@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>status</title>
+</head>
+<body>
+  <job-table />
+  <script type="module">
+
+import {LitElement, html, css} from 'https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js';
+
+class JobTable extends LitElement {
+  
+  static styles = css`
+    * {
+      font-family: sans-serif;
+      box-sizing: border-box;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9em;
+      border: 1px solid #7E1BCC;
+    }
+    th, td {
+      border-bottom: 1px dotted #aaa;
+      padding: 6px;
+    }
+    th {
+      text-align: left;
+      background: #7E1BCC;
+      color: white;
+    }
+    tr:hover td {
+      background: lightyellow;
+    }
+    a {
+      color: black;
+    }
+  `;
+
+  constructor() {
+    super()
+    this.jobs = []
+    this.fallback = false
+  }
+
+  connectedCallback() {
+    super.connectedCallback()
+
+    const loc = window.location;
+    const proto = loc.protocol == 'https:' ? 'wss:' : 'ws:'
+    const uri = `${proto}${loc.host}/storage/ws`
+    const ws = new WebSocket(uri)
+
+    ws.onopen = function() {
+      console.log('WS Connected')
+    }
+
+    ws.onclose = function() {
+      console.log('WS Close')
+    }
+
+    ws.onerror = function(event) {
+      console.log('WS Error', event)
+      this.fallback = true
+      this.pollFallback()
+      setInterval(() => this.pollFallback(), 5000)
+    }
+
+    ws.onmessage = function(evt) {
+      const data = JSON.parse(evt.data)
+      if (Array.isArray(data)) {
+        // on initial websocket connect
+        // server sends all job state
+        this.jobs = data
+      } else {
+        // subsequent messages are individual job updates
+        // update existing if found,
+        // else add new job to front of list
+        const i = this.jobs.findIndex(j => j.id == data.id)
+        if (i == -1) {
+          this.jobs.unshift(data)
+        } else {
+          this.jobs[i] = data
+        }
+      }
+      this.requestUpdate()
+    }.bind(this)
+  }
+
+  pollFallback() {
+    fetch('/storage/jobs')
+    .then(r => r.json())
+    .then(data => {
+      this.jobs = data
+      this.requestUpdate()
+    })
+  }
+
+  disconnectedCallback() {
+    console.log('todo: websocket disconnect')
+  }
+
+  render() {
+    return html`<div>
+
+      <form style="display: flex; align-items: center; gap: 30px;" 
+          action="/storage/file?redirect=true" 
+          method="post" 
+          enctype="multipart/form-data">
+        <h2>${this.jobs.length} jobs</h2>
+        <input 
+          style="flex-grow: 1; background: #efefef; padding: 10px; border-radius: 10px;" 
+          type="file" 
+          name="files" 
+          onchange="form.submit()"
+          required
+          multiple /> 
+      </form>
+
+      ${this.fallback ? html`<div>falling back to polling</div>` : null}
+
+      <table>
+        <tr>
+          <th>Seq</th>
+          <th>Status</th>
+          <th>Progress</th>
+          <th>Source File</th>
+          <th>Worker</th>
+          <th>Created</th>
+          <th>Started</th>
+          <th>Finished</th>
+          <th>Files</th>
+        </tr>
+        ${this.jobs.map(job => html`
+          <tr>
+            <td><a href="/jobs/${job.id}" target="_blank">${job.jetstream_sequence}</a></td>
+            <td>${job.status}</td>
+            <td>
+              <progress value=${job.transcode_progress} />
+            </td>
+            <td>
+              ${job.probe && html`<div>
+                ${showDuration(job.probe.format.duration)}
+                &middot;
+                ${scaleNumber(job.probe.format.size)}
+                &middot;
+                ${scaleNumber(job.probe.format.bit_rate)}
+                &middot;
+                <small>${job.probe.format.format_long_name}</small>
+              </div>`}
+            </td>
+
+            <td>
+              ${job.transcode_worker_id}
+            </td>
+            <td>
+              ${showDate(job.created_at)}
+            </td>
+            <td>
+              ${showDate(job.started_at)}
+            </td>
+            <td>
+              ${showDate(job.finished_at)}
+            </td>
+            <td>
+              ${job.source_info && html`
+                <a href="/storage/obj/${job.source_info.bucket}/${job.source_info.name}" target="_blank">input</a>
+              `}
+
+              ${job.result_info && html`
+                <a href="/storage/obj/${job.result_info.bucket}/${job.result_info.name}" target="_blank">output</a>
+              `}
+            </td>
+          </tr>
+        `)}
+      </table>
+    </div>`;
+  }
+}
+customElements.define('job-table', JobTable);
+
+
+
+function scaleNumber(size) {
+  var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1e3));
+  return (size / Math.pow(1e3, i)).toFixed(2) * 1 + ' ' + ['', 'k', 'M', 'G', 'T'][i];
+}
+
+function showDate(ts) {
+  if (!ts) return ''
+  const d = new Date(ts)
+  return `${d.toLocaleTimeString()}`
+}
+
+function showDuration(sec) {
+  if (!sec) return '0:00';
+  var hours, minutes, seconds;
+  hours = Math.floor(sec / (60 * 60));
+  minutes = Math.floor((sec / 60) % 60);
+  seconds = Math.floor(sec % 60);
+  if (hours && minutes < 10) {
+    minutes = "0" + minutes;
+  }
+  if (seconds < 10) {
+    seconds = "0" + seconds;
+  }
+  var arr = [minutes, seconds]
+  if (hours) arr.unshift(hours)
+  return arr.join(':');
+}
+
+  </script>
+</body>
+</html>

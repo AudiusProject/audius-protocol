@@ -531,6 +531,20 @@ class DBManager {
     }
     return false
   }
+
+  static async getNumLegacyStoragePathsRecords() {
+    const query = `SELECT COUNT(*) FROM "Files" WHERE "storagePath" NOT LIKE '/file_storage/files/%' AND "storagePath" LIKE '/file_storage/%';`
+    // Returns [[{ count }]]
+    const queryResult = await sequelize.query(query)
+    return parseInt(queryResult[0][0].count, 10)
+  }
+
+  static async getNumCustomStoragePathsRecords() {
+    const query = `SELECT COUNT(*) FROM "Files" WHERE "storagePath" NOT LIKE '/file_storage/%';`
+    // Returns [[{ count }]]
+    const queryResult = await sequelize.query(query)
+    return parseInt(queryResult[0][0].count, 10)
+  }
 }
 
 /**

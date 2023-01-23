@@ -121,6 +121,7 @@ def test_index_valid_track(app, mocker):
             "updated_at": "2020-07-11 08:22:15",
             "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
             "file_type": None,
+            "is_playlist_upload": True,
             "track_segments": [
                 {
                     "duration": 6.016,

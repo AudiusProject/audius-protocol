@@ -9,7 +9,7 @@ from src.premium_content.premium_content_access_checker import (
 from src.premium_content.signature import get_premium_content_signature
 from src.queries.get_authed_user import get_authed_user
 
-CID_STREAM_ENABLED = False
+CID_STREAM_ENABLED = True
 
 
 class GetTrackStreamSignature(TypedDict):
@@ -25,7 +25,8 @@ def get_track_stream_signature(args: Dict):
     if not track["is_premium"]:
         return get_premium_content_signature(
             {
-                "id": track["track_cid"],
+                "track_id": track["track_id"],
+                "track_cid": track["track_cid"],
                 "type": "track",
                 "is_premium": False,
             }
@@ -74,7 +75,8 @@ def get_track_stream_signature(args: Dict):
 
     return get_premium_content_signature(
         {
-            "id": track["track_cid"],
+            "track_id": track["track_id"],
+            "track_cid": track["track_cid"],
             "type": "track",
             "is_premium": True,
         }

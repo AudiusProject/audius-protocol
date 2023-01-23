@@ -14,7 +14,6 @@ from src.queries.update_historical_metrics import (
 )
 from src.tasks.celery_app import celery
 from src.utils.get_all_other_nodes import get_all_other_nodes
-from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
@@ -210,7 +209,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     """
     all_other_nodes = get_all_other_nodes()[0]
 
-    visited_node_timestamps_str = redis_get_or_restore(redis, metrics_visited_nodes)
+    visited_node_timestamps_str = redis.get(metrics_visited_nodes)
     visited_node_timestamps = (
         json.loads(visited_node_timestamps_str) if visited_node_timestamps_str else {}
     )
@@ -226,7 +225,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
     summed_unique_monthly_count = summed_unique_metrics["monthly"]
 
     # Merge & persist metrics for our personal node
-    personal_route_metrics_str = redis_get_or_restore(redis, personal_route_metrics)
+    personal_route_metrics_str = redis.get(personal_route_metrics)
     personal_route_metrics_dict = (
         json.loads(personal_route_metrics_str) if personal_route_metrics_str else {}
     )
@@ -239,7 +238,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
                 else:
                     new_personal_route_metrics[ip] = count
 
-    personal_app_metrics_str = redis_get_or_restore(redis, personal_app_metrics)
+    personal_app_metrics_str = redis.get(personal_app_metrics)
     personal_app_metrics_dict = (
         json.loads(personal_app_metrics_str) if personal_app_metrics_str else {}
     )
@@ -284,9 +283,7 @@ def consolidate_metrics_from_other_nodes(self, db, redis):
 
         if new_route_metrics is not None and new_app_metrics is not None:
             visited_node_timestamps[node] = end_time
-            redis_set_and_dump(
-                redis, metrics_visited_nodes, json.dumps(visited_node_timestamps)
-            )
+            redis.set(metrics_visited_nodes, json.dumps(visited_node_timestamps))
 
     # persist updated summed unique counts
     persist_summed_unique_counts(

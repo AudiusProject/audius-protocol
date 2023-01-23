@@ -19,7 +19,8 @@ describe('test transcode_and_segment route', function () {
       /* libsMock */ getLibsMock(),
       BlacklistManager,
       /* setMockFn */ null,
-      1 /* spId */
+      1 /* spId */,
+      true /* mockContentNodeInfoManager */
     )
 
     app = appInfo.app

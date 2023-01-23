@@ -1,4 +1,5 @@
 import json
+import logging
 import urllib.parse
 from typing import List
 from urllib.parse import urljoin
@@ -76,6 +77,8 @@ from src.utils.redis_metrics import record_metrics
 
 from .models.tracks import remixes_response as remixes_response_model
 from .models.tracks import stem_full, track, track_full
+
+logger = logging.getLogger(__name__)
 
 trending_strategy_factory = TrendingStrategyFactory()
 
@@ -458,10 +461,15 @@ class TrackStream(Resource):
         primary_node = creator_nodes[0]
         signature_param = urllib.parse.quote(json.dumps(signature))
         track_cid = track["track_cid"]
-        if CID_STREAM_ENABLED:
-            path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
-        else:
+        if not track_cid:
+            logger.warning(
+                f"tracks.py | stream | We should not reach here! If you see this, it's because the track with id {track_id} has no track_cid. Please investigate."
+            )
             path = f"tracks/stream/{track_id}"
+        elif not CID_STREAM_ENABLED:
+            path = f"tracks/stream/{track_id}"
+        else:
+            path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
         stream_url = urljoin(primary_node, path)
 
         return stream_url
@@ -505,7 +513,6 @@ class TrackSearchResult(Resource):
             "limit": 10,
             "offset": 0,
             "only_downloadable": args["only_downloadable"],
-            "exclude_premium": True,
         }
         response = search(search_args)
         return success_response(response["tracks"])

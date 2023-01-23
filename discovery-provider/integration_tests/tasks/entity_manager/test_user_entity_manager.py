@@ -8,8 +8,10 @@ from sqlalchemy import asc
 from src.challenges.challenge_event import ChallengeEvent
 from src.models.users.user import User
 from src.tasks.entity_manager.entity_manager import entity_manager_update
+from src.tasks.entity_manager.user import UserEventMetadata, update_user_events
 from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, USER_ID_OFFSET
 from src.utils.db_session import get_db
+from src.utils.redis_connection import get_redis
 from web3 import Web3
 from web3.datastructures import AttributeDict
 
@@ -68,6 +70,20 @@ def test_index_valid_user(app, mocker):
                         "_userId": USER_ID_OFFSET,
                         "_action": "Create",
                         "_metadata": "1,2,3",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateArtistPickTrack": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": USER_ID_OFFSET,
+                        "_action": "Update",
+                        "_metadata": "QmUpdateArtistPickTrack",
                         "_signer": "user1wallet",
                     }
                 )
@@ -154,6 +170,10 @@ def test_index_valid_user(app, mocker):
             },
             "events": None,
             "user_id": USER_ID_OFFSET + 1,
+        },
+        "QmUpdateArtistPickTrack": {
+            "track_id": TRACK_ID_OFFSET,
+            "title": "track 1 update",
         },
         "QmUpdateUser1": {
             "is_verified": False,
@@ -406,6 +426,20 @@ def test_index_invalid_users(app, mocker):
                 )
             },
         ],
+        "UpdateUserInvalidArtistPick": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,  # existing user
+                        "_entityType": "User",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "QmInvalidArtistPick",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
     test_metadata = {
         "QmCreateUser1": {
@@ -527,6 +561,9 @@ def test_index_invalid_users(app, mocker):
             "events": {"is_mobile_user": True},
             "user_id": USER_ID_OFFSET,
         },
+        "QmInvalidArtistPick": {
+            "artist_pick_track_id": TRACK_ID_OFFSET + 1,
+        },
     }
 
     entity_manager_txs = [
@@ -559,6 +596,8 @@ def test_index_invalid_users(app, mocker):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
+        existing_user: List[User] = session.query(User).filter(User.is_current).first()
+
         # index transactions
         entity_manager_update(
             None,
@@ -572,8 +611,14 @@ def test_index_invalid_users(app, mocker):
         )
 
         # validate db records
-        all_users: List[User] = session.query(User).all()
+        all_users: List[User] = session.query(User).filter(User.is_current).all()
         assert len(all_users) == 2  # no new users indexed
+
+        existing_user_after_index: List[User] = (
+            session.query(User).filter(User.user_id == 1).first()
+        )
+
+        assert existing_user == existing_user_after_index
 
 
 def test_index_verify_users(app, mocker):
@@ -668,3 +713,21 @@ def test_index_verify_users(app, mocker):
             assert not all_users[1].is_verified  # user 2 is not verified
             calls = [mock.call.dispatch(ChallengeEvent.connect_verified, 0, 1)]
             bus_mock.assert_has_calls(calls, any_order=True)
+
+
+@mock.patch("src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True)
+def test_self_referrals(bus_mock: mock.MagicMock, app):
+    """Test that users can't refer themselves"""
+    block_hash = b"0x8f19da326900d171642af08e6770eedd83509c6c44f6855c98e6a752844e2521"
+    with app.app_context():
+        db = get_db()
+        redis = get_redis()
+        bus_mock(redis)
+    with db.scoped_session() as session, bus_mock.use_scoped_dispatch_queue():
+        user = User(user_id=1, blockhash=str(block_hash), blocknumber=1)
+        events: UserEventMetadata = {"referrer": 1}
+        update_user_events(session, user, events, bus_mock)
+        mock_call = mock.call.dispatch(
+            ChallengeEvent.referral_signup, 1, 1, {"referred_user_id": 1}
+        )
+        assert mock_call not in bus_mock.method_calls

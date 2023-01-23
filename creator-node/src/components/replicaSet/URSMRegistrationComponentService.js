@@ -53,7 +53,6 @@ const respondToURSMRequestForSignature = async (
       nodeEndpointFromSPFactory,
       spID
     } = await verifyRequesterIsValidSP({
-      audiusLibs,
       spID,
       reqTimestamp,
       reqSignature

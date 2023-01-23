@@ -10,8 +10,8 @@ import {
 } from './services/discoveryProvider'
 import { Schemas, SchemaValidator } from './services/schemaValidator'
 import { UserStateManager } from './userStateManager'
-import type { Logger, CaptchaConfig, Nullable } from './utils'
-import { Captcha, Utils } from './utils'
+import type { Logger, Nullable } from './utils'
+import { Utils } from './utils'
 
 import { Keypair, PublicKey } from '@solana/web3.js'
 
@@ -77,7 +77,6 @@ type AudiusLibsConfig = {
   creatorNodeConfig: CreatorNodeConfig
   comstockConfig: LibsComstockConfig
   wormholeConfig: ProxyWormholeConfig
-  captchaConfig: CaptchaConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
   logger: Logger
@@ -303,7 +302,6 @@ export class AudiusLibs {
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   comstockConfig: LibsComstockConfig
   wormholeConfig: ProxyWormholeConfig
-  captchaConfig: CaptchaConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
   isDebug: boolean
@@ -321,7 +319,6 @@ export class AudiusLibs {
   contracts: Nullable<AudiusContracts>
   wormholeClient: Nullable<ProxyWormhole>
   creatorNode: Nullable<CreatorNode>
-  captcha: Nullable<Captcha>
   schemas?: Schemas
   comstock: Nullable<Comstock>
 
@@ -360,7 +357,6 @@ export class AudiusLibs {
     creatorNodeConfig,
     comstockConfig,
     wormholeConfig,
-    captchaConfig,
     hedgehogConfig,
     isServer,
     logger = console,
@@ -381,7 +377,6 @@ export class AudiusLibs {
     this.discoveryProviderConfig = discoveryProviderConfig
     this.comstockConfig = comstockConfig
     this.wormholeConfig = wormholeConfig
-    this.captchaConfig = captchaConfig
     this.hedgehogConfig = hedgehogConfig
     this.isServer = isServer
     this.isDebug = isDebug
@@ -399,7 +394,6 @@ export class AudiusLibs {
     this.wormholeClient = null
     this.contracts = null
     this.creatorNode = null
-    this.captcha = null
     this.comstock = null
 
     // API
@@ -432,16 +426,10 @@ export class AudiusLibs {
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
-    /** Captcha */
-    if (this.captchaConfig) {
-      this.captcha = new Captcha(this.captchaConfig)
-    }
-
     /** Identity Service */
     if (this.identityServiceConfig) {
       this.identityService = new IdentityService({
-        identityServiceEndpoint: this.identityServiceConfig.url,
-        captcha: this.captcha
+        identityServiceEndpoint: this.identityServiceConfig.url
       })
       const hedgehogService = new Hedgehog({
         identityService: this.identityService,
@@ -588,7 +576,6 @@ export class AudiusLibs {
       this.wormholeClient,
       this.creatorNode,
       this.comstock,
-      this.captcha,
       this.isServer,
       this.logger
     ] as BaseConstructorArgs

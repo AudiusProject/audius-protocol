@@ -98,13 +98,13 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+      replicas: 1  # Override default replicas
 
   test-creator-node:
     extends:
       file: docker-compose.yml
       service: creator-node
-    entrypoint: npx mocha --require ts-node/register --exit --recursive --timeout 30000
-    command: ""
+    command: "sleep infinity"
     environment:
       storagePath: "./test_file_storage"
 
@@ -116,8 +116,6 @@ services:
       spOwnerWallet: "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
       delegateOwnerWallet: "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
       delegatePrivateKey: "0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d"
-    volumes:
-      - ./discovery-provider/integration_tests:/audius-discovery-provider/integration_tests
     depends_on:
       creator-node-db:
         condition: service_healthy
@@ -126,6 +124,8 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+      # Override default replicas
+      replicas: 1
     profiles:
       - tests
 
@@ -137,7 +137,7 @@ services:
       service: discovery-provider-elasticsearch
     deploy:
       mode: global
-      replicas: 1
+      replicas: 1  # Override default replicas
 
   discovery-provider-db:
     image: postgres:11.4
@@ -153,7 +153,7 @@ services:
       mode: global
 
   discovery-provider-redis:
-    image: redis:5.0.5
+    image: redis:7.0
     healthcheck:
       test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
@@ -166,16 +166,17 @@ services:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    entrypoint: pytest
-    command: ""
+    command: sleep infinity
     environment:
       audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
       audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+
       audius_redis_url: "redis://discovery-provider-redis:6379/00"
+
       audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
       audius_elasticsearch_run_indexer: "true"
     volumes:
-      - ./discovery-provider/integration_tests:/audius-discovery-provider/integration_tests
+      - ./discovery-provider:/audius-discovery-provider
     depends_on:
       discovery-provider-elasticsearch:
         condition: service_healthy
@@ -186,8 +187,10 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+      replicas: 1  # Override default replicas
     profiles:
       - tests
+      - elasticsearch
 
   # identity-service
 
@@ -203,7 +206,8 @@ services:
       mode: global
 
   identity-service-redis:
-    image: redis:5.0.5
+    image: redis:7.0
+    command: redis-server
     healthcheck:
       test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
@@ -216,8 +220,7 @@ services:
     extends:
       file: docker-compose.yml
       service: identity-service
-    entrypoint: npx mocha --timeout 12000 --exit test/index.js
-    command: ""
+    command: sleep infinity
     environment:
       isTestRun: "true"
       environment: "test"

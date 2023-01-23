@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from src.models.social.play import Play
 from src.utils import db_session
 
 
-def get_latest_play():
+def get_latest_play() -> datetime:
     """
     Gets the latest play in the database
     """

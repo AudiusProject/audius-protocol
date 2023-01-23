@@ -23,4 +23,8 @@ function _M.toset (arr)
     return set
 end
 
+function _M.starts_with(str, start)
+    return str:sub(1, #start) == start
+end
+
 return _M

@@ -1,0 +1,92 @@
+services:
+  comdb:
+    container_name: comdb
+    image: postgres
+    ports:
+      - "5454:5432"
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
+
+  comnats:
+    # container_name: nats
+    image: nats
+    command: -js
+    ports:
+      - "4222:4222"
+
+  com1:
+    container_name: com1
+    build: .
+    environment:
+      audius_discprov_env: test
+      test_host: com1
+      # audius_delegate_owner_wallet: '0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F'
+      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238"
+      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
+      audius_comms_cluster: "true"
+      # audius_comms_replica_count: 3 # could be a future dynamic replica config count thing
+    volumes:
+      - ./comms-linux:/comms-linux
+    depends_on:
+      - comdb
+    ports:
+      - 4222:4222
+      - 6222:6222
+      - 8222:8222
+      - 8925:8925
+
+  com2:
+    container_name: com2
+    build: .
+    volumes:
+      - ./comms-linux:/comms-linux
+    environment:
+      audius_discprov_env: test
+      test_host: com2
+      # audius_delegate_owner_wallet: '0x90b8d2655A7C268d0fA31758A714e583AE54489D'
+      audius_delegate_private_key: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc"
+      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com2?sslmode=disable"
+      audius_comms_cluster: "true"
+    depends_on:
+      - comdb
+    ports:
+      - 8926:8925
+
+  com3:
+    container_name: com3
+    build: .
+    volumes:
+      - ./comms-linux:/comms-linux
+    environment:
+      audius_discprov_env: test
+      test_host: com3
+      # audius_delegate_owner_wallet: '0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B'
+      audius_delegate_private_key: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c"
+      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com3?sslmode=disable"
+      audius_comms_cluster: "true"
+    depends_on:
+      - comdb
+    ports:
+      - 8927:8925
+
+  com4:
+    container_name: com4
+    build: .
+    volumes:
+      - ./comms-linux:/comms-linux
+    environment:
+      audius_discprov_env: test
+      test_host: com4
+      audius_delegate_private_key: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb"
+      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable"
+      audius_comms_cluster: "true"
+    depends_on:
+      - comdb
+    ports:
+      - 8928:8925
+# volumes:
+#   data_cz1:
+#   data_cz2:
+#   data_cz3:

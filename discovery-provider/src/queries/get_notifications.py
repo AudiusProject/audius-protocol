@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 class GetNotificationArgs(TypedDict):
     user_id: int
     timestamp: Optional[int]
+    group_id: Optional[str]
     limit: Optional[int]
 
 
@@ -54,8 +55,13 @@ LEFT JOIN user_seen on
 WHERE
   :user_id = ANY(n.user_ids) AND
   (
-    (:timestamp_offset is NULL OR user_seen.seen_at < :timestamp_offset) OR
-    (:group_id_offset is NULL OR :timestamp_offset is NULL OR (user_seen.seen_at = :timestamp_offset and n.group_id < :group_id_offset))
+    (:timestamp_offset is NULL) OR
+    (user_seen.seen_at is NULL AND n.timestamp < :timestamp_offset) OR
+    (:timestamp_offset is NOT NULL AND user_seen.seen_at < :timestamp_offset) OR
+    (
+        :group_id_offset is NOT NULL AND :timestamp_offset is NOT NULL AND 
+        (user_seen.seen_at = :timestamp_offset AND n.group_id < :group_id_offset)
+    )
   )
 GROUP BY
   n.group_id, user_seen.seen_at, user_seen.prev_seen_at
@@ -82,10 +88,10 @@ class NotificationGroup(TypedDict):
 
 def get_notification_groups(session: Session, args: GetNotificationArgs):
     """
-    Gets the user's notifiations in the database
+    Gets the user's notifications in the database
     """
-
-    limit = min(args.get("limit", DEFAULT_LIMIT), MAX_LIMIT)  # type: ignore
+    limit = args.get("limit") or DEFAULT_LIMIT
+    limit = min(limit, MAX_LIMIT)  # type: ignore
 
     rows = session.execute(
         notification_groups_sql,
@@ -108,8 +114,6 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
         }
         for r in rows
     ]
-    logger.info(res)
-
     return res
 
 
@@ -130,11 +134,6 @@ class SaveNotification(TypedDict):
     save_item_id: int
 
 
-class MilestoneNotification(TypedDict):
-    type: str
-    threshold: int
-
-
 class RemixNotification(TypedDict):
     parent_track_id: int
     track_id: int
@@ -142,16 +141,98 @@ class RemixNotification(TypedDict):
 
 class CosignRemixNotification(TypedDict):
     parent_track_id: int
+    track_owner_id: int
     track_id: int
+
+
+class CreateTrackNotification(TypedDict):
+    track_id: int
+
+
+class CreatePlaylistNotification(TypedDict):
+    is_album: bool
+    playlist_id: int
+
+
+class TipReceiveNotification(TypedDict):
+    amount: int
+    sender_user_id: int
+    receiver_user_id: int
+
+
+class TipSendNotification(TypedDict):
+    amount: int
+    sender_user_id: int
+    receiver_user_id: int
+
+
+class ChallengeRewardNotification(TypedDict):
+    amount: int
+    specifier: str
+    challenge_id: str
+
+
+class ReactionNotification(TypedDict):
+    reacted_to: str
+    reaction_type: str
+    reaction_value: int
+    sender_wallet: str
+
+
+class SupporterRankUpNotification(TypedDict):
+    rank: int
+    sender_user_id: int
+    receiver_user_id: int
+
+
+class SupportingRankUpNotification(TypedDict):
+    rank: int
+    sender_user_id: int
+    receiver_user_id: int
+
+
+class FollowerMilestoneNotification(TypedDict):
+    type: str
+    user_id: int
+    threshold: int
+
+
+class TrackMilestoneNotification(TypedDict):
+    type: str
+    track_id: int
+    threshold: int
+
+
+class PlaylistMilestoneNotification(TypedDict):
+    type: str
+    playlist_id: int
+    threshold: int
+
+
+class TierChangeNotification(TypedDict):
+    new_tier: str
+    new_tier_value: int
+    current_value: str
 
 
 NotificationData = Union[
     FollowNotification,
     RepostNotification,
     SaveNotification,
-    MilestoneNotification,
     RemixNotification,
     CosignRemixNotification,
+    CreateTrackNotification,
+    CreatePlaylistNotification,
+    TipReceiveNotification,
+    TipSendNotification,
+    ChallengeRewardNotification,
+    ReactionNotification,
+    SupporterRankUpNotification,
+    SupportingRankUpNotification,
+    FollowerMilestoneNotification,
+    TrackMilestoneNotification,
+    PlaylistMilestoneNotification,
+    TierChangeNotification,
 ]
 
 
@@ -189,7 +270,6 @@ notifications_sql = notifications_sql.bindparams(
 def get_notifications(session: Session, args: GetNotificationArgs):
     notifications = get_notification_groups(session, args)
     notification_ids = []
-    logger.info(notifications)
     for notification in notifications:
         notification_ids.extend(notification["notification_ids"])
 

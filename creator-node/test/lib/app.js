@@ -16,7 +16,8 @@ export async function getApp(
   libsClient,
   blacklistManager = BlacklistManager,
   setMockFn = null,
-  spId = 1
+  spId = 1,
+  mockContentNodeInfoManager = false
 ) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
@@ -44,6 +45,44 @@ export async function getApp(
     syncQueue: syncQueue,
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
     prometheusRegistry
+  }
+
+  // Update import to make ensureValidSPMiddleware pass
+  if (mockContentNodeInfoManager) {
+    const getContentNodeInfoFromSpId = async (spID, _genericLogger) => {
+      switch (spID) {
+        case 2:
+          return {
+            endpoint: 'http://mock-cn2.audius.co',
+            owner: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb',
+            delegateOwnerWallet: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb'
+          }
+        case 3:
+          return {
+            endpoint: 'http://mock-cn3.audius.co',
+            owner: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36',
+            delegateOwnerWallet: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36'
+          }
+
+        case 1:
+          return {
+            endpoint: 'http://mock-cn1.audius.co',
+            owner: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25',
+            delegateOwnerWallet: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
+          }
+        default:
+          return {
+            owner: '0x0000000000000000000000000000000000000000',
+            endpoint: '',
+            delegateOwnerWallet: '0x0000000000000000000000000000000000000000'
+          }
+      }
+    }
+    require.cache[
+      require.resolve('../../src/services/ContentNodeInfoManager')
+    ] = {
+      exports: { getContentNodeInfoFromSpId }
+    }
   }
 
   // Update the import to be the mocked ServiceRegistry instance

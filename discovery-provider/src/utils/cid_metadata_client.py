@@ -1,5 +1,6 @@
 # pylint: disable=C0302
 import asyncio
+import json
 import logging
 from typing import Any, Dict, KeysView, Set, Tuple
 from urllib.parse import urlparse
@@ -78,7 +79,12 @@ class CIDMetadataClient:
             ) as resp:
                 if resp.status == 200:
                     json_resp = await resp.json(content_type=None)
-                    return (multihash, json_resp)
+                    sanitized_data = (
+                        json.dumps(json_resp, ensure_ascii=False)
+                        .encode("utf-8", "ignore")
+                        .decode("utf-8", "ignore")
+                    )
+                    return (multihash, json.loads(sanitized_data))
         except asyncio.TimeoutError:
             logger.info(
                 f"CIDMetadataClient | _get_metadata_async TimeoutError fetching gateway address - {url}"

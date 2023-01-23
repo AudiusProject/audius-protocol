@@ -48,10 +48,6 @@ const trustedNotifierManagerMock = {
   trustedNotifierID: 12
 }
 
-const sequelizeMock = {
-  query: async () => Promise.resolve()
-}
-
 const getMonitorsMock = async (monitors) => {
   return monitors.map((monitor) => {
     switch (monitor.name) {
@@ -143,7 +139,7 @@ const AsyncProcessingQueueMock = (active = 0, waiting = 0, failed = 0) => {
 }
 
 describe('Test Health Check', function () {
-  it('Should pass', async function () {
+  it('Happy case - should pass', async function () {
     config.set('serviceCountry', 'US')
     config.set('serviceLatitude', '37.7749')
     config.set('serviceLongitude', '-122.4194')
@@ -169,7 +165,6 @@ describe('Test Health Check', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
       TranscodingQueueMock(4, 0).isAvailable,
@@ -181,6 +176,7 @@ describe('Test Health Check', function () {
       ...version,
       service: 'content-node',
       healthy: true,
+      isReadOnlyMode: false,
       git: undefined,
       audiusDockerCompose: undefined,
       selectedDiscoveryProvider: TEST_ENDPOINT,
@@ -290,7 +286,6 @@ describe('Test Health Check', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
       TranscodingQueueMock(4, 0).isAvailable,
@@ -302,6 +297,7 @@ describe('Test Health Check', function () {
       ...version,
       service: 'content-node',
       healthy: true,
+      isReadOnlyMode: false,
       git: undefined,
       audiusDockerCompose: undefined,
       selectedDiscoveryProvider: 'none',
@@ -398,7 +394,6 @@ describe('Test Health Check', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
       TranscodingQueueMock(4, 0).isAvailable,
@@ -410,6 +405,7 @@ describe('Test Health Check', function () {
       ...version,
       service: 'content-node',
       healthy: true,
+      isReadOnlyMode: false,
       git: undefined,
       audiusDockerCompose: undefined,
       selectedDiscoveryProvider: 'none',
@@ -526,6 +522,29 @@ describe('Test Health Check', function () {
     assert.strictEqual(solSecretKeyDerived, SOL_SECRET_KEY_BASE64)
     assert.strictEqual(solPublicKeyDerived.toBase58(), SOL_PUBLIC_KEY_BASE58)
   })
+
+  it('Should check that considerNodeUnhealthy env var returns healthy false', async () => {
+    config.set('considerNodeUnhealthy', true)
+
+    const response = await healthCheck(
+      {
+        libs: libsMock,
+        snapbackSM: snapbackSMMock,
+        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
+        trustedNotifierManager: trustedNotifierManagerMock
+      },
+      mockLogger,
+      getMonitorsMock,
+      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
+      TranscodingQueueMock(4, 0).isAvailable,
+      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
+      2
+    )
+
+    assert.deepStrictEqual(response.healthy, false)
+
+    config.set('considerNodeUnhealthy', false)
+  })
 })
 
 describe('Test Health Check Verbose', function () {
@@ -541,6 +560,7 @@ describe('Test Health Check Verbose', function () {
     config.set('recoverOrphanedDataQueueRateLimitJobsPerInterval', 1)
     config.set('snapbackModuloBase', 18)
     config.set('manualSyncsDisabled', false)
+    config.set('solDelegatePrivateKeyBase64', SOL_SECRET_KEY_BASE64)
 
     const res = await healthCheckVerbose(
       {
@@ -549,7 +569,6 @@ describe('Test Health Check Verbose', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
@@ -561,6 +580,7 @@ describe('Test Health Check Verbose', function () {
       ...version,
       service: 'content-node',
       healthy: true,
+      isReadOnlyMode: false,
       git: undefined,
       audiusDockerCompose: undefined,
       selectedDiscoveryProvider: 'none',
@@ -670,7 +690,6 @@ describe('Test Health Check Verbose', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       2,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
@@ -685,7 +704,6 @@ describe('Test Health Check Verbose', function () {
         trustedNotifierManager: trustedNotifierManagerMock
       },
       mockLogger,
-      sequelizeMock,
       getMonitorsMock,
       TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
       TranscodingQueueMock(4, 0).isAvailable,
@@ -694,28 +712,6 @@ describe('Test Health Check Verbose', function () {
     )
 
     assert.deepStrictEqual(verboseRes, defaultRes)
-  })
-
-  it('Should check that considerNodeUnhealthy env var returns healthy false', async function () {
-    config.set('considerNodeUnhealthy', true)
-
-    const defaultRes = await healthCheck(
-      {
-        libs: libsMock,
-        snapbackSM: snapbackSMMock,
-        asyncProcessingQueue: AsyncProcessingQueueMock(0, 2),
-        trustedNotifierManager: trustedNotifierManagerMock
-      },
-      mockLogger,
-      sequelizeMock,
-      getMonitorsMock,
-      TranscodingQueueMock(4, 0).getTranscodeQueueJobs,
-      TranscodingQueueMock(4, 0).isAvailable,
-      AsyncProcessingQueueMock(0, 2).getAsyncProcessingQueueJobs,
-      2
-    )
-
-    assert.deepStrictEqual(defaultRes.healthy, false)
   })
 })
 

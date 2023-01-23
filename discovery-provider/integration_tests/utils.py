@@ -3,8 +3,9 @@ from datetime import datetime
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
-from src.models.notifications.notification import NotificationSeen
+from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction
@@ -27,6 +28,7 @@ from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.supporter_rank_up import SupporterRankUp
 from src.models.users.user import User
+from src.models.users.user_balance_change import UserBalanceChange
 from src.models.users.user_bank import UserBankAccount, UserBankTx
 from src.models.users.user_listening_history import UserListeningHistory
 from src.models.users.user_tip import UserTip
@@ -108,6 +110,7 @@ def populate_mock_db(db, entities, block_offset=None):
         reposts = entities.get("reposts", [])
         saves = entities.get("saves", [])
         track_routes = entities.get("track_routes", [])
+        playlist_routes = entities.get("playlist_routes", [])
         remixes = entities.get("remixes", [])
         stems = entities.get("stems", [])
         challenges = entities.get("challenges", [])
@@ -130,6 +133,8 @@ def populate_mock_db(db, entities, block_offset=None):
         reward_manager_txs = entities.get("reward_manager_txs", [])
         challenge_disbursements = entities.get("challenge_disbursements", [])
         notification_seens = entities.get("notification_seens", [])
+        playlist_seens = entities.get("playlist_seens", [])
+        user_balance_changes = entities.get("user_balance_changes", [])
 
         num_blocks = max(
             len(tracks),
@@ -138,6 +143,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(saves),
             len(reposts),
             len(subscriptions),
+            len(playlist_seens),
         )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = session.query(Block).filter(Block.number == i).first()
@@ -182,6 +188,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_unlisted=track_meta.get("is_unlisted", False),
                 is_premium=track_meta.get("is_premium", False),
                 premium_conditions=track_meta.get("premium_conditions", None),
+                is_playlist_upload=track_meta.get("is_playlist_upload", False),
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
@@ -387,6 +394,20 @@ def populate_mock_db(db, entities, block_offset=None):
             )
             session.add(route)
 
+        for i, route_meta in enumerate(playlist_routes):
+            route = PlaylistRoute(
+                slug=route_meta.get("slug", ""),
+                title_slug=route_meta.get("title_slug", ""),
+                blockhash=hex(i + block_offset),
+                blocknumber=route_meta.get("blocknumber", i + block_offset),
+                owner_id=route_meta.get("owner_id", i + 1),
+                playlist_id=route_meta.get("playlist_id", i + 1),
+                is_current=route_meta.get("is_current", True),
+                txhash=route_meta.get("txhash", str(i + 1)),
+                collision_id=route_meta.get("collision_id", 0),
+            )
+            session.add(route)
+
         for i, remix_meta in enumerate(remixes):
             remix = Remix(
                 parent_track_id=remix_meta.get("parent_track_id", i),
@@ -528,6 +549,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 amount=challenge_disbursement.get("amount", i),
             )
             session.add(cb)
+        for i, playlist_seen in enumerate(playlist_seens):
+            ps = PlaylistSeen(
+                user_id=playlist_seen.get("user_id", i),
+                playlist_id=playlist_seen.get("playlist_id", i),
+                is_current=playlist_seen.get("is_current", True),
+                seen_at=playlist_seen.get("seen_at", datetime.now()),
+                blockhash=playlist_seen.get("blockhash", str(i)),
+                blocknumber=playlist_seen.get("blocknumber", str(i)),
+                txhash=playlist_seen.get("txhash", str(i)),
+            )
+            session.add(ps)
         for i, notification_seen in enumerate(notification_seens):
             ns = NotificationSeen(
                 user_id=notification_seen.get("user_id", i),
@@ -536,4 +568,15 @@ def populate_mock_db(db, entities, block_offset=None):
                 seen_at=notification_seen.get("seen_at", datetime.now()),
             )
             session.add(ns)
+        for i, balance_change in enumerate(user_balance_changes):
+            ns = UserBalanceChange(
+                user_id=balance_change.get("user_id", i),
+                blocknumber=balance_change.get("blocknumber", i),
+                current_balance=balance_change.get("current_balance", 0),
+                previous_balance=balance_change.get("previous_balance", 0),
+                created_at=balance_change.get("created_at", datetime.now()),
+                updated_at=balance_change.get("updated_at", datetime.now()),
+            )
+            session.add(ns)
+
         session.commit()

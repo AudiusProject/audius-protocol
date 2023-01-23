@@ -112,8 +112,7 @@ class EventScanner:
             f"event_scanner.py | Saving last scanned block ({self.last_scanned_block}) to redis"
         )
         self.redis.set(
-            eth_indexing_last_scanned_block_key,
-            str(self.last_scanned_block),
+            eth_indexing_last_scanned_block_key, str(self.last_scanned_block)
         )
         with self.db.scoped_session() as session:
             record = session.query(EthBlock).first()

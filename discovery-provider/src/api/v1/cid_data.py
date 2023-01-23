@@ -8,7 +8,7 @@ from src.utils.redis_metrics import record_metrics
 
 logger = logging.getLogger(__name__)
 
-ns = Namespace("cid_data", description="Metadata related operations")
+full_ns = Namespace("cid_data", description="Metadata related operations")
 
 
 def get_data(cid: str):
@@ -20,10 +20,10 @@ def get_data(cid: str):
 CID_METDATA_ROUTE = "/<string:metadata_id>"
 
 
-@ns.route(CID_METDATA_ROUTE)
+@full_ns.route(CID_METDATA_ROUTE, doc=False)
 class Metadata(Resource):
     @record_metrics
-    @ns.doc(
+    @full_ns.doc(
         id="""Get Metdata""",
         description="""Get a metadata by CID""",
         params={"metadata_id": "A Metdata CID"},
