@@ -32,7 +32,8 @@ import {
   usersSocialActions as socialUsersActions,
   playerSelectors,
   queueSelectors,
-  premiumContentActions
+  premiumContentActions,
+  premiumContentSelectors
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -75,7 +76,9 @@ const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { tracksActions } = trackPageLineupActions
-const { updatePremiumTrackStatus } = premiumContentActions
+const { updatePremiumTrackStatus, removePremiumContentSignature } =
+  premiumContentActions
+const { getPremiumTrackSignatureMap } = premiumContentSelectors
 const {
   getUser,
   getLineup,
@@ -406,11 +409,18 @@ class TrackPageProvider extends Component<
         ? `#${trackRank.week} This Week`
         : null
 
+    const isPremium = !!track?.is_premium
+    const hasPremiumContentSignature = !!(
+      track?.track_id && this.props.premiumTrackSignatureMap[track.track_id]
+    )
+    const doesUserHaveAccess = !isPremium || hasPremiumContentSignature
+
     const desktopProps = {
       // Follow Props
       onFollow: this.onFollow,
       onUnfollow: this.onUnfollow,
       onUnlock: this.props.onUnlock,
+      onLock: this.props.onLock,
       makePublic: this.props.makeTrackPublic,
       onClickReposts: this.onClickReposts,
       onClickFavorites: this.onClickFavorites
@@ -464,6 +474,7 @@ class TrackPageProvider extends Component<
       heroPlaying,
       userId,
       badge,
+      doesUserHaveAccess,
       onHeroPlay: this.onHeroPlay,
       goToProfilePage: this.goToProfilePage,
       goToSearchResultsPage: this.goToSearchResultsPage,
@@ -519,6 +530,7 @@ function makeMapStateToProps() {
       status: getStatus(state),
       moreByArtist: getMoreByArtistLineup(state),
       userId: getUserId(state),
+      premiumTrackSignatureMap: getPremiumTrackSignatureMap(state),
 
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
@@ -590,6 +602,10 @@ function mapDispatchToProps(dispatch: Dispatch) {
     editTrack: (trackId: ID, formFields: any) =>
       dispatch(cacheTrackActions.editTrack(trackId, formFields)),
     onUnlock: () => dispatch(updatePremiumTrackStatus({ status: 'UNLOCKING' })),
+    onLock: (trackId: ID) => {
+      dispatch(updatePremiumTrackStatus({ status: 'LOCKED' }))
+      dispatch(removePremiumContentSignature({ trackId }))
+    },
     onFollow: (userId: ID) =>
       dispatch(socialUsersActions.followUser(userId, FollowSource.TRACK_PAGE)),
     onUnfollow: (userId: ID) =>

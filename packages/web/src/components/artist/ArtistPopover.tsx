@@ -44,6 +44,7 @@ type ArtistPopoverProps = {
   component?: 'div' | 'span'
   onNavigateAway?: () => void
   onFollow?: () => void
+  onUnfollow?: () => void
 }
 
 export const ArtistPopover = ({
@@ -54,7 +55,8 @@ export const ArtistPopover = ({
   mouseEnterDelay = 0.5,
   component: Component = 'div',
   onNavigateAway,
-  onFollow
+  onFollow,
+  onUnfollow
 }: ArtistPopoverProps) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false)
   const creator = useSelector((state: CommonState) =>
@@ -89,6 +91,7 @@ export const ArtistPopover = ({
           onNavigateAway?.()
         }}
         onFollow={onFollow}
+        onUnfollow={onUnfollow}
       />
     ) : null
 

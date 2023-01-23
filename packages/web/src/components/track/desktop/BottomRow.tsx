@@ -32,7 +32,7 @@ type BottomRowProps = {
   isDarkMode?: boolean
   isMatrixMode: boolean
   showIconButtons?: boolean
-  canOverrideBottomBar?: boolean
+  isTrack?: boolean
   onClickRepost: (e?: any) => void
   onClickFavorite: (e?: any) => void
   onClickShare: (e?: any) => void
@@ -52,7 +52,7 @@ export const BottomRow = ({
   isDarkMode,
   isMatrixMode,
   showIconButtons,
-  canOverrideBottomBar,
+  isTrack,
   onClickRepost,
   onClickFavorite,
   onClickShare
@@ -95,7 +95,7 @@ export const BottomRow = ({
     )
   }
 
-  if (isPremiumContentEnabled && canOverrideBottomBar && !doesUserHaveAccess) {
+  if (isPremiumContentEnabled && isTrack && !doesUserHaveAccess) {
     return (
       <div className={cn(styles.premiumContent, styles.bottomRow)}>
         <IconLock />

@@ -93,7 +93,7 @@ const TrackTile = memo(
     onTogglePlay,
     showRankIcon,
     permalink,
-    canOverrideBottomBar
+    isTrack
   }: TrackTileProps) => {
     const hasOrdering = order !== undefined
 
@@ -124,7 +124,11 @@ const TrackTile = memo(
           // Standalone means that this tile is not w/ a playlist
           [styles.standalone]: !!standalone
         })}
-        onClick={isLoading || isDisabled ? undefined : onTogglePlay}
+        onClick={
+          isLoading || isDisabled || !doesUserHaveAccess
+            ? undefined
+            : onTogglePlay
+        }
       >
         {isPremium && (
           <PremiumTrackCornerTag doesUserHaveAccess={!!doesUserHaveAccess} />
@@ -255,7 +259,7 @@ const TrackTile = memo(
             onClickRepost={onClickRepost}
             onClickFavorite={onClickFavorite}
             onClickShare={onClickShare}
-            canOverrideBottomBar={canOverrideBottomBar}
+            isTrack={isTrack}
           />
         </div>
       </div>

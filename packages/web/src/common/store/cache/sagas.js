@@ -20,6 +20,7 @@ import {
 import { getConfirmCalls } from 'common/store/confirmer/selectors'
 const { CACHE_PRUNE_MIN } = cacheConfig
 const { getCache } = cacheSelectors
+const { add: addToCache } = cacheActions
 
 const DEFAULT_ENTRY_TTL = 5 /* min */ * 60 /* seconds */ * 1000 /* ms */
 
@@ -178,14 +179,15 @@ function* retrieveFromSourceThenCache({
       metadata: m
     }))
 
-    yield call(
-      add,
-      kind,
-      cacheMetadata,
-      // Rewrite the cache entry if we forced retrieving it from source
-      deleteExistingEntry,
-      // Always cache it persistently
-      true
+    yield put(
+      addToCache(
+        kind,
+        cacheMetadata,
+        // Rewrite the cache entry if we forced retrieving it from source
+        deleteExistingEntry,
+        // Always cache it persistently
+        true
+      )
     )
 
     // Perform any side effects

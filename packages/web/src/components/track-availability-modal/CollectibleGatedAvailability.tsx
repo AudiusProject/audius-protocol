@@ -28,7 +28,7 @@ const defaultCollectibles = { [Chain.Eth]: [], [Chain.Sol]: [] }
 const messages = {
   collectibleGated: 'Collectible Gated',
   collectibleGatedSubtitle:
-    'Collectible gated content can only be accessed by users with linked wallets containing a collectible from the specified collection. These tracks do not appear on trending or in user feeds.',
+    'Users who own a digital collectible matching your selection will have access to your track. Collectible gated content does not appear on trending or in user feeds.',
   learnMore: 'Learn More',
   pickACollection: 'Pick a Collection'
 }
@@ -99,21 +99,25 @@ export const CollectibleGatedAvailability = ({
   }, [collectibles])
 
   const ethCollectibleItems = useMemo(() => {
-    return Object.keys(ethCollectionMap).map((slug) => ({
-      text: ethCollectionMap[slug].name,
-      el: (
-        <div className={styles.dropdownRow}>
-          {!!ethCollectionMap[slug].img && (
-            <img
-              src={ethCollectionMap[slug].img!}
-              alt={ethCollectionMap[slug].name}
-            />
-          )}
-          <span>{ethCollectionMap[slug].name}</span>
-        </div>
-      ),
-      value: slug
-    }))
+    return Object.keys(ethCollectionMap)
+      .sort((s1, s2) =>
+        ethCollectionMap[s1].name.localeCompare(ethCollectionMap[s2].name)
+      )
+      .map((slug) => ({
+        text: ethCollectionMap[slug].name,
+        el: (
+          <div className={styles.dropdownRow}>
+            {!!ethCollectionMap[slug].img && (
+              <img
+                src={ethCollectionMap[slug].img!}
+                alt={ethCollectionMap[slug].name}
+              />
+            )}
+            <span>{ethCollectionMap[slug].name}</span>
+          </div>
+        ),
+        value: slug
+      }))
   }, [ethCollectionMap])
 
   // Solana collections
@@ -147,21 +151,25 @@ export const CollectibleGatedAvailability = ({
   }, [collectibles, solCollections])
 
   const solCollectibleItems = useMemo(() => {
-    return Object.keys(solCollectionMap).map((mint) => ({
-      text: solCollectionMap[mint].name,
-      el: (
-        <div className={styles.dropdownRow}>
-          {!!solCollectionMap[mint].img && (
-            <img
-              src={solCollectionMap[mint].img!}
-              alt={solCollectionMap[mint].name}
-            />
-          )}
-          <span>{solCollectionMap[mint].name}</span>
-        </div>
-      ),
-      value: mint
-    }))
+    return Object.keys(solCollectionMap)
+      .sort((m1, m2) =>
+        solCollectionMap[m1].name.localeCompare(solCollectionMap[m2].name)
+      )
+      .map((mint) => ({
+        text: solCollectionMap[mint].name,
+        el: (
+          <div className={styles.dropdownRow}>
+            {!!solCollectionMap[mint].img && (
+              <img
+                src={solCollectionMap[mint].img!}
+                alt={solCollectionMap[mint].name}
+              />
+            )}
+            <span>{solCollectionMap[mint].name}</span>
+          </div>
+        ),
+        value: mint
+      }))
   }, [solCollectionMap])
 
   const menuItems = useMemo(
