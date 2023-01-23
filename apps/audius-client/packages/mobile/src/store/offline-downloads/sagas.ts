@@ -7,6 +7,7 @@ import {
   collectionPageActions,
   FavoriteSource,
   tracksSocialActions,
+  cacheCollectionsActions,
   collectionsSocialActions,
   accountSelectors,
   cacheCollectionsSelectors,
@@ -42,10 +43,15 @@ import {
 } from 'app/services/offline-downloader/workers'
 
 import {
+  getIsCollectionMarkedForDownload,
   getOfflineCollections,
   getOfflineFavoritedCollections
 } from './selectors'
-import { clearOfflineDownloads, doneLoadingFromDisk } from './slice'
+import {
+  clearOfflineDownloads,
+  doneLoadingFromDisk,
+  startDownload
+} from './slice'
 const { fetchCollection, FETCH_COLLECTION_SUCCEEDED, FETCH_COLLECTION_FAILED } =
   collectionPageActions
 const { SET_REACHABLE, SET_UNREACHABLE } = reachabilityActions
@@ -194,6 +200,36 @@ export function* watchSetUnreachable() {
   yield* takeLatest(SET_UNREACHABLE, handleSetUnreachable)
 }
 
+function* downloadNewPlaylistTrackIfNecessary({
+  trackId,
+  playlistId
+}: ReturnType<typeof cacheCollectionsActions.addTrackToPlaylist>) {
+  const isCollectionDownloaded = yield* select(
+    getIsCollectionMarkedForDownload(playlistId.toString())
+  )
+  if (!isCollectionDownloaded || !trackId) return
+
+  const favoriteDownloadedCollections = yield* select(
+    getOfflineFavoritedCollections
+  )
+  const trackForDownload = {
+    trackId,
+    downloadReason: {
+      collection_id: playlistId.toString(),
+      is_from_favorites: !!favoriteDownloadedCollections[playlistId]
+    }
+  }
+  yield* put(startDownload(trackId.toString()))
+  yield* call(enqueueTrackDownload, trackForDownload)
+}
+
+function* watchAddTrackToPlaylist() {
+  yield takeEvery(
+    cacheCollectionsActions.ADD_TRACK_TO_PLAYLIST,
+    downloadNewPlaylistTrackIfNecessary
+  )
+}
+
 const sagas = () => {
   return [
     watchSaveTrack,
@@ -201,7 +237,8 @@ const sagas = () => {
     watchClearOfflineDownloads,
     watchSetReachable,
     watchSetUnreachable,
-    startSync
+    startSync,
+    watchAddTrackToPlaylist
   ]
 }
 
