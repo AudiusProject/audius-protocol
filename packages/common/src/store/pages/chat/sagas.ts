@@ -31,9 +31,9 @@ function* doFetchMoreChats() {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const summary = yield* select(getChatsSummary)
-    const cursor = summary?.next_cursor
+    const before = summary?.prev_cursor
     const response = yield* call([sdk.chats, sdk.chats!.getAll], {
-      cursor
+      before
     })
     const userIds = new Set<number>([])
     for (const chat of response.data) {
