@@ -6,11 +6,6 @@ steps:
   - run:
       name: Checks
       command: |
-        if [[ "$CIRCLE_BRANCH" =~ ^release-v ]]; then
-          echo "gh-release run on non release branch"
-          exit 1
-        fi
-
         CN_VERSION="$(jq -r .version creator-node/.version.json)"
         DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
         if [[ "$CN_VERSION" != "$DP_VERSION" ]]; then
@@ -25,7 +20,7 @@ steps:
         echo "export NEW_VERSION='$NEW_VERSION'" >> "$BASH_ENV"
 
         if ! dpkg --compare-versions "$OLD_VERSION" lt "$NEW_VERSION"; then
-          echo "Version in branch is older than current version"
+          echo "Version in branch name is older than current version"
           exit 1
         fi
   - run:

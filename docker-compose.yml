@@ -236,7 +236,6 @@ services:
       mode: global
 
   identity-service:
-    image: "audius/identity-service:${GIT_COMMIT}"
     build:
       context: identity-service
       args:
@@ -338,7 +337,6 @@ services:
       - elasticsearch
 
   discovery-provider:
-    image: "audius/discovery-provider:${GIT_COMMIT}"
     build:
       context: discovery-provider
       args:
@@ -392,7 +390,6 @@ services:
   # creator-node
 
   creator-node:
-    image: "audius/creator-node:${GIT_COMMIT}"
     build:
       context: creator-node
       args:

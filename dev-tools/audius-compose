@@ -43,6 +43,17 @@ class DefaultCommandGroup(click.Group):
             return super(DefaultCommandGroup, self).resolve_command(ctx, args)
 
 
+def get_git_commit(protocol_dir):
+    return (
+        subprocess.run(
+            ["git", f"--git-dir={protocol_dir / '.git'}", "rev-parse", "HEAD"],
+            capture_output=True,
+        )
+        .stdout.decode()
+        .strip()
+    )
+
+
 def generate_env(
     protocol_dir,
     creator_node_replicas,
@@ -55,15 +66,7 @@ def generate_env(
 
     env = {}
 
-    env["GIT_COMMIT"] = (
-        subprocess.run(
-            ["git", f"--git-dir={protocol_dir / '.git'}", "rev-parse", "HEAD"],
-            capture_output=True,
-            check=True,
-        )
-        .stdout.decode()
-        .strip()
-    )
+    env["GIT_COMMIT"] = get_git_commit(protocol_dir)
 
     env["CREATOR_NODE_REPLICAS"] = str(creator_node_replicas)
 
@@ -172,12 +175,14 @@ def cli(ctx, protocol_dir):
 @click.option("-c", "--creator-node-replicas", default=4, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
+@click.argument("services", nargs=-1)
 @click.pass_obj
 def build(
     protocol_dir,
     creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
+    services,
 ):
     generate_env(
         protocol_dir,
@@ -186,17 +191,82 @@ def build(
         elasticsearch_replicas,
     )
 
-    sys.exit(
+    proc = subprocess.run(
+        [
+            "docker",
+            "compose",
+            f"--project-directory={protocol_dir}",
+            f"--file={protocol_dir / 'docker-compose.yml'}",
+            "--profile=*",
+            "build",
+            *services,
+        ],
+    )
+
+    if proc.returncode != 0:
+        raise click.ClickException("Failed to build images")
+
+
+@cli.command()
+@click.pass_context
+def push(ctx):
+    protocol_dir = ctx.obj
+    git_commit = get_git_commit(protocol_dir)
+
+    if not git_commit:
+        raise click.ClickException("Failed to get git commit")
+
+    ctx.invoke(
+        build, services=["creator-node", "discovery-provider", "identity-service"]
+    )
+
+    try:
+        # TODO: Find if there is a better way to find source image names
         subprocess.run(
             [
                 "docker",
-                "compose",
-                f"--project-directory={protocol_dir}",
-                f"--file={protocol_dir / 'docker-compose.yml'}",
-                "build",
+                "tag",
+                f"{protocol_dir.name}-creator-node",
+                f"audius/creator-node:{git_commit}",
             ],
-        ).returncode
-    )
+            check=True,
+        )
+        subprocess.run(
+            [
+                "docker",
+                "tag",
+                f"{protocol_dir.name}-discovery-provider",
+                f"audius/discovery-provider:{git_commit}",
+            ],
+            check=True,
+        )
+        subprocess.run(
+            [
+                "docker",
+                "tag",
+                f"{protocol_dir.name}-identity-service",
+                f"audius/identity-service:{git_commit}",
+            ],
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        raise click.ClickException("Failed to tag images")
+
+    try:
+        subprocess.run(
+            ["docker", "push", f"audius/creator-node:{git_commit}"],
+            check=True,
+        )
+        subprocess.run(
+            ["docker", "push", f"audius/discovery-provider:{git_commit}"],
+            check=True,
+        )
+        subprocess.run(
+            ["docker", "push", f"audius/identity-service:{git_commit}"],
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        raise click.ClickException("Failed to push images")
 
 
 @cli.command()
