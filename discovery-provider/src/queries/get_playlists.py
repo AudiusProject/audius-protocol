@@ -31,7 +31,6 @@ class RouteArgs(TypedDict):
 class GetPlaylistArgs(TypedDict):
     current_user_id: int
     playlist_ids: List[int]
-    user_id: int
     with_users: bool
     routes: List[RouteArgs]
 
@@ -82,11 +81,6 @@ def _get_unpopulated_playlists(session, args):
             )
         except ValueError as e:
             raise exceptions.ArgumentError("Invalid value found in playlist id list", e)
-
-    if "user_id" in args:
-        user_id = args.get("user_id")
-        # user id filter if the optional query param is passed in
-        playlist_query = playlist_query.filter(Playlist.playlist_owner_id == user_id)
 
     # If no current_user_id, never show hidden playlists
     if not current_user_id:
