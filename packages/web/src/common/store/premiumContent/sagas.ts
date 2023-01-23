@@ -184,7 +184,7 @@ function* updateCollectibleGatedTrackAccess(
   action:
     | ReturnType<typeof updateUserEthCollectibles>
     | ReturnType<typeof updateUserSolCollectibles>
-    | ReturnType<typeof cacheActions.add>
+    | ReturnType<typeof cacheActions.addSucceeded>
     | ReturnType<typeof cacheActions.update>
 ) {
   // Halt if premium content not enabled
@@ -334,7 +334,7 @@ function* refreshPremiumTrackAccess(
 function* watchCollectibleGatedTracks() {
   yield* takeEvery(
     [
-      cacheActions.ADD,
+      cacheActions.ADD_SUCCEEDED,
       cacheActions.UPDATE,
       updateUserEthCollectibles.type,
       updateUserSolCollectibles.type
