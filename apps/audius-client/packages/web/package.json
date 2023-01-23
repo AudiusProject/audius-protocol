@@ -52,7 +52,7 @@
   },
   "dependencies": {
     "@audius/common": "1.5.7",
-    "@audius/sdk": "1.0.41",
+    "@audius/sdk": "1.0.42",
     "@audius/stems": "1.5.7",
     "@coinbase/cbpay-js": "1.2.0",
     "@craco/craco": "7.0.0-alpha.3",
