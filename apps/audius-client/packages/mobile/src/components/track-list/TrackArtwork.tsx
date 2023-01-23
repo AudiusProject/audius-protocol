@@ -1,4 +1,5 @@
 import type { Track } from '@audius/common'
+import { SquareSizes } from '@audius/common'
 import { View } from 'react-native'
 
 import IconPause from 'app/assets/images/pbIconPauseAlt.svg'
@@ -40,6 +41,7 @@ export const TrackArtwork = (props: TrackArtworkProps) => {
   return (
     <TrackImage
       track={track}
+      size={SquareSizes.SIZE_150_BY_150}
       styles={{ root: styles.artworkContainer, image: styles.image }}
     >
       {isActive ? (

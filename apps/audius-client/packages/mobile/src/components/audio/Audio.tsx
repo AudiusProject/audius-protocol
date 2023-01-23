@@ -14,7 +14,8 @@ import {
   FeatureFlags,
   encodeHashId,
   Genre,
-  tracksSocialActions
+  tracksSocialActions,
+  SquareSizes
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import queue from 'react-native-job-queue'
@@ -357,16 +358,21 @@ export const Audio = () => {
           })
         }
 
-        const localSource = isNotReachable
-          ? await getLocalTrackImageSource(trackId)
-          : undefined
+        const localSource =
+          isNotReachable && track
+            ? await getLocalTrackImageSource(
+                trackId,
+                SquareSizes.SIZE_1000_BY_1000
+              )
+            : undefined
 
         const imageUrl =
           getImageSourceOptimistic({
             cid: track ? track.cover_art_sizes || track.cover_art : null,
             user: trackOwner,
+            size: SquareSizes.SIZE_1000_BY_1000,
             localSource
-          })?.[2]?.uri ?? DEFAULT_IMAGE_URL
+          })?.uri ?? DEFAULT_IMAGE_URL
 
         return {
           url,

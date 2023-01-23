@@ -1,6 +1,7 @@
 import { useCallback, useContext } from 'react'
 
 import {
+  SquareSizes,
   CreatePlaylistSource,
   accountSelectors,
   cacheCollectionsActions,
@@ -54,7 +55,8 @@ export const AddToPlaylistDrawer = () => {
   const user = useSelector(getAccountWithOwnPlaylists)
 
   const renderImage = useCallback(
-    (item) => () => <CollectionImage collection={item} />,
+    (item) => () =>
+      <CollectionImage collection={item} size={SquareSizes.SIZE_480_BY_480} />,
     []
   )
 

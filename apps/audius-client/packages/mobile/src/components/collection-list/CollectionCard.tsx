@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import type { Collection } from '@audius/common'
+import { SquareSizes } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 
 import { Card } from 'app/components/card'
@@ -26,7 +27,12 @@ export const CollectionCard = ({ collection, style }: CollectionCardProps) => {
   }, [navigation, collection])
 
   const renderImage = useCallback(
-    () => <CollectionImage collection={collection} />,
+    () => (
+      <CollectionImage
+        collection={collection}
+        size={SquareSizes.SIZE_480_BY_480}
+      />
+    ),
     [collection]
   )
 

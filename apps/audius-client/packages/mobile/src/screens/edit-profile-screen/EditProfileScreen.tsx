@@ -2,6 +2,7 @@ import { useCallback, useEffect } from 'react'
 
 import type { UserMetadata } from '@audius/common'
 import {
+  SquareSizes,
   accountSelectors,
   profilePageActions,
   profilePageSelectors,
@@ -21,6 +22,7 @@ import { FormTextInput, FormImageInput } from 'app/components/core'
 import { FormScreen } from 'app/components/form-screen'
 import { useUserCoverImage } from 'app/components/image/UserCoverImage'
 import { useUserImage } from 'app/components/image/UserImage'
+import { isImageUriSource } from 'app/hooks/useContentNodeImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 
@@ -124,7 +126,10 @@ export const EditProfileScreen = () => {
 
   const { source: coverPhotoSource } = useUserCoverImage(profile)
 
-  const { source: imageSource } = useUserImage(profile)
+  const { source: imageSource } = useUserImage({
+    user: profile,
+    size: SquareSizes.SIZE_480_BY_480
+  })
 
   const handleSubmit = useCallback(
     (values: ProfileValues) => {
@@ -172,8 +177,12 @@ export const EditProfileScreen = () => {
     tiktok_handle,
     website,
     donation,
-    cover_photo: { url: coverPhotoSource[1]?.uri },
-    profile_picture: { url: imageSource[2]?.uri }
+    cover_photo: {
+      url: isImageUriSource(coverPhotoSource) ? coverPhotoSource.uri : undefined
+    },
+    profile_picture: {
+      url: isImageUriSource(imageSource) ? imageSource.uri : undefined
+    }
   }
 
   return (

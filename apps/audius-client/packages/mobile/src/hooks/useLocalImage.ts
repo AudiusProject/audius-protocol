@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
-import { SquareSizes, reachabilitySelectors } from '@audius/common'
+import type { Nullable, SquareSizes, WidthSizes } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common'
 import type { ImageURISource } from 'react-native'
 import { exists } from 'react-native-fs'
 import { useSelector } from 'react-redux'
@@ -13,59 +14,64 @@ import {
 } from 'app/services/offline-downloader'
 const { getIsReachable } = reachabilitySelectors
 
+export const getLocalImageSource = async (
+  getLocalPath: (size: string) => string | undefined,
+  size: SquareSizes | WidthSizes
+) => {
+  const imageSource = {
+    uri: `file://${getLocalPath(size.toString())}`
+  }
+
+  if (!(await exists(imageSource.uri))) {
+    return null
+  }
+
+  return imageSource
+}
+
 const getLocalTrackImagePath = (trackId?: string) => (size: string) =>
   trackId ? getLocalTrackCoverArtPath(trackId, size) : undefined
 
 const getLocalCollectionImagePath = (collectionId?: string) => (size: string) =>
   collectionId ? getLocalCollectionCoverArtPath(collectionId, size) : undefined
 
-export const getLocalTrackImageSource = (trackId?: string) => {
-  return getLocalImageSource(getLocalTrackImagePath(trackId))
-}
-
-export const getLocalCollectionImageSource = (collectionId?: string) => {
-  return getLocalImageSource(getLocalCollectionImagePath(collectionId))
-}
-
-export const getLocalImageSource = async (
-  getLocalPath: (size: string) => string | undefined
+export const getLocalTrackImageSource = (
+  trackId: string,
+  size: SquareSizes | WidthSizes
 ) => {
-  const imageSources = Object.values(SquareSizes)
-    .reverse()
-    .map(
-      (size): ImageURISource => ({
-        uri: `file://${getLocalPath(size.toString())}`,
-        width: parseInt(size.split('x')[0]),
-        height: parseInt(size.split('x')[1])
-      })
-    )
-    .filter((source) => !!source.uri)
+  return getLocalImageSource(getLocalTrackImagePath(trackId), size)
+}
 
-  const verifiedSources: ImageURISource[] = []
-  for (const source of imageSources) {
-    if (source?.uri && (await exists(source.uri))) {
-      verifiedSources.push(source)
-    }
-  }
-  return verifiedSources
+export const getLocalCollectionImageSource = (
+  collectionId: string,
+  size: SquareSizes | WidthSizes
+) => {
+  return getLocalImageSource(getLocalCollectionImagePath(collectionId), size)
 }
 
 // When reachable, return empty array for local source.
 // defined here to have a single reference and avoid rerenders
-const reachableResult = { value: [], loading: false }
+const reachableResult: AsyncState<Nullable<ImageURISource>> = {
+  value: null,
+  loading: false
+}
 
-export const useLocalImage = (
+export const useLocalImage = ({
+  getLocalPath,
+  size
+}: {
   getLocalPath: (size: string) => string | undefined
-): AsyncState<ImageURISource[]> => {
+  size: SquareSizes | WidthSizes
+}): AsyncState<Nullable<ImageURISource>> => {
   const isReachable = useSelector(getIsReachable)
 
   const sourceResult = useAsync(async () => {
     // If reachable, don't check for local images
     if (isReachable) {
-      return []
+      return null
     }
 
-    return await getLocalImageSource(getLocalPath)
+    return await getLocalImageSource(getLocalPath, size)
   }, [getLocalPath])
 
   if (isReachable) {
@@ -75,18 +81,30 @@ export const useLocalImage = (
   return sourceResult
 }
 
-export const useLocalTrackImage = (trackId?: string) => {
+export const useLocalTrackImage = ({
+  trackId,
+  size
+}: {
+  trackId?: string
+  size: SquareSizes | WidthSizes
+}) => {
   const getLocalPath = useCallback(
     (size: string) => getLocalTrackImagePath(trackId)(size),
     [trackId]
   )
-  return useLocalImage(getLocalPath)
+  return useLocalImage({ getLocalPath, size })
 }
 
-export const useLocalCollectionImage = (collectionId?: string) => {
+export const useLocalCollectionImage = ({
+  collectionId,
+  size
+}: {
+  collectionId?: string
+  size: SquareSizes | WidthSizes
+}) => {
   const getLocalPath = useCallback(
     (size: string) => getLocalCollectionImagePath(collectionId)(size),
     [collectionId]
   )
-  return useLocalImage(getLocalPath)
+  return useLocalImage({ getLocalPath, size })
 }

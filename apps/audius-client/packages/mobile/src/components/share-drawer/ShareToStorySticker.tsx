@@ -1,4 +1,5 @@
 import type { Track, User } from '@audius/common'
+import { SquareSizes } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { Image, View } from 'react-native'
 
@@ -75,7 +76,11 @@ export const ShareToStorySticker = ({
 }: ShareToStoryStickerProps) => {
   const styles = useStyles()
 
-  const trackImage = useTrackImage(track, user)
+  const trackImage = useTrackImage({
+    track,
+    user,
+    size: SquareSizes.SIZE_480_BY_480
+  })
   const { neutralLight2, staticNeutralLight8 } = useThemeColors()
   return (
     <View style={[styles.container, style]}>

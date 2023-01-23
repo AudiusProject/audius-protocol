@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import type { User } from '@audius/common'
+import { SquareSizes } from '@audius/common'
 
 import { Card } from 'app/components/card'
 import type { CardProps } from 'app/components/card'
@@ -26,7 +27,10 @@ export const ProfileCard = (props: ProfileCardProps) => {
     navigation.push('Profile', { handle })
   }, [navigation, handle])
 
-  const renderImage = useCallback(() => <UserImage user={profile} />, [profile])
+  const renderImage = useCallback(
+    () => <UserImage user={profile} size={SquareSizes.SIZE_480_BY_480} />,
+    [profile]
+  )
 
   return (
     <Card

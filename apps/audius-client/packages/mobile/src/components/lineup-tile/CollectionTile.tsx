@@ -8,6 +8,7 @@ import type {
   CommonState
 } from '@audius/common'
 import {
+  SquareSizes,
   removeNullable,
   useProxySelector,
   playerSelectors,
@@ -125,7 +126,11 @@ const CollectionTileComponent = ({
 
   const renderImage = useCallback(
     (props: DynamicImageProps) => (
-      <CollectionImage collection={collection} {...props} />
+      <CollectionImage
+        collection={collection}
+        size={SquareSizes.SIZE_150_BY_150}
+        {...props}
+      />
     ),
     [collection]
   )

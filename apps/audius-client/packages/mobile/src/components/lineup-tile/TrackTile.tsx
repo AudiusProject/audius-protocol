@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { Track, User, CommonState } from '@audius/common'
 import {
+  SquareSizes,
   accountSelectors,
   removeNullable,
   PlaybackSource,
@@ -96,7 +97,9 @@ export const TrackTileComponent = ({
   } = track
 
   const renderImage = useCallback(
-    (props: DynamicImageProps) => <TrackImage track={track} {...props} />,
+    (props: DynamicImageProps) => (
+      <TrackImage track={track} size={SquareSizes.SIZE_150_BY_150} {...props} />
+    ),
     [track]
   )
 

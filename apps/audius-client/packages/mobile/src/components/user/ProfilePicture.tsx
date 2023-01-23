@@ -1,3 +1,5 @@
+import { SquareSizes } from '@audius/common'
+
 import type { DynamicImageProps } from 'app/components/core'
 import type { UserImageProps } from 'app/components/image/UserImage'
 import { UserImage } from 'app/components/image/UserImage'
@@ -28,6 +30,7 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     <UserImage
       immediate
       user={profile}
+      size={SquareSizes.SIZE_150_BY_150}
       styles={{
         ...stylesProp,
         root: [styles.profilePhoto, stylesProp?.root]
