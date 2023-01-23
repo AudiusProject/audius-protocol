@@ -1,17 +1,17 @@
-import { ReactNode, useEffect, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 
 import {
   ChallengeRewardID,
   OptimisticUserChallenge,
   removeNullable,
-  sortChallenges,
   StringKeys,
   fillString,
   formatNumberCommas,
   challengesSelectors,
   audioRewardsPageActions,
   ChallengeRewardsModalType,
-  audioRewardsPageSelectors
+  audioRewardsPageSelectors,
+  makeChallengeSortComparator
 } from '@audius/common'
 import { ProgressBar, IconCheck } from '@audius/stems'
 import cn from 'classnames'
@@ -182,7 +182,6 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
   const dispatch = useDispatch()
   const userChallengesLoading = useSelector(getUserChallengesLoading)
   const userChallenges = useSelector(getUserChallenges)
-  const optimisticUserChallenges = useSelector(getOptimisticUserChallenges)
   const [haveChallengesLoaded, setHaveChallengesLoaded] = useState(false)
 
   // The referred challenge only needs a tile if the user was referred
@@ -205,15 +204,20 @@ const RewardsTile = ({ className }: RewardsTileProps) => {
     setVisibility('ChallengeRewardsExplainer')(true)
   }
 
-  const rewardsTiles = rewardIds
-    // Filter out challenges that DN didn't return
-    .map((id) => userChallenges[id]?.challenge_id)
-    .filter(removeNullable)
-    .sort(sortChallenges(optimisticUserChallenges))
-    .map((id) => {
-      const props = getChallengeConfig(id)
-      return <RewardPanel {...props} openModal={openModal} key={props.id} />
-    })
+  const rewardIdsSorted = useMemo(
+    () =>
+      rewardIds
+        // Filter out challenges that DN didn't return
+        .map((id) => userChallenges[id]?.challenge_id)
+        .filter(removeNullable)
+        .sort(makeChallengeSortComparator(userChallenges)),
+    [rewardIds, userChallenges]
+  )
+
+  const rewardsTiles = rewardIdsSorted.map((id) => {
+    const props = getChallengeConfig(id)
+    return <RewardPanel {...props} openModal={openModal} key={props.id} />
+  })
 
   const wm = useWithMobileStyle(styles.mobile)
 
