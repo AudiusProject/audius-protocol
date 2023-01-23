@@ -18,7 +18,8 @@ import {
   accountSelectors,
   cacheUsersSelectors,
   cacheActions,
-  collectionsSocialActions
+  collectionsSocialActions,
+  reachabilitySelectors
 } from '@audius/common'
 import { uniq, isEqual } from 'lodash'
 import RNFS, { exists } from 'react-native-fs'
@@ -66,6 +67,7 @@ import {
 const { saveCollection } = collectionsSocialActions
 const { getUserId } = accountSelectors
 const { getUserFromCollection } = cacheUsersSelectors
+const { getIsReachable } = reachabilitySelectors
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
 export const downloadAllFavorites = async () => {
@@ -336,11 +338,25 @@ const shouldAbortDownload = ({
 export const removeAllDownloadedFavorites = async () => {
   const state = store.getState()
   const currentUserId = getUserId(state)
+  const isReachable = getIsReachable(state)
   if (!currentUserId) return
   const downloadedCollections = getOfflineCollections(state)
   const favoritedDownloadedCollections = getOfflineFavoritedCollections(state)
+  const offlineTracks = getOfflineTracks(state)
 
-  const allFavoritedTracks = await fetchAllFavoritedTracks(currentUserId)
+  const downloadedFavoritedTracks = Object.values(offlineTracks)
+    .filter((track) => !!track.offline?.favorite_created_at)
+    .map((track) => ({
+      trackId: track.track_id,
+      favoriteCreatedAt: track.offline?.favorite_created_at
+    }))
+
+  const allFavoritedTracks = isReachable
+    ? [
+        ...(await fetchAllFavoritedTracks(currentUserId)),
+        ...downloadedFavoritedTracks
+      ]
+    : downloadedFavoritedTracks
   const tracksForDownload: TrackForDownload[] = allFavoritedTracks.map(
     ({ trackId, favoriteCreatedAt }) => ({
       trackId,
