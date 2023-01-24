@@ -21,8 +21,10 @@ async function updateDbTypes(connection: string, name: string) {
 }
 
 const main = async () => {
-  await updateDbTypes(process.env.DN_DB_URL, 'dn')
-  await updateDbTypes(process.env.IDENTITY_DB_URL, 'identity')
+  // await updateDbTypes(process.env.DN_DB_URL, 'dn')
+  await updateDbTypes('postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable', 'dn')
+  // await updateDbTypes('postgresql://postgres:postgres@discovery-provider:5432/audius_discovery?sslmode=disable', 'dn')
+  // await updateDbTypes(process.env.IDENTITY_DB_URL, 'identity')
 }
 
 main()

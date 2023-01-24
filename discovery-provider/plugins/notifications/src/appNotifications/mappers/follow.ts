@@ -18,6 +18,7 @@ export class Follow extends BaseNotification {
   }
 
   async pushNotification() {
+
     const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
@@ -64,6 +65,7 @@ export class Follow extends BaseNotification {
     if (userNotifications.email) {
       // TODO: Send out email
     }
+
   }
 
 

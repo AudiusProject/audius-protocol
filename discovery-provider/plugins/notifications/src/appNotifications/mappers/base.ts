@@ -55,6 +55,7 @@ type UserMobileSettings = {
 }
 
 export abstract class BaseNotification {
+
   notification
   dnDB: Knex
   identityDB: Knex
