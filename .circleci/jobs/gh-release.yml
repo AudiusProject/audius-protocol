@@ -56,5 +56,6 @@ steps:
         git push
   - run:
       name: Make release
+      command: |
         gh release create -d --target "$CIRCLE_BRANCH" -F /tmp/creator-node-changelog "@audius/creator-node-$NEW_VERSION"
         gh release create -d --target "$CIRCLE_BRANCH" -F /tmp/discovery-provider-changelog "@audius/discovery-provider-$NEW_VERSION"
