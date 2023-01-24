@@ -28,7 +28,7 @@ class RouteArgs(TypedDict):
     slug: str
 
 
-class GetPlaylistArgs(TypedDict):
+class GetPlaylistsArgs(TypedDict):
     current_user_id: int
     playlist_ids: List[int]
     user_id: int
@@ -117,7 +117,7 @@ def _get_unpopulated_playlists(session, args):
     return (playlists, playlist_ids)
 
 
-def get_playlists(args: GetPlaylistArgs):
+def get_playlists(args: GetPlaylistsArgs):
     playlists = []
     current_user_id = args.get("current_user_id")
 
