@@ -9,31 +9,31 @@ jobs:
         - test:
                   name: test-creator-node
                   context: GCP
-                  instance-name: circleci-<< pipeline.id >>-cn
+                  instance-name: circleci-$CIRCLE_BUILD_NUM-cn
                   service: creator-node
         - test:
                   name: test-discovery-provider
                   context: GCP
-                  instance-name: circleci-<< pipeline.id >>-dp
+                  instance-name: circleci-$CIRCLE_BUILD_NUM-dp
                   service: discovery-provider
         - test:
                   name: test-identity-service
                   context: GCP
-                  instance-name: circleci-<< pipeline.id >>-is
+                  instance-name: circleci-$CIRCLE_BUILD_NUM-is
                   service: identity-service
         - test:
                   name: test-audius-libs
                   context: GCP
-                  instance-name: circleci-<< pipeline.id >>-libs
+                  instance-name: circleci-$CIRCLE_BUILD_NUM-libs
                   service: audius-libs
         - test:
                   name: test-poa-contracts
                   context: GCP
-                  instance-name: circleci-<< pipeline.id >>-poa
+                  instance-name: circleci-$CIRCLE_BUILD_NUM-poa
                   service: poa-contracts
         - test-audius-cmd:
                   context: GCP
-                  instance-name: circleci-<< pipeline.id >>-e2e
+                  instance-name: circleci-$CIRCLE_BUILD_NUM-e2e
 
         # - slack/on-hold:
         #     context: slack-secrets
