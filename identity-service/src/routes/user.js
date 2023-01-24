@@ -122,7 +122,7 @@ module.exports = function (app) {
           models.UserNotificationSettings.findOrCreate({
             where: { userId: blockchainUserId },
             defaults: { userId: blockchainUserId }
-          });
+          })
 
           return successResponse()
         } catch (err) {
