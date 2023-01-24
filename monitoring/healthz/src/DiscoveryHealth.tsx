@@ -32,6 +32,7 @@ export function DiscoveryHealth() {
             <th>storage</th>
             <th>dbsize</th>
             <th>blockdiff</th>
+            <th>chain</th>
           </tr>
         </thead>
         <tbody>
@@ -105,6 +106,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       </td>
       <td>{`${dbSize} GB`}</td>
       <td>{health.block_difference}</td>
+      <td>{health.chain_health?.status}</td>
     </tr>
   )
 }

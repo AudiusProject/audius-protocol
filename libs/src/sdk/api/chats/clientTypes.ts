@@ -4,7 +4,8 @@ import type { CommsResponse, ChatPermission } from './serverTypes'
 
 export type ChatGetAllRequest = {
   limit?: number
-  cursor?: string
+  before?: string
+  after?: string
 }
 
 export type ChatGetRequest = {
