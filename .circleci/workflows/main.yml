@@ -49,5 +49,6 @@ jobs:
                           - build-gcp-image
                   type: approval
         - gh-release:
+                  context: Github
                   requires:
                           - gh-release-hold

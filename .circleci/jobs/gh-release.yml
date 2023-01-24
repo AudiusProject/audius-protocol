@@ -3,6 +3,7 @@ docker:
   - image: cimg/base:2023.01
 steps:
   - checkout
+  - gh/setup
   - run:
       name: Checks
       command: |
@@ -40,3 +41,20 @@ steps:
 
         generate-changelog creator-node | tee /tmp/creator-node-changelog
         generate-changelog discovery-provider | tee /tmp/discovery-provider-changelog
+  - run:
+      name: Update .version.json
+      command: |
+        jq --arg version "$NEW_VERSION" '.version=$version' creator-node/.version.json > /tmp/.version.json
+        mv /tmp/.version.json creator-node/.version.json
+        git add creator-node/.version.json
+
+        jq --arg version "$NEW_VERSION" '.version=$version' discovery-provider/.version.json > /tmp/.version.json
+        mv /tmp/.version.json discovery-provider/.version.json
+        git add discovery-provider/.version.json
+
+        git commit -m "[skip ci] Bump version to $NEW_VERSION"
+        git push
+  - run:
+      name: Make release
+        gh release create -d --target "$CIRCLE_BRANCH" -F /tmp/creator-node-changelog "@audius/creator-node-$NEW_VERSION"
+        gh release create -d --target "$CIRCLE_BRANCH" -F /tmp/discovery-provider-changelog "@audius/discovery-provider-$NEW_VERSION"
