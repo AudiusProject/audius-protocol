@@ -1,0 +1,19 @@
+{
+    "name": "evaluate",
+    "version": "1.0.0",
+    "description": "",
+    "main": "evaluate.js",
+    "scripts": {
+      "main": "node evaluate.js"
+    },
+    "keywords": [],
+    "author": "",
+    "dependencies": {
+      "@audius/sdk": "1.0.5",
+      "@truffle/hdwallet-provider": "2.0.17",
+      "web3": "1.7.5"
+    },
+    "devDependencies": {
+      "nodemon": "2.0.19"
+    }
+  }

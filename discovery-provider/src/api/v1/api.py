@@ -2,9 +2,10 @@ from flask import Blueprint
 from flask.helpers import url_for
 from flask_restx import Api
 from src.api.v1.challenges import ns as challenges_ns
-from src.api.v1.cid_data import ns as cid_data_ns
+from src.api.v1.cid_data import full_ns as cid_data_full_ns
 from src.api.v1.metrics import ns as metrics_ns
 from src.api.v1.models.users import ns as models_ns
+from src.api.v1.notifications import full_ns as notifications_full_ns
 from src.api.v1.playlists import full_ns as full_playlists_ns
 from src.api.v1.playlists import ns as playlists_ns
 from src.api.v1.reactions import ns as reactions_ns
@@ -51,4 +52,5 @@ api_v1_full.add_namespace(full_search_ns)
 api_v1_full.add_namespace(full_tips_ns)
 api_v1_full.add_namespace(reactions_ns)
 api_v1_full.add_namespace(full_transactions_ns)
-api_v1_full.add_namespace(cid_data_ns)
+api_v1_full.add_namespace(cid_data_full_ns)
+api_v1_full.add_namespace(notifications_full_ns)

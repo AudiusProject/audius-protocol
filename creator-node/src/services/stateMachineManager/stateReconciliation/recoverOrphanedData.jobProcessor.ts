@@ -8,7 +8,7 @@ import type { DecoratedJobParams, DecoratedJobReturnValue } from '../types'
 
 import axios from 'axios'
 import { METRIC_NAMES } from '../../prometheusMonitoring/prometheus.constants'
-import { makeGaugeSetToRecord } from '../stateMachineUtils'
+import { makeGaugeSetToRecord } from '../../prometheusMonitoring/prometheusUsageUtils'
 import { StateMonitoringUser } from '../stateMonitoring/types'
 
 import {

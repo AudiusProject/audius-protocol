@@ -24,6 +24,7 @@ import {
 } from '../stateMachineConstants'
 import { getReplicaSetEndpointsByWallet } from '../../ContentNodeInfoManager'
 import { SecondarySyncHealthTracker } from './SecondarySyncHealthTracker'
+import { makeHistogramToRecord } from '../../prometheusMonitoring/prometheusUsageUtils'
 
 const axios = require('axios')
 const _: LoDashStatic = require('lodash')
@@ -34,10 +35,7 @@ const Utils = require('../../../utils')
 const {
   METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
-const {
-  retrieveClockValueForUserFromReplica,
-  makeHistogramToRecord
-} = require('../stateMachineUtils')
+const { retrieveClockValueForUserFromReplica } = require('../stateMachineUtils')
 const primarySyncFromSecondary = require('../../sync/primarySyncFromSecondary')
 const SyncRequestDeDuplicator = require('./SyncRequestDeDuplicator')
 const {

@@ -1,4 +1,4 @@
-# Do not expose any ports in this file to allow running multiple tests at the same time
+# Do not expose any ports in this file to allow running multiple tests and e2e dev at the same time
 
 version: "3.9"
 
@@ -69,6 +69,66 @@ services:
     deploy:
       mode: global
 
+  build-audius-libs:
+    extends:
+      file: docker-compose.yml
+      service: build-audius-libs
+
+  # creator-node
+
+  creator-node-db:
+    image: postgres:11.4
+    user: postgres
+    environment:
+      POSTGRES_DB: "creator_node"
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  creator-node-redis:
+    image: redis:6.2.7
+    healthcheck:
+      test: [ "CMD", "redis-cli", "PING" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
+      replicas: 1  # Override default replicas
+
+  test-creator-node:
+    extends:
+      file: docker-compose.yml
+      service: creator-node
+    command: "sleep infinity"
+    environment:
+      storagePath: "./test_file_storage"
+
+      dbUrl: "postgres://postgres:postgres@creator-node-db:5432/creator_node"
+      redisHost: "creator-node-redis"
+      redisPort: "6379"
+
+      creatorNodeEndpoint: "http://test-creator-node:4000"
+      spOwnerWallet: "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
+      delegateOwnerWallet: "0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25"
+      delegatePrivateKey: "0xdb527e4d4a2412a443c17e1666764d3bba43e89e61129a35f9abc337ec170a5d"
+    depends_on:
+      creator-node-db:
+        condition: service_healthy
+      creator-node-redis:
+        condition: service_healthy
+    logging: *default-logging
+    deploy:
+      mode: global
+      # Override default replicas
+      replicas: 1
+    profiles:
+      - tests
+
   # discovery-provider
 
   discovery-provider-elasticsearch:
@@ -77,7 +137,7 @@ services:
       service: discovery-provider-elasticsearch
     deploy:
       mode: global
-      replicas: 1
+      replicas: 1  # Override default replicas
 
   discovery-provider-db:
     image: postgres:11.4
@@ -93,7 +153,7 @@ services:
       mode: global
 
   discovery-provider-redis:
-    image: redis:5.0.5
+    image: redis:7.0
     healthcheck:
       test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
@@ -106,16 +166,17 @@ services:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    entrypoint: pytest
-    command: ""
+    command: sleep infinity
     environment:
       audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
       audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+
       audius_redis_url: "redis://discovery-provider-redis:6379/00"
+
       audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
       audius_elasticsearch_run_indexer: "true"
     volumes:
-      - ./discovery-provider/integration_tests:/audius-discovery-provider/integration_tests
+      - ./discovery-provider:/audius-discovery-provider
     depends_on:
       discovery-provider-elasticsearch:
         condition: service_healthy
@@ -123,12 +184,49 @@ services:
         condition: service_healthy
       discovery-provider-redis:
         condition: service_healthy
+    logging: *default-logging
     deploy:
       mode: global
+      replicas: 1  # Override default replicas
     profiles:
       - tests
+      - elasticsearch
+
+  # identity-service
+
+  identity-service-db:
+    image: postgres:11.4
+    user: postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  identity-service-redis:
+    image: redis:7.0
+    command: redis-server
+    healthcheck:
+      test: [ "CMD", "redis-cli", "PING" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  test-identity-service:
+    extends:
+      file: docker-compose.yml
+      service: identity-service
+    command: sleep infinity
+    environment:
+      isTestRun: "true"
+      environment: "test"
 
 volumes:
   poa-contracts-abis:
   eth-contracts-abis:
   solana-programs-idl:
+  audius-libs:

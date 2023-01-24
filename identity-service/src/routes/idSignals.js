@@ -31,6 +31,7 @@ module.exports = function (app) {
         socialHandles,
         twitterUser,
         instagramUser,
+        tikTokUser,
         deviceUserCount,
         userIPRecord
       ] = await Promise.all([
@@ -73,6 +74,13 @@ module.exports = function (app) {
             verified: true
           }
         }),
+        models.TikTokUser.findOne({
+          where: {
+            // TikTok does not store case sensitive screen names
+            'profile.display_name': handle.toLowerCase(),
+            verified: true
+          }
+        }),
         getDeviceIDCountForUserId(req.user.blockchainUserId),
         models.UserIPs.findOne({ where: { handle } })
       ])
@@ -85,11 +93,13 @@ module.exports = function (app) {
         userIP: userIPRecord && userIPRecord.userIP,
         emailAddress: req.user.email
       }
+
       if (socialHandles) {
         response.socialSignals = {
           ...socialHandles.dataValues,
           twitterVerified: !!twitterUser,
-          instagramVerified: !!instagramUser
+          instagramVerified: !!instagramUser,
+          tikTokVerified: !!tikTokUser
         }
       }
       return successResponse(response)

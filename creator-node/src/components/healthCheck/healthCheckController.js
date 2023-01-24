@@ -15,7 +15,6 @@ const {
 } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
-const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
 const TranscodingQueue = require('../../TranscodingQueue')
 
@@ -41,10 +40,6 @@ const FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS =
  * `healthCheckComponentService`.
  */
 const healthCheckController = async (req) => {
-  if (config.get('isReadOnlyMode')) {
-    return errorResponseServerError()
-  }
-
   const { randomBytesToSign, enforceStateMachineQueueHealth } = req.query
 
   const AsyncProcessingQueue =
@@ -54,7 +49,6 @@ const healthCheckController = async (req) => {
   const response = await healthCheck(
     serviceRegistry,
     logger,
-    sequelize,
     getMonitors,
     TranscodingQueue.getTranscodeQueueJobs,
     TranscodingQueue.isAvailable,
@@ -132,7 +126,11 @@ const healthCheckController = async (req) => {
     }
   }
 
-  return successResponse(response)
+  if (config.get('isReadOnlyMode')) {
+    return errorResponseServerError(response)
+  } else {
+    return successResponse(response)
+  }
 }
 
 /**
@@ -175,10 +173,6 @@ const healthCheckDurationController = async (_req) => {
  * Will be used for cnode selection.
  */
 const healthCheckVerboseController = async (req) => {
-  if (config.get('isReadOnlyMode')) {
-    return errorResponseServerError()
-  }
-
   const AsyncProcessingQueue =
     req.app.get('serviceRegistry').asyncProcessingQueue
 
@@ -186,7 +180,6 @@ const healthCheckVerboseController = async (req) => {
   const healthCheckResponse = await healthCheckVerbose(
     serviceRegistry,
     logger,
-    sequelize,
     getMonitors,
     numberOfCPUs,
     TranscodingQueue.getTranscodeQueueJobs,
@@ -194,9 +187,11 @@ const healthCheckVerboseController = async (req) => {
     AsyncProcessingQueue.getAsyncProcessingQueueJobs
   )
 
-  return successResponse({
-    ...healthCheckResponse
-  })
+  if (config.get('isReadOnlyMode')) {
+    return errorResponseServerError(healthCheckResponse)
+  } else {
+    return successResponse(healthCheckResponse)
+  }
 }
 
 /**

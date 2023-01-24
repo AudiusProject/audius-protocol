@@ -1,13 +1,10 @@
+import json
 import logging
 from typing import Optional, TypedDict
 
 from redis import Redis
 from src.solana.solana_client_manager import SolanaClientManager
 from src.solana.solana_transaction_types import ConfirmedSignatureForAddressResult
-from src.utils.helpers import (
-    redis_get_json_cached_key_or_restore,
-    redis_set_json_and_dump,
-)
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +24,7 @@ def cache_latest_sol_db_tx(
     redis: Redis, cache_key: str, latest_tx: CachedProgramTxInfo
 ):
     try:
-        redis_set_json_and_dump(redis, cache_key, latest_tx)
+        redis.set(cache_key, json.dumps(latest_tx))
     except Exception as e:
         logger.error(
             f"cache_solana_program.py | Failed to cache key {cache_key} latest processed transaction {latest_tx}, {e}"
@@ -35,10 +32,9 @@ def cache_latest_sol_db_tx(
         raise e
 
 
-def get_latest_sol_db_tx(redis: Redis, cahce_key: str):
-    latest_sol_db: Optional[CachedProgramTxInfo] = redis_get_json_cached_key_or_restore(
-        redis, cahce_key
-    )
+def get_latest_sol_db_tx(redis: Redis, cache_key: str):
+    value = redis.get(cache_key)
+    latest_sol_db: Optional[CachedProgramTxInfo] = json.loads(value) if value else None
     return latest_sol_db
 
 
@@ -72,8 +68,9 @@ def cache_latest_sol_play_program_tx(
         sig = tx["signature"]
         slot = tx["slot"]
         timestamp = tx["blockTime"]
-        redis_set_json_and_dump(
-            redis, cache_key, {"signature": sig, "slot": slot, "timestamp": timestamp}
+        redis.set(
+            cache_key,
+            json.dumps({"signature": sig, "slot": slot, "timestamp": timestamp}),
         )
     except Exception as e:
         logger.error(
@@ -83,7 +80,6 @@ def cache_latest_sol_play_program_tx(
 
 
 def get_cache_latest_sol_program_tx(redis: Redis, cache_key: str):
-    latest_sol_db: Optional[CachedProgramTxInfo] = redis_get_json_cached_key_or_restore(
-        redis, cache_key
-    )
+    value = redis.get(cache_key)
+    latest_sol_db: Optional[CachedProgramTxInfo] = json.loads(value) if value else None
     return latest_sol_db

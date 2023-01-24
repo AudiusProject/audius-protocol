@@ -49,3 +49,4 @@ class ClusterUtilsForWorker {
 
 const clusterUtilsForWorker = new ClusterUtilsForWorker()
 export { clusterUtilsForWorker }
+module.exports = { clusterUtilsForWorker }

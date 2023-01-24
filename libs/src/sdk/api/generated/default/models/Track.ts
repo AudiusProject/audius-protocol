@@ -68,6 +68,12 @@ export interface Track
         * @type {string}
         * @memberof Track
         */
+        track_cid?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof Track
+        */
         mood?: string;
         /**
         * 

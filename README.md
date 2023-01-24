@@ -76,15 +76,7 @@ Packages for developers to run and test Audius
 
 ### Running the protocol
 
-```bash
-git clone https://github.com/AudiusProject/audius-protocol.git
-cd audius-protocol
-
-bash dev-tools/setup.sh
-audius-compose up
-```
-
-Note that the first time setup takes a bit of time to pull images, but subsequent runs are significantly faster.
+Refer to [dev-tools/README.md](./dev-tools/README.md)
 
 ## Contributing
 

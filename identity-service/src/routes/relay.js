@@ -119,7 +119,9 @@ module.exports = function (app) {
           txProps = {
             contractRegistryKey: body.contractRegistryKey,
             contractAddress: body.contractAddress,
+            nethermindContractAddress: body.nethermindContractAddress,
             encodedABI: body.encodedABI,
+            nethermindEncodedABI: body.nethermindEncodedAbi,
             senderAddress: body.senderAddress,
             gasLimit: body.gasLimit || null
           }

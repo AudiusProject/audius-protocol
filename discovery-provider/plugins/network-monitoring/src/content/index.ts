@@ -345,6 +345,11 @@ const _getUserClockValues = async (
 }> => {
 
     try {
+
+        if (endpoint === '') {
+            throw new Error('endpoint is an empty string')
+        }
+
         const axiosReqObj = {
             method: 'post',
             url: '/users/batch_clock_status',

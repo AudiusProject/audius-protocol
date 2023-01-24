@@ -26,6 +26,35 @@ class GetAudioTransactionsArgs(TypedDict):
     offset: int
 
 
+# SELECT count(*)
+# FROM users
+# JOIN user_bank_accounts ON user_bank_accounts.ethereum_address = users.wallet
+# JOIN audio_transactions_history ON audio_transactions_history.user_bank = user_bank_accounts.bank_account
+# WHERE users.user_id = <user_id> AND users.is_current = TRUE
+
+
+def _get_audio_transactions_history_count(session: Session, user_id: int):
+    query: Query = (
+        session.query(AudioTransactionsHistory)
+        .select_from(User)
+        .filter(User.user_id == user_id, User.is_current == True)
+        .join(UserBankAccount, UserBankAccount.ethereum_address == User.wallet)
+        .join(
+            AudioTransactionsHistory,
+            AudioTransactionsHistory.user_bank == UserBankAccount.bank_account,
+        )
+    )
+    count: int = query.count()
+    return count
+
+
+def get_audio_transactions_history_count(user_id: int):
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        count = _get_audio_transactions_history_count(session, user_id)
+        return count
+
+
 # SELECT audio_transactions_history.*
 # FROM users
 # JOIN user_bank_accounts ON user_bank_accounts.ethereum_address = users.wallet
@@ -51,7 +80,10 @@ def _get_audio_transactions_history(session: Session, args: GetAudioTransactions
     if sort_method == TransactionSortMethod.date:
         query = query.order_by(sort_fn(AudioTransactionsHistory.transaction_created_at))
     elif sort_method == TransactionSortMethod.transaction_type:
-        query = query.order_by(sort_fn(AudioTransactionsHistory.transaction_type))
+        query = query.order_by(
+            sort_fn(AudioTransactionsHistory.transaction_type),
+            desc(AudioTransactionsHistory.transaction_created_at),
+        )
     query = paginate_query(query)
     results: List[AudioTransactionsHistory] = query.all()
     return results

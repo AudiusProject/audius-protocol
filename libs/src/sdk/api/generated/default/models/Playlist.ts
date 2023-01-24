@@ -50,6 +50,12 @@ export interface Playlist
         * @type {string}
         * @memberof Playlist
         */
+        permalink?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof Playlist
+        */
         id: string;
         /**
         * 

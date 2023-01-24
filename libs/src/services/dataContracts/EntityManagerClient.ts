@@ -18,14 +18,17 @@ export enum Action {
   REPOST = 'Repost',
   UNREPOST = 'Unrepost',
   SUBSCRIBE = 'Subscribe',
-  UNSUBSCRIBE = 'Unsubscribe'
+  UNSUBSCRIBE = 'Unsubscribe',
+  VIEW = 'View',
+  VIEW_PLAYLIST = 'ViewPlaylist'
 }
 
 export enum EntityType {
   PLAYLIST = 'Playlist',
   TRACK = 'Track',
   USER = 'User',
-  USER_REPLICA_SET = 'UserReplicaSet'
+  USER_REPLICA_SET = 'UserReplicaSet',
+  NOTIFICATION = 'Notification'
 }
 
 /**
@@ -102,6 +105,7 @@ export class EntityManagerClient extends ContractClient {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.getEthNetId()
     const contractAddress = await this.getAddress()
+    const nethermindContractAddress = await this.getNethermindAddress()
     const signatureData = signatureSchemas.generators.getManageEntityData(
       chainId,
       contractAddress,
@@ -133,10 +137,43 @@ export class EntityManagerClient extends ContractClient {
       nonce,
       sig
     )
+
+    let nethermindMethod
+    if (nethermindContractAddress) {
+      const nethermindSignatureData =
+        signatureSchemas.generators.getManageEntityData(
+          1056800, // TODO get from chain after web3Manager uses nethermind only
+          nethermindContractAddress,
+          userId,
+          entityType,
+          entityId,
+          action,
+          metadataMultihash,
+          nonce
+        )
+      const nethermindSig = await this.web3Manager.signTypedData(
+        nethermindSignatureData
+      )
+
+      nethermindMethod = await this.getMethod(
+        'manageEntity',
+        userId,
+        entityType,
+        entityId,
+        action,
+        metadataMultihash,
+        nonce,
+        nethermindSig
+      )
+    }
     const tx = await this.web3Manager.sendTransaction(
       method,
       this.contractRegistryKey,
-      contractAddress
+      contractAddress,
+      undefined,
+      undefined,
+      nethermindContractAddress,
+      nethermindMethod
     )
     return {
       txReceipt: tx

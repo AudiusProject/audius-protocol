@@ -88,6 +88,7 @@ class MonitoringQueue {
 
   /**
    * Refresh monitor in redis and prometheus (if integer)
+   * @notice throws Error on failure to refresh
    * @param {Object} monitorProps Object containing the monitor props like { func, ttl, type, name }
    * @param {*} monitorKey name of the monitor eg `THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT`
    */

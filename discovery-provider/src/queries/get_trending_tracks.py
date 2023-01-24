@@ -43,7 +43,9 @@ def generate_unpopulated_trending(
     exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
     limit=TRENDING_LIMIT,
 ):
-    trending_tracks = generate_trending(session, time_range, genre, limit, 0, strategy)
+    trending_tracks = generate_trending(
+        session, time_range, genre, limit, 0, strategy.version
+    )
 
     track_scores = [
         strategy.get_track_score(time_range, track)

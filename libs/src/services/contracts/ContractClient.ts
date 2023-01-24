@@ -24,6 +24,7 @@ export class ContractClient {
   contractRegistryKey: string
   getRegistryAddress: GetRegistryAddress
   _contractAddress: Nullable<string>
+  _nethermindContractAddress: Nullable<string>
   _contract: Nullable<Contract>
   _isInitialized: boolean
   _isInitializing: boolean
@@ -46,7 +47,13 @@ export class ContractClient {
     this.logger = logger
 
     // Once initialized, contract address and contract are set up
-    this._contractAddress = contractAddress
+
+    // contractAddress: <entity manager POA>, <entity manager nethermind>
+    // this is backwards compatible so clients may pass in one address 
+    // or both POA and nethermind 
+    const contractAddresses = contractAddress ? contractAddress.split(',') : []
+    this._contractAddress = contractAddresses[0] ?? null
+    this._nethermindContractAddress = contractAddresses[1] ?? null
     this._contract = null
 
     // Initialization setup
@@ -169,6 +176,12 @@ export class ContractClient {
     return this._contractAddress as string
   }
 
+  async getNethermindAddress() {
+    await this.init()
+    // calling init first ensures _contactAddress is present
+    return this._nethermindContractAddress as string
+  }
+
   /**
    * Gets a contract method and ensures that the contract has initted
    * The contract can then be invoked with .call() or be passed to a sendTransaction.
@@ -176,14 +189,14 @@ export class ContractClient {
    */
   async getMethod(methodName: string, ...args: any[]) {
     await this.init()
-    if (!(methodName in this._contract?.methods)) {
+    if (!this._contract || !(methodName in this._contract.methods)) {
       throw new Error(
         `Contract method ${methodName} not found in ${Object.keys(
           this._contract?.methods
         )}`
       )
     }
-    const method = await this._contract?.methods[methodName](...args)
+    const method = await this._contract.methods[methodName](...args)
 
     // Override method.call (chain reads) with built in retry logic
     const call = method.call

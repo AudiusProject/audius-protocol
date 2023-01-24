@@ -50,8 +50,6 @@ def get_feed_sql(args):
     # Allow for fetching only tracks
     tracks_only = args.get("tracks_only", False)
 
-    exclude_premium = args.get("exclude_premium", False)
-
     followee_user_ids = args.get("followee_user_ids", [])
 
     # Current user - user for whom feed is being generated
@@ -93,9 +91,7 @@ def get_feed_sql(args):
                         playlist_track_ids.add(track["track"])
 
                 # get all track objects for track ids
-                playlist_tracks = get_unpopulated_tracks(
-                    session, playlist_track_ids, exclude_premium=False
-                )
+                playlist_tracks = get_unpopulated_tracks(session, playlist_track_ids)
                 playlist_tracks_dict = {
                     track["track_id"]: track for track in playlist_tracks
                 }
@@ -252,8 +248,6 @@ def get_feed_sql(args):
             playlists_to_process = created_playlists + reposted_playlists
 
         tracks = helpers.query_result_to_list(tracks_to_process)
-        if exclude_premium:
-            tracks = list(filter(lambda track: track["is_premium"] == False, tracks))
 
         playlists = helpers.query_result_to_list(playlists_to_process)
 

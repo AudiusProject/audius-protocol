@@ -7,6 +7,7 @@ let token
 let ownerWallet
 let accounts
 let initialSupply
+let toBN
 
 before(async function () {
   await libs.init()

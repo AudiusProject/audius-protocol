@@ -6,15 +6,97 @@ from typing import Dict, Set
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.tasks.entity_manager.utils import (
     PLAYLIST_ID_OFFSET,
     Action,
     EntityType,
     ManageEntityParameters,
+    copy_record,
 )
-from src.tasks.playlists import update_playlist_routes_table
+from src.tasks.task_helpers import generate_slug_and_collision_id
+from src.utils import helpers
 
 logger = logging.getLogger(__name__)
+
+
+def update_playlist_routes_table(session, playlist_record, pending_playlist_routes):
+    logger.info(
+        f"index.py | playlists.py | Updating playlist routes for {playlist_record.playlist_id}"
+    )
+    # Get the title slug, and set the new slug to that
+    # (will check for conflicts later)
+    new_playlist_slug_title = helpers.sanitize_slug(
+        playlist_record.playlist_name, playlist_record.playlist_id
+    )
+    new_playlist_slug = new_playlist_slug_title
+
+    # Find the current route for the playlist
+    # Check the pending playlist route updates first
+    prev_playlist_route_record = next(
+        (
+            route
+            for route in pending_playlist_routes
+            if route.is_current and route.playlist_id == playlist_record.playlist_id
+        ),
+        None,
+    )
+
+    # Then query the DB if necessary
+    if prev_playlist_route_record is None:
+        prev_playlist_route_record = (
+            session.query(PlaylistRoute)
+            .filter(
+                PlaylistRoute.playlist_id == playlist_record.playlist_id,
+                PlaylistRoute.is_current == True,
+            )  # noqa: E712
+            .one_or_none()
+        )
+
+    if prev_playlist_route_record:
+        if prev_playlist_route_record.title_slug == new_playlist_slug_title:
+            # If the title slug hasn't changed, we have no work to do
+            logger.info(f"not changing for {playlist_record.playlist_id}")
+            return
+        # The new route will be current
+        prev_playlist_route_record.is_current = False
+
+    new_playlist_slug, new_collision_id = generate_slug_and_collision_id(
+        session,
+        PlaylistRoute,
+        playlist_record.playlist_id,
+        playlist_record.playlist_name,
+        playlist_record.playlist_owner_id,
+        pending_playlist_routes,
+        new_playlist_slug_title,
+        new_playlist_slug,
+    )
+
+    # Add the new playlist route
+    new_playlist_route = PlaylistRoute()
+    new_playlist_route.slug = new_playlist_slug
+    new_playlist_route.title_slug = new_playlist_slug_title
+    new_playlist_route.collision_id = new_collision_id
+    new_playlist_route.owner_id = playlist_record.playlist_owner_id
+    new_playlist_route.playlist_id = playlist_record.playlist_id
+    new_playlist_route.is_current = True
+    new_playlist_route.blockhash = playlist_record.blockhash
+    new_playlist_route.blocknumber = playlist_record.blocknumber
+    new_playlist_route.txhash = playlist_record.txhash
+    session.add(new_playlist_route)
+
+    # Add to pending playlist routes so we don't add the same route twice
+    pending_playlist_routes.append(new_playlist_route)
+
+    logger.info(
+        f"index.py | playlists.py | Updated playlist routes for {playlist_record.playlist_id} with slug {new_playlist_slug} and owner_id {new_playlist_route.owner_id}"
+    )
+
+
+def get_playlist_events_tx(update_task, event_type, tx_receipt):
+    return getattr(update_task.playlist_contract.events, event_type)().processReceipt(
+        tx_receipt
+    )
 
 
 def validate_playlist_tx(params: ManageEntityParameters):
@@ -128,7 +210,11 @@ def update_playlist(params: ManageEntityParameters):
         existing_playlist = params.new_records[EntityType.PLAYLIST][playlist_id][-1]
 
     updated_playlist = copy_record(
-        existing_playlist, params.block_number, params.event_blockhash, params.txhash
+        existing_playlist,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
     )
     process_playlist_data_event(
         updated_playlist,
@@ -161,35 +247,15 @@ def delete_playlist(params: ManageEntityParameters):
         ]
 
     deleted_playlist = copy_record(
-        existing_playlist, params.block_number, params.event_blockhash, params.txhash
+        existing_playlist,
+        params.block_number,
+        params.event_blockhash,
+        params.txhash,
+        params.block_datetime,
     )
     deleted_playlist.is_delete = True
 
     params.new_records[EntityType.PLAYLIST][params.entity_id].append(deleted_playlist)
-
-
-def copy_record(old_playlist: Playlist, block_number, event_blockhash, txhash):
-    new_playlist = Playlist(
-        playlist_id=old_playlist.playlist_id,
-        playlist_owner_id=old_playlist.playlist_owner_id,
-        is_album=old_playlist.is_album,
-        description=old_playlist.description,
-        playlist_image_multihash=old_playlist.playlist_image_multihash,
-        playlist_image_sizes_multihash=old_playlist.playlist_image_sizes_multihash,
-        playlist_name=old_playlist.playlist_name,
-        is_private=old_playlist.is_private,
-        playlist_contents=old_playlist.playlist_contents,
-        created_at=old_playlist.created_at,
-        updated_at=old_playlist.updated_at,
-        blocknumber=block_number,
-        blockhash=event_blockhash,
-        txhash=txhash,
-        last_added_to=old_playlist.last_added_to,
-        is_current=False,
-        is_delete=old_playlist.is_delete,
-        metadata_multihash=old_playlist.metadata_multihash,
-    )
-    return new_playlist
 
 
 def process_playlist_contents(playlist_record, playlist_metadata, block_integer_time):

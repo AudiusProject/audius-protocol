@@ -32,6 +32,12 @@ export interface PremiumConditions
         * @memberof PremiumConditions
         */
         follow_user_id?: number;
+        /**
+        * 
+        * @type {number}
+        * @memberof PremiumConditions
+        */
+        tip_user_id?: number;
     }
 
 

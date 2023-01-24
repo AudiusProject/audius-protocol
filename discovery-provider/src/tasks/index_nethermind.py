@@ -77,62 +77,12 @@ web3 = web3_provider.get_nethermind_web3()
 # HELPER FUNCTIONS
 
 default_padded_start_hash = (
-    "0x7ef3e7395b68247c807e301774a94df3decdd4e17b7527524b57b58c694252b2"
+    "0x0000000000000000000000000000000000000000000000000000000000000000"
 )
 default_config_start_hash = "0x0"
 
 # Used to update user_replica_set_manager address and skip txs conditionally
 zero_address = "0x0000000000000000000000000000000000000000"
-
-
-def initialize_blocks_table_if_necessary(db: SessionManager):
-    redis = update_task.redis
-
-    target_blockhash = None
-    target_block = web3_provider.get_nethermind_web3().eth.get_block(0, True)
-    target_blockhash = target_block.hash.hex()
-
-    with db.scoped_session() as session:
-        current_block_query_result = session.query(Block).filter_by(is_current=True)
-        if current_block_query_result.count() == 0:
-            blocks_query_result = session.query(Block)
-            assert (
-                blocks_query_result.count() == 0
-            ), "Corrupted DB State - Expect single row marked as current"
-            block_model = Block(
-                blockhash=target_blockhash,
-                number=target_block.number,
-                parenthash=target_blockhash,
-                is_current=True,
-            )
-            if (
-                target_block.number == 0
-                or target_blockhash == default_config_start_hash
-            ):
-                block_model.number = None
-
-            session.add(block_model)
-            logger.info(
-                f"index_nethermind.py | initialize_blocks_table_if_necessary | Initializing blocks table - {block_model}"
-            )
-        else:
-            assert (
-                current_block_query_result.count() == 1
-            ), "Expected SINGLE row marked as current"
-
-            # set the last indexed block in redis
-            current_block_result = current_block_query_result.first()
-            if current_block_result.number:
-                redis.set(
-                    most_recent_indexed_block_redis_key, current_block_result.number
-                )
-            if current_block_result.blockhash:
-                redis.set(
-                    most_recent_indexed_block_hash_redis_key,
-                    current_block_result.blockhash,
-                )
-
-    return target_blockhash
 
 
 def get_latest_block(db: SessionManager, final_poa_block: int):
@@ -151,7 +101,9 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         if current_block_number == None:
             current_block_number = 0
 
-        target_latest_block_number = current_block_number + block_processing_window
+        target_latest_block_number = (
+            current_block_number + block_processing_window - final_poa_block
+        )
 
         latest_block_from_chain = web3.eth.get_block("latest", True)
         latest_block_number_from_chain = latest_block_from_chain.number
@@ -1034,7 +986,6 @@ def update_task(self):
             logger.info(
                 f"index_nethermind.py | {self.request.id} | update_task | Acquired disc_prov_lock"
             )
-            initialize_blocks_table_if_necessary(db)
 
             latest_block = get_latest_block(db, final_poa_block)
 
@@ -1082,11 +1033,11 @@ def update_task(self):
                             f"index_nethermind.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
                         )
 
-                    # Special case for initial block hash value of 0x0 and 0x0000....
-                    reached_initial_block = parent_hash == default_padded_start_hash
+                    # Special case for initial block 0x0 or first block number after final_poa_block
+                    reached_initial_block = latest_block.number == final_poa_block + 1
                     if reached_initial_block:
                         block_intersection_found = True
-                        intersect_block_hash = default_config_start_hash
+                        intersect_block_hash = latest_block.parentHash
                     else:
                         latest_block = dict(web3.eth.get_block(parent_hash, True))
                         latest_block["number"] += final_poa_block
@@ -1106,6 +1057,7 @@ def update_task(self):
                 # Check current block
                 undo_operations_required = (
                     db_current_block.blockhash != intersect_block_hash
+                    and not reached_initial_block
                 )
 
                 if undo_operations_required:
@@ -1124,7 +1076,10 @@ def update_task(self):
 
                 # Add blocks to 'block remove' list from here as we traverse to the
                 # valid intersect block
-                while traverse_block.blockhash != intersect_block_hash:
+                while (
+                    traverse_block.blockhash != intersect_block_hash
+                    and undo_operations_required
+                ):
                     revert_blocks_list.append(traverse_block)
                     parent_query = session.query(Block).filter(
                         Block.blockhash == traverse_block.parenthash

@@ -39,8 +39,9 @@ services:
       timeout: 5s
     logging: *default-logging
     deploy:
-      mode: replicas
-      replicas: "${BLOCK_EXPLORER_ENABLED}"
+      mode: global
+    profiles:
+      - block-explorer
 
   poa-blockscout:
     image: blockscout/blockscout:4.1.3
@@ -61,8 +62,9 @@ services:
         condition: service_healthy
     logging: *default-logging
     deploy:
-      mode: replicas
-      replicas: "${BLOCK_EXPLORER_ENABLED}"
+      mode: global
+    profiles:
+      - block-explorer
 
   # eth-contracts
 
@@ -95,8 +97,9 @@ services:
       timeout: 5s
     logging: *default-logging
     deploy:
-      mode: replicas
-      replicas: "${BLOCK_EXPLORER_ENABLED}"
+      mode: global
+    profiles:
+      - block-explorer
 
   eth-blockscout:
     image: blockscout/blockscout:4.1.3
@@ -117,8 +120,9 @@ services:
         condition: service_healthy
     logging: *default-logging
     deploy:
-      mode: replicas
-      replicas: "${BLOCK_EXPLORER_ENABLED}"
+      mode: global
+    profiles:
+      - block-explorer
 
   # solana-programs
 
@@ -203,6 +207,8 @@ services:
       build-audius-libs:
         condition: service_started
     logging: *default-logging
+    deploy:
+      mode: global
 
   # identity-service
 
@@ -218,7 +224,8 @@ services:
       mode: global
 
   identity-service-redis:
-    image: redis:5.0.5
+    image: redis:7.0
+    command: redis-server
     healthcheck:
       test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
@@ -228,7 +235,10 @@ services:
       mode: global
 
   identity-service:
-    build: identity-service
+    build:
+      context: identity-service
+      args:
+        git_sha: "${GIT_COMMIT}"
     command: scripts/dev-server.sh
     ports:
       - "7000:7000"
@@ -282,6 +292,7 @@ services:
       solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
     volumes:
       - ./identity-service/src:/usr/src/app/src
+      - ./dev-tools:/tmp/dev-tools
       - audius-libs:/usr/src/audius-libs
     depends_on:
       identity-service-db:
@@ -321,9 +332,14 @@ services:
     deploy:
       mode: replicated
       replicas: "${ELASTICSEARCH_REPLICAS}"
+    profiles:
+      - elasticsearch
 
   discovery-provider:
-    build: discovery-provider
+    build:
+      context: discovery-provider
+      args:
+        git_sha: "${GIT_COMMIT}"
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:
@@ -373,34 +389,12 @@ services:
   # creator-node
 
   creator-node:
-    build: creator-node
+    build:
+      context: creator-node
+      args:
+        git_sha: "${GIT_COMMIT}"
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
-    environment:
-      logLevel: "debug"
-      devMode: "true"
-      creatorNodeIsDebug: "true"
-      debuggerPort: 10000
-
-      rateLimitingAudiusUserReqLimit: 3000
-      rateLimitingUserReqLimit: 3000
-      rateLimitingMetadataReqLimit: 3000
-      rateLimitingImageReqLimit: 6000
-      rateLimitingTrackReqLimit: 6000
-      rateLimitingBatchCidsExistLimit: 1
-      maxAudioFileSizeBytes: 250000000
-      maxMemoryFileSizeBytes: 50000000
-      expressAppConcurrency: 2
-
-      identityService: "http://identity-service:7000"
-
-      ethProviderUrl: "http://eth-ganache:8545"
-      ethTokenAddress: "${ETH_TOKEN_ADDRESS}"
-      ethRegistryAddress: "${ETH_REGISTRY_ADDRESS}"
-      ethOwnerWallet: "${ETH_OWNER_WALLET}"
-
-      dataProviderUrl: "http://poa-ganache:8545"
-      dataRegistryAddress: "${POA_REGISTRY_ADDRESS}"
     volumes:
       - ./creator-node/src:/usr/src/app/src
       - audius-libs:/usr/src/audius-libs
@@ -441,13 +435,15 @@ services:
     image: linuxserver/openssh-server:latest # don't pin
     command: bash /tmp/dev-tools/startup/sshuttle-server.sh
     environment:
-      PASSWORD_ACCESS: "true"
+      PUBLIC_KEY_FILE: "/tmp/dev-tools/keys/dev.pub"
       USER_NAME: "sshuttle"
-      USER_PASSWORD: "sshuttle"
     ports:
       - "2222:2222"
     volumes:
       - ./dev-tools/:/tmp/dev-tools
+    logging: *default-logging
+    deploy:
+      mode: global
 
 volumes:
   poa-contracts-abis:

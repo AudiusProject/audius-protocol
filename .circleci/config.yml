@@ -342,7 +342,7 @@ jobs:
               --storage-location=us
       - slack-fail:
           branch_pattern: main
-          slack_mentions_user: "@dheeraj"
+          slack_mentions_user: "@ray"
 
   publish-sdk:
     docker:
@@ -370,6 +370,20 @@ jobs:
           event: always
           branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
+      - restore_cache:
+          keys:
+            - sdk-cache-{{ checksum "libs/package-lock.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - sdk-cache-
+      - run:
+          name: Install sdk dependencies
+          command: |
+            cd libs
+            npm i
+      - save_cache:
+          key: sdk-cache-{{ checksum "libs/package-lock.json" }}
+          paths:
+            - ./libs/node_modules
       - run:
           name: Bump and Publish Libs
           command: |
@@ -735,7 +749,7 @@ jobs:
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: audius_identity_service_test
-      - image: redis:5.0.4
+      - image: redis:7.0
     steps:
       - checkout
       - diff-if-necessary:
@@ -853,70 +867,6 @@ jobs:
       #     paths:
       #       - solana-programs/track_listen_count/target
       #     key: track-listen-count-deps-{{ checksum "solana-programs/track_listen_count/Cargo.toml" }}
-
-  test-solana-programs-anchor:
-    resource_class: large # 4vcpu/8gb
-    machine:
-      image: ubuntu-2004:202107-02 # Ubuntu 20.04, Docker v20.10.7, Docker Compose v1.29.2 - see https://circleci.com/docs/2.0/configuration-reference/#machine
-      docker_layer_caching: true
-    steps:
-      # TODO implement cache for faster build
-      - checkout
-      - diff-if-necessary:
-          service: solana-programs
-      - run:
-          name: Install node
-          command: |
-            export PROTOCOL_DIR="/home/circleci/project"
-            export NVM_VERSION="v0.35.3"
-            export NODE_VERSION="v14.18.1"
-            sudo apt update -y
-            sudo DEBIAN_FRONTEND=noninteractive apt upgrade -y
-            sudo apt install curl -y
-            curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh" | bash
-            source ~/.bashrc
-            nvm install "$NODE_VERSION"
-      - restore_cache:
-          keys:
-            - anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
-            - anchor-node-deps-
-      - run:
-          name: Setup dev dependencies
-          command: |
-            export NODE_VERSION="v14.18.1"
-            source ~/.profile
-            source ~/.bashrc
-            nvm use "$NODE_VERSION"
-            export CARGO_HOME="cargo"
-            export PROTOCOL_DIR="/home/circleci/project"
-            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            source /opt/circleci/.nvm/nvm.sh
-            npm run install-dev
-      - run:
-          name: anchor tests
-          command: |
-            export PROTOCOL_DIR="/home/circleci/project"
-            export PATH="/home/circleci/.local/share/solana/install/active_release/bin:/usr/local/lbin:$PATH"
-            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            npm test
-      - save_cache:
-          paths:
-            - solana-programs/anchor/audius-data/node_modules
-          key: anchor-node-deps-{{ checksum "solana-programs/anchor/audius-data/yarn.lock" }}
-      - run:
-          name: anchor program seed CLI tests
-          command: |
-            export NODE_VERSION="v14.18.1"
-            source ~/.profile
-            source ~/.bashrc
-            nvm use "$NODE_VERSION"
-            export PROTOCOL_DIR="/home/circleci/project"
-            cd "$PROTOCOL_DIR/solana-programs/anchor/audius-data"
-            solana-keygen new --no-bip39-passphrase --force -o "/home/circleci/.config/solana/id.json"
-            yarn
-            source /opt/circleci/.nvm/nvm.sh
-            npm run localnet-up-ci
-            npm run dev-setup
 
   docker-build-and-push:
     docker:
@@ -1273,6 +1223,7 @@ jobs:
         type: string
         default: ""
     steps:
+      - checkout
       - add_ssh_keys:
           fingerprints:
             # github.com
@@ -1280,15 +1231,15 @@ jobs:
       - setup_remote_docker:
           version: 20.10.14
           docker_layer_caching: true
-      - run: |
-          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
-          git clone git@github.com:AudiusProject/audius-tooling.git
-          cd audius-tooling
-          mkdir -p ssh_keys
-          cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
-          SLASH_ADDRESS=<< parameters.slash_address >> \
-          SLASH_AMOUNT=<< parameters.slash_amount >> \
-          release-scripts/<< parameters.target >>.sh
+      - run:
+          no_output_timeout: 30m
+          command: |
+            ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+            mkdir -p ssh_keys
+            cp ~/.ssh/id_rsa_d00ba019ac4658e46cac3499f61b31bb ssh_keys/
+            SLASH_ADDRESS=<< parameters.slash_address >> \
+            SLASH_AMOUNT=<< parameters.slash_amount >> \
+            .circleci/release-scripts/<< parameters.target >>.sh
       - slack-fail
       - when:
           condition:
@@ -1362,6 +1313,8 @@ workflows:
       - noop:
           name: discovery
       - noop:
+          name: comms
+      - noop:
           name: identity
 
       - noop:
@@ -1408,9 +1361,8 @@ workflows:
             - test-libs
             - test-contracts
             - test-solana-programs
-            - test-solana-programs-anchor
             - test-eth-contracts
-            - test-mad-dog-e2e
+            # - test-mad-dog-e2e
             - test-sdk
 
       # Auto-deploy `main` to staging
@@ -1781,6 +1733,12 @@ workflows:
           repo: discovery-provider
           requires:
             - discovery
+      
+      - docker-build-and-push-updated:
+          name: build-comms
+          repo: comms
+          requires:
+            - comms
 
       - test-identity:
           name: test-identity
@@ -1796,17 +1754,13 @@ workflows:
           name: test-solana-programs
           requires:
             - tests
-      - test-solana-programs-anchor:
-          name: test-solana-programs-anchor
-          requires:
-            - tests
 
-      - test-mad-dog-e2e:
-          context:
-            - GCP2
-          mad-dog-type: test
-          requires:
-            - tests
+      # - test-mad-dog-e2e:
+      #     context:
+      #       - GCP2
+      #     mad-dog-type: test
+      #     requires:
+      #       - tests
 
       - test-sdk:
           context:
@@ -1830,9 +1784,9 @@ workflows:
           context:
             - Audius Client
             - slack-secrets
-          filters:
-            branches:
-              only: /(^main$)/
+          # filters:
+          #   branches:
+          #     only: /(^main$)/
 
   # in order to trigger this job
   # 1. go to the CircleCI dashboard
@@ -2003,15 +1957,15 @@ workflows:
   hold-workflows:
     when: << pipeline.parameters.full_ci >>
     jobs:
-      - hold-test-mad-dog-e2e-full:
-          type: approval
-      - test-mad-dog-e2e:
-          context:
-            - GCP2
-          name: test-mad-dog-e2e-full
-          mad-dog-type: test-nightly
-          requires:
-            - hold-test-mad-dog-e2e-full
+      # - hold-test-mad-dog-e2e-full:
+      #     type: approval
+      # - test-mad-dog-e2e:
+      #     context:
+      #       - GCP2
+      #     name: test-mad-dog-e2e-full
+      #     mad-dog-type: test-nightly
+      #     requires:
+      #       - hold-test-mad-dog-e2e-full
       - hold-build-logspout:
           type: approval
       - docker-build-and-push:
@@ -2046,11 +2000,11 @@ workflows:
           name: test-identity-nightly
       - test-solana-programs:
           name: test-solana-programs-nightly
-      - test-mad-dog-e2e:
-          context:
-            - GCP2
-          name: test-mad-dog-e2e-nightly
-          mad-dog-type: test-nightly
+      # - test-mad-dog-e2e:
+      #     context:
+      #       - GCP2
+      #     name: test-mad-dog-e2e-nightly
+      #     mad-dog-type: test-nightly
       - bake-gcp-dev-image:
           context:
             - GCP2

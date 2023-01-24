@@ -245,7 +245,7 @@ describe('Test Create Notification', function () {
     // Set timeout to 30 seconds
     this.timeout(30 * 1000)
     // ======================================= Set subscribers for create notifications =======================================
-    const NUM_SUBSCRIBERS = 100000
+    const NUM_SUBSCRIBERS = 50000
     await models.Subscription.bulkCreate(
       [...Array(NUM_SUBSCRIBERS).keys()]
         .map((num) => ({

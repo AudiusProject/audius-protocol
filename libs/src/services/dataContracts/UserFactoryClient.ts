@@ -1,10 +1,17 @@
 import { ContractClient } from '../contracts/ContractClient'
 import * as signatureSchemas from '../../data-contracts/signatureSchemas'
-import type { UserUpdateRequestFn } from '../../data-contracts/signatureSchemas'
 import { Nullable, Utils } from '../../utils'
-import sigUtil from 'eth-sig-util'
+import sigUtil, { EIP712TypedData } from 'eth-sig-util'
 import { Buffer as SafeBuffer } from 'safe-buffer'
 import type { Web3Manager } from '../web3Manager'
+
+type GeneratorFn = (
+  chainId: number,
+  contractAddress: string,
+  userId: number,
+  newValue: unknown,
+  nonce: string
+) => EIP712TypedData
 
 export class UserFactoryClient extends ContractClient {
   override web3Manager!: Web3Manager
@@ -294,7 +301,7 @@ export class UserFactoryClient extends ContractClient {
    * @param privateKey 64 character hex string
    */
   async getUpdateNonceAndSig(
-    generatorFn: UserUpdateRequestFn,
+    generatorFn: GeneratorFn,
     userId: number,
     newValue: unknown,
     privateKey?: string

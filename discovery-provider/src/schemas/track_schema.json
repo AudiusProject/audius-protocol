@@ -185,6 +185,9 @@
                             },
                             {
                                 "$ref": "#/definitions/PremiumConditionsFollowUserId"
+                            },
+                            {
+                                "$ref": "#/definitions/PremiumConditionsTipUserId"
                             }
                         ]
                     }
@@ -392,12 +395,34 @@
                         "ERC721",
                         "ERC1155"
                     ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "imageUrl": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
+                "externalLink": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
                 }
             },
             "required": [
                 "chain",
                 "address",
-                "standard"
+                "standard",
+                "name",
+                "slug"
             ],
             "title": "PremiumConditionsEthNFTCollection"
         },
@@ -409,12 +434,30 @@
                     "type": "string",
                     "const": "sol"
                 },
+                "address": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
+                },
+                "imageUrl": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
+                "externalLink": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
                 }
             },
             "required": [
                 "chain",
+                "address",
                 "name"
             ],
             "title": "PremiumConditionsSolNFTCollection"
@@ -431,6 +474,19 @@
                 "follow_user_id"
             ],
             "title": "PremiumConditionsFollowUserId"
+        },
+        "PremiumConditionsTipUserId": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "tip_user_id": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "tip_user_id"
+            ],
+            "title": "PremiumConditionsTipUserId"
         }
     }
 }

@@ -100,9 +100,9 @@ const _syncRouteController = async (req, _res) => {
   const primaryEndpoint = req.body.creator_node_endpoint // string
   const immediate = req.body.immediate === true || req.body.immediate === 'true' // boolean - default false
   const blockNumber = req.body.blockNumber // integer
-  const syncOverridePassword = req.body.syncOverridePassword
+  const overridePassword = req.body.overridePassword
 
-  const syncOverride = verifySPOverride(syncOverridePassword)
+  const syncOverride = verifySPOverride(overridePassword)
 
   // Disable multi wallet syncs for now since in below redis logic is broken for multi wallet case
   if (walletPublicKeys.length === 0) {
@@ -277,10 +277,10 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
     return errorResponseBadRequest('This route is disabled')
   }
 
-  const userId = req.query.userId
-  const newPrimarySpId = req.query.newPrimarySpId
-  const newSecondary1SpId = req.query.newSecondary1SpId
-  const newSecondary2SpId = req.query.newSecondary2SpId
+  const userId = parseInt(req.query.userId)
+  const newPrimarySpId = parseInt(req.query.newPrimarySpId)
+  const newSecondary1SpId = parseInt(req.query.newSecondary1SpId)
+  const newSecondary2SpId = parseInt(req.query.newSecondary2SpId)
 
   if (!userId) {
     return errorResponseBadRequest(
@@ -293,31 +293,64 @@ const manuallyUpdateReplicaSetController = async (req, _res) => {
     )
   }
 
+  const newReplicaSetSPIds = [
+    newPrimarySpId,
+    newSecondary1SpId,
+    newSecondary2SpId
+  ]
+  const newSecondarySpIds = [newSecondary1SpId, newSecondary2SpId]
+
   const currentSpIds = await getReplicaSetSpIdsByUserId({
     libs: serviceRegistry.libs,
     userId,
     parentLogger: req.logger,
     logger: req.logger
   })
-  if (config.get('entityManagerReplicaSetEnabled')) {
-    await audiusLibs.User.updateEntityManagerReplicaSet({
-      userId: parseInt(userId),
-      primary: parseInt(newPrimarySpId),
-      secondaries: [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
-      oldPrimary: currentSpIds.primaryId,
-      oldSecondaries: currentSpIds.secondaryIds
-    })
-  } else {
+
+  // First try updateReplicaSet via URSM
+  // Fallback to EntityManager when relay errors
+  try {
     await audiusLibs.contracts.UserReplicaSetManagerClient._updateReplicaSet(
-      parseInt(userId),
-      parseInt(newPrimarySpId),
-      [parseInt(newSecondary1SpId), parseInt(newSecondary2SpId)],
+      userId,
+      newPrimarySpId,
+      newSecondarySpIds,
       currentSpIds.primaryId,
       currentSpIds.secondaryIds
     )
-  }
 
-  return successResponse()
+    return successResponse({ msg: 'Success via UserReplicaSetManager' })
+  } catch (e) {
+    if (!config.get('entityManagerReplicaSetEnabled')) {
+      return errorResponseServerError(
+        `Failed via UserReplicaSetManager with error ${e.message} & EntityManager disabled`
+      )
+    }
+
+    const { blockNumber } = await audiusLibs.User.updateEntityManagerReplicaSet(
+      {
+        userId,
+        primary: newPrimarySpId,
+        secondaries: newSecondarySpIds,
+        oldPrimary: currentSpIds.primaryId,
+        oldSecondaries: currentSpIds.secondaryIds
+      }
+    )
+
+    // Wait for blockhash/blockNumber to be indexed
+    try {
+      await audiusLibs.User.waitForReplicaSetDiscoveryIndexing(
+        userId,
+        newReplicaSetSPIds,
+        blockNumber
+      )
+    } catch (e) {
+      return errorResponseServerError(
+        `Failed via EntityManager - Indexing unable to confirm updated replica set`
+      )
+    }
+
+    return successResponse({ msg: 'Success via EntityManager' })
+  }
 }
 
 // Routes

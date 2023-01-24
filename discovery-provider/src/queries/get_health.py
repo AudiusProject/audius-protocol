@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
+import requests
 from elasticsearch import Elasticsearch
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
@@ -36,7 +37,6 @@ from src.tasks.index_user_bank_backfill import index_user_bank_backfill_complete
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
-from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
@@ -75,6 +75,8 @@ infra_setup = shared_config["discprov"]["infra_setup"]
 min_number_of_cpus: int = 8  # 8 cpu
 min_total_memory: int = 15500000000  # 15.5 GB of RAM
 min_filesystem_size: int = 240000000000  # 240 GB of file system storage
+
+CHAIN_HEALTH_ENDPOINT = "http://chain:8545/health"
 
 
 def get_elapsed_time_redis(redis, redis_key):
@@ -115,6 +117,14 @@ def _get_query_insights():
     )
 
     return query_insights, False
+
+
+def _get_chain_health():
+    try:
+        response = requests.get(CHAIN_HEALTH_ENDPOINT, timeout=0.02)
+        return response.json()
+    except:
+        pass
 
 
 class GetHealthArgs(TypedDict):
@@ -234,8 +244,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     num_users_in_immediate_balance_refresh_queue = int(
         redis.scard(IMMEDIATE_REFRESH_REDIS_PREFIX)
     )
-    last_scanned_block_for_balance_refresh = redis_get_or_restore(
-        redis, eth_indexing_last_scanned_block_key
+    last_scanned_block_for_balance_refresh = redis.get(
+        eth_indexing_last_scanned_block_key
     )
     index_eth_age_sec = get_elapsed_time_redis(
         redis, index_eth_last_completion_redis_key
@@ -366,6 +376,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         },
     }
 
+    if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
+        health_results["audius-docker-compose"] = os.getenv(
+            "AUDIUS_DOCKER_COMPOSE_GIT_SHA"
+        )
+
     if latest_block_num is not None and latest_indexed_block_num is not None:
         if final_poa_block and latest_block_num < final_poa_block:
             latest_block_num += final_poa_block
@@ -393,6 +408,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # TODO - this will become strictly enforced in upcoming service versions and return with error
     else:
         health_results["meets_min_requirements"] = True
+
+    health_results["chain_health"] = _get_chain_health()
 
     if verbose:
         # Elasticsearch health
@@ -544,33 +561,31 @@ def get_play_health_info(
 
     if is_unhealthy_sol_plays or not plays_count_max_drift:
         # Calculate time diff from now to latest play
-        latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)
+        latest_db_play = redis.get(latest_legacy_play_db_key)
         if not latest_db_play:
             # Query and cache latest db play if found
             latest_db_play = get_latest_play()
             if latest_db_play:
-                redis_set_and_dump(
-                    redis, latest_legacy_play_db_key, latest_db_play.timestamp()
-                )
+                redis.set(latest_legacy_play_db_key, latest_db_play.timestamp())
         else:
             # Decode bytes into float for latest timestamp
             latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
 
-        oldest_unarchived_play = redis_get_or_restore(redis, oldest_unarchived_play_key)
+        oldest_unarchived_play = redis.get(oldest_unarchived_play_key)
         if not oldest_unarchived_play:
             # Query and cache oldest unarchived play
             oldest_unarchived_play = get_oldest_unarchived_play()
             if oldest_unarchived_play:
-                redis_set_and_dump(
-                    redis,
+                redis.set(
                     oldest_unarchived_play_key,
                     oldest_unarchived_play.timestamp(),
                 )
         else:
             # Decode bytes into float for latest timestamp
-            oldest_unarchived_play = float(oldest_unarchived_play.decode())
-            oldest_unarchived_play = datetime.utcfromtimestamp(oldest_unarchived_play)
+            oldest_unarchived_play = datetime.utcfromtimestamp(
+                float(oldest_unarchived_play.decode())
+            )
 
         time_diff_general = (
             (current_time_utc - latest_db_play).total_seconds()
@@ -587,7 +602,7 @@ def get_play_health_info(
         "is_unhealthy": is_unhealthy_plays,
         "tx_info": sol_play_info,
         "time_diff_general": time_diff_general,
-        "oldest_unarchived_play_created_at": oldest_unarchived_play,
+        "oldest_unarchived_play_created_at": str(oldest_unarchived_play),
     }
 
 

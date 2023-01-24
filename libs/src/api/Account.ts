@@ -32,6 +32,7 @@ export class Account extends Base {
     this.getUserEmail = this.getUserEmail.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
+    this.associateTikTokUser = this.associateTikTokUser.bind(this)
     this.handleIsValid = this.handleIsValid.bind(this)
     this.lookupTwitterHandle = this.lookupTwitterHandle.bind(this)
     this.updateCreatorNodeEndpoint = this.updateCreatorNodeEndpoint.bind(this)
@@ -130,8 +131,7 @@ export class Account extends Base {
     handleUserBankOutcomes = (_outcome?: string, _errorCodes?: {}) => {},
     userBankOutcomes: Partial<UserBankOutcomes> = {},
     feePayerOverride: Nullable<string> = null,
-    generateRecoveryLink = true,
-    useEntityManager = false
+    generateRecoveryLink = true
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
@@ -199,35 +199,15 @@ export class Account extends Base {
         })()
       }
       // Add user to chain
-      if (!useEntityManager) {
-        phase = phases.ADD_USER
-        const response = await this.User.addUser(metadata)
-        userId = response.userId
-        blockHash = response.blockHash
-        blockNumber = response.blockNumber
+      const newMetadata = await this.User.createEntityManagerUser({
+        metadata
+      })
 
-        // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
-        phase = phases.ADD_REPLICA_SET
-        metadata = (await this.User.assignReplicaSet({ userId }))!
-        // Upload profile pic and cover photo to primary Content Node and sync across secondaries
-        phase = phases.UPLOAD_PROFILE_IMAGES
-        await this.User.uploadProfileImages(
-          profilePictureFile!,
-          coverPhotoFile!,
-          metadata,
-          useEntityManager
-        )
-      } else {
-        const newMetadata = await this.User.createEntityManagerUser({
-          metadata
-        })
-        await this.User.uploadProfileImages(
-          profilePictureFile!,
-          coverPhotoFile!,
-          newMetadata,
-          useEntityManager
-        )
-      }
+      await this.User.uploadProfileImages(
+        profilePictureFile!,
+        coverPhotoFile!,
+        newMetadata
+      )
     } catch (e: any) {
       return {
         error: e.message,
@@ -322,6 +302,15 @@ export class Account extends Base {
       userId,
       handle
     )
+  }
+
+  /**
+   * Associates a user with an tiktok uuid
+   * @param uuid from the TikTok API
+   */
+  async associateTikTokUser(uuid: string, userId: number, handle: string) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    return await this.identityService.associateTikTokUser(uuid, userId, handle)
   }
 
   /**
@@ -723,7 +712,7 @@ export class Account extends Base {
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Click sign to authenticate with identity service: ${unixTs}`
     const signature = await this.ethWeb3Manager.sign(
-      Buffer.from(message, 'utf-8')
+      Buffer.from(message, 'utf-8') as unknown as string
     )
     const wallet = this.ethWeb3Manager.getWalletAddress()
     return await this.identityService.updateMinimumDelegationAmount(

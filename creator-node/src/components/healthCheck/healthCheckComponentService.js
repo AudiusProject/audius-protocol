@@ -17,7 +17,6 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * the current git SHA, service version info, location info, and system info.
  * @param {*} ServiceRegistry
  * @param {*} logger
- * @param {*} sequelize
  * @param {*} getMonitors
  * @param {*} getTranscodeQueueJobs
  * @param {*} getAsyncProcessingQueueJobs
@@ -28,7 +27,6 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
 const healthCheck = async (
   { libs, snapbackSM, trustedNotifierManager } = {},
   logger,
-  sequelize,
   getMonitors,
   getTranscodeQueueJobs,
   transcodingQueueIsAvailable,
@@ -51,6 +49,8 @@ const healthCheck = async (
 
   // expose audiusInfraStack to see how node is being run
   const audiusContentInfraSetup = config.get('audiusContentInfraSetup')
+
+  const isReadOnlyMode = config.get('isReadOnlyMode')
 
   // System information
   const [
@@ -142,7 +142,9 @@ const healthCheck = async (
   const response = {
     ...versionInfo,
     healthy,
+    isReadOnlyMode,
     git: process.env.GIT_SHA,
+    audiusDockerCompose: process.env.AUDIUS_DOCKER_COMPOSE_GIT_SHA,
     selectedDiscoveryProvider: 'none',
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
     spID: config.get('spID'),
@@ -258,7 +260,6 @@ const parseDateOrNull = (date) => {
 const healthCheckVerbose = async (
   { libs, snapbackSM, trustedNotifierManager } = {},
   logger,
-  sequelize,
   getMonitors,
   numberOfCPUs,
   getTranscodeQueueJobs,
@@ -268,7 +269,6 @@ const healthCheckVerbose = async (
   return healthCheck(
     { libs, snapbackSM, trustedNotifierManager },
     logger,
-    sequelize,
     getMonitors,
     getTranscodeQueueJobs,
     transcodingQueueIsAvailable,

@@ -46,6 +46,7 @@ from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
 from src.utils.eth_manager import EthManager
 from src.utils.multi_provider import MultiProvider
+from src.utils.redis_constants import final_poa_block_redis_key
 from src.utils.redis_metrics import METRICS_INTERVAL, SYNCHRONIZE_METRICS_INTERVAL
 from src.utils.session_manager import SessionManager
 from web3 import HTTPProvider, Web3
@@ -60,13 +61,6 @@ eth_web3 = None
 eth_abi_values = None
 
 solana_client_manager = None
-registry = None
-user_factory = None
-track_factory = None
-social_feature_factory = None
-playlist_factory = None
-user_library_factory = None
-user_replica_set_manager = None
 entity_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
@@ -82,55 +76,6 @@ def get_eth_abi_values():
 
 
 def init_contracts():
-    registry_address = web3.toChecksumAddress(shared_config["contracts"]["registry"])
-    registry_instance = web3.eth.contract(
-        address=registry_address, abi=abi_values["Registry"]["abi"]
-    )
-
-    user_factory_address = registry_instance.functions.getContract(
-        bytes("UserFactory", "utf-8")
-    ).call()
-    user_factory_instance = web3.eth.contract(
-        address=user_factory_address, abi=abi_values["UserFactory"]["abi"]
-    )
-    track_factory_address = registry_instance.functions.getContract(
-        bytes("TrackFactory", "utf-8")
-    ).call()
-    track_factory_instance = web3.eth.contract(
-        address=track_factory_address, abi=abi_values["TrackFactory"]["abi"]
-    )
-
-    social_feature_factory_address = registry_instance.functions.getContract(
-        bytes("SocialFeatureFactory", "utf-8")
-    ).call()
-    social_feature_factory_inst = web3.eth.contract(
-        address=social_feature_factory_address,
-        abi=abi_values["SocialFeatureFactory"]["abi"],
-    )
-
-    playlist_factory_address = registry_instance.functions.getContract(
-        bytes("PlaylistFactory", "utf-8")
-    ).call()
-    playlist_factory_inst = web3.eth.contract(
-        address=playlist_factory_address, abi=abi_values["PlaylistFactory"]["abi"]
-    )
-
-    user_library_factory_address = registry_instance.functions.getContract(
-        bytes("UserLibraryFactory", "utf-8")
-    ).call()
-    user_library_factory_inst = web3.eth.contract(
-        address=user_library_factory_address,
-        abi=abi_values["UserLibraryFactory"]["abi"],
-    )
-
-    user_replica_set_manager_address = registry_instance.functions.getContract(
-        bytes("UserReplicaSetManager", "utf-8")
-    ).call()
-    user_replica_set_manager_inst = web3.eth.contract(
-        address=user_replica_set_manager_address,
-        abi=abi_values["UserReplicaSetManager"]["abi"],
-    )
-
     entity_manager_address = None
     entity_manager_inst = None
     if shared_config["contracts"]["entity_manager_address"]:
@@ -142,24 +87,10 @@ def init_contracts():
         )
 
     contract_address_dict = {
-        "registry": registry_address,
-        "user_factory": user_factory_address,
-        "track_factory": track_factory_address,
-        "social_feature_factory": social_feature_factory_address,
-        "playlist_factory": playlist_factory_address,
-        "user_library_factory": user_library_factory_address,
-        "user_replica_set_manager": user_replica_set_manager_address,
         "entity_manager": entity_manager_address,
     }
 
     return (
-        registry_instance,
-        user_factory_instance,
-        track_factory_instance,
-        social_feature_factory_inst,
-        playlist_factory_inst,
-        user_library_factory_inst,
-        user_replica_set_manager_inst,
         entity_manager_inst,
         contract_address_dict,
     )
@@ -186,26 +117,12 @@ def create_celery(test_config=None):
     # Initialize Solana web3 provider
     solana_client_manager = SolanaClientManager(shared_config["solana"]["endpoint"])
 
-    global registry
-    global user_factory
-    global track_factory
-    global social_feature_factory
-    global playlist_factory
-    global user_library_factory
-    global user_replica_set_manager
     global entity_manager
     global contract_addresses
     # pylint: enable=W0603
 
     try:
         (
-            registry,
-            user_factory,
-            track_factory,
-            social_feature_factory,
-            playlist_factory,
-            user_library_factory,
-            user_replica_set_manager,
             entity_manager,
             contract_addresses,
         ) = init_contracts()
@@ -397,6 +314,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_rewards_manager_backfill",
             "src.tasks.index_related_artists",
             "src.tasks.calculate_trending_challenges",
+            "src.tasks.backfill_cid_data",
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
@@ -541,6 +459,10 @@ def configure_celery(celery, test_config=None):
         broker_url=redis_url,
     )
 
+    # backfill cid data if url is provided
+    if "backfill_cid_data_url" in shared_config["discprov"]:
+        celery.send_task("backfill_cid_data")
+
     # Initialize DB object for celery task context
     db = SessionManager(
         database_url, ast.literal_eval(shared_config["db"]["engine_args_literal"])
@@ -601,10 +523,16 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("index_user_listening_history_lock")
     redis_inst.delete("prune_plays_lock")
     redis_inst.delete("update_aggregate_table:aggregate_user_tips")
+    redis_inst.delete("spl_token_lock")
     redis_inst.delete("spl_token_backfill_lock")
     redis_inst.delete("profile_challenge_backfill_lock")
+    redis_inst.delete("backfill_cid_data_lock")
+    redis_inst.delete("index_trending_lock")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
+
+    # delete cached final_poa_block in case it has changed
+    redis_inst.delete(final_poa_block_redis_key)
 
     logger.info("Redis instance initialized!")
 

@@ -5,7 +5,7 @@ import {
   getStartTime
 } from '../../logging'
 
-import TrackTranscodeHandoffManager from './TrackTranscodeHandoffManager'
+import { handOff } from './TrackTranscodeHandoffManager'
 import {
   transcodeAndSegment,
   processTranscodeAndSegments
@@ -101,7 +101,7 @@ export async function handleTranscodeHandOff(
     headers: Record<string, string>
   }
 ) {
-  return TrackTranscodeHandoffManager.handOff(
+  return handOff(
     { logContext },
     {
       libs,

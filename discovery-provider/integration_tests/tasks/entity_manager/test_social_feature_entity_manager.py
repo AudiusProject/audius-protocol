@@ -269,7 +269,7 @@ def test_index_valid_social_features(app, mocker):
         assert current_repost.repost_item_id == 1
 
         # ensure session is flushed, invalidating old records before bulk saving
-        aggregate_playlists: List[aggregate_playlists] = (
+        aggregate_playlists: List[AggregatePlaylist] = (
             session.query(AggregatePlaylist)
             .filter(AggregatePlaylist.playlist_id == 1)
             .all()

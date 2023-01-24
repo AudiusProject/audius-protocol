@@ -22,7 +22,7 @@ import {
   getRateLimiterMiddleware
 } from './reqLimiter'
 import config from './config'
-import { exponentialBucketsRange } from './services/prometheusMonitoring/prometheusUtils'
+import { exponentialBucketsRange } from './services/prometheusMonitoring/prometheusSetupUtils'
 import healthCheckRoutes from './components/healthCheck/healthCheckController'
 import contentBlacklistRoutes from './components/contentBlacklist/contentBlacklistController'
 import replicaSetRoutes from './components/replicaSet/replicaSetController'

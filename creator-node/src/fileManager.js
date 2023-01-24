@@ -497,7 +497,7 @@ async function fetchFileFromNetworkAndSaveToFS(
      * Attempts to fetch CID:
      *  - If file already stored on disk, return immediately
      *  - If file not already stored, request from user's replica set gateways in parallel and write to disk if file exists
-     *  - If file does not exist on user's replca set, try the network and write to disk if file exists
+     *  - If file does not exist on user's replica set, try the network and write to disk if file exists
      */
 
     if (await fs.pathExists(storageLocation)) {

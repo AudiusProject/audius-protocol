@@ -434,9 +434,9 @@ class DBManager {
     )?.length
   }
 
-  static async _getLegacyStoragePathsAndCids(minCid, maxCid, batchSize, dir) {
+  static async _getLegacyStoragePathRecords(minCid, maxCid, batchSize, dir) {
     const dirQuery = `
-      SELECT "storagePath", "multihash", "skipped" FROM
+      SELECT "storagePath", "multihash", "dirMultihash", "fileName", "trackBlockchainId", "fileUUID", "skipped" FROM
         (SELECT * FROM "Files" AS "Page"
           WHERE "multihash" BETWEEN :minCid AND :maxCid AND "type" = 'dir'
           ORDER BY "multihash" DESC)
@@ -445,7 +445,7 @@ class DBManager {
       LIMIT :batchSize
       `
     const nonDirQuery = `
-      SELECT "storagePath", "multihash", "skipped" FROM
+      SELECT "storagePath", "multihash", "dirMultihash", "fileName", "trackBlockchainId", "fileUUID", "skipped" FROM
         (SELECT * FROM "Files" AS "Page"
           WHERE "multihash" BETWEEN :minCid AND :maxCid AND "type" != 'dir'
           ORDER BY "multihash" DESC)
@@ -463,17 +463,11 @@ class DBManager {
         fileRecords
       )}`
     )
-    return fileRecords.map((result) => {
-      return {
-        storagePath: result.storagePath,
-        cid: result.multihash,
-        skipped: result.skipped
-      }
-    })
+    return fileRecords
   }
 
-  static async getNonDirLegacyStoragePathsAndCids(minCid, maxCid, batchSize) {
-    return DBManager._getLegacyStoragePathsAndCids(
+  static async getNonDirLegacyStoragePathRecords(minCid, maxCid, batchSize) {
+    return DBManager._getLegacyStoragePathRecords(
       minCid,
       maxCid,
       batchSize,
@@ -481,8 +475,8 @@ class DBManager {
     )
   }
 
-  static async getDirLegacyStoragePathsAndCids(minCid, maxCid, batchSize) {
-    return DBManager._getLegacyStoragePathsAndCids(
+  static async getDirLegacyStoragePathRecords(minCid, maxCid, batchSize) {
+    return DBManager._getLegacyStoragePathRecords(
       minCid,
       maxCid,
       batchSize,
@@ -536,6 +530,20 @@ class DBManager {
       await transaction.rollback()
     }
     return false
+  }
+
+  static async getNumLegacyStoragePathsRecords() {
+    const query = `SELECT COUNT(*) FROM "Files" WHERE "storagePath" NOT LIKE '/file_storage/files/%' AND "storagePath" LIKE '/file_storage/%';`
+    // Returns [[{ count }]]
+    const queryResult = await sequelize.query(query)
+    return parseInt(queryResult[0][0].count, 10)
+  }
+
+  static async getNumCustomStoragePathsRecords() {
+    const query = `SELECT COUNT(*) FROM "Files" WHERE "storagePath" NOT LIKE '/file_storage/%';`
+    // Returns [[{ count }]]
+    const queryResult = await sequelize.query(query)
+    return parseInt(queryResult[0][0].count, 10)
   }
 }
 

@@ -17,6 +17,7 @@ import { QUEUE_NAMES } from '../stateMachineConstants'
 import { getMapOfCNodeEndpointToSpId } from '../../ContentNodeInfoManager'
 import { instrumentTracing, tracing } from '../../../tracer'
 import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
+import { makeGaugeIncToRecord } from '../../prometheusMonitoring/prometheusUsageUtils'
 
 const _: LoDashStatic = require('lodash')
 
@@ -24,7 +25,6 @@ const config = require('../../../config')
 const {
   METRIC_NAMES
 } = require('../../prometheusMonitoring/prometheus.constants')
-const { makeGaugeIncToRecord } = require('../stateMachineUtils')
 const { SyncType, SYNC_MODES } = require('../stateMachineConstants')
 const {
   getNewOrExistingSyncReq

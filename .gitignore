@@ -7,6 +7,7 @@
 
 .idea
 
+dev-tools/startup/*.env
 
 ### GitHub VSCode .gitignore Template
 ### https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
@@ -23,7 +24,6 @@
 
 # Built Visual Studio Code Extensions
 *.vsix
-
 
 ### GitHub Node .gitignore Template
 ### https://github.com/github/gitignore/blob/main/Node.gitignore

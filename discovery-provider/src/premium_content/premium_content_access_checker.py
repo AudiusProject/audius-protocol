@@ -7,6 +7,7 @@ from src.models.tracks.track import Track
 from src.premium_content.helpers import (
     does_user_follow_artist,
     does_user_have_nft_collection,
+    does_user_support_artist,
 )
 from src.premium_content.premium_content_types import (
     PremiumContentConditions,
@@ -41,6 +42,7 @@ PREMIUM_CONDITION_TO_HANDLER_MAP: Dict[
 ] = {
     "nft_collection": does_user_have_nft_collection,
     "follow_user_id": does_user_follow_artist,
+    "tip_user_id": does_user_support_artist,
 }
 
 

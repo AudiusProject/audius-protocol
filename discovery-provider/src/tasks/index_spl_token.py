@@ -9,6 +9,7 @@ from typing import Any, List, Optional, Set, TypedDict
 import base58
 from redis import Redis
 from solana.publickey import PublicKey
+from src.exceptions import UnsupportedVersionError
 from src.models.indexing.spl_token_transaction import SPLTokenTransaction
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.audio_transactions_history import (
@@ -25,7 +26,7 @@ from src.solana.constants import (
     TX_SIGNATURES_RESIZE_LENGTH,
 )
 from src.solana.solana_client_manager import SolanaClientManager
-from src.solana.solana_helpers import get_base_address
+from src.solana.solana_helpers import SPL_TOKEN_ID, get_base_address
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResult,
     ConfirmedTransaction,
@@ -37,7 +38,13 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
-from src.utils.helpers import get_solana_tx_owner, get_solana_tx_token_balances
+from src.utils.helpers import (
+    get_account_index,
+    get_solana_tx_owner,
+    get_solana_tx_token_balances,
+    get_valid_instruction,
+    has_log,
+)
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_spl_token_db_key,
@@ -51,6 +58,7 @@ SPL_TOKEN_PUBKEY = PublicKey(SPL_TOKEN_PROGRAM) if SPL_TOKEN_PROGRAM else None
 USER_BANK_ADDRESS = shared_config["solana"]["user_bank_program_address"]
 USER_BANK_PUBKEY = PublicKey(USER_BANK_ADDRESS) if USER_BANK_ADDRESS else None
 PURCHASE_AUDIO_MEMO_PROGRAM = "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo"
+TRANSFER_CHECKED_INSTRUCTION = "Program log: Instruction: TransferChecked"
 
 REDIS_TX_CACHE_QUEUE_PREFIX = "spl-token-tx-cache-queue"
 
@@ -64,10 +72,11 @@ MEMO_INSTRUCTION_INDEX = 4
 # Index of receiver account in solana transaction pre/post balances
 # Note: the receiver index is currently the same for purchase and transfer instructions
 # but this assumption could change in the future.
-RECEIVER_ACCOUNT_INDEX = 1
-# Thought we don't index transfers from the sender's side in this task, we must still
+RECEIVER_ACCOUNT_INDEX = 2
+# Though we don't index transfers from the sender's side in this task, we must still
 # enqueue the sender's accounts for balance refreshes if they are Audius accounts.
-SENDER_ACCOUNT_INDEX = 2
+SENDER_ACCOUNT_INDEX = 0
+INITIAL_FETCH_SIZE = 10
 
 purchase_vendor_map = {
     "Link by Stripe": TransactionType.purchase_stripe,
@@ -147,20 +156,42 @@ def parse_spl_token_transaction(
         if error:
             return None
 
+        has_transfer_checked_instruction = has_log(meta, TRANSFER_CHECKED_INSTRUCTION)
+        if not has_transfer_checked_instruction:
+            logger.debug(
+                f"index_spl_token.py | {tx_sig} No transfer checked instruction found"
+            )
+            return None
+        tx_message = result["transaction"]["message"]
+        instruction = get_valid_instruction(tx_message, meta, SPL_TOKEN_ID)
+        if not instruction:
+            logger.error(
+                f"index_spl_token.py | {tx_sig} No valid instruction for spl token program found"
+            )
+            return None
+
         memo_encoded = parse_memo_instruction(result)
         vendor = decode_memo_and_extract_vendor(memo_encoded) if memo_encoded else None
 
-        sender_root_account = get_solana_tx_owner(meta, SENDER_ACCOUNT_INDEX)
-        receiver_root_account = get_solana_tx_owner(meta, RECEIVER_ACCOUNT_INDEX)
-        account_keys = result["transaction"]["message"]["accountKeys"]
-        receiver_token_account = account_keys[RECEIVER_ACCOUNT_INDEX]
-        sender_token_account = account_keys[SENDER_ACCOUNT_INDEX]
-        prebalance, postbalance = get_solana_tx_token_balances(
-            meta, RECEIVER_ACCOUNT_INDEX
-        )
-        # Skip if there is no balance change.
-        if postbalance - prebalance == 0:
+        sender_idx = get_account_index(instruction, SENDER_ACCOUNT_INDEX)
+        receiver_idx = get_account_index(instruction, RECEIVER_ACCOUNT_INDEX)
+        account_keys = tx_message["accountKeys"]
+        sender_token_account = account_keys[sender_idx]
+        receiver_token_account = account_keys[receiver_idx]
+        sender_root_account = get_solana_tx_owner(meta, sender_idx)
+        receiver_root_account = get_solana_tx_owner(meta, receiver_idx)
+        prebalance, postbalance = get_solana_tx_token_balances(meta, receiver_idx)
+
+        # Balance is expected to change if there is a transfer instruction.
+        if postbalance == -1 or prebalance == -1:
+            logger.error(
+                f"index_spl_token.py | {tx_sig} error while parsing pre and post balances"
+            )
             return None
+        if postbalance - prebalance == 0:
+            logger.error(f"index_spl_token.py | {tx_sig} no balance change found")
+            return None
+
         receiver_spl_tx_info: SplTokenTransactionInfo = {
             "user_bank": receiver_token_account,
             "signature": tx_sig["signature"],
@@ -175,6 +206,8 @@ def parse_spl_token_transaction(
         }
         return receiver_spl_tx_info
 
+    except UnsupportedVersionError:
+        return None
     except Exception as e:
         signature = tx_sig["signature"]
         logger.error(
@@ -451,15 +484,22 @@ def process_spl_token_tx(
 
     # Current batch
     page_count = 0
+    is_initial_fetch = True
 
     # Traverse recent records until an intersection is found with latest slot
     while not intersection_found:
-        solana_logger.add_log(f"Requesting transactions before {last_tx_signature}")
+        fetch_size = (
+            INITIAL_FETCH_SIZE if is_initial_fetch else FETCH_TX_SIGNATURES_BATCH_SIZE
+        )
+        solana_logger.add_log(
+            f"Requesting {fetch_size} transactions before {last_tx_signature}"
+        )
         transactions_history = solana_client_manager.get_signatures_for_address(
             SPL_TOKEN_PROGRAM,
             before=last_tx_signature,
-            limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+            limit=fetch_size,
         )
+        is_initial_fetch = False
         solana_logger.add_log(f"Retrieved transactions before {last_tx_signature}")
         transactions_array = transactions_history["result"]
         if not transactions_array:

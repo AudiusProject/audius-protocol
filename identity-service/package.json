@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@amplitude/node": "^1.9.2",
-    "@audius/sdk": "1.0.12",
+    "@audius/sdk": "1.0.37",
     "@certusone/wormhole-sdk": "0.1.1",
     "@improbable-eng/grpc-web-node-http-transport": "^0.15.0",
     "@opentelemetry/api": "^1.2.0",
@@ -105,7 +105,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.2.0",
-    "mocha": "^5.2.0",
+    "mocha": "10.2.0",
     "nock": "^13.2.2",
     "nodemon": "^1.18.10",
     "nyc": "^15.0.0",
