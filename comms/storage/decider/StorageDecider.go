@@ -1,5 +1,5 @@
-// Package StorageDecider decides which IDs this node should store.
-package StorageDecider
+// Package decider decides which IDs this node should store.
+package decider
 
 import "github.com/nats-io/nats.go"
 
@@ -29,13 +29,14 @@ func (d *NaiveDecider) OnChange(prevBuckets []string, curBuckets []string) error
 
 // RendezvousDecider is a storage decider that stores content based on a rendezvous hash.
 type RendezvousDecider struct {
-	jsc       nats.JetStreamContext
-	namespace string
+	namespace         string
+	replicationFactor int
+	jsc               nats.JetStreamContext
 }
 
 // NewRendezvousDecider creates a storage decider that makes this node store content based on a rendezvous hash.
-func NewRendezvousDecider(jsc nats.JetStreamContext, namespace string) *RendezvousDecider {
-	return &RendezvousDecider{jsc: jsc, namespace: namespace}
+func NewRendezvousDecider(namespace string, replicationFactor int, jsc nats.JetStreamContext) *RendezvousDecider {
+	return &RendezvousDecider{namespace: namespace, replicationFactor: replicationFactor, jsc: jsc}
 }
 
 func (d *RendezvousDecider) ShouldStore(id string) (bool, error) {
