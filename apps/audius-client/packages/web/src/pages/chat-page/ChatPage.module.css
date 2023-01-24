@@ -38,15 +38,6 @@
   flex-direction: column;
 }
 
-.messages {
-  flex: 1;
-  overflow-y: scroll;
-}
-
-.messageList {
-  flex: 1;
-}
-
 @media (max-width: 1080px) {
   .chatList {
     width: 96px;

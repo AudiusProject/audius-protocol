@@ -1,19 +1,12 @@
-import { UIEvent, useCallback, useLayoutEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 
-import {
-  chatActions,
-  chatSelectors,
-  FeatureFlags,
-  Status,
-  useProxySelector
-} from '@audius/common'
+import { chatSelectors, FeatureFlags, useProxySelector } from '@audius/common'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 import { RouteComponentProps } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 
-import { useSelector } from 'common/hooks/useSelector'
 import Page from 'components/page/Page'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { chatPage } from 'utils/route'
@@ -25,16 +18,10 @@ import { ChatList } from './components/ChatList'
 import { ChatMessageList } from './components/ChatMessageList'
 import { CreateChatPrompt } from './components/CreateChatPrompt'
 
-const { getOtherChatUsers, getChatMessagesStatus } = chatSelectors
-const { markChatAsRead } = chatActions
+const { getOtherChatUsers } = chatSelectors
 
 const messages = {
   messages: 'Messages'
-}
-
-const isScrolledToBottom = (element: HTMLElement) => {
-  const { scrollTop, clientHeight, scrollHeight } = element
-  return scrollTop + clientHeight >= scrollHeight
 }
 
 export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
@@ -45,9 +32,6 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
     (state) => getOtherChatUsers(state, currentChatId),
     [currentChatId]
   )
-  const messagesStatus = useSelector((state) =>
-    currentChatId ? getChatMessagesStatus(state, currentChatId) : Status.IDLE
-  )
 
   // Get the height of the header so we can slide the messages list underneath it for the blur effect
   const [headerRef, headerBounds] = useMeasure({
@@ -55,16 +39,6 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
     offsetSize: true
   })
   const messagesRef = useRef<HTMLDivElement>(null)
-
-  // Mark chat as read when the user reaches the bottom
-  const handleScroll = useCallback(
-    (e: UIEvent<HTMLDivElement>) => {
-      if (currentChatId && isScrolledToBottom(e.currentTarget)) {
-        dispatch(markChatAsRead({ chatId: currentChatId }))
-      }
-    },
-    [dispatch, currentChatId]
-  )
 
   // Navigate to new chats
   // Scroll to bottom if active chat is clicked again
@@ -81,27 +55,6 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
     },
     [messagesRef, currentChatId, dispatch]
   )
-
-  // Cache whether the user was already scrolled to the bottom prior to render
-  const wasScrolledToBottomBeforeRender =
-    messagesRef.current && isScrolledToBottom(messagesRef.current)
-  useLayoutEffect(() => {
-    // Ensure we're still stuck to the bottom after messages render
-    // This is redundant after first messages render, as using reverse flex wrapping
-    // so no manual scrolling is necessary for new messages being added
-    if (
-      wasScrolledToBottomBeforeRender &&
-      currentChatId &&
-      messagesStatus === Status.SUCCESS
-    ) {
-      messagesRef.current?.scrollTo({ top: messagesRef.current?.scrollHeight })
-    }
-  }, [
-    messagesRef,
-    currentChatId,
-    wasScrolledToBottomBeforeRender,
-    messagesStatus
-  ])
 
   if (!isChatEnabled) {
     return null
@@ -127,20 +80,15 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
         <div className={styles.chatArea}>
           {currentChatId ? (
             <>
-              <div
+              <ChatMessageList
                 ref={messagesRef}
-                onScroll={handleScroll}
-                className={styles.messages}
                 style={{
-                  marginTop: `${-headerBounds.height}px`,
+                  marginTop: `-${headerBounds.height}px`,
                   paddingTop: `${headerBounds.height}px`
                 }}
-              >
-                <ChatMessageList
-                  className={styles.messageList}
-                  chatId={currentChatId}
-                />
-              </div>
+                className={styles.messageList}
+                chatId={currentChatId}
+              />
               <ChatComposer chatId={currentChatId} />
             </>
           ) : (
