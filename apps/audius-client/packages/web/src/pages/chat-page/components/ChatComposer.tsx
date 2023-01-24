@@ -73,7 +73,7 @@ export const ChatComposer = (props: ChatComposerProps) => {
           onChange={handleChange}
           value={value}
           maxVisibleRows={3}
-          maxLength={500}
+          maxLength={10000}
           grows
           resize
         >
