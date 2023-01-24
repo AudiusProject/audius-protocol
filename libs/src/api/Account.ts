@@ -197,9 +197,10 @@ export class Account extends Base {
         })()
       }
       // Add user to chain
-      const {newMetadata, blockHash, blockNumber} = await this.User.createEntityManagerUser({
-        metadata
-      })
+      const { newMetadata, blockHash, blockNumber } =
+        await this.User.createEntityManagerUser({
+          metadata
+        })
       await this.User.uploadProfileImages(
         profilePictureFile!,
         coverPhotoFile!,

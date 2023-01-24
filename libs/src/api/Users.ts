@@ -537,7 +537,7 @@ export class Users extends Base {
 
       // Update metadata in CN and on chain of newly assigned replica set
       phase = phases.UPLOAD_METADATA_AND_UPDATE_ON_CHAIN
-      const {blockHash, blockNumber} = await this.updateAndUploadMetadata({
+      const { blockHash, blockNumber } = await this.updateAndUploadMetadata({
         newMetadata,
         userId
       })
@@ -548,7 +548,7 @@ export class Users extends Base {
       )
 
       console.log(`${logPrefix} completed in ${Date.now() - fnStartMs}ms`)
-      return {newMetadata, blockHash, blockNumber}
+      return { newMetadata, blockHash, blockNumber }
     } catch (e) {
       const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${
         Date.now() - fnStartMs
