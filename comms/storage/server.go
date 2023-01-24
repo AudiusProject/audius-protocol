@@ -1,4 +1,4 @@
-package transcode
+package storage
 
 import (
 	"embed"
@@ -7,14 +7,15 @@ import (
 	"os"
 
 	"comms.audius.co/discovery/config"
+	"comms.audius.co/storage/transcode"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
 )
 
-func DemoTime(jsc nats.JetStreamContext, e *echo.Echo) {
+func startStorageServer(jsc nats.JetStreamContext, e *echo.Echo) {
 
-	jobman, err := NewJobsManager(jsc, "austin1", 1)
+	jobman, err := transcode.NewJobsManager(jsc, "austin1", 1)
 	if err != nil {
 		panic("err")
 	}
@@ -46,7 +47,7 @@ func DemoTime(jsc nats.JetStreamContext, e *echo.Echo) {
 
 	g.POST("/file", func(c echo.Context) error {
 
-		var results []*Job
+		var results []*transcode.Job
 
 		// Multipart form
 		form, err := c.MultipartForm()
@@ -122,7 +123,7 @@ var embededFiles embed.FS
 func getFileSystem() http.FileSystem {
 	devMode := config.Env == "standalone"
 	if devMode {
-		return http.FS(os.DirFS("storage/transcode/static"))
+		return http.FS(os.DirFS("storage/static"))
 	}
 
 	fsys, err := fs.Sub(embededFiles, "static")

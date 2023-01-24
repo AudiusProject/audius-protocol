@@ -1,9 +1,7 @@
 package server
 
 import (
-	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -18,7 +16,6 @@ import (
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
 	"comms.audius.co/shared/peering"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
@@ -28,49 +25,15 @@ var (
 	logger = config.Logger
 )
 
-// func Start() {
-// 	e := NewServer()
-// 	e.Logger.Fatal(e.Start(":8925"))
-// }
-
 func getHealthStatus() schema.Health {
 	return schema.Health{
 		IsHealthy: true,
 	}
 }
 
-func readSignedRequest(c echo.Context) (payload []byte, wallet string, err error) {
-	if c.Request().Method == "GET" {
-		payload = []byte(c.Request().URL.Path)
-	} else if c.Request().Method == "POST" {
-		payload, err = io.ReadAll(c.Request().Body)
-	} else {
-		err = errors.New("unsupported request type")
-	}
-	if err != nil {
-		return
-	}
-
-	sigHex := c.Request().Header.Get(config.SigHeader)
-	sig, err := base64.StdEncoding.DecodeString(sigHex)
-	if err != nil {
-		err = errors.New("bad sig header: " + err.Error())
-		return
-	}
-
-	// recover
-	hash := crypto.Keccak256Hash(payload)
-	pubkey, err := crypto.SigToPub(hash[:], sig)
-	if err != nil {
-		return
-	}
-	wallet = crypto.PubkeyToAddress(*pubkey).Hex()
-	return
-}
-
 func getChats(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := readSignedRequest(c)
+	_, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -136,7 +99,7 @@ func getChats(c echo.Context) error {
 
 func getChat(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := readSignedRequest(c)
+	_, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -163,7 +126,7 @@ func getChat(c echo.Context) error {
 
 func getMessages(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := readSignedRequest(c)
+	_, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -297,7 +260,7 @@ func NewServer() *echo.Echo {
 	// this is the "mutation" RPC encpoint
 	// it will forward RPC to NATS.
 	g.POST("/mutate", func(c echo.Context) error {
-		payload, wallet, err := readSignedRequest(c)
+		payload, wallet, err := peering.ReadSignedRequest(c)
 		if err != nil {
 			return c.JSON(400, "bad request: "+err.Error())
 		}
@@ -340,71 +303,12 @@ func NewServer() *echo.Echo {
 		return c.JSON(200, "ok")
 	})
 
-	// exchange is called by peer discovery providers
-	// for the sake of peering
-	// after validating request came from a registered peer
-	// this server should respond with connection info
-	g.POST("/exchange", func(c echo.Context) error {
-		discoveryNodes, err := peering.GetDiscoveryNodes()
+	g.GET("/debug/sps", func(c echo.Context) error {
+		sps, err := peering.AllNodes()
 		if err != nil {
 			return err
 		}
-
-		payload, senderAddress, err := readSignedRequest(c)
-		if err != nil {
-			return c.String(400, "bad request: "+err.Error())
-		}
-
-		var theirInfo peering.Info
-		err = json.Unmarshal(payload, &theirInfo)
-		if err != nil {
-			return c.String(http.StatusBadRequest, "bad json")
-		}
-
-		// check senderAddress is in known list
-		if !peering.WalletEquals(theirInfo.Address, senderAddress) {
-			return c.String(400, "recovered wallet doesn't match payload wallet")
-		}
-		knownWallet := false
-		for _, sp := range discoveryNodes {
-			if peering.WalletEquals(senderAddress, sp.DelegateOwnerWallet) {
-				knownWallet = true
-			}
-		}
-		if !knownWallet {
-			return c.String(400, "recovered wallet not a registered service provider")
-		}
-
-		// maybe we proactively add their info
-		// maybe something like: go peering.AddPeer(theirInfo)
-		// we'd want to do this because they might not have reverse proxy working
-		// or might not have ports open
-		// and they'd want to connect as client to our nats instance
-		// and we want to make sure they can connect right away
-
-		// maybe also we sign our response
-		// maybe we try to move some of this signing stuff out of the http handler
-		// and http request code
-
-		peering.AddPeer(&theirInfo)
-
-		myInfo, err := peering.MyInfo()
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, myInfo)
-	})
-
-	// debug endpoint to list known peers
-	g.GET("/peers", func(c echo.Context) error {
-		peers := peering.ListPeers()
-		// redact private info
-		for idx, peer := range peers {
-			peer.IP = ""
-			peer.NatsRoute = ""
-			peers[idx] = peer
-		}
-		return c.JSON(200, peers)
+		return c.JSON(200, sps)
 	})
 
 	g.GET("/debug/stream", func(c echo.Context) error {
