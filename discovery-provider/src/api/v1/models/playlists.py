@@ -27,6 +27,7 @@ playlist_model = ns.model(
     {
         "artwork": fields.Nested(playlist_artwork, allow_null=True),
         "description": fields.String,
+        "permalink": fields.String,
         "id": fields.String(required=True),
         "is_album": fields.Boolean(required=True),
         "playlist_name": fields.String(required=True),

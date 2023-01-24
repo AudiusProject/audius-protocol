@@ -153,6 +153,8 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+      # Override default replicas
+      replicas: 1
     profiles:
       - tests
 

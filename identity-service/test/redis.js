@@ -1,7 +1,7 @@
 const assert = require('assert')
 const { Lock, redisClient } = require('../src/redis')
 
-describe('test txRelay: selectWallet()', async () => {
+describe('test redis locks', async () => {
   beforeEach(async () => {
     await Lock.clearAllLocks('*')
   })
@@ -36,24 +36,27 @@ describe('test txRelay: selectWallet()', async () => {
     const keyPattern = 'existinglock*'
 
     // locks shouldn't exist before
-    for (let key of keys) {
-      assert.deepStrictEqual(await Lock.getLock(key), false)
+    for (const key of keys) {
+      const value = await Lock.getLock(key)
+      assert.deepStrictEqual(value, false)
     }
 
-    for (let key of keys) {
+    for (const key of keys) {
       await Lock.setLock(key)
     }
 
     // locks should exist after
-    for (let key of keys) {
-      assert.deepStrictEqual(await Lock.getLock(key), true)
+    for (const key of keys) {
+      const value = await Lock.getLock(key)
+      assert.deepStrictEqual(value, true)
     }
 
     await Lock.clearAllLocks(keyPattern)
 
     // locks should not exist after clearing
-    for (let key of keys) {
-      assert.deepStrictEqual(await Lock.getLock(key), false)
+    for (const key of keys) {
+      const value = await Lock.getLock(key)
+      assert.deepStrictEqual(value, false)
     }
   })
 })

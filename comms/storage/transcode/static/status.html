@@ -54,14 +54,6 @@ class JobTable extends LitElement {
     const uri = `${proto}${loc.host}/storage/ws`
     const ws = new WebSocket(uri)
 
-    // hack since ws no work
-    this.fallback = proto == 'wss:'
-    if (this.fallback) {
-      this.pollFallback()
-      setInterval(() => this.pollFallback(), 5000)
-      return
-    }
-
     ws.onopen = function() {
       console.log('WS Connected')
     }
@@ -72,6 +64,9 @@ class JobTable extends LitElement {
 
     ws.onerror = function(event) {
       console.log('WS Error', event)
+      this.fallback = true
+      this.pollFallback()
+      setInterval(() => this.pollFallback(), 5000)
     }
 
     ws.onmessage = function(evt) {
@@ -100,7 +95,6 @@ class JobTable extends LitElement {
     .then(r => r.json())
     .then(data => {
       this.jobs = data
-      console.log('poll update', new Date())
       this.requestUpdate()
     })
   }
