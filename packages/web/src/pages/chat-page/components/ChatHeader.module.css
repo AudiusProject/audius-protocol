@@ -38,6 +38,10 @@
   padding: 16px;
 }
 
+.icon path {
+  fill: var(--neutral);
+}
+
 @media (max-width: 1080px) {
   .header {
     display: none;
