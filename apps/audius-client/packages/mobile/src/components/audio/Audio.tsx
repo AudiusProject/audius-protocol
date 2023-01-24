@@ -394,7 +394,9 @@ export const Audio = () => {
       // NOTE: Should only happen when the user selects a new lineup so reset should never be called in the background and cause an error
       await TrackPlayer.reset()
       await TrackPlayer.add(newTrackData)
-      await TrackPlayer.skip(queueIndex)
+      if (queueIndex < newQueueTracks.length) {
+        await TrackPlayer.skip(queueIndex)
+      }
     }
 
     if (playing) await TrackPlayer.play()
@@ -414,11 +416,13 @@ export const Audio = () => {
 
   const handleQueueIdxChange = useCallback(async () => {
     const playerIdx = await TrackPlayer.getCurrentTrack()
+    const queue = await TrackPlayer.getQueue()
 
     if (
       !updatingQueueRef.current &&
       queueIndex !== -1 &&
-      queueIndex !== playerIdx
+      queueIndex !== playerIdx &&
+      queueIndex < queue.length
     ) {
       await TrackPlayer.skip(queueIndex)
     }
