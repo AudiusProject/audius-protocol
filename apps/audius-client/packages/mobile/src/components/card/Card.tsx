@@ -11,6 +11,7 @@ import UserBadges from 'app/components/user-badges/UserBadges'
 import type { StylesProp } from 'app/styles'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
+import type { ImageProps } from '../image/FastImage'
 import { DownloadStatusIndicator } from '../offline-downloads'
 
 export type CardType = 'user' | 'collection'
@@ -23,7 +24,7 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
     paddingTop: spacing(2),
     paddingHorizontal: spacing(1)
   },
-  cardImg: {
+  userCardImg: {
     backgroundColor: '#ddd',
     borderRadius: 6,
     overflow: 'hidden',
@@ -31,6 +32,13 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   },
   userImg: {
     borderRadius: 1000
+  },
+  collectionCardImg: {
+    borderRadius: 6,
+    height: 152,
+    width: 152,
+    marginTop: spacing(2),
+    alignSelf: 'center'
   },
   textContainer: {
     paddingVertical: spacing(1)
@@ -58,7 +66,7 @@ type BaseCardProps = {
   id?: string
   onPress: () => void
   primaryText: string
-  renderImage: () => ReactNode
+  renderImage: (options?: ImageProps) => ReactNode
   secondaryText?: string
   TileProps?: Omit<TileProps<ComponentType<LinearGradientProps>>, 'children'>
   style?: StyleProp<ViewStyle>
@@ -99,11 +107,20 @@ export const Card = (props: CardProps) => {
       styles={{ root: style, content: styles.cardContent }}
       {...TileProps}
     >
-      <View style={styles.imgContainer}>
-        <View style={[styles.cardImg, props.type === 'user' && styles.userImg]}>
-          {renderImage()}
+      {props.type === 'user' ? (
+        <View style={styles.imgContainer}>
+          <View
+            style={[
+              styles.userCardImg,
+              props.type === 'user' && styles.userImg
+            ]}
+          >
+            {renderImage()}
+          </View>
         </View>
-      </View>
+      ) : (
+        renderImage({ style: styles.collectionCardImg })
+      )}
       <View style={styles.textContainer}>
         <Text
           numberOfLines={1}

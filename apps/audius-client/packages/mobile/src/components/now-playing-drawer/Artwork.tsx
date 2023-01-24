@@ -1,6 +1,6 @@
 import type { CommonState, Nullable, Track } from '@audius/common'
 import { SquareSizes, averageColorSelectors } from '@audius/common'
-import { Dimensions, View } from 'react-native'
+import { Dimensions } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Shadow } from 'app/components/core'
@@ -52,9 +52,11 @@ export const Artwork = ({ track }: ArtworkProps) => {
 
   return (
     <Shadow opacity={0.2} radius={8} color={shadowColor} style={styles.root}>
-      <View style={[styles.image, { shadowColor: 'red' }]}>
-        <TrackImage track={track} size={SquareSizes.SIZE_1000_BY_1000} />
-      </View>
+      <TrackImage
+        style={styles.image}
+        track={track}
+        size={SquareSizes.SIZE_1000_BY_1000}
+      />
     </Shadow>
   )
 }
