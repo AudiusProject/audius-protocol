@@ -2,7 +2,7 @@ import logging
 
 import pytest
 from integration_tests.utils import populate_mock_db
-from src.queries.get_playlists import GetPlaylistArgs, get_playlists
+from src.queries.get_playlists import GetPlaylistsArgs, get_playlists
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,7 @@ def test_get_playlist_with_playlist_ids(app, test_entities):
         populate_mock_db(db, test_entities)
         with db.scoped_session():
             playlist = get_playlists(
-                GetPlaylistArgs(
+                GetPlaylistsArgs(
                     current_user_id=2,
                     playlist_ids=[2],
                 ),
@@ -76,14 +76,14 @@ def test_get_playlist_with_permalink(app, test_entities):
         populate_mock_db(db, test_entities)
         with db.scoped_session():
             playlist = get_playlists(
-                GetPlaylistArgs(
+                GetPlaylistsArgs(
                     current_user_id=1,
                     routes=[{"handle": "user1", "slug": "playlist-1"}],
                 ),
             )
 
             playlist_from_other_user = get_playlists(
-                GetPlaylistArgs(
+                GetPlaylistsArgs(
                     current_user_id=2,
                     routes=[{"handle": "user1", "slug": "playlist-1"}],
                 ),
@@ -109,7 +109,7 @@ def test_get_playlist_with_permalink_private_playlist(app, test_entities):
         populate_mock_db(db, test_entities)
         with db.scoped_session():
             playlist = get_playlists(
-                GetPlaylistArgs(
+                GetPlaylistsArgs(
                     current_user_id=1,
                     routes=[{"handle": "user2", "slug": "playlist-2"}],
                 ),

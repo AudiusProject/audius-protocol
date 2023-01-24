@@ -12,7 +12,7 @@ from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_playlist_repost_intersection_users import (
     get_playlist_repost_intersection_users,
 )
-from src.queries.get_playlists import get_playlists
+from src.queries.get_playlists import GetPlaylistsArgs, get_playlists
 from src.queries.get_previously_private_playlists import (
     get_previously_private_playlists,
 )
@@ -155,15 +155,14 @@ def get_stems_of_route(track_id):
 @bp.route("/playlists", methods=("GET",))
 @record_metrics
 def get_playlists_route():
-    args = to_dict(request.args)
+    args = GetPlaylistsArgs()
     if "playlist_id" in request.args:
-        args["playlist_id"] = [int(y) for y in request.args.getlist("playlist_id")]
+        args["playlist_ids"] = [int(y) for y in request.args.getlist("playlist_id")]
     if "user_id" in request.args:
         args["user_id"] = request.args.get("user_id", type=int)
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
-    current_user_id = get_current_user_id(required=False)
-    args["current_user_id"] = current_user_id
+    args["current_user_id"] = get_current_user_id(required=False)
     playlists = get_playlists(args)
     return api_helpers.success_response(playlists)
 
