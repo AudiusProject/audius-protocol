@@ -142,8 +142,6 @@ export class Account extends Base {
       ADD_USER: 'ADD_USER'
     }
     let phase = ''
-    let userId, blockHash, blockNumber
-
     try {
       this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
@@ -199,15 +197,15 @@ export class Account extends Base {
         })()
       }
       // Add user to chain
-      const newMetadata = await this.User.createEntityManagerUser({
+      const {newMetadata, blockHash, blockNumber} = await this.User.createEntityManagerUser({
         metadata
       })
-
       await this.User.uploadProfileImages(
         profilePictureFile!,
         coverPhotoFile!,
         newMetadata
       )
+      return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
       return {
         error: e.message,
@@ -215,7 +213,6 @@ export class Account extends Base {
         errorStatus: e.response ? e.response.status : null
       }
     }
-    return { blockHash, blockNumber, userId }
   }
 
   /**
