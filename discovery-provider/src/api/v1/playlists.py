@@ -81,12 +81,10 @@ def format_get_playlists_args(
     playlist_id,
     route,
     with_users,
-    allow_private_playlists,
 ):
     args = {
         "current_user_id": current_user_id,
         "with_users": with_users,
-        "allow_private_playlists": allow_private_playlists,
     }
     if playlist_id:
         args["playlist_ids"] = [playlist_id]
@@ -100,12 +98,9 @@ def get_playlist(
     playlist_id=None,
     route=None,
     with_users=True,
-    allow_private_playlists=False,
 ):
     """Returns a single playlist, or None"""
-    args = format_get_playlists_args(
-        current_user_id, playlist_id, route, with_users, allow_private_playlists
-    )
+    args = format_get_playlists_args(current_user_id, playlist_id, route, with_users)
     playlists = get_playlists(args)
     if playlists:
         return extend_playlist(playlists[0])
@@ -168,7 +163,6 @@ class FullPlaylist(Resource):
         playlist = get_playlist(
             current_user_id=current_user_id,
             playlist_id=playlist_id,
-            allow_private_playlists=True,
         )
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
@@ -196,9 +190,7 @@ class FullPlaylistByHandleAndSlug(Resource):
             "slug": slug,
         }
 
-        playlist = get_playlist(
-            current_user_id=current_user_id, route=route, allow_private_playlists=True
-        )
+        playlist = get_playlist(current_user_id=current_user_id, route=route)
         return_response = []
         if playlist:
             tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
