@@ -22,21 +22,6 @@ psql::
 
 
 
-cluster.up::
-	GOOS=linux go build -o comms-linux
-	docker compose up
-
-cluster.stagger::
-	GOOS=linux go build -o comms-linux
-	docker compose up -d com1
-	sleep 10
-	docker compose up -d com2
-	sleep 40
-	docker compose up -d com3
-	sleep 80
-	docker compose up -d com4
-
-
 fmt::
 	go fmt ./...
 
