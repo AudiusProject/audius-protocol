@@ -44,6 +44,7 @@ const {
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
 const { libs } = require('@audius/sdk')
+const { sequelize } = require('../models')
 const Utils = libs.Utils
 
 const BATCH_CID_ROUTE_LIMIT = 500
@@ -937,6 +938,54 @@ router.post(
 
     // return results
     return successResponse(trackIdMapping)
+  })
+)
+
+router.post(
+  '/segment_to_cid',
+  handleResponse(async (req, _res) => {
+    const { cid, wallet } = req.body
+    if (!cid || !wallet) {
+      return errorResponseBadRequest(`cid or wallet is missing`)
+    }
+
+    const uuid = await models.CNodeUser.findOne({
+      attributes: ['cnodeUserUUID'],
+      raw: true,
+      where: {
+        walletPublicKey: wallet
+      }
+    })
+
+    if (!uuid) {
+      return errorResponseNotFound(
+        `could not find the user uuid with the wallet provided`
+      )
+    }
+
+    const queryResults = await sequelize.query(
+      `
+      SELECT multihash, "trackBlockchainId", "sourceFile"
+      FROM "Files" 
+      WHERE "sourceFile" in (
+        SELECT "sourceFile" 
+        FROM "Files" 
+        WHERE "multihash" = :trackSegmentCid
+      )
+      AND "type" = 'copy320'
+      AND "cnodeUserUUID" = :cnodeUserUUID
+    `,
+      {
+        replacements: {
+          trackSegmentCid: cid,
+          cnodeUserUUID: uuid
+        }
+      }
+    )
+
+    const copy320Cid = queryResults
+
+    return successResponse(copy320Cid)
   })
 )
 
