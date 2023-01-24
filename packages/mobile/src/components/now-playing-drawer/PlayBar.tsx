@@ -141,11 +141,13 @@ export const PlayBar = (props: PlayBarProps) => {
           style={styles.trackInfo}
           onPress={onPress}
         >
-          <View style={styles.artwork}>
-            {track && (
-              <TrackImage track={track} size={SquareSizes.SIZE_150_BY_150} />
-            )}
-          </View>
+          {track ? (
+            <TrackImage
+              style={styles.artwork}
+              track={track}
+              size={SquareSizes.SIZE_150_BY_150}
+            />
+          ) : null}
           <View style={styles.trackText}>
             <Text numberOfLines={1} weight='bold' style={styles.title}>
               {track?.title ?? ''}

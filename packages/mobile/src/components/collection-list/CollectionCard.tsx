@@ -9,6 +9,8 @@ import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { formatCount } from 'app/utils/format'
 
+import type { ImageProps } from '../image/FastImage'
+
 const formatPlaylistCardSecondaryText = (saves: number, tracks: number) => {
   const savesText = saves === 1 ? 'Favorite' : 'Favorites'
   const tracksText = tracks === 1 ? 'Track' : 'Tracks'
@@ -27,10 +29,11 @@ export const CollectionCard = ({ collection, style }: CollectionCardProps) => {
   }, [navigation, collection])
 
   const renderImage = useCallback(
-    () => (
+    (props: ImageProps) => (
       <CollectionImage
         collection={collection}
         size={SquareSizes.SIZE_480_BY_480}
+        {...props}
       />
     ),
     [collection]
