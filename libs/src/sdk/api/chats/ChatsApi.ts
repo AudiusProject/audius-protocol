@@ -67,8 +67,11 @@ export class ChatsApi extends BaseAPI {
     if (requestParameters?.limit) {
       queryParameters.limit = requestParameters.limit
     }
-    if (requestParameters?.cursor) {
-      queryParameters.offset = requestParameters.cursor
+    if (requestParameters?.before) {
+      queryParameters.before = requestParameters.before
+    }
+    if (requestParameters?.after) {
+      queryParameters.after = requestParameters.after
     }
     const response = (await this.request({
       method: 'GET',
@@ -78,7 +81,7 @@ export class ChatsApi extends BaseAPI {
     })) as TypedCommsResponse<UserChat[]>
 
     const decrypted = await Promise.all(
-      response.data.map(this.decryptLastChatMessage)
+      response.data.map(async (c) => await this.decryptLastChatMessage(c))
     )
     return {
       ...response,
