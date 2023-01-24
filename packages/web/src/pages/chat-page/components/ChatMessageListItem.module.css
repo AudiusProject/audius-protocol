@@ -10,29 +10,30 @@
 }
 
 .bubble {
+  --bubble-color: var(--white);
   position: relative;
   z-index: 1;
   display: inline-block;
   max-width: 448px;
   padding: var(--unit-4);
   border-radius: var(--unit-3);
-  box-shadow: var(--box-shadow-near);
+  filter: var(--drop-shadow-near);
   color: var(--netural);
-  background-color: var(--white);
+  background-color: var(--bubble-color);
 }
 
 .bubble:hover {
-  background-color: var(--neutral-light-10);
-  box-shadow: var(--box-shadow-far);
+  --bubble-color: var(--neutral-light-10);
+  filter: var(--drop-shadow-far);
 }
 
 .isAuthor .bubble {
   color: var(--white);
-  background-color: var(--secondary-light-2);
+  --bubble-color: var(--secondary-light-2);
 }
 
 .isAuthor .bubble:hover {
-  background-color: var(--secondary-light-1);
+  --bubble-color: var(--secondary-light-1);
 }
 
 .text {
@@ -102,4 +103,23 @@
 .reactionEmoji {
   margin-inline-end: -28px;
   filter: drop-shadow(-2px 0px 4px rgba(0, 0, 0, 0.15));
+}
+
+.tail {
+  display: flex;
+  position: absolute;
+  bottom: 0;
+}
+
+.tail svg * {
+  fill: var(--bubble-color);
+}
+
+.root:not(.isAuthor) .tail {
+  transform: scaleX(-1);
+  left: -12px;
+}
+
+.root.isAuthor .tail {
+  right: -12px;
 }

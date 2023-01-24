@@ -15,6 +15,8 @@ import { useDispatch } from 'react-redux'
 import { useSelector } from 'common/hooks/useSelector'
 import { reactionMap } from 'components/notification/Notification/components/Reaction'
 
+import { ReactComponent as ChatTail } from '../../../assets/img/ChatTail.svg'
+
 import styles from './ChatMessageListItem.module.css'
 import { ReactionPopupMenu } from './ReactionPopupMenu'
 
@@ -104,6 +106,11 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             <IconPlus className={styles.addReactionIcon} />
           )}
         </div>
+        {hasTail ? (
+          <div className={styles.tail}>
+            <ChatTail />
+          </div>
+        ) : null}
       </div>
       <ReactionPopupMenu
         anchorRef={reactionButtonRef}
