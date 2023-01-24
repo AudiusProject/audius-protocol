@@ -49,8 +49,8 @@ export class ContractClient {
     // Once initialized, contract address and contract are set up
 
     // contractAddress: <entity manager POA>, <entity manager nethermind>
-    // this is backwards compatible so clients may pass in one address 
-    // or both POA and nethermind 
+    // this is backwards compatible so clients may pass in one address
+    // or both POA and nethermind
     const contractAddresses = contractAddress ? contractAddress.split(',') : []
     this._contractAddress = contractAddresses[0] ?? null
     this._nethermindContractAddress = contractAddresses[1] ?? null
