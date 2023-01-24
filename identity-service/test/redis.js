@@ -1,7 +1,7 @@
 const assert = require('assert')
 const { Lock, redisClient } = require('../src/redis')
 
-describe('test txRelay: selectWallet()', async () => {
+describe('test redis locks', async () => {
   beforeEach(async () => {
     await Lock.clearAllLocks('*')
   })
@@ -17,17 +17,17 @@ describe('test txRelay: selectWallet()', async () => {
 
   it('should correctly `setLock` and return true for `getLock` on an existing lock', async () => {
     await Lock.setLock('existinglock')
-    const resp = redisClient.get('existinglock')
-    assert.deepStrictEqual(resp, true)
+    const resp = await redisClient.get('existinglock')
+    assert.deepStrictEqual(resp, '1')
   })
 
   it('should correctly `clearLock`', async () => {
     await Lock.setLock('existinglock')
-    const respBefore = Lock.getLock('existinglock')
+    const respBefore = await Lock.getLock('existinglock')
     assert.deepStrictEqual(respBefore, true)
 
     await Lock.clearLock('existinglock')
-    const respAfter = Lock.getLock('existinglock')
+    const respAfter = await Lock.getLock('existinglock')
     assert.deepStrictEqual(respAfter, false)
   })
 
@@ -36,24 +36,27 @@ describe('test txRelay: selectWallet()', async () => {
     const keyPattern = 'existinglock*'
 
     // locks shouldn't exist before
-    for (let key of keys) {
-      assert.deepStrictEqual(key, false)
+    for (const key of keys) {
+      const value = await Lock.getLock(key)
+      assert.deepStrictEqual(value, false)
     }
 
-    for (let key of keys) {
+    for (const key of keys) {
       await Lock.setLock(key)
     }
 
     // locks should exist after
-    for (let key of keys) {
-      assert.deepStrictEqual(key, true)
+    for (const key of keys) {
+      const value = await Lock.getLock(key)
+      assert.deepStrictEqual(value, true)
     }
 
     await Lock.clearAllLocks(keyPattern)
 
     // locks should not exist after clearing
-    for (let key of keys) {
-      assert.deepStrictEqual(key, true)
+    for (const key of keys) {
+      const value = await Lock.getLock(key)
+      assert.deepStrictEqual(value, false)
     }
   })
 })
