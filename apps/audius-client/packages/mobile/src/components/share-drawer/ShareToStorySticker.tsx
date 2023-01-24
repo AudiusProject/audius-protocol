@@ -13,7 +13,8 @@ import { useTrackImage } from '../image/TrackImage'
 
 const messages = {
   by: 'by',
-  nowPlayingOn: 'Now playing on'
+  nowPlayingOn: 'Now playing on',
+  nowPlayingOnAudius: 'Now playing on Audius'
 }
 
 type ShareToStoryStickerProps = {
@@ -26,6 +27,7 @@ type ShareToStoryStickerProps = {
   style?: StyleProp<ViewStyle>
   /** Called once the image loads successfully */
   onLoad: () => void
+  omitLogo?: boolean
 }
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -53,6 +55,10 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     alignItems: 'center',
     justifyContent: 'space-between'
   },
+  belowDividerContainerCentered: {
+    justifyContent: 'center',
+    textAlign: 'center'
+  },
   title: {
     marginTop: spacing(2)
   },
@@ -72,7 +78,8 @@ export const ShareToStorySticker = ({
   user,
   artist,
   style,
-  onLoad
+  onLoad,
+  omitLogo = false
 }: ShareToStoryStickerProps) => {
   const styles = useStyles()
 
@@ -122,7 +129,12 @@ export const ShareToStorySticker = ({
           />
         </View>
         <Divider color={staticNeutralLight8} width={2} />
-        <View style={styles.belowDividerContainer}>
+        <View
+          style={[
+            styles.belowDividerContainer,
+            omitLogo ? styles.belowDividerContainerCentered : {}
+          ]}
+        >
           <Text
             allowFontScaling={false}
             color='staticNeutralLight2'
@@ -131,9 +143,11 @@ export const ShareToStorySticker = ({
             textTransform='uppercase'
             style={styles.attribution}
           >
-            {messages.nowPlayingOn}
+            {omitLogo ? messages.nowPlayingOnAudius : messages.nowPlayingOn}
           </Text>
-          <AudiusLogo fill={neutralLight2} height={22} width={105} />
+          {omitLogo ? null : (
+            <AudiusLogo fill={neutralLight2} height={22} width={105} />
+          )}
         </View>
       </View>
     </View>

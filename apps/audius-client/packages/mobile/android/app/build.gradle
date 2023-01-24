@@ -350,6 +350,8 @@ dependencies {
     implementation "com.google.android.gms:play-services-cast-framework:${safeExtGet('castFrameworkVersion', '+')}"
 
     implementation project(':react-native-google-cast')
+    
+    implementation 'com.bytedance.ies.ugc.aweme:opensdk-oversea-external:0.2.0.2'
 
     // Add the Firebase SDK for Crashlytics.
     implementation 'com.google.firebase:firebase-analytics:17.2.2'

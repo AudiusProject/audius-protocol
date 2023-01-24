@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="co.audius.app" android:versionCode="2" android:versionName="1.0.1">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="co.audius.app" xmlns:tools="http://schemas.android.com/tools" android:versionCode="2" android:versionName="1.0.1">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
@@ -79,6 +79,7 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths"
+                tools:replace="android:resource"
             />
         </provider>
         <provider
@@ -105,6 +106,8 @@
             <action android:name="android.intent.action.VIEW" />
             <data android:scheme="mailto" android:host="*"/>
         </intent>
+        <package android:name="com.zhiliaoapp.musically" />
+        <package android:name="com.ss.android.ugc.trill" />
     </queries>
 
 </manifest>

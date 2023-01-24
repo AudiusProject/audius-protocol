@@ -18,13 +18,12 @@ import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import IconSnapchat from 'app/assets/images/iconSnapchat.svg'
-import IconTikTok from 'app/assets/images/iconTikTok.svg'
-import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
+import TikTokIcon from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { Theme, useThemeColors, useThemeVariant } from 'app/utils/theme'
+import { useThemeColors } from 'app/utils/theme'
 
 import ActionDrawer from '../action-drawer'
 import { Text } from '../core'
@@ -42,7 +41,7 @@ const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
 const { getAccountUser } = accountSelectors
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(() => ({
   title: {
     display: 'flex',
     flexDirection: 'row',
@@ -75,20 +74,20 @@ export const ShareDrawer = () => {
   const styles = useStyles()
   const viewShotRef = useRef() as React.RefObject<ViewShot>
 
-  const { isEnabled: isShareToTikTokEnabled } = useFeatureFlag(
+  const { isEnabled: isShareSoundToTikTokEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )
   const { isEnabled: isShareToInstagramStoryEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_TO_STORY
   )
-
   const { isEnabled: isShareToSnapchatEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_TO_SNAPCHAT
   )
+  const { isEnabled: isShareVideoToTikTokEnabled } = useFeatureFlag(
+    FeatureFlags.SHARE_VIDEO_TO_TIKTOK
+  )
 
   const { secondary, neutralLight2 } = useThemeColors()
-  const themeVariant = useThemeVariant()
-  const isLightMode = themeVariant === Theme.DEFAULT
   const dispatch = useDispatch()
   const content = useSelector(getShareContent)
   const source = useSelector(getShareSource)
@@ -111,7 +110,7 @@ export const ShareDrawer = () => {
     }
   }, [content])
 
-  const handleShareToTikTok = useCallback(() => {
+  const handleShareSoundToTikTok = useCallback(() => {
     if (content?.type === 'track') {
       dispatch(requestOpenTikTokModal({ id: content.track.track_id }))
     }
@@ -121,6 +120,8 @@ export const ShareDrawer = () => {
     handleShareToStoryStickerLoad,
     handleShareToInstagramStory,
     handleShareToSnapchat,
+    handleShareToTikTok: handleShareVideoToTiktok,
+    selectedPlatform,
     shouldRenderShareToStorySticker
   } = useShareToStory({ content, viewShotRef })
 
@@ -149,29 +150,26 @@ export const ShareDrawer = () => {
     }
   }, [dispatch, content, source])
 
-  const shouldIncludeTikTokAction = Boolean(
-    isShareToTikTokEnabled &&
-      content?.type === 'track' &&
-      isOwner &&
-      !content.track.is_unlisted &&
-      !content.track.is_invalid &&
-      !content.track.is_delete
+  const isShareableTrack =
+    content?.type === 'track' &&
+    !content.track.is_unlisted &&
+    !content.track.is_invalid &&
+    !content.track.is_delete
+
+  const shouldIncludeTikTokSoundAction = Boolean(
+    isShareSoundToTikTokEnabled && isOwner && isShareableTrack
   )
 
   const shouldIncludeInstagramStoryAction = Boolean(
-    isShareToInstagramStoryEnabled &&
-      content?.type === 'track' &&
-      !content.track.is_unlisted &&
-      !content.track.is_invalid &&
-      !content.track.is_delete
+    isShareToInstagramStoryEnabled && isShareableTrack
   )
 
   const shouldIncludeSnapchatAction = Boolean(
-    isShareToSnapchatEnabled &&
-      content?.type === 'track' &&
-      !content.track.is_unlisted &&
-      !content.track.is_invalid &&
-      !content.track.is_delete
+    isShareToSnapchatEnabled && isShareableTrack
+  )
+
+  const shouldIncludeTikTokVideoAction = Boolean(
+    isShareVideoToTikTokEnabled && isShareableTrack
   )
 
   const getRows = useCallback(() => {
@@ -181,12 +179,16 @@ export const ShareDrawer = () => {
       callback: handleShareToTwitter
     }
 
-    const TikTokIcon = isLightMode ? IconTikTok : IconTikTokInverted
-
-    const shareToTikTokAction = {
-      text: messages.tikTok,
+    const shareSoundToTiktokAction = {
+      text: messages.tikTokSound,
       icon: <TikTokIcon height={26} width={26} />,
-      callback: handleShareToTikTok
+      callback: handleShareSoundToTikTok
+    }
+
+    const shareVideoToTiktokAction = {
+      text: messages.tikTokVideo,
+      icon: <TikTokIcon fill={secondary} height={26} width={26} />,
+      callback: handleShareVideoToTiktok
     }
 
     const copyLinkAction = {
@@ -220,8 +222,11 @@ export const ShareDrawer = () => {
       callback: (() => void) | (() => Promise<void>)
     }[] = [shareToTwitterAction]
 
-    if (shouldIncludeTikTokAction) {
-      result.push(shareToTikTokAction)
+    if (shouldIncludeTikTokSoundAction) {
+      result.push(shareSoundToTiktokAction)
+    }
+    if (shouldIncludeTikTokVideoAction) {
+      result.push(shareVideoToTiktokAction)
     }
     if (shouldIncludeInstagramStoryAction) {
       result.push(shareToInstagramStoriesAction)
@@ -236,17 +241,18 @@ export const ShareDrawer = () => {
     return result
   }, [
     handleShareToTwitter,
-    isLightMode,
-    handleShareToTikTok,
+    handleShareSoundToTikTok,
     shareType,
     secondary,
     handleCopyLink,
     handleOpenShareSheet,
     handleShareToSnapchat,
     handleShareToInstagramStory,
-    shouldIncludeTikTokAction,
+    shouldIncludeTikTokSoundAction,
     shouldIncludeInstagramStoryAction,
-    shouldIncludeSnapchatAction
+    shouldIncludeSnapchatAction,
+    handleShareVideoToTiktok,
+    shouldIncludeTikTokVideoAction
   ])
 
   return (
@@ -262,6 +268,7 @@ export const ShareDrawer = () => {
             onLoad={handleShareToStoryStickerLoad}
             track={content?.track}
             artist={content?.artist}
+            omitLogo={selectedPlatform === 'tiktok'}
           />
         </ViewShot>
       ) : null}

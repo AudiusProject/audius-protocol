@@ -38,7 +38,8 @@ export enum FeatureFlags {
   FAST_CACHE = 'fast_cache',
   SAFE_FAST_CACHE = 'safe_fast_cache',
   ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED = 'entity_manager_view_playlist_enabled',
-  ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED = 'entity_manager_view_notifications_enabled'
+  ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED = 'entity_manager_view_notifications_enabled',
+  SHARE_VIDEO_TO_TIKTOK = 'share_video_to_tiktok'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -92,5 +93,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.FAST_CACHE]: false,
   [FeatureFlags.SAFE_FAST_CACHE]: false,
   [FeatureFlags.ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED]: false,
-  [FeatureFlags.ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED]: false
+  [FeatureFlags.ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED]: false,
+  [FeatureFlags.SHARE_VIDEO_TO_TIKTOK]: false
 }

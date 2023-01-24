@@ -13,7 +13,8 @@ export const messages = {
   twitter: 'Share to Twitter',
   instagramStory: 'Share to Instagram Story',
   snapchat: 'Share to Snapchat',
-  tikTok: 'Share Sound to TikTok',
+  tikTokVideo: 'Share to TikTok',
+  tikTokSound: 'Share Sound to TikTok',
   copyLink: (asset: ShareType) => `Copy Link to ${shareTypeMap[asset]}`,
   shareToStoryError: 'Sorry, something went wrong.',
   shareSheet: (asset: ShareType) => `Share ${asset} via...`,
@@ -29,6 +30,7 @@ export const messages = {
   loadingStoryModalTitle: 'Generating Story',
   loadingInstagramStorySubtitle: 'Preparing to open Instagram',
   loadingSnapchatSubtitle: 'Preparing to open Snapchat',
+  loadingTikTokSubtitle: 'Preparing to open TikTok',
   cancel: 'Cancel',
   nftPlaylistShareText: ''
 }

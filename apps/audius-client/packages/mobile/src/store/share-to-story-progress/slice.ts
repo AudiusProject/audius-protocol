@@ -2,12 +2,11 @@ import type { Nullable } from '@audius/common'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
-export type ShareToStoryProgressState = typeof initialState
-
+export type ShareToStoryPlatform = 'instagram' | 'snapchat' | 'tiktok'
 type State = {
   progress: number
   cancel: Nullable<() => Promise<void>>
-  platform: Nullable<'instagram' | 'snapchat'>
+  platform: Nullable<ShareToStoryPlatform>
 }
 
 const initialState: State = {
@@ -15,6 +14,8 @@ const initialState: State = {
   cancel: null,
   platform: null
 }
+
+export type ShareToStoryProgressState = State
 
 const slice = createSlice({
   name: 'shareToStoryProgress',
@@ -26,7 +27,7 @@ const slice = createSlice({
     setCancel: (state, action: PayloadAction<() => Promise<void>>) => {
       state.cancel = action.payload
     },
-    setPlatform: (state, action: PayloadAction<'instagram' | 'snapchat'>) => {
+    setPlatform: (state, action: PayloadAction<ShareToStoryPlatform>) => {
       state.platform = action.payload
     },
     reset: (state) => {
