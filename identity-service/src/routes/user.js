@@ -119,7 +119,7 @@ module.exports = function (app) {
             { where: { blockchainUserId } }
           )
           // Create a user notification setting so the user can receive notifications
-          await models.UserNotificationSettings.create({
+          await models.UserNotificationSettings.findOrCreate({
             userId: blockchainUserId
           })
 
