@@ -1,7 +1,8 @@
-import { forwardRef } from 'react'
+import { forwardRef, useCallback } from 'react'
 
-import { useProxySelector, chatSelectors } from '@audius/common'
-import { IconSettings } from '@audius/stems'
+import { useProxySelector, chatSelectors, modalsActions } from '@audius/common'
+import { IconButton, IconCompose, IconSettings } from '@audius/stems'
+import { useDispatch } from 'react-redux'
 
 import styles from './ChatHeader.module.css'
 import { ChatUser } from './ChatUser'
@@ -16,17 +17,29 @@ type ChatHeaderProps = { currentChatId?: string }
 
 export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
   ({ currentChatId }, ref) => {
+    const dispatch = useDispatch()
     const users = useProxySelector(
       (state) => getOtherChatUsers(state, currentChatId),
       [currentChatId]
     )
+
+    const handleComposeClicked = useCallback(() => {
+      dispatch(
+        modalsActions.setVisibility({ modal: 'ChatCompose', visible: true })
+      )
+    }, [dispatch])
+
     return (
       <div ref={ref} className={styles.root}>
         <div className={styles.left}>
           <h1 className={styles.header}>{messages.header}</h1>
           <div className={styles.options}>
             <IconSettings />
-            {/* <IconCompose /> */}
+            <IconButton
+              aria-label='Compose'
+              icon={<IconCompose className={styles.icon} />}
+              onClick={handleComposeClicked}
+            />
           </div>
         </div>
         <div className={styles.right}>
