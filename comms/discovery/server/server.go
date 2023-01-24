@@ -16,6 +16,7 @@ import (
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
 	"comms.audius.co/shared/peering"
+	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
@@ -29,6 +30,30 @@ func getHealthStatus() schema.Health {
 	return schema.Health{
 		IsHealthy: true,
 	}
+}
+
+func chatWebsocket(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := peering.ReadSignedRequest(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	w := c.Response()
+	r := c.Request()
+
+	conn, _, _, err := ws.UpgradeHTTP(r, w)
+	if err != nil {
+		return err
+	}
+
+	rpcz.RegisterWebsocket(userId, conn)
+	return nil
 }
 
 func getChats(c echo.Context) error {
@@ -252,6 +277,8 @@ func NewServer() *echo.Echo {
 	})
 
 	g.GET("/chats", getChats)
+
+	g.GET("/chats/ws", chatWebsocket)
 
 	g.GET("/chats/:id", getChat)
 
