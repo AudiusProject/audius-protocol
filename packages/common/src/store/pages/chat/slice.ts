@@ -61,10 +61,7 @@ const slice = createSlice({
     fetchMoreChatsFailed: (state) => {
       state.chatList.status = Status.ERROR
     },
-    fetchNewChatMessages: (
-      state,
-      action: PayloadAction<{ chatId: string }>
-    ) => {
+    fetchMoreMessages: (state, action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
       if (!state.chatMessages[action.payload.chatId]) {
         state.chatMessages[action.payload.chatId] = {
@@ -75,7 +72,7 @@ const slice = createSlice({
         state.chatMessages[action.payload.chatId].status = Status.LOADING
       }
     },
-    fetchNewChatMessagesSucceeded: (
+    fetchMoreMessagesSucceeded: (
       state,
       action: PayloadAction<{
         response: TypedCommsResponse<ChatMessage[]>
@@ -87,12 +84,11 @@ const slice = createSlice({
         response: { data, summary }
       } = action.payload
       state.chatMessages[chatId].status = Status.SUCCESS
-      state.chatMessages[chatId].data = data.concat(
-        state.chatMessages[chatId].data
-      )
+      state.chatMessages[chatId].data =
+        state.chatMessages[chatId].data.concat(data)
       state.chatMessages[chatId].summary = summary
     },
-    fetchNewChatMessagesFailed: (
+    fetchMoreMessagesFailed: (
       state,
       action: PayloadAction<{ chatId: string }>
     ) => {
@@ -132,6 +128,51 @@ const slice = createSlice({
     },
     markChatAsRead: (_state, _action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
+    },
+    sendMessage: (
+      _state,
+      _action: PayloadAction<{ chatId: string; message: string }>
+    ) => {
+      // triggers saga
+    },
+    addMessage: (
+      state,
+      action: PayloadAction<{ chatId: string; message: ChatMessage }>
+    ) => {
+      const { chatId, message } = action.payload
+      state.chatMessages[chatId].data.unshift(message)
+    },
+    upsertChat: (state, action: PayloadAction<{ chat: UserChat }>) => {
+      const { chat } = action.payload
+      if (!state.chatList.data) {
+        console.warn('ChatList not initialized')
+        return
+      }
+      const index = state.chatList.data.findIndex(
+        (c) => c.chat_id === chat.chat_id
+      )
+      if (index > -1) {
+        // remove existing
+        state.chatList.data.splice(index, 1)
+      }
+      // Assume new message and put at top of list
+      state.chatList.data.unshift(chat)
+    },
+    updateMessageReactions: (
+      state,
+      action: PayloadAction<{ chatId: string; message: ChatMessage }>
+    ) => {
+      const { chatId, message } = action.payload
+      if (!state.chatMessages[chatId]?.data) {
+        console.warn('ChatMessages not initialized')
+        return
+      }
+      const index = state.chatMessages[chatId].data.findIndex(
+        (m) => m.message_id === message.message_id
+      )
+      if (index > -1) {
+        state.chatMessages[chatId].data[index].reactions = message.reactions
+      }
     }
   }
 })
