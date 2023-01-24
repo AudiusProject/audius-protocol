@@ -22,7 +22,7 @@ steps:
 
         echo "export IMAGE_FLAG='$image_flag'" >> "$BASH_ENV"
   - gcp-run:
-      instance-name: circleci-<< pipeline.git.revision >>
+      instance-name: circleci-$CIRCLE_BUILD_NUM-build
       create-instance-args: >-
         $IMAGE_FLAG
         --preemptible
@@ -49,7 +49,7 @@ steps:
           --source-disk "circleci-<< pipeline.git.revision >>" \
           "audius-protocol-<< pipeline.git.revision >>"
         image_create_exit_code=$?
-        gcloud compute disks delete --quiet "circleci-<< pipeline.git.revision >>"
+        gcloud compute disks delete --quiet "circleci-$CIRCLE_BUILD_NUM-build"
         disk_delete_exit_code=$?
         if [[ "$image_create_exit_code" != "0" ]] || [[ "$disk_delete_exit_code" != "0" ]]; then
           exit 1
