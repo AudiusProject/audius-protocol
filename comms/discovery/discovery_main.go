@@ -24,7 +24,7 @@ func DiscoveryMain() {
 	g := errgroup.Group{}
 
 	g.Go(func() error {
-		err := peering.PollDiscoveryProviders()
+		err := peering.PollRegisteredNodes()
 		if err != nil {
 			return err
 		}
@@ -33,6 +33,7 @@ func DiscoveryMain() {
 
 		err = jetstream.Dial(peerMap)
 		if err != nil {
+			log.Println("jetstream dial failed", err)
 			return err
 		}
 

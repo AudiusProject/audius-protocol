@@ -13,7 +13,7 @@ reset::
 	docker compose down --volumes
 	docker compose up comdb comnats -d
 	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
-		dbmate --wait --migrations-dir ./discovery/db/migrations up
+		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
 
 psql::

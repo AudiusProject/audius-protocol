@@ -49,8 +49,6 @@ func natsConnectionTest(natsUrl string) bool {
 	if err != nil {
 		config.Logger.Warn("nats connection test failed", "url", natsUrl, "err", err)
 	} else {
-		servers := nc.Servers()
-		fmt.Println("nc servers", servers)
 		ok = true
 		nc.Close()
 	}
