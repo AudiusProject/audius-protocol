@@ -46,7 +46,7 @@ steps:
         set +e
         gcloud compute images create \
           --family=audius-protocol \
-          --source-disk "circleci-<< pipeline.git.revision >>" \
+          --source-disk "circleci-$CIRCLE_BUILD_NUM-build" \
           "audius-protocol-<< pipeline.git.revision >>"
         image_create_exit_code=$?
         gcloud compute disks delete --quiet "circleci-$CIRCLE_BUILD_NUM-build"
