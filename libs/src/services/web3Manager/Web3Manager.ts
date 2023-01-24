@@ -221,7 +221,7 @@ export class Web3Manager {
       })
     } else {
       const encodedABI = contractMethod.encodeABI()
-      const nethermindEncodedAbi = nethermindContractMethod!.encodeABI()
+      const nethermindEncodedAbi = nethermindContractMethod?.encodeABI()
       const response = await retry(
         async (bail) => {
           try {

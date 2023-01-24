@@ -116,20 +116,7 @@ export class EntityManagerClient extends ContractClient {
       metadataMultihash,
       nonce
     )
-    const nethermindSignatureData =
-      signatureSchemas.generators.getManageEntityData(
-        1056800, // TODO get from chain after web3Manager uses nethermind only
-        nethermindContractAddress,
-        userId,
-        entityType,
-        entityId,
-        action,
-        metadataMultihash,
-        nonce
-      )
-
     let sig
-    let nethermindSig
     if (privateKey) {
       sig = sigUtil.signTypedData(
         SafeBuffer.from(privateKey, 'hex') as unknown as Buffer,
@@ -139,9 +126,6 @@ export class EntityManagerClient extends ContractClient {
       )
     } else {
       sig = await this.web3Manager.signTypedData(signatureData)
-      nethermindSig = await this.web3Manager.signTypedData(
-        nethermindSignatureData
-      )
     }
     const method = await this.getMethod(
       'manageEntity',
@@ -154,17 +138,34 @@ export class EntityManagerClient extends ContractClient {
       sig
     )
 
-    const nethermindMethod = await this.getMethod(
-      'manageEntity',
-      userId,
-      entityType,
-      entityId,
-      action,
-      metadataMultihash,
-      nonce,
-      nethermindSig
-    )
+    let nethermindMethod
+    if (nethermindContractAddress) {
+      const nethermindSignatureData =
+        signatureSchemas.generators.getManageEntityData(
+          1056800, // TODO get from chain after web3Manager uses nethermind only
+          nethermindContractAddress,
+          userId,
+          entityType,
+          entityId,
+          action,
+          metadataMultihash,
+          nonce
+        )
+      const nethermindSig = await this.web3Manager.signTypedData(
+        nethermindSignatureData
+      )
 
+      nethermindMethod = await this.getMethod(
+        'manageEntity',
+        userId,
+        entityType,
+        entityId,
+        action,
+        metadataMultihash,
+        nonce,
+        nethermindSig
+      )
+    }
     const tx = await this.web3Manager.sendTransaction(
       method,
       this.contractRegistryKey,
