@@ -1,7 +1,6 @@
 package natsd
 
 import (
-	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -30,7 +29,6 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		if info == nil || info.NatsRoute == "" {
 			continue
 		}
-		fmt.Println("nats route: ", info.NatsRoute)
 		route, err := url.Parse(info.NatsRoute)
 		if err != nil {
 			config.Logger.Warn("invalid nats route url: " + info.NatsRoute)
@@ -73,15 +71,17 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		}
 
 		opts.Cluster = server.ClusterOpts{
-			Name:     "comms",
-			Host:     "0.0.0.0",
-			Port:     6222,
-			Username: config.NatsClusterUsername,
-			Password: config.NatsClusterPassword,
-			// NoAdvertise: true,
+			Name:        "comms",
+			Host:        "0.0.0.0",
+			Port:        6222,
+			Username:    config.NatsClusterUsername,
+			Password:    config.NatsClusterPassword,
+			NoAdvertise: true,
 		}
 
-		opts.Routes = routes
+		if len(routes) > 0 {
+			opts.Routes = routes
+		}
 		opts.Nkeys = nkeys
 
 	}

@@ -74,6 +74,12 @@ export interface PlaylistFull
         * @type {string}
         * @memberof PlaylistFull
         */
+        permalink?: string;
+        /**
+        * 
+        * @type {string}
+        * @memberof PlaylistFull
+        */
         id: string;
         /**
         * 

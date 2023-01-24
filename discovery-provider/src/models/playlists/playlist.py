@@ -4,6 +4,8 @@ from sqlalchemy.orm import relationship, validates
 from src.model_validator import ModelValidator
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin, validate_field_helper
+from src.models.playlists.playlist_route import PlaylistRoute
+from src.models.users.user import User
 
 
 class Playlist(Base, RepresentableMixin):
@@ -42,8 +44,36 @@ class Playlist(Base, RepresentableMixin):
         "Block", primaryjoin="Playlist.blocknumber == Block.number"
     )
 
+    _routes = relationship(  # type: ignore
+        PlaylistRoute,
+        primaryjoin="and_(\
+            remote(Playlist.playlist_id) == foreign(PlaylistRoute.playlist_id),\
+            PlaylistRoute.is_current)",
+        lazy="joined",
+        viewonly=True,
+    )
+
+    user = relationship(  # type: ignore
+        User,
+        primaryjoin="and_(\
+            remote(Playlist.playlist_owner_id) == foreign(User.user_id),\
+            User.is_current)",
+        lazy="joined",
+        viewonly=True,
+    )
+
     ModelValidator.init_model_schemas("Playlist")
     fields = ["playlist_name", "description"]
+
+    @property
+    def _slug(self):
+        return self._routes[0].slug if self._routes else ""
+
+    @property
+    def permalink(self):
+        if self.user and self.user[0].handle and self._slug:
+            return f"/{self.user[0].handle}/playlist/{self._slug}"
+        return ""
 
     # unpacking args into @validates
     @validates(*fields)
