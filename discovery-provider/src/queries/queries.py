@@ -12,7 +12,7 @@ from src.queries.get_latest_entities import get_latest_entities
 from src.queries.get_playlist_repost_intersection_users import (
     get_playlist_repost_intersection_users,
 )
-from src.queries.get_playlists import GetPlaylistsArgs, get_playlists
+from src.queries.get_playlists import get_playlists
 from src.queries.get_previously_private_playlists import (
     get_previously_private_playlists,
 )
@@ -163,7 +163,7 @@ def get_playlists_route():
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
     args["current_user_id"] = get_current_user_id(required=False)
-    playlists = get_playlists(GetPlaylistsArgs(args))
+    playlists = get_playlists(args)
     return api_helpers.success_response(playlists)
 
 
