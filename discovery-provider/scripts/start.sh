@@ -114,6 +114,8 @@ if [[ "$audius_discprov_dev_mode" == "true" ]]; then
     fi
 
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
+        # Clear the celerybeat artifacts
+        rm /var/celerybeat*
         audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
         audius_service=worker watchmedo auto-restart --directory ./ --pattern=*.py --recursive -- celery -A src.worker.celery worker --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
     fi
@@ -123,6 +125,8 @@ else
     fi
 
     if [[ "$audius_no_workers" != "true" ]] && [[ "$audius_no_workers" != "1" ]]; then
+        # Clear the celerybeat artifacts
+        rm /var/celerybeat*
         audius_service=beat celery -A src.worker.celery beat --loglevel $audius_discprov_loglevel --schedule=/var/celerybeat-schedule --pidfile=/var/celerybeat.pid 2>&1 | tee >(logger -t beat) &
         audius_service=worker celery -A src.worker.celery worker --max-memory-per-child 300000 --loglevel $audius_discprov_loglevel 2>&1 | tee >(logger -t worker) &
     fi
