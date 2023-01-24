@@ -155,7 +155,7 @@ def get_stems_of_route(track_id):
 @bp.route("/playlists", methods=("GET",))
 @record_metrics
 def get_playlists_route():
-    args = GetPlaylistsArgs()
+    args = {}
     if "playlist_id" in request.args:
         args["playlist_ids"] = [int(y) for y in request.args.getlist("playlist_id")]
     if "user_id" in request.args:
@@ -163,7 +163,7 @@ def get_playlists_route():
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
     args["current_user_id"] = get_current_user_id(required=False)
-    playlists = get_playlists(args)
+    playlists = get_playlists(GetPlaylistsArgs(args))
     return api_helpers.success_response(playlists)
 
 
