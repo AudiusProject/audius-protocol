@@ -42,19 +42,6 @@ func ExchangeEndpoint(c echo.Context) error {
 		return c.String(400, "recovered wallet not a registered service provider")
 	}
 
-	// maybe we proactively add their info
-	// maybe something like: go peering.AddPeer(theirInfo)
-	// we'd want to do this because they might not have reverse proxy working
-	// or might not have ports open
-	// and they'd want to connect as client to our nats instance
-	// and we want to make sure they can connect right away
-
-	// maybe also we sign our response
-	// maybe we try to move some of this signing stuff out of the http handler
-	// and http request code
-
-	// AddPeer(&theirInfo)
-
 	myInfo, err := MyInfo()
 	if err != nil {
 		return err

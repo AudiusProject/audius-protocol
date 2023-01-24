@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"sort"
 	"sync"
@@ -60,22 +59,6 @@ func Solicit() map[string]*Info {
 
 }
 
-func AddPeer(info *Info) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if existing, ok := peerMap[info.IP]; ok {
-		config.Logger.Info("peer already known", "wallet", existing.Address, "ip", existing.IP)
-	} else {
-		config.Logger.Info("adding peer", "wallet", info.Address, "ip", info.IP)
-		peerMap[info.IP] = info
-		// trying to pre-emptively add peer causes routing to cycle endlessly
-		// at least in the docker env
-		// manager.StartNats(peersByWallet)
-	}
-
-}
-
 func ListPeers() []Info {
 	mu.Lock()
 	defer mu.Unlock()
@@ -104,11 +87,7 @@ func solicitServer(endpoint string) (*Info, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		data, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		return nil, fmt.Errorf("%d: %s", resp.StatusCode, data)
+		return nil, fmt.Errorf("%s: %s", endpoint, resp.Status)
 	}
 
 	// get response peer info

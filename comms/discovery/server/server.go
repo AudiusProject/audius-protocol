@@ -303,14 +303,6 @@ func NewServer() *echo.Echo {
 		return c.JSON(200, "ok")
 	})
 
-	g.GET("/debug/sps", func(c echo.Context) error {
-		sps, err := peering.AllNodes()
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, sps)
-	})
-
 	g.GET("/debug/stream", func(c echo.Context) error {
 		jsc := jetstream.GetJetstreamContext()
 		if jsc == nil {
