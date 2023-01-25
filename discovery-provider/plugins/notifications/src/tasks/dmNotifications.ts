@@ -7,9 +7,6 @@ import { MessageReactionNotification } from './../processNotifications/mappers/m
 import type { DMNotification, DMReactionNotification } from './../types/notifications'
 import { getRedisConnection } from './../utils/redisConnection'
 
-const lastIndexedMessageRedisKey = 'latestDMNotificationTimestamp'
-const lastIndexedReactionRedisKey = 'latestDMReactionNotificationTimestamp'
-
 // Sort notifications in ascending order according to timestamp
 function notificationTimestampComparator(n1: MessageNotification | MessageReactionNotification, n2: MessageNotification | MessageReactionNotification): number {
   if (n1.notification.timestamp < n2.notification.timestamp) {
@@ -27,11 +24,11 @@ async function getCursors(redis: RedisClientType): Promise<{ maxTimestamp: Date;
   // Get min cursors from redis (timestamps of the last indexed notifications)
   let minMessageCursor = maxCursor
   let minReactionCursor = maxCursor
-  const cachedMessageTimestamp = await redis.get(lastIndexedMessageRedisKey)
+  const cachedMessageTimestamp = await redis.get(config.lastIndexedMessageRedisKey)
   if (cachedMessageTimestamp) {
     minMessageCursor = new Date(Date.parse(cachedMessageTimestamp))
   }
-  const cachedReactionTimestamp = await redis.get(lastIndexedReactionRedisKey)
+  const cachedReactionTimestamp = await redis.get(config.lastIndexedReactionRedisKey)
   if (cachedReactionTimestamp) {
     minReactionCursor = new Date(Date.parse(cachedReactionTimestamp))
   }
@@ -95,8 +92,8 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
   }
 
   // Set last indexed timestamps in redis
-  setLastIndexedTimestamp(redis, lastIndexedMessageRedisKey, cursors.maxTimestamp, messageNotifications)
-  setLastIndexedTimestamp(redis, lastIndexedReactionRedisKey, cursors.maxTimestamp, reactionNotifications)
+  setLastIndexedTimestamp(redis, config.lastIndexedMessageRedisKey, cursors.maxTimestamp, messageNotifications)
+  setLastIndexedTimestamp(redis, config.lastIndexedReactionRedisKey, cursors.maxTimestamp, reactionNotifications)
 
   if (notifications.length > 0) {
     logger.info('processed new DM notifications')
