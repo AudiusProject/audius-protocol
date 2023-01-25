@@ -4,6 +4,7 @@ import type { Nullable, Track } from '@audius/common'
 import {
   removeNullable,
   FavoriteSource,
+  reachabilitySelectors,
   RepostSource,
   ShareSource,
   castSelectors,
@@ -19,10 +20,12 @@ import { CastButton } from 'react-native-google-cast'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconAirplay from 'app/assets/images/iconAirplay.svg'
+import IconChromecast from 'app/assets/images/iconChromecast.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { useAirplay } from 'app/components/audio/Airplay'
 import { IconButton } from 'app/components/core'
+import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -34,6 +37,8 @@ const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
 const { updateMethod } = castActions
 const { getMethod: getCastMethod, getIsCasting } = castSelectors
+
+const { getIsReachable } = reachabilitySelectors
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   container: {
@@ -67,8 +72,10 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const styles = useStyles()
   const castMethod = useSelector(getCastMethod)
   const isCasting = useSelector(getIsCasting)
-  const { neutral, primary } = useThemeColors()
+  const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const isReachable = useSelector(getIsReachable)
 
   useLayoutEffect(() => {
     if (Platform.OS === 'android' && castMethod === 'airplay') {
@@ -139,7 +146,16 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         />
       )
     }
-    return (
+    return isOfflineModeEnabled || !isReachable ? (
+      <View style={{ ...styles.button, width: 24 }}>
+        <IconChromecast
+          fill={neutralLight6}
+          height={30}
+          width={30}
+          style={{ transform: [{ scaleX: -1 }] }}
+        />
+      </View>
+    ) : (
       <CastButton
         style={{
           ...styles.button,
