@@ -45,6 +45,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: space-between;
   padding: 0px 20px 32px;
   flex: 0 0 calc(50% - 16px);
   min-width: 340px;
@@ -60,6 +61,19 @@
 }
 .trendingRewardPanelContainer {
   padding-top: 40px;
+}
+
+.rewardPanelTop {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  width: 100%;
+}
+.rewardPanelBottom {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  width: 100%;
 }
 
 .rewardPanelContainer:not(:first-child):not(:last-child) {
@@ -78,6 +92,11 @@
 
 .completed {
   background: var(--neutral-light-10);
+}
+
+.buttonCompleted {
+  background: var(--neutral-light-10);
+  min-height: 38px;
 }
 
 .pillContainer {
