@@ -396,7 +396,7 @@ services:
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     volumes:
-      - ./creator-node/src:/usr/src/app/src
+      - ./creator-node:/usr/src/app
       - audius-libs:/usr/src/audius-libs
       - ./dev-tools:/tmp/dev-tools
     depends_on:
