@@ -9,23 +9,26 @@ const {
 const config = require('../config')
 const { logger } = require('../logging')
 
-const IP_API_KEY = config.get('ipApiKey')
+const IP_API_KEY = config.get('ipdataAPIKey')
 
 module.exports = function (app) {
   app.get(
     '/location',
     handleResponse(async (req) => {
-      const ip = getIP(req)
+      let ip = getIP(req)
       if (!ip) {
         return errorResponseBadRequest('Unexpectedly no IP')
       }
-      const url = `https://ipapi.co/${ip}/json/`
+      if (ip.startsWith('::ffff:')) {
+        ip = ip.slice(7)
+      }
+      const url = `https://api.ipdata.co/${ip}`
       try {
         const res = await axios({
           method: 'get',
           url,
           params: {
-            key: IP_API_KEY
+            'api-key': IP_API_KEY
           }
         })
         return successResponse(res.data)
