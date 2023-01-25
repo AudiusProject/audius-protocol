@@ -9,7 +9,7 @@ from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client, Commitment
 from solana.rpc.types import TokenAccountOpts
-from src.exceptions import UnsupportedVersionError
+from src.exceptions import SolanaTransactionFetchError
 from src.solana.solana_helpers import SPL_TOKEN_ID_PK
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResponse,
@@ -22,7 +22,6 @@ logger = logging.getLogger(__name__)
 DEFAULT_MAX_RETRIES = 5
 # number of seconds to wait between calls to get_confirmed_transaction
 DELAY_SECONDS = 0.2
-UNSUPPORTED_VERSION_ERROR_CODE = -32015
 
 
 class SolanaClientManager:
@@ -58,7 +57,7 @@ class SolanaClientManager:
                         return tx_info
                 # We currently only support "legacy" solana transactions. If we encounter
                 # a newer version, raise this specific error so that it can be handled upstream.
-                except UnsupportedVersionError as e:
+                except SolanaTransactionFetchError as e:
                     raise e
                 except Exception as e:
                     logger.error(
@@ -239,9 +238,9 @@ def raise_timeout(signum, frame):
 def _check_error(tx, tx_sig):
     if "error" in tx:
         logger.error(
-            f"solana_client_manager.py | _check_unsupported_version | Transaction {tx_sig} version is unsupported"
+            f"solana_client_manager.py | Error while fetching transaction {tx_sig}: {tx['error']}"
         )
-        raise UnsupportedVersionError()
+        raise SolanaTransactionFetchError()
 
 
 def _try_all(iterable, func, message, randomize=False):
@@ -252,7 +251,7 @@ def _try_all(iterable, func, message, randomize=False):
     for index, value in items:
         try:
             return func(value, index)
-        except UnsupportedVersionError as e:
+        except SolanaTransactionFetchError as e:
             raise e
         except Exception:
             logger.error(
