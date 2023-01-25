@@ -25,7 +25,7 @@ Verify setup:
 
 * `make reset` - starts postgres + nats containers (first time)
 * `make` - dev on discovery
-* `make dev.storage` - dev on storage
+* `make dev.storage` - dev on storage (make sure a JetStream-enabled NATS server is running first with `nats-server -p 4222 -js`)
 * `make test`
 
 Re-run make after code changes

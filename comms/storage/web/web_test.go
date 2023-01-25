@@ -21,6 +21,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO: Can probably move cluster creation to TestMain and for the test just connect directly to localhost:1222 (and reset state at beginning of test)
+
 // TestE2EUpload verifies that a file gets uploaded to the storage node, transcoded, and permanently stored and replicated on the correct nodes.
 func TestE2EUpload(t *testing.T) {
 	assert := assert.New(t)
@@ -87,21 +89,15 @@ func startNatsCluster(t *testing.T, namespace string, replicationFactor int) [5]
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			// Start NATS server (every node except first one is a route to the first node)
+			// Start NATS server (every node except first one has a route to the first node)
 			var s *server.Server
 			if i == 1 {
 				s = runBasicJetStreamServer(1222, 1248, 1249)
 			} else {
 				s = runBasicJetStreamServer(1222+i-1, 1248+i-1, 1248)
 			}
-			_, jsc := jsClient(t, s)
 
-			// Start web server
-			g := glue.New(namespace, replicationFactor, jsc)
-			e := NewServer(g)
-			go e.Start(fmt.Sprintf("127.0.0.1:%d", 1222+i+5))
-
-			nodes[i-1] = &testServer{s: s, g: g, e: e}
+			nodes[i-1] = &testServer{s: s}
 		}(i)
 	}
 	wg.Wait()
@@ -110,7 +106,7 @@ func startNatsCluster(t *testing.T, namespace string, replicationFactor int) [5]
 	numRoutes := 0
 	clusterSize := 0
 	for numRoutes != 4 || clusterSize != 5 {
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 		routez, err := nodes[0].s.Routez(&server.RoutezOptions{})
 		if err != nil {
 			t.Fatalf("Could not get routez info: %v", err)
@@ -121,6 +117,20 @@ func startNatsCluster(t *testing.T, namespace string, replicationFactor int) [5]
 		}
 		numRoutes = routez.NumRoutes
 		clusterSize = jsInfo.Meta.Size
+	}
+
+	// The above wait should've been sufficient but better to have the test be long than flaky
+	time.Sleep(2000 * time.Millisecond)
+
+	// Start each node's web server
+	for i, node := range nodes {
+		_, jsc := jsClient(t, node.s)
+		g := glue.New(namespace, replicationFactor, jsc)
+		e := NewServer(g)
+		go e.Start(fmt.Sprintf("127.0.0.1:%d", 1222+i+5))
+
+		nodes[i].g = g
+		nodes[i].e = e
 	}
 
 	return nodes
@@ -144,7 +154,6 @@ func runBasicJetStreamServer(clientPort int, clusterPort int, seedPort int) *ser
 		Name: "test-cluster",
 		Host: "127.0.0.1",
 		Port: clusterPort,
-		// NoAdvertise: true,
 	}
 	opts.Routes = server.RoutesFromStr(fmt.Sprintf("nats://localhost:%d", seedPort))
 

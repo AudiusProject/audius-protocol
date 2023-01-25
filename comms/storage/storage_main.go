@@ -38,11 +38,6 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	// e := echo.New()
-	// e.HideBanner = true
-	// e.Debug = true
-
-	// startStorageServer(jetstream.GetJetstreamContext(), e)
 	g := glue.New(GlobalNamespace, ReplicationFactor, jetstream.GetJetstreamContext())
 	e := web.NewServer(g)
 
