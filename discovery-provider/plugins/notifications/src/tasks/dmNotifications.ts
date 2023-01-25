@@ -4,7 +4,7 @@ import { logger } from './../logger'
 import { MessageNotification } from './../processNotifications/mappers/message'
 import { MessageReactionNotification } from './../processNotifications/mappers/messageReaction'
 import type { DMNotification, DMReactionNotification } from './../types/notifications'
-import { getRedisConnection } from './../utils/redis_connection'
+import { getRedisConnection } from './../utils/redisConnection'
 
 const lastIndexedMessageRedisKey = 'latestDMNotificationTimestamp'
 const lastIndexedReactionRedisKey = 'latestDMReactionNotificationTimestamp'

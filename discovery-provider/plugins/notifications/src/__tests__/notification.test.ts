@@ -1,7 +1,7 @@
 import { expect, jest, test } from '@jest/globals';
 import { Processor } from '../main';
 import * as sns from '../sns'
-import { getRedisConnection } from './../utils/redis_connection'
+import { getRedisConnection } from './../utils/redisConnection'
 import { randId, clearAllTables, createUser, createChat, insertMessage, insertReaction, insertMobileDevice, insertMobileSetting } from '../utils/populateDB';
 
 
