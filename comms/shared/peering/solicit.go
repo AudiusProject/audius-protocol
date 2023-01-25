@@ -59,6 +59,16 @@ func Solicit() map[string]*Info {
 
 }
 
+func addPeer(info *Info) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if _, known := peerMap[info.IP]; !known {
+		config.Logger.Info("adding peer", "wallet", info.Address)
+		peerMap[info.IP] = info
+	}
+}
+
 func ListPeers() []Info {
 	mu.Lock()
 	defer mu.Unlock()

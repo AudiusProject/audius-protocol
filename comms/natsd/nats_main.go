@@ -14,12 +14,22 @@ func NatsMain() {
 	config.Init()
 	peering.PollRegisteredNodes()
 
+	{
+		var err error
+		config.NatsIsReachable, err = selfConnectionProbe(config.IP)
+		if err != nil {
+			config.Logger.Warn("self connection test error " + err.Error())
+		}
+	}
+
 	go startServer()
 
 	natsman := NatsManager{}
 	for {
 		peerMap := peering.Solicit()
-		natsman.StartNats(peerMap)
+		if config.NatsIsReachable {
+			natsman.StartNats(peerMap)
+		}
 		time.Sleep(time.Minute * 2)
 	}
 }
@@ -39,6 +49,9 @@ func startServer() {
 		if err != nil {
 			return err
 		}
+		if resp.Header.Get("Content-Type") == "application/json" {
+			body = redactIp(body)
+		}
 		return c.Blob(resp.StatusCode, resp.Header.Get("Content-Type"), body)
 	}
 
@@ -57,7 +70,7 @@ func startServer() {
 		if err != nil {
 			return err
 		}
-		return c.JSON(200, sps)
+		return redactedJson(c, sps)
 	})
 
 	e.GET("/nats/peers", func(c echo.Context) error {
@@ -67,7 +80,15 @@ func startServer() {
 			peer.NatsRoute = ""
 			peers[idx] = peer
 		}
-		return c.JSON(200, peers)
+		return redactedJson(c, peers)
+	})
+
+	e.GET("/nats/self", func(c echo.Context) error {
+		return redactedJson(c, map[string]interface{}{
+			"env":               config.Env,
+			"is_content":        config.IsCreatorNode,
+			"nats_is_reachable": config.NatsIsReachable,
+		})
 	})
 
 	e.Logger.Fatal(e.Start(":8924"))
