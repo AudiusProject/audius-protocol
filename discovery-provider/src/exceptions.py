@@ -14,8 +14,8 @@ class NotFoundError(Base):
     pass  # pylint: disable=W0107
 
 
-class UnsupportedVersionError(Base):
-    """Unsupported Solana transaction version"""
+class SolanaTransactionFetchError(Base):
+    """Error while fetching solana transaction"""
 
     pass  # pylint: disable=W0107
 
