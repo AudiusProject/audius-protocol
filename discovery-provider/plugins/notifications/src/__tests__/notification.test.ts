@@ -69,7 +69,7 @@ describe('Notification processor', () => {
 
     // Set last indexed timestamps in redis
     const redis = await getRedisConnection()
-    const messageTimestampMs = Date.now() - 300000
+    const messageTimestampMs = Date.now() - 300000 // 5 min delay in ms
     redis.set('latestDMNotificationTimestamp', new Date(messageTimestampMs - 500).toUTCString())
     redis.set('latestDMReactionNotificationTimestamp', new Date(messageTimestampMs - 500).toUTCString())
 

@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { FollowNotification } from '../../types/appNotifications'
+import { FollowNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 

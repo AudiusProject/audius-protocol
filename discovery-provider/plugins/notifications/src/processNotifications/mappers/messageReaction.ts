@@ -1,7 +1,7 @@
 import { Knex } from 'knex'
 import { BaseNotification, Device } from './base'
 import { UserRow } from '../../types/dn'
-import { DMReactionNotification } from '../../types/appNotifications'
+import { DMReactionNotification } from '../../types/notifications'
 import { sendPushNotification } from '../../sns'
 
 export class MessageReactionNotification extends BaseNotification {

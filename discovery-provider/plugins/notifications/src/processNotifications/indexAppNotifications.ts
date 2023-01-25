@@ -1,11 +1,11 @@
 import { Knex } from 'knex'
 
 import { logger } from '../logger'
-import { FollowNotification } from '../types/appNotifications'
+import { FollowNotification } from '../types/notifications'
 import { NotificationRow } from '../types/dn'
 import { Follow } from './mappers/follow'
 
-export class AppNotifications {
+export class AppNotificationsProcessor {
 
   dnDB: Knex
   identityDB: Knex

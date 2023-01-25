@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import { NotificationRow } from '../../types/dn'
-import { DMNotification, DMReactionNotification } from '../../types/appNotifications'
+import { DMNotification, DMReactionNotification } from '../../types/notifications'
 
 
 export type DeviceType = 'ios' | 'android'

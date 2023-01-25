@@ -4,7 +4,7 @@ import { setupTriggers } from './setup'
 import { getDB } from './conn'
 import { program } from 'commander'
 import { Knex } from 'knex'
-import { AppNotifications } from './appNotifications'
+import { AppNotificationsProcessor } from './processNotifications/indexAppNotifications'
 import { sendDMNotifications } from './tasks/dmNotifications'
 import { sendAppNotifications } from './tasks/appNotifications'
 
@@ -12,9 +12,13 @@ export class Processor {
 
   discoveryDB: Knex
   identityDB: Knex
-  appNotifications: AppNotifications
+  appNotificationsProcessor: AppNotificationsProcessor
   isRunning: boolean
   listener: Listener
+
+  constructor() {
+    this.isRunning = false
+  }
 
   init = async () => {
     logger.info('starting!')
@@ -25,7 +29,7 @@ export class Processor {
     this.listener = new Listener()
     await this.listener.start(this.discoveryDB)
 
-    this.appNotifications = new AppNotifications(this.discoveryDB, this.identityDB)
+    this.appNotificationsProcessor = new AppNotificationsProcessor(this.discoveryDB, this.identityDB)
   }
 
   setupDB = async () => {
@@ -34,7 +38,6 @@ export class Processor {
 
     this.discoveryDB = await getDB(discoveryDBConnection)
     this.identityDB = await getDB(identityDBConnection)
-
   }
 
   start = async () => {
@@ -42,7 +45,7 @@ export class Processor {
     logger.info('processing events')
     this.isRunning = true
     while (this.isRunning) {
-      await sendAppNotifications(this.listener, this.appNotifications)
+      await sendAppNotifications(this.listener, this.appNotificationsProcessor)
       await sendDMNotifications(this.discoveryDB, this.identityDB)
 
       // free up event loop + batch queries to postgres
