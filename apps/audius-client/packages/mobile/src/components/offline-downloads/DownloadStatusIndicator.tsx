@@ -67,6 +67,7 @@ export const DownloadStatusIndicator = ({
 
   const isAllDownloadsErrored = useMemo(
     () =>
+      trackIds.length > 0 &&
       trackIds.every((trackId: number) => {
         const status = offlineDownloadStatus[trackId.toString()]
         return status === OfflineTrackDownloadStatus.ERROR
