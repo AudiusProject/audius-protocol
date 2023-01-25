@@ -35,20 +35,35 @@ jobs:
                   context: GCP
                   instance-name: circleci-$CIRCLE_BUILD_NUM-e2e
 
-        # - slack/on-hold:
-        #     context: slack-secrets
-        #     # NOTE: commented for testing
-        #     # filters:
-        #     #   branches:
-        #     #     only: /^release-v.*$/
-        #     requires:
-        #       - push-docker-images
-        - gh-release-hold:
+        - slack/on-hold:
+                  name: draft-release-slack-hold
+                  context: slack-secrets
+                  filters:
+                          branches:
+                                  only: /^release-v.*$/
+                          tags:
+                                  ignore: /^v.*$/
+        - draft-release-hold:
                   requires:
-                          # - slack/on-hold
-                          - build-gcp-image
+                          - draft-release-slack-hold
                   type: approval
-        - gh-release:
+        - draft-release:
                   context: Github
                   requires:
-                          - gh-release-hold
+                          - draft-release-hold
+
+        - slack/on-hold:
+                  name: release-slack-hold
+                  context: slack-secrets
+                  filters:
+                          tags:
+                                  only: /^v.*$/
+                  requires:
+                          - push-docker-images
+        - release-hold:
+                  requries:
+                          - release-slack-hold
+        - release:
+                  context: Github
+                  requires:
+                          - release-hold

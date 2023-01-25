@@ -5,7 +5,12 @@ steps:
   - checkout
   - gh/setup
   - run:
-      name: Checks
+      name: Set git config
+      command: |
+        git config --global user.email "audius-infra@audius.co"
+        git config --global user.name "audius-infra"
+  - run:
+      name: Sanity Checks
       command: |
         CN_VERSION="$(jq -r .version creator-node/.version.json)"
         DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
@@ -24,11 +29,6 @@ steps:
           echo "Version in branch name is older than current version"
           exit 1
         fi
-  - run:
-      name: Set git config
-      command: |
-        git config --global user.email "audius-infra@audius.co"
-        git config --global user.name "audius-infra"
   - run:
       name: Generate Changelog
       command: |
@@ -52,7 +52,7 @@ steps:
         mv /tmp/.version.json discovery-provider/.version.json
         git add discovery-provider/.version.json
 
-        git commit -m "[skip ci] Bump version to $NEW_VERSION"
+        git commit -m "Bump version to $NEW_VERSION"
         git push
   - run:
       name: Make release

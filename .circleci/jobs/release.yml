@@ -1,0 +1,29 @@
+resource_class: small
+working_directory: ~/audius-protocol
+docker:
+  - image: cimg/base:2023.01
+steps:
+  - checkout
+  - gh/setup
+  - run:
+      name: Set git config
+      command: |
+        git config --global user.email "audius-infra@audius.co"
+        git config --global user.name "audius-infra"
+  - run:
+      name: Convert draft release to regular release
+      command: |
+        gh release edit "v$CIRCLE_TAG" --draft=false
+  - run:
+      name: Update tag in audius-docker-compose
+      command: |
+        git clone git@github.com:AudiusProject/audius-docker-compose.git ~/audius-docker-compose
+        cd ~/audius-docker-compose
+        sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}" */docker-compose.yml
+        git add */docker-compose.yml
+        git commit -m "Bump to version $CIRCLE_TAG"
+        # git push
+  - run:
+      name: create and vote on governance upgrade proposal
+      command: |
+        test

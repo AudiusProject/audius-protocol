@@ -539,6 +539,7 @@ def ps(protocol_dir):
             f"--project-directory={protocol_dir}",
             f"--file={protocol_dir / 'docker-compose.yml'}",
             *([f"--file={AAO_DIR / 'audius-compose.yml'}"] if AAO_DIR.exists() else []),
+            "--profile=*",
             "ps",
             "--format=json",
         ],
