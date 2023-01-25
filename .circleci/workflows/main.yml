@@ -57,7 +57,7 @@ jobs:
       context: slack-secrets
       filters:
         branches:
-          ignore: /^.*$/
+          ignore: /.*/
         tags:
           only: /^v.*$/
       requires:
