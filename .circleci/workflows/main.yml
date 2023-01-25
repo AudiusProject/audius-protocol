@@ -1,69 +1,70 @@
 jobs:
-        - build-gcp-image:
-                  context: GCP
-        - push-docker-images:
-                  context: [GCP, dockerhub]
-                  requires:
-                          - build-gcp-image
+  - build-gcp-image:
+      context: GCP
+  - push-docker-images:
+      context: [GCP, dockerhub]
+      requires:
+        - build-gcp-image
 
-        - test:
-                  name: test-creator-node
-                  context: GCP
-                  instance-name: circleci-$CIRCLE_BUILD_NUM-cn
-                  service: creator-node
-        - test:
-                  name: test-discovery-provider
-                  context: GCP
-                  instance-name: circleci-$CIRCLE_BUILD_NUM-dp
-                  service: discovery-provider
-        - test:
-                  name: test-identity-service
-                  context: GCP
-                  instance-name: circleci-$CIRCLE_BUILD_NUM-is
-                  service: identity-service
-        - test:
-                  name: test-audius-libs
-                  context: GCP
-                  instance-name: circleci-$CIRCLE_BUILD_NUM-libs
-                  service: audius-libs
-        - test:
-                  name: test-poa-contracts
-                  context: GCP
-                  instance-name: circleci-$CIRCLE_BUILD_NUM-poa
-                  service: poa-contracts
-        - test-audius-cmd:
-                  context: GCP
-                  instance-name: circleci-$CIRCLE_BUILD_NUM-e2e
+  - test:
+      name: test-creator-node
+      context: GCP
+      instance-name: circleci-$CIRCLE_BUILD_NUM-cn
+      service: creator-node
+  - test:
+      name: test-discovery-provider
+      context: GCP
+      instance-name: circleci-$CIRCLE_BUILD_NUM-dp
+      service: discovery-provider
+  - test:
+      name: test-identity-service
+      context: GCP
+      instance-name: circleci-$CIRCLE_BUILD_NUM-is
+      service: identity-service
+  - test:
+      name: test-audius-libs
+      context: GCP
+      instance-name: circleci-$CIRCLE_BUILD_NUM-libs
+      service: audius-libs
+  - test:
+      name: test-poa-contracts
+      context: GCP
+      instance-name: circleci-$CIRCLE_BUILD_NUM-poa
+      service: poa-contracts
+  - test-audius-cmd:
+      context: GCP
+      instance-name: circleci-$CIRCLE_BUILD_NUM-e2e
 
-        - slack/on-hold:
-                  name: draft-release-slack-hold
-                  context: slack-secrets
-                  filters:
-                          branches:
-                                  only: /^release-v.*$/
-                          tags:
-                                  ignore: /^v.*$/
-        - draft-release-hold:
-                  requires:
-                          - draft-release-slack-hold
-                  type: approval
-        - draft-release:
-                  context: Github
-                  requires:
-                          - draft-release-hold
+  - slack/on-hold:
+      name: draft-release-slack-hold
+      context: slack-secrets
+      filters:
+        branches:
+          only: /^release-v.*$/
+        tags:
+          ignore: /^v.*$/
+  - draft-release-hold:
+      requires:
+        - draft-release-slack-hold
+      type: approval
+  - draft-release:
+      context: Github
+      requires:
+        - draft-release-hold
 
-        - slack/on-hold:
-                  name: release-slack-hold
-                  context: slack-secrets
-                  filters:
-                          tags:
-                                  only: /^v.*$/
-                  requires:
-                          - push-docker-images
-        - release-hold:
-                  requries:
-                          - release-slack-hold
-        - release:
-                  context: Github
-                  requires:
-                          - release-hold
+  - slack/on-hold:
+      name: release-slack-hold
+      context: slack-secrets
+      filters:
+        tags:
+          only: /^v.*$/
+      requires:
+        - push-docker-images
+  - release-hold:
+      requries:
+        - release-slack-hold
+      type: approval
+  - release:
+      context: Github
+      requires:
+        - release-hold
