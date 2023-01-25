@@ -8,9 +8,6 @@ export class Follow extends BaseNotification {
 
   receiverUserId: number
   followerUserId: number
-  // notification: NotificationRow
-  // dnDB: Knex
-  // identityDB: Knex
 
   constructor(dnDB: Knex, identityDB: Knex, notification: NotificationRow & { data: FollowNotification }) {
     super(dnDB, identityDB, notification)

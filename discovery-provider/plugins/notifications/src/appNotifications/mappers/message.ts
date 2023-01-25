@@ -8,9 +8,6 @@ export class MessageNotification extends BaseNotification {
 
   receiverUserId: number
   senderUserId: number
-  // notification: DMNotification
-  // dnDB: Knex
-  // identityDB: Knex
 
   constructor(dnDB: Knex, identityDB: Knex, notification: DMNotification) {
     super(dnDB, identityDB, notification)
