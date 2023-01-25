@@ -190,8 +190,10 @@ class ManageEntityParameters:
         key: Tuple[int, int],
         record: PlaylistSeen,
     ):
-        self.new_records[EntityType.PLAYLIST_SEEN][key].append(record)  # type: ignore
-        self.existing_records[EntityType.PLAYLIST_SEEN][key] = record  # type: ignore
+        if key not in self.new_records[EntityType.PLAYLIST_SEEN]:  # type: ignore
+            self.new_records[EntityType.PLAYLIST_SEEN][key].append(record)  # type: ignore
+            self.existing_records[EntityType.PLAYLIST_SEEN][key] = record  # type: ignore
+        # If key exists, do nothing
 
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):
