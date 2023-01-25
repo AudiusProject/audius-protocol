@@ -125,42 +125,48 @@ const RewardPanel = ({
       )}
       onClick={openRewardModal}
     >
-      <div className={wm(styles.pillContainer)}>
-        {hasCompleted && (
-          <span className={wm(styles.pillMessage)}>
-            {messages.readyToClaim}
-          </span>
-        )}
+      <div className={wm(styles.rewardPanelTop)}>
+        <div className={wm(styles.pillContainer)}>
+          {hasCompleted && (
+            <span className={wm(styles.pillMessage)}>
+              {messages.readyToClaim}
+            </span>
+          )}
+        </div>
+        <span className={wm(styles.rewardTitle)}>
+          {icon}
+          {title}
+        </span>
+        <span className={wm(styles.rewardDescription)}>
+          {description(challenge)}
+        </span>
       </div>
-      <span className={wm(styles.rewardTitle)}>
-        {icon}
-        {title}
-      </span>
-      <span className={wm(styles.rewardDescription)}>
-        {description(challenge)}
-      </span>
-      <div className={wm(styles.rewardProgress)}>
-        {shouldShowCompleted && <IconCheck className={wm(styles.iconCheck)} />}
-        <p className={styles.rewardProgressLabel}>{progressLabelFilled}</p>
-        {shouldShowProgressBar && (
-          <ProgressBar
-            className={styles.rewardProgressBar}
-            value={challenge?.current_step_count ?? 0}
-            max={challenge?.max_steps}
-          />
-        )}
+      <div className={wm(styles.rewardPanelBottom)}>
+        <div className={wm(styles.rewardProgress)}>
+          {shouldShowCompleted && (
+            <IconCheck className={wm(styles.iconCheck)} />
+          )}
+          <p className={styles.rewardProgressLabel}>{progressLabelFilled}</p>
+          {shouldShowProgressBar && (
+            <ProgressBar
+              className={styles.rewardProgressBar}
+              value={challenge?.current_step_count ?? 0}
+              max={challenge?.max_steps}
+            />
+          )}
+        </div>
+        <Button
+          className={wm(
+            cn(styles.panelButton, hasDisbursed ? styles.buttonCompleted : '')
+          )}
+          type={buttonType}
+          text={buttonMessage}
+          rightIcon={hasDisbursed ? null : <IconArrow />}
+          iconClassName={styles.buttonIcon}
+          onClick={openRewardModal}
+          textClassName={styles.panelButtonText}
+        />
       </div>
-      <Button
-        className={wm(
-          cn(styles.panelButton, hasDisbursed ? styles.completed : '')
-        )}
-        type={buttonType}
-        text={buttonMessage}
-        rightIcon={hasDisbursed ? null : <IconArrow />}
-        iconClassName={styles.buttonIcon}
-        onClick={openRewardModal}
-        textClassName={styles.panelButtonText}
-      />
     </div>
   )
 }
