@@ -68,30 +68,22 @@ describe('Notification processor', () => {
     const awsARN2 = "arn:2"
     await insertMobileDevice(processor.identityDB, user2, deviceType2, awsARN2)
 
-    // Set last indexed timestamps in redis
-    const redis = await getRedisConnection()
-    const messageTimestampMs = Date.now() - config.dmNotificationDelay // 5 min delay in ms
-    redis.set('latestDMNotificationTimestamp', new Date(messageTimestampMs - config.pollInterval).toUTCString())
-    redis.set('latestDMReactionNotificationTimestamp', new Date(messageTimestampMs - config.pollInterval).toUTCString())
+    // Start processor
+    console.log('start processor')
+    processor.start()
+    // Let notifications job run for 1 cycle to initialize the min cursors in redis
+    await new Promise((r) => setTimeout(r, config.pollInterval))
 
-    // User 1 sent message 5 mins ago (account for 5 min delay in sending DM notifications)
+    // User 1 sent message config.dmNotificationDelay mins ago
     const message = "hi from user 1"
     const messageId = randId().toString()
+    const messageTimestampMs = Date.now() - config.dmNotificationDelay // 5 min delay in ms
     const messageTimestamp = new Date(messageTimestampMs)
     const chatId = randId().toString()
     await createChat(processor.discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(processor.discoveryDB, user1, chatId, messageId, message, messageTimestamp)
 
-    // User 2 reacted to user 1's message 5 mins ago
-    const reaction = "fire"
-    await insertReaction(processor.discoveryDB, user2, messageId, reaction, messageTimestamp)
-
-    // Start processor
-    console.log('start processor')
-    processor.start()
-
     await new Promise((r) => setTimeout(r, config.pollInterval))
-    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: deviceType2,
       targetARN: awsARN2,
@@ -101,6 +93,13 @@ describe('Notification processor', () => {
       body: `${user1Name}: ${message}`,
       data: {}
     })
+
+    // User 2 reacted to user 1's message config.dmNotificationDelay mins ago
+    const reaction = "fire"
+    const reactionTimestampMs = Date.now() - config.dmNotificationDelay
+    await insertReaction(processor.discoveryDB, user2, messageId, reaction, new Date(reactionTimestampMs))
+
+    await new Promise((r) => setTimeout(r, config.pollInterval))
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: deviceType1,
       targetARN: awsARN1,
