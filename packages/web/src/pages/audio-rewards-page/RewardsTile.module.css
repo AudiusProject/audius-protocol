@@ -173,6 +173,10 @@
   letter-spacing: 0;
 }
 
+.buttonIcon {
+  margin: 0 2px 0 0px !important;
+}
+
 .loadingRewardsTile.mobile {
   height: 48px;
   width: 48px;

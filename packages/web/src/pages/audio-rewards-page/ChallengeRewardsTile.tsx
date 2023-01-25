@@ -13,7 +13,13 @@ import {
   audioRewardsPageSelectors,
   makeChallengeSortComparator
 } from '@audius/common'
-import { ProgressBar, ButtonType, Button, IconCheck } from '@audius/stems'
+import {
+  ProgressBar,
+  ButtonType,
+  Button,
+  IconCheck,
+  IconArrow
+} from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -23,7 +29,6 @@ import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 
 import styles from './RewardsTile.module.css'
-import ButtonWithArrow from './components/ButtonWithArrow'
 import { Tile } from './components/ExplainerTile'
 import { getChallengeConfig } from './config'
 const { getUserChallenges, getUserChallengesLoading } =
@@ -145,23 +150,17 @@ const RewardPanel = ({
           />
         )}
       </div>
-      {hasDisbursed ? (
-        <Button
-          className={wm(cn(styles.panelButton, styles.completed))}
-          type={buttonType}
-          text={buttonMessage}
-          onClick={openRewardModal}
-          textClassName={styles.panelButtonText}
-        />
-      ) : (
-        <ButtonWithArrow
-          className={wm(styles.panelButton)}
-          type={buttonType}
-          text={buttonMessage}
-          onClick={openRewardModal}
-          textClassName={styles.panelButtonText}
-        />
-      )}
+      <Button
+        className={wm(
+          cn(styles.panelButton, hasDisbursed ? styles.completed : '')
+        )}
+        type={buttonType}
+        text={buttonMessage}
+        rightIcon={hasDisbursed ? null : <IconArrow />}
+        iconClassName={styles.buttonIcon}
+        onClick={openRewardModal}
+        textClassName={styles.panelButtonText}
+      />
     </div>
   )
 }
