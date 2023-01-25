@@ -22,7 +22,7 @@ jobs:
         - mobile-init
       filters:
         branches:
-          only: /(^fast-app.*)$/
+          only: /(^release.*)$/
 
   - mobile-build-upload-production-ios:
       context: Audius Mobile Client
@@ -51,7 +51,7 @@ jobs:
         - mobile-init
       filters:
         branches:
-          only: /(^fast-app.*)$/
+          only: /(^release.*)$/
 
   - mobile-build-upload-production-android:
       context: Audius Mobile Client
