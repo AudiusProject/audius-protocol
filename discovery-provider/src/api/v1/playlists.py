@@ -277,7 +277,12 @@ top_parser.add_argument(
 top_parser.add_argument(
     "mood",
     required=False,
-    description="Filer to a mood",
+    description="Filter to a mood",
+)
+top_parser.add_argument(
+    "filter",
+    required=False,
+    description="Filter for the playlist query",
 )
 
 
