@@ -27,7 +27,10 @@ import {
 import {
   IconTrophy,
   TokenAmountInput,
-  TokenAmountInputChangeHandler
+  TokenAmountInputChangeHandler,
+  ButtonType,
+  Button,
+  IconArrow
 } from '@audius/stems'
 import BN from 'bn.js'
 import cn from 'classnames'
@@ -39,7 +42,6 @@ import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
-import ButtonWithArrow from 'pages/audio-rewards-page/components/ButtonWithArrow'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
@@ -240,12 +242,15 @@ export const SendTip = () => {
       </div>
       {renderAvailableAmount()}
       <div className={cn(styles.flexCenter, styles.buttonContainer)}>
-        <ButtonWithArrow
+        <Button
           text={messages.sendATip}
+          type={ButtonType.PRIMARY_ALT}
           onClick={handleSendClick}
+          rightIcon={<IconArrow />}
           textClassName={styles.buttonText}
           className={cn(styles.buttonText, { [styles.disabled]: isDisabled })}
           disabled={isDisabled}
+          iconClassName={styles.buttonIcon}
         />
       </div>
       {hasInsufficientBalance && (

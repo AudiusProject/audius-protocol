@@ -322,3 +322,7 @@
 .buttonContainer .disabled:hover {
   background: var(--neutral-light-7) !important;
 }
+
+.buttonIcon {
+  margin: 0 2px 0 0px !important;
+}

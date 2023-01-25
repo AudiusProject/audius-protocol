@@ -7,7 +7,7 @@ import {
   TrendingRewardsModalType,
   audioRewardsPageSelectors
 } from '@audius/common'
-import { TabSlider } from '@audius/stems'
+import { TabSlider, ButtonType, Button, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
@@ -25,8 +25,6 @@ import {
   TRENDING_UNDERGROUND_PAGE
 } from 'utils/route'
 import { getTheme, isDarkMode } from 'utils/theme/theme'
-
-import ButtonWithArrow from '../ButtonWithArrow'
 
 import ModalDrawer from './ModalDrawer'
 import styles from './TrendingRewards.module.css'
@@ -207,10 +205,13 @@ const TrendingRewardsBody = ({
             />
           </div>
         </div>
-        <ButtonWithArrow
+        <Button
+          type={ButtonType.PRIMARY_ALT}
           text={textMap[modalType][mobile ? 'buttonMobile' : 'button']}
           onClick={onButtonClick}
           className={styles.button}
+          rightIcon={<IconArrow />}
+          iconClassName={wm(styles.buttonIcon)}
         />
         <span onClick={onClickToS} className={styles.terms}>
           {messages.terms}

@@ -56,3 +56,7 @@
 .mobile .buttonText {
   font-size: 16px !important;
 }
+
+.buttonIcon {
+  margin: 0 2px 0 0px !important;
+}
