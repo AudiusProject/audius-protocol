@@ -837,7 +837,18 @@ router.post(
  * @dev This route does not handle responses by design, so we can pipe the response to client.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:CID', '/content/:CID'], getCID)
+router.get(
+  ['/ipfs/:CID', '/content/:CID'],
+  async (req, _res, next) => {
+    if (!req.is('image/png') && !req.is('image/jpeg')) {
+      return errorResponseBadRequest(
+        'invalid content type: only supported types are png and jpeg'
+      )
+    }
+    next()
+  },
+  getCID
+)
 
 /**
  * Serve images hosted by content node.
