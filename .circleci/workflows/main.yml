@@ -55,10 +55,11 @@ jobs:
   - slack/on-hold:
       name: release-slack-hold
       context: slack-secrets
-      when: << pipeline.git.tag >>
       filters:
         tags:
-          only: /^v.*$/
+          only: /^v.*/
+        branches:
+          ignore: /.*/
       requires:
         - push-docker-images
   - release-hold:
