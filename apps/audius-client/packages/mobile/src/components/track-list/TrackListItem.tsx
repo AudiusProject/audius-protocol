@@ -56,7 +56,8 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     justifyContent: 'center'
   },
   topLine: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   trackTitle: {
     flexDirection: 'row',
@@ -68,7 +69,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     color: palette.neutral
   },
   downloadIndicator: {
-    marginTop: -3,
     marginLeft: spacing(1)
   },
   artistName: {
@@ -141,6 +141,11 @@ export const TrackListItem = ({
   const deletedTextWidth = useMemo(
     () => (messages.deleted.length ? 124 : 0),
     [messages]
+  )
+  const titleMaxWidth = useMemo(
+    () =>
+      titleWidth && deletedTextWidth ? titleWidth - deletedTextWidth : '100%',
+    [deletedTextWidth, titleWidth]
   )
 
   const onPressTrack = () => {
@@ -221,21 +226,11 @@ export const TrackListItem = ({
             >
               <Text
                 numberOfLines={1}
-                style={[
-                  styles.trackTitleText,
-                  {
-                    maxWidth: titleWidth
-                      ? titleWidth - deletedTextWidth
-                      : '100%'
-                  }
-                ]}
+                style={[styles.trackTitleText, { maxWidth: titleMaxWidth }]}
               >
                 {title}
               </Text>
-              <Text
-                numberOfLines={1}
-                style={[styles.trackTitleText, { flexBasis: deletedTextWidth }]}
-              >
+              <Text numberOfLines={1} style={[styles.trackTitleText]}>
                 {messages.deleted}
               </Text>
             </View>
