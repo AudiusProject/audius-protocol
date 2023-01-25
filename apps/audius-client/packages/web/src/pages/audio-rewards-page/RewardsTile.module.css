@@ -154,6 +154,7 @@
 
 .panelButton {
   height: auto !important;
+  width: 100%;
   padding: 8px;
   padding-left: 12px;
 }
