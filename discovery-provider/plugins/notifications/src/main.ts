@@ -1,3 +1,4 @@
+import { config } from './config'
 import { Listener } from './listener'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
@@ -49,7 +50,7 @@ export class Processor {
       await sendDMNotifications(this.discoveryDB, this.identityDB)
 
       // free up event loop + batch queries to postgres
-      await new Promise((r) => setTimeout(r, 500))
+      await new Promise((r) => setTimeout(r, config.pollInterval))
     }
   }
 

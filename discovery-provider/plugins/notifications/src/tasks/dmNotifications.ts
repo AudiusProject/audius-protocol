@@ -1,5 +1,6 @@
 import { Knex } from 'knex'
 import type { RedisClientType } from 'redis'
+import { config } from './../config'
 import { logger } from './../logger'
 import { MessageNotification } from './../processNotifications/mappers/message'
 import { MessageReactionNotification } from './../processNotifications/mappers/messageReaction'
@@ -21,9 +22,7 @@ function notificationTimestampComparator(n1: MessageNotification | MessageReacti
 }
 
 async function getCursors(redis: RedisClientType): Promise<{ maxTimestamp: Date; minMessageTimestamp: Date; minReactionTimestamp: Date }> {
-  // Delay in sending notifications for unread messages
-  const delay = 300000 // 5 minutes in ms
-  const maxCursor = new Date(Date.now() - delay)
+  const maxCursor = new Date(Date.now() - config.dmNotificationDelay)
 
   // Get min cursors from redis (timestamps of the last indexed notifications)
   let minMessageCursor = maxCursor

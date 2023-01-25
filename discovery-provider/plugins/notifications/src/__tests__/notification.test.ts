@@ -2,6 +2,7 @@ import { expect, jest, test } from '@jest/globals';
 import { Processor } from '../main';
 import * as sns from '../sns'
 import { getRedisConnection } from './../utils/redisConnection'
+import { config } from './../config'
 import { randId, clearAllTables, createUser, createChat, insertMessage, insertReaction, insertMobileDevice, insertMobileSetting } from '../utils/populateDB';
 
 
@@ -69,9 +70,9 @@ describe('Notification processor', () => {
 
     // Set last indexed timestamps in redis
     const redis = await getRedisConnection()
-    const messageTimestampMs = Date.now() - 300000 // 5 min delay in ms
-    redis.set('latestDMNotificationTimestamp', new Date(messageTimestampMs - 500).toUTCString())
-    redis.set('latestDMReactionNotificationTimestamp', new Date(messageTimestampMs - 500).toUTCString())
+    const messageTimestampMs = Date.now() - config.dmNotificationDelay // 5 min delay in ms
+    redis.set('latestDMNotificationTimestamp', new Date(messageTimestampMs - config.pollInterval).toUTCString())
+    redis.set('latestDMReactionNotificationTimestamp', new Date(messageTimestampMs - config.pollInterval).toUTCString())
 
     // User 1 sent message 5 mins ago (account for 5 min delay in sending DM notifications)
     const message = "hi from user 1"
@@ -89,7 +90,7 @@ describe('Notification processor', () => {
     console.log('start processor')
     processor.start()
 
-    await new Promise((r) => setTimeout(r, 500))
+    await new Promise((r) => setTimeout(r, config.pollInterval))
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: deviceType2,
