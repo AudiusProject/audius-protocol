@@ -28,7 +28,7 @@ module.exports = function (app) {
           method: 'get',
           url,
           params: {
-            "api-key": IP_API_KEY
+            'api-key': IP_API_KEY
           }
         })
         return successResponse(res.data)
