@@ -66,6 +66,24 @@ def test_get_playlist_with_playlist_ids(app, test_entities):
             )
 
 
+def test_get_private_playlist_with_playlist_ids(app, test_entities):
+    with app.test_request_context(
+        # Request context and args are required for passing
+        # pagination info into paginate_query inside get_playlists
+        data={"limit": 5, "offset": 3},
+    ):
+        db = get_db()
+        populate_mock_db(db, test_entities)
+        with db.scoped_session():
+            playlist = get_playlists(
+                GetPlaylistsArgs(
+                    playlist_ids=[2],
+                ),
+            )
+
+            assert len(playlist) == 0
+
+
 def test_get_playlist_with_permalink(app, test_entities):
     with app.test_request_context(
         # Request context and args are required for passing
@@ -114,4 +132,10 @@ def test_get_playlist_with_permalink_private_playlist(app, test_entities):
                     routes=[{"handle": "user2", "slug": "playlist-2"}],
                 ),
             )
-            assert len(playlist) == 0
+            assert len(playlist) == 1
+            assert_playlist(
+                playlist=playlist[0],
+                playlist_id=2,
+                playlist_name="playlist 2",
+                playlist_owner_id=2,
+            )

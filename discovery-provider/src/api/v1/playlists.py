@@ -77,7 +77,10 @@ full_playlists_with_score_response = make_full_response(
 
 
 def format_get_playlists_args(
-    current_user_id, playlist_id=None, route=None, with_users=True
+    current_user_id,
+    playlist_id,
+    route,
+    with_users,
 ):
     args = {
         "current_user_id": current_user_id,
@@ -90,7 +93,12 @@ def format_get_playlists_args(
     return args
 
 
-def get_playlist(current_user_id, playlist_id=None, route=None, with_users=True):
+def get_playlist(
+    current_user_id,
+    playlist_id=None,
+    route=None,
+    with_users=True,
+):
     """Returns a single playlist, or None"""
     args = format_get_playlists_args(current_user_id, playlist_id, route, with_users)
     playlists = get_playlists(args)
@@ -153,7 +161,8 @@ class FullPlaylist(Resource):
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
         playlist = get_playlist(
-            current_user_id=current_user_id, playlist_id=playlist_id
+            current_user_id=current_user_id,
+            playlist_id=playlist_id,
         )
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
