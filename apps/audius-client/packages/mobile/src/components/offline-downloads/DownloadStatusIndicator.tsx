@@ -65,12 +65,23 @@ export const DownloadStatusIndicator = ({
     [offlineDownloadStatus, trackIds]
   )
 
+  const isAllDownloadsErrored = useMemo(
+    () =>
+      trackIds.every((trackId: number) => {
+        const status = offlineDownloadStatus[trackId.toString()]
+        return status === OfflineTrackDownloadStatus.ERROR
+      }),
+    [offlineDownloadStatus, trackIds]
+  )
+
   const downloadStatus =
     statusOverride ??
     trackDownloadStatus ??
     (isMarkedForDownload
       ? isAnyDownloadInProgress
         ? OfflineTrackDownloadStatus.LOADING
+        : isAllDownloadsErrored
+        ? OfflineTrackDownloadStatus.ERROR
         : OfflineTrackDownloadStatus.SUCCESS
       : null)
 
