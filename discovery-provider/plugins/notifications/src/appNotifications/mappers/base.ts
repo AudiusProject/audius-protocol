@@ -1,7 +1,6 @@
 import { Knex } from 'knex'
 import { NotificationRow } from '../../types/dn'
 import { DMNotification, DMReactionNotification } from '../../types/appNotifications'
-import { sendAndroidMessage, sendIOSMessage } from '../../sns'
 
 
 export type DeviceType = 'ios' | 'android'
@@ -26,32 +25,31 @@ export type Device = {
   deviceToken: string
 }
 
+export type NotificationSettings = {
+  'favorites': boolean
+  'milestonesAndAchievements': boolean
+  'reposts': boolean
+  'announcements': boolean
+  'followers': boolean
+  'remixes': boolean
+}
+
 type UserBrowserSettings = {
   [userId: number]: {
-    'settings': {
-      'favorites': boolean
-      'milestonesAndAchievements': boolean
-      'reposts': boolean
-      'announcements': boolean
-      'followers': boolean
-      'remixes': boolean
-    },
+    settings: NotificationSettings,
     browser: Browser[]
   }
 }
 type UserMobileSettings = {
   [userId: number]: {
-    'settings': {
-      'favorites': boolean
-      'milestonesAndAchievements': boolean
-      'reposts': boolean
-      'announcements': boolean
-      'followers': boolean
-      'remixes': boolean
-    },
+    settings: NotificationSettings,
     badgeCount: number,
     devices: Device[]
   }
+}
+
+type UserEmailSettings = {
+  [userId: number]: EmailFrequency
 }
 
 export abstract class BaseNotification {
@@ -67,6 +65,30 @@ export abstract class BaseNotification {
   }
 
   abstract pushNotification(): Promise<void>
+
+  /**
+   * Fetches the user's notification settings
+   * 
+   * @param userId User id to fetch notification settings for
+   * @returns 
+   */
+  async getShouldSendNotification(userId: number) {
+
+    const [
+      userMobileNotificationSettings,
+      userBrowserNotificationSettings,
+      userEmailSettings
+    ] = await Promise.all([
+      this.getUserMobileNotificationSettings([userId]),
+      this.getUserBrowserSettings([userId]),
+      this.getUserEmailSettings([userId]),
+    ])
+    return {
+      mobile: userMobileNotificationSettings,
+      browser: userBrowserNotificationSettings,
+      email: userEmailSettings
+    }
+  }
 
   /**
    * Fetches the user's mobile push notification settings
@@ -111,7 +133,7 @@ export abstract class BaseNotification {
 
     const userMobileSettings = userNotifSettingsMobile.reduce((acc, setting) => {
       acc[setting.userId] = {
-        'settings': {
+        settings: {
           'favorites': setting.favorites,
           'milestonesAndAchievements': setting.milestonesAndAchievements,
           'reposts': setting.reposts,
@@ -122,7 +144,7 @@ export abstract class BaseNotification {
         devices: [
           ...(acc?.[setting.userId]?.devices ?? []),
           {
-            type: setting.deviceType,
+            type: setting.deviceType as DeviceType,
             awsARN: setting.awsARN,
             deviceToken: setting.deviceToken,
           }
@@ -130,7 +152,7 @@ export abstract class BaseNotification {
         badgeCount: setting.iosBadgeCount || 0
       }
       return acc
-    }, {})
+    }, {} as UserMobileSettings)
     return userMobileSettings
   }
 
@@ -140,7 +162,7 @@ export abstract class BaseNotification {
    * @param userIds User ids to fetch notification settings
    * @returns 
    */
-  async getUserEmailSettings(userIds: number[], frequency?: EmailFrequency) {
+  async getUserEmailSettings(userIds: number[], frequency?: EmailFrequency): Promise<UserEmailSettings> {
 
     const userNotifSettings: Array<{
       userId: number,
@@ -157,10 +179,10 @@ export abstract class BaseNotification {
           queryBuilder.where('emailFrequency', frequency);
         }
       })
-    const userEmailSettings: { [userId: number]: EmailFrequency } = userNotifSettings.reduce((acc, user) => {
+    const userEmailSettings: UserEmailSettings = userNotifSettings.reduce((acc, user) => {
       acc[user.userId] = user.emailFrequency
       return acc
-    }, {})
+    }, {} as UserEmailSettings)
     return userEmailSettings
   }
 
@@ -228,8 +250,8 @@ export abstract class BaseNotification {
         return acc
       }
 
-      acc[setting[0]] = {
-        'settings': {
+      acc[setting.userId] = {
+        settings: {
           'favorites': setting.favorites,
           'milestonesAndAchievements': setting.milestonesAndAchievements,
           'reposts': setting.reposts,
@@ -237,16 +259,16 @@ export abstract class BaseNotification {
           'followers': setting.followers,
           'remixes': setting.remixes,
         },
-        browser: (acc?.[setting[0]]?.devices ?? [])
+        browser: (acc?.[setting.userId]?.browser ?? [])
       }
       if (safariSettings) {
-        acc[setting[0]].browser.push(safariSettings)
+        acc[setting.userId].browser.push(safariSettings)
       }
       if (webPushSettings) {
-        acc[setting[0]].browser.push(webPushSettings)
+        acc[setting.userId].browser.push(webPushSettings)
       }
       return acc
-    }, {})
+    }, {} as UserBrowserSettings)
     return userBrowserSettings
   }
 }

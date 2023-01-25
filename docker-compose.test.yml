@@ -241,7 +241,7 @@ services:
       - tests
       - discovery
 
-  discovery-provider-notifications:
+  test-discovery-provider-notifications:
     extends:
       file: docker-compose.yml
       service: discovery-provider-notifications

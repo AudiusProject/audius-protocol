@@ -1,68 +1,70 @@
 import { Knex } from 'knex'
-import { BaseNotification } from './base'
+import { BaseNotification, Device } from './base'
 import { UserRow } from '../../types/dn'
 import { DMNotification } from '../../types/appNotifications'
-import { logger } from '../../logger'
+import { sendPushNotification } from '../../sns'
 
 export class MessageNotification extends BaseNotification {
 
   receiverUserId: number
-  notification: DMNotification
-  dnDB: Knex
-  identityDB: Knex
+  senderUserId: number
+  // notification: DMNotification
+  // dnDB: Knex
+  // identityDB: Knex
 
   constructor(dnDB: Knex, identityDB: Knex, notification: DMNotification) {
     super(dnDB, identityDB, notification)
     this.receiverUserId = this.notification.receiver_user_id
+    this.senderUserId = this.notification.sender_user_id
   }
 
   async pushNotification() {
-    // const senderUserId = this.notification.sender_user_id
 
-    // // Get the user's notification setting from identity service
-    // const shouldSendNotification = await this.getShouldSendNotification()
-    // if (!shouldSendNotification) {
-    //   return
-    // }
+    const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
+      .from<UserRow>('users')
+      .where('is_current', true)
+      .whereIn('user_id', [this.receiverUserId, this.senderUserId])
+    const users = res.reduce((acc, user) => {
+      acc[user.user_id] = { name: user.name, isDeactivated: user.is_deactivated }
+      return acc
+    }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
-
-    // const res: [string, boolean] = await this.dnDB.select('name', 'is_deactivated')
-    //   .from<UserRow>('user')
-    //   .where({
-    //     'is_current': true,
-    //     'user_id': senderUserId
-    //   })
-    //   .first()
-    // logger.info({ res })
-    // const [userName, isDeactivated] = res
-    // if (isDeactivated) {
-    //   return
-    // }
-    // const title = 'Message'
-    // const senderName = userName
-    // const message = `${senderName}: ${this.notification.message}`
-
-    // const userDevices = this.getUserPushDevices()
-    // if (userDevices[this.receiverUserId]?.length > 0) {
-    //   await Promise.all(this.sendPushNotifications(userDevices, {
-    //     title: title,
-    //     body: message
-    //   }))
-    // }
-  }
-
-  async getUserPushDevices() {
-    // TODO:
-    // 1. Fetch the user's notification settings & devices
-    // 2. Verify that the follow setting is on and there is a device to send to
-    // 3. Validate the user is not abusive
-
-    // Should return dict of user-id to list of devices to send to
-    return {
-      [this.receiverUserId]: [
-        { deviceType: '', deviceToken: '', awsARN: '' },
-      ]
+    if (users?.[this.receiverUserId]?.isDeactivated) {
+      return
     }
+
+    // Get the user's notification setting from identity service
+    const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
+
+    // If the user has devices to the notification to, proceed
+    if ((userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length > 0) {
+      // const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.receiverUserId].settings
+      const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
+      // TODO If the user's settings for the DM notification is set to true, proceed
+      // if (userMobileSettings['messages']) {
+      await Promise.all(devices.map(device => {
+        return sendPushNotification({
+          type: device.type,
+          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+          targetARN: device.awsARN
+        }, {
+          title: 'Message',
+          body: `${users[this.senderUserId].name}: ${this.notification.message}`,
+          data: {}
+        })
+      }))
+        // TODO: increment badge count
+      // }
+    }
+
+    if (userNotifications.browser) {
+      // TODO: Send out browser
+
+    }
+    if (userNotifications.email) {
+      // TODO: Send out email
+    }
+
   }
 
 }
