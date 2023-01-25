@@ -19,7 +19,7 @@ export const ChatsScreen = () => {
   }, [dispatch])
 
   useEffect(() => {
-    dispatch(chatActions.fetchNewChatMessages({ chatId: id }))
+    dispatch(chatActions.fetchMoreMessages({ chatId: id }))
   }, [dispatch])
 
   return (
