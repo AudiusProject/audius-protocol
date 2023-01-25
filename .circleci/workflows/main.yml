@@ -55,9 +55,8 @@ jobs:
   - slack/on-hold:
       name: release-slack-hold
       context: slack-secrets
+      when: << pipeline.git.tag >>
       filters:
-        branches:
-          ignore: /.*/
         tags:
           only: /^v.*$/
       requires:
