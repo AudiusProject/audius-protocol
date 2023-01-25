@@ -63,7 +63,7 @@ jobs:
       requires:
         - push-docker-images
   - release-hold:
-      requries:
+      requires:
         - release-slack-hold
       type: approval
   - release:
