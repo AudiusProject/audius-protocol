@@ -1,6 +1,7 @@
 import { expect, jest, test } from '@jest/globals';
 import { Processor } from '../main';
 import * as sns from '../sns'
+import { getRedisConnection } from './../utils/redis_connection'
 import { randId, clearAllTables, createUser, createChat, insertMessage, insertReaction, insertMobileDevice, insertMobileSetting } from '../utils/populateDB';
 
 
@@ -44,7 +45,7 @@ describe('Notification processor', () => {
     const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
       .mockImplementation(() => Promise.resolve())
 
-    console.log('start processor')
+    console.log('init processor')
     const processor = new Processor()
     await processor.init()
 
@@ -57,43 +58,63 @@ describe('Notification processor', () => {
     const user2Name = "fi"
     await createUser(processor.discoveryDB, { user_id: user1, name: user1Name, is_current: true })
     await createUser(processor.discoveryDB, { user_id: user2, name: user2Name, is_current: true })
+    await insertMobileSetting(processor.identityDB, user1)
     await insertMobileSetting(processor.identityDB, user2)
-    await insertMobileDevice(processor.identityDB, user2)
+    const deviceType1 = "ios"
+    const awsARN1 = "arn:1"
+    await insertMobileDevice(processor.identityDB, user1, deviceType1, awsARN1)
+    const deviceType2 = "android"
+    const awsARN2 = "arn:2"
+    await insertMobileDevice(processor.identityDB, user2, deviceType2, awsARN2)
 
-    // Send message 5 mins ago
-    const message = "hi from user1"
+    // Set last indexed timestamps in redis
+    const redis = await getRedisConnection()
+    const messageTimestampMs = Date.now() - 300000
+    redis.set('latestDMNotificationTimestamp', new Date(messageTimestampMs - 500).toUTCString())
+    redis.set('latestDMReactionNotificationTimestamp', new Date(messageTimestampMs - 500).toUTCString())
+
+    // User 1 sent message 5 mins ago (account for 5 min delay in sending DM notifications)
+    const message = "hi from user 1"
     const messageId = randId().toString()
-    const messageTimestamp = new Date(Date.now() - 300000) // account for 5 min delay in sending DM notifications
+    const messageTimestamp = new Date(messageTimestampMs)
     const chatId = randId().toString()
     await createChat(processor.discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(processor.discoveryDB, user1, chatId, messageId, message, messageTimestamp)
+
+    // User 2 reacted to user 1's message 5 mins ago
+    const reaction = "fire"
+    await insertReaction(processor.discoveryDB, user2, messageId, reaction, messageTimestamp)
+
+    // Start processor
+    console.log('start processor')
+    processor.start()
+
+    await new Promise((r) => setTimeout(r, 500))
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(2)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:2',
+      type: deviceType2,
+      targetARN: awsARN2,
       badgeCount: 0
     }, {
       title: 'Message',
       body: `${user1Name}: ${message}`,
       data: {}
     })
-
-    // Send reaction 5 mins ago
-    const reaction = "fire"
-    const reactionTimestamp = new Date(Date.now() - 300000) // account for 5 min delay in sending DM notifications
-    await insertReaction(processor.discoveryDB, user1, messageId, reaction, reactionTimestamp)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:2',
+      type: deviceType1,
+      targetARN: awsARN1,
       badgeCount: 0
     }, {
       title: 'Reaction',
-      body: `${user1Name} reacted ${reaction} to your message: ${message}`,
+      body: `${user2Name} reacted ${reaction} to your message: ${message}`,
       data: {}
     })
 
+    // TODO assert no notifs when messaging self or reacting to own message
     // TODO send message now and expect spy not to have been called
     // TODO set user active at and expect spy not to have been called
 
     await processor.listener.close()
+    processor.stop()
   })
 })

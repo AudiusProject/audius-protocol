@@ -101,18 +101,29 @@ export async function insertReaction(db: Knex, senderId: number, messageId: stri
     .into('chat_message_reactions')
 }
 
-export async function insertMobileDevice(db: Knex, userId: number) {
+export async function insertMobileDevice(db: Knex, userId: number, deviceType: string, awsARN: string) {
+  const currentTimestamp = new Date(Date.now()).toISOString()
   await db.insert(
     {
       userId: userId,
-      deviceToken: '12345',
-      deviceType: 'ios',
-      awsARN: 'arn:2'
+      deviceToken: randId().toString(),
+      deviceType: deviceType,
+      awsARN: awsARN,
+      createdAt: currentTimestamp,
+      updatedAt: currentTimestamp
     }
     )
     .into('NotificationDeviceTokens')
 }
 
 export async function insertMobileSetting(db: Knex, userId: number) {
-  await db.insert({ userId: userId }).into('UserNotificationMobileSettings')
+  const currentTimestamp = new Date(Date.now()).toISOString()
+  await db.insert(
+    {
+      userId: userId,
+      createdAt: currentTimestamp,
+      updatedAt: currentTimestamp
+    }
+    )
+    .into('UserNotificationMobileSettings')
 }

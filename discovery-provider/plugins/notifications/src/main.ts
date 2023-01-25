@@ -40,13 +40,19 @@ export class Processor {
   start = async () => {
     // process events
     logger.info('processing events')
-    while (true) {
+    this.isRunning = true
+    while (this.isRunning) {
       await sendAppNotifications(this.listener, this.appNotifications)
       await sendDMNotifications(this.discoveryDB, this.identityDB)
 
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, 500))
     }
+  }
+
+  stop = () => {
+    logger.info('stopping notification processor')
+    this.isRunning = false
   }
 
 }

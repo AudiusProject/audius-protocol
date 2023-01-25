@@ -51,6 +51,7 @@ async function getUnreadMessages(discoveryDB: Knex, minTimestamp: Date, maxTimes
     .innerJoin('chat_member', 'chat_message.chat_id', 'chat_member.chat_id')
     .whereRaw('chat_message.created_at > greatest(chat_member.last_active_at, ?)', [minTimestamp.toISOString()])
     .andWhere('chat_message.created_at', '<=', maxTimestamp.toISOString())
+    .andWhereRaw('chat_message.user_id != chat_member.user_id')
 }
 
 async function getUnreadReactions(discoveryDB: Knex, minTimestamp: Date, maxTimestamp: Date): Promise<DMReactionNotification[]> {
@@ -58,10 +59,10 @@ async function getUnreadReactions(discoveryDB: Knex, minTimestamp: Date, maxTime
     .select('chat_message_reactions.user_id as sender_user_id', 'chat_message.user_id as receiver_user_id', 'chat_message_reactions.reaction as reaction', 'chat_message.ciphertext as message', 'chat_message_reactions.updated_at as timestamp')
     .from('chat_message_reactions')
     .innerJoin('chat_message', 'chat_message.message_id', 'chat_message_reactions.message_id')
-    .innerJoin('chat_member as chat', 'chat.chat_id', 'chat_message.chat_id')
-    .innerJoin('chat_member as user', 'user.user_id', 'chat_message.user_id')
-    .whereRaw('chat_message_reactions.updated_at > greatest("user".last_active_at, ?)', [minTimestamp.toISOString()])
+    .joinRaw('join chat_member on chat_member.chat_id = chat_message.chat_id and chat_member.user_id = chat_message.user_id')
+    .whereRaw('chat_message_reactions.updated_at > greatest(chat_member.last_active_at, ?)', [minTimestamp.toISOString()])
     .andWhere('chat_message_reactions.updated_at', '<=', maxTimestamp.toISOString())
+    .andWhereRaw('chat_message_reactions.user_id != chat_member.user_id')
 }
 
 function setLastIndexedTimestamp(redis: RedisClientType, redisKey: string, maxTimestamp: Date, notifications: MessageNotification[] | MessageReactionNotification[]) {
