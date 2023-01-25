@@ -2,7 +2,7 @@ import type { Track, UserTrackMetadata } from '@audius/common'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
-type LineupTrack = Track & UserTrackMetadata & { uid: string }
+type LineupTrack = Track & UserTrackMetadata
 
 export type OfflineDownloadsState = {
   downloadStatus: {

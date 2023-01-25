@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { store } from 'app/store'
 import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
 import {
   addCollection,
@@ -153,11 +154,24 @@ export const useOfflineCollectionLineup = (
 
   const fetchLocalContent = useCallback(() => {
     if (isOfflineModeEnabled && collectionId) {
-      const lineupTracks = Object.values(offlineTracks).filter((track) =>
-        track.offline?.reasons_for_download.some(
-          (reason) => reason.collection_id === collectionId.toString()
+      const lineupTracks = Object.values(offlineTracks)
+        .filter((track) =>
+          track.offline?.reasons_for_download.some(
+            (reason) => reason.collection_id === collectionId.toString()
+          )
         )
-      )
+        .map((track) => ({
+          uid: makeUid(Kind.TRACKS, track.track_id),
+          ...track
+        }))
+
+      const cacheTracks = lineupTracks.map((track) => ({
+        id: track.track_id,
+        uid: track.uid,
+        metadata: track
+      }))
+
+      store.dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
 
       if (collectionId === DOWNLOAD_REASON_FAVORITES) {
         // Reorder lineup tracks accorinding to favorite time

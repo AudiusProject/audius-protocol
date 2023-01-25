@@ -12,12 +12,9 @@ import type {
 import {
   Variant,
   FavoriteSource,
-  Kind,
-  makeUid,
   encodeHashId,
   accountSelectors,
   cacheUsersSelectors,
-  cacheActions,
   collectionsSocialActions,
   reachabilitySelectors
 } from '@audius/common'
@@ -245,23 +242,13 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
       }
 
       if (shouldAbortDownload(downloadReason)) {
-        // Don't dispatch removeDownlaod in this case, since it's already downloaded as part of another collection
+        // Don't dispatch removeDownload in this case, since it's already downloaded as part of another collection
         return
       }
 
       await writeTrackJson(trackIdStr, trackToWrite)
-      const lineupTrack = {
-        uid: makeUid(Kind.TRACKS, track.track_id),
-        ...trackToWrite
-      }
-      const cacheTrack = {
-        id: track.track_id,
-        uid: lineupTrack.uid,
-        metadata: lineupTrack
-      }
-      store.dispatch(cacheActions.add(Kind.TRACKS, [cacheTrack], false, true))
 
-      store.dispatch(loadTrack(lineupTrack))
+      store.dispatch(loadTrack(trackToWrite))
       store.dispatch(completeDownload(trackIdStr))
       return
     }
@@ -290,17 +277,7 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
     await writeTrackJson(trackIdStr, trackToWrite)
     const verified = await verifyTrack(trackIdStr, true)
     if (verified) {
-      const lineupTrack = {
-        uid: makeUid(Kind.TRACKS, track.track_id),
-        ...trackToWrite
-      }
-      const cacheTrack = {
-        id: track.track_id,
-        uid: lineupTrack.uid,
-        metadata: lineupTrack
-      }
-      store.dispatch(cacheActions.add(Kind.TRACKS, [cacheTrack], false, true))
-      store.dispatch(loadTrack(lineupTrack))
+      store.dispatch(loadTrack(trackToWrite))
       store.dispatch(completeDownload(trackIdStr))
       return
     } else {
@@ -311,6 +288,9 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
   } catch (e) {
     throw failJob(e.message)
   } finally {
+    await new Promise((resolve) => {
+      setTimeout(resolve, 1000)
+    })
     if (shouldAbortDownload(downloadReason)) {
       removeTrackDownload(trackForDownload)
     }

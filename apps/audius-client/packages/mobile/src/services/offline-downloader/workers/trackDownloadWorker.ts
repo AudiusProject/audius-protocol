@@ -27,5 +27,5 @@ const executor = (payload: TrackDownloadWorkerPayload) => {
 
 export const trackDownloadWorker = new Worker(TRACK_DOWNLOAD_WORKER, executor, {
   onFailure,
-  concurrency: 10
+  concurrency: 1
 })
