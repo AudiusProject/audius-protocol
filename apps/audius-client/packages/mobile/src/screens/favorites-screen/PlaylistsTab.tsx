@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react'
 
-import type { CommonState } from '@audius/common'
 import { useProxySelector, reachabilitySelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
@@ -9,6 +8,7 @@ import { VirtualizedScrollView, Button } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import type { AppState } from 'app/store'
 import { getOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineTrackDownloadStatus } from 'app/store/offline-downloads/slice'
 
@@ -31,10 +31,10 @@ export const PlaylistsTab = () => {
   const [filterValue, setFilterValue] = useState('')
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
-  const offlineDownloadStatus = useSelector(getOfflineDownloadStatus)
   const userPlaylists = useProxySelector(
-    (state: CommonState) =>
-      getAccountCollections(state, filterValue).filter((collection) => {
+    (state: AppState) => {
+      const offlineDownloadStatus = getOfflineDownloadStatus(state)
+      return getAccountCollections(state, filterValue).filter((collection) => {
         if (collection.is_album) {
           return false
         }
@@ -57,7 +57,8 @@ export const PlaylistsTab = () => {
           )
         }
         return true
-      }),
+      })
+    },
     [filterValue, isReachable, isOfflineModeEnabled]
   )
 
