@@ -19,7 +19,6 @@ type Info struct {
 
 	IsSelf          bool
 	NatsIsReachable bool
-	NatsConnected   bool
 }
 
 func MyInfo() (*Info, error) {

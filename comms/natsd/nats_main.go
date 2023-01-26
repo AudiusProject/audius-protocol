@@ -2,6 +2,7 @@ package natsd
 
 import (
 	"io"
+	"math"
 	"net/http"
 	"time"
 
@@ -25,12 +26,19 @@ func NatsMain() {
 	go startServer()
 
 	natsman := NatsManager{}
-	for {
+	for n := 0; ; n++ {
 		peerMap := peering.Solicit()
 		if config.NatsIsReachable {
 			natsman.StartNats(peerMap)
 		}
-		time.Sleep(time.Minute * 2)
+
+		// poll with exponential backoff:
+		// 2^n seconds (min 8 max 600 seconds)
+		delay := math.Pow(2, float64(n+4))
+		if delay > 600 {
+			delay = 600
+		}
+		time.Sleep(time.Second * time.Duration(delay))
 	}
 }
 

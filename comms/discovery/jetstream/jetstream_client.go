@@ -5,6 +5,7 @@ import (
 	"strings"
 	"sync"
 
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/shared/peering"
 	"github.com/nats-io/nats.go"
 )
@@ -20,13 +21,13 @@ func Dial(peerMap map[string]*peering.Info) error {
 	if peerMap != nil {
 		goodNatsUrls := []string{}
 		for _, peer := range peerMap {
-			u := fmt.Sprintf("nats://%s:4222", peer.IP)
-			ok := peering.NatsConnectionTest(u)
-			if ok {
+			if peer.NatsIsReachable {
+				u := fmt.Sprintf("nats://%s:4222", peer.IP)
 				goodNatsUrls = append(goodNatsUrls, u)
 			}
 		}
 		natsUrl = strings.Join(goodNatsUrls, ",")
+		config.Logger.Info("nats client url: " + natsUrl)
 	}
 
 	nc, err := peering.DialNatsUrl(natsUrl)

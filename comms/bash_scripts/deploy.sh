@@ -13,8 +13,8 @@ for val in 5 6 7; do
   ssh stage-creator-$val 'bash -s' < bash_scripts/deploy_content.sh
 done
 
-# for val in 8 9 10 11; do
-#   echo "CN $val"
-#   ssh stage-creator-$val 'bash -s' < bash_scripts/deploy_content.sh
-# done
+for val in 8 9 10 11; do
+  echo "CN $val"
+  ssh stage-creator-$val 'bash -s' < bash_scripts/deploy_content.sh
+done
 
