@@ -85,7 +85,7 @@ async function start() {
     const pending = takePending()
     if (pending) {
       await processPending(pending)
-      logger.info('processed new updates')
+      logger.info('processed new updates updated log')
     }
     // free up event loop + batch queries to postgres
     await new Promise((r) => setTimeout(r, 500))
