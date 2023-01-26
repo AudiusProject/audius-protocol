@@ -45,7 +45,7 @@ async function getUnreadMessages(discoveryDB: Knex, minTimestamp: Date, maxTimes
     .select('chat_message.user_id as sender_user_id', 'chat_member.user_id as receiver_user_id', 'chat_message.ciphertext as message', 'chat_message.created_at as timestamp')
     .from('chat_message')
     .innerJoin('chat_member', 'chat_message.chat_id', 'chat_member.chat_id')
-    .whereRaw('chat_message.created_at > greatest(chat_member.last_active_at, ?)', [minTimestamp.toISOString()])
+    .whereRaw('chat_message.created_at > greatest(chat_member.last_active_at, ?::timestamp)', [minTimestamp.toISOString()])
     .andWhere('chat_message.created_at', '<=', maxTimestamp.toISOString())
     .andWhereRaw('chat_message.user_id != chat_member.user_id')
 }
@@ -64,10 +64,11 @@ async function getUnreadReactions(discoveryDB: Knex, minTimestamp: Date, maxTime
 function setLastIndexedTimestamp(redis: RedisClientType, redisKey: string, maxTimestamp: Date, notifications: MessageNotification[] | MessageReactionNotification[]) {
   if (notifications.length > 0) {
     notifications.sort(notificationTimestampComparator)
-    const lastIndexedMessageTimestamp = notifications[notifications.length - 1].notification.timestamp.toUTCString()
-    redis.set(redisKey, lastIndexedMessageTimestamp)
+    const lastIndexedTimestamp = notifications[notifications.length - 1].notification.timestamp.toISOString()
+    redis.set(redisKey, lastIndexedTimestamp)
+    console.log(`setting last indexed timestamp to ${lastIndexedTimestamp} for key ${redisKey}`)
   } else {
-    redis.set(redisKey, maxTimestamp.toUTCString())
+    redis.set(redisKey, maxTimestamp.toISOString())
   }
 }
 

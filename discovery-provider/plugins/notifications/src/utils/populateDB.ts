@@ -127,3 +127,41 @@ export async function insertMobileSetting(db: Knex, userId: number) {
     )
     .into('UserNotificationMobileSettings')
 }
+
+export type UserWithDevice = {
+  userId: number,
+  name: string,
+  deviceType: string,
+  awsARN: string
+}
+
+export async function setupTwoUsersWithDevices(discoveryDB: Knex, identityDB: Knex): Promise<{ user1: UserWithDevice, user2: UserWithDevice }> {
+  const user1 = randId()
+  const user1Name = "user 1"
+  const user2 = randId()
+  const user2Name = "user 2"
+  await createUser(discoveryDB, { user_id: user1, name: user1Name, is_current: true })
+  await createUser(discoveryDB, { user_id: user2, name: user2Name, is_current: true })
+  await insertMobileSetting(identityDB, user1)
+  await insertMobileSetting(identityDB, user2)
+  const deviceType1 = "ios"
+  const awsARN1 = "arn:1"
+  await insertMobileDevice(identityDB, user1, deviceType1, awsARN1)
+  const deviceType2 = "android"
+  const awsARN2 = "arn:2"
+  await insertMobileDevice(identityDB, user2, deviceType2, awsARN2)
+  return {
+    user1: {
+      userId: user1,
+      name: user1Name,
+      deviceType: deviceType1,
+      awsARN: awsARN1
+    },
+    user2: {
+      userId: user2,
+      name: user2Name,
+      deviceType: deviceType2,
+      awsARN: awsARN2
+    }
+  }
+}
