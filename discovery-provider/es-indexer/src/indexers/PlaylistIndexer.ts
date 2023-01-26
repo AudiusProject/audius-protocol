@@ -192,7 +192,6 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
     row.repost_count = row.reposted_by.length
     row.save_count = row.saved_by.length
     const slug = row.routes[row.routes.length - 1]
-    console.log('es-indexer playlists10 ', slug)
     row.permalink = `/${row.user.handle}/playlist/${slug}`
   }
 
