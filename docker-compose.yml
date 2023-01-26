@@ -293,6 +293,7 @@ services:
       solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
     volumes:
       - ./identity-service:/usr/src/app
+      - /usr/src/app/node_modules
       - ./dev-tools:/tmp/dev-tools
       - audius-libs:/usr/src/audius-libs
     depends_on:
