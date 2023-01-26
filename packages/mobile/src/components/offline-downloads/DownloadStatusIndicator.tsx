@@ -11,7 +11,9 @@ import IconNotDownloaded from 'app/assets/images/iconNotDownloaded.svg'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import {
   getIsCollectionMarkedForDownload,
-  getOfflineDownloadStatus
+  getIsAnyDownloadInProgress,
+  getTrackOfflineDownloadStatus,
+  getIsAllDownloadsErrored
 } from 'app/store/offline-downloads/selectors'
 import { OfflineTrackDownloadStatus } from 'app/store/offline-downloads/slice'
 
@@ -33,14 +35,13 @@ export const DownloadStatusIndicator = ({
   size = 24
 }: TrackDownloadIndicatorProps) => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const offlineDownloadStatus = useSelector(getOfflineDownloadStatus)
   const isMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(collectionId)
   )
 
-  const trackDownloadStatus = trackId
-    ? offlineDownloadStatus[trackId?.toString()]
-    : null
+  const trackDownloadStatus = useSelector(
+    getTrackOfflineDownloadStatus(trackId)
+  )
 
   const collection = useSelector((state) =>
     getCollection(state, {
@@ -56,23 +57,12 @@ export const DownloadStatusIndicator = ({
     )
   }, [collection])
 
-  const isAnyDownloadInProgress = useMemo(
-    () =>
-      trackIds.some((trackId: number) => {
-        const status = offlineDownloadStatus[trackId.toString()]
-        return status === OfflineTrackDownloadStatus.LOADING
-      }),
-    [offlineDownloadStatus, trackIds]
+  const isAnyDownloadInProgress = useSelector((state) =>
+    getIsAnyDownloadInProgress(state, trackIds)
   )
 
-  const isAllDownloadsErrored = useMemo(
-    () =>
-      trackIds.length > 0 &&
-      trackIds.every((trackId: number) => {
-        const status = offlineDownloadStatus[trackId.toString()]
-        return status === OfflineTrackDownloadStatus.ERROR
-      }),
-    [offlineDownloadStatus, trackIds]
+  const isAllDownloadsErrored = useSelector((state) =>
+    getIsAllDownloadsErrored(state, trackIds)
   )
 
   const downloadStatus =

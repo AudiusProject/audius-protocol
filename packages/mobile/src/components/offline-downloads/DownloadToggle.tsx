@@ -13,8 +13,8 @@ import {
 } from 'app/services/offline-downloader'
 import { setVisibility } from 'app/store/drawers/slice'
 import {
-  getOfflineDownloadStatus,
-  getIsCollectionMarkedForDownload
+  getIsCollectionMarkedForDownload,
+  getIsAnyDownloadInProgress
 } from 'app/store/offline-downloads/selectors'
 import { OfflineTrackDownloadStatus as OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
@@ -93,15 +93,15 @@ export const DownloadToggle = ({
     ? DOWNLOAD_REASON_FAVORITES
     : collection?.playlist_id?.toString()
 
-  const offlineDownloadStatus = useSelector(getOfflineDownloadStatus)
-  const isAnyDownloadInProgress = useMemo(
-    () =>
-      tracksForDownload.some(({ trackId }) => {
-        const status = offlineDownloadStatus[trackId.toString()]
-        return status === OfflineDownloadStatus.LOADING
-      }),
-    [offlineDownloadStatus, tracksForDownload]
+  const trackIds = useMemo(
+    () => tracksForDownload.map(({ trackId }) => trackId),
+    [tracksForDownload]
   )
+
+  const isAnyDownloadInProgress = useSelector((state) =>
+    getIsAnyDownloadInProgress(state, trackIds)
+  )
+
   const isCollectionMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(collectionIdStr)
   )

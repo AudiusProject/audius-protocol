@@ -15,7 +15,8 @@ import {
   encodeHashId,
   Genre,
   tracksSocialActions,
-  SquareSizes
+  SquareSizes,
+  shallowCompare
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import queue from 'react-native-job-queue'
@@ -117,23 +118,39 @@ export const Audio = () => {
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const offlineTracks = useSelector(getOfflineTracks)
 
   // Queue Things
   const queueIndex = useSelector(getIndex)
   const queueShuffle = useSelector(getShuffle)
   const queueOrder = useSelector(getOrder)
   const queueTrackUids = queueOrder.map((trackData) => trackData.uid)
-  const queueTrackMap = useSelector((state) =>
-    getTracks(state, { uids: queueTrackUids })
+  const queueTrackIds = queueOrder.map((trackData) => trackData.id)
+  const queueTrackMap = useSelector(
+    (state) => getTracks(state, { uids: queueTrackUids }),
+    shallowCompare
   )
   const queueTracks = queueOrder.map(
     (trackData) => queueTrackMap[trackData.id] as Track
   )
   const queueTrackOwnerIds = queueTracks.map((track) => track.owner_id)
-  const queueTrackOwnersMap = useSelector((state) =>
-    getUsers(state, { ids: queueTrackOwnerIds })
+  const queueTrackOwnersMap = useSelector(
+    (state) => getUsers(state, { ids: queueTrackOwnerIds }),
+    shallowCompare
   )
+
+  // A map from trackId to offline availability
+  const offlineAvailabilityByTrackId = useSelector((state) => {
+    const offlineTracks = getOfflineTracks(state)
+    return queueTrackIds.reduce((result, id) => {
+      if (offlineTracks[id]) {
+        return {
+          ...result,
+          [id]: true
+        }
+      }
+      return result
+    }, {})
+  }, isEqual)
 
   const dispatch = useDispatch()
 
@@ -333,7 +350,7 @@ export const Audio = () => {
         const offlineTrackAvailable =
           trackId &&
           isOfflineModeEnabled &&
-          offlineTracks[trackId] &&
+          offlineAvailabilityByTrackId[trackId] &&
           (await isAudioAvailableOffline(trackId))
 
         // Get Track url
@@ -406,7 +423,7 @@ export const Audio = () => {
     isOfflineModeEnabled,
     isReachable,
     isStreamMp3Enabled,
-    offlineTracks,
+    offlineAvailabilityByTrackId,
     playing,
     queueIndex,
     queueTrackOwnersMap,
