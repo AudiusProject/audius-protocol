@@ -4,6 +4,11 @@ docker:
 steps:
   - checkout
   - run:
+      name: Set git config
+      command: |
+        git config --global user.email "audius-infra@audius.co"
+        git config --global user.name "audius-infra"
+  - run:
       name: Create branch
       command: |
         OLD_VERSION=$(jq -r .version discovery-provider/.version.json)

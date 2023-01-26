@@ -15,5 +15,5 @@ steps:
         cd audius-docker-compose
         sed -i "s/{TAG:-.*}/{TAG:-$CIRCLE_SHA1}" */docker-compose.yml
         git add */docker-compose.yml
-        git commit -m "Bump to version $CIRCLE_TAG"
+        git commit -m "Update tag to $CIRCLE_SHA1"
         git push
