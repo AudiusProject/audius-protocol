@@ -1,5 +1,11 @@
-import { Avatar, Group, Menu, Table } from '@mantine/core'
-import { ExternalLink, Plus } from 'tabler-icons-react'
+import { Avatar, Button, Group, Menu, Table, Text } from '@mantine/core'
+import {
+  ArrowsShuffle,
+  ExternalLink,
+  Heart,
+  Plus,
+  Recycle,
+} from 'tabler-icons-react'
 import { NowPlaying } from '../stores/nowPlaying'
 import { ArtistCard } from './ArtistCard'
 import { LinkTo } from './LinkTo'
@@ -73,11 +79,29 @@ export function TrackTable({ title, tracks }: TrackTableProps) {
               </td>
               <td></td>
               <td>
-                <UserListModal has_reposted_track_id={track.id}>
-                  <div>{track.repost_count}</div>
+                <UserListModal
+                  title="Reposts"
+                  total_count={track.repost_count}
+                  has_reposted_track_id={track.id}
+                >
+                  <Button fw={700} variant="subtle" compact>
+                    <ArrowsShuffle />
+                    <Text ml={8}>{track.repost_count}</Text>
+                  </Button>
                 </UserListModal>
               </td>
-              <td>{track.favorite_count}</td>
+              <td>
+                <UserListModal
+                  title="Favorites"
+                  total_count={track.favorite_count}
+                  has_favorited_track_id={track.id}
+                >
+                  <Button variant="subtle" compact>
+                    <Heart />
+                    <Text ml={8}>{track.favorite_count}</Text>
+                  </Button>
+                </UserListModal>
+              </td>
               <td>
                 {/* <TimeAgo date={Date.parse(track.created_at)} timeStyle="mini" /> */}
               </td>

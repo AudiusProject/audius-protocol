@@ -96,17 +96,23 @@ export function Profile() {
           </div>
         ))}
 
-        <Group align="top">
-          <div>
+        {/* <Group align="top">
+          <div style={{ width: 500 }}>
             <h4>Following: {user.following_count}</h4>
-            <UserListing is_followed_by_user_id={user.id} />
+            <UserListing
+              total_count={user.following_count}
+              is_followed_by_user_id={user.id}
+            />
           </div>
 
-          <div>
+          <div style={{ width: 500 }}>
             <h4>Followers: {user.follower_count}</h4>
-            <UserListing is_following_user_id={user.id} />
+            <UserListing
+              total_count={user.follower_count}
+              is_following_user_id={user.id}
+            />
           </div>
-        </Group>
+        </Group> */}
       </div>
     </div>
   )

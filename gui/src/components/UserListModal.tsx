@@ -1,12 +1,13 @@
 import { ReactNode, useState } from 'react'
-import { Modal, Button, Group } from '@mantine/core'
+import { Button, CloseButton, Group, Modal, Text } from '@mantine/core'
 import { UserListing, UserListingProps } from './UserListing'
 
 type Props = UserListingProps & {
+  title: string
   children: ReactNode
 }
 
-export function UserListModal({ children, ...rest }: Props) {
+export function UserListModal({ title, children, ...rest }: Props) {
   const [opened, setOpened] = useState(false)
 
   return (
@@ -16,9 +17,17 @@ export function UserListModal({ children, ...rest }: Props) {
         padding={0}
         opened={opened}
         onClose={() => setOpened(false)}
-        // instead of overflow inside, need some virtualized infinite scroller magic
-        overflow="inside"
+        withCloseButton={false}
       >
+        <Group p={12}>
+          <Text sx={{ flexGrow: 1 }} fz={24} fw={700}>
+            {title}
+          </Text>
+          <CloseButton
+            aria-label="Close modal"
+            onClick={() => setOpened(false)}
+          />
+        </Group>
         <UserListing {...rest} />
       </Modal>
 
