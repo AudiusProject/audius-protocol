@@ -44,13 +44,23 @@ steps:
       name: Create Image
       command: |
         set +e
-        gcloud compute images create \
-          --family=audius-protocol \
-          --source-disk "circleci-$CIRCLE_BUILD_NUM-build" \
-          "audius-protocol-<< pipeline.git.revision >>"
-        image_create_exit_code=$?
+
+        available="$(gcloud compute images list --filter "name=(
+          'audius-protocol-<< pipeline.git.revision >>'
+        )" --format "csv(name)[no-heading]")"
+
+        image_create_exit_code=0
+        if ! echo "$available" | grep '^audius-protocol-<< pipeline.git.revision >>$' &>/dev/null; then
+          gcloud compute images create \
+            --family=audius-protocol \
+            --source-disk "circleci-$CIRCLE_BUILD_NUM-build" \
+            "audius-protocol-<< pipeline.git.revision >>"
+          image_create_exit_code=$?
+        fi
+
         gcloud compute disks delete --quiet "circleci-$CIRCLE_BUILD_NUM-build"
         disk_delete_exit_code=$?
+
         if [[ "$image_create_exit_code" != "0" ]] || [[ "$disk_delete_exit_code" != "0" ]]; then
           exit 1
         fi
