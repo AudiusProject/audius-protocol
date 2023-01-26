@@ -121,7 +121,7 @@ const RewardPanel = ({
   return (
     <div
       className={wm(
-        cn(styles.rewardPanelContainer, hasDisbursed ? styles.completed : '')
+        cn(styles.rewardPanelContainer, hasDisbursed ? styles.disbursed : '')
       )}
       onClick={openRewardModal}
     >
@@ -157,7 +157,7 @@ const RewardPanel = ({
         </div>
         <Button
           className={wm(
-            cn(styles.panelButton, hasDisbursed ? styles.buttonCompleted : '')
+            cn(styles.panelButton, hasDisbursed ? styles.disbursed : '')
           )}
           type={buttonType}
           text={buttonMessage}

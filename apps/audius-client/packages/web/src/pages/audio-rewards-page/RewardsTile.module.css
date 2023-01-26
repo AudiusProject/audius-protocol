@@ -90,13 +90,8 @@
   }
 }
 
-.completed {
+.disbursed {
   background: var(--neutral-light-10);
-}
-
-.buttonCompleted {
-  background: var(--neutral-light-10);
-  min-height: 38px;
 }
 
 .pillContainer {
@@ -172,7 +167,7 @@
 }
 
 .panelButton {
-  height: auto !important;
+  height: var(--unit-8) !important;
   width: 100%;
   padding: 8px;
   padding-left: 12px;
