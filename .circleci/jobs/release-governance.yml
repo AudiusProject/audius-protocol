@@ -8,7 +8,7 @@ steps:
         - sdk-cache-{{ checksum "libs/package-lock.json" }}
         - sdk-cache-
   - run:
-      name: Install sdk:
+      name: Install sdk
       command: |
         cd libs
         npm install
