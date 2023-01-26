@@ -430,7 +430,7 @@ def configure_celery(celery, test_config=None):
             "index_profile_challenge_backfill": {
                 "task": "index_profile_challenge_backfill",
                 "schedule": timedelta(minutes=1),
-            }
+            },
         },
         task_serializer="json",
         accept_content=["json"],
