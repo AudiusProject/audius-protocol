@@ -177,7 +177,6 @@ services:
       - tests
       - discovery
 
-
   test-discovery-provider-migrations:
     extends:
       file: docker-compose.yml
@@ -227,12 +226,13 @@ services:
       - elasticsearch
       - discovery
 
-  discovery-provider-notifications:
+  test-discovery-provider-notifications:
     extends:
       file: docker-compose.yml
       service: discovery-provider-notifications
     command: sh -c "npm run test:watch"
     environment:
+      AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
       DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
     volumes:
@@ -242,6 +242,8 @@ services:
         condition: service_completed_successfully
       test-identity-service-migrations:
         condition: service_completed_successfully
+      discovery-provider-redis:
+        condition: service_healthy
     logging: *default-logging
     deploy:
       mode: replicas

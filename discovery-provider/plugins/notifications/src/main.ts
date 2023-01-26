@@ -1,18 +1,25 @@
+import { config } from './config'
 import { Listener } from './listener'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
 import { getDB } from './conn'
 import { program } from 'commander'
 import { Knex } from 'knex'
-import { AppNotifications } from './appNotifications'
+import { AppNotificationsProcessor } from './processNotifications/indexAppNotifications'
+import { sendDMNotifications } from './tasks/dmNotifications'
+import { sendAppNotifications } from './tasks/appNotifications'
 
 export class Processor {
 
   discoveryDB: Knex
   identityDB: Knex
-  appNotifications: AppNotifications
+  appNotificationsProcessor: AppNotificationsProcessor
   isRunning: boolean
   listener: Listener
+
+  constructor() {
+    this.isRunning = false
+  }
 
   init = async () => {
     logger.info('starting!')
@@ -23,7 +30,7 @@ export class Processor {
     this.listener = new Listener()
     await this.listener.start(this.discoveryDB)
 
-    this.appNotifications = new AppNotifications(this.discoveryDB, this.identityDB)
+    this.appNotificationsProcessor = new AppNotificationsProcessor(this.discoveryDB, this.identityDB)
   }
 
   setupDB = async () => {
@@ -32,24 +39,24 @@ export class Processor {
 
     this.discoveryDB = await getDB(discoveryDBConnection)
     this.identityDB = await getDB(identityDBConnection)
-
   }
 
   start = async () => {
     // process events
     logger.info('processing events')
-    while (true) {
-      const pending = this.listener.takePending()
-      if (pending) {
+    this.isRunning = true
+    while (this.isRunning) {
+      await sendAppNotifications(this.listener, this.appNotificationsProcessor)
+      await sendDMNotifications(this.discoveryDB, this.identityDB)
 
-        await Promise.all([
-          this.appNotifications.process(pending.appNotifications)
-        ])
-        logger.info('processed new updates')
-      }
       // free up event loop + batch queries to postgres
-      await new Promise((r) => setTimeout(r, 500))
+      await new Promise((r) => setTimeout(r, config.pollInterval))
     }
+  }
+
+  stop = () => {
+    logger.info('stopping notification processor')
+    this.isRunning = false
   }
 
 }

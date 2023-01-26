@@ -149,6 +149,12 @@ export interface BlockRow {
   'number'?: number | null;
   'parenthash'?: string | null;
 }
+export interface BlocksCopyRow {
+  'blockhash': string;
+  'is_current'?: boolean | null;
+  'number'?: number | null;
+  'parenthash'?: string | null;
+}
 export interface ChallengeDisbursementRow {
   'amount': string;
   'challenge_id': string;
@@ -180,10 +186,42 @@ export interface ChallengeRow {
   'step_count'?: number | null;
   'type': challengetype;
 }
-export interface CidDataRow {
-  'cid': string;
-  'data'?: any | null;
-  'type'?: string | null;
+export interface ChatRow {
+  'chat_id': string;
+  'created_at': Date;
+  'last_message_at': Date;
+}
+export interface ChatBlockedUserRow {
+  'blockee_user_id': number;
+  'blocker_user_id': number;
+  'created_at'?: Date;
+}
+export interface ChatMemberRow {
+  'chat_id': string;
+  'cleared_history_at'?: Date | null;
+  'invite_code': string;
+  'invited_by_user_id': number;
+  'last_active_at'?: Date | null;
+  'unread_count'?: number;
+  'user_id': number;
+}
+export interface ChatMessageRow {
+  'chat_id': string;
+  'ciphertext': string;
+  'created_at': Date;
+  'message_id': string;
+  'user_id': number;
+}
+export interface ChatMessageReactionRow {
+  'created_at'?: Date;
+  'message_id': string;
+  'reaction': string;
+  'updated_at'?: Date;
+  'user_id': number;
+}
+export interface ChatPermissionRow {
+  'permits'?: string | null;
+  'user_id': number;
 }
 export interface EthBlockRow {
   'created_at'?: Date;
@@ -223,17 +261,19 @@ export interface NotificationRow {
   'data'?: any | null;
   'group_id': string;
   'id'?: number;
+  'notification_group_id'?: number | null;
   'slot'?: number | null;
   'specifier': string;
   'timestamp': Date;
   'type': string;
   'user_ids'?: any | null;
 }
-export interface NotificationSeenRow {
-  'blockhash'?: string | null;
+export interface NotificationGroupRow {
   'blocknumber'?: number | null;
-  'seen_at': Date;
-  'txhash'?: string | null;
+  'id'?: number;
+  'notification_id'?: number | null;
+  'slot'?: number | null;
+  'timestamp': Date;
   'user_id': number;
 }
 export interface PgStatStatementRow {
@@ -241,13 +281,25 @@ export interface PgStatStatementRow {
   'blk_write_time'?: number | null;
   'calls'?: string | null;
   'dbid'?: any | null;
+  'jit_emission_count'?: string | null;
+  'jit_emission_time'?: number | null;
+  'jit_functions'?: string | null;
+  'jit_generation_time'?: number | null;
+  'jit_inlining_count'?: string | null;
+  'jit_inlining_time'?: number | null;
+  'jit_optimization_count'?: string | null;
+  'jit_optimization_time'?: number | null;
   'local_blks_dirtied'?: string | null;
   'local_blks_hit'?: string | null;
   'local_blks_read'?: string | null;
   'local_blks_written'?: string | null;
-  'max_time'?: number | null;
-  'mean_time'?: number | null;
-  'min_time'?: number | null;
+  'max_exec_time'?: number | null;
+  'max_plan_time'?: number | null;
+  'mean_exec_time'?: number | null;
+  'mean_plan_time'?: number | null;
+  'min_exec_time'?: number | null;
+  'min_plan_time'?: number | null;
+  'plans'?: string | null;
   'query'?: string | null;
   'queryid'?: string | null;
   'rows'?: string | null;
@@ -255,11 +307,23 @@ export interface PgStatStatementRow {
   'shared_blks_hit'?: string | null;
   'shared_blks_read'?: string | null;
   'shared_blks_written'?: string | null;
-  'stddev_time'?: number | null;
+  'stddev_exec_time'?: number | null;
+  'stddev_plan_time'?: number | null;
+  'temp_blk_read_time'?: number | null;
+  'temp_blk_write_time'?: number | null;
   'temp_blks_read'?: string | null;
   'temp_blks_written'?: string | null;
-  'total_time'?: number | null;
+  'toplevel'?: boolean | null;
+  'total_exec_time'?: number | null;
+  'total_plan_time'?: number | null;
   'userid'?: any | null;
+  'wal_bytes'?: string | null;
+  'wal_fpi'?: string | null;
+  'wal_records'?: string | null;
+}
+export interface PgStatStatementsInfoRow {
+  'dealloc'?: string | null;
+  'stats_reset'?: Date | null;
 }
 export interface PlaylistRouteRow {
   'blockhash': string;
@@ -271,15 +335,6 @@ export interface PlaylistRouteRow {
   'slug': string;
   'title_slug': string;
   'txhash': string;
-}
-export interface PlaylistSeenRow {
-  'blockhash'?: string | null;
-  'blocknumber'?: number | null;
-  'is_current': boolean;
-  'playlist_id': number;
-  'seen_at': Date;
-  'txhash'?: string | null;
-  'user_id': number;
 }
 export interface PlaylistRow {
   'blockhash'?: string | null;
@@ -402,6 +457,13 @@ export interface RouteMetricsTrailingWeekRow {
   'count'?: string | null;
   'unique_count'?: string | null;
 }
+export interface RpcLogRow {
+  'from_wallet'?: string | null;
+  'jetstream_sequence': number;
+  'jetstream_timestamp': Date;
+  'rpc': Object;
+  'sig': string;
+}
 export interface SaveRow {
   'blockhash'?: string | null;
   'blocknumber'?: number | null;
@@ -413,6 +475,9 @@ export interface SaveRow {
   'slot'?: number | null;
   'txhash'?: string;
   'user_id': number;
+}
+export interface SchemaMigrationRow {
+  'version': string;
 }
 export interface SkippedTransactionRow {
   'blockhash': string;
@@ -496,7 +561,6 @@ export interface TrackRow {
   'is_available'?: boolean;
   'is_current': boolean;
   'is_delete': boolean;
-  'is_playlist_upload'?: boolean;
   'is_premium'?: boolean;
   'is_unlisted'?: boolean;
   'isrc'?: string | null;
@@ -514,7 +578,6 @@ export interface TrackRow {
   'stem_of'?: any | null;
   'tags'?: string | null;
   'title'?: string | null;
-  'track_cid'?: string | null;
   'track_id': number;
   'track_segments': any;
   'txhash'?: string;

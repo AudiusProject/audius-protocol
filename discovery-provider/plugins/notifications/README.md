@@ -8,6 +8,10 @@ The Notifications Plugin is designed to send push notifications...
 docker...
 
 
+## Regenerate sql-ts types
+npm run sql-ts
+
+
 ### Environment Variables
 
 The Notifications Plugin is configured with a set of environment variables. 

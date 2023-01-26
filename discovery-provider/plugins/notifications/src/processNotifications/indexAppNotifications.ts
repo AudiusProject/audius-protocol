@@ -1,11 +1,12 @@
 import { Knex } from 'knex'
 
 import { logger } from '../logger'
-import { FollowNotification } from '../types/appNotifications'
+import { FollowNotification } from '../types/notifications'
 import { NotificationRow } from '../types/dn'
 import { Follow } from './mappers/follow'
 
-export class AppNotifications {
+export class AppNotificationsProcessor {
+
   dnDB: Knex
   identityDB: Knex
 
@@ -16,7 +17,7 @@ export class AppNotifications {
 
   async process(notifications: NotificationRow[]) {
     const mappedNotifications = notifications.map(this.mapNotification).filter(Boolean)
-    for (let notification of mappedNotifications) {
+    for (const notification of mappedNotifications) {
       await notification.pushNotification()
     }
 
