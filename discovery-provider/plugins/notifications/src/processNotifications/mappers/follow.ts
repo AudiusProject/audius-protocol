@@ -1,8 +1,7 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { FollowNotification } from '../../types/appNotifications'
-import { BaseNotification } from './base'
-import { logger } from '../../logger'
+import { FollowNotification } from '../../types/notifications'
+import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 
 export class Follow extends BaseNotification {
@@ -27,19 +26,19 @@ export class Follow extends BaseNotification {
     const users = res.reduce((acc, user) => {
       acc[user.user_id] = { name: user.name, isDeactivated: user.is_deactivated }
       return acc
-    }, {})
+    }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await this.getShouldSendNotification()
+    const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
 
     // If the user has devices to the notification to, proceed
     if ((userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length > 0) {
-      const userMobileSettings = userNotifications.mobile?.[this.receiverUserId].settings
-      const devices = userNotifications.mobile?.[this.receiverUserId].devices
+      const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.receiverUserId].settings
+      const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
       if (userMobileSettings['followers']) {
         await Promise.all(devices.map(device => {
@@ -67,26 +66,6 @@ export class Follow extends BaseNotification {
       // TODO: Send out email
     }
 
-
-  }
-
-
-  getShouldSendNotification = async () => {
-
-    const [
-      userMobileNotificationSettings,
-      userBrowserNotificationSettings,
-      userEmailSettings
-    ] = await Promise.all([
-      this.getUserMobileNotificationSettings([this.receiverUserId]),
-      this.getUserBrowserSettings([this.receiverUserId]),
-      this.getUserEmailSettings([this.receiverUserId]),
-    ])
-    return {
-      mobile: userMobileNotificationSettings,
-      browser: userBrowserNotificationSettings,
-      email: userEmailSettings
-    }
   }
 
 }

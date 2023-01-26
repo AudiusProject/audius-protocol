@@ -83,10 +83,10 @@ services:
       file: docker-compose.test.yml
       service: test-discovery-provider-migrations
 
-  discovery-provider-notifications:
+  test-discovery-provider-notifications:
     extends:
       file: docker-compose.test.yml
-      service: discovery-provider-notifications
+      service: test-discovery-provider-notifications
 
   # identity-service
 
