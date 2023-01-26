@@ -27,7 +27,7 @@ var (
 	allNodes = map[string]ServiceNode{}
 )
 
-func PollDiscoveryProviders() error {
+func PollRegisteredNodes() error {
 	// don't start polling for
 	if config.Env == "standalone" || os.Getenv("test_host") != "" {
 		return nil
@@ -35,7 +35,7 @@ func PollDiscoveryProviders() error {
 
 	refresh := func() error {
 		config.Logger.Debug("refreshing SPs")
-		sps, err := queryServiceNodes(false, config.IsStaging)
+		sps, err := queryServiceNodes(config.IsStaging)
 		if err != nil {
 			config.Logger.Warn("refresh SPs failed " + err.Error())
 			return err
@@ -60,7 +60,7 @@ func PollDiscoveryProviders() error {
 
 }
 
-func GetDiscoveryNodes() ([]ServiceNode, error) {
+func listNodes(typeFilter string) ([]ServiceNode, error) {
 	if config.Env == "standalone" {
 		return []ServiceNode{}, nil
 	}
@@ -71,7 +71,7 @@ func GetDiscoveryNodes() ([]ServiceNode, error) {
 	result := []ServiceNode{}
 	mu.Lock()
 	for _, node := range allNodes {
-		if node.Type.ID == "discovery-node" {
+		if typeFilter == "" || node.Type.ID == typeFilter {
 			result = append(result, node)
 		}
 	}
@@ -79,9 +79,16 @@ func GetDiscoveryNodes() ([]ServiceNode, error) {
 	return result, nil
 }
 
+func AllNodes() ([]ServiceNode, error) {
+	return listNodes("")
+}
+
+func GetDiscoveryNodes() ([]ServiceNode, error) {
+	return listNodes("discovery-node")
+}
+
 func GetContentNodes() ([]ServiceNode, error) {
-	// todo: some caching
-	return queryServiceNodes(true, config.IsStaging)
+	return listNodes("content-node")
 }
 
 var testDiscoveryNodes = []ServiceNode{
@@ -109,8 +116,8 @@ var (
 	stagingEndpoint = `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-goerli`
 
 	gql = `
-		query ServiceProviders($type: String) {
-			serviceNodes(where: {isRegistered: true, type: $type}) {
+		query ServiceProviders($skip: Int) {
+			serviceNodes(where: {isRegistered: true}, orderBy: spId, skip: $skip) {
 				id
 				spId
 				endpoint
@@ -123,37 +130,43 @@ var (
 	`
 )
 
-func queryServiceNodes(isContent, isStaging bool) ([]ServiceNode, error) {
+func queryServiceNodes(isStaging bool) ([]ServiceNode, error) {
 
 	endpoint := prodEndpoint
 	if isStaging {
 		endpoint = stagingEndpoint
 	}
 
-	nodeType := "discovery-node"
-	if isContent {
-		nodeType = "content-node"
-	}
+	allNodes := []ServiceNode{}
 
-	input := map[string]interface{}{
-		"query": gql,
-		"variables": map[string]interface{}{
-			"type": nodeType,
-		},
-	}
-
-	output := struct {
-		Data struct {
-			ServiceNodes []ServiceNode
+	for {
+		input := map[string]interface{}{
+			"query": gql,
+			"variables": map[string]interface{}{
+				"skip": len(allNodes),
+			},
 		}
-	}{}
 
-	err := postJson(endpoint, input, &output)
-	if err != nil {
-		return nil, err
+		output := struct {
+			Data struct {
+				ServiceNodes []ServiceNode
+			}
+		}{}
+
+		err := postJson(endpoint, input, &output)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(output.Data.ServiceNodes) == 0 {
+			break
+		}
+
+		allNodes = append(allNodes, output.Data.ServiceNodes...)
+
 	}
 
-	return output.Data.ServiceNodes, nil
+	return allNodes, nil
 }
 
 var httpClient = &http.Client{

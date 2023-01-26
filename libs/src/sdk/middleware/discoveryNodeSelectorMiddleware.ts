@@ -129,7 +129,11 @@ const isDiscoveryNodeHealthy = async ({
     })
     return false
   }
-  if (!data.block_difference || data.block_difference > unhealthyBlockDiff) {
+  if (
+    data.block_difference === null ||
+    data.block_difference === undefined ||
+    data.block_difference > unhealthyBlockDiff
+  ) {
     console.warn('Audius SDK discovery provider POA indexing unhealthy', {
       endpoint
     })

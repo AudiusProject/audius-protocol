@@ -8,6 +8,9 @@ import (
 )
 
 type Info struct {
+	Host string
+	SPID string
+
 	Address   string
 	Nkey      string
 	IP        string
@@ -29,5 +32,5 @@ func MyInfo() (*Info, error) {
 }
 
 func WalletEquals(a, b string) bool {
-	return strings.ToLower(a) == strings.ToLower(b)
+	return strings.EqualFold(a, b)
 }

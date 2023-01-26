@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"sort"
 	"sync"
 
 	"comms.audius.co/discovery/config"
@@ -13,18 +15,18 @@ import (
 
 // todo: this should probably live in a struct
 var (
-	mu            sync.Mutex
-	peersByWallet = map[string]*Info{}
+	mu      sync.Mutex
+	peerMap = map[string]*Info{}
 )
 
 func Solicit() map[string]*Info {
 
 	config.Logger.Info("solicit begin")
 
-	sps, err := GetDiscoveryNodes()
+	sps, err := AllNodes()
 	if err != nil {
 		config.Logger.Error("solicit failed: " + err.Error())
-		return peersByWallet
+		return peerMap
 	}
 
 	var wg sync.WaitGroup
@@ -33,13 +35,16 @@ func Solicit() map[string]*Info {
 		sp := sp
 		wg.Add(1)
 		go func() {
-			u := sp.Endpoint + "/comms/exchange"
+			u := sp.Endpoint + "/nats/exchange"
 			info, err := solicitServer(u)
 			if err != nil {
-				config.Logger.Warn("get info failed", "endpoint", sp.Endpoint, "err", err)
+				config.Logger.Warn("get info failed", "endpoint", u, "err", err)
 			} else {
+				info.Host = sp.Endpoint
+				info.SPID = sp.SPID
+
 				mu.Lock()
-				peersByWallet[info.Address] = info
+				peerMap[info.IP] = info
 				mu.Unlock()
 			}
 			wg.Done()
@@ -48,35 +53,22 @@ func Solicit() map[string]*Info {
 
 	wg.Wait()
 
-	config.Logger.Info("solicit done")
+	config.Logger.Info("solicit done", "sps", len(sps), "peers", len(peerMap))
 
-	return peersByWallet
-
-}
-
-func AddPeer(info *Info) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	if existing, ok := peersByWallet[info.Address]; ok && info.IP == existing.IP {
-		config.Logger.Info("peer already known", "wallet", existing.Address)
-	} else {
-		config.Logger.Info("adding peer", "wallet", info.Address)
-		peersByWallet[info.Address] = info
-		// trying to pre-emptively add peer causes routing to cycle endlessly
-		// at least in the docker env
-		// manager.StartNats(peersByWallet)
-	}
+	return peerMap
 
 }
 
 func ListPeers() []Info {
 	mu.Lock()
 	defer mu.Unlock()
-	peers := make([]Info, 0, len(peersByWallet))
-	for _, i := range peersByWallet {
+	peers := make([]Info, 0, len(peerMap))
+	for _, i := range peerMap {
 		peers = append(peers, *i)
 	}
+	sort.Slice(peers, func(i, j int) bool {
+		return peers[i].IP < peers[j].IP
+	})
 	return peers
 }
 
@@ -94,6 +86,10 @@ func solicitServer(endpoint string) (*Info, error) {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("%s: %s", endpoint, resp.Status)
+	}
+
 	// get response peer info
 	dec := json.NewDecoder(resp.Body)
 	var info *Info
@@ -101,6 +97,9 @@ func solicitServer(endpoint string) (*Info, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	// nats conneciton test
+	info.NatsConnected = NatsConnectionTest(fmt.Sprintf("nats://%s:4222", info.IP))
 
 	info.IsSelf = info.Address == config.WalletAddress
 

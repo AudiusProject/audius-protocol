@@ -1,25 +1,32 @@
 package storage
 
 import (
+	"context"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"time"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/jetstream"
 	"comms.audius.co/shared/peering"
-	"comms.audius.co/storage/transcode"
-	"github.com/labstack/echo/v4"
+	"comms.audius.co/storage/glue"
+	"comms.audius.co/storage/web"
+)
+
+const (
+	GlobalNamespace   string = "0"
+	ReplicationFactor int    = 3
 )
 
 func StorageMain() {
-	// get peers
-	// dial nats
-	// start echo http server
 
-	// todo: shouldn't use discovery coonfig
+	// TODO: shouldn't use discovery config
 	config.Init()
 
 	err := func() error {
-		err := peering.PollDiscoveryProviders()
+		err := peering.PollRegisteredNodes()
 		if err != nil {
 			return err
 		}
@@ -31,11 +38,24 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	e := echo.New()
-	e.HideBanner = true
-	e.Debug = true
+	g := glue.New(GlobalNamespace, ReplicationFactor, jetstream.GetJetstreamContext())
+	e := web.NewServer(g)
 
-	transcode.DemoTime(jetstream.GetJetstreamContext(), e)
+	// Start server
+	go func() {
+		if err := e.Start(":8926"); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal("shutting down the server", err)
+		}
+	}()
 
-	e.Logger.Fatal(e.Start(":8926"))
+	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
+	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
 }
