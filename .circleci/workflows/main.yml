@@ -98,10 +98,10 @@ jobs:
           only: /^release-v.*$/
       type: approval
   - deploy:
-      name: deploy-stage-creator-provider
+      name: deploy-stage-creator-node
       context: open-vpn
       requires:
-        - release-deploy-stage-creator-node-trigger
+        - deploy-stage-creator-node-trigger
       hosts: >-
         stage-creator-4
         stage-creator-1
@@ -121,7 +121,7 @@ jobs:
       name: deploy-stage-discovery-provider
       context: open-vpn
       requires:
-        - release-deploy-stage-discovery-provider-trigger
+        - deploy-stage-discovery-provider-trigger
       hosts: >-
         stage-discovery-4
         stage-discovery-1
@@ -137,9 +137,9 @@ jobs:
           only: /^release-v.*$/
       type: approval
   - deploy:
-      name: deploy-stage-identity-provider
+      name: deploy-stage-identity-service
       context: open-vpn
       requires:
-        - release-deploy-stage-identity-service-trigger
+        - deploy-stage-identity-service-trigger
       hosts: stage-identity
       service: identity-provider
