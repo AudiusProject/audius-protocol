@@ -129,7 +129,7 @@ jobs:
         stage-discovery-3
       service: discovery-provider
 
-  - deploy-stage-identity-provider-service:
+  - deploy-stage-identity-service-trigger:
       requires:
         - push-docker-images
       filters:
@@ -142,4 +142,4 @@ jobs:
       requires:
         - deploy-stage-identity-service-trigger
       hosts: stage-identity
-      service: identity-provider
+      service: identity-service
