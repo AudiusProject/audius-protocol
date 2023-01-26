@@ -11,12 +11,18 @@ import (
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/jetstream"
 	"comms.audius.co/shared/peering"
-	"github.com/labstack/echo/v4"
+	"comms.audius.co/storage/glue"
+	"comms.audius.co/storage/web"
+)
+
+const (
+	GlobalNamespace   string = "0"
+	ReplicationFactor int    = 3
 )
 
 func StorageMain() {
 
-	// todo: shouldn't use discovery config
+	// TODO: shouldn't use discovery config
 	config.Init()
 
 	err := func() error {
@@ -32,11 +38,8 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	e := echo.New()
-	e.HideBanner = true
-	e.Debug = true
-
-	startStorageServer(jetstream.GetJetstreamContext(), e)
+	g := glue.New(GlobalNamespace, ReplicationFactor, jetstream.GetJetstreamContext())
+	e := web.NewServer(g)
 
 	// Start server
 	go func() {
