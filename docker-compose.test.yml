@@ -90,7 +90,7 @@ services:
       mode: global
 
   creator-node-redis:
-    image: redis:6.2.7
+    image: redis:6.2
     healthcheck:
       test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s

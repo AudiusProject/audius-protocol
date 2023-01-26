@@ -32,7 +32,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         py3-pip \
         python3 \
         python3-dev \
-        redis=6.2.7-r0 \
+        redis \
         rsyslog=8.2012.0-r3 \
         sudo=1.9.5p2-r0
 
