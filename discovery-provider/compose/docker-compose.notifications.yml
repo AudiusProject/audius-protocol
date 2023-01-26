@@ -4,7 +4,7 @@ services:
   notifications:
     build: discovery-provider/plugins/notifications
     environment:
-      audius_redis_url: "redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00"
+      AUDIUS_REDIS_URL: "redis://${COMPOSE_PROJECT_NAME}_redis-server_1:6379/00"
       DN_DB_URL: "postgresql://postgres:postgres@discovery-provider:5432/audius_discovery"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
         WAIT_HOSTS: "${COMPOSE_PROJECT_NAME}_redis-server_1:6379"

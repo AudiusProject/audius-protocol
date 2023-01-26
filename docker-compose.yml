@@ -306,7 +306,7 @@ services:
   discovery-provider-notifications:
     build: discovery-provider/plugins/notifications
     environment:
-      audius_redis_url: "redis://identity-service-redis:6379/00"
+      AUDIUS_REDIS_URL: "redis://identity-service-redis:6379/00"
       DN_DB_URL: "postgresql://postgres:postgres@discovery-provider:5432/audius_discovery"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
     volumes:

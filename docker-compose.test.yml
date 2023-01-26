@@ -247,7 +247,7 @@ services:
       service: discovery-provider-notifications
     command: sh -c "npm run test:watch"
     environment:
-      audius_redis_url: "redis://discovery-provider-redis:6379/00"
+      AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
       DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
     volumes:

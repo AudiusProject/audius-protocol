@@ -1,7 +1,7 @@
 import type { RedisClientType } from 'redis'
 import { createClient } from 'redis'
 
-const url = process.env.audius_redis_url || "redis://localhost:6379/0"
+const url = process.env.AUDIUS_REDIS_URL || "redis://localhost:6379/0"
 
 let redisClient: RedisClientType
 let isReady: boolean
