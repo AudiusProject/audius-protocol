@@ -243,7 +243,7 @@ const isLocationSupported = ({
 }) => {
   return (
     !location ||
-    (allowedCountries.some((c) => c === location.country_code_iso3) &&
+    (allowedCountries.some((c) => c === location.country_code) &&
       !deniedRegions.some((r) => r === location.region_code))
   )
 }
@@ -256,13 +256,13 @@ const useOnRampProviderInfo = () => {
     FeatureFlags.BUY_AUDIO_STRIPE_ENABLED
   )
   const coinbaseAllowedCountries = (
-    useRemoteVar(StringKeys.COINBASE_PAY_ALLOWED_COUNTRIES) ?? ''
+    useRemoteVar(StringKeys.COINBASE_PAY_ALLOWED_COUNTRIES_2_LETTER) ?? ''
   ).split(',')
   const coinbaseDeniedRegions = (
     useRemoteVar(StringKeys.COINBASE_PAY_DENIED_REGIONS) ?? ''
   ).split(',')
   const stripeAllowedCountries = (
-    useRemoteVar(StringKeys.STRIPE_ALLOWED_COUNTRIES) ?? ''
+    useRemoteVar(StringKeys.STRIPE_ALLOWED_COUNTRIES_2_LETTER) ?? ''
   ).split(',')
   const stripeDeniedRegions = (
     useRemoteVar(StringKeys.STRIPE_DENIED_REGIONS) ?? ''

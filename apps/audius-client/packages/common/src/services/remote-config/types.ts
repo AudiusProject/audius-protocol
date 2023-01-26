@@ -309,7 +309,13 @@ export enum StringKeys {
   STRIPE_ALLOWED_COUNTRIES = 'STRIPE_ALLOWED_COUNTRIES',
 
   /** Denied Regions for Link by Stripe */
-  STRIPE_DENIED_REGIONS = 'STRIPE_DENIED_REGIONS'
+  STRIPE_DENIED_REGIONS = 'STRIPE_DENIED_REGIONS',
+
+  /** 2-Letter ISO Country Codes of Allowed Countries for Coinbase Pay */
+  COINBASE_PAY_ALLOWED_COUNTRIES_2_LETTER = 'COINBASE_PAY_ALLOWED_COUNTRIES_2_LETTER',
+
+  /** 2-Letter ISO Country Codes of Allowed Countries for Link by Stripe */
+  STRIPE_ALLOWED_COUNTRIES_2_LETTER = 'STRIPE_ALLOWED_COUNTRIES_2_LETTER'
 }
 
 export type AllRemoteConfigKeys =
