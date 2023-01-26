@@ -12,7 +12,8 @@ import {
   walletSelectors,
   InputSendDataAction,
   walletActions,
-  getContext
+  getContext,
+  ErrorLevel
 } from '@audius/common'
 import type { AudiusLibs } from '@audius/sdk'
 import BN from 'bn.js'
@@ -20,6 +21,7 @@ import { all, call, put, take, takeEvery, select } from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
+import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
@@ -179,54 +181,63 @@ function* fetchBalanceAsync() {
   const account = yield* select(getAccountUser)
   if (!account) return
 
-  // Opt out of balance refreshes if the balance
-  // is frozen due to a recent optimistic update
-  const isBalanceFrozen = yield* call(getIsBalanceFrozen)
-  if (isBalanceFrozen) return
+  try {
+    // Opt out of balance refreshes if the balance
+    // is frozen due to a recent optimistic update
+    const isBalanceFrozen = yield* call(getIsBalanceFrozen)
+    if (isBalanceFrozen) return
 
-  const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> =
-    yield* select(getLocalBalanceDidChange)
+    const localBalanceChange: ReturnType<typeof getLocalBalanceDidChange> =
+      yield* select(getLocalBalanceDidChange)
 
-  const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
-    call(
-      [walletClient, 'getCurrentBalance'],
+    const [currentEthAudioWeiBalance, currentSolAudioWeiBalance] = yield* all([
+      call(
+        [walletClient, 'getCurrentBalance'],
+        /* bustCache */ localBalanceChange
+      ),
+      call([walletClient, 'getCurrentWAudioBalance'])
+    ])
+
+    const associatedWalletBalance: BNWei = yield* call(
+      [walletClient, 'getAssociatedWalletBalance'],
+      account.user_id,
       /* bustCache */ localBalanceChange
-    ),
-    call([walletClient, 'getCurrentWAudioBalance'])
-  ])
-
-  const associatedWalletBalance: BNWei = yield* call(
-    [walletClient, 'getAssociatedWalletBalance'],
-    account.user_id,
-    /* bustCache */ localBalanceChange
-  )
-
-  const audioWeiBalance = currentEthAudioWeiBalance.add(
-    currentSolAudioWeiBalance
-  ) as BNWei
-
-  const useSolAudio = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.ENABLE_SPL_AUDIO
-  )
-  if (useSolAudio) {
-    const totalBalance = audioWeiBalance.add(associatedWalletBalance) as BNWei
-    yield* put(
-      setBalance({
-        balance: weiToString(audioWeiBalance),
-        totalBalance: weiToString(totalBalance)
-      })
     )
-  } else {
-    const totalBalance = currentEthAudioWeiBalance.add(
-      associatedWalletBalance
+
+    const audioWeiBalance = currentEthAudioWeiBalance.add(
+      currentSolAudioWeiBalance
     ) as BNWei
-    yield* put(
-      setBalance({
-        balance: weiToString(currentEthAudioWeiBalance),
-        totalBalance: weiToString(totalBalance)
-      })
+
+    const useSolAudio = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.ENABLE_SPL_AUDIO
     )
+    if (useSolAudio) {
+      const totalBalance = audioWeiBalance.add(associatedWalletBalance) as BNWei
+      yield* put(
+        setBalance({
+          balance: weiToString(audioWeiBalance),
+          totalBalance: weiToString(totalBalance)
+        })
+      )
+    } else {
+      const totalBalance = currentEthAudioWeiBalance.add(
+        associatedWalletBalance
+      ) as BNWei
+      yield* put(
+        setBalance({
+          balance: weiToString(currentEthAudioWeiBalance),
+          totalBalance: weiToString(totalBalance)
+        })
+      )
+    }
+  } catch (err) {
+    console.error(err)
+    yield* call(reportToSentry, {
+      level: ErrorLevel.Error,
+      error: err as Error,
+      additionalInfo: { user_id: account.user_id }
+    })
   }
 }
 
