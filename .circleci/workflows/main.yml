@@ -101,7 +101,7 @@ jobs:
       name: deploy-stage-creator-provider
       context: open-vpn
       requires:
-        - release-deploy-creator-node-trigger
+        - release-deploy-stage-creator-node-trigger
       hosts: >-
         stage-creator-4
         stage-creator-1
@@ -121,7 +121,7 @@ jobs:
       name: deploy-stage-discovery-provider
       context: open-vpn
       requires:
-        - release-deploy-discovery-provider-trigger
+        - release-deploy-stage-discovery-provider-trigger
       hosts: >-
         stage-discovery-4
         stage-discovery-1
@@ -140,6 +140,6 @@ jobs:
       name: deploy-stage-identity-provider
       context: open-vpn
       requires:
-        - release-deploy-identity-service-trigger
+        - release-deploy-stage-identity-service-trigger
       hosts: stage-identity
       service: identity-provider
