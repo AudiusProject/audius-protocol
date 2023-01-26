@@ -7,6 +7,7 @@ const optimizelySDK = require('@optimizely/optimizely-sdk')
 const Sentry = require('@sentry/node')
 const cluster = require('cluster')
 
+
 const config = require('./config.js')
 const txRelay = require('./relay/txRelay')
 const ethTxRelay = require('./relay/ethTxRelay')
@@ -64,6 +65,7 @@ class App {
   }
 
   async init() {
+    logger.info("asdf init")
     let server
     await this.getAudiusAnnouncements()
 

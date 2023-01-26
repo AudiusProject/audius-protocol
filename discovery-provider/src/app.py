@@ -36,7 +36,6 @@ from src.queries import (
     skipped_transactions,
     user_signals,
 )
-from src.solana.anchor_program_indexer import AnchorProgramIndexer
 from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
@@ -316,7 +315,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.user_listening_history.index_user_listening_history",
             "src.tasks.prune_plays",
             "src.tasks.index_spl_token",
-            "src.tasks.index_solana_user_data",
             "src.tasks.index_aggregate_tips",
             "src.tasks.index_reactions",
             "src.tasks.update_track_is_available",
@@ -432,12 +430,7 @@ def configure_celery(celery, test_config=None):
             "index_profile_challenge_backfill": {
                 "task": "index_profile_challenge_backfill",
                 "schedule": timedelta(minutes=1),
-            }
-            # UNCOMMENT BELOW FOR MIGRATION DEV WORK
-            # "index_solana_user_data": {
-            #     "task": "index_solana_user_data",
-            #     "schedule": timedelta(seconds=5),
-            # },
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -467,17 +460,6 @@ def configure_celery(celery, test_config=None):
         shared_config,
         redis_inst,
         eth_abi_values,
-    )
-
-    # Initialize Anchor Indexer
-    anchor_program_indexer = AnchorProgramIndexer(
-        shared_config["solana"]["anchor_data_program_id"],
-        shared_config["solana"]["anchor_admin_storage_public_key"],
-        "index_solana_user_data",
-        redis_inst,
-        db,
-        solana_client_manager,
-        cid_metadata_client,
     )
 
     registry_address = web3.toChecksumAddress(
@@ -534,7 +516,6 @@ def configure_celery(celery, test_config=None):
                 eth_web3_provider=eth_web3,
                 solana_client_manager=solana_client_manager,
                 challenge_event_bus=setup_challenge_bus(),
-                anchor_program_indexer=anchor_program_indexer,
                 eth_manager=eth_manager,
             )
 

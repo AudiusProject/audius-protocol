@@ -111,6 +111,20 @@ def test_index_valid_social_features(app, mocker):
                 )
             },
         ],
+        "SaveTrackTx3Dupe": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Save",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
         "UnsaveTrackTx3": [
             {
                 "args": AttributeDict(
@@ -176,9 +190,9 @@ def test_index_valid_social_features(app, mocker):
             {"user_id": 3, "handle": "user-3", "wallet": "user3wallet"},
         ],
         "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
-        "tracks": [{"track_id": 1}],
+        "tracks": [{"track_id": 1, "owner_id": 11}],
         "reposts": [{"repost_item_id": 1, "repost_type": "playlist", "user_id": 1}],
-        "playlists": [{"playlist_id": 1}],
+        "playlists": [{"playlist_id": 1, "playlist_owner_id": 11}],
         "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
     }
     populate_mock_db(db, entities)
@@ -368,6 +382,34 @@ def test_index_invalid_social_features(app, mocker):
                 )
             },
         ],
+        "UserCannotRepostOwnTrackTx6": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Repost",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UserCannotRepostOwnPlaylistTx7": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Repost",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -391,8 +433,8 @@ def test_index_invalid_social_features(app, mocker):
             {"user_id": 3, "handle": "user-3", "wallet": "user3wallet"},
         ],
         "follows": [{"follower_user_id": 1, "followee_user_id": 3}],
-        "tracks": [{"track_id": 1}],
-        "playlists": [{"playlist_id": 1}],
+        "tracks": [{"track_id": 1, "owner_id": 1}],
+        "playlists": [{"playlist_id": 1, "playlist_owner_id": 1}],
         "subscriptions": [{"subscriber_id": 3, "user_id": 2}],
     }
     populate_mock_db(db, entities)

@@ -40,4 +40,6 @@ function loggingMiddleware(req, res, next) {
   next()
 }
 
+logger.info('done logging')
+
 module.exports = { logger, loggingMiddleware, requestNotExcludedFromLogging }

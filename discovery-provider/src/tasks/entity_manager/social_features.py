@@ -8,7 +8,12 @@ from src.models.social.subscription import Subscription
 from src.premium_content.premium_content_access_checker import (
     premium_content_access_checker,
 )
-from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
+from src.tasks.entity_manager.utils import (
+    Action,
+    EntityType,
+    ManageEntityParameters,
+    get_record_key,
+)
 
 action_to_record_type = {
     Action.FOLLOW: EntityType.FOLLOW,
@@ -202,13 +207,54 @@ def validate_social_feature(params: ManageEntityParameters):
     if params.entity_id not in params.existing_records[params.entity_type]:
         raise Exception(f"Entity {params.entity_id} does not exist")
 
-    if params.action == Action.FOLLOW or params.action == Action.UNFOLLOW:
+    # User cannot use social feature on themself
+    if params.action in (
+        Action.FOLLOW,
+        Action.UNFOLLOW,
+        Action.SUBSCRIBE,
+        Action.UNSUBSCRIBE,
+    ):
         if params.user_id == params.entity_id:
             raise Exception(f"User {params.user_id} cannot follow themself")
+    else:
+        target_entity = params.existing_records.get(params.entity_type, {}).get(params.entity_id)
+        print(f"target_entity {target_entity}")
+        owner_id = (
+            target_entity.playlist_owner_id
+            if params.entity_type == EntityType.PLAYLIST
+            else target_entity.owner_id
+        )
+        print(f"asdf owner_id {owner_id}")
+        if params.user_id == owner_id:
+            raise Exception(f"User {params.user_id} cannot {params.action} themself")
 
-    if params.action == Action.SUBSCRIBE or params.action == Action.UNSUBSCRIBE:
-        if params.user_id == params.entity_id:
-            raise Exception("User cannot subscribe to themself")
+    # Cannot duplicate a social feature
+    print("asdf invalidate duplicates")
+    key = get_record_key(params.user_id, params.entity_type, params.entity_id)
+    print(f"asdf key {key}")
+
+    existing_record = params.existing_records.get(action_to_record_type[params.action], {}).get(key)
+    print(f"asdf params.existing_records[params.entity_type] {params.existing_records[params.entity_type]}")
+
+    if existing_record:
+        print(f"asdf existing record {existing_record}")
+        duplicate_create = (
+            params.action
+            in (Action.REPOST, Action.SAVE, Action.FOLLOW, Action.SUBSCRIBE)
+            and not existing_record.is_delete
+        )
+        duplicate_delete = (
+            params.action
+            in (Action.UNREPOST, Action.UNSAVE, Action.UNFOLLOW, Action.UNSUBSCRIBE)
+            and existing_record.is_delete
+        )
+        print(f"asdf duplicate_create {duplicate_create}")
+        print(f"asdf duplicate_delete {duplicate_delete}")
+
+        if duplicate_create or duplicate_delete:
+            raise Exception(
+                f"User {params.user_id} has already sent a {params.action} for {params.entity_type} {params.entity_id}"
+            )
 
     if should_check_entity_access(params.action, params.entity_type):
         premium_content_access = premium_content_access_checker.check_access(
