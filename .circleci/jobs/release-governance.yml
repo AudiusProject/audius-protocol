@@ -22,5 +22,5 @@ steps:
       name: Governance Release
       command: |
         cd libs
-        export RELEASE_VERSION="$(echo "$CIRCLE_BRANCH" | sed 's/release-v//')"
+        export RELEASE_VERSION="$(jq -r .version discovery-provider/.version.json)"
         node scripts/release-governance.js
