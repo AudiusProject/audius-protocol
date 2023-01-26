@@ -111,8 +111,6 @@ describe('Notification processor', () => {
       body: `${user2.name} reacted ${reaction} to your message: ${message}`,
       data: {}
     })
-
-    // TODO set user active at and expect spy not to have been called
   })
 
   test("Does not send DM notifications when sender is receiver", async () => {
