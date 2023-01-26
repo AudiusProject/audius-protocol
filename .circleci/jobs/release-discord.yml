@@ -1,0 +1,13 @@
+resource_class: small
+docker:
+  - image: cimg/base:2023.01
+steps:
+  - run:
+      name: Discord Release
+      command: |
+        VERSION="$(echo "$CIRCLE_BRANCH" | sed 's/release-v//')"
+        curl -X POST -H "$DISCORD_WEBHOOK" -d "Content-Type: application/json" '{
+          "content": "New service version ('"${VERSION}"') is out now!\n\n• [New compose files](<https://github.com/AudiusProject/audius-docker-compose>)\n• [Changelogs](<https://github.com/AudiusProject/audius-protocol/releases>)\n• [Governance Proposals](<https://dashboard.audius.org/#/governance>) (2 days of voting left)",
+          "embeds": null,
+          "attachments": []
+        }'

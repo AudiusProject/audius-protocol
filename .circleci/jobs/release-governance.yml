@@ -1,0 +1,26 @@
+docker:
+  - image: cimg/node:14.16
+steps:
+  - checkout
+
+  - restore_cache:
+      keys:
+        - sdk-cache-{{ checksum "libs/package-lock.json" }}
+        - sdk-cache-
+  - run:
+      name: Install sdk:
+      command: |
+        cd libs
+        npm install
+        npm run build:sdk
+  - save_cache:
+      key: sdk-cache-{{ checksum "libs/package-lock.json" }}
+      paths:
+        - ./libs/node_modules
+
+  - run:
+      name: Governance Release
+      command: |
+        cd libs
+        export RELEASE_VERSION="$(echo "$CIRCLE_BRANCH" | sed 's/release-v//')"
+        node scripts/release-governance.js
