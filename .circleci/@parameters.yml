@@ -1,0 +1,4 @@
+parameters:
+  run-schedule:
+    type: boolean
+    default: false

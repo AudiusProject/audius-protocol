@@ -1,3 +1,5 @@
+when:
+  not: << pipeline.parameters.run-schedule >>
 jobs:
   - build-gcp-image:
       context: GCP
