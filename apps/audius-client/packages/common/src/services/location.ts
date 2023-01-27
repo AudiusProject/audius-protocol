@@ -12,7 +12,6 @@ export type Location = {
   country: string
   country_calling_code: string
   country_code: string
-  country_code_iso3: string
   country_name: string
   currency: string
   is_eu: boolean

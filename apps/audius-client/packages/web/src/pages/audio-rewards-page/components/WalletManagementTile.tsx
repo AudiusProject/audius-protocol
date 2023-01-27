@@ -289,7 +289,7 @@ const useOnRampProviderInfo = () => {
     [value, stripeAllowedCountries, stripeDeniedRegions]
   )
   // Assume USA is supported, so if in USA but still not supported, it's a state ban
-  const isState = value && value.country_code_iso3 === 'USA'
+  const isState = value && value.country_code === 'US'
 
   return {
     [OnRampProvider.STRIPE]: {
