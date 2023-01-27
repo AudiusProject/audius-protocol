@@ -53,6 +53,7 @@ export const UserProfilePictureList = ({
    * users.
    */
   const sliceLimit = showUserListModal ? limit - 1 : limit
+  const lastUser = users[limit - 1]
 
   return (
     <div className={styles.root}>
@@ -71,7 +72,7 @@ export const UserProfilePictureList = ({
             stopPropagation={stopPropagation}
           />
         ))}
-      {showUserListModal ? (
+      {showUserListModal && lastUser ? (
         <Tooltip text={messages.viewAllTooltip} disabled={disableProfileClick}>
           <div
             className={cn(styles.profilePictureExtraRoot, {
@@ -84,7 +85,7 @@ export const UserProfilePictureList = ({
                 styles.profilePictureExtra,
                 profilePictureClassname
               )}
-              user={users[limit - 1]}
+              user={lastUser}
             />
             <span className={styles.profilePictureCount}>
               {`+${formatCount(remainingUsersCount)}`}
