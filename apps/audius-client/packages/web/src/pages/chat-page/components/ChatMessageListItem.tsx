@@ -65,16 +65,19 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   )
   const handleReactionSelected = useCallback(
     (reaction: ReactionTypes) => {
-      dispatch(
-        setMessageReaction({
-          chatId,
-          messageId: message.message_id,
-          reaction
-        })
-      )
+      if (userId) {
+        dispatch(
+          setMessageReaction({
+            userId,
+            chatId,
+            messageId: message.message_id,
+            reaction
+          })
+        )
+      }
       handleCloseReactionPopup()
     },
-    [dispatch, handleCloseReactionPopup, chatId, message]
+    [dispatch, handleCloseReactionPopup, userId, chatId, message]
   )
 
   return (

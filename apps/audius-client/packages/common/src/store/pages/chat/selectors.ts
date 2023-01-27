@@ -1,4 +1,6 @@
 import type { UserChat } from '@audius/sdk'
+import dayjs from 'dayjs'
+import { createSelector } from 'reselect'
 
 import { Status } from 'models/Status'
 import { accountSelectors } from 'store/account'
@@ -13,7 +15,8 @@ export const getChat = (state: CommonState, chatId?: string) =>
     ? state.pages.chat.chatList.data?.find((chat) => chat.chat_id === chatId)
     : undefined
 
-export const getChats = (state: CommonState) => state.pages.chat.chatList.data
+export const getChatsRaw = (state: CommonState) =>
+  state.pages.chat.chatList.data
 
 export const getChatsStatus = (state: CommonState) =>
   state.pages.chat.chatList.status
@@ -21,14 +24,76 @@ export const getChatsStatus = (state: CommonState) =>
 export const getChatsSummary = (state: CommonState) =>
   state.pages.chat.chatList.summary
 
+export const getOptimisticReads = (state: CommonState) =>
+  state.pages.chat.optimisticChatRead
+
+export const getAllChatMessages = (state: CommonState) =>
+  state.pages.chat.chatMessages
+
 export const getChatMessagesSummary = (state: CommonState, chatId: string) =>
   state.pages.chat.chatMessages[chatId]?.summary
 
-export const getChatMessages = (state: CommonState, chatId: string) =>
+export const getChatMessagesRaw = (state: CommonState, chatId: string) =>
   state.pages.chat.chatMessages[chatId]?.data
 
 export const getChatMessagesStatus = (state: CommonState, chatId: string) =>
   state.pages.chat.chatMessages[chatId]?.status ?? Status.IDLE
+
+export const getOptimisticReactions = (state: CommonState) =>
+  state.pages.chat.optimisticReactions
+
+export const getChats = createSelector(
+  [getChatsRaw, getAllChatMessages, getOptimisticReads],
+  (chats, allMessages, optimisticReads) => {
+    return chats?.map((chat) => {
+      // If have a clientside optimistic read status, override the server status
+      if (optimisticReads?.[chat.chat_id]) {
+        chat = {
+          ...chat,
+          ...optimisticReads[chat.chat_id]
+        }
+      }
+
+      // If have newer messages on the client than the server's version for the chat,
+      // use that instead for the last_message and last_message_at
+      const chatMessages = allMessages[chat.chat_id]?.data
+      if (
+        chatMessages &&
+        chatMessages.length > 0 &&
+        chatMessages[0] &&
+        dayjs(chatMessages[0].created_at).isAfter(chat.last_message_at)
+      ) {
+        chat = {
+          ...chat,
+          last_message_at: chatMessages[0].created_at,
+          last_message: chatMessages[0].message
+        }
+      }
+      return chat
+    })
+  }
+)
+
+export const getChatMessages = createSelector(
+  [getChatMessagesRaw, getOptimisticReactions],
+  (messages, optimisticReactions) => {
+    return messages?.map((message) => {
+      const optimisticReaction = optimisticReactions[message.message_id]
+      if (optimisticReaction) {
+        return {
+          ...message,
+          reactions: [
+            optimisticReaction,
+            ...(message.reactions?.filter(
+              (reaction) => optimisticReaction.user_id !== reaction.user_id
+            ) ?? [])
+          ]
+        }
+      }
+      return message
+    })
+  }
+)
 
 export const getOtherChatUsersFromChat = (
   state: CommonState,
