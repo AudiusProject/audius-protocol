@@ -36,7 +36,7 @@ export async function createChat(db: Knex, user1: number, user2: number, chatId:
       created_at: timestamp.toISOString(),
       last_message_at: timestamp.toISOString(),
     }
-    )
+  )
     .into('chat')
 
   await db.insert([
@@ -52,7 +52,7 @@ export async function createChat(db: Knex, user1: number, user2: number, chatId:
       invite_code: chatId,
       user_id: user2
     }
-    ])
+  ])
     .into('chat_member')
 }
 
@@ -76,7 +76,7 @@ export async function insertMessage(db: Knex, senderId: number, chatId: string, 
       created_at: timestamp.toISOString(),
       ciphertext: message
     }
-    )
+  )
     .into('chat_message')
 
   await db('chat')
@@ -97,7 +97,7 @@ export async function insertReaction(db: Knex, senderId: number, messageId: stri
       created_at: timestamp.toISOString(),
       updated_at: timestamp.toISOString()
     }
-    )
+  )
     .into('chat_message_reactions')
 }
 
@@ -112,7 +112,7 @@ export async function insertMobileDevice(db: Knex, userId: number, deviceType: s
       createdAt: currentTimestamp,
       updatedAt: currentTimestamp
     }
-    )
+  )
     .into('NotificationDeviceTokens')
 }
 
@@ -124,7 +124,7 @@ export async function insertMobileSetting(db: Knex, userId: number) {
       createdAt: currentTimestamp,
       updatedAt: currentTimestamp
     }
-    )
+  )
     .into('UserNotificationMobileSettings')
 }
 

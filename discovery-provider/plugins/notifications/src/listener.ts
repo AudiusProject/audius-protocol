@@ -45,6 +45,9 @@ export class Listener {
 
 
   close = async () => {
-    await this.db.client.releaseConnection(this.connection);
+    if (this.db) {
+      await this.db.client.releaseConnection(this.connection);
+      this.db = null
+    }
   }
 }
