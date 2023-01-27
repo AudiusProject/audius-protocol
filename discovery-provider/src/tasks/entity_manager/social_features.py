@@ -217,27 +217,25 @@ def validate_social_feature(params: ManageEntityParameters):
         if params.user_id == params.entity_id:
             raise Exception(f"User {params.user_id} cannot follow themself")
     else:
-        target_entity = params.existing_records.get(params.entity_type, {}).get(params.entity_id)
-        print(f"target_entity {target_entity}")
+        target_entity = params.existing_records.get(params.entity_type, {}).get(
+            params.entity_id
+        )
         owner_id = (
             target_entity.playlist_owner_id
             if params.entity_type == EntityType.PLAYLIST
             else target_entity.owner_id
         )
-        print(f"asdf owner_id {owner_id}")
         if params.user_id == owner_id:
             raise Exception(f"User {params.user_id} cannot {params.action} themself")
 
     # Cannot duplicate a social feature
-    print("asdf invalidate duplicates")
     key = get_record_key(params.user_id, params.entity_type, params.entity_id)
-    print(f"asdf key {key}")
 
-    existing_record = params.existing_records.get(action_to_record_type[params.action], {}).get(key)
-    print(f"asdf params.existing_records[params.entity_type] {params.existing_records[params.entity_type]}")
+    existing_record = params.existing_records.get(
+        action_to_record_type[params.action], {}
+    ).get(key)
 
     if existing_record:
-        print(f"asdf existing record {existing_record}")
         duplicate_create = (
             params.action
             in (Action.REPOST, Action.SAVE, Action.FOLLOW, Action.SUBSCRIBE)
@@ -248,8 +246,6 @@ def validate_social_feature(params: ManageEntityParameters):
             in (Action.UNREPOST, Action.UNSAVE, Action.UNFOLLOW, Action.UNSUBSCRIBE)
             and existing_record.is_delete
         )
-        print(f"asdf duplicate_create {duplicate_create}")
-        print(f"asdf duplicate_delete {duplicate_delete}")
 
         if duplicate_create or duplicate_delete:
             raise Exception(
