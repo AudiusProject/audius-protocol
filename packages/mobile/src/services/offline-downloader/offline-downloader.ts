@@ -130,9 +130,12 @@ export const downloadCollection = async (
   )
 
   if (!user) return
-  store.dispatch(
-    saveCollection(collection.playlist_id, FavoriteSource.OFFLINE_DOWNLOAD)
-  )
+
+  if (!collection.has_current_user_saved) {
+    store.dispatch(
+      saveCollection(collection.playlist_id, FavoriteSource.OFFLINE_DOWNLOAD)
+    )
+  }
   const populatedCollection: Collection = await populateCoverArtSizes({
     ...collection,
     user
