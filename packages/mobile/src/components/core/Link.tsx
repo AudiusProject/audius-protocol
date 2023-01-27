@@ -1,9 +1,9 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
 import type { GestureResponderEvent, PressableProps } from 'react-native'
 import { Linking, Pressable } from 'react-native'
 
-import { ToastContext } from 'app/components/toast/ToastContext'
+import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -14,7 +14,7 @@ const messages = {
 export const useOnOpenLink = (
   source?: 'profile page' | 'track page' | 'collection page'
 ) => {
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
 
   const handlePress = useCallback(
     async (url: string) => {

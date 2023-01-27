@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
-import { ToastContextProvider } from 'app/components/toast/ToastContext'
+import { Toasts } from 'app/components/toasts'
 
 import { useAppScreenOptions } from '../app-screen/useAppScreenOptions'
 
@@ -15,12 +15,13 @@ export const WalletConnectStack = () => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (
-    <ToastContextProvider>
+    <>
+      <Toasts />
       <Stack.Navigator screenOptions={screenOptions}>
         <Stack.Screen name='Wallets' component={WalletConnectScreen} />
       </Stack.Navigator>
       <WalletsDrawer />
       <ConfirmRemoveWalletDrawer />
-    </ToastContextProvider>
+    </>
   )
 }

@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react'
-import { PureComponent, useContext, useEffect } from 'react'
+import { PureComponent, useEffect } from 'react'
 
 import type { Nullable } from '@audius/common'
 import * as Sentry from '@sentry/react-native'
 
-import { ToastContext } from 'app/components/toast/ToastContext'
+import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
@@ -15,7 +15,8 @@ type ErrorToastProps = {
 const ErrorToast = (props: ErrorToastProps) => {
   const { error } = props
   // Do nothing other than trigger a toast when error changes
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
+
   useEffect(() => {
     if (error) {
       console.error(error)

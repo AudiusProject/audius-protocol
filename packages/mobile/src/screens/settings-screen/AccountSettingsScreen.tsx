@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   accountSelectors,
@@ -20,9 +20,9 @@ import IconRemove from 'app/assets/images/iconRemove.svg'
 import IconSignOut from 'app/assets/images/iconSignOut.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { ScrollView, Screen, ScreenContent } from 'app/components/core'
-import { ToastContext } from 'app/components/toast/ToastContext'
 import { ProfilePicture } from 'app/components/user'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 
 import type { ProfileTabScreenParamList } from '../app-screen/ProfileTabScreen'
@@ -77,7 +77,7 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
 
 export const AccountSettingsScreen = () => {
   const styles = useStyles()
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
   const dispatch = useDispatch()
   const accountUser = useSelector(getAccountUser)
   const recoveryEmailStatus = useSelector(getRecoveryEmailStatus)

@@ -1,4 +1,4 @@
-import { useContext, useCallback } from 'react'
+import { useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
 import { Animated, StyleSheet, View, TouchableHighlight } from 'react-native'
@@ -8,10 +8,9 @@ import IconCopy from 'app/assets/images/iconCopy.svg'
 import Text from 'app/components/text'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { useToast } from 'app/hooks/useToast'
 import type { ThemeColors } from 'app/utils/theme'
 import { useThemeColors } from 'app/utils/theme'
-
-import { ToastContext } from '../toast/ToastContext'
 
 const messages = {
   copyPrompt: 'Copy Invite to Clipboard',
@@ -53,7 +52,7 @@ export const ReferralLinkCopyButton = ({
     useThemeColors()
   const styles = useThemedStyles(createStyles)
 
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
   const onCopyClicked = useCallback(() => {
     Clipboard.setString(inviteUrl)
     toast({ content: messages.copyNotice, type: 'info' })
