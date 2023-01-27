@@ -15,7 +15,7 @@ export type Location = {
   country_code_iso3: string
   country_name: string
   currency: string
-  in_eu: boolean
+  is_eu: boolean
   ip: string
   languages: string
   latitude: number
