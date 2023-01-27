@@ -33,6 +33,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         defaultValue: true
       },
+      messages: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: true
+      },
       browserPushNotifications: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
