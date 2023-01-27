@@ -4,11 +4,11 @@ import { logger } from '../../logger'
 
 // @ts-ignore
 import { renderNotificationsEmail } from './components/index.tsx'
-import { EmailFrequency } from '../../appNotifications/mappers/base'
+import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { NotificationRow } from '../../types/dn'
 import { Knex } from 'knex'
 import { EntityType } from './types'
-import { RepostNotification, SaveNotification } from '../../types/appNotifications'
+import { RepostNotification, SaveNotification } from '../../types/notifications'
 
 type RenderEmailProps = {
   userId: number

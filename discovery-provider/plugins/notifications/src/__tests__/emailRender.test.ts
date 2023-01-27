@@ -4,7 +4,7 @@ import { expect, test } from '@jest/globals';
 import { renderEmail } from '../email/appNotifications/renderEmail';
 import { Processor } from '../main';
 import { NotificationRow, reposttype } from '../types/dn';
-import { createReposts, createTestDB, createTracks, createUsers, dropTestDB, insertFollow, insertMobileDevice, insertMobileSetting, replaceDBName } from '../utils/populateDB';
+import { createReposts, createTestDB, createTracks, createUsers, dropTestDB, insertFollows, replaceDBName } from '../utils/populateDB';
 import { Knex } from 'knex';
 
 
@@ -53,7 +53,9 @@ describe('Render Email', () => {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
       processor = await initDB(testName)
 
-      await insertFollow(processor.discoveryDB, 1, 2)
+      await insertFollows(processor.discoveryDB, [
+        { follower_user_id: 1, followee_user_id: 2 }
+      ])
       await new Promise(resolve => setTimeout(resolve, 10))
 
       const notifications: NotificationRow[] = [
@@ -90,7 +92,8 @@ describe('Render Email', () => {
 
 
       await createTracks(processor.discoveryDB, [{
-        track_id: 1
+        track_id: 1,
+        owner_id: 1
       }])
 
 
