@@ -70,16 +70,30 @@ export const TracksTab = () => {
   const isReachable = useSelector(getIsReachable)
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
-  const handleFetchSaves = useCallback(() => {
+  const handleFetchSavesOnline = useCallback(() => {
     dispatch(fetchSaves())
   }, [dispatch])
 
-  useFocusEffect(handleFetchSaves)
-  useOfflineCollectionLineup(
+  const handleFetchSavesOffline = useOfflineCollectionLineup(
     DOWNLOAD_REASON_FAVORITES,
-    handleFetchSaves,
+    handleFetchSavesOnline,
     tracksActions
   )
+
+  const handleFetchSaves = useCallback(() => {
+    if (isOfflineModeEnabled && !isReachable) {
+      handleFetchSavesOffline()
+    } else {
+      handleFetchSavesOnline()
+    }
+  }, [
+    handleFetchSavesOffline,
+    handleFetchSavesOnline,
+    isOfflineModeEnabled,
+    isReachable
+  ])
+
+  useFocusEffect(handleFetchSaves)
 
   const [filterValue, setFilterValue] = useState('')
   const isPlaying = useSelector(getPlaying)
