@@ -7,22 +7,13 @@ const spawnOpenAPIGenerator = (openApiGeneratorArgs) => {
   console.log('Running OpenAPI Generator:')
   const fullCmd = `docker run --rm -v "${process.env.PWD}:/local" openapitools/openapi-generator-cli ${openApiGeneratorArgs.join(' ')}`
   console.log(fullCmd)
-  const openApiGeneratorCLI = exec(fullCmd)
-
-  openApiGeneratorCLI.stdout.on('data', (data) => {
-    console.log(`${data}`)
-  })
-
-  openApiGeneratorCLI.stderr.on('data', (data) => {
-    console.log(`${data}`)
-  })
-
-  openApiGeneratorCLI.on('error', (error) => {
-    console.log(`error: ${error.message}`)
-  })
-
-  openApiGeneratorCLI.on('close', (code) => {
-    console.log(`child process exited with code ${code}`)
+  const openApiGeneratorCLI = exec(fullCmd, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`exec error: ${error}`);
+      return;
+    }
+    console.log(`stdout: ${stdout}`);
+    console.error(`stderr: ${stderr}`);
   })
   return openApiGeneratorCLI
 }
