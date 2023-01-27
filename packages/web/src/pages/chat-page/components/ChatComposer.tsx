@@ -67,12 +67,13 @@ export const ChatComposer = (props: ChatComposerProps) => {
     <div className={cn(styles.root, props.className)}>
       <form className={styles.form} onSubmit={handleSubmit}>
         <TextAreaV2
+          rows={1}
           className={styles.input}
           placeholder={messages.sendMessagePlaceholder}
           onKeyDown={handleKeyDown}
           onChange={handleChange}
           value={value}
-          maxVisibleRows={3}
+          maxVisibleRows={10}
           maxLength={10000}
           grows
           resize
