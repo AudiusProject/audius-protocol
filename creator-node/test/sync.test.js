@@ -92,7 +92,9 @@ describe('Test secondarySyncFromPrimary()', async function () {
       sandbox.restore()
     }
     await sinon.restore()
-    await server.close()
+    if (server) {
+      await server.close()
+    }
   })
 
   describe('test /export route', async function () {

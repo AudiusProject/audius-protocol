@@ -29,7 +29,9 @@ describe('test transcode_and_segment route', function () {
 
   afterEach(async () => {
     sinon.restore()
-    await server.close()
+    if (server) {
+      await server.close()
+    }
   })
 
   it('if uuid/file name/file type is not passed in, return 400', async function () {

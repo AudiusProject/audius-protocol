@@ -1,7 +1,11 @@
 import { initializeApp } from '../../src/app'
 import { ImageProcessingQueue } from '../../src/ImageProcessingQueue'
 const nodeConfig = require('../../src/config.js')
-const { runMigrations, clearDatabase } = require('../../src/migrationManager')
+const {
+  runMigrations,
+  clearDatabase,
+  clearRunningQueries
+} = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')
 const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
@@ -25,6 +29,7 @@ export async function getApp(
   clearRequireCache()
 
   // run all migrations before each test
+  await clearRunningQueries()
   await clearDatabase()
   await runMigrations()
 

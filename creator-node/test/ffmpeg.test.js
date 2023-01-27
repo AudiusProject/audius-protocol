@@ -66,7 +66,7 @@ describe('test segmentFile()', () => {
    * When: it is segmented
    * Then: there are 32 proper track segments present in tests/segments
    */
-  it.only('should properly segment track', async () => {
+  it('should properly segment track', async () => {
     const fileDir = __dirname
     const fileName = 'testTrack.mp3'
 
@@ -79,26 +79,25 @@ describe('test segmentFile()', () => {
 
     // read segments assets from /test-segments
     // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
-    const testSegmentsPath = path.join(fileDir, 'test-segments')
+    const testSegmentsPath = path.join(
+      fileDir,
+      // ffmpeg on arm runs slightly differently. Output is same, but slightly different
+      // segmenting.
+      // Not the best, but this code is meant to not live forever.
+      process.arch === 'arm64' ? 'test-segments/arm' : 'test-segments'
+    )
     const files = await fs.readdir(testSegmentsPath)
 
     // check that testTrack.mp3 that 32 track segments are written
     assert.deepStrictEqual(files.length, 32)
 
     const allSegmentsSet = new Set(files)
-    console.log(allSegmentsSet)
-    console.log(files)
     await Promise.all(
       files.map(async (file, i) => {
         // check that the segment follows naming convention
         const indexSuffix = ('00000' + i).slice(-5)
         assert.deepStrictEqual(file, `segment${indexSuffix}.ts`)
 
-        console.log(
-          'generated',
-          path.join(fileDir, 'segments', file),
-          path.join(testSegmentsPath, file)
-        )
         // check that the segment is proper by comparing its buffer to test assets
         const testGeneratedSegmentBuf = await fs.readFile(
           path.join(fileDir, 'segments', file)
@@ -114,7 +113,6 @@ describe('test segmentFile()', () => {
         allSegmentsSet.delete(file)
       })
     )
-    console.log(allSegmentsSet)
 
     // check that all the expected segments were found
     assert.deepStrictEqual(allSegmentsSet.size, 0)
