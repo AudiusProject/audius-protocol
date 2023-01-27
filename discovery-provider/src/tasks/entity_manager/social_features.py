@@ -217,9 +217,7 @@ def validate_social_feature(params: ManageEntityParameters):
         if params.user_id == params.entity_id:
             raise Exception(f"User {params.user_id} cannot follow themself")
     else:
-        target_entity = params.existing_records.get(params.entity_type, {}).get(
-            params.entity_id
-        )
+        target_entity = params.existing_records[params.entity_type][params.entity_id]
         owner_id = (
             target_entity.playlist_owner_id
             if params.entity_type == EntityType.PLAYLIST
