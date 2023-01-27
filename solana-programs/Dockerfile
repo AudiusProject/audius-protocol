@@ -25,10 +25,9 @@ RUN --mount=type=cache,target=/usr/src/app/target-cache \
     --mount=type=cache,target=/root/.cache/solana \
     --mount=type=cache,target=/usr/local/cargo/registry \
     CARGO_TARGET_DIR=/usr/src/app/target-cache ./scripts/build.sh && \
-    mkdir -p target target/debug anchor/audius-data/target && \
+    mkdir -p target target/debug && \
     cp -r target-cache/deploy target/ && \
     cp target-cache/debug/*-cli target/debug && \
-    cp -r target-cache/deploy anchor/audius-data/target/
 
 ARG BUILD_ID
 LABEL prune=true
