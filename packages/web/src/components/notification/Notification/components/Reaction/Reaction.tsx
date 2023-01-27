@@ -19,6 +19,7 @@ export type ReactionProps = {
   onClick?: MouseEventHandler
   width?: number
   height?: number
+  title?: string
 }
 
 export const Reaction = (props: ReactionProps) => {
@@ -29,7 +30,8 @@ export const Reaction = (props: ReactionProps) => {
     isResponsive,
     onClick,
     width = 86,
-    height = 86
+    height = 86,
+    title
   } = props
   const [isInteracting, setInteracting] = useState(false)
   const [isClicked, setIsClicked] = useState(false)
@@ -82,6 +84,7 @@ export const Reaction = (props: ReactionProps) => {
       onMouseLeave={handleMouseLeave}
     >
       <Lottie
+        title={title}
         height={width}
         width={height}
         options={lottieOptions}
