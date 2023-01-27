@@ -20,7 +20,7 @@ export const getIsInEU = async () => {
   if (!location) {
     return false
   }
-  const isEU = location.in_eu
+  const isEU = location.is_eu
   localStorage.setExpiringJSONValue(IS_EU_KEY, isEU, IS_EU_CACHE_TTL_MS)
   return isEU
 }
