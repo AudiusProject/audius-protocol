@@ -50,8 +50,8 @@
 
 .characterCount {
   color: var(--neutral-light-4);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: var(--font-xs);
+  font-weight: var(--font-medium);
 }
 .characterCount.nearLimit {
   color: var(--accent-orange);

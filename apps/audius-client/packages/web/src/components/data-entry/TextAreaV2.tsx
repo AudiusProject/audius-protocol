@@ -19,6 +19,17 @@ const sizeToVerticalPadding: Record<TextAreaSize, number> = {
   [TextAreaSize.SMALL]: 12
 }
 
+const getMaxHeight = ({
+  maxVisibleRows,
+  size
+}: {
+  maxVisibleRows?: number
+  size: TextAreaSize
+}) =>
+  maxVisibleRows !== undefined
+    ? maxVisibleRows * sizeToLineHeight[size] + sizeToVerticalPadding[size]
+    : undefined
+
 type TextAreaV2Props = ComponentPropsWithoutRef<'textarea'> & {
   grows?: boolean
   resize?: boolean
@@ -47,21 +58,14 @@ export const TextAreaV2 = (props: TextAreaV2Props) => {
 
   const ref = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const characterCount = value ? `${value}`.length : 0
+  const nearCharacterLimit =
+    maxLength &&
+    characterCount > CHARACTER_LIMIT_WARN_THRESHOLD_PERCENT * maxLength
 
-  const growTextArea = useCallback(() => {
-    if (textareaRef.current) {
-      const textarea = textareaRef.current
-      textarea.style.height = '1px'
-      textarea.style.height = `${textarea.scrollHeight + (heightBuffer ?? 0)}px`
-      ref.current?.scrollTo({ top: ref.current?.scrollHeight })
-    }
-  }, [textareaRef, heightBuffer])
-
-  useEffect(() => {
-    if (grows) {
-      growTextArea()
-    }
-  }, [grows, growTextArea, value])
+  const maxHeight = grows
+    ? getMaxHeight({ maxVisibleRows, size })
+    : ref.current?.offsetHeight // clamp to initial height if non-growing
 
   const style = {
     [styles.noResize]: !resize,
@@ -69,15 +73,20 @@ export const TextAreaV2 = (props: TextAreaV2Props) => {
     [styles.small]: size === TextAreaSize.SMALL
   }
 
-  const nearCharacterLimit = maxLength
-    ? `${value}`.length > CHARACTER_LIMIT_WARN_THRESHOLD_PERCENT * maxLength
-    : false
+  const growTextArea = useCallback(() => {
+    if (textareaRef.current) {
+      const textarea = textareaRef.current
+      textarea.style.height = 'inherit'
+      textarea.style.height = `${textarea.scrollHeight + (heightBuffer ?? 0)}px`
+      ref.current?.scrollTo({ top: ref.current?.scrollHeight })
+    }
+  }, [textareaRef, heightBuffer])
 
-  const maxHeight = maxVisibleRows
-    ? `${
-        maxVisibleRows * sizeToLineHeight[size] + sizeToVerticalPadding[size]
-      }px`
-    : undefined
+  useEffect(() => {
+    // Even though we always "grow" the text area,
+    // the maxHeight of the container will cause a scrollbar to appear if necesary
+    growTextArea()
+  }, [growTextArea, value])
 
   return (
     <div
@@ -100,7 +109,7 @@ export const TextAreaV2 = (props: TextAreaV2Props) => {
                 [styles.nearLimit]: nearCharacterLimit
               })}
             >
-              {`${value}`.length}/{maxLength}
+              {characterCount}/{maxLength}
             </div>
           ) : null}
         </div>
