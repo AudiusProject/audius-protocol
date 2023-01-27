@@ -147,7 +147,8 @@ function* watchSetBrowserNotificationSettingsOn() {
           [BrowserNotificationSetting.Followers]: true,
           [BrowserNotificationSetting.Reposts]: true,
           [BrowserNotificationSetting.Favorites]: true,
-          [BrowserNotificationSetting.Remixes]: true
+          [BrowserNotificationSetting.Remixes]: true,
+          [BrowserNotificationSetting.Messages]: true
         }
         yield* put(actions.setNotificationSettings(updatedSettings))
         yield* call(

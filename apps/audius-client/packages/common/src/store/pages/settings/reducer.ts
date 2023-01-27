@@ -28,7 +28,8 @@ export const initialState = {
     [BrowserNotificationSetting.Followers]: true,
     [BrowserNotificationSetting.Reposts]: true,
     [BrowserNotificationSetting.Favorites]: true,
-    [BrowserNotificationSetting.Remixes]: true
+    [BrowserNotificationSetting.Remixes]: true,
+    [BrowserNotificationSetting.Messages]: true
   },
   pushNotifications: {
     [PushNotificationSetting.MobilePush]: true,
@@ -36,7 +37,8 @@ export const initialState = {
     [PushNotificationSetting.Followers]: true,
     [PushNotificationSetting.Reposts]: true,
     [PushNotificationSetting.Remixes]: true,
-    [PushNotificationSetting.Favorites]: true
+    [PushNotificationSetting.Favorites]: true,
+    [PushNotificationSetting.Messages]: true
   },
   [emailFrequency]: EmailFrequency.Daily
 }
@@ -53,7 +55,8 @@ const actionsMap: ActionsMap<SettingsPageState> = {
         [BrowserNotificationSetting.Followers]: action.settings.followers,
         [BrowserNotificationSetting.Reposts]: action.settings.reposts,
         [BrowserNotificationSetting.Favorites]: action.settings.favorites,
-        [BrowserNotificationSetting.Remixes]: action.settings.remixes
+        [BrowserNotificationSetting.Remixes]: action.settings.remixes,
+        [BrowserNotificationSetting.Messages]: action.settings.messages
       }
     }
   },
@@ -69,7 +72,8 @@ const actionsMap: ActionsMap<SettingsPageState> = {
         [PushNotificationSetting.Followers]: action.settings.followers,
         [PushNotificationSetting.Reposts]: action.settings.reposts,
         [PushNotificationSetting.Remixes]: action.settings.remixes,
-        [PushNotificationSetting.Favorites]: action.settings.favorites
+        [PushNotificationSetting.Favorites]: action.settings.favorites,
+        [PushNotificationSetting.Messages]: action.settings.messages
       }
     }
   },

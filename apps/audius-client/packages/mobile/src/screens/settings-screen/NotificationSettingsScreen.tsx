@@ -1,9 +1,14 @@
-import { PushNotificationSetting, settingsPageActions } from '@audius/common'
+import {
+  FeatureFlags,
+  PushNotificationSetting,
+  settingsPageActions
+} from '@audius/common'
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
 import { Screen, ScreenContent } from 'app/components/core'
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 
 import { Divider } from './Divider'
 import { EmailFrequencyControlRow } from './EmailFrequencyControlRow'
@@ -19,11 +24,13 @@ const messages = {
   followers: 'New Followers',
   reposts: 'Reposts',
   favorites: 'Favorites',
-  remixes: 'Remixes of My Tracks'
+  remixes: 'Remixes of My Tracks',
+  messages: 'Messages'
 }
 
 export const NotificationSettingsScreen = () => {
   const dispatch = useDispatch()
+  const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
 
   useEffectOnce(() => {
     dispatch(getPushNotificationSettings())
@@ -58,6 +65,12 @@ export const NotificationSettingsScreen = () => {
           label={messages.remixes}
           type={PushNotificationSetting.Remixes}
         />
+        {isChatEnabled ? (
+          <NotificationRow
+            label={messages.messages}
+            type={PushNotificationSetting.Messages}
+          />
+        ) : null}
         <Divider />
         <EmailFrequencyControlRow />
       </ScreenContent>
