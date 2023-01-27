@@ -9,10 +9,7 @@ const { logger } = require('./logging')
 const config = require('./config')
 const App = require('./app')
 
-logger.info('asdf index')
 const start = async () => {
-  logger.info('asdf start')
-  logger.info("asdf start")
   const port = config.get('port')
   const app = new App(port)
   const { server } = await app.init()
