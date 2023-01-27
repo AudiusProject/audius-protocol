@@ -2,7 +2,7 @@ import { expect, jest, test } from '@jest/globals';
 import { Processor } from '../main';
 import * as sns from '../sns'
 
-import { createTestDB, createUsers, dropTestDB, insertFollow, insertMobileDevice, insertMobileSetting, replaceDBName } from '../utils/populateDB';
+import { createTestDB, createUsers, dropTestDB, insertFollows, insertMobileDevices, insertMobileSettings, replaceDBName } from '../utils/populateDB';
 
 describe('Push Notifications', () => {
 
@@ -37,9 +37,9 @@ describe('Push Notifications', () => {
       })
       console.log('inserting')
       await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-      await insertFollow(processor.discoveryDB, 1, 2)
-      await insertMobileSetting(processor.identityDB, 2)
-      await insertMobileDevice(processor.identityDB, 2)
+      await insertFollows(processor.discoveryDB, [{ follower_user_id: 1, followee_user_id: 2 }])
+      await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+      await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
       await new Promise(resolve => setTimeout(resolve, 10))
 
       const pending = processor.listener.takePending()
