@@ -60,10 +60,5 @@
 }
 
 .crownIcon svg {
-  background: var(--accent-orange);
   padding: 4px;
-}
-
-.rewardsMenuItem {
-  color: var(--accent-orange);
 }
