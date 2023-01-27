@@ -4,7 +4,8 @@ import {
   useCallback,
   useMemo,
   forwardRef,
-  MouseEventHandler
+  MouseEventHandler,
+  useRef
 } from 'react'
 
 import cn from 'classnames'
@@ -200,6 +201,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
     }
   })
 
+  const modalContentClickedRef = useRef<boolean>(false)
   const outsideClickRef = useClickOutside(
     onClose,
     // Check to see if the click outside is not another modal wrapper.
@@ -211,7 +213,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
       // Closing when we're not open can cause a race condition when opened
       // via a click since this handler exists prior to visibility,
       // causing the modal to open and close immediately
-      if (!isOpen) {
+      if (!isOpen || modalContentClickedRef) {
+        modalContentClickedRef.current = false
         return true
       }
       if (e instanceof Element) {
@@ -283,8 +286,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
 
   const bodyOffset = getOffset(anchor, verticalAnchorOffset)
 
-  const handleModalContentClicked: MouseEventHandler = (e) => {
-    e.stopPropagation()
+  const handleModalContentClicked: MouseEventHandler = () => {
+    modalContentClickedRef.current = true
   }
   return (
     <>
