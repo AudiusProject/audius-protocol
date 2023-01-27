@@ -1,0 +1,87 @@
+export enum DeviceType {
+  Mobile = 'mobile',
+  Browser = 'browser',
+}
+
+
+export enum EntityType {
+  Track = 'track',
+  Playlist = 'playlist',
+  Album = 'album',
+}
+
+export type User = {
+  // User's name to display in email
+  name: string
+  // URL to the user's profile pic
+  image: string
+}
+
+export type Entity = {
+  // User's name to display in email
+  type: EntityType
+  // Display name of the track/playlist/album
+  name: string
+}
+
+export type Announcement = {
+  text: string
+}
+
+export type BaseNotification =
+  {
+    users: User[]
+    entity: Entity
+  }
+
+export type Follow = BaseNotification & { type: 'follow' }
+export type Repost = BaseNotification & { type: 'repost' }
+export type Milestone = {
+  type: 'milestone'
+  value: number
+  achievement: string
+  entity: Entity
+}
+
+export type MilestoneFollow = {
+  type: 'milestone'
+  value: number
+  achievement: string
+}
+
+export type TrendingTrack = {
+  type: 'trendingTrack'
+  entity: Entity
+  rank: number
+}
+
+export type UserSubscription = {
+  type: 'userSubscription'
+  entity: Entity
+  rank: number
+}
+
+export type Notification =
+  | Announcement
+  | Follow
+  | Repost
+
+export type NotificationType =
+  | 'favorite'
+  | 'repost'
+  | 'save'
+  | 'follow'
+  | 'announcement'
+  | 'milestone'
+  | 'trendingTrack'
+  | 'createTrack'
+  | 'createPlaylist'
+  | 'chllengeReward'
+  | 'remix'
+  | 'remixCosign'
+  | 'addTrackToPlaylist'
+  | 'tipReceive'
+  | 'tipSend'
+  | 'reaction'
+  | 'supporterRankUp'
+  | 'supportingRankUp'

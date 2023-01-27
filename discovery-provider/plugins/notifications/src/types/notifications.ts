@@ -1,3 +1,5 @@
+import { EntityType } from "../email/appNotifications/types"
+
 export type DMNotification = {
   sender_user_id: number
   receiver_user_id: number
@@ -19,19 +21,19 @@ export type FollowNotification = {
 }
 
 export type RepostNotification = {
-  type: string
+  type: EntityType
   user_id: number
   repost_item_id: number
 
 }
 export type SaveNotification = {
-  type: string
+  type: EntityType
   user_id: number
   save_item_id: number
 }
 
 export type MilestoneNotification = {
-  type: string
+  type: EntityType
   threshold: number
 }
 

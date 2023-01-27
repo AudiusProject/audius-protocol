@@ -4,8 +4,6 @@
   "description": "Service that sends out notifications",
   "scripts": {
     "build": "tsc",
-    "catchup": "node build/src/main.js --no-listen",
-    "catchup:ci": "ts-node --transpileOnly src/main.ts --drop --no-listen",
     "dev": "nodemon",
     "sql-ts": "ts-node scripts/sql-ts.ts",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000",
@@ -31,13 +29,18 @@
   },
   "dependencies": {
     "@aws-sdk/client-sns": "^3.245.0",
+    "@sendgrid/mail": "^7.7.0",
     "commander": "9.2.0",
     "knex": "2.4.1",
     "lodash": "4.17.21",
+    "moment-timezone": "^0.5.40",
     "nodemon": "^2.0.20",
+    "numeral": "^2.0.6",
     "pg": "8.7.3",
     "pino": "7.11.0",
     "pm2": "5.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "redis": "^4.5.1"
   }
 }
