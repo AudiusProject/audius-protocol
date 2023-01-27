@@ -45,12 +45,13 @@ steps:
       command: |
         set +e
 
-        available="$(gcloud compute images list --filter "name=(
-          'audius-protocol-<< pipeline.git.revision >>'
-        )" --format "csv(name)[no-heading]")"
+        status="$(gcloud compute images list \
+          --filter "name=audius-protocol-<< pipeline.git.revision >>" \
+          --format "csv(status)[no-heading]" \
+        )"
 
         image_create_exit_code=0
-        if ! echo "$available" | grep '^audius-protocol-<< pipeline.git.revision >>$' &>/dev/null; then
+        if [[ -z "$status" ]]; then
           gcloud compute images create \
             --family=audius-protocol \
             --source-disk "circleci-$CIRCLE_BUILD_NUM-build" \
@@ -60,6 +61,13 @@ steps:
 
         gcloud compute disks delete --quiet "circleci-$CIRCLE_BUILD_NUM-build"
         disk_delete_exit_code=$?
+
+        while [[ "$(gcloud compute images list \
+          --filter "name=audius-protocol-<< pipeline.git.revision >>" \
+          --format "csv(status)[no-heading]" \
+        )" != "READY" ]]; do
+          sleep 1
+        done
 
         if [[ "$image_create_exit_code" != "0" ]] || [[ "$disk_delete_exit_code" != "0" ]]; then
           exit 1
