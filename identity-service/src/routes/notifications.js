@@ -828,7 +828,6 @@ module.exports = function (app) {
             'milestonesAndAchievements',
             'announcements',
             'followers',
-            'messages',
             'browserPushNotifications',
             'emailFrequency'
           ]
