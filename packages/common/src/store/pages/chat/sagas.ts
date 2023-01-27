@@ -20,12 +20,17 @@ const {
   fetchMoreMessages,
   fetchMoreMessagesSucceeded,
   fetchMoreMessagesFailed,
+  fetchChatSucceeded,
   setMessageReaction,
   setMessageReactionSucceeded,
+  setMessageReactionFailed,
   markChatAsRead,
+  markChatAsReadSucceeded,
+  markChatAsReadFailed,
   sendMessage,
-  addMessage,
-  upsertChat
+  sendMessageSucceeded,
+  sendMessageFailed,
+  addMessage
 } = chatActions
 const { getChatsSummary, getChatMessagesSummary, getChat } = chatSelectors
 
@@ -92,15 +97,10 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
       messageId,
       reaction
     })
-    yield* put(
-      setMessageReactionSucceeded({
-        ...action.payload,
-        userId: user?.user_id,
-        createdAt: dayjs().toISOString()
-      })
-    )
+    yield* put(setMessageReactionSucceeded(action.payload))
   } catch (e) {
     console.error('setMessageReactionFailed', e)
+    yield* put(setMessageReactionFailed(action.payload))
   }
 }
 
@@ -133,29 +133,51 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
     const chat = yield* select((state) => getChat(state, chatId))
     if (!chat || chat?.unread_message_count > 0) {
       yield* call([sdk.chats, sdk.chats.read], { chatId })
-      if (chat) {
-        yield* put(upsertChat({ chat: { ...chat, unread_message_count: 0 } }))
-      }
+      yield* put(markChatAsReadSucceeded({ chatId }))
     }
   } catch (e) {
     console.error('markChatAsReadFailed', e)
+    yield* put(markChatAsReadFailed({ chatId }))
   }
 }
 
+let tempMessageIdCounter = 1
 function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   const { chatId, message } = action.payload
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
-  const response = (yield* call([sdk.chats, sdk.chats.message], {
-    chatId,
-    message
-  })) as ChatMessageRPC
-  const userId = yield* select(getUserId)
-  const currentUserId = encodeHashId(userId)
-  if (currentUserId) {
+  const temporaryMessageId = `temp-${tempMessageIdCounter++}`
+  try {
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const userId = yield* select(getUserId)
+    const currentUserId = encodeHashId(userId)
+    if (!currentUserId) {
+      return
+    }
+
+    // Optimistically add the message
     yield* put(
       addMessage({
         chatId,
+        message: {
+          sender_user_id: currentUserId,
+          message_id: temporaryMessageId,
+          message,
+          reactions: [],
+          created_at: dayjs().toISOString()
+        }
+      })
+    )
+
+    const response = (yield* call([sdk.chats, sdk.chats.message], {
+      chatId,
+      message
+    })) as ChatMessageRPC
+
+    // After successful RPC, replace with real message
+    yield* put(
+      sendMessageSucceeded({
+        chatId,
+        oldMessageId: temporaryMessageId,
         message: {
           sender_user_id: currentUserId,
           message_id: response.params.message_id,
@@ -165,24 +187,29 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
         }
       })
     )
+  } catch (e) {
+    console.error('sendMessageFailed', e)
+    yield* put(
+      sendMessageFailed({ chatId, attemptedMessageId: temporaryMessageId })
+    )
   }
 }
 
-function* refreshChat(chatId: string) {
-  const audiusSdk = yield* getContext('audiusSdk')
-  const sdk = yield* call(audiusSdk)
-  const response = yield* call([sdk.chats, sdk.chats.get], { chatId })
-  const chat = response.data
-  yield* put(upsertChat({ chat }))
+function* fetchChatIfNecessary(action: ReturnType<typeof addMessage>) {
+  const { chatId } = action.payload
+  const existingChat = yield* select((state) => getChat(state, chatId))
+  if (!existingChat) {
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const { data: chat } = yield* call([sdk.chats, sdk.chats.get], { chatId })
+    if (chat) {
+      yield* put(fetchChatSucceeded({ chat }))
+    }
+  }
 }
 
 function* watchAddMessage() {
-  yield takeEvery(
-    addMessage,
-    function* (action: ReturnType<typeof addMessage>) {
-      yield* call(refreshChat, action.payload.chatId)
-    }
-  )
+  yield takeEvery(addMessage, fetchChatIfNecessary)
 }
 
 function* watchSendMessage() {

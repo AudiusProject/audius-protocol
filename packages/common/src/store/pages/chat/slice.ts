@@ -19,9 +19,12 @@ type ChatState = {
       data: ChatMessage[]
     }
   >
+  optimisticReactions: Record<string, ChatMessage['reactions'][number]>
+  optimisticChatRead: Record<string, UserChat>
 }
 
 type SetMessageReactionPayload = {
+  userId: ID
   chatId: string
   messageId: string
   reaction: string
@@ -32,8 +35,13 @@ const initialState: ChatState = {
     status: Status.IDLE,
     data: []
   },
-  chatMessages: {}
+  chatMessages: {},
+  optimisticChatRead: {},
+  optimisticReactions: {}
 }
+
+const chatSortComparator = (a: UserChat, b: UserChat) =>
+  dayjs(a.last_message_at).isBefore(dayjs(b.last_message_at)) ? 1 : -1
 
 const slice = createSlice({
   name: 'application/pages/chat',
@@ -96,28 +104,35 @@ const slice = createSlice({
       state.chatMessages[chatId].status = Status.ERROR
     },
     setMessageReaction: (
-      _state,
-      _action: PayloadAction<SetMessageReactionPayload>
+      state,
+      action: PayloadAction<SetMessageReactionPayload>
     ) => {
       // triggers saga
+      // Optimistically set reaction
+      const { userId, messageId, reaction } = action.payload
+      const encodedUserId = encodeHashId(userId)
+      state.optimisticReactions[messageId] = {
+        user_id: encodedUserId,
+        reaction,
+        created_at: dayjs().toISOString()
+      }
     },
     setMessageReactionSucceeded: (
       state,
-      action: PayloadAction<
-        SetMessageReactionPayload & { userId: ID; createdAt: string }
-      >
+      action: PayloadAction<SetMessageReactionPayload>
     ) => {
+      // Set the true state
       const { userId, chatId, messageId, reaction } = action.payload
+      delete state.optimisticReactions[messageId]
       const index = state.chatMessages[chatId].data.findIndex(
         (message) => message.message_id === messageId
       )
       const encodedUserId = encodeHashId(userId)
       if (index > -1) {
-        const existingReactions = (
+        const existingReactions =
           state.chatMessages[chatId].data[index].reactions ?? []
-        ).filter((r) => r.user_id !== encodedUserId)
         state.chatMessages[chatId].data[index].reactions = [
-          ...existingReactions,
+          ...existingReactions.filter((r) => r.user_id !== encodedUserId),
           {
             user_id: encodedUserId,
             reaction,
@@ -126,52 +141,99 @@ const slice = createSlice({
         ]
       }
     },
-    markChatAsRead: (_state, _action: PayloadAction<{ chatId: string }>) => {
+    setMessageReactionFailed: (
+      state,
+      action: PayloadAction<SetMessageReactionPayload>
+    ) => {
+      // Reset our optimism :(
+      const { messageId } = action.payload
+      delete state.optimisticReactions[messageId]
+    },
+    fetchChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
+      const { chat } = action.payload
+      if (!state.chatList.data.find((c) => c.chat_id === chat.chat_id)) {
+        state.chatList.data.push(chat)
+        state.chatList.data.sort(chatSortComparator)
+      }
+    },
+    markChatAsRead: (state, action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
+      // Optimistically mark as read
+      const { chatId } = action.payload
+      const existingChat = state.chatList.data.find((c) => c.chat_id === chatId)
+      if (existingChat) {
+        state.optimisticChatRead[chatId] = {
+          ...existingChat,
+          last_read_at: existingChat.last_message_at,
+          unread_message_count: existingChat.unread_message_count
+        }
+      }
+    },
+    markChatAsReadSucceeded: (
+      state,
+      action: PayloadAction<{ chatId: string }>
+    ) => {
+      // Set the true state
+      const { chatId } = action.payload
+      delete state.optimisticChatRead[chatId]
+      const index = state.chatList.data.findIndex((c) => c.chat_id === chatId)
+      if (index > -1) {
+        state.chatList.data[index].last_read_at =
+          state.chatList.data[index].last_message_at
+        state.chatList.data[index].unread_message_count = 0
+      }
+    },
+    markChatAsReadFailed: (
+      state,
+      action: PayloadAction<{ chatId: string }>
+    ) => {
+      // Reset our optimism :(
+      const { chatId } = action.payload
+      delete state.optimisticChatRead[chatId]
     },
     sendMessage: (
       _state,
       _action: PayloadAction<{ chatId: string; message: string }>
     ) => {
-      // triggers saga
+      // triggers saga which will add a message optimistically and replace it after success
     },
     addMessage: (
       state,
       action: PayloadAction<{ chatId: string; message: ChatMessage }>
     ) => {
+      // triggers saga to get chat if not exists
       const { chatId, message } = action.payload
       state.chatMessages[chatId].data.unshift(message)
     },
-    upsertChat: (state, action: PayloadAction<{ chat: UserChat }>) => {
-      const { chat } = action.payload
-      if (!state.chatList.data) {
-        console.warn('ChatList not initialized')
-        return
-      }
-      const index = state.chatList.data.findIndex(
-        (c) => c.chat_id === chat.chat_id
-      )
-      if (index > -1) {
-        // remove existing
-        state.chatList.data.splice(index, 1)
-      }
-      // Assume new message and put at top of list
-      state.chatList.data.unshift(chat)
-    },
-    updateMessageReactions: (
+    sendMessageSucceeded: (
       state,
-      action: PayloadAction<{ chatId: string; message: ChatMessage }>
+      action: PayloadAction<{
+        chatId: string
+        oldMessageId: string
+        message: ChatMessage
+      }>
     ) => {
-      const { chatId, message } = action.payload
-      if (!state.chatMessages[chatId]?.data) {
-        console.warn('ChatMessages not initialized')
-        return
-      }
+      const { chatId, oldMessageId, message } = action.payload
       const index = state.chatMessages[chatId].data.findIndex(
-        (m) => m.message_id === message.message_id
+        (m) => m.message_id === oldMessageId
       )
       if (index > -1) {
-        state.chatMessages[chatId].data[index].reactions = message.reactions
+        state.chatMessages[chatId].data[index] = message
+      }
+    },
+    sendMessageFailed: (
+      state,
+      action: PayloadAction<{
+        chatId: string
+        attemptedMessageId: string
+      }>
+    ) => {
+      const { chatId, attemptedMessageId } = action.payload
+      const index = state.chatMessages[chatId].data.findIndex(
+        (m) => m.message_id === attemptedMessageId
+      )
+      if (index > -1) {
+        delete state.chatMessages[chatId].data[index]
       }
     }
   }
