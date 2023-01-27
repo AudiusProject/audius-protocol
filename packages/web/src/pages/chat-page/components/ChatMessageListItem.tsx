@@ -21,6 +21,7 @@ import styles from './ChatMessageListItem.module.css'
 import { ReactionPopupMenu } from './ReactionPopupMenu'
 
 const { setMessageReaction } = chatActions
+const { getUserId } = accountSelectors
 
 type ChatMessageListItemProps = {
   chatId: string
@@ -42,7 +43,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
   const dispatch = useDispatch()
   const [isReactionPopupVisible, setReactionPopupVisible] = useState(false)
   const senderUserId = decodeHashId(message.sender_user_id)
-  const userId = useSelector(accountSelectors.getUserId)
+  const userId = useSelector(getUserId)
   const isAuthor = userId === senderUserId
 
   const handleOpenReactionPopupButtonClicked = useCallback(
@@ -84,7 +85,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
           })}
           onClick={handleOpenReactionPopupButtonClicked}
         >
-          {message.reactions ? (
+          {message.reactions?.length > 0 ? (
             message.reactions.map((reaction) => {
               if (!(reaction.reaction in reactionMap)) {
                 console.error(
