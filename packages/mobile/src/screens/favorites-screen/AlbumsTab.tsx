@@ -55,7 +55,7 @@ export const AlbumsTab = () => {
         return true
       })
     },
-    [filterValue]
+    [filterValue, isReachable, isOfflineModeEnabled]
   )
 
   return (

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import type { ID, Maybe, UID } from '@audius/common'
+import type { ID, Maybe, SmartCollectionVariant, UID } from '@audius/common'
 import {
   Variant,
   useProxySelector,
@@ -35,7 +35,6 @@ import { formatCount } from 'app/utils/format'
 const {
   getCollection,
   getCollectionTracksLineup,
-  getCollectionId,
   getCollectionUid,
   getUserUid
 } = collectionPageSelectors
@@ -72,6 +71,7 @@ type CollectionScreenDetailsTileProps = {
   isPrivate?: boolean
   isPublishing?: boolean
   extraDetails?: DetailsTileDetail[]
+  collectionId: number | SmartCollectionVariant
 } & Omit<
   DetailsTileProps,
   'descriptionLinkPressSource' | 'details' | 'headerText' | 'onPressPlay'
@@ -92,6 +92,7 @@ const recordPlay = (id: Maybe<number>, play = true) => {
 export const CollectionScreenDetailsTile = ({
   description,
   extraDetails = [],
+  collectionId,
   isAlbum,
   isPrivate,
   isPublishing,
@@ -106,24 +107,40 @@ export const CollectionScreenDetailsTile = ({
 
   const collection = useSelector(getCollection)
   const collectionUid = useSelector(getCollectionUid)
-  const collectionId = useSelector(getCollectionId)
   const userUid = useSelector(getUserUid)
   const { entries, status } = useProxySelector(getTracksLineup, [isReachable])
   const tracksLoading = status === Status.LOADING
   const numTracks = entries.length
 
-  const handleFetchLineup = useCallback(() => {
+  const handleFetchLineupOnline = useCallback(() => {
     dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
   }, [dispatch])
+
+  const handleFetchLineupOffline = useOfflineCollectionLineup(
+    collectionId,
+    handleFetchLineupOnline,
+    tracksActions
+  )
+  const handleFetchLineup = useCallback(() => {
+    if (isOfflineModeEnabled && !isReachable) {
+      handleFetchLineupOffline()
+    } else {
+      handleFetchLineupOnline()
+    }
+  }, [
+    handleFetchLineupOffline,
+    handleFetchLineupOnline,
+    isOfflineModeEnabled,
+    isReachable
+  ])
 
   const handleFetchCollectionLineup = useCallback(() => {
     dispatch(resetCollection(collectionUid, userUid))
     handleFetchLineup()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, handleFetchLineup])
+  }, [dispatch, handleFetchLineupOnline])
 
   useFocusEffect(handleFetchCollectionLineup)
-  useOfflineCollectionLineup(collectionId, handleFetchLineup, tracksActions)
 
   const duration = entries?.reduce(
     (duration, entry) => duration + entry.duration,

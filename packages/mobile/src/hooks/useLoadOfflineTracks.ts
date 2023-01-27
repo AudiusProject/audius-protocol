@@ -5,7 +5,8 @@ import type {
   Track,
   UserMetadata,
   lineupActions,
-  UserTrackMetadata
+  UserTrackMetadata,
+  SmartCollectionVariant
 } from '@audius/common'
 import {
   Kind,
@@ -139,7 +140,11 @@ export const useLoadOfflineData = () => {
  * @param lineupActions the actions instance for the lineup
  */
 export const useOfflineCollectionLineup = (
-  collectionId: typeof DOWNLOAD_REASON_FAVORITES | number | null,
+  collectionId:
+    | typeof DOWNLOAD_REASON_FAVORITES
+    | number
+    | SmartCollectionVariant
+    | null,
   fetchOnlineContent: () => void,
   lineupActions: lineupActions.LineupActions
 ) => {
@@ -153,12 +158,19 @@ export const useOfflineCollectionLineup = (
   })
 
   const fetchLocalContent = useCallback(() => {
+    const collectionTrackIds = new Set(
+      collection?.playlist_contents?.track_ids?.map(
+        (trackData) => trackData.track
+      ) ?? []
+    )
+
     if (isOfflineModeEnabled && collectionId) {
       const lineupTracks = Object.values(offlineTracks)
-        .filter((track) =>
-          track.offline?.reasons_for_download.some(
-            (reason) => reason.collection_id === collectionId.toString()
-          )
+        .filter(
+          (track) =>
+            track.offline?.reasons_for_download.some(
+              (reason) => reason.collection_id === collectionId.toString()
+            ) || collectionTrackIds.has(track.track_id)
         )
         .map((track) => ({
           uid: makeUid(Kind.TRACKS, track.track_id),
@@ -174,7 +186,7 @@ export const useOfflineCollectionLineup = (
       store.dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
 
       if (collectionId === DOWNLOAD_REASON_FAVORITES) {
-        // Reorder lineup tracks accorinding to favorite time
+        // Reorder lineup tracks according to favorite time
         const sortedTracks = orderBy(
           lineupTracks,
           (track) => track.offline?.favorite_created_at,
@@ -219,4 +231,5 @@ export const useOfflineCollectionLineup = (
   ])
 
   useReachabilityState(fetchOnlineContent, fetchLocalContent)
+  return fetchLocalContent
 }

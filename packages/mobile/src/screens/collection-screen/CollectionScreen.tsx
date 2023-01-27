@@ -262,6 +262,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
             hasReposted={has_current_user_reposted}
             hasSaved={has_current_user_saved}
             isAlbum={is_album}
+            collectionId={playlist_id}
             isPrivate={is_private}
             isPublishing={_is_publishing ?? false}
             onPressFavorites={handlePressFavorites}

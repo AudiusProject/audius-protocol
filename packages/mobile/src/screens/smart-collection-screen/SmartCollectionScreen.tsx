@@ -105,6 +105,7 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
       style={styles.root}
     >
       <CollectionScreenDetailsTile
+        collectionId={variant}
         description={playlistDescription}
         hasSaved={isSaved}
         hideFavoriteCount
