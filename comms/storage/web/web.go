@@ -67,7 +67,7 @@ func uploadFile(jobman *transcode.JobsManager) func(c echo.Context) error {
 			}
 
 			// add to jobman
-			job, err := jobman.Add(src)
+			job, err := jobman.Add("audio", src)
 			if err != nil {
 				return err
 			}
@@ -118,6 +118,7 @@ func makeTranscodeDemoRoutes(storage *echo.Group, g *glue.Glue) {
 		if err != nil {
 			return err
 		}
+		template := c.FormValue("template")
 		files := form.File["files"]
 		defer form.RemoveAll()
 
@@ -129,7 +130,7 @@ func makeTranscodeDemoRoutes(storage *echo.Group, g *glue.Glue) {
 			}
 
 			// add to jobman
-			job, err := jobman.Add(src)
+			job, err := jobman.Add(template, src)
 			if err != nil {
 				return err
 			}
