@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
 import {
   SquareSizes,
@@ -17,7 +17,7 @@ import { Card } from 'app/components/card'
 import { CardList } from 'app/components/core'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import { CollectionImage } from 'app/components/image/CollectionImage'
-import { ToastContext } from 'app/components/toast/ToastContext'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles, shadow } from 'app/styles'
 
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
@@ -47,7 +47,7 @@ const useStyles = makeStyles(() => ({
 
 export const AddToPlaylistDrawer = () => {
   const styles = useStyles()
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
   const dispatch = useDispatch()
   const { onClose } = useDrawerState('AddToPlaylist')
   const trackId = useSelector(getTrackId)

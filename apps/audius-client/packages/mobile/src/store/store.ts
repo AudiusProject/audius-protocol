@@ -1,5 +1,7 @@
 import type { CommonState, RemoteConfigState } from '@audius/common'
 import {
+  uuid,
+  toastActions,
   ErrorLevel,
   remoteConfigReducer as remoteConfig,
   reducers as commonReducers
@@ -15,6 +17,7 @@ import type {
 } from 'audius-client/src/common/store/pages/signon/types'
 import searchBar from 'audius-client/src/common/store/search-bar/reducer'
 import type SearchBarState from 'audius-client/src/common/store/search-bar/types'
+import RNRestart from 'react-native-restart'
 import type { Store } from 'redux'
 import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { persistStore } from 'redux-persist'
@@ -43,6 +46,10 @@ import { storeContext } from './storeContext'
 import type { WalletConnectState } from './wallet-connect/slice'
 import walletConnect from './wallet-connect/slice'
 
+const errorRestartTimeout = 2000
+
+const { addToast } = toastActions
+
 export type AppState = CommonState & {
   // These also belong in CommonState but are here until we move them to the @audius/common package:
   signOn: SignOnPageState
@@ -62,6 +69,10 @@ export type AppState = CommonState & {
   shareToStoryProgress: ShareToStoryProgressState
 }
 
+const messages = {
+  error: 'Something went wrong'
+}
+
 const onSagaError = (
   error: Error,
   errorInfo: {
@@ -71,11 +82,25 @@ const onSagaError = (
   console.error(
     `Caught saga error: ${error} ${JSON.stringify(errorInfo, null, 4)}`
   )
+
+  dispatch(
+    addToast({
+      content: messages.error,
+      type: 'error',
+      timeout: errorRestartTimeout,
+      key: uuid()
+    })
+  )
+
   reportToSentry({
     level: ErrorLevel.Fatal,
     error,
     additionalInfo: errorInfo
   })
+
+  setTimeout(() => {
+    RNRestart.Restart()
+  }, errorRestartTimeout)
 }
 
 const commonStoreReducers = commonReducers()

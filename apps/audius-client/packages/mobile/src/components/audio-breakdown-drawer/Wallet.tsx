@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
 import type { BNWei } from '@audius/common'
 import {
@@ -13,9 +13,8 @@ import { Animated, TouchableWithoutFeedback, View } from 'react-native'
 import IconCopy from 'app/assets/images/iconCopy.svg'
 import { ChainLogo, Text } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
-
-import { ToastContext } from '../toast/ToastContext'
 
 const messages = {
   copied: 'Copied To Clipboard!'
@@ -53,7 +52,7 @@ type WalletProps = { chain: Chain; address: string; balance: BNWei }
 export const Wallet = (props: WalletProps) => {
   const { chain, address, balance } = props
   const styles = useSyles()
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
 
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.98)
 

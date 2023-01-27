@@ -88,6 +88,7 @@ export {
 export * as themeSelectors from './theme/selectors'
 
 export { default as toastReducer, actions as toastActions } from './toast/slice'
+export * as toastSelectors from './toast/selectors'
 export * from './toast/types'
 export { default as toastSagas } from './toast/sagas'
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useRef } from 'react'
+import React, { useCallback, useRef } from 'react'
 
 import {
   accountSelectors,
@@ -21,13 +21,13 @@ import IconSnapchat from 'app/assets/images/iconSnapchat.svg'
 import TikTokIcon from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import ActionDrawer from '../action-drawer'
 import { Text } from '../core'
-import { ToastContext } from '../toast/ToastContext'
 
 import { ShareToStorySticker } from './ShareToStorySticker'
 import { messages } from './messages'
@@ -40,6 +40,8 @@ const { shareUser } = usersSocialActions
 const { shareTrack } = tracksSocialActions
 const { shareCollection } = collectionsSocialActions
 const { getAccountUser } = accountSelectors
+
+export const shareToastTimeout = 1500
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -92,7 +94,7 @@ export const ShareDrawer = () => {
   const content = useSelector(getShareContent)
   const source = useSelector(getShareSource)
   const account = useSelector(getAccountUser)
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
   const isOwner =
     content?.type === 'track' &&
     account &&
@@ -129,7 +131,11 @@ export const ShareDrawer = () => {
     if (!content) return
     const link = getContentUrl(content)
     Clipboard.setString(link)
-    toast({ content: messages.toast(shareType), type: 'info' })
+    toast({
+      content: messages.toast(shareType),
+      type: 'info',
+      timeout: shareToastTimeout
+    })
   }, [toast, content, shareType])
 
   const handleOpenShareSheet = useCallback(() => {

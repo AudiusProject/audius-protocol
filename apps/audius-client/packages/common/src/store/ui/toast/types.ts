@@ -2,9 +2,13 @@ import { PayloadAction } from '@reduxjs/toolkit'
 
 type ToastContent = string | JSX.Element
 
-type Toast = {
+export type ToastType = 'info' | 'error'
+
+export type Toast = {
   content: ToastContent
+  type?: ToastType
   key: string
+  timeout?: number
 }
 
 export type ToastState = {
@@ -13,6 +17,7 @@ export type ToastState = {
 
 export type ToastAction = PayloadAction<{
   content: ToastContent
+  type?: ToastType
   timeout?: number
 }>
 export type AddToastAction = PayloadAction<Toast>

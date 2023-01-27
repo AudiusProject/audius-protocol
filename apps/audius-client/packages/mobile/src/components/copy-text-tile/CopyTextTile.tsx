@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
 import { View } from 'react-native'
@@ -6,10 +6,9 @@ import LinearGradient from 'react-native-linear-gradient'
 
 import IconCopy from 'app/assets/images/iconCopy.svg'
 import { Tile, Text } from 'app/components/core'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
-
-import { ToastContext } from '../toast/ToastContext'
 
 const messages = {
   copyNotice: 'Copied to clipboard'
@@ -67,7 +66,7 @@ export const CopyTextTile = (props: CopyTextTileProps) => {
   const { pageHeaderGradientColor1, pageHeaderGradientColor2, staticWhite } =
     useThemeColors()
 
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
 
   const handleCopy = useCallback(() => {
     Clipboard.setString(text)

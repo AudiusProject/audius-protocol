@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 
 import EventEmitter from 'events'
 import path from 'path'
@@ -31,6 +31,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconWavform from 'app/assets/images/iconWavform.svg'
 import { Button, LinearProgress, Text } from 'app/components/core'
+import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
 import { apiClient } from 'app/services/audius-api-client'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -58,7 +59,6 @@ import { useThemeColors } from 'app/utils/theme'
 
 import { NativeDrawer } from '../drawer'
 import { DEFAULT_IMAGE_URL, useTrackImage } from '../image/TrackImage'
-import { ToastContext } from '../toast/ToastContext'
 
 import { messages } from './messages'
 
@@ -119,7 +119,7 @@ export const useShareToStory = ({
   content: Nullable<ShareModalContent>
   viewShotRef: React.RefObject<ViewShot>
 }) => {
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
   const dispatch = useDispatch()
   const cancelRef = useRef(false)
   const [shouldRenderShareToStorySticker, setShouldRenderShareToStorySticker] =

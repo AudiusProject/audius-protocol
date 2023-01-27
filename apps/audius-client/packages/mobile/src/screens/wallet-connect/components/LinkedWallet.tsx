@@ -1,4 +1,4 @@
-import { useCallback, useContext } from 'react'
+import { useCallback } from 'react'
 
 import type { BNWei, Chain } from '@audius/common'
 import { formatWei, tokenDashboardPageActions } from '@audius/common'
@@ -11,8 +11,8 @@ import IconCopy from 'app/assets/images/iconCopy.svg'
 import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
 import { ChainLogo, IconButton, Text } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { ToastContext } from 'app/components/toast/ToastContext'
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -95,7 +95,7 @@ export const LinkedWallet = ({
 }: WalletProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
   const { neutralLight4 } = useThemeColors()
   const { onOpen: onOpenConfirmationDrawer } = useDrawer('ConfirmRemoveWallet')
 

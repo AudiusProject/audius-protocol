@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import type { Maybe, CommonState } from '@audius/common'
 import {
@@ -13,12 +13,12 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useToast } from 'app/hooks/useToast'
 import type { ChallengesParamList } from 'app/utils/challenges'
 import { getChallengeConfig } from 'app/utils/challenges'
 
 import Button, { ButtonType } from '../button'
 import { useDrawerState } from '../drawer/AppDrawer'
-import { ToastContext } from '../toast/ToastContext'
 
 import { ChallengeRewardsDrawer } from './ChallengeRewardsDrawer'
 import { ProfileCompletionChecks } from './ProfileCompletionChecks'
@@ -58,7 +58,7 @@ export const ChallengeRewardsDrawerProvider = () => {
   const claimStatus = useSelector(getClaimStatus)
   const aaoErrorCode = useSelector(getAAOErrorCode)
 
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
 
   const challenge = userChallenges ? userChallenges[modalType] : null
   const config = getChallengeConfig(modalType)

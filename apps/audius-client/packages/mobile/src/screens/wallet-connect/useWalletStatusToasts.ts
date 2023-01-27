@@ -1,4 +1,4 @@
-import { useContext, useEffect } from 'react'
+import { useEffect } from 'react'
 
 import {
   tokenDashboardPageActions,
@@ -6,7 +6,7 @@ import {
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { ToastContext } from 'app/components/toast/ToastContext'
+import { useToast } from 'app/hooks/useToast'
 const { getError, getConfirmingWalletStatus, getRemoveWallet } =
   tokenDashboardPageSelectors
 const { resetStatus, resetRemovedStatus, updateWalletError } =
@@ -23,7 +23,7 @@ export const useWalletStatusToasts = () => {
   const { status: removeWalletStatus } = useSelector(getRemoveWallet)
   const errorMessage = useSelector(getError)
 
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
 
   useEffect(() => {
     if (confirmingWalletStatus === 'Confirmed') {

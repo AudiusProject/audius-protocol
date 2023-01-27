@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useRef } from 'react'
+import { useCallback, useMemo, useRef } from 'react'
 
 import type { Collectible } from '@audius/common'
 import { accountSelectors, useProxySelector } from '@audius/common'
@@ -10,9 +10,9 @@ import { useSelector } from 'react-redux'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { Tile, GradientText, FlatList, Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { ToastContext } from 'app/components/toast/ToastContext'
 import UserBadges from 'app/components/user-badges'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { getCollectiblesRoute } from 'app/utils/routes'
 
@@ -84,7 +84,7 @@ export const CollectiblesTab = () => {
   )
   const accountId = useSelector(getUserId)
   const isOwner = profile?.user_id === accountId
-  const { toast } = useContext(ToastContext)
+  const { toast } = useToast()
   const ref = useRef<RNFlatList>(null)
 
   useScrollToTop(() => {
