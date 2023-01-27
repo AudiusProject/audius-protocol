@@ -9,7 +9,8 @@ import (
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/storage/glue"
-	"comms.audius.co/storage/transcode"
+	"comms.audius.co/storage/jobs"
+	"comms.audius.co/storage/jobs/jobsmonitor"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 )
@@ -22,7 +23,6 @@ func NewServer(g *glue.Glue) *echo.Echo {
 
 	storage := e.Group("/storage")
 	makeStorageRoutes(storage, g)
-	makeTranscodeDemoRoutes(storage, g)
 
 	weatherMap := e.Group("/weather-map")
 	makeWeatherMapRoutes(weatherMap)
@@ -32,73 +32,10 @@ func NewServer(g *glue.Glue) *echo.Echo {
 
 // makeStorageRoutes creates all /storage using echo group storage glue g.
 func makeStorageRoutes(storage *echo.Group, g *glue.Glue) {
-	// jobman, err := transcode.NewJobsManager(g.Jsc, "austin1", 1)
-	// if err != nil {
-	// 	panic("err")
-	// }
-	// jobman.StartWorkers(3)
-
-	// storage.POST("/file", uploadFile(jobman))
-	// TODO: Migrate other functions from makeTranscodeDemoRoutes to here.
-}
-
-// makeWeatherMapRoutes redirects all /weather-map routes to static assets using echo group weatherMap.
-func makeWeatherMapRoutes(weatherMap *echo.Group) {
-	// TODO
-}
-
-func uploadFile(jobman *transcode.JobsManager) func(c echo.Context) error {
-	return func(c echo.Context) error {
-		var results []*transcode.Job
-
-		// Multipart form
-		form, err := c.MultipartForm()
-		if err != nil {
-			return err
-		}
-		files := form.File["files"]
-		defer form.RemoveAll()
-
-		for _, file := range files {
-			// Source
-			src, err := file.Open()
-			if err != nil {
-				return err
-			}
-
-			// add to jobman
-			job, err := jobman.Add(src)
-			if err != nil {
-				return err
-			}
-
-			src.Close()
-			results = append(results, job)
-
-		}
-
-		if c.QueryParam("redirect") != "" {
-			return c.Redirect(302, c.Request().Referer())
-		}
-
-		return c.JSON(200, results)
-	}
-}
-
-// makeTranscodeDemoRoutes creates all /storage routes from the transcode demo.
-// TODO: Migrate these to makeStorageRoutes above to consolidate with a pattern that allows for easier testing.
-func makeTranscodeDemoRoutes(storage *echo.Group, g *glue.Glue) {
-	jobman, err := transcode.NewJobsManager(g.Jsc, "austin1", 1)
-	if err != nil {
-		panic(err)
-	}
-
-	jobman.StartWorkers(3)
-
+	// Serve static files to show transcode demo table
 	staticFs := getTranscodeDemoStaticFiles()
 	assetHandler := http.FileServer(staticFs)
 	storage.GET("/static/*", echo.WrapHandler(http.StripPrefix("storage/web/static/", assetHandler)))
-
 	serveStatusUI := func(c echo.Context) error {
 		f, err := staticFs.Open("status.html")
 		if err != nil {
@@ -109,56 +46,24 @@ func makeTranscodeDemoRoutes(storage *echo.Group, g *glue.Glue) {
 	storage.GET("", serveStatusUI)
 	storage.GET("/", serveStatusUI)
 
-	storage.POST("/file", func(c echo.Context) error {
+	storage.POST("/file", uploadFile(g))
+	makeJobMonitorRoutes(storage, g.JobsManager.GetMonitor())
+}
 
-		var results []*transcode.Job
-
-		// Multipart form
-		form, err := c.MultipartForm()
-		if err != nil {
-			return err
-		}
-		files := form.File["files"]
-		defer form.RemoveAll()
-
-		for _, file := range files {
-			// Source
-			src, err := file.Open()
-			if err != nil {
-				return err
-			}
-
-			// add to jobman
-			job, err := jobman.Add(src)
-			if err != nil {
-				return err
-			}
-
-			src.Close()
-			results = append(results, job)
-
-		}
-
-		if c.QueryParam("redirect") != "" {
-			return c.Redirect(302, c.Request().Referer())
-		}
-
-		return c.JSON(200, results)
-
-	})
-
+// makeJobMonitorRoutes creates /storage routes for monitoring the progress of jobs.
+func makeJobMonitorRoutes(storage *echo.Group, jobsMonitor jobsmonitor.JobsMonitor) {
 	storage.GET("/jobs", func(c echo.Context) error {
-		jobs := jobman.List()
+		jobs := jobsMonitor.List()
 		return c.JSON(200, jobs)
 	})
 
 	storage.GET("/jobs/:id", func(c echo.Context) error {
-		job := jobman.Get(c.Param("id"))
+		job := jobsMonitor.GetJob(c.Param("id"))
 		return c.JSON(200, job)
 	})
 
 	storage.GET("/obj/:bucket/:key", func(c echo.Context) error {
-		obj, err := jobman.GetObject(c.Param("bucket"), c.Param("key"))
+		obj, err := jobsMonitor.GetObject(c.Param("bucket"), c.Param("key"))
 		if err != nil {
 			return err
 		}
@@ -175,9 +80,56 @@ func makeTranscodeDemoRoutes(storage *echo.Group, g *glue.Glue) {
 			return err
 		}
 
-		jobman.RegisterWebsocket(conn)
+		jobsMonitor.RegisterWebsocket(conn)
 		return nil
 	})
+}
+
+// makeWeatherMapRoutes redirects all /weather-map routes to static assets using echo group weatherMap.
+func makeWeatherMapRoutes(weatherMap *echo.Group) {
+	// TODO
+}
+
+func uploadFile(g *glue.Glue) func(c echo.Context) error {
+	return func(c echo.Context) error {
+		var results []jobs.Job
+
+		// Multipart form
+		form, err := c.MultipartForm()
+		if err != nil {
+			return err
+		}
+		fileHeaders := form.File["files"]
+		defer form.RemoveAll()
+
+		for _, fileHeader := range fileHeaders {
+			// Source
+			src, err := fileHeader.Open()
+			if err != nil {
+				return err
+			}
+
+			// Create job and queue it for transcoding by saving it to KV store
+			transcodeJob, err := jobs.NewTranscodeJob(src, g.JobsManager.GetTempObjStore())
+			if err != nil {
+				return err
+			}
+			err = g.JobsManager.SaveJob(transcodeJob)
+			if err != nil {
+				return err
+			}
+
+			src.Close()
+			results = append(results, transcodeJob)
+
+		}
+
+		if c.QueryParam("redirect") != "" {
+			return c.Redirect(302, c.Request().Referer())
+		}
+
+		return c.JSON(200, results)
+	}
 }
 
 //go:embed static

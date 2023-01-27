@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"comms.audius.co/storage/glue"
-	"comms.audius.co/storage/transcode"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -38,12 +37,6 @@ func TestE2EUpload(t *testing.T) {
 	}()
 
 	// TODO: Upload file with a hash that will fall in the 'aa' bucket
-	jobman, err := transcode.NewJobsManager(nodes[0].g.Jsc, namespace, 1)
-	if err != nil {
-		panic(err)
-	}
-	jobman.StartWorkers(3)
-
 	url := "/storage/file"
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
@@ -66,7 +59,7 @@ func TestE2EUpload(t *testing.T) {
 	c := nodes[0].e.NewContext(req, rec)
 	res := rec.Result()
 	defer res.Body.Close()
-	if assert.NoError(uploadFile(jobman)(c)) {
+	if assert.NoError(uploadFile(nodes[0].g)(c)) {
 		assert.Equal(http.StatusOK, rec.Code)
 		assert.Equal("null\n", rec.Body.String()) // TODO: This passes now but shouldn't be "null\n"
 	}
@@ -125,7 +118,10 @@ func startNatsCluster(t *testing.T, namespace string, replicationFactor int) [5]
 	// Start each node's web server
 	for i, node := range nodes {
 		_, jsc := jsClient(t, node.s)
-		g := glue.New(namespace, replicationFactor, jsc)
+		g, err := glue.NewProdGlue(namespace, replicationFactor, jsc)
+		if err != nil {
+			t.Fatalf("Could not create glue: %v", err)
+		}
 		e := NewServer(g)
 		go e.Start(fmt.Sprintf("127.0.0.1:%d", 1222+i+5))
 

@@ -38,7 +38,10 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	g := glue.New(GlobalNamespace, ReplicationFactor, jetstream.GetJetstreamContext())
+	g, err := glue.NewProdGlue(GlobalNamespace, ReplicationFactor, jetstream.GetJetstreamContext())
+	if err != nil {
+		log.Fatal(err)
+	}
 	e := web.NewServer(g)
 
 	// Start server

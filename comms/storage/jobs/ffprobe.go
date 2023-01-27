@@ -1,4 +1,5 @@
-package transcode
+// Package jobs defines types and processing logic for jobs done in response to a queue, including image resizing and audio transcoding.
+package jobs
 
 import (
 	"encoding/json"
@@ -32,7 +33,6 @@ func ffprobe(sourcePath string) (*FFProbeResult, error) {
 		return nil, err
 	}
 
-	// fmt.Println(string(probe))
 	var probeResult *FFProbeResult
 	err = json.Unmarshal(probe, &probeResult)
 	return probeResult, err
