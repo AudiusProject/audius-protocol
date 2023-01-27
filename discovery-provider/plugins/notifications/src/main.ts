@@ -21,10 +21,16 @@ export class Processor {
     this.isRunning = false
   }
 
-  init = async () => {
+  init = async ({
+    discoveryDBUrl,
+    identityDBUrl,
+  }: {
+    discoveryDBUrl?: string
+    identityDBUrl?: string
+  } = {}) => {
     logger.info('starting!')
     // setup postgres listener
-    await this.setupDB()
+    await this.setupDB({ discoveryDBUrl, identityDBUrl })
     await setupTriggers(this.discoveryDB)
 
     this.listener = new Listener()
@@ -33,10 +39,15 @@ export class Processor {
     this.appNotificationsProcessor = new AppNotificationsProcessor(this.discoveryDB, this.identityDB)
   }
 
-  setupDB = async () => {
-    const discoveryDBConnection = process.env.DN_DB_URL
-    const identityDBConnection = process.env.IDENTITY_DB_URL
-
+  setupDB = async ({
+    discoveryDBUrl,
+    identityDBUrl,
+  }: {
+    discoveryDBUrl?: string
+    identityDBUrl?: string
+  } = {}) => {
+    const discoveryDBConnection = discoveryDBUrl || process.env.DN_DB_URL
+    const identityDBConnection = identityDBUrl || process.env.IDENTITY_DB_URL
     this.discoveryDB = await getDB(discoveryDBConnection)
     this.identityDB = await getDB(identityDBConnection)
   }
@@ -59,6 +70,11 @@ export class Processor {
     this.isRunning = false
   }
 
+  close = async () => {
+    await this.listener?.close()
+    await this.discoveryDB?.destroy()
+    await this.identityDB?.destroy()
+  }
 }
 
 async function main() {

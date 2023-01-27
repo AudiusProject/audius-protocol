@@ -240,7 +240,7 @@ services:
     environment:
       AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
       DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
-      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
+      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/identity_service"
     volumes:
       - ./discovery-provider/plugins/notifications:/notifications
     depends_on:
@@ -264,6 +264,8 @@ services:
     image: postgres:11.4
     user: postgres
     command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
+    environment:
+      POSTGRES_DB: "identity_service"
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 1s
@@ -296,7 +298,7 @@ services:
       service: identity-service
     command: sh -c "npm run db:migrate"
     environment:
-      audius_db_url: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
+      dbUrl: "postgresql://postgres:postgres@identity-service-db:5432/identity_service"
     depends_on:
       identity-service-db:
         condition: service_healthy

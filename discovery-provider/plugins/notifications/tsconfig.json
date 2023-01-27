@@ -4,6 +4,7 @@
     "skipLibCheck": true,
     "target": "es5",
     "esModuleInterop": true,
+    "jsx": "react",
     "module": "CommonJS",
     "moduleResolution": "node",
     "isolatedModules": true
