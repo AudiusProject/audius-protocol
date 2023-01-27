@@ -9,25 +9,17 @@
 }
 
 .item .icon {
-  height: var(--unit-6);
-  width: var(--unit-6);
+  height: var(--unit-5);
+  width: var(--unit-5);
   display: flex;
   align-items: center;
 
   justify-content: center;
-  border-radius: 100%;
-  background: var(--neutral-light-4);
   margin-right: var(--unit-2);
 }
 
-.item svg {
-  border-radius: 100%;
-  height: var(--unit-4);
-  width: var(--unit-4);
-}
-
 .item path {
-  fill: var(--white);
+  fill: var(--neutral);
 }
 
 .item:hover {
@@ -36,10 +28,6 @@
   background: var(--secondary);
 }
 
-.item:hover svg {
-  background: var(--primary-secondary-text);
-}
-
 .item:hover path {
-  fill: var(--secondary);
+  fill: var(--primary-secondary-text);
 }
