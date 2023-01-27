@@ -1,15 +1,13 @@
-const { spawn } = require('child_process')
+const { exec } = require('child_process')
 const commander = require('commander')
 
 const program = new commander.Command()
 
 const spawnOpenAPIGenerator = (openApiGeneratorArgs) => {
   console.log('Running OpenAPI Generator:')
-  console.log(`openapi-generator-cli ${openApiGeneratorArgs.join(' ')}`)
-  const openApiGeneratorCLI = spawn(
-    'openapi-generator-cli',
-    openApiGeneratorArgs
-  )
+  const fullCmd = `docker run --rm -v "${process.env.PWD}:/local" openapitools/openapi-generator-cli ${openApiGeneratorArgs.join(' ')}`
+  console.log(fullCmd)
+  const openApiGeneratorCLI = exec(fullCmd)
 
   openApiGeneratorCLI.stdout.on('data', (data) => {
     console.log(`${data}`)
@@ -51,11 +49,11 @@ const generate = ({ env, apiVersion, apiFlavor, generator }) => {
     '-i',
     `${baseURL}/${apiPath}/swagger.json`,
     '-o',
-    `src/sdk/api/generated/${outputFolderName}`,
+    `/local/src/sdk/api/generated/${outputFolderName}`,
     '--skip-validate-spec',
     '--additional-properties=modelPropertyNaming=original,useSingleRequestParameter=true,withSeparateModelsAndApi=true,apiPackage=api,modelPackage=model',
     '-t',
-    `src/sdk/api/generator/templates/${generator}`
+    `/local/src/sdk/api/generator/templates/${generator}`
   ]
   spawnOpenAPIGenerator(openApiGeneratorArgs)
 }
