@@ -45,7 +45,7 @@ export const startDownloadWorker = async () => {
   queue.stop()
   queue.configure({
     concurrency: 1,
-    updateInterval: 10
+    updateInterval: 500
   })
 
   // Reset worker to improve devEx. Forces the worker to take code updates across reloads
