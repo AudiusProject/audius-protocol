@@ -1,6 +1,6 @@
 import { renderEmail } from './renderEmail'
 
-import { EmailFrequency } from "../../appNotifications/mappers/base"
+import { EmailFrequency } from "../../processNotifications/mappers/base"
 import { logger } from '../../logger'
 import { getSendgrid } from '../../sendgrid'
 import { MailDataRequired } from '@sendgrid/mail'

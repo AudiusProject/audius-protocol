@@ -1,5 +1,104 @@
 import { Knex } from 'knex'
-import { UserRow } from '../types/dn'
+import { RepostRow, FollowRow, UserRow, TrackRow, SaveRow } from '../types/dn'
+import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow } from '../types/identity'
+import { getDB } from '../conn'
+
+export const replaceDBName = (connectionString: string, testName: string) => {
+  const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
+  console.log({ replace: `${connection}/${testName}` })
+  return `${connection}/${testName}`
+}
+
+export const createTestDB = async (connectionString: string, testName: string) => {
+  const templateDb = /[^/]*$/.exec(connectionString)[0]
+  const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
+  const postgresConnection = `${connection}/postgres`
+  console.log({ postgresConnection })
+  const db = await getDB(postgresConnection)
+  await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
+  console.log({
+    test_name: testName,
+    template: templateDb,
+    connection
+  })
+  await db.raw('CREATE DATABASE :test_name: TEMPLATE :template:', { test_name: testName, template: templateDb })
+  await db.destroy()
+}
+
+export const dropTestDB = async (connectionString: string, testName: string) => {
+  const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
+  const postgresConnection = `${connection}/postgres`
+  const db = await getDB(postgresConnection)
+  console.log({
+    test_name: testName,
+    connectionString,
+    connection
+  })
+  await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
+  await db.destroy()
+
+}
+
+type CreateTrack = Pick<TrackRow, 'owner_id' | 'track_id'> & Partial<TrackRow>
+export const createTracks = async (db: Knex, tracks: CreateTrack[]) => {
+  await db.insert(tracks.map(track => ({
+    is_delete: false,
+    is_current: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+    track_segments: [],
+    ...track,
+  })))
+    .into('tracks')
+}
+
+type CreateUser = Pick<UserRow, 'user_id'> & Partial<UserRow>
+export const createUsers = async (db: Knex, users: CreateUser[]) => {
+  await db.insert(users.map(user => ({
+    is_current: true,
+    created_at: new Date(),
+    updated_at: new Date(),
+    name: `user_${user.user_id}`,
+    creator_node_endpoint: `https://dn1.io,https://dn2.io,https://dn3.io`,
+    ...user,
+  })))
+    .into('users')
+}
+
+
+type CreateRepost = Pick<RepostRow, 'user_id' | 'repost_item_id' | 'repost_type'> & Partial<RepostRow>
+export const createReposts = async (db: Knex, reposts: CreateRepost[]) => {
+  await db.insert(reposts.map(repost => ({
+    is_delete: false,
+    is_current: true,
+    created_at: new Date(),
+    ...repost,
+  })))
+    .into('reposts')
+}
+
+type CreateSave = Pick<SaveRow, 'user_id' | 'save_item_id' | 'save_type'> & Partial<SaveRow>
+export const createSaves = async (db: Knex, saves: CreateSave[]) => {
+  await db.insert(saves.map(save => ({
+    is_delete: false,
+    is_current: true,
+    created_at: new Date(),
+    ...save,
+  })))
+    .into('saves')
+}
+
+type CreateFollow = Pick<FollowRow, 'followee_user_id' | 'follower_user_id'> & Partial<FollowRow>
+export const insertFollows = async (db: Knex, follows: CreateFollow[]) => {
+  await db.insert(follows.map(follow => ({
+    is_delete: false,
+    is_current: true,
+    created_at: new Date(),
+    ...follow,
+  })))
+    .into('follows')
+}
+
 
 // Generate random Id betweeen 0 and 999
 export function randId() {
@@ -23,10 +122,6 @@ export async function clearAllTables(db: Knex) {
       $func$;
     `
   )
-}
-
-export async function createUser(db: Knex, metadata: UserRow) {
-  await db.insert(metadata).into('users')
 }
 
 export async function createChat(db: Knex, user1: number, user2: number, chatId: string, timestamp: Date) {
@@ -101,30 +196,28 @@ export async function insertReaction(db: Knex, senderId: number, messageId: stri
     .into('chat_message_reactions')
 }
 
-export async function insertMobileDevice(db: Knex, userId: number, deviceType: string, awsARN: string) {
+type MoblieDevice = Pick<NotificationDeviceTokenRow, 'userId'> & Partial<NotificationDeviceTokenRow>
+export async function insertMobileDevices(db: Knex, mobileDevices: MoblieDevice[]) {
   const currentTimestamp = new Date(Date.now()).toISOString()
-  await db.insert(
-    {
-      userId: userId,
-      deviceToken: randId().toString(),
-      deviceType: deviceType,
-      awsARN: awsARN,
-      createdAt: currentTimestamp,
-      updatedAt: currentTimestamp
-    }
-  )
+  await db.insert(mobileDevices.map((device, idx) => ({
+    deviceToken: randId().toString(),
+    createdAt: currentTimestamp,
+    updatedAt: currentTimestamp,
+    deviceType: 'ios',
+    awsARN: `arn:${device.userId}`,
+    ...device
+  })))
     .into('NotificationDeviceTokens')
 }
 
-export async function insertMobileSetting(db: Knex, userId: number) {
+type MobileSetting = Pick<UserNotificationMobileSettingRow, 'userId'> & Partial<UserNotificationMobileSettingRow>
+export async function insertMobileSettings(db: Knex, mobileSettings: MobileSetting[]) {
   const currentTimestamp = new Date(Date.now()).toISOString()
-  await db.insert(
-    {
-      userId: userId,
-      createdAt: currentTimestamp,
-      updatedAt: currentTimestamp
-    }
-  )
+  await db.insert(mobileSettings.map(setting => ({
+    createdAt: currentTimestamp,
+    updatedAt: currentTimestamp,
+    ...setting
+  })))
     .into('UserNotificationMobileSettings')
 }
 
@@ -140,16 +233,19 @@ export async function setupTwoUsersWithDevices(discoveryDB: Knex, identityDB: Kn
   const user1Name = "user 1"
   const user2 = randId()
   const user2Name = "user 2"
-  await createUser(discoveryDB, { user_id: user1, name: user1Name, is_current: true })
-  await createUser(discoveryDB, { user_id: user2, name: user2Name, is_current: true })
-  await insertMobileSetting(identityDB, user1)
-  await insertMobileSetting(identityDB, user2)
-  const deviceType1 = "ios"
+  await createUsers(discoveryDB, [
+    { user_id: user1, name: user1Name, is_current: true },
+    { user_id: user2, name: user2Name, is_current: true }
+  ])
+  await insertMobileSettings(identityDB, [{ userId: user1 }, { userId: user2 }])
+  const deviceType1 = enum_NotificationDeviceTokens_deviceType.ios
   const awsARN1 = "arn:1"
-  await insertMobileDevice(identityDB, user1, deviceType1, awsARN1)
-  const deviceType2 = "android"
+  const deviceType2 = enum_NotificationDeviceTokens_deviceType.android
   const awsARN2 = "arn:2"
-  await insertMobileDevice(identityDB, user2, deviceType2, awsARN2)
+  await insertMobileDevices(identityDB, [
+    { userId: user1, deviceType: deviceType1, awsARN: awsARN1 },
+    { userId: user2, deviceType: deviceType2, awsARN: awsARN2 },
+  ])
   return {
     user1: {
       userId: user1,

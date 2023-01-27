@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import moment from 'moment-timezone'
-import { EmailFrequency } from '../../appNotifications/mappers/base'
+import { EmailFrequency } from '../../processNotifications/mappers/base'
 
 import { logger } from '../../logger'
 import { sendNotificationEmail } from './sendEmail'
