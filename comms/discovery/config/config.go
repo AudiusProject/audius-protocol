@@ -30,6 +30,7 @@ var (
 	NatsClusterPassword = ""
 	NatsUseNkeys        = true
 	NatsReplicaCount    = 3
+	NatsIsReachable     = false
 
 	IsStaging     = Env == "stage"
 	IsCreatorNode = false

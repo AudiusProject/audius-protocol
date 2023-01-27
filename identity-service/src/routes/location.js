@@ -31,7 +31,7 @@ module.exports = function (app) {
             'api-key': IP_API_KEY
           }
         })
-        return successResponse(res.data)
+        return successResponse({ ...res.data, in_eu: res.data.is_eu })
       } catch (e) {
         logger.error(`Got error in location: ${e.response?.data}`)
         return errorResponse(e.response?.status, e.response?.data)

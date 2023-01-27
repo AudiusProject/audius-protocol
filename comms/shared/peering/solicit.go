@@ -38,7 +38,7 @@ func Solicit() map[string]*Info {
 			u := sp.Endpoint + "/nats/exchange"
 			info, err := solicitServer(u)
 			if err != nil {
-				config.Logger.Warn("get info failed", "endpoint", u, "err", err)
+				config.Logger.Debug("get info failed", "endpoint", u, "err", err)
 			} else {
 				info.Host = sp.Endpoint
 				info.SPID = sp.SPID
@@ -57,6 +57,16 @@ func Solicit() map[string]*Info {
 
 	return peerMap
 
+}
+
+func addPeer(info *Info) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if _, known := peerMap[info.IP]; !known {
+		config.Logger.Info("adding peer", "info", info)
+		peerMap[info.IP] = info
+	}
 }
 
 func ListPeers() []Info {
@@ -97,9 +107,6 @@ func solicitServer(endpoint string) (*Info, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// nats conneciton test
-	info.NatsConnected = NatsConnectionTest(fmt.Sprintf("nats://%s:4222", info.IP))
 
 	info.IsSelf = info.Address == config.WalletAddress
 
