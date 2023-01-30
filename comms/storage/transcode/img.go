@@ -14,6 +14,8 @@ import (
 	"github.com/disintegration/imaging"
 )
 
+const AUTO = -1
+
 func Resized(ext string, read io.ReadSeeker, width, height int, mode string) (resized io.ReadSeeker, w int, h int) {
 	if width == 0 && height == 0 {
 		return read, 0, 0
@@ -22,6 +24,14 @@ func Resized(ext string, read io.ReadSeeker, width, height int, mode string) (re
 	if err == nil {
 		bounds := srcImage.Bounds()
 		var dstImage *image.NRGBA
+
+		// Maintain aspect ratio when auto-resizing height based on target width
+		if height == AUTO {
+			srcW := bounds.Dx()
+			srcH := bounds.Dy()
+			autoHeight := float64(srcH) * (float64(width) / float64(srcW))
+			height = int(autoHeight)
+		}
 
 		switch mode {
 		case "fit":

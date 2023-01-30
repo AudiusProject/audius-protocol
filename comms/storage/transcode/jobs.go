@@ -366,10 +366,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 		}
 		for _, targetWidth := range widths {
 			srcReader.Seek(0, 0)
-			// todo: this is not the right resize... need to grow width to targetWidth using proportional height
-			// disintegration/imaging lib doesn't have a good API for this
-			// so maybe want to use different lib or shell out to image magic which is much faster
-			out, w, h := Resized(".jpg", srcReader, targetWidth, targetWidth, "fill")
+			out, w, h := Resized(".jpg", srcReader, targetWidth, AUTO, "fill")
 			logger.Debug("resized", "targetWidth", targetWidth, "w", w, "h", h)
 			outName := fmt.Sprintf("%s_%d.jpg", job.ID, targetWidth)
 			info, err := objStore.Put(&nats.ObjectMeta{
