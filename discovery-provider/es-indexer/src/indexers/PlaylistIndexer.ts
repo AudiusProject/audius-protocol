@@ -116,7 +116,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
           where
             is_current = true
             and is_delete = false
-            and repost_type = (case when is_album then 'album' else 'playlist' end)::reposttype
+            and repost_type != 'track'::reposttype
             and repost_item_id = playlist_id
             order by created_at desc
         ) as reposted_by,
@@ -127,7 +127,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
           where
             is_current = true
             and is_delete = false
-            and save_type = (case when is_album then 'album' else 'playlist' end)::savetype
+            and save_type != 'track'::savetype
             and save_item_id = playlist_id
             order by created_at desc
         ) as saved_by
