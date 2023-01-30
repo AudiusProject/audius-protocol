@@ -20,24 +20,6 @@
   background-color: var(--white);
 }
 
-.artistChipContainer :global(.name) {
-  color: var(--neutral);
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-bold);
-  line-height: normal;
-  margin-bottom: 8px;
-}
-.artistChipContainer :global(.followers) {
-  text-align: left;
-  width: 104px;
-  color: var(--neutral);
-  font-family: var(--font-family);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  line-height: normal;
-}
-
 .loadingAnimation {
   pointer-events: none;
   opacity: 0;
