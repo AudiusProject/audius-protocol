@@ -41,7 +41,7 @@
   flex-direction: column;
 
   color: var(--neutral);
-  font-size: var(--font-xs);
+  font-size: var(--font-s);
   overflow: hidden;
 }
 .text > .identity {

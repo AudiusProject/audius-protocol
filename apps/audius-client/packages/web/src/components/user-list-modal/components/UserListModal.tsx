@@ -19,7 +19,8 @@ import {
   FOLLOWING_USER_LIST_TAG as FOLLOWING_TAG,
   REPOSTS_USER_LIST_TAG as REPOST_TAG,
   SUPPORTING_USER_LIST_TAG as SUPPORTING_TAG,
-  TOP_SUPPORTERS_USER_LIST_TAG as SUPPORTER_TAG
+  TOP_SUPPORTERS_USER_LIST_TAG as SUPPORTER_TAG,
+  ID
 } from '@audius/common'
 import {
   Modal,
@@ -43,7 +44,8 @@ const { getUserList: mutualsSelector } = mutualsUserListSelectors
 const { getPageTitle, getUserList: notificationSelector } =
   notificationsUserListSelectors
 const { getUserList: repostsSelector } = repostsUserListSelectors
-const { getUserList: supportingSelector } = supportingUserListSelectors
+const { getUserList: supportingSelector, getId: getSupportingId } =
+  supportingUserListSelectors
 const { getUserList: topSupportersSelector, getId: getSupportersId } =
   topSupportersUserListSelectors
 const { getUser } = cacheUsersSelectors
@@ -72,6 +74,7 @@ const UserListModal = ({
 }: UserListModalProps) => {
   let tag: string
   let selector: (state: AppState) => UserListStoreState
+  let userIdSelector: ((state: AppState) => ID | null) | undefined
   let title: ReactElement | string
   const notificationTitle = useSelector(getPageTitle)
   const scrollParentRef = useRef<HTMLElement>()
@@ -125,6 +128,7 @@ const UserListModal = ({
     case UserListType.SUPPORTER:
       tag = SUPPORTER_TAG
       selector = topSupportersSelector
+      userIdSelector = getSupportersId
       title = (
         <div className={styles.titleContainer}>
           <IconTrophy className={styles.icon} />
@@ -141,6 +145,7 @@ const UserListModal = ({
     case UserListType.SUPPORTING:
       tag = SUPPORTING_TAG
       selector = supportingSelector
+      userIdSelector = getSupportingId
       title = (
         <div className={styles.titleContainer}>
           <IconTip className={styles.icon} />
@@ -185,6 +190,7 @@ const UserListModal = ({
         }}
       >
         <UserList
+          userIdSelector={userIdSelector}
           stateSelector={selector!}
           tag={tag}
           getScrollParent={() => scrollParentRef.current || null}
