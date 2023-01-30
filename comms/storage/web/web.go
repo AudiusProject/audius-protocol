@@ -60,21 +60,11 @@ func uploadFile(jobman *transcode.JobsManager) func(c echo.Context) error {
 		defer form.RemoveAll()
 
 		for _, file := range files {
-			// Source
-			src, err := file.Open()
+			job, err := jobman.Add("audio", file)
 			if err != nil {
 				return err
 			}
-
-			// add to jobman
-			job, err := jobman.Add("audio", src)
-			if err != nil {
-				return err
-			}
-
-			src.Close()
 			results = append(results, job)
-
 		}
 
 		if c.QueryParam("redirect") != "" {
@@ -123,21 +113,11 @@ func makeTranscodeDemoRoutes(storage *echo.Group, g *glue.Glue) {
 		defer form.RemoveAll()
 
 		for _, file := range files {
-			// Source
-			src, err := file.Open()
+			job, err := jobman.Add(template, file)
 			if err != nil {
 				return err
 			}
-
-			// add to jobman
-			job, err := jobman.Add(template, src)
-			if err != nil {
-				return err
-			}
-
-			src.Close()
 			results = append(results, job)
-
 		}
 
 		if c.QueryParam("redirect") != "" {

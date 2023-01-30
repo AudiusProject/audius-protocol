@@ -132,6 +132,7 @@ class JobTable extends LitElement {
       <table>
         <tr>
           <th>Seq</th>
+          <th>Type</th>
           <th>Status</th>
           <th>Progress</th>
           <th>Source File</th>
@@ -142,22 +143,15 @@ class JobTable extends LitElement {
           <th>Files</th>
         </tr>
         ${this.jobs.map(job => html`
-          <tr>
+          <tr style="font-size: 80%">
             <td><a href="/storage/jobs/${job.id}" target="_blank">${job.jetstream_sequence}</a></td>
+            <td>${job.template}</td>
             <td>${job.status}</td>
             <td>
               <progress value=${job.transcode_progress} />
             </td>
             <td>
-              ${job.probe && html`<div>
-                ${showDuration(job.probe.format.duration)}
-                &middot;
-                ${scaleNumber(job.probe.format.size)}
-                &middot;
-                ${scaleNumber(job.probe.format.bit_rate)}
-                &middot;
-                <small>${job.probe.format.format_long_name}</small>
-              </div>`}
+              ${ffprobeDisplay(job.probe)}
             </td>
 
             <td>
@@ -172,14 +166,10 @@ class JobTable extends LitElement {
             <td>
               ${showDate(job.finished_at)}
             </td>
-            <td>
-              ${job.source_info && html`
-                <a href="/storage/obj/${job.source_info.bucket}/${job.source_info.name}" target="_blank">input</a>
-              `}
-
-              ${job.result_info && resultLink(job.result_info)}
-
-              ${job.results && job.results.map(resultLink)}
+            <td style="display: flex; gap: 10px;">
+              ${resultLink(job.source_info, 'input')}
+              ${resultLink(job.result_info)}
+              ${job.results && job.results.map(r => resultLink(r))}
             </td>
           </tr>
         `)}
@@ -190,13 +180,33 @@ class JobTable extends LitElement {
 customElements.define('job-table', JobTable);
 
 
-function resultLink(result_info) {
+function resultLink(result_info, fallbackDescription) {
+  if (!result_info) return null
   return html`
-    <a href="/storage/obj/${result_info.bucket}/${result_info.name}" target="_blank">output</a>
+    <a href="/storage/obj/${result_info.bucket}/${result_info.name}" target="_blank">
+      ${result_info.description || fallbackDescription || 'output'}
+    </a>
   `
 }
 
+function ffprobeDisplay(probe) {
+  if (!probe) return null
+  const spans = [
+    showDuration(probe.format.duration),
+    scaleNumber(probe.format.size),
+    scaleNumber(probe.format.bit_rate),
+    probe.format.format_long_name,
+  ]
+    .filter(Boolean)
+    .map(d => html`<small>${d}</small>`)
+
+  return html`<div style="display: flex; gap: 10px">
+    ${spans}
+  </div>`
+}
+
 function scaleNumber(size) {
+  if (!size) return null
   var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1e3));
   return (size / Math.pow(1e3, i)).toFixed(2) * 1 + ' ' + ['', 'k', 'M', 'G', 'T'][i];
 }
@@ -208,7 +218,7 @@ function showDate(ts) {
 }
 
 function showDuration(sec) {
-  if (!sec) return '0:00';
+  if (!sec) return null;
   var hours, minutes, seconds;
   hours = Math.floor(sec / (60 * 60));
   minutes = Math.floor((sec / 60) % 60);

@@ -33,7 +33,7 @@ type Job struct {
 	Error             string             `json:"error,omitempty"`
 	Probe             *FFProbeResult     `json:"probe,omitempty"`
 	SourceInfo        *nats.ObjectInfo   `json:"source_info,omitempty"`
-	ResultInfo        *nats.ObjectInfo   `json:"result_info,omitempty"`
+	ResultInfo        *nats.ObjectInfo   `json:"result_info,omitempty"` // deprecated: use Results
 	Results           []*nats.ObjectInfo `json:"results,omitempty"`
 	TransocdeWorkerID string             `json:"transcode_worker_id,omitempty"`
 	JetstreamSequence int                `json:"jetstream_sequence,omitempty"`
@@ -145,7 +145,12 @@ func (jobman *JobsManager) watch() {
 	}
 }
 
-func (jobman *JobsManager) Add(template string, f multipart.File) (*Job, error) {
+func (jobman *JobsManager) Add(template string, upload *multipart.FileHeader) (*Job, error) {
+	f, err := upload.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
 
 	// fileHash, err := hashFile(f)
 	// if err != nil {
@@ -162,7 +167,8 @@ func (jobman *JobsManager) Add(template string, f multipart.File) (*Job, error) 
 	// put in bucket
 	// todo: sharding
 	meta := &nats.ObjectMeta{
-		Name: fileHash,
+		Name:        fileHash,
+		Description: upload.Filename,
 	}
 	info, err := jobman.objStore.Put(meta, f)
 	if err != nil {
@@ -319,6 +325,16 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 		return onError(err)
 	}
 
+	// ffprobe: get some info about input file
+	// esp. length for transocde progress
+	// maybe skip transcode if it's a 192kbps mp3
+	job.Probe, err = ffprobe(srcPath)
+	if err != nil {
+		logger.Warn("ffprobe error: " + err.Error())
+	} else {
+		jobman.Update(job)
+	}
+
 	switch job.Template {
 	case "img_square":
 		// 150x150, 480x480, 1000x1000
@@ -332,7 +348,10 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 			out, w, h := Resized(".jpg", srcReader, targetBox, targetBox, "fill")
 			logger.Debug("resized", "targetBox", targetBox, "w", w, "h", h)
 			outName := fmt.Sprintf("%s_%d.jpg", job.ID, targetBox)
-			info, err := objStore.Put(&nats.ObjectMeta{Name: outName}, out)
+			info, err := objStore.Put(&nats.ObjectMeta{
+				Name:        outName,
+				Description: fmt.Sprintf("%dx%[1]d", targetBox),
+			}, out)
 			if err != nil {
 				return onError(err)
 			}
@@ -353,7 +372,10 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 			out, w, h := Resized(".jpg", srcReader, targetWidth, targetWidth, "fill")
 			logger.Debug("resized", "targetWidth", targetWidth, "w", w, "h", h)
 			outName := fmt.Sprintf("%s_%d.jpg", job.ID, targetWidth)
-			info, err := objStore.Put(&nats.ObjectMeta{Name: outName}, out)
+			info, err := objStore.Put(&nats.ObjectMeta{
+				Name:        outName,
+				Description: fmt.Sprintf("%dx", targetWidth),
+			}, out)
 			if err != nil {
 				return onError(err)
 			}
@@ -363,16 +385,6 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	case "audio", "":
 		if job.Template == "" {
 			logger.Warn("empty template, falling back to audio")
-		}
-
-		// ffprobe: get some info about input file
-		// esp. length for transocde progress
-		// maybe skip transcode if it's a 192kbps mp3
-		job.Probe, err = ffprobe(srcPath)
-		if err != nil {
-			logger.Warn("ffprobe error: " + err.Error())
-		} else {
-			jobman.Update(job)
 		}
 
 		cmd := exec.Command("ffmpeg",
@@ -427,14 +439,18 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 		}
 
 		// put result
-		info, err := objStore.Put(&nats.ObjectMeta{Name: job.ID + "_320.mp3"}, dest)
+		info, err := objStore.Put(&nats.ObjectMeta{
+			Name:        job.ID + "_320.mp3",
+			Description: "320kbps",
+		}, dest)
 		if err != nil {
 			return onError(err)
 		}
 
-		job.ResultInfo = info
+		job.Results = append(job.Results, info)
 	}
 
+	job.TranscodeProgress = 1
 	job.FinishedAt = timeNowPtr()
 	job.Status = "done"
 	jobman.Update(job)
