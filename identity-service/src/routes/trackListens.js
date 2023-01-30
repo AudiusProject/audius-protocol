@@ -14,12 +14,10 @@ const {
 const { logger } = require('../logging')
 const authMiddleware = require('../authMiddleware')
 const {
-  createTrackListenTransaction,
-  getFeePayerKeypair,
-  sendAndSignTransaction
+  createTrackListenInstructions,
+  getFeePayerKeypair
 } = require('../solana-client')
 const config = require('../config.js')
-const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 function trimToHour(date) {
   date.setMinutes(0)
@@ -381,190 +379,115 @@ module.exports = function (app) {
         )
       }
 
-      const optimizelyClient = app.get('optimizelyClient')
-      const isSolanaListenEnabled = getFeatureFlag(
-        optimizelyClient,
-        FEATURE_FLAGS.SOLANA_LISTEN_ENABLED_SERVER
-      )
-      const solanaListen =
-        req.body.solanaListen || isSolanaListenEnabled || false
       const timeout = req.body.timeout || 60000
-
-      const sendRawTransaction =
-        req.body.sendRawTransaction ||
-        getFeatureFlag(
-          optimizelyClient,
-          FEATURE_FLAGS.SOLANA_SEND_RAW_TRANSACTION
-        ) ||
-        false
 
       const currentHour = trimToHour(new Date())
       // Dedicated listen flow
-      if (solanaListen) {
-        const suffix = currentHour.toISOString()
-        const entropy = uuidv4()
+      const suffix = currentHour.toISOString()
+      const entropy = uuidv4()
 
-        // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
-        const trackingRedisKeys = getTrackingListenKeys(suffix)
-        await initializeExpiringRedisKey(
-          redis,
-          trackingRedisKeys.submission,
-          redisTxTrackingExpirySeconds
-        )
-        await initializeExpiringRedisKey(
-          redis,
-          trackingRedisKeys.success,
-          redisTxTrackingExpirySeconds
-        )
+      // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
+      const trackingRedisKeys = getTrackingListenKeys(suffix)
+      await initializeExpiringRedisKey(
+        redis,
+        trackingRedisKeys.submission,
+        redisTxTrackingExpirySeconds
+      )
+      await initializeExpiringRedisKey(
+        redis,
+        trackingRedisKeys.success,
+        redisTxTrackingExpirySeconds
+      )
 
-        req.logger.debug(
-          `TrackListen tx submission, trackId=${trackId} userId=${userId}, ${JSON.stringify(
+      req.logger.debug(
+        `TrackListen tx submission, trackId=${trackId} userId=${userId}, ${JSON.stringify(
+          trackingRedisKeys
+        )}`
+      )
+
+      await redis.incr(trackingRedisKeys.submission)
+      await redis.zadd(
+        TRACKING_LISTEN_SUBMISSION_KEY,
+        Date.now(),
+        Date.now() + entropy
+      )
+      let location
+      try {
+        let clientIPAddress =
+          (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||
+          req.socket.remoteAddress
+        if (clientIPAddress.startsWith('::ffff:')) {
+          clientIPAddress = clientIPAddress.slice(7)
+        }
+
+        const url = `https://api.ipdata.co/${clientIPAddress}?api-key=${config.get(
+          'ipdataAPIKey'
+        )}`
+
+        const locationResponse = (await axios.get(url)).data
+        location = {
+          city: locationResponse.city,
+          region: locationResponse.region,
+          country: locationResponse.country_name
+        }
+      } catch (e) {
+        req.logger.error(
+          `TrackListen location fetch failed: ${e}, trackId=${trackId} userId=${userId}, ${JSON.stringify(
             trackingRedisKeys
           )}`
         )
+        location = {}
+      }
 
-        await redis.incr(trackingRedisKeys.submission)
+      try {
+        const instructions = await createTrackListenInstructions({
+          privateKey: config.get('solanaSignerPrivateKey'),
+          userId: userId.toString(),
+          trackId: trackId.toString(),
+          source: 'relay',
+          location,
+          connection
+        })
+        const feePayerAccount = getFeePayerKeypair(false)
+        req.logger.debug(
+          `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`
+        )
+
+        const transactionHandler = libs.solanaWeb3Manager.transactionHandler
+        const { res: solTxSignature, error } =
+          await transactionHandler.handleTransaction({
+            instructions,
+            skipPreflight: false, // TODO
+            feePayerOverride: feePayerAccount,
+            retry: true
+          })
+
+        if (error) {
+          return errorResponseServerError(
+            `TrackListens tx error, trackId=${trackId} userId=${userId} : ${error}`
+          )
+        }
+
+        req.logger.debug(
+          `TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId} `
+        )
+
+        // Increment success tracker
+        await redis.incr(trackingRedisKeys.success)
         await redis.zadd(
-          TRACKING_LISTEN_SUBMISSION_KEY,
+          TRACKING_LISTEN_SUCCESS_KEY,
           Date.now(),
           Date.now() + entropy
         )
-        let location
-        try {
-          let clientIPAddress =
-            (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||
-            req.socket.remoteAddress
-          if (clientIPAddress.startsWith('::ffff:')) {
-            clientIPAddress = clientIPAddress.slice(7)
-          }
-
-          const url = `https://api.ipdata.co/${clientIPAddress}?api-key=${config.get(
-            'ipdataAPIKey'
-          )}`
-
-          const locationResponse = (await axios.get(url)).data
-          location = {
-            city: locationResponse.city,
-            region: locationResponse.region,
-            country: locationResponse.country_name
-          }
-        } catch (e) {
-          req.logger.error(
-            `TrackListen location fetch failed: ${e}, trackId=${trackId} userId=${userId}, ${JSON.stringify(
-              trackingRedisKeys
-            )}`
-          )
-          location = {}
-        }
-
-        try {
-          const trackListenTransaction = await createTrackListenTransaction({
-            validSigner: null,
-            privateKey: config.get('solanaSignerPrivateKey'),
-            userId: userId.toString(),
-            trackId: trackId.toString(),
-            source: 'relay',
-            location,
-            connection
-          })
-          const feePayerAccount = getFeePayerKeypair(false)
-          let solTxSignature
-          if (sendRawTransaction) {
-            req.logger.debug(
-              `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`
-            )
-            solTxSignature = await sendAndSignTransaction(
-              connection,
-              trackListenTransaction,
-              feePayerAccount,
-              timeout,
-              logger
-            )
-          } else {
-            await retry(
-              async () => {
-                req.logger.debug(
-                  `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendAndConfirmTransaction`
-                )
-                solTxSignature = await solanaWeb3.sendAndConfirmTransaction(
-                  connection,
-                  trackListenTransaction,
-                  [feePayerAccount],
-                  {
-                    skipPreflight: false,
-                    commitment: config.get('solanaTxCommitmentLevel'),
-                    preflightCommitment: config.get('solanaTxCommitmentLevel')
-                  }
-                )
-              },
-              {
-                // Retry function 3x by default
-                // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 8000 ms (capped)
-                minTimeout: 500,
-                maxTimeout: 8000,
-                factor: 3,
-                retries: 3,
-                onRetry: (err, i) => {
-                  if (err) {
-                    req.logger.error(
-                      `TrackListens tx retry error, trackId=${trackId} userId=${userId} : ${err}`
-                    )
-                  }
-                }
-              }
-            )
-          }
-
-          req.logger.debug(
-            `TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId}, sendRawTransaction=${sendRawTransaction}`
-          )
-
-          // Increment success tracker
-          await redis.incr(trackingRedisKeys.success)
-          await redis.zadd(
-            TRACKING_LISTEN_SUCCESS_KEY,
-            Date.now(),
-            Date.now() + entropy
-          )
-          return successResponse({
-            solTxSignature
-          })
-        } catch (e) {
-          return errorResponseServerError(
-            `TrackListens tx error, trackId=${trackId} userId=${userId} : ${e}`
-          )
-        }
+        return successResponse({
+          solTxSignature
+        })
+      } catch (e) {
+        // This should never happen
+        return errorResponseServerError(
+          `TrackListens tx error, trackId=${trackId} userId=${userId} : ${e}`
+        )
       }
-
-      // TODO: Make all of this conditional based on request parameters
-      const trackListenRecord = await models.TrackListenCount.findOrCreate({
-        where: { hour: currentHour, trackId }
-      })
-      if (trackListenRecord && trackListenRecord[1]) {
-        logger.info(`New track listen record inserted ${trackListenRecord}`)
-      }
-      await models.TrackListenCount.increment('listens', {
-        where: { hour: currentHour, trackId: req.params.id }
-      })
-
-      // Clients will send a randomly generated string UUID for anonymous users.
-      // Those listened should NOT be recorded in the userTrackListen table
-      const isRealUser = typeof userId === 'number'
-      if (isRealUser) {
-        // Find / Create the record of the user listening to the track
-        const [userTrackListenRecord, created] =
-          await models.UserTrackListen.findOrCreate({
-            where: { userId, trackId }
-          })
-
-        // If the record was not created, updated the timestamp
-        if (!created) {
-          await userTrackListenRecord.increment('count')
-          await userTrackListenRecord.save()
-        }
-      }
-
-      return successResponse({})
     })
   )
 
