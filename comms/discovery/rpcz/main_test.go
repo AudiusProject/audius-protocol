@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"github.com/nats-io/nats.go"
 )
@@ -16,6 +17,8 @@ var (
 
 // this runs before all tests (not a per-test setup / teardown)
 func TestMain(m *testing.M) {
+	config.Init()
+
 	// setup
 	os.Setenv("audius_db_url", "postgresql://postgres:postgres@localhost:5454/comtest?sslmode=disable")
 	err := db.Dial()

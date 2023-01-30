@@ -11,7 +11,6 @@ import (
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
-	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -22,12 +21,7 @@ func TestRateLimit(t *testing.T) {
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
 
-	// Create rate limit KV
-	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   config.RateLimitRulesBucketName,
-		Replicas: 1,
-	})
-	assert.NoError(t, err)
+	kv := testValidator.limiter.kv
 
 	// Add test rules
 	testRules := map[string]int{
