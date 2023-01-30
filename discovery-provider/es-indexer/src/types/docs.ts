@@ -20,6 +20,8 @@ export type PlaylistDoc = PlaylistRow & {
   suggest: string
   tracks: TrackDoc[]
   save_count: number
+  routes: string[]
+  permalink: string
   saved_by: number[]
   repost_count: number
   reposted_by: number[]
