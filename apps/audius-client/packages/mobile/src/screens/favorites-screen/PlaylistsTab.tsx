@@ -9,7 +9,10 @@ import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppState } from 'app/store'
-import { getOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
+import {
+  getIsDoneLoadingFromDisk,
+  getOfflineDownloadStatus
+} from 'app/store/offline-downloads/selectors'
 import { OfflineTrackDownloadStatus } from 'app/store/offline-downloads/slice'
 
 import type { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScreen'
@@ -31,8 +34,15 @@ export const PlaylistsTab = () => {
   const [filterValue, setFilterValue] = useState('')
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
+  const isDoneLoadingFromDisk = useSelector(getIsDoneLoadingFromDisk)
+
   const userPlaylists = useProxySelector(
     (state: AppState) => {
+      if (isOfflineModeEnabled && !isReachable) {
+        if (!isDoneLoadingFromDisk) {
+          return []
+        }
+      }
       const offlineDownloadStatus = getOfflineDownloadStatus(state)
       return getAccountCollections(state, filterValue).filter((collection) => {
         if (collection.is_album) {
@@ -59,7 +69,7 @@ export const PlaylistsTab = () => {
         return true
       })
     },
-    [filterValue, isReachable, isOfflineModeEnabled]
+    [filterValue, isReachable, isOfflineModeEnabled, isDoneLoadingFromDisk]
   )
 
   const handleNavigateToNewPlaylist = useCallback(() => {

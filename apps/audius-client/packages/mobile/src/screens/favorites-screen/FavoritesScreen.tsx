@@ -1,7 +1,11 @@
 import { useMemo } from 'react'
 
 import type { CommonState } from '@audius/common'
-import { accountActions } from '@audius/common'
+import {
+  accountActions,
+  useProxySelector,
+  reachabilitySelectors
+} from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -20,12 +24,14 @@ import {
   useReadOfflineOverride
 } from 'app/hooks/useIsOfflineModeEnabled'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { getIsDoneLoadingFromDisk } from 'app/store/offline-downloads/selectors'
 
 import { AlbumsTab } from './AlbumsTab'
 import { PlaylistsTab } from './PlaylistsTab'
 import { TracksTab } from './TracksTab'
 import { getAccountCollections } from './selectors'
 const { fetchSavedPlaylists, fetchSavedAlbums } = accountActions
+const { getIsReachable } = reachabilitySelectors
 
 const messages = {
   header: 'Favorites'
@@ -53,7 +59,8 @@ export const FavoritesScreen = () => {
   useAppTabScreen()
   const dispatch = useDispatch()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-
+  const isDoneLoadingFromDisk = useSelector(getIsDoneLoadingFromDisk)
+  const isReachable = useSelector(getIsReachable)
   const { value: allFavoritedTrackIds } = useFetchAllFavoritedTracks()
 
   useReadOfflineOverride()
@@ -63,8 +70,16 @@ export const FavoritesScreen = () => {
     dispatch(fetchSavedAlbums())
   })
 
-  const userCollections = useSelector((state: CommonState) =>
-    getAccountCollections(state, '')
+  const userCollections = useProxySelector(
+    (state: CommonState) => {
+      if (isOfflineModeEnabled && !isReachable) {
+        if (!isDoneLoadingFromDisk) {
+          return []
+        }
+      }
+      return getAccountCollections(state, '')
+    },
+    [isOfflineModeEnabled, isReachable, isDoneLoadingFromDisk]
   )
 
   const tracksForDownload: TrackForDownload[] = useMemo(() => {
