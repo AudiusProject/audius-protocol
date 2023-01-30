@@ -32,10 +32,9 @@ export const useCollectionImage = (options: UseCollectionImageOptions) => {
     getUser(state, { id: collection?.playlist_owner_id })
   )
 
-  const { value: localSource, loading } = useLocalCollectionImage({
-    collectionId: collection?.playlist_id.toString(),
-    size
-  })
+  const { value: localSource, loading } = useLocalCollectionImage(
+    collection?.playlist_id.toString()
+  )
 
   const contentNodeSource = useContentNodeImage({
     cid,

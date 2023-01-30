@@ -28,10 +28,9 @@ export const useTrackImage = ({ track, size, user }: UseTrackImageOptions) => {
   const selectedUser = useSelector((state) =>
     getUser(state, { id: track?.owner_id })
   )
-  const { value: localSource, loading } = useLocalTrackImage({
-    trackId: track?.track_id.toString(),
-    size
-  })
+  const { value: localSource, loading } = useLocalTrackImage(
+    track?.track_id.toString()
+  )
 
   const contentNodeSource = useContentNodeImage({
     cid,

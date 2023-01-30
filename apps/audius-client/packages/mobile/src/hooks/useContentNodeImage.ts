@@ -44,7 +44,7 @@ const createImageSourcesForEndpoints = ({
  * Create all the sources for an image.
  * Includes legacy endpoints and optionally local sources
  */
-const createAllImageSources = ({
+export const createAllImageSources = ({
   cid,
   user,
   endpoints: providedEndpoints,

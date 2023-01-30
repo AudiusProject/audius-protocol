@@ -1,6 +1,4 @@
-import { useCallback } from 'react'
-
-import type { Nullable, SquareSizes, WidthSizes } from '@audius/common'
+import type { Nullable } from '@audius/common'
 import { reachabilitySelectors } from '@audius/common'
 import type { ImageURISource } from 'react-native'
 import { exists } from 'react-native-fs'
@@ -14,12 +12,9 @@ import {
 } from 'app/services/offline-downloader'
 const { getIsReachable } = reachabilitySelectors
 
-export const getLocalImageSource = async (
-  getLocalPath: (size: string) => string | undefined,
-  size: SquareSizes | WidthSizes
-) => {
+export const getLocalImageSource = async (localPath: string | undefined) => {
   const imageSource = {
-    uri: `file://${getLocalPath(size.toString())}`
+    uri: `file://${localPath}`
   }
 
   if (!(await exists(imageSource.uri))) {
@@ -29,24 +24,18 @@ export const getLocalImageSource = async (
   return imageSource
 }
 
-const getLocalTrackImagePath = (trackId?: string) => (size: string) =>
-  trackId ? getLocalTrackCoverArtPath(trackId, size) : undefined
+const getLocalTrackImagePath = (trackId?: string) =>
+  trackId ? getLocalTrackCoverArtPath(trackId) : undefined
 
-const getLocalCollectionImagePath = (collectionId?: string) => (size: string) =>
-  collectionId ? getLocalCollectionCoverArtPath(collectionId, size) : undefined
+const getLocalCollectionImagePath = (collectionId?: string) =>
+  collectionId ? getLocalCollectionCoverArtPath(collectionId) : undefined
 
-export const getLocalTrackImageSource = (
-  trackId: string,
-  size: SquareSizes | WidthSizes
-) => {
-  return getLocalImageSource(getLocalTrackImagePath(trackId), size)
+export const getLocalTrackImageSource = (trackId: string) => {
+  return getLocalImageSource(getLocalTrackImagePath(trackId))
 }
 
-export const getLocalCollectionImageSource = (
-  collectionId: string,
-  size: SquareSizes | WidthSizes
-) => {
-  return getLocalImageSource(getLocalCollectionImagePath(collectionId), size)
+export const getLocalCollectionImageSource = (collectionId: string) => {
+  return getLocalImageSource(getLocalCollectionImagePath(collectionId))
 }
 
 // When reachable, return empty array for local source.
@@ -56,13 +45,9 @@ const reachableResult: AsyncState<Nullable<ImageURISource>> = {
   loading: false
 }
 
-export const useLocalImage = ({
-  getLocalPath,
-  size
-}: {
-  getLocalPath: (size: string) => string | undefined
-  size: SquareSizes | WidthSizes
-}): AsyncState<Nullable<ImageURISource>> => {
+export const useLocalImage = (
+  imagePath?: string
+): AsyncState<Nullable<ImageURISource>> => {
   const isReachable = useSelector(getIsReachable)
 
   const sourceResult = useAsync(async () => {
@@ -71,8 +56,8 @@ export const useLocalImage = ({
       return null
     }
 
-    return await getLocalImageSource(getLocalPath, size)
-  }, [getLocalPath])
+    return await getLocalImageSource(imagePath)
+  }, [imagePath])
 
   if (isReachable) {
     return reachableResult
@@ -81,30 +66,10 @@ export const useLocalImage = ({
   return sourceResult
 }
 
-export const useLocalTrackImage = ({
-  trackId,
-  size
-}: {
-  trackId?: string
-  size: SquareSizes | WidthSizes
-}) => {
-  const getLocalPath = useCallback(
-    (size: string) => getLocalTrackImagePath(trackId)(size),
-    [trackId]
-  )
-  return useLocalImage({ getLocalPath, size })
+export const useLocalTrackImage = (trackId?: string) => {
+  return useLocalImage(getLocalTrackImagePath(trackId))
 }
 
-export const useLocalCollectionImage = ({
-  collectionId,
-  size
-}: {
-  collectionId?: string
-  size: SquareSizes | WidthSizes
-}) => {
-  const getLocalPath = useCallback(
-    (size: string) => getLocalCollectionImagePath(collectionId)(size),
-    [collectionId]
-  )
-  return useLocalImage({ getLocalPath, size })
+export const useLocalCollectionImage = (collectionId?: string) => {
+  return useLocalImage(getLocalCollectionImagePath(collectionId))
 }
