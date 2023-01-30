@@ -125,7 +125,6 @@ def cache(**kwargs):
     @functools.wraps simply ensures that if Python introspects `inner_wrap`, it refers to
     `func` rather than `inner_wrap`.
     """
-    ttl_sec = kwargs["ttl_sec"] if "ttl_sec" in kwargs else default_ttl_sec
     transform = kwargs["transform"] if "transform" in kwargs else None
     cache_prefix_override = (
         kwargs["cache_prefix_override"] if "cache_prefix_override" in kwargs else None
@@ -148,14 +147,6 @@ def cache(**kwargs):
                     return cached_resp, 200
 
             response = func(*args, **kwargs)
-
-            if len(response) == 2:
-                resp, status_code = response
-                if status_code < 400:
-                    set_json_cached_key(redis, key, resp, ttl_sec)
-
-                return resp, status_code
-            set_json_cached_key(redis, key, response, ttl_sec)
 
             return transform(response)
 
