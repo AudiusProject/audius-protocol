@@ -271,6 +271,19 @@ export interface PlaylistRow {
   'upc'?: string | null;
   'updated_at': Date;
 }
+
+export interface PlaylistRouteRow {
+  'blockhash': string;
+  'blocknumber': number;
+  'collision_id': number;
+  'is_current': boolean;
+  'owner_id': number;
+  'slug': string;
+  'title_slug': string;
+  'playlist_id': number;
+  'txhash': string;
+}
+
 export interface PlayRow {
   'created_at': Date;
   'id'?: number;
