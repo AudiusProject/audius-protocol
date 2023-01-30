@@ -152,8 +152,7 @@ async function getListenTimestamp(connection) {
   return blockTime
 }
 
-async function createTrackListenTransaction({
-  validSigner,
+async function createTrackListenInstructions({
   privateKey,
   userId,
   trackId,
@@ -161,7 +160,7 @@ async function createTrackListenTransaction({
   location,
   connection
 }) {
-  validSigner = validSigner || VALID_SIGNER
+  const validSigner = VALID_SIGNER
 
   const privKey = Buffer.from(privateKey, 'hex')
   const pubKey = secp256k1.publicKeyCreate(privKey, false).slice(1)
@@ -210,8 +209,6 @@ async function createTrackListenTransaction({
     instructionData
   )
 
-  const transaction = new solanaWeb3.Transaction()
-
   const secpInstruction =
     solanaWeb3.Secp256k1Program.createInstructionWithPublicKey({
       publicKey: pubKey,
@@ -219,10 +216,7 @@ async function createTrackListenTransaction({
       signature: sigObj.signature,
       recoveryId: sigObj.recid
     })
-
-  transaction.add(secpInstruction)
-
-  transaction.add({
+  const listenInstruction = new solanaWeb3.TransactionInstruction({
     keys: [
       { pubkey: validSignerPubK, isSigner: false, isWritable: false },
       { pubkey: signerGroup, isSigner: false, isWritable: false },
@@ -238,150 +232,10 @@ async function createTrackListenTransaction({
     data: serializedInstructionArgs
   })
 
-  return transaction
-}
-
-const getUnixTs = () => {
-  return new Date().getTime() / 1000
-}
-
-async function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
-
-// Adapted from mango send function
-// https://github.com/blockworks-foundation/mango-ui/blob/b6abfc6c13b71fc17ebbe766f50b8215fa1ec54f/src/utils/send.tsx#L785
-// THIS FUNCTION MUST BE MOVED TO LIBS TRANSACTIONHANDLER
-async function sendAndSignTransaction(
-  connection,
-  transaction,
-  signers,
-  timeout,
-  logger
-) {
-  // Sign transaction
-  const latestBlockhashInfo = await connection.getLatestBlockhash('confirmed')
-  const latestBlockhash = latestBlockhashInfo.blockhash
-  transaction.recentBlockhash = latestBlockhash
-  transaction.sign(signers)
-  // Serialize and grab raw transaction bytes
-  const rawTransaction = transaction.serialize()
-  const startTime = getUnixTs()
-  const txid = await connection.sendRawTransaction(rawTransaction, {
-    skipPreflight: true,
-    maxRetries: 0
-  })
-
-  let done = false
-  // Anonymous function to retry sending until confirmation
-  ;(async () => {
-    // eslint-disable-next-line no-unmodified-loop-condition
-    while (!done && getUnixTs() - startTime < timeout) {
-      connection.sendRawTransaction(rawTransaction, {
-        skipPreflight: true,
-        maxRetries: 0
-      })
-      await delay(300)
-    }
-    const elapsed = getUnixTs() - startTime
-    logger.info(
-      `TrackListen | Exited retry send loop for ${txid}, elapsed=${elapsed}, done=${done}, timeout=${timeout}, startTime=${startTime}`
-    )
-  })()
-
-  try {
-    await awaitTransactionSignatureConfirmation(
-      txid,
-      timeout,
-      connection,
-      logger
-    )
-  } catch (e) {
-    throw new Error(e)
-  } finally {
-    done = true
-  }
-  return txid
-}
-
-// Adapted from mango send function
-// https://github.com/blockworks-foundation/mango-ui/blob/b6abfc6c13b71fc17ebbe766f50b8215fa1ec54f/src/utils/send.tsx#L785
-// THIS FUNCTION MUST BE MOVED TO LIBS TRANSACTIONHANDLER
-async function awaitTransactionSignatureConfirmation(
-  txid,
-  timeout,
-  connection,
-  logger
-) {
-  let done = false
-  const result = await new Promise((resolve, reject) => {
-    ;(async () => {
-      setTimeout(() => {
-        if (done) {
-          return
-        }
-        done = true
-        reject(new Error(`Timed out for txid ${txid}`))
-      }, timeout)
-      try {
-        connection.onSignature(
-          txid,
-          (result) => {
-            done = true
-            if (result.err) {
-              reject(result.err)
-            } else {
-              resolve(result)
-            }
-          },
-          connection.commitment
-        )
-      } catch (e) {
-        done = true
-        logger.error('TrackListen | WS error in setup', txid, e)
-      }
-      while (!done) {
-        // eslint-disable-next-line no-loop-func
-        ;(async () => {
-          try {
-            const signatureStatuses = await connection.getSignatureStatuses([
-              txid
-            ])
-            const result = signatureStatuses && signatureStatuses.value[0]
-            if (!done) {
-              if (!result) {
-              } else if (result.err) {
-                logger.error('TrackListen | REST error for', txid, result)
-                done = true
-                reject(result.err)
-              } else if (
-                !(
-                  result.confirmations ||
-                  result.confirmationStatus === 'confirmed' ||
-                  result.confirmationStatus === 'finalized'
-                )
-              ) {
-              } else {
-                done = true
-                resolve(result)
-              }
-            }
-          } catch (e) {
-            if (!done) {
-              logger.error('REST connection error: txid', txid, e)
-            }
-          }
-        })()
-        await delay(300)
-      }
-    })()
-  })
-  done = true
-  return result
+  return [secpInstruction, listenInstruction]
 }
 
 module.exports = {
-  createTrackListenTransaction,
-  getFeePayerKeypair,
-  sendAndSignTransaction
+  createTrackListenInstructions,
+  getFeePayerKeypair
 }
