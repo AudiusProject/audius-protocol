@@ -9,7 +9,6 @@ import (
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
-	"comms.audius.co/discovery/jetstream"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/nats-io/nats.go"
@@ -24,7 +23,7 @@ func TestRateLimit(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create rate limit KV
-	kv, err := jetstream.GetJetstreamContext().CreateKeyValue(&nats.KeyValueConfig{
+	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:   config.RateLimitRulesBucketName,
 		Replicas: 1,
 	})

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"comms.audius.co/discovery/db"
-	"comms.audius.co/discovery/jetstream"
 	"comms.audius.co/discovery/rpcz"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
@@ -30,17 +29,16 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
+	jsc, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
 	if err != nil {
 		log.Fatal(err)
 	}
-	jetstream.SetJetstreamContext(js)
 
-	proc, err := rpcz.NewProcessor()
+	proc, err := rpcz.NewProcessor(jsc)
 	if err != nil {
 		log.Fatal(err)
 	}
-	testServer = NewServer(proc)
+	testServer = NewServer(jsc, proc)
 
 	// run tests
 	code := m.Run()

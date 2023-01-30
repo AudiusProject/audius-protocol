@@ -6,11 +6,11 @@ import (
 	"testing"
 
 	"comms.audius.co/discovery/db"
-	"comms.audius.co/discovery/jetstream"
 	"github.com/nats-io/nats.go"
 )
 
 var (
+	jsc           nats.JetStreamContext
 	testValidator *Validator
 )
 
@@ -28,19 +28,17 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
+	jsc, err = nc.JetStream(nats.PublishAsyncMaxPending(256))
 	if err != nil {
 		log.Fatal(err)
 	}
-	jetstream.SetJetstreamContext(js)
 
 	// setup test validator
-	limiter, err := NewRateLimiter()
+	limiter, err := NewRateLimiter(jsc)
 	if err != nil {
 		log.Fatal(err)
 	}
 	testValidator = &Validator{
-		jsc:     js,
 		db:      db.Conn,
 		limiter: limiter,
 	}

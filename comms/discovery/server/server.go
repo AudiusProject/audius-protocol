@@ -10,7 +10,6 @@ import (
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
-	"comms.audius.co/discovery/jetstream"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
@@ -183,7 +182,7 @@ func getMessages(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
-func NewServer(proc *rpcz.RPCProcessor) *echo.Echo {
+func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
@@ -232,11 +231,6 @@ func NewServer(proc *rpcz.RPCProcessor) *echo.Echo {
 		// subject := "audius.comms.demo"
 		subject := "audius.staging.relay"
 
-		jsc := jetstream.GetJetstreamContext()
-		if jsc == nil {
-			return c.String(500, "jetstream not ready")
-		}
-
 		// Publish data to the subject
 		msg := nats.NewMsg(subject)
 		msg.Header.Add(config.SigHeader, c.Request().Header.Get(config.SigHeader))
@@ -284,10 +278,6 @@ func NewServer(proc *rpcz.RPCProcessor) *echo.Echo {
 		}
 
 		subject := "audius.dms.demo"
-		jsc := jetstream.GetJetstreamContext()
-		if jsc == nil {
-			return c.JSON(500, "jetstream not ready")
-		}
 
 		// Publish data to the subject
 		msg := nats.NewMsg(subject)
@@ -304,10 +294,6 @@ func NewServer(proc *rpcz.RPCProcessor) *echo.Echo {
 	})
 
 	g.GET("/debug/stream", func(c echo.Context) error {
-		jsc := jetstream.GetJetstreamContext()
-		if jsc == nil {
-			return c.String(500, "jetstream not ready")
-		}
 
 		info, err := jsc.StreamInfo(config.GlobalStreamName)
 		if err != nil {
@@ -317,10 +303,6 @@ func NewServer(proc *rpcz.RPCProcessor) *echo.Echo {
 	})
 
 	g.GET("/debug/consumer", func(c echo.Context) error {
-		jsc := jetstream.GetJetstreamContext()
-		if jsc == nil {
-			return c.String(500, "jetstream not ready")
-		}
 
 		info, err := jsc.ConsumerInfo(config.GlobalStreamName, config.WalletAddress)
 		if err != nil {

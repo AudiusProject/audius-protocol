@@ -14,8 +14,8 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func NewProcessor() (*RPCProcessor, error) {
-	limiter, err := NewRateLimiter()
+func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
+	limiter, err := NewRateLimiter(jsc)
 	if err != nil {
 		return nil, err
 	}

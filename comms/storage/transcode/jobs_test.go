@@ -1,36 +1,11 @@
 package transcode
 
 import (
-	"log"
-	"os"
 	"testing"
 
-	"comms.audius.co/discovery/jetstream"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestMain(m *testing.M) {
-
-	// connect to NATS and create JetStream Context
-	nc, err := nats.Connect(nats.DefaultURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
-	if err != nil {
-		log.Fatal(err)
-	}
-	jetstream.SetJetstreamContext(js)
-
-	// run tests
-	code := m.Run()
-
-	// teardown
-	nc.Close()
-
-	os.Exit(code)
-}
 
 func TestJobManager(t *testing.T) {
 

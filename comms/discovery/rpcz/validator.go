@@ -13,13 +13,11 @@ import (
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/jmoiron/sqlx"
-	"github.com/nats-io/nats.go"
 )
 
 ////////////////////
 
 type Validator struct {
-	jsc     nats.JetStreamContext
 	db      *sqlx.DB
 	limiter *RateLimiter
 }

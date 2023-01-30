@@ -8,7 +8,6 @@ import (
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
-	"comms.audius.co/discovery/jetstream"
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
@@ -23,6 +22,7 @@ func DiscoveryMain() {
 	// dial datasources in parallel
 	g := errgroup.Group{}
 
+	var jsc nats.JetStreamContext
 	var proc *rpcz.RPCProcessor
 
 	g.Go(func() error {
@@ -33,20 +33,19 @@ func DiscoveryMain() {
 
 		peerMap := peering.Solicit()
 
-		err = jetstream.Dial(peerMap)
+		jsc, err = peering.DialJetstream(peerMap)
 		if err != nil {
 			log.Println("jetstream dial failed", err)
 			return err
 		}
 
 		// create streams
-		jsc := jetstream.GetJetstreamContext()
 		err = createJetstreamStreams(jsc)
 		if err != nil {
 			return err
 		}
 
-		proc, err = rpcz.NewProcessor()
+		proc, err = rpcz.NewProcessor(jsc)
 		if err != nil {
 			return err
 		}
@@ -56,14 +55,16 @@ func DiscoveryMain() {
 			return err
 		}
 
+		err = pubkeystore.Dial(jsc)
+		if err != nil {
+			return err
+		}
+
 		return nil
 
 	})
 	g.Go(func() error {
 		return db.Dial()
-	})
-	g.Go(func() error {
-		return pubkeystore.Dial()
 	})
 	g.Go(func() error {
 		out, err := exec.Command("dbmate",
@@ -78,7 +79,7 @@ func DiscoveryMain() {
 		log.Fatal(err)
 	}
 
-	e := server.NewServer(proc)
+	e := server.NewServer(jsc, proc)
 	e.Logger.Fatal(e.Start(":8925"))
 }
 

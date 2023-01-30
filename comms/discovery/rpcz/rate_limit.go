@@ -5,24 +5,15 @@ import (
 	"sync"
 
 	"comms.audius.co/discovery/config"
-	"comms.audius.co/discovery/jetstream"
 	"github.com/nats-io/nats.go"
 )
 
-func NewRateLimiter() (*RateLimiter, error) {
-	jsc := jetstream.GetJetstreamContext()
+func NewRateLimiter(jsc nats.JetStreamContext) (*RateLimiter, error) {
 
 	// kv
-	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   config.RateLimitRulesBucketName,
-		Replicas: 1,
-	})
+	kv, err := jsc.KeyValue(config.RateLimitRulesBucketName)
 	if err != nil {
 		return nil, err
-	}
-
-	limiter := &RateLimiter{
-		limits: map[string]int{},
 	}
 
 	watcher, err := kv.WatchAll()
@@ -30,29 +21,39 @@ func NewRateLimiter() (*RateLimiter, error) {
 		return nil, err
 	}
 
-	go func() {
-		for change := range watcher.Updates() {
-			if change == nil {
-				continue
-			}
+	limiter := &RateLimiter{
+		kv:      kv,
+		watcher: watcher,
+		limits:  map[string]int{},
+	}
 
-			val, err := strconv.Atoi(string(change.Value()))
-			if err != nil {
-				config.Logger.Warn("invalid rate limit value", "key", change.Key(), "err", err)
-			} else {
-				limiter.Lock()
-				limiter.limits[change.Key()] = val
-				limiter.Unlock()
-			}
-		}
-	}()
+	go limiter.watch()
 
 	return limiter, nil
 }
 
 type RateLimiter struct {
 	sync.RWMutex
-	limits map[string]int
+	kv      nats.KeyValue
+	watcher nats.KeyWatcher
+	limits  map[string]int
+}
+
+func (limiter *RateLimiter) watch() {
+	for change := range limiter.watcher.Updates() {
+		if change == nil {
+			continue
+		}
+
+		val, err := strconv.Atoi(string(change.Value()))
+		if err != nil {
+			config.Logger.Warn("invalid rate limit value", "key", change.Key(), "err", err)
+		} else {
+			limiter.Lock()
+			limiter.limits[change.Key()] = val
+			limiter.Unlock()
+		}
+	}
 }
 
 func (limiter *RateLimiter) Get(rule string) int {
