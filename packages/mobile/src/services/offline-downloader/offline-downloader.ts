@@ -1,15 +1,16 @@
 import path from 'path'
 
 import type {
-  Collection,
   CollectionMetadata,
   CommonState,
   DownloadReason,
   Track,
+  UserCollectionMetadata,
   UserMetadata,
   UserTrackMetadata
 } from '@audius/common'
 import {
+  SquareSizes,
   Variant,
   FavoriteSource,
   encodeHashId,
@@ -22,6 +23,7 @@ import { uniq, isEqual } from 'lodash'
 import RNFS, { exists } from 'react-native-fs'
 
 import type { TrackForDownload } from 'app/components/offline-downloads'
+import { createAllImageSources } from 'app/hooks/useContentNodeImage'
 import { fetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
 import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import { store } from 'app/store'
@@ -40,7 +42,6 @@ import {
   removeDownload,
   removeCollection
 } from 'app/store/offline-downloads/slice'
-import { populateCoverArtSizes } from 'app/utils/populateCoverArtSizes'
 
 import { apiClient } from '../audius-api-client'
 
@@ -136,13 +137,16 @@ export const downloadCollection = async (
       saveCollection(collection.playlist_id, FavoriteSource.OFFLINE_DOWNLOAD)
     )
   }
-  const populatedCollection: Collection = await populateCoverArtSizes({
+
+  const collectionWithUser: UserCollectionMetadata = {
     ...collection,
     user
-  })
-  downloadCollectionCoverArt(populatedCollection)
+  }
+
+  downloadCollectionCoverArt(collectionWithUser)
+
   const collectionToWrite: CollectionMetadata = {
-    ...populatedCollection,
+    ...collectionWithUser,
     offline: {
       isFavoritesDownload: !!isFavoritesDownload
     }
@@ -210,8 +214,6 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
     throw failJob(`track to download is not available - ${trackIdStr}`)
   }
 
-  const track = await populateCoverArtSizes(trackFromApi)
-
   try {
     if (await verifyTrack(trackIdStr, false)) {
       // Track is already downloaded, so rewrite the json
@@ -256,15 +258,18 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
       return
     }
 
-    await downloadTrackCoverArt(track)
-    await tryDownloadTrackFromEachCreatorNode(track)
+    await downloadTrackCoverArt(trackFromApi)
+
+    await tryDownloadTrackFromEachCreatorNode(trackFromApi)
     const now = Date.now()
     const trackToWrite: Track & UserTrackMetadata = {
-      ...track,
+      ...trackFromApi,
+      // Empty cover art sizes because the images are stored locally
+      _cover_art_sizes: {},
       offline: {
         reasons_for_download: uniq([
           downloadReason,
-          ...(track?.offline?.reasons_for_download ?? [])
+          ...(trackFromApi?.offline?.reasons_for_download ?? [])
         ]),
         download_completed_time: now,
         last_verified_time: now,
@@ -440,33 +445,57 @@ export const removeTrackDownload = async ({
   }
 }
 
-export const downloadTrackCoverArt = async (track: Track) => {
-  const coverArtUris = Object.values(track._cover_art_sizes)
-  await Promise.all(
-    coverArtUris.map(async (coverArtUri) => {
-      const destination = getLocalTrackCoverArtDestination(
-        track.track_id.toString(),
-        coverArtUri
-      )
-      await downloadIfNotExists(coverArtUri, destination)
-    })
-  )
-}
+const downloadCoverArt =
+  <T extends UserTrackMetadata | UserCollectionMetadata>(
+    getDestination: (entity: T, uri: string) => string
+  ) =>
+  async (entity: T) => {
+    const cid = entity ? entity.cover_art_sizes || entity.cover_art : null
 
-export const downloadCollectionCoverArt = async (collection: Collection) => {
-  const coverArtUris = Object.values(collection._cover_art_sizes)
-  await Promise.all(
-    coverArtUris.map(async (coverArtUri) => {
-      const destination = getLocalCollectionCoverArtDestination(
-        collection.playlist_id.toString(),
-        coverArtUri
-      )
-      await downloadIfNotExists(coverArtUri, destination)
+    const imageSources = createAllImageSources({
+      cid,
+      user: entity.user,
+      // Only download the largest image
+      size: SquareSizes.SIZE_1000_BY_1000
     })
-  )
-}
 
-export const tryDownloadTrackFromEachCreatorNode = async (track: Track) => {
+    const coverArtUris = imageSources
+      .map(({ uri }) => uri)
+      .filter((uri): uri is string => !!uri)
+
+    const downloadImage = async (uris: string[]) => {
+      if (!uris.length) {
+        return
+      }
+      const uri = uris[0]
+
+      const destination = getDestination(entity, uri)
+
+      const response = await downloadIfNotExists(uri, destination)
+      if (response !== 200) {
+        await downloadImage(uris.slice(1))
+      }
+    }
+
+    await downloadImage(coverArtUris)
+  }
+
+const getTrackArtDestination = (entity: UserTrackMetadata, uri: string) =>
+  getLocalTrackCoverArtDestination(entity.track_id.toString(), uri)
+
+const getCollectionArtDestination = (
+  entity: UserCollectionMetadata,
+  uri: string
+) => getLocalCollectionCoverArtDestination(entity.playlist_id.toString(), uri)
+
+export const downloadTrackCoverArt = downloadCoverArt(getTrackArtDestination)
+export const downloadCollectionCoverArt = downloadCoverArt(
+  getCollectionArtDestination
+)
+
+export const tryDownloadTrackFromEachCreatorNode = async (
+  track: UserTrackMetadata
+) => {
   const state = store.getState()
   const user = (
     await apiClient.getUser({

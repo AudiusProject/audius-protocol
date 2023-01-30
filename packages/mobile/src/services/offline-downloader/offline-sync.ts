@@ -11,7 +11,6 @@ import queue from 'react-native-job-queue'
 import type { TrackForDownload } from 'app/components/offline-downloads'
 import { fetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
 import { store } from 'app/store'
-import { populateCoverArtSizes } from 'app/utils/populateCoverArtSizes'
 import { isAvailableForPlay } from 'app/utils/trackUtils'
 
 import { apiClient } from '../audius-api-client'
@@ -165,20 +164,13 @@ export const syncCollectionTracks = async (
     return
   }
 
-  const updatedCollectionWithArt = await populateCoverArtSizes(
-    updatedCollection
-  )
-
   downloadCollection(
-    updatedCollectionWithArt,
+    updatedCollection,
     isFavoritesDownload,
     /* skipTracks */ true
   )
-  if (
-    updatedCollectionWithArt.cover_art_sizes !==
-    offlineCollection.cover_art_sizes
-  ) {
-    downloadCollectionCoverArt(updatedCollectionWithArt)
+  if (updatedCollection.cover_art_sizes !== offlineCollection.cover_art_sizes) {
+    downloadCollectionCoverArt(updatedCollection)
   }
 
   const oldTrackIds = new Set(
@@ -251,10 +243,8 @@ export const syncStaleTracks = () => {
     }
 
     if (moment(updatedTrack.updated_at).isAfter(staleTrack.updated_at)) {
-      const updatedTrackWithArt = await populateCoverArtSizes(updatedTrack)
-
-      if (updatedTrackWithArt.cover_art_sizes !== staleTrack.cover_art_sizes) {
-        downloadTrackCoverArt(updatedTrackWithArt)
+      if (updatedTrack.cover_art_sizes !== staleTrack.cover_art_sizes) {
+        downloadTrackCoverArt(updatedTrack)
       }
     }
 

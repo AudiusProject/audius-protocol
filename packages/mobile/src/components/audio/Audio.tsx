@@ -377,10 +377,7 @@ export const Audio = () => {
 
         const localSource =
           isNotReachable && track
-            ? await getLocalTrackImageSource(
-                trackId,
-                SquareSizes.SIZE_1000_BY_1000
-              )
+            ? await getLocalTrackImageSource(trackId)
             : undefined
 
         const imageUrl =
