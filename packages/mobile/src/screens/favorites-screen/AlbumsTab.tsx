@@ -8,7 +8,10 @@ import { VirtualizedScrollView } from 'app/components/core'
 import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import type { AppState } from 'app/store'
-import { getOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
+import {
+  getOfflineDownloadStatus,
+  getIsDoneLoadingFromDisk
+} from 'app/store/offline-downloads/selectors'
 import { OfflineTrackDownloadStatus } from 'app/store/offline-downloads/slice'
 
 import { FilterInput } from './FilterInput'
@@ -27,8 +30,14 @@ export const AlbumsTab = () => {
   const [filterValue, setFilterValue] = useState('')
   const isReachable = useSelector(getIsReachable)
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const isDoneLoadingFromDisk = useSelector(getIsDoneLoadingFromDisk)
   const userAlbums = useProxySelector(
     (state: AppState) => {
+      if (isOfflineModeEnabled && !isReachable) {
+        if (!isDoneLoadingFromDisk) {
+          return []
+        }
+      }
       const offlineDownloadStatus = getOfflineDownloadStatus(state)
       return getAccountCollections(state, filterValue).filter((collection) => {
         if (!collection.is_album) {
@@ -55,7 +64,7 @@ export const AlbumsTab = () => {
         return true
       })
     },
-    [filterValue, isReachable, isOfflineModeEnabled]
+    [filterValue, isReachable, isOfflineModeEnabled, isDoneLoadingFromDisk]
   )
 
   return (
