@@ -20,7 +20,13 @@ type StylesOptions = {
   type: Theme
 }
 
-type NamedStyles<T> = { [P in keyof T]: ViewStyle | TextStyle | ImageStyle }
+type NamedStyles<T> = {
+  [P in keyof T]:
+    | ViewStyle
+    | TextStyle
+    | ImageStyle
+    | (ViewStyle & { fill: string }) // For SVGs
+}
 
 export const makeStyles = <T extends NamedStyles<T> | NamedStyles<any>>(
   styles: (options: StylesOptions) => T | NamedStyles<T>

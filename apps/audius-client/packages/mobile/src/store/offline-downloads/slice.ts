@@ -21,9 +21,10 @@ export type OfflineDownloadsState = {
 }
 
 export enum OfflineTrackDownloadStatus {
-  LOADING = 'LOADING',
-  SUCCESS = 'SUCCESS',
-  ERROR = 'ERROR'
+  INIT = 'INIT', // download is queued
+  LOADING = 'LOADING', // download is in progress
+  SUCCESS = 'SUCCESS', // download succeeded
+  ERROR = 'ERROR' // download errored
 }
 
 type CollectionDownloadPayload = {
@@ -45,16 +46,18 @@ const slice = createSlice({
   name: 'offlineDownloads',
   initialState,
   reducers: {
-    startDownload: (state, { payload: trackId }: PayloadAction<string>) => {
-      state.downloadStatus[trackId] = OfflineTrackDownloadStatus.LOADING
-    },
+    // Queueing downloads
     batchStartDownload: (
       state,
       { payload: trackIds }: PayloadAction<string[]>
     ) => {
       trackIds.forEach((trackId) => {
-        state.downloadStatus[trackId] = OfflineTrackDownloadStatus.LOADING
+        state.downloadStatus[trackId] = OfflineTrackDownloadStatus.INIT
       })
+    },
+    // Actually starting the download
+    startDownload: (state, { payload: trackId }: PayloadAction<string>) => {
+      state.downloadStatus[trackId] = OfflineTrackDownloadStatus.LOADING
     },
     completeDownload: (state, { payload: trackId }: PayloadAction<string>) => {
       state.downloadStatus[trackId] = OfflineTrackDownloadStatus.SUCCESS

@@ -62,10 +62,13 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   trackTitle: {
     flexDirection: 'row',
     flexShrink: 1,
-    alignItems: 'center'
+    alignItems: 'center',
+    textAlignVertical: 'top'
   },
   trackTitleText: {
     ...font('demiBold'),
+    lineHeight: 16,
+    paddingTop: 2,
     color: palette.neutral
   },
   downloadIndicator: {
@@ -237,7 +240,7 @@ export const TrackListItem = ({
 
             {!isDeleted && (
               <View style={styles.downloadIndicator}>
-                <DownloadStatusIndicator trackId={track_id} size={18} />
+                <DownloadStatusIndicator trackId={track_id} size={16} />
               </View>
             )}
           </View>
