@@ -31,7 +31,9 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         updated_at: { type: 'date' },
         is_album: { type: 'boolean' },
         is_private: { type: 'boolean' },
+        permalink: { type: 'keyword' },
         is_delete: { type: 'boolean' },
+        routes: { type: 'keyword' },
         suggest: standardSuggest,
         playlist_name: {
           ...lowerKeyword,
@@ -99,6 +101,14 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
           'created_at', users.created_at,
           'updated_at', users.updated_at
         ) as user,
+
+        array(
+          select slug
+          from playlist_routes pr
+          where
+            pr.playlist_id = playlists.playlist_id
+          order by is_current
+        ) as routes,
 
         array(
           select user_id 
@@ -181,6 +191,8 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
       .join(' ')
     row.repost_count = row.reposted_by.length
     row.save_count = row.saved_by.length
+    const slug = row.routes[row.routes.length - 1]
+    row.permalink = `/${row.user.handle}/playlist/${slug}`
   }
 
   private async getTracks(trackIds: number[]) {
