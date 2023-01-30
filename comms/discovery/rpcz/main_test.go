@@ -10,6 +10,10 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+var (
+	testValidator *Validator
+)
+
 // this runs before all tests (not a per-test setup / teardown)
 func TestMain(m *testing.M) {
 	// setup
@@ -29,6 +33,17 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 	jetstream.SetJetstreamContext(js)
+
+	// setup test validator
+	limiter, err := NewRateLimiter()
+	if err != nil {
+		log.Fatal(err)
+	}
+	testValidator = &Validator{
+		jsc:     js,
+		db:      db.Conn,
+		limiter: limiter,
+	}
 
 	// run tests
 	code := m.Run()

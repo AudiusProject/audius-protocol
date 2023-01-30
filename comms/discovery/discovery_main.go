@@ -23,6 +23,8 @@ func DiscoveryMain() {
 	// dial datasources in parallel
 	g := errgroup.Group{}
 
+	var proc *rpcz.RPCProcessor
+
 	g.Go(func() error {
 		err := peering.PollRegisteredNodes()
 		if err != nil {
@@ -44,7 +46,12 @@ func DiscoveryMain() {
 			return err
 		}
 
-		err = createConsumer(jsc)
+		proc, err = rpcz.NewProcessor()
+		if err != nil {
+			return err
+		}
+
+		err = createConsumer(jsc, proc)
 		if err != nil {
 			return err
 		}
@@ -71,7 +78,7 @@ func DiscoveryMain() {
 		log.Fatal(err)
 	}
 
-	e := server.NewServer()
+	e := server.NewServer(proc)
 	e.Logger.Fatal(e.Start(":8925"))
 }
 
@@ -110,7 +117,7 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 	return nil
 }
 
-func createConsumer(jsc nats.JetStreamContext) error {
+func createConsumer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) error {
 
 	// ------------------------------------------------------------------------------
 	// TEMP: Subscribe to the subject for the demo
@@ -120,7 +127,7 @@ func createConsumer(jsc nats.JetStreamContext) error {
 	// also, should be a pull consumer with explicit ack.
 	// matrix-org/dendrite codebase has some nice examples to follow...
 
-	sub, err := jsc.Subscribe(config.GlobalStreamSubject, rpcz.Apply, nats.Durable(config.WalletAddress))
+	sub, err := jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.WalletAddress))
 
 	if info, err := sub.ConsumerInfo(); err == nil {
 		config.Logger.Info("create subscription", "sub", info)

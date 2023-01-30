@@ -44,9 +44,7 @@ func TestChatBlocking(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"user_id": "%s"}`, encodedUserId)),
 		}
 
-		chatBlock := string(schema.RPCMethodChatBlock)
-
-		err = Validators[chatBlock](tx, user1Id, exampleRpc)
+		err = testValidator.validateChatBlock(tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 	}
 
@@ -75,9 +73,7 @@ func TestChatBlocking(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "invites": [{"user_id": "%s", "invite_code": "1"}, {"user_id": "%s", "invite_code": "2"}]}`, chatId, user1IdEncoded, user2IdEncoded)),
 		}
 
-		chatCreate := string(schema.RPCMethodChatCreate)
-
-		err = Validators[chatCreate](tx, user1Id, exampleRpc)
+		err = testValidator.validateChatCreate(tx, user1Id, exampleRpc)
 		assert.ErrorContains(t, err, "Cannot chat with a user you have blocked or user who has blocked you")
 	}
 
@@ -91,9 +87,7 @@ func TestChatBlocking(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message_id": "1", "message": "test"}`, chatId)),
 		}
 
-		chatMessage := string(schema.RPCMethodChatMessage)
-
-		err = Validators[chatMessage](tx, user1Id, exampleRpc)
+		err = testValidator.validateChatMessage(tx, user1Id, exampleRpc)
 		assert.ErrorContains(t, err, "Cannot chat with a user you have blocked or user who has blocked you")
 	}
 

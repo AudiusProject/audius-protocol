@@ -183,7 +183,7 @@ func getMessages(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
-func NewServer() *echo.Echo {
+func NewServer(proc *rpcz.RPCProcessor) *echo.Echo {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
@@ -278,7 +278,7 @@ func NewServer() *echo.Echo {
 		}
 
 		// call validator
-		err = rpcz.Validate(userId, rawRpc)
+		err = proc.Validate(userId, rawRpc)
 		if err != nil {
 			return c.JSON(400, "bad request: "+err.Error())
 		}
