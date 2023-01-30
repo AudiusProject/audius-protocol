@@ -1,11 +1,13 @@
+import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
+import type { StylesProp } from 'app/styles'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-const useStyles = makeStyles(({ spacing, typography, palette }) => ({
-  progressBarContainer: {
+const useStyles = makeStyles(({ spacing, palette }) => ({
+  root: {
     backgroundColor: palette.neutralLight9,
     borderRadius: 22,
     height: spacing(6),
@@ -51,12 +53,20 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   }
 }))
 
-export const ProgressBar = ({ progress, max }) => {
+type ProgressBarProps = {
+  progress: number
+  max: number
+  style?: StylesProp<{
+    root: ViewStyle
+  }>
+}
+
+export const ProgressBar = ({ progress, max, style }: ProgressBarProps) => {
   const styles = useStyles()
   const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
     useThemeColors()
   return (
-    <View style={styles.progressBarContainer}>
+    <View style={[styles.root, style?.root]}>
       <LinearGradient
         colors={[pageHeaderGradientColor1, pageHeaderGradientColor2]}
         useAngle={true}

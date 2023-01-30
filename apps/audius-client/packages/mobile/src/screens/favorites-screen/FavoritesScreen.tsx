@@ -6,6 +6,7 @@ import {
   useProxySelector,
   reachabilitySelectors
 } from '@audius/common'
+import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -16,6 +17,7 @@ import IconPlaylists from 'app/assets/images/iconPlaylists.svg'
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
 import type { TrackForDownload } from 'app/components/offline-downloads'
 import { DownloadToggle } from 'app/components/offline-downloads'
+import { DownloadProgress } from 'app/components/offline-downloads/DownloadProgress'
 import { TopTabNavigator } from 'app/components/top-tab-bar'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useFetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
@@ -116,10 +118,13 @@ export const FavoritesScreen = () => {
         styles={{ icon: { marginLeft: 3 } }}
       >
         {isOfflineModeEnabled && (
-          <DownloadToggle
-            tracksForDownload={tracksForDownload}
-            isFavoritesDownload
-          />
+          <View style={{ flexDirection: 'row' }}>
+            <DownloadProgress />
+            <DownloadToggle
+              tracksForDownload={tracksForDownload}
+              isFavoritesDownload
+            />
+          </View>
         )}
       </ScreenHeader>
       <ScreenContent isOfflineCapable={isOfflineModeEnabled}>
