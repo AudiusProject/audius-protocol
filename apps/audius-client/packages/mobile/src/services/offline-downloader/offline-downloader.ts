@@ -20,7 +20,7 @@ import {
   reachabilitySelectors
 } from '@audius/common'
 import { uniq, isEqual } from 'lodash'
-import RNFS, { exists } from 'react-native-fs'
+import RNFetchBlob from 'rn-fetch-blob'
 
 import type { TrackForDownload } from 'app/components/offline-downloads'
 import { createAllImageSources } from 'app/hooks/useContentNodeImage'
@@ -59,9 +59,13 @@ import {
   writeCollectionJson,
   writeFavoritesCollectionJson,
   purgeDownloadedCollection,
-  getLocalCollectionCoverArtDestination
+  getLocalCollectionCoverArtDestination,
+  mkdirSafe
 } from './offline-storage'
 
+const {
+  fs: { exists }
+} = RNFetchBlob
 const { saveCollection } = collectionsSocialActions
 const { getUserId } = accountSelectors
 const { getUserFromCollection } = cacheUsersSelectors
@@ -531,12 +535,11 @@ const downloadIfNotExists = async (
   }
 
   const destinationDirectory = path.dirname(destination)
-  await RNFS.mkdir(destinationDirectory)
+  await mkdirSafe(destinationDirectory)
 
-  const result = await RNFS.downloadFile({
-    fromUrl: uri,
-    toFile: destination
-  })?.promise
+  const result = await RNFetchBlob.config({
+    path: destination
+  }).fetch('GET', uri)
 
-  return result?.statusCode ?? null
+  return result?.info().status ?? null
 }
