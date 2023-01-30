@@ -272,6 +272,10 @@
   color: var(--secondary);
 }
 
+.collectibleName:hover {
+  cursor: pointer;
+}
+
 .lockedIcon,
 .unlockedIcon {
   margin-right: 8px;
@@ -403,6 +407,16 @@
 
 .spinner g path {
   stroke: var(--static-white) !important;
+}
+
+.premiumContentSectionDescription > div {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.premiumContentSectionDescription > div > span {
+  flex-shrink: 0;
 }
 
 .premiumContentSectionDescription .spinner {
