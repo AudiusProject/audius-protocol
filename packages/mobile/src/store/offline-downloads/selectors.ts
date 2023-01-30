@@ -41,7 +41,12 @@ export const getIsAnyDownloadInProgress = createSelector(
   (offlineDownloadStatus, trackIds) => {
     return trackIds.some((trackId: number) => {
       const status = offlineDownloadStatus[trackId.toString()]
-      return status === OfflineTrackDownloadStatus.LOADING
+      // Any download is in progress if any are loading (actively downloading)
+      // or init (queued, but not actively downloading)
+      return (
+        status === OfflineTrackDownloadStatus.LOADING ||
+        status === OfflineTrackDownloadStatus.INIT
+      )
     })
   }
 )

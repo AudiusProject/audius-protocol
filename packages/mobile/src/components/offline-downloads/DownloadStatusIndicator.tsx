@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
 
 import { cacheCollectionsSelectors } from '@audius/common'
-import LottieView from 'lottie-react-native'
 import { useSelector } from 'react-redux'
+import Rive from 'rive-react-native'
 
-import iconDownloading from 'app/assets/animations/iconDownloading.json'
 import IconDownloadFailed from 'app/assets/images/iconDownloadFailed.svg'
-import IconDownload from 'app/assets/images/iconDownloadPurple.svg'
-import IconNotDownloaded from 'app/assets/images/iconNotDownloaded.svg'
+import IconDownloadInactive from 'app/assets/images/iconDownloadInactive.svg'
+import IconDownloadQueued from 'app/assets/images/iconDownloadQueued.svg'
+import IconDownloaded from 'app/assets/images/iconDownloaded.svg'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import {
   getIsCollectionMarkedForDownload,
@@ -16,6 +16,8 @@ import {
   getIsAllDownloadsErrored
 } from 'app/store/offline-downloads/selectors'
 import { OfflineTrackDownloadStatus } from 'app/store/offline-downloads/slice'
+import { makeStyles } from 'app/styles'
+import { useThemeVariant } from 'app/utils/theme'
 
 const { getCollection } = cacheCollectionsSelectors
 
@@ -27,6 +29,21 @@ type TrackDownloadIndicatorProps = {
   size?: number
 }
 
+const useStyles = makeStyles(({ palette }) => ({
+  iconDownloadQueued: {
+    fill: palette.neutralLight4
+  },
+  iconDownloaded: {
+    fill: palette.secondary
+  },
+  iconDownloadFailed: {
+    fill: palette.secondary
+  },
+  iconDownloadInactive: {
+    fill: palette.neutralLight4
+  }
+}))
+
 export const DownloadStatusIndicator = ({
   collectionId,
   trackId,
@@ -34,6 +51,8 @@ export const DownloadStatusIndicator = ({
   showNotDownloaded,
   size = 24
 }: TrackDownloadIndicatorProps) => {
+  const styles = useStyles()
+  const themeVariant = useThemeVariant()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(collectionId)
@@ -79,26 +98,49 @@ export const DownloadStatusIndicator = ({
   if (!isOfflineModeEnabled) return null
 
   switch (downloadStatus) {
+    case OfflineTrackDownloadStatus.INIT:
+      return (
+        <IconDownloadQueued
+          fill={styles.iconDownloadQueued.fill}
+          height={size}
+          width={size}
+        />
+      )
     case OfflineTrackDownloadStatus.LOADING:
       return (
-        <LottieView
+        <Rive
           style={{
             height: size,
             width: size
           }}
-          source={iconDownloading}
-          autoPlay
-          loop
+          resourceName={`downloading_${themeVariant}`}
+          autoplay
         />
       )
     case OfflineTrackDownloadStatus.SUCCESS:
-      return <IconDownload height={size} width={size} />
+      return (
+        <IconDownloaded
+          fill={styles.iconDownloaded.fill}
+          height={size}
+          width={size}
+        />
+      )
     case OfflineTrackDownloadStatus.ERROR:
       // TODO: clickable to retry
-      return <IconDownloadFailed height={size} width={size} />
+      return (
+        <IconDownloadFailed
+          fill={styles.iconDownloadFailed.fill}
+          height={size}
+          width={size}
+        />
+      )
     default:
       return showNotDownloaded ? (
-        <IconNotDownloaded height={size} width={size} />
+        <IconDownloadInactive
+          fill={styles.iconDownloadInactive.fill}
+          height={size}
+          width={size}
+        />
       ) : null
   }
 }
