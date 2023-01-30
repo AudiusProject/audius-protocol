@@ -14,6 +14,7 @@ import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { VirtualizedScrollView } from 'app/components/core'
+import type { FastImageProps } from 'app/components/image/FastImage'
 import { CollectionScreenDetailsTile } from 'app/screens/collection-screen/CollectionScreenDetailsTile'
 import type { SmartCollection } from 'app/screens/explore-screen/smartCollections'
 import { makeStyles } from 'app/styles'
@@ -83,21 +84,24 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
     }
   }, [collection, variant, dispatch])
 
-  const renderImage = useCallback(() => {
-    return (
-      <LinearGradient
-        colors={gradientColors}
-        angle={gradientAngle}
-        style={styles.image}
-      >
-        {Icon ? (
-          <View style={styles.imageIcon}>
-            <Icon width='100%' height='100%' />
-          </View>
-        ) : null}
-      </LinearGradient>
-    )
-  }, [gradientColors, gradientAngle, styles, Icon])
+  const renderImage = useCallback(
+    ({ style }: FastImageProps) => {
+      return (
+        <LinearGradient
+          colors={gradientColors}
+          angle={gradientAngle}
+          style={[style, styles.image]}
+        >
+          {Icon ? (
+            <View style={styles.imageIcon}>
+              <Icon width='100%' height='100%' />
+            </View>
+          ) : null}
+        </LinearGradient>
+      )
+    },
+    [gradientColors, gradientAngle, styles, Icon]
+  )
 
   return (
     <VirtualizedScrollView
