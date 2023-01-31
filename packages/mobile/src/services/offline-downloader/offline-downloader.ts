@@ -366,6 +366,26 @@ export const removeAllDownloadedFavorites = async () => {
   // remove collections if they're not also downloaded separately
   Object.entries(favoritedDownloadedCollections).forEach(
     ([collectionId, isDownloaded]) => {
+      // Find any tracks from downloaded collections and mark them
+      // to be removed.
+      tracksForDownload.push(
+        ...Object.values(offlineTracks)
+          .filter((track) =>
+            track.offline?.reasons_for_download.some(
+              (reason) =>
+                reason.collection_id === collectionId &&
+                reason.is_from_favorites
+            )
+          )
+          .map((track) => ({
+            trackId: track.track_id,
+            downloadReason: {
+              is_from_favorites: true,
+              collection_id: collectionId
+            }
+          }))
+      )
+
       if (!isDownloaded) return
       if (downloadedCollections[collectionId]) {
         store.dispatch(
