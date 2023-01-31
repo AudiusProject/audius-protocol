@@ -173,6 +173,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         onPress={handleRepost}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
+        isDisabled={!isReachable}
       />
     )
   }
