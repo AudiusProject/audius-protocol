@@ -622,7 +622,7 @@ def test_index_entity_update_and_social_feature(app, mocker):
         assert len(all_reposts) == 11
 
         all_notifications: List[Notification] = session.query(Notification).all()
-        assert len(all_notifications) == 11
+        assert len(all_notifications) == 12
 
         all_milestones: List[Milestone] = session.query(Milestone).all()
         assert len(all_milestones) == 1

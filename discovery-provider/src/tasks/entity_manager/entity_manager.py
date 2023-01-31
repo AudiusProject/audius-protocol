@@ -266,6 +266,8 @@ def entity_manager_update(
             f"entity_manager.py | Completed with {num_total_changes} total changes"
         )
     except Exception as e:
+        # print("asdf existing records: ", session.query(PlaylistSeen).all())
+
         logger.error(f"entity_manager.py | Exception occurred {e}", exc_info=True)
         raise e
     return num_total_changes, changed_entity_ids
