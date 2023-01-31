@@ -48,12 +48,10 @@ func TestChatDeletion(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s"}`, chatId)),
 		}
 
-		chatDelete := string(schema.RPCMethodChatDelete)
-
-		err = Validators[chatDelete](tx, user1Id, exampleRpc)
+		err = testValidator.validateChatDelete(tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 
-		err = Validators[chatDelete](tx, user3Id, exampleRpc)
+		err = testValidator.validateChatDelete(tx, user3Id, exampleRpc)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	}
 

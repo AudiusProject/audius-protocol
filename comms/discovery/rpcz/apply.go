@@ -14,8 +14,30 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
+	limiter, err := NewRateLimiter(jsc)
+	if err != nil {
+		return nil, err
+	}
+	validator := &Validator{
+		db:      db.Conn,
+		limiter: limiter,
+	}
+	return &RPCProcessor{
+		validator: validator,
+	}, nil
+}
+
+type RPCProcessor struct {
+	validator *Validator
+}
+
+func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {
+	return proc.validator.Validate(userId, rawRpc)
+}
+
 // Validates + applies a NATS message
-func Apply(msg *nats.Msg) {
+func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	var err error
 	logger := config.Logger.New()
 
@@ -51,7 +73,7 @@ func Apply(msg *nats.Msg) {
 	}
 
 	// call any validator
-	err = Validate(userId, rawRpc)
+	err = proc.validator.Validate(userId, rawRpc)
 	if err != nil {
 		logger.Info(err.Error())
 		return

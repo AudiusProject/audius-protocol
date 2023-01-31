@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"comms.audius.co/discovery/config"
-	"comms.audius.co/discovery/jetstream"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/glue"
 	"comms.audius.co/storage/web"
+	"github.com/nats-io/nats.go"
 )
 
 const (
@@ -25,20 +25,20 @@ func StorageMain() {
 	// TODO: shouldn't use discovery config
 	config.Init()
 
-	err := func() error {
+	jsc, err := func() (nats.JetStreamContext, error) {
 		err := peering.PollRegisteredNodes()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		peerMap := peering.Solicit()
-		return jetstream.Dial(peerMap)
+		return peering.DialJetstream(peerMap)
 	}()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	g := glue.New(GlobalNamespace, ReplicationFactor, jetstream.GetJetstreamContext())
+	g := glue.New(GlobalNamespace, ReplicationFactor, jsc)
 	e := web.NewServer(g)
 
 	// Start server

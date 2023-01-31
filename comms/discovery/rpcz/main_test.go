@@ -5,13 +5,20 @@ import (
 	"os"
 	"testing"
 
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
-	"comms.audius.co/discovery/jetstream"
 	"github.com/nats-io/nats.go"
+)
+
+var (
+	jsc           nats.JetStreamContext
+	testValidator *Validator
 )
 
 // this runs before all tests (not a per-test setup / teardown)
 func TestMain(m *testing.M) {
+	config.Init()
+
 	// setup
 	os.Setenv("audius_db_url", "postgresql://postgres:postgres@localhost:5454/comtest?sslmode=disable")
 	err := db.Dial()
@@ -24,11 +31,20 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
+	jsc, err = nc.JetStream(nats.PublishAsyncMaxPending(256))
 	if err != nil {
 		log.Fatal(err)
 	}
-	jetstream.SetJetstreamContext(js)
+
+	// setup test validator
+	limiter, err := NewRateLimiter(jsc)
+	if err != nil {
+		log.Fatal(err)
+	}
+	testValidator = &Validator{
+		db:      db.Conn,
+		limiter: limiter,
+	}
 
 	// run tests
 	code := m.Run()
