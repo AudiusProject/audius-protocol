@@ -25,7 +25,9 @@ type Glue struct {
 }
 
 func New(namespace string, replicationFactor int, jsc nats.JetStreamContext) *Glue {
-	d := decider.NewRendezvousDecider(namespace, replicationFactor, jsc)
+	allStorageNodePubKeys := []string{"pubkey1", "pubkey2", "pubkey3"} // TODO: get dynamically (from KV store?) and re-initialize on change
+	thisNodePubKey := "pubkey1"                                        // TODO: get dynamically
+	d := decider.NewRendezvousDecider(namespace, replicationFactor, allStorageNodePubKeys, thisNodePubKey, jsc)
 	return &Glue{Namespace: namespace, StorageDecider: d, Jsc: jsc}
 }
 
