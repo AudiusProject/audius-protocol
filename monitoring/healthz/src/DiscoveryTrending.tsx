@@ -10,7 +10,6 @@ export function DiscoveryTrending() {
   const responses = sps.map((sp) => {
     const endpoint = sp.endpoint
     const res = useSWR(sp.endpoint + '/v1/full/tracks/trending', fetcher)
-    console.log(endpoint)
     return { endpoint: endpoint, res: res}
   }).sort((a, b) => {
     if (!a.res.data) {
