@@ -23,18 +23,20 @@ import (
 )
 
 type Job struct {
-	ID                string           `json:"id"`
-	Status            string           `json:"status"`
-	CreatedAt         *time.Time       `json:"created_at,omitempty"`
-	StartedAt         *time.Time       `json:"started_at,omitempty"`
-	FinishedAt        *time.Time       `json:"finished_at,omitempty"`
-	TranscodeProgress float64          `json:"transcode_progress,omitempty"`
-	Error             string           `json:"error,omitempty"`
-	Probe             *FFProbeResult   `json:"probe,omitempty"`
-	SourceInfo        *nats.ObjectInfo `json:"source_info,omitempty"`
-	ResultInfo        *nats.ObjectInfo `json:"result_info,omitempty"`
-	TransocdeWorkerID string           `json:"transcode_worker_id,omitempty"`
-	JetstreamSequence int              `json:"jetstream_sequence,omitempty"`
+	ID                string             `json:"id"`
+	Template          string             `json:"template"`
+	Status            string             `json:"status"`
+	CreatedAt         *time.Time         `json:"created_at,omitempty"`
+	StartedAt         *time.Time         `json:"started_at,omitempty"`
+	FinishedAt        *time.Time         `json:"finished_at,omitempty"`
+	TranscodeProgress float64            `json:"transcode_progress,omitempty"`
+	Error             string             `json:"error,omitempty"`
+	Probe             *FFProbeResult     `json:"probe,omitempty"`
+	SourceInfo        *nats.ObjectInfo   `json:"source_info,omitempty"`
+	ResultInfo        *nats.ObjectInfo   `json:"result_info,omitempty"` // deprecated: use Results
+	Results           []*nats.ObjectInfo `json:"results,omitempty"`
+	TransocdeWorkerID string             `json:"transcode_worker_id,omitempty"`
+	JetstreamSequence int                `json:"jetstream_sequence,omitempty"`
 }
 
 type JobsManager struct {
@@ -143,7 +145,12 @@ func (jobman *JobsManager) watch() {
 	}
 }
 
-func (jobman *JobsManager) Add(f multipart.File) (*Job, error) {
+func (jobman *JobsManager) Add(template string, upload *multipart.FileHeader) (*Job, error) {
+	f, err := upload.Open()
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
 
 	// fileHash, err := hashFile(f)
 	// if err != nil {
@@ -160,7 +167,8 @@ func (jobman *JobsManager) Add(f multipart.File) (*Job, error) {
 	// put in bucket
 	// todo: sharding
 	meta := &nats.ObjectMeta{
-		Name: fileHash,
+		Name:        fileHash,
+		Description: upload.Filename,
 	}
 	info, err := jobman.objStore.Put(meta, f)
 	if err != nil {
@@ -169,10 +177,12 @@ func (jobman *JobsManager) Add(f multipart.File) (*Job, error) {
 
 	job := &Job{
 		ID:        fileHash,
+		Template:  template,
 		Status:    "pending",
 		CreatedAt: timeNowPtr(),
 
 		SourceInfo: info,
+		Results:    []*nats.ObjectInfo{},
 	}
 	err = jobman.put(job, true)
 	if err != nil {
@@ -325,69 +335,120 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 		jobman.Update(job)
 	}
 
-	cmd := exec.Command("ffmpeg",
-		"-y",
-		"-i", srcPath,
-		"-b:a", "320k",
-		"-f", "mp3",
-		"-progress", "pipe:2",
-		destPath)
+	switch job.Template {
+	case "img_square":
+		// 150x150, 480x480, 1000x1000
+		squares := []int{150, 480, 1000}
+		srcReader, err := os.Open(srcPath)
+		if err != nil {
+			return onError(err)
+		}
+		for _, targetBox := range squares {
+			srcReader.Seek(0, 0)
+			out, w, h := Resized(".jpg", srcReader, targetBox, targetBox, "fill")
+			logger.Debug("resized", "targetBox", targetBox, "w", w, "h", h)
+			outName := fmt.Sprintf("%s_%d.jpg", job.ID, targetBox)
+			info, err := objStore.Put(&nats.ObjectMeta{
+				Name:        outName,
+				Description: fmt.Sprintf("%dx%[1]d", targetBox),
+			}, out)
+			if err != nil {
+				return onError(err)
+			}
+			job.Results = append(job.Results, info)
+		}
+	case "img_backdrop":
+		// 640x, 2000x
+		widths := []int{640, 2000}
+		srcReader, err := os.Open(srcPath)
+		if err != nil {
+			return onError(err)
+		}
+		for _, targetWidth := range widths {
+			srcReader.Seek(0, 0)
+			out, w, h := Resized(".jpg", srcReader, targetWidth, AUTO, "fill")
+			logger.Debug("resized", "targetWidth", targetWidth, "w", w, "h", h)
+			outName := fmt.Sprintf("%s_%d.jpg", job.ID, targetWidth)
+			info, err := objStore.Put(&nats.ObjectMeta{
+				Name:        outName,
+				Description: fmt.Sprintf("%dx", targetWidth),
+			}, out)
+			if err != nil {
+				return onError(err)
+			}
+			job.Results = append(job.Results, info)
+		}
 
-	cmd.Stdout = os.Stdout
+	case "audio", "":
+		if job.Template == "" {
+			logger.Warn("empty template, falling back to audio")
+		}
 
-	// read ffmpeg progress
-	stderr, err := cmd.StderrPipe()
-	if err != nil {
-		logger.Warn(err.Error())
-	} else if job.Probe != nil {
-		durationSeconds := cast.ToFloat64(job.Probe.Format.Duration)
-		durationUs := durationSeconds * 1000 * 1000
-		go func() {
-			stderrLines := bufio.NewScanner(stderr)
-			for stderrLines.Scan() {
-				line := stderrLines.Text()
-				var u float64
-				fmt.Sscanf(line, "out_time_us=%f", &u)
-				if u > 0 && durationUs > 0 {
-					percent := u / durationUs
-					job.TranscodeProgress = percent
-					jobman.Update(job)
+		cmd := exec.Command("ffmpeg",
+			"-y",
+			"-i", srcPath,
+			"-b:a", "320k",
+			"-f", "mp3",
+			"-progress", "pipe:2",
+			destPath)
+
+		cmd.Stdout = os.Stdout
+
+		// read ffmpeg progress
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			logger.Warn(err.Error())
+		} else if job.Probe != nil {
+			durationSeconds := cast.ToFloat64(job.Probe.Format.Duration)
+			durationUs := durationSeconds * 1000 * 1000
+			go func() {
+				stderrLines := bufio.NewScanner(stderr)
+				for stderrLines.Scan() {
+					line := stderrLines.Text()
+					var u float64
+					fmt.Sscanf(line, "out_time_us=%f", &u)
+					if u > 0 && durationUs > 0 {
+						percent := u / durationUs
+						job.TranscodeProgress = percent
+						jobman.Update(job)
+					}
+
+					// tell server we're still on it
+					msg.InProgress()
 				}
 
-				// tell server we're still on it
-				msg.InProgress()
-			}
+			}()
+		}
 
-		}()
+		err = cmd.Start()
+		if err != nil {
+			return onError(err)
+		}
+
+		err = cmd.Wait()
+		if err != nil {
+			return onError(err)
+		}
+
+		dest, err := os.Open(destPath)
+		if err != nil {
+			return onError(err)
+		}
+
+		// put result
+		info, err := objStore.Put(&nats.ObjectMeta{
+			Name:        job.ID + "_320.mp3",
+			Description: "320kbps",
+		}, dest)
+		if err != nil {
+			return onError(err)
+		}
+
+		job.Results = append(job.Results, info)
 	}
 
-	err = cmd.Start()
-	if err != nil {
-		return onError(err)
-	}
-
-	err = cmd.Wait()
-	if err != nil {
-		return onError(err)
-	}
-
-	dest, err := os.Open(destPath)
-	if err != nil {
-		return onError(err)
-	}
-
-	//
-	// where to put result??
-	// probably should go to some "destination" bucket
-	// but for now just put in same ol bucket with a suffix
-	//
-	info, err := objStore.Put(&nats.ObjectMeta{Name: job.ID + "_320.mp3"}, dest)
-	if err != nil {
-		return onError(err)
-	}
-
+	job.TranscodeProgress = 1
 	job.FinishedAt = timeNowPtr()
-	job.ResultInfo = info
 	job.Status = "done"
 	jobman.Update(job)
 
