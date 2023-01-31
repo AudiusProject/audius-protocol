@@ -10,6 +10,8 @@ export const getLocalSave = (state: CommonState, props: { id: ID }) =>
   state.pages.savedPage.localSaves[props.id]
 export const getInitialFetchStatus = (state: CommonState) =>
   state.pages.savedPage.initialFetch
+export const getIsFetchingMore = (state: CommonState) =>
+  state.pages.savedPage.fetchingMore
 export const hasReachedEnd = (state: CommonState) =>
   state.pages.savedPage.hasReachedEnd
 

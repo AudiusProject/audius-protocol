@@ -125,13 +125,14 @@ export const TrackList = ({
   const renderTrack: FlatListProps<TrackMetadata>['renderItem'] = ({
     item,
     index
-  }) =>
-    renderDraggableTrack({
+  }) => {
+    return renderDraggableTrack({
       item,
       index,
       drag: () => {},
       isActive: false
     }) as ReactElement
+  }
 
   if (showSkeleton)
     return (
