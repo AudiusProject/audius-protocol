@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 
 import { cacheCollectionsSelectors } from '@audius/common'
+import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 import Rive from 'rive-react-native'
 
@@ -108,14 +109,16 @@ export const DownloadStatusIndicator = ({
       )
     case OfflineTrackDownloadStatus.LOADING:
       return (
-        <Rive
-          style={{
-            height: size,
-            width: size
-          }}
-          resourceName={`downloading_${themeVariant}`}
-          autoplay
-        />
+        <View>
+          <Rive
+            style={{
+              height: size,
+              width: size
+            }}
+            resourceName={`downloading_${themeVariant}`}
+            autoplay
+          />
+        </View>
       )
     case OfflineTrackDownloadStatus.SUCCESS:
       return (
