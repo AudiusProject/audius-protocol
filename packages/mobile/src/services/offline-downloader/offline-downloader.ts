@@ -344,6 +344,8 @@ export const removeAllDownloadedFavorites = async () => {
       favoriteCreatedAt: track.offline?.favorite_created_at
     }))
 
+  purgeDownloadedCollection(DOWNLOAD_REASON_FAVORITES)
+
   const allFavoritedTracks = isReachable
     ? [
         ...(await fetchAllFavoritedTracks(currentUserId)),
@@ -360,8 +362,6 @@ export const removeAllDownloadedFavorites = async () => {
       }
     })
   )
-
-  purgeDownloadedCollection(DOWNLOAD_REASON_FAVORITES)
 
   // remove collections if they're not also downloaded separately
   Object.entries(favoritedDownloadedCollections).forEach(
