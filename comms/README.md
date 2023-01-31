@@ -50,3 +50,9 @@ Currently docker build + push is done locally and some bash scripts are used to 
 
 * Authenticate on Dockerhub
 * `bash bash_scripts/deploy.sh`
+
+## WIP ENDLINE
+
+```
+docker compose -f docker-compose-endline.yml up -d
+```
