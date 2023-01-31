@@ -675,7 +675,7 @@ def revert_blocks(self, db, revert_blocks_list):
     logger.info(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
     logger.info(revert_blocks_list)
 
-    with db.scoped_session() as session:
+    with db.scoped_session(autoflush=False) as session:
 
         rebuild_playlist_index = False
         rebuild_track_index = False
