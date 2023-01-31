@@ -39,6 +39,9 @@ export const DownloadProgress = () => {
       status === OfflineDownloadStatus.SUCCESS ||
       status === OfflineDownloadStatus.ERROR
   ).length
+  const numDownloadsSuccess = Object.values(downloadStatus).filter(
+    (status) => status === OfflineDownloadStatus.SUCCESS
+  ).length
 
   const isMarkedForDownload = useSelector(
     getIsCollectionMarkedForDownload(DOWNLOAD_REASON_FAVORITES)
@@ -50,13 +53,13 @@ export const DownloadProgress = () => {
   return (
     <View style={styles.root}>
       <Text style={styles.text} color='neutral' weight='demiBold' fontSize='xs'>
-        {`${numDownloadsComplete}/${numDownloads}`}
+        {`${numDownloadsSuccess}/${numDownloads}`}
       </Text>
       <ProgressBar
         style={{
           root: styles.progressBar
         }}
-        progress={numDownloadsComplete}
+        progress={numDownloadsSuccess}
         max={numDownloads}
       />
     </View>
