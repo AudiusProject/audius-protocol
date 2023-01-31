@@ -321,7 +321,7 @@ def test_index_valid_social_features(app, mocker):
         )
         assert len(aggregate_playlists) == 1
         aggregate_palylist = aggregate_playlists[0]
-        assert aggregate_palylist.repost_count == 1
+        assert aggregate_palylist.repost_count == 2
     calls = [
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
