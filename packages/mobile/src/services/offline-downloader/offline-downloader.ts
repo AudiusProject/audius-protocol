@@ -83,7 +83,7 @@ export const downloadAllFavorites = async () => {
       isFavoritesDownload: false
     })
   )
-  writeFavoritesCollectionJson()
+  await writeFavoritesCollectionJson()
 
   const allFavoritedTracks = await fetchAllFavoritedTracks(currentUserId)
   const tracksForDownload: TrackForDownload[] = allFavoritedTracks.map(
@@ -148,7 +148,7 @@ export const downloadCollection = async (
     user
   }
 
-  downloadCollectionCoverArt(collectionWithUser)
+  await downloadCollectionCoverArt(collectionWithUser)
 
   const collectionToWrite: CollectionMetadata = {
     ...collectionWithUser,
