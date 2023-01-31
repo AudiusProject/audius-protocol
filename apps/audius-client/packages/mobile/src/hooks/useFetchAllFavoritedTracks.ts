@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 
-import type { APIFavorite, ID } from '@audius/common'
+import type { APIFavorite } from '@audius/common'
 import {
   decodeHashId,
   encodeHashId,
@@ -18,36 +18,32 @@ const { getLocalSaves } = savedPageSelectors
 
 const { getUserId } = accountSelectors
 
-export const fetchAllFavoritedTracks = async (currentUserId: number) => {
-  let tracksAndTimestamps: { trackId: ID; favoriteCreatedAt: string }[] = []
-  let loadMore = true
-  let offset = 0
-  // TODO: store results in state to avoid duplicate fetching
-  while (loadMore) {
-    const url = apiClient.makeUrl(
-      `/users/${encodeHashId(currentUserId)}/favorites`,
-      {
-        user_id: currentUserId,
-        limit: 500,
-        offset
-      }
-    )
-    const { data: result } = await fetch(url).then((response) =>
-      response.json()
-    )
+type FavoritedTracksResponse = {
+  data: {
+    favorite_item_id: string
+    favorite_type: string
+    created_at: string
+  }[]
+}
 
-    loadMore = result.length > 0
-    offset += result.length
-    tracksAndTimestamps = tracksAndTimestamps.concat(
-      result
-        .filter((trackSave) => trackSave.favorite_type === 'SaveType.track')
-        .map((trackSave: APIFavorite) => ({
-          trackId: decodeHashId(trackSave.favorite_item_id),
-          favoriteCreatedAt: trackSave.created_at
-        }))
-    )
-  }
-  return tracksAndTimestamps
+export const fetchAllFavoritedTracks = async (currentUserId: number) => {
+  const url = apiClient.makeUrl(
+    `/users/${encodeHashId(currentUserId)}/favorites`,
+    {
+      user_id: currentUserId,
+      limit: 10000
+    }
+  )
+  const { data: result }: FavoritedTracksResponse = await fetch(url).then(
+    (response) => response.json()
+  )
+
+  return result
+    .filter((trackSave) => trackSave.favorite_type === 'SaveType.track')
+    .map((trackSave: APIFavorite) => ({
+      trackId: decodeHashId(trackSave.favorite_item_id) as number,
+      favoriteCreatedAt: trackSave.created_at
+    }))
 }
 
 export const useFetchAllFavoritedTracks = () => {
