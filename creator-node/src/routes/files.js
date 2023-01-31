@@ -965,6 +965,10 @@ router.post(
 
     const { cnodeUserUUID } = cnodeUser
 
+    req.logger.debug(
+      `requesting copy320 for segment ${cid} and wallet ${cnodeUserUUID}`
+    )
+
     const queryResults = await sequelize.query(
       `
       SELECT multihash, "trackBlockchainId", "sourceFile"
