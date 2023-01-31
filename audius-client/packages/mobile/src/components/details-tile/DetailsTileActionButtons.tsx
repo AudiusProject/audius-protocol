@@ -75,7 +75,7 @@ export const DetailsTileActionButtons = ({
     <RepostButton
       wrapperStyle={styles.actionButton}
       onPress={onPressRepost}
-      isActive={hasReposted}
+      isActive={!isOwner && hasReposted}
       isDisabled={isOwner}
     />
   )
@@ -84,7 +84,7 @@ export const DetailsTileActionButtons = ({
     <FavoriteButton
       wrapperStyle={styles.actionButton}
       onPress={onPressSave}
-      isActive={hasSaved}
+      isActive={!isOwner && hasSaved}
       isDisabled={isOwner}
     />
   )
