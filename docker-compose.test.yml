@@ -84,7 +84,7 @@ services:
     extends:
       file: docker-compose.yml
       service: creator-node
-    command: "sleep infinity"
+    command: "npm run build && sleep infinity"
     environment:
       storagePath: "./test_file_storage"
 
