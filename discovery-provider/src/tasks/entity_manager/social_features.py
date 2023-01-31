@@ -232,26 +232,26 @@ def validate_social_feature(params: ManageEntityParameters):
     # Cannot duplicate a social feature
     key = get_record_key(params.user_id, params.entity_type, params.entity_id)
 
-    existing_record = params.existing_records.get(
-        action_to_record_type[params.action], {}
-    ).get(key)
+    record_types = action_to_record_types[params.action]
 
-    if existing_record:
-        duplicate_create = (
-            params.action
-            in (Action.REPOST, Action.SAVE, Action.FOLLOW, Action.SUBSCRIBE)
-            and not existing_record.is_delete
-        )
-        duplicate_delete = (
-            params.action
-            in (Action.UNREPOST, Action.UNSAVE, Action.UNFOLLOW, Action.UNSUBSCRIBE)
-            and existing_record.is_delete
-        )
-
-        if duplicate_create or duplicate_delete:
-            raise Exception(
-                f"User {params.user_id} has already sent a {params.action} for {params.entity_type} {params.entity_id}"
+    for record_type in record_types:
+        existing_record = params.existing_records.get(record_type, {}).get(key)
+        if existing_record:
+            duplicate_create = (
+                params.action
+                in (Action.REPOST, Action.SAVE, Action.FOLLOW, Action.SUBSCRIBE)
+                and not existing_record.is_delete
             )
+            duplicate_delete = (
+                params.action
+                in (Action.UNREPOST, Action.UNSAVE, Action.UNFOLLOW, Action.UNSUBSCRIBE)
+                and existing_record.is_delete
+            )
+
+            if duplicate_create or duplicate_delete:
+                raise Exception(
+                    f"User {params.user_id} has already sent a {params.action} for {params.entity_type} {params.entity_id}"
+                )
 
     if should_check_entity_access(params.action, params.entity_type):
         premium_content_access = premium_content_access_checker.check_access(
