@@ -13,7 +13,7 @@ import {
   getIsDoneLoadingFromDisk,
   getOfflineDownloadStatus
 } from 'app/store/offline-downloads/selectors'
-import { OfflineTrackDownloadStatus } from 'app/store/offline-downloads/slice'
+import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
 import type { FavoritesTabScreenParamList } from '../app-screen/FavoritesTabScreen'
 
@@ -61,7 +61,7 @@ export const PlaylistsTab = () => {
               trackIds.some((t) => {
                 return (
                   offlineDownloadStatus[t.toString()] ===
-                  OfflineTrackDownloadStatus.SUCCESS
+                  OfflineDownloadStatus.SUCCESS
                 )
               }))
           )

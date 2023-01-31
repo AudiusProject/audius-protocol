@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 
 import type { CommonState } from '../store/commonStore'
 
-const createProxySelectorHook = <TState extends object = any>() => {
+export const createProxySelectorHook = <TState extends object = any>() => {
   const useProxySelector = <TReturnType>(
     fn: (state: TState) => TReturnType,
     deps: DependencyList

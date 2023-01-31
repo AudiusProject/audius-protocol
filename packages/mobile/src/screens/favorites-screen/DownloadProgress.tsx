@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { Text } from 'app/components/core'
 import { ProgressBar } from 'app/components/progress-bar'
 import { getOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
-import { OfflineTrackDownloadStatus } from 'app/store/offline-downloads/slice'
+import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -32,8 +32,8 @@ export const DownloadProgress = () => {
   const numDownloads = Object.keys(downloadStatus).length
   const numDownloadsComplete = Object.values(downloadStatus).filter(
     (status) =>
-      status === OfflineTrackDownloadStatus.SUCCESS ||
-      status === OfflineTrackDownloadStatus.ERROR
+      status === OfflineDownloadStatus.SUCCESS ||
+      status === OfflineDownloadStatus.ERROR
   ).length
 
   // Only render if there are active downloads
