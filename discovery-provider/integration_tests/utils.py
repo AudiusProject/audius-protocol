@@ -135,9 +135,10 @@ def populate_mock_db(db, entities, block_offset=None):
         notification_seens = entities.get("notification_seens", [])
         playlist_seens = entities.get("playlist_seens", [])
         user_balance_changes = entities.get("user_balance_changes", [])
-
+        print("asdf num users ", len(users))
         num_blocks = max(
             len(tracks),
+            len(playlists),
             len(users),
             len(follows),
             len(saves),
@@ -150,6 +151,7 @@ def populate_mock_db(db, entities, block_offset=None):
             session.query(Block).filter(Block.is_current == True).update(
                 {"is_current": False}
             )
+            print("asdf max block ", max_block)
             if not max_block:
                 block = Block(
                     blockhash=hex(i),
@@ -157,6 +159,7 @@ def populate_mock_db(db, entities, block_offset=None):
                     parenthash="0x01",
                     is_current=(i == block_offset + num_blocks - 1),
                 )
+                print("asdf adding block ", block)
                 session.add(block)
                 session.flush()
 
