@@ -236,6 +236,18 @@ def get_feed_es(args, limit=10):
         if "favorite_count" in item:
             item["save_count"] = item["favorite_count"]
 
+    # filter out collectible gated tracks from feed
+    sorted_feed = list(
+        filter(
+            lambda item: ("premium_conditions" not in item)  # not a track
+            or (item["premium_conditions"] is None)  # not a premium track
+            or (
+                "nft_collection" not in item["premium_conditions"]
+            ),  # not a collectible gated track
+            sorted_feed,
+        )
+    )
+
     # batch populate premium track metadata
     db = get_db_read_replica()
     with db.scoped_session() as session:
