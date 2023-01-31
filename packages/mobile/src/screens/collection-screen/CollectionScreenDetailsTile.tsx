@@ -250,6 +250,7 @@ export const CollectionScreenDetailsTile = ({
       details={details}
       hideOverflow={detailsTileProps.hideOverflow || !isReachable}
       hideListenCount={true}
+      hideRepost={!isReachable}
       isPlaying={isPlaying && isQueued}
       renderBottomContent={renderTrackList}
       headerText={!isOfflineModeEnabled ? headerText : undefined}
