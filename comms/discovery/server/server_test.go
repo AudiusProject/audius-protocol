@@ -152,8 +152,6 @@ func TestGetChats(t *testing.T) {
 		},
 	}
 
-	e := NewServer()
-
 	// Test GET /comms/chats
 	{
 		// Query /comms/chats
@@ -166,7 +164,7 @@ func TestGetChats(t *testing.T) {
 		req.Header.Set(config.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
+		c := testServer.NewContext(req, rec)
 
 		res := rec.Result()
 		defer res.Body.Close()
@@ -209,7 +207,7 @@ func TestGetChats(t *testing.T) {
 		req.Header.Set(config.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
+		c := testServer.NewContext(req, rec)
 
 		// Set query params
 		before := time.Now().UTC().Add(-time.Minute * time.Duration(45)).Format(time.RFC3339Nano)
@@ -258,7 +256,7 @@ func TestGetChats(t *testing.T) {
 		req.Header.Set(config.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
+		c := testServer.NewContext(req, rec)
 
 		// Set path params
 		c.SetParamNames("id")
@@ -377,7 +375,6 @@ func TestGetMessages(t *testing.T) {
 
 	// Test GET /comms/chats/:id/messages
 	{
-		e := NewServer()
 		req, err := http.NewRequest(http.MethodGet, "/comms/chats/:id/messages", nil)
 		assert.NoError(t, err)
 
@@ -387,7 +384,7 @@ func TestGetMessages(t *testing.T) {
 		req.Header.Set(config.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
+		c := testServer.NewContext(req, rec)
 
 		// Set path params
 		c.SetParamNames("id")
@@ -424,7 +421,6 @@ func TestGetMessages(t *testing.T) {
 
 	// Test paginated GET /comms/chats/:id/messages
 	{
-		e := NewServer()
 		req, err := http.NewRequest(http.MethodGet, "/comms/chats/:id/messages", nil)
 		assert.NoError(t, err)
 
@@ -434,7 +430,7 @@ func TestGetMessages(t *testing.T) {
 		req.Header.Set(config.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
-		c := e.NewContext(req, rec)
+		c := testServer.NewContext(req, rec)
 
 		// Set path params
 		c.SetParamNames("id")

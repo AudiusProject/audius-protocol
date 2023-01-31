@@ -8,7 +8,6 @@ import (
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
-	"comms.audius.co/discovery/jetstream"
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
@@ -23,6 +22,9 @@ func DiscoveryMain() {
 	// dial datasources in parallel
 	g := errgroup.Group{}
 
+	var jsc nats.JetStreamContext
+	var proc *rpcz.RPCProcessor
+
 	g.Go(func() error {
 		err := peering.PollRegisteredNodes()
 		if err != nil {
@@ -31,20 +33,29 @@ func DiscoveryMain() {
 
 		peerMap := peering.Solicit()
 
-		err = jetstream.Dial(peerMap)
+		jsc, err = peering.DialJetstream(peerMap)
 		if err != nil {
 			log.Println("jetstream dial failed", err)
 			return err
 		}
 
 		// create streams
-		jsc := jetstream.GetJetstreamContext()
 		err = createJetstreamStreams(jsc)
 		if err != nil {
 			return err
 		}
 
-		err = createConsumer(jsc)
+		proc, err = rpcz.NewProcessor(jsc)
+		if err != nil {
+			return err
+		}
+
+		err = createConsumer(jsc, proc)
+		if err != nil {
+			return err
+		}
+
+		err = pubkeystore.Dial(jsc)
 		if err != nil {
 			return err
 		}
@@ -54,9 +65,6 @@ func DiscoveryMain() {
 	})
 	g.Go(func() error {
 		return db.Dial()
-	})
-	g.Go(func() error {
-		return pubkeystore.Dial()
 	})
 	g.Go(func() error {
 		out, err := exec.Command("dbmate",
@@ -71,7 +79,7 @@ func DiscoveryMain() {
 		log.Fatal(err)
 	}
 
-	e := server.NewServer()
+	e := server.NewServer(jsc, proc)
 	e.Logger.Fatal(e.Start(":8925"))
 }
 
@@ -110,7 +118,7 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 	return nil
 }
 
-func createConsumer(jsc nats.JetStreamContext) error {
+func createConsumer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) error {
 
 	// ------------------------------------------------------------------------------
 	// TEMP: Subscribe to the subject for the demo
@@ -120,7 +128,7 @@ func createConsumer(jsc nats.JetStreamContext) error {
 	// also, should be a pull consumer with explicit ack.
 	// matrix-org/dendrite codebase has some nice examples to follow...
 
-	sub, err := jsc.Subscribe(config.GlobalStreamSubject, rpcz.Apply, nats.Durable(config.WalletAddress))
+	sub, err := jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.WalletAddress))
 
 	if info, err := sub.ConsumerInfo(); err == nil {
 		config.Logger.Info("create subscription", "sub", info)

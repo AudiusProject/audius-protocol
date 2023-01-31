@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"comms.audius.co/discovery/config"
-	"comms.audius.co/discovery/jetstream"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/storageserver"
+	"github.com/nats-io/nats.go"
 )
 
 func StorageMain() {
@@ -19,20 +19,20 @@ func StorageMain() {
 	// TODO: shouldn't use discovery config
 	config.Init()
 
-	err := func() error {
+	jsc, err := func() (nats.JetStreamContext, error) {
 		err := peering.PollRegisteredNodes()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		peerMap := peering.Solicit()
-		return jetstream.Dial(peerMap)
+		return peering.DialJetstream(peerMap)
 	}()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	ss := storageserver.NewProd(jetstream.GetJetstreamContext())
+	ss := storageserver.NewProd(jsc)
 
 	// Start server
 	go func() {

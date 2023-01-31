@@ -119,25 +119,16 @@ func (ss *StorageServer) serveFileUpload(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	template := c.FormValue("template")
 	files := form.File["files"]
 	defer form.RemoveAll()
 
 	for _, file := range files {
-		// Source
-		src, err := file.Open()
+		job, err := ss.JobsManager.Add(template, file)
 		if err != nil {
 			return err
 		}
-
-		// add to jobman
-		job, err := ss.JobsManager.Add(src)
-		if err != nil {
-			return err
-		}
-
-		src.Close()
 		results = append(results, job)
-
 	}
 
 	if c.QueryParam("redirect") != "" {

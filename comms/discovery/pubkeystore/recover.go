@@ -9,13 +9,14 @@ import (
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
-	"comms.audius.co/discovery/jetstream"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
+	"github.com/nats-io/nats.go"
 )
 
 var (
+	jsc       nats.JetStreamContext
 	poaClient *ethclient.Client
 
 	// on staging, and soon prod
@@ -26,8 +27,11 @@ var (
 	audiusChainClient *ethclient.Client
 )
 
-func Dial() error {
+func Dial(jetstreamContext nats.JetStreamContext) error {
 	var err error
+
+	jsc = jetstreamContext
+
 	endpoint := "https://poa-gateway.audius.co"
 
 	if config.IsStaging {
@@ -54,7 +58,6 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 
 	conn := db.Conn
 
-	jsc := jetstream.GetJetstreamContext()
 	kv, err := jsc.KeyValue(config.PubkeystoreBucketName)
 	if err != nil {
 		return "", err

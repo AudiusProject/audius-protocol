@@ -55,11 +55,12 @@ func TestE2EUpload(t *testing.T) {
 	assert.NoError(writer.Close())
 
 	req, err := http.NewRequest(http.MethodPost, url, body)
+	assert.NoError(err)
 	req.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
+	templateWriter, err := writer.CreateFormField("template")
+	assert.NoError(err)
+	templateWriter.Write([]byte("audio"))
 
-	if err != nil {
-		t.Errorf("The request could not be created because of: %v", err)
-	}
 	rec := httptest.NewRecorder()
 	ss := nodes[0].ss
 	c := ss.WebServer.NewContext(req, rec)

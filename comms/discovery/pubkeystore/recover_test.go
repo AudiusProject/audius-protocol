@@ -17,7 +17,7 @@ func TestRecovery(t *testing.T) {
 
 	// dagron
 	config.IsStaging = true
-	err = Dial()
+	err = Dial(nil)
 	assert.NoError(t, err)
 
 	// addUser on POA
