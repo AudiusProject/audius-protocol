@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import type { Collection, CommonState, DownloadReason } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -20,6 +21,8 @@ import { OfflineTrackDownloadStatus as OfflineDownloadStatus } from 'app/store/o
 import { makeStyles } from 'app/styles'
 
 import { DownloadStatusIndicator } from './DownloadStatusIndicator'
+
+const { getIsReachable } = reachabilitySelectors
 
 export type TrackForDownload = {
   trackId: number
@@ -88,6 +91,7 @@ export const DownloadToggle = ({
 }: DownloadToggleProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
+  const isReachable = useSelector(getIsReachable)
   const [disabled, setDisabled] = useState(false)
   const collectionIdStr = isAllFavoritesToggle
     ? DOWNLOAD_REASON_FAVORITES
@@ -165,6 +169,9 @@ export const DownloadToggle = ({
     ]
   )
 
+  const switchOn =
+    isCollectionMarkedForDownload || isThisFavoritedCollectionDownload
+
   return (
     <View style={labelText ? styles.rootWithLabel : styles.root}>
       {labelText ? <View style={styles.flex1} /> : null}
@@ -195,11 +202,13 @@ export const DownloadToggle = ({
       <View style={labelText ? styles.toggleContainer : null}>
         {collection || isAllFavoritesToggle ? (
           <Switch
-            value={
-              isCollectionMarkedForDownload || isThisFavoritedCollectionDownload
-            }
+            value={switchOn}
             onValueChange={handleToggleDownload}
-            disabled={disabled || isThisFavoritedCollectionDownload}
+            disabled={
+              disabled ||
+              isThisFavoritedCollectionDownload ||
+              (!switchOn && !isReachable)
+            }
           />
         ) : null}
       </View>
