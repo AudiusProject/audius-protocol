@@ -270,6 +270,7 @@ export const CollectionScreenDetailsTile = ({
       description={description}
       descriptionLinkPressSource='collection page'
       details={details}
+      hideOverflow={detailsTileProps.hideOverflow || !isReachable}
       hideListenCount={true}
       isPlaying={isPlaying && isQueued}
       renderBottomContent={renderTrackList}
