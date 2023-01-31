@@ -37,8 +37,10 @@ export const SubscribeButton = (props: SubscribeButtonProps) => {
   const dispatch = useDispatch()
 
   const handlePress = useCallback(() => {
-    dispatch(setNotificationSubscription(user_id, !isSubscribed, true))
-  }, [dispatch, user_id, isSubscribed])
+    dispatch(
+      setNotificationSubscription(user_id, !isSubscribed, true, handle, false)
+    )
+  }, [dispatch, user_id, isSubscribed, handle])
 
   return (
     <Button
