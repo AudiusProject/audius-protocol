@@ -6,6 +6,7 @@ import {
   FETCH_SAVES_REQUESTED,
   FETCH_SAVES_SUCCEEDED,
   FETCH_SAVES_FAILED,
+  FETCH_MORE_SAVES,
   FETCH_MORE_SAVES_SUCCEEDED,
   FETCH_MORE_SAVES_FAILED,
   ADD_LOCAL_SAVE,
@@ -21,7 +22,8 @@ const initialState = {
   localSaves: {},
   saves: [],
   initialFetch: false,
-  hasReachedEnd: false
+  hasReachedEnd: false,
+  fetchingMore: false
 }
 
 const actionsMap = {
@@ -44,9 +46,16 @@ const actionsMap = {
       initialFetch: false
     }
   },
+  [FETCH_MORE_SAVES](state, action) {
+    return {
+      ...state,
+      fetchingMore: true
+    }
+  },
   [FETCH_SAVES_FAILED](state, action) {
     return {
       ...state,
+      fetchingMore: false,
       saves: []
     }
   },
@@ -56,6 +65,7 @@ const actionsMap = {
 
     return {
       ...state,
+      fetchingMore: false,
       saves: savesCopy
     }
   },

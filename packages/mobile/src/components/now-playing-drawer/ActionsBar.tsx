@@ -146,7 +146,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         />
       )
     }
-    return isOfflineModeEnabled || !isReachable ? (
+    return isOfflineModeEnabled && !isReachable ? (
       <View style={{ ...styles.button, width: 24 }}>
         <IconChromecast
           fill={neutralLight6}

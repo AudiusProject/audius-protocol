@@ -15,6 +15,7 @@ export interface SavedPageState {
   saves: Favorite[]
   hasReachedEnd: boolean
   initialFetch: boolean
+  fetchingMore: boolean
 }
 
 export enum SavedPageTabs {
