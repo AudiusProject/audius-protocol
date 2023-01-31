@@ -48,6 +48,9 @@ export function* repostTrackAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
+  if (userId === action.trackId) {
+    return
+  }
 
   // Increment the repost count on the user
   const user = yield* select(getUser, { id: userId })
@@ -192,6 +195,9 @@ export function* undoRepostTrackAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
+  if (userId === action.trackId) {
+    return
+  }
 
   // Decrement the repost count
   const user = yield* select(getUser, { id: userId })
@@ -303,6 +309,9 @@ export function* saveTrackAsync(
     yield* put(signOnActions.showRequiresAccountModal())
     yield* put(signOnActions.openSignOn(false))
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    return
+  }
+  if (userId === action.trackId) {
     return
   }
 
@@ -445,6 +454,9 @@ export function* unsaveTrackAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
+  if (userId === action.trackId) {
+    return
+  }
 
   // Decrement the save count
   const user = yield* select(getUser, { id: userId })
@@ -467,6 +479,7 @@ export function* unsaveTrackAsync(
 
   const tracks = yield* select(getTracks, { ids: [action.trackId] })
   const track = tracks[action.trackId]
+
   if (track) {
     const eagerlyUpdatedMetadata: Partial<Track> = {
       has_current_user_saved: false,

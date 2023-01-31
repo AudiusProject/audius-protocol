@@ -136,7 +136,8 @@ export const downloadCollection = async (
 
   if (!user) return
 
-  if (!collection.has_current_user_saved) {
+  const isOwner = currentUserId === user.user_id
+  if (!collection.has_current_user_saved && !isOwner) {
     store.dispatch(
       saveCollection(collection.playlist_id, FavoriteSource.OFFLINE_DOWNLOAD)
     )

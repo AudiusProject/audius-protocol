@@ -54,6 +54,9 @@ export function* repostCollectionAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
+  if (userId === action.collectionId) {
+    return
+  }
 
   // increment the repost count on the user
   const user = yield* select(getUser, { id: userId })
@@ -158,6 +161,9 @@ export function* undoRepostCollectionAsync(
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountModal())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    return
+  }
+  if (userId === action.collectionId) {
     return
   }
 
@@ -308,6 +314,9 @@ export function* saveCollectionAsync(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
+  if (userId === action.collectionId) {
+    return
+  }
 
   const collections = yield* select(getCollections, {
     ids: [action.collectionId]
@@ -447,6 +456,10 @@ export function* unsaveCollectionAsync(
   action: ReturnType<typeof socialActions.unsaveCollection>
 ) {
   yield* call(waitForWrite)
+  const userId = yield* select(getUserId)
+  if (userId === action.collectionId) {
+    return
+  }
   const collections = yield* select(getCollections, {
     ids: [action.collectionId]
   })

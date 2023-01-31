@@ -45,6 +45,9 @@ export function* followUser(
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
     return
   }
+  if (accountId === action.userId) {
+    return
+  }
 
   const users = yield* select(getUsers, { ids: [action.userId, accountId] })
   const followedUser = users[action.userId]
@@ -162,6 +165,9 @@ export function* unfollowUser(
     yield* put(signOnActions.openSignOn(false))
     yield* put(signOnActions.showRequiresAccountModal())
     yield* put(make(Name.CREATE_ACCOUNT_OPEN, { source: 'social action' }))
+    return
+  }
+  if (accountId === action.userId) {
     return
   }
 
