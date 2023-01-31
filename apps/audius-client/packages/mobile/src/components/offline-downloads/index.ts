@@ -1,2 +1,2 @@
 export * from './DownloadStatusIndicator'
-export * from './DownloadToggle'
+export * from './types'

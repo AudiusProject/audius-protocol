@@ -12,7 +12,7 @@ import {
   getOfflineDownloadStatus,
   getIsDoneLoadingFromDisk
 } from 'app/store/offline-downloads/selectors'
-import { OfflineTrackDownloadStatus } from 'app/store/offline-downloads/slice'
+import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
 import { FilterInput } from './FilterInput'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
@@ -56,7 +56,7 @@ export const AlbumsTab = () => {
               trackIds.some((t) => {
                 return (
                   offlineDownloadStatus[t.toString()] ===
-                  OfflineTrackDownloadStatus.SUCCESS
+                  OfflineDownloadStatus.SUCCESS
                 )
               }))
           )

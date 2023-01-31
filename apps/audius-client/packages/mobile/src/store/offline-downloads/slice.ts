@@ -6,7 +6,7 @@ type LineupTrack = Track & UserTrackMetadata
 
 export type OfflineDownloadsState = {
   downloadStatus: {
-    [key: string]: OfflineTrackDownloadStatus
+    [key: string]: OfflineDownloadStatus
   }
   tracks: {
     [key: string]: LineupTrack
@@ -20,7 +20,8 @@ export type OfflineDownloadsState = {
   isDoneLoadingFromDisk: boolean
 }
 
-export enum OfflineTrackDownloadStatus {
+export enum OfflineDownloadStatus {
+  INACTIVE = 'INACTIVE', // download is not initiated,
   INIT = 'INIT', // download is queued
   LOADING = 'LOADING', // download is in progress
   SUCCESS = 'SUCCESS', // download succeeded
@@ -52,18 +53,18 @@ const slice = createSlice({
       { payload: trackIds }: PayloadAction<string[]>
     ) => {
       trackIds.forEach((trackId) => {
-        state.downloadStatus[trackId] = OfflineTrackDownloadStatus.INIT
+        state.downloadStatus[trackId] = OfflineDownloadStatus.INIT
       })
     },
     // Actually starting the download
     startDownload: (state, { payload: trackId }: PayloadAction<string>) => {
-      state.downloadStatus[trackId] = OfflineTrackDownloadStatus.LOADING
+      state.downloadStatus[trackId] = OfflineDownloadStatus.LOADING
     },
     completeDownload: (state, { payload: trackId }: PayloadAction<string>) => {
-      state.downloadStatus[trackId] = OfflineTrackDownloadStatus.SUCCESS
+      state.downloadStatus[trackId] = OfflineDownloadStatus.SUCCESS
     },
     errorDownload: (state, { payload: trackId }: PayloadAction<string>) => {
-      state.downloadStatus[trackId] = OfflineTrackDownloadStatus.ERROR
+      state.downloadStatus[trackId] = OfflineDownloadStatus.ERROR
     },
     removeDownload: (state, { payload: trackId }: PayloadAction<string>) => {
       delete state.downloadStatus[trackId]
@@ -92,13 +93,13 @@ const slice = createSlice({
       tracks.forEach((track) => {
         const trackIdStr = track.track_id.toString()
         state.tracks[trackIdStr] = track
-        state.downloadStatus[trackIdStr] = OfflineTrackDownloadStatus.SUCCESS
+        state.downloadStatus[trackIdStr] = OfflineDownloadStatus.SUCCESS
       })
     },
     loadTrack: (state, { payload: track }: PayloadAction<LineupTrack>) => {
       const trackIdStr = track.track_id.toString()
       state.tracks[trackIdStr] = track
-      state.downloadStatus[trackIdStr] = OfflineTrackDownloadStatus.SUCCESS
+      state.downloadStatus[trackIdStr] = OfflineDownloadStatus.SUCCESS
     },
     unloadTrack: (state, { payload: trackId }: PayloadAction<string>) => {
       delete state.tracks[trackId]

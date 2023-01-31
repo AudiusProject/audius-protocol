@@ -3,7 +3,7 @@ import { createSelector } from 'reselect'
 import type { AppState } from 'app/store'
 
 import type { OfflineDownloadsState } from './slice'
-import { OfflineTrackDownloadStatus } from './slice'
+import { OfflineDownloadStatus } from './slice'
 
 export const getOfflineDownloadStatus = (state: AppState) =>
   state.offlineDownloads.downloadStatus
@@ -37,15 +37,18 @@ export const getIsDoneLoadingFromDisk = (state: AppState): boolean =>
   state.offlineDownloads.isDoneLoadingFromDisk
 
 export const getIsAnyDownloadInProgress = createSelector(
-  [getOfflineDownloadStatus, (state, trackIds) => trackIds],
+  [
+    getOfflineDownloadStatus,
+    (_state: AppState, trackIds: number[]) => trackIds
+  ],
   (offlineDownloadStatus, trackIds) => {
     return trackIds.some((trackId: number) => {
       const status = offlineDownloadStatus[trackId.toString()]
       // Any download is in progress if any are loading (actively downloading)
       // or init (queued, but not actively downloading)
       return (
-        status === OfflineTrackDownloadStatus.LOADING ||
-        status === OfflineTrackDownloadStatus.INIT
+        status === OfflineDownloadStatus.LOADING ||
+        status === OfflineDownloadStatus.INIT
       )
     })
   }
@@ -58,7 +61,7 @@ export const getIsAllDownloadsErrored = createSelector(
       trackIds.length > 0 &&
       trackIds.every((trackId: number) => {
         const status = offlineDownloadStatus[trackId.toString()]
-        return status === OfflineTrackDownloadStatus.ERROR
+        return status === OfflineDownloadStatus.ERROR
       })
     )
   }

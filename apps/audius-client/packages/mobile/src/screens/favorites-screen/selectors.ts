@@ -22,10 +22,7 @@ const matchesFilter = (
   )
 }
 
-export const getAccountCollections = (
-  state: CommonState,
-  filterValue: string
-) => {
+export const getAccountCollections = (state: CommonState, filterValue = '') => {
   const collectionEntries = state.collections?.entries
   const { collections } = state.account
   if (!collectionEntries) return []

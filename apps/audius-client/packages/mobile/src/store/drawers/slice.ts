@@ -1,8 +1,6 @@
-import type { Nullable } from '@audius/common'
+import type { ID, Nullable } from '@audius/common'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
-
-import type { TrackForDownload } from 'app/components/offline-downloads'
 
 export type BaseDrawerData = Record<string, unknown>
 
@@ -37,13 +35,9 @@ export type DrawerData = {
   ConfirmRemoveWallet: undefined
   ShareToStoryProgress: undefined
   UnfavoriteDownloadedCollection: { collectionId: number }
-  RemoveDownloadedFavorites: {
-    collectionId: string
-    tracksForDownload: TrackForDownload[]
-  }
+  RemoveDownloadedFavorites: undefined
   RemoveDownloadedCollection: {
-    collectionId: string
-    tracksForDownload: TrackForDownload[]
+    collectionId: ID
   }
 }
 

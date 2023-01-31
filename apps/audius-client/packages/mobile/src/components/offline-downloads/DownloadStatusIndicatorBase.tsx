@@ -1,0 +1,91 @@
+import type { Nullable } from '@audius/common'
+import type { StyleProp, ViewStyle } from 'react-native'
+import { View } from 'react-native'
+import Rive from 'rive-react-native'
+
+import IconDownloadFailed from 'app/assets/images/iconDownloadFailed.svg'
+import IconDownloadInactive from 'app/assets/images/iconDownloadInactive.svg'
+import IconDownloadQueued from 'app/assets/images/iconDownloadQueued.svg'
+import IconDownloaded from 'app/assets/images/iconDownloaded.svg'
+import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
+import { makeStyles } from 'app/styles'
+import { useThemeVariant } from 'app/utils/theme'
+
+type DownloadStatusIndicatorProps = {
+  status: Nullable<OfflineDownloadStatus>
+  size?: number
+  style?: StyleProp<ViewStyle>
+}
+
+const useStyles = makeStyles(({ palette }) => ({
+  iconDownloadQueued: {
+    fill: palette.neutralLight4
+  },
+  iconDownloaded: {
+    fill: palette.secondary
+  },
+  iconDownloadFailed: {
+    fill: palette.secondary
+  },
+  iconDownloadInactive: {
+    fill: palette.neutralLight4
+  }
+}))
+
+export const DownloadStatusIndicator = (
+  props: DownloadStatusIndicatorProps
+) => {
+  const { status, size = 24, style } = props
+  const styles = useStyles()
+  const themeVariant = useThemeVariant()
+
+  const renderIndicator = () => {
+    switch (status) {
+      case OfflineDownloadStatus.INIT:
+        return (
+          <IconDownloadQueued
+            fill={styles.iconDownloadQueued.fill}
+            height={size}
+            width={size}
+          />
+        )
+      case OfflineDownloadStatus.LOADING:
+        return (
+          <View>
+            <Rive
+              style={{ height: size, width: size }}
+              resourceName={`downloading_${themeVariant}`}
+              autoplay
+            />
+          </View>
+        )
+      case OfflineDownloadStatus.SUCCESS:
+        return (
+          <IconDownloaded
+            fill={styles.iconDownloaded.fill}
+            height={size}
+            width={size}
+          />
+        )
+      case OfflineDownloadStatus.ERROR:
+        return (
+          <IconDownloadFailed
+            fill={styles.iconDownloadFailed.fill}
+            height={size}
+            width={size}
+          />
+        )
+      case OfflineDownloadStatus.INACTIVE:
+        return (
+          <IconDownloadInactive
+            fill={styles.iconDownloadInactive.fill}
+            height={size}
+            width={size}
+          />
+        )
+      default:
+        return null
+    }
+  }
+  return <View style={style}>{renderIndicator()}</View>
+}

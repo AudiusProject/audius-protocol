@@ -2,7 +2,6 @@ import { useCallback, useMemo } from 'react'
 
 import type { ID, Maybe, SmartCollectionVariant, UID } from '@audius/common'
 import {
-  Variant,
   useProxySelector,
   collectionPageActions,
   playerSelectors,
@@ -25,19 +24,16 @@ import type {
   DetailsTileDetail,
   DetailsTileProps
 } from 'app/components/details-tile/types'
-import { DownloadToggle } from 'app/components/offline-downloads'
 import { TrackList } from 'app/components/track-list'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useOfflineCollectionLineup } from 'app/hooks/useLoadOfflineTracks'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
-const {
-  getCollection,
-  getCollectionTracksLineup,
-  getCollectionUid,
-  getUserUid
-} = collectionPageSelectors
+
+import { CollectionHeader } from './CollectionHeader'
+const { getCollectionTracksLineup, getCollectionUid, getUserUid } =
+  collectionPageSelectors
 const { resetCollection } = collectionPageActions
 const { makeGetTableMetadatas } = lineupSelectors
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
@@ -105,7 +101,6 @@ export const CollectionScreenDetailsTile = ({
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
 
-  const collection = useSelector(getCollection)
   const collectionUid = useSelector(getCollectionUid)
   const userUid = useSelector(getUserUid)
   const { entries, status } = useProxySelector(getTracksLineup, [isReachable])
@@ -218,27 +213,10 @@ export const CollectionScreenDetailsTile = ({
     return messages.playlist
   }, [isAlbum, isPrivate, isPublishing])
 
-  const tracksForDownload = useMemo(
-    () =>
-      entries.map((track) => ({
-        trackId: track.track_id,
-        downloadReason: {
-          is_from_favorites: false,
-          collection_id: collectionId?.toString()
-        }
-      })),
-    [collectionId, entries]
+  const renderHeader = useCallback(
+    () => <CollectionHeader collectionId={collectionId} />,
+    [collectionId]
   )
-
-  const renderHeader = useCallback(() => {
-    return collection?.variant === Variant.SMART ? null : (
-      <DownloadToggle
-        collection={collection}
-        tracksForDownload={tracksForDownload}
-        labelText={headerText}
-      />
-    )
-  }, [collection, headerText, tracksForDownload])
 
   const renderTrackList = () => {
     if (tracksLoading)
