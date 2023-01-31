@@ -1,17 +1,45 @@
 import useSWR from 'swr'
 import { SP, useDiscoveryProviders } from './useServiceProviders'
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json())
+
 export function DiscoveryTrending() {
   const { data: sps, error } = useDiscoveryProviders()
-  if (error) return <div>error</div>
   if (!sps) return null
+
+  const responses = sps.map((sp) => {
+    const endpoint = sp.endpoint
+    const res = useSWR(sp.endpoint + '/v1/full/tracks/trending', fetcher)
+    console.log(endpoint)
+    return { endpoint: endpoint, res: res}
+  }).sort((a, b) => {
+    if (!a.res.data) {
+      return -1
+    }
+
+    if (!b.res.data) {
+      return -1
+    }
+    const aIndexedBlock = a.res.data.data.latest_indexed_block
+    const bIndexedBlock = b.res.data.data.latest_indexed_block
+    if (aIndexedBlock < bIndexedBlock) {
+      return -1
+    }
+    if (aIndexedBlock > bIndexedBlock) {
+      return 1
+    }
+    return 0
+  })
+
+  if (error) return <div>error</div>
+
   return (
     <div style={{ padding: 20 }}>
       <h2>{sps.length}</h2>
       <table className="table">
         <tbody>
-          {sps.map((sp) => (
-            <TrendingRow key={sp.endpoint} sp={sp} />
+          {responses.map(({endpoint, res: {data, error}}, i) => (
+            <TrendingRow key={endpoint} data={data} endpoint={endpoint}/>
           ))}
         </tbody>
       </table>
@@ -19,15 +47,11 @@ export function DiscoveryTrending() {
   )
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json())
-
-function TrendingRow({ sp }: { sp: SP }) {
-  const { data, error } = useSWR(sp.endpoint + '/v1/full/tracks/trending', fetcher)
-
+function TrendingRow({ data, endpoint }: { data: any, endpoint: string }) {
   if (!data)
     return (
       <tr>
-        <td>{sp.endpoint}</td>
+        <td>{endpoint}</td>
       </tr>
     )
 
@@ -37,8 +61,8 @@ function TrendingRow({ sp }: { sp: SP }) {
   return (
     <tr>
       <td>
-        <a href={sp.endpoint + '/health_check'} target="_blank">
-          {sp.endpoint.replace('https://', '')}
+        <a href={endpoint + '/health_check'} target="_blank">
+          {endpoint.replace('https://', '')}
         </a>
       </td>
       <td>
