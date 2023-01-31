@@ -7,7 +7,7 @@ import { TrackAvailabilitySelectionProps } from './types'
 const messages = {
   public: 'Public (Default)',
   publicSubtitle:
-    'Public uploads will appear throughout Audius and will be visible to all users.'
+    'Public tracks are visible to all users and appear throughout Audius.'
 }
 
 export const PublicAvailability = ({

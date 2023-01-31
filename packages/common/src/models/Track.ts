@@ -87,6 +87,24 @@ export type PremiumContentSignature = {
   signature: string
 }
 
+export type EthCollectionMap = {
+  [slug: string]: {
+    name: string
+    address: string
+    standard: TokenStandard
+    img: Nullable<string>
+    externalLink: Nullable<string>
+  }
+}
+
+export type SolCollectionMap = {
+  [mint: string]: {
+    name: string
+    img: Nullable<string>
+    externalLink: Nullable<string>
+  }
+}
+
 export type TrackMetadata = {
   blocknumber: number
   activity_timestamp?: string

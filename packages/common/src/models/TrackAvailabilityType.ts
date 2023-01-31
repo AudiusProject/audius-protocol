@@ -1,0 +1,6 @@
+export enum TrackAvailabilityType {
+  PUBLIC = 'PUBLIC',
+  SPECIAL_ACCESS = 'SPECIAL_ACCESS',
+  COLLECTIBLE_GATED = 'COLLECTIBLE_GATED',
+  HIDDEN = 'HIDDEN'
+}
