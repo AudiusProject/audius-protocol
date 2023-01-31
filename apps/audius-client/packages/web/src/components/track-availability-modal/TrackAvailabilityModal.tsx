@@ -4,7 +4,8 @@ import {
   FeatureFlags,
   PremiumConditions,
   accountSelectors,
-  Nullable
+  Nullable,
+  TrackAvailabilityType
 } from '@audius/common'
 import {
   Modal,
@@ -25,7 +26,7 @@ import { HiddenAvailability } from './HiddenAvailability'
 import { PublicAvailability } from './PublicAvailability'
 import { SpecialAccessAvailability } from './SpecialAccessAvailability'
 import styles from './TrackAvailabilityModal.module.css'
-import { AvailabilityType, TrackMetadataState } from './types'
+import { TrackMetadataState } from './types'
 
 const { getUserId } = accountSelectors
 
@@ -72,17 +73,17 @@ const TrackAvailabilityModal = ({
     [accountUserId]
   )
 
-  let availability = AvailabilityType.PUBLIC
+  let availability = TrackAvailabilityType.PUBLIC
   if (
     metadataState.is_premium &&
     metadataState.premium_conditions &&
     'nft_collection' in metadataState.premium_conditions
   ) {
-    availability = AvailabilityType.COLLECTIBLE_GATED
+    availability = TrackAvailabilityType.COLLECTIBLE_GATED
   } else if (metadataState.is_premium) {
-    availability = AvailabilityType.SPECIAL_ACCESS
+    availability = TrackAvailabilityType.SPECIAL_ACCESS
   } else if (metadataState.unlisted) {
-    availability = AvailabilityType.HIDDEN
+    availability = TrackAvailabilityType.HIDDEN
   }
 
   const updatePublicField = useCallback(() => {
@@ -92,7 +93,7 @@ const TrackAvailabilityModal = ({
   const updatePremiumContentFields = useCallback(
     (
       premiumConditions: Nullable<PremiumConditions>,
-      availabilityType: AvailabilityType
+      availabilityType: TrackAvailabilityType
     ) => {
       if (premiumConditions) {
         didUpdateState({
@@ -101,13 +102,13 @@ const TrackAvailabilityModal = ({
           premium_conditions: premiumConditions
         })
       } else if (availabilityType === availability) {
-      } else if (availabilityType === AvailabilityType.SPECIAL_ACCESS) {
+      } else if (availabilityType === TrackAvailabilityType.SPECIAL_ACCESS) {
         didUpdateState({
           ...defaultAvailabilityFields,
           is_premium: true,
           premium_conditions: defaultSpecialAccess
         })
-      } else if (availabilityType === AvailabilityType.COLLECTIBLE_GATED) {
+      } else if (availabilityType === TrackAvailabilityType.COLLECTIBLE_GATED) {
         didUpdateState({
           ...defaultAvailabilityFields,
           is_premium: true,
@@ -153,26 +154,26 @@ const TrackAvailabilityModal = ({
       </ModalHeader>
       <ModalContent className={styles.content}>
         <PublicAvailability
-          selected={availability === AvailabilityType.PUBLIC}
+          selected={availability === TrackAvailabilityType.PUBLIC}
           metadataState={metadataState}
           updatePublicField={updatePublicField}
         />
         {isSpecialAccessGateEnabled && (
           <SpecialAccessAvailability
-            selected={availability === AvailabilityType.SPECIAL_ACCESS}
+            selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
             metadataState={metadataState}
             updatePremiumContentFields={updatePremiumContentFields}
           />
         )}
         {isNFTGateEnabled && (
           <CollectibleGatedAvailability
-            selected={availability === AvailabilityType.COLLECTIBLE_GATED}
+            selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
             metadataState={metadataState}
             updatePremiumContentFields={updatePremiumContentFields}
           />
         )}
         <HiddenAvailability
-          selected={availability === AvailabilityType.HIDDEN}
+          selected={availability === TrackAvailabilityType.HIDDEN}
           metadataState={metadataState}
           updateUnlistedField={updateUnlistedField}
           updateHiddenField={updateHiddenField}

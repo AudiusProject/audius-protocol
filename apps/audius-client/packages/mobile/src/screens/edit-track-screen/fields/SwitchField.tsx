@@ -1,4 +1,5 @@
 import { useField } from 'formik'
+import type { ViewStyle } from 'react-native'
 import { View } from 'react-native'
 
 import { Switch, Text } from 'app/components/core'
@@ -19,15 +20,16 @@ const useStyles = makeStyles(({ spacing }) => ({
 type SwitchFieldProps = {
   name: string
   label: string
+  style?: ViewStyle
 }
 
 export const SwitchField = (props: SwitchFieldProps) => {
-  const { name, label } = props
+  const { name, label, style } = props
   const styles = useStyles()
   const [{ value }, , { setValue }] = useField(name)
 
   return (
-    <View style={styles.root}>
+    <View style={[styles.root, style]}>
       <Text fontSize='large' weight='demiBold' style={styles.label}>
         {label}
       </Text>

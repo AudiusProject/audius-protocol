@@ -1,11 +1,24 @@
+import { useMemo } from 'react'
+
+import type {
+  FieldVisibility,
+  Nullable,
+  PremiumConditions
+} from '@audius/common'
 import { useField } from 'formik'
 
 import type { ContextualSubmenuProps } from 'app/components/core'
 import { ContextualSubmenu } from 'app/components/core'
+import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
 
 const messages = {
-  label: 'Track Visibility',
+  trackVisibility: 'Track Visibility',
+  availability: 'Availability',
   public: 'Public',
+  collectibleGated: 'Collectible Gated',
+  specialAccess: 'Special Access',
+  followersOnly: 'Followers Only',
+  supportersOnly: 'Supporters Only',
   hidden: 'Hidden',
   showGenre: 'Show Genre',
   showMood: 'Show Mood',
@@ -27,21 +40,45 @@ const fieldVisibilityKeys = Object.keys(fieldVisibilityLabelMap)
 type TrackVisibilityFieldProps = Partial<ContextualSubmenuProps>
 
 export const TrackVisibilityField = (props: TrackVisibilityFieldProps) => {
-  const [{ value: isUnlisted }] = useField('is_unlisted')
-  const [{ value: fieldVisibility }] = useField('field_visibility')
+  const [{ value: premiumConditions }] =
+    useField<Nullable<PremiumConditions>>('premium_conditions')
+  const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
+  const [{ value: fieldVisibility }] =
+    useField<FieldVisibility>('field_visibility')
 
-  const trackVisibilityLabel = isUnlisted ? messages.hidden : messages.public
   const fieldVisibilityLabels = fieldVisibilityKeys
     .filter((visibilityKey) => fieldVisibility[visibilityKey])
     .map((visibilityKey) => fieldVisibilityLabelMap[visibilityKey])
 
-  const values = [trackVisibilityLabel, ...fieldVisibilityLabels]
+  const trackAvailabilityLabels = useMemo(() => {
+    if ('nft_collection' in (premiumConditions ?? {})) {
+      return [messages.collectibleGated]
+    }
+    if (premiumConditions?.follow_user_id) {
+      return [messages.specialAccess, messages.followersOnly]
+    }
+    if (premiumConditions?.tip_user_id) {
+      return [messages.specialAccess, messages.supportersOnly]
+    }
+    if (isUnlisted) {
+      return [messages.hidden, ...fieldVisibilityLabels]
+    }
+    return [messages.public]
+  }, [premiumConditions, isUnlisted, fieldVisibilityLabels])
+
+  const isPremiumContentEnabled = useIsPremiumContentEnabled()
+  const label = isPremiumContentEnabled
+    ? messages.availability
+    : messages.trackVisibility
+  const submenuScreenName = isPremiumContentEnabled
+    ? 'Availability'
+    : 'TrackVisibility'
 
   return (
     <ContextualSubmenu
-      label={messages.label}
-      submenuScreenName='TrackVisibility'
-      value={values}
+      label={label}
+      submenuScreenName={submenuScreenName}
+      value={trackAvailabilityLabels}
       {...props}
     />
   )

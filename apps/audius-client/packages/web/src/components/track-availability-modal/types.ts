@@ -1,4 +1,8 @@
-import { Nullable, PremiumConditions } from '@audius/common'
+import {
+  TrackAvailabilityType,
+  Nullable,
+  PremiumConditions
+} from '@audius/common'
 
 export enum PremiumTrackMetadataField {
   IS_PREMIUM = 'is_premium',
@@ -25,20 +29,13 @@ export type TrackMetadataState = {
   [UnlistedTrackMetadataField.PLAYS]: boolean
 }
 
-export enum AvailabilityType {
-  PUBLIC = 'PUBLIC',
-  SPECIAL_ACCESS = 'SPECIAL_ACCESS',
-  COLLECTIBLE_GATED = 'COLLECTIBLE_GATED',
-  HIDDEN = 'HIDDEN'
-}
-
 export type TrackAvailabilitySelectionProps = {
   selected: boolean
   metadataState: TrackMetadataState
   updatePublicField?: () => void
   updatePremiumContentFields?: (
     premiumConditions: Nullable<PremiumConditions>,
-    availability: AvailabilityType
+    availability: TrackAvailabilityType
   ) => void
   updateUnlistedField?: () => void
   updateHiddenField?: (field: string) => (visible: boolean) => void

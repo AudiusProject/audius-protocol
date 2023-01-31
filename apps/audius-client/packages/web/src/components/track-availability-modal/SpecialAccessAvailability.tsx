@@ -1,4 +1,4 @@
-import { accountSelectors } from '@audius/common'
+import { accountSelectors, TrackAvailabilityType } from '@audius/common'
 import { IconInfo, IconSpecialAccess } from '@audius/stems'
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 import Tooltip from 'components/tooltip/Tooltip'
 
 import styles from './TrackAvailabilityModal.module.css'
-import { AvailabilityType, TrackAvailabilitySelectionProps } from './types'
+import { TrackAvailabilitySelectionProps } from './types'
 
 const { getUserId } = accountSelectors
 
@@ -32,7 +32,10 @@ export const SpecialAccessAvailability = ({
         className={styles.availabilityRowContent}
         onClick={() => {
           if (updatePremiumContentFields) {
-            updatePremiumContentFields(null, AvailabilityType.SPECIAL_ACCESS)
+            updatePremiumContentFields(
+              null,
+              TrackAvailabilityType.SPECIAL_ACCESS
+            )
           }
         }}
       >
@@ -61,7 +64,7 @@ export const SpecialAccessAvailability = ({
                   if (updatePremiumContentFields && !!accountUserId) {
                     updatePremiumContentFields(
                       { follow_user_id: accountUserId },
-                      AvailabilityType.SPECIAL_ACCESS
+                      TrackAvailabilityType.SPECIAL_ACCESS
                     )
                   }
                 }}
@@ -84,7 +87,7 @@ export const SpecialAccessAvailability = ({
                   if (updatePremiumContentFields && !!accountUserId) {
                     updatePremiumContentFields(
                       { tip_user_id: accountUserId },
-                      AvailabilityType.SPECIAL_ACCESS
+                      TrackAvailabilityType.SPECIAL_ACCESS
                     )
                   }
                 }}
