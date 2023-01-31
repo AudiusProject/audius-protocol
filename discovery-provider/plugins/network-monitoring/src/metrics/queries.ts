@@ -13,23 +13,28 @@ import { instrumentTracing, tracing } from "../tracer"
 // Get the current user count from discovery nodes
 const _getUserCount = async (run_id: number): Promise<number> => {
 
-    const usersResp: unknown[] = await sequelizeConn.query(`
+    try {
+        const usersResp: unknown[] = await sequelizeConn.query(`
     SELECT COUNT(*) as user_count
     FROM network_monitoring_users
     WHERE run_id = :run_id
     `,
-    {
-      type: QueryTypes.SELECT,
-      replacements: { run_id },
+            {
+                type: QueryTypes.SELECT,
+                replacements: { run_id },
+            }
+        );
+
+        const usersCount = parseInt(
+            ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+                .user_count
+        );
+
+        return usersCount;
+    } catch (e: any) {
+        tracing.recordException(e)
+        return 0
     }
-  );
-
-  const usersCount = parseInt(
-    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
-      .user_count
-  );
-
-  return usersCount;
 };
 
 export const getUserCount = instrumentTracing({
@@ -41,21 +46,26 @@ export const getUserCount = instrumentTracing({
  */
 
 const _getRunStartTime = async (run_id: number): Promise<Date> => {
-    const runStartTimeResp: unknown[] = await sequelizeConn.query(`
+    try {
+        const runStartTimeResp: unknown[] = await sequelizeConn.query(`
         SELECT created_at
         FROM 
             network_monitoring_index_blocks
         WHERE
             run_id = :run_id 
     `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id }
-    })
+            type: QueryTypes.SELECT,
+            replacements: { run_id }
+        })
 
-    const runStartTimeStr = (runStartTimeResp[0] as { created_at: string }).created_at as string
-    const runStartTime = new Date(runStartTimeStr)
+        const runStartTimeStr = (runStartTimeResp[0] as { created_at: string }).created_at as string
+        const runStartTime = new Date(runStartTimeStr)
 
-    return runStartTime
+        return runStartTime
+    } catch (e: any) {
+        tracing.recordException(e)
+        return new Date()
+    }
 }
 
 export const getRunStartTime = instrumentTracing({
@@ -64,7 +74,8 @@ export const getRunStartTime = instrumentTracing({
 
 const _getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ content_node_spid: string, cid_count: number }[]> => {
 
-    const cidsListResp = await sequelizeConn.query(`
+    try {
+        const cidsListResp = await sequelizeConn.query(`
         SELECT content_node_spid, COUNT(*) as cid_count
         FROM 
             (SELECT * FROM network_monitoring_cids_from_content WHERE run_id = :run_id)
@@ -82,13 +93,17 @@ const _getCidsReplicatedAtLeastOnce = async (run_id: number): Promise<{ content_
         GROUP BY 
             content_node_spid;
     `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id },
-    })
+            type: QueryTypes.SELECT,
+            replacements: { run_id },
+        })
 
-    const cids = (cidsListResp as { content_node_spid: string, cid_count: number }[])
+        const cids = (cidsListResp as { content_node_spid: string, cid_count: number }[])
 
-    return cids
+        return cids
+    } catch (e: any) {
+        tracing.recordException(e)
+        return []
+    }
 }
 
 export const getCidsReplicatedAtLeastOnce = instrumentTracing({
@@ -97,8 +112,9 @@ export const getCidsReplicatedAtLeastOnce = instrumentTracing({
 
 const _getPrimaryUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
 
-    tracing.info(`[${run_id}] metric: primary user count`);
-    const primaryCountResp: unknown[] = await sequelizeConn.query(`
+    try {
+        tracing.info(`[${run_id}] metric: primary user count`);
+        const primaryCountResp: unknown[] = await sequelizeConn.query(`
         SELECT 
             joined.endpoint, COUNT(*) 
         FROM (
@@ -111,16 +127,20 @@ const _getPrimaryUserCount = async (run_id: number): Promise<{ endpoint: string,
         GROUP BY 
             joined.endpoint
     `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id }
-    })
+            type: QueryTypes.SELECT,
+            replacements: { run_id }
+        })
 
 
-    const primaryCount = (primaryCountResp as { endpoint: string, count: string }[]).map(({ endpoint, count }) => {
-        return { endpoint, count: parseInt(count) }
-    })
+        const primaryCount = (primaryCountResp as { endpoint: string, count: string }[]).map(({ endpoint, count }) => {
+            return { endpoint, count: parseInt(count) }
+        })
 
-    return primaryCount
+        return primaryCount
+    } catch (e: any) {
+        tracing.recordException(e)
+        return []
+    }
 }
 
 export const getPrimaryUserCount = instrumentTracing({
@@ -130,8 +150,9 @@ export const getPrimaryUserCount = instrumentTracing({
 // Count of users who have a specific content node in their replica set 
 // This is different from `getUserCount()` which literally just gets the number of users on Audius
 const _getAllUserCount = async (run_id: number): Promise<{ endpoint: string, count: number }[]> => {
-    tracing.info(`[${run_id}] metric: all user count`);
-    const userListResp: unknown[] = await sequelizeConn.query(`
+    try {
+        tracing.info(`[${run_id}] metric: all user count`);
+        const userListResp: unknown[] = await sequelizeConn.query(`
         SELECT joined.endpoint, COUNT(*) 
         FROM (
             (SELECT * FROM network_monitoring_content_nodes WHERE run_id = :run_id) AS cnodes
@@ -147,15 +168,19 @@ const _getAllUserCount = async (run_id: number): Promise<{ endpoint: string, cou
         GROUP BY 
             joined.endpoint;
     `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id },
-    })
+            type: QueryTypes.SELECT,
+            replacements: { run_id },
+        })
 
-    const userList = await (userListResp as { endpoint: string, count: string }[]).map(({ endpoint, count }) => {
-        return { endpoint, count: parseInt(count) }
-    })
+        const userList = await (userListResp as { endpoint: string, count: string }[]).map(({ endpoint, count }) => {
+            return { endpoint, count: parseInt(count) }
+        })
 
-    return userList
+        return userList
+    } catch (e: any) {
+        tracing.recordException(e)
+        return []
+    }
 }
 
 export const getAllUserCount = instrumentTracing({
@@ -163,7 +188,8 @@ export const getAllUserCount = instrumentTracing({
 })
 
 const _getCidReplicationFactor = async (run_id: number): Promise<number> => {
-    const replicationFactorResp: unknown[] = await sequelizeConn.query(`
+    try {
+        const replicationFactorResp: unknown[] = await sequelizeConn.query(`
         SELECT AVG(cid_counts.count) 
         FROM (
             (
@@ -185,15 +211,19 @@ const _getCidReplicationFactor = async (run_id: number): Promise<number> => {
             )
         ) as cid_counts; 
     `,
-    {
-      type: QueryTypes.SELECT,
-      replacements: { run_id },
+            {
+                type: QueryTypes.SELECT,
+                replacements: { run_id },
+            }
+        );
+
+        const replicationFactor = (await (replicationFactorResp as number[])[0]) || 0;
+
+        return replicationFactor;
+    } catch (e: any) {
+        tracing.recordException(e)
+        return 0
     }
-  );
-
-  const replicationFactor = (await (replicationFactorResp as number[])[0]) || 0;
-
-  return replicationFactor;
 };
 
 export const getCidReplicationFactor = instrumentTracing({
@@ -203,7 +233,8 @@ export const getCidReplicationFactor = instrumentTracing({
 // The number of users whose primary content node is in sync 
 // with all of their secondary content nodes in their replica set
 const _getFullySyncedUsersCount = async (run_id: number): Promise<number> => {
-    const usersResp: unknown[] = await sequelizeConn.query(`
+    try {
+        const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
         FROM network_monitoring_users
         WHERE
@@ -217,18 +248,22 @@ const _getFullySyncedUsersCount = async (run_id: number): Promise<number> => {
         AND
             secondary1_clock_value = secondary2_clock_value;
     `,
-    {
-      type: QueryTypes.SELECT,
-      replacements: { run_id },
+            {
+                type: QueryTypes.SELECT,
+                replacements: { run_id },
+            }
+        );
+
+        const usersCount = parseInt(
+            ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+                .user_count
+        );
+
+        return usersCount;
+    } catch (e: any) {
+        tracing.recordException(e)
+        return 0
     }
-  );
-
-  const usersCount = parseInt(
-    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
-      .user_count
-  );
-
-  return usersCount;
 };
 
 export const getFullySyncedUsersCount = instrumentTracing({
@@ -238,7 +273,8 @@ export const getFullySyncedUsersCount = instrumentTracing({
 // The number of users whose primary content node is only in sync
 // with one of their secondary content nodes in their replica set
 const _getPartiallySyncedUsersCount = async (run_id: number): Promise<number> => {
-    const usersResp: unknown[] = await sequelizeConn.query(`
+    try {
+        const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
         FROM network_monitoring_users
         WHERE 
@@ -255,13 +291,17 @@ const _getPartiallySyncedUsersCount = async (run_id: number): Promise<number> =>
         AND 
             secondary1_clock_value != secondary2_clock_value;
     `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id },
-    })
+            type: QueryTypes.SELECT,
+            replacements: { run_id },
+        })
 
-    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+        const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
 
-    return usersCount
+        return usersCount
+    } catch (e: any) {
+        tracing.recordException(e)
+        return 0
+    }
 }
 
 export const getPartiallySyncedUsersCount = instrumentTracing({
@@ -271,7 +311,8 @@ export const getPartiallySyncedUsersCount = instrumentTracing({
 // The number of users whose primary content node isn't in sync 
 // with any of their other secondary content nodes in their replica set
 const _getUnsyncedUsersCount = async (run_id: number): Promise<number> => {
-    const usersResp: unknown[] = await sequelizeConn.query(`
+    try {
+        const usersResp: unknown[] = await sequelizeConn.query(`
         SELECT COUNT(*) as user_count
         FROM network_monitoring_users
         WHERE 
@@ -285,18 +326,22 @@ const _getUnsyncedUsersCount = async (run_id: number): Promise<number> => {
         AND
             primary_clock_value != secondary2_clock_value;
     `,
-    {
-      type: QueryTypes.SELECT,
-      replacements: { run_id },
+            {
+                type: QueryTypes.SELECT,
+                replacements: { run_id },
+            }
+        );
+
+        const usersCount = parseInt(
+            ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+                .user_count
+        );
+
+        return usersCount;
+    } catch (e: any) {
+        tracing.recordException(e)
+        return 0
     }
-  );
-
-  const usersCount = parseInt(
-    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
-      .user_count
-  );
-
-  return usersCount;
 };
 
 export const getUnsyncedUsersCount = instrumentTracing({
@@ -305,7 +350,8 @@ export const getUnsyncedUsersCount = instrumentTracing({
 
 // The number of users whose primary content node clock value is null
 const _getUsersWithNullPrimaryClock = async (run_id: number): Promise<number> => {
-    const usersResp: unknown[] = await sequelizeConn.query(`
+    try {
+        const usersResp: unknown[] = await sequelizeConn.query(`
     SELECT COUNT(*) as user_count
     FROM network_monitoring_users
     WHERE 
@@ -313,13 +359,17 @@ const _getUsersWithNullPrimaryClock = async (run_id: number): Promise<number> =>
     AND 
         primary_clock_value IS NULL;
     `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id },
-    })
+            type: QueryTypes.SELECT,
+            replacements: { run_id },
+        })
 
-    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+        const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
 
-    return usersCount
+        return usersCount
+    } catch (e: any) {
+        tracing.recordException(e)
+        return 0
+    }
 }
 
 export const getUsersWithNullPrimaryClock = instrumentTracing({
@@ -328,7 +378,8 @@ export const getUsersWithNullPrimaryClock = instrumentTracing({
 
 // The number of users who have a recorded clock value of -2
 const _getUsersWithUnhealthyReplica = async (run_id: number): Promise<number> => {
-    const usersResp: unknown[] = await sequelizeConn.query(`
+    try {
+        const usersResp: unknown[] = await sequelizeConn.query(`
     SELECT COUNT(*) as user_count
     FROM network_monitoring_users
     WHERE 
@@ -341,13 +392,17 @@ const _getUsersWithUnhealthyReplica = async (run_id: number): Promise<number> =>
         secondary2_clock_value = -2
     );
     `, {
-        type: QueryTypes.SELECT,
-        replacements: { run_id },
-    })
+            type: QueryTypes.SELECT,
+            replacements: { run_id },
+        })
 
-    const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
+        const usersCount = parseInt(((usersResp as { user_count: string }[])[0] || { user_count: '0' }).user_count)
 
-    return usersCount
+        return usersCount
+    } catch (e: any) {
+        tracing.recordException(e)
+        return 0
+    }
 }
 
 export const getUsersWithUnhealthyReplica = instrumentTracing({
@@ -355,10 +410,11 @@ export const getUsersWithUnhealthyReplica = instrumentTracing({
 })
 
 const _getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidSet: number[]): Promise<number> => {
+    try {
 
-    const spidSetStr = `{${spidSet.join(",")}}`
+        const spidSetStr = `{${spidSet.join(",")}}`
 
-    const usersResp: unknown[] = await sequelizeConn.query(`
+        const usersResp: unknown[] = await sequelizeConn.query(`
     SELECT COUNT(*) as user_count
     FROM network_monitoring_users
     WHERE
@@ -370,18 +426,22 @@ const _getUsersWithEntireReplicaSetInSpidSetCount = async (run_id: number, spidS
     AND 
         secondary2spid = ANY( :spidSetStr );
     `,
-    {
-      type: QueryTypes.SELECT,
-      replacements: { run_id, spidSetStr },
+            {
+                type: QueryTypes.SELECT,
+                replacements: { run_id, spidSetStr },
+            }
+        );
+
+        const usersCount = parseInt(
+            ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+                .user_count
+        );
+
+        return usersCount;
+    } catch (e: any) {
+        tracing.recordException(e)
+        return 0
     }
-  );
-
-  const usersCount = parseInt(
-    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
-      .user_count
-  );
-
-  return usersCount;
 };
 
 export const getUsersWithEntireReplicaSetInSpidSetCount = instrumentTracing({
@@ -389,13 +449,14 @@ export const getUsersWithEntireReplicaSetInSpidSetCount = instrumentTracing({
 })
 
 const _getUsersWithEntireReplicaSetNotInSpidSetCount = async (
-  run_id: number,
-  spidSet: number[]
+    run_id: number,
+    spidSet: number[]
 ): Promise<number> => {
-  const spidSetStr = `{${spidSet.join(",")}}`;
+    try {
+        const spidSetStr = `{${spidSet.join(",")}}`;
 
-  const usersResp: unknown[] = await sequelizeConn.query(
-    `
+        const usersResp: unknown[] = await sequelizeConn.query(
+            `
     SELECT COUNT(*) as user_count
     FROM network_monitoring_users
     WHERE
@@ -407,18 +468,22 @@ const _getUsersWithEntireReplicaSetNotInSpidSetCount = async (
     AND 
         secondary2spid != ALL( :spidSetStr );
     `,
-    {
-      type: QueryTypes.SELECT,
-      replacements: { run_id, spidSetStr },
+            {
+                type: QueryTypes.SELECT,
+                replacements: { run_id, spidSetStr },
+            }
+        );
+
+        const usersCount = parseInt(
+            ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
+                .user_count
+        );
+
+        return usersCount;
+    } catch (e: any) {
+        tracing.recordException(e)
+        return 0
     }
-  );
-
-  const usersCount = parseInt(
-    ((usersResp as { user_count: string }[])[0] || { user_count: "0" })
-      .user_count
-  );
-
-  return usersCount;
 };
 
 export const getUsersWithEntireReplicaSetNotInSpidSetCount = instrumentTracing({
@@ -426,16 +491,17 @@ export const getUsersWithEntireReplicaSetNotInSpidSetCount = instrumentTracing({
 });
 
 const _getUserStatusByPrimary = async (
-  run_id: number
+    run_id: number
 ): Promise<{
-  spid: number;
-  endpoint: string;
-  fullySyncedCount: number;
-  partiallySyncedCount: number;
-  unsyncedCount: number;
+    spid: number;
+    endpoint: string;
+    fullySyncedCount: number;
+    partiallySyncedCount: number;
+    unsyncedCount: number;
 }[]> => {
-  const userStatusByPrimaryResp: unknown[] = await sequelizeConn.query(
-    `
+    try {
+        const userStatusByPrimaryResp: unknown[] = await sequelizeConn.query(
+            `
             SELECT fully_synced.spid, cnodes.endpoint, fully_synced.fully_synced_count, partially_synced.partially_synced_count, unsynced.unsynced_count
         FROM (
             SELECT primaryspid AS spid, COUNT(*) as fully_synced_count
@@ -490,41 +556,45 @@ const _getUserStatusByPrimary = async (
         ON cnodes.spid = fully_synced.spid
         ORDER BY fully_synced.spid;
         `,
-    {
-      type: QueryTypes.SELECT,
-      replacements: { run_id },
+            {
+                type: QueryTypes.SELECT,
+                replacements: { run_id },
+            }
+        );
+
+        const userStatusByPrimary: {
+            spid: number;
+            endpoint: string;
+            fullySyncedCount: number;
+            partiallySyncedCount: number;
+            unsyncedCount: number;
+        }[] = (
+            userStatusByPrimaryResp as {
+                spid: string;
+                endpoint: string;
+                fully_synced_count: string;
+                partially_synced_count: string;
+                unsynced_count: string;
+            }[]
+        ).map((elem) => {
+            return {
+                spid: parseInt(elem.spid),
+                endpoint: elem.endpoint,
+                fullySyncedCount: parseInt(elem.fully_synced_count),
+                partiallySyncedCount: parseInt(elem.partially_synced_count),
+                unsyncedCount: parseInt(elem.unsynced_count),
+            };
+        });
+
+        return userStatusByPrimary;
+    } catch (e: any) {
+        tracing.recordException(e)
+        return []
     }
-  );
-
-  const userStatusByPrimary: {
-    spid: number;
-    endpoint: string;
-    fullySyncedCount: number;
-    partiallySyncedCount: number;
-    unsyncedCount: number;
-  }[] = (
-    userStatusByPrimaryResp as {
-      spid: string;
-      endpoint: string;
-      fully_synced_count: string;
-      partially_synced_count: string;
-      unsynced_count: string;
-    }[]
-  ).map((elem) => {
-    return {
-      spid: parseInt(elem.spid),
-      endpoint: elem.endpoint,
-      fullySyncedCount: parseInt(elem.fully_synced_count),
-      partiallySyncedCount: parseInt(elem.partially_synced_count),
-      unsyncedCount: parseInt(elem.unsynced_count),
-    };
-  });
-
-  return userStatusByPrimary;
 };
 
 export const getUserStatusByPrimary = instrumentTracing({
-    fn: _getUserStatusByPrimary, 
+    fn: _getUserStatusByPrimary,
 })
 
 const _getUserStatusByReplica = async (run_id: number): Promise<{
@@ -533,9 +603,10 @@ const _getUserStatusByReplica = async (run_id: number): Promise<{
     fullySyncedCount: number;
     partiallySyncedCount: number;
     unsyncedCount: number;
-  }[]> => {
-    const userStatusByReplicaResp: unknown[] = await sequelizeConn.query(
-        `
+}[]> => {
+    try {
+        const userStatusByReplicaResp: unknown[] = await sequelizeConn.query(
+            `
         SELECT 
     fully_synced.spid, 
     cnodes.endpoint, 
@@ -709,37 +780,41 @@ JOIN (
 ON cnodes.spid = fully_synced.spid
 ORDER BY fully_synced.spid;
             `,
-        {
-          type: QueryTypes.SELECT,
-          replacements: { run_id },
-        }
-      );
-    
-      const userStatusByReplica: {
-        spid: number;
-        endpoint: string;
-        fullySyncedCount: number;
-        partiallySyncedCount: number;
-        unsyncedCount: number;
-      }[] = (
-        userStatusByReplicaResp as {
-          spid: string;
-          endpoint: string;
-          fully_synced_count: string;
-          partially_synced_count: string;
-          unsynced_count: string;
-        }[]
-      ).map((elem) => {
-        return {
-          spid: parseInt(elem.spid),
-          endpoint: elem.endpoint,
-          fullySyncedCount: parseInt(elem.fully_synced_count),
-          partiallySyncedCount: parseInt(elem.partially_synced_count),
-          unsyncedCount: parseInt(elem.unsynced_count),
-        };
-      });
-    
-      return userStatusByReplica; 
+            {
+                type: QueryTypes.SELECT,
+                replacements: { run_id },
+            }
+        );
+
+        const userStatusByReplica: {
+            spid: number;
+            endpoint: string;
+            fullySyncedCount: number;
+            partiallySyncedCount: number;
+            unsyncedCount: number;
+        }[] = (
+            userStatusByReplicaResp as {
+                spid: string;
+                endpoint: string;
+                fully_synced_count: string;
+                partially_synced_count: string;
+                unsynced_count: string;
+            }[]
+        ).map((elem) => {
+            return {
+                spid: parseInt(elem.spid),
+                endpoint: elem.endpoint,
+                fullySyncedCount: parseInt(elem.fully_synced_count),
+                partiallySyncedCount: parseInt(elem.partially_synced_count),
+                unsyncedCount: parseInt(elem.unsynced_count),
+            };
+        });
+
+        return userStatusByReplica;
+    } catch (e: any) {
+        tracing.recordException(e)
+        return []
+    }
 }
 
 export const getUserStatusByReplica = instrumentTracing({
