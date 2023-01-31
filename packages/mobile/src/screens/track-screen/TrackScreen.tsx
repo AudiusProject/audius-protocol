@@ -4,7 +4,8 @@ import {
   trackPageLineupActions,
   trackPageActions,
   trackPageSelectors,
-  useProxySelector
+  useProxySelector,
+  reachabilitySelectors
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { Text, View } from 'react-native'
@@ -22,6 +23,7 @@ import { TrackScreenMainContent } from './TrackScreenMainContent'
 const { fetchTrack } = trackPageActions
 const { tracksActions } = trackPageLineupActions
 const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
+const { getIsReachable } = reachabilitySelectors
 
 const messages = {
   moreBy: 'More By',
@@ -54,6 +56,7 @@ export const TrackScreen = () => {
   const { params } = useRoute<'Track'>()
   const dispatch = useDispatch()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const isReachable = useSelector(getIsReachable)
 
   const { searchTrack, id, canBeUnlisted = true, handle, slug } = params ?? {}
 
@@ -101,8 +104,9 @@ export const TrackScreen = () => {
 
   const remixParentTrackId = track.remix_of?.tracks?.[0]?.parent_track_id
   const showMoreByArtistTitle =
-    (remixParentTrackId && lineup.entries.length > 2) ||
-    (!remixParentTrackId && lineup.entries.length > 1)
+    isReachable &&
+    ((remixParentTrackId && lineup.entries.length > 2) ||
+      (!remixParentTrackId && lineup.entries.length > 1))
 
   const hasValidRemixParent =
     !!remixParentTrackId &&
@@ -125,7 +129,9 @@ export const TrackScreen = () => {
       <ScreenContent isOfflineCapable={isOfflineModeEnabled}>
         <Lineup
           actions={tracksActions}
-          count={6}
+          // When offline, we don't want to render any tiles here and the
+          // current solution is to hard-code a count to show skeletons
+          count={isReachable ? 6 : 0}
           header={
             <TrackScreenMainContent
               lineup={lineup}
