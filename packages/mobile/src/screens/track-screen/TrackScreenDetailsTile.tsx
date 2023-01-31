@@ -23,7 +23,8 @@ import {
   shareModalUIActions,
   RepostType,
   repostsUserListActions,
-  favoritesUserListActions
+  favoritesUserListActions,
+  reachabilitySelectors
 } from '@audius/common'
 import { Image, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -51,6 +52,7 @@ const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
 const { tracksActions } = trackPageLineupActions
 const { getUserId } = accountSelectors
+const { getIsReachable } = reachabilitySelectors
 
 const messages = {
   track: 'track',
@@ -123,6 +125,7 @@ export const TrackScreenDetailsTile = ({
   const navigation = useNavigation()
   const { accentOrange } = useThemeColors()
 
+  const isReachable = useSelector(getIsReachable)
   const currentUserId = useSelector(getUserId)
   const dispatch = useDispatch()
   const playingId = useSelector(getTrackId)
@@ -338,6 +341,7 @@ export const TrackScreenDetailsTile = ({
       hideFavorite={is_unlisted}
       hideRepost={is_unlisted}
       hideShare={is_unlisted && !field_visibility?.share}
+      hideOverflow={!isReachable}
       hideFavoriteCount={is_unlisted}
       hideListenCount={is_unlisted && !field_visibility?.play_count}
       hideRepostCount={is_unlisted}

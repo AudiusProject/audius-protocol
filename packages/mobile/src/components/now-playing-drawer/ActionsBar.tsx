@@ -204,6 +204,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         icon={IconKebabHorizontal}
         styles={{ icon: styles.icon, root: styles.button }}
         onPress={onPressOverflow}
+        isDisabled={!isReachable}
       />
     )
   }
