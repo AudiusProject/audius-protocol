@@ -22,7 +22,7 @@ export function DiscoveryTrending() {
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 function TrendingRow({ sp }: { sp: SP }) {
-  const { data, error } = useSWR(sp.endpoint + '/v1/tracks/trending', fetcher)
+  const { data, error } = useSWR(sp.endpoint + '/v1/full/tracks/trending', fetcher)
 
   if (!data)
     return (
@@ -32,12 +32,20 @@ function TrendingRow({ sp }: { sp: SP }) {
     )
 
   const tracks = data.data
+  const latestChainBlock = data.latest_chain_block
+  const latestIndexedBlock = data.latest_indexed_block
   return (
     <tr>
       <td>
         <a href={sp.endpoint + '/health_check'} target="_blank">
           {sp.endpoint.replace('https://', '')}
         </a>
+      </td>
+      <td>
+        Latest Chain Block: {latestChainBlock}
+      </td>
+      <td>
+        Latest Indexed Block: {latestIndexedBlock}
       </td>
       <td style={{ whiteSpace: 'nowrap' }}>
         {tracks.slice(0, 25).map((t: any) => (

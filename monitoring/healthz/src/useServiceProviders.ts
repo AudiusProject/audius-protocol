@@ -55,9 +55,9 @@ export function useServiceProviders(
 }
 
 export function useDiscoveryProviders() {
-  return useServiceProviders('prod', 'discovery-node')
+  return useServiceProviders('staging', 'discovery-node')
 }
 
 export function useContentProviders() {
-  return useServiceProviders('prod', 'content-node')
+  return useServiceProviders('staging', 'content-node')
 }
