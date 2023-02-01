@@ -99,5 +99,5 @@ func startServer() {
 		})
 	})
 
-	e.Logger.Fatal(e.Start(":8925"))
+	e.Logger.Fatal(e.Start(":8924"))
 }

@@ -47,6 +47,7 @@ type StorageServer struct {
 }
 
 func NewProd(jsc nats.JetStreamContext) *StorageServer {
+	// TODO: config refactor
 	allStorageNodePubKeys := []string{
 		"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
 		"0x90b8d2655A7C268d0fA31758A714e583AE54489D",
