@@ -27,9 +27,8 @@ import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
-import { useOfflineCollectionLineup } from 'app/hooks/useLoadOfflineTracks'
+import { useOfflineFavoritesLineup } from 'app/hooks/useLoadOfflineTracks'
 import { make, track } from 'app/services/analytics'
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
@@ -110,10 +109,8 @@ export const TracksTab = () => {
     debouncedFetchSaves(filterValue)
   }, [debouncedFetchSaves, filterValue])
 
-  const handleFetchSavesOffline = useOfflineCollectionLineup(
-    DOWNLOAD_REASON_FAVORITES,
-    handleFetchSavesOnline,
-    tracksActions
+  const handleFetchSavesOffline = useOfflineFavoritesLineup(
+    handleFetchSavesOnline
   )
 
   const handleFetchSaves = useCallback(() => {
