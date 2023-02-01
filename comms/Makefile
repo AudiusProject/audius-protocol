@@ -35,6 +35,10 @@ build::
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-comms:latest
 	docker push audius/wip-comms:latest
 
+build.alpine::
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64
+	go build -ldflags="-w -s" -o comms main.go
+
 # this is a "fast build and push"
 # we build target specific binary on our host machine (osx)
 # and copy into container (see Dockerfile with build instructions commented out)
