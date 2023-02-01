@@ -1,10 +1,12 @@
 package rpcz
 
 import (
+	"encoding/json"
 	"net"
 	"sync"
 
 	"comms.audius.co/discovery/config"
+	"comms.audius.co/discovery/schema"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 )
@@ -24,11 +26,16 @@ func RegisterWebsocket(userId int32, conn net.Conn) {
 	websocketMap[userId] = conn
 }
 
-func websocketPush(userId int32, payload []byte) {
+func websocketPush(userId int32, data schema.ChatWebsocketEventData) {
 	mu.RLock()
 	defer mu.RUnlock()
 	if conn, ok := websocketMap[userId]; ok {
-		err := wsutil.WriteServerMessage(conn, ws.OpText, payload)
+		payload, err := json.Marshal(data)
+		if err != nil {
+			config.Logger.Error("failed to encode json: " + err.Error())
+			return
+		}
+		err = wsutil.WriteServerMessage(conn, ws.OpText, payload)
 		if err != nil {
 			config.Logger.Info("websocket push failed: " + err.Error())
 			conn.Close()
