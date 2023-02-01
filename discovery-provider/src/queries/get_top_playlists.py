@@ -36,7 +36,7 @@ class TopPlaylistKind(str, enum.Enum):
 def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
     current_user_id = args.get("current_user_id")
 
-    # NOTE: This is a temporary fix while migrating clients to pass 
+    # NOTE: This is a temporary fix while migrating clients to pass
     # along an encoded user id via url param
     if current_user_id is None:
         current_user_id = get_current_user_id(required=False)
