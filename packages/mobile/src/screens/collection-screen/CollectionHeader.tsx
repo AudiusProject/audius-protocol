@@ -2,23 +2,32 @@ import { useCallback } from 'react'
 
 import type { Collection, SmartCollectionVariant } from '@audius/common'
 import {
+  FavoriteSource,
+  accountSelectors,
   reachabilitySelectors,
   collectionPageSelectors,
+  collectionsSocialActions,
   Variant
 } from '@audius/common'
 import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
 import { Switch, Text } from 'app/components/core'
-import { DownloadStatusIndicator } from 'app/components/offline-downloads/DownloadStatusIndicatorBase'
+import { getCollectionDownloadStatus } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
+import { DownloadStatusIndicator } from 'app/components/offline-downloads/DownloadStatusIndicator'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useProxySelector } from 'app/hooks/useProxySelector'
-import { downloadCollection } from 'app/services/offline-downloader'
+import {
+  batchDownloadCollection,
+  DOWNLOAD_REASON_FAVORITES
+} from 'app/services/offline-downloader'
 import { setVisibility } from 'app/store/drawers/slice'
-import { getOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
+import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
+const { getUserId } = accountSelectors
 const { getCollection } = collectionPageSelectors
+const { saveCollection } = collectionsSocialActions
 const { getIsReachable } = reachabilitySelectors
 
 const messages = {
@@ -27,6 +36,7 @@ const messages = {
   empty: 'This playlist is empty.',
   privatePlaylist: 'Private Playlist',
   publishing: 'Publishing...',
+  queued: 'Download Queued',
   downloading: 'Downloading'
 }
 
@@ -120,46 +130,40 @@ type OfflineCollectionHeaderProps = {
 const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
   const styles = useStyles()
   const { collection, headerText } = props
-  const { playlist_id, playlist_contents } = collection
-  const { track_ids } = playlist_contents
+  const { playlist_id } = collection
   const dispatch = useDispatch()
+  const currentUserId = useSelector(getUserId)
   const isReachable = useSelector(getIsReachable)
 
-  const isMarkedForDownload = useProxySelector(
-    (state) => {
-      const { collections, favoritedCollections } = state.offlineDownloads
-      return collections[playlist_id] || favoritedCollections[playlist_id]
-    },
-    [playlist_id]
+  const isMarkedForDownload = useSelector(
+    getIsCollectionMarkedForDownload(playlist_id)
   )
 
-  const isDownloaded = useProxySelector(
-    (state) => {
-      const trackIds = track_ids.map(({ track }) => track)
-      const downloadStatus = getOfflineDownloadStatus(state)
-      return trackIds.every(
-        (trackId) => downloadStatus[trackId] === OfflineDownloadStatus.SUCCESS
-      )
-    },
-    [track_ids]
+  const isFavoritesToggleOn = useSelector(
+    getIsCollectionMarkedForDownload(DOWNLOAD_REASON_FAVORITES)
   )
 
-  const getDownloadStatus = () => {
-    if (!isMarkedForDownload) {
-      return OfflineDownloadStatus.INACTIVE
-    }
-    if (isDownloaded) {
-      return OfflineDownloadStatus.SUCCESS
-    }
-    return OfflineDownloadStatus.LOADING
-  }
-
-  const downloadStatus = getDownloadStatus()
+  const downloadStatus = useProxySelector(
+    (state) => {
+      const status = getCollectionDownloadStatus(state, playlist_id)
+      return isMarkedForDownload ? status : OfflineDownloadStatus.INACTIVE
+    },
+    [isMarkedForDownload, playlist_id]
+  )
 
   const handleToggleDownload = useCallback(
     (isDownloadEnabled: boolean) => {
       if (isDownloadEnabled) {
-        downloadCollection(collection)
+        batchDownloadCollection([collection], false)
+        const isOwner = currentUserId === collection.playlist_owner_id
+        if (!collection.has_current_user_saved && !isOwner) {
+          dispatch(
+            saveCollection(
+              collection.playlist_id,
+              FavoriteSource.OFFLINE_DOWNLOAD
+            )
+          )
+        }
       } else {
         dispatch(
           setVisibility({
@@ -170,8 +174,17 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
         )
       }
     },
-    [collection, dispatch, playlist_id]
+    [collection, currentUserId, dispatch, playlist_id]
   )
+
+  const getTextColor = () => {
+    if (
+      downloadStatus === OfflineDownloadStatus.INACTIVE ||
+      downloadStatus === OfflineDownloadStatus.INIT
+    )
+      return 'neutralLight4'
+    return 'secondary'
+  }
 
   return (
     <View style={styles.root}>
@@ -183,11 +196,7 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
         />
         <Text
           style={styles.headerText}
-          color={
-            downloadStatus === OfflineDownloadStatus.INACTIVE
-              ? 'neutralLight4'
-              : 'secondary'
-          }
+          color={getTextColor()}
           weight='demiBold'
           fontSize='small'
         >
@@ -200,7 +209,7 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
         <Switch
           value={isMarkedForDownload}
           onValueChange={handleToggleDownload}
-          disabled={isMarkedForDownload || !isReachable}
+          disabled={isFavoritesToggleOn || !isReachable}
         />
       </View>
     </View>

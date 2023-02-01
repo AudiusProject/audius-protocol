@@ -33,8 +33,8 @@ import {
   syncFavoritedCollections,
   syncStaleTracks,
   syncCollectionsTracks,
-  downloadCollection,
-  enqueueTrackDownload
+  enqueueTrackDownload,
+  batchDownloadCollection
 } from 'app/services/offline-downloader'
 import {
   blockedPlayCounterWorker,
@@ -50,6 +50,7 @@ import {
 import {
   clearOfflineDownloads,
   doneLoadingFromDisk,
+  OfflineDownloadStatus,
   startDownload
 } from './slice'
 const { fetchCollection, FETCH_COLLECTION_SUCCEEDED, FETCH_COLLECTION_FAILED } =
@@ -104,7 +105,7 @@ export function* downloadSavedCollection(
     }
   }))
   if (!tracksForDownload) return
-  downloadCollection(collection, /* isFavoritesDownload */ true)
+  batchDownloadCollection([collection], true)
   batchDownloadTrack(tracksForDownload)
 }
 
@@ -176,7 +177,8 @@ export function* startSync() {
     yield* call(
       syncCollectionsTracks,
       existingOfflineCollections,
-      isFavoritesDownloadEnabled
+      isFavoritesDownloadEnabled !== OfflineDownloadStatus.INACTIVE &&
+        isFavoritesDownloadEnabled !== OfflineDownloadStatus.ERROR
     )
     yield* call(syncStaleTracks)
   } catch (e) {

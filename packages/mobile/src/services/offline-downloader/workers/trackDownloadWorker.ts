@@ -1,11 +1,11 @@
 import type { CancellablePromise } from 'react-native-job-queue'
 import { Worker } from 'react-native-job-queue'
 
-import type { TrackForDownload } from 'app/components/offline-downloads'
 import { store } from 'app/store'
 import { errorDownload } from 'app/store/offline-downloads/slice'
 
 import { batchRemoveTrackDownload, downloadTrack } from '../offline-downloader'
+import type { TrackForDownload } from '../types'
 
 export const TRACK_DOWNLOAD_WORKER = 'track_download_worker'
 export type TrackDownloadWorkerPayload = TrackForDownload

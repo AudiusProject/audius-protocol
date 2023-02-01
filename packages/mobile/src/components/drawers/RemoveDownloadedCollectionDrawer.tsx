@@ -40,7 +40,7 @@ export const RemoveDownloadedCollectionDrawer = () => {
   }))
 
   const handleConfirm = useCallback(() => {
-    removeCollectionDownload(collectionId.toString(), tracksForDownload ?? [])
+    removeCollectionDownload(collectionId, tracksForDownload ?? [])
   }, [collectionId, tracksForDownload])
 
   return (

@@ -127,6 +127,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
   const {
     _is_publishing,
     description,
+    playlist_contents: { track_ids },
     has_current_user_reposted,
     has_current_user_saved,
     is_album,
@@ -274,6 +275,7 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
             renderImage={renderImage}
             repostCount={repost_count}
             saveCount={save_count}
+            trackCount={track_ids.length}
             title={playlist_name}
             user={user}
           />

@@ -102,6 +102,7 @@ export const AddToPlaylistDrawer = () => {
             <Card
               key={item.playlist_id}
               type='collection'
+              id={item.playlist_id}
               primaryText={item.playlist_name}
               secondaryText={user.name}
               onPress={() => {

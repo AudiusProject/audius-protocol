@@ -57,8 +57,8 @@ export const UnfavoriteDownloadedCollectionDrawer = () => {
 
   const handleConfirm = useCallback(() => {
     dispatch(unsaveCollection(collectionId, FavoriteSource.COLLECTION_PAGE))
-    removeCollectionDownload(collectionIdStr, tracksForDownload)
-  }, [collectionId, collectionIdStr, tracksForDownload, dispatch])
+    removeCollectionDownload(collectionId, tracksForDownload)
+  }, [collectionId, tracksForDownload, dispatch])
 
   return (
     <ConfirmationDrawer

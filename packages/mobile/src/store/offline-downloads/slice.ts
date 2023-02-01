@@ -1,6 +1,12 @@
-import type { Track, UserTrackMetadata } from '@audius/common'
+import type { ID, Track, UserTrackMetadata } from '@audius/common'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
+
+export type CollectionId = ID | string
+type CollectionStatusPayload = {
+  collectionId: CollectionId
+  isFavoritesDownload?: boolean
+}
 
 type LineupTrack = Track & UserTrackMetadata
 
@@ -8,14 +14,14 @@ export type OfflineDownloadsState = {
   downloadStatus: {
     [key: string]: OfflineDownloadStatus
   }
+  collectionStatus: {
+    [key: string]: OfflineDownloadStatus
+  }
+  favoritedCollectionStatus: {
+    [key: string]: OfflineDownloadStatus
+  }
   tracks: {
     [key: string]: LineupTrack
-  }
-  collections: {
-    [key: string]: boolean
-  }
-  favoritedCollections: {
-    [key: string]: boolean
   }
   isDoneLoadingFromDisk: boolean
 }
@@ -28,18 +34,11 @@ export enum OfflineDownloadStatus {
   ERROR = 'ERROR' // download errored
 }
 
-type CollectionDownloadPayload = {
-  collectionId: string
-  // true if collection downloaded as part of allFavorites download toggle
-  // false if collection was marked for download individually on its own page
-  isFavoritesDownload: boolean
-}
-
 const initialState: OfflineDownloadsState = {
   downloadStatus: {},
   tracks: {},
-  collections: {},
-  favoritedCollections: {},
+  collectionStatus: {},
+  favoritedCollectionStatus: {},
   isDoneLoadingFromDisk: false
 }
 
@@ -48,7 +47,7 @@ const slice = createSlice({
   initialState,
   reducers: {
     // Queueing downloads
-    batchStartDownload: (
+    batchInitDownload: (
       state,
       { payload: trackIds }: PayloadAction<string[]>
     ) => {
@@ -69,25 +68,58 @@ const slice = createSlice({
     removeDownload: (state, { payload: trackId }: PayloadAction<string>) => {
       delete state.downloadStatus[trackId]
     },
-    addCollection: (
+    batchInitCollectionDownload: (
       state,
       {
-        payload: { collectionId, isFavoritesDownload }
-      }: PayloadAction<CollectionDownloadPayload>
+        payload: { collectionIds, isFavoritesDownload }
+      }: PayloadAction<{
+        collectionIds: CollectionId[]
+        isFavoritesDownload: boolean
+      }>
     ) => {
-      isFavoritesDownload
-        ? (state.favoritedCollections[collectionId] = true)
-        : (state.collections[collectionId] = true)
+      collectionIds.forEach((collectionId) => {
+        state.collectionStatus[collectionId] = OfflineDownloadStatus.INIT
+      })
     },
-    removeCollection: (
+    startCollectionDownload: (
       state,
-      {
-        payload: { collectionId, isFavoritesDownload }
-      }: PayloadAction<CollectionDownloadPayload>
+      action: PayloadAction<CollectionStatusPayload>
     ) => {
-      isFavoritesDownload
-        ? (state.favoritedCollections[collectionId] = false)
-        : (state.collections[collectionId] = false)
+      const { collectionId, isFavoritesDownload } = action.payload
+      const collectionStatus = isFavoritesDownload
+        ? state.favoritedCollectionStatus
+        : state.collectionStatus
+      collectionStatus[collectionId] = OfflineDownloadStatus.LOADING
+    },
+    completeCollectionDownload: (
+      state,
+      action: PayloadAction<CollectionStatusPayload>
+    ) => {
+      const { collectionId, isFavoritesDownload } = action.payload
+      const collectionStatus = isFavoritesDownload
+        ? state.favoritedCollectionStatus
+        : state.collectionStatus
+      collectionStatus[collectionId] = OfflineDownloadStatus.SUCCESS
+    },
+    errorCollectionDownload: (
+      state,
+      action: PayloadAction<CollectionStatusPayload>
+    ) => {
+      const { collectionId, isFavoritesDownload } = action.payload
+      const collectionStatus = isFavoritesDownload
+        ? state.favoritedCollectionStatus
+        : state.collectionStatus
+      collectionStatus[collectionId] = OfflineDownloadStatus.ERROR
+    },
+    removeCollectionDownload: (
+      state,
+      action: PayloadAction<CollectionStatusPayload>
+    ) => {
+      const { collectionId, isFavoritesDownload } = action.payload
+      const collectionStatus = isFavoritesDownload
+        ? state.favoritedCollectionStatus
+        : state.collectionStatus
+      delete collectionStatus[collectionId]
     },
     loadTracks: (state, { payload: tracks }: PayloadAction<LineupTrack[]>) => {
       tracks.forEach((track) => {
@@ -115,7 +147,7 @@ const slice = createSlice({
       state.isDoneLoadingFromDisk = true
     },
     clearOfflineDownloads: (state) => {
-      state.collections = initialState.collections
+      state.collectionStatus = initialState.collectionStatus
       state.tracks = initialState.tracks
       state.downloadStatus = initialState.downloadStatus
       state.isDoneLoadingFromDisk = initialState.isDoneLoadingFromDisk
@@ -124,13 +156,17 @@ const slice = createSlice({
 })
 
 export const {
+  // TODO: don't name these the same thing
+  batchInitDownload,
   startDownload,
-  batchStartDownload,
   completeDownload,
   errorDownload,
   removeDownload,
-  addCollection,
-  removeCollection,
+  batchInitCollectionDownload,
+  startCollectionDownload,
+  completeCollectionDownload,
+  errorCollectionDownload,
+  removeCollectionDownload,
   loadTracks,
   loadTrack,
   unloadTrack,
@@ -138,5 +174,6 @@ export const {
   doneLoadingFromDisk,
   clearOfflineDownloads
 } = slice.actions
+export const actions = slice.actions
 
 export default slice.reducer
