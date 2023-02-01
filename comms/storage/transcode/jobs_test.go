@@ -20,18 +20,20 @@ func TestJobManager(t *testing.T) {
 
 	jobm.Update(&Job{
 		ID:        "1",
-		Status:    "new",
+		Status:    JobStatusError,
 		CreatedAt: timeNowPtr(),
 	})
 
 	jobm.Update(&Job{
 		ID:        "2",
-		Status:    "new",
+		Status:    JobStatusInProgress,
 		CreatedAt: timeNowPtr(),
 	})
 
-	j := jobm.Get("1")
-	assert.Equal(t, "new", j.Status)
+	j1 := jobm.Get("1")
+	assert.Equal(t, JobStatusError, j1.Status)
+	j2 := jobm.Get("2")
+	assert.Equal(t, JobStatusInProgress, j2.Status)
 
 	jobs := jobm.List()
 	assert.Len(t, jobs, 2)

@@ -59,7 +59,7 @@ func TestE2EUpload(t *testing.T) {
 	req.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
 	templateWriter, err := writer.CreateFormField("template")
 	assert.NoError(err)
-	templateWriter.Write([]byte("audio"))
+	templateWriter.Write([]byte(transcode.JobTemplateAudio))
 
 	rec := httptest.NewRecorder()
 	ss := nodes[0].ss

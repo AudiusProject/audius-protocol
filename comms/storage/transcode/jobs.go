@@ -22,10 +22,27 @@ import (
 	"github.com/spf13/cast"
 )
 
+type JobStatus string
+
+const (
+	JobStatusPending    JobStatus = "pending"
+	JobStatusInProgress JobStatus = "in progress"
+	JobStatusDone       JobStatus = "done"
+	JobStatusError      JobStatus = "error"
+)
+
+type JobTemplate string
+
+const (
+	JobTemplateAudio       JobTemplate = "audio"
+	JobTemplateImgSquare   JobTemplate = "img_square"
+	JobTemplateImgBackdrop JobTemplate = "img_backdrop"
+)
+
 type Job struct {
 	ID                string             `json:"id"`
-	Template          string             `json:"template"`
-	Status            string             `json:"status"`
+	Template          JobTemplate        `json:"template"`
+	Status            JobStatus          `json:"status"`
 	CreatedAt         *time.Time         `json:"created_at,omitempty"`
 	StartedAt         *time.Time         `json:"started_at,omitempty"`
 	FinishedAt        *time.Time         `json:"finished_at,omitempty"`
@@ -40,8 +57,7 @@ type Job struct {
 }
 
 type JobsManager struct {
-	queueName string
-	jsc       nats.JetStreamContext
+	jsc nats.JetStreamContext
 
 	kv        nats.KeyValue
 	watcher   nats.KeyWatcher
@@ -57,30 +73,25 @@ type JobsManager struct {
 	mu sync.RWMutex
 }
 
+const (
+	KvSuffix    = "_kv"
+	objStoreTtl = time.Hour * 24
+)
+
 func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) (*JobsManager, error) {
-
-	// work queue
-	queueName := prefix + "_queue"
-	_, err := jsc.AddStream(&nats.StreamConfig{
-		Name:     queueName,
-		Subjects: []string{queueName},
-		Replicas: replicaCount,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// work subscription
-	workSubscription, err := jsc.QueueSubscribeSync(queueName, queueName, nats.AckWait(time.Minute))
-	if err != nil {
-		return nil, err
-	}
-
 	// kv
+	kvBucketName := prefix + KvSuffix
 	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   prefix + "_kv",
+		Bucket:   kvBucketName,
 		Replicas: replicaCount,
 	})
+	if err != nil {
+		return nil, err
+	}
+
+	// work subscription using kv's underlying stream
+	kvStreamName := "KV_" + kvBucketName
+	workSubscription, err := jsc.QueueSubscribeSync("", kvStreamName, nats.AckWait(time.Minute), nats.BindStream(kvStreamName))
 	if err != nil {
 		return nil, err
 	}
@@ -94,14 +105,13 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 	// todo: sharding
 	objStore, err := jsc.CreateObjectStore(&nats.ObjectStoreConfig{
 		Bucket: prefix + "_store",
-		TTL:    time.Hour * 24 * 7,
+		TTL:    objStoreTtl,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	jobman := &JobsManager{
-		queueName:        queueName,
 		workSubscription: workSubscription,
 		objStore:         objStore,
 		jsc:              jsc,
@@ -145,7 +155,7 @@ func (jobman *JobsManager) watch() {
 	}
 }
 
-func (jobman *JobsManager) Add(template string, upload *multipart.FileHeader) (*Job, error) {
+func (jobman *JobsManager) Add(template JobTemplate, upload *multipart.FileHeader) (*Job, error) {
 	f, err := upload.Open()
 	if err != nil {
 		return nil, err
@@ -178,13 +188,13 @@ func (jobman *JobsManager) Add(template string, upload *multipart.FileHeader) (*
 	job := &Job{
 		ID:        fileHash,
 		Template:  template,
-		Status:    "pending",
+		Status:    JobStatusPending,
 		CreatedAt: timeNowPtr(),
 
 		SourceInfo: info,
 		Results:    []*nats.ObjectInfo{},
 	}
-	err = jobman.put(job, true)
+	err = jobman.Update(job)
 	if err != nil {
 		return nil, err
 	}
@@ -202,10 +212,6 @@ func hashFile(r io.Reader) (string, error) {
 }
 
 func (jobman *JobsManager) Update(job *Job) error {
-	return jobman.put(job, false)
-}
-
-func (jobman *JobsManager) put(job *Job, isNew bool) error {
 	d, err := json.Marshal(job)
 	if err != nil {
 		return err
@@ -218,14 +224,6 @@ func (jobman *JobsManager) put(job *Job, isNew bool) error {
 
 	// update in table too
 	jobman.putInTable(job)
-
-	// if new add task to queue
-	if isNew {
-		_, err = jobman.jsc.Publish(jobman.queueName, d)
-		if err != nil {
-			return err
-		}
-	}
 
 	return nil
 }
@@ -298,14 +296,14 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	onError := func(err error) error {
 		logger.Warn("job error: " + err.Error())
 		job.Error = err.Error()
-		job.Status = "error"
+		job.Status = JobStatusError
 		jobman.Update(job)
 		return err
 	}
 
 	logger.Debug("starting job", "job", string(msg.Data))
 
-	job.Status = "in progress"
+	job.Status = JobStatusInProgress
 	job.StartedAt = timeNowPtr()
 
 	// tmp files
@@ -336,7 +334,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	}
 
 	switch job.Template {
-	case "img_square":
+	case JobTemplateImgSquare:
 		// 150x150, 480x480, 1000x1000
 		squares := []int{150, 480, 1000}
 		srcReader, err := os.Open(srcPath)
@@ -357,7 +355,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 			}
 			job.Results = append(job.Results, info)
 		}
-	case "img_backdrop":
+	case JobTemplateImgBackdrop:
 		// 640x, 2000x
 		widths := []int{640, 2000}
 		srcReader, err := os.Open(srcPath)
@@ -379,7 +377,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 			job.Results = append(job.Results, info)
 		}
 
-	case "audio", "":
+	case JobTemplateAudio, "":
 		if job.Template == "" {
 			logger.Warn("empty template, falling back to audio")
 		}
@@ -449,7 +447,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 
 	job.TranscodeProgress = 1
 	job.FinishedAt = timeNowPtr()
-	job.Status = "done"
+	job.Status = JobStatusDone
 	jobman.Update(job)
 
 	return nil
@@ -475,6 +473,12 @@ func (jobman *JobsManager) startWorker(workerNumber int) {
 		err = json.Unmarshal(msg.Data, &job)
 		if err != nil {
 			fmt.Println("invalid job json", string(msg.Data), err)
+			msg.Ack()
+			continue
+		}
+
+		// Only process pending jobs
+		if job.Status != JobStatusPending {
 			msg.Ack()
 			continue
 		}
