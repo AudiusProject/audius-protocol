@@ -22,7 +22,7 @@ func New(prefixLength int) *Bucketer {
 
 // GetBucketForId returns the bucket that id should be stored in.
 func (b *Bucketer) GetBucketForId(id string) string {
-	return id[:b.PrefixLength]
+	return id[len(id)-b.PrefixLength:]
 }
 
 // makeBuckets recursively generates all string combinations of length prefixLength using chars.
