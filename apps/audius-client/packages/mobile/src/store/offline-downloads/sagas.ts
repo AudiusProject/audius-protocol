@@ -34,7 +34,8 @@ import {
   syncStaleTracks,
   syncCollectionsTracks,
   enqueueTrackDownload,
-  batchDownloadCollection
+  batchDownloadCollection,
+  batchRemoveTrackDownload
 } from 'app/services/offline-downloader'
 import {
   blockedPlayCounterWorker,
@@ -75,6 +76,26 @@ export function* downloadSavedTrack(
 
 export function* watchSaveTrack() {
   yield* takeEvery(tracksSocialActions.SAVE_TRACK, downloadSavedTrack)
+}
+
+type UnsaveTrackAction = ReturnType<typeof tracksSocialActions.unsaveTrack>
+
+function* watchUnsaveTrack() {
+  yield* takeEvery(
+    tracksSocialActions.UNSAVE_TRACK,
+    function* removeTrack(action: UnsaveTrackAction) {
+      const { trackId } = action
+      const trackToRemove = {
+        trackId,
+        downloadReason: {
+          is_from_favorites: true,
+          collection_id: DOWNLOAD_REASON_FAVORITES
+        }
+      }
+
+      yield* call(batchRemoveTrackDownload, [trackToRemove])
+    }
+  )
 }
 
 export function* downloadSavedCollection(
@@ -235,6 +256,7 @@ function* watchAddTrackToPlaylist() {
 const sagas = () => {
   return [
     watchSaveTrack,
+    watchUnsaveTrack,
     watchSaveCollection,
     watchClearOfflineDownloads,
     watchSetReachable,
