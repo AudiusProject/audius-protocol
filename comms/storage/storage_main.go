@@ -12,6 +12,7 @@ import (
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/storageserver"
 	"github.com/nats-io/nats.go"
+	"github.com/nats-io/prometheus-nats-exporter/exporter"
 )
 
 func StorageMain() {
@@ -34,12 +35,26 @@ func StorageMain() {
 
 	ss := storageserver.NewProd(jsc)
 
+
 	// Start server
 	go func() {
 		if err := ss.WebServer.Start(":8926"); err != nil && err != http.ErrServerClosed {
 			ss.WebServer.Logger.Fatal("shutting down the server", err)
 		}
 	}()
+
+	// Get the default options, and set what you need to.  The listen address and port
+	// is how prometheus can poll for collected data.
+	opts := exporter.GetDefaultExporterOptions()
+	opts.ListenAddress = "localhost"
+	opts.ListenPort = 8888
+	opts.GetVarz = true
+	opts.NATSServerURL = "http://localhost:8222"
+
+	// Start exporter
+	exp := exporter.NewExporter(opts)
+	exp.Start()
+	defer exp.Stop()
 
 	// Wait for interrupt signal to gracefully shutdown the server with a timeout of 10 seconds.
 	// Use a buffered channel to avoid missing signals as recommended for signal.Notify
@@ -50,5 +65,8 @@ func StorageMain() {
 	defer cancel()
 	if err := ss.WebServer.Shutdown(ctx); err != nil {
 		ss.WebServer.Logger.Fatal(err)
+
+		// Wait until the prometheus exporter is stopped
+		exp.WaitUntilDone()
 	}
 }
