@@ -41,7 +41,7 @@ import {
 } from '../services/offline-downloader/offline-storage'
 
 import { useIsOfflineModeEnabled } from './useIsOfflineModeEnabled'
-import useReachabilityState from './useReachabilityState'
+import { useReachabilityEffect } from './useReachabilityEffect'
 const { getCollection } = cacheCollectionsSelectors
 const { getSavedTracksLineup } = savedPageSelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
@@ -143,12 +143,8 @@ export const useLoadOfflineData = () => {
 }
 
 /**
- * A helper hook that can substitute out the contents of a lineup for the
- * equivalent "offline" version
+ * Load a collection lineup, either online or offline
  * @param collectionId either the numeric collection id
- * @param fetchOnlineContent a callback that can be used to refetch the online content
- *  if reachability is established. This is normally what you would call inside
- *  `useFocusEffect` on mount of the lineup
  * TODO: Move this into the component layer
  */
 export const useOfflineCollectionLineup = (
@@ -224,16 +220,11 @@ export const useOfflineCollectionLineup = (
     offlineTracks
   ])
 
-  useReachabilityState(fetchOnlineContent, fetchLocalContent)
-  return fetchLocalContent
+  useReachabilityEffect(fetchOnlineContent, fetchLocalContent)
 }
 
 /**
- * A helper hook that can substitute out the contents of a lineup for the
- * equivalent "offline" version
- * @param fetchOnlineContent a callback that can be used to refetch the online content
- *  if reachability is established. This is normally what you would call inside
- *  `useFocusEffect` on mount of the lineup
+ * Load the favorites lineup, either online or offline
  * TODO: Move this into the component layer
  */
 export const useOfflineFavoritesLineup = (fetchOnlineContent: () => void) => {
@@ -287,6 +278,5 @@ export const useOfflineFavoritesLineup = (fetchOnlineContent: () => void) => {
     }
   }, [dispatch, isOfflineModeEnabled, offlineTracks, savedTracksUidMap])
 
-  useReachabilityState(fetchOnlineContent, fetchLocalContent)
-  return fetchLocalContent
+  useReachabilityEffect(fetchOnlineContent, fetchLocalContent)
 }

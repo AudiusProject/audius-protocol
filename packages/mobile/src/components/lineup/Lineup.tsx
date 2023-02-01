@@ -14,7 +14,7 @@ import {
   TrackTile,
   LineupTileSkeleton
 } from 'app/components/lineup-tile'
-import { useBecomeReachable } from 'app/hooks/useReachabilityState'
+import { useReachableEffect } from 'app/hooks/useReachabilityEffect'
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 
 import { Delineator } from './Delineator'
@@ -162,6 +162,8 @@ const LineupTileView = memo(function LineupTileView({
   }
 })
 
+// Using `memo` because FlatList renders these items
+// And we want to avoid a full render when the props haven't changed
 const LineupItemTile = memo(function LineupItemTile({
   item,
   index,
@@ -330,7 +332,7 @@ export const Lineup = ({
     ]
   )
 
-  useBecomeReachable(
+  useReachableEffect(
     useCallback(() => {
       if (entries.length > 0 || status === Status.LOADING) return
       handleLoadMore(true)

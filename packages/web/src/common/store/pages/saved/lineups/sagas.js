@@ -24,8 +24,10 @@ const getSavedTracks = (state) => state.pages.savedPage.tracks
 
 const PREFIX = savedTracksActions.prefix
 
-function* getTracks() {
-  const savedTracks = yield select(getSaves)
+function* getTracks({ offset, limit }) {
+  const allSavedTracks = yield select(getSaves)
+  const savedTracks = allSavedTracks.slice(offset, offset + limit)
+
   const savedTrackIds = savedTracks.map((save) => save.save_item_id ?? null)
   const savedTrackTimestamps = savedTracks.reduce((map, save) => {
     map[save.save_item_id] = save.created_at

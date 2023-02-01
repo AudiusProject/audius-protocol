@@ -9,10 +9,11 @@ import type { CommonState } from '../store/commonStore'
 export const createProxySelectorHook = <TState extends object = any>() => {
   const useProxySelector = <TReturnType>(
     fn: (state: TState) => TReturnType,
-    deps: DependencyList
+    deps: DependencyList,
+    equalityFn?: Parameters<typeof useSelector>[1]
   ): TReturnType => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    return useSelector(useCallback(memoize(fn), deps))
+    return useSelector(useCallback(memoize(fn), deps), equalityFn)
   }
   return useProxySelector
 }

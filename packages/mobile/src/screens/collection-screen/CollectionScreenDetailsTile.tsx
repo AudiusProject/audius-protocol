@@ -14,7 +14,6 @@ import {
   collectionPageSelectors,
   reachabilitySelectors
 } from '@audius/common'
-import { useFocusEffect } from '@react-navigation/native'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -105,38 +104,17 @@ export const CollectionScreenDetailsTile = ({
   const collectionUid = useSelector(getCollectionUid)
   const userUid = useSelector(getUserUid)
   const { entries, status } = useProxySelector(getTracksLineup, [isReachable])
+  const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
+
   const tracksLoading = status === Status.LOADING
   const numTracks = entries.length
 
   const handleFetchLineupOnline = useCallback(() => {
-    dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
-  }, [dispatch])
-
-  const handleFetchLineupOffline = useOfflineCollectionLineup(
-    collectionId,
-    handleFetchLineupOnline
-  )
-
-  const handleFetchLineup = useCallback(() => {
-    if (isOfflineModeEnabled && !isReachable) {
-      handleFetchLineupOffline()
-    } else {
-      handleFetchLineupOnline()
-    }
-  }, [
-    handleFetchLineupOffline,
-    handleFetchLineupOnline,
-    isOfflineModeEnabled,
-    isReachable
-  ])
-
-  const handleFetchCollectionLineup = useCallback(() => {
     dispatch(resetCollection(collectionUid, userUid))
-    handleFetchLineup()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dispatch, handleFetchLineupOnline])
+    dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
+  }, [dispatch, collectionUid, userUid])
 
-  useFocusEffect(handleFetchCollectionLineup)
+  useOfflineCollectionLineup(collectionId, handleFetchLineupOnline)
 
   const duration = entries?.reduce(
     (duration, entry) => duration + entry.duration,
@@ -228,7 +206,7 @@ export const CollectionScreenDetailsTile = ({
             hideArt
             showDivider
             showSkeleton
-            tracks={Array(Math.min(10, trackCount ?? 0))}
+            uids={Array(Math.min(10, trackCount ?? 0))}
           />
         </>
       )
@@ -242,7 +220,7 @@ export const CollectionScreenDetailsTile = ({
           hideArt
           showDivider
           togglePlay={handlePressTrackListItemPlay}
-          tracks={entries}
+          uids={trackUids}
         />
       </>
     )

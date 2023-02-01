@@ -1,6 +1,10 @@
 import { useCallback, useState } from 'react'
 
-import { useProxySelector, reachabilitySelectors } from '@audius/common'
+import {
+  useProxySelector,
+  reachabilitySelectors,
+  shallowCompare
+} from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -69,7 +73,8 @@ export const PlaylistsTab = () => {
         return true
       })
     },
-    [filterValue, isReachable, isOfflineModeEnabled, isDoneLoadingFromDisk]
+    [filterValue, isReachable, isOfflineModeEnabled, isDoneLoadingFromDisk],
+    shallowCompare
   )
 
   const handleNavigateToNewPlaylist = useCallback(() => {
