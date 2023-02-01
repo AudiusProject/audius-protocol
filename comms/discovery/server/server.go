@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -34,7 +35,27 @@ func getHealthStatus() schema.Health {
 
 func chatWebsocket(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+
+	// Check that timestamp is less than 5 seconds old
+	timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
+	if err != nil || time.Now().UnixMilli() - timestamp > 5000 {
+		return c.String(400, "Invalid signature timestamp")
+	}
+	
+	// Websockets from the client can't send headers, so instead, the signature is a query parameter
+	// Strip out the signature query parameter to get the true signature payload
+	u, err := url.Parse(c.Request().RequestURI)
+	if err != nil {
+		return c.String(400, "Could not parse URL")
+	}
+	q := u.Query()
+	q.Del("signature")
+	u.RawQuery = q.Encode()
+	signature := c.QueryParam("signature")
+	signedData := []byte(u.String())
+
+	// Now that we have the data that was actually signed, we can recover the wallet
+	wallet, err := peering.ReadSigned(signature, signedData)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
