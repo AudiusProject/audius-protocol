@@ -47,8 +47,15 @@ type StorageServer struct {
 }
 
 func NewProd(jsc nats.JetStreamContext) *StorageServer {
-	allStorageNodePubKeys := []string{"pubkey1", "pubkey2", "pubkey3"} // TODO: get dynamically (from KV store?) and re-initialize on change
-	thisNodePubKey := "pubkey1"                                        // TODO: get dynamically
+
+	// TODO: config refactor
+	allStorageNodePubKeys := []string{
+		"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
+		"0x90b8d2655A7C268d0fA31758A714e583AE54489D",
+		"0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
+		"0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
+	} // TODO: get dynamically (from KV store?) and re-initialize on change
+	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: get dynamically
 	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, allStorageNodePubKeys, thisNodePubKey, jsc)
 	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
@@ -86,7 +93,8 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 
 // runStorer runs a goroutine to pull tracks from temp NATS object storage to long-term object storage.
 func (ss *StorageServer) runStorer(uploadStream string) {
-	thisNodePubKey := "pubKey1" // TODO: Get from config or something - same for value in NewProd() above
+
+	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: Get from config or something - same for value in NewProd() above
 	// Create a per-node explicit pull consumer on the stream that backs the track upload status KV bucket
 	storerDurable := fmt.Sprintf("STORER_%s", thisNodePubKey)
 	_, err := ss.Jsc.AddConsumer(uploadStream, &nats.ConsumerConfig{

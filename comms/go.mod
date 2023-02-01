@@ -22,6 +22,8 @@ require (
 	golang.org/x/sync v0.1.0
 )
 
+require golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
+
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect

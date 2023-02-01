@@ -35,7 +35,6 @@ func StorageMain() {
 
 	ss := storageserver.NewProd(jsc)
 
-
 	// Start server
 	go func() {
 		if err := ss.WebServer.Start(":8926"); err != nil && err != http.ErrServerClosed {

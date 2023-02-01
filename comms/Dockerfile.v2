@@ -1,0 +1,20 @@
+FROM golang:alpine as builder
+
+RUN apk add build-base make
+RUN export GO111MODULE=on && \
+    go install github.com/nats-io/nats-server/v2@latest && \
+    go install github.com/nats-io/natscli/nats@latest && \
+    go install github.com/nats-io/nkeys/nk@latest && \
+    go install github.com/nats-io/nsc/v2@latest
+
+WORKDIR /app
+COPY . .
+RUN make build.alpine
+
+FROM alpine as final
+
+RUN apk add ffmpeg
+COPY --from=builder /go/bin/* /bin
+COPY --from=builder /app/comms /bin/comms
+VOLUME ["/tmp/nats"]
+ENTRYPOINT [ "comms" ]
