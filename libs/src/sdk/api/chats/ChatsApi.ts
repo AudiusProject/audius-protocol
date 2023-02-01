@@ -1,6 +1,7 @@
 import {
   BaseAPI,
   Configuration,
+  HTTPQuery,
   RequiredError,
   WalletAPI
 } from '../generated/default'
@@ -70,20 +71,24 @@ export class ChatsApi extends BaseAPI {
 
   public async getAll(requestParameters?: ChatGetAllRequest) {
     const path = `/comms/chats`
-    const queryParameters: any = {}
+    const queryParameters: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
     if (requestParameters?.limit) {
-      queryParameters.limit = requestParameters.limit
+      queryParameters['limit'] = requestParameters.limit
     }
     if (requestParameters?.before) {
-      queryParameters.before = requestParameters.before
+      queryParameters['before'] = requestParameters.before
     }
     if (requestParameters?.after) {
-      queryParameters.after = requestParameters.after
+      queryParameters['after'] = requestParameters.after
     }
     const response = (await this.request({
       method: 'GET',
       path,
-      headers: await this.getSignatureHeader(path),
+      headers: await this.getSignatureHeader(
+        `${path}?${this.configuration.queryParamsStringify(queryParameters)}`
+      ),
       query: queryParameters
     })) as TypedCommsResponse<UserChat[]>
 
@@ -107,20 +112,24 @@ export class ChatsApi extends BaseAPI {
 
     const sharedSecret = await this.getChatSecret(requestParameters.chatId)
     const path = `/comms/chats/${requestParameters.chatId}/messages`
-    const queryParameters: any = {}
+    const queryParameters: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
     if (requestParameters.limit) {
-      queryParameters.limit = requestParameters.limit
+      queryParameters['limit'] = requestParameters.limit
     }
     if (requestParameters.before) {
-      queryParameters.before = requestParameters.before
+      queryParameters['before'] = requestParameters.before
     }
     if (requestParameters.after) {
-      queryParameters.after = requestParameters.after
+      queryParameters['after'] = requestParameters.after
     }
     const response = (await this.request({
       method: 'GET',
       path,
-      headers: await this.getSignatureHeader(path),
+      headers: await this.getSignatureHeader(
+        `${path}?${this.configuration.queryParamsStringify(queryParameters)}`
+      ),
       query: queryParameters
     })) as TypedCommsResponse<ChatMessage[]>
     const decrypted = await Promise.all(
@@ -484,10 +493,16 @@ export class ChatsApi extends BaseAPI {
 
   private async getRaw(chatId: string) {
     const path = `/comms/chats/${chatId}`
+    const queryParameters: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
     return (await this.request({
       method: 'GET',
       path,
-      headers: await this.getSignatureHeader(path)
+      query: queryParameters,
+      headers: await this.getSignatureHeader(
+        `${path}?${this.configuration.queryParamsStringify(queryParameters)}`
+      )
     })) as TypedCommsResponse<UserChat>
   }
 
