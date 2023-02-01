@@ -130,6 +130,8 @@ services:
     image: audius/solana-programs:m1-latest
     ports:
       - "8899:8899"
+    volumes:
+      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
     logging: *default-logging
     deploy:
       mode: global
