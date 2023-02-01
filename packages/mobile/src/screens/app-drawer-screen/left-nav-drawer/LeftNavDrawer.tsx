@@ -158,7 +158,7 @@ const WrappedLeftNavDrawer = () => {
         <LeftNavLink
           icon={IconUser}
           label={'Messages'}
-          to='Chats'
+          to='ChatList'
           params={{}}
         />
       ) : null}
