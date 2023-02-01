@@ -421,8 +421,12 @@ class GiantTrackTile extends PureComponent {
     return (
       <div className={styles.giantTrackTile}>
         <div className={styles.topSection}>
-          {isPremium && (
-            <PremiumTrackCornerTag doesUserHaveAccess={doesUserHaveAccess} />
+          {!isLoading && isPremium && premiumConditions && (
+            <PremiumTrackCornerTag
+              doesUserHaveAccess={doesUserHaveAccess}
+              isOwner={isOwner}
+              premiumConditions={premiumConditions}
+            />
           )}
           <GiantArtwork
             trackId={trackId}
@@ -481,8 +485,8 @@ class GiantTrackTile extends PureComponent {
             >
               {this.renderShareButton()}
               {this.renderMakePublicButton()}
-              {this.renderRepostButton()}
-              {this.renderFavoriteButton()}
+              {doesUserHaveAccess && this.renderRepostButton()}
+              {doesUserHaveAccess && this.renderFavoriteButton()}
               <span>
                 <Menu {...overflowMenu}>
                   {(ref, triggerPopup) => (
@@ -509,12 +513,13 @@ class GiantTrackTile extends PureComponent {
           ) : null}
         </div>
 
-        {isPremium && !isOwner && (
+        {isPremium && (
           <PremiumTrackSection
             isLoading={isLoading}
             trackId={trackId}
             premiumConditions={premiumConditions}
             doesUserHaveAccess={doesUserHaveAccess}
+            isOwner={isOwner}
           />
         )}
 

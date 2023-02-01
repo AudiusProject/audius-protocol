@@ -409,12 +409,6 @@ class TrackPageProvider extends Component<
         ? `#${trackRank.week} This Week`
         : null
 
-    const isPremium = !!track?.is_premium
-    const hasPremiumContentSignature = !!(
-      track?.track_id && this.props.premiumTrackSignatureMap[track.track_id]
-    )
-    const doesUserHaveAccess = !isPremium || hasPremiumContentSignature
-
     const desktopProps = {
       // Follow Props
       onFollow: this.onFollow,
@@ -474,7 +468,6 @@ class TrackPageProvider extends Component<
       heroPlaying,
       userId,
       badge,
-      doesUserHaveAccess,
       onHeroPlay: this.onHeroPlay,
       goToProfilePage: this.goToProfilePage,
       goToSearchResultsPage: this.goToSearchResultsPage,

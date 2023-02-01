@@ -17,14 +17,13 @@ import {
   accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
-  premiumContentSelectors,
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
-import { connect, useSelector } from 'react-redux'
+import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
@@ -34,6 +33,7 @@ import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackArtwork } from 'components/track/desktop/Artwork'
 import UserBadges from 'components/user-badges/UserBadges'
+import { usePremiumContentAccess } from 'hooks/usePremiumContentAccess'
 import {
   setUsers,
   setVisibility
@@ -61,7 +61,6 @@ const { getUserFromTrack } = cacheUsersSelectors
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { getUserHandle } = accountSelectors
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
 
 type OwnProps = {
   uid: UID
@@ -111,6 +110,7 @@ const ConnectedTrackTile = memo(
     isTrending,
     showRankIcon
   }: ConnectedTrackTileProps) => {
+    const trackWithFallback = getTrackWithFallback(track)
     const {
       is_delete,
       is_unlisted: isUnlisted,
@@ -130,7 +130,7 @@ const ConnectedTrackTile = memo(
       _cover_art_sizes,
       play_count,
       duration
-    } = getTrackWithFallback(track)
+    } = trackWithFallback
 
     const {
       _artist_pick,
@@ -145,9 +145,9 @@ const ConnectedTrackTile = memo(
     const isOwner = handle === userHandle
     const isArtistPick = showArtistPick && _artist_pick === trackId
 
-    const premiumTrackSignatureMap = useSelector(getPremiumTrackSignatureMap)
-    const hasPremiumContentSignature = !!premiumTrackSignatureMap[trackId]
-    const doesUserHaveAccess = !isPremium || hasPremiumContentSignature
+    const { isUserAccessTBD, doesUserHaveAccess } =
+      usePremiumContentAccess(trackWithFallback)
+    const loading = isLoading || isUserAccessTBD
 
     const menuRef = useRef<HTMLDivElement>(null)
 
@@ -163,10 +163,10 @@ const ConnectedTrackTile = memo(
 
     const [artworkLoaded, setArtworkLoaded] = useState(false)
     useEffect(() => {
-      if (artworkLoaded && !isLoading && hasLoaded) {
+      if (artworkLoaded && !loading && hasLoaded) {
         hasLoaded(index)
       }
-    }, [artworkLoaded, hasLoaded, index, isLoading])
+    }, [artworkLoaded, hasLoaded, index, loading])
 
     const renderImage = () => {
       const artworkProps = {
@@ -177,8 +177,8 @@ const ConnectedTrackTile = memo(
         isBuffering: isTrackBuffering,
         isPlaying: isTrackPlaying,
         artworkIconClassName: styles.artworkIcon,
-        showArtworkIcon: !isLoading,
-        showSkeleton: isLoading,
+        showArtworkIcon: !loading,
+        showSkeleton: loading,
         callback: () => setArtworkLoaded(true),
         label: `${title} by ${name}`,
         doesUserHaveAccess
@@ -345,7 +345,7 @@ const ConnectedTrackTile = memo(
     const userName = renderUserName()
 
     const disableActions = false
-    const showSkeleton = isLoading
+    const showSkeleton = loading
 
     return (
       <Draggable
@@ -367,7 +367,7 @@ const ConnectedTrackTile = memo(
           isPremium={isPremium}
           premiumConditions={premiumConditions}
           doesUserHaveAccess={doesUserHaveAccess}
-          isLoading={isLoading}
+          isLoading={loading}
           isDarkMode={isDarkMode()}
           isMatrixMode={isMatrix()}
           listenCount={play_count}
@@ -382,7 +382,7 @@ const ConnectedTrackTile = memo(
           fieldVisibility={fieldVisibility}
           containerClassName={cn(styles.container, {
             [containerClassName!]: !!containerClassName,
-            [styles.loading]: isLoading,
+            [styles.loading]: loading,
             [styles.active]: isActive
           })}
           onClickTitle={onClickTitle}

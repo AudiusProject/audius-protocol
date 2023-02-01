@@ -130,8 +130,12 @@ const TrackTile = memo(
             : onTogglePlay
         }
       >
-        {isPremium && (
-          <PremiumTrackCornerTag doesUserHaveAccess={!!doesUserHaveAccess} />
+        {!isLoading && isPremium && premiumConditions && (
+          <PremiumTrackCornerTag
+            doesUserHaveAccess={!!doesUserHaveAccess}
+            isOwner={isOwner}
+            premiumConditions={premiumConditions}
+          />
         )}
         {/* prefix ordering */}
         <RankAndIndexIndicator
@@ -206,17 +210,19 @@ const TrackTile = memo(
               )}
             </div>
             <div className={styles.topRight}>
-              {isPremium && (
-                <PremiumContentLabel
-                  premiumConditions={premiumConditions}
-                  doesUserHaveAccess={!!doesUserHaveAccess}
-                />
-              )}
               {isArtistPick && (
                 <div className={styles.topRightIconLabel}>
                   <IconStar className={styles.topRightIcon} />
                   {messages.artistPick}
                 </div>
+              )}
+              {!isLoading && isPremium && (
+                <PremiumContentLabel
+                  premiumConditions={premiumConditions}
+                  doesUserHaveAccess={!!doesUserHaveAccess}
+                  isOwner={isOwner}
+                  permalink={permalink}
+                />
               )}
               {isUnlisted && (
                 <div className={styles.topRightIconLabel}>

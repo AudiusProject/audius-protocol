@@ -128,6 +128,8 @@ export { ReactComponent as IconTrending } from '../../assets/icons/iconTrending.
 export { ReactComponent as IconCampFire } from '../../assets/icons/iconCampFire.svg'
 export { ReactComponent as IconSpecialAccess } from '../../assets/icons/iconSpecialAccess.svg'
 export { ReactComponent as IconCollectible } from '../../assets/icons/iconCollectible.svg'
+export { ReactComponent as IconCollectibleCornerTag } from '../../assets/icons/iconCollectibleCornerTag.svg'
+export { ReactComponent as IconSpecialAccessCornerTag } from '../../assets/icons/iconSpecialAccessCornerTag.svg'
 export { ReactComponent as IconVisibilityPublic } from '../../assets/icons/iconVisibilityPublic.svg'
 export { ReactComponent as IconCrown } from '../../assets/icons/iconCrown.svg'
 export { ReactComponent as LogoSol } from '../../assets/icons/logoSol.svg'

@@ -1,11 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { ID, PremiumContentSignature } from 'models'
+import { Nullable } from 'utils'
 
 type PremiumTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
 
 type PremiumContentState = {
-  premiumTrackSignatureMap: { [id: ID]: PremiumContentSignature }
+  premiumTrackSignatureMap: { [id: ID]: Nullable<PremiumContentSignature> }
   status: PremiumTrackStatus
 }
 
@@ -15,7 +16,7 @@ const initialState: PremiumContentState = {
 }
 
 type UpdatePremiumContentSignaturesPayload = {
-  [id: ID]: PremiumContentSignature
+  [id: ID]: Nullable<PremiumContentSignature>
 }
 
 type RemovePremiumContentSignaturePayload = {

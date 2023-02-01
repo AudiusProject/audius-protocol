@@ -277,10 +277,19 @@
 }
 
 .lockedIcon,
-.unlockedIcon {
+.unlockedIcon,
+.collectibleIcon,
+.specialAccessIcon {
   margin-right: 8px;
   width: 16px;
   height: 16px;
+}
+
+.lockedIcon path,
+.unlockedIcon path,
+.collectibleIcon path,
+.specialAccessIcon path {
+  fill: var(--neutral);
 }
 
 .badgeIcon {
