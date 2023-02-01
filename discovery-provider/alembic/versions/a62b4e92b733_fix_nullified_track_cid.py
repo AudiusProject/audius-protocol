@@ -1,7 +1,7 @@
 """fix track_cid that were nullified when editted
 
 Revision ID: a62b4e92b733
-Revises: efafdb22df81
+Revises: 72b030bb3dcb
 Create Date: 2023-01-12 18:21:58.029182
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "a62b4e92b733"
-down_revision = "6a9f01e775d5"
+down_revision = "72b030bb3dcb"
 branch_labels = None
 depends_on = None
 
