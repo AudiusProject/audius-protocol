@@ -25,7 +25,7 @@ func NewRendezvousDecider(namespace string, replicationFactor int, allStorageNod
 		replicationFactor:     replicationFactor,
 		allStorageNodePubKeys: allStorageNodePubKeys,
 		thisNodePubKey:        thisNodePubKey,
-		bucketer:              bucketer.New(3),
+		bucketer:              bucketer.New(2),
 		jsc:                   jsc,
 	}
 	d.BucketsStored = d.computeBucketsNodeStores(thisNodePubKey)
