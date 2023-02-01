@@ -11,7 +11,7 @@ describe('test Solana listen tracking', function () {
   const TRACKING_LISTEN_SUBMISSION_KEY = 'listens-tx-submission-ts'
   const TRACKING_LISTEN_SUCCESS_KEY = 'listens-tx-success-ts'
 
-  let app, server, sandbox, solanaWeb3Stub, createTrackListenInstructions, transactionHandlerStub
+  let app, server, sandbox, solanaWeb3Stub, createTrackListenInstructions
   beforeEach(async () => {
     delete require.cache[require.resolve('../../src/routes/trackListens')]
     sandbox = sinon.createSandbox()
@@ -20,9 +20,10 @@ describe('test Solana listen tracking', function () {
     app = appInfo.app
     server = appInfo.server
     solanaWeb3Stub = sandbox.stub()
-    transactionHandlerStub = sandbox.stub()
     app.get('audiusLibs').solanaWeb3Manager.solanaWeb3 = solanaWeb3Stub
-    app.get('audiusLibs').solanaWeb3Manager.transactionHandler = transactionHandlerStub
+    app.get('audiusLibs').solanaWeb3Manager.transactionHandler = {
+      handleTransaction: function() {return Promise.resolve('ok')}
+    }
     await app.get('redis').flushdb()
   })
   afterEach(async () => {
@@ -33,7 +34,6 @@ describe('test Solana listen tracking', function () {
   const recordSuccessfulListen = async (raw) => {
     // Common to both raw and non-raw path
     createTrackListenInstructions.resolves('expected success')
-    transactionHandlerStub.resolves('ok')
     const resp = await request(app)
       .post(`/tracks/${TRACK_ID}/listen`)
       .send({
