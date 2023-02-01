@@ -1,4 +1,9 @@
-import type { CommsResponse, ChatPermission } from './serverTypes'
+import type {
+  CommsResponse,
+  ChatPermission,
+  ChatMessage,
+  ChatMessageNullableReaction
+} from './serverTypes'
 
 // REQUEST PARAMETERS
 
@@ -38,7 +43,7 @@ export type ChatMessageRequest = {
 export type ChatReactRequest = {
   chatId: string
   messageId: string
-  reaction: string
+  reaction: string | null
 }
 
 export type ChatReadRequest = {
@@ -59,4 +64,16 @@ export type ChatPermitRequest = {
 
 export type TypedCommsResponse<T> = Omit<CommsResponse, 'data'> & {
   data: T
+}
+
+export type ChatEvents = {
+  open: () => void
+  close: () => void
+  error: (error: any) => void
+  ['message']: (params: { chatId: string; message: ChatMessage }) => void
+  ['reaction']: (params: {
+    chatId: string
+    messageId: string
+    reaction: ChatMessageNullableReaction
+  }) => void
 }

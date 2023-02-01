@@ -13,12 +13,14 @@ import type {
   RPCPayload,
   ChatInvite,
   UserChat,
-  ChatMessage
+  ChatMessage,
+  ChatWebsocketEventData
 } from './serverTypes'
 import type {
   ChatBlockRequest,
   ChatCreateRequest,
   ChatDeleteRequest,
+  ChatEvents,
   ChatGetAllRequest,
   ChatGetMessagesRequest,
   ChatGetRequest,
@@ -29,10 +31,14 @@ import type {
   ChatReadRequest,
   TypedCommsResponse
 } from './clientTypes'
+import WebSocket from 'isomorphic-ws'
+import EventEmitter from 'events'
+import type TypedEmitter from 'typed-emitter'
 
 export class ChatsApi extends BaseAPI {
   private chatSecrets: Record<string, Uint8Array> = {}
   private readonly walletApi: WalletAPI
+  public eventEmitter: TypedEmitter<ChatEvents>
 
   constructor(params: Configuration) {
     super(params)
@@ -42,6 +48,7 @@ export class ChatsApi extends BaseAPI {
       'constructor'
     )
     this.walletApi = params.walletApi!
+    this.eventEmitter = new EventEmitter() as TypedEmitter<ChatEvents>
   }
 
   // #region QUERY
@@ -129,6 +136,55 @@ export class ChatsApi extends BaseAPI {
       ...response,
       data: decrypted
     }
+  }
+
+  public async listen() {
+    const timestamp = new Date().getTime()
+    const originalUrl = `/comms/chats/ws?timestamp=${timestamp}`
+    const signatureHeader = await this.getSignatureHeader(originalUrl)
+    const url = `ws://localhost:8925${originalUrl}&signature=${encodeURIComponent(
+      signatureHeader['x-sig']
+    )}`
+    const ws = new WebSocket(url)
+    ws.addEventListener('open', () => {
+      this.eventEmitter.emit('open')
+    })
+    ws.addEventListener('message', async (messageEvent) => {
+      const data = JSON.parse(messageEvent.data) as ChatWebsocketEventData
+      if (data.rpc.method === 'chat.message') {
+        const sharedSecret = await this.getChatSecret(data.rpc.params.chat_id)
+        this.eventEmitter.emit('message', {
+          chatId: data.rpc.params.chat_id,
+          message: {
+            message_id: data.rpc.params.message_id,
+            message: await this.decryptString(
+              sharedSecret,
+              base64.decode(data.rpc.params.message)
+            ),
+            sender_user_id: data.metadata.userId,
+            created_at: data.metadata.timestamp,
+            reactions: []
+          }
+        })
+      } else if (data.rpc.method === 'chat.react') {
+        this.eventEmitter.emit('reaction', {
+          chatId: data.rpc.params.chat_id,
+          messageId: data.rpc.params.message_id,
+          reaction: {
+            reaction: data.rpc.params.reaction,
+            user_id: data.metadata.userId,
+            created_at: data.metadata.timestamp
+          }
+        })
+      }
+    })
+    ws.addEventListener('close', () => {
+      this.eventEmitter.emit('close')
+    })
+    ws.addEventListener('error', (e) => {
+      this.eventEmitter.emit('error', e)
+    })
+    return ws
   }
 
   // #endregion
