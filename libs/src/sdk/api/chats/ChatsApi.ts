@@ -472,9 +472,13 @@ export class ChatsApi extends BaseAPI {
     const sharedSecret = await this.getChatSecret(c.chat_id)
     return {
       ...c,
-      last_message: c.last_message
-        ? await this.decryptString(sharedSecret, base64.decode(c.last_message))
-        : ''
+      last_message:
+        c.last_message && c.last_message.length > 0
+          ? await this.decryptString(
+              sharedSecret,
+              base64.decode(c.last_message)
+            )
+          : ''
     }
   }
 
