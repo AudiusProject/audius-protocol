@@ -113,9 +113,9 @@ export const CollectionScreenDetailsTile = ({
 
   const handleFetchLineupOffline = useOfflineCollectionLineup(
     collectionId,
-    handleFetchLineupOnline,
-    tracksActions
+    handleFetchLineupOnline
   )
+
   const handleFetchLineup = useCallback(() => {
     if (isOfflineModeEnabled && !isReachable) {
       handleFetchLineupOffline()

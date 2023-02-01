@@ -96,6 +96,7 @@ function* getCollectionTracks() {
 }
 
 const keepDateAdded = (track) => ({
+  id: track.track_id,
   uid: track.uid,
   kind: Kind.TRACKS,
   dateAdded: track.dateAdded

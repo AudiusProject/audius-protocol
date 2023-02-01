@@ -4,17 +4,21 @@ import type {
   CollectionMetadata,
   Track,
   UserMetadata,
-  lineupActions,
   UserTrackMetadata,
   SmartCollectionVariant
 } from '@audius/common'
 import {
+  savedPageTracksLineupActions,
   Kind,
   makeUid,
   cacheActions,
-  cacheCollectionsSelectors
+  cacheCollectionsSelectors,
+  savedPageSelectors,
+  collectionPageLineupActions,
+  collectionPageSelectors
 } from '@audius/common'
 import { orderBy } from 'lodash'
+import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
@@ -39,6 +43,8 @@ import {
 import { useIsOfflineModeEnabled } from './useIsOfflineModeEnabled'
 import useReachabilityState from './useReachabilityState'
 const { getCollection } = cacheCollectionsSelectors
+const { getSavedTracksLineup } = savedPageSelectors
+const { getCollectionTracksLineup } = collectionPageSelectors
 
 export const useLoadOfflineData = () => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
@@ -133,102 +139,147 @@ export const useLoadOfflineData = () => {
 /**
  * A helper hook that can substitute out the contents of a lineup for the
  * equivalent "offline" version
- * @param collectionId either the numeric collection id or DOWNLOAD_REASON_FAVORITES
+ * @param collectionId either the numeric collection id
  * @param fetchOnlineContent a callback that can be used to refetch the online content
  *  if reachability is established. This is normally what you would call inside
  *  `useFocusEffect` on mount of the lineup
- * @param lineupActions the actions instance for the lineup
+ * TODO: Move this into the component layer
  */
 export const useOfflineCollectionLineup = (
-  collectionId:
-    | typeof DOWNLOAD_REASON_FAVORITES
-    | number
-    | SmartCollectionVariant
-    | null,
-  fetchOnlineContent: () => void,
-  lineupActions: lineupActions.LineupActions
+  collectionId: number | SmartCollectionVariant | null,
+  fetchOnlineContent: () => void
 ) => {
   const dispatch = useDispatch()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const offlineTracks = useSelector(getOfflineTracks)
   const collection = useSelector((state) => {
-    if (collectionId !== DOWNLOAD_REASON_FAVORITES) {
-      return getCollection(state, { id: collectionId as number })
-    }
+    return getCollection(state, { id: collectionId as number })
   })
+  const collectionTracks = useSelector(getCollectionTracksLineup)
+  const collectionTrackUidMap = collectionTracks.entries.reduce(
+    (acc, track) => {
+      acc[track.id] = track.uid
+      return acc
+    },
+    {}
+  )
 
   const fetchLocalContent = useCallback(() => {
-    const collectionTrackIds = new Set(
-      collection?.playlist_contents?.track_ids?.map(
-        (trackData) => trackData.track
-      ) ?? []
-    )
-
-    if (isOfflineModeEnabled && collectionId) {
+    if (isOfflineModeEnabled && collectionId && collection) {
       const lineupTracks = Object.values(offlineTracks)
-        .filter(
-          (track) =>
-            track.offline?.reasons_for_download.some(
-              (reason) => reason.collection_id === collectionId.toString()
-            ) || collectionTrackIds.has(track.track_id)
+        .filter((track) =>
+          track.offline?.reasons_for_download.some(
+            (reason) => reason.collection_id === collectionId.toString()
+          )
         )
         .map((track) => ({
-          uid: makeUid(Kind.TRACKS, track.track_id),
-          ...track
+          id: track.track_id,
+          kind: Kind.TRACKS,
+          uid:
+            collectionTrackUidMap[track.track_id] ??
+            makeUid(Kind.TRACKS, track.track_id)
         }))
 
       const cacheTracks = lineupTracks.map((track) => ({
-        id: track.track_id,
+        id: track.id,
         uid: track.uid,
         metadata: track
       }))
 
       store.dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
 
-      if (collectionId === DOWNLOAD_REASON_FAVORITES) {
-        // Reorder lineup tracks according to favorite time
-        const sortedTracks = orderBy(
-          lineupTracks,
-          (track) => track.offline?.favorite_created_at,
-          ['desc']
-        )
-        dispatch(
-          lineupActions.fetchLineupMetadatasSucceeded(
-            sortedTracks,
-            0,
-            sortedTracks.length,
-            0,
-            0
-          )
-        )
-      } else {
-        // Reorder lineup tracks according to the collection
-        // TODO: This may have issues for playlists with duplicate tracks
-        const sortedTracks = collection?.playlist_contents.track_ids
-          .map(({ track: trackId }) =>
-            lineupTracks.find((track) => trackId === track.track_id)
-          )
-          .filter((track) => !!track)
+      // Reorder lineup tracks according to the collection
+      // TODO: This may have issues for playlists with duplicate tracks
+      const sortedTracks = collection.playlist_contents.track_ids
+        .map(({ track: trackId, time }) => ({
+          ...lineupTracks.find((track) => trackId === track.id),
+          // Borrowed from common/store/pages/collection/linups/sagas.js
+          // An artifact of non-string legacy data
+          dateAdded: typeof time === 'string' ? moment(time) : moment.unix(time)
+        }))
+        .filter((track) => track.id)
 
-        dispatch(
-          lineupActions.fetchLineupMetadatasSucceeded(
-            sortedTracks,
-            0,
-            lineupTracks.length,
-            0,
-            0
-          )
+      dispatch(
+        collectionPageLineupActions.fetchLineupMetadatasSucceeded(
+          sortedTracks,
+          0,
+          sortedTracks.length,
+          0,
+          0
         )
-      }
+      )
     }
   }, [
-    collection?.playlist_contents.track_ids,
+    collectionTrackUidMap,
+    collection,
     collectionId,
     dispatch,
     isOfflineModeEnabled,
-    lineupActions,
     offlineTracks
   ])
+
+  useReachabilityState(fetchOnlineContent, fetchLocalContent)
+  return fetchLocalContent
+}
+
+/**
+ * A helper hook that can substitute out the contents of a lineup for the
+ * equivalent "offline" version
+ * @param fetchOnlineContent a callback that can be used to refetch the online content
+ *  if reachability is established. This is normally what you would call inside
+ *  `useFocusEffect` on mount of the lineup
+ * TODO: Move this into the component layer
+ */
+export const useOfflineFavoritesLineup = (fetchOnlineContent: () => void) => {
+  const dispatch = useDispatch()
+  const isOfflineModeEnabled = useIsOfflineModeEnabled()
+  const offlineTracks = useSelector(getOfflineTracks)
+  const savedTracks = useSelector(getSavedTracksLineup)
+  const savedTracksUidMap = savedTracks.entries.reduce((acc, track) => {
+    acc[track.id] = track.uid
+    return acc
+  }, {})
+
+  const fetchLocalContent = useCallback(() => {
+    if (isOfflineModeEnabled) {
+      const lineupTracks = Object.values(offlineTracks)
+        .filter((track) =>
+          track.offline?.reasons_for_download.some(
+            (reason) => reason.collection_id === DOWNLOAD_REASON_FAVORITES
+          )
+        )
+        .map((track) => ({
+          uid:
+            savedTracksUidMap[track.track_id] ??
+            makeUid(Kind.TRACKS, track.track_id),
+          id: track.track_id,
+          dateSaved: track.offline?.favorite_created_at,
+          kind: Kind.TRACKS
+        }))
+
+      const cacheTracks = lineupTracks.map((track) => ({
+        id: track.id,
+        uid: track.uid,
+        metadata: track
+      }))
+
+      store.dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
+
+      // Reorder lineup tracks according to favorite time
+      const sortedTracks = orderBy(lineupTracks, (track) => track.dateSaved, [
+        'desc'
+      ])
+      dispatch(
+        savedPageTracksLineupActions.fetchLineupMetadatasSucceeded(
+          sortedTracks,
+          0,
+          sortedTracks.length,
+          0,
+          0
+        )
+      )
+    }
+  }, [dispatch, isOfflineModeEnabled, offlineTracks, savedTracksUidMap])
 
   useReachabilityState(fetchOnlineContent, fetchLocalContent)
   return fetchLocalContent
