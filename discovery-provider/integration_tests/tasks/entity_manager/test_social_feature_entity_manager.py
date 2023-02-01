@@ -314,15 +314,14 @@ def test_index_valid_social_features(app, mocker):
         assert current_repost.repost_item_id == 1
 
     with db.scoped_session() as session:
-        # ensure previous session updated and triggered correctly
         aggregate_playlists: List[AggregatePlaylist] = (
             session.query(AggregatePlaylist)
             .filter(AggregatePlaylist.playlist_id == 1)
             .all()
         )
         assert len(aggregate_playlists) == 1
-        aggregate_palylist = aggregate_playlists[0]
-        assert aggregate_palylist.repost_count == 1
+        aggregate_playlist = aggregate_playlists[0]
+        assert aggregate_playlist.repost_count == 1
     calls = [
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
