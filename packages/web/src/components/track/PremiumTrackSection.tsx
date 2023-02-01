@@ -16,7 +16,14 @@ import {
   premiumContentSelectors,
   accountSelectors
 } from '@audius/common'
-import { Button, ButtonType, IconLock, IconUnlocked } from '@audius/stems'
+import {
+  Button,
+  ButtonType,
+  IconCollectible,
+  IconLock,
+  IconSpecialAccess,
+  IconUnlocked
+} from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
@@ -47,19 +54,25 @@ const messages = {
   howToUnlock: 'HOW TO UNLOCK',
   unlocking: 'UNLOCKING',
   unlocked: 'UNLOCKED',
+  collectibleGated: 'COLLECTIBLE GATED',
+  specialAccess: 'SPECIAL ACCESS',
   goToCollection: 'Go To Collection',
   sendTip: 'Send Tip',
   followArtist: 'Follow Artist',
+  ownCollectibleGatedPrefix:
+    'Users can unlock access by linking a wallet containing a collectible from ',
   unlockCollectibleGatedTrack:
     'To unlock this track, you must link a wallet containing a collectible from:',
   aCollectibleFrom: 'A Collectible from ',
   unlockingCollectibleGatedTrackSuffix: ' was found in a linked wallet.',
   unlockedCollectibleGatedTrackSuffix:
     ' was found in a linked wallet. This track is now available.',
+  ownFollowGated: 'Users can unlock access by following your account!',
   unlockFollowGatedTrackPrefix: 'Follow',
   thankYouForFollowing: 'Thank you for following',
   unlockingFollowGatedTrackSuffix: '!',
   unlockedFollowGatedTrackSuffix: '! This track is now available.',
+  ownTipGated: 'Users can unlock access by sending you a tip!',
   unlockTipGatedTrackPrefix: 'Send',
   unlockTipGatedTrackSuffix: ' a tip',
   thankYouForSupporting: 'Thank you for supporting',
@@ -74,6 +87,7 @@ type PremiumTrackAccessSectionProps = {
   followee: Nullable<User>
   tippedUser: Nullable<User>
   goToCollection: () => void
+  isOwner: boolean
 }
 
 const LockedPremiumTrackSection = ({
@@ -323,11 +337,19 @@ const UnlockedPremiumTrackSection = ({
   premiumConditions,
   followee,
   tippedUser,
-  goToCollection
+  goToCollection,
+  isOwner
 }: PremiumTrackAccessSectionProps) => {
   const renderUnlockedDescription = useCallback(() => {
     if (premiumConditions.nft_collection) {
-      return (
+      return isOwner ? (
+        <div>
+          <span>{messages.ownCollectibleGatedPrefix}</span>
+          <span className={styles.collectibleName} onClick={goToCollection}>
+            &nbsp;{premiumConditions.nft_collection.name}&nbsp;
+          </span>
+        </div>
+      ) : (
         <div>
           <IconVerifiedGreen className={styles.verifiedGreenIcon} />
           <span>{messages.aCollectibleFrom}</span>
@@ -340,7 +362,11 @@ const UnlockedPremiumTrackSection = ({
     }
 
     if (premiumConditions.follow_user_id) {
-      return (
+      return isOwner ? (
+        <div>
+          <span>{messages.ownFollowGated}</span>
+        </div>
+      ) : (
         <div>
           <IconVerifiedGreen className={styles.verifiedGreenIcon} />
           <span>{messages.thankYouForFollowing}&nbsp;</span>
@@ -357,7 +383,11 @@ const UnlockedPremiumTrackSection = ({
     }
 
     if (premiumConditions.tip_user_id) {
-      return (
+      return isOwner ? (
+        <div>
+          <span>{messages.ownTipGated}</span>
+        </div>
+      ) : (
         <div>
           <IconVerifiedGreen className={styles.verifiedGreenIcon} />
           <span>{messages.thankYouForSupporting}&nbsp;</span>
@@ -380,8 +410,20 @@ const UnlockedPremiumTrackSection = ({
   return (
     <div className={styles.premiumContentSectionUnlocked}>
       <div className={styles.premiumContentSectionTitle}>
-        <IconUnlocked className={styles.unlockedIcon} />
-        {messages.unlocked}
+        {isOwner ? (
+          premiumConditions.nft_collection ? (
+            <IconCollectible className={styles.collectibleIcon} />
+          ) : (
+            <IconSpecialAccess className={styles.specialAccessIcon} />
+          )
+        ) : (
+          <IconUnlocked className={styles.unlockedIcon} />
+        )}
+        {isOwner
+          ? premiumConditions.nft_collection
+            ? messages.collectibleGated
+            : messages.specialAccess
+          : messages.unlocked}
       </div>
       <div className={styles.premiumContentSectionDescription}>
         {renderUnlockedDescription()}
@@ -395,13 +437,15 @@ type PremiumTrackSectionProps = {
   trackId: ID
   premiumConditions: PremiumConditions
   doesUserHaveAccess: boolean
+  isOwner: boolean
 }
 
 export const PremiumTrackSection = ({
   isLoading,
   trackId,
   premiumConditions,
-  doesUserHaveAccess
+  doesUserHaveAccess,
+  isOwner
 }: PremiumTrackSectionProps) => {
   const { isEnabled: isPremiumContentEnabled } = useFlag(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
@@ -456,6 +500,7 @@ export const PremiumTrackSection = ({
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
+          isOwner={isOwner}
         />
       </div>
     )
@@ -470,6 +515,7 @@ export const PremiumTrackSection = ({
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
+          isOwner={isOwner}
         />
       </div>
     )
@@ -483,6 +529,7 @@ export const PremiumTrackSection = ({
         followee={followee}
         tippedUser={tippedUser}
         goToCollection={handleGoToCollection}
+        isOwner={isOwner}
       />
     </div>
   )

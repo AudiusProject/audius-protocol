@@ -18,10 +18,12 @@ import SectionButton from 'components/section-button/SectionButton'
 import StatBanner from 'components/stat-banner/StatBanner'
 import GiantTrackTile from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
+import { usePremiumContentAccess } from 'hooks/usePremiumContentAccess'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
 import Remixes from './Remixes'
 import styles from './TrackPage.module.css'
+
 const { tracksActions } = trackPageLineupActions
 
 const messages = {
@@ -42,7 +44,6 @@ export type OwnProps = {
   heroPlaying: boolean
   userId: ID | null
   badge: string | null
-  doesUserHaveAccess: boolean
   onHeroPlay: (isPlaying: boolean) => void
   goToProfilePage: (handle: string) => void
   goToSearchResultsPage: (tag: string) => void
@@ -88,7 +89,6 @@ const TrackPage = ({
   heroPlaying,
   userId,
   badge,
-  doesUserHaveAccess,
   onHeroPlay,
   goToProfilePage,
   goToSearchResultsPage,
@@ -120,7 +120,10 @@ const TrackPage = ({
   const following = user?.does_current_user_follow ?? false
   const isSaved = heroTrack?.has_current_user_saved ?? false
   const isReposted = heroTrack?.has_current_user_reposted ?? false
-  const loading = !heroTrack
+
+  const { isUserAccessTBD, doesUserHaveAccess } =
+    usePremiumContentAccess(heroTrack)
+  const loading = !heroTrack || isUserAccessTBD
 
   const onPlay = () => onHeroPlay(heroPlaying)
   const onSave = isOwner

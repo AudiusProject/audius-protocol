@@ -1,5 +1,9 @@
-import { FeatureFlags } from '@audius/common'
-import { IconLockedCornerTag, IconUnlockedCornerTag } from '@audius/stems'
+import { FeatureFlags, PremiumConditions } from '@audius/common'
+import {
+  IconLockedCornerTag,
+  IconCollectibleCornerTag,
+  IconSpecialAccessCornerTag
+} from '@audius/stems'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -7,10 +11,14 @@ import styles from './GiantTrackTile.module.css'
 
 type PremiumTrackCornerTagProps = {
   doesUserHaveAccess: boolean
+  isOwner: boolean
+  premiumConditions: PremiumConditions
 }
 
 export const PremiumTrackCornerTag = ({
-  doesUserHaveAccess
+  doesUserHaveAccess,
+  isOwner,
+  premiumConditions
 }: PremiumTrackCornerTagProps) => {
   const { isEnabled: isPremiumContentEnabled } = useFlag(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
@@ -20,8 +28,15 @@ export const PremiumTrackCornerTag = ({
     return null
   }
 
+  if (isOwner) {
+    if (premiumConditions.nft_collection) {
+      return <IconCollectibleCornerTag className={styles.cornerTag} />
+    }
+    return <IconSpecialAccessCornerTag className={styles.cornerTag} />
+  }
+
   if (doesUserHaveAccess) {
-    return <IconUnlockedCornerTag className={styles.cornerTag} />
+    return null
   }
 
   return <IconLockedCornerTag className={styles.cornerTag} />

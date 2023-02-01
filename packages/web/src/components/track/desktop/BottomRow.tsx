@@ -95,7 +95,7 @@ export const BottomRow = ({
     )
   }
 
-  if (isPremiumContentEnabled && isTrack && !doesUserHaveAccess) {
+  if (isPremiumContentEnabled && isTrack && !isLoading && !doesUserHaveAccess) {
     return (
       <div className={cn(styles.premiumContent, styles.bottomRow)}>
         <IconLock />
