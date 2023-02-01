@@ -138,6 +138,7 @@ def populate_mock_db(db, entities, block_offset=None):
 
         num_blocks = max(
             len(tracks),
+            len(playlists),
             len(users),
             len(follows),
             len(saves),

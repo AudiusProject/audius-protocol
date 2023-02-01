@@ -5,7 +5,10 @@ from unittest import mock
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
 from src.challenges.challenge_event import ChallengeEvent
+from src.models.notifications.milestone import Milestone
+from src.models.notifications.notification import Notification
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
+from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -310,15 +313,15 @@ def test_index_valid_social_features(app, mocker):
         assert current_repost.repost_type == EntityType.PLAYLIST.value.lower()
         assert current_repost.repost_item_id == 1
 
-        # ensure session is flushed, invalidating old records before bulk saving
+    with db.scoped_session() as session:
         aggregate_playlists: List[AggregatePlaylist] = (
             session.query(AggregatePlaylist)
             .filter(AggregatePlaylist.playlist_id == 1)
             .all()
         )
         assert len(aggregate_playlists) == 1
-        aggregate_palylist = aggregate_playlists[0]
-        assert aggregate_palylist.repost_count == 1
+        aggregate_playlist = aggregate_playlists[0]
+        assert aggregate_playlist.repost_count == 1
     calls = [
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
@@ -495,3 +498,131 @@ def test_index_invalid_social_features(app, mocker):
         # Verify repost
         all_reposts: List[Repost] = session.query(Repost).all()
         assert len(all_reposts) == 0
+
+
+def test_index_entity_update_and_social_feature(app, mocker):
+    "Tests a playlist update and repost in the same block"
+    bus_mock = mocker.patch(
+        "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
+    )
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+
+    """
+    const resp = await this.manageEntity({
+        userId,
+        entityType: EntityType.USER,
+        entityId: followeeUserId,
+        action: isUnfollow ? Action.UNFOLLOW : Action.FOLLOW,
+        metadataMultihash: ''
+      })
+    """
+    tx_receipts = {
+        "RepostPlaylistTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 11,
+                        "_action": "Repost",
+                        "_metadata": "",
+                        "_signer": "user11wallet",
+                    }
+                )
+            },
+        ],
+        "UpdatePlaylist1Tx2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 10,
+                        "_action": "Update",
+                        "_metadata": "QmUpdatePlaylist1",
+                        "_signer": "user10wallet",
+                    }
+                )
+            },
+        ],
+        "RepostPlaylistTx3": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 12,
+                        "_action": "Repost",
+                        "_metadata": "",
+                        "_signer": "user12wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": i, "handle": f"user-{i}", "wallet": f"user{i}wallet"}
+            for i in range(1, 13)
+        ],
+        "playlists": [{"playlist_id": 1, "playlist_owner_id": 10}],
+        "reposts": [
+            {"repost_item_id": 1, "repost_type": "playlist", "user_id": i}
+            for i in range(1, 10)
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    test_metadata = {
+        "QmUpdatePlaylist1": {
+            "playlist_contents": {"track_ids": []},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "playlist updated",
+        }
+    }
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=2,
+            block_timestamp=1585336422,
+            block_hash=0,
+            metadata=test_metadata,
+        )
+
+        all_playlists: List[Playlist] = session.query(Playlist).all()
+        assert len(all_playlists) == 2
+
+        all_reposts: List[Repost] = session.query(Repost).all()
+        assert len(all_reposts) == 11
+
+        all_notifications: List[Notification] = session.query(Notification).all()
+        assert len(all_notifications) == 12
+
+        all_milestones: List[Milestone] = session.query(Milestone).all()
+        assert len(all_milestones) == 1
