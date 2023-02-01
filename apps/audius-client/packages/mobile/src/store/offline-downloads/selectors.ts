@@ -1,9 +1,8 @@
-import { createSelector } from 'reselect'
+import type { ID } from '@audius/common'
 
 import type { AppState } from 'app/store'
 
 import type { OfflineDownloadsState } from './slice'
-import { OfflineDownloadStatus } from './slice'
 
 export const getOfflineDownloadStatus = (state: AppState) =>
   state.offlineDownloads.downloadStatus
@@ -13,11 +12,11 @@ export const getTrackOfflineDownloadStatus =
     trackId ? state.offlineDownloads.downloadStatus[trackId] : null
 
 export const getIsCollectionMarkedForDownload =
-  (collection?: string) => (state: AppState) =>
+  (collectionId?: string | ID) => (state: AppState) =>
     !!(
-      collection &&
-      (state.offlineDownloads.collections[collection] ||
-        state.offlineDownloads.favoritedCollections[collection])
+      collectionId &&
+      (state.offlineDownloads.collectionStatus[collectionId] ||
+        state.offlineDownloads.favoritedCollectionStatus[collectionId])
     )
 
 export const getOfflineTracks = (
@@ -26,43 +25,13 @@ export const getOfflineTracks = (
 
 export const getOfflineCollections = (
   state: AppState
-): OfflineDownloadsState['collections'] => state.offlineDownloads.collections
+): OfflineDownloadsState['collectionStatus'] =>
+  state.offlineDownloads.collectionStatus
 
 export const getOfflineFavoritedCollections = (
   state: AppState
-): OfflineDownloadsState['favoritedCollections'] =>
-  state.offlineDownloads.favoritedCollections
+): OfflineDownloadsState['favoritedCollectionStatus'] =>
+  state.offlineDownloads.favoritedCollectionStatus
 
 export const getIsDoneLoadingFromDisk = (state: AppState): boolean =>
   state.offlineDownloads.isDoneLoadingFromDisk
-
-export const getIsAnyDownloadInProgress = createSelector(
-  [
-    getOfflineDownloadStatus,
-    (_state: AppState, trackIds: number[]) => trackIds
-  ],
-  (offlineDownloadStatus, trackIds) => {
-    return trackIds.some((trackId: number) => {
-      const status = offlineDownloadStatus[trackId.toString()]
-      // Any download is in progress if any are loading (actively downloading)
-      // or init (queued, but not actively downloading)
-      return (
-        status === OfflineDownloadStatus.LOADING ||
-        status === OfflineDownloadStatus.INIT
-      )
-    })
-  }
-)
-
-export const getIsAllDownloadsErrored = createSelector(
-  [getOfflineDownloadStatus, (state, trackIds) => trackIds],
-  (offlineDownloadStatus, trackIds) => {
-    return (
-      trackIds.length > 0 &&
-      trackIds.every((trackId: number) => {
-        const status = offlineDownloadStatus[trackId.toString()]
-        return status === OfflineDownloadStatus.ERROR
-      })
-    )
-  }
-)

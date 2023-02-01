@@ -8,7 +8,6 @@ import { accountSelectors } from '@audius/common'
 import moment from 'moment'
 import queue from 'react-native-job-queue'
 
-import type { TrackForDownload } from 'app/components/offline-downloads'
 import { fetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
 import { store } from 'app/store'
 import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
@@ -17,15 +16,16 @@ import { isAvailableForPlay } from 'app/utils/trackUtils'
 import { apiClient } from '../audius-api-client'
 
 import {
+  batchDownloadCollection,
   batchDownloadTrack,
   batchRemoveTrackDownload,
-  downloadCollection,
   downloadCollectionCoverArt,
   downloadTrackCoverArt,
   DOWNLOAD_REASON_FAVORITES,
   removeDownloadedCollectionFromFavorites
 } from './offline-downloader'
 import { purgeDownloadedTrack, writeTrackJson } from './offline-storage'
+import type { TrackForDownload } from './types'
 import type { TrackDownloadWorkerPayload } from './workers/trackDownloadWorker'
 import { TRACK_DOWNLOAD_WORKER } from './workers/trackDownloadWorker'
 
@@ -107,9 +107,7 @@ export const syncFavoritedCollections = async (
     (collection) => !newCollectionIds.has(collection.playlist_id)
   )
 
-  addedCollections.forEach((collection) => {
-    downloadCollection(collection, /* isFavoritesDownload */ true)
-  })
+  batchDownloadCollection(addedCollections, true)
 
   removedCollections.forEach((collection) => {
     const tracksForDownload =
@@ -122,7 +120,7 @@ export const syncFavoritedCollections = async (
       })) ?? []
 
     removeDownloadedCollectionFromFavorites(
-      collection.playlist_id.toString(),
+      collection.playlist_id,
       tracksForDownload
     )
   })
@@ -130,7 +128,7 @@ export const syncFavoritedCollections = async (
 
 export const syncCollectionsTracks = async (
   collections: Collection[],
-  isFavoritesDownload?: boolean
+  isFavoritesDownload: boolean
 ) => {
   collections.forEach((collection) => {
     syncCollectionTracks(collection, isFavoritesDownload)
@@ -139,7 +137,7 @@ export const syncCollectionsTracks = async (
 
 export const syncCollectionTracks = async (
   offlineCollection: Collection,
-  isFavoritesDownload?: boolean
+  isFavoritesDownload: boolean
 ) => {
   const state = store.getState()
   const currentUserId = getUserId(state as unknown as CommonState)
@@ -220,8 +218,8 @@ export const syncCollectionTracks = async (
     return
   }
 
-  downloadCollection(
-    updatedCollection,
+  batchDownloadCollection(
+    [updatedCollection],
     isFavoritesDownload,
     /* skipTracks */ true
   )

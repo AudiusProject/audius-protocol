@@ -5,7 +5,7 @@ import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Switch } from 'app/components/core'
-import { DownloadStatusIndicator } from 'app/components/offline-downloads/DownloadStatusIndicatorBase'
+import { DownloadStatusIndicator } from 'app/components/offline-downloads/DownloadStatusIndicator'
 import { useProxySelector } from 'app/hooks/useProxySelector'
 import {
   downloadAllFavorites,
@@ -33,10 +33,11 @@ export const DownloadFavoritesSwitch = () => {
   const isReachable = useSelector(getIsReachable)
 
   const isMarkedForDownload = useProxySelector((state) => {
-    const { collections, favoritedCollections } = state.offlineDownloads
-    return (
-      collections[DOWNLOAD_REASON_FAVORITES] ||
-      favoritedCollections[DOWNLOAD_REASON_FAVORITES]
+    const { collectionStatus, favoritedCollectionStatus } =
+      state.offlineDownloads
+    return !!(
+      collectionStatus[DOWNLOAD_REASON_FAVORITES] ||
+      favoritedCollectionStatus[DOWNLOAD_REASON_FAVORITES]
     )
   }, [])
 

@@ -101,6 +101,9 @@ export type DetailsTileProps = {
   /** Amount of favorites (saves) on this item */
   saveCount?: number
 
+  /** Amount of tracks on this item */
+  trackCount?: number
+
   /** Title of the item */
   title: string
 

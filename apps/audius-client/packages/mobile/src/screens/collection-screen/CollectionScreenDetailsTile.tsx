@@ -93,6 +93,7 @@ export const CollectionScreenDetailsTile = ({
   isPrivate,
   isPublishing,
   renderImage,
+  trackCount,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -223,7 +224,12 @@ export const CollectionScreenDetailsTile = ({
       return (
         <>
           <View style={styles.trackListDivider} />
-          <TrackList hideArt showDivider showSkeleton tracks={Array(20)} />
+          <TrackList
+            hideArt
+            showDivider
+            showSkeleton
+            tracks={Array(Math.min(10, trackCount ?? 0))}
+          />
         </>
       )
 
