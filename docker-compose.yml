@@ -315,6 +315,47 @@ services:
     profiles:
       - elasticsearch
 
+  comms:
+    build:
+      context: comms
+      dockerfile: DockerfileM1
+    container_name: comms
+    command: /comms-linux discovery
+    environment:
+      audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/postgres?sslmode=disable"
+    depends_on:
+      - nats
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
+  nats:
+    build:
+      context: comms
+      dockerfile: DockerfileM1
+    container_name: nats
+    command: /comms-linux nats
+    restart: unless-stopped
+    ports:
+      - "6222:6222"
+      - "4222:4222"
+    environment:
+      - NATS_STORE_DIR=/nats
+    volumes:
+      - /var/k8s/nats:/nats
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   discovery-provider:
     build:
       context: discovery-provider
@@ -323,6 +364,7 @@ services:
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:
+      audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/postgres"
       PYTHONPYCACHEPREFIX: /tmp/pycache
 
       audius_web3_host: "poa-ganache"
@@ -353,6 +395,8 @@ services:
       - solana-programs-idl:/audius-discovery-provider/idl
       - ./dev-tools:/tmp/dev-tools
     depends_on:
+      discovery-provider-db:
+        condition: service_healthy
       poa-ganache:
         condition: service_healthy
       eth-ganache:
@@ -365,6 +409,17 @@ services:
     deploy:
       mode: replicated
       replicas: "${DISCOVERY_PROVIDER_REPLICAS}"
+
+  discovery-provider-db:
+    image: postgres:11.4
+    user: postgres
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+    logging: *default-logging
+    deploy:
+      mode: global
 
   # creator-node
 
