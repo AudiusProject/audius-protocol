@@ -12,13 +12,17 @@ type CollectionListProps = {
   collection: Collection[] | undefined
 } & ListProps
 
+const renderCard = ({ item }: { item: Collection }) => (
+  <CollectionCard collection={item} />
+)
+
 export const CollectionList = (props: CollectionListProps) => {
   const { collection, ...other } = props
 
   return (
     <CardList
       data={collection}
-      renderItem={({ item }) => <CollectionCard collection={item} />}
+      renderItem={renderCard}
       LoadingCardComponent={CollectionCardSkeleton}
       {...other}
     />

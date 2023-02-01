@@ -19,8 +19,8 @@ export const CollectionScreenSkeleton = (
         <StaticSkeleton />
         <StaticSkeleton />
       </View>
-      <TrackListItemSkeleton />
-      <TrackListItemSkeleton />
+      <TrackListItemSkeleton index={0} />
+      <TrackListItemSkeleton index={1} />
     </EntitySkeleton>
   )
 }

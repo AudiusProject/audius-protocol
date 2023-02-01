@@ -1,23 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
-import type { ID, UID } from '@audius/common'
+import type { ID, Nullable, Track, UID, User } from '@audius/common'
 import {
-  Kind,
-  useProxySelector,
+  cacheTracksSelectors,
+  cacheUsersSelectors,
   savedPageActions,
-  playerSelectors,
   Status,
   FavoriteSource,
-  Name,
   PlaybackSource,
-  lineupSelectors,
   savedPageTracksLineupActions as tracksActions,
   savedPageSelectors,
   tracksSocialActions,
   reachabilitySelectors
 } from '@audius/common'
-import { useFocusEffect } from '@react-navigation/native'
-import { debounce } from 'lodash'
+import { isEqual, debounce } from 'lodash'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
@@ -28,25 +24,25 @@ import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useOfflineFavoritesLineup } from 'app/hooks/useLoadOfflineTracks'
-import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 import { FilterInput } from './FilterInput'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
-const { getPlaying, getUid } = playerSelectors
 const { saveTrack, unsaveTrack } = tracksSocialActions
+const { fetchSaves, fetchMoreSaves } = savedPageActions
 const {
+  getSaves,
+  getLocalSaves,
   getSavedTracksLineup,
   getSavedTracksStatus,
   getInitialFetchStatus,
-  getIsFetchingMore,
-  hasReachedEnd
+  getIsFetchingMore
 } = savedPageSelectors
-const { fetchSaves, fetchMoreSaves } = savedPageActions
-const { makeGetTableMetadatas } = lineupSelectors
 const { getIsReachable } = reachabilitySelectors
+const { getTrack } = cacheTracksSelectors
+const { getUserFromTrack } = cacheUsersSelectors
 
 const messages = {
   emptyTabText: "You haven't favorited any tracks yet.",
@@ -71,8 +67,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   }
 }))
 
-const getTracks = makeGetTableMetadatas(getSavedTracksLineup)
-
 const FETCH_LIMIT = 50
 
 export const TracksTab = () => {
@@ -81,58 +75,72 @@ export const TracksTab = () => {
   const isReachable = useSelector(getIsReachable)
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
-  const [hasFetchedOnFocus, setHasFetchedOnFocus] = useState(false)
   const [filterValue, setFilterValue] = useState('')
   const [fetchPage, setFetchPage] = useState(0)
-  const [allTracksFetched, setAllTracksFetched] = useState(false)
-  const isPlaying = useSelector(getPlaying)
-  const playingUid = useSelector(getUid)
   const savedTracksStatus = useSelector(getSavedTracksStatus)
-  const hasReachedFavoritesEnd = useSelector(hasReachedEnd)
   const initialFetch = useSelector(getInitialFetchStatus)
   const isFetchingMore = useSelector(getIsFetchingMore)
-  const savedTracks = useProxySelector(getTracks, [])
+  const saves = useSelector(getSaves)
+  const localSaves = useSelector(getLocalSaves)
 
-  const isLoading = savedTracksStatus !== Status.SUCCESS
-  const tracks = useMemo(
-    () => savedTracks.entries as TrackMetadata[],
-    [savedTracks.entries]
+  const saveCount = useMemo(
+    () => saves.length + Object.keys(localSaves).length,
+    [saves, localSaves]
   )
 
-  const debouncedFetchSaves = useMemo(() => {
+  const isLoading = savedTracksStatus !== Status.SUCCESS
+
+  const debouncedFetchSavesOnline = useMemo(() => {
     return debounce((filterVal) => {
       dispatch(fetchSaves(filterVal, '', '', 0, FETCH_LIMIT))
     }, 500)
   }, [dispatch])
 
-  const handleFetchSavesOnline = useCallback(() => {
-    debouncedFetchSaves(filterValue)
-  }, [debouncedFetchSaves, filterValue])
+  const fetchSavesOnline = useCallback(() => {
+    debouncedFetchSavesOnline(filterValue)
+  }, [debouncedFetchSavesOnline, filterValue])
 
-  const handleFetchSavesOffline = useOfflineFavoritesLineup(
-    handleFetchSavesOnline
-  )
+  useOfflineFavoritesLineup(fetchSavesOnline)
 
-  const handleFetchSaves = useCallback(() => {
-    if (isOfflineModeEnabled && !isReachable) {
-      handleFetchSavesOffline()
-    } else {
-      handleFetchSavesOnline()
+  useEffect(() => {
+    if (isReachable) {
+      fetchSavesOnline()
     }
-  }, [
-    handleFetchSavesOffline,
-    handleFetchSavesOnline,
-    isOfflineModeEnabled,
-    isReachable
-  ])
+  }, [isReachable, fetchSavesOnline])
+
+  const savedTrackUids: string[] = useSelector((state) => {
+    return getSavedTracksLineup(state).entries.map(({ uid }) => uid)
+  }, isEqual)
+
+  const filterTrack = (
+    track: Nullable<Track>,
+    user: Nullable<User>
+  ): track is TrackMetadata => {
+    if (!track || !user) {
+      return false
+    }
+
+    if (!filterValue.length) {
+      return true
+    }
+
+    const matchValue = filterValue?.toLowerCase()
+    return (
+      track.title?.toLowerCase().indexOf(matchValue) > -1 ||
+      user.name.toLowerCase().indexOf(matchValue) > -1
+    )
+  }
+
+  const allTracksFetched = useMemo(() => {
+    return savedTrackUids.length === saveCount && !filterValue
+  }, [savedTrackUids, saveCount, filterValue])
 
   const handleMoreFetchSaves = useCallback(() => {
     if (
       allTracksFetched ||
-      isLoading ||
       isFetchingMore ||
       (isOfflineModeEnabled && !isReachable) ||
-      tracks.length < fetchPage * FETCH_LIMIT
+      savedTrackUids.length < fetchPage * FETCH_LIMIT
     ) {
       return
     }
@@ -148,41 +156,18 @@ export const TracksTab = () => {
     fetchPage,
     filterValue,
     isFetchingMore,
-    isLoading,
     isOfflineModeEnabled,
     isReachable,
-    tracks.length
+    savedTrackUids.length
   ])
 
-  useEffect(() => {
-    const allTracks = tracks.every((track) => track.kind === Kind.TRACKS)
-
-    if (allTracks && !allTracksFetched && !filterValue) {
-      setAllTracksFetched(true)
-    } else if (!allTracks && allTracksFetched) {
-      setAllTracksFetched(false)
-    }
-  }, [allTracksFetched, filterValue, hasReachedFavoritesEnd, tracks])
-
-  useEffect(() => {
-    if (!allTracksFetched) handleFetchSaves()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filterValue])
-
-  useFocusEffect(() => {
-    if (!hasFetchedOnFocus) {
-      setHasFetchedOnFocus(true)
-      handleFetchSaves()
-    }
-  })
-
-  const filterTrack = (track: TrackMetadata) => {
-    const matchValue = filterValue?.toLowerCase()
-    return (
-      track.title?.toLowerCase().indexOf(matchValue) > -1 ||
-      track.user?.name.toLowerCase().indexOf(matchValue) > -1
-    )
-  }
+  const filteredTrackUids: string[] = useSelector((state) => {
+    return savedTrackUids.filter((uid) => {
+      const track = getTrack(state, { uid })
+      const user = getUserFromTrack(state, { uid })
+      return filterTrack(track, user)
+    })
+  }, isEqual)
 
   const onToggleSave = useCallback(
     (isSaved: boolean, trackId: ID) => {
@@ -195,39 +180,14 @@ export const TracksTab = () => {
 
   const togglePlay = useCallback(
     (uid: UID, id: ID) => {
-      if (uid !== playingUid || (uid === playingUid && !isPlaying)) {
-        dispatch(tracksActions.play(uid))
-        // TODO: store and queue events locally; upload on reconnect
-        if (!isReachable && isOfflineModeEnabled) return
-        track(
-          make({
-            eventName: Name.PLAYBACK_PLAY,
-            id: `${id}`,
-            source: PlaybackSource.FAVORITES_PAGE
-          })
-        )
-      } else if (uid === playingUid && isPlaying) {
-        dispatch(tracksActions.pause())
-        if (!isReachable && isOfflineModeEnabled) return
-        track(
-          make({
-            eventName: Name.PLAYBACK_PAUSE,
-            id: `${id}`,
-            source: PlaybackSource.FAVORITES_PAGE
-          })
-        )
-      }
+      dispatch(tracksActions.togglePlay(uid, id, PlaybackSource.FAVORITES_PAGE))
     },
-    [playingUid, isPlaying, dispatch, isReachable, isOfflineModeEnabled]
+    [dispatch]
   )
-
-  const filteredTracks = allTracksFetched
-    ? tracks.filter(filterTrack)
-    : tracks.filter((track) => track.kind !== Kind.EMPTY)
 
   return (
     <VirtualizedScrollView listKey='favorites-screen'>
-      {!isLoading && tracks.length === 0 && !filterValue ? (
+      {!isLoading && filteredTrackUids.length === 0 && !filterValue ? (
         isOfflineModeEnabled && !isReachable ? (
           <NoTracksPlaceholder />
         ) : (
@@ -243,7 +203,7 @@ export const TracksTab = () => {
           />
           <WithLoader loading={initialFetch}>
             <>
-              {tracks.length ? (
+              {filteredTrackUids.length ? (
                 <Tile
                   styles={{
                     root: styles.container,
@@ -251,14 +211,14 @@ export const TracksTab = () => {
                   }}
                 >
                   <TrackList
+                    hideArt
+                    onEndReached={handleMoreFetchSaves}
+                    onEndReachedThreshold={1.5}
                     onSave={onToggleSave}
                     showDivider
                     togglePlay={togglePlay}
                     trackItemAction='save'
-                    tracks={filteredTracks}
-                    onEndReachedThreshold={1.5}
-                    onEndReached={handleMoreFetchSaves}
-                    hideArt
+                    uids={filteredTrackUids}
                   />
                 </Tile>
               ) : null}

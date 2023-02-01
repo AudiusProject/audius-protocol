@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import type { Collection } from '@audius/common'
 import {
@@ -36,6 +36,11 @@ const useStyles = makeStyles(({ spacing }) => ({
 const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
   const { values, handleSubmit, handleReset, setFieldValue } = props
   const styles = useStyles()
+
+  const trackIds = useMemo(
+    () => values.tracks?.map(({ track_id }) => track_id),
+    [values.tracks]
+  )
 
   const handleReorder = useCallback(
     ({ data, from, to }) => {
@@ -92,7 +97,7 @@ const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
           isReorderable
           onReorder={handleReorder}
           onRemove={handleRemove}
-          tracks={values.tracks}
+          ids={trackIds}
           trackItemAction='remove'
           ListHeaderComponent={header}
           ListFooterComponent={<View style={styles.footer} />}

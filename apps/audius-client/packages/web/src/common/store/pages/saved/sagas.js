@@ -5,14 +5,7 @@ import {
   savedPageSelectors,
   waitForValue
 } from '@audius/common'
-import {
-  takeLatest,
-  call,
-  put,
-  fork,
-  select,
-  getContext
-} from 'redux-saga/effects'
+import { takeLatest, call, put, select, getContext } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -20,10 +13,6 @@ import { waitForRead } from 'utils/sagaHelpers'
 import tracksSagas from './lineups/sagas'
 const { getSaves } = savedPageSelectors
 const { getAccountUser } = accountSelectors
-
-function* fetchTracksLineup() {
-  yield put(tracksActions.fetchLineupMetadatas())
-}
 
 function* watchFetchSaves() {
   let currentQuery = ''
@@ -49,7 +38,7 @@ function* watchFetchSaves() {
 
     // Don't refetch saves in the same session
     if (saves && saves.length && isSameParams) {
-      yield fork(fetchTracksLineup)
+      yield put(tracksActions.fetchLineupMetadatas(offset, limit))
     } else {
       try {
         currentQuery = query
@@ -85,7 +74,7 @@ function* watchFetchSaves() {
         if (limit > 0 && saves.length < limit) {
           yield put(actions.endFetching(offset + saves.length))
         }
-        yield fork(fetchTracksLineup)
+        yield put(tracksActions.fetchLineupMetadatas(offset, limit))
       } catch (e) {
         yield put(actions.fetchSavesFailed())
       }
@@ -128,7 +117,7 @@ function* watchFetchMoreSaves() {
       if (limit > 0 && saves.length < limit) {
         yield put(actions.endFetching(offset + saves.length))
       }
-      yield fork(fetchTracksLineup)
+      yield put(tracksActions.fetchLineupMetadatas(offset, limit))
     } catch (e) {
       yield put(actions.fetchMoreSavesFailed())
     }
