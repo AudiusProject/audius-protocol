@@ -314,7 +314,7 @@ def test_index_valid_social_features(app, mocker):
         assert current_repost.repost_item_id == 1
 
     with db.scoped_session() as session:
-        # ensure session is flushed, invalidating old records before bulk saving
+        # ensure previous session updated and triggered correctly
         aggregate_playlists: List[AggregatePlaylist] = (
             session.query(AggregatePlaylist)
             .filter(AggregatePlaylist.playlist_id == 1)
