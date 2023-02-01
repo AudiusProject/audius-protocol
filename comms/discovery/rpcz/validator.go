@@ -17,20 +17,9 @@ import (
 
 ////////////////////
 
-func Validate(userId int32, rawRpc schema.RawRPC) error {
-
-	// Always check timestamp
-	if (time.Now().UnixMilli() - rawRpc.Timestamp > 5000) {
-		return errors.New("Invalid timestamp")
-	}
-
-	validator := Validators[rawRpc.Method]
-	if validator == nil {
-		config.Logger.Debug("no validator for " + rawRpc.Method)
-		return nil
-	}
-
-	return validator(nil, userId, rawRpc)
+type Validator struct {
+	db      *sqlx.DB
+	limiter *RateLimiter
 }
 
 func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
