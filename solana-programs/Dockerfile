@@ -28,6 +28,6 @@ RUN --mount=type=cache,target=/usr/src/app/target-cache \
 
 ARG BUILD_ID
 LABEL prune=true
-LABEL build=$BUILD_IDm
+LABEL build=$BUILD_ID
 
 CMD [ "./scripts/deploy.sh" ]
