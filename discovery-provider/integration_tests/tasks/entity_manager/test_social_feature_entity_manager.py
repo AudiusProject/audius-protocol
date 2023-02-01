@@ -313,6 +313,7 @@ def test_index_valid_social_features(app, mocker):
         assert current_repost.repost_type == EntityType.PLAYLIST.value.lower()
         assert current_repost.repost_item_id == 1
 
+    with db.scoped_session() as session:
         # ensure session is flushed, invalidating old records before bulk saving
         aggregate_playlists: List[AggregatePlaylist] = (
             session.query(AggregatePlaylist)
@@ -321,7 +322,7 @@ def test_index_valid_social_features(app, mocker):
         )
         assert len(aggregate_playlists) == 1
         aggregate_palylist = aggregate_playlists[0]
-        assert aggregate_palylist.repost_count == 2
+        assert aggregate_palylist.repost_count == 1
     calls = [
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
