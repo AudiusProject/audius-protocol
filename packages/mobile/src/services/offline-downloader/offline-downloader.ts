@@ -3,7 +3,6 @@ import path from 'path'
 import type {
   CollectionMetadata,
   CommonState,
-  DownloadReason,
   ID,
   Track,
   UserCollectionMetadata,
@@ -11,6 +10,7 @@ import type {
   UserTrackMetadata
 } from '@audius/common'
 import {
+  cacheTracksSelectors,
   SquareSizes,
   encodeHashId,
   accountSelectors,
@@ -39,7 +39,8 @@ import {
   batchInitCollectionDownload,
   errorCollectionDownload,
   startCollectionDownload,
-  completeCollectionDownload
+  completeCollectionDownload,
+  OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
 
 import { apiClient } from '../audius-api-client'
@@ -69,6 +70,7 @@ const {
   fs: { exists }
 } = RNFetchBlob
 const { getUserId } = accountSelectors
+const { getTrack } = cacheTracksSelectors
 const { getIsReachable } = reachabilitySelectors
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
@@ -224,13 +226,7 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
 
   const state = store.getState()
   const currentUserId = getUserId(state)
-  const offlineTracks = getOfflineTracks(state)
-  if (shouldAbortDownload(downloadReason)) {
-    if (!offlineTracks[trackId]) {
-      store.dispatch(removeDownload(trackIdStr))
-    }
-    return
-  }
+  if (shouldAbortDownload(trackForDownload)) return
 
   const trackFromApi = await apiClient.getTrack({
     id: trackId,
@@ -279,10 +275,7 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
         }
       }
 
-      if (shouldAbortDownload(downloadReason)) {
-        // Don't dispatch removeDownload in this case, since it's already downloaded as part of another collection
-        return
-      }
+      if (shouldAbortDownload(trackForDownload)) return
 
       await writeTrackJson(trackIdStr, trackToWrite)
 
@@ -310,46 +303,58 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
       }
     }
 
-    if (shouldAbortDownload(downloadReason)) {
-      store.dispatch(removeDownload(trackIdStr))
-      return
-    }
-
     await writeTrackJson(trackIdStr, trackToWrite)
+
+    if (shouldAbortDownload(trackForDownload)) return
+
     const verified = await verifyTrack(trackIdStr, true)
-    if (verified) {
-      store.dispatch(loadTrack(trackToWrite))
-      store.dispatch(completeDownload(trackIdStr))
-      return
-    } else {
+    if (!verified) {
       throw failJob(
         `DownloadQueueWorker - download verification failed ${trackIdStr}`
       )
     }
+    store.dispatch(loadTrack(trackToWrite))
+    store.dispatch(completeDownload(trackIdStr))
+    return
   } catch (e) {
     throw failJob(e.message)
   } finally {
-    if (shouldAbortDownload(downloadReason)) {
+    if (shouldAbortDownload(trackForDownload)) {
       removeTrackDownload(trackForDownload)
     }
   }
 }
 
 // Util to check if we should short-circuit download in case the associated collection download has been cancelled
-const shouldAbortDownload = ({
-  collection_id,
-  is_from_favorites
-}: DownloadReason) => {
+const shouldAbortDownload = (trackForDownload: TrackForDownload) => {
+  const { trackId, downloadReason } = trackForDownload
+  const { collection_id, is_from_favorites } = downloadReason
   const state = store.getState()
   const offlineCollections = getOfflineCollections(state)
   const favoritedOfflineCollections = getOfflineFavoritedCollections(state)
-  if (is_from_favorites && collection_id !== DOWNLOAD_REASON_FAVORITES) {
-    return (
-      !offlineCollections[DOWNLOAD_REASON_FAVORITES] ||
-      (collection_id && !favoritedOfflineCollections[collection_id])
-    )
-  } else {
-    return collection_id && !offlineCollections[collection_id]
+  const cachedTrack = getTrack(state, { id: trackId })
+  const isSaved = cachedTrack?.has_current_user_saved
+  const isFavoritesMarkedForDownload =
+    offlineCollections[DOWNLOAD_REASON_FAVORITES]
+
+  // Abort all favorites downloads when favorites are not marked for download
+  if (is_from_favorites && !isFavoritesMarkedForDownload) {
+    return true
+  }
+
+  // Abort all track downloads for a unsuccessfully downloaded collection
+  if (
+    collection_id &&
+    collection_id !== DOWNLOAD_REASON_FAVORITES &&
+    offlineCollections[collection_id] !== OfflineDownloadStatus.SUCCESS &&
+    favoritedOfflineCollections[collection_id] !== OfflineDownloadStatus.SUCCESS
+  ) {
+    return true
+  }
+
+  // Abort track that has been unfavorited in favorited tracks collection
+  if (collection_id === DOWNLOAD_REASON_FAVORITES && isSaved === false) {
+    return true
   }
 }
 
