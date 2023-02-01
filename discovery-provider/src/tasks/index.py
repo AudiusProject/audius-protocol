@@ -443,7 +443,9 @@ def index_blocks(self, db, blocks_list):
         )
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
-        with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
+        with db.scoped_session(
+            autoflush=False
+        ) as session, challenge_bus.use_scoped_dispatch_queue():
             skip_tx_hash = get_tx_hash_to_skip(session, redis)
             skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
             if skip_whole_block:
@@ -675,7 +677,7 @@ def revert_blocks(self, db, revert_blocks_list):
     logger.info(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
     logger.info(revert_blocks_list)
 
-    with db.scoped_session(autoflush=False) as session:
+    with db.scoped_session() as session:
 
         rebuild_playlist_index = False
         rebuild_track_index = False
