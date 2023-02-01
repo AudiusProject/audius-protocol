@@ -64,6 +64,10 @@ func listNodes(typeFilter string) ([]ServiceNode, error) {
 	if config.Env == "standalone" {
 		return []ServiceNode{}, nil
 	}
+	// TODO: config refactor
+	if os.Getenv("storage_v2") == "true" {
+		return v2DevNodes, nil
+	}
 	if os.Getenv("test_host") != "" {
 		return testDiscoveryNodes, nil
 	}
@@ -106,6 +110,26 @@ var testDiscoveryNodes = []ServiceNode{
 	},
 	{
 		Endpoint:            "http://com4:8925",
+		DelegateOwnerWallet: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
+	},
+}
+
+// TODO: config refactor
+var v2DevNodes = []ServiceNode{
+	{
+		Endpoint:            "http://com1:8924",
+		DelegateOwnerWallet: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
+	},
+	{
+		Endpoint:            "http://com2:8924",
+		DelegateOwnerWallet: "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
+	},
+	{
+		Endpoint:            "http://com3:8924",
+		DelegateOwnerWallet: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
+	},
+	{
+		Endpoint:            "http://com4:8924",
 		DelegateOwnerWallet: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
 	},
 }

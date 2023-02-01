@@ -1,36 +1,11 @@
 package transcode
 
 import (
-	"log"
-	"os"
 	"testing"
 
-	"comms.audius.co/discovery/jetstream"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestMain(m *testing.M) {
-
-	// connect to NATS and create JetStream Context
-	nc, err := nats.Connect(nats.DefaultURL)
-	if err != nil {
-		log.Fatal(err)
-	}
-	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
-	if err != nil {
-		log.Fatal(err)
-	}
-	jetstream.SetJetstreamContext(js)
-
-	// run tests
-	code := m.Run()
-
-	// teardown
-	nc.Close()
-
-	os.Exit(code)
-}
 
 func TestJobManager(t *testing.T) {
 
@@ -45,18 +20,20 @@ func TestJobManager(t *testing.T) {
 
 	jobm.Update(&Job{
 		ID:        "1",
-		Status:    "new",
+		Status:    JobStatusError,
 		CreatedAt: timeNowPtr(),
 	})
 
 	jobm.Update(&Job{
 		ID:        "2",
-		Status:    "new",
+		Status:    JobStatusInProgress,
 		CreatedAt: timeNowPtr(),
 	})
 
-	j := jobm.Get("1")
-	assert.Equal(t, "new", j.Status)
+	j1 := jobm.Get("1")
+	assert.Equal(t, JobStatusError, j1.Status)
+	j2 := jobm.Get("2")
+	assert.Equal(t, JobStatusInProgress, j2.Status)
 
 	jobs := jobm.List()
 	assert.Len(t, jobs, 2)

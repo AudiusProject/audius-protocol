@@ -14,22 +14,15 @@ ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
 ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
 ARG CLAIMABLE_TOKENS_PRIVATE_KEY
 ARG REWARD_MANAGER_PRIVATE_KEY
-ARG AUDIUS_DATA_PRIVATE_KEY
 
 COPY . .
 RUN --mount=type=cache,target=/usr/src/app/target \
-    --mount=type=cache,target=/usr/src/app/anchor/audius-data/target \
     --mount=type=cache,target=/root/.cache/solana \
     --mount=type=cache,target=/usr/local/cargo/registry \
     ./scripts/update-keys.sh && \
     cargo build-bpf && \
     mkdir -p artifacts/main-target && \
     cp -r target/deploy/ artifacts/main-target && \
-    cd anchor/audius-data && anchor build && cd ../.. && \
-    mkdir -p artifacts/audius-data-target && \
-    cp -r anchor/audius-data/target/deploy artifacts/audius-data-target && \
-    cp -r anchor/audius-data/target/idl artifacts/audius-data-target && \
-    cp -r anchor/audius-data/target/types artifacts/audius-data-target
 
 # ------
 
@@ -47,8 +40,6 @@ ENV PATH="/root/solana-release/bin:${PATH}"
 COPY scripts/install-solana.sh /tmp/install-solana.sh
 RUN --mount=type=cache,target=/usr/local/cargo/registry /tmp/install-solana.sh
 
-COPY anchor/audius-data/package.json anchor/audius-data/yarn.lock anchor/audius-data/
-RUN cd anchor/audius-data && yarn install
 
 ARG AUDIUS_ETH_REGISTRY_PRIVATE_KEY
 ARG TRACK_LISTEN_COUNT_PRIVATE_KEY
@@ -68,13 +59,11 @@ ARG valid_signer_eth_address
 
 COPY . .
 COPY --from=bpf-builder /usr/src/app/artifacts/main-target target
-COPY --from=bpf-builder /usr/src/app/artifacts/audius-data-target anchor/audius-data/target
 
 RUN --mount=type=cache,target=/usr/src/app/target \
     --mount=type=cache,target=/root/.cache/solana \
     --mount=type=cache,target=/usr/local/cargo/registry \
     ./scripts/setup-predeployed.sh /usr/db && \
-    cp -r anchor/audius-data/target/idl anchor/audius-data/
 
 HEALTHCHECK --interval=5s --timeout=5s --retries=10 \
     CMD solana balance CMRCuQcnbzHzQfDRZfkfAXM9TKce1X6LjHhSLqQc68WU || exit 1

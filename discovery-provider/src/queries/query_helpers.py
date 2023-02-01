@@ -39,7 +39,7 @@ redis = redis_connection.get_redis()
 
 defaultLimit = 100
 minLimit = 1
-maxLimit = 500
+maxLimit = 10000
 defaultOffset = 0
 minOffset = 0
 

@@ -28,7 +28,7 @@ from src.tasks.entity_manager.playlist import (
     update_playlist,
 )
 from src.tasks.entity_manager.social_features import (
-    action_to_record_type,
+    action_to_record_types,
     create_social_action_types,
     create_social_record,
     delete_social_action_types,
@@ -250,8 +250,7 @@ def entity_manager_update(
                     original_records[record_type][entity_id].is_current = False
 
         # insert/update all tracks, playlist records in this block
-        session.flush()  # flush so aggregate triggers have invalidated records ^
-        session.bulk_save_objects(records_to_save)
+        session.add_all(records_to_save)
         num_total_changes += len(records_to_save)
 
         # update metrics
@@ -306,10 +305,11 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             action = helpers.get_tx_arg(event, "_action")
 
             # Query social operations as needed
-            if action in action_to_record_type.keys():
-                record_type = action_to_record_type[action]
-                entity_key = get_record_key(user_id, entity_type, entity_id)
-                entities_to_fetch[record_type].add(entity_key)
+            if action in action_to_record_types.keys():
+                record_types = action_to_record_types[action]
+                for record_type in record_types:
+                    entity_key = get_record_key(user_id, entity_type, entity_id)
+                    entities_to_fetch[record_type].add(entity_key)
 
             # Add playlist track ids in entities to fetch
             # to prevent playlists from including premium tracks

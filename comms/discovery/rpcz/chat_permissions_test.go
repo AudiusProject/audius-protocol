@@ -44,8 +44,7 @@ func TestChatPermissions(t *testing.T) {
 		exampleRpc := schema.RawRPC{
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "test123"}`, chatId)),
 		}
-		chatMessage := string(schema.RPCMethodChatMessage)
-		err = Validators[chatMessage](tx, sender, exampleRpc)
+		err = testValidator.validateChatMessage(tx, sender, exampleRpc)
 		if errorExpected {
 			assert.ErrorContains(t, err, "Not permitted to send messages to this user")
 		} else {
@@ -59,9 +58,7 @@ func TestChatPermissions(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"permit": "all"}`)),
 		}
 
-		chatPermit := string(schema.RPCMethodChatPermit)
-
-		err = Validators[chatPermit](tx, user1Id, exampleRpc)
+		err = testValidator.validateChatPermit(tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 	}
 

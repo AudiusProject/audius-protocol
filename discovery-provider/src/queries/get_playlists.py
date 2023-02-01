@@ -88,21 +88,22 @@ def _get_unpopulated_playlists(session, args):
         # user id filter if the optional query param is passed in
         playlist_query = playlist_query.filter(Playlist.playlist_owner_id == user_id)
 
-    # If no current_user_id, never show hidden playlists
-    if not current_user_id:
+    # If no current_user_id and no direct route was passed in, never show hidden playlists
+    if not current_user_id and not routes:
         playlist_query = playlist_query.filter(Playlist.is_private == False)
 
-    # Filter out deletes unless we're fetching explicitly by id
-    if "playlist_ids" not in args and "routes" not in args:
+    # Filter out deletes unless we're fetching explicitly by id or route
+    if "playlist_ids" not in args and not routes:
         playlist_query = playlist_query.filter(Playlist.is_delete == False)
 
     playlist_query = playlist_query.order_by(desc(Playlist.created_at))
     playlists = paginate_query(playlist_query).all()
     playlists = helpers.query_result_to_list(playlists)
 
-    # if we passed in a current_user_id, filter out all privte playlists where
+    # if we passed in a current_user_id and no direct route was passed in,
+    # filter out all privte playlists where
     # the owner_id doesn't match the current_user_id
-    if current_user_id:
+    if current_user_id and not routes:
         playlists = list(
             filter(
                 lambda playlist: (not playlist["is_private"])

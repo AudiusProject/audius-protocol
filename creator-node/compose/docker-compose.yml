@@ -50,7 +50,7 @@ services:
     networks:
       - audius_dev
   creator-node-redis:
-    image: redis:6.2.7
+    image: redis:6.2
     ports:
       - '${CREATOR_NODE_REDIS_HOST_PORT}:6379'
     networks:

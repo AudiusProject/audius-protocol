@@ -160,7 +160,7 @@ def test_index_playlist_view(app, mocker):
             session,
             entity_manager_txs,
             block_number=3,
-            block_timestamp=1000000000,
+            block_timestamp=timestamp,
             block_hash=0,
             metadata={},
         )

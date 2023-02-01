@@ -26,7 +26,7 @@ def validate_notification_tx(params: ManageEntityParameters):
     if params.action == Action.VIEW:
         user_id = params.user_id
         if user_id not in params.existing_records[EntityType.USER]:
-            raise Exception(f"User {user_id} does not exists")
+            raise Exception(f"User {user_id} does not exist")
 
         wallet = params.existing_records[EntityType.USER][user_id].wallet
         if wallet and wallet.lower() != params.signer.lower():
@@ -107,7 +107,7 @@ def create_notification(params: ManageEntityParameters):
 def validate_view_playlist_tx(params: ManageEntityParameters):
     user_id = params.user_id
     if user_id not in params.existing_records[EntityType.USER]:
-        raise Exception(f"User {user_id} does not exists")
+        raise Exception(f"User {user_id} does not exist")
 
     wallet = params.existing_records[EntityType.USER][user_id].wallet
     if wallet and wallet.lower() != params.signer.lower():

@@ -36,12 +36,10 @@ func TestChat(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message": "test123"}`, chatId)),
 		}
 
-		chatMessage := string(schema.RPCMethodChatMessage)
-
-		err = Validators[chatMessage](tx, user1Id, exampleRpc)
+		err = testValidator.validateChatMessage(tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 
-		err = Validators[chatMessage](tx, user3Id, exampleRpc)
+		err = testValidator.validateChatMessage(tx, user3Id, exampleRpc)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	}
 
@@ -98,12 +96,10 @@ func TestChat(t *testing.T) {
 			Params: []byte(fmt.Sprintf(`{"chat_id": "%s", "message_id": "%s", "reaction": "heart"}`, chatId, replyMessageId)),
 		}
 
-		chatReact := string(schema.RPCMethodChatReact)
-
-		err = Validators[chatReact](tx, user1Id, exampleRpc)
+		err = testValidator.validateChatReact(tx, user1Id, exampleRpc)
 		assert.NoError(t, err)
 
-		err = Validators[chatReact](tx, user3Id, exampleRpc)
+		err = testValidator.validateChatReact(tx, user3Id, exampleRpc)
 		assert.ErrorIs(t, err, sql.ErrNoRows)
 	}
 

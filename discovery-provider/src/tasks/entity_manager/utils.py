@@ -162,6 +162,7 @@ class ManageEntityParameters:
     ):
         key = get_record_key(user_id, entity_type, entity_id)
         self.new_records[record_type][key].append(record)  # type: ignore
+        self.existing_records[record_type][key] = record  # type: ignore
 
     def add_user_record(self, user_id: int, user: User):
         self.new_records[EntityType.USER][user_id].append(user)  # type: ignore
@@ -190,8 +191,10 @@ class ManageEntityParameters:
         key: Tuple[int, int],
         record: PlaylistSeen,
     ):
-        self.new_records[EntityType.PLAYLIST_SEEN][key].append(record)  # type: ignore
-        self.existing_records[EntityType.PLAYLIST_SEEN][key] = record  # type: ignore
+        if key not in self.new_records[EntityType.PLAYLIST_SEEN]:  # type: ignore
+            self.new_records[EntityType.PLAYLIST_SEEN][key].append(record)  # type: ignore
+            self.existing_records[EntityType.PLAYLIST_SEEN][key] = record  # type: ignore
+        # If key exists, do nothing
 
 
 def get_record_key(user_id: int, entity_type: str, entity_id: int):
