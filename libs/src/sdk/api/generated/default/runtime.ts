@@ -285,7 +285,7 @@ export function exists(json: any, key: string) {
  * @internal
  */
 export function querystring(params: HTTPQuery, prefix: string = ''): string {
-    return Object.keys(params)
+    return Object.keys(params).sort()
         .map((key) => {
             const fullKey = prefix + (prefix.length ? `[${key}]` : key);
             const value = params[key];
