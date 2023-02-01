@@ -1,6 +1,8 @@
 import type { Nullable } from '@audius/common'
+import { reachabilitySelectors } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { View } from 'react-native'
+import { useSelector } from 'react-redux'
 import Rive from 'rive-react-native'
 
 import IconDownloadFailed from 'app/assets/images/iconDownloadFailed.svg'
@@ -10,6 +12,8 @@ import IconDownloaded from 'app/assets/images/iconDownloaded.svg'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
+
+const { getIsReachable } = reachabilitySelectors
 
 type DownloadStatusIndicatorProps = {
   status: Nullable<OfflineDownloadStatus>
@@ -38,8 +42,20 @@ export const DownloadStatusIndicator = (
   const { status, size = 24, style } = props
   const styles = useStyles()
   const themeVariant = useThemeVariant()
+  const isReachable = useSelector(getIsReachable)
 
   const renderIndicator = () => {
+    // If we are offline, display as download succeeded
+    // since we only show the user successfully downloaded things.
+    if (!isReachable) {
+      return (
+        <IconDownloaded
+          fill={styles.iconDownloaded.fill}
+          height={size}
+          width={size}
+        />
+      )
+    }
     switch (status) {
       case OfflineDownloadStatus.INIT:
         return (
