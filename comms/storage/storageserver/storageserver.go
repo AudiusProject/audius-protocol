@@ -23,17 +23,19 @@ const (
 	NumJobWorkers     int    = 3
 )
 
-type NodeStatus string
+// TODO: Not clear how we'll use the commented out code below yet. Maybe remove
 
-const (
-	NodeStatusOk           NodeStatus = "ok"
-	NodeStatusDraining     NodeStatus = "draining"
-	NodeStatusDeregistered NodeStatus = "deregistered"
-)
+// type NodeStatus string
 
-type Node struct {
-	Status string `json:"status"`
-}
+// const (
+// 	NodeStatusOk           NodeStatus = "ok"
+// 	NodeStatusDraining     NodeStatus = "draining"
+// 	NodeStatusDeregistered NodeStatus = "deregistered"
+// )
+
+// type Node struct {
+// 	Status string `json:"status"`
+// }
 
 // StorageServer lives for the lifetime of the program and holds connections and managers.
 type StorageServer struct {
@@ -77,8 +79,7 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	// TODO: Embed static /weather-map files in binary and server from the route below.
 	// weatherMap := ss.WebServer.Group("/weather-map")
 
-	// TODO: Use a constant for the stream name (also used by JobsManager)
-	ss.runStorer(fmt.Sprintf("KV_%s_kv", namespace))
+	ss.runStorer("KV_" + namespace + transcode.KvSuffix)
 
 	return ss
 }
@@ -111,7 +112,6 @@ func (ss *StorageServer) runStorer(uploadStream string) {
 		for {
 			msgs, err := storerSub.Fetch(1)
 			if err == nil {
-				fmt.Printf("(STORER) Received %q. Data: %q\n", msgs[0].Subject, msgs[0].Data)
 				msgs[0].Ack()
 
 				job := transcode.Job{}
@@ -120,7 +120,7 @@ func (ss *StorageServer) runStorer(uploadStream string) {
 					panic(err)
 				}
 
-				if job.Status == "done" {
+				if job.Status == transcode.JobStatusDone {
 					if ss.StorageDecider.ShouldStore(job.ID) {
 						fmt.Printf("Storing file with ID %q\n", job.ID)
 						// TODO: Use CDK to download to long-term storage
@@ -130,7 +130,7 @@ func (ss *StorageServer) runStorer(uploadStream string) {
 					}
 				}
 			} else if err != nats.ErrTimeout { // Timeout is expected when there's nothing new in the stream
-				fmt.Printf("Error fetching message to store a track: %q\n", err)
+				fmt.Printf("Error fetching message to store a file: %q\n", err)
 			}
 		}
 	}()
@@ -169,7 +169,7 @@ func (ss *StorageServer) serveFileUpload(c echo.Context) error {
 	defer form.RemoveAll()
 
 	for _, file := range files {
-		job, err := ss.JobsManager.Add(template, file)
+		job, err := ss.JobsManager.Add(transcode.JobTemplate(template), file)
 		if err != nil {
 			return err
 		}
