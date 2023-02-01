@@ -10,14 +10,8 @@ import (
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/shared/peering"
-	"comms.audius.co/storage/glue"
-	"comms.audius.co/storage/web"
+	"comms.audius.co/storage/storageserver"
 	"github.com/nats-io/nats.go"
-)
-
-const (
-	GlobalNamespace   string = "0"
-	ReplicationFactor int    = 3
 )
 
 func StorageMain() {
@@ -38,13 +32,12 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	g := glue.New(GlobalNamespace, ReplicationFactor, jsc)
-	e := web.NewServer(g)
+	ss := storageserver.NewProd(jsc)
 
 	// Start server
 	go func() {
-		if err := e.Start(":8926"); err != nil && err != http.ErrServerClosed {
-			e.Logger.Fatal("shutting down the server", err)
+		if err := ss.WebServer.Start(":8926"); err != nil && err != http.ErrServerClosed {
+			ss.WebServer.Logger.Fatal("shutting down the server", err)
 		}
 	}()
 
@@ -55,7 +48,7 @@ func StorageMain() {
 	<-quit
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := e.Shutdown(ctx); err != nil {
-		e.Logger.Fatal(err)
+	if err := ss.WebServer.Shutdown(ctx); err != nil {
+		ss.WebServer.Logger.Fatal(err)
 	}
 }
