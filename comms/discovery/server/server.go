@@ -157,7 +157,6 @@ func getChat(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	logger.Debug("chat", "userId", userId, "chatId", c.Param("id"), "chat.chatId", chat.ChatID)
 	members, err := queries.ChatMembers(db.Conn, ctx, chat.ChatID)
 	if err != nil {
 		return err

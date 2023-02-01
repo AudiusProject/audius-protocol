@@ -27,7 +27,7 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 	var noTx *sqlx.Tx = nil
 
 	// Always check timestamp
-	if (time.Now().UnixMilli() - rawRpc.Timestamp > 5000) {
+	if (time.Now().UnixMilli() - rawRpc.Timestamp > config.SignatureTimeToLiveMs) {
 		return errors.New("Invalid timestamp")
 	}
 

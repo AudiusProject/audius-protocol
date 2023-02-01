@@ -19,8 +19,7 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	if c.Request().Method == "GET" {
 		// Check that timestamp is less than 5 seconds old
 		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
-		if err != nil || time.Now().UnixMilli() - timestamp > 5000 {
-			c.Logger().Debug("ReadSignedRequest", "timestamp", timestamp, "diff", time.Now().UnixMilli() - timestamp)
+		if err != nil || time.Now().UnixMilli() - timestamp > config.SignatureTimeToLiveMs {
 			return nil, "", errors.New("Invalid timestamp")
 		}
 
@@ -33,7 +32,6 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 		q.Del("app_name")
 		u.RawQuery = q.Encode()
 		payload = []byte(u.String())
-		config.Logger.Debug("ReadSignedRequest", "payload", u.String())
 	} else if c.Request().Method == "POST" {
 		payload, err = io.ReadAll(c.Request().Body)
 	} else {
