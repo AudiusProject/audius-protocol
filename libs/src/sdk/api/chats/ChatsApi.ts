@@ -16,7 +16,8 @@ import type {
   ChatInvite,
   UserChat,
   ChatMessage,
-  ChatWebsocketEventData
+  ChatWebsocketEventData,
+  RPCPayloadRequest
 } from './serverTypes'
 import type {
   ChatBlockRequest,
@@ -549,8 +550,8 @@ export class ChatsApi extends BaseAPI {
     })
   }
 
-  private async sendRpc(args: RPCPayload) {
-    const payload = JSON.stringify(args)
+  private async sendRpc(args: RPCPayloadRequest) {
+    const payload = JSON.stringify({ ...args, timestamp: new Date().getTime() })
     await this.signAndSendRequest({
       method: 'POST',
       headers: {},

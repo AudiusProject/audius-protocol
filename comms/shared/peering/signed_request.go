@@ -14,23 +14,7 @@ import (
 )
 
 func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
-		// Check that timestamp is less than 5 seconds old
-		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
-		if err != nil || time.Now().UnixMilli() - timestamp > 5000 {
-			c.Logger().Debug("ReadSignedRequest", "timestamp", timestamp, "diff", time.Now().UnixMilli() - timestamp)
-			return nil, "", errors.New("Invalid timestamp")
-		}
-
-		// Strip out the app_name query parameter to get the true signature payload
-		u, err := url.Parse(c.Request().RequestURI)
-		if err != nil {
-			return nil, "", errors.New("Invalid Request URI")
-		}
-		q := u.Query()
-		q.Del("app_name")
-		u.RawQuery = q.Encode()
-		payload = []byte(u.String())
-		config.Logger.Debug("ReadSignedRequest", "payload", u.String())
+	var payload []byte
 	var err error
 	if c.Request().Method == "GET" {
 		// Check that timestamp is less than 5 seconds old

@@ -22,6 +22,11 @@ type validatorFunc func(tx *sqlx.Tx, userId int32, rpc schema.RawRPC) error
 
 func Validate(userId int32, rawRpc schema.RawRPC) error {
 
+	// Always check timestamp
+	if (time.Now().UnixMilli() - rawRpc.Timestamp > 5000) {
+		return errors.New("Invalid timestamp")
+	}
+
 	validator := Validators[rawRpc.Method]
 	if validator == nil {
 		config.Logger.Debug("no validator for " + rawRpc.Method)

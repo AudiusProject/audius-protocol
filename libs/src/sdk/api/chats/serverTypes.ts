@@ -76,7 +76,7 @@ export type ChatPermitRPC = {
   }
 }
 
-export type RPCPayload =
+export type RPCPayloadRequest =
   | ChatCreateRPC
   | ChatDeleteRPC
   | ChatInviteRPC
@@ -86,6 +86,8 @@ export type RPCPayload =
   | ChatBlockRPC
   | ChatUnblockRPC
   | ChatPermitRPC
+
+export type RPCPayload = RPCPayloadRequest & { timestamp: number }
 
 export type RPCMethod = RPCPayload['method']
 

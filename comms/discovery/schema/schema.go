@@ -98,6 +98,27 @@ type ChatPermitRPCParams struct {
 	Permit ChatPermission `json:"permit"`
 }
 
+type RPCPayloadRequest struct {
+	Method RPCMethod               `json:"method"`
+	Params RPCPayloadRequestParams `json:"params"`
+}
+
+type RPCPayloadRequestParams struct {
+	ChatID          *string           `json:"chat_id,omitempty"`
+	Invites         []TentacledInvite `json:"invites,omitempty"`
+	Message         *string           `json:"message,omitempty"`
+	MessageID       *string           `json:"message_id,omitempty"`
+	ParentMessageID *string           `json:"parent_message_id,omitempty"`
+	Reaction        *string           `json:"reaction"`
+	UserID          *string           `json:"user_id,omitempty"`
+	Permit          *ChatPermission   `json:"permit,omitempty"`
+}
+
+type TentacledInvite struct {
+	InviteCode string `json:"invite_code"`
+	UserID     string `json:"user_id"`
+}
+
 type UserChat struct {
 	ChatID             string       `json:"chat_id"`
 	ChatMembers        []ChatMember `json:"chat_members"`
@@ -173,22 +194,23 @@ type Metadata struct {
 }
 
 type RPCPayload struct {
-	Method RPCMethod        `json:"method"`
-	Params RPCPayloadParams `json:"params"`
+	Method    RPCMethod        `json:"method"`
+	Params    RPCPayloadParams `json:"params"`
+	Timestamp float64          `json:"timestamp"`
 }
 
 type RPCPayloadParams struct {
-	ChatID          *string           `json:"chat_id,omitempty"`
-	Invites         []TentacledInvite `json:"invites,omitempty"`
-	Message         *string           `json:"message,omitempty"`
-	MessageID       *string           `json:"message_id,omitempty"`
-	ParentMessageID *string           `json:"parent_message_id,omitempty"`
-	Reaction        *string           `json:"reaction"`
-	UserID          *string           `json:"user_id,omitempty"`
-	Permit          *ChatPermission   `json:"permit,omitempty"`
+	ChatID          *string         `json:"chat_id,omitempty"`
+	Invites         []StickyInvite  `json:"invites,omitempty"`
+	Message         *string         `json:"message,omitempty"`
+	MessageID       *string         `json:"message_id,omitempty"`
+	ParentMessageID *string         `json:"parent_message_id,omitempty"`
+	Reaction        *string         `json:"reaction"`
+	UserID          *string         `json:"user_id,omitempty"`
+	Permit          *ChatPermission `json:"permit,omitempty"`
 }
 
-type TentacledInvite struct {
+type StickyInvite struct {
 	InviteCode string `json:"invite_code"`
 	UserID     string `json:"user_id"`
 }
