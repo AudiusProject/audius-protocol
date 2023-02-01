@@ -11,12 +11,11 @@ describe('test Solana listen tracking', function () {
   const TRACKING_LISTEN_SUBMISSION_KEY = 'listens-tx-submission-ts'
   const TRACKING_LISTEN_SUCCESS_KEY = 'listens-tx-success-ts'
 
-  let app, server, sandbox, solanaWeb3Stub, createTrackListenTransactionStub, sendAndSignTransactionStub
+  let app, server, sandbox, solanaWeb3Stub, createTrackListenInstructions
   beforeEach(async () => {
     delete require.cache[require.resolve('../../src/routes/trackListens')]
     sandbox = sinon.createSandbox()
-    createTrackListenTransactionStub = sandbox.stub(solClient, 'createTrackListenTransaction')
-    sendAndSignTransactionStub = sandbox.stub(solClient, 'sendAndSignTransaction')
+    createTrackListenInstructions = sandbox.stub(solClient, 'createTrackListenInstructions')
     const appInfo = await getApp()
     app = appInfo.app
     server = appInfo.server
@@ -31,13 +30,7 @@ describe('test Solana listen tracking', function () {
 
   const recordSuccessfulListen = async (raw) => {
     // Common to both raw and non-raw path
-    createTrackListenTransactionStub.resolves('expected success')
-
-    if (raw) {
-      sendAndSignTransactionStub.resolves('expected success')
-    } else {
-      solanaWeb3Stub.sendAndConfirmTransaction = () => Promise.resolve('expected success')
-    }
+    createTrackListenInstructions.resolves('expected success')
 
     const resp = await request(app)
       .post(`/tracks/${TRACK_ID}/listen`)
@@ -50,8 +43,8 @@ describe('test Solana listen tracking', function () {
   }
 
   const recordFailedListen = async (raw) => {
-    // Failed listen just needs createTrackListenTransaction to fail because it's called before raw/non-raw logic
-    createTrackListenTransactionStub.rejects('intentional failure')
+    // Failed listen just needs ccreateTrackListenInstructions to fail because it's called before raw/non-raw logic
+    createTrackListenInstructions.rejects('intentional failure')
 
     const resp = await request(app)
       .post(`/tracks/${TRACK_ID}/listen`)
