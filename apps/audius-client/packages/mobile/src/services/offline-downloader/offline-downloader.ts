@@ -458,6 +458,7 @@ export const removeTrackDownload = async ({
           favorite_created_at: diskTrack.offline?.favorite_created_at
         }
       }
+      store.dispatch(loadTrack(trackToWrite))
       await writeTrackJson(trackIdStr, trackToWrite)
     }
   } catch (e) {
