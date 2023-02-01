@@ -3,6 +3,8 @@ package storageserver
 
 import (
 	"embed"
+	"encoding/json"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"os"
@@ -33,7 +35,7 @@ type Node struct {
 	Status string `json:"status"`
 }
 
-// StorageServer lives for the lifetime of the program and holds connections.
+// StorageServer lives for the lifetime of the program and holds connections and managers.
 type StorageServer struct {
 	Namespace      string
 	StorageDecider decider.StorageDecider
@@ -75,20 +77,63 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	// TODO: Embed static /weather-map files in binary and server from the route below.
 	// weatherMap := ss.WebServer.Group("/weather-map")
 
+	// TODO: Use a constant for the stream name (also used by JobsManager)
+	ss.runStorer(fmt.Sprintf("KV_%s_kv", namespace))
+
 	return ss
 }
 
-// CreateNamespace creates a KV bucket for namespace.
-// The bucket contains a mapping of <node operater wallet address> -> Node.
-func (ss *StorageServer) CreateNamespace() error {
-	// TODO
-	return nil
-}
+// runStorer runs a goroutine to pull tracks from temp NATS object storage to long-term object storage.
+func (ss *StorageServer) runStorer(uploadStream string) {
+	thisNodePubKey := "pubKey1" // TODO: Get from config or something - same for value in NewProd() above
+	// Create a per-node explicit pull consumer on the stream that backs the track upload status KV bucket
+	storerDurable := fmt.Sprintf("STORER_%s", thisNodePubKey)
+	_, err := ss.Jsc.AddConsumer(uploadStream, &nats.ConsumerConfig{
+		Durable:       storerDurable,
+		AckPolicy:     nats.AckExplicitPolicy,
+		DeliverPolicy: nats.DeliverAllPolicy, // Using the "all" policy means when a node registers it will download every track that it needs
+		ReplayPolicy:  nats.ReplayInstantPolicy,
+	})
+	if err != nil {
+		panic(err)
+	}
 
-// CreateOrUpdateNode creates or updates the value of node for walletAddress in namespace.
-func (ss *StorageServer) CreateOrUpdateNode(walletAddress string, node Node) error {
-	// TODO
-	return nil
+	// Create a subscription on the consumer for every node
+	// Subject can be empty since it defaults to all subjects bound to the stream
+	storerSub, err := ss.Jsc.PullSubscribe("", storerDurable, nats.BindStream(uploadStream))
+	if err != nil {
+		panic(err)
+	}
+
+	// Watch KV store to download files to long-term storage
+	// TODO: Maybe there should be an exit channel for in case we restart StorageServer without restarting the whole program? (e.g., if we want to update StorageDecider to pass it a new slice of storage node pubkeys)
+	go func() {
+		for {
+			msgs, err := storerSub.Fetch(1)
+			if err == nil {
+				fmt.Printf("(STORER) Received %q. Data: %q\n", msgs[0].Subject, msgs[0].Data)
+				msgs[0].Ack()
+
+				job := transcode.Job{}
+				err := json.Unmarshal(msgs[0].Data, &job)
+				if err != nil {
+					panic(err)
+				}
+
+				if job.Status == "done" {
+					if ss.StorageDecider.ShouldStore(job.ID) {
+						fmt.Printf("Storing file with ID %q\n", job.ID)
+						// TODO: Use CDK to download to long-term storage
+					} else {
+						fmt.Printf("Not storing file with ID %q\n", job.ID)
+						continue
+					}
+				}
+			} else if err != nats.ErrTimeout { // Timeout is expected when there's nothing new in the stream
+				fmt.Printf("Error fetching message to store a track: %q\n", err)
+			}
+		}
+	}()
 }
 
 /**
