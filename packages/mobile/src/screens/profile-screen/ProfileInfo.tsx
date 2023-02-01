@@ -1,4 +1,8 @@
-import { accountSelectors, FollowSource } from '@audius/common'
+import {
+  accountSelectors,
+  FollowSource,
+  reachabilitySelectors
+} from '@audius/common'
 import { View, Text } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -81,6 +85,8 @@ type ProfileInfoProps = {
 export const ProfileInfo = (props: ProfileInfoProps) => {
   const { onFollow } = props
   const { params } = useRoute<'Profile'>()
+  const { getIsReachable } = reachabilitySelectors
+  const isReachable = useSelector(getIsReachable)
   const accountHandle = useSelector(getUserHandle)
   const styles = useStyles()
 
@@ -139,7 +145,9 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
           {does_follow_current_user ? <FollowsYouChip /> : null}
         </View>
       </View>
-      <View style={styles.actionButtons}>{actionButtons}</View>
+      {isReachable ? (
+        <View style={styles.actionButtons}>{actionButtons}</View>
+      ) : null}
     </View>
   )
 }
