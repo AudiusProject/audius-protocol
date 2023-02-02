@@ -1,4 +1,8 @@
-import { removeAllDownloadedFavorites } from 'app/services/offline-downloader'
+import { useCallback } from 'react'
+
+import { useDispatch } from 'react-redux'
+
+import { removeAllDownloadedFavorites } from 'app/store/offline-downloads/slice'
 
 import { ConfirmationDrawer } from './ConfirmationDrawer'
 
@@ -12,11 +16,17 @@ const messages = {
 const drawerName = 'RemoveDownloadedFavorites'
 
 export const RemoveDownloadedFavoritesDrawer = () => {
+  const dispatch = useDispatch()
+
+  const handleConfirm = useCallback(() => {
+    dispatch(removeAllDownloadedFavorites())
+  }, [dispatch])
+
   return (
     <ConfirmationDrawer
       drawerName={drawerName}
       messages={messages}
-      onConfirm={removeAllDownloadedFavorites}
+      onConfirm={handleConfirm}
     />
   )
 }

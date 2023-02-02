@@ -1,7 +1,7 @@
-import type { DownloadReason } from '@audius/common'
+import type { DownloadReason, ID } from '@audius/common'
 
 export type CollectionForDownload = {
-  collectionId: number
+  collectionId: ID
   isFavoritesDownload?: boolean
 }
 

@@ -45,6 +45,10 @@ import {
   setPlayCounterWorker
 } from 'app/services/offline-downloader/workers'
 
+import { watchRemoveAllDownloadedFavorites } from './sagas/removeAllDownloadedFavoritesSaga'
+import { watchRemoveCollectionDownloads } from './sagas/removeCollectionDownloadsSaga'
+import { watchRemoveTrackDownloads } from './sagas/removeTrackDownloadsSaga'
+import { watchUpdateTrackDownloadReasons } from './sagas/updateTrackDownloadReasonsSaga'
 import {
   getIsCollectionMarkedForDownload,
   getIsDoneLoadingFromDisk,
@@ -294,7 +298,11 @@ const sagas = () => {
     watchSetUnreachable,
     startSync,
     watchAddTrackToPlaylist,
-    watchAddLocalSave
+    watchAddLocalSave,
+    watchRemoveAllDownloadedFavorites,
+    watchRemoveTrackDownloads,
+    watchUpdateTrackDownloadReasons,
+    watchRemoveCollectionDownloads
   ]
 }
 

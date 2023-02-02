@@ -8,8 +8,7 @@ import {
   batchInitDownload,
   errorCollectionDownload,
   errorDownload,
-  removeCollectionDownload,
-  removeDownload
+  removeCollectionDownload
 } from 'app/store/offline-downloads/slice'
 
 import type { CollectionForDownload, TrackForDownload } from './types'
@@ -178,6 +177,7 @@ export const cancelQueuedCollectionDownloads = async (
             // No attempts left
             queue.removeJob(rawJob)
           }
+          // TODO: check if still needed
           store.dispatch(removeCollectionDownload(parsedPayload))
         }
       }
@@ -216,7 +216,6 @@ export const cancelQueuedDownloads = async (
             // No attempts left
             queue.removeJob(rawJob)
           }
-          store.dispatch(removeDownload(parsedPayload.trackId.toString()))
         }
       }
     } catch (e) {
