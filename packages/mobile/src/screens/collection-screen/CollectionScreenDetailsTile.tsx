@@ -2,14 +2,12 @@ import { useCallback, useMemo } from 'react'
 
 import type { ID, Maybe, SmartCollectionVariant, UID } from '@audius/common'
 import {
-  useProxySelector,
   collectionPageActions,
   playerSelectors,
   Status,
   Name,
   PlaybackSource,
   formatSecondsAsText,
-  lineupSelectors,
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
   reachabilitySelectors
@@ -25,16 +23,14 @@ import type {
 } from 'app/components/details-tile/types'
 import { TrackList } from 'app/components/track-list'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
-import { useOfflineCollectionLineup } from 'app/hooks/useLoadOfflineTracks'
 import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 
 import { CollectionHeader } from './CollectionHeader'
-const { getCollectionTracksLineup, getCollectionUid, getUserUid } =
-  collectionPageSelectors
+import { useCollectionLineup } from './useCollectionLineup'
+const { getCollectionUid, getUserUid } = collectionPageSelectors
 const { resetCollection } = collectionPageActions
-const { makeGetTableMetadatas } = lineupSelectors
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 
@@ -72,8 +68,6 @@ type CollectionScreenDetailsTileProps = {
   'descriptionLinkPressSource' | 'details' | 'headerText' | 'onPressPlay'
 >
 
-const getTracksLineup = makeGetTableMetadatas(getCollectionTracksLineup)
-
 const recordPlay = (id: Maybe<number>, play = true) => {
   track(
     make({
@@ -103,18 +97,17 @@ export const CollectionScreenDetailsTile = ({
 
   const collectionUid = useSelector(getCollectionUid)
   const userUid = useSelector(getUserUid)
-  const { entries, status } = useProxySelector(getTracksLineup, [isReachable])
-  const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
 
-  const tracksLoading = status === Status.LOADING
-  const numTracks = entries.length
-
-  const handleFetchLineupOnline = useCallback(() => {
+  const fetchLineup = useCallback(() => {
     dispatch(resetCollection(collectionUid, userUid))
     dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
   }, [dispatch, collectionUid, userUid])
 
-  useOfflineCollectionLineup(collectionId, handleFetchLineupOnline)
+  const { entries, status } = useCollectionLineup(collectionId, fetchLineup)
+  const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
+
+  const tracksLoading = status === Status.LOADING
+  const numTracks = entries.length
 
   const duration = entries?.reduce(
     (duration, entry) => duration + entry.duration,

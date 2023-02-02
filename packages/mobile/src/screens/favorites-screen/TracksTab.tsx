@@ -23,19 +23,18 @@ import { TrackList } from 'app/components/track-list'
 import type { TrackMetadata } from 'app/components/track-list/types'
 import { WithLoader } from 'app/components/with-loader/WithLoader'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
-import { useOfflineFavoritesLineup } from 'app/hooks/useLoadOfflineTracks'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 
 import { FilterInput } from './FilterInput'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
+import { useFavoritesLineup } from './useFavoritesLineup'
 const { saveTrack, unsaveTrack } = tracksSocialActions
-const { fetchSaves, fetchMoreSaves } = savedPageActions
+const { fetchSaves: fetchSavesAction, fetchMoreSaves } = savedPageActions
 const {
   getSaves,
   getLocalSaves,
-  getSavedTracksLineup,
   getSavedTracksStatus,
   getInitialFetchStatus,
   getIsFetchingMore
@@ -90,27 +89,25 @@ export const TracksTab = () => {
 
   const isLoading = savedTracksStatus !== Status.SUCCESS
 
-  const debouncedFetchSavesOnline = useMemo(() => {
+  const debouncedFetchSaves = useMemo(() => {
     return debounce((filterVal) => {
-      dispatch(fetchSaves(filterVal, '', '', 0, FETCH_LIMIT))
+      dispatch(fetchSavesAction(filterVal, '', '', 0, FETCH_LIMIT))
     }, 500)
   }, [dispatch])
 
-  const fetchSavesOnline = useCallback(() => {
-    debouncedFetchSavesOnline(filterValue)
-  }, [debouncedFetchSavesOnline, filterValue])
-
-  useOfflineFavoritesLineup(fetchSavesOnline)
+  const fetchSaves = useCallback(() => {
+    debouncedFetchSaves(filterValue)
+  }, [debouncedFetchSaves, filterValue])
 
   useEffect(() => {
+    // Need to fetch saves when the filterValue (by way of fetchSaves) changes
     if (isReachable) {
-      fetchSavesOnline()
+      fetchSaves()
     }
-  }, [isReachable, fetchSavesOnline])
+  }, [isReachable, fetchSaves])
 
-  const savedTrackUids: string[] = useSelector((state) => {
-    return getSavedTracksLineup(state).entries.map(({ uid }) => uid)
-  }, isEqual)
+  const { entries } = useFavoritesLineup(fetchSaves)
+  const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
 
   const filterTrack = (
     track: Nullable<Track>,
@@ -132,15 +129,15 @@ export const TracksTab = () => {
   }
 
   const allTracksFetched = useMemo(() => {
-    return savedTrackUids.length === saveCount && !filterValue
-  }, [savedTrackUids, saveCount, filterValue])
+    return trackUids.length === saveCount && !filterValue
+  }, [trackUids, saveCount, filterValue])
 
   const handleMoreFetchSaves = useCallback(() => {
     if (
       allTracksFetched ||
       isFetchingMore ||
       (isOfflineModeEnabled && !isReachable) ||
-      savedTrackUids.length < fetchPage * FETCH_LIMIT
+      trackUids.length < fetchPage * FETCH_LIMIT
     ) {
       return
     }
@@ -158,11 +155,11 @@ export const TracksTab = () => {
     isFetchingMore,
     isOfflineModeEnabled,
     isReachable,
-    savedTrackUids.length
+    trackUids.length
   ])
 
   const filteredTrackUids: string[] = useSelector((state) => {
-    return savedTrackUids.filter((uid) => {
+    return trackUids.filter((uid) => {
       const track = getTrack(state, { uid })
       const user = getUserFromTrack(state, { uid })
       return filterTrack(track, user)
