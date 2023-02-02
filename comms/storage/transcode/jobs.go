@@ -14,12 +14,15 @@ import (
 	"sync"
 	"time"
 
+	"comms.audius.co/storage/decider"
+
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/inconshreveable/log15"
 	"github.com/lucsky/cuid"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/cast"
+	_ "gocloud.dev/blob/fileblob"
 )
 
 type JobStatus string
@@ -65,8 +68,8 @@ type JobsManager struct {
 	isCurrent bool
 	logger    log15.Logger
 
-	objStore         nats.ObjectStore
 	workSubscription *nats.Subscription
+	storageDecider   decider.StorageDecider
 
 	websockets map[net.Conn]bool
 
@@ -78,7 +81,7 @@ const (
 	objStoreTtl = time.Hour * 24
 )
 
-func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) (*JobsManager, error) {
+func NewJobsManager(jsc nats.JetStreamContext, prefix string, storageDecider decider.StorageDecider, replicaCount int) (*JobsManager, error) {
 	// kv
 	kvBucketName := prefix + KvSuffix
 	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
@@ -101,24 +104,14 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		return nil, err
 	}
 
-	// object store
-	// todo: sharding
-	objStore, err := jsc.CreateObjectStore(&nats.ObjectStoreConfig{
-		Bucket: prefix + "_store",
-		TTL:    objStoreTtl,
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	jobman := &JobsManager{
 		workSubscription: workSubscription,
-		objStore:         objStore,
 		jsc:              jsc,
 		kv:               kv,
 		watcher:          watcher,
 		table:            map[string]*Job{},
 		logger:           log15.New(),
+		storageDecider:   storageDecider,
 		websockets:       map[net.Conn]bool{},
 	}
 
@@ -175,12 +168,15 @@ func (jobman *JobsManager) Add(template JobTemplate, upload *multipart.FileHeade
 	fileHash := cuid.New()
 
 	// put in bucket
-	// todo: sharding
 	meta := &nats.ObjectMeta{
 		Name:        fileHash,
 		Description: upload.Filename,
 	}
-	info, err := jobman.objStore.Put(meta, f)
+	objStore, err := jobman.storageDecider.GetTempStoreFor(fileHash)
+	if err != nil {
+		return nil, err
+	}
+	info, err := objStore.Put(meta, f)
 	if err != nil {
 		return nil, err
 	}
@@ -241,8 +237,11 @@ func (jobman *JobsManager) Get(id string) *Job {
 }
 
 func (jobman *JobsManager) GetObject(bucket, key string) (nats.ObjectResult, error) {
-	// todo: sharding
-	return jobman.objStore.Get(key)
+	objStore, err := jobman.jsc.ObjectStore(bucket)
+	if err != nil {
+		return nil, err
+	}
+	return objStore.Get(key)
 }
 
 func (jobman *JobsManager) RegisterWebsocket(conn net.Conn) {
@@ -291,7 +290,10 @@ func (jobman *JobsManager) StartWorkers(count int) {
 
 func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	logger := jobman.logger.New("job", job.ID)
-	objStore := jobman.objStore
+	objStore, err := jobman.storageDecider.GetTempStoreFor(job.ID)
+	if err != nil {
+		return err
+	}
 
 	onError := func(err error) error {
 		logger.Warn("job error: " + err.Error())
@@ -318,7 +320,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	defer os.Remove(srcPath)
 	defer os.Remove(destPath)
 
-	err := objStore.GetFile(job.ID, srcPath)
+	err = objStore.GetFile(job.ID, srcPath)
 	if err != nil {
 		return onError(err)
 	}

@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/transcode"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats-server/v2/server"
@@ -36,7 +37,8 @@ func TestE2EUpload(t *testing.T) {
 	}()
 
 	// TODO: Upload file with a hash that will fall in the 'aa' bucket
-	jobman, err := transcode.NewJobsManager(nodes[0].ss.Jsc, nodes[0].ss.Namespace, 1)
+	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, []string{"pubKey1", "pubKey2", "pubKey3", "pubKey4", "pubKey5"}, "pubKey1", nodes[0].ss.Jsc)
+	jobman, err := transcode.NewJobsManager(nodes[0].ss.Jsc, nodes[0].ss.Namespace, d, 1)
 	if err != nil {
 		panic(err)
 	}

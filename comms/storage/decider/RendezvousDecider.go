@@ -2,6 +2,8 @@
 package decider
 
 import (
+	"fmt"
+
 	"comms.audius.co/storage/bucketer"
 	"github.com/nats-io/nats.go"
 	"github.com/tysonmote/rendezvous"
@@ -47,6 +49,17 @@ func (d *RendezvousDecider) OnChange(prevBuckets []string, curBuckets []string) 
 	// TODO: soft delete
 	// TODO: fetch
 	return nil
+}
+
+func (d *RendezvousDecider) GetTempStoreFor(bucketOrId string) (nats.ObjectStore, error) {
+	var bucket = bucketOrId
+	if d.bucketer.SuffixLength != len(bucketOrId) {
+		bucket = d.bucketer.GetBucketForId(bucketOrId)
+	}
+	return d.jsc.CreateObjectStore(&nats.ObjectStoreConfig{
+		Bucket: fmt.Sprintf("%s_%s_store", d.namespace, bucket),
+		TTL:    objStoreTtl,
+	})
 }
 
 // computeBucketsNodeStores determines the buckets that this node is responsible for storing based on all nodes in the storage network.
