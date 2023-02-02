@@ -1,4 +1,5 @@
-import { EntityType } from "../email/appNotifications/types"
+import { EntityType, DMEntityType } from '../email/appNotifications/types'
+import { NotificationRow } from './dn'
 
 export type DMNotification = {
   sender_user_id: number
@@ -14,6 +15,18 @@ export type DMReactionNotification = {
   message: string
   timestamp: Date
 }
+
+export type DMEmailNotification = {
+  type: DMEntityType
+  sender_user_id: number
+  receiver_user_id: number
+}
+
+export type AppEmailNotification = {
+  receiver_user_id: number
+} & NotificationRow
+
+export type EmailNotification = AppEmailNotification | DMEmailNotification
 
 export type FollowNotification = {
   follower_user_id: number

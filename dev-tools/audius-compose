@@ -507,7 +507,6 @@ def ps(protocol_dir):
             continue
 
         name = service["Service"]
-        replica = int(service["Name"].split("-")[-1])
         status = service["Health"] or service["State"]
 
         ports = {}
@@ -516,6 +515,8 @@ def ps(protocol_dir):
                 if publisher["PublishedPort"]:
                     ports[publisher["PublishedPort"]] = publisher["TargetPort"]
 
+        if service["Service"] in ["creator-node", "discovery-provider", "discovery-provider-elasticsearch"]:
+            replica = int(service["Name"].split("-")[-1])
         if service["Service"] == "creator-node":
             name = f"{service['Service']}-{replica}"
             ports[4000 + replica - 1] = 4000

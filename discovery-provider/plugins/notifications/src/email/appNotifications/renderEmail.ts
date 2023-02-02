@@ -3,9 +3,10 @@ import moment from 'moment-timezone'
 import { logger } from '../../logger'
 
 // @ts-ignore
-import { renderNotificationsEmail } from './components/index.tsx'
+import { DMEntityType } from './types'
+import { DMEmailNotification, EmailNotification } from '../../types/notifications'
+import { renderNotificationsEmail } from './components/index'
 import { EmailFrequency } from '../../processNotifications/mappers/base'
-import { NotificationRow } from '../../types/dn'
 import { Knex } from 'knex'
 import { EntityType } from './types'
 import { RepostNotification, SaveNotification } from '../../types/notifications'
@@ -13,7 +14,7 @@ import { RepostNotification, SaveNotification } from '../../types/notifications'
 type RenderEmailProps = {
   userId: number
   email: string
-  notifications: NotificationRow[]
+  notifications: EmailNotification[]
   frequency: EmailFrequency
   dnDb: Knex
 }
@@ -45,10 +46,16 @@ type PlaylistResource = {
   creator_node_endpoint: string
 }
 
+type UserResourcesDict = { [userId: number]: UserResource & { imageUrl: string } }
+
+type TrackResourcesDict = { [userId: number]: TrackResource & { imageUrl: string } }
+
+type PlaylistResourcesDict = { [userId: number]: PlaylistResource & { imageUrl: string } }
+
 type Resources = {
-  users: { [userId: number]: UserResource & { imageUrl: string } }
-  tracks: { [userId: number]: TrackResource & { imageUrl: string } }
-  playlists: { [userId: number]: PlaylistResource & { imageUrl: string } }
+  users: UserResourcesDict
+  tracks: TrackResourcesDict
+  playlists: PlaylistResourcesDict
 }
 
 // TODO: Fill out defaults
@@ -101,13 +108,13 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
     'users.profile_picture',
     'users.creator_node_endpoint',
   ).from('users').whereIn('user_id', Array.from(ids.users)).andWhere('is_current', true)
-  const users: { [userId: number]: UserResource & { imageUrl: string } } = userRows.reduce((acc, user) => {
+  const users: UserResourcesDict = userRows.reduce((acc, user) => {
     acc[user.user_id] = {
       ...user,
       imageUrl: getUserProfileUrl(user)
     }
     return acc
-  }, {})
+  }, {} as UserResourcesDict)
 
   const trackRows: TrackResource[] = await dnDb.select(
     'tracks.track_id',
@@ -126,7 +133,7 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
       imageUrl: getTrackCoverArt(track)
     }
     return acc
-  }, {})
+  }, {} as TrackResourcesDict)
 
   const playlistRows: PlaylistResource[] = await dnDb.select(
     'playlists.playlist_id',
@@ -147,13 +154,13 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
       imageUrl: getPlaylistImage(playlist)
     }
     return acc
-  }, {})
+  }, {} as PlaylistResourcesDict)
 
 
   return { users, tracks, playlists }
 }
 
-const getNotificationProps = async (dnDB: Knex, notifications: NotificationRow[]) => {
+const getNotificationProps = async (dnDB: Knex, notifications: EmailNotification[]) => {
   const idsToFetch: ResourceIds = {
     users: new Set(),
     tracks: new Set(),
@@ -161,7 +168,7 @@ const getNotificationProps = async (dnDB: Knex, notifications: NotificationRow[]
   }
   console.log({ notifications })
 
-  for (let notification of notifications) {
+  for (const notification of notifications) {
     if (notification.type == 'follow') {
       idsToFetch.users.add(notification.data.follower_user_id)
       idsToFetch.users.add(notification.data.followee_user_id)
@@ -184,13 +191,17 @@ const getNotificationProps = async (dnDB: Knex, notifications: NotificationRow[]
         idsToFetch.playlists.add(data.save_item_id)
       }
     }
+    else if (notification.type == DMEntityType.Message || notification.type == DMEntityType.Reaction) {
+      idsToFetch.users.add(notification.receiver_user_id)
+      idsToFetch.users.add((notification as DMEmailNotification).sender_user_id)
+    }
   }
   const resources = await fetchResources(dnDB, idsToFetch)
   console.log(JSON.stringify(resources, null, ' '))
-  return notifications.map(notification => getEmailNotificationProp(notification, resources))
+  return notifications.map(notification => getEmailNotificationProps(notification, resources))
 }
 
-const getEmailNotificationProp = (notification, resources: Resources) => {
+const getEmailNotificationProps = (notification: EmailNotification, resources: Resources) => {
   if (notification.type == 'follow') {
     const followerId = notification.data.follower_user_id
     const user = resources.users[followerId]
@@ -229,7 +240,13 @@ const getEmailNotificationProp = (notification, resources: Resources) => {
     }
     return { type: 'repost', users, entity }
   }
-
+  else if (notification.type == DMEntityType.Message || notification.type == DMEntityType.Reaction) {
+    const user = resources.users[(notification as DMEmailNotification).sender_user_id]
+    return {
+      type: notification.type,
+      users: [{ name: user.name, image: user.imageUrl }]
+    }
+  }
 }
 
 const getEmailTitle = (frequency: EmailFrequency, userEmail: string) => {
@@ -279,6 +296,7 @@ export const renderEmail = async ({
   )
 
   const notificationCount = notifications.length
+  // TODO why this 0-5 slice?
   const notificationProps = await getNotificationProps(dnDb, notifications.slice(0, 5))
   console.log({ notificationProps })
   const renderProps = {
