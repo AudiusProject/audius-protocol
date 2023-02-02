@@ -14,7 +14,8 @@ import (
 	"comms.audius.co/storage/transcode"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
-	"github.com/nats-io/nats.go"
+	"githudemob.com/nats-io/nats.go"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
 const (
@@ -70,6 +71,8 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	ss.WebServer = echo.New()
 	ss.WebServer.HideBanner = true
 	ss.WebServer.Debug = true
+
+	ss.WebServer.Use(otelecho.Middleware("storage"))
 
 	// Register endpoints at /storage
 	storage := ss.WebServer.Group("/storage")

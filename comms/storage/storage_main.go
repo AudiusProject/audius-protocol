@@ -11,6 +11,7 @@ import (
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/storageserver"
+	"comms.audius.co/storage/telemetry"
 	"github.com/nats-io/nats.go"
 )
 
@@ -18,6 +19,11 @@ func StorageMain() {
 
 	// TODO: shouldn't use discovery config
 	config.Init()
+
+	ctx := context.Background()
+
+	tp := telemetry.InitTracing()
+	defer func() { _ = tp.Shutdown(ctx) }()
 
 	jsc, err := func() (nats.JetStreamContext, error) {
 		err := peering.PollRegisteredNodes()
