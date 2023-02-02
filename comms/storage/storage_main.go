@@ -22,7 +22,8 @@ func StorageMain() {
 
 	ctx := context.Background()
 
-	tp := telemetry.InitTracing()
+	logger := telemetry.NewConsoleLogger()
+	tp := telemetry.InitTracing(logger)
 	defer func() { _ = tp.Shutdown(ctx) }()
 
 	jsc, err := func() (nats.JetStreamContext, error) {

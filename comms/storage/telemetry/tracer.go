@@ -1,8 +1,8 @@
 package telemetry
 
 import (
+	"io"
 	"log"
-	"os"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
@@ -16,16 +16,16 @@ import (
 
 const (
 	serviceName = "storage"
-	version = "v0.1.0"
+	version     = "v0.1.0"
 	environment = "stage"
 )
 
 var tracer trace.Tracer
 
 // newExporter returns a console exporter.
-func newConsoleExporter() (*stdouttrace.Exporter, error) {
+func newConsoleExporter(w io.Writer) (*stdouttrace.Exporter, error) {
 	return stdouttrace.New(
-		stdouttrace.WithWriter(os.Stdout),
+		stdouttrace.WithWriter(w),
 		// Use human-readable output.
 		stdouttrace.WithPrettyPrint(),
 		// Do not print timestamps for the demo.
@@ -47,10 +47,9 @@ func newResource() *resource.Resource {
 	return r
 }
 
+func InitTracing(w io.Writer) *sdktrace.TracerProvider {
 
-func InitTracing() *sdktrace.TracerProvider {
-
-	exp, err := newConsoleExporter()
+	exp, err := newConsoleExporter(w)
 	if err != nil {
 		log.Fatalf("failed to initialize exporter: %v", err)
 	}
@@ -62,7 +61,6 @@ func InitTracing() *sdktrace.TracerProvider {
 		sdktrace.WithBatcher(exp),
 		sdktrace.WithResource(r),
 	)
-
 
 	otel.SetTracerProvider(tp)
 
