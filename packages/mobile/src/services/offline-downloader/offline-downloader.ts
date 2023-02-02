@@ -13,8 +13,7 @@ import {
   cacheTracksSelectors,
   SquareSizes,
   encodeHashId,
-  accountSelectors,
-  reachabilitySelectors
+  accountSelectors
 } from '@audius/common'
 import { uniq, isEqual } from 'lodash'
 import RNFetchBlob from 'rn-fetch-blob'
@@ -25,8 +24,7 @@ import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import { store } from 'app/store'
 import {
   getOfflineCollections,
-  getOfflineFavoritedCollections,
-  getOfflineTracks
+  getOfflineFavoritedCollections
 } from 'app/store/offline-downloads/selectors'
 import {
   actions as offlineDownloadsActions,
@@ -71,7 +69,6 @@ const {
 } = RNFetchBlob
 const { getUserId } = accountSelectors
 const { getTrack } = cacheTracksSelectors
-const { getIsReachable } = reachabilitySelectors
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
 export enum DownloadTrackError {
@@ -411,81 +408,6 @@ const shouldAbortDownload = (trackForDownload: TrackForDownload) => {
   if (collection_id === DOWNLOAD_REASON_FAVORITES && isSaved === false) {
     return true
   }
-}
-
-export const removeAllDownloadedFavorites = async () => {
-  const state = store.getState()
-  const currentUserId = getUserId(state)
-  const isReachable = getIsReachable(state)
-  if (!currentUserId) return
-  const downloadedCollections = getOfflineCollections(state)
-  const favoritedDownloadedCollections = getOfflineFavoritedCollections(state)
-  const offlineTracks = getOfflineTracks(state)
-
-  const downloadedFavoritedTracks = Object.values(offlineTracks)
-    .filter((track) => !!track.offline?.favorite_created_at)
-    .map((track) => ({
-      trackId: track.track_id,
-      favoriteCreatedAt: track.offline?.favorite_created_at
-    }))
-
-  purgeDownloadedCollection(DOWNLOAD_REASON_FAVORITES)
-
-  const allFavoritedTracks = isReachable
-    ? [
-        ...(await fetchAllFavoritedTracks(currentUserId)),
-        ...downloadedFavoritedTracks
-      ]
-    : downloadedFavoritedTracks
-  const tracksForDownload: TrackForDownload[] = allFavoritedTracks.map(
-    ({ trackId, favoriteCreatedAt }) => ({
-      trackId,
-      downloadReason: {
-        is_from_favorites: true,
-        collection_id: DOWNLOAD_REASON_FAVORITES,
-        favorite_created_at: favoriteCreatedAt
-      }
-    })
-  )
-
-  // remove collections if they're not also downloaded separately
-  Object.entries(favoritedDownloadedCollections).forEach(
-    ([collectionId, isDownloaded]) => {
-      // Find any tracks from downloaded collections and mark them
-      // to be removed.
-      tracksForDownload.push(
-        ...Object.values(offlineTracks)
-          .filter((track) =>
-            track.offline?.reasons_for_download.some(
-              (reason) =>
-                reason.collection_id === collectionId &&
-                reason.is_from_favorites
-            )
-          )
-          .map((track) => ({
-            trackId: track.track_id,
-            downloadReason: {
-              is_from_favorites: true,
-              collection_id: collectionId
-            }
-          }))
-      )
-
-      if (!isDownloaded) return
-      if (downloadedCollections[collectionId]) {
-        store.dispatch(
-          offlineDownloadsActions.removeCollectionDownload({
-            collectionId,
-            isFavoritesDownload: true
-          })
-        )
-      } else {
-        purgeDownloadedCollection(collectionId)
-      }
-    }
-  )
-
-  batchRemoveTrackDownload(tracksForDownload)
 }
 
 export const removeDownloadedCollectionFromFavorites = async (
