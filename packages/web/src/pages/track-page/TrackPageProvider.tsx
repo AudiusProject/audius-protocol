@@ -32,7 +32,6 @@ import {
   usersSocialActions as socialUsersActions,
   playerSelectors,
   queueSelectors,
-  premiumContentActions,
   premiumContentSelectors
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
@@ -76,8 +75,6 @@ const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { tracksActions } = trackPageLineupActions
-const { updatePremiumTrackStatus, removePremiumContentSignature } =
-  premiumContentActions
 const { getPremiumTrackSignatureMap } = premiumContentSelectors
 const {
   getUser,
@@ -413,8 +410,6 @@ class TrackPageProvider extends Component<
       // Follow Props
       onFollow: this.onFollow,
       onUnfollow: this.onUnfollow,
-      onUnlock: this.props.onUnlock,
-      onLock: this.props.onLock,
       makePublic: this.props.makeTrackPublic,
       onClickReposts: this.onClickReposts,
       onClickFavorites: this.onClickFavorites
@@ -594,11 +589,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
       ),
     editTrack: (trackId: ID, formFields: any) =>
       dispatch(cacheTrackActions.editTrack(trackId, formFields)),
-    onUnlock: () => dispatch(updatePremiumTrackStatus({ status: 'UNLOCKING' })),
-    onLock: (trackId: ID) => {
-      dispatch(updatePremiumTrackStatus({ status: 'LOCKED' }))
-      dispatch(removePremiumContentSignature({ trackId }))
-    },
     onFollow: (userId: ID) =>
       dispatch(socialUsersActions.followUser(userId, FollowSource.TRACK_PAGE)),
     onUnfollow: (userId: ID) =>

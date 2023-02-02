@@ -14,20 +14,27 @@ import {
   premiumContentSelectors,
   premiumContentActions,
   collectiblesActions,
+  tippingActions,
   trackPageActions,
+  usersSocialActions,
   TrackMetadata,
+  PremiumTrackStatus,
   Nullable
 } from '@audius/common'
-import { takeEvery, select, call, put, delay } from 'typed-redux-saga'
+import { takeEvery, select, call, put, delay, all } from 'typed-redux-saga'
 
-import { TrackRouteParams } from 'utils/route/trackRouteParser'
+import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 const {
   updatePremiumContentSignatures,
+  removePremiumContentSignatures,
   updatePremiumTrackStatus,
+  updatePremiumTrackStatuses,
   refreshPremiumTrack
 } = premiumContentActions
+
+const { refreshTipGatedTracks } = tippingActions
 
 const { updateUserEthCollectibles, updateUserSolCollectibles } =
   collectiblesActions
@@ -224,7 +231,7 @@ function* updateCollectibleGatedTrackAccess(
   if (areTracksUpdated) {
     yield* call(updateNewPremiumContentSignatures, {
       tracks: action.entries.map(
-        ({ metadata }: { metadata: TrackMetadata }) => metadata
+        ({ metadata }: { metadata: Partial<TrackMetadata> }) => metadata
       ),
       premiumTrackSignatureIdSet
     })
@@ -329,12 +336,93 @@ function* pollPremiumTrack({
   while (true) {
     const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
     if (premiumTrackSignatureMap[trackId]) {
-      yield* put(updatePremiumTrackStatus({ status: 'UNLOCKED' }))
+      yield* put(updatePremiumTrackStatus({ trackId, status: 'UNLOCKED' }))
       break
     }
     yield* put(trackPageActions.fetchTrack(null, slug, handle, false, true))
     yield* delay(frequency)
   }
+}
+
+/**
+ * 1. Get follow or tip gated tracks of user
+ * 2. Set those track statuses to 'UNLOCKING'
+ * 3. Poll for premium content signatures for those tracks
+ * 4. When the signatures are returned, set those track statuses as 'UNLOCKED'
+ */
+function* updateGatedTracks(trackOwnerId: ID, gate: 'follow' | 'tip') {
+  const statusMap: { [id: ID]: PremiumTrackStatus } = {}
+  const trackParamsMap: { [id: ID]: TrackRouteParams } = {}
+  const cachedTracks = yield* select(getTracks, {})
+
+  Object.keys(cachedTracks).forEach((trackId) => {
+    const id = parseInt(trackId)
+    const {
+      owner_id: ownerId,
+      permalink,
+      premium_conditions: premiumConditions
+    } = cachedTracks[id]
+    const isGated =
+      gate === 'follow'
+        ? premiumConditions?.follow_user_id
+        : premiumConditions?.tip_user_id
+    if (isGated && ownerId === trackOwnerId) {
+      statusMap[id] = 'UNLOCKING'
+      trackParamsMap[id] = parseTrackRoute(permalink)
+    }
+  })
+
+  yield* put(updatePremiumTrackStatuses(statusMap))
+
+  yield* all(
+    Object.keys(trackParamsMap).map((trackId) => {
+      const id = parseInt(trackId)
+      return call(pollPremiumTrack, {
+        trackId: id,
+        trackParams: trackParamsMap[id],
+        frequency: PREMIUM_TRACK_POLL_FREQUENCY
+      })
+    })
+  )
+}
+
+/**
+ * 1. Get follow-gated tracks of unfollowed user
+ * 2. Set those track statuses to 'LOCKED'
+ * 3. Remove the premium content signatures for those tracks
+ */
+function* handleUnfollowUser(
+  action: ReturnType<typeof usersSocialActions.unfollowUser>
+) {
+  const statusMap: { [id: ID]: PremiumTrackStatus } = {}
+  const cachedTracks = yield* select(getTracks, {})
+
+  Object.keys(cachedTracks).forEach((trackId) => {
+    const id = parseInt(trackId)
+    const { owner_id: ownerId, premium_conditions: premiumConditions } =
+      cachedTracks[id]
+    const isFollowGated = premiumConditions?.follow_user_id
+    if (isFollowGated && ownerId === action.userId) {
+      statusMap[id] = 'LOCKED'
+    }
+  })
+
+  yield* put(updatePremiumTrackStatuses(statusMap))
+
+  const trackIds = Object.keys(statusMap).map((trackId) => parseInt(trackId))
+  yield* put(removePremiumContentSignatures({ trackIds }))
+}
+
+function* handleFollowUser(
+  action: ReturnType<typeof usersSocialActions.followUser>
+) {
+  yield* call(updateGatedTracks, action.userId, 'follow')
+}
+
+function* handleTipGatedTracks(
+  action: ReturnType<typeof refreshTipGatedTracks>
+) {
+  yield* call(updateGatedTracks, action.payload.userId, 'tip')
 }
 
 function* refreshPremiumTrackAccess(
@@ -346,6 +434,23 @@ function* refreshPremiumTrackAccess(
     trackParams,
     frequency: PREMIUM_TRACK_POLL_FREQUENCY
   })
+}
+
+/**
+ * Remove premium content signatures from track metadata when they're
+ * no longer accessible by the user.
+ */
+function* handleRemovePremiumContentSignatures(
+  action: ReturnType<typeof removePremiumContentSignatures>
+) {
+  const cachedTracks = yield* select(getTracks, {
+    ids: action.payload.trackIds
+  })
+  const metadatas = Object.keys(cachedTracks).map((trackId) => {
+    const id = parseInt(trackId)
+    return { id, metadata: { premium_content_signature: null } }
+  })
+  yield* put(cacheActions.update(Kind.TRACKS, metadatas))
 }
 
 function* watchCollectibleGatedTracks() {
@@ -360,12 +465,38 @@ function* watchCollectibleGatedTracks() {
   )
 }
 
+function* watchFollowGatedTracks() {
+  yield* takeEvery(usersSocialActions.FOLLOW_USER, handleFollowUser)
+}
+
+function* watchUnfollowGatedTracks() {
+  yield* takeEvery(usersSocialActions.UNFOLLOW_USER, handleUnfollowUser)
+}
+
+function* watchTipGatedTracks() {
+  yield* takeEvery(refreshTipGatedTracks.type, handleTipGatedTracks)
+}
+
 function* watchRefreshPremiumTrack() {
   yield* takeEvery(refreshPremiumTrack.type, refreshPremiumTrackAccess)
 }
 
+function* watchRemovePremiumContentSignatures() {
+  yield* takeEvery(
+    removePremiumContentSignatures.type,
+    handleRemovePremiumContentSignatures
+  )
+}
+
 const sagas = () => {
-  return [watchCollectibleGatedTracks, watchRefreshPremiumTrack]
+  return [
+    watchCollectibleGatedTracks,
+    watchFollowGatedTracks,
+    watchUnfollowGatedTracks,
+    watchTipGatedTracks,
+    watchRefreshPremiumTrack,
+    watchRemovePremiumContentSignatures
+  ]
 }
 
 export default sagas

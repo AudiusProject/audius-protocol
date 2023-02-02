@@ -1,20 +1,30 @@
 import { ReactNode, useCallback } from 'react'
 
-import { FeatureFlags, FieldVisibility } from '@audius/common'
+import {
+  FeatureFlags,
+  FieldVisibility,
+  premiumContentSelectors,
+  ID
+} from '@audius/common'
 import { IconLock } from '@audius/stems'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './TrackTile.module.css'
 
+const { getPremiumTrackStatusMap } = premiumContentSelectors
+
 const messages = {
   repostLabel: 'Repost',
   unrepostLabel: 'Unrepost',
+  unlocking: 'UNLOCKING',
   locked: 'LOCKED'
 }
 
@@ -33,6 +43,7 @@ type BottomRowProps = {
   isMatrixMode: boolean
   showIconButtons?: boolean
   isTrack?: boolean
+  trackId?: ID
   onClickRepost: (e?: any) => void
   onClickFavorite: (e?: any) => void
   onClickShare: (e?: any) => void
@@ -53,6 +64,7 @@ export const BottomRow = ({
   isMatrixMode,
   showIconButtons,
   isTrack,
+  trackId,
   onClickRepost,
   onClickFavorite,
   onClickShare
@@ -60,6 +72,8 @@ export const BottomRow = ({
   const { isEnabled: isPremiumContentEnabled } = useFlag(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
   )
+  const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
+  const premiumTrackStatus = trackId && premiumTrackStatusMap[trackId]
 
   const repostLabel = isReposted ? messages.unrepostLabel : messages.repostLabel
 
@@ -96,7 +110,12 @@ export const BottomRow = ({
   }
 
   if (isPremiumContentEnabled && isTrack && !isLoading && !doesUserHaveAccess) {
-    return (
+    return premiumTrackStatus === 'UNLOCKING' ? (
+      <div className={cn(styles.premiumContent, styles.bottomRow)}>
+        <LoadingSpinner className={styles.spinner} />
+        {messages.unlocking}
+      </div>
+    ) : (
       <div className={cn(styles.premiumContent, styles.bottomRow)}>
         <IconLock />
         {messages.locked}

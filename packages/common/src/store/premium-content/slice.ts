@@ -1,30 +1,33 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import { ID, PremiumContentSignature } from 'models'
+import { ID, PremiumContentSignature, PremiumTrackStatus } from 'models'
 import { Nullable } from 'utils'
-
-type PremiumTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
 
 type PremiumContentState = {
   premiumTrackSignatureMap: { [id: ID]: Nullable<PremiumContentSignature> }
-  status: PremiumTrackStatus
+  statusMap: { [id: ID]: PremiumTrackStatus }
 }
 
 const initialState: PremiumContentState = {
   premiumTrackSignatureMap: {},
-  status: null
+  statusMap: {}
 }
 
 type UpdatePremiumContentSignaturesPayload = {
   [id: ID]: Nullable<PremiumContentSignature>
 }
 
-type RemovePremiumContentSignaturePayload = {
-  trackId: ID
+type RemovePremiumContentSignaturesPayload = {
+  trackIds: ID[]
 }
 
 type UpdatePremiumTrackStatusPayload = {
+  trackId: ID
   status: PremiumTrackStatus
+}
+
+type UpdatePremiumTrackStatusesPayload = {
+  [id: ID]: PremiumTrackStatus
 }
 
 type RefreshPremiumTrackPayload = {
@@ -48,11 +51,19 @@ const slice = createSlice({
         ...action.payload
       }
     },
-    removePremiumContentSignature: (state, action: PayloadAction<RemovePremiumContentSignaturePayload>) => {
-      delete state.premiumTrackSignatureMap[action.payload.trackId]
+    removePremiumContentSignatures: (state, action: PayloadAction<RemovePremiumContentSignaturesPayload>) => {
+      action.payload.trackIds.forEach(trackId => {
+        delete state.premiumTrackSignatureMap[trackId]
+      })
     },
     updatePremiumTrackStatus: (state, action: PayloadAction<UpdatePremiumTrackStatusPayload>) => {
-      state.status = action.payload.status
+      state.statusMap[action.payload.trackId] = action.payload.status
+    },
+    updatePremiumTrackStatuses: (state, action: PayloadAction<UpdatePremiumTrackStatusesPayload>) => {
+      state.statusMap = {
+        ...state.statusMap,
+        ...action.payload
+      }
     },
     refreshPremiumTrack: (
       _,
@@ -63,7 +74,9 @@ const slice = createSlice({
 
 export const {
   updatePremiumContentSignatures,
+  removePremiumContentSignatures,
   updatePremiumTrackStatus,
+  updatePremiumTrackStatuses,
   refreshPremiumTrack
 } = slice.actions
 

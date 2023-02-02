@@ -93,7 +93,8 @@ const TrackTile = memo(
     onTogglePlay,
     showRankIcon,
     permalink,
-    isTrack
+    isTrack,
+    trackId
   }: TrackTileProps) => {
     const hasOrdering = order !== undefined
 
@@ -266,6 +267,7 @@ const TrackTile = memo(
             onClickFavorite={onClickFavorite}
             onClickShare={onClickShare}
             isTrack={isTrack}
+            trackId={trackId}
           />
         </div>
       </div>

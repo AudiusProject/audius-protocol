@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   FeatureFlags,
@@ -9,9 +9,7 @@ import {
   Nullable,
   Chain,
   usersSocialActions as socialActions,
-  premiumContentActions,
   FollowSource,
-  tippingSelectors,
   tippingActions,
   premiumContentSelectors,
   accountSelectors
@@ -27,7 +25,6 @@ import {
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
-import { usePrevious } from 'react-use'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import { ReactComponent as IconVerifiedGreen } from 'assets/img/iconVerifiedGreen.svg'
@@ -39,15 +36,12 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import { SIGN_UP_PAGE } from 'utils/route'
-import { parseTrackRoute } from 'utils/route/trackRouteParser'
 
 import styles from './GiantTrackTile.module.css'
 
 const { getUsers } = cacheUsersSelectors
-const { getSendStatus } = tippingSelectors
 const { beginTip } = tippingActions
-const { getPremiumTrackStatus } = premiumContentSelectors
-const { updatePremiumTrackStatus, refreshPremiumTrack } = premiumContentActions
+const { getPremiumTrackStatusMap } = premiumContentSelectors
 const { getAccountUser } = accountSelectors
 
 const messages = {
@@ -82,7 +76,6 @@ const messages = {
 }
 
 type PremiumTrackAccessSectionProps = {
-  trackId: ID
   premiumConditions: PremiumConditions
   followee: Nullable<User>
   tippedUser: Nullable<User>
@@ -91,27 +84,13 @@ type PremiumTrackAccessSectionProps = {
 }
 
 const LockedPremiumTrackSection = ({
-  trackId,
   premiumConditions,
   followee,
   tippedUser,
   goToCollection
 }: PremiumTrackAccessSectionProps) => {
   const dispatch = useDispatch()
-  const tipSendStatus = useSelector(getSendStatus)
-  const previousSendStatus = usePrevious(tipSendStatus)
   const account = useSelector(getAccountUser)
-
-  // Set unlocking state if send tip is successful and user closed the tip modal.
-  useEffect(() => {
-    if (previousSendStatus === 'SUCCESS' && tipSendStatus === null) {
-      dispatch(updatePremiumTrackStatus({ status: 'UNLOCKING' }))
-
-      // Poll discovery to get user's premium content signature for this track.
-      const trackParams = parseTrackRoute(window.location.pathname)
-      dispatch(refreshPremiumTrack({ trackParams, trackId }))
-    }
-  }, [dispatch, previousSendStatus, tipSendStatus, trackId])
 
   const handleSendTip = useCallback(() => {
     if (account) {
@@ -131,18 +110,12 @@ const LockedPremiumTrackSection = ({
             FollowSource.TRACK_PAGE
           )
         )
-        // Set unlocking state if user has clicked on button to follow artist.
-        dispatch(updatePremiumTrackStatus({ status: 'UNLOCKING' }))
-
-        // Poll discovery to get user's premium content signature for this track.
-        const trackParams = parseTrackRoute(window.location.pathname)
-        dispatch(refreshPremiumTrack({ trackParams, trackId }))
       }
     } else {
       dispatch(pushRoute(SIGN_UP_PAGE))
       dispatch(showRequiresAccountModal())
     }
-  }, [dispatch, account, premiumConditions, trackId])
+  }, [dispatch, account, premiumConditions])
 
   const renderLockedDescription = useCallback(() => {
     if (premiumConditions.nft_collection) {
@@ -405,7 +378,7 @@ const UnlockedPremiumTrackSection = ({
 
     // should not reach here
     return null
-  }, [premiumConditions, followee, tippedUser, goToCollection])
+  }, [premiumConditions, isOwner, followee, tippedUser, goToCollection])
 
   return (
     <div className={styles.premiumContentSectionUnlocked}>
@@ -450,7 +423,8 @@ export const PremiumTrackSection = ({
   const { isEnabled: isPremiumContentEnabled } = useFlag(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
   )
-  const premiumTrackStatus = useSelector(getPremiumTrackStatus)
+  const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
+  const premiumTrackStatus = premiumTrackStatusMap[trackId] ?? null
   const { follow_user_id: followUserId, tip_user_id: tipUserId } =
     premiumConditions ?? {}
   const users = useSelector<AppState, { [id: ID]: User }>((state) =>
@@ -495,7 +469,6 @@ export const PremiumTrackSection = ({
     return (
       <div className={cn(styles.premiumContentSection, fadeIn)}>
         <UnlockedPremiumTrackSection
-          trackId={trackId}
           premiumConditions={premiumConditions}
           followee={followee}
           tippedUser={tippedUser}
@@ -510,7 +483,6 @@ export const PremiumTrackSection = ({
     return (
       <div className={cn(styles.premiumContentSection, fadeIn)}>
         <UnlockingPremiumTrackSection
-          trackId={trackId}
           premiumConditions={premiumConditions}
           followee={followee}
           tippedUser={tippedUser}
@@ -524,7 +496,6 @@ export const PremiumTrackSection = ({
   return (
     <div className={cn(styles.premiumContentSection, fadeIn)}>
       <LockedPremiumTrackSection
-        trackId={trackId}
         premiumConditions={premiumConditions}
         followee={followee}
         tippedUser={tippedUser}

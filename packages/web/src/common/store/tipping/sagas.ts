@@ -65,7 +65,8 @@ const {
   setShowTip,
   setSupportingOverridesForUser,
   setSupportersOverridesForUser,
-  fetchUserSupporter
+  fetchUserSupporter,
+  refreshTipGatedTracks
 } = tippingActions
 const {
   getOptimisticSupporters,
@@ -287,6 +288,7 @@ function* sendTipAsync() {
         source
       })
     )
+    yield put(refreshTipGatedTracks({ userId: recipient.user_id }))
 
     /**
      * Store optimistically updated supporting value for sender

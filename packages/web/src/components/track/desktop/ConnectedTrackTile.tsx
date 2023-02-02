@@ -393,6 +393,7 @@ const ConnectedTrackTile = memo(
           isTrending={isTrending}
           showRankIcon={showRankIcon}
           permalink={permalink}
+          trackId={trackId}
           isTrack
         />
       </Draggable>

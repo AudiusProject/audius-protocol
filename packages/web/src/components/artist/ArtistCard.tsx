@@ -20,12 +20,10 @@ const { setNotificationSubscription } = profilePageActions
 type ArtistCardProps = {
   artist: User
   onNavigateAway: () => void
-  onFollow?: () => void
-  onUnfollow?: () => void
 }
 
 export const ArtistCard = (props: ArtistCardProps) => {
-  const { artist, onNavigateAway, onFollow, onUnfollow } = props
+  const { artist, onNavigateAway } = props
   const {
     user_id,
     bio,
@@ -76,18 +74,12 @@ export const ArtistCard = (props: ArtistCardProps) => {
 
   const handleFollow = useCallback(() => {
     dispatch(followUser(user_id, FollowSource.HOVER_TILE))
-    if (onFollow) {
-      onFollow()
-    }
-  }, [dispatch, user_id, onFollow])
+  }, [dispatch, user_id])
 
   const handleUnfollow = useCallback(() => {
     dispatch(unfollowUser(user_id, FollowSource.HOVER_TILE))
     dispatch(setNotificationSubscription(user_id, false, true))
-    if (onUnfollow) {
-      onUnfollow()
-    }
-  }, [dispatch, user_id, onUnfollow])
+  }, [dispatch, user_id])
 
   return (
     <div className={styles.popoverContainer} onClick={handleClick}>
