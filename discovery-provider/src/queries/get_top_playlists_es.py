@@ -47,6 +47,12 @@ def get_top_playlists_es(kind, args):
 
     dsl = default_function_score(dsl, "repost_count")
 
+    # top playlists have large saved_by and reposted_by
+    # exclude them from the result
+    dsl['_source'] = {
+        'exclude': ['saved_by', 'reposted_by']
+    }
+
     found = esclient.search(index=ES_PLAYLISTS, query=dsl['query'], size=limit)
 
     playlists = [h["_source"] for h in found["hits"]["hits"]]
@@ -62,9 +68,11 @@ def get_top_playlists_es(kind, args):
         p['user'] = user_by_id[str(p['playlist_owner_id'])]
         extend_playlist(p)
 
-        # sets has_current_user_reposted
-        # but not: followee_reposts, followee_favorites
-        # populate_track_or_playlist_metadata_es(p, current_user)
+        # elsewhere we call:
+        #   populate_track_or_playlist_metadata_es(p, current_user)
+        # but we want to cache top playlists... 
+        # and we source excluded saved_by and reposted_by
+        # so we don't tailor to current_user here
 
     return playlists
 
