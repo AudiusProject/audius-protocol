@@ -777,6 +777,7 @@ export class DiscoveryProvider {
     limit,
     mood,
     filter,
+    encodedUserId,
     withUsers = false
   }: Requests.GetTopFullPlaylistsParams) {
     const req = Requests.getTopFullPlaylists({
@@ -784,6 +785,7 @@ export class DiscoveryProvider {
       limit,
       mood,
       filter,
+      encodedUserId,
       withUsers
     })
     return await this._makeRequest(req)
