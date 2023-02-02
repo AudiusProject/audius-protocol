@@ -74,5 +74,8 @@ def get_top_playlists_es(kind, args):
         # and we source excluded saved_by and reposted_by
         # so we don't tailor to current_user here
 
+        # also null out tracks
+        p['tracks'] = None
+
     return playlists
 
