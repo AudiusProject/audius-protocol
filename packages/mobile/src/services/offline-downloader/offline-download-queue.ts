@@ -28,6 +28,17 @@ import {
   TRACK_DOWNLOAD_WORKER
 } from './workers/trackDownloadWorker'
 
+const isEqualCollectionPayload = isEqual
+
+const isEqualTrackPayload = (
+  a: TrackDownloadWorkerPayload,
+  b: TrackDownloadWorkerPayload
+) => {
+  const { favoriteCreatedAt: ignoredAFavoriteCreatedAt, ...aPayload } = a
+  const { favoriteCreatedAt: ignoredBFavoriteCreatedAt, ...bPayload } = a
+  return isEqual(aPayload, bPayload)
+}
+
 export const enqueueCollectionDownload = async (
   collectionForDownload: CollectionForDownload
 ) => {
@@ -153,7 +164,8 @@ export const cancelQueuedCollectionDownloads = async (
       return (
         workerName === COLLECTION_DOWNLOAD_WORKER &&
         (payloadsToCancelById[parsedPayload.collectionId] ?? []).some(
-          (payloadToCancel) => isEqual(payloadToCancel, parsedPayload)
+          (payloadToCancel) =>
+            isEqualCollectionPayload(payloadToCancel, parsedPayload)
         )
       )
     } catch (e) {
@@ -191,7 +203,8 @@ export const cancelQueuedDownloads = async (
       return (
         workerName === TRACK_DOWNLOAD_WORKER &&
         (payloadsToCancelById[parsedPayload.trackId] ?? []).some(
-          (payloadToCancel) => isEqual(payloadToCancel, parsedPayload)
+          (payloadToCancel) =>
+            isEqualTrackPayload(payloadToCancel, parsedPayload)
         )
       )
     } catch (e) {

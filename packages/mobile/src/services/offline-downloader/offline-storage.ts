@@ -3,6 +3,7 @@ import path from 'path'
 import type {
   Collection,
   CollectionMetadata,
+  Nullable,
   Track,
   UserMetadata,
   UserTrackMetadata
@@ -170,7 +171,7 @@ export const listTracks = async (): Promise<string[]> => {
 
 export const getTrackJson = async (
   trackId: string
-): Promise<Track & UserTrackMetadata> => {
+): Promise<Nullable<Track & UserTrackMetadata>> => {
   try {
     const trackJson = await readFile(getLocalTrackJsonPath(trackId), 'utf8')
     return JSON.parse(trackJson)
@@ -178,7 +179,7 @@ export const getTrackJson = async (
     if (e instanceof SyntaxError) {
       purgeDownloadedTrack(trackId)
     }
-    return Promise.reject(e)
+    return null
   }
 }
 
