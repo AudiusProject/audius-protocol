@@ -15,20 +15,20 @@ require (
 	github.com/nats-io/nats-server/v2 v2.9.7
 	github.com/nats-io/nats.go v1.19.0
 	github.com/nats-io/nkeys v0.3.0
+	github.com/rs/zerolog v1.29.0
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/spf13/cast v1.5.0
 	github.com/stretchr/testify v1.8.1
 	github.com/tabbed/pqtype v0.1.1
+	go.opentelemetry.io/otel v1.12.0
+	go.opentelemetry.io/otel/sdk v1.12.0
+	go.opentelemetry.io/otel/trace v1.12.0
 	golang.org/x/sync v0.1.0
 )
 
 require (
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/rs/zerolog v1.29.0 // indirect
-	go.opentelemetry.io/otel v1.12.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.12.0 // indirect
-	go.opentelemetry.io/otel/trace v1.12.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	golang.org/x/term v0.4.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
@@ -58,7 +58,7 @@ require (
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
-	github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d // indirect
+	github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d
 	github.com/urfave/cli/v2 v2.20.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect

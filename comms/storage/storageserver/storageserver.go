@@ -14,7 +14,7 @@ import (
 	"comms.audius.co/storage/transcode"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
-	"githudemob.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
