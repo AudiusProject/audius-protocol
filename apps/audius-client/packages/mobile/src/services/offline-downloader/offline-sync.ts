@@ -22,6 +22,7 @@ import {
   downloadCollectionCoverArt,
   downloadTrackCoverArt,
   DOWNLOAD_REASON_FAVORITES,
+  removeCollectionDownload,
   removeDownloadedCollectionFromFavorites
 } from './offline-downloader'
 import { purgeDownloadedTrack, writeTrackJson } from './offline-storage'
@@ -160,14 +161,29 @@ export const syncCollectionTracks = async (
     })
   )?.[0]
 
-  // TODO: will discovery serve a removed playlist?
   if (!updatedCollection) return
-  const downloadedCollectionTrackIds = offlineCollection.tracks
-    ?.map((track) => track.track_id)
-    ?.filter((trackId) => downloadedTracks[trackId] != null)
+
+  const downloadedCollectionTrackIds =
+    offlineCollection.tracks
+      ?.map((track) => track.track_id)
+      ?.filter((trackId) => downloadedTracks[trackId] != null) ?? []
+
+  if (updatedCollection.is_delete) {
+    removeCollectionDownload(
+      collectionId,
+      downloadedCollectionTrackIds.map((trackId) => ({
+        trackId,
+        downloadReason: {
+          is_from_favorites: isFavoritesDownload,
+          collection_id: collectionIdStr
+        }
+      }))
+    )
+    return
+  }
 
   const downloadedOrQueuedCollectionTrackIds = new Set([
-    ...(downloadedCollectionTrackIds || []),
+    ...downloadedCollectionTrackIds,
     ...queuedTrackIds
   ])
   const updatedCollectionTrackIds = new Set(
