@@ -7,6 +7,7 @@ from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
+from src.queries.get_top_playlists_es import get_top_playlists_es
 from src.queries.query_helpers import (
     create_followee_playlists_subquery,
     decayed_score,
@@ -40,6 +41,9 @@ def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
     # along an encoded user id via url param
     if current_user_id is None:
         current_user_id = get_current_user_id(required=False)
+
+    # todo: wrap in try / catch
+    return get_top_playlists_es(kind, args)
 
     # Argument parsing and checking
     if kind not in ("playlist", "album"):
