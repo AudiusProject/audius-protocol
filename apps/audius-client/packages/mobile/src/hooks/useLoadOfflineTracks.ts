@@ -110,7 +110,8 @@ export const useLoadOfflineData = () => {
           console.warn('Error verifying track', trackId, e)
         }
         try {
-          const track: Track & UserTrackMetadata = await getTrackJson(trackId)
+          const track = await getTrackJson(trackId)
+          if (!track) return
           const lineupTrack = {
             uid: makeUid(Kind.TRACKS, track.track_id),
             kind: Kind.TRACKS,

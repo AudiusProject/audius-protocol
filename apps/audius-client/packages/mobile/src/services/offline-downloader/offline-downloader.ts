@@ -245,9 +245,11 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
 
   try {
     if (await verifyTrack(trackIdStr, false)) {
+      const trackJson = await getTrackJson(trackIdStr)
+      if (!trackJson) return
+
       // Track is already downloaded, so rewrite the json
       // to include this collection in the reasons_for_download list
-      const trackJson = await getTrackJson(trackIdStr)
 
       // Skip if duplicate download reason
       if (
@@ -487,13 +489,13 @@ export const removeTrackDownload = async ({
   try {
     const trackIdStr = trackId.toString()
     const diskTrack = await getTrackJson(trackIdStr)
-    const downloadReasons = diskTrack.offline?.reasons_for_download ?? []
+    const downloadReasons = diskTrack?.offline?.reasons_for_download ?? []
     const remainingReasons = downloadReasons.filter((reason) =>
       downloadReason.collection_id === DOWNLOAD_REASON_FAVORITES
         ? !reason.is_from_favorites
         : !isEqual(reason, downloadReason)
     )
-    if (remainingReasons.length === 0) {
+    if (!diskTrack || remainingReasons.length === 0) {
       purgeDownloadedTrack(trackIdStr)
       store.dispatch(removeDownload(trackIdStr))
     } else {
