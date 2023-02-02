@@ -105,6 +105,8 @@ export type SolCollectionMap = {
   }
 }
 
+export type PremiumTrackStatus = null | 'UNLOCKING' | 'UNLOCKED' | 'LOCKED'
+
 export type TrackMetadata = {
   blocknumber: number
   activity_timestamp?: string

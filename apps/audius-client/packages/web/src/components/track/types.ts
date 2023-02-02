@@ -213,6 +213,9 @@ export type DesktopTrackTileProps = {
 
   /** Whether the tile is for a track */
   isTrack?: boolean
+
+  /** Track id if track tile */
+  trackId?: ID
 }
 
 export type DesktopPlaylistTileProps = {

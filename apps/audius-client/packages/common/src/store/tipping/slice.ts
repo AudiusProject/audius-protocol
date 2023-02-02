@@ -156,6 +156,9 @@ const slice = createSlice({
     },
     setShowTip: (state, action: PayloadAction<{ show: boolean }>) => {
       state.showTip = action.payload.show
+    },
+    refreshTipGatedTracks: (_state, _action: PayloadAction<{ userId: ID }>) => {
+      // triggers saga
     }
   }
 })
@@ -178,7 +181,8 @@ export const {
   fetchRecentTips,
   fetchUserSupporter,
   setTipToDisplay,
-  setShowTip
+  setShowTip,
+  refreshTipGatedTracks
 } = slice.actions
 
 export const actions = slice.actions

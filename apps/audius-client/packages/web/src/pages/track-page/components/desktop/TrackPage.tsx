@@ -53,8 +53,6 @@ export type OwnProps = {
   onHeroRepost: (isReposted: boolean, trackId: ID) => void
   onFollow: () => void
   onUnfollow: () => void
-  onUnlock: () => void
-  onLock: (trackId: ID) => void
   onClickReposts: () => void
   onClickFavorites: () => void
 
@@ -99,8 +97,6 @@ const TrackPage = ({
   onSaveTrack,
   onFollow,
   onUnfollow,
-  onUnlock,
-  onLock,
   onDownloadTrack,
   makePublic,
   onExternalLinkClick,
@@ -202,8 +198,6 @@ const TrackPage = ({
       following={following}
       onFollow={onFollow}
       onUnfollow={onUnfollow}
-      onUnlock={onUnlock}
-      onLock={onLock}
       download={defaults.download}
       onDownload={onDownload}
       makePublic={makePublic}

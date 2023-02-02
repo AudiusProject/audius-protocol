@@ -450,3 +450,9 @@
 .menuContainer:active {
   transform: scale3d(0.95, 0.95, 0.95);
 }
+
+.spinner {
+  margin-right: 8px;
+  height: 16px;
+  width: 16px;
+}
