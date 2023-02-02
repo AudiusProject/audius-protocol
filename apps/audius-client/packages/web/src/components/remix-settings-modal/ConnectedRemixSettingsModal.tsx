@@ -4,7 +4,9 @@ import {
   ID,
   Status,
   remixSettingsSelectors,
-  remixSettingsActions
+  remixSettingsActions,
+  Nullable,
+  PremiumConditions
 } from '@audius/common'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
@@ -16,8 +18,13 @@ const { getTrack, getUser, getStatus } = remixSettingsSelectors
 const { fetchTrack, fetchTrackSucceeded, reset } = remixSettingsActions
 
 type OwnProps = {
+  isPremium: boolean
+  premiumConditions: Nullable<PremiumConditions>
+  isRemix: boolean
+  setIsRemix: (isRemix: boolean) => void
   isOpen: boolean
   onClose: () => void
+  onChangeField: (field: string, value: any) => void
   // When opening the modal from a track that already has remix_of set,
   // the initial track id should be set to the first remix parent's track id.
   // This is used in the "edit track" flow.
@@ -30,8 +37,13 @@ type ConnectedRemixSettingsModalProps = OwnProps &
 
 const ConnectedRemixSettingsModal = ({
   initialTrackId,
+  isPremium,
+  premiumConditions,
+  isRemix,
+  setIsRemix,
   isOpen,
   onClose,
+  onChangeField,
   track,
   user,
   status,
@@ -56,6 +68,12 @@ const ConnectedRemixSettingsModal = ({
     <RemixSettingsModal
       isOpen={isOpen}
       onClose={onClose}
+      isPremium={isPremium}
+      premiumConditions={premiumConditions}
+      isRemix={isRemix}
+      setIsRemix={setIsRemix}
+      onChangeField={onChangeField}
+      reset={reset}
       track={track}
       user={user}
       isInvalidTrack={status === Status.ERROR}

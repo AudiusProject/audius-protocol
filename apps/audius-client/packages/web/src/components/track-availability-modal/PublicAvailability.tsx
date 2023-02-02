@@ -11,22 +11,20 @@ const messages = {
 }
 
 export const PublicAvailability = ({
-  selected,
-  updatePublicField
+  selected
 }: TrackAvailabilitySelectionProps) => {
   return (
-    <div className={cn(styles.radioItem, { [styles.selected]: selected })}>
+    <div>
       <div
-        className={styles.availabilityRowContent}
-        onClick={updatePublicField}
+        className={cn(styles.availabilityRowTitle, {
+          [styles.selected]: selected
+        })}
       >
-        <div className={styles.availabilityRowTitle}>
-          <IconVisibilityPublic className={styles.availabilityRowIcon} />
-          <span>{messages.public}</span>
-        </div>
-        <div className={styles.availabilityRowDescription}>
-          {messages.publicSubtitle}
-        </div>
+        <IconVisibilityPublic className={styles.availabilityRowIcon} />
+        <span>{messages.public}</span>
+      </div>
+      <div className={styles.availabilityRowDescription}>
+        {messages.publicSubtitle}
       </div>
     </div>
   )

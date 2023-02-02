@@ -20,6 +20,29 @@
   fill: var(--neutral-light-2);
 }
 
+.isRemix {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--unit-6);
+  padding: var(--unit-2) 18px;
+  background: var(--neutral-light-9);
+  border: 1px solid var(--neutral-light-7);
+  border-radius: var(--unit-2);
+  font-weight: var(--font-medium);
+  line-height: 140%;
+}
+
+.isRemixIcon {
+  margin-right: 18px;
+  width: var(--unit-5);
+  height: var(--unit-5);
+  flex-shrink: 0;
+}
+
+.isRemixIcon path {
+  fill: var(--neutral);
+}
+
 .section {
   display: flex;
   align-items: center;
@@ -30,6 +53,10 @@
   transition: opacity 0.2s ease-in-out;
   transform: translate3d(0, 0, 0);
   opacity: 1;
+}
+
+.section:not(:last-child) {
+  margin-bottom: 12px;
 }
 
 .sectionTitleClassname {
@@ -55,38 +82,6 @@
   fill: var(--neutral);
 }
 
-.radioItem {
-  position: relative;
-  display: flex;
-  align-items: start;
-  padding: 24px 0;
-  border-top: 1px solid var(--neutral-light-7);
-}
-
-.radioItem:first-child {
-  padding-top: 0;
-  border: none;
-}
-
-.radioItem::before {
-  position: absolute;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  content: ' ';
-  background: var(--neutral-light-6);
-  box-shadow: inset 2px 2px 2px rgba(0, 0, 0, 0.1);
-}
-
-.selected.radioItem::before {
-  background: var(--white);
-  border: 6px solid var(--secondary);
-}
-
-.radioItem:hover {
-  cursor: pointer;
-}
-
 .specialAccessRadioItem {
   align-items: center;
 }
@@ -103,17 +98,6 @@
 .specialAccessRadioItem > div {
   width: calc(100% - 32px);
   margin-left: 32px;
-}
-
-.radioInput {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-}
-
-.availabilityRowContent {
-  width: calc(100% - 28px);
-  margin-left: 28px;
 }
 
 .availabilityRowTitle {
@@ -142,26 +126,24 @@
 
 .collectibleGated {
   padding: 0;
-  margin-top: 24px;
+  margin-top: var(--unit-6);
 }
 
 .hiddenSection {
   display: flex;
 }
 
-.hiddenSection > div:last-child {
+.availabilityRowSelection.hiddenSection .hiddenSectionColumn {
   width: 304px;
-  margin-left: 12px;
+  margin-bottom: 0;
 }
 
-.hiddenSection > div:first-child {
-  width: 304px;
+.hiddenSectionColumn:first-child {
   margin-right: 12px;
 }
 
-.availabilityRowSelection > div:not(:last-child),
-.availabilityRowSelection > div > div:not(:last-child) {
-  margin-bottom: 12px;
+.hiddenSectionColumn:last-child {
+  margin-left: 12px;
 }
 
 .doneButtonContainer {
@@ -173,12 +155,20 @@
   font-size: var(--font-l);
 }
 
-.selected .availabilityRowTitle {
+.selected.availabilityRowTitle {
   color: var(--secondary);
 }
 
 .selected path {
   fill: var(--secondary);
+}
+
+.disabled.availabilityRowTitle {
+  color: var(--neutral-light-6);
+}
+
+.disabled path {
+  fill: var(--neutral-light-6);
 }
 
 .supportersInfo {
@@ -240,4 +230,31 @@
   width: 48px;
   height: 48px;
   border-radius: 8px;
+}
+
+.noCollectibles {
+  display: flex;
+  align-items: center;
+  margin: 24px 0 8px 8px;
+  padding: 8px 16px;
+  background: var(--neutral-light-9);
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 8px;
+}
+
+.noCollectibleIcon {
+  margin-left: 2px;
+  width: var(--unit-6);
+  height: var(--unit-6);
+}
+
+.noCollectibleIcon path {
+  fill: var(--neutral);
+}
+
+.noCollectibleText {
+  margin-left: 18px;
+  font-weight: var(--font-medium);
+  font-size: var(--font-m);
+  line-height: 140%;
 }

@@ -4,8 +4,9 @@ import {
   FeatureFlags,
   PremiumConditions,
   accountSelectors,
-  Nullable,
-  TrackAvailabilityType
+  TrackAvailabilityType,
+  collectiblesSelectors,
+  Nullable
 } from '@audius/common'
 import {
   Modal,
@@ -19,6 +20,9 @@ import {
 import cn from 'classnames'
 import { useSelector } from 'react-redux'
 
+import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCircle.svg'
+import { ModalRadioGroup } from 'components/modal-radio/ModalRadioGroup'
+import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import { CollectibleGatedAvailability } from './CollectibleGatedAvailability'
@@ -29,10 +33,12 @@ import styles from './TrackAvailabilityModal.module.css'
 import { TrackMetadataState } from './types'
 
 const { getUserId } = accountSelectors
+const { getVerifiedUserCollections } = collectiblesSelectors
 
 const messages = {
   title: 'AVAILABILITY',
-  hideTrack: 'Hide Track',
+  isRemix:
+    'This track is marked as a remix. To enable additional availability options, unmark within Remix Settings.',
   done: 'Done'
 }
 
@@ -49,6 +55,7 @@ const defaultAvailabilityFields = {
 
 type TrackAvailabilityModalProps = {
   isOpen: boolean
+  isRemix: boolean
   metadataState: TrackMetadataState
   didUpdateState: (newState: TrackMetadataState) => void
   onClose: () => void
@@ -58,6 +65,7 @@ type TrackAvailabilityModalProps = {
 // as well as toggle individual unlisted metadata field visibility.
 const TrackAvailabilityModal = ({
   isOpen,
+  isRemix,
   metadataState,
   didUpdateState,
   onClose
@@ -66,6 +74,13 @@ const TrackAvailabilityModal = ({
   const { isEnabled: isSpecialAccessGateEnabled } = useFlag(
     FeatureFlags.SPECIAL_ACCESS_GATE_ENABLED
   )
+  const { ethCollectionMap, solCollectionMap } = useSelector(
+    getVerifiedUserCollections
+  )
+  const numEthCollectibles = Object.keys(ethCollectionMap).length
+  const numSolCollectibles = Object.keys(solCollectionMap).length
+  const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
+  const isCollectibleGateDisabled = hasNoCollectibles || isRemix
 
   const accountUserId = useSelector(getUserId)
   const defaultSpecialAccess = useMemo(
@@ -136,6 +151,98 @@ const TrackAvailabilityModal = ({
     [didUpdateState, metadataState]
   )
 
+  const noOp = useCallback(() => {}, [])
+
+  const handleSelectionClick = useCallback(
+    (availability: TrackAvailabilityType) => {
+      if (availability === TrackAvailabilityType.PUBLIC) {
+        return updatePublicField
+      }
+      if (
+        availability === TrackAvailabilityType.SPECIAL_ACCESS ||
+        availability === TrackAvailabilityType.COLLECTIBLE_GATED
+      ) {
+        return () => {
+          updatePremiumContentFields(null, availability)
+        }
+      }
+      if (availability === TrackAvailabilityType.HIDDEN) {
+        return updateUnlistedField
+      }
+      return noOp
+    },
+    [noOp, updatePublicField, updatePremiumContentFields, updateUnlistedField]
+  )
+
+  const radioItems = [
+    <ModalRadioItem
+      key='public'
+      selected={availability === TrackAvailabilityType.PUBLIC}
+      onClick={handleSelectionClick(TrackAvailabilityType.PUBLIC)}
+    >
+      <PublicAvailability
+        selected={availability === TrackAvailabilityType.PUBLIC}
+        state={metadataState}
+        onStateUpdate={() => {}}
+      />
+    </ModalRadioItem>
+  ]
+  if (isSpecialAccessGateEnabled) {
+    radioItems.push(
+      <ModalRadioItem
+        key='special-access'
+        selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
+        onClick={
+          isRemix
+            ? noOp
+            : handleSelectionClick(TrackAvailabilityType.SPECIAL_ACCESS)
+        }
+        disabled={isRemix}
+      >
+        <SpecialAccessAvailability
+          selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
+          state={metadataState}
+          onStateUpdate={updatePremiumContentFields}
+          disabled={isRemix}
+        />
+      </ModalRadioItem>
+    )
+  }
+  if (isNFTGateEnabled) {
+    radioItems.push(
+      <ModalRadioItem
+        key='collectible-gated'
+        selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
+        onClick={
+          isCollectibleGateDisabled
+            ? noOp
+            : handleSelectionClick(TrackAvailabilityType.COLLECTIBLE_GATED)
+        }
+        disabled={isCollectibleGateDisabled}
+      >
+        <CollectibleGatedAvailability
+          selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
+          state={metadataState}
+          onStateUpdate={updatePremiumContentFields}
+          disabled={isCollectibleGateDisabled}
+        />
+      </ModalRadioItem>
+    )
+  }
+  radioItems.push(
+    <ModalRadioItem
+      key='hidden'
+      selected={availability === TrackAvailabilityType.HIDDEN}
+      onClick={handleSelectionClick(TrackAvailabilityType.HIDDEN)}
+    >
+      <HiddenAvailability
+        selected={availability === TrackAvailabilityType.HIDDEN}
+        state={metadataState}
+        onStateUpdate={updateHiddenField}
+      />
+    </ModalRadioItem>
+  )
+
   return (
     <Modal
       isOpen={isOpen}
@@ -152,32 +259,14 @@ const TrackAvailabilityModal = ({
           icon={<IconHidden className={styles.modalTitleIcon} />}
         />
       </ModalHeader>
-      <ModalContent className={styles.content}>
-        <PublicAvailability
-          selected={availability === TrackAvailabilityType.PUBLIC}
-          metadataState={metadataState}
-          updatePublicField={updatePublicField}
-        />
-        {isSpecialAccessGateEnabled && (
-          <SpecialAccessAvailability
-            selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
-            metadataState={metadataState}
-            updatePremiumContentFields={updatePremiumContentFields}
-          />
+      <ModalContent>
+        {isRemix && (
+          <div className={styles.isRemix}>
+            <IconQuestionCircle className={styles.isRemixIcon} />
+            <div>{messages.isRemix}</div>
+          </div>
         )}
-        {isNFTGateEnabled && (
-          <CollectibleGatedAvailability
-            selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
-            metadataState={metadataState}
-            updatePremiumContentFields={updatePremiumContentFields}
-          />
-        )}
-        <HiddenAvailability
-          selected={availability === TrackAvailabilityType.HIDDEN}
-          metadataState={metadataState}
-          updateUnlistedField={updateUnlistedField}
-          updateHiddenField={updateHiddenField}
-        />
+        <ModalRadioGroup items={radioItems} />
         <div className={styles.doneButtonContainer}>
           <Button
             type={ButtonType.PRIMARY_ALT}
