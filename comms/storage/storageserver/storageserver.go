@@ -86,7 +86,7 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	storage.GET("/jobs", ss.serveJobs)
 	storage.GET("/jobs/:id", ss.serveJobById)
 	storage.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
-	storage.GET("/long-term/:key", ss.streamLongTermObjectByKey)
+	storage.GET("/long-term/:bucket/:key", ss.streamLongTermObjectByBucketAndKey)
 	storage.GET("/ws", ss.upgradeConnToWebsocket)
 
 	// TODO: Embed static /weather-map files in binary and server from the route below.
@@ -161,8 +161,8 @@ func (ss *StorageServer) streamTempObjectByBucketAndKey(c echo.Context) error {
 	return c.Stream(200, "", obj)
 }
 
-func (ss *StorageServer) streamLongTermObjectByKey(c echo.Context) error {
-	reader, err := ss.LongTerm.Get(c.Param("key"))
+func (ss *StorageServer) streamLongTermObjectByBucketAndKey(c echo.Context) error {
+	reader, err := ss.LongTerm.Get(c.Param("bucket"), c.Param("key"))
 	if err != nil {
 		return err
 	}

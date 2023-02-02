@@ -2,6 +2,7 @@
 package decider
 
 import (
+	"log"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -16,8 +17,8 @@ type StorageDecider interface {
 	// OnChange finds content that needs to be stored or deleted and fetches or deletes it.
 	OnChange(prevBuckets []string, curBuckets []string) error
 
-	// GetTempStoreFor returns the object store that should be used to temporarily store raw or transcoded content that either has ID bucketOrId or is in the bucket bucketOrId.
-	GetTempStoreFor(bucketOrId string) (nats.ObjectStore, error)
+	// GetNamespacedBucketFor returns the bucket for both temp and long-term storage for the given (non-namespaced) bucket or content ID.
+	GetNamespacedBucketFor(idOrNonNamespacedBucket string) string
 }
 
 // NaiveDecider is a storage decider that stores everything.
@@ -28,7 +29,16 @@ type NaiveDecider struct {
 
 // NewNaiveDecider creates a storage decider that makes this node store all content.
 func NewNaiveDecider(namespace string, jsc nats.JetStreamContext) *NaiveDecider {
-	return &NaiveDecider{namespace: namespace, jsc: jsc}
+	d := &NaiveDecider{namespace: namespace, jsc: jsc}
+
+	// Pre-create single bucket for naive decider - no sharding
+	createObjStoreIfNotExists(&nats.ObjectStoreConfig{
+		Bucket:      d.GetNamespacedBucketFor(""),
+		Description: "Temp object store for all files (non-sharded, naive StorageDecider)",
+		TTL:         objStoreTtl,
+	}, jsc)
+
+	return d
 }
 
 func (d *NaiveDecider) ShouldStore(id string) bool {
@@ -39,10 +49,18 @@ func (d *NaiveDecider) OnChange(prevBuckets []string, curBuckets []string) error
 	return nil
 }
 
-func (d *NaiveDecider) GetTempStoreFor(bucketOrId string) (nats.ObjectStore, error) {
-	// No sharding for naive decider - store it all in one bucket.
-	return d.jsc.CreateObjectStore(&nats.ObjectStoreConfig{
-		Bucket: d.namespace + "_store",
-		TTL:    objStoreTtl,
-	})
+func (d *NaiveDecider) GetNamespacedBucketFor(_ string) string {
+	return d.namespace + "_naive-bucket"
+}
+
+func createObjStoreIfNotExists(cfg *nats.ObjectStoreConfig, jsc nats.JetStreamContext) {
+	_, err := jsc.ObjectStore(cfg.Bucket)
+	if err == nats.ErrBucketNotFound || err == nats.ErrStreamNotFound {
+		_, err = jsc.CreateObjectStore(cfg)
+		if err != nil {
+			log.Fatalf("Failed to create-if-not-exists object store %q: %v", cfg.Bucket, err)
+		}
+	} else if err != nil {
+		log.Fatalf("Failed to create-if-not-exists object store %q: %v", cfg.Bucket, err)
+	}
 }

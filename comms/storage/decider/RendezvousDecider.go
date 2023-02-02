@@ -30,7 +30,7 @@ func NewRendezvousDecider(namespace string, replicationFactor int, allStorageNod
 		bucketer:              bucketer.New(2),
 		jsc:                   jsc,
 	}
-	d.BucketsStored = d.computeBucketsNodeStores(thisNodePubKey)
+	d.BucketsStored = d.computeAndCreateBucketsNodeStores(thisNodePubKey)
 	return &d
 }
 
@@ -51,19 +51,17 @@ func (d *RendezvousDecider) OnChange(prevBuckets []string, curBuckets []string) 
 	return nil
 }
 
-func (d *RendezvousDecider) GetTempStoreFor(bucketOrId string) (nats.ObjectStore, error) {
-	var bucket = bucketOrId
-	if d.bucketer.SuffixLength != len(bucketOrId) {
-		bucket = d.bucketer.GetBucketForId(bucketOrId)
+func (d *RendezvousDecider) GetNamespacedBucketFor(idOrNonNamespacedBucket string) string {
+	var bucket = idOrNonNamespacedBucket
+	if d.bucketer.SuffixLength != len(idOrNonNamespacedBucket) {
+		bucket = d.bucketer.GetBucketForId(idOrNonNamespacedBucket)
 	}
-	return d.jsc.CreateObjectStore(&nats.ObjectStoreConfig{
-		Bucket: fmt.Sprintf("%s_%s_store", d.namespace, bucket),
-		TTL:    objStoreTtl,
-	})
+	return fmt.Sprintf("%s_%s", d.namespace, bucket)
 }
 
 // computeBucketsNodeStores determines the buckets that this node is responsible for storing based on all nodes in the storage network.
-func (d *RendezvousDecider) computeBucketsNodeStores(publicKey string) []string {
+func (d *RendezvousDecider) computeAndCreateBucketsNodeStores(publicKey string) []string {
+	// Compute buckets
 	buckets := []string{}
 	hash := d.getHashRing()
 	for _, bucket := range d.bucketer.Buckets {
@@ -73,6 +71,16 @@ func (d *RendezvousDecider) computeBucketsNodeStores(publicKey string) []string 
 			}
 		}
 	}
+
+	// Pre-create buckets
+	for _, bucket := range buckets {
+		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
+			Bucket:      d.GetNamespacedBucketFor(bucket),
+			Description: fmt.Sprintf("Temp object store for files in bucket %s", bucket),
+			TTL:         objStoreTtl,
+		}, d.jsc)
+	}
+
 	return buckets
 }
 

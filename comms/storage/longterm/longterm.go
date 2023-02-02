@@ -9,18 +9,21 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/transcode"
 	"github.com/nats-io/nats.go"
 	"gocloud.dev/blob"
+	_ "gocloud.dev/blob/fileblob"
 )
 
 type LongTerm struct {
 	storageDecider decider.StorageDecider
 	jsc            nats.JetStreamContext
 }
+
+// Created within the temp folder (/tmp) to store files that are being downloaded from the temp store to the long-term store.
+const longTermDir = "audius-long-term"
 
 // New creates a struct that listens to streamToStoreFrom and downloads content from the temp store to the long-term store.
 func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) *LongTerm {
@@ -29,23 +32,27 @@ func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc na
 		jsc:            jsc,
 	}
 
-	os.MkdirAll(getFileBucketPath(), os.ModePerm)
+	err := os.MkdirAll(getFileBucketPath(), os.ModePerm)
+	if err != nil {
+		log.Fatalf("could not create long-term storage directory: %v", err)
+	}
 	longTerm.runStorer(streamToStoreFrom)
 	return longTerm
 }
 
 // Get returns a file from the long-term store.
-func (lt *LongTerm) Get(key string) (io.Reader, error) {
+func (lt *LongTerm) Get(bucketName, key string) (io.Reader, error) {
 	ctx := context.Background()
-	bucket, err := blob.OpenBucket(ctx, getBucketUrl())
+	blobBucket, err := blob.OpenBucket(ctx, getBucketUrl())
 	if err != nil {
 		return nil, fmt.Errorf("could not open long-term bucket: %v", err)
 	}
-	defer bucket.Close()
+	defer blobBucket.Close()
 
-	reader, err := bucket.NewReader(ctx, key, nil)
+	bucketedKey := lt.storageDecider.GetNamespacedBucketFor(bucketName) + "/" + key
+	reader, err := blobBucket.NewReader(ctx, bucketedKey, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read %q: %v", key, err)
+		return nil, fmt.Errorf("failed to read %q: %v", bucketedKey, err)
 	}
 	return reader, nil
 }
@@ -62,14 +69,14 @@ func (lt *LongTerm) runStorer(uploadStream string) {
 		ReplayPolicy:  nats.ReplayInstantPolicy,
 	})
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error creating consumer for long-term file storer: %q\n", err)
 	}
 
 	// Create a subscription on the consumer for every node
 	// Subject can be empty since it defaults to all subjects bound to the stream
 	storerSub, err := lt.jsc.PullSubscribe("", storerDurable, nats.BindStream(uploadStream))
 	if err != nil {
-		panic(err)
+		log.Fatalf("Error creating subscription for long-term file storer: %q\n", err)
 	}
 
 	// Watch KV store to download files to long-term storage
@@ -83,7 +90,7 @@ func (lt *LongTerm) runStorer(uploadStream string) {
 				job := transcode.Job{}
 				err := json.Unmarshal(msgs[0].Data, &job)
 				if err != nil {
-					panic(err)
+					log.Printf("Error unmarshalling job to store a file: %q\n", err)
 				}
 
 				if job.Status == transcode.JobStatusDone {
@@ -105,16 +112,19 @@ func (lt *LongTerm) runStorer(uploadStream string) {
 func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) {
 	// Open the long-term storage *blob.Bucket
 	ctx := context.Background()
-	bucket, err := blob.OpenBucket(ctx, getBucketUrl())
+	blobBucket, err := blob.OpenBucket(ctx, getBucketUrl())
 	if err != nil {
 		fmt.Printf("error: failed to store file - could not open bucket: %v", err)
 		return
 	}
-	defer bucket.Close()
+	defer blobBucket.Close()
 
 	for _, tmpObj := range tmpObjects {
+		tmpBucketName := lt.storageDecider.GetNamespacedBucketFor(tmpObj.Bucket)
+		ltKey := tmpBucketName + "/" + tmpObj.Name
+
 		// Get object from temp store
-		objStore, err := lt.jsc.ObjectStore(tmpObj.Bucket)
+		objStore, err := lt.jsc.ObjectStore(tmpBucketName)
 		if err != nil {
 			log.Printf("Failed to get object from temp store: %v\n", err)
 			return
@@ -125,10 +135,10 @@ func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) {
 			return
 		}
 
-		// Open a *blob.Writer for the blob at key=tmpObj.Name
-		writer, err := bucket.NewWriter(ctx, tmpObj.Name, nil)
+		// Open a *blob.Writer for the blob at key=tmpObj.Bucket/tmpObj.Name
+		writer, err := blobBucket.NewWriter(ctx, ltKey, nil)
 		if err != nil {
-			log.Printf("Failed to write %q: %v\n", tmpObj.Name, err)
+			log.Printf("Failed to write %q: %v\n", ltKey, err)
 			return
 		}
 		defer writer.Close()
@@ -148,11 +158,5 @@ func getBucketUrl() string {
 }
 
 func getFileBucketPath() string {
-	rootDir := "/tmp/audius-long-term"
-	// On Windows, convert "\" to "/" (for in case rootDir is an env var in the future) and add a leading "/":
-	slashDir := filepath.ToSlash(rootDir)
-	if os.PathSeparator != '/' && !strings.HasPrefix(slashDir, "/") {
-		slashDir = "/" + slashDir
-	}
-	return slashDir
+	return filepath.Join(os.TempDir(), longTermDir)
 }

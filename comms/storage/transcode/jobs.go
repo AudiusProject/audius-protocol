@@ -171,7 +171,7 @@ func (jobman *JobsManager) Add(template JobTemplate, upload *multipart.FileHeade
 		Name:        fileHash,
 		Description: upload.Filename,
 	}
-	objStore, err := jobman.storageDecider.GetTempStoreFor(fileHash)
+	objStore, err := jobman.jsc.ObjectStore(jobman.storageDecider.GetNamespacedBucketFor(fileHash))
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +289,7 @@ func (jobman *JobsManager) StartWorkers(count int) {
 
 func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	logger := jobman.logger.New("job", job.ID)
-	objStore, err := jobman.storageDecider.GetTempStoreFor(job.ID)
+	objStore, err := jobman.jsc.ObjectStore(jobman.storageDecider.GetNamespacedBucketFor(job.ID))
 	if err != nil {
 		return err
 	}
