@@ -102,7 +102,7 @@ export const DownloadFavoritesSwitch = () => {
       <Switch
         value={isMarkedForDownload}
         onValueChange={handleToggleDownload}
-        disabled={!isReachable}
+        disabled={!isReachable && !isMarkedForDownload}
       />
     </View>
   )
