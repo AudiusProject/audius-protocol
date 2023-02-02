@@ -22,7 +22,6 @@ import (
 	"github.com/lucsky/cuid"
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/cast"
-	_ "gocloud.dev/blob/fileblob"
 )
 
 type JobStatus string
