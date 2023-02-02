@@ -28,14 +28,14 @@ import {
   TRACK_DOWNLOAD_WORKER
 } from './workers/trackDownloadWorker'
 
-const isEqualCollectionPayload = isEqual
+export const isEqualCollectionPayload = isEqual
 
-const isEqualTrackPayload = (
+export const isEqualTrackPayload = (
   a: TrackDownloadWorkerPayload,
   b: TrackDownloadWorkerPayload
 ) => {
   const { favoriteCreatedAt: ignoredAFavoriteCreatedAt, ...aPayload } = a
-  const { favoriteCreatedAt: ignoredBFavoriteCreatedAt, ...bPayload } = a
+  const { favoriteCreatedAt: ignoredBFavoriteCreatedAt, ...bPayload } = b
   return isEqual(aPayload, bPayload)
 }
 
@@ -158,29 +158,29 @@ export const cancelQueuedCollectionDownloads = async (
   )
   queue.stop()
   const jobs = await queue.getJobs()
-  const jobsToCancel = jobs.filter(({ workerName, payload }) => {
+  jobs.forEach((rawJob) => {
+    const { workerName, payload, id, active } = rawJob
     try {
-      const parsedPayload: CollectionDownloadWorkerPayload = JSON.parse(payload)
-      return (
-        workerName === COLLECTION_DOWNLOAD_WORKER &&
-        (payloadsToCancelById[parsedPayload.collectionId] ?? []).some(
-          (payloadToCancel) =>
-            isEqualCollectionPayload(payloadToCancel, parsedPayload)
+      if (workerName === COLLECTION_DOWNLOAD_WORKER) {
+        const parsedPayload: CollectionDownloadWorkerPayload =
+          JSON.parse(payload)
+        const shouldCancel = (
+          payloadsToCancelById[parsedPayload.collectionId] ?? []
+        ).some((payloadToCancel) =>
+          isEqualCollectionPayload(payloadToCancel, parsedPayload)
         )
-      )
-    } catch (e) {
-      console.warn(e)
-      return false
-    }
-  })
-  jobsToCancel.forEach(async (rawJob) => {
-    try {
-      const parsedPayload: CollectionDownloadWorkerPayload = JSON.parse(
-        rawJob.payload
-      )
-      rawJob.active ? queue.cancelJob(rawJob.id) : queue.removeJob(rawJob)
 
-      store.dispatch(removeCollectionDownload(parsedPayload))
+        if (shouldCancel) {
+          if (active && id) {
+            // Still has attempts left
+            queue.cancelJob(id)
+          } else {
+            // No attempts left
+            queue.removeJob(rawJob)
+          }
+          store.dispatch(removeCollectionDownload(parsedPayload))
+        }
+      }
     } catch (e) {
       console.warn(e)
     }
@@ -197,29 +197,28 @@ export const cancelQueuedDownloads = async (
   )
   queue.stop()
   const jobs = await queue.getJobs()
-  const jobsToCancel = jobs.filter(({ workerName, payload }) => {
+  jobs.forEach((rawJob) => {
+    const { workerName, payload, id, active } = rawJob
     try {
-      const parsedPayload: TrackDownloadWorkerPayload = JSON.parse(payload)
-      return (
-        workerName === TRACK_DOWNLOAD_WORKER &&
-        (payloadsToCancelById[parsedPayload.trackId] ?? []).some(
-          (payloadToCancel) =>
-            isEqualTrackPayload(payloadToCancel, parsedPayload)
+      if (workerName === TRACK_DOWNLOAD_WORKER) {
+        const parsedPayload: TrackDownloadWorkerPayload = JSON.parse(payload)
+        const shouldCancel = (
+          payloadsToCancelById[parsedPayload.trackId] ?? []
+        ).some((payloadToCancel) =>
+          isEqualTrackPayload(payloadToCancel, parsedPayload)
         )
-      )
-    } catch (e) {
-      console.warn(e)
-      return false
-    }
-  })
-  jobsToCancel.forEach(async (rawJob) => {
-    try {
-      const parsedPayload: TrackDownloadWorkerPayload = JSON.parse(
-        rawJob.payload
-      )
-      rawJob.active ? queue.cancelJob(rawJob.id) : queue.removeJob(rawJob)
 
-      store.dispatch(removeDownload(parsedPayload.trackId.toString()))
+        if (shouldCancel) {
+          if (active && id) {
+            // Still has attempts left
+            queue.cancelJob(id)
+          } else {
+            // No attempts left
+            queue.removeJob(rawJob)
+          }
+          store.dispatch(removeDownload(parsedPayload.trackId.toString()))
+        }
+      }
     } catch (e) {
       console.warn(e)
     }

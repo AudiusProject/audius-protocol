@@ -74,6 +74,21 @@ const { getTrack } = cacheTracksSelectors
 const { getIsReachable } = reachabilitySelectors
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
+export enum DownloadTrackError {
+  IS_DELETED = 'IS_DELETED',
+  IS_UNLISTED = 'IS_UNLISTED',
+  FAILED_TO_FETCH = 'FAILED_TO_FETCH',
+  FAILED_TO_VERIFY = 'FAILED_TO_VERIFY',
+  UNKNOWN = 'UNKNOWN'
+}
+
+export enum DownloadCollectionError {
+  IS_DELETED = 'IS_DELETED',
+  IS_PRIVATE = 'IS_PRIVATE',
+  FAILED_TO_FETCH = 'FAILED_TO_FETCH',
+  UNKNOWN = 'UNKNOWN'
+}
+
 export const downloadAllFavorites = async () => {
   const state = store.getState()
   const currentUserId = getUserId(state)
@@ -152,11 +167,18 @@ export const downloadCollection = async ({
   store.dispatch(startCollectionDownload({ collectionId, isFavoritesDownload }))
 
   // Throw this
-  const failJob = (message?: string) => {
+  const failJob = ({
+    message,
+    error
+  }: {
+    message?: string
+    error?: DownloadCollectionError
+  }) => {
     store.dispatch(
       errorCollectionDownload({ collectionId, isFavoritesDownload })
     )
-    return new Error(message)
+    console.warn(message)
+    return new Error(error)
   }
 
   const collectionFromApi = (
@@ -167,39 +189,53 @@ export const downloadCollection = async ({
   )[0]
 
   if (!collectionFromApi) {
-    throw failJob(
-      `collection to download not found on discovery - ${collectionFromApi}`
-    )
+    throw failJob({
+      message: `collection to download not found on discovery - ${collectionFromApi}`,
+      error: DownloadCollectionError.FAILED_TO_FETCH
+    })
   }
   const collection = collectionFromApi
 
   // Prevent download of unavailable collections
-  if (
-    collection.is_delete ||
-    // Not sure this is necessary
-    (collection.is_private && collection.playlist_owner_id !== currentUserId)
-  )
-    throw failJob(`collection to download is not available - ${collectionId}`)
-
-  await downloadCollectionCoverArt(collection)
-
-  const collectionToWrite: CollectionMetadata = {
-    ...collection,
-    offline: {
-      // TODO: This is broken! Need to add download reasons. We are only tracking the last known download reason.
-      isFavoritesDownload: !!isFavoritesDownload
-    }
+  if (collection.is_delete) {
+    throw failJob({
+      message: `collection to download is deleted - ${collectionId}`,
+      error: DownloadCollectionError.IS_DELETED
+    })
+  }
+  if (collection.is_private && collection.playlist_owner_id !== currentUserId) {
+    throw failJob({
+      message: `collection to download is private and user is not owner - ${collectionId} - ${currentUserId}`,
+      error: DownloadCollectionError.IS_PRIVATE
+    })
   }
 
-  await writeCollectionJson(
-    collectionId.toString(),
-    collectionToWrite,
-    collection.user
-  )
+  try {
+    await downloadCollectionCoverArt(collection)
 
-  store.dispatch(
-    completeCollectionDownload({ collectionId, isFavoritesDownload })
-  )
+    const collectionToWrite: CollectionMetadata = {
+      ...collection,
+      offline: {
+        // TODO: This is broken! Need to add download reasons. We are only tracking the last known download reason.
+        isFavoritesDownload: !!isFavoritesDownload
+      }
+    }
+
+    await writeCollectionJson(
+      collectionId.toString(),
+      collectionToWrite,
+      collection.user
+    )
+
+    store.dispatch(
+      completeCollectionDownload({ collectionId, isFavoritesDownload })
+    )
+  } catch (e) {
+    throw failJob({
+      message: e?.message ?? 'Unknown Error',
+      error: DownloadCollectionError.UNKNOWN
+    })
+  }
 }
 
 export const batchDownloadTrack = (tracksForDownload: TrackForDownload[]) => {
@@ -219,9 +255,16 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
   store.dispatch(startDownload(trackIdStr))
 
   // Throw this
-  const failJob = (message?: string) => {
+  const failJob = ({
+    message,
+    error
+  }: {
+    message?: string
+    error?: DownloadTrackError
+  }) => {
     store.dispatch(errorDownload(trackIdStr))
-    return new Error(message)
+    console.warn(message)
+    return new Error(error)
   }
 
   const state = store.getState()
@@ -234,13 +277,22 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
   })
 
   if (!trackFromApi) {
-    throw failJob(`track to download not found on discovery - ${trackIdStr}`)
+    throw failJob({
+      message: `track to download not found on discovery - ${trackIdStr}`,
+      error: DownloadTrackError.FAILED_TO_FETCH
+    })
   }
-  if (
-    trackFromApi?.is_delete ||
-    (trackFromApi?.is_unlisted && currentUserId !== trackFromApi.user.user_id)
-  ) {
-    throw failJob(`track to download is not available - ${trackIdStr}`)
+  if (trackFromApi.is_delete) {
+    throw failJob({
+      message: `track to download is deleted - ${trackIdStr}`,
+      error: DownloadTrackError.IS_DELETED
+    })
+  }
+  if (trackFromApi.is_unlisted && currentUserId !== trackFromApi.user.user_id) {
+    throw failJob({
+      message: `track to download is unlisted and user is not owner - ${trackIdStr} - ${currentUserId}`,
+      error: DownloadTrackError.IS_UNLISTED
+    })
   }
 
   try {
@@ -311,9 +363,10 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
 
     const verified = await verifyTrack(trackIdStr, true)
     if (!verified) {
-      throw failJob(
-        `DownloadQueueWorker - download verification failed ${trackIdStr}`
-      )
+      throw failJob({
+        message: `DownloadQueueWorker - download verification failed ${trackIdStr}`,
+        error: DownloadTrackError.FAILED_TO_VERIFY
+      })
     }
     store.dispatch(loadTrack(trackToWrite))
     store.dispatch(completeDownload(trackIdStr))
@@ -515,7 +568,8 @@ export const removeTrackDownload = async ({
     }
   } catch (e) {
     console.error(
-      `failed to remove track ${trackId} from collection ${downloadReason.collection_id}`
+      `failed to remove track ${trackId} from collection ${downloadReason.collection_id}`,
+      e
     )
   }
 }
