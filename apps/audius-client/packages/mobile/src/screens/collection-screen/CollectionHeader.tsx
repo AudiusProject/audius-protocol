@@ -209,7 +209,9 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
         <Switch
           value={isMarkedForDownload}
           onValueChange={handleToggleDownload}
-          disabled={isFavoritesToggleOn || !isReachable}
+          disabled={
+            isFavoritesToggleOn || (!isReachable && !isMarkedForDownload)
+          }
         />
       </View>
     </View>

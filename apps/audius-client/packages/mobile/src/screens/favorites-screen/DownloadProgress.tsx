@@ -1,3 +1,4 @@
+import { reachabilitySelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
@@ -10,6 +11,8 @@ import {
 } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
+
+const { getIsReachable } = reachabilitySelectors
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
@@ -33,6 +36,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 export const DownloadProgress = () => {
   const styles = useStyles()
   const downloadStatus = useSelector(getOfflineDownloadStatus)
+  const isReachable = useSelector(getIsReachable)
   const numDownloads = Object.keys(downloadStatus).length
   const numDownloadsComplete = Object.values(downloadStatus).filter(
     (status) =>
@@ -48,7 +52,12 @@ export const DownloadProgress = () => {
   )
 
   // Only render if there are active downloads
-  if (numDownloadsComplete === numDownloads || !isMarkedForDownload) return null
+  if (
+    numDownloadsComplete === numDownloads ||
+    !isMarkedForDownload ||
+    !isReachable
+  )
+    return null
 
   return (
     <View style={styles.root}>
