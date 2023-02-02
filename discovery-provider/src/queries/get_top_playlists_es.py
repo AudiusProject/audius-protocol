@@ -1,4 +1,4 @@
-
+import time
 
 from src.utils.elasticdsl import populate_track_or_playlist_metadata_es
 from src.api.v1.helpers import extend_playlist
@@ -45,7 +45,24 @@ def get_top_playlists_es(kind, args):
             }
         })
 
-    dsl = default_function_score(dsl, "repost_count")
+    # decay score
+    # https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-score-query.html#decay-functions-date-fields
+    dsl = {
+        "query": {
+            "script_score": {
+                "query": {"bool": dsl},
+                "script": {
+                    "source": f"_score * doc['repost_count'].value * decayDateGauss(params.origin, params.scale, params.offset, params.decay, doc['created_at'].value)",
+                    "params": {
+                        "origin": str(round(time.time()*1000)),
+                        "scale": "30d",
+                        "offset": "0",
+                        "decay": 0.5,
+                    }
+                },
+            }
+        }
+    }
 
     # top playlists have large saved_by and reposted_by
     # exclude them from the result
@@ -55,7 +72,11 @@ def get_top_playlists_es(kind, args):
 
     found = esclient.search(index=ES_PLAYLISTS, query=dsl['query'], size=limit)
 
-    playlists = [h["_source"] for h in found["hits"]["hits"]]
+    playlists = []
+    for hit in found["hits"]["hits"]:
+        p = hit["_source"]
+        p['score'] = hit['_score']
+        playlists.append(p)
 
     # with users behavior
     user_id_set = set([str(p['playlist_owner_id']) for p in playlists])
