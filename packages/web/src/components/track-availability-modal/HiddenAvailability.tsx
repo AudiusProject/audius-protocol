@@ -70,59 +70,54 @@ const HiddenTrackMetadataSection = ({
 
 export const HiddenAvailability = ({
   selected,
-  metadataState,
-  updateUnlistedField,
-  updateHiddenField
+  state,
+  onStateUpdate
 }: TrackAvailabilitySelectionProps) => {
   return (
-    <div className={cn(styles.radioItem, { [styles.selected]: selected })}>
+    <div>
       <div
-        className={styles.availabilityRowContent}
-        onClick={updateUnlistedField}
+        className={cn(styles.availabilityRowTitle, {
+          [styles.selected]: selected
+        })}
       >
-        <div className={styles.availabilityRowTitle}>
-          <IconHidden className={styles.availabilityRowIcon} />
-          <span>{messages.hidden}</span>
-        </div>
-        <div className={styles.availabilityRowDescription}>
-          {messages.hiddenSubtitle}
-        </div>
-        {selected && (
-          <div
-            className={cn(
-              styles.availabilityRowSelection,
-              styles.hiddenSection
-            )}
-          >
-            <div>
-              {unlistedTrackMetadataOrder.slice(0, 3).map((label, i) => {
-                return (
-                  <HiddenTrackMetadataSection
-                    key={i}
-                    isDisabled={false}
-                    isVisible={metadataState[label]}
-                    title={hiddenTrackMetadataMap[label]}
-                    didSet={updateHiddenField!(label)}
-                  />
-                )
-              })}
-            </div>
-            <div>
-              {unlistedTrackMetadataOrder.slice(3).map((label, i) => {
-                return (
-                  <HiddenTrackMetadataSection
-                    key={i}
-                    isDisabled={false}
-                    isVisible={metadataState[label]}
-                    title={hiddenTrackMetadataMap[label]}
-                    didSet={updateHiddenField!(label)}
-                  />
-                )
-              })}
-            </div>
-          </div>
-        )}
+        <IconHidden className={styles.availabilityRowIcon} />
+        <span>{messages.hidden}</span>
       </div>
+      <div className={styles.availabilityRowDescription}>
+        {messages.hiddenSubtitle}
+      </div>
+      {selected && (
+        <div
+          className={cn(styles.availabilityRowSelection, styles.hiddenSection)}
+        >
+          <div className={styles.hiddenSectionColumn}>
+            {unlistedTrackMetadataOrder.slice(0, 3).map((label, i) => {
+              return (
+                <HiddenTrackMetadataSection
+                  key={i}
+                  isDisabled={false}
+                  isVisible={state[label]}
+                  title={hiddenTrackMetadataMap[label]}
+                  didSet={onStateUpdate(label)}
+                />
+              )
+            })}
+          </div>
+          <div className={styles.hiddenSectionColumn}>
+            {unlistedTrackMetadataOrder.slice(3).map((label, i) => {
+              return (
+                <HiddenTrackMetadataSection
+                  key={i}
+                  isDisabled={false}
+                  isVisible={state[label]}
+                  title={hiddenTrackMetadataMap[label]}
+                  didSet={onStateUpdate(label)}
+                />
+              )
+            })}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,0 +1,23 @@
+.trigger {
+  margin-top: var(--unit-3);
+  width: 156px;
+  height: 35px !important;
+}
+
+.triggerText {
+  font-size: var(--font-xs) !important;
+}
+
+.hideRemixes {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 17px;
+  height: 34px;
+}
+
+.hideRemixesText {
+  color: var(--neutral);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  margin-right: 8px;
+}

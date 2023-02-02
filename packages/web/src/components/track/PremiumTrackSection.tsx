@@ -98,20 +98,20 @@ const LockedPremiumTrackSection = ({
   goToCollection
 }: PremiumTrackAccessSectionProps) => {
   const dispatch = useDispatch()
-  const sendStatus = useSelector(getSendStatus)
-  const previousSendStatus = usePrevious(sendStatus)
+  const tipSendStatus = useSelector(getSendStatus)
+  const previousSendStatus = usePrevious(tipSendStatus)
   const account = useSelector(getAccountUser)
 
   // Set unlocking state if send tip is successful and user closed the tip modal.
   useEffect(() => {
-    if (previousSendStatus === 'SUCCESS' && sendStatus === null) {
+    if (previousSendStatus === 'SUCCESS' && tipSendStatus === null) {
       dispatch(updatePremiumTrackStatus({ status: 'UNLOCKING' }))
 
       // Poll discovery to get user's premium content signature for this track.
       const trackParams = parseTrackRoute(window.location.pathname)
       dispatch(refreshPremiumTrack({ trackParams, trackId }))
     }
-  }, [dispatch, previousSendStatus, sendStatus, trackId])
+  }, [dispatch, previousSendStatus, tipSendStatus, trackId])
 
   const handleSendTip = useCallback(() => {
     if (account) {

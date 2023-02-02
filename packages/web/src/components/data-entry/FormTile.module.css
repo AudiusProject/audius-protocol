@@ -121,7 +121,7 @@
 .release {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
 }
 .release > div:first-child {
   flex: 0 0 158px;
@@ -208,18 +208,4 @@
 
 .floatRight > * {
   margin: 8px;
-}
-
-.hideRemixes {
-  display: inline-flex;
-  align-items: center;
-  margin-top: 17px;
-  height: 34px;
-}
-
-.hideRemixesText {
-  color: var(--neutral);
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  margin-right: 8px;
 }
