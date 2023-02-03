@@ -133,7 +133,7 @@ const getNotifications = async (dnDb: Knex, startOffset: moment.Moment, userIds:
     sender_user_id: n.sender_user_id,
     receiver_user_id: n.receiver_user_id
   }))
-  const reactionsResp= await dnDb.raw(reactionNotificationsSql, {
+  const reactionsResp = await dnDb.raw(reactionNotificationsSql, {
     start_offset: messageStartOffset,
     end_offset: messageEndOffset,
     user_ids: [[userIds]]

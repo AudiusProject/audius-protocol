@@ -296,7 +296,6 @@ export const renderEmail = async ({
   )
 
   const notificationCount = notifications.length
-  // TODO why this 0-5 slice?
   const notificationProps = await getNotificationProps(dnDb, notifications.slice(0, 5))
   console.log({ notificationProps })
   const renderProps = {
