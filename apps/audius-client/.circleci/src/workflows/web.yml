@@ -94,7 +94,7 @@ jobs:
   - web-deploy-sentry-sourcemaps:
       context: Audius Client
       requires:
-        - web-deploy-production-s3
+        - web-hold-production
       filters:
         branches:
           only: /(^release.*)$/

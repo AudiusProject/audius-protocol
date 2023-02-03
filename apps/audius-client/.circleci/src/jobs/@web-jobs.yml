@@ -261,7 +261,7 @@ web-deploy-sentry-sourcemaps:
         name: upload-sourcemaps
         command: |
           cd packages/web
-          node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client files ${CIRCLE_SHA1} upload-sourcemaps --no-rewrite sourcemaps
+          node_modules/.bin/sentry-cli --auth-token ${SENTRY_AUTH_TOKEN} releases --org audius --project audius-client files ${CIRCLE_SHA1} upload-sourcemaps --no-rewrite build-production/static/js
     - run:
         name: finalize-release
         command: |
