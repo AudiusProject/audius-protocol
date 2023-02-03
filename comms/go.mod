@@ -15,6 +15,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.9.7
 	github.com/nats-io/nats.go v1.19.0
 	github.com/nats-io/nkeys v0.3.0
+	github.com/nats-io/prometheus-nats-exporter v0.10.1
 	github.com/rs/zerolog v1.29.0
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/spf13/cast v1.5.0

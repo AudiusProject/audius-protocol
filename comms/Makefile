@@ -33,6 +33,9 @@ test::
 	audius_discprov_env='standalone' go test ./... -count=1
 
 
+test.load::
+	hey -n 10000 -c 50 http://localhost:8926/storage/jobs
+
 
 build::
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-comms:latest
@@ -58,6 +61,7 @@ tools::
 	go install github.com/kyleconroy/sqlc/cmd/sqlc@main
 	CGO_ENABLED=0 go install github.com/nats-io/natscli/nats@latest
 	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
+	go install github.com/rakyll/hey@latest
 
 sqlc:: reset
 	sqlc generate

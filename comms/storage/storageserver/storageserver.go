@@ -49,6 +49,7 @@ type StorageServer struct {
 }
 
 func NewProd(jsc nats.JetStreamContext) *StorageServer {
+
 	// TODO: config refactor
 	allStorageNodePubKeys := []string{
 		"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
@@ -97,6 +98,7 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 
 // runStorer runs a goroutine to pull tracks from temp NATS object storage to long-term object storage.
 func (ss *StorageServer) runStorer(uploadStream string) {
+
 	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: Get from config or something - same for value in NewProd() above
 	// Create a per-node explicit pull consumer on the stream that backs the track upload status KV bucket
 	storerDurable := fmt.Sprintf("STORER_%s", thisNodePubKey)
