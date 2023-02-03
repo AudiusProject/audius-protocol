@@ -128,8 +128,6 @@ const getNotifications = async (dnDb: Knex, startOffset: moment.Moment, userIds:
     user_ids: [[userIds]]
   })
   const messages: { sender_user_id: number, receiver_user_id: number }[] = messagesResp.rows
-  console.log(`${typeof messages}`)
-  console.log(`${JSON.stringify(messages)}`)
   const messageNotifications: DMEmailNotification[] = messages.map(n => ({
     type: DMEntityType.Message,
     sender_user_id: n.sender_user_id,
