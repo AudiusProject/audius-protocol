@@ -11,10 +11,12 @@ import (
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/storage/decider"
+	"comms.audius.co/storage/telemetry"
 	"comms.audius.co/storage/transcode"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
 const (
@@ -47,6 +49,7 @@ type StorageServer struct {
 }
 
 func NewProd(jsc nats.JetStreamContext) *StorageServer {
+
 	// TODO: config refactor
 	allStorageNodePubKeys := []string{
 		"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
@@ -71,6 +74,9 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	ss.WebServer.HideBanner = true
 	ss.WebServer.Debug = true
 
+	ss.WebServer.Use(otelecho.Middleware("storage"))
+	telemetry.AddPrometheusMiddlware(ss.WebServer)
+
 	// Register endpoints at /storage
 	storage := ss.WebServer.Group("/storage")
 	storage.GET("", ss.serveStatusUI)
@@ -92,6 +98,7 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 
 // runStorer runs a goroutine to pull tracks from temp NATS object storage to long-term object storage.
 func (ss *StorageServer) runStorer(uploadStream string) {
+
 	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: Get from config or something - same for value in NewProd() above
 	// Create a per-node explicit pull consumer on the stream that backs the track upload status KV bucket
 	storerDurable := fmt.Sprintf("STORER_%s", thisNodePubKey)
