@@ -39,6 +39,9 @@ build.alpine::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 	go build -ldflags="-w -s" -o comms main.go
 
+build.weathermap::
+	cd storage/storageserver/weather-map; yarn && yarn build
+
 # this is a "fast build and push"
 # we build target specific binary on our host machine (osx)
 # and copy into container (see Dockerfile with build instructions commented out)

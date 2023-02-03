@@ -43,7 +43,12 @@
             "request": "launch",
             "mode": "debug",
             "program": "${workspaceFolder}/comms",
-            "env": { "audius_discprov_env": "standalone" },
+            "env": {
+              "audius_discprov_env": "standalone",
+              "storage_v2": "true",
+              "audius_delegate_owner_wallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
+              "audius_delegate_private_key": "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238"
+            },
             "args": ["storage"]
         }
     ]

@@ -173,11 +173,11 @@ func (jobman *JobsManager) Add(template JobTemplate, upload *multipart.FileHeade
 	}
 	objStore, err := jobman.jsc.ObjectStore(jobman.storageDecider.GetNamespacedBucketFor(fileHash))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get object store: %v", err)
 	}
 	info, err := objStore.Put(meta, f)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to put object: %v", err)
 	}
 
 	job := &Job{

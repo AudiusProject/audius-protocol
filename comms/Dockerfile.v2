@@ -1,6 +1,14 @@
-FROM golang:alpine as builder
+FROM node:alpine AS react-builder
 
-RUN apk add build-base make
+RUN apk add make
+WORKDIR /app
+COPY Makefile Makefile
+COPY storage/storageserver/weather-map storage/storageserver/weather-map
+RUN make build.weathermap
+
+FROM golang:alpine AS go-builder
+
+RUN apk add build-base make nodejs npm
 RUN export GO111MODULE=on && \
     go install github.com/nats-io/nats-server/v2@latest && \
     go install github.com/nats-io/natscli/nats@latest && \
@@ -9,12 +17,13 @@ RUN export GO111MODULE=on && \
 
 WORKDIR /app
 COPY . .
+COPY --from=react-builder /app/storage/storageserver/weather-map/dist /app/storage/storageserver/weather-map/dist
 RUN make build.alpine
 
-FROM alpine as final
+FROM alpine AS final
 
 RUN apk add ffmpeg
-COPY --from=builder /go/bin/* /bin
-COPY --from=builder /app/comms /bin/comms
+COPY --from=go-builder /go/bin/* /bin
+COPY --from=go-builder /app/comms /bin/comms
 VOLUME ["/tmp/nats"]
 ENTRYPOINT [ "comms" ]
