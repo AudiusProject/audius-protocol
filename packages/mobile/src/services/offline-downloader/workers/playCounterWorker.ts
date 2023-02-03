@@ -1,5 +1,5 @@
 import { tracksSocialActions } from '@audius/common'
-import queue, { Worker } from 'react-native-job-queue'
+import { Worker } from 'react-native-job-queue'
 
 import { store } from 'app/store'
 
@@ -14,20 +14,4 @@ const countPlay = async (payload: PlayCountWorkerPayload) => {
   store.dispatch(recordListen(trackId))
 }
 
-export const setPlayCounterWorker = async (
-  worker: Worker<PlayCountWorkerPayload>
-) => {
-  queue.stop()
-  queue.removeWorker(PLAY_COUNTER_WORKER)
-  queue.addWorker(worker)
-  await queue.start()
-}
-
 export const playCounterWorker = new Worker(PLAY_COUNTER_WORKER, countPlay)
-export const blockedPlayCounterWorker = new Worker(
-  PLAY_COUNTER_WORKER,
-  countPlay,
-  {
-    concurrency: 0
-  }
-)

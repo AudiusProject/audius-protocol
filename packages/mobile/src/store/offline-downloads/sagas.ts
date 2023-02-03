@@ -12,7 +12,6 @@ import {
   collectionsSocialActions,
   accountSelectors,
   cacheCollectionsSelectors,
-  reachabilityActions,
   savedPageActions
 } from '@audius/common'
 import { waitForBackendSetup } from 'audius-client/src/common/store/backend/sagas'
@@ -39,11 +38,6 @@ import {
   batchDownloadCollection,
   batchRemoveTrackDownload
 } from 'app/services/offline-downloader'
-import {
-  blockedPlayCounterWorker,
-  playCounterWorker,
-  setPlayCounterWorker
-} from 'app/services/offline-downloader/workers'
 
 import { watchRemoveAllDownloadedFavorites } from './sagas/removeAllDownloadedFavoritesSaga'
 import { watchRemoveCollectionDownloads } from './sagas/removeCollectionDownloadsSaga'
@@ -63,7 +57,6 @@ import {
 } from './slice'
 const { fetchCollection, FETCH_COLLECTION_SUCCEEDED, FETCH_COLLECTION_FAILED } =
   collectionPageActions
-const { SET_REACHABLE, SET_UNREACHABLE } = reachabilityActions
 const { getUserId } = accountSelectors
 const { getCollections } = cacheCollectionsSelectors
 
@@ -215,22 +208,6 @@ export function* startSync() {
   }
 }
 
-export function* handleSetReachable() {
-  yield* call(setPlayCounterWorker, playCounterWorker)
-}
-
-export function* watchSetReachable() {
-  yield* takeLatest(SET_REACHABLE, handleSetReachable)
-}
-
-export function* handleSetUnreachable() {
-  yield* call(setPlayCounterWorker, blockedPlayCounterWorker)
-}
-
-export function* watchSetUnreachable() {
-  yield* takeLatest(SET_UNREACHABLE, handleSetUnreachable)
-}
-
 function* downloadNewPlaylistTrackIfNecessary({
   trackId,
   playlistId
@@ -295,8 +272,6 @@ const sagas = () => {
     watchUnsaveTrack,
     watchSaveCollection,
     watchClearOfflineDownloads,
-    watchSetReachable,
-    watchSetUnreachable,
     startSync,
     watchAddTrackToPlaylist,
     watchAddLocalSave,
