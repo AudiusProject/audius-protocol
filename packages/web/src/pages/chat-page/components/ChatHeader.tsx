@@ -25,7 +25,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
 
     const handleComposeClicked = useCallback(() => {
       dispatch(
-        modalsActions.setVisibility({ modal: 'ChatCompose', visible: true })
+        modalsActions.setVisibility({ modal: 'CreateChat', visible: true })
       )
     }, [dispatch])
 

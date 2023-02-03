@@ -106,3 +106,10 @@ export {
 } from './transaction-details/slice'
 export * as transactionDetailsSelectors from './transaction-details/selectors'
 export * from './transaction-details/types'
+
+export {
+  default as searchUsersModalReducer,
+  actions as searchUsersModalActions,
+  SearchUsersModalState
+} from './search-users-modal/slice'
+export * as searchUsersModalSelectors from './search-users-modal/selectors'

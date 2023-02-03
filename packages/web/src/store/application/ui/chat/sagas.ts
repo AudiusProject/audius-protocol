@@ -15,7 +15,7 @@ function* watchCreateChatSucceeded() {
       const {
         payload: { chat }
       } = action
-      yield* put(setVisibility({ modal: 'ChatCompose', visible: false }))
+      yield* put(setVisibility({ modal: 'CreateChat', visible: false }))
       yield* put(pushRoute(chatPage(chat.chat_id)))
     }
   )

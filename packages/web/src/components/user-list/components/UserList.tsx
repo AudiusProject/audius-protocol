@@ -1,5 +1,3 @@
-import { ReactNode } from 'react'
-
 import {
   ID,
   SUPPORTING_USER_LIST_TAG,
@@ -33,7 +31,6 @@ type UserListProps = {
   onUnfollow: (userId: ID) => void
   getScrollParent?: () => HTMLElement | null
   onNavigateAway?: () => void
-  renderActionButton?: (userId: ID) => ReactNode
 }
 
 const UserList = (props: UserListProps) => {
@@ -74,18 +71,16 @@ const UserList = (props: UserListProps) => {
                   : undefined
               }
             />
-            {user.user_id !== props.userId
-              ? props.renderActionButton?.(user.user_id) || (
-                  <FollowButton
-                    size='small'
-                    following={user.does_current_user_follow}
-                    onFollow={() => props.onFollow(user.user_id)}
-                    onUnfollow={() => props.onUnfollow(user.user_id)}
-                    showIcon
-                    stopPropagation
-                  />
-                )
-              : null}
+            {user.user_id !== props.userId ? (
+              <FollowButton
+                size='small'
+                following={user.does_current_user_follow}
+                onFollow={() => props.onFollow(user.user_id)}
+                onUnfollow={() => props.onUnfollow(user.user_id)}
+                showIcon
+                stopPropagation
+              />
+            ) : null}
           </div>
         ))}
         {/* Only show the spacer if we're in fullscreen mode (no getScrollParent) */}

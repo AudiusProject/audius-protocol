@@ -45,6 +45,7 @@ import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import remixSettingsSagas from 'common/store/remix-settings/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
+import searchUsersModalSagas from 'common/store/search-users-modal/sagas'
 import serviceSelectionSagas from 'common/store/service-selection/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
@@ -58,7 +59,6 @@ import followingPageSagas from 'common/store/user-list/following/sagas'
 import mutualsPageSagas from 'common/store/user-list/mutuals/sagas'
 import notificationUsersPageSagas from 'common/store/user-list/notifications/sagas'
 import repostPageSagas from 'common/store/user-list/reposts/sagas'
-import searchPageSagas from 'common/store/user-list/search/sagas'
 import supportingPageSagas from 'common/store/user-list/supporting/sagas'
 import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
@@ -168,12 +168,12 @@ export default function* rootSaga() {
     remixSettingsSagas(),
     repostPageSagas(),
     scrollLockSagas(),
-    searchPageSagas(),
     shareModalSagas(),
     overflowMenuSagas(),
     toastSagas(),
     shareSoundToTikTokModalSagas(),
     smartCollectionPageSagas(),
+    searchUsersModalSagas(),
     stemUploadSagas(),
     themeSagas(),
     tokenDashboardSagas(),

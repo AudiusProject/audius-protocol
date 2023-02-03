@@ -34,7 +34,7 @@ const initialState: ModalsState = {
   TransactionDetails: false,
   VipDiscord: false,
   StripeOnRamp: false,
-  ChatCompose: false
+  CreateChat: false
 }
 
 const slice = createSlice({
