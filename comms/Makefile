@@ -16,6 +16,9 @@ reset::
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
 
+down::
+	docker compose down --volumes
+
 psql::
 	docker exec -it comdb psql -U postgres audius_discovery
 

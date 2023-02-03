@@ -14,11 +14,12 @@ import (
 	"sync"
 	"time"
 
+	"comms.audius.co/storage/telemetry"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
-	"github.com/inconshreveable/log15"
 	"github.com/lucsky/cuid"
 	"github.com/nats-io/nats.go"
+	"github.com/rs/zerolog"
 	"github.com/spf13/cast"
 )
 
@@ -63,7 +64,7 @@ type JobsManager struct {
 	watcher   nats.KeyWatcher
 	table     map[string]*Job
 	isCurrent bool
-	logger    log15.Logger
+	logger    zerolog.Logger
 
 	objStore         nats.ObjectStore
 	workSubscription *nats.Subscription
@@ -118,7 +119,7 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		kv:               kv,
 		watcher:          watcher,
 		table:            map[string]*Job{},
-		logger:           log15.New(),
+		logger:           telemetry.NewConsoleLogger(),
 		websockets:       map[net.Conn]bool{},
 	}
 
@@ -138,7 +139,7 @@ func (jobman *JobsManager) watch() {
 		var job *Job
 		err := json.Unmarshal(change.Value(), &job)
 		if err != nil {
-			jobman.logger.Warn("invalid kv value: " + string(change.Value()))
+			jobman.logger.Warn().Msg("invalid kv value: " + string(change.Value()))
 			continue
 		}
 
@@ -259,7 +260,7 @@ func (jobman *JobsManager) websocketSend(conn net.Conn, payload []byte) {
 	err := wsutil.WriteServerMessage(conn, ws.OpText, payload)
 	if err != nil {
 		// if write fails, remove this conn
-		jobman.logger.Debug("removing conn " + err.Error())
+		jobman.logger.Debug().Msg("removing conn " + err.Error())
 		jobman.mu.Lock()
 		delete(jobman.websockets, conn)
 		jobman.mu.Unlock()
@@ -290,18 +291,18 @@ func (jobman *JobsManager) StartWorkers(count int) {
 }
 
 func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
-	logger := jobman.logger.New("job", job.ID)
+	logger := jobman.logger.With().Str("job", job.ID).Logger()
 	objStore := jobman.objStore
 
 	onError := func(err error) error {
-		logger.Warn("job error: " + err.Error())
+		logger.Warn().Msg("job error: " + err.Error())
 		job.Error = err.Error()
 		job.Status = JobStatusError
 		jobman.Update(job)
 		return err
 	}
 
-	logger.Debug("starting job", "job", string(msg.Data))
+	logger.Debug().Str("job data", string(msg.Data)).Msg("starting job")
 
 	job.Status = JobStatusInProgress
 	job.StartedAt = timeNowPtr()
@@ -328,7 +329,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	// maybe skip transcode if it's a 192kbps mp3
 	job.Probe, err = ffprobe(srcPath)
 	if err != nil {
-		logger.Warn("ffprobe error: " + err.Error())
+		logger.Warn().Msg("ffprobe error: " + err.Error())
 	} else {
 		jobman.Update(job)
 	}
@@ -344,7 +345,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 		for _, targetBox := range squares {
 			srcReader.Seek(0, 0)
 			out, w, h := Resized(".jpg", srcReader, targetBox, targetBox, "fill")
-			logger.Debug("resized", "targetBox", targetBox, "w", w, "h", h)
+			logger.Debug().Int("targetBox", targetBox).Int("w", w).Int("h", h).Msg("resized")
 			outName := fmt.Sprintf("%s_%d.jpg", job.ID, targetBox)
 			info, err := objStore.Put(&nats.ObjectMeta{
 				Name:        outName,
@@ -365,7 +366,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 		for _, targetWidth := range widths {
 			srcReader.Seek(0, 0)
 			out, w, h := Resized(".jpg", srcReader, targetWidth, AUTO, "fill")
-			logger.Debug("resized", "targetWidth", targetWidth, "w", w, "h", h)
+			logger.Debug().Int("targetWidth", targetWidth).Int("w", w).Int("h", h).Msg("resized")
 			outName := fmt.Sprintf("%s_%d.jpg", job.ID, targetWidth)
 			info, err := objStore.Put(&nats.ObjectMeta{
 				Name:        outName,
@@ -379,7 +380,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 
 	case JobTemplateAudio, "":
 		if job.Template == "" {
-			logger.Warn("empty template, falling back to audio")
+			logger.Warn().Msg("empty template, falling back to audio")
 		}
 
 		cmd := exec.Command("ffmpeg",
@@ -395,7 +396,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 		// read ffmpeg progress
 		stderr, err := cmd.StderrPipe()
 		if err != nil {
-			logger.Warn(err.Error())
+			logger.Warn().Err(err)
 		} else if job.Probe != nil {
 			durationSeconds := cast.ToFloat64(job.Probe.Format.Duration)
 			durationUs := durationSeconds * 1000 * 1000
@@ -456,7 +457,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 func (jobman *JobsManager) startWorker(workerNumber int) {
 	workerId := fmt.Sprintf("%s_%d", os.Getenv("NAME"), workerNumber)
 
-	logger := jobman.logger.New("worker", workerId)
+	logger := jobman.logger.With().Str("worker", workerId).Logger()
 	sub := jobman.workSubscription
 
 	for {
@@ -465,7 +466,7 @@ func (jobman *JobsManager) startWorker(workerNumber int) {
 			continue
 		}
 		if err != nil {
-			logger.Warn(err.Error())
+			logger.Warn().Err(err)
 			continue
 		}
 
