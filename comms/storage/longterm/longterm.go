@@ -19,13 +19,31 @@ import (
 type LongTerm struct {
 	storageDecider decider.StorageDecider
 	jsc            nats.JetStreamContext
+	blobStore      *blob.Bucket
 }
 
 // New creates a struct that listens to streamToStoreFrom and downloads content from the temp store to the long-term store.
 func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) *LongTerm {
+
+	// todo: config week
+	blobDriverURL := os.Getenv("TODO_STORAGE_DRIVER_URL")
+	if blobDriverURL == "" {
+		tempDir := "/tmp/audius_storage"
+		if err := os.MkdirAll(tempDir, os.ModePerm); err != nil {
+			log.Fatalln("failed to create fallback dir", err)
+		}
+		blobDriverURL = "file://" + tempDir
+		log.Printf("warning: no storage driver URL specified... falling back to %s \n", blobDriverURL)
+	}
+	b, err := blob.OpenBucket(context.Background(), blobDriverURL)
+	if err != nil {
+		log.Fatalln("failed to open bucket", blobDriverURL)
+	}
+
 	longTerm := &LongTerm{
 		storageDecider: storageDecider,
 		jsc:            jsc,
+		blobStore:      b,
 	}
 
 	longTerm.runStorer(streamToStoreFrom)
@@ -34,15 +52,8 @@ func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc na
 
 // Get returns a file from the long-term store.
 func (lt *LongTerm) Get(bucketName, key string) (io.Reader, error) {
-	ctx := context.Background()
-	blobBucket, err := blob.OpenBucket(ctx, getBucketUrl())
-	if err != nil {
-		return nil, fmt.Errorf("could not open long-term bucket: %v", err)
-	}
-	defer blobBucket.Close()
-
 	bucketedKey := lt.storageDecider.GetNamespacedBucketFor(bucketName) + "/" + key
-	reader, err := blobBucket.NewReader(ctx, bucketedKey, nil)
+	reader, err := lt.blobStore.NewReader(context.Background(), bucketedKey, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %q: %v", bucketedKey, err)
 	}
@@ -117,13 +128,6 @@ func (lt *LongTerm) processMessage(msg *nats.Msg) error {
 
 func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) error {
 	// Open the long-term storage *blob.Bucket
-	ctx := context.Background()
-	blobBucket, err := blob.OpenBucket(ctx, getBucketUrl())
-	if err != nil {
-		return fmt.Errorf("error: failed to store file - could not open bucket: %v", err)
-	}
-	defer blobBucket.Close()
-
 	for _, tmpObj := range tmpObjects {
 		tmpBucketName := lt.storageDecider.GetNamespacedBucketFor(tmpObj.Bucket)
 		ltKey := tmpBucketName + "/" + tmpObj.Name
@@ -139,7 +143,7 @@ func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) error {
 		}
 
 		// Open a *blob.Writer for the blob at key=tmpObj.Bucket/tmpObj.Name
-		writer, err := blobBucket.NewWriter(ctx, ltKey, nil)
+		writer, err := lt.blobStore.NewWriter(context.Background(), ltKey, nil)
 		if err != nil {
 			return fmt.Errorf("Failed to write %q: %v\n", ltKey, err)
 		}
@@ -154,16 +158,4 @@ func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) error {
 	}
 
 	return nil
-}
-
-// getBucketUrl returns the URL for the long-term storage bucket - default file storage at /tmp/audius-long-term.
-// todo: ENV config so operator can specify driver prefix...
-// todo: we'll also need to blank import all supported drivers at build time so they work.
-func getBucketUrl() string {
-	if u := os.Getenv("TODO_STORAGE_DRIVER_URL"); u != "" {
-		return u
-	}
-
-	// fallback: use temp dir if user didn't specify where to store files
-	return "file://" + os.TempDir()
 }
