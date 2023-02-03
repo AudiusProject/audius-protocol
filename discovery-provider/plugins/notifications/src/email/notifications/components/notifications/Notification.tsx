@@ -12,7 +12,7 @@ import {
 } from './Icons'
 
 import { capitalize } from '../utils'
-import { Entity, EntityType, User } from '../../types'
+import { Entity, EntityType, DMEntityType, User } from '../../types'
 
 const getRankSuffix = (num) => {
   if (num === 1) return 'st'
@@ -304,6 +304,22 @@ const notificationMap = {
         <BodyText text={` sent you a tip of `} />
         <HighlightText text={notification.amount} />
         <BodyText text={` $AUDIO`} />
+      </span>
+    )
+  },
+  [DMEntityType.Message](notification) {
+    const user = getUsers(notification.users)
+    return (
+      <span className={'notificationText'}>
+        {user}<BodyText text={` sent you a message`} />
+      </span>
+    )
+  },
+  [DMEntityType.Reaction](notification) {
+    const user = getUsers(notification.users)
+    return (
+      <span className={'notificationText'}>
+        {user}<BodyText text={` reacted to your message`} />
       </span>
     )
   }

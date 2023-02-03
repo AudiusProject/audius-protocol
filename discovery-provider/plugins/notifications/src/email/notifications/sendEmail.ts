@@ -1,5 +1,6 @@
 import { renderEmail } from './renderEmail'
 
+import { EmailNotification } from '../../types/notifications'
 import { EmailFrequency } from "../../processNotifications/mappers/base"
 import { logger } from '../../logger'
 import { getSendgrid } from '../../sendgrid'
@@ -8,12 +9,11 @@ import { Knex } from 'knex'
 
 // Sendgrid object
 
-type Notiication = any
 type SendNotificationEmailProps = {
   userId: number
   email: string
   frequency: EmailFrequency
-  notifications: Notiication[]
+  notifications: EmailNotification[]
   dnDb: Knex
 }
 
@@ -39,7 +39,6 @@ export const sendNotificationEmail = async ({
       )
       return
     }
-
 
     const notifHtml = await renderEmail({
       userId,
