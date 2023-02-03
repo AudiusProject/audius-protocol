@@ -31,7 +31,7 @@ func NewRendezvousDecider(namespace string, replicationFactor int, allStorageNod
 		bucketer:              bucketer.New(2),
 		jsc:                   jsc,
 	}
-	d.BucketsStored = d.computeAndCreateBucketsNodeStores(thisNodePubKey)
+	d.BucketsStored = d.computeShardsNodeStores(thisNodePubKey)
 	return &d
 }
 
@@ -87,20 +87,19 @@ func (d *RendezvousDecider) GetNamespacedShardFor(any string) (string, error) {
 	return fmt.Sprintf("%s_%s", d.namespace, shard), nil
 }
 
-// computeBucketsNodeStores determines the buckets that this node is responsible for storing based on all nodes in the storage network.
-func (d *RendezvousDecider) computeAndCreateBucketsNodeStores(publicKey string) []string {
-	// Compute buckets
-	buckets := []string{}
+// computeShardsNodeStores determines the shards that this node is responsible for storing based on all nodes in the storage network.
+func (d *RendezvousDecider) computeShardsNodeStores(publicKey string) []string {
+	shards := []string{}
 	hash := d.getHashRing()
-	for _, bucket := range d.bucketer.Buckets {
-		for _, pubKeyThatStores := range hash.GetN(d.replicationFactor, bucket) {
+	for _, shard := range d.bucketer.Buckets {
+		for _, pubKeyThatStores := range hash.GetN(d.replicationFactor, shard) {
 			if pubKeyThatStores == d.thisNodePubKey {
-				buckets = append(buckets, bucket)
+				shards = append(shards, shard)
 			}
 		}
 	}
 
-	return buckets
+	return shards
 }
 
 // getHashRing returns a data structure that spreads storage across all allStorageNodePubKeys in the network.
