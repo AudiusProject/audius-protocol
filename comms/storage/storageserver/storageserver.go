@@ -11,6 +11,7 @@ import (
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/storage/decider"
+	"comms.audius.co/storage/telemetry"
 	"comms.audius.co/storage/transcode"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
@@ -73,6 +74,7 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	ss.WebServer.Debug = true
 
 	ss.WebServer.Use(otelecho.Middleware("storage"))
+	telemetry.AddPrometheusMiddlware(ss.WebServer)
 
 	// Register endpoints at /storage
 	storage := ss.WebServer.Group("/storage")
