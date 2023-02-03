@@ -9,6 +9,8 @@ import {
 } from '../offline-downloader'
 import type { CollectionForDownload } from '../types'
 
+import { startQueueIfOnline } from './utils'
+
 export const COLLECTION_DOWNLOAD_WORKER = 'collection_download_worker'
 export type CollectionDownloadWorkerPayload = CollectionForDownload
 
@@ -35,7 +37,7 @@ const onFailure = async (
       } catch (e) {
         console.warn(e)
       }
-      queue.start()
+      startQueueIfOnline()
       break
     }
     default:

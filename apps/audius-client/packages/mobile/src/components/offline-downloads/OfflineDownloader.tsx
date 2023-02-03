@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { reachabilitySelectors } from '@audius/common'
 import queue from 'react-native-job-queue'
@@ -18,12 +18,21 @@ export const OfflineDownloader = () => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const [initialized, setInitialized] = useState(false)
 
+  const initialize = useCallback(async () => {
+    try {
+      await startDownloadWorker()
+    } catch (e) {
+      console.warn('Download worker failed to start', e)
+      return
+    }
+    setInitialized(true)
+  }, [])
+
   useEffect(() => {
     if (!initialized && isOfflineModeEnabled) {
-      setInitialized(true)
-      startDownloadWorker()
+      initialize()
     }
-  }, [initialized, isOfflineModeEnabled])
+  }, [initialize, initialized, isOfflineModeEnabled])
 
   useLoadOfflineData()
 
@@ -31,11 +40,10 @@ export const OfflineDownloader = () => {
 
   useEffect(() => {
     if (!initialized) return
-    const isQueueRunning = queue.isRunning
 
-    if (isReachable && !isQueueRunning) {
+    if (isReachable) {
       queue.start()
-    } else if (!isReachable && isQueueRunning) {
+    } else if (!isReachable) {
       queue.stop()
     }
   }, [initialized, isReachable])
