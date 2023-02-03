@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import {
   useProxySelector,
@@ -22,6 +22,7 @@ import { FilterInput } from './FilterInput'
 import { NoTracksPlaceholder } from './NoTracksPlaceholder'
 import { OfflineContentBanner } from './OfflineContentBanner'
 import { getAccountCollections } from './selectors'
+import { buildCollectionIdsToNumPlayableTracksMap } from './utils'
 
 const { getIsReachable } = reachabilitySelectors
 
@@ -35,6 +36,18 @@ export const AlbumsTab = () => {
   const isReachable = useSelector(getIsReachable)
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isDoneLoadingFromDisk = useSelector(getIsDoneLoadingFromDisk)
+
+  const offlineDownloadStatus = useProxySelector(
+    (state: AppState) => {
+      if (isDoneLoadingFromDisk && isOfflineModeEnabled && !isReachable) {
+        return getOfflineDownloadStatus(state)
+      }
+      // We don't need offline download status when we're not offline. This saves us rerenders while we're downloading things and updating the offline download slice.
+      return undefined
+    },
+    [isReachable, isOfflineModeEnabled, isDoneLoadingFromDisk]
+  )
+
   const userAlbums = useProxySelector(
     (state: AppState) => {
       if (isOfflineModeEnabled && !isReachable) {
@@ -42,14 +55,13 @@ export const AlbumsTab = () => {
           return []
         }
       }
-      const offlineDownloadStatus = getOfflineDownloadStatus(state)
       return getAccountCollections(state, filterValue).filter((collection) => {
         if (!collection.is_album) {
           return false
         }
         if (isOfflineModeEnabled && !isReachable) {
           const trackIds =
-            collection?.playlist_contents?.track_ids?.map(
+            collection.playlist_contents.track_ids.map(
               (trackData) => trackData.track
             ) ?? []
 
@@ -59,8 +71,9 @@ export const AlbumsTab = () => {
             (trackIds.length === 0 ||
               trackIds.some((t) => {
                 return (
+                  offlineDownloadStatus &&
                   offlineDownloadStatus[t.toString()] ===
-                  OfflineDownloadStatus.SUCCESS
+                    OfflineDownloadStatus.SUCCESS
                 )
               }))
           )
@@ -68,9 +81,23 @@ export const AlbumsTab = () => {
         return true
       })
     },
-    [filterValue, isReachable, isOfflineModeEnabled, isDoneLoadingFromDisk],
+    [
+      filterValue,
+      isReachable,
+      isOfflineModeEnabled,
+      isDoneLoadingFromDisk,
+      offlineDownloadStatus
+    ],
     shallowCompare
   )
+
+  const numPlayableTracksMap = useMemo(() => {
+    return buildCollectionIdsToNumPlayableTracksMap(
+      userAlbums,
+      isOfflineModeEnabled && !isReachable,
+      offlineDownloadStatus || {}
+    )
+  }, [isOfflineModeEnabled, isReachable, offlineDownloadStatus, userAlbums])
 
   return (
     <VirtualizedScrollView listKey='favorites-albums-view'>
@@ -92,6 +119,7 @@ export const AlbumsTab = () => {
             listKey='favorites-albums'
             scrollEnabled={false}
             collection={userAlbums}
+            collectionIdsToNumTracks={numPlayableTracksMap}
             style={{ marginVertical: 12 }}
           />
         </>
