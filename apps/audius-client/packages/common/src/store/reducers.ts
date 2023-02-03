@@ -66,7 +66,12 @@ import remixSettingsReducer, {
 import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
-import { ToastState, TransactionDetailsState } from './ui'
+import {
+  searchUsersModalReducer,
+  SearchUsersModalState,
+  ToastState,
+  TransactionDetailsState
+} from './ui'
 import addToPlaylistReducer, {
   AddToPlaylistState
 } from './ui/add-to-playlist/reducer'
@@ -104,7 +109,6 @@ import followingUserListReducer from './user-list/following/reducers'
 import mutualsUserListReducer from './user-list/mutuals/reducers'
 import notificationsUserListReducer from './user-list/notifications/reducers'
 import repostsUserListReducer from './user-list/reposts/reducers'
-import searchUserListReducer from './user-list/search/reducers'
 import supportingUserListReducer from './user-list/supporting/reducers'
 import topSupportersUserListReducer from './user-list/top-supporters/reducers'
 import wallet from './wallet/slice'
@@ -168,6 +172,7 @@ export const reducers = () => ({
     remixSettings: remixSettingsReducer,
     shareSoundToTikTokModal: shareSoundToTikTokModalReducer,
     shareModal: shareModalReducer,
+    searchUsersModal: searchUsersModalReducer,
     toast: toastReducer,
     transactionDetails: transactionDetailsReducer,
     userList: combineReducers({
@@ -178,8 +183,7 @@ export const reducers = () => ({
       topSupporters: topSupportersUserListReducer,
       supporting: supportingUserListReducer,
       mutuals: mutualsUserListReducer,
-      notifications: notificationsUserListReducer,
-      search: searchUserListReducer
+      notifications: notificationsUserListReducer
     }),
     theme,
     vipDiscordModal: vipDiscordModalReducer,
@@ -276,6 +280,7 @@ export type CommonState = {
     reactions: ReactionsState
     remixSettings: RemixSettingsState
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
+    searchUsersModal: SearchUsersModalState
     shareModal: ShareModalState
     toast: ToastState
     transactionDetails: TransactionDetailsState
@@ -288,7 +293,6 @@ export type CommonState = {
       favorites: ReturnType<typeof favoritesUserListReducer>
       topSupporters: ReturnType<typeof topSupportersUserListReducer>
       supporting: ReturnType<typeof supportingUserListReducer>
-      search: ReturnType<typeof searchUserListReducer>
     }
     theme: ThemeState
     vipDiscordModal: VipDiscordModalState

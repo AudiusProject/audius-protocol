@@ -26,7 +26,7 @@ export const CreateChatPrompt = () => {
   const hasChats = chats?.length > 0
 
   const handleClick = useCallback(() => {
-    dispatch(setVisibility({ modal: 'ChatCompose', visible: true }))
+    dispatch(setVisibility({ modal: 'CreateChat', visible: true }))
   }, [dispatch])
 
   return (

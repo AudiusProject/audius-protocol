@@ -1,0 +1,19 @@
+.root {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--unit-4);
+  border-bottom: 1px solid var(--neutral-light-8);
+}
+
+.root:not(:disabled):hover {
+  cursor: pointer;
+  background: var(--neutral-light-10);
+}
+
+.root.disabled .artistChip {
+  opacity: 0.5;
+}
+
+.icon path {
+  fill: var(--neutral-light-4);
+}
