@@ -299,7 +299,7 @@ class Top(Resource):
     @record_metrics
     @ns.doc(id="""Top Playlists""", description="""Gets top playlists.""")
     @ns.marshal_with(full_playlists_with_score_response)
-    # @cache(ttl_sec=30 * 60)
+    @cache(ttl_sec=30 * 60)
     def get(self):
         args = top_parser.parse_args()
         if args.get("limit") is None:
