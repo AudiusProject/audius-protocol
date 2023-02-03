@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"path/filepath"
 
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/transcode"
@@ -22,9 +21,6 @@ type LongTerm struct {
 	jsc            nats.JetStreamContext
 }
 
-// Created within the temp folder (/tmp) to store files that are being downloaded from the temp store to the long-term store.
-const longTermDir = "audius-long-term"
-
 // New creates a struct that listens to streamToStoreFrom and downloads content from the temp store to the long-term store.
 func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) *LongTerm {
 	longTerm := &LongTerm{
@@ -32,10 +28,6 @@ func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc na
 		jsc:            jsc,
 	}
 
-	err := os.MkdirAll(getFileBucketPath(), os.ModePerm)
-	if err != nil {
-		log.Fatalf("could not create long-term storage directory: %v", err)
-	}
 	longTerm.runStorer(streamToStoreFrom)
 	return longTerm
 }
@@ -85,22 +77,12 @@ func (lt *LongTerm) runStorer(uploadStream string) {
 		for {
 			msgs, err := storerSub.Fetch(1)
 			if err == nil {
-				msgs[0].Ack()
-
-				job := transcode.Job{}
-				err := json.Unmarshal(msgs[0].Data, &job)
-				if err != nil {
-					log.Printf("Error unmarshalling job to store a file: %q\n", err)
-				}
-
-				if job.Status == transcode.JobStatusDone {
-					if lt.storageDecider.ShouldStore(job.ID) {
-						fmt.Printf("Storing file with ID %q\n", job.ID)
-						lt.moveTempToLongTerm(job.Results)
-					} else {
-						fmt.Printf("Not storing file with ID %q\n", job.ID)
-						continue
-					}
+				msg := msgs[0]
+				if err := lt.processMessage(msg); err != nil {
+					log.Printf("longterm processMessage failed: %q\n", err)
+					msg.Nak()
+				} else {
+					msg.Ack()
 				}
 			} else if err != nats.ErrTimeout { // Timeout is expected when there's nothing new in the stream
 				fmt.Printf("Error fetching message to store a file: %q\n", err)
@@ -109,13 +91,36 @@ func (lt *LongTerm) runStorer(uploadStream string) {
 	}()
 }
 
-func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) {
+// processMessage will move file to longterm storage if this server is responsible for the shard.
+// should only return an error if storage failed... error will stall consumer and retry until succeeds.
+// reason being: if storage fails for this file it probably will for the next and we shouldn't just go ACKing all these storage operations that failed.
+// if a Nak is too extreme... we could instead retry this N times and then Ack in the calling function
+func (lt *LongTerm) processMessage(msg *nats.Msg) error {
+	job := transcode.Job{}
+	err := json.Unmarshal(msg.Data, &job)
+	if err != nil {
+		log.Printf("invalid job input: %q\n", err)
+		return nil
+	}
+
+	if job.Status == transcode.JobStatusDone {
+		if lt.storageDecider.ShouldStore(job.ID) {
+			fmt.Printf("Storing file with ID %q\n", job.ID)
+			return lt.moveTempToLongTerm(job.Results)
+		} else {
+			fmt.Printf("Not storing file with ID %q\n", job.ID)
+		}
+	}
+
+	return nil
+}
+
+func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) error {
 	// Open the long-term storage *blob.Bucket
 	ctx := context.Background()
 	blobBucket, err := blob.OpenBucket(ctx, getBucketUrl())
 	if err != nil {
-		fmt.Printf("error: failed to store file - could not open bucket: %v", err)
-		return
+		return fmt.Errorf("error: failed to store file - could not open bucket: %v", err)
 	}
 	defer blobBucket.Close()
 
@@ -126,37 +131,39 @@ func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) {
 		// Get object from temp store
 		objStore, err := lt.jsc.ObjectStore(tmpBucketName)
 		if err != nil {
-			log.Printf("Failed to get object from temp store: %v\n", err)
-			return
+			return fmt.Errorf("Failed to get object from temp store: %v\n", err)
 		}
 		tempObj, err := objStore.Get(tmpObj.Name)
 		if err != nil {
-			log.Printf("Failed to get object from temp store: %v\n", err)
-			return
+			return fmt.Errorf("Failed to get object from temp store: %v\n", err)
 		}
 
 		// Open a *blob.Writer for the blob at key=tmpObj.Bucket/tmpObj.Name
 		writer, err := blobBucket.NewWriter(ctx, ltKey, nil)
 		if err != nil {
-			log.Printf("Failed to write %q: %v\n", ltKey, err)
-			return
+			return fmt.Errorf("Failed to write %q: %v\n", ltKey, err)
 		}
-		defer writer.Close()
 
 		// Copy the data
 		_, err = io.Copy(writer, tempObj)
 		if err != nil {
-			log.Printf("Failed to copy data: %v\n", err)
-			return
+			return fmt.Errorf("Failed to copy data: %v\n", err)
 		}
+
+		writer.Close()
 	}
+
+	return nil
 }
 
 // getBucketUrl returns the URL for the long-term storage bucket - default file storage at /tmp/audius-long-term.
+// todo: ENV config so operator can specify driver prefix...
+// todo: we'll also need to blank import all supported drivers at build time so they work.
 func getBucketUrl() string {
-	return "file://" + getFileBucketPath()
-}
+	if u := os.Getenv("TODO_STORAGE_DRIVER_URL"); u != "" {
+		return u
+	}
 
-func getFileBucketPath() string {
-	return filepath.Join(os.TempDir(), longTermDir)
+	// fallback: use temp dir if user didn't specify where to store files
+	return "file://" + os.TempDir()
 }
