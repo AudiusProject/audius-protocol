@@ -14,7 +14,7 @@ import { makeStyles } from 'app/styles'
 import { useThemeVariant } from 'app/utils/theme'
 const { getIsReachable } = reachabilitySelectors
 
-type DownloadStatusIndicatorProps = {
+export type DownloadStatusIndicatorProps = {
   status: Nullable<OfflineDownloadStatus>
   size?: number
   style?: StyleProp<ViewStyle>

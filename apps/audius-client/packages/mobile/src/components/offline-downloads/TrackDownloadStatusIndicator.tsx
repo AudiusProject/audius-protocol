@@ -3,9 +3,10 @@ import { useSelector } from 'react-redux'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { getTrackOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
 
+import type { DownloadStatusIndicatorProps } from './DownloadStatusIndicator'
 import { DownloadStatusIndicator } from './DownloadStatusIndicator'
 
-type TrackDownloadIndicatorProps = {
+type TrackDownloadIndicatorProps = Partial<DownloadStatusIndicatorProps> & {
   trackId?: number
   size?: number
 }
