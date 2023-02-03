@@ -13,6 +13,7 @@ import (
 	"comms.audius.co/storage/transcode"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
 )
 
@@ -56,7 +57,7 @@ func NewProd(jsc nats.JetStreamContext) *StorageServer {
 	} // TODO: get dynamically (from KV store?) and re-initialize on change
 	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: get dynamically
 	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, allStorageNodePubKeys, thisNodePubKey, jsc)
-	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, d, 1)
+	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
 		panic(err)
 	}
@@ -79,6 +80,10 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 
 	// Register endpoints at /storage
 	storage := ss.WebServer.Group("/storage")
+
+	storage.Use(middleware.Logger())
+	storage.Use(middleware.Recover())
+
 	storage.GET("", ss.serveStatusUI)
 	storage.GET("/", ss.serveStatusUI)
 	storage.GET("/static/*", ss.serveStaticAssets)

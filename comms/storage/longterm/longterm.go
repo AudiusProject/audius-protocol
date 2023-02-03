@@ -129,11 +129,11 @@ func (lt *LongTerm) processMessage(msg *nats.Msg) error {
 func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) error {
 	// Open the long-term storage *blob.Bucket
 	for _, tmpObj := range tmpObjects {
-		tmpBucketName := lt.storageDecider.GetNamespacedBucketFor(tmpObj.Bucket)
-		ltKey := tmpBucketName + "/" + tmpObj.Name
+		shard := lt.storageDecider.GetNamespacedBucketFor(tmpObj.Name)
+		ltKey := shard + "/" + tmpObj.Name
 
 		// Get object from temp store
-		objStore, err := lt.jsc.ObjectStore(tmpBucketName)
+		objStore, err := lt.jsc.ObjectStore(tmpObj.Bucket)
 		if err != nil {
 			return fmt.Errorf("Failed to get object from temp store: %v\n", err)
 		}

@@ -3,7 +3,6 @@ package transcode
 import (
 	"testing"
 
-	"comms.audius.co/storage/decider"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
@@ -17,7 +16,7 @@ func TestJobManager(t *testing.T) {
 	jsc, err := nc.JetStream()
 	assert.NoError(t, err)
 
-	jobm, err := NewJobsManager(jsc, namespace, decider.NewNaiveDecider(namespace, jsc), 1)
+	jobm, err := NewJobsManager(jsc, namespace, 1)
 	assert.NoError(t, err)
 
 	jobm.Update(&Job{

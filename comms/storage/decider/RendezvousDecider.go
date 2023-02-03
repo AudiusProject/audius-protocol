@@ -72,15 +72,6 @@ func (d *RendezvousDecider) computeAndCreateBucketsNodeStores(publicKey string) 
 		}
 	}
 
-	// Pre-create buckets
-	for _, bucket := range buckets {
-		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
-			Bucket:      d.GetNamespacedBucketFor(bucket),
-			Description: fmt.Sprintf("Temp object store for files in bucket %s", bucket),
-			TTL:         objStoreTtl,
-		}, d.jsc)
-	}
-
 	return buckets
 }
 

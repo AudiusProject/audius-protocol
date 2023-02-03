@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
+	"math/rand"
 	"mime/multipart"
 	"net"
 	"os"
@@ -13,8 +15,6 @@ import (
 	"sort"
 	"sync"
 	"time"
-
-	"comms.audius.co/storage/decider"
 
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -68,7 +68,7 @@ type JobsManager struct {
 	logger    log15.Logger
 
 	workSubscription *nats.Subscription
-	storageDecider   decider.StorageDecider
+	tempBucketCount  int
 
 	websockets map[net.Conn]bool
 
@@ -80,7 +80,7 @@ const (
 	objStoreTtl = time.Hour * 24
 )
 
-func NewJobsManager(jsc nats.JetStreamContext, prefix string, storageDecider decider.StorageDecider, replicaCount int) (*JobsManager, error) {
+func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) (*JobsManager, error) {
 	// kv
 	kvBucketName := prefix + KvSuffix
 	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
@@ -98,6 +98,15 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, storageDecider dec
 		return nil, err
 	}
 
+	// create temp buckets
+	tempBucketCount := 20
+	for i := 0; i < tempBucketCount; i++ {
+		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
+			Bucket: fmt.Sprintf("temp_%d", i),
+			TTL:    objStoreTtl,
+		}, jsc)
+	}
+
 	watcher, err := kv.WatchAll()
 	if err != nil {
 		return nil, err
@@ -110,7 +119,7 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, storageDecider dec
 		watcher:          watcher,
 		table:            map[string]*Job{},
 		logger:           log15.New(),
-		storageDecider:   storageDecider,
+		tempBucketCount:  tempBucketCount,
 		websockets:       map[net.Conn]bool{},
 	}
 
@@ -171,8 +180,11 @@ func (jobman *JobsManager) Add(template JobTemplate, upload *multipart.FileHeade
 		Name:        fileHash,
 		Description: upload.Filename,
 	}
-	objStore, err := jobman.jsc.ObjectStore(jobman.storageDecider.GetNamespacedBucketFor(fileHash))
+
+	randBucket := fmt.Sprintf("temp_%d", rand.Intn(jobman.tempBucketCount))
+	objStore, err := jobman.jsc.ObjectStore(randBucket)
 	if err != nil {
+		log.Println("FUUU", randBucket, err)
 		return nil, err
 	}
 	info, err := objStore.Put(meta, f)
@@ -289,7 +301,7 @@ func (jobman *JobsManager) StartWorkers(count int) {
 
 func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	logger := jobman.logger.New("job", job.ID)
-	objStore, err := jobman.jsc.ObjectStore(jobman.storageDecider.GetNamespacedBucketFor(job.ID))
+	objStore, err := jobman.jsc.ObjectStore(job.SourceInfo.Bucket)
 	if err != nil {
 		return err
 	}

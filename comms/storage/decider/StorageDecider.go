@@ -2,7 +2,6 @@
 package decider
 
 import (
-	"log"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -31,13 +30,6 @@ type NaiveDecider struct {
 func NewNaiveDecider(namespace string, jsc nats.JetStreamContext) *NaiveDecider {
 	d := &NaiveDecider{namespace: namespace, jsc: jsc}
 
-	// Pre-create single bucket for naive decider - no sharding
-	createObjStoreIfNotExists(&nats.ObjectStoreConfig{
-		Bucket:      d.GetNamespacedBucketFor(""),
-		Description: "Temp object store for all files (non-sharded, naive StorageDecider)",
-		TTL:         objStoreTtl,
-	}, jsc)
-
 	return d
 }
 
@@ -51,16 +43,4 @@ func (d *NaiveDecider) OnChange(prevBuckets []string, curBuckets []string) error
 
 func (d *NaiveDecider) GetNamespacedBucketFor(_ string) string {
 	return d.namespace + "_naive-bucket"
-}
-
-func createObjStoreIfNotExists(cfg *nats.ObjectStoreConfig, jsc nats.JetStreamContext) {
-	_, err := jsc.ObjectStore(cfg.Bucket)
-	if err == nats.ErrBucketNotFound || err == nats.ErrStreamNotFound {
-		_, err = jsc.CreateObjectStore(cfg)
-		if err != nil {
-			log.Fatalf("Failed to create-if-not-exists object store %q: %v", cfg.Bucket, err)
-		}
-	} else if err != nil {
-		log.Fatalf("Failed to create-if-not-exists object store %q: %v", cfg.Bucket, err)
-	}
 }
