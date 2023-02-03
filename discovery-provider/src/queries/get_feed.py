@@ -218,6 +218,14 @@ def get_feed_sql(args):
                 )
             reposted_tracks = reposted_tracks.order_by(desc(Track.created_at)).all()
 
+            # filter out premium track reposts from feed
+            reposted_tracks = list(
+                filter(
+                    lambda track: track["is_premium"] == False,  # not a premium track
+                    reposted_tracks,
+                )
+            )
+
             if not tracks_only:
                 # Query playlists reposted by followees, excluding playlists already fetched from above
                 reposted_playlists = session.query(Playlist).filter(
