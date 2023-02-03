@@ -1239,7 +1239,7 @@ function* watchFetchCoverArt() {
       inProgress.add(key)
 
       try {
-        let collection = yield select(getCollection, { id: collectionId })
+        const collection = yield select(getCollection, { id: collectionId })
         const user = yield select(getUser, { id: collection.playlist_owner_id })
         if (
           !collection ||
@@ -1260,14 +1260,18 @@ function* watchFetchCoverArt() {
           coverArtSize,
           gateways
         )
-        collection = yield select(getCollection, { id: collectionId })
-        collection._cover_art_sizes = {
-          ...collection._cover_art_sizes,
-          [coverArtSize || DefaultSizes.OVERRIDE]: url
-        }
         yield put(
           cacheActions.update(Kind.COLLECTIONS, [
-            { id: collectionId, metadata: collection }
+            {
+              id: collectionId,
+              metadata: {
+                ...collection,
+                _cover_art_sizes: {
+                  ...collection._cover_art_sizes,
+                  [coverArtSize || DefaultSizes.OVERRIDE]: url
+                }
+              }
+            }
           ])
         )
       } catch (e) {

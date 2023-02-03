@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import imageEmpty from 'app/assets/images/imageBlank2x.png'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
 import { useLocalCollectionImage } from 'app/hooks/useLocalImage'
+import { useThemeColors } from 'app/utils/theme'
 
 import type { FastImageProps } from './FastImage'
 import { FastImage } from './FastImage'
@@ -51,11 +52,24 @@ type CollectionImageProps = UseCollectionImageOptions & Partial<FastImageProps>
 
 export const CollectionImage = (props: CollectionImageProps) => {
   const { collection, size, user, style, ...other } = props
+
   const collectionImageSource = useCollectionImage({ collection, size, user })
+  const { neutralLight8 } = useThemeColors()
 
   if (!collectionImageSource) return null
 
-  const { source, handleError } = collectionImageSource
+  const { source, handleError, isFallbackImage } = collectionImageSource
+
+  if (isFallbackImage) {
+    return (
+      <FastImage
+        {...other}
+        style={[style, { backgroundColor: neutralLight8 }]}
+        source={source}
+        onError={handleError}
+      />
+    )
+  }
 
   return (
     <FastImage {...other} style={style} source={source} onError={handleError} />
