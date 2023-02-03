@@ -1,6 +1,8 @@
 import enum
+import logging
 from typing import Optional, TypedDict
 
+from flask import request
 from sqlalchemy import desc
 from src import exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
@@ -19,6 +21,9 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+from src.utils.elasticdsl import esclient
+
+logger = logging.getLogger(__name__)
 
 
 class GetTopPlaylistsArgs(TypedDict):
@@ -35,15 +40,24 @@ class TopPlaylistKind(str, enum.Enum):
 
 
 def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
+    skip_es = request.args.get("es") == "0"
+    use_es = esclient and not skip_es
+    if use_es:
+        try:
+            return get_top_playlists_es(kind, args)
+        except Exception as e:
+            logger.error(f"elasticsearch get_top_playlists_es failed: {e}")
+
+    return get_top_playlists_sql(kind, args)
+
+
+def get_top_playlists_sql(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
     current_user_id = args.get("current_user_id")
 
     # NOTE: This is a temporary fix while migrating clients to pass
     # along an encoded user id via url param
     if current_user_id is None:
         current_user_id = get_current_user_id(required=False)
-
-    # todo: wrap in try / catch
-    return get_top_playlists_es(kind, args)
 
     # Argument parsing and checking
     if kind not in ("playlist", "album"):
@@ -70,7 +84,6 @@ def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-
         # If filtering by followees, set the playlist view to be only playlists from
         # users that the current user follows.
         if query_filter == "followees":
