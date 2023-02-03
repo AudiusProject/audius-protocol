@@ -11,5 +11,5 @@ cd /tmp && \
     chmod +x /usr/local/bin/dbmate && \
     cd /audius-discovery-provider
 
-DATABASE_URL="${audius_db_url/\+psycopg2}?sslmode=disable" dbmate --wait --no-dump-schema --migrations-dir comms/db/migrations up
+DATABASE_URL="${audius_db_url/\+psycopg2}?sslmode=disable" dbmate --wait --no-dump-schema --migrations-dir comms/discovery/db/migrations up
 echo "Finished running dbmate migrations"
