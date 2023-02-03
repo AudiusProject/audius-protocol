@@ -1,5 +1,7 @@
 import { Knex } from 'knex'
-import { RepostRow, FollowRow, UserRow, TrackRow, SaveRow } from '../types/dn'
+import { EmailFrequency } from '../processNotifications/mappers/base'
+import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow } from '../types/dn'
+import { UserRow as IdentityUserRow } from '../types/identity'
 import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow } from '../types/identity'
 import { getDB } from '../conn'
 
@@ -52,7 +54,7 @@ export const createTracks = async (db: Knex, tracks: CreateTrack[]) => {
     .into('tracks')
 }
 
-type CreateUser = Pick<UserRow, 'user_id'> & Partial<UserRow>
+type CreateUser = Pick<DNUserRow, 'user_id'> & Partial<DNUserRow>
 export const createUsers = async (db: Knex, users: CreateUser[]) => {
   await db.insert(users.map(user => ({
     is_current: true,
@@ -99,6 +101,25 @@ export const insertFollows = async (db: Knex, follows: CreateFollow[]) => {
     .into('follows')
 }
 
+export const setUserEmailAndSettings = async (db: Knex, frequency: EmailFrequency, userId: number): Promise<IdentityUserRow> => {
+  const user = {
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    lastSeenDate: new Date(),
+    handle: `user_${userId}`,
+    email: `user_${userId}@gmail.com`,
+    blockchainUserId: userId,
+  } 
+  await db.insert(user).into('Users')
+  await db.insert({
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    userId: userId,
+    emailFrequency: frequency,
+  })
+    .into('UserNotificationSettings')
+  return user
+}
 
 // Generate random Id betweeen 0 and 999
 export function randId() {

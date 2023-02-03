@@ -10,6 +10,11 @@ export enum EntityType {
   Album = 'album',
 }
 
+export enum DMEntityType {
+  Message = 'message',
+  Reaction = 'messageReaction',
+}
+
 export type User = {
   // User's name to display in email
   name: string

@@ -1,9 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 import { expect, test } from '@jest/globals';
-import { renderEmail } from '../email/appNotifications/renderEmail';
+import { renderEmail } from '../email/notifications/renderEmail';
 import { Processor } from '../main';
-import { NotificationRow, reposttype } from '../types/dn';
+import { reposttype } from '../types/dn';
+import { AppEmailNotification } from '../types/notifications'
 import { createReposts, createTestDB, createTracks, createUsers, dropTestDB, insertFollows, replaceDBName } from '../utils/populateDB';
 import { Knex } from 'knex';
 
@@ -58,7 +59,7 @@ describe('Render Email', () => {
       ])
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      const notifications: NotificationRow[] = [
+      const notifications: AppEmailNotification[] = [
         {
           type: 'follow',
           timestamp: new Date(),
@@ -67,7 +68,9 @@ describe('Render Email', () => {
           data: {
             follower_user_id: 1,
             followee_user_id: 2
-          }
+          },
+          user_ids: [2],
+          receiver_user_id: 2
         }
       ]
       const notifHtml = await renderEmail({
@@ -104,7 +107,7 @@ describe('Render Email', () => {
       // }])
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      const notifications: NotificationRow[] = [
+      const notifications: AppEmailNotification[] = [
         {
           type: 'repost',
           timestamp: new Date(),
@@ -114,7 +117,9 @@ describe('Render Email', () => {
             user_id: 2,
             repost_item_id: 1,
             type: reposttype.track
-          }
+          },
+          user_ids: [2],
+          receiver_user_id: 2,
         }
       ]
       const notifHtml = await renderEmail({
