@@ -232,9 +232,10 @@ const slice = createSlice({
       state.isDoneLoadingFromDisk = true
     },
     clearOfflineDownloads: (state) => {
-      state.collectionStatus = initialState.collectionStatus
-      state.tracks = initialState.tracks
       state.downloadStatus = initialState.downloadStatus
+      state.collectionStatus = initialState.collectionStatus
+      state.favoritedCollectionStatus = initialState.favoritedCollectionStatus
+      state.tracks = initialState.tracks
       state.isDoneLoadingFromDisk = initialState.isDoneLoadingFromDisk
     },
     // Lifecycle actions that trigger complex saga flows

@@ -223,3 +223,18 @@ export const cancelQueuedDownloads = async (
   })
   startQueueIfOnline()
 }
+
+export const cancelAllQueuedDownloads = async () => {
+  queue.stop()
+  const jobs = await queue.getJobs()
+  jobs.forEach((rawJob) => {
+    const { workerName, id } = rawJob
+    if (
+      workerName === TRACK_DOWNLOAD_WORKER ||
+      workerName === COLLECTION_DOWNLOAD_WORKER
+    ) {
+      queue.cancelJob(id)
+    }
+  })
+  startQueueIfOnline()
+}
