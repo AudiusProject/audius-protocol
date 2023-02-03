@@ -1,6 +1,7 @@
 import { createSelector } from 'reselect'
 
 import { UID } from '../../models'
+import { Uid } from '../../utils/uid'
 import { cacheUsersSelectors, cacheTracksSelectors } from '../cache'
 import { playerSelectors } from '../player'
 import { CommonState } from '../reducers'
@@ -38,6 +39,11 @@ export const getId = (state: CommonState) =>
 export const getCollectible = (state: CommonState) => {
   if (!isQueueIndexValid(state)) return null
   return state.queue.order[state.queue.index].collectible ?? null
+}
+export const getCollectionId = (state: CommonState) => {
+  const uid = getUid(state)
+  if (!uid) return null
+  return Uid.getCollectionId(uid)
 }
 
 const getCurrentTrack = (state: CommonState) =>

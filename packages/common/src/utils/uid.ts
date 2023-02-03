@@ -46,6 +46,14 @@ export class Uid {
     return kind.substring(componentName.length + 1)
   }
 
+  static makeCollectionSourceId = (source: string, collectionId: string) =>
+    `${source}:collection:${collectionId}`
+
+  static getCollectionId = (uid: string) => {
+    const source = this.getComponent(uid, 'source')
+    return source.split('collection:')[1] ?? null
+  }
+
   toString = () => {
     return `kind:${this.kind}-id:${this.id}${
       this.source ? `-source:${this.source}` : ''
