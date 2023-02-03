@@ -117,7 +117,7 @@ func (lt *LongTerm) processMessage(msg *nats.Msg) error {
 	if job.Status == transcode.JobStatusDone {
 		if lt.storageDecider.ShouldStore(job.ID) {
 			fmt.Printf("Storing file with ID %q\n", job.ID)
-			return lt.moveTempToLongTerm(job.Results)
+			return lt.moveTempToLongTerm(job)
 		} else {
 			fmt.Printf("Not storing file with ID %q\n", job.ID)
 		}
@@ -126,10 +126,11 @@ func (lt *LongTerm) processMessage(msg *nats.Msg) error {
 	return nil
 }
 
-func (lt *LongTerm) moveTempToLongTerm(tmpObjects []*nats.ObjectInfo) error {
-	// Open the long-term storage *blob.Bucket
-	for _, tmpObj := range tmpObjects {
-		shard := lt.storageDecider.GetNamespacedBucketFor(tmpObj.Name)
+func (lt *LongTerm) moveTempToLongTerm(job transcode.Job) error {
+	// put all results in same shard as input file
+	shard := lt.storageDecider.GetNamespacedBucketFor(job.ID)
+
+	for _, tmpObj := range job.Results {
 		ltKey := shard + "/" + tmpObj.Name
 
 		// Get object from temp store
