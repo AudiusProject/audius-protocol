@@ -29,6 +29,7 @@ func (ts *TrendingServer) Run(conf Config) error {
 
 	wsv.GET("/tracks/trending", ts.GetTrendingTracks)
 	wsv.GET("/playlists/trending", ts.GetTrendingPlaylists)
+	wsv.GET("/trending/health", ts.GetHealth)
 
 	return wsv.Start(conf.WebServerPort)
 }
@@ -47,4 +48,12 @@ func (ts *TrendingServer) GetTrendingPlaylists(c echo.Context) error {
 		return err
 	}
 	return c.String(http.StatusOK, res)
+}
+
+func (ts *TrendingServer) GetHealth(c echo.Context) error {
+	res := ts.Database.CheckHealth()
+	if res {
+		return c.String(http.StatusOK, "")
+	}
+	return c.String(http.StatusInternalServerError, "BANG!")
 }
