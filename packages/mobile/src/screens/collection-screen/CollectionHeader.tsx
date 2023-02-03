@@ -179,11 +179,12 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
 
   const getTextColor = () => {
     if (
-      downloadStatus === OfflineDownloadStatus.INACTIVE ||
-      downloadStatus === OfflineDownloadStatus.INIT
-    )
-      return 'neutralLight4'
-    return 'secondary'
+      downloadStatus === OfflineDownloadStatus.LOADING ||
+      downloadStatus === OfflineDownloadStatus.SUCCESS
+    ) {
+      return 'secondary'
+    }
+    return 'neutralLight4'
   }
 
   return (

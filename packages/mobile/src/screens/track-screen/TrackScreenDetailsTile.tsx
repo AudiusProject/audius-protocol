@@ -35,8 +35,12 @@ import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'
 import type { ImageProps } from 'app/components/image/FastImage'
 import { TrackImage } from 'app/components/image/TrackImage'
+import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
+import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as record } from 'app/services/analytics'
+import { getTrackOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
+import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import type { SearchTrack, SearchUser } from 'app/store/search/types'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
@@ -112,6 +116,21 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
   bottomContent: {
     marginHorizontal: spacing(3)
+  },
+
+  headerContainer: {
+    ...flexRowCentered(),
+    justifyContent: 'center',
+    marginTop: spacing(2),
+    marginBottom: spacing(3)
+  },
+  headerText: {
+    letterSpacing: 2,
+    textAlign: 'center',
+    textTransform: 'uppercase'
+  },
+  downloadStatusIndicator: {
+    marginRight: spacing(2)
   }
 }))
 
@@ -125,6 +144,7 @@ export const TrackScreenDetailsTile = ({
   const navigation = useNavigation()
   const { accentOrange } = useThemeColors()
 
+  const isOfflineEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
   const currentUserId = useSelector(getUserId)
   const dispatch = useDispatch()
@@ -281,11 +301,38 @@ export const TrackScreenDetailsTile = ({
     )
   }
 
-  const renderHiddenHeader = () => {
-    return (
+  const downloadStatus = useSelector(getTrackOfflineDownloadStatus(track_id))
+  const getDownloadTextColor = () => {
+    if (
+      downloadStatus === OfflineDownloadStatus.SUCCESS ||
+      downloadStatus === OfflineDownloadStatus.LOADING
+    ) {
+      return 'secondary'
+    }
+    return 'neutralLight4'
+  }
+
+  const renderHeader = () => {
+    return is_unlisted ? (
       <View style={styles.hiddenDetailsTileWrapper}>
         <IconHidden fill={accentOrange} />
         <Text style={styles.hiddenTrackLabel}>{messages.hiddenTrack}</Text>
+      </View>
+    ) : (
+      <View style={styles.headerContainer}>
+        <TrackDownloadStatusIndicator
+          style={styles.downloadStatusIndicator}
+          size={20}
+          trackId={track_id}
+        />
+        <Text
+          style={styles.headerText}
+          color={getDownloadTextColor()}
+          weight='demiBold'
+          fontSize='small'
+        >
+          {isRemix ? messages.remix : messages.track}
+        </Text>
       </View>
     )
   }
@@ -336,7 +383,7 @@ export const TrackScreenDetailsTile = ({
       hasSaved={has_current_user_saved}
       user={user}
       renderBottomContent={renderBottomContent}
-      renderHeader={is_unlisted ? renderHiddenHeader : undefined}
+      renderHeader={is_unlisted || isOfflineEnabled ? renderHeader : undefined}
       headerText={isRemix ? messages.remix : messages.track}
       hideFavorite={is_unlisted}
       hideRepost={is_unlisted || !isReachable}
