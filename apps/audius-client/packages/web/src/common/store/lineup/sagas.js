@@ -36,8 +36,6 @@ const { getUsers } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 
-const makeCollectionSourceId = (source, playlistId) =>
-  `${source}:collection:${playlistId}`
 const getEntryId = (entry) => `${entry.kind}:${entry.id}`
 
 const flatten = (list) =>
@@ -231,7 +229,7 @@ function* fetchLineupMetadatasAsync(
             const uid = new Uid(
               Kind.TRACKS,
               id,
-              makeCollectionSourceId(source, metadata.playlist_id),
+              Uid.makeCollectionSourceId(source, metadata.playlist_id),
               idx
             )
             return { id, uid: uid.toString() }
@@ -396,7 +394,7 @@ function* reset(
           const trackUid = new Uid(
             Kind.TRACKS,
             trackId,
-            makeCollectionSourceId(source, collection.playlist_id),
+            Uid.makeCollectionSourceId(source, collection.playlist_id),
             idx
           )
           return { UID: trackUid.toString() }

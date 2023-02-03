@@ -16,7 +16,8 @@ import {
   Genre,
   tracksSocialActions,
   SquareSizes,
-  shallowCompare
+  shallowCompare,
+  savedPageTracksLineupActions
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import queue from 'react-native-job-queue'
@@ -31,7 +32,7 @@ import TrackPlayer, {
   TrackType
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce } from 'react-use'
+import { useEffectOnce, usePrevious } from 'react-use'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
@@ -41,18 +42,29 @@ import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
+  DOWNLOAD_REASON_FAVORITES,
   getLocalAudioPath,
   isAudioAvailableOffline
 } from 'app/services/offline-downloader'
 import type { PlayCountWorkerPayload } from 'app/services/offline-downloader/workers/playCounterWorker'
 import { PLAY_COUNTER_WORKER } from 'app/services/offline-downloader/workers/playCounterWorker'
-import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
+import {
+  getOfflineTracks,
+  getIsCollectionMarkedForDownload
+} from 'app/store/offline-downloads/selectors'
 
 const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
 const { getPlaying, getSeek, getCurrentTrack, getCounter } = playerSelectors
 const { recordListen } = tracksSocialActions
-const { getIndex, getOrder, getRepeat, getShuffle } = queueSelectors
+const {
+  getIndex,
+  getOrder,
+  getSource,
+  getCollectionId,
+  getRepeat,
+  getShuffle
+} = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
 // TODO: These constants are the same in now playing drawer. Move them to shared location
@@ -123,6 +135,8 @@ export const Audio = () => {
   const queueIndex = useSelector(getIndex)
   const queueShuffle = useSelector(getShuffle)
   const queueOrder = useSelector(getOrder)
+  const queueSource = useSelector(getSource)
+  const queueCollectionId = useSelector(getCollectionId)
   const queueTrackUids = queueOrder.map((trackData) => trackData.uid)
   const queueTrackIds = queueOrder.map((trackData) => trackData.id)
   const queueTrackMap = useSelector(
@@ -137,6 +151,19 @@ export const Audio = () => {
     (state) => getUsers(state, { ids: queueTrackOwnerIds }),
     shallowCompare
   )
+
+  const isCollectionMarkedForDownload = useSelector(
+    getIsCollectionMarkedForDownload(
+      queueSource === savedPageTracksLineupActions.prefix
+        ? DOWNLOAD_REASON_FAVORITES
+        : queueCollectionId?.toString()
+    )
+  )
+  const wasCollectionMarkedForDownload = usePrevious(
+    isCollectionMarkedForDownload
+  )
+  const didOfflineToggleChange =
+    isCollectionMarkedForDownload !== wasCollectionMarkedForDownload
 
   // A map from trackId to offline availability
   const offlineAvailabilityByTrackId = useSelector((state) => {
@@ -330,7 +357,12 @@ export const Audio = () => {
 
   const handleQueueChange = useCallback(async () => {
     const refUids = queueListRef.current
-    if (queueIndex === -1 || isEqual(refUids, queueTrackUids)) return
+    if (queueIndex === -1) {
+      return
+    }
+    if (isEqual(refUids, queueTrackUids) && !didOfflineToggleChange) {
+      return
+    }
 
     updatingQueueRef.current = true
     queueListRef.current = queueTrackUids
@@ -347,16 +379,19 @@ export const Audio = () => {
       newQueueTracks.map(async (track) => {
         const trackOwner = queueTrackOwnersMap[track.owner_id]
         const trackId = track.track_id.toString()
+        const isAudioAvailableOfflineToStream = await isAudioAvailableOffline(
+          trackId
+        )
         const offlineTrackAvailable =
           trackId &&
           isOfflineModeEnabled &&
           offlineAvailabilityByTrackId[trackId] &&
-          (await isAudioAvailableOffline(trackId))
+          isAudioAvailableOfflineToStream
 
         // Get Track url
         let url: string
         let isM3u8 = false
-        if (offlineTrackAvailable) {
+        if (offlineTrackAvailable && isCollectionMarkedForDownload) {
           const audioFilePath = getLocalAudioPath(trackId)
           url = `file://${audioFilePath}`
         } else if (isStreamMp3Enabled && isReachable) {
@@ -425,7 +460,9 @@ export const Audio = () => {
     queueIndex,
     queueTrackOwnersMap,
     queueTrackUids,
-    queueTracks
+    queueTracks,
+    didOfflineToggleChange,
+    isCollectionMarkedForDownload
   ])
 
   const handleQueueIdxChange = useCallback(async () => {
