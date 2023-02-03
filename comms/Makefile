@@ -19,6 +19,9 @@ reset::
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
 
+down::
+	docker compose down --volumes
+
 psql::
 	docker exec -it comdb psql -U postgres audius_discovery
 
@@ -32,6 +35,9 @@ test::
 	docker compose up -d comdb
 	audius_discprov_env='standalone' go test ./... -count=1
 
+
+test.load::
+	hey -n 10000 -c 50 http://localhost:8926/storage/jobs
 
 
 build::
@@ -58,6 +64,7 @@ tools::
 	go install github.com/kyleconroy/sqlc/cmd/sqlc@main
 	CGO_ENABLED=0 go install github.com/nats-io/natscli/nats@latest
 	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
+	go install github.com/rakyll/hey@latest
 
 sqlc:: reset
 	sqlc generate

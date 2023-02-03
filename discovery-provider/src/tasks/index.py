@@ -443,9 +443,7 @@ def index_blocks(self, db, blocks_list):
         )
         challenge_bus: ChallengeEventBus = update_task.challenge_event_bus
 
-        with db.scoped_session(
-            autoflush=False
-        ) as session, challenge_bus.use_scoped_dispatch_queue():
+        with db.scoped_session() as session, challenge_bus.use_scoped_dispatch_queue():
             skip_tx_hash = get_tx_hash_to_skip(session, redis)
             skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
             if skip_whole_block:
