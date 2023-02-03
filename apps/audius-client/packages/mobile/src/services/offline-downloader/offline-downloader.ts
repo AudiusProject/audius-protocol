@@ -24,7 +24,8 @@ import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import { store } from 'app/store'
 import {
   getOfflineCollections,
-  getOfflineFavoritedCollections
+  getOfflineFavoritedCollections,
+  getTrackOfflineDownloadStatus
 } from 'app/store/offline-downloads/selectors'
 import {
   actions as offlineDownloadsActions,
@@ -32,6 +33,7 @@ import {
   startDownload,
   completeDownload,
   errorDownload,
+  abandonDownload,
   loadTrack,
   removeDownload,
   batchInitCollectionDownload,
@@ -112,18 +114,30 @@ export const downloadAllFavorites = async () => {
     })
   )
 
-  batchDownloadTrack(tracksForDownload)
-
   // @ts-ignore state is CommonState
   const favoritedCollections = getAccountCollections(state as CommonState, '')
-  batchDownloadCollection(favoritedCollections, true)
+  // Aggregate all of the tracks and collections to download, but download the tracks first
+  const {
+    tracksForDownload: collectionTracksForDownload,
+    collectionsForDownload
+  } = batchDownloadCollection(favoritedCollections, true, false, true)
+
+  batchDownloadTrack(tracksForDownload.concat(collectionTracksForDownload))
+  collectionsForDownload.forEach((collectionForDownload) =>
+    enqueueCollectionDownload(collectionForDownload)
+  )
 }
 
 export const batchDownloadCollection = (
   collections: CollectionMetadata[],
   isFavoritesDownload: boolean,
-  skipTracks = false
-) => {
+  skipTracks = false,
+  // Returns tracks back to the caller instead of queuing them specifically
+  skipDownload = false
+): {
+  tracksForDownload: TrackForDownload[]
+  collectionsForDownload: CollectionForDownload[]
+} => {
   const collectionsForDownload: CollectionForDownload[] = collections.map(
     (collection) => ({
       collectionId: collection.playlist_id,
@@ -138,21 +152,27 @@ export const batchDownloadCollection = (
       isFavoritesDownload
     })
   )
-  collectionsForDownload.forEach((collectionForDownload) =>
-    enqueueCollectionDownload(collectionForDownload)
-  )
+  if (!skipDownload) {
+    collectionsForDownload.forEach((collectionForDownload) =>
+      enqueueCollectionDownload(collectionForDownload)
+    )
+  }
 
-  if (skipTracks) return
-  const tracksForDownload = collections.flatMap((collection) =>
-    collection.playlist_contents.track_ids.map(({ track: trackId }) => ({
-      trackId,
-      downloadReason: {
-        is_from_favorites: isFavoritesDownload,
-        collection_id: collection.playlist_id.toString()
-      }
-    }))
+  if (skipTracks) return { tracksForDownload: [], collectionsForDownload: [] }
+  const tracksForDownload: TrackForDownload[] = collections.flatMap(
+    (collection) =>
+      collection.playlist_contents.track_ids.map(({ track: trackId }) => ({
+        trackId,
+        downloadReason: {
+          is_from_favorites: isFavoritesDownload,
+          collection_id: collection.playlist_id.toString()
+        }
+      }))
   )
-  batchDownloadTrack(tracksForDownload)
+  if (!skipDownload) {
+    batchDownloadTrack(tracksForDownload)
+  }
+  return { tracksForDownload, collectionsForDownload }
 }
 
 export const downloadCollection = async ({
@@ -335,9 +355,11 @@ export const downloadTrack = async (trackForDownload: TrackForDownload) => {
       return
     }
 
-    await downloadTrackCoverArt(trackFromApi)
+    await Promise.all([
+      downloadTrackCoverArt(trackFromApi),
+      tryDownloadTrackFromEachCreatorNode(trackFromApi)
+    ])
 
-    await tryDownloadTrackFromEachCreatorNode(trackFromApi)
     const now = Date.now()
     const trackToWrite: Track & UserTrackMetadata = {
       ...trackFromApi,
@@ -461,6 +483,7 @@ export const removeTrackDownload = async ({
   trackId,
   downloadReason
 }: TrackForDownload) => {
+  const state = store.getState()
   try {
     const trackIdStr = trackId.toString()
     const diskTrack = await getTrackJson(trackIdStr)
@@ -472,7 +495,12 @@ export const removeTrackDownload = async ({
     )
     if (!diskTrack || remainingReasons.length === 0) {
       purgeDownloadedTrack(trackIdStr)
-      store.dispatch(removeDownload(trackIdStr))
+      const status = getTrackOfflineDownloadStatus(trackId)(state)
+      if (status === OfflineDownloadStatus.ERROR) {
+        store.dispatch(abandonDownload(trackIdStr))
+      } else {
+        store.dispatch(removeDownload(trackIdStr))
+      }
     } else {
       const now = Date.now()
       const trackToWrite = {

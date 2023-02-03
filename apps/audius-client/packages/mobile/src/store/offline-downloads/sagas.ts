@@ -206,7 +206,8 @@ export function* startSync() {
       syncCollectionsTracks,
       existingOfflineCollections,
       isFavoritesDownloadEnabled !== OfflineDownloadStatus.INACTIVE &&
-        isFavoritesDownloadEnabled !== OfflineDownloadStatus.ERROR
+        isFavoritesDownloadEnabled !== OfflineDownloadStatus.ERROR &&
+        isFavoritesDownloadEnabled !== OfflineDownloadStatus.ABANDONED
     )
     yield* call(syncStaleTracks)
   } catch (e) {
