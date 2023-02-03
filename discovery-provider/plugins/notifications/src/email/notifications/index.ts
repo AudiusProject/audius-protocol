@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import moment from 'moment-timezone'
-import { config } from './../config'
+import { config } from '../../config'
 import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { DMEmailNotification, EmailNotification } from '../../types/notifications'
 import { DMEntityType } from './types'
@@ -40,12 +40,12 @@ const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, st
     )
     .from('Users')
     .join('UserNotificationSettings', 'UserNotificationSettings.userId', 'Users.blockchainUserId')
-    .join('NotificationEmail', 'NotificationEmail.userId', 'Users.blockchainUserId')
+    .leftJoin('NotificationEmails', 'NotificationEmails.userId', 'Users.blockchainUserId')
     .where('Users.isEmailDeliverable', true)
     .where(function () {
-      this.where('NotificationEmail', null).orWhere('NotificationEmail.timestamp', '<', validLastEmailOffset)
+      this.where('NotificationEmails', null).orWhere('NotificationEmails.timestamp', '<', validLastEmailOffset)
     })
-    .where('UserNotificationSettings.frequency', frequency)
+    .where('UserNotificationSettings.emailFrequency', frequency)
   const emailUsers = userRows.reduce((acc, user) => {
     acc[user.blockchainUserId] = user.email
     return acc
@@ -55,86 +55,92 @@ const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, st
 
 const appNotificationsSql = `
 WITH latest_user_seen AS (
-  SELECT
-    DISTINCT ON(user_id),
+  SELECT DISTINCT ON (user_id)
+    user_id,
     seen_at
   FROM
     notification_seen
   ORDER BY
+    user_id,
     seen_at desc
 )
--- Get users' notifications after start_offset
-WITH user_notifications AS (
-  SELECT
-    *
-  FROM
-      notification n
-  WHERE
-    n.timestamp > :start_offset AND
-    n.user_ids && (:user_ids)
-)
--- Get users' unread notifications after start_offset
 SELECT
   n.*,
   latest_user_seen.user_id AS receiver_user_id
-FROM user_notifications n
+FROM (
+  SELECT *
+  FROM
+      notification
+  WHERE
+    notification.timestamp > :start_offset AND
+    notification.user_ids && (:user_ids)
+) AS n
 LEFT JOIN latest_user_seen ON latest_user_seen.user_id = ANY(n.user_ids)
 WHERE
   latest_user_seen.seen_at is NULL OR
-  latest_user_seen.seen_at < user_notification.timestamp
+  latest_user_seen.seen_at < n.timestamp
 `
-// TODO add message and reaction to notif
+// TODO group notifs if multiple
 const messageNotificationsSql = `
-WITH chat_members AS (
+WITH members_can_notify AS (
   SELECT user_id, chat_id
   FROM chat_member
-  WHERE user_id IN (:user_ids) AND last_active_at <= :start_offset
+  WHERE
+    user_id = ANY(:user_ids) AND
+    (last_active_at IS NULL OR last_active_at <= :start_offset)
 )
 SELECT
   chat_message.user_id AS sender_user_id,
-  chat_member.user_id AS receiver_user_id,
+  members_can_notify.user_id AS receiver_user_id
 FROM chat_message
-JOIN chat_members ON chat_message.chat_id = chat_members.chat_id
-WHERE chat_message.created_at > :start_offset AND chat_message.created_at <= :end_offset AND chat_message.user_id != chat_members.user_id
+JOIN members_can_notify ON chat_message.chat_id = members_can_notify.chat_id
+WHERE chat_message.created_at > :start_offset AND chat_message.created_at <= :end_offset AND chat_message.user_id != members_can_notify.user_id
 `
 const reactionNotificationsSql = `
-WITH chat_members AS (
+WITH members_can_notify AS (
   SELECT user_id, chat_id
   FROM chat_member
-  WHERE user_id IN (:user_ids) AND last_active_at <= :start_offset
+  WHERE
+    user_id = ANY(:user_ids) AND
+    (last_active_at IS NULL OR last_active_at <= :start_offset)
 )
 SELECT
   chat_message_reactions.user_id AS sender_user_id,
   chat_message.user_id AS receiver_user_id
 FROM chat_message_reactions
 JOIN chat_message ON chat_message.message_id = chat_message_reactions.message_id
-JOIN chat_members on chat_members.chat_id = chat_message.chat_id AND chat_members.user_id = chat_message.user_id
-WHERE chat_message_reactions.updated_at > :start_offset AND chat_message_reactions.updated_at <= :end_offset AND chat_message_reactions.user_id != chat_members.user_id
+JOIN members_can_notify on members_can_notify.chat_id = chat_message.chat_id AND members_can_notify.user_id = chat_message.user_id
+WHERE chat_message_reactions.updated_at > :start_offset AND chat_message_reactions.updated_at <= :end_offset AND chat_message_reactions.user_id != members_can_notify.user_id
 `
 
 const getNotifications = async (dnDb: Knex, startOffset: moment.Moment, userIds: string[]): Promise<EmailNotification[]> => {
-  const appNotifications: EmailNotification[] = await dnDb.raw(appNotificationsSql, {
+  const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
     start_offset: startOffset,
     user_ids: [[userIds]]
   })
+  const appNotifications: EmailNotification[] = appNotificationsResp.rows
 
-  const messageStartOffset = new Date(startOffset.toDate() - config.dmNotificationDelay).toISOString()
+  const messageStartOffset = new Date(startOffset.valueOf() - config.dmNotificationDelay).toISOString()
   const messageEndOffset = new Date(Date.now() - config.dmNotificationDelay).toISOString()
-  const messages: { sender_user_id: number, receiver_user_id: number }[] = await dnDb.raw(messageNotificationsSql, {
+  const messagesResp = await dnDb.raw(messageNotificationsSql, {
     start_offset: messageStartOffset,
     end_offset: messageEndOffset,
     user_ids: [[userIds]]
   })
+  const messages: { sender_user_id: number, receiver_user_id: number }[] = messagesResp.rows
+  console.log(`${typeof messages}`)
+  console.log(`${JSON.stringify(messages)}`)
   const messageNotifications: DMEmailNotification[] = messages.map(n => ({
     type: DMEntityType.Message,
     sender_user_id: n.sender_user_id,
     receiver_user_id: n.receiver_user_id
   }))
-  const reactions: { sender_user_id: number, receiver_user_id: number }[] = await dnDb.raw(reactionNotificationsSql, {
+  const reactionsResp= await dnDb.raw(reactionNotificationsSql, {
     start_offset: messageStartOffset,
     end_offset: messageEndOffset,
     user_ids: [[userIds]]
   })
+  const reactions: { sender_user_id: number, receiver_user_id: number }[] = reactionsResp.rows
   const reactionNotifications: DMEmailNotification[] = reactions.map(n => ({
     type: DMEntityType.Reaction,
     sender_user_id: n.sender_user_id,
@@ -168,7 +174,7 @@ const groupNotifications = (notifications: EmailNotification[], users: EmailUser
   return userNotifications
 }
 
-async function processEmailNotifications(dnDb: Knex, identityDb: Knex, frequency: EmailFrequency) {
+export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, frequency: EmailFrequency) {
   try {
     const now = moment()
     const days = 1

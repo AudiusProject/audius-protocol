@@ -1,4 +1,4 @@
-import { EntityType, DMEntityType } from '../email/appNotifications/types'
+import { EntityType, DMEntityType } from '../email/notifications/types'
 import { NotificationRow } from './dn'
 
 export type DMNotification = {

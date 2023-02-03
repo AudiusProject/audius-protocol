@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { expect, test } from '@jest/globals';
-import { renderEmail } from '../email/appNotifications/renderEmail';
+import { renderEmail } from '../email/notifications/renderEmail';
 import { Processor } from '../main';
 import { reposttype } from '../types/dn';
 import { AppEmailNotification } from '../types/notifications'
