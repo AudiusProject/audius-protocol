@@ -11,13 +11,16 @@ const objStoreTtl = time.Hour * 24
 
 type StorageDecider interface {
 	// ShouldStore returns true if this node should store the content with ID id.
-	ShouldStore(id string) bool
+	ShouldStore(id string) (bool, error)
 
 	// OnChange finds content that needs to be stored or deleted and fetches or deletes it.
 	OnChange(prevBuckets []string, curBuckets []string) error
 
-	// GetNamespacedBucketFor returns the bucket for both temp and long-term storage for the given (non-namespaced) bucket or content ID.
-	GetNamespacedBucketFor(idOrNonNamespacedBucket string) string
+	// GetNamespacedShardFor returns the shard for long-term storage for the given string of any of the following formats:
+	// - (non-namespaced) shard: 2 characters
+	// - job ID: a cuid
+	// - file name: a string that ends with <cuid>_<string>.<extension>
+	GetNamespacedShardFor(any string) (string, error)
 }
 
 // NaiveDecider is a storage decider that stores everything.
@@ -33,14 +36,14 @@ func NewNaiveDecider(namespace string, jsc nats.JetStreamContext) *NaiveDecider 
 	return d
 }
 
-func (d *NaiveDecider) ShouldStore(id string) bool {
-	return true
+func (d *NaiveDecider) ShouldStore(id string) (bool, error) {
+	return true, nil
 }
 
 func (d *NaiveDecider) OnChange(prevBuckets []string, curBuckets []string) error {
 	return nil
 }
 
-func (d *NaiveDecider) GetNamespacedBucketFor(_ string) string {
-	return d.namespace + "_naive-bucket"
+func (d *NaiveDecider) GetNamespacedShardFor(_ string) (string, error) {
+	return d.namespace + "_naive-shard", nil
 }

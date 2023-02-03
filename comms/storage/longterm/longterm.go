@@ -51,8 +51,12 @@ func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc na
 }
 
 // Get returns a file from the long-term store.
-func (lt *LongTerm) Get(bucketName, key string) (io.Reader, error) {
-	bucketedKey := lt.storageDecider.GetNamespacedBucketFor(bucketName) + "/" + key
+func (lt *LongTerm) Get(fileName string) (io.Reader, error) {
+	shard, err := lt.storageDecider.GetNamespacedShardFor(fileName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get shard for %q: %v", fileName, err)
+	}
+	bucketedKey := shard + "/" + fileName
 	reader, err := lt.blobStore.NewReader(context.Background(), bucketedKey, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read %q: %v", bucketedKey, err)
@@ -115,7 +119,12 @@ func (lt *LongTerm) processMessage(msg *nats.Msg) error {
 	}
 
 	if job.Status == transcode.JobStatusDone {
-		if lt.storageDecider.ShouldStore(job.ID) {
+
+		shouldStore, err := lt.storageDecider.ShouldStore(job.ID)
+		if err != nil {
+			return fmt.Errorf("failed to determine if should store %q: %q", job.ID, err)
+		}
+		if shouldStore {
 			fmt.Printf("Storing file with ID %q\n", job.ID)
 			return lt.moveTempToLongTerm(job)
 		} else {
@@ -127,8 +136,11 @@ func (lt *LongTerm) processMessage(msg *nats.Msg) error {
 }
 
 func (lt *LongTerm) moveTempToLongTerm(job transcode.Job) error {
-	// put all results in same shard as input file
-	shard := lt.storageDecider.GetNamespacedBucketFor(job.ID)
+	// Store results in long-term shard that's different from the temp store's bucket name
+	shard, err := lt.storageDecider.GetNamespacedShardFor(job.ID)
+	if err != nil {
+		return fmt.Errorf("Failed to get shard for %q: %v\n", job.ID, err)
+	}
 
 	for _, tmpObj := range job.Results {
 		ltKey := shard + "/" + tmpObj.Name
@@ -143,7 +155,7 @@ func (lt *LongTerm) moveTempToLongTerm(job transcode.Job) error {
 			return fmt.Errorf("Failed to get object from temp store: %v\n", err)
 		}
 
-		// Open a *blob.Writer for the blob at key=tmpObj.Bucket/tmpObj.Name
+		// Open a *blob.Writer for the blob at key=shard/tmpObj.Name
 		writer, err := lt.blobStore.NewWriter(context.Background(), ltKey, nil)
 		if err != nil {
 			return fmt.Errorf("Failed to write %q: %v\n", ltKey, err)

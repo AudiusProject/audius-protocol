@@ -3,7 +3,7 @@
 package bucketer
 
 import (
-	"log"
+	"fmt"
 	"math"
 
 	"golang.org/x/exp/slices"
@@ -26,12 +26,12 @@ func New(suffixLength int) *Bucketer {
 }
 
 // GetBucketForId returns the bucket that id should be stored in.
-func (b *Bucketer) GetBucketForId(id string) string {
+func (b *Bucketer) GetBucketForId(id string) (string, error) {
 	bucket := id[len(id)-b.SuffixLength:]
 	if !slices.Contains(b.Buckets, bucket) {
-		log.Fatalf("bucket %s not found (id=%q)", bucket, id)
+		return "", fmt.Errorf("bucket %s not found (id=%q)", bucket, id)
 	}
-	return bucket
+	return bucket, nil
 }
 
 // makeBuckets recursively generates all string combinations of length suffixLength using chars.
