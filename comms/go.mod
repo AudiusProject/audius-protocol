@@ -15,6 +15,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.9.7
 	github.com/nats-io/nats.go v1.19.0
 	github.com/nats-io/nkeys v0.3.0
+	github.com/nats-io/prometheus-nats-exporter v0.10.1
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/spf13/cast v1.5.0
 	github.com/stretchr/testify v1.8.1
@@ -23,6 +24,18 @@ require (
 )
 
 require golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
+
+require (
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/prometheus/client_golang v1.12.2 // indirect
+	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/common v0.37.0 // indirect
+	github.com/prometheus/procfs v0.8.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
+)
 
 require (
 	github.com/StackExchange/wmi v0.0.0-20180116203802-5d049714c4a6 // indirect
@@ -39,7 +52,7 @@ require (
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect
-	github.com/mattn/go-colorable v0.1.11 // indirect
+	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
 	github.com/nats-io/jwt/v2 v2.3.0 // indirect
@@ -48,7 +61,7 @@ require (
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/tklauser/go-sysconf v0.3.5 // indirect
 	github.com/tklauser/numcpus v0.2.2 // indirect
-	github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d // indirect
+	github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d
 	github.com/urfave/cli/v2 v2.20.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.1 // indirect
@@ -59,7 +72,7 @@ require (
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
+	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
