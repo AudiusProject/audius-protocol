@@ -70,7 +70,7 @@ if [ "${ARG1}" == "standalone_creator" ]; then
   fi
   if [ ! "${REDIS_EXISTS}" ]; then
     echo "Redis Container doesn't exist"
-    docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:6.2.7
+    docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:6.2
     sleep 1
   fi
 elif [ "${ARG1}" == "teardown" ]; then

@@ -42,9 +42,19 @@ func ExchangeEndpoint(c echo.Context) error {
 		return c.String(400, "recovered wallet not a registered service provider")
 	}
 
+	addPeer(&theirInfo)
+
 	myInfo, err := MyInfo()
 	if err != nil {
 		return err
 	}
+
+	// only provide cluster URL if both servers are reachable
+	// to prevent spammy connection retries
+	canRoute := myInfo.NatsIsReachable && theirInfo.NatsIsReachable
+	if !canRoute {
+		myInfo.NatsRoute = ""
+	}
+
 	return c.JSON(200, myInfo)
 }

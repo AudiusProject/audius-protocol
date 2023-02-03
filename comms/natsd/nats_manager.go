@@ -26,20 +26,23 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 	tags := []string{}
 
 	for _, info := range peerMap {
-		if info == nil || info.NatsRoute == "" {
+		if info == nil || info.Nkey == "" {
 			continue
 		}
-		route, err := url.Parse(info.NatsRoute)
-		if err != nil {
-			config.Logger.Warn("invalid nats route url: " + info.NatsRoute)
-			continue
-		}
+
 		user := &server.NkeyUser{
 			Nkey: info.Nkey,
 		}
-
-		routes = append(routes, route)
 		nkeys = append(nkeys, user)
+
+		if info.NatsIsReachable && info.NatsRoute != "" {
+			route, err := url.Parse(info.NatsRoute)
+			if err != nil {
+				config.Logger.Warn("invalid nats route url: " + info.NatsRoute)
+			} else {
+				routes = append(routes, route)
+			}
+		}
 	}
 
 	serverName := config.WalletAddress
@@ -79,9 +82,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 			NoAdvertise: true,
 		}
 
-		if len(routes) > 0 {
-			opts.Routes = routes
-		}
+		opts.Routes = routes
 		opts.Nkeys = nkeys
 
 	}

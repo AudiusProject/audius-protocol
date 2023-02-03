@@ -127,27 +127,7 @@ services:
   # solana-programs
 
   solana-test-validator:
-    build:
-      context: solana-programs
-      dockerfile: Dockerfile.dev
-      args:
-        AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}"
-        TRACK_LISTEN_COUNT_PRIVATE_KEY: "${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}"
-        CLAIMABLE_TOKENS_PRIVATE_KEY: "${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}"
-        REWARD_MANAGER_PRIVATE_KEY: "${SOLANA_REWARD_MANAGER_SECRET_KEY}"
-        AUDIUS_DATA_PRIVATE_KEY: "${SOLANA_AUDIUS_DATA_SECRET_KEY}"
-        owner_private_key: "${SOLANA_OWNER_SECRET_KEY}"
-        feepayer_private_key: "${SOLANA_FEEPAYER_SECRET_KEY}"
-        token_private_key: "${SOLANA_TOKEN_MINT_SECRET_KEY}"
-        admin_authority_private_key: "${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}"
-        admin_account_private_key: "${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}"
-        signer_group_private_key: "${SOLANA_SIGNER_GROUP_SECRET_KEY}"
-        valid_signer_private_key: "${SOLANA_VALID_SIGNER_SECRET_KEY}"
-        reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
-        reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
-        valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
-    volumes:
-      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
+    image: audius/solana-programs:latest
     ports:
       - "8899:8899"
     logging: *default-logging

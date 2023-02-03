@@ -36,6 +36,15 @@
             "name": "(Content Node) Test",
             "request": "launch",
             "type": "node-terminal"
+        },
+        {
+            "name": "(Storage Node) Launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/comms",
+            "env": { "audius_discprov_env": "standalone" },
+            "args": ["storage"]
         }
     ]
 }

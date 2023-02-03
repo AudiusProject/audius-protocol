@@ -19,7 +19,6 @@ class DatabaseTask(Task):
         eth_web3_provider=None,
         solana_client_manager=None,
         challenge_event_bus=None,
-        anchor_program_indexer=None,
         eth_manager=None,
     ):
         self._db = db
@@ -33,7 +32,6 @@ class DatabaseTask(Task):
         self._eth_web3_provider = eth_web3_provider
         self._solana_client_manager = solana_client_manager
         self._challenge_event_bus = challenge_event_bus
-        self._anchor_program_indexer = anchor_program_indexer
         self._eth_manager = eth_manager
 
     @property
@@ -79,10 +77,6 @@ class DatabaseTask(Task):
     @property
     def challenge_event_bus(self) -> ChallengeEventBus:
         return self._challenge_event_bus
-
-    @property
-    def anchor_program_indexer(self):
-        return self._anchor_program_indexer
 
     @property
     def eth_manager(self) -> EthManager:

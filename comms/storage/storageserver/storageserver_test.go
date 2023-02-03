@@ -1,4 +1,5 @@
-package web
+// Package storageserver lives for the lifetime of the program and mananges connections and route handlers.
+package storageserver
 
 import (
 	"bytes"
@@ -12,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	"comms.audius.co/storage/glue"
 	"comms.audius.co/storage/transcode"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats-server/v2/server"
@@ -26,11 +26,9 @@ import (
 // TestE2EUpload verifies that a file gets uploaded to the storage node, transcoded, and permanently stored and replicated on the correct nodes.
 func TestE2EUpload(t *testing.T) {
 	assert := assert.New(t)
-	namespace := "0"
-	replicationFactor := 3
 
 	// Start 5 storage nodes (NATS cluster and web servers)
-	nodes := startNatsCluster(t, namespace, replicationFactor)
+	nodes := startNatsCluster(t)
 	defer func() {
 		for _, node := range nodes {
 			shutdownJSServerAndRemoveStorage(t, node.s)
@@ -38,7 +36,7 @@ func TestE2EUpload(t *testing.T) {
 	}()
 
 	// TODO: Upload file with a hash that will fall in the 'aa' bucket
-	jobman, err := transcode.NewJobsManager(nodes[0].g.Jsc, namespace, 1)
+	jobman, err := transcode.NewJobsManager(nodes[0].ss.Jsc, nodes[0].ss.Namespace, 1)
 	if err != nil {
 		panic(err)
 	}
@@ -57,16 +55,18 @@ func TestE2EUpload(t *testing.T) {
 	assert.NoError(writer.Close())
 
 	req, err := http.NewRequest(http.MethodPost, url, body)
+	assert.NoError(err)
 	req.Header.Set(echo.HeaderContentType, writer.FormDataContentType())
+	templateWriter, err := writer.CreateFormField("template")
+	assert.NoError(err)
+	templateWriter.Write([]byte(transcode.JobTemplateAudio))
 
-	if err != nil {
-		t.Errorf("The request could not be created because of: %v", err)
-	}
 	rec := httptest.NewRecorder()
-	c := nodes[0].e.NewContext(req, rec)
+	ss := nodes[0].ss
+	c := ss.WebServer.NewContext(req, rec)
 	res := rec.Result()
 	defer res.Body.Close()
-	if assert.NoError(uploadFile(jobman)(c)) {
+	if assert.NoError(ss.serveFileUpload(c)) {
 		assert.Equal(http.StatusOK, rec.Code)
 		assert.Equal("null\n", rec.Body.String()) // TODO: This passes now but shouldn't be "null\n"
 	}
@@ -77,12 +77,11 @@ func TestE2EUpload(t *testing.T) {
 }
 
 type testServer struct {
-	s *server.Server
-	g *glue.Glue
-	e *echo.Echo
+	s  *server.Server
+	ss *StorageServer
 }
 
-func startNatsCluster(t *testing.T, namespace string, replicationFactor int) [5]*testServer {
+func startNatsCluster(t *testing.T) [5]*testServer {
 	nodes := [5]*testServer{}
 	wg := sync.WaitGroup{}
 	for i := 1; i <= 5; i++ {
@@ -125,12 +124,9 @@ func startNatsCluster(t *testing.T, namespace string, replicationFactor int) [5]
 	// Start each node's web server
 	for i, node := range nodes {
 		_, jsc := jsClient(t, node.s)
-		g := glue.New(namespace, replicationFactor, jsc)
-		e := NewServer(g)
-		go e.Start(fmt.Sprintf("127.0.0.1:%d", 1222+i+5))
-
-		nodes[i].g = g
-		nodes[i].e = e
+		ss := NewProd(jsc)
+		go ss.WebServer.Start(fmt.Sprintf("127.0.0.1:%d", 1222+i+5))
+		nodes[i].ss = ss
 	}
 
 	return nodes

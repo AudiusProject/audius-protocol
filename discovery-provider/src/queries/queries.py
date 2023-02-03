@@ -456,6 +456,10 @@ def get_top_playlists_route(type):
         args["mood"] = None
     if "with_users" in request.args:
         args["with_users"] = parse_bool_param(request.args.get("with_users"))
+
+    current_user_id = get_current_user_id(required=False)
+    args["current_user_id"] = current_user_id
+
     try:
         playlists = get_top_playlists(type, args)
         return api_helpers.success_response(playlists)

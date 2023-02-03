@@ -949,7 +949,7 @@ router.post(
       return errorResponseBadRequest(`cid or wallet is missing`)
     }
 
-    const uuid = await models.CNodeUser.findOne({
+    const cnodeUser = await models.CNodeUser.findOne({
       attributes: ['cnodeUserUUID'],
       raw: true,
       where: {
@@ -957,11 +957,17 @@ router.post(
       }
     })
 
-    if (!uuid) {
+    if (!cnodeUser) {
       return errorResponseNotFound(
         `could not find the user uuid with the wallet provided`
       )
     }
+
+    const { cnodeUserUUID } = cnodeUser
+
+    req.logger.debug(
+      `requesting copy320 for segment ${cid} and wallet ${cnodeUserUUID}`
+    )
 
     const queryResults = await sequelize.query(
       `
@@ -978,7 +984,7 @@ router.post(
       {
         replacements: {
           trackSegmentCid: cid,
-          cnodeUserUUID: uuid
+          cnodeUserUUID
         }
       }
     )

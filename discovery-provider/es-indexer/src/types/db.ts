@@ -5,25 +5,25 @@
 export interface AggregateDailyAppNameMetricRow {
   'application_name': string;
   'count': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'id'?: number;
   'timestamp': Date;
-  'updated_at': Date;
+  'updated_at'?: Date;
 }
 export interface AggregateDailyTotalUsersMetricRow {
   'count': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'id'?: number;
   'timestamp': Date;
-  'updated_at': Date;
+  'updated_at'?: Date;
 }
 export interface AggregateDailyUniqueUsersMetricRow {
   'count': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'id'?: number;
   'summed_count'?: number | null;
   'timestamp': Date;
-  'updated_at': Date;
+  'updated_at'?: Date;
 }
 export interface AggregateIntervalPlayRow {
   'created_at'?: Date | null;
@@ -35,44 +35,44 @@ export interface AggregateIntervalPlayRow {
 export interface AggregateMonthlyAppNameMetricRow {
   'application_name': string;
   'count': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'id'?: number;
   'timestamp': Date;
-  'updated_at': Date;
+  'updated_at'?: Date;
 }
 export interface AggregateMonthlyPlayRow {
   'count': number;
   'play_item_id': number;
-  'timestamp': Date;
+  'timestamp'?: Date;
 }
 export interface AggregateMonthlyTotalUsersMetricRow {
   'count': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'id'?: number;
   'timestamp': Date;
-  'updated_at': Date;
+  'updated_at'?: Date;
 }
 export interface AggregateMonthlyUniqueUsersMetricRow {
   'count': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'id'?: number;
   'summed_count'?: number | null;
   'timestamp': Date;
-  'updated_at': Date;
+  'updated_at'?: Date;
 }
 export interface AggregatePlaylistRow {
   'is_album'?: boolean | null;
-  'playlist_id'?: number | null;
-  'repost_count'?: string | null;
-  'save_count'?: string | null;
+  'playlist_id': number;
+  'repost_count'?: number | null;
+  'save_count'?: number | null;
 }
 export interface AggregatePlayRow {
   'count'?: string | null;
-  'play_item_id'?: number | null;
+  'play_item_id': number;
 }
 export interface AggregateTrackRow {
-  'repost_count': number;
-  'save_count': number;
+  'repost_count'?: number;
+  'save_count'?: number;
   'track_id': number;
 }
 export interface AggregateUserRow {
@@ -92,27 +92,17 @@ export interface AggregateUserTipRow {
   'receiver_user_id': number;
   'sender_user_id': number;
 }
-export interface AlbumLexemeDictRow {
-  'handle'?: string | null;
-  'owner_id'?: number | null;
-  'playlist_id'?: number | null;
-  'playlist_name'?: string | null;
-  'repost_count'?: string | null;
-  'row_number'?: string | null;
-  'user_name'?: string | null;
-  'word'?: string | null;
-}
 export interface AlembicVersionRow {
   'version_num': string;
 }
 export interface AppNameMetricRow {
   'application_name': string;
   'count': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'id'?: string;
   'ip'?: string | null;
-  'timestamp': Date;
-  'updated_at': Date;
+  'timestamp'?: Date;
+  'updated_at'?: Date;
 }
 export interface AppNameMetricsAllTimeRow {
   'count'?: string | null;
@@ -136,17 +126,24 @@ export interface AssociatedWalletRow {
   'user_id': number;
   'wallet': string;
 }
+export interface AudioTransactionsHistoryRow {
+  'balance': string;
+  'change': string;
+  'created_at'?: Date;
+  'method': string;
+  'signature': string;
+  'slot': number;
+  'transaction_created_at': Date;
+  'transaction_type': string;
+  'tx_metadata'?: string | null;
+  'updated_at'?: Date;
+  'user_bank': string;
+}
 export interface AudiusDataTxRow {
   'signature': string;
   'slot': number;
 }
 export interface BlockRow {
-  'blockhash': string;
-  'is_current'?: boolean | null;
-  'number'?: number | null;
-  'parenthash'?: string | null;
-}
-export interface BlocksCopyRow {
   'blockhash': string;
   'is_current'?: boolean | null;
   'number'?: number | null;
@@ -183,10 +180,52 @@ export interface ChallengeRow {
   'step_count'?: number | null;
   'type': challengetype;
 }
-export interface EthBlockRow {
+export interface ChatRow {
+  'chat_id': string;
   'created_at': Date;
+  'last_message_at': Date;
+}
+export interface ChatBlockedUserRow {
+  'blockee_user_id': number;
+  'blocker_user_id': number;
+  'created_at'?: Date;
+}
+export interface ChatMemberRow {
+  'chat_id': string;
+  'cleared_history_at'?: Date | null;
+  'invite_code': string;
+  'invited_by_user_id': number;
+  'last_active_at'?: Date | null;
+  'unread_count'?: number;
+  'user_id': number;
+}
+export interface ChatMessageRow {
+  'chat_id': string;
+  'ciphertext': string;
+  'created_at': Date;
+  'message_id': string;
+  'user_id': number;
+}
+export interface ChatMessageReactionRow {
+  'created_at'?: Date;
+  'message_id': string;
+  'reaction': string;
+  'updated_at'?: Date;
+  'user_id': number;
+}
+export interface ChatPermissionRow {
+  'permits'?: string | null;
+  'user_id': number;
+}
+export interface CidDataRow {
+  'cid': string;
+  'data'?: any | null;
+  'type'?: string | null;
+}
+export interface EthBlockRow {
+  'created_at'?: Date;
   'last_scanned_block'?: number;
-  'updated_at': Date;
+  'updated_at'?: Date;
 }
 export interface FollowRow {
   'blockhash'?: string | null;
@@ -205,6 +244,7 @@ export interface HourlyPlayCountRow {
 }
 export interface IndexingCheckpointRow {
   'last_checkpoint': number;
+  'signature'?: string | null;
   'tablename': string;
 }
 export interface MilestoneRow {
@@ -214,6 +254,24 @@ export interface MilestoneRow {
   'slot'?: number | null;
   'threshold': number;
   'timestamp': Date;
+}
+export interface NotificationRow {
+  'blocknumber'?: number | null;
+  'data'?: any | null;
+  'group_id': string;
+  'id'?: number;
+  'slot'?: number | null;
+  'specifier': string;
+  'timestamp': Date;
+  'type': string;
+  'user_ids'?: any | null;
+}
+export interface NotificationSeenRow {
+  'blockhash'?: string | null;
+  'blocknumber'?: number | null;
+  'seen_at': Date;
+  'txhash'?: string | null;
+  'user_id': number;
 }
 export interface PgStatStatementRow {
   'blk_read_time'?: number | null;
@@ -240,15 +298,25 @@ export interface PgStatStatementRow {
   'total_time'?: number | null;
   'userid'?: any | null;
 }
-export interface PlaylistLexemeDictRow {
-  'handle'?: string | null;
-  'owner_id'?: number | null;
-  'playlist_id'?: number | null;
-  'playlist_name'?: string | null;
-  'repost_count'?: string | null;
-  'row_number'?: string | null;
-  'user_name'?: string | null;
-  'word'?: string | null;
+export interface PlaylistRouteRow {
+  'blockhash': string;
+  'blocknumber': number;
+  'collision_id': number;
+  'is_current': boolean;
+  'owner_id': number;
+  'playlist_id': number;
+  'slug': string;
+  'title_slug': string;
+  'txhash': string;
+}
+export interface PlaylistSeenRow {
+  'blockhash'?: string | null;
+  'blocknumber'?: number | null;
+  'is_current': boolean;
+  'playlist_id': number;
+  'seen_at': Date;
+  'txhash'?: string | null;
+  'user_id': number;
 }
 export interface PlaylistRow {
   'blockhash'?: string | null;
@@ -260,6 +328,7 @@ export interface PlaylistRow {
   'is_delete': boolean;
   'is_private': boolean;
   'last_added_to'?: Date | null;
+  'metadata_multihash'?: string | null;
   'playlist_contents': any;
   'playlist_id': number;
   'playlist_image_multihash'?: string | null;
@@ -271,26 +340,46 @@ export interface PlaylistRow {
   'upc'?: string | null;
   'updated_at': Date;
 }
+
+export interface PlaylistRouteRow {
+  'blockhash': string;
+  'blocknumber': number;
+  'collision_id': number;
+  'is_current': boolean;
+  'owner_id': number;
+  'slug': string;
+  'title_slug': string;
+  'playlist_id': number;
+  'txhash': string;
+}
+
 export interface PlayRow {
-  'created_at': Date;
+  'city'?: string | null;
+  'country'?: string | null;
+  'created_at'?: Date;
   'id'?: number;
   'play_item_id': number;
+  'region'?: string | null;
   'signature'?: string | null;
   'slot'?: number | null;
   'source'?: string | null;
-  'updated_at': Date;
+  'updated_at'?: Date;
   'user_id'?: number | null;
 }
 export interface PlaysArchiveRow {
   'archived_at'?: Date | null;
-  'created_at': Date;
+  'created_at'?: Date;
   'id': number;
   'play_item_id': number;
   'signature'?: string | null;
   'slot'?: number | null;
   'source'?: string | null;
-  'updated_at': Date;
+  'updated_at'?: Date;
   'user_id'?: number | null;
+}
+export interface PubkeyRow {
+  'pubkey'?: string | null;
+  'wallet': string;
 }
 export interface ReactionRow {
   'id'?: number;
@@ -303,7 +392,7 @@ export interface ReactionRow {
   'tx_signature'?: string | null;
 }
 export interface RelatedArtistRow {
-  'created_at': Date;
+  'created_at'?: Date;
   'related_artist_user_id': number;
   'score': number;
   'user_id': number;
@@ -329,15 +418,20 @@ export interface RewardManagerTxRow {
   'signature': string;
   'slot': number;
 }
+export interface RewardsManagerBackfillTxRow {
+  'created_at': Date;
+  'signature': string;
+  'slot': number;
+}
 export interface RouteMetricRow {
   'count': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'id'?: string;
   'ip'?: string | null;
-  'query_string': string;
+  'query_string'?: string;
   'route_path': string;
-  'timestamp': Date;
-  'updated_at': Date;
+  'timestamp'?: Date;
+  'updated_at'?: Date;
   'version': string;
 }
 export interface RouteMetricsAllTimeRow {
@@ -362,6 +456,20 @@ export interface RouteMetricsTrailingWeekRow {
   'count'?: string | null;
   'unique_count'?: string | null;
 }
+export interface RpcLogRow {
+  'from_wallet'?: string | null;
+  'jetstream_sequence': number;
+  'jetstream_timestamp': Date;
+  'rpc': Object;
+  'sig': string;
+}
+export interface RpclogRow {
+  'cuid': string;
+  'jetstream_seq'?: number | null;
+  'method'?: string | null;
+  'params'?: any | null;
+  'wallet'?: string | null;
+}
 export interface SaveRow {
   'blockhash'?: string | null;
   'blocknumber'?: number | null;
@@ -374,13 +482,25 @@ export interface SaveRow {
   'txhash'?: string;
   'user_id': number;
 }
+export interface SchemaMigrationRow {
+  'version': string;
+}
+export interface SequelizeMetaRow {
+  'name': string;
+}
 export interface SkippedTransactionRow {
   'blockhash': string;
   'blocknumber': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'id'?: number;
-  'level': skippedtransactionlevel;
+  'level'?: skippedtransactionlevel | null;
   'txhash': string;
+  'updated_at'?: Date;
+}
+export interface SplTokenBackfillTxRow {
+  'created_at': Date;
+  'last_scanned_slot'?: number;
+  'signature': string;
   'updated_at': Date;
 }
 export interface SplTokenTxRow {
@@ -393,6 +513,16 @@ export interface StemRow {
   'child_track_id': number;
   'parent_track_id': number;
 }
+export interface SubscriptionRow {
+  'blockhash'?: string | null;
+  'blocknumber'?: number | null;
+  'created_at'?: Date;
+  'is_current': boolean;
+  'is_delete': boolean;
+  'subscriber_id': number;
+  'txhash'?: string;
+  'user_id': number;
+}
 export interface SupporterRankUpRow {
   'rank': number;
   'receiver_user_id': number;
@@ -403,16 +533,6 @@ export interface TagTrackUserRow {
   'owner_id'?: number | null;
   'tag'?: string | null;
   'track_id'?: number | null;
-}
-export interface TrackLexemeDictRow {
-  'handle'?: string | null;
-  'owner_id'?: number | null;
-  'repost_count'?: number | null;
-  'row_number'?: string | null;
-  'track_id'?: number | null;
-  'track_title'?: string | null;
-  'user_name'?: string | null;
-  'word'?: string | null;
 }
 export interface TrackRouteRow {
   'blockhash': string;
@@ -447,8 +567,11 @@ export interface TrackRow {
   'field_visibility'?: any | null;
   'file_type'?: string | null;
   'genre'?: string | null;
+  'is_available'?: boolean;
   'is_current': boolean;
   'is_delete': boolean;
+  'is_playlist_upload'?: boolean;
+  'is_premium'?: boolean;
   'is_unlisted'?: boolean;
   'isrc'?: string | null;
   'iswc'?: string | null;
@@ -457,6 +580,7 @@ export interface TrackRow {
   'metadata_multihash'?: string | null;
   'mood'?: string | null;
   'owner_id': number;
+  'premium_conditions'?: any | null;
   'release_date'?: string | null;
   'remix_of'?: any | null;
   'route_id'?: string | null;
@@ -464,6 +588,7 @@ export interface TrackRow {
   'stem_of'?: any | null;
   'tags'?: string | null;
   'title'?: string | null;
+  'track_cid'?: string | null;
   'track_id': number;
   'track_segments': any;
   'txhash'?: string;
@@ -511,18 +636,18 @@ export interface UrsmContentNodeRow {
 }
 export interface UserBalanceChangeRow {
   'blocknumber': number;
-  'created_at': Date;
+  'created_at'?: Date;
   'current_balance': string;
   'previous_balance': string;
-  'updated_at': Date;
+  'updated_at'?: Date;
   'user_id'?: number;
 }
 export interface UserBalanceRow {
   'associated_sol_wallets_balance'?: string;
   'associated_wallets_balance'?: string;
   'balance': string;
-  'created_at': Date;
-  'updated_at': Date;
+  'created_at'?: Date;
+  'updated_at'?: Date;
   'user_id'?: number;
   'waudio'?: string | null;
 }
@@ -531,6 +656,11 @@ export interface UserBankAccountRow {
   'created_at': Date;
   'ethereum_address': string;
   'signature': string;
+}
+export interface UserBankBackfillTxRow {
+  'created_at': Date;
+  'signature': string;
+  'slot': number;
 }
 export interface UserBankTxRow {
   'created_at': Date;
@@ -550,18 +680,10 @@ export interface UserEventRow {
   'blocknumber'?: number | null;
   'id'?: number;
   'is_current': boolean;
-  'is_mobile_user': boolean;
+  'is_mobile_user'?: boolean;
   'referrer'?: number | null;
   'slot'?: number | null;
   'user_id': number;
-}
-export interface UserLexemeDictRow {
-  'follower_count'?: string | null;
-  'handle'?: string | null;
-  'row_number'?: string | null;
-  'user_id'?: number | null;
-  'user_name'?: string | null;
-  'word'?: string | null;
 }
 export interface UserListeningHistoryRow {
   'listening_history': any;
@@ -569,7 +691,7 @@ export interface UserListeningHistoryRow {
 }
 export interface UserTipRow {
   'amount': string;
-  'created_at': Date;
+  'created_at'?: Date;
   'receiver_user_id': number;
   'sender_user_id': number;
   'signature': string;
@@ -577,12 +699,13 @@ export interface UserTipRow {
   'updated_at'?: Date;
 }
 export interface UserRow {
+  'artist_pick_track_id'?: number | null;
   'bio'?: string | null;
   'blockhash'?: string | null;
   'blocknumber'?: number | null;
   'cover_photo'?: string | null;
   'cover_photo_sizes'?: string | null;
-  'created_at': Date;
+  'created_at'?: Date;
   'creator_node_endpoint'?: string | null;
   'handle'?: string | null;
   'handle_lc'?: string | null;
@@ -601,7 +724,7 @@ export interface UserRow {
   'secondary_ids'?: any | null;
   'slot'?: number | null;
   'txhash'?: string;
-  'updated_at': Date;
+  'updated_at'?: Date;
   'user_authority_account'?: string | null;
   'user_id': number;
   'user_storage_account'?: string | null;
