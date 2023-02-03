@@ -83,6 +83,7 @@ export const DownloadStatusIndicator = (
           />
         )
       case OfflineDownloadStatus.ERROR:
+      case OfflineDownloadStatus.ABANDONED:
         return (
           <IconDownloadFailed
             fill={styles.iconDownloadFailed.fill}

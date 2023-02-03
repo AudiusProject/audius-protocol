@@ -60,7 +60,8 @@ export const DownloadFavoritesSwitch = () => {
     return favoritedTracks.every(({ id }) => {
       return (
         downloadStatus[id] === OfflineDownloadStatus.SUCCESS ||
-        downloadStatus[id] === OfflineDownloadStatus.ERROR
+        downloadStatus[id] === OfflineDownloadStatus.ERROR ||
+        downloadStatus[id] === OfflineDownloadStatus.ABANDONED
       )
     })
   }, [])

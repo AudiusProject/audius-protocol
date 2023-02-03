@@ -41,7 +41,8 @@ export const DownloadProgress = () => {
   const numDownloadsComplete = Object.values(downloadStatus).filter(
     (status) =>
       status === OfflineDownloadStatus.SUCCESS ||
-      status === OfflineDownloadStatus.ERROR
+      status === OfflineDownloadStatus.ERROR ||
+      status === OfflineDownloadStatus.ABANDONED
   ).length
   const numDownloadsSuccess = Object.values(downloadStatus).filter(
     (status) => status === OfflineDownloadStatus.SUCCESS

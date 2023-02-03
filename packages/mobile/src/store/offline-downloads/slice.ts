@@ -59,11 +59,19 @@ export type UpdateTrackDownloadReasonsAction = PayloadAction<{
 }>
 
 export enum OfflineDownloadStatus {
-  INACTIVE = 'INACTIVE', // download is not initiated,
-  INIT = 'INIT', // download is queued
-  LOADING = 'LOADING', // download is in progress
-  SUCCESS = 'SUCCESS', // download succeeded
-  ERROR = 'ERROR' // download errored
+  // download is not initiated
+  INACTIVE = 'INACTIVE',
+  // download is queued
+  INIT = 'INIT',
+  // download is in progress
+  LOADING = 'LOADING',
+  // download succeeded
+  SUCCESS = 'SUCCESS',
+  // download errored
+  ERROR = 'ERROR',
+  // download was abandoned (usually after error).
+  // downloads in the error state can be retried
+  ABANDONED = 'ABANDONED'
 }
 
 const initialState: OfflineDownloadsState = {
@@ -99,6 +107,9 @@ const slice = createSlice({
     },
     removeDownload: (state, { payload: trackId }: PayloadAction<string>) => {
       delete state.downloadStatus[trackId]
+    },
+    abandonDownload: (state, { payload: trackId }: PayloadAction<string>) => {
+      state.downloadStatus[trackId] = OfflineDownloadStatus.ABANDONED
     },
     batchInitCollectionDownload: (
       state,
@@ -237,6 +248,7 @@ export const {
   startDownload,
   completeDownload,
   errorDownload,
+  abandonDownload,
   removeDownload,
   batchInitCollectionDownload,
   startCollectionDownload,
