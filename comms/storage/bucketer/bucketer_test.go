@@ -70,10 +70,14 @@ func TestGetBucketForId(t *testing.T) {
 	for testName, testCase := range testCases {
 		t.Logf("Running test case %q", testName)
 		for _, id := range testCase.idsExpectedInBucket {
-			assert.True(t, testCase.bucketer.GetBucketForId(id) == testCase.bucket, "Expected %s to be in bucket %s", id, testCase.bucket)
+			shard, err := testCase.bucketer.GetBucketForId(id)
+			assert.NoError(t, err)
+			assert.True(t, shard == testCase.bucket, "Expected %s to be in bucket %s", id, testCase.bucket)
 		}
 		for _, id := range testCase.idsExpectedNotInBucket {
-			assert.False(t, testCase.bucketer.GetBucketForId(id) == testCase.bucket, "Expected %s to not be in bucket %s", id, testCase.bucket)
+			shard, err := testCase.bucketer.GetBucketForId(id)
+			assert.NoError(t, err)
+			assert.False(t, shard == testCase.bucket, "Expected %s to not be in bucket %s", id, testCase.bucket)
 		}
 	}
 }

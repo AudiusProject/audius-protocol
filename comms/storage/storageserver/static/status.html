@@ -182,11 +182,24 @@ customElements.define('job-table', JobTable);
 
 function resultLink(result_info, fallbackDescription) {
   if (!result_info) return null
-  return html`
-    <a href="/storage/obj/${result_info.bucket}/${result_info.name}" target="_blank">
-      ${result_info.description || fallbackDescription || 'output'}
+  if (fallbackDescription === 'input') {
+    return html`
+    ${result_info.description || fallbackDescription || 'output'}
+    <a href="/storage/tmp-obj/${result_info.bucket}/${result_info.name}" target="_blank">
+       [temp]
+    </a>
+    `
+  } else {
+    return html`
+    ${result_info.description || 'output'}
+    <a href="/storage/tmp-obj/${result_info.bucket}/${result_info.name}" target="_blank">
+       [temp]
+    </a>
+    <a href="/storage/long-term/${result_info.name}" target="_blank">
+      [long-term]
     </a>
   `
+  }
 }
 
 function ffprobeDisplay(probe) {

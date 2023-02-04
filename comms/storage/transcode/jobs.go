@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
+	"math/rand"
 	"mime/multipart"
 	"net"
 	"os"
@@ -66,8 +68,8 @@ type JobsManager struct {
 	isCurrent bool
 	logger    zerolog.Logger
 
-	objStore         nats.ObjectStore
 	workSubscription *nats.Subscription
+	tempBucketCount  int
 
 	websockets map[net.Conn]bool
 
@@ -97,29 +99,28 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		return nil, err
 	}
 
-	watcher, err := kv.WatchAll()
-	if err != nil {
-		return nil, err
+	// create temp buckets
+	tempBucketCount := 20
+	for i := 0; i < tempBucketCount; i++ {
+		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
+			Bucket: fmt.Sprintf("temp_%d", i),
+			TTL:    objStoreTtl,
+		}, jsc)
 	}
 
-	// object store
-	// todo: sharding
-	objStore, err := jsc.CreateObjectStore(&nats.ObjectStoreConfig{
-		Bucket: prefix + "_store",
-		TTL:    objStoreTtl,
-	})
+	watcher, err := kv.WatchAll()
 	if err != nil {
 		return nil, err
 	}
 
 	jobman := &JobsManager{
 		workSubscription: workSubscription,
-		objStore:         objStore,
 		jsc:              jsc,
 		kv:               kv,
 		watcher:          watcher,
 		table:            map[string]*Job{},
 		logger:           telemetry.NewConsoleLogger(),
+		tempBucketCount:  tempBucketCount,
 		websockets:       map[net.Conn]bool{},
 	}
 
@@ -176,12 +177,18 @@ func (jobman *JobsManager) Add(template JobTemplate, upload *multipart.FileHeade
 	fileHash := cuid.New()
 
 	// put in bucket
-	// todo: sharding
 	meta := &nats.ObjectMeta{
 		Name:        fileHash,
 		Description: upload.Filename,
 	}
-	info, err := jobman.objStore.Put(meta, f)
+
+	randBucket := fmt.Sprintf("temp_%d", rand.Intn(jobman.tempBucketCount))
+	objStore, err := jobman.jsc.ObjectStore(randBucket)
+	if err != nil {
+		log.Println("FUUU", randBucket, err)
+		return nil, err
+	}
+	info, err := objStore.Put(meta, f)
 	if err != nil {
 		return nil, err
 	}
@@ -242,8 +249,11 @@ func (jobman *JobsManager) Get(id string) *Job {
 }
 
 func (jobman *JobsManager) GetObject(bucket, key string) (nats.ObjectResult, error) {
-	// todo: sharding
-	return jobman.objStore.Get(key)
+	objStore, err := jobman.jsc.ObjectStore(bucket)
+	if err != nil {
+		return nil, err
+	}
+	return objStore.Get(key)
 }
 
 func (jobman *JobsManager) RegisterWebsocket(conn net.Conn) {
@@ -292,7 +302,10 @@ func (jobman *JobsManager) StartWorkers(count int) {
 
 func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	logger := jobman.logger.With().Str("job", job.ID).Logger()
-	objStore := jobman.objStore
+	objStore, err := jobman.jsc.ObjectStore(job.SourceInfo.Bucket)
+	if err != nil {
+		return err
+	}
 
 	onError := func(err error) error {
 		logger.Warn().Msg("job error: " + err.Error())
@@ -319,7 +332,7 @@ func (jobman *JobsManager) processJob(msg *nats.Msg, job *Job) error {
 	defer os.Remove(srcPath)
 	defer os.Remove(destPath)
 
-	err := objStore.GetFile(job.ID, srcPath)
+	err = objStore.GetFile(job.ID, srcPath)
 	if err != nil {
 		return onError(err)
 	}
