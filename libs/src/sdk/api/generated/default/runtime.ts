@@ -99,7 +99,7 @@ export class BaseAPI {
             if (middleware.pre) {
                 fetchParams = await middleware.pre({
                     fetch: this.fetchApi,
-                    config: this.configuration,
+                    configuration: this.configuration,
                     ...fetchParams,
                 }) || fetchParams;
             }
@@ -109,7 +109,7 @@ export class BaseAPI {
             if (middleware.post) {
                 response = await middleware.post({
                     fetch: this.fetchApi,
-                    config: this.configuration,
+                    configuration: this.configuration,
                     url: fetchParams.url,
                     init: fetchParams.init,
                     response
@@ -162,8 +162,8 @@ export type WalletAPI = {
 }
 
 export interface ConfigurationParameters {
-    origin?: string; // default origin
-    basePath?: string; // override base path
+    origin?: string | null; // default origin
+    basePath?: string | null; // override base path
     fetchApi: FetchAPI; // fetch implementation
     middleware?: Middleware[]; // middleware to apply before/after fetch requests
     queryParamsStringify?: (params: HTTPQuery) => string; // stringify function for query strings
@@ -180,17 +180,17 @@ export class Configuration {
     constructor(private configuration: ConfigurationParameters) {}
 
     get basePath(): string {
-        return this.configuration.basePath != null ? this.configuration.basePath : BASE_PATH;
+        return this.configuration.basePath ?? BASE_PATH;
     }
 
-    set origin(origin: string) {
+    set origin(origin: string | null) {
         this.configuration.origin = origin
     }
-    
+
     get origin(): string {
         return this.configuration.origin ?? ''
     }
-    
+
     get fetchApi(): FetchAPI {
         return this.configuration.fetchApi;
     }
@@ -351,7 +351,7 @@ export interface Consume {
  */
 export interface RequestContext {
     fetch: FetchAPI;
-    config: Configuration;
+    configuration: Configuration,
     url: string;
     init?: RequestInit;
 }
@@ -361,7 +361,7 @@ export interface RequestContext {
  */
 export interface ResponseContext {
     fetch: FetchAPI;
-    config: Configuration;
+    configuration: Configuration,
     url: string;
     init?: RequestInit;
     response: unknown;
