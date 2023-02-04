@@ -15,6 +15,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Switch, Text } from 'app/components/core'
 import { getCollectionDownloadStatus } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
 import { DownloadStatusIndicator } from 'app/components/offline-downloads/DownloadStatusIndicator'
+import { useDebouncedCallback } from 'app/hooks/useDebouncedCallback'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useProxySelector } from 'app/hooks/useProxySelector'
 import {
@@ -177,6 +178,11 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
     [collection, currentUserId, dispatch, playlist_id]
   )
 
+  const debouncedHandleToggleDownload = useDebouncedCallback(
+    handleToggleDownload,
+    800
+  )
+
   const getTextColor = () => {
     if (
       downloadStatus === OfflineDownloadStatus.LOADING ||
@@ -208,8 +214,8 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
       </View>
       <View style={styles.headerRight}>
         <Switch
-          value={isMarkedForDownload}
-          onValueChange={handleToggleDownload}
+          defaultValue={isMarkedForDownload}
+          onValueChange={debouncedHandleToggleDownload}
           disabled={
             isFavoritesToggleOn || (!isReachable && !isMarkedForDownload)
           }

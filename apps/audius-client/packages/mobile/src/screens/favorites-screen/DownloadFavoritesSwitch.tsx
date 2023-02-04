@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Switch } from 'app/components/core'
 import { DownloadStatusIndicator } from 'app/components/offline-downloads/DownloadStatusIndicator'
+import { useDebouncedCallback } from 'app/hooks/useDebouncedCallback'
 import { useProxySelector } from 'app/hooks/useProxySelector'
 import {
   downloadAllFavorites,
@@ -94,6 +95,11 @@ export const DownloadFavoritesSwitch = () => {
     [dispatch]
   )
 
+  const debouncedHandleToggleDownload = useDebouncedCallback(
+    handleToggleDownload,
+    800
+  )
+
   return (
     <View style={styles.root}>
       <DownloadStatusIndicator
@@ -101,8 +107,8 @@ export const DownloadFavoritesSwitch = () => {
         style={styles.downloadStatusIndicator}
       />
       <Switch
-        value={isMarkedForDownload}
-        onValueChange={handleToggleDownload}
+        defaultValue={isMarkedForDownload}
+        onValueChange={debouncedHandleToggleDownload}
         disabled={!isReachable && !isMarkedForDownload}
       />
     </View>
