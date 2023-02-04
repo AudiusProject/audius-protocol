@@ -7,11 +7,6 @@ import { PublicKey } from '@solana/web3.js'
 import { BN } from '@project-serum/anchor'
 import type { Users } from './Users'
 
-type UserBankOutcomes = {
-  Request: string
-  Failure: string
-}
-
 export class Account extends Base {
   User: Users
 
@@ -115,9 +110,6 @@ export class Account extends Base {
    * @param coverPhotoFile an optional file to upload as the cover phtoo
    * @param hasWallet
    * @param host The host url used for the recovery email
-   * @param handleUserBankOutcomes an optional callback to record user bank outcomes
-   * @param userBankOutcomes an optional object with request, succes, and failure keys to record user bank outcomes
-   * @param feePayerOverride an optional string in case the client wants to switch between fee payers
    * @param generateRecoveryLink an optional flag to skip generating recovery link for testing purposes
    */
   async signUp(
@@ -128,16 +120,12 @@ export class Account extends Base {
     coverPhotoFile: Nullable<File> = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    handleUserBankOutcomes = (_outcome?: string, _errorCodes?: {}) => {},
-    userBankOutcomes: Partial<UserBankOutcomes> = {},
-    feePayerOverride: Nullable<string> = null,
     generateRecoveryLink = true
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
-      SOLANA_USER_BANK_CREATION: 'SOLANA_USER_BANK_CREATION',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
       ADD_USER: 'ADD_USER'
     }
