@@ -19,7 +19,7 @@ export class ResolveApi extends GeneratedResolveApi {
   ): Promise<T> {
     if (requestParameters.url === null || requestParameters.url === undefined) {
       throw new RequiredError(
-        'trackId',
+        'url',
         'Required parameter requestParameters.url was null or undefined when calling resolve.'
       )
     }
