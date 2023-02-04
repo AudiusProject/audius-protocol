@@ -164,38 +164,6 @@ export class Account extends Base {
         }
       }
 
-      // Create a wAudio user bank address.
-      // If userbank creation fails, we still proceed
-      // through signup
-      if (this.solanaWeb3Manager) {
-        phase = phases.SOLANA_USER_BANK_CREATION
-        // Fire and forget createUserBank. In the case of failure, we will
-        // retry to create user banks in a later session before usage
-        ;(async () => {
-          try {
-            handleUserBankOutcomes(userBankOutcomes.Request)
-            const { error, errorCode } =
-              await this.solanaWeb3Manager.createUserBank(feePayerOverride!)
-            if (error ?? errorCode) {
-              console.error(
-                `Failed to create userbank, with err: ${error}, ${errorCode}`
-              )
-              handleUserBankOutcomes(userBankOutcomes.Failure, {
-                error,
-                errorCode
-              })
-            } else {
-              console.log('Successfully created userbank!')
-              handleUserBankOutcomes('Create User Bank: Success')
-            }
-          } catch (err: any) {
-            console.error(`Got error creating userbank: ${err}, continuing...`)
-            handleUserBankOutcomes(userBankOutcomes.Failure, {
-              error: err.toString()
-            })
-          }
-        })()
-      }
       // Add user to chain
       const { newMetadata, blockHash, blockNumber } =
         await this.User.createEntityManagerUser({
