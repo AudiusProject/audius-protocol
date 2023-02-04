@@ -12,7 +12,6 @@ import cuid from 'cuid'
 
 import * as secp from '@noble/secp256k1'
 import type {
-  RPCPayload,
   ChatInvite,
   UserChat,
   ChatMessage,
