@@ -20,7 +20,7 @@ import {
 } from './api/generated/full'
 import fetch from 'cross-fetch'
 
-import { addAppNameMiddleware, jsonResponseMiddleware } from './middleware'
+import { addAppNameMiddleware } from './middleware'
 import { defaultWalletApi, defaultDiscoveryNodeSelector } from './services'
 import type { WalletApiService, DiscoveryNodeSelectorService } from './services'
 
@@ -87,8 +87,7 @@ const initializeApis = ({
 }) => {
   const defaultMiddleware = [
     addAppNameMiddleware({ appName }),
-    services.discoveryNodeSelector.createMiddleware(),
-    jsonResponseMiddleware({ extractData: true })
+    services.discoveryNodeSelector.createMiddleware()
   ]
   const generatedApiClientConfig = new Configuration({
     fetchApi: fetch,
@@ -107,10 +106,7 @@ const initializeApis = ({
     new Configuration({
       fetchApi: fetch,
       basePath: '',
-      middleware: [
-        ...defaultMiddleware,
-        jsonResponseMiddleware({ extractData: false })
-      ]
+      middleware: [...defaultMiddleware]
     }),
     services.walletApi,
     services.discoveryNodeSelector
