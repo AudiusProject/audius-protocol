@@ -21,6 +21,7 @@ from src.utils.db_session import get_db_read_replica
 
 
 class GetTopPlaylistsArgs(TypedDict):
+    current_user_id: Optional[int]
     limit: Optional[int]
     mood: Optional[str]
     filter: Optional[str]
@@ -33,7 +34,12 @@ class TopPlaylistKind(str, enum.Enum):
 
 
 def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
-    current_user_id = get_current_user_id(required=False)
+    current_user_id = args.get("current_user_id")
+
+    # NOTE: This is a temporary fix while migrating clients to pass
+    # along an encoded user id via url param
+    if current_user_id is None:
+        current_user_id = get_current_user_id(required=False)
 
     # Argument parsing and checking
     if kind not in ("playlist", "album"):
@@ -44,7 +50,7 @@ def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
     limit = args.get("limit", 16)
     mood = args.get("mood", None)
 
-    if "filter" in args:
+    if args.get("filter") is not None:
         query_filter = args.get("filter")
         if query_filter != "followees":
             raise exceptions.ArgumentError(

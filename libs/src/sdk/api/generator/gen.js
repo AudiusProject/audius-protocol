@@ -83,7 +83,7 @@ program
       '-g',
       generator,
       '-o',
-      `templates/${generator}`
+      `/local/templates/${generator}`
     ])
   })
 

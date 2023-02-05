@@ -16,7 +16,6 @@ from src.api.v1.helpers import (
     get_default_max,
     make_full_response,
     make_response,
-    pagination_parser,
     pagination_with_current_user_parser,
     search_parser,
     success_response,
@@ -276,7 +275,7 @@ class PlaylistSearchResult(Resource):
         return success_response(response["playlists"])
 
 
-top_parser = pagination_parser.copy()
+top_parser = pagination_with_current_user_parser.copy()
 top_parser.add_argument(
     "type",
     required=True,
@@ -311,6 +310,9 @@ class Top(Resource):
             args["offset"] = 0
         if args.get("type") not in ["album", "playlist"]:
             abort_bad_request_param("type", ns)
+        current_user_id = get_current_user_id(args)
+        if current_user_id:
+            args["current_user_id"] = current_user_id
 
         args["with_users"] = True
 
