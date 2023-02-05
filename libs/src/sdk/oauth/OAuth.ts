@@ -253,9 +253,9 @@ export class OAuth {
     }
     // Verify token and decode
     const decodedJwt = await this.verifyToken(event.data.token)
-    if (decodedJwt) {
+    if (decodedJwt?.data) {
       if (this.loginSuccessCallback) {
-        this.loginSuccessCallback(decodedJwt)
+        this.loginSuccessCallback(decodedJwt.data)
       }
     } else {
       this._surfaceError('The token was invalid.')
