@@ -7,7 +7,17 @@ import {
 } from './generated/default'
 import type { DiscoveryNodeSelectorService } from '../services/DiscoveryNodeSelector'
 
-export class TracksApi extends GeneratedTracksApi {
+// Get the type of the generated TracksApi excluding streamTrack
+type GeneratedTracksApiWithoutStream = new (config: Configuration) => {
+  [P in Exclude<keyof GeneratedTracksApi, 'streamTrack'>]: GeneratedTracksApi[P]
+}
+
+// Create a new "class" that masks our generated TracksApi with the new type
+const TracksApiWithoutStream: GeneratedTracksApiWithoutStream =
+  GeneratedTracksApi
+
+// Extend that new class
+export class TracksApi extends TracksApiWithoutStream {
   constructor(
     configuration: Configuration,
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService
