@@ -3,8 +3,7 @@ import {
   Configuration,
   HTTPQuery,
   RequestOpts,
-  RequiredError,
-  WalletAPI
+  RequiredError
 } from '../generated/default'
 import * as aes from 'micro-aes-gcm'
 import { base64 } from '@scure/base'
@@ -41,13 +40,12 @@ import type { WalletApiService } from '../../services/WalletApi'
 
 export class ChatsApi extends BaseAPI {
   private chatSecrets: Record<string, Uint8Array> = {}
-  private readonly walletApi: WalletAPI
   private readonly eventEmitter: TypedEmitter<ChatEvents>
   private websocket: WebSocket | undefined
 
   constructor(
     config: Configuration,
-    walletService: WalletApiService,
+    private readonly walletService: WalletApiService,
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService
   ) {
     super(config)
@@ -56,7 +54,6 @@ export class ChatsApi extends BaseAPI {
       'params.walletApi',
       'constructor'
     )
-    this.walletApi = walletService!
     this.eventEmitter = new EventEmitter() as TypedEmitter<ChatEvents>
 
     // Listen for discovery node selection changes and reinit websocket
@@ -411,7 +408,9 @@ export class ChatsApi extends BaseAPI {
     inviteePublicKey: Uint8Array,
     chatSecret: Uint8Array
   ) {
-    const sharedSecret = await this.walletApi.getSharedSecret(inviteePublicKey)
+    const sharedSecret = await this.walletService.getSharedSecret(
+      inviteePublicKey
+    )
     const encryptedChatSecret = await this.encrypt(sharedSecret, chatSecret)
     const inviteCode = new Uint8Array(65 + encryptedChatSecret.length)
     inviteCode.set(userPublicKey)
@@ -422,7 +421,9 @@ export class ChatsApi extends BaseAPI {
   private async readInviteCode(inviteCode: Uint8Array) {
     const friendPublicKey = inviteCode.slice(0, 65)
     const chatSecretEncrypted = inviteCode.slice(65)
-    const sharedSecret = await this.walletApi.getSharedSecret(friendPublicKey)
+    const sharedSecret = await this.walletService.getSharedSecret(
+      friendPublicKey
+    )
     return await this.decrypt(sharedSecret, chatSecretEncrypted)
   }
 
@@ -492,7 +493,9 @@ export class ChatsApi extends BaseAPI {
   }
 
   private async getSignatureHeader(payload: string) {
-    const [allSignatureBytes, recoveryByte] = await this.walletApi.sign(payload)
+    const [allSignatureBytes, recoveryByte] = await this.walletService.sign(
+      payload
+    )
     const signatureBytes = new Uint8Array(65)
     signatureBytes.set(allSignatureBytes, 0)
     signatureBytes[64] = recoveryByte
