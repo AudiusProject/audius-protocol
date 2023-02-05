@@ -1,22 +1,24 @@
 import {
+  JSONApiResponse,
   HTTPHeaders,
-  Playlist,
   RequiredError,
-  Track,
-  User
+  BaseAPI,
+  ResolveRequest
 } from './generated/default'
 import {
-  ResolveApi as GeneratedResolveApi,
-  ResolveRequest
-} from './generated/default/apis/ResolveApi'
+  instanceOfPlaylistResponse,
+  instanceOfTrackResponse,
+  PlaylistResponseFromJSON,
+  TrackResponseFromJSON,
+  UserResponseFromJSON
+} from './generated/default/models'
 
-export class ResolveApi extends GeneratedResolveApi {
+// Extend that new class
+export class ResolveApi extends BaseAPI {
   /**
    * Resolves a provided Audius app URL to the API resource it represents
    */
-  async resolve<T extends Track | Playlist | User>(
-    requestParameters: ResolveRequest
-  ): Promise<T> {
+  async resolveRaw(requestParameters: ResolveRequest) {
     if (requestParameters.url === null || requestParameters.url === undefined) {
       throw new RequiredError(
         'url',
@@ -32,11 +34,24 @@ export class ResolveApi extends GeneratedResolveApi {
 
     const headerParameters: HTTPHeaders = {}
 
-    return await this.request({
+    const response = await this.request({
       path: `/resolve`,
       method: 'GET',
       headers: headerParameters,
       query: queryParameters
     })
+    return new JSONApiResponse(response, (json) => {
+      if (instanceOfTrackResponse(json)) {
+        return TrackResponseFromJSON(json)
+      } else if (instanceOfPlaylistResponse(json)) {
+        return PlaylistResponseFromJSON(json)
+      } else {
+        return UserResponseFromJSON(json)
+      }
+    })
+  }
+
+  async resolve(requestParameters: ResolveRequest) {
+    return await (await this.resolveRaw(requestParameters)).value()
   }
 }
