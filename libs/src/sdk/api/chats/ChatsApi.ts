@@ -137,14 +137,15 @@ export class ChatsApi extends BaseAPI {
     if (requestParameters.after) {
       query['after'] = requestParameters.after
     }
-    const response = (await this.signAndSendRequest({
+    const response = await this.signAndSendRequest({
       method: 'GET',
       headers: {},
       path,
       query
-    })) as TypedCommsResponse<ChatMessage[]>
+    })
+    const json = (await response.json()) as TypedCommsResponse<ChatMessage[]>
     const decrypted = await Promise.all(
-      response.data.map(async (m) => ({
+      json.data.map(async (m) => ({
         ...m,
         message: await this.decryptString(
           sharedSecret,
@@ -153,7 +154,7 @@ export class ChatsApi extends BaseAPI {
       }))
     )
     return {
-      ...response,
+      ...json,
       data: decrypted
     }
   }
@@ -462,12 +463,13 @@ export class ChatsApi extends BaseAPI {
     const queryParameters: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    return (await this.signAndSendRequest({
+    const response = await this.signAndSendRequest({
       method: 'GET',
       headers: {},
       path,
       query: queryParameters
-    })) as TypedCommsResponse<UserChat>
+    })
+    return (await response.json()) as TypedCommsResponse<UserChat>
   }
 
   private async getChatSecret(chatId: string) {
@@ -489,7 +491,8 @@ export class ChatsApi extends BaseAPI {
       method: 'GET',
       headers: {}
     })
-    return base64.decode(response.data)
+    const json = await response.json()
+    return base64.decode(json.data)
   }
 
   private async getSignatureHeader(payload: string) {
