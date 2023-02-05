@@ -58,6 +58,7 @@ from src.api.v1.models.users import (
     user_replica_set,
     user_subscribers,
 )
+from src.api.v1.models.wildcard_model import WildcardModel
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.queries.get_associated_user_id import get_associated_user_id
@@ -232,25 +233,16 @@ monthly_aggregate_play = ns.model(
 
 wild_month = fields.Wildcard(fields.Nested(monthly_aggregate_play, required=True))
 
-wild_month_model = ns.model("wild_month_model", {"*": wild_month})
+wild_month_model = WildcardModel(
+    "wild_month_model",
+    {"*": wild_month},
+)
+ns.add_model("wild_month_model", wild_month_model)
 user_track_listen_counts_response = make_response(
     "user_track_listen_counts_response",
     ns,
     fields.Nested(
         wild_month_model,
-        example={
-            "2021-10-01T00:00:00.000Z": {
-                "totalListens": 7,
-                "trackIds": [484436],
-                "listenCounts": [
-                    {
-                        "trackId": 484436,
-                        "date": "2021-10-01T00:00:00.000Z",
-                        "listens": 7,
-                    }
-                ],
-            }
-        },
         skip_none=True,
     ),
 )
