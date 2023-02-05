@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface UserSearch
  */
-export interface UserSearch 
-    {
-        /**
-        * 
-        * @type {Array<User>}
-        * @memberof UserSearch
-        */
-        data?: Array<User>;
-    }
+export interface UserSearch {
+    /**
+     * 
+     * @type {Array<User>}
+     * @memberof UserSearch
+     */
+    data?: Array<User>;
+}
 
+/**
+ * Check if a given object implements the UserSearch interface.
+ */
+export function instanceOfUserSearch(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function UserSearchFromJSON(json: any): UserSearch {
+    return UserSearchFromJSONTyped(json, false);
+}
+
+export function UserSearchFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserSearch {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(UserFromJSON)),
+    };
+}
+
+export function UserSearchToJSON(value?: UserSearch | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(UserToJSON)),
+    };
+}
 

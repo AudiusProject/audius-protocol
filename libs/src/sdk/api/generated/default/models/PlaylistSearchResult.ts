@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { Playlist } from './Playlist';
 import {
-    Playlist,
     PlaylistFromJSON,
     PlaylistFromJSONTyped,
     PlaylistToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface PlaylistSearchResult
  */
-export interface PlaylistSearchResult 
-    {
-        /**
-        * 
-        * @type {Array<Playlist>}
-        * @memberof PlaylistSearchResult
-        */
-        data?: Array<Playlist>;
-    }
+export interface PlaylistSearchResult {
+    /**
+     * 
+     * @type {Array<Playlist>}
+     * @memberof PlaylistSearchResult
+     */
+    data?: Array<Playlist>;
+}
 
+/**
+ * Check if a given object implements the PlaylistSearchResult interface.
+ */
+export function instanceOfPlaylistSearchResult(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function PlaylistSearchResultFromJSON(json: any): PlaylistSearchResult {
+    return PlaylistSearchResultFromJSONTyped(json, false);
+}
+
+export function PlaylistSearchResultFromJSONTyped(json: any, ignoreDiscriminator: boolean): PlaylistSearchResult {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(PlaylistFromJSON)),
+    };
+}
+
+export function PlaylistSearchResultToJSON(value?: PlaylistSearchResult | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(PlaylistToJSON)),
+    };
+}
 

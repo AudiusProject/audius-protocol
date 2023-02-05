@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { UserFull } from './UserFull';
 import {
-    UserFull,
     UserFullFromJSON,
     UserFullFromJSONTyped,
     UserFullToJSON,
@@ -25,26 +25,67 @@ import {
  * @export
  * @interface FullSupporting
  */
-export interface FullSupporting 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof FullSupporting
-        */
-        rank: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof FullSupporting
-        */
-        amount: string;
-        /**
-        * 
-        * @type {UserFull}
-        * @memberof FullSupporting
-        */
-        receiver: UserFull;
-    }
+export interface FullSupporting {
+    /**
+     * 
+     * @type {number}
+     * @memberof FullSupporting
+     */
+    rank: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof FullSupporting
+     */
+    amount: string;
+    /**
+     * 
+     * @type {UserFull}
+     * @memberof FullSupporting
+     */
+    receiver: UserFull;
+}
 
+/**
+ * Check if a given object implements the FullSupporting interface.
+ */
+export function instanceOfFullSupporting(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "rank" in value;
+    isInstance = isInstance && "amount" in value;
+    isInstance = isInstance && "receiver" in value;
+
+    return isInstance;
+}
+
+export function FullSupportingFromJSON(json: any): FullSupporting {
+    return FullSupportingFromJSONTyped(json, false);
+}
+
+export function FullSupportingFromJSONTyped(json: any, ignoreDiscriminator: boolean): FullSupporting {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'rank': json['rank'],
+        'amount': json['amount'],
+        'receiver': UserFullFromJSON(json['receiver']),
+    };
+}
+
+export function FullSupportingToJSON(value?: FullSupporting | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'rank': value.rank,
+        'amount': value.amount,
+        'receiver': UserFullToJSON(value.receiver),
+    };
+}
 

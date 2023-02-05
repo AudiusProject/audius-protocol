@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { FullRemix } from './FullRemix';
 import {
-    FullRemix,
     FullRemixFromJSON,
     FullRemixFromJSONTyped,
     FullRemixToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface FullRemixParent
  */
-export interface FullRemixParent 
-    {
-        /**
-        * 
-        * @type {Array<FullRemix>}
-        * @memberof FullRemixParent
-        */
-        tracks?: Array<FullRemix>;
-    }
+export interface FullRemixParent {
+    /**
+     * 
+     * @type {Array<FullRemix>}
+     * @memberof FullRemixParent
+     */
+    tracks?: Array<FullRemix>;
+}
 
+/**
+ * Check if a given object implements the FullRemixParent interface.
+ */
+export function instanceOfFullRemixParent(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function FullRemixParentFromJSON(json: any): FullRemixParent {
+    return FullRemixParentFromJSONTyped(json, false);
+}
+
+export function FullRemixParentFromJSONTyped(json: any, ignoreDiscriminator: boolean): FullRemixParent {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'tracks': !exists(json, 'tracks') ? undefined : ((json['tracks'] as Array<any>).map(FullRemixFromJSON)),
+    };
+}
+
+export function FullRemixParentToJSON(value?: FullRemixParent | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'tracks': value.tracks === undefined ? undefined : ((value.tracks as Array<any>).map(FullRemixToJSON)),
+    };
+}
 

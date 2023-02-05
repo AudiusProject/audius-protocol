@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,49 +12,100 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
  * @interface StemFull
  */
-export interface StemFull 
-    {
-        /**
-        * 
-        * @type {string}
-        * @memberof StemFull
-        */
-        id: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof StemFull
-        */
-        parent_id: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof StemFull
-        */
-        category: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof StemFull
-        */
-        cid: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof StemFull
-        */
-        user_id: string;
-        /**
-        * 
-        * @type {number}
-        * @memberof StemFull
-        */
-        blocknumber: number;
-    }
+export interface StemFull {
+    /**
+     * 
+     * @type {string}
+     * @memberof StemFull
+     */
+    id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StemFull
+     */
+    parent_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StemFull
+     */
+    category: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StemFull
+     */
+    cid: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof StemFull
+     */
+    user_id: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof StemFull
+     */
+    blocknumber: number;
+}
 
+/**
+ * Check if a given object implements the StemFull interface.
+ */
+export function instanceOfStemFull(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "id" in value;
+    isInstance = isInstance && "parent_id" in value;
+    isInstance = isInstance && "category" in value;
+    isInstance = isInstance && "cid" in value;
+    isInstance = isInstance && "user_id" in value;
+    isInstance = isInstance && "blocknumber" in value;
+
+    return isInstance;
+}
+
+export function StemFullFromJSON(json: any): StemFull {
+    return StemFullFromJSONTyped(json, false);
+}
+
+export function StemFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): StemFull {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'id': json['id'],
+        'parent_id': json['parent_id'],
+        'category': json['category'],
+        'cid': json['cid'],
+        'user_id': json['user_id'],
+        'blocknumber': json['blocknumber'],
+    };
+}
+
+export function StemFullToJSON(value?: StemFull | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'id': value.id,
+        'parent_id': value.parent_id,
+        'category': value.category,
+        'cid': value.cid,
+        'user_id': value.user_id,
+        'blocknumber': value.blocknumber,
+    };
+}
 

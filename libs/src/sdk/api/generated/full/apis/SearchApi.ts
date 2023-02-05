@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -15,58 +14,30 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  SearchAutocompleteResponse,
+  SearchFullResponse,
+} from '../models';
 import {
-    SearchAutocompleteResponse,
     SearchAutocompleteResponseFromJSON,
     SearchAutocompleteResponseToJSON,
-    SearchFullResponse,
     SearchFullResponseFromJSON,
     SearchFullResponseToJSON,
 } from '../models';
 
 export interface SearchRequest {
-    /**
-     * The search query
-     */
     query: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
     offset?: number;
-    /**
-     * The number of items to fetch
-     */
     limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
     userId?: string;
-    /**
-     * The type of response, one of: all, users, tracks, playlists, or albums
-     */
     kind?: SearchKindEnum;
 }
 
 export interface SearchAutocompleteRequest {
-    /**
-     * The search query
-     */
     query: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
     offset?: number;
-    /**
-     * The number of items to fetch
-     */
     limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
     userId?: string;
-    /**
-     * The type of response, one of: all, users, tracks, playlists, or albums
-     */
     kind?: SearchAutocompleteKindEnum;
 }
 
@@ -78,7 +49,7 @@ export class SearchApi extends runtime.BaseAPI {
     /**
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async search(requestParameters: SearchRequest): Promise<NonNullable<SearchFullResponse["data"]>> {
+    async searchRaw(requestParameters: SearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchFullResponse>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
             throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling search.');
         }
@@ -107,19 +78,29 @@ export class SearchApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        return this.request({
+        const response = await this.request({
             path: `/search/full`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<SearchFullResponse["data"]>>;
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchFullResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get Users/Tracks/Playlists/Albums that best match the search query
+     */
+    async search(requestParameters: SearchRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchFullResponse> {
+        const response = await this.searchRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
      * Same as search but optimized for quicker response at the cost of some entity information.
      * Get Users/Tracks/Playlists/Albums that best match the search query
      */
-    async searchAutocomplete(requestParameters: SearchAutocompleteRequest): Promise<NonNullable<SearchAutocompleteResponse["data"]>> {
+    async searchAutocompleteRaw(requestParameters: SearchAutocompleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SearchAutocompleteResponse>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
             throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling searchAutocomplete.');
         }
@@ -148,35 +129,46 @@ export class SearchApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        return this.request({
+        const response = await this.request({
             path: `/search/autocomplete`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<SearchAutocompleteResponse["data"]>>;
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => SearchAutocompleteResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Same as search but optimized for quicker response at the cost of some entity information.
+     * Get Users/Tracks/Playlists/Albums that best match the search query
+     */
+    async searchAutocomplete(requestParameters: SearchAutocompleteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SearchAutocompleteResponse> {
+        const response = await this.searchAutocompleteRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }
 
 /**
-    * @export
-    * @enum {string}
-    */
-export enum SearchKindEnum {
-    All = 'all',
-    Users = 'users',
-    Tracks = 'tracks',
-    Playlists = 'playlists',
-    Albums = 'albums'
-}
+ * @export
+ */
+export const SearchKindEnum = {
+    All: 'all',
+    Users: 'users',
+    Tracks: 'tracks',
+    Playlists: 'playlists',
+    Albums: 'albums'
+} as const;
+export type SearchKindEnum = typeof SearchKindEnum[keyof typeof SearchKindEnum];
 /**
-    * @export
-    * @enum {string}
-    */
-export enum SearchAutocompleteKindEnum {
-    All = 'all',
-    Users = 'users',
-    Tracks = 'tracks',
-    Playlists = 'playlists',
-    Albums = 'albums'
-}
+ * @export
+ */
+export const SearchAutocompleteKindEnum = {
+    All: 'all',
+    Users: 'users',
+    Tracks: 'tracks',
+    Playlists: 'playlists',
+    Albums: 'albums'
+} as const;
+export type SearchAutocompleteKindEnum = typeof SearchAutocompleteKindEnum[keyof typeof SearchAutocompleteKindEnum];

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { ConnectedWallets } from './ConnectedWallets';
 import {
-    ConnectedWallets,
     ConnectedWalletsFromJSON,
     ConnectedWalletsFromJSONTyped,
     ConnectedWalletsToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface ConnectedWalletsResponse
  */
-export interface ConnectedWalletsResponse 
-    {
-        /**
-        * 
-        * @type {ConnectedWallets}
-        * @memberof ConnectedWalletsResponse
-        */
-        data?: ConnectedWallets;
-    }
+export interface ConnectedWalletsResponse {
+    /**
+     * 
+     * @type {ConnectedWallets}
+     * @memberof ConnectedWalletsResponse
+     */
+    data?: ConnectedWallets;
+}
 
+/**
+ * Check if a given object implements the ConnectedWalletsResponse interface.
+ */
+export function instanceOfConnectedWalletsResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function ConnectedWalletsResponseFromJSON(json: any): ConnectedWalletsResponse {
+    return ConnectedWalletsResponseFromJSONTyped(json, false);
+}
+
+export function ConnectedWalletsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ConnectedWalletsResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ConnectedWalletsFromJSON(json['data']),
+    };
+}
+
+export function ConnectedWalletsResponseToJSON(value?: ConnectedWalletsResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': ConnectedWalletsToJSON(value.data),
+    };
+}
 

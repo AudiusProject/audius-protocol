@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { Supporter } from './Supporter';
 import {
-    Supporter,
     SupporterFromJSON,
     SupporterFromJSONTyped,
     SupporterToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface GetSupporters
  */
-export interface GetSupporters 
-    {
-        /**
-        * 
-        * @type {Array<Supporter>}
-        * @memberof GetSupporters
-        */
-        data?: Array<Supporter>;
-    }
+export interface GetSupporters {
+    /**
+     * 
+     * @type {Array<Supporter>}
+     * @memberof GetSupporters
+     */
+    data?: Array<Supporter>;
+}
 
+/**
+ * Check if a given object implements the GetSupporters interface.
+ */
+export function instanceOfGetSupporters(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function GetSupportersFromJSON(json: any): GetSupporters {
+    return GetSupportersFromJSONTyped(json, false);
+}
+
+export function GetSupportersFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetSupporters {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(SupporterFromJSON)),
+    };
+}
+
+export function GetSupportersToJSON(value?: GetSupporters | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(SupporterToJSON)),
+    };
+}
 

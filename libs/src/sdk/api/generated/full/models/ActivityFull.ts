@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,31 +12,70 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
  * @interface ActivityFull
  */
-export interface ActivityFull 
-    {
-        /**
-        * 
-        * @type {string}
-        * @memberof ActivityFull
-        */
-        timestamp?: string;
-        /**
-        * 
-        * @type {object}
-        * @memberof ActivityFull
-        */
-        item_type?: object;
-        /**
-        * 
-        * @type {object}
-        * @memberof ActivityFull
-        */
-        item?: object;
-    }
+export interface ActivityFull {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActivityFull
+     */
+    timestamp?: string;
+    /**
+     * 
+     * @type {object}
+     * @memberof ActivityFull
+     */
+    item_type?: object;
+    /**
+     * 
+     * @type {object}
+     * @memberof ActivityFull
+     */
+    item?: object;
+}
 
+/**
+ * Check if a given object implements the ActivityFull interface.
+ */
+export function instanceOfActivityFull(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function ActivityFullFromJSON(json: any): ActivityFull {
+    return ActivityFullFromJSONTyped(json, false);
+}
+
+export function ActivityFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): ActivityFull {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
+        'item_type': !exists(json, 'item_type') ? undefined : json['item_type'],
+        'item': !exists(json, 'item') ? undefined : json['item'],
+    };
+}
+
+export function ActivityFullToJSON(value?: ActivityFull | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'timestamp': value.timestamp,
+        'item_type': value.item_type,
+        'item': value.item,
+    };
+}
 

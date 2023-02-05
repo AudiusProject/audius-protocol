@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { VersionMetadata } from './VersionMetadata';
 import {
-    VersionMetadata,
     VersionMetadataFromJSON,
     VersionMetadataFromJSONTyped,
     VersionMetadataToJSON,
@@ -25,56 +25,111 @@ import {
  * @export
  * @interface TransactionHistoryCountResponse
  */
-export interface TransactionHistoryCountResponse 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof TransactionHistoryCountResponse
-        */
-        latest_chain_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof TransactionHistoryCountResponse
-        */
-        latest_indexed_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof TransactionHistoryCountResponse
-        */
-        latest_chain_slot_plays: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof TransactionHistoryCountResponse
-        */
-        latest_indexed_slot_plays: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof TransactionHistoryCountResponse
-        */
-        signature: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof TransactionHistoryCountResponse
-        */
-        timestamp: string;
-        /**
-        * 
-        * @type {VersionMetadata}
-        * @memberof TransactionHistoryCountResponse
-        */
-        version: VersionMetadata;
-        /**
-        * 
-        * @type {number}
-        * @memberof TransactionHistoryCountResponse
-        */
-        data?: number;
-    }
+export interface TransactionHistoryCountResponse {
+    /**
+     * 
+     * @type {number}
+     * @memberof TransactionHistoryCountResponse
+     */
+    latest_chain_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TransactionHistoryCountResponse
+     */
+    latest_indexed_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TransactionHistoryCountResponse
+     */
+    latest_chain_slot_plays: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TransactionHistoryCountResponse
+     */
+    latest_indexed_slot_plays: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof TransactionHistoryCountResponse
+     */
+    signature: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TransactionHistoryCountResponse
+     */
+    timestamp: string;
+    /**
+     * 
+     * @type {VersionMetadata}
+     * @memberof TransactionHistoryCountResponse
+     */
+    version: VersionMetadata;
+    /**
+     * 
+     * @type {number}
+     * @memberof TransactionHistoryCountResponse
+     */
+    data?: number;
+}
 
+/**
+ * Check if a given object implements the TransactionHistoryCountResponse interface.
+ */
+export function instanceOfTransactionHistoryCountResponse(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "latest_chain_block" in value;
+    isInstance = isInstance && "latest_indexed_block" in value;
+    isInstance = isInstance && "latest_chain_slot_plays" in value;
+    isInstance = isInstance && "latest_indexed_slot_plays" in value;
+    isInstance = isInstance && "signature" in value;
+    isInstance = isInstance && "timestamp" in value;
+    isInstance = isInstance && "version" in value;
+
+    return isInstance;
+}
+
+export function TransactionHistoryCountResponseFromJSON(json: any): TransactionHistoryCountResponse {
+    return TransactionHistoryCountResponseFromJSONTyped(json, false);
+}
+
+export function TransactionHistoryCountResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): TransactionHistoryCountResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'latest_chain_block': json['latest_chain_block'],
+        'latest_indexed_block': json['latest_indexed_block'],
+        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
+        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
+        'signature': json['signature'],
+        'timestamp': json['timestamp'],
+        'version': VersionMetadataFromJSON(json['version']),
+        'data': !exists(json, 'data') ? undefined : json['data'],
+    };
+}
+
+export function TransactionHistoryCountResponseToJSON(value?: TransactionHistoryCountResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'latest_chain_block': value.latest_chain_block,
+        'latest_indexed_block': value.latest_indexed_block,
+        'latest_chain_slot_plays': value.latest_chain_slot_plays,
+        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
+        'signature': value.signature,
+        'timestamp': value.timestamp,
+        'version': VersionMetadataToJSON(value.version),
+        'data': value.data,
+    };
+}
 

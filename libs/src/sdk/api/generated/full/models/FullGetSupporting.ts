@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,14 +12,15 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { FullSupporting } from './FullSupporting';
 import {
-    FullSupporting,
     FullSupportingFromJSON,
     FullSupportingFromJSONTyped,
     FullSupportingToJSON,
 } from './FullSupporting';
+import type { VersionMetadata } from './VersionMetadata';
 import {
-    VersionMetadata,
     VersionMetadataFromJSON,
     VersionMetadataFromJSONTyped,
     VersionMetadataToJSON,
@@ -31,56 +31,111 @@ import {
  * @export
  * @interface FullGetSupporting
  */
-export interface FullGetSupporting 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof FullGetSupporting
-        */
-        latest_chain_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof FullGetSupporting
-        */
-        latest_indexed_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof FullGetSupporting
-        */
-        latest_chain_slot_plays: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof FullGetSupporting
-        */
-        latest_indexed_slot_plays: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof FullGetSupporting
-        */
-        signature: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof FullGetSupporting
-        */
-        timestamp: string;
-        /**
-        * 
-        * @type {VersionMetadata}
-        * @memberof FullGetSupporting
-        */
-        version: VersionMetadata;
-        /**
-        * 
-        * @type {FullSupporting}
-        * @memberof FullGetSupporting
-        */
-        data?: FullSupporting;
-    }
+export interface FullGetSupporting {
+    /**
+     * 
+     * @type {number}
+     * @memberof FullGetSupporting
+     */
+    latest_chain_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FullGetSupporting
+     */
+    latest_indexed_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FullGetSupporting
+     */
+    latest_chain_slot_plays: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FullGetSupporting
+     */
+    latest_indexed_slot_plays: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof FullGetSupporting
+     */
+    signature: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof FullGetSupporting
+     */
+    timestamp: string;
+    /**
+     * 
+     * @type {VersionMetadata}
+     * @memberof FullGetSupporting
+     */
+    version: VersionMetadata;
+    /**
+     * 
+     * @type {FullSupporting}
+     * @memberof FullGetSupporting
+     */
+    data?: FullSupporting;
+}
 
+/**
+ * Check if a given object implements the FullGetSupporting interface.
+ */
+export function instanceOfFullGetSupporting(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "latest_chain_block" in value;
+    isInstance = isInstance && "latest_indexed_block" in value;
+    isInstance = isInstance && "latest_chain_slot_plays" in value;
+    isInstance = isInstance && "latest_indexed_slot_plays" in value;
+    isInstance = isInstance && "signature" in value;
+    isInstance = isInstance && "timestamp" in value;
+    isInstance = isInstance && "version" in value;
+
+    return isInstance;
+}
+
+export function FullGetSupportingFromJSON(json: any): FullGetSupporting {
+    return FullGetSupportingFromJSONTyped(json, false);
+}
+
+export function FullGetSupportingFromJSONTyped(json: any, ignoreDiscriminator: boolean): FullGetSupporting {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'latest_chain_block': json['latest_chain_block'],
+        'latest_indexed_block': json['latest_indexed_block'],
+        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
+        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
+        'signature': json['signature'],
+        'timestamp': json['timestamp'],
+        'version': VersionMetadataFromJSON(json['version']),
+        'data': !exists(json, 'data') ? undefined : FullSupportingFromJSON(json['data']),
+    };
+}
+
+export function FullGetSupportingToJSON(value?: FullGetSupporting | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'latest_chain_block': value.latest_chain_block,
+        'latest_indexed_block': value.latest_indexed_block,
+        'latest_chain_slot_plays': value.latest_chain_slot_plays,
+        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
+        'signature': value.signature,
+        'timestamp': value.timestamp,
+        'version': VersionMetadataToJSON(value.version),
+        'data': FullSupportingToJSON(value.data),
+    };
+}
 

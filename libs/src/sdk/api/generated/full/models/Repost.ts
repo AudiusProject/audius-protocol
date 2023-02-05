@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,31 +12,73 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
  * @interface Repost
  */
-export interface Repost 
-    {
-        /**
-        * 
-        * @type {string}
-        * @memberof Repost
-        */
-        repost_item_id: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof Repost
-        */
-        repost_type: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof Repost
-        */
-        user_id: string;
-    }
+export interface Repost {
+    /**
+     * 
+     * @type {string}
+     * @memberof Repost
+     */
+    repost_item_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Repost
+     */
+    repost_type: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Repost
+     */
+    user_id: string;
+}
 
+/**
+ * Check if a given object implements the Repost interface.
+ */
+export function instanceOfRepost(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "repost_item_id" in value;
+    isInstance = isInstance && "repost_type" in value;
+    isInstance = isInstance && "user_id" in value;
+
+    return isInstance;
+}
+
+export function RepostFromJSON(json: any): Repost {
+    return RepostFromJSONTyped(json, false);
+}
+
+export function RepostFromJSONTyped(json: any, ignoreDiscriminator: boolean): Repost {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'repost_item_id': json['repost_item_id'],
+        'repost_type': json['repost_type'],
+        'user_id': json['user_id'],
+    };
+}
+
+export function RepostToJSON(value?: Repost | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'repost_item_id': value.repost_item_id,
+        'repost_type': value.repost_type,
+        'user_id': value.user_id,
+    };
+}
 

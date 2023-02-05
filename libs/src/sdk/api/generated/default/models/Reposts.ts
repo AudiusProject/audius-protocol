@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { Activity } from './Activity';
 import {
-    Activity,
     ActivityFromJSON,
     ActivityFromJSONTyped,
     ActivityToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface Reposts
  */
-export interface Reposts 
-    {
-        /**
-        * 
-        * @type {Array<Activity>}
-        * @memberof Reposts
-        */
-        data?: Array<Activity>;
-    }
+export interface Reposts {
+    /**
+     * 
+     * @type {Array<Activity>}
+     * @memberof Reposts
+     */
+    data?: Array<Activity>;
+}
 
+/**
+ * Check if a given object implements the Reposts interface.
+ */
+export function instanceOfReposts(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function RepostsFromJSON(json: any): Reposts {
+    return RepostsFromJSONTyped(json, false);
+}
+
+export function RepostsFromJSONTyped(json: any, ignoreDiscriminator: boolean): Reposts {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(ActivityFromJSON)),
+    };
+}
+
+export function RepostsToJSON(value?: Reposts | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(ActivityToJSON)),
+    };
+}
 

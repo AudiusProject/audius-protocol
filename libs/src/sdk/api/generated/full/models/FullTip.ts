@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,14 +12,15 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { SupporterReference } from './SupporterReference';
 import {
-    SupporterReference,
     SupporterReferenceFromJSON,
     SupporterReferenceFromJSONTyped,
     SupporterReferenceToJSON,
 } from './SupporterReference';
+import type { UserFull } from './UserFull';
 import {
-    UserFull,
     UserFullFromJSON,
     UserFullFromJSONTyped,
     UserFullToJSON,
@@ -31,50 +31,103 @@ import {
  * @export
  * @interface FullTip
  */
-export interface FullTip 
-    {
-        /**
-        * 
-        * @type {string}
-        * @memberof FullTip
-        */
-        amount: string;
-        /**
-        * 
-        * @type {UserFull}
-        * @memberof FullTip
-        */
-        sender: UserFull;
-        /**
-        * 
-        * @type {UserFull}
-        * @memberof FullTip
-        */
-        receiver: UserFull;
-        /**
-        * 
-        * @type {string}
-        * @memberof FullTip
-        */
-        created_at: string;
-        /**
-        * 
-        * @type {number}
-        * @memberof FullTip
-        */
-        slot: number;
-        /**
-        * 
-        * @type {Array<SupporterReference>}
-        * @memberof FullTip
-        */
-        followee_supporters: Array<SupporterReference>;
-        /**
-        * 
-        * @type {string}
-        * @memberof FullTip
-        */
-        tx_signature: string;
-    }
+export interface FullTip {
+    /**
+     * 
+     * @type {string}
+     * @memberof FullTip
+     */
+    amount: string;
+    /**
+     * 
+     * @type {UserFull}
+     * @memberof FullTip
+     */
+    sender: UserFull;
+    /**
+     * 
+     * @type {UserFull}
+     * @memberof FullTip
+     */
+    receiver: UserFull;
+    /**
+     * 
+     * @type {string}
+     * @memberof FullTip
+     */
+    created_at: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof FullTip
+     */
+    slot: number;
+    /**
+     * 
+     * @type {Array<SupporterReference>}
+     * @memberof FullTip
+     */
+    followee_supporters: Array<SupporterReference>;
+    /**
+     * 
+     * @type {string}
+     * @memberof FullTip
+     */
+    tx_signature: string;
+}
 
+/**
+ * Check if a given object implements the FullTip interface.
+ */
+export function instanceOfFullTip(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "amount" in value;
+    isInstance = isInstance && "sender" in value;
+    isInstance = isInstance && "receiver" in value;
+    isInstance = isInstance && "created_at" in value;
+    isInstance = isInstance && "slot" in value;
+    isInstance = isInstance && "followee_supporters" in value;
+    isInstance = isInstance && "tx_signature" in value;
+
+    return isInstance;
+}
+
+export function FullTipFromJSON(json: any): FullTip {
+    return FullTipFromJSONTyped(json, false);
+}
+
+export function FullTipFromJSONTyped(json: any, ignoreDiscriminator: boolean): FullTip {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'amount': json['amount'],
+        'sender': UserFullFromJSON(json['sender']),
+        'receiver': UserFullFromJSON(json['receiver']),
+        'created_at': json['created_at'],
+        'slot': json['slot'],
+        'followee_supporters': ((json['followee_supporters'] as Array<any>).map(SupporterReferenceFromJSON)),
+        'tx_signature': json['tx_signature'],
+    };
+}
+
+export function FullTipToJSON(value?: FullTip | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'amount': value.amount,
+        'sender': UserFullToJSON(value.sender),
+        'receiver': UserFullToJSON(value.receiver),
+        'created_at': value.created_at,
+        'slot': value.slot,
+        'followee_supporters': ((value.followee_supporters as Array<any>).map(SupporterReferenceToJSON)),
+        'tx_signature': value.tx_signature,
+    };
+}
 

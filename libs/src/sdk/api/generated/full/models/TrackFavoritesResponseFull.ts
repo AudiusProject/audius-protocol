@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,14 +12,15 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { UserFull } from './UserFull';
 import {
-    UserFull,
     UserFullFromJSON,
     UserFullFromJSONTyped,
     UserFullToJSON,
 } from './UserFull';
+import type { VersionMetadata } from './VersionMetadata';
 import {
-    VersionMetadata,
     VersionMetadataFromJSON,
     VersionMetadataFromJSONTyped,
     VersionMetadataToJSON,
@@ -31,56 +31,111 @@ import {
  * @export
  * @interface TrackFavoritesResponseFull
  */
-export interface TrackFavoritesResponseFull 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof TrackFavoritesResponseFull
-        */
-        latest_chain_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof TrackFavoritesResponseFull
-        */
-        latest_indexed_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof TrackFavoritesResponseFull
-        */
-        latest_chain_slot_plays: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof TrackFavoritesResponseFull
-        */
-        latest_indexed_slot_plays: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof TrackFavoritesResponseFull
-        */
-        signature: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof TrackFavoritesResponseFull
-        */
-        timestamp: string;
-        /**
-        * 
-        * @type {VersionMetadata}
-        * @memberof TrackFavoritesResponseFull
-        */
-        version: VersionMetadata;
-        /**
-        * 
-        * @type {Array<UserFull>}
-        * @memberof TrackFavoritesResponseFull
-        */
-        data?: Array<UserFull>;
-    }
+export interface TrackFavoritesResponseFull {
+    /**
+     * 
+     * @type {number}
+     * @memberof TrackFavoritesResponseFull
+     */
+    latest_chain_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TrackFavoritesResponseFull
+     */
+    latest_indexed_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TrackFavoritesResponseFull
+     */
+    latest_chain_slot_plays: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof TrackFavoritesResponseFull
+     */
+    latest_indexed_slot_plays: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackFavoritesResponseFull
+     */
+    signature: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackFavoritesResponseFull
+     */
+    timestamp: string;
+    /**
+     * 
+     * @type {VersionMetadata}
+     * @memberof TrackFavoritesResponseFull
+     */
+    version: VersionMetadata;
+    /**
+     * 
+     * @type {Array<UserFull>}
+     * @memberof TrackFavoritesResponseFull
+     */
+    data?: Array<UserFull>;
+}
 
+/**
+ * Check if a given object implements the TrackFavoritesResponseFull interface.
+ */
+export function instanceOfTrackFavoritesResponseFull(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "latest_chain_block" in value;
+    isInstance = isInstance && "latest_indexed_block" in value;
+    isInstance = isInstance && "latest_chain_slot_plays" in value;
+    isInstance = isInstance && "latest_indexed_slot_plays" in value;
+    isInstance = isInstance && "signature" in value;
+    isInstance = isInstance && "timestamp" in value;
+    isInstance = isInstance && "version" in value;
+
+    return isInstance;
+}
+
+export function TrackFavoritesResponseFullFromJSON(json: any): TrackFavoritesResponseFull {
+    return TrackFavoritesResponseFullFromJSONTyped(json, false);
+}
+
+export function TrackFavoritesResponseFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrackFavoritesResponseFull {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'latest_chain_block': json['latest_chain_block'],
+        'latest_indexed_block': json['latest_indexed_block'],
+        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
+        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
+        'signature': json['signature'],
+        'timestamp': json['timestamp'],
+        'version': VersionMetadataFromJSON(json['version']),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(UserFullFromJSON)),
+    };
+}
+
+export function TrackFavoritesResponseFullToJSON(value?: TrackFavoritesResponseFull | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'latest_chain_block': value.latest_chain_block,
+        'latest_indexed_block': value.latest_indexed_block,
+        'latest_chain_slot_plays': value.latest_chain_slot_plays,
+        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
+        'signature': value.signature,
+        'timestamp': value.timestamp,
+        'version': VersionMetadataToJSON(value.version),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(UserFullToJSON)),
+    };
+}
 

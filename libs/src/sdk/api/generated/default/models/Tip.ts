@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -25,32 +25,74 @@ import {
  * @export
  * @interface Tip
  */
-export interface Tip 
-    {
-        /**
-        * 
-        * @type {string}
-        * @memberof Tip
-        */
-        amount: string;
-        /**
-        * 
-        * @type {User}
-        * @memberof Tip
-        */
-        sender?: User;
-        /**
-        * 
-        * @type {User}
-        * @memberof Tip
-        */
-        receiver?: User;
-        /**
-        * 
-        * @type {string}
-        * @memberof Tip
-        */
-        created_at: string;
-    }
+export interface Tip {
+    /**
+     * 
+     * @type {string}
+     * @memberof Tip
+     */
+    amount: string;
+    /**
+     * 
+     * @type {User}
+     * @memberof Tip
+     */
+    sender?: User;
+    /**
+     * 
+     * @type {User}
+     * @memberof Tip
+     */
+    receiver?: User;
+    /**
+     * 
+     * @type {string}
+     * @memberof Tip
+     */
+    created_at: string;
+}
 
+/**
+ * Check if a given object implements the Tip interface.
+ */
+export function instanceOfTip(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "amount" in value;
+    isInstance = isInstance && "created_at" in value;
+
+    return isInstance;
+}
+
+export function TipFromJSON(json: any): Tip {
+    return TipFromJSONTyped(json, false);
+}
+
+export function TipFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tip {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'amount': json['amount'],
+        'sender': !exists(json, 'sender') ? undefined : UserFromJSON(json['sender']),
+        'receiver': !exists(json, 'receiver') ? undefined : UserFromJSON(json['receiver']),
+        'created_at': json['created_at'],
+    };
+}
+
+export function TipToJSON(value?: Tip | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'amount': value.amount,
+        'sender': UserToJSON(value.sender),
+        'receiver': UserToJSON(value.receiver),
+        'created_at': value.created_at,
+    };
+}
 

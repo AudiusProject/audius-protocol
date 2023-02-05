@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,14 +12,15 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { TrackFull } from './TrackFull';
 import {
-    TrackFull,
     TrackFullFromJSON,
     TrackFullFromJSONTyped,
     TrackFullToJSON,
 } from './TrackFull';
+import type { VersionMetadata } from './VersionMetadata';
 import {
-    VersionMetadata,
     VersionMetadataFromJSON,
     VersionMetadataFromJSONTyped,
     VersionMetadataToJSON,
@@ -31,56 +31,111 @@ import {
  * @export
  * @interface FullPlaylistTracksResponse
  */
-export interface FullPlaylistTracksResponse 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof FullPlaylistTracksResponse
-        */
-        latest_chain_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof FullPlaylistTracksResponse
-        */
-        latest_indexed_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof FullPlaylistTracksResponse
-        */
-        latest_chain_slot_plays: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof FullPlaylistTracksResponse
-        */
-        latest_indexed_slot_plays: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof FullPlaylistTracksResponse
-        */
-        signature: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof FullPlaylistTracksResponse
-        */
-        timestamp: string;
-        /**
-        * 
-        * @type {VersionMetadata}
-        * @memberof FullPlaylistTracksResponse
-        */
-        version: VersionMetadata;
-        /**
-        * 
-        * @type {Array<TrackFull>}
-        * @memberof FullPlaylistTracksResponse
-        */
-        data?: Array<TrackFull>;
-    }
+export interface FullPlaylistTracksResponse {
+    /**
+     * 
+     * @type {number}
+     * @memberof FullPlaylistTracksResponse
+     */
+    latest_chain_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FullPlaylistTracksResponse
+     */
+    latest_indexed_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FullPlaylistTracksResponse
+     */
+    latest_chain_slot_plays: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof FullPlaylistTracksResponse
+     */
+    latest_indexed_slot_plays: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof FullPlaylistTracksResponse
+     */
+    signature: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof FullPlaylistTracksResponse
+     */
+    timestamp: string;
+    /**
+     * 
+     * @type {VersionMetadata}
+     * @memberof FullPlaylistTracksResponse
+     */
+    version: VersionMetadata;
+    /**
+     * 
+     * @type {Array<TrackFull>}
+     * @memberof FullPlaylistTracksResponse
+     */
+    data?: Array<TrackFull>;
+}
 
+/**
+ * Check if a given object implements the FullPlaylistTracksResponse interface.
+ */
+export function instanceOfFullPlaylistTracksResponse(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "latest_chain_block" in value;
+    isInstance = isInstance && "latest_indexed_block" in value;
+    isInstance = isInstance && "latest_chain_slot_plays" in value;
+    isInstance = isInstance && "latest_indexed_slot_plays" in value;
+    isInstance = isInstance && "signature" in value;
+    isInstance = isInstance && "timestamp" in value;
+    isInstance = isInstance && "version" in value;
+
+    return isInstance;
+}
+
+export function FullPlaylistTracksResponseFromJSON(json: any): FullPlaylistTracksResponse {
+    return FullPlaylistTracksResponseFromJSONTyped(json, false);
+}
+
+export function FullPlaylistTracksResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): FullPlaylistTracksResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'latest_chain_block': json['latest_chain_block'],
+        'latest_indexed_block': json['latest_indexed_block'],
+        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
+        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
+        'signature': json['signature'],
+        'timestamp': json['timestamp'],
+        'version': VersionMetadataFromJSON(json['version']),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(TrackFullFromJSON)),
+    };
+}
+
+export function FullPlaylistTracksResponseToJSON(value?: FullPlaylistTracksResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'latest_chain_block': value.latest_chain_block,
+        'latest_indexed_block': value.latest_indexed_block,
+        'latest_chain_slot_plays': value.latest_chain_slot_plays,
+        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
+        'signature': value.signature,
+        'timestamp': value.timestamp,
+        'version': VersionMetadataToJSON(value.version),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(TrackFullToJSON)),
+    };
+}
 

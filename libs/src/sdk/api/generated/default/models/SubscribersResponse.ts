@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface SubscribersResponse
  */
-export interface SubscribersResponse 
-    {
-        /**
-        * 
-        * @type {Array<User>}
-        * @memberof SubscribersResponse
-        */
-        data?: Array<User>;
-    }
+export interface SubscribersResponse {
+    /**
+     * 
+     * @type {Array<User>}
+     * @memberof SubscribersResponse
+     */
+    data?: Array<User>;
+}
 
+/**
+ * Check if a given object implements the SubscribersResponse interface.
+ */
+export function instanceOfSubscribersResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function SubscribersResponseFromJSON(json: any): SubscribersResponse {
+    return SubscribersResponseFromJSONTyped(json, false);
+}
+
+export function SubscribersResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): SubscribersResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(UserFromJSON)),
+    };
+}
+
+export function SubscribersResponseToJSON(value?: SubscribersResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(UserToJSON)),
+    };
+}
 

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { DecodedUserToken } from './DecodedUserToken';
 import {
-    DecodedUserToken,
     DecodedUserTokenFromJSON,
     DecodedUserTokenFromJSONTyped,
     DecodedUserTokenToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface VerifyToken
  */
-export interface VerifyToken 
-    {
-        /**
-        * 
-        * @type {DecodedUserToken}
-        * @memberof VerifyToken
-        */
-        data?: DecodedUserToken;
-    }
+export interface VerifyToken {
+    /**
+     * 
+     * @type {DecodedUserToken}
+     * @memberof VerifyToken
+     */
+    data?: DecodedUserToken;
+}
 
+/**
+ * Check if a given object implements the VerifyToken interface.
+ */
+export function instanceOfVerifyToken(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function VerifyTokenFromJSON(json: any): VerifyToken {
+    return VerifyTokenFromJSONTyped(json, false);
+}
+
+export function VerifyTokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): VerifyToken {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : DecodedUserTokenFromJSON(json['data']),
+    };
+}
+
+export function VerifyTokenToJSON(value?: VerifyToken | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': DecodedUserTokenToJSON(value.data),
+    };
+}
 

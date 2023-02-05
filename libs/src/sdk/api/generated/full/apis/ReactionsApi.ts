@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -17,13 +16,7 @@
 import * as runtime from '../runtime';
 
 export interface BulkGetReactionsRequest {
-    /**
-     * The &#x60;reacted_to&#x60; transaction id(s) of the reactions in question.
-     */
     reactedToIds: Array<string>;
-    /**
-     * The type of reactions for which to query.
-     */
     type?: string;
 }
 
@@ -31,5 +24,42 @@ export interface BulkGetReactionsRequest {
  * 
  */
 export class ReactionsApi extends runtime.BaseAPI {
+
+    /**
+     * Gets reactions by reacted_to_id and type
+     */
+    async bulkGetReactionsRaw(requestParameters: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.reactedToIds === null || requestParameters.reactedToIds === undefined) {
+            throw new runtime.RequiredError('reactedToIds','Required parameter requestParameters.reactedToIds was null or undefined when calling bulkGetReactions.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.type !== undefined) {
+            queryParameters['type'] = requestParameters.type;
+        }
+
+        if (requestParameters.reactedToIds) {
+            queryParameters['reacted_to_ids'] = requestParameters.reactedToIds.join(runtime.COLLECTION_FORMATS["csv"]);
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/reactions`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Gets reactions by reacted_to_id and type
+     */
+    async bulkGetReactions(requestParameters: BulkGetReactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.bulkGetReactionsRaw(requestParameters, initOverrides);
+    }
 
 }

@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,31 +12,70 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
  * @interface ListenCount
  */
-export interface ListenCount 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof ListenCount
-        */
-        trackId?: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof ListenCount
-        */
-        date?: string;
-        /**
-        * 
-        * @type {number}
-        * @memberof ListenCount
-        */
-        listens?: number;
-    }
+export interface ListenCount {
+    /**
+     * 
+     * @type {number}
+     * @memberof ListenCount
+     */
+    trackId?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ListenCount
+     */
+    date?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ListenCount
+     */
+    listens?: number;
+}
 
+/**
+ * Check if a given object implements the ListenCount interface.
+ */
+export function instanceOfListenCount(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function ListenCountFromJSON(json: any): ListenCount {
+    return ListenCountFromJSONTyped(json, false);
+}
+
+export function ListenCountFromJSONTyped(json: any, ignoreDiscriminator: boolean): ListenCount {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'trackId': !exists(json, 'trackId') ? undefined : json['trackId'],
+        'date': !exists(json, 'date') ? undefined : json['date'],
+        'listens': !exists(json, 'listens') ? undefined : json['listens'],
+    };
+}
+
+export function ListenCountToJSON(value?: ListenCount | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'trackId': value.trackId,
+        'date': value.date,
+        'listens': value.listens,
+    };
+}
 

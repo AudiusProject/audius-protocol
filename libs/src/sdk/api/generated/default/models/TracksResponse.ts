@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { Track } from './Track';
 import {
-    Track,
     TrackFromJSON,
     TrackFromJSONTyped,
     TrackToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface TracksResponse
  */
-export interface TracksResponse 
-    {
-        /**
-        * 
-        * @type {Array<Track>}
-        * @memberof TracksResponse
-        */
-        data?: Array<Track>;
-    }
+export interface TracksResponse {
+    /**
+     * 
+     * @type {Array<Track>}
+     * @memberof TracksResponse
+     */
+    data?: Array<Track>;
+}
 
+/**
+ * Check if a given object implements the TracksResponse interface.
+ */
+export function instanceOfTracksResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function TracksResponseFromJSON(json: any): TracksResponse {
+    return TracksResponseFromJSONTyped(json, false);
+}
+
+export function TracksResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): TracksResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(TrackFromJSON)),
+    };
+}
+
+export function TracksResponseToJSON(value?: TracksResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(TrackToJSON)),
+    };
+}
 

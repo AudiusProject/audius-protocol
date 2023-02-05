@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,14 +12,15 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { TrackFull } from './TrackFull';
 import {
-    TrackFull,
     TrackFullFromJSON,
     TrackFullFromJSONTyped,
     TrackFullToJSON,
 } from './TrackFull';
+import type { VersionMetadata } from './VersionMetadata';
 import {
-    VersionMetadata,
     VersionMetadataFromJSON,
     VersionMetadataFromJSONTyped,
     VersionMetadataToJSON,
@@ -31,56 +31,111 @@ import {
  * @export
  * @interface RemixingResponse
  */
-export interface RemixingResponse 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof RemixingResponse
-        */
-        latest_chain_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof RemixingResponse
-        */
-        latest_indexed_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof RemixingResponse
-        */
-        latest_chain_slot_plays: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof RemixingResponse
-        */
-        latest_indexed_slot_plays: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof RemixingResponse
-        */
-        signature: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof RemixingResponse
-        */
-        timestamp: string;
-        /**
-        * 
-        * @type {VersionMetadata}
-        * @memberof RemixingResponse
-        */
-        version: VersionMetadata;
-        /**
-        * 
-        * @type {Array<TrackFull>}
-        * @memberof RemixingResponse
-        */
-        data?: Array<TrackFull>;
-    }
+export interface RemixingResponse {
+    /**
+     * 
+     * @type {number}
+     * @memberof RemixingResponse
+     */
+    latest_chain_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof RemixingResponse
+     */
+    latest_indexed_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof RemixingResponse
+     */
+    latest_chain_slot_plays: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof RemixingResponse
+     */
+    latest_indexed_slot_plays: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemixingResponse
+     */
+    signature: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof RemixingResponse
+     */
+    timestamp: string;
+    /**
+     * 
+     * @type {VersionMetadata}
+     * @memberof RemixingResponse
+     */
+    version: VersionMetadata;
+    /**
+     * 
+     * @type {Array<TrackFull>}
+     * @memberof RemixingResponse
+     */
+    data?: Array<TrackFull>;
+}
 
+/**
+ * Check if a given object implements the RemixingResponse interface.
+ */
+export function instanceOfRemixingResponse(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "latest_chain_block" in value;
+    isInstance = isInstance && "latest_indexed_block" in value;
+    isInstance = isInstance && "latest_chain_slot_plays" in value;
+    isInstance = isInstance && "latest_indexed_slot_plays" in value;
+    isInstance = isInstance && "signature" in value;
+    isInstance = isInstance && "timestamp" in value;
+    isInstance = isInstance && "version" in value;
+
+    return isInstance;
+}
+
+export function RemixingResponseFromJSON(json: any): RemixingResponse {
+    return RemixingResponseFromJSONTyped(json, false);
+}
+
+export function RemixingResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): RemixingResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'latest_chain_block': json['latest_chain_block'],
+        'latest_indexed_block': json['latest_indexed_block'],
+        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
+        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
+        'signature': json['signature'],
+        'timestamp': json['timestamp'],
+        'version': VersionMetadataFromJSON(json['version']),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(TrackFullFromJSON)),
+    };
+}
+
+export function RemixingResponseToJSON(value?: RemixingResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'latest_chain_block': value.latest_chain_block,
+        'latest_indexed_block': value.latest_indexed_block,
+        'latest_chain_slot_plays': value.latest_chain_slot_plays,
+        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
+        'signature': value.signature,
+        'timestamp': value.timestamp,
+        'version': VersionMetadataToJSON(value.version),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(TrackFullToJSON)),
+    };
+}
 

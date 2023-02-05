@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { UserSubscribers } from './UserSubscribers';
 import {
-    UserSubscribers,
     UserSubscribersFromJSON,
     UserSubscribersFromJSONTyped,
     UserSubscribersToJSON,
@@ -25,14 +25,48 @@ import {
  * @export
  * @interface BulkSubscribersResponse
  */
-export interface BulkSubscribersResponse 
-    {
-        /**
-        * 
-        * @type {Array<UserSubscribers>}
-        * @memberof BulkSubscribersResponse
-        */
-        data?: Array<UserSubscribers>;
-    }
+export interface BulkSubscribersResponse {
+    /**
+     * 
+     * @type {Array<UserSubscribers>}
+     * @memberof BulkSubscribersResponse
+     */
+    data?: Array<UserSubscribers>;
+}
 
+/**
+ * Check if a given object implements the BulkSubscribersResponse interface.
+ */
+export function instanceOfBulkSubscribersResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function BulkSubscribersResponseFromJSON(json: any): BulkSubscribersResponse {
+    return BulkSubscribersResponseFromJSONTyped(json, false);
+}
+
+export function BulkSubscribersResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): BulkSubscribersResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(UserSubscribersFromJSON)),
+    };
+}
+
+export function BulkSubscribersResponseToJSON(value?: BulkSubscribersResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(UserSubscribersToJSON)),
+    };
+}
 

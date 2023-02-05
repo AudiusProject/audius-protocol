@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { TrackFull } from './TrackFull';
 import {
-    TrackFull,
     TrackFullFromJSON,
     TrackFullFromJSONTyped,
     TrackFullToJSON,
@@ -25,20 +25,57 @@ import {
  * @export
  * @interface RemixesResponse
  */
-export interface RemixesResponse 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof RemixesResponse
-        */
-        count: number;
-        /**
-        * 
-        * @type {Array<TrackFull>}
-        * @memberof RemixesResponse
-        */
-        tracks?: Array<TrackFull>;
-    }
+export interface RemixesResponse {
+    /**
+     * 
+     * @type {number}
+     * @memberof RemixesResponse
+     */
+    count: number;
+    /**
+     * 
+     * @type {Array<TrackFull>}
+     * @memberof RemixesResponse
+     */
+    tracks?: Array<TrackFull>;
+}
 
+/**
+ * Check if a given object implements the RemixesResponse interface.
+ */
+export function instanceOfRemixesResponse(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "count" in value;
+
+    return isInstance;
+}
+
+export function RemixesResponseFromJSON(json: any): RemixesResponse {
+    return RemixesResponseFromJSONTyped(json, false);
+}
+
+export function RemixesResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): RemixesResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'count': json['count'],
+        'tracks': !exists(json, 'tracks') ? undefined : ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
+    };
+}
+
+export function RemixesResponseToJSON(value?: RemixesResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'count': value.count,
+        'tracks': value.tracks === undefined ? undefined : ((value.tracks as Array<any>).map(TrackFullToJSON)),
+    };
+}
 

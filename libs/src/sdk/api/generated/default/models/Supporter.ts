@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,8 +12,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -25,26 +25,67 @@ import {
  * @export
  * @interface Supporter
  */
-export interface Supporter 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof Supporter
-        */
-        rank: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof Supporter
-        */
-        amount: string;
-        /**
-        * 
-        * @type {User}
-        * @memberof Supporter
-        */
-        sender: User;
-    }
+export interface Supporter {
+    /**
+     * 
+     * @type {number}
+     * @memberof Supporter
+     */
+    rank: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof Supporter
+     */
+    amount: string;
+    /**
+     * 
+     * @type {User}
+     * @memberof Supporter
+     */
+    sender: User;
+}
 
+/**
+ * Check if a given object implements the Supporter interface.
+ */
+export function instanceOfSupporter(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "rank" in value;
+    isInstance = isInstance && "amount" in value;
+    isInstance = isInstance && "sender" in value;
+
+    return isInstance;
+}
+
+export function SupporterFromJSON(json: any): Supporter {
+    return SupporterFromJSONTyped(json, false);
+}
+
+export function SupporterFromJSONTyped(json: any, ignoreDiscriminator: boolean): Supporter {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'rank': json['rank'],
+        'amount': json['amount'],
+        'sender': UserFromJSON(json['sender']),
+    };
+}
+
+export function SupporterToJSON(value?: Supporter | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'rank': value.rank,
+        'amount': value.amount,
+        'sender': UserToJSON(value.sender),
+    };
+}
 

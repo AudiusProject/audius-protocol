@@ -1,4 +1,3 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
 /**
@@ -13,14 +12,15 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { Activity } from './Activity';
 import {
-    Activity,
     ActivityFromJSON,
     ActivityFromJSONTyped,
     ActivityToJSON,
 } from './Activity';
+import type { VersionMetadata } from './VersionMetadata';
 import {
-    VersionMetadata,
     VersionMetadataFromJSON,
     VersionMetadataFromJSONTyped,
     VersionMetadataToJSON,
@@ -31,56 +31,111 @@ import {
  * @export
  * @interface HistoryResponse
  */
-export interface HistoryResponse 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof HistoryResponse
-        */
-        latest_chain_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof HistoryResponse
-        */
-        latest_indexed_block: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof HistoryResponse
-        */
-        latest_chain_slot_plays: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof HistoryResponse
-        */
-        latest_indexed_slot_plays: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof HistoryResponse
-        */
-        signature: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof HistoryResponse
-        */
-        timestamp: string;
-        /**
-        * 
-        * @type {VersionMetadata}
-        * @memberof HistoryResponse
-        */
-        version: VersionMetadata;
-        /**
-        * 
-        * @type {Array<Activity>}
-        * @memberof HistoryResponse
-        */
-        data?: Array<Activity>;
-    }
+export interface HistoryResponse {
+    /**
+     * 
+     * @type {number}
+     * @memberof HistoryResponse
+     */
+    latest_chain_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof HistoryResponse
+     */
+    latest_indexed_block: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof HistoryResponse
+     */
+    latest_chain_slot_plays: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof HistoryResponse
+     */
+    latest_indexed_slot_plays: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof HistoryResponse
+     */
+    signature: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof HistoryResponse
+     */
+    timestamp: string;
+    /**
+     * 
+     * @type {VersionMetadata}
+     * @memberof HistoryResponse
+     */
+    version: VersionMetadata;
+    /**
+     * 
+     * @type {Array<Activity>}
+     * @memberof HistoryResponse
+     */
+    data?: Array<Activity>;
+}
 
+/**
+ * Check if a given object implements the HistoryResponse interface.
+ */
+export function instanceOfHistoryResponse(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "latest_chain_block" in value;
+    isInstance = isInstance && "latest_indexed_block" in value;
+    isInstance = isInstance && "latest_chain_slot_plays" in value;
+    isInstance = isInstance && "latest_indexed_slot_plays" in value;
+    isInstance = isInstance && "signature" in value;
+    isInstance = isInstance && "timestamp" in value;
+    isInstance = isInstance && "version" in value;
+
+    return isInstance;
+}
+
+export function HistoryResponseFromJSON(json: any): HistoryResponse {
+    return HistoryResponseFromJSONTyped(json, false);
+}
+
+export function HistoryResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): HistoryResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'latest_chain_block': json['latest_chain_block'],
+        'latest_indexed_block': json['latest_indexed_block'],
+        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
+        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
+        'signature': json['signature'],
+        'timestamp': json['timestamp'],
+        'version': VersionMetadataFromJSON(json['version']),
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(ActivityFromJSON)),
+    };
+}
+
+export function HistoryResponseToJSON(value?: HistoryResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'latest_chain_block': value.latest_chain_block,
+        'latest_indexed_block': value.latest_indexed_block,
+        'latest_chain_slot_plays': value.latest_chain_slot_plays,
+        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
+        'signature': value.signature,
+        'timestamp': value.timestamp,
+        'version': VersionMetadataToJSON(value.version),
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(ActivityToJSON)),
+    };
+}
 
