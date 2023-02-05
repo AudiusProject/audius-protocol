@@ -112,7 +112,7 @@ export class OAuth {
   loginSuccessCallback: LoginSuccessCallback | null
   loginErrorCallback: LoginErrorCallback | null
 
-  constructor(private config: OAuthConfig) {
+  constructor(private readonly config: OAuthConfig) {
     if (typeof window === 'undefined') {
       // TODO(nkang): Add link to documentation once written
       throw new Error(
