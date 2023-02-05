@@ -6,8 +6,7 @@ import {
   Configuration,
   PlaylistsApi,
   UsersApi,
-  TipsApi,
-  RequiredError
+  TipsApi
 } from './api/generated/default'
 import {
   Configuration as ConfigurationFull,
@@ -22,11 +21,11 @@ import {
 import fetch from 'cross-fetch'
 
 import { addAppNameMiddleware, jsonResponseMiddleware } from './middleware'
-import { DiscoveryNodeSelector } from './services/DiscoveryNodeSelector/DiscoveryNodeSelector'
-import type { WalletApiService } from './services/WalletApi'
+import { defaultWalletApi, defaultDiscoveryNodeSelector } from './services'
+import type { WalletApiService, DiscoveryNodeSelectorService } from './services'
 
 type ServicesContainer = {
-  discoveryNodeSelector: DiscoveryNodeSelector
+  discoveryNodeSelector: DiscoveryNodeSelectorService
   /**
    * Helpers to faciliate requests that require signatures or encryption
    */
@@ -42,22 +41,6 @@ type SdkConfig = {
    * Services injection
    */
   services?: Partial<ServicesContainer>
-}
-
-/**
- * Default wallet API which is used to surface errors when the walletApi is not configured
- */
-const defaultWalletAPI: WalletApiService = {
-  getSharedSecret: async (_: string | Uint8Array): Promise<Uint8Array> => {
-    throw new RequiredError(
-      'Wallet API configuration missing. This method requires using the walletApi config for write access.'
-    )
-  },
-  sign: async (_: string): Promise<[Uint8Array, number]> => {
-    throw new RequiredError(
-      'Wallet API configuration missing. This method requires using the walletApi config for write access.'
-    )
-  }
 }
 
 /**
@@ -89,10 +72,8 @@ export const sdk = (config: SdkConfig) => {
 
 const initializeServices = (config: SdkConfig) => {
   const defaultServices: ServicesContainer = {
-    discoveryNodeSelector: new DiscoveryNodeSelector({
-      bootstrapServices: []
-    }),
-    walletApi: defaultWalletAPI
+    discoveryNodeSelector: defaultDiscoveryNodeSelector,
+    walletApi: defaultWalletApi
   }
   return { ...defaultServices, ...config.services }
 }
@@ -106,14 +87,12 @@ const initializeApis = ({
 }) => {
   const defaultMiddleware = [
     addAppNameMiddleware({ appName }),
-    services.discoveryNodeSelector.createMiddleware()
+    services.discoveryNodeSelector.createMiddleware(),
+    jsonResponseMiddleware({ extractData: true })
   ]
   const generatedApiClientConfig = new Configuration({
     fetchApi: fetch,
-    middleware: [
-      ...defaultMiddleware,
-      jsonResponseMiddleware({ extractData: true })
-    ]
+    middleware: [...defaultMiddleware]
   })
 
   const tracks = new TracksApi(
@@ -139,10 +118,7 @@ const initializeApis = ({
 
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi: fetch,
-    middleware: [
-      ...defaultMiddleware,
-      jsonResponseMiddleware({ extractData: true })
-    ]
+    middleware: [...defaultMiddleware]
   })
 
   const full = {
