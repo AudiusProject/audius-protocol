@@ -49,25 +49,30 @@ export class ChatsApi extends BaseAPI {
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService
   ) {
     super(config)
-    this.assertNotNullOrUndefined(
-      walletService,
-      'params.walletApi',
-      'constructor'
-    )
     this.eventEmitter = new EventEmitter() as TypedEmitter<ChatEvents>
 
     // Listen for discovery node selection changes and reinit websocket
     this.discoveryNodeSelectorService.addEventListener('change', (endpoint) => {
       if (this.websocket) {
         this.websocket.close()
+        this.createWebsocket(endpoint).then((ws) => {
+          this.websocket = ws
+        })
       }
-      this.listen(endpoint).then((ws) => {
-        this.websocket = ws
-      })
     })
   }
 
   // #region QUERY
+
+  public async listen() {
+    const endpoint =
+      await this.discoveryNodeSelectorService.getSelectedEndpoint()
+    if (endpoint) {
+      this.websocket = await this.createWebsocket(endpoint)
+    } else {
+      throw new Error('No services available to listen to')
+    }
+  }
 
   public async get(requestParameters: ChatGetRequest) {
     this.assertNotNullOrUndefined(
@@ -98,15 +103,16 @@ export class ChatsApi extends BaseAPI {
     if (requestParameters?.after) {
       query['after'] = requestParameters.after
     }
-    const response = (await this.signAndSendRequest({
+    const response = await this.signAndSendRequest({
       method: 'GET',
       headers: {},
       path,
       query
-    })) as TypedCommsResponse<UserChat[]>
+    })
+    const json = (await response.json()) as TypedCommsResponse<UserChat[]>
 
     const decrypted = await Promise.all(
-      response.data.map(async (c) => await this.decryptLastChatMessage(c))
+      json.data.map(async (c) => await this.decryptLastChatMessage(c))
     )
     return {
       ...response,
@@ -534,7 +540,7 @@ export class ChatsApi extends BaseAPI {
     return args
   }
 
-  private async listen(endpoint: string) {
+  private async createWebsocket(endpoint: string) {
     const timestamp = new Date().getTime()
     const originalUrl = `/comms/chats/ws?timestamp=${timestamp}`
     const signatureHeader = await this.getSignatureHeader(originalUrl)
