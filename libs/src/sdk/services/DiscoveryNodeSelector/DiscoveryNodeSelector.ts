@@ -57,9 +57,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   }
 
   private set isBehind(isBehind: boolean) {
-    if (isBehind) {
+    if (isBehind && !this._isBehind) {
       this.warn('using behind discovery node')
-    } else {
+    } else if (!isBehind && this._isBehind) {
       this.info('discovery node no longer behind')
     }
     this._isBehind = isBehind
@@ -132,22 +132,22 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     const selectionPromise = this.select()
     return {
       pre: async (context: RequestContext) => {
-        if (!context.url.startsWith('http')) {
+        let url = context.url
+        if (!url.startsWith('http')) {
           const endpoint = await selectionPromise
-          context.url = `${endpoint}${context.url}`
-        } else if (
-          this.selectedNode &&
-          !context.url.startsWith(this.selectedNode)
-        ) {
+          url = `${endpoint}${context.url}`
+        } else if (this.selectedNode && !url.startsWith(this.selectedNode)) {
           // Wrong endpoint! We have a new discovery node!
           const oldUrl = new URL(context.url)
-          context.url = `${this.selectedNode}${oldUrl.pathname}${oldUrl.search}`
+          url = `${this.selectedNode}${oldUrl.pathname}${oldUrl.search}`
         }
+        return { url, init: context.init }
       },
       post: async (context: ResponseContext) => {
-        const response = context.response as Response
-        const endpointUrl = new URL(context.url)
-        const endpoint = `${endpointUrl.protocol}//${endpointUrl.hostname}`
+        const response = context.response
+        const endpoint = context.response.url.substring(
+          context.url.length - context.response.url.length
+        )
         if (response.ok) {
           // Even when successful, copy response to read JSON body to
           // check for signs the DN is unhealthy and reselect if necessary.
@@ -165,8 +165,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             reason,
             data: {
               block_difference:
-                data.latest_chain_block! - data.latest_indexed_block!,
-              version: data.version!.version
+                (data.latest_chain_block ?? 0) -
+                (data.latest_indexed_block ?? 0),
+              version: data.version?.version ?? ''
             }
           })
         } else {
@@ -182,8 +183,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             health,
             reason,
             data: {
-              block_difference: data!.block_difference!,
-              version: data!.version!
+              block_difference: data?.block_difference ?? 0,
+              version: data?.version ?? ''
             }
           })
         }
@@ -217,6 +218,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       (!this.config.blocklist || !this.config.blocklist.has(shortcircuit))
     ) {
       this.selectedNode = shortcircuit
+      this.info(`Selected discprov ${this.selectedNode}`, decisionTree)
       return shortcircuit
     }
 
@@ -280,6 +282,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           decisionTree.push({
             stage: DECISION_TREE_STATE.FAILED_AND_RESETTING
           })
+          this.error('Failed to select discovery node', decisionTree)
           return null
         }
       }
@@ -347,7 +350,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           if (!allowed || isExpired) {
             this.clearCached()
           } else {
-            return latestEndpoint
+            return latestEndpoint as string
           }
         }
       } catch (e) {

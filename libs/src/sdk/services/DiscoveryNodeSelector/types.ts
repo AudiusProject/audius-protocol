@@ -94,7 +94,7 @@ export type ServiceSelectionEvents = {
 }
 
 export type DiscoveryNodeSelectorService = {
-  getSelectedEndpoint: () => Promise<string>
+  getSelectedEndpoint: () => Promise<string | null>
   createMiddleware: () => Middleware
   addEventListener: TypedEventEmitter<ServiceSelectionEvents>['addListener']
   removeEventListener: TypedEventEmitter<ServiceSelectionEvents>['removeListener']

@@ -20,9 +20,9 @@ const isIndexerHealthy = ({
   data: HealthCheckResponseData
   maxBlockDiff: number
 }) =>
-  data.block_difference === null ||
   data.block_difference === undefined ||
-  data.block_difference > maxBlockDiff
+  data.block_difference === null ||
+  data.block_difference <= maxBlockDiff
 
 const isApiIndexerHealthy = ({
   data,
@@ -35,7 +35,7 @@ const isApiIndexerHealthy = ({
   data.latest_indexed_block === null ||
   data.latest_chain_block === undefined ||
   data.latest_indexed_block === undefined ||
-  data.latest_chain_block - data.latest_indexed_block > maxBlockDiff
+  data.latest_chain_block - data.latest_indexed_block <= maxBlockDiff
 
 const isSolanaIndexerHealthy = ({
   data,
@@ -59,10 +59,10 @@ const isApiSolanaIndexerHealthy = ({
   data: ApiHealthResponseData
   maxSlotDiffPlays: number | null
 }) =>
-  maxSlotDiffPlays &&
-  data.latest_chain_slot_plays &&
-  data.latest_indexed_slot_plays &&
-  data.latest_chain_slot_plays - data.latest_indexed_slot_plays >
+  !maxSlotDiffPlays ||
+  !data.latest_chain_slot_plays ||
+  !data.latest_indexed_slot_plays ||
+  data.latest_chain_slot_plays - data.latest_indexed_slot_plays <=
     maxSlotDiffPlays
 
 export const getDiscoveryNodeApiHealth = ({
