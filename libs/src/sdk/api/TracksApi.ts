@@ -1,4 +1,3 @@
-import type { DiscoveryProvider } from '../../services/discoveryProvider'
 import { BASE_PATH, RequiredError } from './generated/default/runtime'
 
 import {
@@ -6,13 +5,14 @@ import {
   StreamTrackRequest,
   TracksApi as GeneratedTracksApi
 } from './generated/default'
+import type { DiscoveryNodeSelectorService } from '../services/DiscoveryNodeSelector'
 
 export class TracksApi extends GeneratedTracksApi {
-  discoveryNode: DiscoveryProvider
-
-  constructor(configuration: Configuration, discoveryNode: DiscoveryProvider) {
+  constructor(
+    configuration: Configuration,
+    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService
+  ) {
     super(configuration)
-    this.discoveryNode = discoveryNode
   }
 
   /**
@@ -33,7 +33,7 @@ export class TracksApi extends GeneratedTracksApi {
       `{${'track_id'}}`,
       encodeURIComponent(String(requestParameters.trackId))
     )
-    const host = await this.discoveryNode.getHealthyDiscoveryProviderEndpoint(0)
+    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     return `${host}${BASE_PATH}${path}`
   }
 }
