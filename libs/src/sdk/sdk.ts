@@ -85,13 +85,13 @@ const initializeApis = ({
   appName: string
   services: ServicesContainer
 }) => {
-  const defaultMiddleware = [
+  const middleware = [
     addAppNameMiddleware({ appName }),
     services.discoveryNodeSelector.createMiddleware()
   ]
   const generatedApiClientConfig = new Configuration({
     fetchApi: fetch,
-    middleware: [...defaultMiddleware]
+    middleware
   })
 
   const tracks = new TracksApi(
@@ -106,7 +106,7 @@ const initializeApis = ({
     new Configuration({
       fetchApi: fetch,
       basePath: '',
-      middleware: [...defaultMiddleware]
+      middleware
     }),
     services.walletApi,
     services.discoveryNodeSelector
@@ -114,7 +114,7 @@ const initializeApis = ({
 
   const generatedApiClientConfigFull = new ConfigurationFull({
     fetchApi: fetch,
-    middleware: [...defaultMiddleware]
+    middleware
   })
 
   const full = {
