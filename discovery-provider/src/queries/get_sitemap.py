@@ -158,16 +158,13 @@ def get_track_slugs(session: Session, limit: int, offset: int):
 
 
 def get_playlist_slugs(session: Session, limit: int, offset: int):
-    slugs: List[Tuple[str, str]] = (
-        session.query(
-            User.handle_lc,
-            PlaylistRoute.slug,
-        )
-        .join(User, User.user_id == Playlist.playlist_owner_id)
+    slugs: List[Tuple[str, str, bool]] = (
+        session.query(User.handle_lc, PlaylistRoute.slug, Playlist.is_album)
+        .join(User, User.user_id == PlaylistRoute.owner_id)
         .join(Playlist, PlaylistRoute.playlist_id == Playlist.playlist_id)
         .filter(
             User.is_current == True,
-            PlaylistRoute.is_current == False,
+            PlaylistRoute.is_current == True,
             Playlist.is_current == True,
             Playlist.is_private == False,
         )
@@ -176,7 +173,9 @@ def get_playlist_slugs(session: Session, limit: int, offset: int):
         .offset(offset)
         .all()
     )
-    return [f"{slug[0]}/{slug[1]}" for slug in slugs]
+    return [
+        f"{slug[0]}/{'album' if slug[2] else 'playlist'}/{slug[1]}" for slug in slugs
+    ]
 
 
 def get_user_slugs(session: Session, limit: int, offset: int):
