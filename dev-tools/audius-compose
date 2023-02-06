@@ -366,9 +366,9 @@ def test_run(protocol_dir, service, args):
     if service == "discovery-provider":
         cmd = "pytest"
     elif service == "creator-node":
-        cmd = "npx mocha"
+        cmd = "./node_modules/.bin/mocha"
     elif service == "identity-service":
-        cmd = "npx mocha"
+        cmd = "./node_modules/.bin/mocha"
     else:
         click.secho(
             "Invalid service specified",
