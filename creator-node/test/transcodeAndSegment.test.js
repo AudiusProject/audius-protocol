@@ -9,6 +9,10 @@ describe('test transcode_and_segment route', function () {
 
   before(function () {
     testUuid = uuid.v4()
+
+    Object.keys(require.cache).forEach(function (key) {
+      delete require.cache[key]
+    })
   })
 
   beforeEach(async function () {

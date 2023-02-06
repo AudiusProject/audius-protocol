@@ -65,6 +65,7 @@ services:
   creator-node-db:
     image: postgres:11.4
     user: postgres
+    command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_DB: "creator_node"
     healthcheck:
@@ -128,6 +129,7 @@ services:
   discovery-provider-db:
     image: postgres:11.4
     user: postgres
+    command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_DB: "discovery_provider"
     healthcheck:
@@ -183,6 +185,7 @@ services:
   identity-service-db:
     image: postgres:11.4
     user: postgres
+    command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     healthcheck:
       test: ["CMD", "pg_isready"]
       interval: 10s
