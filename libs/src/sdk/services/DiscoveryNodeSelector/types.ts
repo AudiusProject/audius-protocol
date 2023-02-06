@@ -28,7 +28,15 @@ export type BackupHealthData = {
   version: string
 }
 
+export type Backup = BackupHealthData & {
+  endpoint: string
+}
+
 export type DiscoveryNodeSelectorServiceConfigInternal = {
+  /**
+   * Starts the service with a preset selection. Useful for caching/eager loading
+   */
+  initialSelectedNode: string | null
   /**
    * Services from this list should not be picked
    */
@@ -79,15 +87,12 @@ export type DiscoveryNodeSelectorServiceConfigInternal = {
   bootstrapServices: string[]
 }
 
-export type DiscoveryNodeSelectorServiceConfig =
-  Partial<DiscoveryNodeSelectorServiceConfigInternal> & {
-    /**
-     * This should be a list of registered discovery nodes that can be used to
-     * initialize the selection and get the current registered list from.
-     * @example ['https://discoverynode.audius.co', 'https://disoverynode2.audius.co']
-     */
-    bootstrapServices: string[]
-  }
+export type DiscoveryNodeSelectorServiceConfig = Partial<
+  Omit<DiscoveryNodeSelectorServiceConfigInternal, 'healthCheckThresholds'>
+> & {
+  healthCheckThresholds?: Partial<HealthCheckThresholds>
+  bootstrapServices: string[]
+}
 
 export type ServiceSelectionEvents = {
   change: (endpoint: string) => void

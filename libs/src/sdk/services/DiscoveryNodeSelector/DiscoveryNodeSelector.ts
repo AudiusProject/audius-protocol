@@ -1,11 +1,9 @@
 import semver from 'semver'
 import sampleSize from 'lodash/sampleSize'
-import type { ApiHealthResponseData } from './healthCheckTypes'
+import { ApiHealthResponseData, HealthCheckStatus } from './healthCheckTypes'
 import {
-  getDiscoveryNodeHealth,
-  DiscoveryNodeHealth,
-  getHealthCheck,
-  getDiscoveryNodeApiHealth
+  getDiscoveryNodeApiHealth,
+  getDiscoveryNodeHealthCheck
 } from './healthChecks'
 import { promiseAny } from '../../utils/promiseAny'
 import {
@@ -19,6 +17,7 @@ import type {
 } from '../../api/generated/default'
 import {
   BackupHealthData,
+  Backup,
   Decision,
   DECISION_TREE_STATE,
   DiscoveryNodeSelectorService,
@@ -59,9 +58,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
   private set isBehind(isBehind: boolean) {
     if (isBehind && !this._isBehind) {
-      this.warn('using behind discovery node')
+      this.warn('using behind discovery node', this.selectedNode)
     } else if (!isBehind && this._isBehind) {
-      this.info('discovery node no longer behind')
+      this.info('discovery node no longer behind', this.selectedNode)
     }
     this._isBehind = isBehind
   }
@@ -75,7 +74,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * List of services that were found to be unhealthy but still usable in a pinch
    */
-  private backupServices: Record<string, BackupHealthData>
+  private backupServices: Record<string, Backup>
 
   /**
    * Reference to a setTimeout for removing services from the unhealthy list so they can be retried
@@ -87,6 +86,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    */
   private backupCleanupTimeout: NodeJS.Timeout | null = null
 
+  /**
+   * Composed EventEmitter for alerting listeners of reselections
+   */
   private readonly eventEmitter: TypedEventEmitter<ServiceSelectionEvents>
 
   /**
@@ -105,13 +107,17 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   constructor(config: DiscoveryNodeSelectorServiceConfig) {
     this.config = {
       ...defaultDiscoveryNodeSelectorConfig,
-      ...config
+      ...config,
+      healthCheckThresholds: {
+        ...defaultDiscoveryNodeSelectorConfig.healthCheckThresholds,
+        ...config.healthCheckThresholds
+      }
     }
     this.services = config.bootstrapServices
     this._isBehind = false
     this.unhealthyServices = new Set([])
     this.backupServices = {}
-    this.selectedNode = null
+    this.selectedNode = this.config.initialSelectedNode
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
     this.addEventListener = this.eventEmitter.addListener.bind(
@@ -174,9 +180,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         } else {
           // On request failure, check health_check and reselect if unhealthy
           this.warn('request failed', context)
-          const data = await getHealthCheck(endpoint)
-          const { health, reason } = await getDiscoveryNodeHealth({
-            data,
+          const { health, data, reason } = await getDiscoveryNodeHealthCheck({
+            endpoint,
             healthCheckThresholds: this.config.healthCheckThresholds
           })
           await this.reselectIfNecessary({
@@ -206,6 +211,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    * @returns a healthy discovery node endpoint
    */
   private async select() {
+    this.debug('Selecting new discovery node...')
     // If a short circuit is provided, take it. Don't check it, just use it.
     const shortcircuit = await this.getCached()
     const decisionTree: Decision[] = []
@@ -274,6 +280,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             stage: DECISION_TREE_STATE.SELECTED_FROM_BACKUP,
             val: backup
           })
+          this.selectedNode = backup
+          this.isBehind = true
           return backup
         } else {
           // Nothing could be found that was healthy.
@@ -300,14 +308,17 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
 
       // Race this "round" of services to find the quickest healthy node
       selectedService = await this.anyHealthyEndpoint(round)
+      attemptedServicesCount += round.length
 
       // Retry if none were found
       if (!selectedService) {
         decisionTree.push({
           stage: DECISION_TREE_STATE.ROUND_FAILED_RETRY
         })
+        this.debug('No healthy services found. Attempting another round...', {
+          attemptedServicesCount
+        })
       }
-      attemptedServicesCount += round.length
     }
 
     // Trigger a cleanup event for all of the unhealthy and backup services,
@@ -394,33 +405,31 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    */
   private async anyHealthyEndpoint(endpoints: string[]) {
     const abortController = new AbortControllerPolyfill() as AbortController
-    const timeoutPromise = new Promise<null>((resolve, _reject) =>
-      setTimeout(() => {
-        abortController.abort()
-        resolve(null)
-      }, this.config.requestTimeout)
-    )
     const requestPromises = endpoints.map(async (endpoint) => {
-      const data = await getHealthCheck(endpoint, {
-        signal: abortController.signal
-      })
-      const { health, reason } = await getDiscoveryNodeHealth({
-        data,
+      const { health, data, reason } = await getDiscoveryNodeHealthCheck({
+        endpoint,
+        fetchOptions: { signal: abortController.signal },
+        timeoutMs: this.config.requestTimeout,
         healthCheckThresholds: this.config.healthCheckThresholds
       })
-      if (health !== DiscoveryNodeHealth.HEALTHY) {
-        if (data === null || health === DiscoveryNodeHealth.UNHEALTHY) {
+      if (health !== HealthCheckStatus.HEALTHY) {
+        if (health === HealthCheckStatus.UNHEALTHY) {
           this.unhealthyServices.add(endpoint)
-        } else if (health === DiscoveryNodeHealth.BEHIND) {
-          this.backupServices[endpoint] = {
-            block_difference: data.block_difference!,
-            version: data.version!
+        } else if (health === HealthCheckStatus.BEHIND) {
+          this.unhealthyServices.add(endpoint)
+          if (data) {
+            this.backupServices[endpoint] = {
+              endpoint,
+              block_difference: data.block_difference!,
+              version: data.version!
+            }
           }
         }
         this.warn('health_check', endpoint, health, reason)
         throw new Error(`${endpoint} ${health}: ${reason}`)
       } else {
         // We're healthy!
+        this.info('health_check', endpoint, health)
         // Cancel any existing requests from other promises
         abortController.abort()
         // Refresh service list with the healthy list from DN
@@ -430,12 +439,18 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         ) {
           this.services = data.network.discoveryNodes
         } else {
-          this.warn("couldn't load new service list from healthy DN!")
+          this.warn("Couldn't load new service list from healthy service")
         }
         return endpoint
       }
     })
-    return await promiseAny([timeoutPromise, ...requestPromises])
+
+    try {
+      return await promiseAny(requestPromises)
+    } catch (e) {
+      this.error('No healthy nodes', e)
+      return null
+    }
   }
 
   /**
@@ -450,20 +465,21 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     data
   }: {
     endpoint: string
-    health: DiscoveryNodeHealth
+    health: HealthCheckStatus
     reason?: string
     data: BackupHealthData
   }) {
-    if (health === DiscoveryNodeHealth.HEALTHY) {
+    if (health === HealthCheckStatus.HEALTHY) {
       this.isBehind = false
       return endpoint
-    } else if (this.isBehind && DiscoveryNodeHealth.BEHIND) {
+    } else if (this.isBehind && HealthCheckStatus.BEHIND) {
       return endpoint
     } else {
-      if (health === DiscoveryNodeHealth.UNHEALTHY || !data) {
+      if (health === HealthCheckStatus.UNHEALTHY || !data) {
         this.unhealthyServices.add(endpoint)
-      } else if (health === DiscoveryNodeHealth.BEHIND) {
+      } else if (health === HealthCheckStatus.BEHIND) {
         this.backupServices[endpoint] = {
+          endpoint,
           block_difference: data.block_difference,
           version: data.version
         }

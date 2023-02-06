@@ -1,10 +1,13 @@
 import semver from 'semver'
-import type {
+import {
   ApiHealthResponseData,
   HealthCheckResponseData,
+  HealthCheckStatus,
+  HealthCheckStatusReason,
   HealthCheckThresholds
 } from './healthCheckTypes'
 import { DISCOVERY_SERVICE_NAME } from './constants'
+import fetch from 'cross-fetch'
 
 const hasSameMajorAndMinorVersion = (version1: string, version2: string) => {
   return (
@@ -76,7 +79,7 @@ export const getDiscoveryNodeApiHealth = ({
     data.version?.service &&
     data.version.service !== DISCOVERY_SERVICE_NAME
   ) {
-    return { health: DiscoveryNodeHealth.UNHEALTHY, reason: 'name' }
+    return { health: HealthCheckStatus.UNHEALTHY, reason: 'name' }
   }
   if (minVersion) {
     if (
@@ -85,69 +88,58 @@ export const getDiscoveryNodeApiHealth = ({
       !hasSameMajorAndMinorVersion(data.version.version, minVersion)
     ) {
       return {
-        health: DiscoveryNodeHealth.UNHEALTHY,
+        health: HealthCheckStatus.UNHEALTHY,
         reason: 'version'
       }
     }
 
     if (semver.lt(data.version.version, minVersion)) {
-      return { health: DiscoveryNodeHealth.BEHIND, reason: 'version' }
+      return { health: HealthCheckStatus.BEHIND, reason: 'version' }
     }
   }
   if (!isApiIndexerHealthy({ data, maxBlockDiff })) {
-    return { health: DiscoveryNodeHealth.BEHIND, reason: 'block diff' }
+    return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
   }
   if (!isApiSolanaIndexerHealthy({ data, maxSlotDiffPlays })) {
-    return { health: DiscoveryNodeHealth.BEHIND, reason: 'slot diff' }
+    return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
   }
-  return { health: DiscoveryNodeHealth.HEALTHY }
+  return { health: HealthCheckStatus.HEALTHY }
 }
 
-export enum DiscoveryNodeHealth {
-  UNHEALTHY = 'unhealthy',
-  BEHIND = 'behind',
-  HEALTHY = 'healthy'
-}
-
-export const getHealthCheck = async (
+const getHealthCheckData = async (
   endpoint: string,
   fetchOptions?: RequestInit
 ) => {
   const healthCheckURL = `${endpoint}/health_check`
   let data = null
-  try {
-    // Don't use context.fetch to bypass middleware
-    const response = await fetch(healthCheckURL, fetchOptions)
-    if (!response.ok) {
-      throw new Error(response.statusText)
-    }
-    const json = await response.json()
-    data = json.data as HealthCheckResponseData
-    if (!data) {
-      throw new Error('Empty data')
-    }
-    return data
-  } catch (e) {
-    return null
+  const response = await fetch(healthCheckURL, fetchOptions)
+  if (!response.ok) {
+    throw new Error(response.statusText)
   }
+  const json = await response.json()
+  data = json.data as HealthCheckResponseData
+  if (!data) {
+    throw new Error('data')
+  }
+  return data
 }
 
-export const getDiscoveryNodeHealth = async ({
+const toHealthStatusReason = ({
   data,
   healthCheckThresholds: { minVersion, maxBlockDiff, maxSlotDiffPlays }
 }: {
   data: HealthCheckResponseData | null
   healthCheckThresholds: HealthCheckThresholds
-}) => {
+}): HealthCheckStatusReason => {
   if (data === null) {
     return {
-      health: DiscoveryNodeHealth.UNHEALTHY,
+      health: HealthCheckStatus.UNHEALTHY,
       reason: 'data'
     }
   }
   if (data.service !== DISCOVERY_SERVICE_NAME) {
     return {
-      health: DiscoveryNodeHealth.UNHEALTHY,
+      health: HealthCheckStatus.UNHEALTHY,
       reason: 'name'
     }
   }
@@ -158,21 +150,58 @@ export const getDiscoveryNodeHealth = async ({
       !hasSameMajorAndMinorVersion(data.version, minVersion)
     ) {
       return {
-        health: DiscoveryNodeHealth.UNHEALTHY,
+        health: HealthCheckStatus.UNHEALTHY,
         reason: 'version'
       }
     }
 
     if (semver.lt(data.version, minVersion)) {
-      return { health: DiscoveryNodeHealth.BEHIND, reason: 'version' }
+      return { health: HealthCheckStatus.BEHIND, reason: 'version' }
     }
   }
   if (!isIndexerHealthy({ data, maxBlockDiff })) {
-    return { health: DiscoveryNodeHealth.BEHIND, reason: 'block diff' }
+    return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
   }
   if (!isSolanaIndexerHealthy({ data, maxSlotDiffPlays })) {
-    return { health: DiscoveryNodeHealth.BEHIND, reason: 'slot diff' }
+    return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
   }
 
-  return { health: DiscoveryNodeHealth.HEALTHY }
+  return { health: HealthCheckStatus.HEALTHY }
+}
+
+export const getDiscoveryNodeHealthCheck = async ({
+  endpoint,
+  healthCheckThresholds,
+  fetchOptions,
+  timeoutMs
+}: {
+  endpoint: string
+  healthCheckThresholds: HealthCheckThresholds
+  fetchOptions?: RequestInit
+  timeoutMs?: number
+}) => {
+  const timeoutPromises = []
+  if (timeoutMs !== undefined) {
+    const timeoutPromise = new Promise<never>((_resolve, reject) =>
+      setTimeout(() => reject(new Error('timeout')), timeoutMs)
+    )
+    timeoutPromises.push(timeoutPromise)
+  }
+  try {
+    const data = await Promise.race([
+      getHealthCheckData(endpoint, fetchOptions),
+      ...timeoutPromises
+    ])
+    const reason = toHealthStatusReason({
+      data,
+      healthCheckThresholds
+    })
+    return { ...reason, data }
+  } catch (e) {
+    return {
+      health: HealthCheckStatus.UNHEALTHY,
+      reason: (e as Error)?.message,
+      data: null
+    }
+  }
 }

@@ -18,6 +18,7 @@ export const DISCOVERY_REGRESSED_MODE_TIMEOUT_MS = 600000 // 10 min
 
 export const defaultDiscoveryNodeSelectorConfig: DiscoveryNodeSelectorServiceConfigInternal =
   {
+    initialSelectedNode: null,
     blocklist: null,
     allowlist: null,
     maxConcurrentRequests: 6,

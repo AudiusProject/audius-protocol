@@ -170,3 +170,14 @@ export type HealthCheckThresholds = {
    */
   maxBlockDiff: number
 }
+
+export enum HealthCheckStatus {
+  UNHEALTHY = 'unhealthy',
+  BEHIND = 'behind',
+  HEALTHY = 'healthy'
+}
+
+export type HealthCheckStatusReason = {
+  health: HealthCheckStatus
+  reason?: string
+}
