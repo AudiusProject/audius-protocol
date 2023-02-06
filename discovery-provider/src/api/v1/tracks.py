@@ -106,7 +106,7 @@ def get_single_track(track_id, current_user_id, endpoint_ns, exclude_premium=Tru
     args = {
         "id": [track_id],
         "with_users": True,
-        "filter_deleted": True,
+        "filter_deleted": False,
         "exclude_premium": exclude_premium,
         "current_user_id": current_user_id,
     }

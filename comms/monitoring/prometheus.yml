@@ -1,0 +1,15 @@
+global:
+  scrape_interval:     5s # By default, scrape targets every 5 seconds.
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'nats-test-server'
+
+# A scrape configuration containing exactly one endpoint to scrape:
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'nats-test-server'
+
+    static_configs:
+      - targets: ['host.docker.internal:8926']

@@ -216,68 +216,79 @@ type StickyInvite struct {
 }
 
 type ChatCreateRPCMethod string
+
 const (
 	MethodChatCreate ChatCreateRPCMethod = "chat.create"
 )
 
 type ChatDeleteRPCMethod string
+
 const (
 	MethodChatDelete ChatDeleteRPCMethod = "chat.delete"
 )
 
 type ChatInviteRPCMethod string
+
 const (
 	MethodChatInvite ChatInviteRPCMethod = "chat.invite"
 )
 
 type ChatMessageRPCMethod string
+
 const (
 	MethodChatMessage ChatMessageRPCMethod = "chat.message"
 )
 
 type ChatReactRPCMethod string
+
 const (
 	MethodChatReact ChatReactRPCMethod = "chat.react"
 )
 
 type ChatReadRPCMethod string
+
 const (
 	MethodChatRead ChatReadRPCMethod = "chat.read"
 )
 
 type ChatBlockRPCMethod string
+
 const (
 	MethodChatBlock ChatBlockRPCMethod = "chat.block"
 )
 
 type ChatUnblockRPCMethod string
+
 const (
 	MethodChatUnblock ChatUnblockRPCMethod = "chat.unblock"
 )
 
 type ChatPermitRPCMethod string
+
 const (
 	MethodChatPermit ChatPermitRPCMethod = "chat.permit"
 )
 
 // Defines who the user allows to message them
 type ChatPermission string
+
 const (
-	All ChatPermission = "all"
+	All       ChatPermission = "all"
 	Followees ChatPermission = "followees"
-	None ChatPermission = "none"
-	Tippers ChatPermission = "tippers"
+	None      ChatPermission = "none"
+	Tippers   ChatPermission = "tippers"
 )
 
 type RPCMethod string
+
 const (
-	RPCMethodChatBlock RPCMethod = "chat.block"
-	RPCMethodChatCreate RPCMethod = "chat.create"
-	RPCMethodChatDelete RPCMethod = "chat.delete"
-	RPCMethodChatInvite RPCMethod = "chat.invite"
+	RPCMethodChatBlock   RPCMethod = "chat.block"
+	RPCMethodChatCreate  RPCMethod = "chat.create"
+	RPCMethodChatDelete  RPCMethod = "chat.delete"
+	RPCMethodChatInvite  RPCMethod = "chat.invite"
 	RPCMethodChatMessage RPCMethod = "chat.message"
-	RPCMethodChatPermit RPCMethod = "chat.permit"
-	RPCMethodChatReact RPCMethod = "chat.react"
-	RPCMethodChatRead RPCMethod = "chat.read"
+	RPCMethodChatPermit  RPCMethod = "chat.permit"
+	RPCMethodChatReact   RPCMethod = "chat.react"
+	RPCMethodChatRead    RPCMethod = "chat.read"
 	RPCMethodChatUnblock RPCMethod = "chat.unblock"
 )
