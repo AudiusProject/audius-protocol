@@ -28,6 +28,7 @@ import {
 } from './types'
 import type TypedEventEmitter from 'typed-emitter'
 import EventEmitter from 'events'
+import AbortController from 'abort-controller'
 
 export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
