@@ -15,7 +15,6 @@ export const defaultDiscoveryNodeSelectorConfig: DiscoveryNodeSelectorServiceCon
     unhealthyTTL: 3600000, // 1 hour
     backupsTTL: 120000, // 2 min
     cacheTTL: 600000, //  10 min
-    localStorage: null,
     healthCheckThresholds: {
       minVersion: null,
       maxSlotDiffPlays: null,
