@@ -12,7 +12,16 @@ export type ApiHealthResponseData = Partial<{
   data: unknown
 }>
 
-export type HealthCheckResponseData = Partial<{
+// Adjusted from Terry: https://stackoverflow.com/questions/61132262/typescript-deep-partial
+type DeepPartial<T> = T extends any[]
+  ? T
+  : T extends object
+  ? {
+      [P in keyof T]?: DeepPartial<T[P]>
+    }
+  : T
+
+export type HealthCheckResponseData = DeepPartial<{
   auto_upgrade_enabled: boolean
   block_difference: number
   challenge_last_event_age_sec: number

@@ -4,11 +4,18 @@ import {
   test,
   beforeAll,
   afterAll,
-  afterEach
+  afterEach,
+  jest
 } from '@jest/globals'
 import { setupServer } from 'msw/node'
 import { rest } from 'msw'
 import { DiscoveryNodeSelector } from './DiscoveryNodeSelector'
+import type {
+  ApiHealthResponseData,
+  HealthCheckResponseData
+} from './healthCheckTypes'
+import fetch, { Response } from 'cross-fetch'
+import type { FetchParams } from '../../api/generated/default'
 
 // jest.mock('./healthChecks', () => ({
 //   getHealthCheck: jest.fn(() => ({}))
@@ -20,15 +27,17 @@ const BEHIND_LARGE_BLOCKDIFF_NODE = 'https://behind-largeblockdiff.audius.co'
 const BEHIND_PATCH_VERSION_NODE = 'https://behind-patchversion.audius.co'
 const BEHIND_MINOR_VERSION_NODE = 'https://behind-minorversion.audius.co'
 const UNHEALTHY_NODE = 'https://unhealthy.audius.co'
+const UNHEALTHY_DATA_NODE = 'https://unhealthy-data.audius.co'
 const UNRESPONSIVE_NODE = 'https://unresponsive.audius.co'
+const CONTENT_NODE = 'https://contentnode.audius.co'
 
-// const generateHealthyNodes = (count: number) => {
-//   const nodes = []
-//   for (let id = 0; id < count; id++) {
-//     nodes.push(`https://healthy${id}.audius.co`)
-//   }
-//   return nodes
-// }
+const generateSlowerHealthyNodes = (count: number) => {
+  const nodes = []
+  for (let id = 0; id < count; id++) {
+    nodes.push(`https://healthy-slow${id}.audius.co`)
+  }
+  return nodes
+}
 
 const generateUnhealthyNodes = (count: number) => {
   const nodes = []
@@ -38,12 +47,33 @@ const generateUnhealthyNodes = (count: number) => {
   return nodes
 }
 
+const NETWORK_DISCOVERY_NODES = [
+  HEALTHY_NODE,
+  ...generateSlowerHealthyNodes(10)
+]
+
 const handlers = [
   // Healthy
   rest.get(
     /https:\/\/healthy(.*).audius.co\/health_check/,
     (_req, res, ctx) => {
+      const data: HealthCheckResponseData = {
+        service: 'discovery-node',
+        version: '1.2.3',
+        block_difference: 0,
+        network: {
+          discoveryNodes: NETWORK_DISCOVERY_NODES
+        }
+      }
+      return res(ctx.status(200), ctx.json({ data }))
+    }
+  ),
+  // Slower healthy
+  rest.get(
+    /https:\/\/healthy-slow(.*).audius.co\/health_check/,
+    (_req, res, ctx) => {
       return res(
+        ctx.delay(50),
         ctx.status(200),
         ctx.json({
           data: {
@@ -71,6 +101,7 @@ const handlers = [
       )
     }
   ),
+
   // Very behind blockdiff
   rest.get(
     /https:\/\/behind-largeblockdiff(.*).audius.co\/health_check/,
@@ -142,13 +173,26 @@ const handlers = [
       return res(ctx.status(502))
     }
   ),
+  // Unhealthy (no data)
+  rest.get(`${UNHEALTHY_DATA_NODE}/health_check`, (_req, res, ctx) => {
+    return res(ctx.status(200), ctx.json(null))
+  }),
   // Unresponsive
   rest.get(
     /https:\/\/unresponsive(.*).audius.co\/health_check/,
     (_req, res, ctx) => {
-      return res(ctx.delay(10_000), ctx.status(502))
+      return res(ctx.delay('infinite'))
     }
-  )
+  ),
+  // Content Node
+  rest.get(`${CONTENT_NODE}/health_check`, (_req, res, ctx) => {
+    const data: HealthCheckResponseData = {
+      service: 'content-node',
+      version: '1.2.3',
+      block_difference: 0
+    }
+    return res(ctx.json({ data }))
+  })
 ]
 const server = setupServer(...handlers)
 
@@ -176,23 +220,7 @@ describe('discoveryNodeSelector', () => {
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(HEALTHY_NODE)
     expect(selector.isBehind).toBe(false)
-  })
-
-  test('falls back to best blockdiff backup', async () => {
-    const selector = new DiscoveryNodeSelector({
-      healthCheckThresholds: {
-        minVersion: '1.2.3'
-      },
-      bootstrapServices: [
-        BEHIND_BLOCKDIFF_NODE,
-        BEHIND_LARGE_BLOCKDIFF_NODE,
-        BEHIND_MINOR_VERSION_NODE,
-        UNHEALTHY_NODE
-      ]
-    })
-    const selected = await selector.getSelectedEndpoint()
-    expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
-    expect(selector.isBehind).toBe(true)
+    expect(selector.getServices()).toStrictEqual(NETWORK_DISCOVERY_NODES)
   })
 
   test('falls back to patch version backup before blockdiff backup', async () => {
@@ -213,16 +241,21 @@ describe('discoveryNodeSelector', () => {
     expect(selector.isBehind).toBe(true)
   })
 
-  test('timeout request before too long', async () => {
+  test('falls back to best blockdiff backup', async () => {
     const selector = new DiscoveryNodeSelector({
       healthCheckThresholds: {
         minVersion: '1.2.3'
       },
-      requestTimeout: 50,
-      bootstrapServices: [UNRESPONSIVE_NODE]
+      bootstrapServices: [
+        BEHIND_BLOCKDIFF_NODE,
+        BEHIND_LARGE_BLOCKDIFF_NODE,
+        BEHIND_MINOR_VERSION_NODE,
+        UNHEALTHY_NODE
+      ]
     })
     const selected = await selector.getSelectedEndpoint()
-    expect(selected).toBe(null)
+    expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
+    expect(selector.isBehind).toBe(true)
   })
 
   test('respects allowlist', async () => {
@@ -275,5 +308,223 @@ describe('discoveryNodeSelector', () => {
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(HEALTHY_NODE)
     expect(selector.isBehind).toBe(false)
+  })
+
+  test('selects fastest discovery node', async () => {
+    const selector = new DiscoveryNodeSelector({
+      bootstrapServices: [HEALTHY_NODE, ...generateSlowerHealthyNodes(5)]
+    })
+    const selected = await selector.getSelectedEndpoint()
+    expect(selected).toBe(HEALTHY_NODE)
+    expect(selector.isBehind).toBe(false)
+  })
+
+  test('does not select unhealthy nodes', async () => {
+    const selector = new DiscoveryNodeSelector({
+      requestTimeout: 50,
+      bootstrapServices: [
+        CONTENT_NODE,
+        UNHEALTHY_DATA_NODE,
+        UNHEALTHY_NODE,
+        UNRESPONSIVE_NODE
+      ]
+    })
+    const selected = await selector.getSelectedEndpoint()
+    expect(selected).toBe(null)
+  })
+
+  describe('middleware', () => {
+    test('prepends URL to requests', async () => {
+      const selector = new DiscoveryNodeSelector({
+        bootstrapServices: [HEALTHY_NODE]
+      })
+      const middleware = selector.createMiddleware()
+      expect(middleware.pre).not.toBeUndefined()
+      const result = await middleware.pre!({
+        fetch: fetch,
+        url: '/v1/full/tracks',
+        init: {}
+      })
+      expect(result).not.toBeUndefined()
+      expect((result as FetchParams).url.startsWith(HEALTHY_NODE))
+    })
+
+    test('reselects if request succeeds but node fell behind', async () => {
+      const selector = new DiscoveryNodeSelector({
+        initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      })
+      const middleware = selector.createMiddleware()
+      expect(middleware.post).not.toBeUndefined()
+
+      const changeHandler = jest.fn(() => {})
+      selector.addEventListener('change', changeHandler)
+
+      const data: ApiHealthResponseData = {
+        latest_chain_block: 100,
+        latest_indexed_block: 50,
+        latest_chain_slot_plays: 100,
+        latest_indexed_slot_plays: 100,
+        version: {
+          service: 'discovery-node',
+          version: '1.2.3'
+        }
+      }
+      await middleware.post!({
+        fetch: fetch,
+        url: '/v1/full/tracks',
+        init: {},
+        response: new Response(JSON.stringify(data))
+      })
+      expect(changeHandler).toBeCalledWith(HEALTHY_NODE)
+    })
+
+    test("doesn't reselect if behind but was already behind", async () => {
+      const selector = new DiscoveryNodeSelector({
+        bootstrapServices: [BEHIND_BLOCKDIFF_NODE]
+      })
+      await selector.getSelectedEndpoint()
+      expect(selector.isBehind).toBe(true)
+
+      const middleware = selector.createMiddleware()
+      expect(middleware.post).not.toBeUndefined()
+
+      const changeHandler = jest.fn(() => {})
+      selector.addEventListener('change', changeHandler)
+
+      const data: ApiHealthResponseData = {
+        latest_chain_block: 100,
+        latest_indexed_block: 50,
+        latest_chain_slot_plays: 100,
+        latest_indexed_slot_plays: 100,
+        version: {
+          service: 'discovery-node',
+          version: '1.2.3'
+        }
+      }
+      await middleware.post!({
+        fetch: fetch,
+        url: '/v1/full/tracks',
+        init: {},
+        response: new Response(JSON.stringify(data))
+      })
+      expect(changeHandler).not.toBeCalled()
+    })
+
+    test('reselects if request fails and node fell behind', async () => {
+      const selector = new DiscoveryNodeSelector({
+        initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      })
+      const middleware = selector.createMiddleware()
+      expect(middleware.post).not.toBeUndefined()
+
+      const changeHandler = jest.fn(() => {})
+      selector.addEventListener('change', changeHandler)
+
+      const response = {
+        ok: false,
+        url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
+        json: async function (): Promise<any> {
+          return null
+        }
+      }
+
+      await middleware.post!({
+        fetch: fetch,
+        url: '/v1/full/tracks',
+        init: {},
+        response: response as Response
+      })
+      expect(changeHandler).toBeCalledWith(HEALTHY_NODE)
+    })
+
+    test('reselects if request fails and node unhealthy', async () => {
+      const selector = new DiscoveryNodeSelector({
+        initialSelectedNode: UNHEALTHY_NODE,
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      })
+      const middleware = selector.createMiddleware()
+      expect(middleware.post).not.toBeUndefined()
+
+      const changeHandler = jest.fn(() => {})
+      selector.addEventListener('change', changeHandler)
+
+      const response = {
+        ok: false,
+        url: `${UNHEALTHY_NODE}/v1/full/tracks`,
+        json: async function (): Promise<any> {
+          return null
+        }
+      }
+
+      await middleware.post!({
+        fetch: fetch,
+        url: '/v1/full/tracks',
+        init: {},
+        response: response as Response
+      })
+      expect(changeHandler).toBeCalledWith(HEALTHY_NODE)
+    })
+
+    test("doesn't reselect if request fails but node is healthy", async () => {
+      const selector = new DiscoveryNodeSelector({
+        initialSelectedNode: HEALTHY_NODE,
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      })
+      const middleware = selector.createMiddleware()
+      expect(middleware.post).not.toBeUndefined()
+
+      const changeHandler = jest.fn(() => {})
+      selector.addEventListener('change', changeHandler)
+
+      const response = {
+        ok: false,
+        url: `${HEALTHY_NODE}/v1/full/tracks`,
+        json: async function (): Promise<any> {
+          return null
+        }
+      }
+
+      await middleware.post!({
+        fetch: fetch,
+        url: '/v1/full/tracks',
+        init: {},
+        response: response as Response
+      })
+      expect(changeHandler).not.toBeCalled()
+    })
+
+    test('resets isBehind when request shows the node is caught up', async () => {
+      const selector = new DiscoveryNodeSelector({
+        bootstrapServices: [BEHIND_BLOCKDIFF_NODE]
+      })
+      await selector.getSelectedEndpoint()
+      expect(selector.isBehind).toBe(true)
+
+      const middleware = selector.createMiddleware()
+      expect(middleware.post).not.toBeUndefined()
+
+      const changeHandler = jest.fn(() => {})
+      selector.addEventListener('change', changeHandler)
+
+      const data: ApiHealthResponseData = {
+        latest_chain_block: 100,
+        latest_indexed_block: 100,
+        latest_chain_slot_plays: 100,
+        latest_indexed_slot_plays: 100,
+        version: {
+          service: 'discovery-node',
+          version: '1.2.3'
+        }
+      }
+      await middleware.post!({
+        fetch: fetch,
+        url: '/v1/full/tracks',
+        init: {},
+        response: new Response(JSON.stringify(data))
+      })
+      expect(selector.isBehind).toBe(false)
+    })
   })
 })

@@ -2,7 +2,7 @@ import semver from 'semver'
 import sampleSize from 'lodash/sampleSize'
 import { ApiHealthResponseData, HealthCheckStatus } from './healthCheckTypes'
 import {
-  getDiscoveryNodeApiHealth,
+  parseApiHealthStatusReason,
   getDiscoveryNodeHealthCheck
 } from './healthChecks'
 import { promiseAny } from '../../utils/promiseAny'
@@ -144,17 +144,14 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         if (!url.startsWith('http')) {
           const endpoint = await selectionPromise
           url = `${endpoint}${context.url}`
-        } else if (this.selectedNode && !url.startsWith(this.selectedNode)) {
-          // Wrong endpoint! We have a new discovery node!
-          const oldUrl = new URL(context.url)
-          url = `${this.selectedNode}${oldUrl.pathname}${oldUrl.search}`
         }
         return { url, init: context.init }
       },
       post: async (context: ResponseContext) => {
         const response = context.response
-        const endpoint = context.response.url.substring(
-          context.url.length - context.response.url.length
+        const endpoint = response.url.substring(
+          0,
+          response.url.length - context.url.length
         )
         if (response.ok) {
           // Even when successful, copy response to read JSON body to
@@ -163,7 +160,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           // if the selected one falls behind, even if requests are succeeding
           const responseClone = response.clone()
           const data = (await responseClone.json()) as ApiHealthResponseData
-          const { health, reason } = getDiscoveryNodeApiHealth({
+          const { health, reason } = parseApiHealthStatusReason({
             data,
             healthCheckThresholds: this.config.healthCheckThresholds
           })
@@ -180,7 +177,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           })
         } else {
           // On request failure, check health_check and reselect if unhealthy
-          this.warn('request failed', context)
+          this.warn('request failed', endpoint, context)
           const { health, data, reason } = await getDiscoveryNodeHealthCheck({
             endpoint,
             healthCheckThresholds: this.config.healthCheckThresholds
@@ -200,11 +197,22 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     }
   }
 
+  /**
+   * Selects a discovery node or returns the existing selection
+   * @returns a discovery node endpoint
+   */
   public async getSelectedEndpoint() {
     if (this.selectedNode !== null) {
       return this.selectedNode
     }
     return await this.select()
+  }
+
+  /**
+   * Gets the list of services
+   */
+  public getServices() {
+    return this.services
   }
 
   /**
@@ -423,7 +431,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           version: data.version
         }
       }
-      this.warn('health_check', endpoint, health, reason)
+      this.warn(
+        'api_health_check failed, reselecting',
+        endpoint,
+        health,
+        reason
+      )
       return await this.select()
     }
   }

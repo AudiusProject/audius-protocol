@@ -68,7 +68,7 @@ const isApiSolanaIndexerHealthy = ({
   data.latest_chain_slot_plays - data.latest_indexed_slot_plays <=
     maxSlotDiffPlays
 
-export const getDiscoveryNodeApiHealth = ({
+export const parseApiHealthStatusReason = ({
   data,
   healthCheckThresholds: { minVersion, maxBlockDiff, maxSlotDiffPlays }
 }: {
@@ -124,7 +124,7 @@ const getHealthCheckData = async (
   return data
 }
 
-const toHealthStatusReason = ({
+export const parseHealthStatusReason = ({
   data,
   healthCheckThresholds: { minVersion, maxBlockDiff, maxSlotDiffPlays }
 }: {
@@ -192,7 +192,7 @@ export const getDiscoveryNodeHealthCheck = async ({
       getHealthCheckData(endpoint, fetchOptions),
       ...timeoutPromises
     ])
-    const reason = toHealthStatusReason({
+    const reason = parseHealthStatusReason({
       data,
       healthCheckThresholds
     })
