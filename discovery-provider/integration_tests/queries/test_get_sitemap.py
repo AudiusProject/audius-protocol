@@ -36,6 +36,15 @@ def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
                 }
                 for i in range(10)
             ],
+            "playlist_routes": [
+                {
+                    "playlist_id": i,
+                    "owner_id": i,
+                    "slug": f"p_slug_{i}",
+                    "title_slug": f"p_title_slug_{i}",
+                }
+                for i in range(10)
+            ],
             "tracks": [{"track_id": i, "owner_id": i} for i in range(10)],
             "track_routes": [
                 {
@@ -62,21 +71,21 @@ def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
             track_root = get_track_root(session, 3)
             assert (
                 track_root
-                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/4.xml</loc>\n  </sitemap>\n</urlset>\n'
+                == b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/track/4.xml</loc>\n  </sitemap>\n</sitemapindex>\n'
             )
 
             # Validate that there are 6 playlist sitemaps -  10 total playlist / 2 user per sitemap = 5
             playlist_root = get_playlist_root(session, 2)
             assert (
                 playlist_root
-                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/4.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/5.xml</loc>\n  </sitemap>\n</urlset>\n'
+                == b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/2.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/3.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/4.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/playlist/5.xml</loc>\n  </sitemap>\n</sitemapindex>\n'
             )
 
             # Validate that there are 2 user sitemaps -  20 total user / 12 user per sitemap = 2
             user_root = get_user_root(session, 12)
             assert (
                 user_root
-                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/user/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/user/2.xml</loc>\n  </sitemap>\n</urlset>\n'
+                == b'<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/user/1.xml</loc>\n  </sitemap>\n  <sitemap>\n    <loc>https://discoveryprovider.audius.co/sitemaps/user/2.xml</loc>\n  </sitemap>\n</sitemapindex>\n'
             )
 
             # Validate that returns 6 track slugs
@@ -97,7 +106,7 @@ def test_get_sitemaps(mock_set_base_url, mock_get_client_base_url, app):
             playlist_page_1 = get_playlist_page(session, 1, 100)
             assert (
                 playlist_page_1
-                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://audius.co/user_0/album/p_name_0-0</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_1/playlist/p_name_1-1</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_2/album/p_name_2-2</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_3/playlist/p_name_3-3</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_4/album/p_name_4-4</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_5/playlist/p_name_5-5</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_6/album/p_name_6-6</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_7/playlist/p_name_7-7</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_8/album/p_name_8-8</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_9/playlist/p_name_9-9</loc>\n  </url>\n</urlset>\n'
+                == b'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>https://audius.co/user_0/album/p_slug_0</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_1/playlist/p_slug_1</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_2/album/p_slug_2</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_3/playlist/p_slug_3</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_4/album/p_slug_4</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_5/playlist/p_slug_5</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_6/album/p_slug_6</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_7/playlist/p_slug_7</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_8/album/p_slug_8</loc>\n  </url>\n  <url>\n    <loc>https://audius.co/user_9/playlist/p_slug_9</loc>\n  </url>\n</urlset>\n'
             )
 
             # Validate that starts at user 0 and 8 user slugs
