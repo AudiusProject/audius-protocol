@@ -92,24 +92,45 @@ const slice = createSlice({
       { payload: trackIds }: PayloadAction<string[]>
     ) => {
       trackIds.forEach((trackId) => {
-        state.downloadStatus[trackId] = OfflineDownloadStatus.INIT
+        if (
+          !state.downloadStatus[trackId] ||
+          (state.downloadStatus[trackId] !== OfflineDownloadStatus.LOADING &&
+            state.downloadStatus[trackId] !== OfflineDownloadStatus.SUCCESS)
+        ) {
+          state.downloadStatus[trackId] = OfflineDownloadStatus.INIT
+        }
       })
     },
     // Actually starting the download
     startDownload: (state, { payload: trackId }: PayloadAction<string>) => {
-      state.downloadStatus[trackId] = OfflineDownloadStatus.LOADING
+      if (
+        !state.downloadStatus[trackId] ||
+        state.downloadStatus[trackId] !== OfflineDownloadStatus.SUCCESS
+      ) {
+        state.downloadStatus[trackId] = OfflineDownloadStatus.LOADING
+      }
     },
     completeDownload: (state, { payload: trackId }: PayloadAction<string>) => {
       state.downloadStatus[trackId] = OfflineDownloadStatus.SUCCESS
     },
     errorDownload: (state, { payload: trackId }: PayloadAction<string>) => {
-      state.downloadStatus[trackId] = OfflineDownloadStatus.ERROR
+      if (
+        !state.downloadStatus[trackId] ||
+        state.downloadStatus[trackId] !== OfflineDownloadStatus.SUCCESS
+      ) {
+        state.downloadStatus[trackId] = OfflineDownloadStatus.ERROR
+      }
     },
     removeDownload: (state, { payload: trackId }: PayloadAction<string>) => {
       delete state.downloadStatus[trackId]
     },
     abandonDownload: (state, { payload: trackId }: PayloadAction<string>) => {
-      state.downloadStatus[trackId] = OfflineDownloadStatus.ABANDONED
+      if (
+        !state.downloadStatus[trackId] ||
+        state.downloadStatus[trackId] !== OfflineDownloadStatus.SUCCESS
+      ) {
+        state.downloadStatus[trackId] = OfflineDownloadStatus.ABANDONED
+      }
     },
     batchInitCollectionDownload: (
       state,
