@@ -164,7 +164,9 @@ export type HealthCheckThresholds = {
   /**
    * Minimum version of Discovery Node to allow for selection.
    * Can use the version on chain to ensure latest.
-   * Note: Will not allow any newer major or minor versions, just newer patches.
+   * Note: Will not allow any newer major or minor versions (unless as backups), just newer patches.
+   * @todo load this from disk by default
+   * @default null
    */
   minVersion: string | null
   /**
