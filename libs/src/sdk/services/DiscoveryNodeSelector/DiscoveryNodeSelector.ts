@@ -137,7 +137,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    * @returns the middleware
    */
   public createMiddleware(): Middleware {
-    const selectionPromise = this.select()
+    const selectionPromise = this.getSelectedEndpoint()
     return {
       pre: async (context: RequestContext) => {
         let url = context.url
