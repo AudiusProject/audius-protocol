@@ -375,7 +375,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         ) {
           this.services = data.network.discoveryNodes
         } else {
-          this.warn("Couldn't load new service list from healthy service")
+          this.warn(
+            "Couldn't load new service list from healthy service",
+            endpoint
+          )
         }
         return endpoint
       }
