@@ -2,7 +2,12 @@ import time
 
 from src.api.v1.helpers import extend_playlist
 from src.queries.query_helpers import get_current_user_id
-from src.utils.elasticdsl import ES_PLAYLISTS, ES_USERS, esclient
+from src.utils.elasticdsl import (
+    ES_PLAYLISTS,
+    ES_USERS,
+    esclient,
+    populate_user_metadata_es,
+)
 
 
 def get_top_playlists_es(kind, args):
@@ -76,7 +81,9 @@ def get_top_playlists_es(kind, args):
     user_by_id = {d["_id"]: d["_source"] for d in user_list["docs"] if d["found"]}
 
     for p in playlists:
-        p["user"] = user_by_id[str(p["playlist_owner_id"])]
+        u = user_by_id[str(p["playlist_owner_id"])]
+        # omit current_user because top playlists are cached across users
+        p["user"] = populate_user_metadata_es(u, None)
         extend_playlist(p)
 
     return playlists
