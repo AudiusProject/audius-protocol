@@ -1,6 +1,7 @@
 /**
  * Polyfill for Promise.any
- * Taken from: https://dev.to/sinxwal/looking-for-promise-any-let-s-quickly-implement-a-polyfill-for-it-1kga
+ * Adapted from Sergio Tskhovrebov's implementation:
+ * https://dev.to/sinxwal/looking-for-promise-any-let-s-quickly-implement-a-polyfill-for-it-1kga
  */
 export const promiseAny = async <T>(
   iterable: Iterable<T | PromiseLike<T>>
