@@ -8,7 +8,8 @@ type FilterInputProps = TextInputProps
 
 const useStyles = makeStyles(({ spacing }) => ({
   tileRoot: {
-    margin: spacing(4)
+    marginVertical: spacing(4),
+    marginHorizontal: spacing(3)
   },
   tile: {
     padding: spacing(2)
@@ -16,14 +17,13 @@ const useStyles = makeStyles(({ spacing }) => ({
 }))
 
 export const FilterInput = (props: FilterInputProps) => {
-  const { value, onChangeText, placeholder } = props
+  const { onChangeText, placeholder } = props
   const styles = useStyles()
 
   return (
     <Tile styles={{ root: styles.tileRoot, tile: styles.tile }}>
       <TextInput
         placeholder={placeholder}
-        value={value}
         onChangeText={onChangeText}
         returnKeyType='search'
         Icon={IconFilter}
