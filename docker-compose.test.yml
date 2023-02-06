@@ -43,11 +43,18 @@ services:
     deploy:
       mode: global
 
+  # NOTE: We don't need solana but services have depend_on solana-test-validator
+  # so we use a dummpy container
   solana-test-validator:
-    extends:
-      file: docker-compose.yml
-      service: solana-test-validator
+    image: alpine:3.14
+    command: sleep inf
+    healthcheck:
+      test: [ "CMD", "true" ]
+      interval: 10s
+      timeout: 5s
     logging: *default-logging
+    deploy:
+      mode: global
 
   build-audius-libs:
     extends:
