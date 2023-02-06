@@ -154,7 +154,7 @@ def get_feed_es(args, limit=10):
     )
 
     # take a "soft limit" here.  Some tracks / reposts might get filtered out below
-    # if is_delete
+    # if is_delete, or if track is collectible gated
     sorted_with_reposts = sorted_with_reposts[0 : limit * 2]
 
     mget_reposts = []
@@ -237,7 +237,9 @@ def get_feed_es(args, limit=10):
         if "favorite_count" in item:
             item["save_count"] = item["favorite_count"]
 
-    # filter out collectible gated tracks from feed
+    # Filter out collectible gated tracks from feed.
+    # The soft limit above allows us to filter out collectible gated tracks
+    # and still be able to probabilistically satisfy the given limit later below.
     sorted_feed = list(
         filter(
             lambda item: ("premium_conditions" not in item)  # not a track
