@@ -56,10 +56,13 @@ def get_top_playlists_es(kind, args):
         }
     }
 
-    # omit unused fields from result
-    dsl["_source"] = {"exclude": ["saved_by", "reposted_by", "tracks"]}
-
-    found = esclient.search(index=ES_PLAYLISTS, query=dsl["query"], size=limit)
+    found = esclient.search(
+        index=ES_PLAYLISTS,
+        query=dsl["query"],
+        size=limit,
+        # omit unused fields from result
+        _source_excludes=["saved_by", "reposted_by", "tracks"],
+    )
 
     playlists = []
     for hit in found["hits"]["hits"]:
