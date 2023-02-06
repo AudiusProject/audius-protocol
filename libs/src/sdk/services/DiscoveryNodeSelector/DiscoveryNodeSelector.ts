@@ -495,69 +495,30 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   }
 
   /**
-   * In the case of no "healthy" services, we resort to backups in the following order:
-   * 1. Pick the most recent (patch) version that's not behind
-   * 2. Pick the least behind node that is a valid patch version and enter "regressed mode"
-   * 3. Pick `null`
+   * First try to get a node that's got a healthy blockdiff, but a behind version.
+   * If that fails, get the node with the lowest blockdiff on the most up to date version
    */
   private async selectFromBackups() {
-    const versions: string[] = []
-    const blockDiffs: number[] = []
-
-    const versionMap: Record<string, string[]> = {}
-    const blockDiffMap: Record<string, string[]> = {}
-
-    // Go through each backup and create two keyed maps:
-    // { semver => [node] }
-    // { blockdiff => [node] }
-    Object.keys(this.backupServices).forEach((backup) => {
-      const healthCheck = this.backupServices[backup]
-      if (!healthCheck?.version || !healthCheck.block_difference) {
-        return
+    const sortedBackups = Object.values(this.backupServices).sort((a, b) => {
+      const versionSort = semver.rcompare(a.version, b.version)
+      if (versionSort === 0) {
+        return a.block_difference - b.block_difference
       }
-      const { version, block_difference: blockDiff } = healthCheck
-
-      versions.push(version)
-      blockDiffs.push(blockDiff)
-
-      if (version in versionMap) {
-        versionMap[version]?.push(backup)
-      } else {
-        versionMap[version] = [backup]
-      }
-
-      if (blockDiff in blockDiffMap) {
-        blockDiffMap[blockDiff]?.push(backup)
-      } else {
-        blockDiffMap[blockDiff] = [backup]
-      }
+      return versionSort
     })
-
-    // Sort the versions by desc semver
-    const sortedVersions = versions.sort(semver.rcompare)
-
-    // Select the closest version that's a healthy # of blocks behind
-    let selected: string = ''
-    for (const version of sortedVersions) {
-      const endpoints = versionMap[version] as string[]
-      for (let i = 0; i < endpoints.length; ++i) {
-        if (
-          (this.backupServices[endpoints[i] as string]
-            ?.block_difference as number) <=
-          this.config.healthCheckThresholds.maxBlockDiff
-        ) {
-          selected = endpoints[i] as string
-          break
-        }
-      }
-      if (selected) return selected
+    const goodBlockdiffBadVersion = sortedBackups.find(
+      (s) =>
+        s.block_difference <= this.config.healthCheckThresholds.maxBlockDiff
+    )
+    const nextBest = sortedBackups[0]
+    if (!goodBlockdiffBadVersion && nextBest) {
+      return nextBest.endpoint
     }
+    return goodBlockdiffBadVersion?.endpoint ?? null
+  }
 
-    // Select the best block diff node
-    const bestBlockDiff = blockDiffs.sort()[0] as number
-    selected = blockDiffMap[bestBlockDiff]?.[0] as string
-    this.isBehind = true
-    return selected
+  private debug(...args: any[]) {
+    console.debug('[audius-sdk][discovery-node-selector]', ...args)
   }
 
   /** console.info proxy utility to add a prefix */
