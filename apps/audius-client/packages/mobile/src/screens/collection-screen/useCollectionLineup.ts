@@ -60,7 +60,7 @@ export const useCollectionLineup = (
           (trackData) => trackData.track
         ) || []
       )
-      const lineupTracks = Object.values(offlineTracks)
+      const lineupTracks = offlineTracks
         .filter(
           (track) =>
             track.offline?.reasons_for_download.some(

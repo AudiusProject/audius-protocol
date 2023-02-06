@@ -1,9 +1,4 @@
-import type {
-  DownloadReason,
-  ID,
-  Track,
-  UserTrackMetadata
-} from '@audius/common'
+import type { DownloadReason, ID, OfflineTrackMetadata } from '@audius/common'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 
@@ -14,7 +9,10 @@ type CollectionStatusPayload = {
   isFavoritesDownload?: boolean
 }
 
-type LineupTrack = Track & UserTrackMetadata
+export type TrackOfflineMetadataPayload = {
+  trackId: ID
+  offlineMetadata: OfflineTrackMetadata
+}
 
 export type OfflineDownloadsState = {
   downloadStatus: {
@@ -26,8 +24,8 @@ export type OfflineDownloadsState = {
   favoritedCollectionStatus: {
     [key: string]: OfflineDownloadStatus
   }
-  tracks: {
-    [key: string]: LineupTrack
+  offlineTrackMetadata: {
+    [key: string]: OfflineTrackMetadata
   }
   isDoneLoadingFromDisk: boolean
 }
@@ -76,7 +74,7 @@ export enum OfflineDownloadStatus {
 
 const initialState: OfflineDownloadsState = {
   downloadStatus: {},
-  tracks: {},
+  offlineTrackMetadata: {},
   collectionStatus: {},
   favoritedCollectionStatus: {},
   isDoneLoadingFromDisk: false
@@ -209,20 +207,18 @@ const slice = createSlice({
         delete state.collectionStatus[collectionId]
       })
     },
-    loadTracks: (state, { payload: tracks }: PayloadAction<LineupTrack[]>) => {
-      tracks.forEach((track) => {
-        const trackIdStr = track.track_id.toString()
-        state.tracks[trackIdStr] = track
-        state.downloadStatus[trackIdStr] = OfflineDownloadStatus.SUCCESS
+    batchSetTrackOfflineMetadata: (
+      state,
+      action: PayloadAction<TrackOfflineMetadataPayload[]>
+    ) => {
+      const { payload: trackOfflineMetadatas } = action
+      trackOfflineMetadatas.forEach((trackOfflineMetadata) => {
+        const { trackId, offlineMetadata } = trackOfflineMetadata
+        state.offlineTrackMetadata[trackId] = offlineMetadata
       })
     },
-    loadTrack: (state, { payload: track }: PayloadAction<LineupTrack>) => {
-      const trackIdStr = track.track_id.toString()
-      state.tracks[trackIdStr] = track
-      state.downloadStatus[trackIdStr] = OfflineDownloadStatus.SUCCESS
-    },
     unloadTrack: (state, { payload: trackId }: PayloadAction<string>) => {
-      delete state.tracks[trackId]
+      delete state.offlineTrackMetadata[trackId]
       delete state.downloadStatus[trackId]
     },
     updateTrackDownloadReasons: (
@@ -230,22 +226,19 @@ const slice = createSlice({
       action: UpdateTrackDownloadReasonsAction
     ) => {
       const { reasons } = action.payload
-      const { tracks } = state
+      const { offlineTrackMetadata } = state
 
       reasons.forEach((reason) => {
         const { trackId, reasons_for_download } = reason
-        const track = tracks[trackId]
-        const { offline } = track
+        const offlineMetadata = offlineTrackMetadata[trackId]
 
-        if (offline) {
-          offline.reasons_for_download = reasons_for_download
-        }
+        offlineMetadata.reasons_for_download = reasons_for_download
       })
     },
     removeTrackDownloads: (state, action: RemoveTrackDownloadsAction) => {
       const { trackIds } = action.payload
       trackIds.forEach((trackId) => {
-        delete state.tracks[trackId]
+        delete state.offlineTrackMetadata[trackId]
         delete state.downloadStatus[trackId]
       })
     },
@@ -255,8 +248,9 @@ const slice = createSlice({
     clearOfflineDownloads: (state) => {
       state.downloadStatus = initialState.downloadStatus
       state.collectionStatus = initialState.collectionStatus
+      state.offlineTrackMetadata = initialState.offlineTrackMetadata
+      state.downloadStatus = initialState.downloadStatus
       state.favoritedCollectionStatus = initialState.favoritedCollectionStatus
-      state.tracks = initialState.tracks
       state.isDoneLoadingFromDisk = initialState.isDoneLoadingFromDisk
     },
     // Lifecycle actions that trigger complex saga flows
@@ -279,8 +273,7 @@ export const {
   updateCollectionDownloadReasons,
   removeCollectionDownload,
   removeCollectionDownloads,
-  loadTracks,
-  loadTrack,
+  batchSetTrackOfflineMetadata,
   unloadTrack,
   updateTrackDownloadReasons,
   removeTrackDownloads,

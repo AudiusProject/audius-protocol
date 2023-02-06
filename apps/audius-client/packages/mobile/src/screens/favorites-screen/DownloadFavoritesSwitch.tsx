@@ -13,7 +13,7 @@ import {
   DOWNLOAD_REASON_FAVORITES
 } from 'app/services/offline-downloader'
 import { setVisibility } from 'app/store/drawers/slice'
-import { getOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
+import { getAllOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
 const { getIsReachable } = reachabilitySelectors
@@ -43,7 +43,7 @@ export const DownloadFavoritesSwitch = () => {
   }, [])
 
   const isDownloaded = useProxySelector((state) => {
-    const downloadStatus = getOfflineDownloadStatus(state)
+    const downloadStatus = getAllOfflineDownloadStatus(state)
     const tracksToDownload = Object.keys(downloadStatus)
     if (tracksToDownload.length === 0) return false
 

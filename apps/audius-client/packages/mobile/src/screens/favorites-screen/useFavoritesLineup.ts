@@ -35,7 +35,7 @@ export const useFavoritesLineup = (fetchLineup: () => void) => {
 
   const fetchLineupOffline = useCallback(() => {
     if (isOfflineModeEnabled) {
-      const lineupTracks = Object.values(offlineTracks)
+      const lineupTracks = offlineTracks
         .filter((track) =>
           track.offline?.reasons_for_download.some(
             (reason) => reason.collection_id === DOWNLOAD_REASON_FAVORITES
