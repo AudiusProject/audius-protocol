@@ -7,6 +7,8 @@ import {
 } from './generated/default'
 import type { DiscoveryNodeSelectorService } from '../services/DiscoveryNodeSelector'
 
+// Subclass type masking adapted from Damir Arh's method:
+// https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
 // Get the type of the generated TracksApi excluding streamTrack
 type GeneratedTracksApiWithoutStream = new (config: Configuration) => {
   [P in Exclude<keyof GeneratedTracksApi, 'streamTrack'>]: GeneratedTracksApi[P]
