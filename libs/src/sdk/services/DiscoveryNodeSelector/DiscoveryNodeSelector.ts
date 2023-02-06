@@ -345,8 +345,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         healthCheckThresholds: this.config.healthCheckThresholds
       })
       if (health !== HealthCheckStatus.HEALTHY) {
-        if (health === HealthCheckStatus.UNHEALTHY) {
+        if (reason === 'Aborted') {
+          // Ignore aborted requests
+          this.debug('health_check', endpoint, health, reason)
+        } else if (health === HealthCheckStatus.UNHEALTHY) {
           this.unhealthyServices.add(endpoint)
+          this.warn('health_check', endpoint, health, reason)
         } else if (health === HealthCheckStatus.BEHIND) {
           this.unhealthyServices.add(endpoint)
           if (data) {
@@ -356,12 +360,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
               version: data.version!
             }
           }
+          this.warn('health_check', endpoint, health, reason)
         }
-        this.warn('health_check', endpoint, health, reason)
         throw new Error(`${endpoint} ${health}: ${reason}`)
       } else {
         // We're healthy!
-        this.info('health_check', endpoint, health)
+        this.debug('health_check', endpoint, health)
         // Cancel any existing requests from other promises
         abortController.abort()
         // Refresh service list with the healthy list from DN
