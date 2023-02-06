@@ -282,7 +282,7 @@ const BasicForm = (props) => {
 
   const { onChangeField } = props
   const handleRemixToggle = useCallback(() => {
-    setIsRemix((isRemix) => !isRemix)
+    setIsRemix(!isRemix)
     if (!isRemix) setRemixSettingsModalVisible(true)
     if (isRemix) {
       onChangeField('remix_of', null)
@@ -478,7 +478,7 @@ const AdvancedForm = (props) => {
         true,
       remixes: hideRemixes
     })
-    setHideRemixes((hideRemixes) => !hideRemixes)
+    setHideRemixes(!hideRemixes)
   }
 
   return (
