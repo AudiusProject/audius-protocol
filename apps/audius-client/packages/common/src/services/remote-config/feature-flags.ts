@@ -75,7 +75,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.NEW_ARTIST_DASHBOARD_TABLE]: false,
   [FeatureFlags.BUY_AUDIO_COINBASE_ENABLED]: false,
   [FeatureFlags.BUY_AUDIO_STRIPE_ENABLED]: false,
-  [FeatureFlags.OFFLINE_MODE_ENABLED]: true,
+  [FeatureFlags.OFFLINE_MODE_ENABLED]: false,
   [FeatureFlags.PREMIUM_CONTENT_ENABLED]: false,
   [FeatureFlags.ANDROID_PREMIUM_CONTENT_ENABLED]: false,
   [FeatureFlags.IOS_PREMIUM_CONTENT_ENABLED]: false,
