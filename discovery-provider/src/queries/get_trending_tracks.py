@@ -46,8 +46,11 @@ def generate_unpopulated_trending(
     exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     limit=TRENDING_LIMIT,
 ):
+    # We use limit * 2 here to apply a soft limit so that
+    # when we later filter out premium or collectible gated tracks,
+    # we will probabilistically satisfy the given limit.
     trending_tracks = generate_trending(
-        session, time_range, genre, limit, 0, strategy.version
+        session, time_range, genre, limit * 2, 0, strategy.version
     )
 
     track_scores = [
