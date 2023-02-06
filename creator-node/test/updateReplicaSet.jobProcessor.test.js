@@ -22,6 +22,11 @@ const { expect } = chai
 
 describe('test updateReplicaSet job processor', function () {
   let server, sandbox, originalContentNodeEndpoint, logger
+  before(function () {
+    Object.keys(require.cache).forEach(function (key) {
+      delete require.cache[key]
+    })
+  })
 
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
@@ -85,9 +90,7 @@ describe('test updateReplicaSet job processor', function () {
     const autoSelectCreatorNodesStub = sandbox
       .stub()
       .resolves({ services: healthyNodes })
-    const _updateReplicaSet = sandbox
-    .stub()
-    .resolves({ blocknumber: 10 })
+    const _updateReplicaSet = sandbox.stub().resolves({ blocknumber: 10 })
 
     const audiusLibsStub = {
       ServiceProvider: {
@@ -104,26 +107,22 @@ describe('test updateReplicaSet job processor', function () {
         }
       },
       Utils: {
-        encodeHashId: sandbox
-        .mock()
-        .callsFake((id) => {
+        encodeHashId: sandbox.mock().callsFake((id) => {
           return encode(id)
         })
       },
       discoveryProvider: {
-        getUserReplicaSet: sandbox
-        .mock()
-        .callsFake(({ encodedUserId }) => {
+        getUserReplicaSet: sandbox.mock().callsFake(({ encodedUserId }) => {
           const user_id = decode(encodedUserId)
           return {
             user_id,
-            "wallet": '0x123456789',
-            "primary": 'http://mock-cn1.audius.co',
-            "secondary1": 'http://mock-cn2.audius.co',
-            "secondary2": 'http://mock-cn3.audius.co',
-            "primarySpID": 1,
-            "secondary1SpID": 2,
-            "secondary2SpID": 3
+            wallet: '0x123456789',
+            primary: 'http://mock-cn1.audius.co',
+            secondary1: 'http://mock-cn2.audius.co',
+            secondary2: 'http://mock-cn3.audius.co',
+            primarySpID: 1,
+            secondary1SpID: 2,
+            secondary2SpID: 3
           }
         })
       }
@@ -379,10 +378,7 @@ describe('test updateReplicaSet job processor', function () {
     expect(output.issuedReconfig).to.be.true
     expect(newReplicaSet.newPrimary).to.be.oneOf([secondary1, secondary2])
     // Replacement nodes are randomly so we can't enforce order of secondaries
-    expect(newReplicaSet.newSecondary1).to.be.oneOf([
-      secondary1,
-      secondary2
-    ])
+    expect(newReplicaSet.newSecondary1).to.be.oneOf([secondary1, secondary2])
     expect(newReplicaSet.newSecondary2).to.be.oneOf([
       fourthHealthyNode,
       fifthHealthyNode
@@ -397,7 +393,10 @@ describe('test updateReplicaSet job processor', function () {
       fourthHealthyNode,
       fifthHealthyNode
     ])
-    const newSecondaries = [newReplicaSet.newSecondary1, newReplicaSet.newSecondary2]
+    const newSecondaries = [
+      newReplicaSet.newSecondary1,
+      newReplicaSet.newSecondary2
+    ]
     expect(jobsToEnqueue).to.have.nested.property(QUEUE_NAMES.RECURRING_SYNC)
     const jobs = jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]
     expect(jobs).to.have.lengthOf(2)
@@ -470,10 +469,9 @@ describe('test updateReplicaSet job processor', function () {
       fourthHealthyNode,
       fifthHealthyNode
     ])
-    expect(newReplicaSet.newSecondary2).to.be.oneOf([
-      fourthHealthyNode,
-      fifthHealthyNode
-    ]).and.not.equal(newReplicaSet.newSecondary1)
+    expect(newReplicaSet.newSecondary2)
+      .to.be.oneOf([fourthHealthyNode, fifthHealthyNode])
+      .and.not.equal(newReplicaSet.newSecondary1)
     expect(newReplicaSet.issueReconfig).to.be.true
     expect(newReplicaSet.reconfigType).to.equal(
       RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
@@ -483,7 +481,10 @@ describe('test updateReplicaSet job processor', function () {
       fourthHealthyNode,
       fifthHealthyNode
     ])
-    const newSecondaries = [newReplicaSet.newSecondary1, newReplicaSet.newSecondary2]
+    const newSecondaries = [
+      newReplicaSet.newSecondary1,
+      newReplicaSet.newSecondary2
+    ]
     expect(jobsToEnqueue).to.have.nested.property(QUEUE_NAMES.RECURRING_SYNC)
     const jobs = jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]
     expect(jobs).to.have.lengthOf(2)
@@ -538,10 +539,18 @@ describe('test updateReplicaSet job processor', function () {
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.MULTIPLE_SECONDARIES.key]
     })
-    const { metricsToRecord, errorMsg, issuedReconfig, newReplicaSet, jobsToEnqueue } = output
+    const {
+      metricsToRecord,
+      errorMsg,
+      issuedReconfig,
+      newReplicaSet,
+      jobsToEnqueue
+    } = output
 
     // Verify metrics record a successful reconfig
-    expect(metricsToRecord[0].metricLabels.result).to.equal('success_issue_reconfig_disabled')
+    expect(metricsToRecord[0].metricLabels.result).to.equal(
+      'success_issue_reconfig_disabled'
+    )
     expect(metricsToRecord[0].metricName).to.equal(
       'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
     )
@@ -552,11 +561,13 @@ describe('test updateReplicaSet job processor', function () {
     expect(issuedReconfig).to.be.false
     expect(newReplicaSet.newPrimary).to.equal(secondary2)
     // Replacement nodes are randomly so we can't enforce order of secondaries
-    expect(newReplicaSet.newSecondary1).to.be.oneOf([fourthHealthyNode, fifthHealthyNode])
-    expect(newReplicaSet.newSecondary2).to.be.oneOf([
+    expect(newReplicaSet.newSecondary1).to.be.oneOf([
       fourthHealthyNode,
       fifthHealthyNode
-    ]).and.not.equal(newReplicaSet.newSecondary1)
+    ])
+    expect(newReplicaSet.newSecondary2)
+      .to.be.oneOf([fourthHealthyNode, fifthHealthyNode])
+      .and.not.equal(newReplicaSet.newSecondary1)
     expect(newReplicaSet.issueReconfig).to.be.false
     expect(newReplicaSet.reconfigType).to.equal(
       RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
@@ -628,17 +639,17 @@ describe('test updateReplicaSet job processor', function () {
     expect(output.issuedReconfig).to.be.true
     expect(newReplicaSet.newPrimary).to.be.oneOf([secondary1, secondary2])
     // Replacement nodes are randomly so we can't enforce order of secondaries
-    expect(newReplicaSet.newSecondary1).to.be.oneOf([
-      secondary1,
-      secondary2,
-      fourthHealthyNode,
-      fifthHealthyNode
-    ]).and.not.equal(newReplicaSet.primary)
-    expect(newReplicaSet.newSecondary2).to.be.oneOf([
-      secondary2,
-      fourthHealthyNode,
-      fifthHealthyNode
-    ]).and.not.equal(newReplicaSet.newSecondary1)
+    expect(newReplicaSet.newSecondary1)
+      .to.be.oneOf([
+        secondary1,
+        secondary2,
+        fourthHealthyNode,
+        fifthHealthyNode
+      ])
+      .and.not.equal(newReplicaSet.primary)
+    expect(newReplicaSet.newSecondary2)
+      .to.be.oneOf([secondary2, fourthHealthyNode, fifthHealthyNode])
+      .and.not.equal(newReplicaSet.newSecondary1)
     expect(newReplicaSet.issueReconfig).to.be.true
     expect(newReplicaSet.reconfigType).to.equal(
       RECONFIG_MODES.PRIMARY_AND_OR_SECONDARIES.key
@@ -649,7 +660,10 @@ describe('test updateReplicaSet job processor', function () {
       fourthHealthyNode,
       fifthHealthyNode
     ])
-    const newSecondaries = [newReplicaSet.newSecondary1, newReplicaSet.newSecondary2]
+    const newSecondaries = [
+      newReplicaSet.newSecondary1,
+      newReplicaSet.newSecondary2
+    ]
     expect(jobsToEnqueue).to.have.nested.property(QUEUE_NAMES.RECURRING_SYNC)
     const jobs = jobsToEnqueue[QUEUE_NAMES.RECURRING_SYNC]
     expect(jobs).to.have.lengthOf(2)
@@ -708,10 +722,18 @@ describe('test updateReplicaSet job processor', function () {
       replicaToUserInfoMap,
       enabledReconfigModes: [RECONFIG_MODES.MULTIPLE_SECONDARIES.key]
     })
-    const { metricsToRecord, errorMsg, issuedReconfig, newReplicaSet, jobsToEnqueue } = output
+    const {
+      metricsToRecord,
+      errorMsg,
+      issuedReconfig,
+      newReplicaSet,
+      jobsToEnqueue
+    } = output
 
     // Verify metrics record a successful reconfig
-    expect(metricsToRecord[0].metricLabels.result).to.equal('success_issue_reconfig_disabled')
+    expect(metricsToRecord[0].metricLabels.result).to.equal(
+      'success_issue_reconfig_disabled'
+    )
     expect(metricsToRecord[0].metricName).to.equal(
       'audius_cn_state_machine_update_replica_set_queue_job_duration_seconds'
     )
@@ -723,10 +745,9 @@ describe('test updateReplicaSet job processor', function () {
     expect(newReplicaSet.newPrimary).to.equal(primary)
     // Replacement nodes are randomly so we can't enforce order of secondaries
     expect(newReplicaSet.newSecondary1).to.equal(secondary2)
-    expect(newReplicaSet.newSecondary2).to.be.oneOf([
-      fourthHealthyNode,
-      fifthHealthyNode
-    ]).and.not.equal(newReplicaSet.newSecondary1)
+    expect(newReplicaSet.newSecondary2)
+      .to.be.oneOf([fourthHealthyNode, fifthHealthyNode])
+      .and.not.equal(newReplicaSet.newSecondary1)
     expect(newReplicaSet.issueReconfig).to.be.false
     expect(newReplicaSet.reconfigType).to.equal(
       RECONFIG_MODES.ONE_SECONDARY.key
