@@ -27,6 +27,7 @@ import {
   DiscoveryNodeSelector,
   WalletApi
 } from './services'
+import defaultDiscoveryNodeServices from './services/DiscoveryNodeSelector/defaultBootstrapServices.json'
 
 type ServicesContainer = {
   /**
@@ -80,7 +81,7 @@ export const sdk = (config: SdkConfig) => {
 const initializeServices = (config: SdkConfig) => {
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector({
-      bootstrapServices: ['https://discoveryprovider.audius.co']
+      bootstrapServices: defaultDiscoveryNodeServices.services
     }),
     walletApi: new WalletApi()
   }
