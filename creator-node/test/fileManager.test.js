@@ -45,7 +45,7 @@ const req = {
 
 // TODO - instead of using ./test/test-segments, use ./test/testTrackUploadDir
 // consts used for testing generateNonImageCid()
-const segmentsDirPath = 'test/test-segments'
+const segmentsDirPath = 'test/test-segments/x86'
 const sourceFile = 'segment00001.ts'
 const srcPath = path.join(segmentsDirPath, sourceFile)
 

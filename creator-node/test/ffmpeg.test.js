@@ -84,7 +84,7 @@ describe('test segmentFile()', () => {
       // ffmpeg on arm runs slightly differently. Output is same, but slightly different
       // segmenting.
       // Not the best, but this code is meant to not live forever.
-      process.arch === 'arm64' ? 'test-segments/arm' : 'test-segments'
+      process.arch === 'arm64' ? 'test-segments/arm' : 'test-segments/x86'
     )
     const files = await fs.readdir(testSegmentsPath)
 

@@ -67,7 +67,7 @@ function _getTestSegmentFilePathAtIndex(index) {
   else if (index >= 10 && index < 32) suffix += `${index}`
   else throw new Error('Index must be [0, 32)')
 
-  return path.join(__dirname, 'test-segments', `segment${suffix}.ts`)
+  return path.join(__dirname, 'test-segments/x86', `segment${suffix}.ts`)
 }
 
 describe('test Polling Tracks with mocked IPFS', function () {
