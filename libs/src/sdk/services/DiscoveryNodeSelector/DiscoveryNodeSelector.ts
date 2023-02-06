@@ -28,7 +28,7 @@ import {
 } from './types'
 import type TypedEventEmitter from 'typed-emitter'
 import EventEmitter from 'events'
-import AbortController from 'abort-controller'
+import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
 
 export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
@@ -393,7 +393,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    * @returns the fastest healthy endpoint or null if none are healthy
    */
   private async anyHealthyEndpoint(endpoints: string[]) {
-    const abortController = new AbortController()
+    const abortController = new AbortControllerPolyfill() as AbortController
     const timeoutPromise = new Promise<null>((resolve, _reject) =>
       setTimeout(() => {
         abortController.abort()
