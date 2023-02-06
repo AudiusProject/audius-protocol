@@ -14,7 +14,7 @@ const messages = {
 type RemixSettingsModalTriggerProps = {
   onClick: () => void
   hideRemixes: boolean
-  didToggleHideRemixesState: () => void
+  handleToggle: () => void
 }
 
 export const RemixSettingsModalTrigger = (
@@ -40,10 +40,7 @@ export const RemixSettingsModalTrigger = (
   return (
     <div className={styles.hideRemixes}>
       <div className={styles.hideRemixesText}>{messages.hideRemixes}</div>
-      <Switch
-        isOn={props.hideRemixes}
-        handleToggle={props.didToggleHideRemixesState}
-      />
+      <Switch isOn={props.hideRemixes} handleToggle={props.handleToggle} />
     </div>
   )
 }
