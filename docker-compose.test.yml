@@ -2,8 +2,7 @@
 
 version: "3.9"
 
-x-logging:
-  &default-logging
+x-logging: &default-logging
   options:
     max-size: "50m"
     max-file: "3"
@@ -69,7 +68,7 @@ services:
     environment:
       POSTGRES_DB: "creator_node"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -79,7 +78,7 @@ services:
   creator-node-redis:
     image: redis:6.2
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -91,7 +90,7 @@ services:
     extends:
       file: docker-compose.yml
       service: creator-node
-    command: "npm run build && sleep infinity"
+    command: "sleep infinity"
     environment:
       storagePath: "./test_file_storage"
 
@@ -132,7 +131,7 @@ services:
     environment:
       POSTGRES_DB: "discovery_provider"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -142,7 +141,7 @@ services:
   discovery-provider-redis:
     image: redis:7.0
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -185,7 +184,7 @@ services:
     image: postgres:11.4
     user: postgres
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -196,7 +195,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
