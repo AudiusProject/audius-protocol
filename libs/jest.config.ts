@@ -34,7 +34,7 @@ export default {
   // coverageProvider: "babel",
 
   // A list of reporter names that Jest uses when writing coverage reports
-  // coverageReporters: [
+  coverageReporters: ['html', 'text'],
   //   "json",
   //   "text",
   //   "lcov",
