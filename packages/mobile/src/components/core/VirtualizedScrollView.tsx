@@ -19,6 +19,9 @@ type VirtualizedScrollViewProps = BaseFlatListProps & {
 /**
  * ScrollView that can wrap an inner Virtualized List, allowing inner lists to
  * scroll the entire ScrollView
+ *
+ * This gives us much more flexibility with the layout and styling of FlatLists,
+ * for example styling the FlatList content separately from the Header
  */
 export const VirtualizedScrollView = (props: VirtualizedScrollViewProps) => {
   const { children, ...other } = props

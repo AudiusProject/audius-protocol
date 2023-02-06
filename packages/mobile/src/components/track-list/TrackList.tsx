@@ -138,8 +138,8 @@ export const TrackList = ({
     <FlatList
       {...otherProps}
       data={data}
-      renderItem={renderTrack}
       keyExtractor={keyExtractor}
+      renderItem={renderTrack}
     />
   )
 }
