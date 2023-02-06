@@ -21,10 +21,17 @@ import {
 import fetch from 'cross-fetch'
 
 import { addAppNameMiddleware } from './middleware'
-import { defaultWalletApi, defaultDiscoveryNodeSelector } from './services'
-import type { WalletApiService, DiscoveryNodeSelectorService } from './services'
+import {
+  WalletApiService,
+  DiscoveryNodeSelectorService,
+  DiscoveryNodeSelector,
+  WalletApi
+} from './services'
 
 type ServicesContainer = {
+  /**
+   * Service used to choose discovery node
+   */
   discoveryNodeSelector: DiscoveryNodeSelectorService
   /**
    * Helpers to faciliate requests that require signatures or encryption
@@ -72,8 +79,10 @@ export const sdk = (config: SdkConfig) => {
 
 const initializeServices = (config: SdkConfig) => {
   const defaultServices: ServicesContainer = {
-    discoveryNodeSelector: defaultDiscoveryNodeSelector,
-    walletApi: defaultWalletApi
+    discoveryNodeSelector: new DiscoveryNodeSelector({
+      bootstrapServices: ['https://discoveryprovider.audius.co']
+    }),
+    walletApi: new WalletApi()
   }
   return { ...defaultServices, ...config.services }
 }
