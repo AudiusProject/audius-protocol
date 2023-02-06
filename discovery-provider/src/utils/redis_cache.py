@@ -135,7 +135,6 @@ def cache(**kwargs):
     def outer_wrap(func):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
-            # .get() returns None if value not found
             has_user_id = (
                 "user_id" in request.args and request.args["user_id"] is not None
             )
