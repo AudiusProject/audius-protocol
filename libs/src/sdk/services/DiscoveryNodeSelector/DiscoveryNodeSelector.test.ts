@@ -264,4 +264,16 @@ describe('discoveryNodeSelector', () => {
     // Didn't run select(), so isBehind shouldn't have triggered yet
     expect(selector.isBehind).toBe(false)
   })
+
+  test('rejects configured default if blocklisted', async () => {
+    const selector = new DiscoveryNodeSelector({
+      initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
+      blocklist: new Set([BEHIND_BLOCKDIFF_NODE]),
+      requestTimeout: 50,
+      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+    })
+    const selected = await selector.getSelectedEndpoint()
+    expect(selected).toBe(HEALTHY_NODE)
+    expect(selector.isBehind).toBe(false)
+  })
 })

@@ -6,10 +6,7 @@ import {
   getDiscoveryNodeHealthCheck
 } from './healthChecks'
 import { promiseAny } from '../../utils/promiseAny'
-import {
-  defaultDiscoveryNodeSelectorConfig,
-  DISCOVERY_SELECTOR_LOCAL_STORAGE_KEY
-} from './constants'
+import { defaultDiscoveryNodeSelectorConfig } from './constants'
 import type {
   Middleware,
   RequestContext,
@@ -117,7 +114,11 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this._isBehind = false
     this.unhealthyServices = new Set([])
     this.backupServices = {}
-    this.selectedNode = this.config.initialSelectedNode
+    this.selectedNode =
+      this.config.initialSelectedNode &&
+      !this.config.blocklist?.has(this.config.initialSelectedNode)
+        ? this.config.initialSelectedNode
+        : null
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
     this.addEventListener = this.eventEmitter.addListener.bind(
@@ -212,22 +213,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    */
   private async select() {
     this.debug('Selecting new discovery node...')
-    // If a short circuit is provided, take it. Don't check it, just use it.
-    const shortcircuit = await this.getCached()
     const decisionTree: Decision[] = []
-    decisionTree.push({
-      stage: DECISION_TREE_STATE.CHECK_SHORT_CIRCUIT,
-      val: shortcircuit
-    })
-    // If there is a shortcircuit defined and we have not blacklisted it, pick it
-    if (
-      shortcircuit &&
-      (!this.config.blocklist || !this.config.blocklist.has(shortcircuit))
-    ) {
-      this.selectedNode = shortcircuit
-      this.info(`Selected discprov ${this.selectedNode}`, decisionTree)
-      return shortcircuit
-    }
 
     // Get all the services we have
     let services = [...this.services]
@@ -331,7 +317,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     })
     // If we made it this far, we found the best service! (of the rounds we tried)
     if (selectedService) {
-      this.setCached(selectedService)
       this.selectedNode = selectedService
       this.eventEmitter.emit('change', selectedService)
     }
@@ -339,59 +324,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       attemptedServicesCount
     })
     return selectedService
-  }
-
-  /** Retrieves a cached discovery node from localstorage */
-  private async getCached() {
-    if (this.config.localStorage) {
-      try {
-        const discProvTimestamp = await this.config.localStorage.getItem(
-          DISCOVERY_SELECTOR_LOCAL_STORAGE_KEY
-        )
-        if (discProvTimestamp) {
-          const { endpoint: latestEndpoint, timestamp } =
-            JSON.parse(discProvTimestamp)
-
-          const allowed =
-            !this.config.allowlist || this.config.allowlist.has(latestEndpoint)
-
-          const isExpired =
-            this.config.cacheTTL !== null &&
-            Date.now() - timestamp > this.config.cacheTTL
-
-          if (!allowed || isExpired) {
-            this.clearCached()
-          } else {
-            return latestEndpoint as string
-          }
-        }
-      } catch (e) {
-        this.error(
-          'Could not retrieve cached discovery endpoint from localStorage',
-          e
-        )
-      }
-    }
-    return null
-  }
-
-  /** Clears any cached discovery node from localstorage */
-  private async clearCached() {
-    if (this.config.localStorage) {
-      await this.config.localStorage.removeItem(
-        DISCOVERY_SELECTOR_LOCAL_STORAGE_KEY
-      )
-    }
-  }
-
-  /** Sets a cached discovery node in localstorage */
-  private async setCached(endpoint: string) {
-    if (this.config.localStorage) {
-      await this.config.localStorage.setItem(
-        DISCOVERY_SELECTOR_LOCAL_STORAGE_KEY,
-        JSON.stringify({ endpoint, timestamp: Date.now() })
-      )
-    }
   }
 
   /**
@@ -485,7 +417,6 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         }
       }
       this.warn('health_check', endpoint, health, reason)
-      this.clearCached()
       return await this.select()
     }
   }

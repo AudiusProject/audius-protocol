@@ -5,17 +5,6 @@ import type { DiscoveryNodeSelectorServiceConfigInternal } from './types'
  */
 export const DISCOVERY_SERVICE_NAME = 'discovery-node'
 
-/**
- * Local storage key for cached Discovery Node selections
- */
-export const DISCOVERY_SELECTOR_LOCAL_STORAGE_KEY =
-  '@audius/sdk:discovery-node-selection'
-
-/**
- * How long to stay in regressed mode if no healthy services are found
- */
-export const DISCOVERY_REGRESSED_MODE_TIMEOUT_MS = 600000 // 10 min
-
 export const defaultDiscoveryNodeSelectorConfig: DiscoveryNodeSelectorServiceConfigInternal =
   {
     initialSelectedNode: null,
