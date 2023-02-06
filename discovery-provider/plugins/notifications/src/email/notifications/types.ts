@@ -71,6 +71,20 @@ export type Notification =
   | Follow
   | Repost
 
+export type ChallengeId =
+  | 'referred'
+  | 'referrals'
+  | 'ref-v'
+  | 'connect-verified'
+  | 'listen-streak'
+  | 'mobile-install'
+  | 'profile-completion'
+  | 'track-upload'
+  | 'send-first-tip'
+  | 'first-playlist'
+
+
+
 export type NotificationType =
   | 'favorite'
   | 'repost'

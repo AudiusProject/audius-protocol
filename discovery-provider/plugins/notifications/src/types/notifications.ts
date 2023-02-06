@@ -1,4 +1,4 @@
-import { EntityType, DMEntityType } from '../email/notifications/types'
+import { ChallengeId, EntityType, DMEntityType } from '../email/notifications/types'
 import { NotificationRow } from './dn'
 
 export type DMNotification = {
@@ -28,9 +28,24 @@ export type AppEmailNotification = {
 
 export type EmailNotification = AppEmailNotification | DMEmailNotification
 
+export type EmailUser = {
+  user_id: number
+  name: string
+  profile_picture_sizes: string
+  profile_picture: string
+  creator_node_endpoint: string
+  imageUrl: string
+}
+
 export type FollowNotification = {
   follower_user_id: number
   followee_user_id: number
+}
+
+export type FollowNotificationEmail = {
+  type: 'follow'
+  data: FollowNotification
+  followerUser: EmailUser
 }
 
 export type RepostNotification = {
@@ -69,6 +84,67 @@ export type CreatePlaylistNotification = {
   playlist_id: number
 }
 
+export type TipReceiveNotification = {
+  amount: number
+  sender_user_id: number
+  receiver_user_id: number
+}
+
+export type TipSendNotification = {
+  amount: number
+  sender_user_id: number
+  receiver_user_id: number
+}
+
+export type ChallengeRewardNotification = {
+  amount: number
+  specifier: string
+  challenge_id: ChallengeId
+}
+
+export type ReactionNotification = {
+  reacted_to: string
+  reaction_type: string
+  reaction_value: number
+  sender_wallet: string
+}
+
+export type SupporterRankUpNotification = {
+  rank: number
+  sender_user_id: number
+  receiver_user_id: number
+}
+
+export type SupportingRankUpNotification = {
+  rank: number
+  sender_user_id: number
+  receiver_user_id: number
+}
+
+export type FollowerMilestoneNotification = {
+  type: string
+  user_id: number
+  threshold: number
+}
+
+export type TrackMilestoneNotification = {
+  type: string
+  track_id: number
+  threshold: number
+}
+
+export type PlaylistMilestoneNotification = {
+  type: string
+  playlist_id: number
+  threshold: number
+}
+
+export type TierChangeNotification = {
+  new_tier: string
+  new_tier_value: number
+  current_value: string
+}
+
 export type NotificationData =
   | DMNotification
   | DMReactionNotification
@@ -80,3 +156,13 @@ export type NotificationData =
   | CosignRemixNotification
   | CreateTrackNotification
   | CreatePlaylistNotification
+  | TipReceiveNotification
+  | TipSendNotification
+  | ChallengeRewardNotification
+  | ReactionNotification
+  | SupporterRankUpNotification
+  | SupportingRankUpNotification
+  | FollowerMilestoneNotification
+  | TrackMilestoneNotification
+  | PlaylistMilestoneNotification
+  | TierChangeNotification

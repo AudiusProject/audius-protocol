@@ -1,22 +1,26 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { FollowNotification } from '../../types/notifications'
+import { SaveNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
+import { EntityType } from '../../email/appNotifications/types'
 
-type FollowNotificationRow = Omit<NotificationRow, 'data'> & { data: FollowNotification }
-export class Follow extends BaseNotification<FollowNotificationRow> {
+type SaveNotificationRow = Omit<NotificationRow, 'data'> & { data: SaveNotification }
+export class Save extends BaseNotification<SaveNotificationRow> {
 
   receiverUserId: number
-  followerUserId: number
+  saveItemId: number
+  saveType: EntityType
+  saverUserId: number
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: FollowNotificationRow) {
+  constructor(dnDB: Knex, identityDB: Knex, notification: SaveNotificationRow) {
     super(dnDB, identityDB, notification)
-    const userIds = this.notification.user_ids!
-    const followeeUserId = userIds[0]
-    this.followerUserId = this.notification.data.follower_user_id
-    this.receiverUserId = followeeUserId
+    const userIds: number[] = this.notification.user_ids!
+    this.receiverUserId = userIds[0]
+    this.saveItemId = this.notification.data.save_item_id
+    this.saveType = this.notification.data.type
+    this.saverUserId = this.notification.data.user_id
   }
 
   async pushNotification() {
@@ -24,15 +28,18 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
-      .whereIn('user_id', [this.receiverUserId, this.followerUserId])
+      .whereIn('user_id', [this.receiverUserId, this.saverUserId])
     const users = res.reduce((acc, user) => {
       acc[user.user_id] = { name: user.name, isDeactivated: user.is_deactivated }
       return acc
     }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
+
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
     }
+
+    // TODO: Fetch the tracks or playlist
 
     // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
@@ -42,15 +49,15 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
       const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.receiverUserId].settings
       const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['followers']) {
+      if (userMobileSettings['favorites']) {
         await Promise.all(devices.map(device => {
           return sendPushNotification({
             type: device.type,
             badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
             targetARN: device.awsARN
           }, {
-            title: 'Follow',
-            body: `${users[this.followerUserId].name} followed you`,
+            title: 'Favorite',
+            body: ``,
             data: {}
           })
         }))
@@ -71,16 +78,35 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
   }
 
   getResourcesForEmail(): ResourceIds {
+    let tracks = new Set<number>()
+    let playlists = new Set<number>()
+    if (this.saveType === EntityType.Track) {
+      tracks.add(this.saveItemId)
+    } else {
+      playlists.add(this.saveItemId)
+    }
+
     return {
-      users: new Set([this.receiverUserId, this.followerUserId])
+      users: new Set([this.receiverUserId, this.saverUserId]),
+      tracks,
+      playlists
     }
   }
 
   formatEmailProps(resources: Resources) {
-    const user = resources.users[this.followerUserId]
+    const user = resources.users[this.saverUserId]
+    let entity
+    if (this.saveType === EntityType.Track) {
+      const track = resources.tracks[this.saveItemId]
+      entity = { type: EntityType.Track, name: track.title, image: track.imageUrl }
+    } else {
+      const playlist = resources.playlists[this.saveItemId]
+      entity = { type: EntityType.Playlist, name: playlist.playlist_name, image: playlist.imageUrl }
+    }
     return {
       type: this.notification.type,
-      users: [{ name: user.name, image: user.imageUrl }]
+      users: [{ name: user.name, image: user.imageUrl }],
+      entity
     }
   }
 
