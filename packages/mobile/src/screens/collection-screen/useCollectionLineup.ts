@@ -55,11 +55,17 @@ export const useCollectionLineup = (
 
   const fetchLineupOffline = useCallback(() => {
     if (isOfflineModeEnabled && collectionId && collection) {
+      const collectionTrackIds = new Set(
+        collection?.playlist_contents?.track_ids?.map(
+          (trackData) => trackData.track
+        ) || []
+      )
       const lineupTracks = Object.values(offlineTracks)
-        .filter((track) =>
-          track.offline?.reasons_for_download.some(
-            (reason) => reason.collection_id === collectionId.toString()
-          )
+        .filter(
+          (track) =>
+            track.offline?.reasons_for_download.some(
+              (reason) => reason.collection_id === collectionId.toString()
+            ) || collectionTrackIds.has(track.track_id)
         )
         .map((track) => ({
           id: track.track_id,
