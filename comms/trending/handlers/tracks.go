@@ -1,3 +1,0 @@
-package handlers
-
-func GetTrendingTracksHandler()

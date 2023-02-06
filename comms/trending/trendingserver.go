@@ -16,6 +16,7 @@ func NewTrendingServer() *TrendingServer {
 	wsv := echo.New()
 	wsv.Debug = true
 
+	// can swap with any DB type
 	db := db.NewClickHouseDB()
 
 	return &TrendingServer{
