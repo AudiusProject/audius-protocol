@@ -136,8 +136,8 @@ def cache(**kwargs):
         @functools.wraps(func)
         def inner_wrap(*args, **kwargs):
             # .get() returns None if value not found
-            has_user_id = request.args.get("user_id") or request.headers.get(
-                "x-user-id"
+            has_user_id = (
+                "user_id" in request.args and request.args["user_id"] is not None
             )
             key = extract_key(request.path, request.args.items(), cache_prefix_override)
             # only read cache responses w/o user id because only those are inserted
