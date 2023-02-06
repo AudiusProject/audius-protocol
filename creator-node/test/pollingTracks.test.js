@@ -143,7 +143,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
     process.env.maxAudioFileSizeBytes = 10
     // Clear require cache so the config picks up the env change
     Object.keys(require.cache).forEach(function (key) {
-      delete require.cache[key]
+      // exclude src/models/index from the key deletion because it initalizes a new connection pool
+      // every time and we hit a db error if we clear the cache and keep creating new pg pools
+      if (
+        key.includes('creator-node/src/') &&
+        !key.includes('creator-node/src/models/index.js')
+      ) {
+        delete require.cache[key]
+      }
     })
 
     // Reset app
@@ -173,7 +180,14 @@ describe('test Polling Tracks with mocked IPFS', function () {
     process.env.maxMemoryFileSizeBytes = 10
     // Clear require cache so the config picks up the env change
     Object.keys(require.cache).forEach(function (key) {
-      delete require.cache[key]
+      // exclude src/models/index from the key deletion because it initalizes a new connection pool
+      // every time and we hit a db error if we clear the cache and keep creating new pg pools
+      if (
+        key.includes('creator-node/src/') &&
+        !key.includes('creator-node/src/models/index.js')
+      ) {
+        delete require.cache[key]
+      }
     })
 
     // Reset app

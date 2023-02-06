@@ -11,7 +11,14 @@ describe('test transcode_and_segment route', function () {
     testUuid = uuid.v4()
 
     Object.keys(require.cache).forEach(function (key) {
-      delete require.cache[key]
+      // exclude src/models/index from the key deletion because it initalizes a new connection pool
+      // every time and we hit a db error if we clear the cache and keep creating new pg pools
+      if (
+        key.includes('creator-node/src/') &&
+        !key.includes('creator-node/src/models/index.js')
+      ) {
+        delete require.cache[key]
+      }
     })
   })
 

@@ -56,7 +56,14 @@ const libsMock = getLibsMock()
 describe('Test secondarySyncFromPrimary()', function () {
   before(function () {
     Object.keys(require.cache).forEach(function (key) {
-      delete require.cache[key]
+      // exclude src/models/index from the key deletion because it initalizes a new connection pool
+      // every time and we hit a db error if we clear the cache and keep creating new pg pools
+      if (
+        key.includes('creator-node/src/') &&
+        !key.includes('creator-node/src/models/index.js')
+      ) {
+        delete require.cache[key]
+      }
     })
   })
   let server, app, mockServiceRegistry, userId
@@ -1557,7 +1564,14 @@ describe('Test secondarySyncFromPrimary()', function () {
 describe('Test primarySyncFromSecondary() with mocked export', () => {
   before(function () {
     Object.keys(require.cache).forEach(function (key) {
-      delete require.cache[key]
+      // exclude src/models/index from the key deletion because it initalizes a new connection pool
+      // every time and we hit a db error if we clear the cache and keep creating new pg pools
+      if (
+        key.includes('creator-node/src/') &&
+        !key.includes('creator-node/src/models/index.js')
+      ) {
+        delete require.cache[key]
+      }
     })
   })
   let server,
