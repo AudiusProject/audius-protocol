@@ -10,7 +10,12 @@ import queue from 'react-native-job-queue'
 
 import { fetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
 import { store } from 'app/store'
-import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
+import {
+  getAllOfflineDownloadStatus,
+  getAllOfflineTrackMetadata,
+  getOfflineTracks
+} from 'app/store/offline-downloads/selectors'
+import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { isAvailableForPlay } from 'app/utils/trackUtils'
 
 import { apiClient } from '../audius-api-client'
@@ -41,7 +46,7 @@ export const syncFavoritedTracks = async () => {
   if (!currentUserId) return
 
   const favoritedTracks = await fetchAllFavoritedTracks(currentUserId)
-  const downloadedTracks = getOfflineTracks(state)
+  const offlineTrackMetadata = getAllOfflineTrackMetadata(state)
 
   const isTrackFavoriteReason = (downloadReason: DownloadReason) =>
     downloadReason.is_from_favorites &&
@@ -52,11 +57,12 @@ export const syncFavoritedTracks = async () => {
     .map(({ payload }) => JSON.parse(payload) as TrackDownloadWorkerPayload)
     .filter(({ downloadReason }) => isTrackFavoriteReason(downloadReason))
     .map(({ trackId }) => trackId)
-  const cachedFavoritedTrackIds = Object.entries(downloadedTracks)
-    .filter(([_id, track]) =>
-      track.offline?.reasons_for_download.some(isTrackFavoriteReason)
+  const cachedFavoritedTrackIds = Object.entries(offlineTrackMetadata)
+    .filter(([_id, trackOfflineMetadata]) =>
+      trackOfflineMetadata.reasons_for_download.some(isTrackFavoriteReason)
     )
-    .map(([_id, track]) => track.track_id)
+    .map(([id, _trackOfflineMetadata]) => id)
+    .map(parseInt)
 
   const oldTrackIds = new Set([...queuedTrackIds, ...cachedFavoritedTrackIds])
   const newTrackIds = new Set(favoritedTracks.map(({ trackId }) => trackId))
@@ -142,7 +148,7 @@ export const syncCollectionTracks = async (
 ) => {
   const state = store.getState()
   const currentUserId = getUserId(state as unknown as CommonState)
-  const downloadedTracks = getOfflineTracks(state)
+  const trackDownloadStatus = getAllOfflineDownloadStatus(state)
   const collectionId = offlineCollection.playlist_id
   const collectionIdStr = offlineCollection.playlist_id.toString()
   const queuedTrackIds = (await queue.getJobs())
@@ -166,7 +172,14 @@ export const syncCollectionTracks = async (
   const downloadedCollectionTrackIds =
     offlineCollection.tracks
       ?.map((track) => track.track_id)
-      ?.filter((trackId) => downloadedTracks[trackId] != null) ?? []
+      ?.filter((trackId) => {
+        const downloadStatus = trackDownloadStatus[trackId]
+        return (
+          downloadStatus === OfflineDownloadStatus.SUCCESS ||
+          downloadStatus === OfflineDownloadStatus.LOADING ||
+          downloadStatus === OfflineDownloadStatus.INIT
+        )
+      }) ?? []
 
   if (updatedCollection.is_delete) {
     removeCollectionDownload(
@@ -251,15 +264,13 @@ export const syncStaleTracks = () => {
   const currentUserId = getUserId(state as unknown as CommonState)
   if (!currentUserId) return
 
-  const staleDownloadedTracks = Object.entries(downloadedTracks)
-    .filter(
-      ([id, track]) =>
-        track.offline &&
-        moment()
-          .subtract(STALE_DURATION_TRACKS)
-          .isAfter(moment(track.offline?.last_verified_time))
-    )
-    .map(([_id, track]) => track)
+  const staleDownloadedTracks = downloadedTracks.filter(
+    (track) =>
+      track.offline &&
+      moment()
+        .subtract(STALE_DURATION_TRACKS)
+        .isAfter(moment(track.offline?.last_verified_time))
+  )
 
   staleDownloadedTracks.forEach(async (staleTrack) => {
     const updatedTrack = await apiClient.getTrack({

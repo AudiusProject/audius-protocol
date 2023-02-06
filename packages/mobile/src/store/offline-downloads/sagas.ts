@@ -47,8 +47,8 @@ import { watchUpdateTrackDownloadReasons } from './sagas/updateTrackDownloadReas
 import {
   getIsCollectionMarkedForDownload,
   getIsDoneLoadingFromDisk,
-  getOfflineCollections,
-  getOfflineFavoritedCollections
+  getAllOfflineCollections,
+  getAllOfflineFavoritedCollections
 } from './selectors'
 import {
   clearOfflineDownloads,
@@ -64,7 +64,7 @@ const { getCollections } = cacheCollectionsSelectors
 export function* downloadSavedTrack(
   action: ReturnType<typeof tracksSocialActions.saveTrack>
 ) {
-  const offlineCollections = yield* select(getOfflineCollections)
+  const offlineCollections = yield* select(getAllOfflineCollections)
   if (!offlineCollections[DOWNLOAD_REASON_FAVORITES]) return
   enqueueTrackDownload({
     trackId: action.trackId,
@@ -102,7 +102,7 @@ function* watchUnsaveTrack() {
 export function* downloadSavedCollection(
   action: ReturnType<typeof collectionsSocialActions.saveCollection>
 ) {
-  const offlineCollections = yield* select(getOfflineCollections)
+  const offlineCollections = yield* select(getAllOfflineCollections)
   const currentUserId = yield* select(getUserId)
 
   if (
@@ -159,11 +159,11 @@ export function* startSync() {
     const accountCollectionIds = Object.values(accountCollections).map(
       (collection) => collection.id
     )
-    const offlineCollectionsState = yield* select(getOfflineCollections)
+    const offlineCollectionsState = yield* select(getAllOfflineCollections)
     const isFavoritesDownloadEnabled =
       offlineCollectionsState[DOWNLOAD_REASON_FAVORITES]
     const offlineFavoritedCollections = yield* select(
-      getOfflineFavoritedCollections
+      getAllOfflineFavoritedCollections
     )
     const existingOfflineCollections: Collection[] = Object.entries(
       offlineFavoritedCollections
@@ -221,7 +221,7 @@ function* downloadNewPlaylistTrackIfNecessary({
   if (!isCollectionDownloaded || !trackId) return
 
   const favoriteDownloadedCollections = yield* select(
-    getOfflineFavoritedCollections
+    getAllOfflineFavoritedCollections
   )
   const trackForDownload = {
     trackId,

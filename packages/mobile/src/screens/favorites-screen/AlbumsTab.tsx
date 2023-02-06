@@ -13,7 +13,7 @@ import { EmptyTileCTA } from 'app/components/empty-tile-cta'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import type { AppState } from 'app/store'
 import {
-  getOfflineDownloadStatus,
+  getAllOfflineDownloadStatus,
   getIsDoneLoadingFromDisk
 } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
@@ -40,7 +40,7 @@ export const AlbumsTab = () => {
   const offlineDownloadStatus = useProxySelector(
     (state: AppState) => {
       if (isDoneLoadingFromDisk && isOfflineModeEnabled && !isReachable) {
-        return getOfflineDownloadStatus(state)
+        return getAllOfflineDownloadStatus(state)
       }
       // We don't need offline download status when we're not offline. This saves us rerenders while we're downloading things and updating the offline download slice.
       return undefined

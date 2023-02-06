@@ -13,8 +13,8 @@ import {
 } from 'app/services/offline-downloader'
 
 import {
-  getOfflineCollections,
-  getOfflineFavoritedCollections,
+  getAllOfflineCollections,
+  getAllOfflineFavoritedCollections,
   getOfflineTracks
 } from '../selectors'
 import type {
@@ -75,9 +75,9 @@ function* removeAllDownloadedFavoritesWorker() {
 }
 
 function* removeFavoritedCollections() {
-  const offlineCollections = yield* select(getOfflineCollections)
+  const offlineCollections = yield* select(getAllOfflineCollections)
   const offlineFavoritedCollections = yield* select(
-    getOfflineFavoritedCollections
+    getAllOfflineFavoritedCollections
   )
   const offlineFavoritedCollectionIds = Object.keys(offlineFavoritedCollections)
 
@@ -112,16 +112,13 @@ function* removeFavoritedCollections() {
 
 function* removeFavoritedTracks() {
   const offlineTracks = yield* select(getOfflineTracks)
-  const offlineTrackList = Object.keys(offlineTracks).map(
-    (offlineTrackId) => offlineTracks[offlineTrackId]
-  )
 
   const tracksToRemove: ID[] = []
   const tracksToUpdate: TrackReasonsToUpdate[] = []
   const tracksToDequeue: TrackForDownload[] = []
 
   const offlineFavoritedCollections = yield* select(
-    getOfflineFavoritedCollections
+    getAllOfflineFavoritedCollections
   )
 
   const favoritedCollectionIds = new Set([
@@ -129,7 +126,7 @@ function* removeFavoritedTracks() {
     ...Object.keys(offlineFavoritedCollections)
   ])
 
-  for (const offlineTrack of offlineTrackList) {
+  for (const offlineTrack of offlineTracks) {
     const { track_id, offline } = offlineTrack
     if (!offline) continue
 

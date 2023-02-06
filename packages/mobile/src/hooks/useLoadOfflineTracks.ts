@@ -1,18 +1,14 @@
-import type {
-  CollectionMetadata,
-  Track,
-  UserMetadata,
-  UserTrackMetadata
-} from '@audius/common'
+import type { CollectionMetadata, Track, UserMetadata } from '@audius/common'
 import { Kind, makeUid, cacheActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
 import { useAsync } from 'react-use'
 
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import type { TrackOfflineMetadataPayload } from 'app/store/offline-downloads/slice'
 import {
+  batchSetTrackOfflineMetadata,
   completeCollectionDownload,
-  doneLoadingFromDisk,
-  loadTracks
+  doneLoadingFromDisk
 } from 'app/store/offline-downloads/slice'
 
 import {
@@ -80,7 +76,7 @@ export const useLoadOfflineData = () => {
 
     const trackIds = await listTracks()
     const cacheTracks: { uid: string; id: number; metadata: Track }[] = []
-    const lineupTracks: (Track & UserTrackMetadata & { uid: string })[] = []
+    const trackOfflineMetadatas: TrackOfflineMetadataPayload[] = []
     await Promise.all(
       trackIds.map(async (trackId) => {
         try {
@@ -91,15 +87,10 @@ export const useLoadOfflineData = () => {
         }
         try {
           const track = await getTrackJson(trackId)
-          if (!track) return
-          const lineupTrack = {
-            uid: makeUid(Kind.TRACKS, track.track_id),
-            kind: Kind.TRACKS,
-            ...track
-          }
+          if (!track?.offline) return
           cacheTracks.push({
             id: track.track_id,
-            uid: lineupTrack.uid,
+            uid: makeUid(Kind.TRACKS, track.track_id),
             metadata: track
           })
           if (track.user) {
@@ -109,7 +100,10 @@ export const useLoadOfflineData = () => {
               metadata: track.user
             })
           }
-          lineupTracks.push(lineupTrack)
+          trackOfflineMetadatas.push({
+            trackId: track.track_id,
+            offlineMetadata: track.offline
+          })
         } catch (e) {
           console.warn('Failed to load track from disk', trackId, e)
         }
@@ -118,7 +112,7 @@ export const useLoadOfflineData = () => {
 
     dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
     dispatch(cacheActions.add(Kind.USERS, cacheUsers, false, true))
-    dispatch(loadTracks(lineupTracks))
+    dispatch(batchSetTrackOfflineMetadata(trackOfflineMetadatas))
     dispatch(doneLoadingFromDisk())
   }, [isOfflineModeEnabled])
 }

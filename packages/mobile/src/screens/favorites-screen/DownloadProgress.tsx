@@ -7,7 +7,7 @@ import { ProgressBar } from 'app/components/progress-bar'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import {
   getIsCollectionMarkedForDownload,
-  getOfflineDownloadStatus
+  getAllOfflineDownloadStatus
 } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
@@ -35,7 +35,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
 
 export const DownloadProgress = () => {
   const styles = useStyles()
-  const downloadStatus = useSelector(getOfflineDownloadStatus)
+  const downloadStatus = useSelector(getAllOfflineDownloadStatus)
   const isReachable = useSelector(getIsReachable)
   const numDownloads = Object.keys(downloadStatus).length
   const numDownloadsComplete = Object.values(downloadStatus).filter(
