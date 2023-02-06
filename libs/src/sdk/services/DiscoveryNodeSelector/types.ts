@@ -1,6 +1,5 @@
 import type TypedEventEmitter from 'typed-emitter'
 import type { Middleware } from '../../api/generated/default'
-import type { LocalStorage } from '../../utils/localStorage'
 import type { HealthCheckThresholds } from './healthCheckTypes'
 
 export type Decision = {
@@ -70,11 +69,6 @@ export type DiscoveryNodeSelectorServiceConfigInternal = {
    * @default 600000 ten minutes
    */
   cacheTTL: number | null
-  /**
-   * Injection for LocalStorage/AsyncStorage/Node-LocalStorage or some form of a persistent cache.
-   * Can be used in order to shortcircuit selection for quicker load times.
-   */
-  localStorage: LocalStorage | null
   /**
    * Configuration for determining healthy status
    */
