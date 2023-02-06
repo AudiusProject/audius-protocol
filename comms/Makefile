@@ -9,6 +9,14 @@ dev.storage::
 	@	audius_discprov_env='standalone' \
 		go run main.go storage
 
+dev.trending::
+	@   go run main.go trending
+
+# these are the dependencies required for trending to operate
+# currently only clickhouse is required but more could be added here
+dev.trending.deps::
+	@   docker compose up chdb
+
 reset::
 	docker compose down --volumes
 	docker compose up comdb comnats -d

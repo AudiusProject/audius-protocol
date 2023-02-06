@@ -1,4 +1,4 @@
-package trending
+package config
 
 type Config struct {
 	WebServerPort    string
