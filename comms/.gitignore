@@ -2,5 +2,6 @@ wip
 comms.audius.co
 comms-linux
 build
+clickhouse-vol
 
 db/schema.sql
