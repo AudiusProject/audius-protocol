@@ -1,6 +1,10 @@
 package db
 
 import (
+	"context"
+	"fmt"
+	"time"
+
 	"comms.audius.co/trending/config"
 	"github.com/ClickHouse/clickhouse-go/v2"
 )
@@ -10,8 +14,42 @@ type ClickHouseDB struct {
 }
 
 func NewClickHouseDB(conf config.Config) (*ClickHouseDB, error) {
-	conn, err := clickhouse.Open(&clickhouse.Options{})
+	conn, err := clickhouse.Open(&clickhouse.Options{
+		Addr: []string{conf.DatabaseAddress},
+		Auth: clickhouse.Auth{
+			Database: conf.DatabaseName,
+			Username: conf.DatabaseUsername,
+			Password: conf.DatabasePassword,
+		},
+		Debug: conf.Debug,
+		Debugf: func(format string, v ...interface{}) {
+			fmt.Printf(format, v)
+		},
+		Settings: clickhouse.Settings{
+			"max_execution_time": conf.ClickHouseMaxExecutionTime,
+		},
+		DialTimeout:          time.Duration(10) * time.Second,
+		MaxOpenConns:         5,
+		MaxIdleConns:         5,
+		ConnMaxLifetime:      time.Duration(10) * time.Minute,
+		ConnOpenStrategy:     clickhouse.ConnOpenInOrder,
+		BlockBufferSize:      10,
+		MaxCompressionBuffer: 10240,
+		ClientInfo: clickhouse.ClientInfo{ // optional, please see Client info section in the README.md
+			Products: []struct {
+				Name    string
+				Version string
+			}{
+				{Name: "aud-trending", Version: "0.1"},
+			},
+		},
+	})
 
+	if err != nil {
+		return nil, err
+	}
+
+	err = conn.Ping(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -22,7 +60,7 @@ func NewClickHouseDB(conf config.Config) (*ClickHouseDB, error) {
 }
 
 func (ch ClickHouseDB) CheckHealth() bool {
-	return true
+	return nil == ch.CHDB.Ping(context.Background())
 }
 
 func (ch ClickHouseDB) QueryTrendingTracks() (string, error) {
