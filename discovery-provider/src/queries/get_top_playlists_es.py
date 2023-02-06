@@ -66,7 +66,7 @@ def get_top_playlists_es(kind, args):
         query=dsl["query"],
         size=limit,
         # omit unused fields from result
-        _source_excludes=["saved_by", "reposted_by", "tracks"],
+        source_excludes=["saved_by", "reposted_by", "tracks"],
     )
 
     playlists = []
