@@ -180,21 +180,17 @@ TRIGGER AS
 	    )
 	values (
 	        new.blocknumber,
-	        ARRAY_CAT(
-	            ARRAY(
-	                SELECT
-	                    user_id
-	                FROM
-	                    followee_repost_repost_ids
-	            ),
-	            ARRAY [owner_user_id]
+	        ARRAY(
+	            SELECT user_id
+	            FROM
+	                followee_repost_repost_ids
 	        ),
 	        new.created_at,
-	        'repost',
+	        'repost_repost',
 	        new.user_id,
-	        'repost:' || new.repost_item_id || ':type:' || new.repost_type,
+	        'repost_repost:' || new.repost_item_id || ':type:' || new.repost_type,
 	        json_build_object(
-	            'repost_item_id',
+	            'repost_repost_item_id',
 	            new.repost_item_id,
 	            'user_id',
 	            new.user_id,
@@ -205,8 +201,7 @@ TRIGGER AS
 	do nothing;
 	end if;
 	-- notify content owner of a repost
-	if new.is_delete is false
-	and new.is_repost_repost is false then
+	if new.is_delete is false then
 	insert into
 	    notification (
 	        blocknumber,
