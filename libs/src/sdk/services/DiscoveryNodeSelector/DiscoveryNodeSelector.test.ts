@@ -25,6 +25,8 @@ const HEALTHY_NODE = 'https://healthy.audius.co'
 const BEHIND_BLOCKDIFF_NODE = 'https://behind-blockdiff.audius.co'
 const BEHIND_LARGE_BLOCKDIFF_NODE = 'https://behind-largeblockdiff.audius.co'
 const BEHIND_PATCH_VERSION_NODE = 'https://behind-patchversion.audius.co'
+const BEHIND_EARLIER_PATCH_VERSION_NODE =
+  'https://behind-patchversion.audius.co'
 const BEHIND_MINOR_VERSION_NODE = 'https://behind-minorversion.audius.co'
 const UNHEALTHY_NODE = 'https://unhealthy.audius.co'
 const UNHEALTHY_DATA_NODE = 'https://unhealthy-data.audius.co'
@@ -53,21 +55,18 @@ const NETWORK_DISCOVERY_NODES = [
 ]
 
 const handlers = [
-  // Healthy
-  rest.get(
-    /https:\/\/healthy(.*).audius.co\/health_check/,
-    (_req, res, ctx) => {
-      const data: HealthCheckResponseData = {
-        service: 'discovery-node',
-        version: '1.2.3',
-        block_difference: 0,
-        network: {
-          discoveryNodes: NETWORK_DISCOVERY_NODES
-        }
+  rest.get(`${HEALTHY_NODE}/health_check`, (_req, res, ctx) => {
+    const data: HealthCheckResponseData = {
+      service: 'discovery-node',
+      version: '1.2.3',
+      block_difference: 0,
+      network: {
+        discoveryNodes: NETWORK_DISCOVERY_NODES
       }
-      return res(ctx.status(200), ctx.json({ data }))
     }
-  ),
+    return res(ctx.delay(25), ctx.status(200), ctx.json({ data }))
+  }),
+
   // Slower healthy
   rest.get(
     /https:\/\/healthy-slow(.*).audius.co\/health_check/,
@@ -85,87 +84,55 @@ const handlers = [
       )
     }
   ),
-  // Behind blockdiff
+
+  rest.get(`${BEHIND_BLOCKDIFF_NODE}/health_check`, (_req, res, ctx) => {
+    const data: HealthCheckResponseData = {
+      service: 'discovery-node',
+      version: '1.2.3',
+      block_difference: 50
+    }
+    return res(ctx.status(200), ctx.json({ data }))
+  }),
+
+  rest.get(`${BEHIND_LARGE_BLOCKDIFF_NODE}/health_check`, (_req, res, ctx) => {
+    const data: HealthCheckResponseData = {
+      service: 'discovery-node',
+      version: '1.2.3',
+      block_difference: 200
+    }
+    return res(ctx.status(200), ctx.json({ data }))
+  }),
+
+  rest.get(`${BEHIND_PATCH_VERSION_NODE}/health_check`, (_req, res, ctx) => {
+    const data: HealthCheckResponseData = {
+      service: 'discovery-node',
+      version: '1.2.2',
+      block_difference: 0
+    }
+    return res(ctx.status(200), ctx.json({ data }))
+  }),
+
   rest.get(
-    /https:\/\/behind-blockdiff(.*).audius.co\/health_check/,
+    `${BEHIND_EARLIER_PATCH_VERSION_NODE}/health_check`,
     (_req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          data: {
-            service: 'discovery-node',
-            version: '1.2.3',
-            block_difference: 50
-          }
-        })
-      )
+      const data: HealthCheckResponseData = {
+        service: 'discovery-node',
+        version: '1.2.2',
+        block_difference: 0
+      }
+      return res(ctx.status(200), ctx.json({ data }))
     }
   ),
 
-  // Very behind blockdiff
-  rest.get(
-    /https:\/\/behind-largeblockdiff(.*).audius.co\/health_check/,
-    (_req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          data: {
-            service: 'discovery-node',
-            version: '1.2.3',
-            block_difference: 200
-          }
-        })
-      )
+  rest.get(`${BEHIND_MINOR_VERSION_NODE}/health_check`, (_req, res, ctx) => {
+    const data: HealthCheckResponseData = {
+      service: 'discovery-node',
+      version: '1.1.0',
+      block_difference: 0
     }
-  ),
-  // Behind patch version
-  rest.get(
-    /https:\/\/behind-patchversion(.*).audius.co\/health_check/,
-    (_req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          data: {
-            service: 'discovery-node',
-            version: '1.2.2',
-            block_difference: 0
-          }
-        })
-      )
-    }
-  ),
-  // Behind more patch version
-  rest.get(
-    /https:\/\/behind-patchversion(.*).audius.co\/health_check/,
-    (_req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          data: {
-            service: 'discovery-node',
-            version: '1.2.1',
-            block_difference: 0
-          }
-        })
-      )
-    }
-  ),
-  // Behind minor version
-  rest.get(
-    /https:\/\/behind-minorversion(.*).audius.co\/health_check/,
-    (_req, res, ctx) => {
-      return res(
-        ctx.status(200),
-        ctx.json({
-          data: {
-            service: 'discovery-node',
-            version: '1.1.0',
-            block_difference: 0
-          }
-        })
-      )
-    }
-  ),
+    return res(ctx.status(200), ctx.json({ data }))
+  }),
+
   // Unhealthy (offline)
   rest.get(
     /https:\/\/unhealthy(.*).audius.co\/health_check/,
@@ -173,18 +140,15 @@ const handlers = [
       return res(ctx.status(502))
     }
   ),
-  // Unhealthy (no data)
+
   rest.get(`${UNHEALTHY_DATA_NODE}/health_check`, (_req, res, ctx) => {
     return res(ctx.status(200), ctx.json(null))
   }),
-  // Unresponsive
-  rest.get(
-    /https:\/\/unresponsive(.*).audius.co\/health_check/,
-    (_req, res, ctx) => {
-      return res(ctx.delay('infinite'))
-    }
-  ),
-  // Content Node
+
+  rest.get(`${UNRESPONSIVE_NODE}/health_check`, (_req, res, ctx) => {
+    return res(ctx.delay('infinite'))
+  }),
+
   rest.get(`${CONTENT_NODE}/health_check`, (_req, res, ctx) => {
     const data: HealthCheckResponseData = {
       service: 'content-node',
