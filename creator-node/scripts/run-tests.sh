@@ -125,7 +125,7 @@ export minimumMemoryAvailable=2000000000
 export maxFileDescriptorsAllocatedPercentage=95
 export minimumDailySyncCount=5
 export minimumRollingSyncCount=10
-export dbConnectionPoolMax=500
+export dbConnectionPoolMax=1
 
 # tests
 run_unit_tests
