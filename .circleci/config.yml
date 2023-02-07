@@ -389,11 +389,11 @@ jobs:
           command: |
             cd libs
             npm run sdk:bootstrap
-      # - run:
-      #     name: Bump and Publish Libs
-      #     command: |
-      #       export PROTOCOL_DIR=/home/circleci/project
-      #       libs/scripts/release.sh << parameters.sdk_release_commit >>
+      - run:
+          name: Bump and Publish Libs
+          command: |
+            export PROTOCOL_DIR=/home/circleci/project
+            libs/scripts/release.sh << parameters.sdk_release_commit >>
       - slack-fail:
           branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
