@@ -11,15 +11,19 @@ import { call, select, put } from 'typed-redux-saga'
 import {
   DOWNLOAD_REASON_FAVORITES,
   getCollectionJson,
-  getTrackJson,
-  verifyTrack
+  getTrackJson
 } from 'app/services/offline-downloader'
 
 import {
   getOfflineCollectionsStatus,
   getOfflineTrackStatus
 } from '../selectors'
-import { doneLoadingFromDisk, OfflineDownloadStatus } from '../slice'
+import type { DownloadQueueItem } from '../slice'
+import {
+  redownloadOfflineItems,
+  doneLoadingFromDisk,
+  OfflineDownloadStatus
+} from '../slice'
 
 import { getIsOfflineEnabled } from './getIsOfflineEnabled'
 
@@ -36,6 +40,8 @@ export function* rehydrateOfflineDataSaga() {
   const collectionsToCache: CachedCollection[] = []
   const usersToCache: CachedUser[] = []
   const tracksToCache: CachedTrack[] = []
+  const collectionsToRedownload: DownloadQueueItem[] = []
+  const tracksToRedownload: DownloadQueueItem[] = []
 
   const offlineCollectionStatus = yield* select(getOfflineCollectionsStatus)
   const downloadedCollectionIds = Object.keys(offlineCollectionStatus).filter(
@@ -45,28 +51,31 @@ export function* rehydrateOfflineDataSaga() {
 
   for (const collectionId of downloadedCollectionIds) {
     if (collectionId === DOWNLOAD_REASON_FAVORITES) continue
-    try {
-      const userCollection = yield* call(getCollectionJson, collectionId)
-      const { user, ...collection } = userCollection
-      const id = parseInt(collectionId, 10)
-
-      collectionsToCache.push({
-        id,
-        uid: makeUid(Kind.COLLECTIONS, id),
-        metadata: collection
+    const userCollection = yield* call(getCollectionJson, collectionId)
+    if (userCollection === null) {
+      collectionsToRedownload.push({
+        type: 'collection',
+        id: Number(collectionId)
       })
+      continue
+    }
 
-      if (user) {
-        const { user_id } = user
-        usersToCache.push({
-          id: user_id,
-          uid: makeUid(Kind.USERS, user_id),
-          metadata: user
-        })
-      }
-    } catch (e) {
-      console.warn('Failed to load offline collection', collectionId, e)
-      // TODO: purge json + update metadatas
+    const { user, ...collection } = userCollection
+    const id = parseInt(collectionId, 10)
+
+    collectionsToCache.push({
+      id,
+      uid: makeUid(Kind.COLLECTIONS, id),
+      metadata: collection
+    })
+
+    if (user) {
+      const { user_id } = user
+      usersToCache.push({
+        id: user_id,
+        uid: makeUid(Kind.USERS, user_id),
+        metadata: user
+      })
     }
   }
 
@@ -76,34 +85,40 @@ export function* rehydrateOfflineDataSaga() {
   )
 
   for (const trackId of downloadedTrackIds) {
-    const verified = yield* call(verifyTrack, trackId, true)
-    // TODO might want to purge etc
-    if (!verified) continue
-
-    try {
-      const userTrack = yield* call(getTrackJson, trackId)
-      if (!userTrack) continue
-      const { user, ...track } = userTrack
-      const { track_id } = track
-
-      tracksToCache.push({
-        id: track_id,
-        uid: makeUid(Kind.TRACKS, track_id),
-        metadata: track
+    const userTrack = yield* call(getTrackJson, trackId)
+    if (userTrack === null) {
+      tracksToRedownload.push({
+        type: 'track',
+        id: Number(trackId)
       })
-
-      if (user) {
-        const { user_id } = user
-        usersToCache.push({
-          id: user_id,
-          uid: makeUid(Kind.USERS, user_id),
-          metadata: user
-        })
-      }
-    } catch (e) {
-      console.warn('Failed to load track from disk', trackId, e)
-      // TODO: purge json + update metadatas
+      continue
     }
+
+    const { user, ...track } = userTrack
+    const { track_id } = track
+
+    tracksToCache.push({
+      id: track_id,
+      uid: makeUid(Kind.TRACKS, track_id),
+      metadata: track
+    })
+
+    if (user) {
+      const { user_id } = user
+      usersToCache.push({
+        id: user_id,
+        uid: makeUid(Kind.USERS, user_id),
+        metadata: user
+      })
+    }
+  }
+
+  if (collectionsToRedownload.length > 0 || tracksToRedownload.length > 0) {
+    yield* put(
+      redownloadOfflineItems({
+        items: [...collectionsToRedownload, ...tracksToRedownload]
+      })
+    )
   }
 
   if (collectionsToCache.length > 0) {

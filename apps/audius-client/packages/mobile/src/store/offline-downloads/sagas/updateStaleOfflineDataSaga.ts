@@ -8,15 +8,15 @@ import { waitForRead } from 'audius-client/src/utils/sagaHelpers'
 import moment from 'moment'
 import { select, call, put, take } from 'typed-redux-saga'
 
-import {
-  downloadTrackCoverArt,
-  writeTrackJson
-} from 'app/services/offline-downloader'
 import { isAvailableForPlay } from 'app/utils/trackUtils'
 
 import { getOfflineTrackMetadata } from '../selectors'
-import type { OfflineItem } from '../slice'
-import { doneLoadingFromDisk, addOfflineItems } from '../slice'
+import type { DownloadQueueItem, OfflineItem } from '../slice'
+import {
+  addOfflineItems,
+  redownloadOfflineItems,
+  doneLoadingFromDisk
+} from '../slice'
 const { getUserId } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 
@@ -32,16 +32,20 @@ export function* updateStaleOfflineDataSaga() {
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 
+  const offlineItemsToRedownload: DownloadQueueItem[] = []
   const offlineItemsToUpdate: OfflineItem[] = []
 
   const staleTrackIds = Object.keys(offlineTrackMetadata)
     .map((id) => parseInt(id, 10))
     .filter((trackId) => {
       const metadata = offlineTrackMetadata[trackId]
+      if (!metadata.last_verified_time) return false
       return moment()
         .subtract(STALE_DURATION_TRACKS)
-        .isAfter(metadata.download_completed_time)
+        .isAfter(metadata.last_verified_time)
     })
+
+  const now = Date.now()
 
   for (const trackId of staleTrackIds) {
     const staleTrack = yield* select(getTrack, { id: trackId })
@@ -56,28 +60,29 @@ export function* updateStaleOfflineDataSaga() {
 
     if (!isAvailableForPlay(updatedTrack, currentUserId)) {
       // TODO purge the track and update metadatas
+      // NOTE: Does the sync process cover this case?
+      // Will we have an issue where the sync process sees that we are missing a track for a collection or for favorites and will try to redownload the track?
       continue
     }
 
     if (moment(updatedTrack.updated_at).isAfter(staleTrack.updated_at)) {
-      if (updatedTrack.cover_art_sizes !== staleTrack.cover_art_sizes) {
-        yield* call(downloadTrackCoverArt, updatedTrack)
-      }
+      offlineItemsToRedownload.push({
+        type: 'track',
+        id: trackId
+      })
     }
-
-    // TODO: re-download the mp3 if it's changed
-    yield* call(writeTrackJson, trackId.toString(), updatedTrack)
-
-    const now = Date.now()
     offlineItemsToUpdate.push({
       type: 'track',
       id: trackId,
       metadata: {
-        download_completed_time: now,
-        last_verified_time: now,
-        reasons_for_download: []
+        reasons_for_download: [],
+        download_completed_time:
+          offlineTrackMetadata[trackId].download_completed_time,
+        last_verified_time: now
       }
     })
   }
+  yield* put(redownloadOfflineItems({ items: offlineItemsToRedownload }))
+  // Updating the last_verified_time for all of the track offline metadatas
   yield* put(addOfflineItems({ items: offlineItemsToUpdate }))
 }
