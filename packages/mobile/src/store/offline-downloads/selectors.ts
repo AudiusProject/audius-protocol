@@ -3,27 +3,19 @@ import { removeNullable, cacheTracksSelectors } from '@audius/common'
 
 import type { AppState } from 'app/store'
 
-import type { OfflineDownloadsState } from './slice'
 import { OfflineDownloadStatus } from './slice'
 const { getTrack } = cacheTracksSelectors
 
-export const getAllOfflineDownloadStatus = (state: AppState) =>
-  state.offlineDownloads.downloadStatus
+export const getOfflineTrackStatus = (state: AppState) =>
+  state.offlineDownloads.trackStatus
 
 export const getTrackOfflineDownloadStatus =
   (trackId?: number) => (state: AppState) =>
-    trackId ? state.offlineDownloads.downloadStatus[trackId] : null
+    trackId ? state.offlineDownloads.trackStatus[trackId] : null
 
 export const getIsCollectionMarkedForDownload =
   (collectionId?: string | ID) => (state: AppState) =>
-    !!(
-      collectionId &&
-      (state.offlineDownloads.collectionStatus[collectionId] ||
-        state.offlineDownloads.favoritedCollectionStatus[collectionId])
-    )
-
-export const getAllOfflineTrackMetadata = (state: AppState) =>
-  state.offlineDownloads.offlineTrackMetadata
+    !!(collectionId && state.offlineDownloads.collectionStatus[collectionId])
 
 export const getTrackOfflineMetadata =
   (trackId?: number) => (state: AppState) =>
@@ -36,24 +28,28 @@ export const getTrackDownloadReasons =
           .reasons_for_download
       : []
 
-export const getAllOfflineCollections = (
-  state: AppState
-): OfflineDownloadsState['collectionStatus'] =>
-  state.offlineDownloads.collectionStatus
-
-export const getAllOfflineFavoritedCollections = (
-  state: AppState
-): OfflineDownloadsState['favoritedCollectionStatus'] =>
-  state.offlineDownloads.favoritedCollectionStatus
-
 export const getIsDoneLoadingFromDisk = (state: AppState): boolean =>
   state.offlineDownloads.isDoneLoadingFromDisk
 
+export const getOfflineTrackMetadata = (state: AppState) =>
+  state.offlineDownloads.offlineTrackMetadata
+
+export const getOfflineCollectionMetadata = (state: AppState) =>
+  state.offlineDownloads.offlineCollectionMetadata
+
+export const getOfflineCollectionsStatus = (state: AppState) =>
+  state.offlineDownloads.collectionStatus
+
+export const getDownloadQueue = (state: AppState) =>
+  state.offlineDownloads.downloadQueue
+
+export const getQueueStatus = (state: AppState) =>
+  state.offlineDownloads.queueStatus
 // Computed Selectors
 
 // Get ids for successfully downloaded tracks
 export const getOfflineTrackIds = (state: AppState) =>
-  Object.entries(state.offlineDownloads.downloadStatus)
+  Object.entries(state.offlineDownloads.trackStatus)
     .filter(
       ([id, downloadStatus]) => downloadStatus === OfflineDownloadStatus.SUCCESS
     )

@@ -162,14 +162,14 @@ export type TrackMetadata = {
 
 export type DownloadReason = {
   is_from_favorites?: boolean
-  collection_id?: string
+  collection_id: ID | string
 }
 
 // This is available on mobile for offline tracks
 export type OfflineTrackMetadata = {
   reasons_for_download: DownloadReason[]
-  download_completed_time: EpochTimeStamp
-  last_verified_time: EpochTimeStamp
+  download_completed_time?: EpochTimeStamp
+  last_verified_time?: EpochTimeStamp
   favorite_created_at?: string
 }
 

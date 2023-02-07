@@ -1,11 +1,10 @@
 import { useCallback } from 'react'
 
-import type { Collection } from '@audius/common'
 import { cacheCollectionsSelectors } from '@audius/common'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
-import { removeCollectionDownload } from 'app/services/offline-downloader'
+import { requestRemoveDownloadedCollection } from 'app/store/offline-downloads/slice'
 
 import { ConfirmationDrawer } from './ConfirmationDrawer'
 const { getCollection } = cacheCollectionsSelectors
@@ -24,29 +23,20 @@ const drawerName = 'RemoveDownloadedCollection'
 export const RemoveDownloadedCollectionDrawer = () => {
   const { data } = useDrawer(drawerName)
   const { collectionId } = data
+  const dispatch = useDispatch()
 
-  const collection = useSelector((state) =>
-    getCollection(state, { id: collectionId })
-  ) as Collection
-
-  const { is_album, tracks } = collection
-
-  const tracksForDownload = tracks?.map(({ track_id }) => ({
-    trackId: track_id,
-    downloadReason: {
-      is_from_favorites: false,
-      collection_id: collectionId.toString()
-    }
-  }))
+  const isAlbum = useSelector(
+    (state) => !!getCollection(state, { id: collectionId })?.is_album
+  )
 
   const handleConfirm = useCallback(() => {
-    removeCollectionDownload(collectionId, tracksForDownload ?? [])
-  }, [collectionId, tracksForDownload])
+    dispatch(requestRemoveDownloadedCollection({ collectionId }))
+  }, [dispatch, collectionId])
 
   return (
     <ConfirmationDrawer
       drawerName={drawerName}
-      messages={{ ...messages, description: messages.description(is_album) }}
+      messages={{ ...messages, description: messages.description(isAlbum) }}
       onConfirm={handleConfirm}
     />
   )

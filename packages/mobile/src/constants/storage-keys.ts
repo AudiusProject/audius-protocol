@@ -5,3 +5,5 @@ export const IP_STORAGE_KEY = 'user-ip-timetstamp'
 export const SESSION_COUNT_KEY = '@session-count'
 export const ENTROPY_KEY = 'hedgehog-entropy-key'
 export const THEME_STORAGE_KEY = 'theme'
+export const OFFLINE_OVERRIDE_STORAGE_KEY =
+  'offline_mode_enabled_local_override'

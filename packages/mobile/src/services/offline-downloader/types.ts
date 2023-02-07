@@ -1,8 +1,12 @@
-import type { DownloadReason, ID } from '@audius/common'
+import type {
+  CollectionDownloadReason,
+  DownloadReason,
+  ID
+} from '@audius/common'
 
 export type CollectionForDownload = {
-  collectionId: ID
-  isFavoritesDownload?: boolean
+  collectionId: ID | string
+  downloadReason: CollectionDownloadReason
 }
 
 export type TrackForDownload = {

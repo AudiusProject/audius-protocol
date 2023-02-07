@@ -17,7 +17,6 @@ import HCaptcha from 'app/components/hcaptcha'
 import NavigationContainer from 'app/components/navigation-container'
 import { NotificationReminder } from 'app/components/notification-reminder/NotificationReminder'
 import OAuth from 'app/components/oauth/OAuth'
-import { OfflineDownloader } from 'app/components/offline-downloads/OfflineDownloader'
 import { RateCtaReminder } from 'app/components/rate-cta-drawer/RateCtaReminder'
 import { Toasts } from 'app/components/toasts'
 import { useEnterForeground } from 'app/hooks/useAppState'
@@ -91,7 +90,6 @@ const App = () => {
                     <OAuth />
                     <NotificationReminder />
                     <RateCtaReminder />
-                    <OfflineDownloader />
                   </NavigationContainer>
                 </ErrorBoundary>
               </PortalProvider>
