@@ -17,8 +17,8 @@ const { getIfAttemptedStateFix } = require('./utils')
 
 const LibsUtils = audiusLibs.Utils
 
-const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes')) // Default = 250,000,000 bytes = 250MB
-const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes')) // Default = 50,000,000 bytes = 50MB
+const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes'))
+const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes'))
 const ALLOWED_UPLOAD_FILE_EXTENSIONS = config.get('allowedUploadFileExtensions') // default set in config.json
 const AUDIO_MIME_TYPE_REGEX = /audio\/(.*)/
 

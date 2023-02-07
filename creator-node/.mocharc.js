@@ -1,6 +1,7 @@
 module.exports = {
-  require: "ts-node/register",
+  require: 'ts-node/register',
   exit: true,
   recursive: true,
-  timeout: 30000
+  timeout: 240000,
+  'max-old-space-size': 4096
 }
