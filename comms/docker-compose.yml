@@ -23,6 +23,11 @@ services:
         hard: 262144
     volumes:
       - ./clickhouse-vol:/var/lib/clickhouse
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider localhost:8123/ping || exit 1
+      interval: 2s
+      timeout: 2s
+      retries: 16
 
   comnats:
     # container_name: nats
