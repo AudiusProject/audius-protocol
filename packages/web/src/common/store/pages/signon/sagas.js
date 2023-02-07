@@ -402,7 +402,7 @@ function* signUp() {
         if (!signOn.useMetaMask && signOn.tikTokId) {
           const { error } = yield call(
             audiusBackendInstance.associateTikTokAccount,
-            handle.toLowerCase(),
+            signOn.tikTokId,
             userId,
             handle
           )
