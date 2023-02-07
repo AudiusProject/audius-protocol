@@ -103,7 +103,14 @@ export const HiddenAvailability = ({
   // set hidden and reset other fields.
   useEffect(() => {
     if (!isUnlisted && selected) {
-      setTrackAvailabilityFields({ is_unlisted: true }, true)
+      setTrackAvailabilityFields(
+        {
+          is_unlisted: true,
+          'field_visibility.share': false,
+          'field_visibility.play_count': false
+        },
+        true
+      )
     }
   }, [isUnlisted, selected, setTrackAvailabilityFields])
 

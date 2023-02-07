@@ -1,13 +1,16 @@
 import { useCallback, useEffect } from 'react'
 
 import type { Nullable, PremiumConditions } from '@audius/common'
+import { collectiblesSelectors } from '@audius/common'
 import { useField } from 'formik'
 import { View, Image, Dimensions } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
+import { useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
+import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
 import { Link, Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
@@ -20,10 +23,14 @@ const messages = {
     'Users who own a digital collectible matching your selection will have access to your track. Collectible gated content does not appear on trending or in user feeds.',
   learnMore: 'Learn More',
   pickACollection: 'Pick A Collection',
-  ownersOf: 'Owners Of'
+  ownersOf: 'Owners Of',
+  noCollectibles:
+    'No Collectibles found. To enable this option, link a wallet containing a collectible.'
 }
 
 const LEARN_MORE_URL = ''
+
+const { getVerifiedUserCollections } = collectiblesSelectors
 
 const screenWidth = Dimensions.get('screen').width
 
@@ -105,6 +112,26 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     borderRadius: spacing(1),
     width: spacing(5),
     height: spacing(5)
+  },
+  noCollectibles: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: spacing(4),
+    paddingVertical: spacing(2),
+    paddingHorizontal: spacing(4),
+    borderWidth: 1,
+    borderColor: palette.neutralLight7,
+    borderRadius: spacing(2),
+    backgroundColor: palette.neutralLight9
+  },
+  noCollectiblesText: {
+    flex: 1,
+    flexWrap: 'wrap'
+  },
+  questionIcon: {
+    marginRight: spacing(4),
+    width: spacing(5),
+    height: spacing(5)
   }
 }))
 
@@ -136,6 +163,13 @@ export const CollectibleGatedAvailability = ({
     ? neutralLight4
     : neutral
 
+  const { ethCollectionMap, solCollectionMap } = useSelector(
+    getVerifiedUserCollections
+  )
+  const numEthCollectibles = Object.keys(ethCollectionMap).length
+  const numSolCollectibles = Object.keys(solCollectionMap).length
+  const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
+
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
@@ -148,7 +182,8 @@ export const CollectibleGatedAvailability = ({
       setTrackAvailabilityFields(
         {
           is_premium: true,
-          premium_conditions: { nft_collection: undefined }
+          premium_conditions: { nft_collection: undefined },
+          'field_visibility.remixes': false
         },
         true
       )
@@ -172,6 +207,14 @@ export const CollectibleGatedAvailability = ({
           {messages.collectibleGatedSubtitle}
         </Text>
       </View>
+      {hasNoCollectibles && (
+        <View style={styles.noCollectibles}>
+          <IconQuestionCircle style={styles.questionIcon} fill={neutral} />
+          <Text style={styles.noCollectiblesText}>
+            {messages.noCollectibles}
+          </Text>
+        </View>
+      )}
       <Link url={LEARN_MORE_URL} style={styles.learnMore}>
         <Text style={styles.learnMoreText}>{messages.learnMore}</Text>
         <IconArrow fill={secondary} width={16} height={16} />

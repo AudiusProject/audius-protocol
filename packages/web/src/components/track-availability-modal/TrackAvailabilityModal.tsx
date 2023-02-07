@@ -49,8 +49,8 @@ const defaultAvailabilityFields = {
   genre: true,
   mood: true,
   tags: true,
-  plays: false,
-  share: false
+  plays: true,
+  share: true
 }
 
 type TrackAvailabilityModalProps = {
@@ -137,7 +137,9 @@ const TrackAvailabilityModal = ({
   const updateUnlistedField = useCallback(() => {
     didUpdateState({
       ...defaultAvailabilityFields,
-      unlisted: true
+      unlisted: true,
+      plays: false,
+      share: false
     })
   }, [didUpdateState])
 

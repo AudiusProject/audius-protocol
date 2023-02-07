@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
+import type { Nullable, PremiumConditions } from '@audius/common'
 import {
   createRemixOfMetadata,
   remixSettingsActions,
@@ -12,13 +13,16 @@ import { debounce } from 'lodash'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import type { TextProps } from 'app/components/core'
 import { TextInput, Divider, Button, Switch, Text } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
+import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { getTrackRoute } from 'app/utils/routes'
+import { useColor } from 'app/utils/theme'
 
 import { FormScreen, RemixTrackPill } from '../components'
 import type { RemixOfField } from '../types'
@@ -31,17 +35,27 @@ const remixLinkInputDebounceMs = 1000
 const messages = {
   screenTitle: 'Remix Settings',
   isRemixLabel: 'This Track is a Remix',
+  markRemix: 'Mark This Track as a Remix',
   isRemixLinkDescription: 'Paste the link to the Audius track you’ve remixed.',
   hideRemixLabel: 'Hide Remixes on Track Page',
+  hideRemixesDescription:
+    'Enabling this option will prevent other user’s remixes from appearing on your track page.',
+  hideRemixes: 'Hide Remixes of this Track',
   hideRemixDescription:
     'Hide remixes of this track to prevent them from showing on your track page.',
   done: 'Done',
   invalidRemixUrl: 'Please paste a valid Audius track URL',
   missingRemixUrl: 'Must include a link to the original track',
-  remixUrlPlaceholder: 'Track URL'
+  remixUrlPlaceholder: 'Track URL',
+  enterLink: 'Enter an Audius Link',
+  changeAvailbilityPrefix: 'Availablity is set to ',
+  changeAvailbilitySuffix:
+    'To enable these options, change availability to Public.',
+  collectibleGated: 'Collectible Gated. ',
+  specialAccess: 'Special Access. '
 }
 
-const useStyles = makeStyles(({ spacing, typography }) => ({
+const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   setting: {
     paddingHorizontal: spacing(6),
     paddingVertical: spacing(8)
@@ -59,6 +73,26 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
   },
   input: {
     fontSize: typography.fontSize.large
+  },
+  changeAvailability: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing(16),
+    paddingVertical: spacing(2),
+    paddingHorizontal: spacing(4),
+    backgroundColor: palette.neutralLight9,
+    borderWidth: 1,
+    borderColor: palette.neutralLight7,
+    borderRadius: spacing(2)
+  },
+  changeAvailabilityText: {
+    flexDirection: 'row',
+    flexWrap: 'wrap'
+  },
+  questionIcon: {
+    marginRight: spacing(4),
+    width: spacing(5),
+    height: spacing(5)
   }
 }))
 
@@ -73,11 +107,18 @@ const descriptionProps: TextProps = {
 }
 
 export const RemixSettingsScreen = () => {
+  const isPremiumContentEnabled = useIsPremiumContentEnabled()
   const styles = useStyles()
+  const neutral = useColor('neutral')
   const [{ value: remixOf }, , { setValue: setRemixOf }] =
     useField<RemixOfField>('remix_of')
   const [{ value: remixesVisible }, , { setValue: setRemixesVisible }] =
     useField<boolean>('field_visibility.remixes')
+  const [{ value: isPremium }] = useField<boolean>('is_premium')
+  const [{ value: premiumConditions }] =
+    useField<Nullable<PremiumConditions>>('premium_conditions')
+  const isCollectibleGated = 'nft_collection' in (premiumConditions ?? {})
+
   const parentTrackId = remixOf?.tracks[0].parent_track_id
   const [isTrackRemix, setIsTrackRemix] = useState(Boolean(parentTrackId))
   const [remixOfInput, setRemixOfInput] = useState('')
@@ -89,6 +130,17 @@ export const RemixSettingsScreen = () => {
   const parentTrackArtist = useSelector(getUser)
   const parentTrackStatus = useSelector(getStatus)
   const isInvalidParentTrack = parentTrackStatus === Status.ERROR
+
+  useEffect(() => {
+    if (isPremium) {
+      setRemixOf(null)
+      setRemixesVisible(false)
+    } else {
+      setRemixesVisible(true)
+    }
+    // adding the useField setters cause infinite rendering
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPremium])
 
   const handleFetchParentTrack = useMemo(
     () =>
@@ -181,9 +233,31 @@ export const RemixSettingsScreen = () => {
     >
       <View>
         <View style={styles.setting}>
+          {isPremium && (
+            <View style={styles.changeAvailability}>
+              <IconQuestionCircle style={styles.questionIcon} fill={neutral} />
+              <View style={styles.changeAvailabilityText}>
+                <Text>{messages.changeAvailbilityPrefix}</Text>
+                <Text>
+                  {isCollectibleGated
+                    ? messages.collectibleGated
+                    : messages.specialAccess}
+                </Text>
+                <Text>{messages.changeAvailbilitySuffix}</Text>
+              </View>
+            </View>
+          )}
           <View style={styles.option}>
-            <Text {...labelProps}>{messages.isRemixLabel}</Text>
-            <Switch value={isTrackRemix} onValueChange={handleChangeIsRemix} />
+            <Text {...labelProps}>
+              {isPremiumContentEnabled
+                ? messages.markRemix
+                : messages.isRemixLabel}
+            </Text>
+            <Switch
+              value={isTrackRemix}
+              onValueChange={handleChangeIsRemix}
+              isDisabled={isPremium}
+            />
           </View>
           {isTrackRemix ? (
             <View>
@@ -194,7 +268,11 @@ export const RemixSettingsScreen = () => {
                 styles={{ root: styles.inputRoot, input: styles.input }}
                 value={remixOfInput}
                 onChangeText={handleChangeLink}
-                placeholder={messages.remixUrlPlaceholder}
+                placeholder={
+                  isPremiumContentEnabled
+                    ? messages.enterLink
+                    : messages.remixUrlPlaceholder
+                }
                 onFocus={handleFocus}
                 returnKeyType='done'
               />
@@ -216,13 +294,22 @@ export const RemixSettingsScreen = () => {
         <Divider />
         <View style={styles.setting}>
           <View style={styles.option}>
-            <Text {...labelProps}>{messages.hideRemixLabel}</Text>
+            <Text {...labelProps}>
+              {isPremiumContentEnabled
+                ? messages.hideRemixes
+                : messages.hideRemixLabel}
+            </Text>
             <Switch
               value={!remixesVisible}
               onValueChange={(value) => setRemixesVisible(!value)}
+              isDisabled={isPremium}
             />
           </View>
-          <Text {...descriptionProps}>{messages.hideRemixDescription}</Text>
+          <Text {...descriptionProps}>
+            {isPremiumContentEnabled
+              ? messages.hideRemixesDescription
+              : messages.hideRemixDescription}
+          </Text>
         </View>
         <Divider />
       </View>

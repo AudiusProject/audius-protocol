@@ -60,6 +60,11 @@ class EditPage extends Component {
       ) {
         newInvalidTracksFields[i].genre = !track.metadata.genre
         newInvalidTracksFields[i].artwork = !track.metadata.artwork.file
+        const { premium_conditions: premiumConditions } = track.metadata
+        newInvalidTracksFields[i].premium_conditions =
+          premiumConditions &&
+          'nft_collection' in premiumConditions &&
+          !premiumConditions.nft_collection
       }
       return Object.values(newInvalidTracksFields[i]).every((f) => !f)
     })
@@ -77,22 +82,39 @@ class EditPage extends Component {
     ]
     for (let i = 0; i < tracks.length; i += 1) {
       const track = tracks[i]
-      // If track is not unlisted (is public) and one of the unlisted visibility fields is false, set to true
+
+      // If track is premium, set remixes to false
+      const isPremium = track.metadata.is_premium
+      const remixes = isPremium
+        ? false
+        : track.metadata.field_visibility.remixes
+
+      // If track is not unlisted and one of the unlisted visibility fields is false, set to true
+      const isUnlisted = track.metadata.is_unlisted
+      const genre = !isUnlisted ? true : track.metadata.field_visibility.genre
+      const mood = !isUnlisted ? true : track.metadata.field_visibility.mood
+      const tags = !isUnlisted ? true : track.metadata.field_visibility.tags
+      const share = !isUnlisted ? true : track.metadata.field_visibility.share
+      const play_count = !isUnlisted
+        ? true
+        : track.metadata.field_visibility.play_count
+
       if (
-        !track.metadata.is_unlisted &&
-        !unlistedVisibilityFields.every(
-          (field) => track.metadata.field_visibility[field]
-        )
+        isPremium ||
+        (!isUnlisted &&
+          !unlistedVisibilityFields.every(
+            (field) => track.metadata.field_visibility[field]
+          ))
       ) {
         this.updateTrack(
           'field_visibility',
           {
-            genre: true,
-            mood: true,
-            tags: true,
-            share: true,
-            play_count: true,
-            remixes: track.metadata.field_visibility.remixes
+            genre,
+            mood,
+            tags,
+            share,
+            play_count,
+            remixes
           },
           false,
           i

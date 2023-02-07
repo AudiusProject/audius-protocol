@@ -9,6 +9,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 type SwitchProps = RNSwitchProps & {
   defaultValue?: boolean
+  isDisabled?: boolean
 }
 
 const switchStyle = Platform.OS === 'ios' && {
@@ -21,20 +22,21 @@ export const Switch = (props: SwitchProps) => {
     value,
     onValueChange: onValueChangeProp,
     style: styleProp,
+    isDisabled = false,
     ...other
   } = props
   const { neutralLight6, white, secondary } = useThemeColors()
-  const [isEnabledState, setIsEnabled] = useToggle(defaultValue)
+  const [isOnState, setIsOn] = useToggle(defaultValue)
 
-  const isEnabled = value ?? isEnabledState
+  const isOn = value ?? isOnState
 
   const handleValueChange = useCallback(
     (value: boolean) => {
       onValueChangeProp?.(value)
-      setIsEnabled(value)
+      setIsOn(value)
       light()
     },
-    [onValueChangeProp, setIsEnabled]
+    [onValueChangeProp, setIsOn]
   )
 
   return (
@@ -42,8 +44,9 @@ export const Switch = (props: SwitchProps) => {
       style={[switchStyle, styleProp]}
       trackColor={{ false: neutralLight6, true: secondary }}
       thumbColor={white}
-      value={isEnabled}
+      value={isOn}
       onValueChange={handleValueChange}
+      disabled={isDisabled}
       {...other}
     />
   )

@@ -19,7 +19,7 @@ export const getVerifiedUserCollections = createSelector(
   getAllUserCollectibles,
   getSolCollections,
   (accountUserId, allUserCollectibles, solCollections) => {
-    const collectibles = accountUserId ? allUserCollectibles[accountUserId] ?? null : defaultCollectibles
+    const collectibles = accountUserId ? allUserCollectibles[accountUserId] ?? defaultCollectibles : defaultCollectibles
 
     // Ethereum collections
     const ethCollectionMap: EthCollectionMap = {}
