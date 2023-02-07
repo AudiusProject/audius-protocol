@@ -43,7 +43,7 @@ services:
       mode: global
 
   # NOTE: We don't need solana but services have depend_on solana-test-validator
-  # so we use a dummpy container
+  # so we use a dummy container
   solana-test-validator:
     image: alpine:3.14
     command: sleep inf

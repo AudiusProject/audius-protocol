@@ -31,9 +31,9 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         updated_at: { type: 'date' },
         is_album: { type: 'boolean' },
         is_private: { type: 'boolean' },
-        permalink: { type: 'keyword' },
+        permalink: lowerKeyword,
         is_delete: { type: 'boolean' },
-        routes: { type: 'keyword' },
+        routes: lowerKeyword,
         suggest: standardSuggest,
         playlist_name: {
           ...lowerKeyword,
@@ -74,8 +74,8 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
 
         tracks: {
           properties: {
-            mood: { type: 'keyword' },
-            genre: { type: 'keyword' },
+            mood: lowerKeyword,
+            genre: lowerKeyword,
             tags: lowerKeyword,
             play_count: { type: 'integer' },
             repost_count: { type: 'integer' },
