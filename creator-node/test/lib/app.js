@@ -34,6 +34,7 @@ export async function getApp(
   await runMigrations()
 
   if (spId) nodeConfig.set('spID', spId)
+  nodeConfig.set('dbConnectionPoolMax', 500)
 
   const prometheusRegistry = new PrometheusRegistry()
   const apq = new AsyncProcessingQueueMock(libsClient, prometheusRegistry)
