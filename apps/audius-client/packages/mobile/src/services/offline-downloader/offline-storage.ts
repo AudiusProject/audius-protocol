@@ -11,12 +11,6 @@ import type {
 import { allSettled } from '@audius/common'
 import RNFetchBlob from 'rn-fetch-blob'
 
-import { store } from 'app/store'
-import {
-  removeCollectionDownload,
-  unloadTrack
-} from 'app/store/offline-downloads/slice'
-
 import { DOWNLOAD_REASON_FAVORITES } from './offline-downloader'
 
 const {
@@ -111,12 +105,13 @@ export const purgeDownloadedCollection = async (collectionId: string) => {
   const collectionDir = getLocalCollectionDir(collectionId)
   if (!(await exists(collectionDir))) return
   await unlink(collectionDir)
-  store.dispatch(
-    removeCollectionDownload({ collectionId, isFavoritesDownload: true })
-  )
-  store.dispatch(
-    removeCollectionDownload({ collectionId, isFavoritesDownload: false })
-  )
+  // TODO properly delete from store + potentially move this to saga
+  // store.dispatch(
+  //   removeCollectionDownload({ collectionId, isFavoritesDownload: true })
+  // )
+  // store.dispatch(
+  //   removeCollectionDownload({ collectionId, isFavoritesDownload: false })
+  // )
 }
 
 // Track Json
@@ -236,7 +231,8 @@ export const purgeDownloadedTrack = async (trackId: string) => {
   const trackDir = getLocalTrackDir(trackId)
   if (!(await exists(trackDir))) return
   await unlink(trackDir)
-  store.dispatch(unloadTrack(trackId))
+  // TODO properly delete from store + potentially move this to saga
+  // store.dispatch(unloadTrack(trackId))
 }
 
 /** Debugging method to read cached files */

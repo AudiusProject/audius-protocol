@@ -469,8 +469,6 @@ PODS:
     - React-Core
   - react-native-in-app-review (4.2.1):
     - React-Core
-  - react-native-job-queue (0.5.0):
-    - React
   - react-native-keep-awake (1.1.0):
     - React-Core
   - react-native-netinfo (9.3.0):
@@ -745,7 +743,6 @@ DEPENDENCIES:
   - react-native-google-cast (from `../node_modules/react-native-google-cast`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
-  - react-native-job-queue (from `../node_modules/react-native-job-queue`)
   - "react-native-keep-awake (from `../node_modules/@sayem314/react-native-keep-awake`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
@@ -919,8 +916,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-picker"
   react-native-in-app-review:
     :path: "../node_modules/react-native-in-app-review"
-  react-native-job-queue:
-    :path: "../node_modules/react-native-job-queue"
   react-native-keep-awake:
     :path: "../node_modules/@sayem314/react-native-keep-awake"
   react-native-netinfo:
@@ -1093,7 +1088,6 @@ SPEC CHECKSUMS:
   react-native-google-cast: f621202a36e6e82ac7e86aac721cadb05b45c231
   react-native-image-picker: bd579f59ff1cd14c78d6a041dbe2dbec858a9141
   react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
-  react-native-job-queue: b5ab7a599f4cdef5b20905172972f0a4bbd69770
   react-native-keep-awake: 16f22b2dc09f7ede9f46e3b187a824a1841f1ddf
   react-native-netinfo: f473620bc118d6f44ce65669dd4810a7cfb36a7d
   react-native-pager-view: a9ba7d4218dcff32c0cdb41237c62fb487f013dd

@@ -15,7 +15,7 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppState } from 'app/store'
 import {
   getIsDoneLoadingFromDisk,
-  getAllOfflineDownloadStatus
+  getOfflineTrackStatus
 } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
@@ -43,7 +43,7 @@ export const PlaylistsTab = () => {
   const offlineDownloadStatus = useProxySelector(
     (state: AppState) => {
       if (isDoneLoadingFromDisk && isOfflineModeEnabled && !isReachable) {
-        return getAllOfflineDownloadStatus(state)
+        return getOfflineTrackStatus(state)
       }
       // We don't need offline download status when we're not offline. This saves us rerenders while we're downloading things and updating the offline download slice.
       return undefined
