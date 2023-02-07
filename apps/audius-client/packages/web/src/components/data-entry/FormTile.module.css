@@ -188,6 +188,14 @@
   height: 35px;
 }
 
+.release .trackAvailabilityButton.error {
+  border-color: var(--accent-red) !important;
+}
+
+.release .trackAvailabilityButton.error:hover {
+  border-color: var(--accent-red-dark-1) !important;
+}
+
 .trackAvailabilityButton .trackAvailabilityButtonText {
   font-size: var(--font-xs);
 }

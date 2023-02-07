@@ -10,8 +10,9 @@ const defaultTrackAvailabilityFields = {
   'field_visibility.genre': true,
   'field_visibility.mood': true,
   'field_visibility.tags': true,
-  'field_visibility.share': false,
-  'field_visibility.play_count': false
+  'field_visibility.share': true,
+  'field_visibility.play_count': true,
+  'field_visibility.remixes': true
 }
 type TrackAvailabilityField = typeof defaultTrackAvailabilityFields
 
@@ -33,6 +34,9 @@ export const useSetTrackAvailabilityFields = () => {
   const [, , { setValue: setPlayCount }] = useField<boolean>(
     'field_visibility.play_count'
   )
+  const [, , { setValue: setRemixes }] = useField<boolean>(
+    'field_visibility.remixes'
+  )
 
   const fieldSetters = useMemo(() => {
     return {
@@ -43,7 +47,8 @@ export const useSetTrackAvailabilityFields = () => {
       'field_visibility.mood': setMood,
       'field_visibility.tags': setTags,
       'field_visibility.share': setShare,
-      'field_visibility.play_count': setPlayCount
+      'field_visibility.play_count': setPlayCount,
+      'field_visibility.remixes': setRemixes
     }
     // adding the useField setters cause infinite rendering
     // eslint-disable-next-line react-hooks/exhaustive-deps

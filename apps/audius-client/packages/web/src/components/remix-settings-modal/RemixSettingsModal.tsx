@@ -103,6 +103,8 @@ type RemixSettingsModalProps = {
   isInvalidTrack: boolean
   track: Track | null
   user: User | null
+  hideRemixes?: boolean
+  onToggleHideRemixes?: () => void
 }
 
 const RemixSettingsModal = ({
@@ -117,13 +119,13 @@ const RemixSettingsModal = ({
   reset,
   track,
   user,
-  isInvalidTrack
+  isInvalidTrack,
+  hideRemixes,
+  onToggleHideRemixes
 }: RemixSettingsModalProps) => {
   const { isEnabled: isPremiumContentEnabled } = useFlag(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
   )
-
-  const [shouldHideOtherRemixes, setShouldHideOtherRemixes] = useState(true)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -249,12 +251,8 @@ const RemixSettingsModal = ({
               {messages.hideOtherRemixes}
             </span>
             <Switch
-              isOn={shouldHideOtherRemixes || isPremium}
-              handleToggle={(e) => {
-                setShouldHideOtherRemixes(
-                  !(shouldHideOtherRemixes || isPremium)
-                )
-              }}
+              isOn={!!hideRemixes || isPremium}
+              handleToggle={() => onToggleHideRemixes?.()}
               isDisabled={isPremium}
               allowCheckedWhileDisabled
             />

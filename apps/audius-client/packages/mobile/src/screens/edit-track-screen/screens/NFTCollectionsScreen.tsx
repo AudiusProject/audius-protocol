@@ -7,14 +7,16 @@ import { View, Image } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconImage from 'app/assets/images/iconImage.svg'
-import { Text } from 'app/components/core'
+import { Button, Text } from 'app/components/core'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, typography } from 'app/styles'
 
 import { ListSelectionScreen } from './ListSelectionScreen'
 
 const messages = {
   collections: 'COLLECTIONS',
-  searchCollections: 'Search Collections'
+  searchCollections: 'Search Collections',
+  done: 'Done'
 }
 
 const { getVerifiedUserCollections } = collectiblesSelectors
@@ -44,6 +46,7 @@ const useStyles = makeStyles(({ spacing, palette, type }) => ({
 
 export const NFTCollectionsScreen = () => {
   const styles = useStyles()
+  const navigation = useNavigation()
   const [{ value: premiumConditions }, , { setValue: setPremiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const { ethCollectionMap, solCollectionMap, collectionImageMap } =
@@ -131,6 +134,12 @@ export const NFTCollectionsScreen = () => {
     [setPremiumConditions, ethCollectionMap, solCollectionMap]
   )
 
+  const handleSubmit = useCallback(() => {
+    if (premiumConditions?.nft_collection) {
+      navigation.goBack()
+    }
+  }, [premiumConditions, navigation])
+
   return (
     <ListSelectionScreen
       data={data}
@@ -143,6 +152,16 @@ export const NFTCollectionsScreen = () => {
       allowDeselect={false}
       itemStyles={styles.row}
       itemContentStyles={styles.row}
+      bottomSection={
+        <Button
+          variant='primary'
+          size='large'
+          fullWidth
+          title={messages.done}
+          onPress={handleSubmit}
+          disabled={!premiumConditions?.nft_collection}
+        />
+      }
     />
   )
 }

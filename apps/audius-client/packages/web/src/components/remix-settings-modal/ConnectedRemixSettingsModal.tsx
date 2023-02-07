@@ -25,6 +25,8 @@ type OwnProps = {
   isOpen: boolean
   onClose: () => void
   onChangeField: (field: string, value: any) => void
+  hideRemixes?: boolean
+  onToggleHideRemixes?: () => void
   // When opening the modal from a track that already has remix_of set,
   // the initial track id should be set to the first remix parent's track id.
   // This is used in the "edit track" flow.
@@ -49,7 +51,9 @@ const ConnectedRemixSettingsModal = ({
   status,
   setInitialTrackId,
   reset,
-  onEditUrl
+  onEditUrl,
+  hideRemixes,
+  onToggleHideRemixes
 }: ConnectedRemixSettingsModalProps) => {
   useEffect(() => {
     if (isOpen && initialTrackId) {
@@ -78,6 +82,8 @@ const ConnectedRemixSettingsModal = ({
       user={user}
       isInvalidTrack={status === Status.ERROR}
       onEditUrl={onEditUrl}
+      hideRemixes={hideRemixes}
+      onToggleHideRemixes={onToggleHideRemixes}
     />
   )
 }

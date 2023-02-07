@@ -75,7 +75,6 @@ export const PublicAvailability = ({
 
   const { reset: resetTrackAvailabilityFields } =
     useSetTrackAvailabilityFields()
-
   useEffect(() => {
     if (selected) {
       resetTrackAvailabilityFields()

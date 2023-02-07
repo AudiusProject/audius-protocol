@@ -175,7 +175,8 @@ export class SolanaClient {
         this.connection,
         programAddress
       )
-      const result = (await (await fetch(metadata.data.uri)).json()) ?? {}
+      const response = await fetch(metadata.data.uri.replaceAll('\x00', ''))
+      const result = (await response.json()) ?? {}
       const imageUrl = result?.image
       return {
         metadata,

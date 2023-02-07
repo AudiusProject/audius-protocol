@@ -339,7 +339,9 @@ function* pollPremiumTrack({
       yield* put(updatePremiumTrackStatus({ trackId, status: 'UNLOCKED' }))
       break
     }
-    yield* put(trackPageActions.fetchTrack(null, slug, handle, false, true))
+    yield* put(
+      trackPageActions.fetchTrack(null, slug, handle, false, true, false)
+    )
     yield* delay(frequency)
   }
 }

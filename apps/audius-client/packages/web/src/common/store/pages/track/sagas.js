@@ -134,8 +134,14 @@ function* getRestOfLineup(permalink, ownerHandle) {
 
 function* watchFetchTrack() {
   yield takeEvery(trackPageActions.FETCH_TRACK, function* (action) {
-    const { trackId, handle, slug, canBeUnlisted, forceRetrieveFromSource } =
-      action
+    const {
+      trackId,
+      handle,
+      slug,
+      canBeUnlisted,
+      forceRetrieveFromSource,
+      withRemixes = true
+    } = action
     try {
       let track
       if (!trackId) {
@@ -143,7 +149,7 @@ function* watchFetchTrack() {
           handle,
           slug,
           withStems: true,
-          withRemixes: true,
+          withRemixes,
           withRemixParents: true,
           forceRetrieveFromSource
         })
@@ -155,7 +161,7 @@ function* watchFetchTrack() {
           trackIds: ids,
           canBeUnlisted,
           withStems: true,
-          withRemixes: true,
+          withRemixes,
           withRemixParents: true
         })
         track = tracks && tracks.length === 1 ? tracks[0] : null

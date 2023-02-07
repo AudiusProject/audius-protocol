@@ -122,7 +122,8 @@ export const SpecialAccessAvailability = ({
       setTrackAvailabilityFields(
         {
           is_premium: true,
-          premium_conditions: { follow_user_id: currentUserId }
+          premium_conditions: { follow_user_id: currentUserId },
+          'field_visibility.remixes': false
         },
         true
       )

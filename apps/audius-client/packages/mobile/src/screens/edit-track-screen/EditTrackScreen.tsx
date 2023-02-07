@@ -43,6 +43,33 @@ export const EditTrackScreen = (props: EditTrackScreenProps) => {
         trackArtwork: ignoredTrackArtwork,
         ...metadata
       } = values
+
+      // If track is not unlisted and one of the unlisted visibility fields is false, set to true.
+      // We shouldn't have to do this if we set the default for 'share' and 'play_count' to true
+      // in newTrackMetadata, but not sure why they default to false.
+      if (!metadata.is_unlisted) {
+        const unlistedVisibilityFields = [
+          'genre',
+          'mood',
+          'tags',
+          'share',
+          'play_count'
+        ]
+        const shouldOverrideVisibilityFields = !unlistedVisibilityFields.every(
+          (field) => metadata.field_visibility?.[field]
+        )
+        if (shouldOverrideVisibilityFields) {
+          metadata.field_visibility = {
+            ...metadata.field_visibility,
+            genre: true,
+            mood: true,
+            tags: true,
+            share: true,
+            play_count: true,
+            remixes: !!metadata.field_visibility?.remixes
+          }
+        }
+      }
       onSubmit(metadata)
     },
     [onSubmit]
