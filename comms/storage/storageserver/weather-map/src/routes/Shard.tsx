@@ -131,24 +131,5 @@ export default function Shard() {
         highlightFileName={fileName}
       />
     </>
-
-    //   <h1>Shard Overview ({shard})</h1>
-    //   Nodes storing this shard:
-    //   <ul>
-    //     {nodesStoringShard.map((node) => (
-    //       <div key={pubKey}>
-    //         <a href={`${hostsAndShards[pubKey].host}/nats`}>
-    //           {hostsAndShards[pubKey].host}/nats
-    //         </a>
-    //         :
-    //         <ul key={pubKey}>
-    //           <li>
-    //             <ShardInNode shard={shard} natsHost={hostsAndShards[pubKey].host} />
-    //           </li>
-    //         </ul>
-    //       </div>
-    //     ))}
-    //   </ul>
-    // </div>
   )
 }

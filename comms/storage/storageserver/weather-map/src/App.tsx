@@ -25,10 +25,6 @@ export default function App() {
           },
         ],
       },
-      // {
-      //   path: `${baseURL}/job/:job`,
-      //   element: <JobView />,
-      // }
     ],
     { basename: baseURL },
   )

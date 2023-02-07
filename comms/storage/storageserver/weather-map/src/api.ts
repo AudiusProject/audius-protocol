@@ -17,17 +17,6 @@ export type KeyAndMd5 = {
   md5: string
 }
 export type EndpointToMd5 = { [endpoint: string]: string }
-// export const useLsShard = (shard: string, host: string) =>
-//   useQuery<KeyAndMd5[], any>(
-//     ['keysAndMd5s', shard, host],
-//     ({ queryKey }) => {
-//       const [_, shard, host] = queryKey
-//       return axios
-//         .get(`${host}/storage/long-term/shard/${shard}?includeMD5s=true`)
-//         .then((res) => res.data)
-//     },
-//     {},
-//   )
 export const fetchFilesByShardAndHost = async (shard: string, host: string) => {
   return axios
     .get(`${host}/storage/long-term/shard/${shard}?includeMD5s=true`)
