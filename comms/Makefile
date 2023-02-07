@@ -5,8 +5,12 @@ dev.discovery::
 		audius_db_url='postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable' \
 		go run main.go discovery
 
-dev.storage::
+dev.storage:: build.weathermap
 	@	audius_discprov_env='standalone' \
+		storage_v2="true" \
+		storage_v2_single_node="true" \
+		audius_delegate_owner_wallet="0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F" \
+		audius_delegate_private_key="293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" \
 		go run main.go storage
 
 reset::
@@ -15,6 +19,9 @@ reset::
 	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
+
+down::
+	docker compose down --volumes
 
 psql::
 	docker exec -it comdb psql -U postgres audius_discovery
@@ -29,6 +36,9 @@ test::
 	docker compose up -d comdb
 	audius_discprov_env='standalone' go test ./... -count=1
 
+
+test.load::
+	hey -n 10000 -c 50 http://localhost:8926/storage/jobs
 
 
 build::
@@ -58,6 +68,7 @@ tools::
 	go install github.com/kyleconroy/sqlc/cmd/sqlc@main
 	CGO_ENABLED=0 go install github.com/nats-io/natscli/nats@latest
 	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
+	go install github.com/rakyll/hey@latest
 
 sqlc:: reset
 	sqlc generate

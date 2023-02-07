@@ -505,6 +505,7 @@ export type GetTopFullPlaylistsParams = {
   mood?: string
   filter?: string
   withUsers?: boolean
+  encodedUserId?: string
 }
 
 export const getTopFullPlaylists = ({
@@ -512,6 +513,7 @@ export const getTopFullPlaylists = ({
   limit,
   mood,
   filter,
+  encodedUserId,
   withUsers = false
 }: GetTopFullPlaylistsParams) => {
   return {
@@ -521,7 +523,8 @@ export const getTopFullPlaylists = ({
       limit,
       mood,
       filter,
-      with_users: withUsers
+      with_users: withUsers,
+      user_id: encodedUserId
     }
   }
 }

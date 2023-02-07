@@ -2,23 +2,18 @@
 package decider
 
 import (
-	"log"
-	"time"
-
 	"github.com/nats-io/nats.go"
 )
 
-const objStoreTtl = time.Hour * 24
-
 type StorageDecider interface {
 	// ShouldStore returns true if this node should store the content with ID id.
-	ShouldStore(id string) bool
+	ShouldStore(id string) (bool, error)
 
 	// OnChange finds content that needs to be stored or deleted and fetches or deletes it.
-	OnChange(prevBuckets []string, curBuckets []string) error
+	OnChange(prevShards []string, curShards []string) error
 
-	// GetNamespacedBucketFor returns the bucket for both temp and long-term storage for the given (non-namespaced) bucket or content ID.
-	GetNamespacedBucketFor(idOrNonNamespacedBucket string) string
+	// GetShardForID returns the shard, prefixed with "<namespace>_", for the given id (a base36 cuid).
+	GetNamespacedShardForID(id string) (string, error)
 }
 
 // NaiveDecider is a storage decider that stores everything.
@@ -31,36 +26,17 @@ type NaiveDecider struct {
 func NewNaiveDecider(namespace string, jsc nats.JetStreamContext) *NaiveDecider {
 	d := &NaiveDecider{namespace: namespace, jsc: jsc}
 
-	// Pre-create single bucket for naive decider - no sharding
-	createObjStoreIfNotExists(&nats.ObjectStoreConfig{
-		Bucket:      d.GetNamespacedBucketFor(""),
-		Description: "Temp object store for all files (non-sharded, naive StorageDecider)",
-		TTL:         objStoreTtl,
-	}, jsc)
-
 	return d
 }
 
-func (d *NaiveDecider) ShouldStore(id string) bool {
-	return true
+func (d *NaiveDecider) ShouldStore(id string) (bool, error) {
+	return true, nil
 }
 
-func (d *NaiveDecider) OnChange(prevBuckets []string, curBuckets []string) error {
+func (d *NaiveDecider) OnChange(prevShards []string, curShards []string) error {
 	return nil
 }
 
-func (d *NaiveDecider) GetNamespacedBucketFor(_ string) string {
-	return d.namespace + "_naive-bucket"
-}
-
-func createObjStoreIfNotExists(cfg *nats.ObjectStoreConfig, jsc nats.JetStreamContext) {
-	_, err := jsc.ObjectStore(cfg.Bucket)
-	if err == nats.ErrBucketNotFound || err == nats.ErrStreamNotFound {
-		_, err = jsc.CreateObjectStore(cfg)
-		if err != nil {
-			log.Fatalf("Failed to create-if-not-exists object store %q: %v", cfg.Bucket, err)
-		}
-	} else if err != nil {
-		log.Fatalf("Failed to create-if-not-exists object store %q: %v", cfg.Bucket, err)
-	}
+func (d *NaiveDecider) GetNamespacedShardForID(_ string) (string, error) {
+	return d.namespace + "_naive-shard", nil
 }

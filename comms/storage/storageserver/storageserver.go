@@ -6,17 +6,20 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"strings"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/longterm"
 	"comms.audius.co/storage/monitor"
+	"comms.audius.co/storage/telemetry"
 	"comms.audius.co/storage/transcode"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 )
 
 const (
@@ -38,12 +41,17 @@ type StorageServer struct {
 
 func NewProd(jsc nats.JetStreamContext) *StorageServer {
 	// TODO: config refactor
-	allStorageNodePubKeys := []string{
-		"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-		"0x90b8d2655A7C268d0fA31758A714e583AE54489D",
-		"0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
-		"0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
-	} // TODO: get dynamically (from KV store?) and re-initialize on change
+	var allStorageNodePubKeys []string
+	if os.Getenv("storage_v2_single_node") == "true" {
+		allStorageNodePubKeys = []string{"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"}
+	} else {
+		allStorageNodePubKeys = []string{
+			"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
+			"0x90b8d2655A7C268d0fA31758A714e583AE54489D",
+			"0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
+			"0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
+		} // TODO: get dynamically (from KV store?) and re-initialize on change
+	}
 	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: get dynamically
 	var host string
 	switch thisNodePubKey {
@@ -65,9 +73,9 @@ func NewProd(jsc nats.JetStreamContext) *StorageServer {
 	jobsManager.StartWorkers(NumJobWorkers)
 
 	m := monitor.New(jsc)
-	err = m.SetHostAndBucketsForNode(thisNodePubKey, host, d.BucketsStored)
+	err = m.SetHostAndShardsForNode(thisNodePubKey, host, d.ShardsStored)
 	if err != nil {
-		log.Error("Error setting host and buckets for node", "err", err)
+		log.Error("Error setting host and shards for node", "err", err)
 	}
 
 	return NewCustom(
@@ -94,8 +102,15 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	ss.WebServer.Debug = true
 	ss.WebServer.Use(middleware.CORS())
 
+	ss.WebServer.Use(otelecho.Middleware("storage"))
+	telemetry.AddPrometheusMiddlware(ss.WebServer)
+
 	// Register endpoints at /storage
 	storage := ss.WebServer.Group("/storage")
+
+	storage.Use(middleware.Logger())
+	storage.Use(middleware.Recover())
+
 	storage.GET("", ss.serveStatusUI)
 	storage.GET("/", ss.serveStatusUI)
 	storage.GET("/static/*", ss.serveStatusStaticAssets)
@@ -103,10 +118,10 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	storage.GET("/jobs", ss.serveJobs)
 	storage.GET("/jobs/:id", ss.serveJobById)
 	storage.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
-	storage.GET("/long-term/:bucket/:key", ss.streamLongTermObjectByBucketAndKey)
-	storage.GET("/long-term/:bucket", ss.serveLongTermKeysByBucket) // QueryParam: includeMD5s=[true|false]
+	storage.GET("/long-term/shard/:shard", ss.serveLongTermKeysByShard) // QueryParam: includeMD5s=[true|false]
+	storage.GET("/long-term/file/:fileName", ss.streamLongTermObjectByFileName)
 	storage.GET("/ws", ss.upgradeConnToWebsocket)
-	storage.GET("/nodes-to-buckets", ss.serveNodesToBuckets)
+	storage.GET("/nodes-to-shards", ss.serveNodesToShards)
 	storage.GET("/job-results/:id", ss.serveJobResultsById)
 
 	// Register endpoints at /storage/weather for React weather map
@@ -193,12 +208,11 @@ func (ss *StorageServer) streamTempObjectByBucketAndKey(c echo.Context) error {
 	return c.Stream(200, "", obj)
 }
 
-func (ss *StorageServer) streamLongTermObjectByBucketAndKey(c echo.Context) error {
-	reader, err := ss.LongTerm.Get(c.Param("bucket"), c.Param("key"))
+func (ss *StorageServer) streamLongTermObjectByFileName(c echo.Context) error {
+	reader, err := ss.LongTerm.Get(c.Param("fileName"))
 	if err != nil {
 		return err
 	}
-	defer reader.Close()
 	// TODO: mime type?
 	return c.Stream(200, "", reader)
 }
@@ -213,25 +227,30 @@ func (ss *StorageServer) upgradeConnToWebsocket(c echo.Context) error {
 	return nil
 }
 
-func (ss *StorageServer) serveNodesToBuckets(c echo.Context) error {
-	nodesToBuckets, err := ss.Monitor.GetNodesToBuckets()
+func (ss *StorageServer) serveNodesToShards(c echo.Context) error {
+	nodesToShards, err := ss.Monitor.GetNodesToShards()
 	if err != nil {
 		return err
 	}
-	return c.JSON(200, nodesToBuckets)
+	return c.JSON(200, nodesToShards)
 }
 
-func (ss *StorageServer) serveLongTermKeysByBucket(c echo.Context) error {
-	bucket := c.Param("bucket")
+func (ss *StorageServer) serveLongTermKeysByShard(c echo.Context) error {
+	// Make sure shard has namespace prefix
+	shard := c.Param("shard")
+	if idx := strings.Index(shard, "_"); idx == -1 {
+		shard = ss.Namespace + "_" + shard
+	}
+
 	includeMD5s := c.QueryParam("includeMD5s")
 	if includeMD5s == "true" {
-		keysAndMD5s, err := ss.LongTerm.GetKeysAndMD5sIn(bucket)
+		keysAndMD5s, err := ss.LongTerm.GetKeysAndMD5sIn(shard)
 		if err != nil {
 			return err
 		}
 		return c.JSON(200, keysAndMD5s)
 	} else {
-		keys, err := ss.LongTerm.GetKeysIn(bucket)
+		keys, err := ss.LongTerm.GetKeysIn(shard)
 		if err != nil {
 			return err
 		}
@@ -265,6 +284,8 @@ func getStatusStaticFiles() http.FileSystem {
 	return http.FS(fsys)
 }
 
+// NOTE: This will error in IDE if you don't run `yarn build` in the weather-map directory first, but it will compile fine at build time either way.
+//
 //go:embed weather-map/dist
 var embeddedWeatherMapFiles embed.FS
 

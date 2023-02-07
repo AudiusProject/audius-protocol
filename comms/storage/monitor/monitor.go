@@ -13,18 +13,18 @@ type Monitor struct {
 	kv  nats.KeyValue
 }
 
-type HostAndBuckets struct {
-	Host    string   `json:"host"`
-	Buckets []string `json:"buckets"`
+type HostAndShards struct {
+	Host   string   `json:"host"`
+	Shards []string `json:"shards"`
 }
 
 func New(jsc nats.JetStreamContext) *Monitor {
-	// Create KV store for each node to set its endpoint and the list of buckets it stores
+	// Create KV store for each node to set its endpoint and the list of shards it stores
 	kv, err := jsc.KeyValue("nodes_monitoring")
 	if err == nats.ErrBucketNotFound || err == nats.ErrStreamNotFound {
 		kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
 			Bucket:      "nodes_monitoring",
-			Description: "KV store for each node to set its endpoint and the list of buckets it stores",
+			Description: "KV store for each node to set its endpoint and the list of shards it stores",
 		})
 		if err != nil {
 			log.Fatalf("Failed to create-if-not-exists monitoring KV store: %v", err)
@@ -39,33 +39,33 @@ func New(jsc nats.JetStreamContext) *Monitor {
 	}
 }
 
-func (m *Monitor) GetNodesToBuckets() (map[string]HostAndBuckets, error) {
-	nodesToBuckets := make(map[string]HostAndBuckets)
+func (m *Monitor) GetNodesToShards() (map[string]HostAndShards, error) {
+	nodesToShards := make(map[string]HostAndShards)
 
 	pubKeys, err := m.kv.Keys()
 	if err != nil {
 		return nil, err
 	}
 	for _, pubKey := range pubKeys {
-		hostAndBuckets := HostAndBuckets{}
+		hostAndShards := HostAndShards{}
 		entry, err := m.kv.Get(pubKey)
 		if err != nil {
 			return nil, err
 		}
-		err = json.Unmarshal(entry.Value(), &hostAndBuckets)
+		err = json.Unmarshal(entry.Value(), &hostAndShards)
 		if err != nil {
 			return nil, err
 		}
-		nodesToBuckets[pubKey] = hostAndBuckets
+		nodesToShards[pubKey] = hostAndShards
 	}
 
-	return nodesToBuckets, nil
+	return nodesToShards, nil
 }
 
-func (m *Monitor) SetHostAndBucketsForNode(nodePubKey, host string, buckets []string) error {
-	data, err := json.Marshal(HostAndBuckets{
-		Host:    host,
-		Buckets: buckets,
+func (m *Monitor) SetHostAndShardsForNode(nodePubKey, host string, shards []string) error {
+	data, err := json.Marshal(HostAndShards{
+		Host:   host,
+		Shards: shards,
 	})
 	if err != nil {
 		return err

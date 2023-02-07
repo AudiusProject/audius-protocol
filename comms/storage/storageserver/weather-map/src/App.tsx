@@ -1,33 +1,37 @@
-import './App.css'
-import { QueryClient, QueryClientProvider } from 'react-query';
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import NodeView from './components/NodeView';
-import BucketView from './components/BucketView';
+import { QueryClient, QueryClientProvider } from 'react-query'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
-const queryClient = new QueryClient();
+import Home from './routes/Home'
+import Shard from './routes/Shard'
+import Wrapper from './routes/Wrapper'
+
+const queryClient = new QueryClient()
 const baseURL = '/storage/weather'
 
 export default function App() {
-  const router = createBrowserRouter([
-    {
-      path: `${baseURL}/`,
-      element: <NodeView />,
-      children: [
-        
-      ]
-    },
-    {
-      path: `${baseURL}/bucket/:bucket`,
-      element: <BucketView />,
-    },
-    // {
-    //   path: `${baseURL}/job/:job`,
-    //   element: <JobView />,
-    // }
-  ]);
+  const router = createBrowserRouter(
+    [
+      {
+        path: `/`,
+        element: <Wrapper />,
+        children: [
+          {
+            path: `/`,
+            element: <Home />,
+          },
+          {
+            path: `/shard/:shard`,
+            element: <Shard />,
+          },
+        ],
+      },
+      // {
+      //   path: `${baseURL}/job/:job`,
+      //   element: <JobView />,
+      // }
+    ],
+    { basename: baseURL },
+  )
   return (
     <div className="App">
       <QueryClientProvider client={queryClient}>

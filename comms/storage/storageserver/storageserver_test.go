@@ -36,7 +36,7 @@ func TestE2EUpload(t *testing.T) {
 		}
 	}()
 
-	// TODO: Upload file with a hash that will fall in the 'aa' bucket
+	// TODO: Upload file with a hash that will fall in the 'aa' shard
 	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, []string{"pubKey1", "pubKey2", "pubKey3", "pubKey4", "pubKey5"}, "pubKey1", nodes[0].ss.Jsc)
 	jobman, err := transcode.NewJobsManager(nodes[0].ss.Jsc, nodes[0].ss.Namespace, d, 1)
 	if err != nil {
@@ -73,9 +73,9 @@ func TestE2EUpload(t *testing.T) {
 		assert.Equal("null\n", rec.Body.String()) // TODO: This passes now but shouldn't be "null\n"
 	}
 
-	// TODO: Verify that file is stored in the 'aa' bucket on exactly 3 of the 5 nodes
+	// TODO: Verify that file is stored in the 'aa' shard on exactly 3 of the 5 nodes
 
-	// TODO: Verify that all other buckets are empty
+	// TODO: Verify that all other shard are empty
 }
 
 type testServer struct {

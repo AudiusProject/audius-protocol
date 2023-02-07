@@ -1,6 +1,6 @@
-// Package bucketer handles the logic for deciding which content falls into which buckets.
+// Package sharder handles the logic for deciding which content falls into which shards.
 // Implemented for cuid2, which consists of only numbers and lowercase letters (base36).
-package bucketer
+package sharder
 
 import (
 	"testing"
@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMakeBuckets(t *testing.T) {
+func TestMakeShards(t *testing.T) {
 	testCases := map[string]struct {
 		suffixLength int
 		expected     []string
@@ -26,54 +26,58 @@ func TestMakeBuckets(t *testing.T) {
 
 	for testName, testCase := range testCases {
 		t.Logf("Running test case %q", testName)
-		result := New(testCase.suffixLength).Buckets
+		result := New(testCase.suffixLength).Shards
 		assert.ElementsMatchf(t, testCase.expected, result, "Expected %s\n got %s", testCase.expected, result)
 	}
 }
 
-func TestGetBucketForId(t *testing.T) {
+func TestGetShardForId(t *testing.T) {
 	suffixLength1 := New(1)
 	suffixLength2 := New(2)
 
 	testCases := map[string]struct {
-		bucketer               *Bucketer
-		bucket                 string
-		idsExpectedInBucket    []string
-		idsExpectedNotInBucket []string
+		sharder               *Sharder
+		shard                 string
+		idsExpectedInShard    []string
+		idsExpectedNotInShard []string
 	}{
-		"'a' bucket": {
-			bucketer:               suffixLength1,
-			bucket:                 "a",
-			idsExpectedInBucket:    []string{"clbcdefga", "clbcdefaa"},
-			idsExpectedNotInBucket: []string{"aabcdefg", "4abcdefgb", "xrbcdefg", "9sbcdefg"},
+		"'a' shard": {
+			sharder:               suffixLength1,
+			shard:                 "a",
+			idsExpectedInShard:    []string{"clbcdefga", "clbcdefaa"},
+			idsExpectedNotInShard: []string{"aabcdefg", "4abcdefgb", "xrbcdefg", "9sbcdefg"},
 		},
-		"'4' bucket": {
-			bucketer:               suffixLength1,
-			bucket:                 "4",
-			idsExpectedInBucket:    []string{"aabcdefg4", "444444444"},
-			idsExpectedNotInBucket: []string{"4abcdefg", "babcdefg", "xrbcdefg", "9sbcdefg"},
+		"'4' shard": {
+			sharder:               suffixLength1,
+			shard:                 "4",
+			idsExpectedInShard:    []string{"aabcdefg4", "444444444"},
+			idsExpectedNotInShard: []string{"4abcdefg", "babcdefg", "xrbcdefg", "9sbcdefg"},
 		},
-		"'xr' bucket": {
-			bucketer:               suffixLength2,
-			bucket:                 "xr",
-			idsExpectedInBucket:    []string{"aabcdefgxr"},
-			idsExpectedNotInBucket: []string{"xrbcdefg", "xabcdefg", "rabcdefg", "9sbcdefg"},
+		"'xr' shard": {
+			sharder:               suffixLength2,
+			shard:                 "xr",
+			idsExpectedInShard:    []string{"aabcdefgxr"},
+			idsExpectedNotInShard: []string{"xrbcdefg", "xabcdefg", "rabcdefg", "9sbcdefg"},
 		},
-		"'9s' bucket": {
-			bucketer:               suffixLength2,
-			bucket:                 "9s",
-			idsExpectedInBucket:    []string{"bcdefg99s"},
-			idsExpectedNotInBucket: []string{"9sbcdefg9sa", "babcdef9ss", "4abcdefg", "xrbcdefg"},
+		"'9s' shard": {
+			sharder:               suffixLength2,
+			shard:                 "9s",
+			idsExpectedInShard:    []string{"bcdefg99s"},
+			idsExpectedNotInShard: []string{"9sbcdefg9sa", "babcdef9ss", "4abcdefg", "xrbcdefg"},
 		},
 	}
 
 	for testName, testCase := range testCases {
 		t.Logf("Running test case %q", testName)
-		for _, id := range testCase.idsExpectedInBucket {
-			assert.True(t, testCase.bucketer.GetBucketForId(id) == testCase.bucket, "Expected %s to be in bucket %s", id, testCase.bucket)
+		for _, id := range testCase.idsExpectedInShard {
+			shard, err := testCase.sharder.GetShardForId(id)
+			assert.NoError(t, err)
+			assert.True(t, shard == testCase.shard, "Expected %s to be in shard %s", id, testCase.shard)
 		}
-		for _, id := range testCase.idsExpectedNotInBucket {
-			assert.False(t, testCase.bucketer.GetBucketForId(id) == testCase.bucket, "Expected %s to not be in bucket %s", id, testCase.bucket)
+		for _, id := range testCase.idsExpectedNotInShard {
+			shard, err := testCase.sharder.GetShardForId(id)
+			assert.NoError(t, err)
+			assert.False(t, shard == testCase.shard, "Expected %s to not be in shard %s", id, testCase.shard)
 		}
 	}
 }
