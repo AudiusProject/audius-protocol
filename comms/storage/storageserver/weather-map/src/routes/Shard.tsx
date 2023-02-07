@@ -30,7 +30,7 @@ export default function Shard() {
   }
 
   if (isLoading) return <>Loading...</>
-  if (error) return <>An error has occurred: ${error}</>
+  if (error) return <>An error has occurred: ${JSON.stringify(error)}</>
   if (!hostsAndShards) return <>Unable to query any nodes in network</>
   if (!shard) return <>No shard specified in path param</>
 

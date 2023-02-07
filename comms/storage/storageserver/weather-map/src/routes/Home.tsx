@@ -8,12 +8,12 @@ export default function Home() {
   const [searchParams] = useSearchParams()
 
   let demo = false
-  for (const [key, val] of searchParams.entries()) {
-    if (key === 'demo') demo = true
+  for (const queryParam of searchParams.keys()) {
+    if (queryParam === 'demo') demo = true
   }
 
   if (isLoading) return <>Loading...</>
-  if (error) return <>An error has occurred: ${error}</>
+  if (error) return <>An error has occurred: ${JSON.stringify(error)}</>
   if (!hostsAndShards) return <>Unable to query any nodes in network</>
 
   // Add to hostsAndShards for the dev environment since we only have 4 nodes
