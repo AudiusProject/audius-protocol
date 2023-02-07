@@ -111,6 +111,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             Track.created_at,
             follower_query.c.is_verified,
             Track.is_premium,
+            Track.premium_conditions,
         )
         .join(Track, Track.track_id == AggregatePlay.play_item_id)
         .join(follower_query, follower_query.c.user_id == Track.owner_id)
@@ -143,6 +144,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "listens": record[3],
             "owner_verified": record[5],
             "is_premium": record[6],
+            "premium_conditions": record[7],
         }
         for record in base_query
     }
