@@ -25,6 +25,7 @@ import {
 import type TypedEventEmitter from 'typed-emitter'
 import EventEmitter from 'events'
 import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
+import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 
 export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
@@ -101,16 +102,12 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    */
   public removeAllEventListeners
 
-  constructor(config: DiscoveryNodeSelectorServiceConfig) {
-    this.config = {
-      ...defaultDiscoveryNodeSelectorConfig,
-      ...config,
-      healthCheckThresholds: {
-        ...defaultDiscoveryNodeSelectorConfig.healthCheckThresholds,
-        ...config.healthCheckThresholds
-      }
-    }
-    this.services = config.bootstrapServices
+  constructor(config?: DiscoveryNodeSelectorServiceConfig) {
+    this.config = mergeConfigWithDefaults(
+      config,
+      defaultDiscoveryNodeSelectorConfig
+    )
+    this.services = this.config.bootstrapServices
     this._isBehind = false
     this.unhealthyServices = new Set([])
     this.backupServices = {}

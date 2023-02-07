@@ -41,10 +41,12 @@ getDiscoveryNodes.then(async (list) => {
   if (!list || list.length === 0) {
     throw Error('Services not found')
   }
+  const version = await contracts.getCurrentVersion('discovery-node')
   await writeFile(
-    path.resolve(__dirname, 'defaultBootstrapServices.json'),
+    path.resolve(__dirname, 'bootstrapConfig.json'),
     JSON.stringify(
       {
+        version,
         services: list.map((node) => node.endpoint)
       },
       undefined,

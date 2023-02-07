@@ -27,7 +27,6 @@ import {
   DiscoveryNodeSelector,
   WalletApi
 } from './services'
-import defaultDiscoveryNodeServices from './services/DiscoveryNodeSelector/defaultBootstrapServices.json'
 
 type ServicesContainer = {
   /**
@@ -80,9 +79,7 @@ export const sdk = (config: SdkConfig) => {
 
 const initializeServices = (config: SdkConfig) => {
   const defaultServices: ServicesContainer = {
-    discoveryNodeSelector: new DiscoveryNodeSelector({
-      bootstrapServices: defaultDiscoveryNodeServices.services
-    }),
+    discoveryNodeSelector: new DiscoveryNodeSelector(),
     walletApi: new WalletApi()
   }
   return { ...defaultServices, ...config.services }

@@ -267,7 +267,10 @@ describe('discoveryNodeSelector', () => {
       initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
       blocklist: new Set([BEHIND_BLOCKDIFF_NODE]),
       requestTimeout: 50,
-      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+      bootstrapServices: [HEALTHY_NODE, UNHEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+      healthCheckThresholds: {
+        minVersion: '1.2.3'
+      }
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(HEALTHY_NODE)
@@ -276,7 +279,10 @@ describe('discoveryNodeSelector', () => {
 
   test('selects fastest discovery node', async () => {
     const selector = new DiscoveryNodeSelector({
-      bootstrapServices: [HEALTHY_NODE, ...generateSlowerHealthyNodes(5)]
+      bootstrapServices: [HEALTHY_NODE, ...generateSlowerHealthyNodes(5)],
+      healthCheckThresholds: {
+        minVersion: '1.2.3'
+      }
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(HEALTHY_NODE)
@@ -291,7 +297,10 @@ describe('discoveryNodeSelector', () => {
         UNHEALTHY_DATA_NODE,
         UNHEALTHY_NODE,
         UNRESPONSIVE_NODE
-      ]
+      ],
+      healthCheckThresholds: {
+        minVersion: '1.2.3'
+      }
     })
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(null)
@@ -316,7 +325,10 @@ describe('discoveryNodeSelector', () => {
     test('reselects if request succeeds but node fell behind', async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
       })
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
@@ -345,7 +357,10 @@ describe('discoveryNodeSelector', () => {
 
     test("doesn't reselect if behind but was already behind", async () => {
       const selector = new DiscoveryNodeSelector({
-        bootstrapServices: [BEHIND_BLOCKDIFF_NODE]
+        bootstrapServices: [BEHIND_BLOCKDIFF_NODE],
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
       })
       await selector.getSelectedEndpoint()
       expect(selector.isBehind).toBe(true)
@@ -378,7 +393,10 @@ describe('discoveryNodeSelector', () => {
     test('reselects if request fails and node fell behind', async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: BEHIND_BLOCKDIFF_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
       })
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
@@ -406,7 +424,10 @@ describe('discoveryNodeSelector', () => {
     test('reselects if request fails and node unhealthy', async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: UNHEALTHY_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
       })
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
@@ -434,7 +455,10 @@ describe('discoveryNodeSelector', () => {
     test("doesn't reselect if request fails but node is healthy", async () => {
       const selector = new DiscoveryNodeSelector({
         initialSelectedNode: HEALTHY_NODE,
-        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE]
+        bootstrapServices: [HEALTHY_NODE, BEHIND_BLOCKDIFF_NODE],
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
       })
       const middleware = selector.createMiddleware()
       expect(middleware.post).not.toBeUndefined()
@@ -461,7 +485,10 @@ describe('discoveryNodeSelector', () => {
 
     test('resets isBehind when request shows the node is caught up', async () => {
       const selector = new DiscoveryNodeSelector({
-        bootstrapServices: [BEHIND_BLOCKDIFF_NODE]
+        bootstrapServices: [BEHIND_BLOCKDIFF_NODE],
+        healthCheckThresholds: {
+          minVersion: '1.2.3'
+        }
       })
       await selector.getSelectedEndpoint()
       expect(selector.isBehind).toBe(true)

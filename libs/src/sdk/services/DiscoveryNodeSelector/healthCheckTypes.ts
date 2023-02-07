@@ -1,3 +1,5 @@
+import type { DeepPartial } from '../../utils/deepPartial'
+
 export type ApiHealthResponseData = Partial<{
   latest_chain_block: number
   latest_indexed_block: number
@@ -11,15 +13,6 @@ export type ApiHealthResponseData = Partial<{
   }
   data: unknown
 }>
-
-// Adjusted from Terry: https://stackoverflow.com/questions/61132262/typescript-deep-partial
-type DeepPartial<T> = T extends any[]
-  ? T
-  : T extends object
-  ? {
-      [P in keyof T]?: DeepPartial<T[P]>
-    }
-  : T
 
 export type HealthCheckResponseData = DeepPartial<{
   auto_upgrade_enabled: boolean

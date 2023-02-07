@@ -1,5 +1,6 @@
 import type TypedEventEmitter from 'typed-emitter'
 import type { Middleware } from '../../api/generated/default'
+import type { DeepPartial } from '../../utils/deepPartial'
 import type { HealthCheckThresholds } from './healthCheckTypes'
 
 export type Decision = {
@@ -81,12 +82,8 @@ export type DiscoveryNodeSelectorServiceConfigInternal = {
   bootstrapServices: string[]
 }
 
-export type DiscoveryNodeSelectorServiceConfig = Partial<
-  Omit<DiscoveryNodeSelectorServiceConfigInternal, 'healthCheckThresholds'>
-> & {
-  healthCheckThresholds?: Partial<HealthCheckThresholds>
-  bootstrapServices: string[]
-}
+export type DiscoveryNodeSelectorServiceConfig =
+  DeepPartial<DiscoveryNodeSelectorServiceConfigInternal>
 
 export type ServiceSelectionEvents = {
   change: (endpoint: string) => void

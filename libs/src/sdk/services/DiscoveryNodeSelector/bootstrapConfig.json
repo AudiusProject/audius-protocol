@@ -1,4 +1,5 @@
 {
+  "version": "0.3.72",
   "services": [
     "https://audius-metadata-1.figment.io",
     "https://audius-metadata-2.figment.io",
