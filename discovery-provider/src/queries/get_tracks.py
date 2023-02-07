@@ -48,6 +48,10 @@ class GetTrackArgs(TypedDict):
     exclude_premium: bool
     routes: List[RouteArgs]
     filter_tracks: str
+    # Whether to skip filtering out stems
+    skip_stem_of_filter: bool
+    # Whether to skip filtering out unlisted tracks
+    skip_unlisted_filter: bool
 
     # Optional sort method for the returned results
     sort_method: Optional[SortMethod]

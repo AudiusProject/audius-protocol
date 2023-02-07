@@ -109,6 +109,7 @@ def get_single_track(track_id, current_user_id, endpoint_ns, exclude_premium=Tru
         "filter_deleted": False,
         "exclude_premium": exclude_premium,
         "current_user_id": current_user_id,
+        "skip_stem_of_filter": True
     }
     tracks = get_tracks(args)
     if not tracks:
