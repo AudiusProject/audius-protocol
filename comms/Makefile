@@ -58,7 +58,7 @@ build.weathermap::
 # this is nice because go is good at cross compiling and cross compiling inside a docker container running on QEMU is 10x slower
 # also we get build cache... end result is a 10 second build and push, which is nice.
 # also... this is pretty much identical to doing a docker "multi-stage" build, but way simpler.
-build.fast::
+build.fast:: build.weathermap
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/comms-linux-amd64
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/comms:a1
 	docker push audius/comms:a1
