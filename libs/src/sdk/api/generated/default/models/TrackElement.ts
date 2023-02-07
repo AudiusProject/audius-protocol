@@ -25,7 +25,7 @@ export interface TrackElement {
      * @type {string}
      * @memberof TrackElement
      */
-    parent_track_id: string;
+    parentTrackId: string;
 }
 
 /**
@@ -33,7 +33,7 @@ export interface TrackElement {
  */
 export function instanceOfTrackElement(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "parent_track_id" in value;
+    isInstance = isInstance && "parentTrackId" in value;
 
     return isInstance;
 }
@@ -48,7 +48,7 @@ export function TrackElementFromJSONTyped(json: any, ignoreDiscriminator: boolea
     }
     return {
         
-        'parent_track_id': json['parent_track_id'],
+        'parentTrackId': json['parent_track_id'],
     };
 }
 
@@ -61,7 +61,7 @@ export function TrackElementToJSON(value?: TrackElement | null): any {
     }
     return {
         
-        'parent_track_id': value.parent_track_id,
+        'parent_track_id': value.parentTrackId,
     };
 }
 

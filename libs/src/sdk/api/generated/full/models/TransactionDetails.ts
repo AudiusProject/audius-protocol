@@ -28,13 +28,13 @@ export interface TransactionDetails {
      * @type {string}
      * @memberof TransactionDetails
      */
-    transaction_date: string;
+    transactionDate: string;
     /**
      * 
      * @type {string}
      * @memberof TransactionDetails
      */
-    transaction_type: string;
+    transactionType: string;
     /**
      * 
      * @type {string}
@@ -52,7 +52,7 @@ export interface TransactionDetails {
      * @type {string}
      * @memberof TransactionDetails
      */
-    user_bank: string;
+    userBank: string;
     /**
      * 
      * @type {string}
@@ -78,11 +78,11 @@ export interface TransactionDetails {
  */
 export function instanceOfTransactionDetails(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "transaction_date" in value;
-    isInstance = isInstance && "transaction_type" in value;
+    isInstance = isInstance && "transactionDate" in value;
+    isInstance = isInstance && "transactionType" in value;
     isInstance = isInstance && "method" in value;
     isInstance = isInstance && "signature" in value;
-    isInstance = isInstance && "user_bank" in value;
+    isInstance = isInstance && "userBank" in value;
     isInstance = isInstance && "change" in value;
     isInstance = isInstance && "balance" in value;
     isInstance = isInstance && "metadata" in value;
@@ -102,11 +102,11 @@ export function TransactionDetailsFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'transaction_date': json['transaction_date'],
-        'transaction_type': json['transaction_type'],
+        'transactionDate': json['transaction_date'],
+        'transactionType': json['transaction_type'],
         'method': json['method'],
         'signature': json['signature'],
-        'user_bank': json['user_bank'],
+        'userBank': json['user_bank'],
         'change': json['change'],
         'balance': json['balance'],
         'metadata': json['metadata'],
@@ -122,11 +122,11 @@ export function TransactionDetailsToJSON(value?: TransactionDetails | null): any
     }
     return {
         
-        'transaction_date': value.transaction_date,
-        'transaction_type': value.transaction_type,
+        'transaction_date': value.transactionDate,
+        'transaction_type': value.transactionType,
         'method': value.method,
         'signature': value.signature,
-        'user_bank': value.user_bank,
+        'user_bank': value.userBank,
         'change': value.change,
         'balance': value.balance,
         'metadata': value.metadata,

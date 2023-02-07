@@ -86,31 +86,31 @@ export interface PlaylistFull {
      * @type {boolean}
      * @memberof PlaylistFull
      */
-    is_album: boolean;
+    isAlbum: boolean;
     /**
      * 
      * @type {string}
      * @memberof PlaylistFull
      */
-    playlist_name: string;
+    playlistName: string;
     /**
      * 
      * @type {number}
      * @memberof PlaylistFull
      */
-    repost_count: number;
+    repostCount: number;
     /**
      * 
      * @type {number}
      * @memberof PlaylistFull
      */
-    favorite_count: number;
+    favoriteCount: number;
     /**
      * 
      * @type {number}
      * @memberof PlaylistFull
      */
-    total_play_count: number;
+    totalPlayCount: number;
     /**
      * 
      * @type {UserFull}
@@ -128,61 +128,61 @@ export interface PlaylistFull {
      * @type {string}
      * @memberof PlaylistFull
      */
-    created_at?: string;
+    createdAt?: string;
     /**
      * 
      * @type {Array<Repost>}
      * @memberof PlaylistFull
      */
-    followee_reposts: Array<Repost>;
+    followeeReposts: Array<Repost>;
     /**
      * 
      * @type {Array<Favorite>}
      * @memberof PlaylistFull
      */
-    followee_favorites: Array<Favorite>;
+    followeeFavorites: Array<Favorite>;
     /**
      * 
      * @type {boolean}
      * @memberof PlaylistFull
      */
-    has_current_user_reposted: boolean;
+    hasCurrentUserReposted: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof PlaylistFull
      */
-    has_current_user_saved: boolean;
+    hasCurrentUserSaved: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof PlaylistFull
      */
-    is_delete: boolean;
+    isDelete: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof PlaylistFull
      */
-    is_private: boolean;
+    isPrivate: boolean;
     /**
      * 
      * @type {string}
      * @memberof PlaylistFull
      */
-    updated_at?: string;
+    updatedAt?: string;
     /**
      * 
      * @type {Array<PlaylistAddedTimestamp>}
      * @memberof PlaylistFull
      */
-    added_timestamps: Array<PlaylistAddedTimestamp>;
+    addedTimestamps: Array<PlaylistAddedTimestamp>;
     /**
      * 
      * @type {string}
      * @memberof PlaylistFull
      */
-    user_id: string;
+    userId: string;
     /**
      * 
      * @type {Array<TrackFull>}
@@ -194,19 +194,19 @@ export interface PlaylistFull {
      * @type {string}
      * @memberof PlaylistFull
      */
-    cover_art?: string;
+    coverArt?: string;
     /**
      * 
      * @type {string}
      * @memberof PlaylistFull
      */
-    cover_art_sizes?: string;
+    coverArtSizes?: string;
     /**
      * 
      * @type {number}
      * @memberof PlaylistFull
      */
-    track_count: number;
+    trackCount: number;
 }
 
 /**
@@ -215,23 +215,23 @@ export interface PlaylistFull {
 export function instanceOfPlaylistFull(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "is_album" in value;
-    isInstance = isInstance && "playlist_name" in value;
-    isInstance = isInstance && "repost_count" in value;
-    isInstance = isInstance && "favorite_count" in value;
-    isInstance = isInstance && "total_play_count" in value;
+    isInstance = isInstance && "isAlbum" in value;
+    isInstance = isInstance && "playlistName" in value;
+    isInstance = isInstance && "repostCount" in value;
+    isInstance = isInstance && "favoriteCount" in value;
+    isInstance = isInstance && "totalPlayCount" in value;
     isInstance = isInstance && "user" in value;
     isInstance = isInstance && "blocknumber" in value;
-    isInstance = isInstance && "followee_reposts" in value;
-    isInstance = isInstance && "followee_favorites" in value;
-    isInstance = isInstance && "has_current_user_reposted" in value;
-    isInstance = isInstance && "has_current_user_saved" in value;
-    isInstance = isInstance && "is_delete" in value;
-    isInstance = isInstance && "is_private" in value;
-    isInstance = isInstance && "added_timestamps" in value;
-    isInstance = isInstance && "user_id" in value;
+    isInstance = isInstance && "followeeReposts" in value;
+    isInstance = isInstance && "followeeFavorites" in value;
+    isInstance = isInstance && "hasCurrentUserReposted" in value;
+    isInstance = isInstance && "hasCurrentUserSaved" in value;
+    isInstance = isInstance && "isDelete" in value;
+    isInstance = isInstance && "isPrivate" in value;
+    isInstance = isInstance && "addedTimestamps" in value;
+    isInstance = isInstance && "userId" in value;
     isInstance = isInstance && "tracks" in value;
-    isInstance = isInstance && "track_count" in value;
+    isInstance = isInstance && "trackCount" in value;
 
     return isInstance;
 }
@@ -250,27 +250,27 @@ export function PlaylistFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
         'description': !exists(json, 'description') ? undefined : json['description'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
         'id': json['id'],
-        'is_album': json['is_album'],
-        'playlist_name': json['playlist_name'],
-        'repost_count': json['repost_count'],
-        'favorite_count': json['favorite_count'],
-        'total_play_count': json['total_play_count'],
+        'isAlbum': json['is_album'],
+        'playlistName': json['playlist_name'],
+        'repostCount': json['repost_count'],
+        'favoriteCount': json['favorite_count'],
+        'totalPlayCount': json['total_play_count'],
         'user': UserFullFromJSON(json['user']),
         'blocknumber': json['blocknumber'],
-        'created_at': !exists(json, 'created_at') ? undefined : json['created_at'],
-        'followee_reposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
-        'followee_favorites': ((json['followee_favorites'] as Array<any>).map(FavoriteFromJSON)),
-        'has_current_user_reposted': json['has_current_user_reposted'],
-        'has_current_user_saved': json['has_current_user_saved'],
-        'is_delete': json['is_delete'],
-        'is_private': json['is_private'],
-        'updated_at': !exists(json, 'updated_at') ? undefined : json['updated_at'],
-        'added_timestamps': ((json['added_timestamps'] as Array<any>).map(PlaylistAddedTimestampFromJSON)),
-        'user_id': json['user_id'],
+        'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
+        'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
+        'followeeFavorites': ((json['followee_favorites'] as Array<any>).map(FavoriteFromJSON)),
+        'hasCurrentUserReposted': json['has_current_user_reposted'],
+        'hasCurrentUserSaved': json['has_current_user_saved'],
+        'isDelete': json['is_delete'],
+        'isPrivate': json['is_private'],
+        'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
+        'addedTimestamps': ((json['added_timestamps'] as Array<any>).map(PlaylistAddedTimestampFromJSON)),
+        'userId': json['user_id'],
         'tracks': ((json['tracks'] as Array<any>).map(TrackFullFromJSON)),
-        'cover_art': !exists(json, 'cover_art') ? undefined : json['cover_art'],
-        'cover_art_sizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
-        'track_count': json['track_count'],
+        'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
+        'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
+        'trackCount': json['track_count'],
     };
 }
 
@@ -287,27 +287,27 @@ export function PlaylistFullToJSON(value?: PlaylistFull | null): any {
         'description': value.description,
         'permalink': value.permalink,
         'id': value.id,
-        'is_album': value.is_album,
-        'playlist_name': value.playlist_name,
-        'repost_count': value.repost_count,
-        'favorite_count': value.favorite_count,
-        'total_play_count': value.total_play_count,
+        'is_album': value.isAlbum,
+        'playlist_name': value.playlistName,
+        'repost_count': value.repostCount,
+        'favorite_count': value.favoriteCount,
+        'total_play_count': value.totalPlayCount,
         'user': UserFullToJSON(value.user),
         'blocknumber': value.blocknumber,
-        'created_at': value.created_at,
-        'followee_reposts': ((value.followee_reposts as Array<any>).map(RepostToJSON)),
-        'followee_favorites': ((value.followee_favorites as Array<any>).map(FavoriteToJSON)),
-        'has_current_user_reposted': value.has_current_user_reposted,
-        'has_current_user_saved': value.has_current_user_saved,
-        'is_delete': value.is_delete,
-        'is_private': value.is_private,
-        'updated_at': value.updated_at,
-        'added_timestamps': ((value.added_timestamps as Array<any>).map(PlaylistAddedTimestampToJSON)),
-        'user_id': value.user_id,
+        'created_at': value.createdAt,
+        'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),
+        'followee_favorites': ((value.followeeFavorites as Array<any>).map(FavoriteToJSON)),
+        'has_current_user_reposted': value.hasCurrentUserReposted,
+        'has_current_user_saved': value.hasCurrentUserSaved,
+        'is_delete': value.isDelete,
+        'is_private': value.isPrivate,
+        'updated_at': value.updatedAt,
+        'added_timestamps': ((value.addedTimestamps as Array<any>).map(PlaylistAddedTimestampToJSON)),
+        'user_id': value.userId,
         'tracks': ((value.tracks as Array<any>).map(TrackFullToJSON)),
-        'cover_art': value.cover_art,
-        'cover_art_sizes': value.cover_art_sizes,
-        'track_count': value.track_count,
+        'cover_art': value.coverArt,
+        'cover_art_sizes': value.coverArtSizes,
+        'track_count': value.trackCount,
     };
 }
 

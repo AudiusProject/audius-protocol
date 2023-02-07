@@ -31,7 +31,7 @@ export interface ActivityFull {
      * @type {object}
      * @memberof ActivityFull
      */
-    item_type?: object;
+    itemType?: object;
     /**
      * 
      * @type {object}
@@ -60,7 +60,7 @@ export function ActivityFullFromJSONTyped(json: any, ignoreDiscriminator: boolea
     return {
         
         'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
-        'item_type': !exists(json, 'item_type') ? undefined : json['item_type'],
+        'itemType': !exists(json, 'item_type') ? undefined : json['item_type'],
         'item': !exists(json, 'item') ? undefined : json['item'],
     };
 }
@@ -75,7 +75,7 @@ export function ActivityFullToJSON(value?: ActivityFull | null): any {
     return {
         
         'timestamp': value.timestamp,
-        'item_type': value.item_type,
+        'item_type': value.itemType,
         'item': value.item,
     };
 }

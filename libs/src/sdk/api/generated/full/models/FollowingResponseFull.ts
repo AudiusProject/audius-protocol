@@ -38,25 +38,25 @@ export interface FollowingResponseFull {
      * @type {number}
      * @memberof FollowingResponseFull
      */
-    latest_chain_block: number;
+    latestChainBlock: number;
     /**
      * 
      * @type {number}
      * @memberof FollowingResponseFull
      */
-    latest_indexed_block: number;
+    latestIndexedBlock: number;
     /**
      * 
      * @type {number}
      * @memberof FollowingResponseFull
      */
-    latest_chain_slot_plays: number;
+    latestChainSlotPlays: number;
     /**
      * 
      * @type {number}
      * @memberof FollowingResponseFull
      */
-    latest_indexed_slot_plays: number;
+    latestIndexedSlotPlays: number;
     /**
      * 
      * @type {string}
@@ -88,10 +88,10 @@ export interface FollowingResponseFull {
  */
 export function instanceOfFollowingResponseFull(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "latest_chain_block" in value;
-    isInstance = isInstance && "latest_indexed_block" in value;
-    isInstance = isInstance && "latest_chain_slot_plays" in value;
-    isInstance = isInstance && "latest_indexed_slot_plays" in value;
+    isInstance = isInstance && "latestChainBlock" in value;
+    isInstance = isInstance && "latestIndexedBlock" in value;
+    isInstance = isInstance && "latestChainSlotPlays" in value;
+    isInstance = isInstance && "latestIndexedSlotPlays" in value;
     isInstance = isInstance && "signature" in value;
     isInstance = isInstance && "timestamp" in value;
     isInstance = isInstance && "version" in value;
@@ -109,10 +109,10 @@ export function FollowingResponseFullFromJSONTyped(json: any, ignoreDiscriminato
     }
     return {
         
-        'latest_chain_block': json['latest_chain_block'],
-        'latest_indexed_block': json['latest_indexed_block'],
-        'latest_chain_slot_plays': json['latest_chain_slot_plays'],
-        'latest_indexed_slot_plays': json['latest_indexed_slot_plays'],
+        'latestChainBlock': json['latest_chain_block'],
+        'latestIndexedBlock': json['latest_indexed_block'],
+        'latestChainSlotPlays': json['latest_chain_slot_plays'],
+        'latestIndexedSlotPlays': json['latest_indexed_slot_plays'],
         'signature': json['signature'],
         'timestamp': json['timestamp'],
         'version': VersionMetadataFromJSON(json['version']),
@@ -129,10 +129,10 @@ export function FollowingResponseFullToJSON(value?: FollowingResponseFull | null
     }
     return {
         
-        'latest_chain_block': value.latest_chain_block,
-        'latest_indexed_block': value.latest_indexed_block,
-        'latest_chain_slot_plays': value.latest_chain_slot_plays,
-        'latest_indexed_slot_plays': value.latest_indexed_slot_plays,
+        'latest_chain_block': value.latestChainBlock,
+        'latest_indexed_block': value.latestIndexedBlock,
+        'latest_chain_slot_plays': value.latestChainSlotPlays,
+        'latest_indexed_slot_plays': value.latestIndexedSlotPlays,
         'signature': value.signature,
         'timestamp': value.timestamp,
         'version': VersionMetadataToJSON(value.version),

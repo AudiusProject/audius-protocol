@@ -49,7 +49,7 @@ export interface FieldVisibility {
      * @type {boolean}
      * @memberof FieldVisibility
      */
-    play_count?: boolean;
+    playCount?: boolean;
     /**
      * 
      * @type {boolean}
@@ -81,7 +81,7 @@ export function FieldVisibilityFromJSONTyped(json: any, ignoreDiscriminator: boo
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
         'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'share': !exists(json, 'share') ? undefined : json['share'],
-        'play_count': !exists(json, 'play_count') ? undefined : json['play_count'],
+        'playCount': !exists(json, 'play_count') ? undefined : json['play_count'],
         'remixes': !exists(json, 'remixes') ? undefined : json['remixes'],
     };
 }
@@ -99,7 +99,7 @@ export function FieldVisibilityToJSON(value?: FieldVisibility | null): any {
         'tags': value.tags,
         'genre': value.genre,
         'share': value.share,
-        'play_count': value.play_count,
+        'play_count': value.playCount,
         'remixes': value.remixes,
     };
 }

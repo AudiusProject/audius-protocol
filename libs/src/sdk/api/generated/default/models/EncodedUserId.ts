@@ -25,7 +25,7 @@ export interface EncodedUserId {
      * @type {string}
      * @memberof EncodedUserId
      */
-    user_id?: string;
+    userId?: string;
 }
 
 /**
@@ -47,7 +47,7 @@ export function EncodedUserIdFromJSONTyped(json: any, ignoreDiscriminator: boole
     }
     return {
         
-        'user_id': !exists(json, 'user_id') ? undefined : json['user_id'],
+        'userId': !exists(json, 'user_id') ? undefined : json['user_id'],
     };
 }
 
@@ -60,7 +60,7 @@ export function EncodedUserIdToJSON(value?: EncodedUserId | null): any {
     }
     return {
         
-        'user_id': value.user_id,
+        'user_id': value.userId,
     };
 }
 

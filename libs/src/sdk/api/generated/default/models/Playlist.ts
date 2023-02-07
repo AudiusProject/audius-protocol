@@ -62,31 +62,31 @@ export interface Playlist {
      * @type {boolean}
      * @memberof Playlist
      */
-    is_album: boolean;
+    isAlbum: boolean;
     /**
      * 
      * @type {string}
      * @memberof Playlist
      */
-    playlist_name: string;
+    playlistName: string;
     /**
      * 
      * @type {number}
      * @memberof Playlist
      */
-    repost_count: number;
+    repostCount: number;
     /**
      * 
      * @type {number}
      * @memberof Playlist
      */
-    favorite_count: number;
+    favoriteCount: number;
     /**
      * 
      * @type {number}
      * @memberof Playlist
      */
-    total_play_count: number;
+    totalPlayCount: number;
     /**
      * 
      * @type {User}
@@ -101,11 +101,11 @@ export interface Playlist {
 export function instanceOfPlaylist(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "is_album" in value;
-    isInstance = isInstance && "playlist_name" in value;
-    isInstance = isInstance && "repost_count" in value;
-    isInstance = isInstance && "favorite_count" in value;
-    isInstance = isInstance && "total_play_count" in value;
+    isInstance = isInstance && "isAlbum" in value;
+    isInstance = isInstance && "playlistName" in value;
+    isInstance = isInstance && "repostCount" in value;
+    isInstance = isInstance && "favoriteCount" in value;
+    isInstance = isInstance && "totalPlayCount" in value;
     isInstance = isInstance && "user" in value;
 
     return isInstance;
@@ -125,11 +125,11 @@ export function PlaylistFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
         'description': !exists(json, 'description') ? undefined : json['description'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
         'id': json['id'],
-        'is_album': json['is_album'],
-        'playlist_name': json['playlist_name'],
-        'repost_count': json['repost_count'],
-        'favorite_count': json['favorite_count'],
-        'total_play_count': json['total_play_count'],
+        'isAlbum': json['is_album'],
+        'playlistName': json['playlist_name'],
+        'repostCount': json['repost_count'],
+        'favoriteCount': json['favorite_count'],
+        'totalPlayCount': json['total_play_count'],
         'user': UserFromJSON(json['user']),
     };
 }
@@ -147,11 +147,11 @@ export function PlaylistToJSON(value?: Playlist | null): any {
         'description': value.description,
         'permalink': value.permalink,
         'id': value.id,
-        'is_album': value.is_album,
-        'playlist_name': value.playlist_name,
-        'repost_count': value.repost_count,
-        'favorite_count': value.favorite_count,
-        'total_play_count': value.total_play_count,
+        'is_album': value.isAlbum,
+        'playlist_name': value.playlistName,
+        'repost_count': value.repostCount,
+        'favorite_count': value.favoriteCount,
+        'total_play_count': value.totalPlayCount,
         'user': UserToJSON(value.user),
     };
 }

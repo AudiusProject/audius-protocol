@@ -25,7 +25,7 @@ export interface UserReplicaSet {
      * @type {number}
      * @memberof UserReplicaSet
      */
-    user_id: number;
+    userId: number;
     /**
      * 
      * @type {string}
@@ -75,7 +75,7 @@ export interface UserReplicaSet {
  */
 export function instanceOfUserReplicaSet(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "user_id" in value;
+    isInstance = isInstance && "userId" in value;
     isInstance = isInstance && "wallet" in value;
 
     return isInstance;
@@ -91,7 +91,7 @@ export function UserReplicaSetFromJSONTyped(json: any, ignoreDiscriminator: bool
     }
     return {
         
-        'user_id': json['user_id'],
+        'userId': json['user_id'],
         'wallet': json['wallet'],
         'primary': !exists(json, 'primary') ? undefined : json['primary'],
         'secondary1': !exists(json, 'secondary1') ? undefined : json['secondary1'],
@@ -111,7 +111,7 @@ export function UserReplicaSetToJSON(value?: UserReplicaSet | null): any {
     }
     return {
         
-        'user_id': value.user_id,
+        'user_id': value.userId,
         'wallet': value.wallet,
         'primary': value.primary,
         'secondary1': value.secondary1,

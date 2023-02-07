@@ -25,13 +25,13 @@ export interface UserSubscribers {
      * @type {string}
      * @memberof UserSubscribers
      */
-    user_id: string;
+    userId: string;
     /**
      * 
      * @type {Array<string>}
      * @memberof UserSubscribers
      */
-    subscriber_ids?: Array<string>;
+    subscriberIds?: Array<string>;
 }
 
 /**
@@ -39,7 +39,7 @@ export interface UserSubscribers {
  */
 export function instanceOfUserSubscribers(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "user_id" in value;
+    isInstance = isInstance && "userId" in value;
 
     return isInstance;
 }
@@ -54,8 +54,8 @@ export function UserSubscribersFromJSONTyped(json: any, ignoreDiscriminator: boo
     }
     return {
         
-        'user_id': json['user_id'],
-        'subscriber_ids': !exists(json, 'subscriber_ids') ? undefined : json['subscriber_ids'],
+        'userId': json['user_id'],
+        'subscriberIds': !exists(json, 'subscriber_ids') ? undefined : json['subscriber_ids'],
     };
 }
 
@@ -68,8 +68,8 @@ export function UserSubscribersToJSON(value?: UserSubscribers | null): any {
     }
     return {
         
-        'user_id': value.user_id,
-        'subscriber_ids': value.subscriber_ids,
+        'user_id': value.userId,
+        'subscriber_ids': value.subscriberIds,
     };
 }
 

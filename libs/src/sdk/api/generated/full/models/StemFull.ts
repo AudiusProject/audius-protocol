@@ -31,7 +31,7 @@ export interface StemFull {
      * @type {string}
      * @memberof StemFull
      */
-    parent_id: string;
+    parentId: string;
     /**
      * 
      * @type {string}
@@ -49,7 +49,7 @@ export interface StemFull {
      * @type {string}
      * @memberof StemFull
      */
-    user_id: string;
+    userId: string;
     /**
      * 
      * @type {number}
@@ -64,10 +64,10 @@ export interface StemFull {
 export function instanceOfStemFull(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "parent_id" in value;
+    isInstance = isInstance && "parentId" in value;
     isInstance = isInstance && "category" in value;
     isInstance = isInstance && "cid" in value;
-    isInstance = isInstance && "user_id" in value;
+    isInstance = isInstance && "userId" in value;
     isInstance = isInstance && "blocknumber" in value;
 
     return isInstance;
@@ -84,10 +84,10 @@ export function StemFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     return {
         
         'id': json['id'],
-        'parent_id': json['parent_id'],
+        'parentId': json['parent_id'],
         'category': json['category'],
         'cid': json['cid'],
-        'user_id': json['user_id'],
+        'userId': json['user_id'],
         'blocknumber': json['blocknumber'],
     };
 }
@@ -102,10 +102,10 @@ export function StemFullToJSON(value?: StemFull | null): any {
     return {
         
         'id': value.id,
-        'parent_id': value.parent_id,
+        'parent_id': value.parentId,
         'category': value.category,
         'cid': value.cid,
-        'user_id': value.user_id,
+        'user_id': value.userId,
         'blocknumber': value.blocknumber,
     };
 }

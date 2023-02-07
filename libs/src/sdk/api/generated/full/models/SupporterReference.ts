@@ -25,7 +25,7 @@ export interface SupporterReference {
      * @type {string}
      * @memberof SupporterReference
      */
-    user_id: string;
+    userId: string;
 }
 
 /**
@@ -33,7 +33,7 @@ export interface SupporterReference {
  */
 export function instanceOfSupporterReference(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "user_id" in value;
+    isInstance = isInstance && "userId" in value;
 
     return isInstance;
 }
@@ -48,7 +48,7 @@ export function SupporterReferenceFromJSONTyped(json: any, ignoreDiscriminator: 
     }
     return {
         
-        'user_id': json['user_id'],
+        'userId': json['user_id'],
     };
 }
 
@@ -61,7 +61,7 @@ export function SupporterReferenceToJSON(value?: SupporterReference | null): any
     }
     return {
         
-        'user_id': value.user_id,
+        'user_id': value.userId,
     };
 }
 

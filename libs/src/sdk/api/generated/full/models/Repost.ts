@@ -25,19 +25,19 @@ export interface Repost {
      * @type {string}
      * @memberof Repost
      */
-    repost_item_id: string;
+    repostItemId: string;
     /**
      * 
      * @type {string}
      * @memberof Repost
      */
-    repost_type: string;
+    repostType: string;
     /**
      * 
      * @type {string}
      * @memberof Repost
      */
-    user_id: string;
+    userId: string;
 }
 
 /**
@@ -45,9 +45,9 @@ export interface Repost {
  */
 export function instanceOfRepost(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "repost_item_id" in value;
-    isInstance = isInstance && "repost_type" in value;
-    isInstance = isInstance && "user_id" in value;
+    isInstance = isInstance && "repostItemId" in value;
+    isInstance = isInstance && "repostType" in value;
+    isInstance = isInstance && "userId" in value;
 
     return isInstance;
 }
@@ -62,9 +62,9 @@ export function RepostFromJSONTyped(json: any, ignoreDiscriminator: boolean): Re
     }
     return {
         
-        'repost_item_id': json['repost_item_id'],
-        'repost_type': json['repost_type'],
-        'user_id': json['user_id'],
+        'repostItemId': json['repost_item_id'],
+        'repostType': json['repost_type'],
+        'userId': json['user_id'],
     };
 }
 
@@ -77,9 +77,9 @@ export function RepostToJSON(value?: Repost | null): any {
     }
     return {
         
-        'repost_item_id': value.repost_item_id,
-        'repost_type': value.repost_type,
-        'user_id': value.user_id,
+        'repost_item_id': value.repostItemId,
+        'repost_type': value.repostType,
+        'user_id': value.userId,
     };
 }
 

@@ -50,7 +50,7 @@ export interface Tip {
      * @type {string}
      * @memberof Tip
      */
-    created_at: string;
+    createdAt: string;
 }
 
 /**
@@ -59,7 +59,7 @@ export interface Tip {
 export function instanceOfTip(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "amount" in value;
-    isInstance = isInstance && "created_at" in value;
+    isInstance = isInstance && "createdAt" in value;
 
     return isInstance;
 }
@@ -77,7 +77,7 @@ export function TipFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tip {
         'amount': json['amount'],
         'sender': !exists(json, 'sender') ? undefined : UserFromJSON(json['sender']),
         'receiver': !exists(json, 'receiver') ? undefined : UserFromJSON(json['receiver']),
-        'created_at': json['created_at'],
+        'createdAt': json['created_at'],
     };
 }
 
@@ -93,7 +93,7 @@ export function TipToJSON(value?: Tip | null): any {
         'amount': value.amount,
         'sender': UserToJSON(value.sender),
         'receiver': UserToJSON(value.receiver),
-        'created_at': value.created_at,
+        'created_at': value.createdAt,
     };
 }
 
