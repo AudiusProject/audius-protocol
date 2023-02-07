@@ -386,7 +386,9 @@ jobs:
             - ./libs/node_modules
       - run:
           name: Bootstrap service list
-          command: npm run sdk:bootstrap
+          command: |
+            cd libs
+            npm run sdk:bootstrap
       # - run:
       #     name: Bump and Publish Libs
       #     command: |
