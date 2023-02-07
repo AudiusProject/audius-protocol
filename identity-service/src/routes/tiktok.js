@@ -94,9 +94,11 @@ module.exports = function (app) {
         const { user: tikTokUser } = data
 
         const existingTikTokUser = await models.TikTokUser.findOne({
-          where: { uuid: tikTokUser.open_id },
-          blockchainUserId: {
-            [models.Sequelize.Op.not]: null
+          where: {
+            uuid: tikTokUser.open_id,
+            blockchainUserId: {
+              [models.Sequelize.Op.not]: null
+            }
           }
         })
 
