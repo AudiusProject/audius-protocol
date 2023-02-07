@@ -78,18 +78,18 @@ export const writeFavoritesCollectionJson = async () => {
 
 export const getCollectionJson = async (
   collectionId: string
-): Promise<OfflineCollection> => {
+): Promise<Nullable<OfflineCollection>> => {
   try {
+    const isVerified = await verifyCollection(collectionId)
+    if (!isVerified) return null
+
     const collectionJson = await readFile(
       getLocalCollectionJsonPath(collectionId),
       'utf8'
     )
     return JSON.parse(collectionJson)
   } catch (e) {
-    if (e instanceof SyntaxError) {
-      purgeDownloadedCollection(collectionId)
-    }
-    return Promise.reject(e)
+    return null
   }
 }
 
@@ -168,12 +168,12 @@ export const getTrackJson = async (
   trackId: string
 ): Promise<Nullable<Track & UserTrackMetadata>> => {
   try {
+    const isVerified = await verifyTrack(trackId)
+    if (!isVerified) return null
+
     const trackJson = await readFile(getLocalTrackJsonPath(trackId), 'utf8')
     return JSON.parse(trackJson)
   } catch (e) {
-    if (e instanceof SyntaxError) {
-      purgeDownloadedTrack(trackId)
-    }
     return null
   }
 }
@@ -189,6 +189,7 @@ export const writeTrackJson = async (
   await writeFile(pathToWrite, JSON.stringify(trackToWrite))
 }
 
+// TODO: Update this to verify that the JSON can be parsed properly?
 export const verifyTrack = async (
   trackId: string,
   expectTrue?: boolean
@@ -207,6 +208,28 @@ export const verifyTrack = async (
     !audioExists && console.warn(`Missing audio for ${trackId}`)
     !jsonExists && console.warn(`Missing json for ${trackId}`)
     !artExists && console.warn(`Missing art for ${trackId}`)
+  }
+
+  return booleanResults.every((result) => result)
+}
+
+// TODO: Update this to verify that the JSON can be parsed properly?
+export const verifyCollection = async (
+  collectionId: string,
+  expectTrue?: boolean
+) => {
+  const artFile = exists(getLocalCollectionCoverArtPath(collectionId))
+  const jsonFile = exists(getLocalCollectionJsonPath(collectionId))
+
+  const results = await allSettled([artFile, jsonFile])
+  const booleanResults = results.map(
+    (result) => result.status === 'fulfilled' && !!result.value
+  )
+  const [artExists, jsonExists] = booleanResults
+
+  if (expectTrue) {
+    !artExists && console.warn(`Missing art for ${collectionId}`)
+    !jsonExists && console.warn(`Missing json for ${collectionId}`)
   }
 
   return booleanResults.every((result) => result)

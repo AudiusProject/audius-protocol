@@ -60,6 +60,10 @@ export type OfflineItem =
       metadata: OfflineCollectionMetadata
     }
 
+export type RedownloadOfflineItemsAction = PayloadAction<{
+  items: DownloadQueueItem[]
+}>
+
 export type AddOfflineItemsAction = PayloadAction<{
   items: OfflineItem[]
 }>
@@ -119,6 +123,21 @@ const slice = createSlice({
   name: 'offlineDownloads',
   initialState,
   reducers: {
+    redownloadOfflineItems: (state, action: RedownloadOfflineItemsAction) => {
+      const { trackStatus, collectionStatus, downloadQueue } = state
+      const { items } = action.payload
+
+      for (const item of items) {
+        const { type, id } = item
+
+        if (type === 'collection') {
+          collectionStatus[id] = OfflineDownloadStatus.INIT
+        } else if (type === 'track') {
+          trackStatus[id] = OfflineDownloadStatus.INIT
+        }
+        downloadQueue.push(item)
+      }
+    },
     addOfflineItems: (state, action: AddOfflineItemsAction) => {
       const { items } = action.payload
       const {
@@ -253,6 +272,7 @@ const slice = createSlice({
 
 export const {
   addOfflineItems,
+  redownloadOfflineItems,
   removeOfflineItems,
   doneLoadingFromDisk,
   clearOfflineDownloads,

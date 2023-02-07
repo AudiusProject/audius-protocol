@@ -117,7 +117,7 @@ export const tryDownloadTrackFromEachCreatorNode = async (
   }
 }
 
-/** Dowanload file at uri to destination unless there is already a file at that location or overwrite is true */
+/** Download file at uri to destination unless there is already a file at that location or overwrite is true */
 const downloadIfNotExists = async (
   uri: string,
   destination: string,
