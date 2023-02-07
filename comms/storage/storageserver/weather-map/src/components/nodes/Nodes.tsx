@@ -28,7 +28,9 @@ export default function Nodes({
                     {hostsAndShards[pubKey].host} (
                     <a
                       href={`${hostsAndShards[pubKey].host}/nats`}
+                      target="_blank"
                       className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
+                      rel="noreferrer"
                     >
                       nats
                     </a>
@@ -37,7 +39,9 @@ export default function Nodes({
                       href={`${getStorageHostFromNatsHost(
                         hostsAndShards[pubKey].host,
                       )}/storage`}
+                      target="_blank"
                       className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
+                      rel="noreferrer"
                     >
                       upload
                     </a>
