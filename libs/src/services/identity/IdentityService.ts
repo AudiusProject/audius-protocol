@@ -553,7 +553,7 @@ export class IdentityService {
   async getUserBankTransactionMetadata(transactionId: string) {
     const headers = await this._signData()
 
-    return await this._makeRequest({
+    return await this._makeRequest<InAppAudioPurchaseMetadata[]>({
       url: `/transaction_metadata?id=${transactionId}`,
       method: 'get',
       headers
