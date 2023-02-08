@@ -64,7 +64,8 @@ export const { updateQuery, setHistory, clearHistory, addItem, fetchHistory } =
 
 const searchPersistConfig = {
   key: 'search',
-  storage: AsyncStorage
+  storage: AsyncStorage,
+  whitelist: ['history']
 }
 
 const persistedSearchReducer = persistReducer(
