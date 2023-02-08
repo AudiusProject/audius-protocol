@@ -67,7 +67,7 @@ const linkButtonMap: Record<LinkButtonType, LinkButtonInfo> = {
     link: () => TRENDING_PAGE
   },
   sendFirstTip: {
-    label: 'Find Someone To Tip',
+    label: 'Send a Tip',
     leftIcon: null,
     rightIcon: <GoldBadgeIconImage />,
     link: () => FAVORITES_PAGE

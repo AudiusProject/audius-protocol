@@ -23,14 +23,14 @@ export const challengeRewardsConfig: Record<
 > = {
   referrals: {
     id: 'referrals',
-    title: 'Invite your Friends!',
+    title: 'Invite Your Friends!',
     description: (challenge) =>
-      `Earn ${challenge?.amount} $AUDIO, for you and your friend`,
+      `Earn ${challenge?.amount} $AUDIO for you and your friend.`,
     fullDescription: (challenge) =>
       `Invite your Friends! You’ll earn ${challenge?.amount} $AUDIO for each friend who joins with your link (and they’ll get an $AUDIO too)`,
     progressLabel: '%0/%1 Invites Accepted',
     remainingLabel: '%0/%1 Invites Remain',
-    panelButtonText: 'Invite your Friends'
+    panelButtonText: 'Invite Your Friends'
   },
   'ref-v': {
     id: 'ref-v',
@@ -94,7 +94,8 @@ export const challengeRewardsConfig: Record<
   'track-upload': {
     id: 'track-upload',
     title: 'Upload 3 Tracks',
-    description: (challenge) => `Earn ${challenge?.amount} $AUDIO.`,
+    description: (challenge) =>
+      `Earn ${challenge?.amount} $AUDIO for uploading 3 tracks.`,
     fullDescription: () => 'Upload 3 tracks to your profile',
     progressLabel: '%0/%1 Uploaded',
     panelButtonText: 'Upload Tracks'
@@ -107,7 +108,7 @@ export const challengeRewardsConfig: Record<
     fullDescription: () =>
       'Show some love to your favorite artist and send them a tip.',
     progressLabel: 'Not Earned',
-    panelButtonText: 'Find Someone To Tip'
+    panelButtonText: 'Send a Tip'
   },
   'first-playlist': {
     id: 'first-playlist',

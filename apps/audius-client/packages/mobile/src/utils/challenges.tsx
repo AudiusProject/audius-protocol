@@ -32,8 +32,8 @@ export const messages = {
     'Show some love to your favorite artist and send them $AUDIO', // iOS only
   sendFirstTipShortDescriptionAlt:
     'Show some love to your favorite artist and send them $AUDIO', // iOS only
-  sendFirstTipButton: 'Find Someone To Tip',
-  sendFirstTipButtonAlt: 'Find Someone To Send To' // iOS only
+  sendFirstTipButton: 'Send a Tip',
+  sendFirstTipButtonAlt: 'Find Artists to Support' // iOS only
 }
 
 export type ChallengesParamList = {
