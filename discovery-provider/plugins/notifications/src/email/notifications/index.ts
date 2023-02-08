@@ -94,7 +94,6 @@ WHERE
   latest_user_seen.seen_at is NULL OR
   latest_user_seen.seen_at < n.timestamp
 `
-// TODO group notifs if multiple
 const messageNotificationsSql = `
 WITH members_can_notify AS (
   SELECT user_id, chat_id
