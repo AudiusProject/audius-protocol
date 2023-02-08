@@ -1,5 +1,5 @@
 import { clearOfflineDownloadsSaga } from './sagas/clearOfflineDownloadsSaga'
-import { processDownloadQueueSaga } from './sagas/processDownloadQueueSaga/processDownloadQueueSaga'
+import { downloadQueueSagas } from './sagas/downloadQueueSagas/downloadQueueSagas'
 import { rehydrateOfflineDataSaga } from './sagas/rehydrateOfflineDataSaga'
 import { requestDownloadAllFavoritesSaga } from './sagas/requestDownloadAllFavoritesSaga'
 import { requestDownloadCollectionSaga } from './sagas/requestDownloadCollectionSaga'
@@ -8,9 +8,7 @@ import { requestRemoveAllDownloadedFavoritesSaga } from './sagas/requestRemoveAl
 import { requestRemoveDownloadedCollectionSaga } from './sagas/requestRemoveDownloadedCollectionSaga'
 import { requestRemoveFavoritedDownloadedCollectionSaga } from './sagas/requestRemoveFavoritedDownloadedCollectionSaga'
 import { updateStaleOfflineDataSaga } from './sagas/updateStaleOfflineDataSaga'
-import { watchAddOfflineItems } from './sagas/watchAddOfflineItems'
 import { watchAddTrackToPlaylistSaga } from './sagas/watchAddTrackToPlaylistSaga'
-import { watchReachability } from './sagas/watchReachability'
 import { watchRemoveOfflineItems } from './sagas/watchRemoveOfflineItems'
 import { watchSaveCollectionSaga } from './sagas/watchSaveCollectionSaga'
 import { watchSaveTrackSaga } from './sagas/watchSaveTrackSaga'
@@ -30,17 +28,15 @@ const sagas = () => {
     requestRemoveDownloadedCollectionSaga,
     requestRemoveFavoritedDownloadedCollectionSaga,
 
-    // Queue process
-    processDownloadQueueSaga,
+    // Queue sagas
+    ...downloadQueueSagas(),
 
-    // Watchers
+    // Track/Collection watchers
     watchSaveTrackSaga,
     watchUnSaveTrackSaga,
     watchSaveCollectionSaga,
-    watchAddOfflineItems,
     watchRemoveOfflineItems,
     watchAddTrackToPlaylistSaga,
-    watchReachability,
 
     // Cleanup
     clearOfflineDownloadsSaga

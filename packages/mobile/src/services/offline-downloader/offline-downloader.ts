@@ -28,21 +28,6 @@ const { getUserId } = accountSelectors
 
 export const DOWNLOAD_REASON_FAVORITES = 'favorites'
 
-export enum DownloadTrackError {
-  IS_DELETED = 'IS_DELETED',
-  IS_UNLISTED = 'IS_UNLISTED',
-  FAILED_TO_FETCH = 'FAILED_TO_FETCH',
-  FAILED_TO_VERIFY = 'FAILED_TO_VERIFY',
-  UNKNOWN = 'UNKNOWN'
-}
-
-export enum DownloadCollectionError {
-  IS_DELETED = 'IS_DELETED',
-  IS_PRIVATE = 'IS_PRIVATE',
-  FAILED_TO_FETCH = 'FAILED_TO_FETCH',
-  UNKNOWN = 'UNKNOWN'
-}
-
 const downloadCoverArt =
   <T extends UserTrackMetadata | UserCollectionMetadata>(
     getDestination: (entity: T, uri: string) => string
