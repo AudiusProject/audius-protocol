@@ -8,7 +8,6 @@
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint": "lerna run lint",
     "lint:fix": "lerna run lint:fix",
-    "update-sdk": "lerna exec -- npm-check-updates @audius/sdk -u && npm i",
     "WEB========================================": "",
     "web:dev": "cd packages/web && npm run start:dev",
     "web:stage": "cd packages/web && npm run start:stage",
@@ -28,7 +27,10 @@
     "COMMON=====================================": "",
     "common": "cd packages/common && npm run start",
     "STEMS======================================": "",
-    "stems": "cd packages/stems && npm run start"
+    "stems": "cd packages/stems && npm run start",
+    "SDK========================================": "",
+    "sdk:update": "lerna exec -- npm-check-updates @audius/sdk -u && npm i",
+    "sdk:link": "./scripts/link-sdk.sh"
   },
   "devDependencies": {
     "@types/keyv": "4.2.0",
