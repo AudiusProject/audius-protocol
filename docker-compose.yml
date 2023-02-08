@@ -1,6 +1,7 @@
 version: "3.9"
 
-x-logging: &default-logging
+x-logging:
+  &default-logging
   options:
     max-size: "50m"
     max-file: "3"
@@ -33,7 +34,7 @@ services:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_USER: "postgres"
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -91,7 +92,7 @@ services:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_USER: "postgres"
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -218,7 +219,7 @@ services:
     image: postgres:11.4
     user: postgres
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -229,7 +230,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -297,7 +298,6 @@ services:
       - /usr/src/app/node_modules
       - ./dev-tools:/tmp/dev-tools
       - audius-libs:/usr/src/audius-libs
-      - /usr/src/app/node_modules
       - /usr/src/app/build
     depends_on:
       identity-service-db:
@@ -328,7 +328,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --fail http://localhost:9200/_cluster/health || exit 1",
+          "curl --fail http://localhost:9200/_cluster/health || exit 1"
         ]
       interval: 10s
       timeout: 5s
