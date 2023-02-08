@@ -147,7 +147,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     if (this.selectedNode) {
       if (config.healthCheckThresholds) {
         this.selectedNode = null
-      } else if (!config.allowlist?.has(this.selectedNode)) {
+      } else if (config.allowlist && !config.allowlist.has(this.selectedNode)) {
         this.selectedNode = null
       } else if (config.blocklist?.has(this.selectedNode)) {
         this.selectedNode = null
