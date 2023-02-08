@@ -3,6 +3,7 @@ import { removeNullable, cacheTracksSelectors } from '@audius/common'
 
 import type { AppState } from 'app/store'
 
+import type { CollectionId } from './slice'
 import { OfflineDownloadStatus } from './slice'
 const { getTrack } = cacheTracksSelectors
 
@@ -13,6 +14,11 @@ export const getTrackOfflineDownloadStatus =
   (trackId?: number) => (state: AppState) =>
     trackId ? state.offlineDownloads.trackStatus[trackId] : null
 
+export const getCollectionOfflineDownloadStatus =
+  (collectionId?: CollectionId) => (state: AppState) =>
+    collectionId ? state.offlineDownloads.collectionStatus[collectionId] : null
+
+// TODO: This should verify that the status is correct
 export const getIsCollectionMarkedForDownload =
   (collectionId?: string | ID) => (state: AppState) =>
     !!(collectionId && state.offlineDownloads.collectionStatus[collectionId])
