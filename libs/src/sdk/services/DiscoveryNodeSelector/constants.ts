@@ -15,7 +15,6 @@ export const defaultDiscoveryNodeSelectorConfig: DiscoveryNodeSelectorServiceCon
     requestTimeout: 30000, // 30s
     unhealthyTTL: 3600000, // 1 hour
     backupsTTL: 120000, // 2 min
-    cacheTTL: 600000, //  10 min
     healthCheckThresholds: {
       minVersion: bootstrap.version,
       maxSlotDiffPlays: null,
