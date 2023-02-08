@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
+import inspect
 import logging
 import os
 import time
@@ -928,7 +929,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @celery.task(name="update_discovery_provider_nethermind", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
-
+    logger.info(f"asdf inspect stack {inspect.stack()}")
     # ask identity did you switch relay
     # start indexing from the start block we've configured (stage/prod may be different)
 
