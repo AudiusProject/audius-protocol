@@ -51,7 +51,7 @@ export const LineupTile = ({
     repost_count,
     save_count
   } = item
-  const { _artist_pick, name, user_id } = user
+  const { artist_pick_track_id, name, user_id } = user
   const currentUserId = useSelector(getUserId)
   const isCollection = 'playlist_id' in item
 
@@ -59,7 +59,7 @@ export const LineupTile = ({
 
   return (
     <LineupTileRoot onPress={onPress} {...TileProps}>
-      {showArtistPick && _artist_pick === id ? (
+      {showArtistPick && artist_pick_track_id === id ? (
         <LineupTileBannerIcon type={LineupTileBannerIconType.STAR} />
       ) : null}
       {isUnlisted ? (
@@ -68,7 +68,7 @@ export const LineupTile = ({
       <View>
         <LineupTileTopRight
           duration={duration}
-          isArtistPick={_artist_pick === id}
+          isArtistPick={artist_pick_track_id === id}
           isUnlisted={isUnlisted}
           showArtistPick={showArtistPick}
         />

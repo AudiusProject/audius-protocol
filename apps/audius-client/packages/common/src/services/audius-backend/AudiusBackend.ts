@@ -880,15 +880,6 @@ export const audiusBackend = ({
       const account = audiusLibs.Account.getCurrentUser()
       if (!account) return null
 
-      // If reading the artist pick from discovery, set _artist_pick on
-      // the user to the value from discovery (set in artist_pick_track_id
-      // on the user).
-      // TODO after migration is complete: replace all usages of
-      // _artist_pick with artist_pick_track_id
-      const readArtistPickFromDiscoveryEnabled =
-        (await getFeatureEnabled(
-          FeatureFlags.READ_ARTIST_PICK_FROM_DISCOVERY
-        )) ?? false
       try {
         const body = await getCreatorSocialHandle(account.handle)
         account.twitter_handle = body.twitterHandle || null
@@ -896,14 +887,6 @@ export const audiusBackend = ({
         account.tiktok_handle = body.tikTokHandle || null
         account.website = body.website || null
         account.donation = body.donation || null
-        account._artist_pick =
-          (readArtistPickFromDiscoveryEnabled
-            ? account.artist_pick_track_id
-            : body.pinnedTrackId) || null
-        account.artist_pick_track_id =
-          (readArtistPickFromDiscoveryEnabled
-            ? account.artist_pick_track_id
-            : body.pinnedTrackId) || null
         account.twitterVerified = body.twitterVerified || false
         account.instagramVerified = body.instagramVerified || false
         account.tikTokVerified = body.tikTokVerified || false
@@ -1855,31 +1838,6 @@ export const audiusBackend = ({
     } catch (err) {
       console.log(getErrorMessage(err))
       throw err
-    }
-  }
-
-  /**
-   * Sets the artist pick for a user
-   * @param {number?} trackId if null, unsets the artist pick
-   */
-  async function setArtistPick(trackId: Nullable<ID> = null) {
-    await waitForLibsInit()
-    try {
-      const { data, signature } = await signData()
-      return await fetch(`${identityServiceUrl}/artist_pick`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({
-          trackId
-        })
-      })
-    } catch (err) {
-      console.log(getErrorMessage(err))
-      return false
     }
   }
 
@@ -3267,7 +3225,6 @@ export const audiusBackend = ({
     sendTokens,
     sendWAudioTokens,
     sendWelcomeEmail,
-    setArtistPick,
     setCreatorNodeEndpoint,
     setup,
     setUserHandleForRelay,

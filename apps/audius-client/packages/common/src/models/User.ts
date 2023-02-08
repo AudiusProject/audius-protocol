@@ -1,6 +1,6 @@
 import { Collectible, CollectiblesMetadata } from 'models/Collectible'
 import { Color } from 'models/Color'
-import { CID, ID } from 'models/Identifiers'
+import { CID } from 'models/Identifiers'
 import { CoverPhotoSizes, ProfilePictureSizes } from 'models/ImageSizes'
 import { PlaylistLibrary } from 'models/PlaylistLibrary'
 import { SolanaWalletAddress, StringWei, WalletAddress } from 'models/Wallet'
@@ -68,7 +68,6 @@ export type ComputedUserProperties = {
   _cover_photo_sizes: CoverPhotoSizes
   _collectionIds?: string[]
   _profile_picture_color?: Color
-  _artist_pick?: ID
   updatedProfilePicture?: { file: File; url: string }
   updatedCoverPhoto?: { file: File; url: string }
 }

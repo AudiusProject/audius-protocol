@@ -112,7 +112,7 @@ const TrackListItem = ({
     includeRepost: true,
     includeShare: false,
     includeTrackPage: true,
-    isArtistPick: track.user._artist_pick === track.track_id,
+    isArtistPick: track.user.artist_pick_track_id === track.track_id,
     isDeleted: deleted,
     isFavorited: track.has_current_user_saved,
     isOwner: false,

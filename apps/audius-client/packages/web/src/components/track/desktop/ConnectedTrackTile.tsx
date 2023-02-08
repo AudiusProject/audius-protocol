@@ -133,7 +133,7 @@ const ConnectedTrackTile = memo(
     } = trackWithFallback
 
     const {
-      _artist_pick,
+      artist_pick_track_id,
       name,
       handle,
       is_deactivated: isOwnerDeactivated
@@ -143,7 +143,7 @@ const ConnectedTrackTile = memo(
     const isTrackBuffering = isActive && isBuffering
     const isTrackPlaying = isActive && isPlaying
     const isOwner = handle === userHandle
-    const isArtistPick = showArtistPick && _artist_pick === trackId
+    const isArtistPick = showArtistPick && artist_pick_track_id === trackId
 
     const { isUserAccessTBD, doesUserHaveAccess } =
       usePremiumContentAccess(trackWithFallback)

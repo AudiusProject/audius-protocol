@@ -73,7 +73,7 @@ export const getCollectionWithFallback = (collection: Collection | null) => {
 export const getUserWithFallback = (user: User | null) => {
   return (
     user || {
-      _artist_pick: -1,
+      artist_pick_track_id: -1,
       name: '',
       handle: '',
       is_verified: false,

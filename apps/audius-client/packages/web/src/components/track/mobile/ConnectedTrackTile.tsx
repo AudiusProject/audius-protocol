@@ -102,7 +102,7 @@ const ConnectedTrackTile = memo(
       duration
     } = getTrackWithFallback(track)
 
-    const { _artist_pick, user_id, handle, name, is_verified } =
+    const { artist_pick_track_id, user_id, handle, name, is_verified } =
       getUserWithFallback(user)
 
     const isOwner = user_id === currentUserId
@@ -202,7 +202,7 @@ const ConnectedTrackTile = memo(
         coSign={_co_sign}
         // Artist Pick
         showArtistPick={showArtistPick}
-        isArtistPick={_artist_pick === track_id}
+        isArtistPick={artist_pick_track_id === track_id}
         // Artist
         artistHandle={handle}
         artistName={name}
