@@ -33,7 +33,7 @@ const challengeInfoMap: Partial<
   >
 > = {
   'profile-completion': {
-    title: '✅️ Complete your Profile',
+    title: '✅️ Complete Your Profile',
     amount: 1
   },
   'listen-streak': {
@@ -45,15 +45,15 @@ const challengeInfoMap: Partial<
     amount: 1
   },
   referrals: {
-    title: '📨 Invite your Friends',
+    title: '📨 Invite Your Friends',
     amount: 1
   },
   'ref-v': {
-    title: '📨 Invite your Fans',
+    title: '📨 Invite Your Fans',
     amount: 1
   },
   referred: {
-    title: '📨 Invite your Friends',
+    title: '📨 Invite Your Friends',
     amount: 1
   },
   'connect-verified': {
