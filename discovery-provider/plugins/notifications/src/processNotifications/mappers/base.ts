@@ -1,4 +1,5 @@
 import { Knex } from 'knex'
+import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
 import { NotificationRow } from '../../types/dn'
 import { DMNotification, DMReactionNotification } from '../../types/notifications'
 
@@ -52,13 +53,13 @@ type UserEmailSettings = {
   [userId: number]: EmailFrequency
 }
 
-export abstract class BaseNotification {
+export abstract class BaseNotification<Type> {
 
-  notification
+  notification: Type
   dnDB: Knex
   identityDB: Knex
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: NotificationRow | DMNotification | DMReactionNotification) {
+  constructor(dnDB: Knex, identityDB: Knex, notification: Type) {
     this.notification = notification
     this.dnDB = dnDB
     this.identityDB = identityDB
@@ -271,4 +272,13 @@ export abstract class BaseNotification {
     }, {} as UserBrowserSettings)
     return userBrowserSettings
   }
+
+  getResourcesForEmail(): ResourceIds {
+    return {}
+  }
+
+  formatEmailProps(resources: Resources) {
+    return {}
+  }
+
 }

@@ -12,7 +12,7 @@ import {
 } from './Icons'
 
 import { capitalize } from '../utils'
-import { Entity, EntityType, DMEntityType, User } from '../../types'
+import { ChallengeId, Entity, EntityType, DMEntityType, User } from '../../types'
 
 const getRankSuffix = (num) => {
   if (num === 1) return 'st'
@@ -21,7 +21,9 @@ const getRankSuffix = (num) => {
   return 'th'
 }
 
-const challengeRewardsConfig = {
+const challengeRewardsConfig: {
+  [key in ChallengeId]: { title: string, icon: React.Component }
+} = {
   referred: {
     title: 'Invite your Friends',
     icon: <IncomingEnvelopeIcon />
@@ -64,7 +66,7 @@ const challengeRewardsConfig = {
   }
 }
 
-const HighlightText = ({ text }: { text: string }) => (
+export const HighlightText = ({ text }: { text: string }) => (
   <span
     className={'avenir'}
     style={{
@@ -77,7 +79,7 @@ const HighlightText = ({ text }: { text: string }) => (
   </span>
 )
 
-const BodyText = ({ text, className }: { text: string, className?: string }) => (
+export const BodyText = ({ text, className }: { text: string, className?: string }) => (
   <span
     className={`avenir ${className}`}
     style={{
@@ -90,7 +92,7 @@ const BodyText = ({ text, className }: { text: string, className?: string }) => 
   </span>
 )
 
-export const getUsers = (users: User[]) => {
+export export const getUsers = (users: User[]) => {
   const [firstUser] = users
   if (users.length > 1) {
     const userCount = users.length - 1
@@ -120,17 +122,6 @@ export const getEntity = (entity: Entity) => {
   }
 }
 
-
-// const FavoriteNotification = () => {
-//   const user = getUsers(notification.users)
-//   const entity = getEntity(notification.entity)
-
-//   return (
-//     <span className={'notificationText'}>
-//       {user}<BodyText text={` favorited your `} />{entity}
-//     </span>
-//   )
-// }
 
 const notificationMap = {
   ['favorite'](notification) {
@@ -209,7 +200,7 @@ const notificationMap = {
       </span>
     )
   },
-  ['remixCreate'](notification) {
+  ['remix'](notification) {
     const { remixUser, remixTrack, parentTrackUser, parentTrack } = notification
     return (
       <span className={'notificationText'}>
@@ -219,7 +210,7 @@ const notificationMap = {
       </span>
     )
   },
-  ['remixCosign'](notification) {
+  ['cosign'](notification) {
     const { parentTrackUser, parentTracks } = notification
     const parentTrack = parentTracks.find(t => t.owner_id === parentTrackUser.user_id)
     return (
@@ -230,7 +221,7 @@ const notificationMap = {
       </span>
     )
   },
-  ['challengeReward'](notification) {
+  ['challenge_reward'](notification) {
     const { rewardAmount } = notification
     const { title, icon } = challengeRewardsConfig[notification.challengeId]
     let bodyText
@@ -276,7 +267,7 @@ const notificationMap = {
       </span>
     )
   },
-  ['supporterRankUp'](notification) {
+  ['supporter_rank_up'](notification) {
     return (
       <span className={'notificationText'}>
         <HighlightText text={capitalize(notification.sendingUser.name)} />
@@ -286,7 +277,7 @@ const notificationMap = {
       </span>
     )
   },
-  ['supportingRankUp'](notification) {
+  ['supporting_rank_up'](notification) {
     return (
       <span className={'notificationText'}>
         <BodyText text={`You're now `} />
@@ -297,7 +288,7 @@ const notificationMap = {
       </span>
     )
   },
-  ['tipReceive'](notification) {
+  ['tip_receive'](notification) {
     return (
       <span className={'notificationText'}>
         <HighlightText text={capitalize(notification.sendingUser.name)} />
@@ -333,7 +324,7 @@ const getMessage = (notification) => {
 
 const getTitle = (notification) => {
   switch (notification.type) {
-    case 'RemixCreate': {
+    case 'remix': {
       const { parentTrack } = notification
       return (
         <span className={'notificationText'}>
@@ -349,7 +340,7 @@ const getTitle = (notification) => {
 
 const getTrackMessage = (notification) => {
   switch (notification.type) {
-    case 'remixCosign': {
+    case 'cosign': {
       const { remixTrack } = notification
       return (
         <span className={'notificationText'}>
@@ -363,12 +354,12 @@ const getTrackMessage = (notification) => {
 }
 
 export const getTrackLink = (track) => {
-  return `https://audius.co/${track.route_id}-${track.track_id}`
+  return `https://audius.co/${track.slug}`
 }
 
 const getTwitter = (notification) => {
   switch (notification.type) {
-    case 'RemixCreate': {
+    case 'remix': {
       const { parentTrack, parentTrackUser, remixUser, remixTrack } = notification
       const twitterHandle = parentTrackUser.twitterHandle
         ? `@${parentTrackUser.twitterHandle}`
@@ -381,7 +372,7 @@ const getTwitter = (notification) => {
           }&text=${encodeURIComponent(text)}`
       }
     }
-    case 'RemixCosign': {
+    case 'cosign': {
       const { parentTracks, parentTrackUser, remixTrack } = notification
       const parentTrack = parentTracks.find(t => t.owner_id === parentTrackUser.user_id)
       const url = getTrackLink(remixTrack)
@@ -395,7 +386,7 @@ const getTwitter = (notification) => {
           }&text=${encodeURIComponent(text)}`
       }
     }
-    case 'TrendingTrack': {
+    case 'trending_track': {
       const { rank, entity } = notification
       const url = getTrackLink(entity)
       const rankSuffix = getRankSuffix(rank)
@@ -406,7 +397,7 @@ const getTwitter = (notification) => {
           }&text=${encodeURIComponent(text)}`
       }
     }
-    case 'ChallengeReward': {
+    case 'challenge_reward': {
       const text = `I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards`
       return {
         message: 'Share this with your fans',

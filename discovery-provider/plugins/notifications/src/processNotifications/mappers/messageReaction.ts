@@ -4,7 +4,7 @@ import { UserRow } from '../../types/dn'
 import { DMReactionNotification } from '../../types/notifications'
 import { sendPushNotification } from '../../sns'
 
-export class MessageReactionNotification extends BaseNotification {
+export class MessageReactionNotification extends BaseNotification<DMReactionNotification> {
 
   receiverUserId: number
   senderUserId: number
@@ -50,7 +50,7 @@ export class MessageReactionNotification extends BaseNotification {
           data: {}
         })
       }))
-        // TODO: increment badge count
+      // TODO: increment badge count
       // }
     }
 

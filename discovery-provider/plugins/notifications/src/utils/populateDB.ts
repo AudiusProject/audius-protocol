@@ -7,7 +7,6 @@ import { getDB } from '../conn'
 
 export const replaceDBName = (connectionString: string, testName: string) => {
   const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
-  console.log({ replace: `${connection}/${testName}` })
   return `${connection}/${testName}`
 }
 
@@ -15,14 +14,8 @@ export const createTestDB = async (connectionString: string, testName: string) =
   const templateDb = /[^/]*$/.exec(connectionString)[0]
   const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
   const postgresConnection = `${connection}/postgres`
-  console.log({ postgresConnection })
   const db = await getDB(postgresConnection)
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
-  console.log({
-    test_name: testName,
-    template: templateDb,
-    connection
-  })
   await db.raw('CREATE DATABASE :test_name: TEMPLATE :template:', { test_name: testName, template: templateDb })
   await db.destroy()
 }
@@ -31,11 +24,6 @@ export const dropTestDB = async (connectionString: string, testName: string) => 
   const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
   const postgresConnection = `${connection}/postgres`
   const db = await getDB(postgresConnection)
-  console.log({
-    test_name: testName,
-    connectionString,
-    connection
-  })
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
   await db.destroy()
 
@@ -52,6 +40,18 @@ export const createTracks = async (db: Knex, tracks: CreateTrack[]) => {
     ...track,
   })))
     .into('tracks')
+  await db.insert(tracks.map(track => ({
+    is_current: true,
+    slug: `track_${track.track_id}`,
+    title_slug: `track_${track.track_id}`,
+    collision_id: track.track_id,
+    blockhash: `0x${track.track_id}`,
+    blocknumber: 1,
+    txhash: `0x${track.track_id}`,
+    track_id: track.track_id,
+    owner_id: track.owner_id
+  })))
+    .into('track_routes')
 }
 
 type CreateUser = Pick<DNUserRow, 'user_id'> & Partial<DNUserRow>
