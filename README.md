@@ -100,7 +100,23 @@ where <package-name> is the name of the package from npm, and <sub-repo> is the 
 To update a package, manually update the version in the relevant package.json, and then run `npm i` from the root. A script to upgrade `@audius/sdk` in all sub-packages is present in the root package.json:
 
 ```bash
-npm run update-sdk
+npm run sdk:update
 ```
 
 It's possible to run a modified version of this command to do more complex upgrade logic across sub-repos, so use it as a guide.
+
+
+### Linking the audius sdk
+
+To develop with the Audius [sdk](https://github.com/AudiusProject/audius-protocol/tree/main/libs) alongside the client, clone the audius-protocol repository and run the following:
+
+```bash
+cd audius-protocol
+export PROTOCOL_DIR=$(pwd)
+```
+
+```bash
+cd audius-client
+npm run sdk:link
+npm run web:stage # or similar
+```
