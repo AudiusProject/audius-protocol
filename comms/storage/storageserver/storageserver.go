@@ -4,6 +4,7 @@ package storageserver
 import (
 	"embed"
 	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -14,7 +15,6 @@ import (
 	"comms.audius.co/storage/monitor"
 	"comms.audius.co/storage/telemetry"
 	"comms.audius.co/storage/transcode"
-	"github.com/ethereum/go-ethereum/log"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -75,7 +75,7 @@ func NewProd(jsc nats.JetStreamContext) *StorageServer {
 	m := monitor.New(jsc)
 	err = m.SetHostAndShardsForNode(thisNodePubKey, host, d.ShardsStored)
 	if err != nil {
-		log.Error("Error setting host and shards for node", "err", err)
+		log.Fatal("Error setting host and shards for node", "err", err)
 	}
 
 	return NewCustom(
