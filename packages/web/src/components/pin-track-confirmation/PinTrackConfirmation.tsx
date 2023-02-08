@@ -52,7 +52,9 @@ const getMessages = (action?: PinTrackAction) => {
 }
 
 const PinTrackConfirmation = (props: PinTrackConfirmationProps) => {
-  const { _artist_pick: artistPick } = props.user || { _artist_pick: null }
+  const { artist_pick_track_id: artistPick } = props.user || {
+    artist_pick_track_id: null
+  }
   const pinAction = !artistPick
     ? PinTrackAction.ADD
     : props.pinTrack.trackId

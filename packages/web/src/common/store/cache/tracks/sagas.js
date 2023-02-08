@@ -270,22 +270,16 @@ function* deleteTrackAsync(action) {
     handle
   )
   if (socials.pinnedTrackId === action.trackId) {
-    // Dual write to the artist_pick_track_id field in the
-    // users table in the discovery DB. Part of the migration
-    // of the artist pick feature from the identity service
-    // to the entity manager in discovery.
     yield put(
       cacheActions.update(Kind.USERS, [
         {
           id: userId,
           metadata: {
-            artist_pick_track_id: null,
-            _artist_pick: null
+            artist_pick_track_id: null
           }
         }
       ])
     )
-    yield call(audiusBackendInstance.setArtistPick)
     const user = yield call(waitForValue, getUser, { id: userId })
     yield fork(updateProfileAsync, { metadata: user })
   }

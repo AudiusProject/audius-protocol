@@ -3,32 +3,20 @@ import {
   accountSelectors,
   cacheTracksActions,
   cacheTracksSelectors,
-  cacheUsersSelectors,
   profilePageSelectors,
   TracksSortMode,
   profilePageTracksLineupActions as tracksActions,
   profilePageTracksLineupActions as lineupActions,
-  tracksSocialActions,
-  waitForValue,
-  FeatureFlags
+  tracksSocialActions
 } from '@audius/common'
-import {
-  all,
-  call,
-  select,
-  takeEvery,
-  put,
-  getContext
-} from 'redux-saga/effects'
+import { call, select, takeEvery, put } from 'redux-saga/effects'
 
-import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveUserTracks } from './retrieveUserTracks'
 const { SET_ARTIST_PICK } = tracksSocialActions
 const { getProfileUserId, getProfileTracksLineup } = profilePageSelectors
-const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { DELETE_TRACK } = cacheTracksActions
 const { getUserId, getUserHandle } = accountSelectors
@@ -39,80 +27,18 @@ function* getTracks({ offset, limit, payload, handle }) {
   const currentUserId = yield select(getUserId)
   const profileHandle = handle.toLowerCase()
 
-  // Wait for user to receive social handles
-  // We need to know ahead of time whether we want to request
-  // the "artist pick" track in addition to the artist's tracks.
-  // TODO: Move artist pick to chain/discprov to avoid this extra trip
-  const user = yield call(
-    waitForValue,
-    getUser,
-    { handle: profileHandle },
-    (user) => 'twitter_handle' in user
-  )
   const sort = payload?.sort === TracksSortMode.POPULAR ? 'plays' : 'date'
   const getUnlisted = true
-  const getFeatureEnabled = yield getContext('getFeatureEnabled')
-  const readArtistPickFromDiscoveryEnabled = yield call(
-    getFeatureEnabled,
-    FeatureFlags.READ_ARTIST_PICK_FROM_DISCOVERY
-  ) ?? false
 
-  if (!readArtistPickFromDiscoveryEnabled && user._artist_pick) {
-    let [pinnedTrack, processed] = yield all([
-      call(retrieveTracks, { trackIds: [user._artist_pick] }),
-      call(retrieveUserTracks, {
-        handle: profileHandle,
-        currentUserId,
-        sort,
-        limit,
-        offset,
-        getUnlisted
-      })
-    ])
-
-    // Pinned tracks *should* be unpinned
-    // when deleted, but just in case they're not,
-    // defend against that edge case here.
-    if (!pinnedTrack.length || pinnedTrack[0].is_delete) {
-      pinnedTrack = []
-    }
-
-    const pinnedTrackIndex = processed.findIndex(
-      (track) => track.track_id === user._artist_pick
-    )
-    if (offset === 0) {
-      // If pinned track found in tracksResponse,
-      // put it to the front of the list, slicing it out of tracksResponse.
-      if (pinnedTrackIndex !== -1) {
-        return pinnedTrack
-          .concat(processed.slice(0, pinnedTrackIndex))
-          .concat(processed.slice(pinnedTrackIndex + 1))
-      }
-      // If pinned track not in tracksResponse,
-      // add it to the front of the list.
-      return pinnedTrack.concat(processed)
-    } else {
-      // If we're paginating w/ offset > 0
-      // set the pinned track as null.
-      // This will be handled by `filterDeletes` via `nullCount`
-      if (pinnedTrackIndex !== -1) {
-        return processed.map((track, i) =>
-          i === pinnedTrackIndex ? null : track
-        )
-      }
-      return processed
-    }
-  } else {
-    const processed = yield call(retrieveUserTracks, {
-      handle: profileHandle,
-      currentUserId,
-      sort,
-      limit,
-      offset,
-      getUnlisted
-    })
-    return processed
-  }
+  const processed = yield call(retrieveUserTracks, {
+    handle: profileHandle,
+    currentUserId,
+    sort,
+    limit,
+    offset,
+    getUnlisted
+  })
+  return processed
 }
 
 const sourceSelector = (state, handle) =>

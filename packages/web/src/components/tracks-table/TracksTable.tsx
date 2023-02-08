@@ -339,7 +339,7 @@ export const TracksTable = ({
             isFavorited={track.has_current_user_saved}
             isOwner={track.owner_id === userId}
             isOwnerDeactivated={!!track.user?.is_deactivated}
-            isArtistPick={track.user?._artist_pick === track.track_id}
+            isArtistPick={track.user?.artist_pick_track_id === track.track_id}
             index={cellInfo.row.index}
             trackTitle={track.name}
             albumId={null}

@@ -78,7 +78,7 @@ export type LineupProps = {
    * Indicator if a track should be displayed differently (ie. artist pick)
    * The leadingElementId is displayed at the top of the lineup
    */
-  leadingElementId?: ID
+  leadingElementId?: ID | null
 
   /**
    * A custom delineator to show after the leading element

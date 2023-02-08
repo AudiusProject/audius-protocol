@@ -407,7 +407,7 @@ const ProfilePage = ({
               {...getLineupProps(artistTracks)}
               extraPrecedingElement={trackUploadChip}
               animateLeadingElement
-              leadingElementId={profile._artist_pick}
+              leadingElementId={profile.artist_pick_track_id}
               loadMore={loadMoreArtistTracks}
               playTrack={playArtistTrack}
               pauseTrack={pauseArtistTrack}
