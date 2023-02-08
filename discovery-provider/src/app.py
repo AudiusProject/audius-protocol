@@ -406,7 +406,7 @@ def configure_celery(celery, test_config=None):
             },
             "prune_plays": {
                 "task": "prune_plays",
-                "schedule": timedelta(minutes=1),
+                "schedule": timedelta(seconds=30),
             },
             "index_spl_token": {
                 "task": "index_spl_token",
