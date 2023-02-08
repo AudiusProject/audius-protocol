@@ -430,7 +430,9 @@ def configure_celery(celery, test_config=None):
     if "backfill_cid_data_url" in shared_config["discprov"]:
         celery.send_task("backfill_cid_data")
     celery.send_task("update_discovery_provider")
+    logger.info("asdf sending nethermind task from app")
     celery.send_task("update_discovery_provider_nethermind")
+    logger.info("asdf sent nethermind task from app")
 
     # Initialize DB object for celery task context
     db = SessionManager(
