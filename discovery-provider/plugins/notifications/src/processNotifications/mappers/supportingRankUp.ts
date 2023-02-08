@@ -1,22 +1,23 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { FollowNotification } from '../../types/notifications'
+import { SupportingRankUpNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
 
-type FollowNotificationRow = Omit<NotificationRow, 'data'> & { data: FollowNotification }
-export class Follow extends BaseNotification<FollowNotificationRow> {
+type SupportingRankUpNotificationRow = Omit<NotificationRow, 'data'> & { data: SupportingRankUpNotification }
+export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificationRow> {
 
+  senderUserId: number
   receiverUserId: number
-  followerUserId: number
+  rank: number
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: FollowNotificationRow) {
+  constructor(dnDB: Knex, identityDB: Knex, notification: SupportingRankUpNotificationRow) {
     super(dnDB, identityDB, notification)
-    const userIds = this.notification.user_ids!
-    const followeeUserId = userIds[0]
-    this.followerUserId = this.notification.data.follower_user_id
-    this.receiverUserId = followeeUserId
+    const userIds: number[] = this.notification.user_ids!
+    this.rank = this.notification.data.rank
+    this.receiverUserId = this.notification.data.receiver_user_id
+    this.senderUserId = this.notification.data.receiver_user_id
   }
 
   async pushNotification() {
@@ -24,33 +25,36 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
-      .whereIn('user_id', [this.receiverUserId, this.followerUserId])
+      .whereIn('user_id', [this.receiverUserId, this.senderUserId])
     const users = res.reduce((acc, user) => {
       acc[user.user_id] = { name: user.name, isDeactivated: user.is_deactivated }
       return acc
     }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
-    if (users?.[this.receiverUserId]?.isDeactivated) {
+
+    if (users?.[this.senderUserId]?.isDeactivated) {
       return
     }
 
+    // TODO: Fetch the remix track and parent track
+
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
+    const userNotifications = await super.getShouldSendNotification(this.senderUserId)
 
     // If the user has devices to the notification to, proceed
-    if ((userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length > 0) {
-      const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.receiverUserId].settings
-      const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
+    if ((userNotifications.mobile?.[this.senderUserId]?.devices ?? []).length > 0) {
+      const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.senderUserId].settings
+      const devices: Device[] = userNotifications.mobile?.[this.senderUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['followers']) {
+      if (userMobileSettings['favorites']) {
         await Promise.all(devices.map(device => {
           return sendPushNotification({
             type: device.type,
-            badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+            badgeCount: userNotifications.mobile[this.senderUserId].badgeCount,
             targetARN: device.awsARN
           }, {
-            title: 'Follow',
-            body: `${users[this.followerUserId].name} followed you`,
+            title: 'Favorite',
+            body: ``,
             data: {}
           })
         }))
@@ -72,15 +76,16 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
 
   getResourcesForEmail(): ResourceIds {
     return {
-      users: new Set([this.receiverUserId, this.followerUserId])
+      users: new Set([this.senderUserId, this.receiverUserId]),
     }
   }
 
   formatEmailProps(resources: Resources) {
-    const user = resources.users[this.followerUserId]
+    const sendingUser = resources.users[this.senderUserId]
     return {
       type: this.notification.type,
-      users: [{ name: user.name, image: user.imageUrl }]
+      sendingUser: { name: sendingUser.name },
+      rank: this.rank
     }
   }
 

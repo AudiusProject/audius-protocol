@@ -65,7 +65,7 @@ const snippetMap = {
       return `You have reached over ${notification.value} Followers`
     }
   },
-  ['trendingTrack'](notification) {
+  ['trending_track'](notification) {
     const rank = notification.rank
     const suffix = getNumberSuffix(rank)
     return `Your Track ${notification.entity.title} is ${notification.rank}${suffix} on Trending Right Now!`
@@ -81,27 +81,27 @@ const snippetMap = {
     const { parentTrack } = notification
     return `New remix of your track ${parentTrack.title}`
   },
-  ['remixCosign'](notification) {
+  ['cosign'](notification) {
     const { parentTrackUser, parentTracks } = notification
     const parentTrack = parentTracks.find(t => t.ownerId === parentTrackUser.userId)
     return `${parentTrackUser.name} Co-signed your Remix of ${parentTrack.title}`
   },
-  ['challengeReward'](notification) {
+  ['challenge_reward'](notification) {
     return `You've earned $AUDIO for completing challenges`
   },
-  ['addTrackToPlaylist'](notification) {
+  ['add_track_to_playlist'](notification) {
     return `${notification.playlistOwner.name} added ${notification.track.title} to ${notification.playlist.playlist_name}`
   },
-  ['tipReceive'](notification) {
+  ['tip_receive'](notification) {
     return `${notification.sendingUser.name} sent you a tip of ${notification.amount} $AUDIO`
   },
   ['reaction'](notification) {
     return `${notification.reactingUser.name} reacted to your tip of ${notification.amount} $AUDIO`
   },
-  ['supporterRankUp'](notification) {
+  ['supporter_rank_up'](notification) {
     return `${notification.sendingUser.name} became your #${notification.rank} top supporter`
   },
-  ['supportingRankUp'](notification) {
+  ['supporting_rank_up'](notification) {
     return `You're now ${notification.receivingUser.name}'s #${notification.rank} top supporter`
   }
 }

@@ -9,7 +9,7 @@ import { renderNotificationsEmail } from './components/index'
 import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { Knex } from 'knex'
 import { EntityType } from './types'
-import { RepostNotification, SaveNotification } from '../../types/notifications'
+import { CosignRemixNotification, CreatePlaylistNotification, CreateTrackNotification, FollowerMilestoneNotification, PlaylistMilestoneNotification, RemixNotification, RepostNotification, SaveNotification, SupporterRankUpNotification, SupportingRankUpNotification, TierChangeNotification, TipReceiveNotification, TipSendNotification, TrackMilestoneNotification } from '../../types/notifications'
 
 type RenderEmailProps = {
   userId: number
@@ -19,11 +19,12 @@ type RenderEmailProps = {
   dnDb: Knex
 }
 
-type ResourceIds = {
-  users: Set<number>
-  tracks: Set<number>
-  playlists: Set<number>
+export type ResourceIds = {
+  users?: Set<number>
+  tracks?: Set<number>
+  playlists?: Set<number>
 }
+
 type UserResource = {
   user_id: number
   name: string
@@ -34,9 +35,11 @@ type UserResource = {
 type TrackResource = {
   track_id: number
   title: string
+  owner_id: number
   cover_art: string
   cover_art_sizes: string
   creator_node_endpoint: string
+  slug: string
 }
 type PlaylistResource = {
   playlist_id: number
@@ -44,18 +47,13 @@ type PlaylistResource = {
   playlist_image_multihash: string
   playlist_image_sizes_multihash: string
   creator_node_endpoint: string
+  slug: string
 }
 
-type UserResourcesDict = { [userId: number]: UserResource & { imageUrl: string } }
-
-type TrackResourcesDict = { [userId: number]: TrackResource & { imageUrl: string } }
-
-type PlaylistResourcesDict = { [userId: number]: PlaylistResource & { imageUrl: string } }
-
-type Resources = {
-  users: UserResourcesDict
-  tracks: TrackResourcesDict
-  playlists: PlaylistResourcesDict
+export type Resources = {
+  users: { [userId: number]: UserResource & { imageUrl: string } }
+  tracks: { [userId: number]: TrackResource & { imageUrl: string } }
+  playlists: { [userId: number]: PlaylistResource & { imageUrl: string } }
 }
 
 // TODO: Fill out defaults
@@ -119,14 +117,18 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
   const trackRows: TrackResource[] = await dnDb.select(
     'tracks.track_id',
     'tracks.title',
+    'tracks.owner_id',
     'tracks.cover_art_sizes',
     'users.creator_node_endpoint',
-    'users.name'
+    'users.name',
+    'track_routes.slug'
   ).from('tracks')
     .join('users', 'users.user_id', 'tracks.owner_id')
+    .join('track_routes', 'track_routes.track_id', 'tracks.owner_id')
     .whereIn('tracks.track_id', Array.from(ids.tracks))
     .andWhere('tracks.is_current', true)
     .andWhere('users.is_current', true)
+    .andWhere('track_routes.is_current', true)
   const tracks: { [trackId: number]: TrackResource & { imageUrl: string } } = trackRows.reduce((acc, track) => {
     acc[track.track_id] = {
       ...track,
@@ -141,12 +143,15 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
     'playlists.playlist_image_sizes_multihash',
     'playlists.playlist_image_multihash',
     'users.creator_node_endpoint',
-    'users.name'
+    'users.name',
+    'playlist_routes.slug'
   ).from('playlists')
     .join('users', 'users.user_id', 'playlists.playlist_owner_id')
+    .join('playlist_routes', 'playlist_routes.playlist_id', 'playlists.playlist_id')
     .whereIn('playlists.playlist_id', Array.from(ids.playlists))
     .andWhere('playlists.is_current', true)
     .andWhere('users.is_current', true)
+    .andWhere('playlist_routes.is_current', true)
 
   const playlists: { [playlistId: number]: PlaylistResource & { imageUrl: string } } = playlistRows.reduce((acc, playlist) => {
     acc[playlist.playlist_id] = {
@@ -167,6 +172,14 @@ const getNotificationProps = async (dnDB: Knex, notifications: EmailNotification
     playlists: new Set(),
   }
   console.log({ notifications })
+
+  // TODO: change to this format
+  // for (let notification of notifications) {
+  //   const resources = notification.getResourcesForEmail()
+  //   Object.entries(resources).forEach(([key, value]) => {
+  //     idsToFetch[key] = new Set([...idsToFetch[key], ...Array.from(value)])
+  //   })
+
 
   for (const notification of notifications) {
     if (notification.type == 'follow') {
@@ -195,9 +208,43 @@ const getNotificationProps = async (dnDB: Knex, notifications: EmailNotification
       idsToFetch.users.add(notification.receiver_user_id)
       idsToFetch.users.add((notification as DMEmailNotification).sender_user_id)
     }
+
+    // else if (notification.type == 'milestone') {
+    //   const data = notification.data
+    //   // TODO: figure out
+
+    //   if (notification.data.track_id) {
+    //     const data: TrackMilestoneNotification = notification.data
+    //     idsToFetch.tracks.add(data.track_id)
+    //   }
+    //   if (notification.data.playlist_id) {
+    //     const data: PlaylistMilestoneNotification = notification.data
+    //     idsToFetch.playlists.add(data.playlist_id)
+    //   }
+    //   if (notification.data.user_id) {
+    //     const data: FollowerMilestoneNotification = notification.data
+    //     continue
+    //   }
+    // }
+    // else if (notification.type == 'reaction') {
+    //   // TODO:
+    // }
+    // else if (notification.type == 'challenge_reward') {
+    //   const data: SupportingRankUpNotification = notification.data
+    //   continue
+    // }
+    // else if (notification.type == 'create') {
+    //   if (notification.data.track_id) {
+    //     const data: CreateTrackNotification = notification.data
+    //     idsToFetch.tracks.add(data.track_id)
+    //   } else if (notification.data.playlist_id) {
+    //     const data: CreatePlaylistNotification = notification.data
+    //     idsToFetch.users.add(data.playlist_id)
+    //   }
+    // }
   }
   const resources = await fetchResources(dnDB, idsToFetch)
-  console.log(JSON.stringify(resources, null, ' '))
+
   return notifications.map(notification => getEmailNotificationProps(notification, resources))
 }
 
