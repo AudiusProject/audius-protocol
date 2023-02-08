@@ -10,8 +10,8 @@ import { Timestamped } from './Timestamped'
 
 export type UserMetadata = {
   album_count: number
-  artist_pick_track_id: number | null
-  bio: string | null
+  artist_pick_track_id: Nullable<number>
+  bio: Nullable<string>
   cover_photo: Nullable<CID>
   creator_node_endpoint: Nullable<string>
   current_user_followee_follow_count: number
