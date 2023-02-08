@@ -72,18 +72,20 @@ const Visualizer = ({
   const [showVisualizer, setShowVisualizer] = useState(false)
 
   useEffect(() => {
-    if (!(window as any).AudioContext) {
+    if (showVisualizer) {
       let browser
-      if ((window as any).webkitAudioContext) {
+      if (/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) {
         browser = 'Safari'
-      } else if (window.navigator.userAgent.indexOf('MSIE ') > 0) {
+      } else if (/MSIE/i.test(navigator.userAgent)) {
         browser = 'Internet Explorer'
-      } else {
+      } else if (!window?.AudioContext) {
         browser = 'your browser'
       }
-      setToastText(messages(browser).notSupported)
+      if (browser) {
+        setToastText(messages(browser).notSupported)
+      }
     }
-  }, [])
+  }, [showVisualizer])
 
   if (!webGLExists) {
     return null
