@@ -20,6 +20,7 @@ export type DMEmailNotification = {
   type: DMEntityType
   sender_user_id: number
   receiver_user_id: number
+  multiple?: boolean
 }
 
 export type AppEmailNotification = {

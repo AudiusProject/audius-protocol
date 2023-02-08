@@ -302,7 +302,7 @@ const notificationMap = {
     const user = getUsers(notification.users)
     return (
       <span className={'notificationText'}>
-        {user}<BodyText text={` sent you a message`} />
+        {user}<BodyText text={` sent you ${notification.multiple ? 'new messages' : 'a message'}`} />
       </span>
     )
   },
@@ -310,7 +310,7 @@ const notificationMap = {
     const user = getUsers(notification.users)
     return (
       <span className={'notificationText'}>
-        {user}<BodyText text={` reacted to your message`} />
+        {user}<BodyText text={` reacted to your message${notification.multiple ? 's' : ''}`} />
       </span>
     )
   }

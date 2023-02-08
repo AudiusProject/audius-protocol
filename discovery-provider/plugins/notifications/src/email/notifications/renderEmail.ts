@@ -291,6 +291,7 @@ const getEmailNotificationProps = (notification: EmailNotification, resources: R
     const user = resources.users[(notification as DMEmailNotification).sender_user_id]
     return {
       type: notification.type,
+      multiple: (notification as DMEmailNotification).multiple,
       users: [{ name: user.name, image: user.imageUrl }]
     }
   }

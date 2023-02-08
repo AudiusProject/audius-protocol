@@ -180,6 +180,7 @@ const getNotifications = async (dnDb: Knex, frequency: EmailFrequency, startOffs
   return appNotifications.concat(messageNotifications).concat(reactionNotifications)
 }
 
+// Group notifications by user
 const groupNotifications = (notifications: EmailNotification[], users: EmailUsers): UserEmailNotification[] => {
   const userNotifications: UserEmailNotification[] = []
   notifications.forEach(notification => {
@@ -198,7 +199,17 @@ const groupNotifications = (notifications: EmailNotification[], users: EmailUser
       }
     } else {
       // Add to user's notification list in userNotifications
-      userNotifications[userNotificationsIndex].notifications.push(notification)
+      if (notification.type == DMEntityType.Message || notification.type == DMEntityType.Reaction) {
+        // Only include 1 notification row per <sender, receiver> DM pair even if there are multiple unread messages
+        const existingNotificationFromSenderIndex = userNotifications[userNotificationsIndex].notifications.findIndex((processedNotification) => (processedNotification.type == DMEntityType.Message || processedNotification.type == DMEntityType.Reaction) && (processedNotification as DMEmailNotification).sender_user_id == (notification as DMEmailNotification).sender_user_id)
+        if (existingNotificationFromSenderIndex == -1) {
+          userNotifications[userNotificationsIndex].notifications.push(notification)
+        } else {
+          (userNotifications[userNotificationsIndex].notifications[existingNotificationFromSenderIndex] as DMEmailNotification).multiple = true
+        }
+      } else {
+        userNotifications[userNotificationsIndex].notifications.push(notification)
+      }
     }
   })
   return userNotifications

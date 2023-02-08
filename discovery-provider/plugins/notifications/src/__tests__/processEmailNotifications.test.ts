@@ -126,6 +126,7 @@ describe('Email Notifications', () => {
     const userFrequency = 'live'
     const emailFrequency = 'daily'
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
+    const { email: user1Email } = await setUserEmailAndSettings(identityDB, userFrequency, user1)
     const { email: user2Email } = await setUserEmailAndSettings(identityDB, userFrequency, user2)
 
     // User 1 sent two messages config.dmNotificationDelay ms ago
@@ -139,26 +140,44 @@ describe('Email Notifications', () => {
     const message2Id = randId().toString()
     const message2Timestamp = new Date(Date.now() - config.dmNotificationDelay)
     await insertMessage(discoveryDB, user1, chatId, message2Id, message2, message2Timestamp)
+    
+    // User 2 sent 2 reactions config.dmNotificationDelay ms ago
+    const reactionTimestamp = new Date(Date.now() - config.dmNotificationDelay)
+    const reaction1 = "heart"
+    await insertReaction(discoveryDB, user2, message1Id, reaction1, reactionTimestamp)
+    const reaction2 = "fire"
+    await insertReaction(discoveryDB, user2, message2Id, reaction2, reactionTimestamp)
 
-    const expectedNotifications = [
+    const expectedUser1Notifications = [
       {
-        type: DMEntityType.Message,
-        sender_user_id: user1,
-        receiver_user_id: user2
-      },
-      {
-        type: DMEntityType.Message,
-        sender_user_id: user1,
-        receiver_user_id: user2
+        type: DMEntityType.Reaction,
+        sender_user_id: user2,
+        receiver_user_id: user1,
+        multiple: true
       }
     ]
-    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
-    expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(1)
+    const expectedUser2Notifications = [
+      {
+        type: DMEntityType.Message,
+        sender_user_id: user1,
+        receiver_user_id: user2,
+        multiple: true
+      }
+    ]
+    await processEmailNotifications(discoveryDB, identityDB, frequency)
+    expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(2)
     expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
       userId: user2,
       email: user2Email,
       frequency: emailFrequency,
-      notifications: expectedNotifications,
+      notifications: expectedUser2Notifications,
+      dnDb: discoveryDB
+    })
+    expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
+      userId: user1,
+      email: user1Email,
+      frequency: emailFrequency,
+      notifications: expectedUser1Notifications,
       dnDb: discoveryDB
     })
   })
