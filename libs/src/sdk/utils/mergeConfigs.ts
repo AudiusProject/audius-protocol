@@ -1,7 +1,7 @@
 import mergeWith from 'lodash/mergeWith'
 
 /**
- * Gets the config with any undefined properties relaced by the defaults
+ * Gets the config with any undefined properties replaced by the defaults
  * @param config the config
  * @param defaults the defaults
  * @returns the merged config with defaults
