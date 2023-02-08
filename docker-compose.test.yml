@@ -43,11 +43,18 @@ services:
     deploy:
       mode: global
 
+  # NOTE: We don't need solana but services have depend_on solana-test-validator
+  # so we use a dummy container
   solana-test-validator:
-    extends:
-      file: docker-compose.yml
-      service: solana-test-validator
+    image: alpine:3.14
+    command: sleep inf
+    healthcheck:
+      test: [ "CMD", "true" ]
+      interval: 10s
+      timeout: 5s
     logging: *default-logging
+    deploy:
+      mode: global
 
   build-audius-libs:
     extends:
@@ -78,7 +85,7 @@ services:
     logging: *default-logging
     deploy:
       mode: global
-      replicas: 1  # Override default replicas
+      replicas: 1 # Override default replicas
 
   test-creator-node:
     extends:
@@ -117,7 +124,7 @@ services:
       service: discovery-provider-elasticsearch
     deploy:
       mode: global
-      replicas: 1  # Override default replicas
+      replicas: 1 # Override default replicas
 
   discovery-provider-db:
     image: postgres:11.4
@@ -167,7 +174,7 @@ services:
     logging: *default-logging
     deploy:
       mode: global
-      replicas: 1  # Override default replicas
+      replicas: 1 # Override default replicas
     profiles:
       - tests
       - elasticsearch
