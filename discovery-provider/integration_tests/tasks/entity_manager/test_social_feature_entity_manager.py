@@ -164,13 +164,29 @@ def test_index_valid_social_features(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Repost",
-                        "_metadata": "",
+                        "_metadata": "QmRepostPlaylist4",
                         "_signer": "user1wallet",
                     }
                 )
             },
         ],
+        "RepostPlaylistTx5": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 3,
+                        "_action": "Repost",
+                        "_metadata": "",
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
     }
+
+    metadata = {"QmRepostPlaylist4": {"is_repost_repost": True}}
 
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
@@ -210,7 +226,7 @@ def test_index_valid_social_features(app, mocker):
             block_number=1,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata={},
+            metadata=metadata,
         )
 
         # Verify follows
@@ -302,16 +318,23 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify repost
         all_reposts: List[Repost] = session.query(Repost).all()
-        assert len(all_reposts) == 3
+        assert len(all_reposts) == 4
 
         current_reposts: List[Repost] = (
             session.query(Repost).filter(Repost.is_current == True).all()
         )
-        assert len(current_reposts) == 1
-        current_repost = current_reposts[0]
-        assert current_repost.is_delete == False
-        assert current_repost.repost_type == EntityType.PLAYLIST.value.lower()
-        assert current_repost.repost_item_id == 1
+        assert len(current_reposts) == 2
+        assert current_reposts[0].is_delete == False
+        assert current_reposts[0].repost_type == EntityType.PLAYLIST.value.lower()
+        assert current_reposts[0].repost_item_id == 1
+        assert current_reposts[0].user_id == 1
+        assert current_reposts[0].is_repost_repost == True
+
+        assert current_reposts[1].is_delete == False
+        assert current_reposts[1].repost_type == EntityType.PLAYLIST.value.lower()
+        assert current_reposts[1].repost_item_id == 1
+        assert current_reposts[1].user_id == 3
+        assert current_reposts[1].is_repost_repost == False
 
     with db.scoped_session() as session:
         aggregate_playlists: List[AggregatePlaylist] = (
@@ -321,7 +344,7 @@ def test_index_valid_social_features(app, mocker):
         )
         assert len(aggregate_playlists) == 1
         aggregate_playlist = aggregate_playlists[0]
-        assert aggregate_playlist.repost_count == 1
+        assert aggregate_playlist.repost_count == 2
     calls = [
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),

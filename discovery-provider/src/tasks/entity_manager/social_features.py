@@ -58,7 +58,6 @@ premium_content_validation_entities = {EntityType.TRACK}
 
 
 def create_social_record(params: ManageEntityParameters):
-
     validate_social_feature(params)
 
     record_types = action_to_record_types[params.action]
@@ -88,6 +87,8 @@ def create_social_record(params: ManageEntityParameters):
                 is_delete=False,
             )
         elif record_type == EntityType.REPOST:
+            metadata = params.metadata.get(params.metadata_cid, {})
+            is_repost_repost = metadata.get("is_repost_repost", False)
             create_record = Repost(
                 blockhash=params.event_blockhash,
                 blocknumber=params.block_number,
@@ -96,6 +97,7 @@ def create_social_record(params: ManageEntityParameters):
                 user_id=params.user_id,
                 repost_item_id=params.entity_id,
                 repost_type=params.entity_type.lower(),
+                is_repost_repost=is_repost_repost,
                 is_current=True,
                 is_delete=False,
             )
@@ -129,7 +131,6 @@ def create_social_record(params: ManageEntityParameters):
 
 
 def delete_social_record(params):
-
     validate_social_feature(params)
 
     record_types = action_to_record_types[params.action]
