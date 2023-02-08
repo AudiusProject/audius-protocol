@@ -33,6 +33,7 @@ export type NotificationSettings = {
   'announcements': boolean
   'followers': boolean
   'remixes': boolean
+  'messages': boolean
 }
 
 type UserBrowserSettings = {
@@ -107,6 +108,7 @@ export abstract class BaseNotification<Type> {
       announcements: boolean
       followers: boolean
       remixes: boolean
+      messages: boolean
       deviceType: string
       awsARN: string
       deviceToken: string
@@ -120,6 +122,7 @@ export abstract class BaseNotification<Type> {
         'UserNotificationMobileSettings.announcements',
         'UserNotificationMobileSettings.followers',
         'UserNotificationMobileSettings.remixes',
+        'UserNotificationMobileSettings.messages',
         'NotificationDeviceTokens.deviceType',
         'NotificationDeviceTokens.awsARN',
         'NotificationDeviceTokens.deviceToken',
@@ -141,6 +144,7 @@ export abstract class BaseNotification<Type> {
           'announcements': setting.announcements,
           'followers': setting.followers,
           'remixes': setting.remixes,
+          'messages': setting.messages,
         },
         devices: [
           ...(acc?.[setting.userId]?.devices ?? []),
@@ -203,6 +207,7 @@ export abstract class BaseNotification<Type> {
       announcements: boolean
       followers: boolean
       remixes: boolean
+      messages: boolean
       deviceType?: string
       awsARN?: string
       deviceToken?: string
@@ -218,6 +223,7 @@ export abstract class BaseNotification<Type> {
         "UserNotificationBrowserSettings.announcements",
         "UserNotificationBrowserSettings.followers",
         "UserNotificationBrowserSettings.remixes",
+        "UserNotificationBrowserSettings.messages",
         'NotificationDeviceTokens.deviceType', // Note safari switch to web push protocol last yr for safari 16+
         'NotificationDeviceTokens.awsARN', // so these fields are no longer necessary if we don't want to support 
         'NotificationDeviceTokens.deviceToken', // legacy safari push notifs
@@ -259,6 +265,7 @@ export abstract class BaseNotification<Type> {
           'announcements': setting.announcements,
           'followers': setting.followers,
           'remixes': setting.remixes,
+          'messages': setting.messages,
         },
         browser: (acc?.[setting.userId]?.browser ?? [])
       }

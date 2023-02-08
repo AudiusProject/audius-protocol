@@ -1,5 +1,5 @@
 import { Knex } from 'knex'
-import { BaseNotification, Device } from './base'
+import { BaseNotification, Device, NotificationSettings } from './base'
 import { UserRow } from '../../types/dn'
 import { DMNotification } from '../../types/notifications'
 import { sendPushNotification } from '../../sns'
@@ -36,23 +36,22 @@ export class MessageNotification extends BaseNotification<DMNotification> {
 
     // If the user has devices to the notification to, proceed
     if ((userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length > 0) {
-      // const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.receiverUserId].settings
+      const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.receiverUserId].settings
       const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
-      // TODO If the user's settings for the DM notification is set to true, proceed
-      // if (userMobileSettings['messages']) {
-      await Promise.all(devices.map(device => {
-        return sendPushNotification({
-          type: device.type,
-          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
-          targetARN: device.awsARN
-        }, {
-          title: 'Message',
-          body: `${users[this.senderUserId].name}: ${this.notification.message}`,
-          data: {}
-        })
-      }))
-      // TODO: increment badge count
-      // }
+      if (userMobileSettings['messages']) {
+        await Promise.all(devices.map(device => {
+          return sendPushNotification({
+            type: device.type,
+            badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+            targetARN: device.awsARN
+          }, {
+            title: 'Message',
+            body: `${users[this.senderUserId].name}: ${this.notification.message}`,
+            data: {}
+          })
+        }))
+        // TODO: increment badge count
+      }
     }
 
     if (userNotifications.browser) {
