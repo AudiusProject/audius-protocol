@@ -65,12 +65,6 @@ export type DiscoveryNodeSelectorServiceConfigInternal = {
    */
   backupsTTL: number
   /**
-   * How long the cache should live for selected nodes, in ms.
-   * If unset, never expires.
-   * @default 600000 ten minutes
-   */
-  cacheTTL: number | null
-  /**
    * Configuration for determining healthy status
    */
   healthCheckThresholds: HealthCheckThresholds

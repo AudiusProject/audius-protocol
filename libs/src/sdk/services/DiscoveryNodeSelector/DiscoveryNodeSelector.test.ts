@@ -234,6 +234,14 @@ describe('discoveryNodeSelector', () => {
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
     expect(selector.isBehind).toBe(true)
+
+    // Update config and trigger reselection
+    selector.updateConfig({
+      allowlist: new Set([HEALTHY_NODE])
+    })
+    const selected2 = await selector.getSelectedEndpoint()
+    expect(selected2).toBe(HEALTHY_NODE)
+    expect(selector.isBehind).toBe(false)
   })
 
   test('respects blocklist', async () => {
@@ -248,6 +256,14 @@ describe('discoveryNodeSelector', () => {
     const selected = await selector.getSelectedEndpoint()
     expect(selected).toBe(BEHIND_BLOCKDIFF_NODE)
     expect(selector.isBehind).toBe(true)
+
+    // Update config and trigger reselection
+    selector.updateConfig({
+      blocklist: new Set([BEHIND_BLOCKDIFF_NODE])
+    })
+    const selected2 = await selector.getSelectedEndpoint()
+    expect(selected2).toBe(HEALTHY_NODE)
+    expect(selector.isBehind).toBe(false)
   })
 
   test('uses configured default', async () => {
