@@ -32,11 +32,12 @@ jobs:
       name: test-poa-contracts
       context: GCP
       instance-name: circleci-$CIRCLE_BUILD_NUM-poa
+      service: poa-contracts
   - test:
       name: test-eth-contracts
       context: GCP
       instance-name: circleci-$CIRCLE_BUILD_NUM-poa
-      service: poa-contracts
+      service: eth-contracts
   - test-audius-cmd:
       context: GCP
       instance-name: circleci-$CIRCLE_BUILD_NUM-e2e
