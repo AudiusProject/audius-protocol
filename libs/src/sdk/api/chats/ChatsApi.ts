@@ -115,7 +115,7 @@ export class ChatsApi extends BaseAPI {
       json.data.map(async (c) => await this.decryptLastChatMessage(c))
     )
     return {
-      ...response,
+      ...json,
       data: decrypted
     }
   }
