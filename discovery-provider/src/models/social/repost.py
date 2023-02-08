@@ -40,6 +40,7 @@ class Repost(Base, RepresentableMixin):
     )
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
+    is_repost_repost = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(DateTime, nullable=False, index=True)
     txhash = Column(
         String,
