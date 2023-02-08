@@ -127,6 +127,9 @@ def extend_user(user, current_user_id=None):
         return user
     user_id = encode_int_id(user["user_id"])
     user["id"] = user_id
+    if user.get("artist_pick_track_id"):
+        artist_pick_track_id = encode_int_id(user["artist_pick_track_id"])
+        user["artist_pick_track_id"] = artist_pick_track_id
     user = add_user_artwork(user)
     # Do not surface playlist library in user response unless we are
     # that user specifically
