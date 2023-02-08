@@ -6,7 +6,10 @@ import {
   getLocalTrackDir
 } from 'app/services/offline-downloader'
 
-import { getTrackOfflineDownloadStatus } from '../selectors'
+import {
+  getOfflineCollectionsStatus,
+  getOfflineTrackStatus
+} from '../selectors'
 import type { RemoveOfflineItemsAction } from '../slice'
 import { removeOfflineItems } from '../slice'
 
@@ -16,8 +19,8 @@ export function* watchRemoveOfflineItems() {
 
 function* deleteItemsFromDisk(action: RemoveOfflineItemsAction) {
   const { items } = action.payload
-  const trackStatus = yield* select(getTrackOfflineDownloadStatus)
-  const collectionStatus = yield* select(getTrackOfflineDownloadStatus)
+  const trackStatus = yield* select(getOfflineTrackStatus)
+  const collectionStatus = yield* select(getOfflineCollectionsStatus)
 
   for (const item of items) {
     if (item.type === 'collection' && !collectionStatus[item.id]) {
