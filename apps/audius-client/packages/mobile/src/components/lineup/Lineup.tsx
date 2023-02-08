@@ -287,8 +287,8 @@ export const Lineup = ({
         (includeLineupStatus ? status !== Status.LOADING : true)
 
       if (shouldLoadMore || reset) {
-        const _offset = reset ? offset : 0
-        const _page = reset ? page : 0
+        const _offset = reset ? 0 : offset
+        const _page = reset ? 0 : page
         const itemLoadCount = itemCounts.initial + _page * itemCounts.loadMore
 
         if (!reset) {
@@ -506,6 +506,8 @@ export const Lineup = ({
   const pullToRefreshProps =
     pullToRefresh || refreshProp ? { onRefresh: refresh, refreshing } : {}
 
+  const handleEndReached = useCallback(() => handleLoadMore(), [handleLoadMore])
+
   return (
     <View style={styles.root}>
       <SectionList
@@ -518,7 +520,7 @@ export const Lineup = ({
           lineup.hasMore ? <View style={{ height: 16 }} /> : ListFooterComponent
         }
         ListEmptyComponent={LineupEmptyComponent}
-        onEndReached={handleLoadMore as () => void}
+        onEndReached={handleEndReached}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}
         sections={sections}
         stickySectionHeadersEnabled={false}
