@@ -1097,5 +1097,5 @@ def update_task(self):
     except Exception as e:
         logger.error(f"Fatal error in main loop {e}", exc_info=True)
         raise e
-    finally:
-        celery.send_task("update_discovery_provider_nethermind")
+    # finally:
+    #     celery.send_task("update_discovery_provider_nethermind")
