@@ -138,7 +138,10 @@ export const Slider = memo((props: SliderProps) => {
       currentAnimation.current = Animated.timing(translationAnim, {
         toValue: railWidth,
         duration: timeRemaining,
-        useNativeDriver: true
+        // Can't use native driver because this animation is potentially hours long,
+        // and would have to be serialized into an array to be passed to the native layer.
+        // The array exceeds the number of properties allowed in hermes
+        useNativeDriver: false
       })
       currentAnimation.current.start()
     },
