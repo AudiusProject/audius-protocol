@@ -31,9 +31,9 @@ const Results = Object.freeze({
   SENT: 'SENT'
 })
 
-const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment): Promise<{ blockchainUserId: number, email: string }[]> => {
+const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment): Promise<EmailUsers> => {
   const validLastEmailOffset = startOffset.subtract(2, 'hour')
-  return await identityDb
+  const userRows: { blockchainUserId: number, email: string }[] = await identityDb
     .select(
       'Users.blockchainUserId',
       'Users.email'
@@ -61,6 +61,11 @@ const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, st
         queryBuilder.where('UserNotificationSettings.emailFrequency', frequency)
       }
     })
+  const emailUsers = userRows.reduce((acc, user) => {
+    acc[user.blockchainUserId] = user.email
+    return acc
+  }, {} as EmailUsers)
+  return emailUsers
 }
 
 const appNotificationsSql = `
@@ -206,15 +211,7 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
     const days = 1
     const hours = 1
     const startOffset = now.clone().subtract(days, 'days').subtract(hours, 'hour')
-    const userRows = await getUsersCanNotify(identityDb, frequency, startOffset)
-    if (frequency == 'daily') {
-      const liveFrequencyUserRows = await getUsersCanNotify(identityDb, 'live', startOffset)
-      userRows.push(...liveFrequencyUserRows)
-    }
-    const users = userRows.reduce((acc, user) => {
-      acc[user.blockchainUserId] = user.email
-      return acc
-    }, {} as EmailUsers)
+    const users = await getUsersCanNotify(identityDb, frequency, startOffset)
     const notifications = await getNotifications(dnDb, frequency, startOffset, Object.keys(users))
     const groupedNotifications = groupNotifications(notifications, users)
 
