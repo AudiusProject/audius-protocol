@@ -112,6 +112,9 @@ def get_latest_block(db: SessionManager):
         target_latest_block_number = current_block_number + block_processing_window
 
         latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
+        latest_block_from_chain = update_task.web3.eth.get_block(
+            latest_block_from_chain.number, True
+        )
         latest_block_number_from_chain = latest_block_from_chain.number
 
         target_latest_block_number = min(
