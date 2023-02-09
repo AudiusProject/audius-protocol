@@ -43,6 +43,19 @@ export class ChatsApi extends BaseAPI {
   private readonly eventEmitter: TypedEmitter<ChatEvents>
   private websocket: WebSocket | undefined
 
+  /**
+   * Proxy to the event emitter addListener
+   */
+  public addEventListener
+  /**
+   * Proxy to the event emitter removeListener
+   */
+  public removeEventListener
+  /**
+   * Proxy to the event emitter removeAllListeners
+   */
+  public removeAllEventListeners
+
   constructor(
     config: Configuration,
     private readonly walletService: WalletApiService,
@@ -50,6 +63,15 @@ export class ChatsApi extends BaseAPI {
   ) {
     super(config)
     this.eventEmitter = new EventEmitter() as TypedEmitter<ChatEvents>
+    this.addEventListener = this.eventEmitter.addListener.bind(
+      this.eventEmitter
+    )
+    this.removeEventListener = this.eventEmitter.removeListener.bind(
+      this.eventEmitter
+    )
+    this.removeAllEventListeners = this.eventEmitter.removeAllListeners.bind(
+      this.eventEmitter
+    )
 
     // Listen for discovery node selection changes and reinit websocket
     this.discoveryNodeSelectorService.addEventListener('change', (endpoint) => {
@@ -549,9 +571,6 @@ export class ChatsApi extends BaseAPI {
       signatureHeader['x-sig']
     )}`
     const ws = new WebSocket(url)
-    ws.addEventListener('open', () => {
-      this.eventEmitter.emit('open')
-    })
     ws.addEventListener('message', (messageEvent) => {
       const handleAsync = async () => {
         const data = JSON.parse(messageEvent.data) as ChatWebsocketEventData
@@ -583,6 +602,9 @@ export class ChatsApi extends BaseAPI {
         }
       }
       handleAsync()
+    })
+    ws.addEventListener('open', () => {
+      this.eventEmitter.emit('open')
     })
     ws.addEventListener('close', () => {
       this.eventEmitter.emit('close')
