@@ -31,9 +31,9 @@ const Results = Object.freeze({
   SENT: 'SENT'
 })
 
-const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment): Promise<EmailUsers>  => {
+const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment): Promise<{ blockchainUserId: number, email: string }[]> => {
   const validLastEmailOffset = startOffset.subtract(2, 'hour')
-  const userRows: { blockchainUserId: number, email: string }[] = await identityDb
+  return await identityDb
     .select(
       'Users.blockchainUserId',
       'Users.email'
@@ -45,12 +45,22 @@ const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, st
     .where(function () {
       this.where('NotificationEmails', null).orWhere('NotificationEmails.timestamp', '<', validLastEmailOffset)
     })
-    .where('UserNotificationSettings.emailFrequency', frequency)
-  const emailUsers = userRows.reduce((acc, user) => {
-    acc[user.blockchainUserId] = user.email
-    return acc
-  }, {} as EmailUsers)
-  return emailUsers
+    .modify(function (queryBuilder: Knex.QueryBuilder) {
+      // This logic is to handle a 'live' frequency exception for message notifications so as to not spam users with
+      // live email notifications for every new message action.
+      // New messages/reactions do not trigger live email notifications but are included in existing live emails scheduled to go out.
+      // If a user with frequency='live' receives messages but no other notifications to trigger a live email since validLastEmailOffset,
+      // they'll receive a daily email with the message notifications.
+      // No other notification types for the live users since validLastEmailOffset should be included in the daily
+      // email because they would have triggered an email notification immediately.
+      if (frequency == 'daily') {
+        queryBuilder.where(function () {
+          this.where('UserNotificationSettings.emailFrequency', frequency).orWhere('UserNotificationSettings.emailFrequency', 'live')
+        })
+      } else {
+        queryBuilder.where('UserNotificationSettings.emailFrequency', frequency)
+      }
+    })
 }
 
 const appNotificationsSql = `
@@ -113,19 +123,37 @@ JOIN members_can_notify on members_can_notify.chat_id = chat_message.chat_id AND
 WHERE chat_message_reactions.updated_at > :start_offset AND chat_message_reactions.updated_at <= :end_offset AND chat_message_reactions.user_id != members_can_notify.user_id
 `
 
-const getNotifications = async (dnDb: Knex, startOffset: moment.Moment, userIds: string[]): Promise<EmailNotification[]> => {
+const getNotifications = async (dnDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment, userIds: string[]): Promise<EmailNotification[]> => {
   const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
     start_offset: startOffset,
     user_ids: [[userIds]]
   })
   const appNotifications: EmailNotification[] = appNotificationsResp.rows
 
+  // This logic is to handle a 'live' frequency exception for message notifications so as to not spam users with
+  // live email notifications for every new message action.
+  // New messages/reactions do not trigger live email notifications but are included in existing live emails scheduled to go out.
+  // If a user with frequency='live' receives messages but no other notifications to trigger a live email in the past day,
+  // they'll receive a daily email with the message notifications.
+  let messageUserIds: string[] | number[] = userIds
+  if (frequency == 'live') {
+    // Only query for unread messages and reactions for users with app notifications scheduled to go out in this live email.
+    if (appNotifications.length == 0) {
+      return appNotifications
+    }
+    const userIdsWithAppNotifications = appNotifications.reduce((acc, notification) => {
+      acc.push(notification.receiver_user_id)
+      return acc
+    }, [] as number[])
+    messageUserIds = userIdsWithAppNotifications
+  }
+
   const messageStartOffset = new Date(startOffset.valueOf() - config.dmNotificationDelay).toISOString()
   const messageEndOffset = new Date(Date.now() - config.dmNotificationDelay).toISOString()
   const messagesResp = await dnDb.raw(messageNotificationsSql, {
     start_offset: messageStartOffset,
     end_offset: messageEndOffset,
-    user_ids: [[userIds]]
+    user_ids: [[messageUserIds]]
   })
   const messages: { sender_user_id: number, receiver_user_id: number }[] = messagesResp.rows
   const messageNotifications: DMEmailNotification[] = messages.map(n => ({
@@ -136,7 +164,7 @@ const getNotifications = async (dnDb: Knex, startOffset: moment.Moment, userIds:
   const reactionsResp = await dnDb.raw(reactionNotificationsSql, {
     start_offset: messageStartOffset,
     end_offset: messageEndOffset,
-    user_ids: [[userIds]]
+    user_ids: [[messageUserIds]]
   })
   const reactions: { sender_user_id: number, receiver_user_id: number }[] = reactionsResp.rows
   const reactionNotifications: DMEmailNotification[] = reactions.map(n => ({
@@ -178,8 +206,16 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
     const days = 1
     const hours = 1
     const startOffset = now.clone().subtract(days, 'days').subtract(hours, 'hour')
-    const users = await getUsersCanNotify(identityDb, frequency, startOffset)
-    const notifications = await getNotifications(dnDb, startOffset, Object.keys(users))
+    const userRows = await getUsersCanNotify(identityDb, frequency, startOffset)
+    if (frequency == 'daily') {
+      const liveFrequencyUserRows = await getUsersCanNotify(identityDb, 'live', startOffset)
+      userRows.push(...liveFrequencyUserRows)
+    }
+    const users = userRows.reduce((acc, user) => {
+      acc[user.blockchainUserId] = user.email
+      return acc
+    }, {} as EmailUsers)
+    const notifications = await getNotifications(dnDb, frequency, startOffset, Object.keys(users))
     const groupedNotifications = groupNotifications(notifications, users)
 
     // Validate their timezones to send at the right time!
@@ -216,7 +252,7 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
               userId: user.blockchainUserId,
               emailFrequency: frequency,
               timestamp: currentUtcTime
-            }]).into('NotificationEmail')
+            }]).into('NotificationEmails')
             return { result: Results.SENT }
           } catch (e) {
             return { result: Results.ERROR, error: e.toString() }
