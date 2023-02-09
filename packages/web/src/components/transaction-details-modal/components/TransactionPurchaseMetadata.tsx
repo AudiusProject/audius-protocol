@@ -1,4 +1,8 @@
-import { InAppAudioPurchaseMetadata, formatNumberString } from '@audius/common'
+import {
+  InAppAudioPurchaseMetadata,
+  formatNumberString,
+  Nullable
+} from '@audius/common'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import {
@@ -23,14 +27,14 @@ const messages = {
 export const TransactionPurchaseMetadata = ({
   metadata
 }: {
-  metadata: InAppAudioPurchaseMetadata
+  metadata?: Nullable<InAppAudioPurchaseMetadata>
 }) => {
   return (
     <BlockContainer>
       <Block header={messages.cost}>
         <IconUSD />
         <span className={styles.amount}>
-          {metadata.usd
+          {metadata?.usd
             ? formatNumberString(metadata.usd, {
                 minDecimals: 2,
                 maxDecimals: 2
@@ -41,7 +45,7 @@ export const TransactionPurchaseMetadata = ({
       </Block>
       <Block
         header={
-          metadata.purchaseTransactionId ? (
+          metadata?.purchaseTransactionId ? (
             <a
               className={styles.link}
               href={`https://explorer.solana.com/tx/${metadata.purchaseTransactionId}`}
@@ -58,7 +62,7 @@ export const TransactionPurchaseMetadata = ({
       >
         <IconSOL />
         <span className={styles.amount}>
-          {metadata.sol
+          {metadata?.sol
             ? formatNumberString(metadata.sol, { maxDecimals: 2 })
             : '?'}
         </span>
@@ -66,7 +70,7 @@ export const TransactionPurchaseMetadata = ({
       </Block>
       <Block
         header={
-          metadata.swapTransactionId ? (
+          metadata?.swapTransactionId ? (
             <a
               className={styles.link}
               href={`https://explorer.solana.com/tx/${metadata.swapTransactionId}`}
@@ -83,7 +87,7 @@ export const TransactionPurchaseMetadata = ({
       >
         <IconAUDIO />
         <span className={styles.amount}>
-          {metadata.audio
+          {metadata?.audio
             ? formatNumberString(metadata.audio, { maxDecimals: 2 })
             : '?'}
         </span>
