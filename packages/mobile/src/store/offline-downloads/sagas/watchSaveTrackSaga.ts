@@ -1,9 +1,10 @@
 import { tracksSocialActions } from '@audius/common'
 import moment from 'moment'
-import { put, takeEvery } from 'typed-redux-saga'
+import { put, takeEvery, select } from 'typed-redux-saga'
 
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 
+import { getIsCollectionMarkedForDownload } from '../selectors'
 import { addOfflineItems } from '../slice'
 
 export function* watchSaveTrackSaga() {
@@ -14,6 +15,11 @@ function* downloadSavedTrack(
   action: ReturnType<typeof tracksSocialActions.saveTrack>
 ) {
   const { trackId } = action
+  const isAllFavoritesDownloadOn = yield* select(
+    getIsCollectionMarkedForDownload(DOWNLOAD_REASON_FAVORITES)
+  )
+
+  if (!isAllFavoritesDownloadOn) return
   yield* put(
     addOfflineItems({
       items: [
