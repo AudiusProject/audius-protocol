@@ -1,6 +1,6 @@
 FROM golang:alpine AS builder
 
-RUN apk add build-base make nodejs npm
+RUN apk add build-base make
 RUN export GO111MODULE=on && \
   go install github.com/nats-io/nats-server/v2@latest && \
   go install github.com/nats-io/natscli/nats@latest && \
