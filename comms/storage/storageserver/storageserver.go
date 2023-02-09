@@ -66,7 +66,7 @@ func NewProd(jsc nats.JetStreamContext) *StorageServer {
 	}
 
 	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, allStorageNodePubKeys, thisNodePubKey, jsc)
-	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, d, 1)
+	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
 		panic(err)
 	}

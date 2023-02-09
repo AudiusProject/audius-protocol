@@ -15,8 +15,6 @@ import (
 	"sync"
 	"time"
 
-	"comms.audius.co/storage/decider"
-
 	"comms.audius.co/storage/telemetry"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -70,7 +68,6 @@ type JobsManager struct {
 	logger    zerolog.Logger
 
 	workSubscription *nats.Subscription
-	storageDecider   decider.StorageDecider
 	tempBucketCount  int
 
 	websockets map[net.Conn]bool
@@ -83,7 +80,7 @@ const (
 	objStoreTtl = time.Hour * 24
 )
 
-func NewJobsManager(jsc nats.JetStreamContext, prefix string, storageDecider decider.StorageDecider, replicaCount int) (*JobsManager, error) {
+func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) (*JobsManager, error) {
 	// kv
 	kvBucketName := prefix + KvSuffix
 	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
@@ -121,7 +118,6 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, storageDecider dec
 		kv:               kv,
 		watcher:          watcher,
 		table:            map[string]*Job{},
-		storageDecider:   storageDecider,
 		logger:           telemetry.NewConsoleLogger(),
 		tempBucketCount:  tempBucketCount,
 		websockets:       map[net.Conn]bool{},
