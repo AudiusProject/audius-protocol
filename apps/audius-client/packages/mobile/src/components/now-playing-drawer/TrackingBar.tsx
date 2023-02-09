@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 
 import { playerSelectors } from '@audius/common'
-import { Animated, Dimensions } from 'react-native'
+import { Animated, Dimensions, Easing } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import TrackPlayer from 'react-native-track-player'
 import { useSelector } from 'react-redux'
@@ -59,6 +59,7 @@ export const TrackingBar = (props: TrackingBarProps) => {
     currentAnimation.current = Animated.timing(translateXAnimation.current, {
       toValue: 1,
       duration: timeRemaining * 1000,
+      easing: Easing.linear,
       // Can't use native driver because this animation is potentially hours long,
       // and would have to be serialized into an array to be passed to the native layer.
       // The array exceeds the number of properties allowed in hermes

@@ -8,6 +8,7 @@ import { View, PanResponder } from 'react-native'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { makeStyles } from 'app/styles'
 
+import type { OnMeasure } from './Reaction'
 import { reactionMap } from './reactions'
 
 const useStyles = makeStyles(() => ({
@@ -43,8 +44,8 @@ type Positions = { [k in ReactionTypes]: { x: number; width: number } }
  * each reaction one of the following statuses: idle/interacting/selected/unselected
  */
 export const ReactionList = (props: ReactionListProps) => {
-  const styles = useStyles()
   const { selectedReaction, onChange, isVisible } = props
+  const styles = useStyles()
   // The current reaction the user is interacting with.
   // Note this needs to be a ref since the guesture handler is also a ref
   const interactingReactionRef = useRef<ReactionTypes | null>(null)
@@ -103,6 +104,11 @@ export const ReactionList = (props: ReactionListProps) => {
     })
   )
 
+  const handleMeasure: OnMeasure = useCallback((config) => {
+    const { x, width, reactionType } = config
+    positions.current = { ...positions.current, [reactionType]: { x, width } }
+  }, [])
+
   return (
     <View>
       <View style={styles.root} {...panResponder.current.panHandlers}>
@@ -122,12 +128,7 @@ export const ReactionList = (props: ReactionListProps) => {
             <Reaction
               key={reactionType}
               status={status}
-              onMeasure={({ x, width }: { x: number; width: number }) => {
-                positions.current = {
-                  ...positions.current,
-                  [reactionType]: { x, width }
-                }
-              }}
+              onMeasure={handleMeasure}
               isVisible={isVisible}
             />
           )
