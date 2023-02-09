@@ -30,9 +30,6 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     backgroundColor: palette.secondary,
     borderRadius: 8
   },
-  toastError: {
-    backgroundColor: palette.accentRed
-  },
   contentRoot: {
     paddingTop: spacing(3) + 2,
     paddingBottom: spacing(3),
@@ -53,7 +50,7 @@ type ToastProps = {
 
 export const Toast = (props: ToastProps) => {
   const { toast } = props
-  const { content, timeout = DEFAULT_TIMEOUT, type, key } = toast
+  const { content, timeout = DEFAULT_TIMEOUT, key } = toast
   const styles = useStyles()
   const toastAnimation = useRef(new Animated.Value(0))
   const insets = useSafeAreaInsets()
@@ -105,8 +102,7 @@ export const Toast = (props: ToastProps) => {
           {
             opacity: opacityStyle,
             transform: [{ translateY: translateYStyle }]
-          },
-          type === 'error' && styles.toastError
+          }
         ]}
       >
         <View style={styles.contentRoot}>
