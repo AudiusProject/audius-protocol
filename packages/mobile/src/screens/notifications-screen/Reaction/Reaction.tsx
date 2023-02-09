@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
+import type { ReactionTypes } from '@audius/common'
 import type { AnimatedLottieViewProps } from 'lottie-react-native'
 import LottieView from 'lottie-react-native'
 import type { StyleProp, View, ViewProps, ViewStyle } from 'react-native'
@@ -19,17 +20,23 @@ const useStyles = makeStyles(({ spacing }) => ({
 
 export type ReactionStatus = 'interacting' | 'idle' | 'selected' | 'unselected'
 
+type OnMeasureConfig = { x: number; width: number; reactionType: ReactionTypes }
+
+export type OnMeasure = (config: OnMeasureConfig) => void
+
 export type ReactionProps = ViewProps & {
+  reactionType: ReactionTypes
   autoPlay?: boolean
   source: AnimatedLottieViewProps['source']
   style?: StyleProp<ViewStyle>
   status?: ReactionStatus
-  onMeasure?: (values: { x: number; width: number }) => void
+  onMeasure?: OnMeasure
   isVisible: boolean
 }
 
 export const Reaction = (props: ReactionProps) => {
   const {
+    reactionType,
     autoPlay = true,
     source,
     style,
@@ -58,11 +65,12 @@ export const Reaction = (props: ReactionProps) => {
   }, [status, autoPlay, isVisible])
 
   useEffect(() => {
-    ref.current?.measureInWindow((x, _, width) => {
-      onMeasure?.({ x, width })
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- onMeasure changes too much
-  }, [])
+    if (isVisible && onMeasure) {
+      ref.current?.measureInWindow((x, _, width) => {
+        onMeasure({ x, width, reactionType })
+      })
+    }
+  }, [isVisible, onMeasure, reactionType])
 
   useEffect(() => {
     if (previousStatus !== 'interacting' && status === 'interacting') {

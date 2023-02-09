@@ -2,7 +2,7 @@ import { memo, useCallback, useEffect, useRef, useState } from 'react'
 
 import { useAppState } from '@react-native-community/hooks'
 import type { GestureResponderEvent } from 'react-native'
-import { View, Animated, PanResponder } from 'react-native'
+import { Easing, View, Animated, PanResponder } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import TrackPlayer from 'react-native-track-player'
 import { useAsync, usePrevious } from 'react-use'
@@ -138,6 +138,7 @@ export const Slider = memo((props: SliderProps) => {
       currentAnimation.current = Animated.timing(translationAnim, {
         toValue: railWidth,
         duration: timeRemaining,
+        easing: Easing.linear,
         // Can't use native driver because this animation is potentially hours long,
         // and would have to be serialized into an array to be passed to the native layer.
         // The array exceeds the number of properties allowed in hermes
