@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"mime/multipart"
 	"net"
@@ -185,12 +184,11 @@ func (jobman *JobsManager) Add(template JobTemplate, upload *multipart.FileHeade
 	randBucket := fmt.Sprintf("temp_%d", rand.Intn(jobman.tempBucketCount))
 	objStore, err := jobman.jsc.ObjectStore(randBucket)
 	if err != nil {
-		log.Println("FUUU", randBucket, err)
 		return nil, err
 	}
 	info, err := objStore.Put(meta, f)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to put object: %v", err)
 	}
 
 	job := &Job{

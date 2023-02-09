@@ -2,25 +2,18 @@
 package decider
 
 import (
-	"time"
-
 	"github.com/nats-io/nats.go"
 )
-
-const objStoreTtl = time.Hour * 24
 
 type StorageDecider interface {
 	// ShouldStore returns true if this node should store the content with ID id.
 	ShouldStore(id string) (bool, error)
 
 	// OnChange finds content that needs to be stored or deleted and fetches or deletes it.
-	OnChange(prevBuckets []string, curBuckets []string) error
+	OnChange(prevShards []string, curShards []string) error
 
-	// GetNamespacedShardFor returns the shard for long-term storage for the given string of any of the following formats:
-	// - (non-namespaced) shard: 2 characters
-	// - job ID: a cuid
-	// - file name: a string that ends with <cuid>_<string>.<extension>
-	GetNamespacedShardFor(any string) (string, error)
+	// GetShardForID returns the shard, prefixed with "<namespace>_", for the given id (a base36 cuid).
+	GetNamespacedShardForID(id string) (string, error)
 }
 
 // NaiveDecider is a storage decider that stores everything.
@@ -40,10 +33,10 @@ func (d *NaiveDecider) ShouldStore(id string) (bool, error) {
 	return true, nil
 }
 
-func (d *NaiveDecider) OnChange(prevBuckets []string, curBuckets []string) error {
+func (d *NaiveDecider) OnChange(prevShards []string, curShards []string) error {
 	return nil
 }
 
-func (d *NaiveDecider) GetNamespacedShardFor(_ string) (string, error) {
+func (d *NaiveDecider) GetNamespacedShardForID(_ string) (string, error) {
 	return d.namespace + "_naive-shard", nil
 }
