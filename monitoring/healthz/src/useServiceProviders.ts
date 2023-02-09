@@ -1,5 +1,6 @@
+import useSWR from 'swr'
 import prod from './sps/prod.json'
-import stage from './sps/prod.json'
+import stage from './sps/stage.json'
 
 export type SP = {
   endpoint: string
@@ -22,12 +23,10 @@ export function getServiceProviders(
 export function useServiceProviders(
   env: string,
   type: 'content-node' | 'discovery-node'
-): SP[] {
-  const isStaging = env == 'staging'
-  const sps = isStaging ? stage : prod
-  return sps.filter((sp) => sp.type.id == type)
+) {
+  return useSWR<SP[]>([env, type], getServiceProviders)
 }
 
-export function useDiscoveryProviders(): SP[] {
+export function useDiscoveryProviders() {
   return useServiceProviders('prod', 'discovery-node')
 }

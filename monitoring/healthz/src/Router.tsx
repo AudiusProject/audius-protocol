@@ -11,6 +11,7 @@ import { DiscoveryHealth } from './DiscoveryHealth'
 import { DiscoverySearch } from './DiscoverySearch'
 import { DiscoveryTrending } from './DiscoveryTrending'
 import { IdTranslator } from './IdTranslator'
+import { Nats } from './Nats'
 
 const routeList: RouteObject[] = [
   {
@@ -25,6 +26,7 @@ const routeList: RouteObject[] = [
           { path: 'feed', element: <DiscoveryFeed /> },
           { path: 'search', element: <DiscoverySearch /> },
           { path: 'id', element: <IdTranslator /> },
+          { path: 'nats', element: <Nats /> },
         ],
       },
 

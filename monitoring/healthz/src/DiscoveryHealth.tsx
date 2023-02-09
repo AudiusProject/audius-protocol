@@ -10,7 +10,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function DiscoveryHealth() {
   const [env, nodeType] = useEnvironmentSelection()
-  const sps = useServiceProviders(env, nodeType)
+  const { data: sps } = useServiceProviders(env, nodeType)
 
   const isContent = nodeType == 'content-node'
 
