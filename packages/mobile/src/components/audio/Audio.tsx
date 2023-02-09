@@ -42,8 +42,7 @@ import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
   DOWNLOAD_REASON_FAVORITES,
-  getLocalAudioPath,
-  isAudioAvailableOffline
+  getLocalAudioPath
 } from 'app/services/offline-downloader'
 import {
   getOfflineTrackStatus,
@@ -378,14 +377,10 @@ export const Audio = () => {
       newQueueTracks.map(async (track) => {
         const trackOwner = queueTrackOwnersMap[track.owner_id]
         const trackId = track.track_id.toString()
-        const isAudioAvailableOfflineToStream = await isAudioAvailableOffline(
-          trackId
-        )
         const offlineTrackAvailable =
           trackId &&
           isOfflineModeEnabled &&
-          offlineAvailabilityByTrackId[trackId] &&
-          isAudioAvailableOfflineToStream
+          offlineAvailabilityByTrackId[trackId]
 
         // Get Track url
         let url: string
