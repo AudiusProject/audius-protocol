@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime, timedelta
 
 from integration_tests.utils import populate_mock_db
 from src.queries.get_notifications import get_notifications
