@@ -9,6 +9,7 @@ import {
 
 import { downloadCollectionWorker } from './downloadCollectionWorker'
 import { downloadTrackWorker } from './downloadTrackWorker'
+import { syncCollectionWorker } from './syncCollectionWorker'
 
 export function* requestDownloadQueuedItemSaga() {
   yield* takeEvery(requestDownloadQueuedItem.type, downloadQueuedItem)
@@ -32,5 +33,7 @@ function* downloadQueuedItem() {
     yield* call(downloadCollectionWorker, id)
   } else if (type === 'track') {
     yield* call(downloadTrackWorker, id)
+  } else if (type === 'collection-sync') {
+    yield* call(syncCollectionWorker, id)
   }
 }

@@ -97,16 +97,18 @@ export const makeUser = (
   return newUser
 }
 
-const makeFavorite = (favorite: APIFavorite): Favorite | undefined => {
-  const decodedSaveItemId = decodeHashId(favorite.favorite_item_id)
-  const decodedUserId = decodeHashId(favorite.user_id)
+export const makeFavorite = (favorite: APIFavorite): Favorite | undefined => {
+  const { favorite_item_id, user_id, created_at } = favorite
+  const decodedSaveItemId = decodeHashId(favorite_item_id)
+  const decodedUserId = decodeHashId(user_id)
   if (!decodedSaveItemId || !decodedUserId) {
     return undefined
   }
   return {
     save_item_id: decodedSaveItemId,
     user_id: decodedUserId,
-    save_type: favorite.favorite_type
+    save_type: favorite.favorite_type,
+    created_at
   }
 }
 

@@ -34,7 +34,6 @@ type CachedTrack = { id: ID; uid: UID; metadata: TrackMetadata }
 // Load offline data into redux on app start
 export function* rehydrateOfflineDataSaga() {
   const isOfflineModeEnabled = yield* call(getIsOfflineEnabled)
-
   if (!isOfflineModeEnabled) return
 
   const collectionsToCache: CachedCollection[] = []

@@ -105,13 +105,6 @@ export const purgeDownloadedCollection = async (collectionId: string) => {
   const collectionDir = getLocalCollectionDir(collectionId)
   if (!(await exists(collectionDir))) return
   await unlink(collectionDir)
-  // TODO properly delete from store + potentially move this to saga
-  // store.dispatch(
-  //   removeCollectionDownload({ collectionId, isFavoritesDownload: true })
-  // )
-  // store.dispatch(
-  //   removeCollectionDownload({ collectionId, isFavoritesDownload: false })
-  // )
 }
 
 // Track Json

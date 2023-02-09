@@ -1,6 +1,6 @@
 import type {
-  ID,
   OfflineCollectionMetadata,
+  ID,
   OfflineTrackMetadata
 } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -27,6 +27,7 @@ export type TrackOfflineMetadataPayload = {
 export type DownloadQueueItem =
   | { type: 'collection'; id: CollectionId }
   | { type: 'track'; id: ID }
+  | { type: 'collection-sync'; id: CollectionId }
 
 export type OfflineDownloadsState = {
   trackStatus: {
@@ -34,6 +35,9 @@ export type OfflineDownloadsState = {
   }
   collectionStatus: {
     [key: string]: OfflineDownloadStatus
+  }
+  collectionSyncStatus: {
+    [Key in ID]?: CollectionSyncStatus
   }
   isDoneLoadingFromDisk: boolean
   downloadQueue: DownloadQueueItem[]
@@ -59,6 +63,10 @@ export type OfflineItem =
       id: CollectionId
       metadata: OfflineCollectionMetadata
     }
+  | {
+      type: 'collection-sync'
+      id: CollectionId
+    }
 
 export type RedownloadOfflineItemsAction = PayloadAction<{
   items: DownloadQueueItem[]
@@ -72,11 +80,15 @@ export type RemoveOfflineItemsAction = PayloadAction<{
   items: OfflineItem[]
 }>
 
+export type CollectionSyncItem = { id: CollectionId }
+
 export type CollectionAction = PayloadAction<{
   collectionId: ID
 }>
 
 export type QueueAction = PayloadAction<DownloadQueueItem>
+
+export type SyncAction = PayloadAction<{ id: CollectionId }>
 
 export type CompleteDownloadAction = PayloadAction<
   | { type: 'track'; id: ID; completedAt: number }
@@ -109,9 +121,17 @@ export enum OfflineDownloadStatus {
   ABANDONED = 'ABANDONED'
 }
 
+export enum CollectionSyncStatus {
+  INIT = 'INIT',
+  SYNCING = 'SYNCING',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR'
+}
+
 const initialState: OfflineDownloadsState = {
   trackStatus: {},
   collectionStatus: {},
+  collectionSyncStatus: {},
   isDoneLoadingFromDisk: false,
   downloadQueue: [],
   queueStatus: QueueStatus.IDLE,
@@ -145,7 +165,8 @@ const slice = createSlice({
         trackStatus,
         downloadQueue,
         offlineCollectionMetadata,
-        collectionStatus
+        collectionStatus,
+        collectionSyncStatus
       } = state
       for (const item of items) {
         if (item.type === 'track') {
@@ -164,6 +185,18 @@ const slice = createSlice({
             collectionStatus[id] = OfflineDownloadStatus.INIT
             downloadQueue.push({ type, id })
           }
+        } else if (item.type === 'collection-sync') {
+          const { id } = item
+          const syncStatus = collectionSyncStatus[id]
+          if (
+            !(
+              syncStatus === CollectionSyncStatus.INIT ||
+              syncStatus === CollectionSyncStatus.SYNCING
+            )
+          ) {
+            collectionSyncStatus[id] = CollectionSyncStatus.INIT
+            downloadQueue.push({ type: 'collection-sync', id })
+          }
         }
       }
     },
@@ -174,7 +207,8 @@ const slice = createSlice({
         trackStatus,
         downloadQueue,
         offlineCollectionMetadata,
-        collectionStatus
+        collectionStatus,
+        collectionSyncStatus
       } = state
 
       for (const item of items) {
@@ -197,12 +231,14 @@ const slice = createSlice({
 
           if (!offlineCollectionMetadata[id]) {
             delete collectionStatus[id]
-            const queueIndex = downloadQueue.findIndex(
-              (queueItem) => queueItem.type === type && queueItem.id === id
+            delete collectionSyncStatus[id]
+
+            state.downloadQueue = downloadQueue.filter(
+              (queueItem) =>
+                (queueItem.type === type ||
+                  queueItem.type === 'collection-sync') &&
+                queueItem.id === id
             )
-            if (queueIndex !== -1) {
-              downloadQueue.splice(queueIndex, 1)
-            }
           }
         }
       }
@@ -245,6 +281,24 @@ const slice = createSlice({
       }
       state.downloadQueue.shift()
     },
+    startCollectionSync: (state, action: SyncAction) => {
+      const { id } = action.payload
+      state.collectionSyncStatus[id] = CollectionSyncStatus.SYNCING
+    },
+    completeCollectionSync: (state, action: SyncAction) => {
+      const { id } = action.payload
+      state.collectionSyncStatus[id] = CollectionSyncStatus.SUCCESS
+      state.downloadQueue.shift()
+    },
+    cancelCollectionSync: (state, action: SyncAction) => {
+      const { id } = action.payload
+      state.collectionSyncStatus[id] = CollectionSyncStatus.INIT
+    },
+    errorCollectionSync: (state, action: SyncAction) => {
+      const { id } = action.payload
+      state.collectionSyncStatus[id] = CollectionSyncStatus.ERROR
+      state.downloadQueue.shift()
+    },
     updateQueueStatus: (state, action: UpdateQueueStatusAction) => {
       state.queueStatus = action.payload.queueStatus
     },
@@ -254,6 +308,7 @@ const slice = createSlice({
     clearOfflineDownloads: (state) => {
       state.trackStatus = initialState.trackStatus
       state.collectionStatus = initialState.collectionStatus
+      state.collectionSyncStatus = initialState.collectionSyncStatus
       state.offlineTrackMetadata = initialState.offlineTrackMetadata
       state.trackStatus = initialState.trackStatus
       state.isDoneLoadingFromDisk = initialState.isDoneLoadingFromDisk
@@ -284,22 +339,26 @@ const slice = createSlice({
 
 export const {
   addOfflineItems,
-  redownloadOfflineItems,
   removeOfflineItems,
+  redownloadOfflineItems,
   doneLoadingFromDisk,
   clearOfflineDownloads,
+  startDownload,
+  completeDownload,
+  cancelDownload,
+  errorDownload,
+  startCollectionSync,
+  completeCollectionSync,
+  cancelCollectionSync,
+  errorCollectionSync,
+  updateQueueStatus,
   requestDownloadAllFavorites,
   requestDownloadCollection,
   requestDownloadFavoritedCollection,
   removeAllDownloadedFavorites,
   requestRemoveDownloadedCollection,
   requestRemoveFavoritedDownloadedCollection,
-  requestDownloadQueuedItem,
-  startDownload,
-  completeDownload,
-  cancelDownload,
-  errorDownload,
-  updateQueueStatus
+  requestDownloadQueuedItem
 } = slice.actions
 export const actions = slice.actions
 

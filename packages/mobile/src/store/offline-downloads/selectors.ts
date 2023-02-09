@@ -18,6 +18,11 @@ export const getCollectionOfflineDownloadStatus =
   (collectionId?: CollectionId) => (state: AppState) =>
     collectionId ? state.offlineDownloads.collectionStatus[collectionId] : null
 
+export const getCollectionSyncStatus = (
+  state: AppState,
+  collectionId: CollectionId
+) => state.offlineDownloads.collectionSyncStatus[collectionId]
+
 // TODO: This should verify that the status is correct
 export const getIsCollectionMarkedForDownload =
   (collectionId?: string | ID) => (state: AppState) =>

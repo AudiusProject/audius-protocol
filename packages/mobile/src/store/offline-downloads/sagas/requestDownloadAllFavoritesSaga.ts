@@ -1,7 +1,6 @@
-import { accountSelectors } from '@audius/common'
+import { accountSelectors, getContext } from '@audius/common'
 import { takeEvery, select, call, put } from 'typed-redux-saga'
 
-import { fetchAllFavoritedTracks } from 'app/hooks/useFetchAllFavoritedTracks'
 import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 
@@ -26,10 +25,18 @@ function* downloadAllFavorites() {
     metadata: { reasons_for_download: [{ is_from_favorites: true }] }
   })
 
-  const allFavoritedTracks = yield* call(fetchAllFavoritedTracks, currentUserId)
+  const apiClient = yield* getContext('apiClient')
+  const allFavoritedTracks = yield* call([apiClient, apiClient.getFavorites], {
+    currentUserId,
+    limit: 10000
+  })
+
+  console.log('favs?', allFavoritedTracks)
+
+  if (!allFavoritedTracks) return
 
   for (const favoritedTrack of allFavoritedTracks) {
-    const { trackId, favoriteCreatedAt } = favoritedTrack
+    const { save_item_id: trackId, created_at } = favoritedTrack
     const downloadReason = {
       is_from_favorites: true,
       collection_id: DOWNLOAD_REASON_FAVORITES
@@ -39,7 +46,7 @@ function* downloadAllFavorites() {
       type: 'track',
       id: trackId,
       metadata: {
-        favorite_created_at: favoriteCreatedAt,
+        favorite_created_at: created_at,
         reasons_for_download: [downloadReason]
       }
     })
