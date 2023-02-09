@@ -395,7 +395,9 @@ export class IdentityService {
     senderAddress: string,
     encodedABI: string,
     gasLimit: number,
-    handle: string | null = null
+    handle: string | null = null,
+    nethermindContractAddress: string | null | undefined,
+    nethermindEncodedAbi: string | undefined
   ): Promise<{ receipt: TransactionReceipt }> {
     return await this._makeRequest({
       url: '/relay',
@@ -406,7 +408,9 @@ export class IdentityService {
         senderAddress,
         encodedABI,
         gasLimit,
-        handle
+        handle,
+        nethermindContractAddress,
+        nethermindEncodedAbi
       }
     })
   }
