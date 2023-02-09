@@ -73,6 +73,8 @@ const messages = {
   error: 'Something went wrong'
 }
 
+const initializationTime = Date.now()
+
 const onSagaError = (
   error: Error,
   errorInfo: {
@@ -98,9 +100,14 @@ const onSagaError = (
     additionalInfo: errorInfo
   })
 
-  setTimeout(() => {
-    RNRestart.Restart()
-  }, errorRestartTimeout)
+  // Automatically restart the app if the session is longer
+  // than 30 seconds. Don't want to restart for shorter sessions
+  // because it could result in a restart loop
+  if (Date.now() - initializationTime > 30000) {
+    setTimeout(() => {
+      RNRestart.Restart()
+    }, errorRestartTimeout)
+  }
 }
 
 const commonStoreReducers = commonReducers()
