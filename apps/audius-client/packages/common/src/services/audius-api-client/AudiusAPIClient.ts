@@ -1,6 +1,11 @@
 import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
 
-import { ID, TimeRange, StemTrackMetadata } from '../../models'
+import {
+  ID,
+  TimeRange,
+  StemTrackMetadata,
+  CollectionMetadata
+} from '../../models'
 import { SearchKind } from '../../store/pages/search-results/types'
 import { decodeHashId, encodeHashId } from '../../utils/hashIds'
 import { Nullable, removeNullable } from '../../utils/typeUtils'
@@ -16,6 +21,7 @@ import { processSearchResults } from './helper'
 import {
   APIActivity,
   APIBlockConfirmation,
+  APIFavorite,
   APIPlaylist,
   APIResponse,
   APISearch,
@@ -46,7 +52,8 @@ enum PathType {
 const ROOT_ENDPOINT_MAP = {
   feed: `/feed`,
   healthCheck: '/health_check',
-  blockConfirmation: '/block_confirmation'
+  blockConfirmation: '/block_confirmation',
+  getCollectionMetadata: '/playlists'
 }
 
 const FULL_ENDPOINT_MAP = {
@@ -107,6 +114,7 @@ const ENDPOINT_MAP = {
   associatedWallets: '/users/associated_wallets',
   associatedWalletUserId: '/users/id',
   userChallenges: (userId: OpaqueID) => `/users/${userId}/challenges`,
+  userFavorites: (userId: OpaqueID) => `/users/${userId}/favorites`,
   undisbursedUserChallenges: `/challenges/undisbursed`
 }
 
@@ -242,6 +250,11 @@ type GetRelatedArtistsArgs = CurrentUserIdArg &
     userId: ID
   }
 
+type GetFavoritesArgs = {
+  currentUserId: ID
+  limit?: number
+}
+
 type GetProfileListArgs = {
   profileUserId: ID
   currentUserId: Nullable<ID>
@@ -263,6 +276,11 @@ type GetUserRepostsByHandleArgs = {
   currentUserId: Nullable<ID>
   offset?: number
   limit?: number
+}
+
+type GetCollectionMetadataArgs = {
+  collectionId: ID
+  currentUserId: ID
 }
 
 type GetPlaylistArgs = {
@@ -1047,6 +1065,21 @@ export class AudiusAPIClient {
     return adapted
   }
 
+  async getFavorites({ currentUserId, limit }: GetFavoritesArgs) {
+    this._assertInitialized()
+    const encodedUserId = encodeHashId(currentUserId)
+    const params = { user_id: encodedUserId, limit }
+    const response = await this._getResponse<APIResponse<APIFavorite[]>>(
+      ENDPOINT_MAP.userFavorites(encodedUserId),
+      params,
+      true,
+      PathType.VersionPath
+    )
+    if (!response) return null
+    const { data } = response
+    return data.map(adapter.makeFavorite).filter(removeNullable)
+  }
+
   async getFavoritedTracks({
     profileUserId,
     currentUserId,
@@ -1168,6 +1201,24 @@ export class AudiusAPIClient {
       .map(adapter.makeUser)
       .filter(removeNullable)
     return adapted
+  }
+
+  async getCollectionMetadata({
+    collectionId,
+    currentUserId
+  }: GetCollectionMetadataArgs) {
+    this._assertInitialized()
+
+    const headers = { 'X-User-ID': currentUserId.toString() }
+    const params = { playlist_id: collectionId }
+    const response = await this._getResponse<APIResponse<CollectionMetadata[]>>(
+      ROOT_ENDPOINT_MAP.getCollectionMetadata,
+      params,
+      false,
+      PathType.RootPath,
+      headers
+    )
+    return response?.data?.[0]
   }
 
   async getPlaylist({ playlistId, currentUserId }: GetPlaylistArgs) {

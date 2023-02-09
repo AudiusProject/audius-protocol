@@ -10,7 +10,6 @@ import {
   downloadTrackCoverArt,
   purgeDownloadedTrack,
   tryDownloadTrackFromEachCreatorNode,
-  verifyTrack,
   writeTrackJson
 } from 'app/services/offline-downloader'
 
@@ -96,12 +95,6 @@ function* downloadTrackAsync(
 
     yield* call(writeTrackJson, trackId.toString(), trackMetadata)
   } catch (e) {
-    return OfflineDownloadStatus.ERROR
-  }
-
-  const verified = yield* call(verifyTrack, trackId.toString(), true)
-
-  if (!verified) {
     return OfflineDownloadStatus.ERROR
   }
 

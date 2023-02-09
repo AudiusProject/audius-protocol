@@ -4,9 +4,11 @@ import { call } from 'typed-redux-saga'
 import { OFFLINE_OVERRIDE_STORAGE_KEY } from 'app/constants/storage-keys'
 
 export function* getIsOfflineEnabled() {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  yield* call(remoteConfigInstance.waitForRemoteConfig)
+
   const isOfflineModeEnabled = yield* call(
-    getFeatureEnabled,
+    remoteConfigInstance.getFeatureEnabled,
     FeatureFlags.OFFLINE_MODE_ENABLED
   )
 
