@@ -52,7 +52,12 @@ func NewProd(jsc nats.JetStreamContext) *StorageServer {
 			"0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
 		} // TODO: get dynamically (from KV store?) and re-initialize on change
 	}
-	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: get dynamically
+	// TODO: Standardize config with something like https://github.com/AudiusProject/audius-protocol/blob/main/comms/discovery/config/config.go#L62
+	var thisNodePubKey string
+	thisNodePubKey = os.Getenv("delegatePrivateKey") // stage + prod
+	if thisNodePubKey == "" {
+		thisNodePubKey = os.Getenv("audius_delegate_owner_wallet") // local dev
+	}
 	var host string
 	switch thisNodePubKey {
 	case "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F":
@@ -63,6 +68,9 @@ func NewProd(jsc nats.JetStreamContext) *StorageServer {
 		host = "http://localhost:8926"
 	case "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16":
 		host = "http://localhost:8927"
+	}
+	if host == "" {
+		host = os.Getenv("creatorNodeEndpoint") // stage + prod
 	}
 
 	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, allStorageNodePubKeys, thisNodePubKey, jsc)
