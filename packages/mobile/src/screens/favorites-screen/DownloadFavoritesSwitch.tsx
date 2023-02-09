@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { reachabilitySelectors } from '@audius/common'
 import { View } from 'react-native'
@@ -9,6 +9,7 @@ import { DownloadStatusIndicator } from 'app/components/offline-downloads/Downlo
 import { useDebouncedCallback } from 'app/hooks/useDebouncedCallback'
 import { useProxySelector } from 'app/hooks/useProxySelector'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { getVisibility } from 'app/store/drawers/selectors'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getOfflineTrackStatus } from 'app/store/offline-downloads/selectors'
 import {
@@ -74,6 +75,20 @@ export const DownloadFavoritesSwitch = () => {
   }
 
   const downloadStatus = getDownloadStatus()
+  const [switchValue, setSwitchValue] = useState(isMarkedForDownload)
+  const removeDrawerVisibility = useSelector(
+    getVisibility('RemoveDownloadedFavorites')
+  )
+
+  useEffect(() => {
+    if (
+      removeDrawerVisibility !== true &&
+      isMarkedForDownload !== switchValue
+    ) {
+      setSwitchValue(isMarkedForDownload)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMarkedForDownload, removeDrawerVisibility])
 
   const handleToggleDownload = useCallback(
     (isDownloadEnabled: boolean) => {
@@ -96,6 +111,11 @@ export const DownloadFavoritesSwitch = () => {
     800
   )
 
+  const handleSwitchValueChange = (isEnabled: boolean) => {
+    setSwitchValue(isEnabled)
+    debouncedHandleToggleDownload(isEnabled)
+  }
+
   return (
     <View style={styles.root}>
       <DownloadStatusIndicator
@@ -103,8 +123,8 @@ export const DownloadFavoritesSwitch = () => {
         style={styles.downloadStatusIndicator}
       />
       <Switch
-        defaultValue={isMarkedForDownload}
-        onValueChange={debouncedHandleToggleDownload}
+        value={switchValue}
+        onValueChange={handleSwitchValueChange}
         disabled={!isReachable && !isMarkedForDownload}
       />
     </View>
