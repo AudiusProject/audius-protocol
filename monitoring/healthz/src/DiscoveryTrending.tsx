@@ -1,10 +1,17 @@
+import { useQuery } from '@tanstack/react-query'
 import useSWR from 'swr'
-import { SP, useDiscoveryProviders } from './useServiceProviders'
+import { fetchApi } from './query'
+import { SP } from './useServiceProviders'
 
 export function DiscoveryTrending() {
-  const { data: sps, error } = useDiscoveryProviders()
-  if (error) return <div>error</div>
-  if (!sps) return null
+  let { data } = useQuery(
+    ['prod', 'discovery-node', '/v1/tracks/trending'],
+    fetchApi
+  )
+
+  if (!data) return <div>loading</div>
+  const sps = data
+
   return (
     <div style={{ padding: 20 }}>
       <h2>{sps.length}</h2>
@@ -22,22 +29,25 @@ export function DiscoveryTrending() {
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 function TrendingRow({ sp }: { sp: SP }) {
-  const { data, error } = useSWR(sp.endpoint + '/v1/tracks/trending', fetcher)
-
-  if (!data)
+  if (!sp.health || !sp.apiJson) {
     return (
       <tr>
-        <td>{sp.endpoint}</td>
+        <td>loading</td>
       </tr>
     )
+  }
+  console.log(sp)
+  // return null
 
-  const tracks = data.data
+  const tracks = sp.apiJson
   return (
     <tr>
       <td>
         <a href={sp.endpoint + '/health_check'} target="_blank">
           {sp.endpoint.replace('https://', '')}
         </a>
+        <br />
+        {sp.health.data.block_difference}
       </td>
       <td style={{ whiteSpace: 'nowrap' }}>
         {tracks.slice(0, 25).map((t: any) => (

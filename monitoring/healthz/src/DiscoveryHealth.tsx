@@ -10,11 +10,10 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
 export function DiscoveryHealth() {
   const [env, nodeType] = useEnvironmentSelection()
-  const { data: sps, error } = useServiceProviders(env, nodeType)
+  const sps = useServiceProviders(env, nodeType)
 
   const isContent = nodeType == 'content-node'
 
-  if (error) return <div>error</div>
   if (!sps) return null
   return (
     <div style={{ padding: 20 }}>
@@ -63,11 +62,14 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     )
 
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
-  const fsUsed = bytesToGb(health.filesystem_used) || bytesToGb(health.storagePathUsed)
-  const fsSize = bytesToGb(health.filesystem_size) || bytesToGb(health.storagePathSize)
+  const fsUsed =
+    bytesToGb(health.filesystem_used) || bytesToGb(health.storagePathUsed)
+  const fsSize =
+    bytesToGb(health.filesystem_size) || bytesToGb(health.storagePathSize)
   const storagePercent = fsUsed / fsSize
   const isBehind = health.block_difference > 5 ? 'is-behind' : ''
-  const dbSize = bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
+  const dbSize =
+    bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
 
@@ -102,7 +104,9 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       <td>
         <progress value={storagePercent} />
         <br></br>
-        <span>{fsUsed} / {fsSize} GB</span>
+        <span>
+          {fsUsed} / {fsSize} GB
+        </span>
       </td>
       <td>{`${dbSize} GB`}</td>
       <td>{health.block_difference}</td>

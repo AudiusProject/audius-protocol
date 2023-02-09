@@ -1,7 +1,8 @@
 ```
 nvm use
 
-npm i --legacy-peer-deps
+npm i
+npm run refresh
 npm run dev
 
 npm run deploy

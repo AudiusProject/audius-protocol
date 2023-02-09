@@ -1,0 +1,110 @@
+[
+  {
+    "id": "content-node::12",
+    "endpoint": "https://creatornode10.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0xf7c96916bd37ad76d4eedd6536b81c29706c8056",
+    "type": {
+      "id": "content-node"
+    }
+  },
+  {
+    "id": "content-node::13",
+    "endpoint": "https://creatornode11.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0x5e98cbeeaa2acedec0833ac3d1634e2a7ae0f3c2",
+    "type": {
+      "id": "content-node"
+    }
+  },
+  {
+    "id": "content-node::7",
+    "endpoint": "https://creatornode5.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0xdc2bdf1f23381ca2ec9e9c70d4fd96cd8645d090",
+    "type": {
+      "id": "content-node"
+    }
+  },
+  {
+    "id": "content-node::8",
+    "endpoint": "https://creatornode6.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0x68039d001d87e7a5e6b06fe0825ea7871c1cd6c2",
+    "type": {
+      "id": "content-node"
+    }
+  },
+  {
+    "id": "content-node::9",
+    "endpoint": "https://creatornode7.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0x1f8e7af58086992ef4c4fc0371446974bbbc0d9f",
+    "type": {
+      "id": "content-node"
+    }
+  },
+  {
+    "id": "content-node::10",
+    "endpoint": "https://creatornode8.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0x8fcfa10bd3808570987dbb5b1ef4ab74400fbfda",
+    "type": {
+      "id": "content-node"
+    }
+  },
+  {
+    "id": "content-node::11",
+    "endpoint": "https://creatornode9.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0x5e98cbeeaa2acedec0833ac3d1634e2a7ae0f3c2",
+    "type": {
+      "id": "content-node"
+    }
+  },
+  {
+    "id": "discovery-node::4",
+    "endpoint": "https://discoveryprovider.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0x8fcfa10bd3808570987dbb5b1ef4ab74400fbfda",
+    "type": {
+      "id": "discovery-node"
+    }
+  },
+  {
+    "id": "discovery-node::2",
+    "endpoint": "https://discoveryprovider2.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0x5e98cbeeaa2acedec0833ac3d1634e2a7ae0f3c2",
+    "type": {
+      "id": "discovery-node"
+    }
+  },
+  {
+    "id": "discovery-node::3",
+    "endpoint": "https://discoveryprovider3.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0xf7c96916bd37ad76d4eedd6536b81c29706c8056",
+    "type": {
+      "id": "discovery-node"
+    }
+  },
+  {
+    "id": "discovery-node::5",
+    "endpoint": "https://discoveryprovider5.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0x8311f59b72522e728231dc60226359a51878f9a1",
+    "type": {
+      "id": "discovery-node"
+    }
+  },
+  {
+    "id": "content-node::6",
+    "endpoint": "https://usermetadata.staging.audius.co",
+    "isRegistered": true,
+    "delegateOwnerWallet": "0x671ddce7b4e676c9467f87e4031a917b5d6f75f0",
+    "type": {
+      "id": "content-node"
+    }
+  }
+]

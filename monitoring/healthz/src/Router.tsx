@@ -5,7 +5,6 @@ import {
   RouteObject,
   useRoutes,
 } from 'react-router-dom'
-import { APIDiff } from './APIDiff'
 import { ContentHealth } from './Content'
 import { DiscoveryFeed } from './DiscoveryFeed'
 import { DiscoveryHealth } from './DiscoveryHealth'
@@ -25,7 +24,6 @@ const routeList: RouteObject[] = [
           { path: 'trending', element: <DiscoveryTrending /> },
           { path: 'feed', element: <DiscoveryFeed /> },
           { path: 'search', element: <DiscoverySearch /> },
-          { path: 'diff', element: <APIDiff /> },
           { path: 'id', element: <IdTranslator /> },
         ],
       },

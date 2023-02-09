@@ -1,19 +1,5 @@
-import useSWR from 'swr'
-
-const prodEndpoint =
-  'https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-mainnet'
-
-const stagingEndpoint =
-  'https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-goerli'
-
-const gql = `
-query ServiceProviders($type: String) {
-  serviceNodes(where: {isRegistered: true, type: $type}) {
-    endpoint
-    isRegistered
-  }
-}
-`
+import prod from './sps/prod.json'
+import stage from './sps/prod.json'
 
 export type SP = {
   endpoint: string
@@ -24,40 +10,24 @@ export type SP = {
   discoveryHealth?: any
 }
 
-export function theGraphFetcher(
+export function getServiceProviders(
   env: string,
   type: 'content-node' | 'discovery-node'
-) {
-  return fetch(env == 'staging' ? stagingEndpoint : prodEndpoint, {
-    method: 'POST',
-    body: JSON.stringify({
-      query: gql,
-      variables: {
-        type,
-      },
-    }),
-  }).then(async (resp) => {
-    const data = await resp.json()
-    const sps = data.data.serviceNodes as SP[]
-    const hostSortKey = (sp: SP) =>
-      new URL(sp.endpoint).hostname.split('.').reverse().join('.')
-    sps.sort((a, b) => (hostSortKey(a) < hostSortKey(b) ? -1 : 1))
-    // console.log(sps)
-    return sps
-  })
+): SP[] {
+  const isStaging = env == 'staging'
+  const sps = isStaging ? stage : prod
+  return sps.filter((sp) => sp.type.id == type)
 }
 
 export function useServiceProviders(
   env: string,
   type: 'content-node' | 'discovery-node'
-) {
-  return useSWR<SP[]>([env, type], theGraphFetcher)
+): SP[] {
+  const isStaging = env == 'staging'
+  const sps = isStaging ? stage : prod
+  return sps.filter((sp) => sp.type.id == type)
 }
 
-export function useDiscoveryProviders() {
+export function useDiscoveryProviders(): SP[] {
   return useServiceProviders('prod', 'discovery-node')
-}
-
-export function useContentProviders() {
-  return useServiceProviders('prod', 'content-node')
 }

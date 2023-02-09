@@ -1,22 +1,22 @@
 import { QueryClient } from '@tanstack/react-query'
-import { SP, theGraphFetcher } from './useServiceProviders'
+import { getServiceProviders, SP } from './useServiceProviders'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000,
+      staleTime: 5000,
     },
   },
 })
 
-export async function fetchApi({ queryKey }: { queryKey: string[] }) {
-  const sps = await queryClient.fetchQuery(
-    queryKey,
-    () => theGraphFetcher(queryKey[0], queryKey[1] as any),
-    {
-      staleTime: 1000 * 30,
-    }
+export async function fetchSPs({ queryKey }: { queryKey: string[] }) {
+  return queryClient.fetchQuery(queryKey, () =>
+    getServiceProviders(queryKey[0], queryKey[1] as any)
   )
+}
+
+export async function fetchApi({ queryKey }: { queryKey: string[] }) {
+  const sps = await fetchHealth({ queryKey })
 
   sps.map(async (sp) => {
     const apiUrl = `${sp.endpoint}${queryKey[2]}`
@@ -28,7 +28,7 @@ export async function fetchApi({ queryKey }: { queryKey: string[] }) {
 
       return before.map((x) => {
         if (x.endpoint == sp.endpoint) {
-          return { ...x, apiJson: JSON.stringify(apiJson.data, undefined, 2) }
+          return { ...x, apiJson: apiJson.data }
         }
         return x
       })
@@ -39,13 +39,7 @@ export async function fetchApi({ queryKey }: { queryKey: string[] }) {
 }
 
 export async function fetchHealth({ queryKey }: { queryKey: string[] }) {
-  const sps = await queryClient.fetchQuery(
-    queryKey,
-    () => theGraphFetcher(queryKey[0], queryKey[1] as any),
-    {
-      staleTime: 1000 * 30,
-    }
-  )
+  const sps = await fetchSPs({ queryKey })
 
   // in a separate "thread" fetch the health for each endpoint
   sps.map(async (sp) => {
