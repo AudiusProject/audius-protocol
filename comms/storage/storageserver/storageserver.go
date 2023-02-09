@@ -284,8 +284,6 @@ func getStatusStaticFiles() http.FileSystem {
 	return http.FS(fsys)
 }
 
-// NOTE: This will error in IDE if you don't run `yarn build` in the weather-map directory first, but it will compile fine at build time either way.
-//
 //go:embed weather-map/dist
 var embeddedWeatherMapFiles embed.FS
 

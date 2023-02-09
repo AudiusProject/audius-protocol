@@ -8,8 +8,10 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-dist
 *.local
+
+# Allow dist so our more frequent builds can skip the expensive React build step. Dist is <300KB so committing is not a problem.
+!dist
 
 # Editor directories and files
 .vscode/*

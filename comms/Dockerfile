@@ -1,14 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:alpine AS react-builder
-
-RUN apk add make
-WORKDIR /app
-COPY Makefile Makefile
-COPY storage/storageserver/weather-map storage/storageserver/weather-map
-RUN make build.weathermap
-
-FROM golang:latest AS final
+FROM golang:latest
 
 RUN apt update && apt install -y ffmpeg 
 
@@ -25,7 +17,6 @@ COPY go.mod ./
 COPY go.sum ./
 RUN go mod download
 COPY . ./
-COPY --from=react-builder /app/storage/storageserver/weather-map/dist /app/storage/storageserver/weather-map/dist
 RUN CGO_ENABLED=0 GOOS=linux go build -o /comms-linux
 
 # COPY build/comms-linux-amd64 /comms-linux
