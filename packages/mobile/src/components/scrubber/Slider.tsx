@@ -163,7 +163,7 @@ export const Slider = memo((props: SliderProps) => {
       Animated.timing(translationAnim, {
         duration: 100,
         toValue: newPosition,
-        useNativeDriver: true
+        useNativeDriver: false
       }).start()
       handlePressHandleIn()
       onPressIn()
