@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"time"
 
 	"comms.audius.co/trending/config"
@@ -23,7 +23,7 @@ func NewClickHouseDB(conf config.Config) (*ClickHouseDB, error) {
 		},
 		Debug: conf.Debug,
 		Debugf: func(format string, v ...interface{}) {
-			fmt.Printf(format, v)
+			log.Println(format, v)
 		},
 		Settings: clickhouse.Settings{
 			"max_execution_time": conf.ClickHouseMaxExecutionTime,

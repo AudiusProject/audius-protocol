@@ -11,7 +11,7 @@ services:
 
   chdb:
     container_name: chdb
-    image: yandex/clickhouse-server
+    image: clickhouse/clickhouse-server
     ports:
      - "8123:8123"
      - "9000:9000"
