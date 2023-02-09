@@ -3,6 +3,7 @@ import asyncio
 import concurrent.futures
 import json
 import logging
+import os
 import time
 from datetime import datetime
 from operator import itemgetter, or_
@@ -112,9 +113,14 @@ def get_latest_block(db: SessionManager):
         target_latest_block_number = current_block_number + block_processing_window
 
         latest_block_from_chain = update_task.web3.eth.get_block("latest", True)
-        latest_block_from_chain = update_task.web3.eth.get_block(
-            latest_block_from_chain.number, True
-        )
+
+        if os.getenv("audius_discprov_env") != "dev":
+            # index 1 block behind to avoid reverting
+            # TODO make reverting 1 block fast and remove this workaround
+            latest_block_from_chain = update_task.web3.eth.get_block(
+                latest_block_from_chain.number - 1, True
+            )
+
         latest_block_number_from_chain = latest_block_from_chain.number
 
         target_latest_block_number = min(
