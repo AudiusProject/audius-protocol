@@ -40,25 +40,14 @@ type StorageServer struct {
 }
 
 func NewProd(jsc nats.JetStreamContext) *StorageServer {
-	// TODO: config refactor
-	var allStorageNodePubKeys []string
-	if os.Getenv("storage_v2_single_node") == "true" {
-		allStorageNodePubKeys = []string{"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"}
-	} else {
-		allStorageNodePubKeys = []string{
-			"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-			"0x90b8d2655A7C268d0fA31758A714e583AE54489D",
-			"0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
-			"0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
-		} // TODO: get dynamically (from KV store?) and re-initialize on change
-	}
 	// TODO: Standardize config with something like https://github.com/AudiusProject/audius-protocol/blob/main/comms/discovery/config/config.go#L62
 	var thisNodePubKey string
-	thisNodePubKey = os.Getenv("delegatePrivateKey") // stage + prod
+	thisNodePubKey = os.Getenv("delegateOwnerWallet") // stage + prod
 	if thisNodePubKey == "" {
 		thisNodePubKey = os.Getenv("audius_delegate_owner_wallet") // local dev
 	}
 	var host string
+	// TODO: host config
 	switch thisNodePubKey {
 	case "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F":
 		host = "http://localhost:8924"
@@ -69,11 +58,12 @@ func NewProd(jsc nats.JetStreamContext) *StorageServer {
 	case "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16":
 		host = "http://localhost:8927"
 	}
+
+	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, thisNodePubKey, jsc)
 	if host == "" {
 		host = os.Getenv("creatorNodeEndpoint") // stage + prod
 	}
 
-	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, allStorageNodePubKeys, thisNodePubKey, jsc)
 	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
 		panic(err)

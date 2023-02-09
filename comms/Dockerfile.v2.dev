@@ -1,0 +1,16 @@
+FROM golang:alpine
+
+RUN apk add build-base make ffmpeg
+RUN export GO111MODULE=on && \
+    go install github.com/nats-io/nats-server/v2@latest && \
+    go install github.com/nats-io/natscli/nats@latest && \
+    go install github.com/nats-io/nkeys/nk@latest && \
+    go install github.com/nats-io/nsc/v2@latest && \
+    go install github.com/cosmtrek/air@latest
+
+WORKDIR /app
+COPY . .
+RUN make build.alpine
+
+VOLUME ["/tmp"]
+ENTRYPOINT [ "air" ]

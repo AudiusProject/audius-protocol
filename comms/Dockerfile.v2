@@ -16,5 +16,6 @@ FROM alpine AS final
 RUN apk add ffmpeg
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/comms /bin/comms
-VOLUME ["/tmp/nats"]
+
+VOLUME ["/tmp"]
 ENTRYPOINT [ "comms" ]
