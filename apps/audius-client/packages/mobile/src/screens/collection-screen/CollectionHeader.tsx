@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import type { Collection, SmartCollectionVariant } from '@audius/common'
 import {
@@ -16,6 +16,7 @@ import { useDebouncedCallback } from 'app/hooks/useDebouncedCallback'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useProxySelector } from 'app/hooks/useProxySelector'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { getVisibility } from 'app/store/drawers/selectors'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
 import {
@@ -149,6 +150,22 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
     [isMarkedForDownload, playlist_id]
   )
 
+  const [downloadSwitchValue, setDownloadSwitchValue] =
+    useState(isMarkedForDownload)
+  const removeDrawerVisibility = useSelector(
+    getVisibility('RemoveDownloadedCollection')
+  )
+
+  useEffect(() => {
+    if (
+      removeDrawerVisibility !== true &&
+      isMarkedForDownload !== downloadSwitchValue
+    ) {
+      setDownloadSwitchValue(isMarkedForDownload)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isMarkedForDownload, removeDrawerVisibility])
+
   const handleToggleDownload = useCallback(
     (isDownloadEnabled: boolean) => {
       if (isDownloadEnabled) {
@@ -170,6 +187,11 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
     handleToggleDownload,
     800
   )
+
+  const handleDownloadSwitchChange = (isEnabled: boolean) => {
+    setDownloadSwitchValue(isEnabled)
+    debouncedHandleToggleDownload(isEnabled)
+  }
 
   const getTextColor = () => {
     if (
@@ -202,8 +224,8 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
       </View>
       <View style={styles.headerRight}>
         <Switch
-          defaultValue={isMarkedForDownload}
-          onValueChange={debouncedHandleToggleDownload}
+          value={downloadSwitchValue}
+          onValueChange={handleDownloadSwitchChange}
           disabled={
             isFavoritesToggleOn || (!isReachable && !isMarkedForDownload)
           }
