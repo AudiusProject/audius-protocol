@@ -63,7 +63,7 @@ solana_client_manager = None
 entity_manager = None
 contract_addresses: Dict[str, Any] = defaultdict()
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 
 def get_contract_addresses():
