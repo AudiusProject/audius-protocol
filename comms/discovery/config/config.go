@@ -125,6 +125,14 @@ func Init() {
 		"np", NatsClusterPassword)
 }
 
+func GetEnvDefault(k, defaultV string) string {
+	v := os.Getenv(k)
+	if len(v) == 0 {
+		return defaultV
+	}
+	return v
+}
+
 func mgetenv(keys ...string) string {
 	for _, k := range keys {
 		v := os.Getenv(k)

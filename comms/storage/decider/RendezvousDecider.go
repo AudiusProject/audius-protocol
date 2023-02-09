@@ -4,6 +4,7 @@ package decider
 import (
 	"fmt"
 
+	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/sharder"
 	"github.com/nats-io/nats.go"
 	"github.com/tysonmote/rendezvous"
@@ -21,7 +22,13 @@ type RendezvousDecider struct {
 }
 
 // NewRendezvousDecider creates a storage decider that makes this node store content based on a rendezvous hash.
-func NewRendezvousDecider(namespace string, replicationFactor int, allStorageNodePubKeys []string, thisNodePubKey string, jsc nats.JetStreamContext) *RendezvousDecider {
+func NewRendezvousDecider(namespace string, replicationFactor int, thisNodePubKey string, jsc nats.JetStreamContext) *RendezvousDecider {
+	var allStorageNodePubKeys []string
+	allNodes, _ := peering.GetContentNodes()
+	for _, v := range allNodes {
+		allStorageNodePubKeys = append(allStorageNodePubKeys, v.DelegateOwnerWallet)
+	}
+
 	d := RendezvousDecider{
 		namespace:             namespace,
 		replicationFactor:     replicationFactor,
