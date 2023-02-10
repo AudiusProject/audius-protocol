@@ -47,10 +47,10 @@ export interface UserFull {
     albumCount: number;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof UserFull
      */
-    artistPickTrackId?: number;
+    artistPickTrackId?: string;
     /**
      * 
      * @type {string}
