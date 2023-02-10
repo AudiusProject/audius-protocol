@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 
 import { formatSeconds, playerActions } from '@audius/common'
 import { View } from 'react-native'
@@ -9,13 +9,9 @@ import { makeStyles } from 'app/styles'
 
 import { PositionTimestamp } from './PositionTimestamp'
 import { Slider } from './Slider'
+import { usePosition } from './usePosition'
 
 const { seek } = playerActions
-
-// Timeout applied when releasing the drag-handle before timestamps reset.
-const SCRUB_RELEASE_TIMEOUT_MS = 1000
-
-// Pretty formats seconds into m:ss or h:mm:ss
 
 const useStyles = makeStyles(({ palette }) => ({
   root: {
@@ -61,52 +57,56 @@ export const Scrubber = (props: ScrubberProps) => {
   const { mediaKey, isPlaying, duration, onPressIn, onPressOut } = props
   const styles = useStyles()
   const dispatch = useDispatch()
-  const [dragSeconds, setDragSeconds] = useState<string | null>(null)
+  const [isInteracting, setIsInteracting] = useState(false)
+  const { ref, setPosition } = usePosition(
+    mediaKey,
+    duration,
+    isPlaying,
+    isInteracting
+  )
 
   const handlePressIn = useCallback(() => {
     onPressIn()
+    setIsInteracting(true)
   }, [onPressIn])
 
   const handlePressOut = useCallback(
     (percentComplete: number) => {
+      const newPosition = percentComplete * duration
       if (duration) {
-        dispatch(seek({ seconds: percentComplete * duration }))
+        dispatch(seek({ seconds: newPosition }))
       }
+      setPosition(newPosition)
+      setIsInteracting(false)
       onPressOut()
-      setTimeout(() => {
-        setDragSeconds(null)
-      }, SCRUB_RELEASE_TIMEOUT_MS)
     },
-    [onPressOut, dispatch, duration]
+    [onPressOut, dispatch, duration, setPosition]
   )
 
-  const onDrag = useCallback(
+  const handleDrag = useCallback(
     (percentComplete: number) => {
-      if (duration) {
-        setDragSeconds(formatSeconds(percentComplete * duration))
-      }
+      setIsInteracting(true)
+      setPosition(percentComplete * duration)
     },
-    [duration, setDragSeconds]
+    [duration, setPosition]
   )
 
-  useEffect(() => {
-    setDragSeconds(formatSeconds(0))
-  }, [mediaKey])
+  const handleDragRelease = useCallback(() => {
+    setIsInteracting(false)
+  }, [])
 
   // TODO: disable scrubber animation when now playing is closed
   // Disable tracking bar animation when now playing bar is open
   return (
     <View style={styles.root}>
-      <PositionTimestamp
-        dragSeconds={dragSeconds}
-        setDragSeconds={setDragSeconds}
-      />
+      <PositionTimestamp ref={ref} />
       <Slider
         mediaKey={mediaKey}
         isPlaying={isPlaying}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        onDrag={onDrag}
+        onDrag={handleDrag}
+        onDragRelease={handleDragRelease}
         duration={duration}
       />
       <Text style={styles.timestamp} weight='regular' numberOfLines={1}>
