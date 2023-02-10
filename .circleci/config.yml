@@ -34,7 +34,6 @@ jobs:
             ./circleci config pack . | tee generated_config.yml
       - continuation/continue:
           configuration_path: .circleci/generated_config.yml
-          parameters: '{"release-create-branch": << pipeline.parameters.release-create-branch >>}'
 
 workflows:
   circleci-setup:
