@@ -79,7 +79,7 @@ const writeBootstrapConfig = async () => {
   const staging = await generateBootstrapConfig(envConfigs.staging)
   const development = {
     minVersion: '0.0.0',
-    discoveryNodes: ['http://localhost:5000']
+    discoveryNodes: ['http://audius-protocol-discovery-provider-1']
   }
   const config = {
     production,
