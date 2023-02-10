@@ -1,50 +1,35 @@
-import { useEffect } from 'react'
+import { forwardRef } from 'react'
 
-import type { Nullable } from '@audius/common'
-import { formatSeconds } from '@audius/common'
-import { useStreamPosition } from 'react-native-google-cast'
-import { useProgress } from 'react-native-track-player'
+import type { Text as TextInputProps } from 'react-native'
+import { TextInput, View } from 'react-native'
 
-import { Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 
-type PositionTimestampProps = {
-  dragSeconds: Nullable<string>
-  setDragSeconds: (seconds: Nullable<string>) => void
-}
+type PositionTimestampProps = Partial<TextInputProps>
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, typography }) => ({
   timestamp: {
     width: 50,
     color: palette.neutral,
-    fontSize: 12,
+    fontSize: typography.fontSize.xs,
+    fontFamily: typography.fontByWeight.regular,
     flexShrink: 1,
     textAlign: 'right'
   }
 }))
 
-export const PositionTimestamp = (props: PositionTimestampProps) => {
-  const { dragSeconds, setDragSeconds } = props
-  const styles = useStyles()
-  const { position: trackPlayerPosition, duration: progressDuration } =
-    useProgress(1000)
-
-  const streamPosition = useStreamPosition(1000)
-
-  useEffect(() => {
-    setDragSeconds(null)
-  }, [progressDuration, streamPosition, setDragSeconds])
-
-  const position = streamPosition ?? trackPlayerPosition
-
-  return (
-    <Text
-      style={[styles.timestamp, { textAlign: 'right' }]}
-      fontSize='xs'
-      weight='regular'
-      numberOfLines={1}
-    >
-      {dragSeconds || formatSeconds(position)}
-    </Text>
-  )
-}
+export const PositionTimestamp = forwardRef<TextInput, PositionTimestampProps>(
+  (props, ref) => {
+    const styles = useStyles()
+    return (
+      <View pointerEvents='none'>
+        <TextInput
+          ref={ref}
+          style={styles.timestamp}
+          numberOfLines={1}
+          {...props}
+        />
+      </View>
+    )
+  }
+)

@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useAppState } from '@react-native-community/hooks'
 import type { GestureResponderEvent } from 'react-native'
@@ -92,6 +92,7 @@ type SliderProps = {
    * and then dragging.
    */
   onDrag: (percentComplete: number) => void
+  onDragRelease: () => void
 }
 
 /**
@@ -101,7 +102,15 @@ type SliderProps = {
  * re-renders of itself, despite having to update external timestamps on "drag."
  */
 export const Slider = memo((props: SliderProps) => {
-  const { mediaKey, isPlaying, duration, onPressIn, onPressOut, onDrag } = props
+  const {
+    mediaKey,
+    isPlaying,
+    duration,
+    onPressIn,
+    onPressOut,
+    onDrag,
+    onDragRelease
+  } = props
   const styles = useStyles()
   const { primaryLight2, primaryDark2 } = useThemeColors()
 
@@ -222,28 +231,40 @@ export const Slider = memo((props: SliderProps) => {
     [onPressOut, animateFromNowToEnd]
   )
 
-  const panResponder = PanResponder.create({
-    onMoveShouldSetPanResponder: () => {
-      return true
-    },
-    onPanResponderMove: (e, gestureState) => {
-      const newPosition = Math.max(
-        0,
-        Math.min(gestureState.dx + handlePosition, railWidth)
-      )
-      attachToDx(translationAnim, newPosition)(e)
-      onDrag(newPosition / railWidth)
-    },
-    onPanResponderRelease: (e, gestureState) => {
-      const newPosition = Math.max(
-        0,
-        Math.min(gestureState.dx + handlePosition, railWidth)
-      )
-      attachToDx(translationAnim, newPosition)(e)
-      setHandlePosition(newPosition)
-      onReleaseHandle(newPosition / railWidth)
-    }
-  })
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: () => {
+          return true
+        },
+        onPanResponderMove: (e, gestureState) => {
+          const newPosition = Math.max(
+            0,
+            Math.min(gestureState.dx + handlePosition, railWidth)
+          )
+          attachToDx(translationAnim, newPosition)(e)
+          onDrag(newPosition / railWidth)
+        },
+        onPanResponderRelease: (e, gestureState) => {
+          const newPosition = Math.max(
+            0,
+            Math.min(gestureState.dx + handlePosition, railWidth)
+          )
+          attachToDx(translationAnim, newPosition)(e)
+          setHandlePosition(newPosition)
+          onReleaseHandle(newPosition / railWidth)
+          onDragRelease()
+        }
+      }),
+    [
+      handlePosition,
+      onDrag,
+      onDragRelease,
+      onReleaseHandle,
+      railWidth,
+      translationAnim
+    ]
+  )
 
   // When the media key changes, reset the scrubber
   useEffect(() => {
