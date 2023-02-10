@@ -9,7 +9,7 @@ from collections import defaultdict
 from typing import Any, Dict
 
 import redis
-from celery.schedules import crontab, timedelta
+from celery.schedules import timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
