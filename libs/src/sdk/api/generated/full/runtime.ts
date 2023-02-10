@@ -159,7 +159,7 @@ export class BaseAPI {
             body:
                 isFormData(overriddenInit.body) ||
                 overriddenInit.body instanceof URLSearchParams ||
-                isBlob(overriddenInit.body)
+                isBlob(overriddenInit.body) || isString(overriddenInit.body)
                     ? overriddenInit.body
                     : JSON.stringify(overriddenInit.body),
         };
@@ -231,6 +231,10 @@ function isBlob(value: any): value is Blob {
 
 function isFormData(value: any): value is FormData {
     return typeof FormData !== "undefined" && value instanceof FormData;
+}
+
+function isString(value: any): value is string {
+    return typeof value === 'string'
 }
 
 export class ResponseError extends Error {
