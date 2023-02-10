@@ -159,7 +159,7 @@ export class BaseAPI {
             body:
                 isFormData(overriddenInit.body) ||
                 overriddenInit.body instanceof URLSearchParams ||
-                isBlob(overriddenInit.body)
+                isBlob(overriddenInit.body) || isString(overriddenInit.body)
                     ? overriddenInit.body
                     : JSON.stringify(overriddenInit.body),
         };
@@ -233,6 +233,10 @@ function isFormData(value: any): value is FormData {
     return typeof FormData !== "undefined" && value instanceof FormData;
 }
 
+function isString(value: any): value is string {
+    return typeof value === 'string'
+}
+
 export class ResponseError extends Error {
     override name: "ResponseError" = "ResponseError";
     constructor(public response: Response, msg?: string) {
@@ -293,6 +297,7 @@ export function exists(json: any, key: string) {
 
 export function querystring(params: HTTPQuery, prefix: string = ''): string {
     return Object.keys(params)
+        .sort()
         .map(key => querystringSingleKey(key, params[key], prefix))
         .filter(part => part.length > 0)
         .join('&');

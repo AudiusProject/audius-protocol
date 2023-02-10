@@ -88,14 +88,14 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		Replicas: replicaCount,
 	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create KV: %v", err)
 	}
 
 	// work subscription using kv's underlying stream
 	kvStreamName := "KV_" + kvBucketName
 	workSubscription, err := jsc.QueueSubscribeSync("", kvStreamName, nats.AckWait(time.Minute), nats.BindStream(kvStreamName))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create KV work subscription: %v", err)
 	}
 
 	// create temp buckets
@@ -109,7 +109,7 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 
 	watcher, err := kv.WatchAll()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to watch KV: %v", err)
 	}
 
 	jobman := &JobsManager{

@@ -154,7 +154,7 @@ def get_feed_es(args, limit=10):
     )
 
     # take a "soft limit" here.  Some tracks / reposts might get filtered out below
-    # if is_delete
+    # if is_delete, or if track is collectible gated
     sorted_with_reposts = sorted_with_reposts[0 : limit * 2]
 
     mget_reposts = []
@@ -186,8 +186,9 @@ def get_feed_es(args, limit=10):
                 or s.get("is_private")
                 or s.get("is_unlisted")
                 or s.get("stem_of")
+                or s.get("is_premium")
             ):
-                # MISSING: skip reposts for delete, private, unlisted, stem_of
+                # MISSING: skip reposts for delete, private, unlisted, stem_of, is_premium
                 # this is why we took soft limit above
                 continue
             keyed_reposts[s["item_key"]] = s
@@ -235,6 +236,20 @@ def get_feed_es(args, limit=10):
         # but /feed still expects save_count
         if "favorite_count" in item:
             item["save_count"] = item["favorite_count"]
+
+    # Filter out collectible gated tracks from feed.
+    # The soft limit above allows us to filter out collectible gated tracks
+    # and still be able to probabilistically satisfy the given limit later below.
+    sorted_feed = list(
+        filter(
+            lambda item: ("premium_conditions" not in item)  # not a track
+            or (item["premium_conditions"] is None)  # not a premium track
+            or (
+                "nft_collection" not in item["premium_conditions"]
+            ),  # not a collectible gated track
+            sorted_feed,
+        )
+    )
 
     # batch populate premium track metadata
     db = get_db_read_replica()

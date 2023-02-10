@@ -41,10 +41,10 @@ export interface User {
     albumCount: number;
     /**
      * 
-     * @type {number}
+     * @type {string}
      * @memberof User
      */
-    artistPickTrackId?: number;
+    artistPickTrackId?: string;
     /**
      * 
      * @type {string}

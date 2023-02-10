@@ -14,20 +14,29 @@ import (
 )
 
 type ServiceNode struct {
-	ID                  string
-	SPID                string
-	Endpoint            string
-	DelegateOwnerWallet string
+	ID                  string `json:"id"`
+	SPID                string `json:"spID"`
+	Endpoint            string `json:"endpoint"`
+	DelegateOwnerWallet string `json:"delegateOwnerWallet"`
 	Type                struct {
-		ID string
-	}
+		ID string `json:"id"`
+	} `json:"type"`
 }
 
 var (
 	allNodes = map[string]ServiceNode{}
 )
 
-func PollRegisteredNodes() error {
+func PollRegisteredNodes(registeredNodesOverride []ServiceNode) error {
+	if len(registeredNodesOverride) > 0 {
+		mu.Lock()
+		for _, sp := range registeredNodesOverride {
+			allNodes[sp.ID] = sp
+		}
+		mu.Unlock()
+		return nil
+	}
+
 	// don't start polling for
 	if config.Env == "standalone" || os.Getenv("test_host") != "" {
 		return nil
@@ -71,7 +80,7 @@ func listNodes(typeFilter string) ([]ServiceNode, error) {
 		return testNodes, nil
 	}
 	// make dev.discovery
-	if config.Env == "standalone" {
+	if config.Env == "standalone" && len(allNodes) == 0 {
 		return []ServiceNode{}, nil
 	}
 

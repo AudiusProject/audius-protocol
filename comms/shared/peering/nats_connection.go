@@ -25,11 +25,11 @@ func DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error) {
 
 	nc, err := DialNatsUrl(natsUrl)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to dial natsUrl %q: %v", natsUrl, err)
 	}
 	j, err := nc.JetStream()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open jetstream connection: %v", err)
 	}
 	return j, nil
 }
