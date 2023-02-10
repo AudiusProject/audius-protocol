@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,37 +13,82 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
  * @interface Favorite
  */
-export interface Favorite 
-    {
-        /**
-        * 
-        * @type {string}
-        * @memberof Favorite
-        */
-        favorite_item_id: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof Favorite
-        */
-        favorite_type: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof Favorite
-        */
-        user_id: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof Favorite
-        */
-        created_at: string;
-    }
+export interface Favorite {
+    /**
+     * 
+     * @type {string}
+     * @memberof Favorite
+     */
+    favorite_item_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Favorite
+     */
+    favorite_type: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Favorite
+     */
+    user_id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Favorite
+     */
+    created_at: string;
+}
 
+/**
+ * Check if a given object implements the Favorite interface.
+ */
+export function instanceOfFavorite(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "favorite_item_id" in value;
+    isInstance = isInstance && "favorite_type" in value;
+    isInstance = isInstance && "user_id" in value;
+    isInstance = isInstance && "created_at" in value;
+
+    return isInstance;
+}
+
+export function FavoriteFromJSON(json: any): Favorite {
+    return FavoriteFromJSONTyped(json, false);
+}
+
+export function FavoriteFromJSONTyped(json: any, ignoreDiscriminator: boolean): Favorite {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'favorite_item_id': json['favorite_item_id'],
+        'favorite_type': json['favorite_type'],
+        'user_id': json['user_id'],
+        'created_at': json['created_at'],
+    };
+}
+
+export function FavoriteToJSON(value?: Favorite | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'favorite_item_id': value.favorite_item_id,
+        'favorite_type': value.favorite_type,
+        'user_id': value.user_id,
+        'created_at': value.created_at,
+    };
+}
 

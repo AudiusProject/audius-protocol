@@ -48,8 +48,6 @@ export * from './UserResponse';
 export * from './UserSearch';
 export * from './UserSubscribers';
 export * from './UserTrackListenCountsResponse';
-export * from './UserTrackListenCountsResponseData';
 export * from './UsersByContentNode';
 export * from './VerifyToken';
 export * from './VersionMetadata';
-export * from './WildMonthModel';

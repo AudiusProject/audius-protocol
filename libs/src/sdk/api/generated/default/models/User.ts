@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,14 +13,15 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { CoverPhoto } from './CoverPhoto';
 import {
-    CoverPhoto,
     CoverPhotoFromJSON,
     CoverPhotoFromJSONTyped,
     CoverPhotoToJSON,
 } from './CoverPhoto';
+import type { ProfilePicture } from './ProfilePicture';
 import {
-    ProfilePicture,
     ProfilePictureFromJSON,
     ProfilePictureFromJSONTyped,
     ProfilePictureToJSON,
@@ -31,134 +32,222 @@ import {
  * @export
  * @interface User
  */
-export interface User 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof User
-        */
-        album_count: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof User
-        */
-        artist_pick_track_id?: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof User
-        */
-        bio?: string;
-        /**
-        * 
-        * @type {CoverPhoto}
-        * @memberof User
-        */
-        cover_photo?: CoverPhoto;
-        /**
-        * 
-        * @type {number}
-        * @memberof User
-        */
-        followee_count: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof User
-        */
-        follower_count: number;
-        /**
-        * 
-        * @type {boolean}
-        * @memberof User
-        */
-        does_follow_current_user?: boolean;
-        /**
-        * 
-        * @type {string}
-        * @memberof User
-        */
-        handle: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof User
-        */
-        id: string;
-        /**
-        * 
-        * @type {boolean}
-        * @memberof User
-        */
-        is_verified: boolean;
-        /**
-        * 
-        * @type {string}
-        * @memberof User
-        */
-        location?: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof User
-        */
-        name: string;
-        /**
-        * 
-        * @type {number}
-        * @memberof User
-        */
-        playlist_count: number;
-        /**
-        * 
-        * @type {ProfilePicture}
-        * @memberof User
-        */
-        profile_picture?: ProfilePicture;
-        /**
-        * 
-        * @type {number}
-        * @memberof User
-        */
-        repost_count: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof User
-        */
-        track_count: number;
-        /**
-        * 
-        * @type {boolean}
-        * @memberof User
-        */
-        is_deactivated: boolean;
-        /**
-        * 
-        * @type {string}
-        * @memberof User
-        */
-        erc_wallet?: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof User
-        */
-        spl_wallet: string;
-        /**
-        * 
-        * @type {number}
-        * @memberof User
-        */
-        supporter_count: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof User
-        */
-        supporting_count: number;
-    }
+export interface User {
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    album_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    artist_pick_track_id?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof User
+     */
+    bio?: string;
+    /**
+     * 
+     * @type {CoverPhoto}
+     * @memberof User
+     */
+    cover_photo?: CoverPhoto;
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    followee_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    follower_count: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof User
+     */
+    does_follow_current_user?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof User
+     */
+    handle: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof User
+     */
+    id: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof User
+     */
+    is_verified: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof User
+     */
+    location?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof User
+     */
+    name: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    playlist_count: number;
+    /**
+     * 
+     * @type {ProfilePicture}
+     * @memberof User
+     */
+    profile_picture?: ProfilePicture;
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    repost_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    track_count: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof User
+     */
+    is_deactivated: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof User
+     */
+    erc_wallet?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof User
+     */
+    spl_wallet: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    supporter_count: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof User
+     */
+    supporting_count: number;
+}
 
+/**
+ * Check if a given object implements the User interface.
+ */
+export function instanceOfUser(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "album_count" in value;
+    isInstance = isInstance && "followee_count" in value;
+    isInstance = isInstance && "follower_count" in value;
+    isInstance = isInstance && "handle" in value;
+    isInstance = isInstance && "id" in value;
+    isInstance = isInstance && "is_verified" in value;
+    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "playlist_count" in value;
+    isInstance = isInstance && "repost_count" in value;
+    isInstance = isInstance && "track_count" in value;
+    isInstance = isInstance && "is_deactivated" in value;
+    isInstance = isInstance && "spl_wallet" in value;
+    isInstance = isInstance && "supporter_count" in value;
+    isInstance = isInstance && "supporting_count" in value;
+
+    return isInstance;
+}
+
+export function UserFromJSON(json: any): User {
+    return UserFromJSONTyped(json, false);
+}
+
+export function UserFromJSONTyped(json: any, ignoreDiscriminator: boolean): User {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'album_count': json['album_count'],
+        'artist_pick_track_id': !exists(json, 'artist_pick_track_id') ? undefined : json['artist_pick_track_id'],
+        'bio': !exists(json, 'bio') ? undefined : json['bio'],
+        'cover_photo': !exists(json, 'cover_photo') ? undefined : CoverPhotoFromJSON(json['cover_photo']),
+        'followee_count': json['followee_count'],
+        'follower_count': json['follower_count'],
+        'does_follow_current_user': !exists(json, 'does_follow_current_user') ? undefined : json['does_follow_current_user'],
+        'handle': json['handle'],
+        'id': json['id'],
+        'is_verified': json['is_verified'],
+        'location': !exists(json, 'location') ? undefined : json['location'],
+        'name': json['name'],
+        'playlist_count': json['playlist_count'],
+        'profile_picture': !exists(json, 'profile_picture') ? undefined : ProfilePictureFromJSON(json['profile_picture']),
+        'repost_count': json['repost_count'],
+        'track_count': json['track_count'],
+        'is_deactivated': json['is_deactivated'],
+        'erc_wallet': !exists(json, 'erc_wallet') ? undefined : json['erc_wallet'],
+        'spl_wallet': json['spl_wallet'],
+        'supporter_count': json['supporter_count'],
+        'supporting_count': json['supporting_count'],
+    };
+}
+
+export function UserToJSON(value?: User | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'album_count': value.album_count,
+        'artist_pick_track_id': value.artist_pick_track_id,
+        'bio': value.bio,
+        'cover_photo': CoverPhotoToJSON(value.cover_photo),
+        'followee_count': value.followee_count,
+        'follower_count': value.follower_count,
+        'does_follow_current_user': value.does_follow_current_user,
+        'handle': value.handle,
+        'id': value.id,
+        'is_verified': value.is_verified,
+        'location': value.location,
+        'name': value.name,
+        'playlist_count': value.playlist_count,
+        'profile_picture': ProfilePictureToJSON(value.profile_picture),
+        'repost_count': value.repost_count,
+        'track_count': value.track_count,
+        'is_deactivated': value.is_deactivated,
+        'erc_wallet': value.erc_wallet,
+        'spl_wallet': value.spl_wallet,
+        'supporter_count': value.supporter_count,
+        'supporting_count': value.supporting_count,
+    };
+}
 

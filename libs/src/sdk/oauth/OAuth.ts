@@ -1,9 +1,6 @@
-import type {
-  DiscoveryProvider,
-  UserProfile
-} from '../../services/discoveryProvider'
+import type { DecodedUserToken, UsersApi } from '../api/generated/default'
 
-export type LoginSuccessCallback = (profile: UserProfile) => void
+export type LoginSuccessCallback = (profile: DecodedUserToken) => void
 export type LoginErrorCallback = (errorMessage: string) => void
 export type ButtonOptions = {
   size: 'small' | 'medium' | 'large'
@@ -104,28 +101,24 @@ const generateAudiusLogoSvg = (size: 'small' | 'medium' | 'large') => {
 const OAUTH_URL = 'https://audius.co/oauth/auth'
 const CSRF_TOKEN_KEY = 'audiusOauthState'
 
-type OauthConfig = {
+type OAuthConfig = {
   appName: string
-  discoveryProvider: DiscoveryProvider
+  usersApi: UsersApi
 }
 
-export class Oauth {
-  discoveryProvider: DiscoveryProvider
-  appName: string
+export class OAuth {
   activePopupWindow: null | Window
   popupCheckInterval: NodeJS.Timer | null
   loginSuccessCallback: LoginSuccessCallback | null
   loginErrorCallback: LoginErrorCallback | null
 
-  constructor({ discoveryProvider, appName }: OauthConfig) {
+  constructor(private readonly config: OAuthConfig) {
     if (typeof window === 'undefined') {
       // TODO(nkang): Add link to documentation once written
       throw new Error(
         'Audius OAuth SDK functions are only available in browser. Refer to our documentation to learn how to implement Audius OAuth manually.'
       )
     }
-    this.discoveryProvider = discoveryProvider
-    this.appName = appName
     this.activePopupWindow = null
     this.loginSuccessCallback = null
     this.loginErrorCallback = null
@@ -148,7 +141,7 @@ export class Oauth {
   }
 
   login() {
-    if (!this.appName) {
+    if (!this.config.appName) {
       this._surfaceError('App name not set (set with `init` method).')
       return
     }
@@ -164,7 +157,7 @@ export class Oauth {
     const windowOptions =
       'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=375, height=720, top=100, left=100'
     const originURISafe = encodeURIComponent(window.location.origin)
-    const appNameURISafe = encodeURI(this.appName)
+    const appNameURISafe = encodeURI(this.config.appName)
     const fullOauthUrl = `${OAUTH_URL}?scope=read&state=${csrfToken}&redirect_uri=postMessage&origin=${originURISafe}&app_name=${appNameURISafe}`
     this.activePopupWindow = window.open(fullOauthUrl, '', windowOptions)
     this._clearPopupCheckInterval()
@@ -212,8 +205,14 @@ export class Oauth {
     element.replaceWith(button)
   }
 
+  /**
+   * Verify if the given jwt ID token was signed by the subject (user) in the payload
+   * @deprecated see `UsersApi.verifyIDToken`
+   * @param token the token to verify
+   * @returns
+   */
   async verifyToken(token: string) {
-    return await this.discoveryProvider.verifyToken(token)
+    return await this.config.usersApi.verifyIDToken({ token })
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
@@ -254,9 +253,9 @@ export class Oauth {
     }
     // Verify token and decode
     const decodedJwt = await this.verifyToken(event.data.token)
-    if (decodedJwt) {
+    if (decodedJwt?.data) {
       if (this.loginSuccessCallback) {
-        this.loginSuccessCallback(decodedJwt)
+        this.loginSuccessCallback(decodedJwt.data)
       }
     } else {
       this._surfaceError('The token was invalid.')

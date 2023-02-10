@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -25,26 +26,67 @@ import {
  * @export
  * @interface Supporting
  */
-export interface Supporting 
-    {
-        /**
-        * 
-        * @type {number}
-        * @memberof Supporting
-        */
-        rank: number;
-        /**
-        * 
-        * @type {string}
-        * @memberof Supporting
-        */
-        amount: string;
-        /**
-        * 
-        * @type {User}
-        * @memberof Supporting
-        */
-        receiver: User;
-    }
+export interface Supporting {
+    /**
+     * 
+     * @type {number}
+     * @memberof Supporting
+     */
+    rank: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof Supporting
+     */
+    amount: string;
+    /**
+     * 
+     * @type {User}
+     * @memberof Supporting
+     */
+    receiver: User;
+}
 
+/**
+ * Check if a given object implements the Supporting interface.
+ */
+export function instanceOfSupporting(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "rank" in value;
+    isInstance = isInstance && "amount" in value;
+    isInstance = isInstance && "receiver" in value;
+
+    return isInstance;
+}
+
+export function SupportingFromJSON(json: any): Supporting {
+    return SupportingFromJSONTyped(json, false);
+}
+
+export function SupportingFromJSONTyped(json: any, ignoreDiscriminator: boolean): Supporting {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'rank': json['rank'],
+        'amount': json['amount'],
+        'receiver': UserFromJSON(json['receiver']),
+    };
+}
+
+export function SupportingToJSON(value?: Supporting | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'rank': value.rank,
+        'amount': value.amount,
+        'receiver': UserToJSON(value.receiver),
+    };
+}
 

@@ -1,5 +1,5 @@
-// @ts-nocheck
 /* tslint:disable */
+// @ts-nocheck
 /* eslint-disable */
 /**
  * API
@@ -15,50 +15,28 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  TransactionHistoryCountResponse,
+  TransactionHistoryResponse,
+} from '../models';
 import {
-    TransactionHistoryCountResponse,
     TransactionHistoryCountResponseFromJSON,
     TransactionHistoryCountResponseToJSON,
-    TransactionHistoryResponse,
     TransactionHistoryResponseFromJSON,
     TransactionHistoryResponseToJSON,
 } from '../models';
 
 export interface GetAudioTransactionHistoryRequest {
-    /**
-     * The data that was signed by the user for signature recovery
-     */
     encodedDataMessage: string;
-    /**
-     * The signature of data, used for signature recovery
-     */
     encodedDataSignature: string;
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
     offset?: number;
-    /**
-     * The number of items to fetch
-     */
     limit?: number;
-    /**
-     * The sort method
-     */
     sortMethod?: GetAudioTransactionHistorySortMethodEnum;
-    /**
-     * The sort direction
-     */
     sortDirection?: GetAudioTransactionHistorySortDirectionEnum;
 }
 
 export interface GetAudioTransactionHistoryCountRequest {
-    /**
-     * The data that was signed by the user for signature recovery
-     */
     encodedDataMessage: string;
-    /**
-     * The signature of data, used for signature recovery
-     */
     encodedDataSignature: string;
 }
 
@@ -70,7 +48,7 @@ export class TransactionsApi extends runtime.BaseAPI {
     /**
      * Gets the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistory(requestParameters: GetAudioTransactionHistoryRequest): Promise<NonNullable<TransactionHistoryResponse["data"]>> {
+    async getAudioTransactionHistoryRaw(requestParameters: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryResponse>> {
         if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
             throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getAudioTransactionHistory.');
         }
@@ -107,18 +85,28 @@ export class TransactionsApi extends runtime.BaseAPI {
             headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
         }
 
-        return this.request({
+        const response = await this.request({
             path: `/transactions`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TransactionHistoryResponse["data"]>>;
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactionHistory(requestParameters: GetAudioTransactionHistoryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryResponse> {
+        const response = await this.getAudioTransactionHistoryRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
      * Gets the count of the user\'s $AUDIO transaction history within the App
      */
-    async getAudioTransactionHistoryCount(requestParameters: GetAudioTransactionHistoryCountRequest): Promise<NonNullable<TransactionHistoryCountResponse["data"]>> {
+    async getAudioTransactionHistoryCountRaw(requestParameters: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TransactionHistoryCountResponse>> {
         if (requestParameters.encodedDataMessage === null || requestParameters.encodedDataMessage === undefined) {
             throw new runtime.RequiredError('encodedDataMessage','Required parameter requestParameters.encodedDataMessage was null or undefined when calling getAudioTransactionHistoryCount.');
         }
@@ -139,29 +127,39 @@ export class TransactionsApi extends runtime.BaseAPI {
             headerParameters['Encoded-Data-Signature'] = String(requestParameters.encodedDataSignature);
         }
 
-        return this.request({
+        const response = await this.request({
             path: `/transactions/count`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TransactionHistoryCountResponse["data"]>>;
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TransactionHistoryCountResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the count of the user\'s $AUDIO transaction history within the App
+     */
+    async getAudioTransactionHistoryCount(requestParameters: GetAudioTransactionHistoryCountRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TransactionHistoryCountResponse> {
+        const response = await this.getAudioTransactionHistoryCountRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }
 
 /**
-    * @export
-    * @enum {string}
-    */
-export enum GetAudioTransactionHistorySortMethodEnum {
-    Date = 'date',
-    TransactionType = 'transaction_type'
-}
+ * @export
+ */
+export const GetAudioTransactionHistorySortMethodEnum = {
+    Date: 'date',
+    TransactionType: 'transaction_type'
+} as const;
+export type GetAudioTransactionHistorySortMethodEnum = typeof GetAudioTransactionHistorySortMethodEnum[keyof typeof GetAudioTransactionHistorySortMethodEnum];
 /**
-    * @export
-    * @enum {string}
-    */
-export enum GetAudioTransactionHistorySortDirectionEnum {
-    Asc = 'asc',
-    Desc = 'desc'
-}
+ * @export
+ */
+export const GetAudioTransactionHistorySortDirectionEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type GetAudioTransactionHistorySortDirectionEnum = typeof GetAudioTransactionHistorySortDirectionEnum[keyof typeof GetAudioTransactionHistorySortDirectionEnum];

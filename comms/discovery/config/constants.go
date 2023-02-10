@@ -19,6 +19,8 @@ var (
 		RateLimitMaxNumNewChats:             100,
 	}
 
+	SignatureTimeToLiveMs = int64(60000)
+
 	GlobalStreamName    = "audius"
 	GlobalStreamSubject = "audius.>"
 )

@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,25 +13,64 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
  * @interface ConnectedWallets
  */
-export interface ConnectedWallets 
-    {
-        /**
-        * 
-        * @type {Array<string>}
-        * @memberof ConnectedWallets
-        */
-        erc_wallets: Array<string>;
-        /**
-        * 
-        * @type {Array<string>}
-        * @memberof ConnectedWallets
-        */
-        spl_wallets: Array<string>;
-    }
+export interface ConnectedWallets {
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ConnectedWallets
+     */
+    erc_wallets: Array<string>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ConnectedWallets
+     */
+    spl_wallets: Array<string>;
+}
 
+/**
+ * Check if a given object implements the ConnectedWallets interface.
+ */
+export function instanceOfConnectedWallets(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "erc_wallets" in value;
+    isInstance = isInstance && "spl_wallets" in value;
+
+    return isInstance;
+}
+
+export function ConnectedWalletsFromJSON(json: any): ConnectedWallets {
+    return ConnectedWalletsFromJSONTyped(json, false);
+}
+
+export function ConnectedWalletsFromJSONTyped(json: any, ignoreDiscriminator: boolean): ConnectedWallets {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'erc_wallets': json['erc_wallets'],
+        'spl_wallets': json['spl_wallets'],
+    };
+}
+
+export function ConnectedWalletsToJSON(value?: ConnectedWallets | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'erc_wallets': value.erc_wallets,
+        'spl_wallets': value.spl_wallets,
+    };
+}
 

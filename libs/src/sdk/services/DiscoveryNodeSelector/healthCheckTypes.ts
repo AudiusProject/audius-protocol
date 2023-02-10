@@ -1,4 +1,20 @@
-export type HealthCheckResponseData = Partial<{
+import type { DeepPartial } from '../../utils/deepPartial'
+
+export type ApiHealthResponseData = Partial<{
+  latest_chain_block: number
+  latest_indexed_block: number
+  latest_chain_slot_plays: number
+  latest_indexed_slot_plays: number
+  signature: string
+  timestamp: string
+  version: {
+    service: string
+    version: string
+  }
+  data: unknown
+}>
+
+export type HealthCheckResponseData = DeepPartial<{
   auto_upgrade_enabled: boolean
   block_difference: number
   challenge_last_event_age_sec: number
@@ -22,6 +38,9 @@ export type HealthCheckResponseData = Partial<{
   latest_indexed_block_num: number
   maximum_healthy_block_difference: number
   meets_min_requirements: boolean
+  network: {
+    discoveryNodes: string[]
+  }
   num_users_in_immediate_balance_refresh_queue: number
   num_users_in_lazy_balance_refresh_queue: number
   number_of_cpus: number
@@ -133,3 +152,36 @@ export type HealthCheckResponseData = Partial<{
     blocknumber: number
   }
 }>
+
+export type HealthCheckThresholds = {
+  /**
+   * Minimum version of Discovery Node to allow for selection.
+   * Can use the version on chain to ensure latest.
+   * Note: Will not allow any newer major or minor versions (unless as backups), just newer patches.
+   * @todo load this from disk by default
+   * @default null
+   */
+  minVersion: string | null
+  /**
+   * The maximum number of slots allowed to be behind on indexing plays.
+   * If unset, don't check the slot diff for plays.
+   * @default undefined
+   */
+  maxSlotDiffPlays: number | null
+  /**
+   * The maximum number of blocks allowed to be behind on indexing the data layer.
+   * @default 15
+   */
+  maxBlockDiff: number
+}
+
+export enum HealthCheckStatus {
+  UNHEALTHY = 'unhealthy',
+  BEHIND = 'behind',
+  HEALTHY = 'healthy'
+}
+
+export type HealthCheckStatusReason = {
+  health: HealthCheckStatus
+  reason?: string
+}

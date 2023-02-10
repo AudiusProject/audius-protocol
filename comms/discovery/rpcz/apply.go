@@ -2,7 +2,6 @@ package rpcz
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/nats-io/nats.go"
+	"github.com/tidwall/gjson"
 )
 
 func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
@@ -82,12 +82,14 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	attemptApply := func(msg *nats.Msg) error {
 
 		// write to db
-		tx := db.Conn.MustBegin()
+		tx, err := db.Conn.Beginx()
+		if err != nil {
+			return err
+		}
 
 		query := `
 		INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING
 		`
-		var result sql.Result
 		result, err := tx.Exec(query, meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
 		if err != nil {
 			return err
@@ -207,7 +209,37 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			logger.Warn("no handler for ", rawRpc.Method)
 		}
 
-		return tx.Commit()
+		err = tx.Commit()
+		if err != nil {
+			return err
+		}
+
+		// send out websocket events?
+		if chatId := gjson.GetBytes(rawRpc.Params, "chat_id").String(); chatId != "" {
+			var userIds []int32
+			err = db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1`, chatId)
+			if err != nil {
+				config.Logger.Warn("failed to load chat members for websocket push " + err.Error())
+			} else {
+				var parsedParams schema.RPCPayloadParams
+				err := json.Unmarshal(rawRpc.Params, &parsedParams)
+				if err != nil {
+					config.Logger.Error("Failed to parse params")
+				}
+				payload := schema.RPCPayload{ Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams }
+				encodedUserId, err := misc.EncodeHashId(int(userId))
+				data := schema.ChatWebsocketEventData{ RPC: payload, Metadata: schema.Metadata{Timestamp: meta.Timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
+				for _, subscribedUserId := range userIds {
+					// Don't send events sent by a user to that same user
+					if (subscribedUserId != userId) {
+						websocketPush(subscribedUserId, data)
+					}
+				}
+			}
+
+		}
+
+		return nil
 	}
 
 	for i := 1; i < 5; i++ {
