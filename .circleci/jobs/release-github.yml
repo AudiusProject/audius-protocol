@@ -10,5 +10,5 @@ steps:
       command: |
         CN_VERSION="$(jq -r .version creator-node/.version.json)"
         DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
-        gh release edit "@audius/creator-node-$CN_VERSION" --draft false --target "$CIRCLE_SHA1" 
-        gh release edit "@audius/discovery-provider-$DP_VERSION" --draft false --target "$CIRCLE_SHA1"
+        gh release edit "@audius/creator-node-$CN_VERSION" --draft=false --target "$CIRCLE_SHA1" 
+        gh release edit "@audius/discovery-provider-$DP_VERSION" --draft=false --target "$CIRCLE_SHA1"
