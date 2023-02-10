@@ -1,5 +1,5 @@
+import { bootstrapConfig } from '../../bootstrapConfig'
 import type { DiscoveryNodeSelectorServiceConfigInternal } from './types'
-import bootstrap from './bootstrapConfig.json'
 
 /**
  * The name of the service for Discovery Node
@@ -16,9 +16,9 @@ export const defaultDiscoveryNodeSelectorConfig: DiscoveryNodeSelectorServiceCon
     unhealthyTTL: 3600000, // 1 hour
     backupsTTL: 120000, // 2 min
     healthCheckThresholds: {
-      minVersion: bootstrap.version,
+      minVersion: bootstrapConfig.production.minVersion,
       maxSlotDiffPlays: null,
       maxBlockDiff: 15
     },
-    bootstrapServices: bootstrap.services
+    bootstrapServices: bootstrapConfig.production.discoveryNodes
   }
