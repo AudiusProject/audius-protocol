@@ -1,4 +1,4 @@
 parameters:
-  run-schedule:
+  release-create-branch:
     type: boolean
     default: false

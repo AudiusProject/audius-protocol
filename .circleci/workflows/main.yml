@@ -1,5 +1,5 @@
 when:
-  not: << pipeline.parameters.run-schedule >>
+  not: << pipeline.parameters.release-create-branch >>
 jobs:
   - build-gcp-image:
       context: GCP
