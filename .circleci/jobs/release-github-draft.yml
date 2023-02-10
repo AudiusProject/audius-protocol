@@ -12,7 +12,7 @@ steps:
   - run:
       name: Generate Changelog
       command: |
-        if [[ "$(gh release list)" == "" ]]; then
+        if [[ "$(gh release list --exclude-drafts)" == "" ]]; then
           touch /tmp/creator-node-changelog /tmp/discovery-provider-changelog
           exit
         fi
