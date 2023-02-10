@@ -21,6 +21,7 @@ steps:
   - run:
       name: Governance Release
       command: |
-        cd libs
         export RELEASE_VERSION="$(jq -r .version discovery-provider/.version.json)"
+
+        cd libs
         node scripts/release-governance.js
