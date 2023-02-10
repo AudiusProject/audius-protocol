@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/transcode"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats-server/v2/server"
@@ -26,6 +27,9 @@ import (
 // TestE2EUpload verifies that a file gets uploaded to the storage node, transcoded, and permanently stored and replicated on the correct nodes.
 func TestE2EUpload(t *testing.T) {
 	assert := assert.New(t)
+
+	// Clear state in case a previous test or debug session left something behind
+	os.RemoveAll("/tmp/test-server_*")
 
 	// Start 5 storage nodes (NATS cluster and web servers)
 	nodes := startNatsCluster(t)
@@ -124,7 +128,17 @@ func startNatsCluster(t *testing.T) [5]*testServer {
 	// Start each node's web server
 	for i, node := range nodes {
 		_, jsc := jsClient(t, node.s)
-		ss := NewProd(jsc)
+		switch i {
+		case 0:
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238")
+		case 1:
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc")
+		case 2:
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c")
+		case 3:
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb")
+		}
+		ss := NewProd(config.GetStorageConfig(), jsc)
 		go ss.WebServer.Start(fmt.Sprintf("127.0.0.1:%d", 1222+i+5))
 		nodes[i].ss = ss
 	}

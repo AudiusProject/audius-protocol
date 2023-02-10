@@ -14,8 +14,7 @@ services:
       service: nats
     environment:
       audius_discprov_env: standalone
-      audius_delegate_owner_wallet: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238"
+      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       test_host: "com1"
     depends_on:
       - comdb
@@ -32,9 +31,18 @@ services:
     image: "comms:v2-dev"
     environment:
       audius_discprov_env: standalone
-      test_host: "storage1"
-      audius_delegate_owner_wallet: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238"
+      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Remove after shared/peering/ config is in place
+      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
+      DEV_ONLY_REGISTERED_NODES: '
+        [
+          {
+            "id": "content-node::1",
+            "spId": "1",
+            "endpoint": "http://com1:8924",
+            "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
+            "type": { "id": "content-node" }
+          }
+        ]'
       NATS_SERVER_URL: "nats://com1:4222"
       NAME: "storage1"
     depends_on:

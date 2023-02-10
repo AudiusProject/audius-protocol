@@ -26,7 +26,7 @@ func DiscoveryMain() {
 	var proc *rpcz.RPCProcessor
 
 	g.Go(func() error {
-		err := peering.PollRegisteredNodes()
+		err := peering.PollRegisteredNodes(nil)
 		if err != nil {
 			return err
 		}

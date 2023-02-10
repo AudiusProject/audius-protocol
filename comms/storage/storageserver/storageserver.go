@@ -3,13 +3,14 @@ package storageserver
 
 import (
 	"embed"
+	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
-	"comms.audius.co/discovery/config"
+	"comms.audius.co/shared/peering"
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/longterm"
 	"comms.audius.co/storage/monitor"
@@ -39,34 +40,30 @@ type StorageServer struct {
 	Monitor        *monitor.Monitor
 }
 
-func NewProd(jsc nats.JetStreamContext) *StorageServer {
-	// TODO: Standardize config with something like https://github.com/AudiusProject/audius-protocol/blob/main/comms/discovery/config/config.go#L62
-	var thisNodePubKey string
-	thisNodePubKey = os.Getenv("delegateOwnerWallet") // stage + prod
-	if thisNodePubKey == "" {
-		thisNodePubKey = os.Getenv("audius_delegate_owner_wallet") // local dev
+func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext) *StorageServer {
+	thisNodePubKey := config.DelegatePublicKey.Hex
+	allNodes, err := peering.GetContentNodes()
+	if err != nil {
+		log.Fatal("Error getting all nodes: ", err)
 	}
 	var host string
-	// TODO: host config
-	switch thisNodePubKey {
-	case "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F":
-		host = "http://localhost:8924"
-	case "0x90b8d2655A7C268d0fA31758A714e583AE54489D":
-		host = "http://localhost:8925"
-	case "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B":
-		host = "http://localhost:8926"
-	case "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16":
-		host = "http://localhost:8927"
+	var allStorageNodePubKeys []string
+	for _, node := range allNodes {
+		fmt.Printf("checking node %v against this pubKey %q\n", node, thisNodePubKey)
+		allStorageNodePubKeys = append(allStorageNodePubKeys, node.DelegateOwnerWallet)
+		if node.DelegateOwnerWallet == thisNodePubKey {
+			host = node.Endpoint
+		}
+	}
+	if host == "" {
+		log.Fatal("Could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
 	}
 
-	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, thisNodePubKey, jsc)
-	if host == "" {
-		host = os.Getenv("creatorNodeEndpoint") // stage + prod
-	}
+	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, thisNodePubKey, allStorageNodePubKeys, jsc)
 
 	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
-		panic(err)
+		log.Fatal("failed to start jobs manager: ", err)
 	}
 	jobsManager.StartWorkers(NumJobWorkers)
 
@@ -81,7 +78,7 @@ func NewProd(jsc nats.JetStreamContext) *StorageServer {
 		d,
 		jsc,
 		jobsManager,
-		longterm.New("KV_"+GlobalNamespace+transcode.KvSuffix, d, jsc),
+		longterm.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc),
 		m,
 	)
 }
@@ -269,11 +266,6 @@ func (ss *StorageServer) serveJobResultsById(c echo.Context) error {
 var embeddedStatusFiles embed.FS
 
 func getStatusStaticFiles() http.FileSystem {
-	devMode := config.Env == "standalone"
-	if devMode {
-		return http.FS(os.DirFS("storage/storageserver/static"))
-	}
-
 	fsys, err := fs.Sub(embeddedStatusFiles, "static")
 	if err != nil {
 		panic(err)
@@ -286,11 +278,6 @@ func getStatusStaticFiles() http.FileSystem {
 var embeddedWeatherMapFiles embed.FS
 
 func getWeatherMapStaticFiles() http.FileSystem {
-	// devMode := config.Env == "standalone"
-	// if devMode {
-	// 	return http.FS(os.DirFS("storage/storageserver/weather-map/dist"))
-	// }
-
 	fsys, err := fs.Sub(embeddedWeatherMapFiles, "weather-map/dist")
 	if err != nil {
 		panic(err)

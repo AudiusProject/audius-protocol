@@ -26,17 +26,12 @@ type LongTerm struct {
 }
 
 // New creates a struct that listens to streamToStoreFrom and downloads content from the temp store to the long-term store.
-func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) *LongTerm {
-
-	// todo: config week
-	blobDriverURL := os.Getenv("TODO_STORAGE_DRIVER_URL")
-	if blobDriverURL == "" {
-		tempDir := "/tmp/audius_storage"
-		if err := os.MkdirAll(tempDir, os.ModePerm); err != nil {
-			log.Fatalln("failed to create fallback dir", err)
+func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) *LongTerm {
+	if strings.HasPrefix(blobDriverURL, "file://") {
+		dir := blobDriverURL[len("file://"):]
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			log.Fatalln("failed to create long-term storage dir: ", err)
 		}
-		blobDriverURL = "file://" + tempDir
-		log.Printf("warning: no storage driver URL specified... falling back to %s \n", blobDriverURL)
 	}
 	b, err := blob.OpenBucket(context.Background(), blobDriverURL)
 	if err != nil {
@@ -50,7 +45,7 @@ func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc na
 		blobStore:         b,
 	}
 
-	longTerm.runStorer()
+	longTerm.runStorer(thisNodePubKey)
 	return longTerm
 }
 
@@ -191,8 +186,7 @@ func (lt *LongTerm) GetJobResultsFor(id string) ([]*ShardAndFile, error) {
 }
 
 // runStorer runs a goroutine to pull tracks from temp NATS object storage to long-term object storage.
-func (lt *LongTerm) runStorer() {
-	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: Get from config or something - same for value in NewProd() above
+func (lt *LongTerm) runStorer(thisNodePubKey string) {
 	// Create a per-node explicit pull consumer on the stream that backs the track upload status KV bucket
 	storerDurable := fmt.Sprintf("STORER_%s", thisNodePubKey)
 	_, err := lt.jsc.AddConsumer(lt.streamToStoreFrom, &nats.ConsumerConfig{
