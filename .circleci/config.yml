@@ -278,7 +278,7 @@ parameters:
     default: false
   sdk_version:
     type: string
-    default: ""
+    default: "patch"
   sdk_preid:
     type: string
     default: ""
