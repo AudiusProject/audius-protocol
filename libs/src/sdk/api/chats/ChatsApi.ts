@@ -554,7 +554,7 @@ export class ChatsApi extends BaseAPI implements ReadOnlyEmitter<ChatEvents> {
     const payload = JSON.stringify({ ...args, timestamp: new Date().getTime() })
     await this.signAndSendRequest({
       method: 'POST',
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
       path: `/comms/mutate`,
       body: payload
     })
@@ -565,7 +565,7 @@ export class ChatsApi extends BaseAPI implements ReadOnlyEmitter<ChatEvents> {
     const timestamp = new Date().getTime()
     const originalUrl = `/comms/chats/ws?timestamp=${timestamp}`
     const signatureHeader = await this.getSignatureHeader(originalUrl)
-    const host = endpoint.replace(/http(s?)/g, 'ws$1:')
+    const host = endpoint.replace(/http(s?)/g, 'ws$1')
     const url = `${host}${originalUrl}&signature=${encodeURIComponent(
       signatureHeader['x-sig']
     )}`
