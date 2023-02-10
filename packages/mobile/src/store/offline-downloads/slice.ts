@@ -28,6 +28,7 @@ export type DownloadQueueItem =
   | { type: 'collection'; id: CollectionId }
   | { type: 'track'; id: ID }
   | { type: 'collection-sync'; id: CollectionId }
+  | { type: 'play-count'; id: ID }
 
 export type OfflineDownloadsState = {
   trackStatus: {
@@ -67,6 +68,7 @@ export type OfflineItem =
       type: 'collection-sync'
       id: CollectionId
     }
+  | { type: 'play-count'; id: ID }
 
 export type RedownloadOfflineItemsAction = PayloadAction<{
   items: DownloadQueueItem[]
@@ -197,6 +199,8 @@ const slice = createSlice({
             collectionSyncStatus[id] = CollectionSyncStatus.INIT
             downloadQueue.push({ type: 'collection-sync', id })
           }
+        } else if (item.type === 'play-count') {
+          downloadQueue.push(item)
         }
       }
     },
@@ -299,6 +303,9 @@ const slice = createSlice({
       state.collectionSyncStatus[id] = CollectionSyncStatus.ERROR
       state.downloadQueue.shift()
     },
+    completePlayCount: (state) => {
+      state.downloadQueue.shift()
+    },
     updateQueueStatus: (state, action: UpdateQueueStatusAction) => {
       state.queueStatus = action.payload.queueStatus
     },
@@ -351,6 +358,7 @@ export const {
   completeCollectionSync,
   cancelCollectionSync,
   errorCollectionSync,
+  completePlayCount,
   updateQueueStatus,
   requestDownloadAllFavorites,
   requestDownloadCollection,

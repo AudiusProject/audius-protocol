@@ -9,6 +9,7 @@ import {
 
 import { downloadCollectionWorker } from './downloadCollectionWorker'
 import { downloadTrackWorker } from './downloadTrackWorker'
+import { playCounterWorker } from './playCounterWorker'
 import { syncCollectionWorker } from './syncCollectionWorker'
 
 export function* requestDownloadQueuedItemSaga() {
@@ -35,5 +36,7 @@ function* downloadQueuedItem() {
     yield* call(downloadTrackWorker, id)
   } else if (type === 'collection-sync') {
     yield* call(syncCollectionWorker, id)
+  } else if (type === 'play-count') {
+    yield* call(playCounterWorker, id)
   }
 }
