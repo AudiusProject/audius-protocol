@@ -3,7 +3,8 @@ docker:
   - image: cimg/base:2023.01
 steps:
   - checkout
-  - gh/setup
+  - gh/setup:
+      version: 2.23.0
   - run:
       name: Update github release
       command: |
