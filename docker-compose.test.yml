@@ -2,8 +2,7 @@
 
 version: "3.9"
 
-x-logging:
-  &default-logging
+x-logging: &default-logging
   options:
     max-size: "50m"
     max-file: "3"
@@ -66,10 +65,11 @@ services:
   creator-node-db:
     image: postgres:11.4
     user: postgres
+    command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_DB: "creator_node"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -79,7 +79,7 @@ services:
   creator-node-redis:
     image: redis:6.2
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -129,10 +129,11 @@ services:
   discovery-provider-db:
     image: postgres:11.4
     user: postgres
+    command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     environment:
       POSTGRES_DB: "discovery_provider"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -142,7 +143,7 @@ services:
   discovery-provider-redis:
     image: redis:7.0
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -184,8 +185,9 @@ services:
   identity-service-db:
     image: postgres:11.4
     user: postgres
+    command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -196,7 +198,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
