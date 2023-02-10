@@ -14,6 +14,8 @@ else
     RELEASE_VERSION=${2}
 fi
 
+PREID=${3}
+
 if [[ $(whoami) != "circleci" ]]; then
     echo "This script is intended to be run through CI."
     echo "Please see:"
@@ -73,7 +75,7 @@ function git-reset () {
 function bump-version () {
     (
         # Patch the version
-        VERSION=$(npm version ${RELEASE_VERSION})
+        VERSION=$(npm version ${RELEASE_VERSION} --preid=${PREID})
         tmp=$(mktemp)
         jq ". += {audius: {releaseSHA: \"${GIT_COMMIT}\"}}" package.json > "$tmp" \
             && mv "$tmp" package.json
