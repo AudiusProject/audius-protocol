@@ -18,6 +18,20 @@ steps:
       paths:
         - ./libs/node_modules
 
+  - restore_cache:
+      keys:
+        - eth-contracts-cache-{{ checksum "eth-contracts/package-lock.json" }}
+        - eth-contracts-cache-
+  - run:
+      name: Install eth-contracts dependencies
+      command: |
+        cd eth-contracts
+        npm install
+  - save_cache:
+      key: eth-contracts-cache-{{ checksum "eth-contracts/package-lock.json" }}
+      paths:
+        - ./eth-contracts/node_modules
+
   - run:
       name: Governance Release
       command: |
