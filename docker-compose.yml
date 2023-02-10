@@ -322,7 +322,7 @@ services:
     container_name: comms
     command: /comms-linux discovery
     environment:
-      audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/postgres?sslmode=disable"
+      audius_db_url: "postgres://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery?sslmode=disable"
     depends_on:
       - nats
     restart: unless-stopped
@@ -364,7 +364,6 @@ services:
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:
-      audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/postgres"
       PYTHONPYCACHEPREFIX: /tmp/pycache
 
       audius_web3_host: "poa-ganache"
@@ -395,8 +394,6 @@ services:
       - solana-programs-idl:/audius-discovery-provider/idl
       - ./dev-tools:/tmp/dev-tools
     depends_on:
-      discovery-provider-db:
-        condition: service_healthy
       poa-ganache:
         condition: service_healthy
       eth-ganache:
@@ -409,17 +406,6 @@ services:
     deploy:
       mode: replicated
       replicas: "${DISCOVERY_PROVIDER_REPLICAS}"
-
-  discovery-provider-db:
-    image: postgres:11.4
-    user: postgres
-    healthcheck:
-      test: [ "CMD", "pg_isready" ]
-      interval: 10s
-      timeout: 5s
-    logging: *default-logging
-    deploy:
-      mode: global
 
   # creator-node
 
