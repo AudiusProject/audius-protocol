@@ -81,11 +81,10 @@ WITH latest_user_seen AS (
 )
 SELECT
   n.*,
-  latest_user_seen.user_id AS receiver_user_id
+  unnest(n.user_ids) AS receiver_user_id
 FROM (
   SELECT *
-  FROM
-      notification
+  FROM notification
   WHERE
     notification.timestamp > :start_offset AND
     notification.user_ids && (:user_ids)

@@ -1,13 +1,12 @@
 import { Knex } from 'knex'
 import { EmailFrequency } from '../processNotifications/mappers/base'
-import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow } from '../types/dn'
+import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow, NotificationRow } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow } from '../types/identity'
 import { getDB } from '../conn'
 
 export const replaceDBName = (connectionString: string, testName: string) => {
   const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
-  console.log({ replace: `${connection}/${testName}` })
   return `${connection}/${testName}`
 }
 
@@ -15,14 +14,8 @@ export const createTestDB = async (connectionString: string, testName: string) =
   const templateDb = /[^/]*$/.exec(connectionString)[0]
   const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
   const postgresConnection = `${connection}/postgres`
-  console.log({ postgresConnection })
   const db = await getDB(postgresConnection)
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
-  console.log({
-    test_name: testName,
-    template: templateDb,
-    connection
-  })
   await db.raw('CREATE DATABASE :test_name: TEMPLATE :template:', { test_name: testName, template: templateDb })
   await db.destroy()
 }
@@ -31,11 +24,6 @@ export const dropTestDB = async (connectionString: string, testName: string) => 
   const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
   const postgresConnection = `${connection}/postgres`
   const db = await getDB(postgresConnection)
-  console.log({
-    test_name: testName,
-    connectionString,
-    connection
-  })
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
   await db.destroy()
 
@@ -100,6 +88,11 @@ export const insertFollows = async (db: Knex, follows: CreateFollow[]) => {
   })))
     .into('follows')
 }
+type CreateNotification = Pick<NotificationRow, 'id' | 'specifier' | 'group_id' | 'type' | 'timestamp' | 'user_ids'> & Partial<NotificationRow>
+  export const insertNotifications = async (db: Knex, notifications: CreateNotification[]) => {
+    await db.insert(notifications)
+    .into('notification')
+  }
 
 export const setUserEmailAndSettings = async (db: Knex, frequency: EmailFrequency, userId: number): Promise<IdentityUserRow> => {
   const user = {
