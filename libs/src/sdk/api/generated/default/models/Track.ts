@@ -68,7 +68,7 @@ export interface Track {
      * @type {string}
      * @memberof Track
      */
-    track_cid?: string;
+    trackCid?: string;
     /**
      * 
      * @type {string}
@@ -80,25 +80,25 @@ export interface Track {
      * @type {string}
      * @memberof Track
      */
-    release_date?: string;
+    releaseDate?: string;
     /**
      * 
      * @type {RemixParent}
      * @memberof Track
      */
-    remix_of?: RemixParent;
+    remixOf?: RemixParent;
     /**
      * 
      * @type {number}
      * @memberof Track
      */
-    repost_count: number;
+    repostCount: number;
     /**
      * 
      * @type {number}
      * @memberof Track
      */
-    favorite_count: number;
+    favoriteCount: number;
     /**
      * 
      * @type {string}
@@ -134,7 +134,7 @@ export interface Track {
      * @type {number}
      * @memberof Track
      */
-    play_count: number;
+    playCount: number;
     /**
      * 
      * @type {string}
@@ -146,7 +146,7 @@ export interface Track {
      * @type {boolean}
      * @memberof Track
      */
-    is_streamable?: boolean;
+    isStreamable?: boolean;
 }
 
 /**
@@ -155,12 +155,12 @@ export interface Track {
 export function instanceOfTrack(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "repost_count" in value;
-    isInstance = isInstance && "favorite_count" in value;
+    isInstance = isInstance && "repostCount" in value;
+    isInstance = isInstance && "favoriteCount" in value;
     isInstance = isInstance && "title" in value;
     isInstance = isInstance && "user" in value;
     isInstance = isInstance && "duration" in value;
-    isInstance = isInstance && "play_count" in value;
+    isInstance = isInstance && "playCount" in value;
 
     return isInstance;
 }
@@ -179,20 +179,20 @@ export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tra
         'description': !exists(json, 'description') ? undefined : json['description'],
         'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'id': json['id'],
-        'track_cid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
+        'trackCid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
-        'release_date': !exists(json, 'release_date') ? undefined : json['release_date'],
-        'remix_of': !exists(json, 'remix_of') ? undefined : RemixParentFromJSON(json['remix_of']),
-        'repost_count': json['repost_count'],
-        'favorite_count': json['favorite_count'],
+        'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
+        'remixOf': !exists(json, 'remix_of') ? undefined : RemixParentFromJSON(json['remix_of']),
+        'repostCount': json['repost_count'],
+        'favoriteCount': json['favorite_count'],
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
         'title': json['title'],
         'user': UserFromJSON(json['user']),
         'duration': json['duration'],
         'downloadable': !exists(json, 'downloadable') ? undefined : json['downloadable'],
-        'play_count': json['play_count'],
+        'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
-        'is_streamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
+        'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
     };
 }
 
@@ -209,20 +209,20 @@ export function TrackToJSON(value?: Track | null): any {
         'description': value.description,
         'genre': value.genre,
         'id': value.id,
-        'track_cid': value.track_cid,
+        'track_cid': value.trackCid,
         'mood': value.mood,
-        'release_date': value.release_date,
-        'remix_of': RemixParentToJSON(value.remix_of),
-        'repost_count': value.repost_count,
-        'favorite_count': value.favorite_count,
+        'release_date': value.releaseDate,
+        'remix_of': RemixParentToJSON(value.remixOf),
+        'repost_count': value.repostCount,
+        'favorite_count': value.favoriteCount,
         'tags': value.tags,
         'title': value.title,
         'user': UserToJSON(value.user),
         'duration': value.duration,
         'downloadable': value.downloadable,
-        'play_count': value.play_count,
+        'play_count': value.playCount,
         'permalink': value.permalink,
-        'is_streamable': value.is_streamable,
+        'is_streamable': value.isStreamable,
     };
 }
 

@@ -25,25 +25,25 @@ export interface Favorite {
      * @type {string}
      * @memberof Favorite
      */
-    favorite_item_id: string;
+    favoriteItemId: string;
     /**
      * 
      * @type {string}
      * @memberof Favorite
      */
-    favorite_type: string;
+    favoriteType: string;
     /**
      * 
      * @type {string}
      * @memberof Favorite
      */
-    user_id: string;
+    userId: string;
     /**
      * 
      * @type {string}
      * @memberof Favorite
      */
-    created_at: string;
+    createdAt: string;
 }
 
 /**
@@ -51,10 +51,10 @@ export interface Favorite {
  */
 export function instanceOfFavorite(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "favorite_item_id" in value;
-    isInstance = isInstance && "favorite_type" in value;
-    isInstance = isInstance && "user_id" in value;
-    isInstance = isInstance && "created_at" in value;
+    isInstance = isInstance && "favoriteItemId" in value;
+    isInstance = isInstance && "favoriteType" in value;
+    isInstance = isInstance && "userId" in value;
+    isInstance = isInstance && "createdAt" in value;
 
     return isInstance;
 }
@@ -69,10 +69,10 @@ export function FavoriteFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     }
     return {
         
-        'favorite_item_id': json['favorite_item_id'],
-        'favorite_type': json['favorite_type'],
-        'user_id': json['user_id'],
-        'created_at': json['created_at'],
+        'favoriteItemId': json['favorite_item_id'],
+        'favoriteType': json['favorite_type'],
+        'userId': json['user_id'],
+        'createdAt': json['created_at'],
     };
 }
 
@@ -85,10 +85,10 @@ export function FavoriteToJSON(value?: Favorite | null): any {
     }
     return {
         
-        'favorite_item_id': value.favorite_item_id,
-        'favorite_type': value.favorite_type,
-        'user_id': value.user_id,
-        'created_at': value.created_at,
+        'favorite_item_id': value.favoriteItemId,
+        'favorite_type': value.favoriteType,
+        'user_id': value.userId,
+        'created_at': value.createdAt,
     };
 }
 

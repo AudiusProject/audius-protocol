@@ -25,13 +25,13 @@ export interface ConnectedWallets {
      * @type {Array<string>}
      * @memberof ConnectedWallets
      */
-    erc_wallets: Array<string>;
+    ercWallets: Array<string>;
     /**
      * 
      * @type {Array<string>}
      * @memberof ConnectedWallets
      */
-    spl_wallets: Array<string>;
+    splWallets: Array<string>;
 }
 
 /**
@@ -39,8 +39,8 @@ export interface ConnectedWallets {
  */
 export function instanceOfConnectedWallets(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "erc_wallets" in value;
-    isInstance = isInstance && "spl_wallets" in value;
+    isInstance = isInstance && "ercWallets" in value;
+    isInstance = isInstance && "splWallets" in value;
 
     return isInstance;
 }
@@ -55,8 +55,8 @@ export function ConnectedWalletsFromJSONTyped(json: any, ignoreDiscriminator: bo
     }
     return {
         
-        'erc_wallets': json['erc_wallets'],
-        'spl_wallets': json['spl_wallets'],
+        'ercWallets': json['erc_wallets'],
+        'splWallets': json['spl_wallets'],
     };
 }
 
@@ -69,8 +69,8 @@ export function ConnectedWalletsToJSON(value?: ConnectedWallets | null): any {
     }
     return {
         
-        'erc_wallets': value.erc_wallets,
-        'spl_wallets': value.spl_wallets,
+        'erc_wallets': value.ercWallets,
+        'spl_wallets': value.splWallets,
     };
 }
 

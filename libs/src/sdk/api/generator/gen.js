@@ -50,7 +50,7 @@ const generate = ({ env, apiVersion, apiFlavor, generator }) => {
     '-o',
     `/local/src/sdk/api/generated/${outputFolderName}`,
     '--skip-validate-spec',
-    '--additional-properties=modelPropertyNaming=original,useSingleRequestParameter=true,withSeparateModelsAndApi=true,apiPackage=api,modelPackage=model',
+    '--additional-properties=modelPropertyNaming=camelCase,useSingleRequestParameter=true,withSeparateModelsAndApi=true,apiPackage=api,modelPackage=model',
     '-t',
     `/local/src/sdk/api/generator/templates/${generator}`
   ]

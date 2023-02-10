@@ -110,7 +110,7 @@ export interface TrackFull {
      * @type {string}
      * @memberof TrackFull
      */
-    track_cid?: string;
+    trackCid?: string;
     /**
      * 
      * @type {string}
@@ -122,25 +122,25 @@ export interface TrackFull {
      * @type {string}
      * @memberof TrackFull
      */
-    release_date?: string;
+    releaseDate?: string;
     /**
      * 
      * @type {FullRemixParent}
      * @memberof TrackFull
      */
-    remix_of?: FullRemixParent;
+    remixOf?: FullRemixParent;
     /**
      * 
      * @type {number}
      * @memberof TrackFull
      */
-    repost_count: number;
+    repostCount: number;
     /**
      * 
      * @type {number}
      * @memberof TrackFull
      */
-    favorite_count: number;
+    favoriteCount: number;
     /**
      * 
      * @type {string}
@@ -176,7 +176,7 @@ export interface TrackFull {
      * @type {number}
      * @memberof TrackFull
      */
-    play_count: number;
+    playCount: number;
     /**
      * 
      * @type {string}
@@ -188,7 +188,7 @@ export interface TrackFull {
      * @type {boolean}
      * @memberof TrackFull
      */
-    is_streamable?: boolean;
+    isStreamable?: boolean;
     /**
      * 
      * @type {number}
@@ -200,25 +200,25 @@ export interface TrackFull {
      * @type {string}
      * @memberof TrackFull
      */
-    create_date?: string;
+    createDate?: string;
     /**
      * 
      * @type {string}
      * @memberof TrackFull
      */
-    cover_art_sizes?: string;
+    coverArtSizes?: string;
     /**
      * 
      * @type {string}
      * @memberof TrackFull
      */
-    created_at?: string;
+    createdAt?: string;
     /**
      * 
      * @type {string}
      * @memberof TrackFull
      */
-    credits_splits?: string;
+    creditsSplits?: string;
     /**
      * 
      * @type {DownloadMetadata}
@@ -248,103 +248,103 @@ export interface TrackFull {
      * @type {FieldVisibility}
      * @memberof TrackFull
      */
-    field_visibility?: FieldVisibility;
+    fieldVisibility?: FieldVisibility;
     /**
      * 
      * @type {Array<Repost>}
      * @memberof TrackFull
      */
-    followee_reposts: Array<Repost>;
+    followeeReposts: Array<Repost>;
     /**
      * 
      * @type {boolean}
      * @memberof TrackFull
      */
-    has_current_user_reposted: boolean;
+    hasCurrentUserReposted: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof TrackFull
      */
-    is_unlisted: boolean;
+    isUnlisted: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof TrackFull
      */
-    has_current_user_saved: boolean;
+    hasCurrentUserSaved: boolean;
     /**
      * 
      * @type {Array<Favorite>}
      * @memberof TrackFull
      */
-    followee_favorites: Array<Favorite>;
+    followeeFavorites: Array<Favorite>;
     /**
      * 
      * @type {string}
      * @memberof TrackFull
      */
-    route_id: string;
+    routeId: string;
     /**
      * 
      * @type {StemParent}
      * @memberof TrackFull
      */
-    stem_of?: StemParent;
+    stemOf?: StemParent;
     /**
      * 
      * @type {Array<TrackSegment>}
      * @memberof TrackFull
      */
-    track_segments?: Array<TrackSegment>;
+    trackSegments?: Array<TrackSegment>;
     /**
      * 
      * @type {string}
      * @memberof TrackFull
      */
-    updated_at?: string;
+    updatedAt?: string;
     /**
      * 
      * @type {string}
      * @memberof TrackFull
      */
-    user_id: string;
+    userId: string;
     /**
      * 
      * @type {boolean}
      * @memberof TrackFull
      */
-    is_delete?: boolean;
+    isDelete?: boolean;
     /**
      * 
      * @type {string}
      * @memberof TrackFull
      */
-    cover_art?: string;
+    coverArt?: string;
     /**
      * 
      * @type {boolean}
      * @memberof TrackFull
      */
-    is_available?: boolean;
+    isAvailable?: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof TrackFull
      */
-    is_premium?: boolean;
+    isPremium?: boolean;
     /**
      * 
      * @type {object}
      * @memberof TrackFull
      */
-    premium_conditions?: object;
+    premiumConditions?: object;
     /**
      * 
      * @type {PremiumContentSignature}
      * @memberof TrackFull
      */
-    premium_content_signature?: PremiumContentSignature;
+    premiumContentSignature?: PremiumContentSignature;
 }
 
 /**
@@ -353,20 +353,20 @@ export interface TrackFull {
 export function instanceOfTrackFull(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "repost_count" in value;
-    isInstance = isInstance && "favorite_count" in value;
+    isInstance = isInstance && "repostCount" in value;
+    isInstance = isInstance && "favoriteCount" in value;
     isInstance = isInstance && "title" in value;
     isInstance = isInstance && "user" in value;
     isInstance = isInstance && "duration" in value;
-    isInstance = isInstance && "play_count" in value;
+    isInstance = isInstance && "playCount" in value;
     isInstance = isInstance && "blocknumber" in value;
-    isInstance = isInstance && "followee_reposts" in value;
-    isInstance = isInstance && "has_current_user_reposted" in value;
-    isInstance = isInstance && "is_unlisted" in value;
-    isInstance = isInstance && "has_current_user_saved" in value;
-    isInstance = isInstance && "followee_favorites" in value;
-    isInstance = isInstance && "route_id" in value;
-    isInstance = isInstance && "user_id" in value;
+    isInstance = isInstance && "followeeReposts" in value;
+    isInstance = isInstance && "hasCurrentUserReposted" in value;
+    isInstance = isInstance && "isUnlisted" in value;
+    isInstance = isInstance && "hasCurrentUserSaved" in value;
+    isInstance = isInstance && "followeeFavorites" in value;
+    isInstance = isInstance && "routeId" in value;
+    isInstance = isInstance && "userId" in value;
 
     return isInstance;
 }
@@ -385,46 +385,46 @@ export function TrackFullFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'description': !exists(json, 'description') ? undefined : json['description'],
         'genre': !exists(json, 'genre') ? undefined : json['genre'],
         'id': json['id'],
-        'track_cid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
+        'trackCid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
         'mood': !exists(json, 'mood') ? undefined : json['mood'],
-        'release_date': !exists(json, 'release_date') ? undefined : json['release_date'],
-        'remix_of': !exists(json, 'remix_of') ? undefined : FullRemixParentFromJSON(json['remix_of']),
-        'repost_count': json['repost_count'],
-        'favorite_count': json['favorite_count'],
+        'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
+        'remixOf': !exists(json, 'remix_of') ? undefined : FullRemixParentFromJSON(json['remix_of']),
+        'repostCount': json['repost_count'],
+        'favoriteCount': json['favorite_count'],
         'tags': !exists(json, 'tags') ? undefined : json['tags'],
         'title': json['title'],
         'user': UserFullFromJSON(json['user']),
         'duration': json['duration'],
         'downloadable': !exists(json, 'downloadable') ? undefined : json['downloadable'],
-        'play_count': json['play_count'],
+        'playCount': json['play_count'],
         'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
-        'is_streamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
+        'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
         'blocknumber': json['blocknumber'],
-        'create_date': !exists(json, 'create_date') ? undefined : json['create_date'],
-        'cover_art_sizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
-        'created_at': !exists(json, 'created_at') ? undefined : json['created_at'],
-        'credits_splits': !exists(json, 'credits_splits') ? undefined : json['credits_splits'],
+        'createDate': !exists(json, 'create_date') ? undefined : json['create_date'],
+        'coverArtSizes': !exists(json, 'cover_art_sizes') ? undefined : json['cover_art_sizes'],
+        'createdAt': !exists(json, 'created_at') ? undefined : json['created_at'],
+        'creditsSplits': !exists(json, 'credits_splits') ? undefined : json['credits_splits'],
         'download': !exists(json, 'download') ? undefined : DownloadMetadataFromJSON(json['download']),
         'isrc': !exists(json, 'isrc') ? undefined : json['isrc'],
         'license': !exists(json, 'license') ? undefined : json['license'],
         'iswc': !exists(json, 'iswc') ? undefined : json['iswc'],
-        'field_visibility': !exists(json, 'field_visibility') ? undefined : FieldVisibilityFromJSON(json['field_visibility']),
-        'followee_reposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
-        'has_current_user_reposted': json['has_current_user_reposted'],
-        'is_unlisted': json['is_unlisted'],
-        'has_current_user_saved': json['has_current_user_saved'],
-        'followee_favorites': ((json['followee_favorites'] as Array<any>).map(FavoriteFromJSON)),
-        'route_id': json['route_id'],
-        'stem_of': !exists(json, 'stem_of') ? undefined : StemParentFromJSON(json['stem_of']),
-        'track_segments': !exists(json, 'track_segments') ? undefined : ((json['track_segments'] as Array<any>).map(TrackSegmentFromJSON)),
-        'updated_at': !exists(json, 'updated_at') ? undefined : json['updated_at'],
-        'user_id': json['user_id'],
-        'is_delete': !exists(json, 'is_delete') ? undefined : json['is_delete'],
-        'cover_art': !exists(json, 'cover_art') ? undefined : json['cover_art'],
-        'is_available': !exists(json, 'is_available') ? undefined : json['is_available'],
-        'is_premium': !exists(json, 'is_premium') ? undefined : json['is_premium'],
-        'premium_conditions': !exists(json, 'premium_conditions') ? undefined : json['premium_conditions'],
-        'premium_content_signature': !exists(json, 'premium_content_signature') ? undefined : PremiumContentSignatureFromJSON(json['premium_content_signature']),
+        'fieldVisibility': !exists(json, 'field_visibility') ? undefined : FieldVisibilityFromJSON(json['field_visibility']),
+        'followeeReposts': ((json['followee_reposts'] as Array<any>).map(RepostFromJSON)),
+        'hasCurrentUserReposted': json['has_current_user_reposted'],
+        'isUnlisted': json['is_unlisted'],
+        'hasCurrentUserSaved': json['has_current_user_saved'],
+        'followeeFavorites': ((json['followee_favorites'] as Array<any>).map(FavoriteFromJSON)),
+        'routeId': json['route_id'],
+        'stemOf': !exists(json, 'stem_of') ? undefined : StemParentFromJSON(json['stem_of']),
+        'trackSegments': !exists(json, 'track_segments') ? undefined : ((json['track_segments'] as Array<any>).map(TrackSegmentFromJSON)),
+        'updatedAt': !exists(json, 'updated_at') ? undefined : json['updated_at'],
+        'userId': json['user_id'],
+        'isDelete': !exists(json, 'is_delete') ? undefined : json['is_delete'],
+        'coverArt': !exists(json, 'cover_art') ? undefined : json['cover_art'],
+        'isAvailable': !exists(json, 'is_available') ? undefined : json['is_available'],
+        'isPremium': !exists(json, 'is_premium') ? undefined : json['is_premium'],
+        'premiumConditions': !exists(json, 'premium_conditions') ? undefined : json['premium_conditions'],
+        'premiumContentSignature': !exists(json, 'premium_content_signature') ? undefined : PremiumContentSignatureFromJSON(json['premium_content_signature']),
     };
 }
 
@@ -441,46 +441,46 @@ export function TrackFullToJSON(value?: TrackFull | null): any {
         'description': value.description,
         'genre': value.genre,
         'id': value.id,
-        'track_cid': value.track_cid,
+        'track_cid': value.trackCid,
         'mood': value.mood,
-        'release_date': value.release_date,
-        'remix_of': FullRemixParentToJSON(value.remix_of),
-        'repost_count': value.repost_count,
-        'favorite_count': value.favorite_count,
+        'release_date': value.releaseDate,
+        'remix_of': FullRemixParentToJSON(value.remixOf),
+        'repost_count': value.repostCount,
+        'favorite_count': value.favoriteCount,
         'tags': value.tags,
         'title': value.title,
         'user': UserFullToJSON(value.user),
         'duration': value.duration,
         'downloadable': value.downloadable,
-        'play_count': value.play_count,
+        'play_count': value.playCount,
         'permalink': value.permalink,
-        'is_streamable': value.is_streamable,
+        'is_streamable': value.isStreamable,
         'blocknumber': value.blocknumber,
-        'create_date': value.create_date,
-        'cover_art_sizes': value.cover_art_sizes,
-        'created_at': value.created_at,
-        'credits_splits': value.credits_splits,
+        'create_date': value.createDate,
+        'cover_art_sizes': value.coverArtSizes,
+        'created_at': value.createdAt,
+        'credits_splits': value.creditsSplits,
         'download': DownloadMetadataToJSON(value.download),
         'isrc': value.isrc,
         'license': value.license,
         'iswc': value.iswc,
-        'field_visibility': FieldVisibilityToJSON(value.field_visibility),
-        'followee_reposts': ((value.followee_reposts as Array<any>).map(RepostToJSON)),
-        'has_current_user_reposted': value.has_current_user_reposted,
-        'is_unlisted': value.is_unlisted,
-        'has_current_user_saved': value.has_current_user_saved,
-        'followee_favorites': ((value.followee_favorites as Array<any>).map(FavoriteToJSON)),
-        'route_id': value.route_id,
-        'stem_of': StemParentToJSON(value.stem_of),
-        'track_segments': value.track_segments === undefined ? undefined : ((value.track_segments as Array<any>).map(TrackSegmentToJSON)),
-        'updated_at': value.updated_at,
-        'user_id': value.user_id,
-        'is_delete': value.is_delete,
-        'cover_art': value.cover_art,
-        'is_available': value.is_available,
-        'is_premium': value.is_premium,
-        'premium_conditions': value.premium_conditions,
-        'premium_content_signature': PremiumContentSignatureToJSON(value.premium_content_signature),
+        'field_visibility': FieldVisibilityToJSON(value.fieldVisibility),
+        'followee_reposts': ((value.followeeReposts as Array<any>).map(RepostToJSON)),
+        'has_current_user_reposted': value.hasCurrentUserReposted,
+        'is_unlisted': value.isUnlisted,
+        'has_current_user_saved': value.hasCurrentUserSaved,
+        'followee_favorites': ((value.followeeFavorites as Array<any>).map(FavoriteToJSON)),
+        'route_id': value.routeId,
+        'stem_of': StemParentToJSON(value.stemOf),
+        'track_segments': value.trackSegments === undefined ? undefined : ((value.trackSegments as Array<any>).map(TrackSegmentToJSON)),
+        'updated_at': value.updatedAt,
+        'user_id': value.userId,
+        'is_delete': value.isDelete,
+        'cover_art': value.coverArt,
+        'is_available': value.isAvailable,
+        'is_premium': value.isPremium,
+        'premium_conditions': value.premiumConditions,
+        'premium_content_signature': PremiumContentSignatureToJSON(value.premiumContentSignature),
     };
 }
 

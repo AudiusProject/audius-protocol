@@ -38,13 +38,13 @@ export interface User {
      * @type {number}
      * @memberof User
      */
-    album_count: number;
+    albumCount: number;
     /**
      * 
      * @type {number}
      * @memberof User
      */
-    artist_pick_track_id?: number;
+    artistPickTrackId?: number;
     /**
      * 
      * @type {string}
@@ -56,25 +56,25 @@ export interface User {
      * @type {CoverPhoto}
      * @memberof User
      */
-    cover_photo?: CoverPhoto;
+    coverPhoto?: CoverPhoto;
     /**
      * 
      * @type {number}
      * @memberof User
      */
-    followee_count: number;
+    followeeCount: number;
     /**
      * 
      * @type {number}
      * @memberof User
      */
-    follower_count: number;
+    followerCount: number;
     /**
      * 
      * @type {boolean}
      * @memberof User
      */
-    does_follow_current_user?: boolean;
+    doesFollowCurrentUser?: boolean;
     /**
      * 
      * @type {string}
@@ -92,7 +92,7 @@ export interface User {
      * @type {boolean}
      * @memberof User
      */
-    is_verified: boolean;
+    isVerified: boolean;
     /**
      * 
      * @type {string}
@@ -110,55 +110,55 @@ export interface User {
      * @type {number}
      * @memberof User
      */
-    playlist_count: number;
+    playlistCount: number;
     /**
      * 
      * @type {ProfilePicture}
      * @memberof User
      */
-    profile_picture?: ProfilePicture;
+    profilePicture?: ProfilePicture;
     /**
      * 
      * @type {number}
      * @memberof User
      */
-    repost_count: number;
+    repostCount: number;
     /**
      * 
      * @type {number}
      * @memberof User
      */
-    track_count: number;
+    trackCount: number;
     /**
      * 
      * @type {boolean}
      * @memberof User
      */
-    is_deactivated: boolean;
+    isDeactivated: boolean;
     /**
      * 
      * @type {string}
      * @memberof User
      */
-    erc_wallet?: string;
+    ercWallet?: string;
     /**
      * 
      * @type {string}
      * @memberof User
      */
-    spl_wallet: string;
+    splWallet: string;
     /**
      * 
      * @type {number}
      * @memberof User
      */
-    supporter_count: number;
+    supporterCount: number;
     /**
      * 
      * @type {number}
      * @memberof User
      */
-    supporting_count: number;
+    supportingCount: number;
 }
 
 /**
@@ -166,20 +166,20 @@ export interface User {
  */
 export function instanceOfUser(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "album_count" in value;
-    isInstance = isInstance && "followee_count" in value;
-    isInstance = isInstance && "follower_count" in value;
+    isInstance = isInstance && "albumCount" in value;
+    isInstance = isInstance && "followeeCount" in value;
+    isInstance = isInstance && "followerCount" in value;
     isInstance = isInstance && "handle" in value;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "is_verified" in value;
+    isInstance = isInstance && "isVerified" in value;
     isInstance = isInstance && "name" in value;
-    isInstance = isInstance && "playlist_count" in value;
-    isInstance = isInstance && "repost_count" in value;
-    isInstance = isInstance && "track_count" in value;
-    isInstance = isInstance && "is_deactivated" in value;
-    isInstance = isInstance && "spl_wallet" in value;
-    isInstance = isInstance && "supporter_count" in value;
-    isInstance = isInstance && "supporting_count" in value;
+    isInstance = isInstance && "playlistCount" in value;
+    isInstance = isInstance && "repostCount" in value;
+    isInstance = isInstance && "trackCount" in value;
+    isInstance = isInstance && "isDeactivated" in value;
+    isInstance = isInstance && "splWallet" in value;
+    isInstance = isInstance && "supporterCount" in value;
+    isInstance = isInstance && "supportingCount" in value;
 
     return isInstance;
 }
@@ -194,27 +194,27 @@ export function UserFromJSONTyped(json: any, ignoreDiscriminator: boolean): User
     }
     return {
         
-        'album_count': json['album_count'],
-        'artist_pick_track_id': !exists(json, 'artist_pick_track_id') ? undefined : json['artist_pick_track_id'],
+        'albumCount': json['album_count'],
+        'artistPickTrackId': !exists(json, 'artist_pick_track_id') ? undefined : json['artist_pick_track_id'],
         'bio': !exists(json, 'bio') ? undefined : json['bio'],
-        'cover_photo': !exists(json, 'cover_photo') ? undefined : CoverPhotoFromJSON(json['cover_photo']),
-        'followee_count': json['followee_count'],
-        'follower_count': json['follower_count'],
-        'does_follow_current_user': !exists(json, 'does_follow_current_user') ? undefined : json['does_follow_current_user'],
+        'coverPhoto': !exists(json, 'cover_photo') ? undefined : CoverPhotoFromJSON(json['cover_photo']),
+        'followeeCount': json['followee_count'],
+        'followerCount': json['follower_count'],
+        'doesFollowCurrentUser': !exists(json, 'does_follow_current_user') ? undefined : json['does_follow_current_user'],
         'handle': json['handle'],
         'id': json['id'],
-        'is_verified': json['is_verified'],
+        'isVerified': json['is_verified'],
         'location': !exists(json, 'location') ? undefined : json['location'],
         'name': json['name'],
-        'playlist_count': json['playlist_count'],
-        'profile_picture': !exists(json, 'profile_picture') ? undefined : ProfilePictureFromJSON(json['profile_picture']),
-        'repost_count': json['repost_count'],
-        'track_count': json['track_count'],
-        'is_deactivated': json['is_deactivated'],
-        'erc_wallet': !exists(json, 'erc_wallet') ? undefined : json['erc_wallet'],
-        'spl_wallet': json['spl_wallet'],
-        'supporter_count': json['supporter_count'],
-        'supporting_count': json['supporting_count'],
+        'playlistCount': json['playlist_count'],
+        'profilePicture': !exists(json, 'profile_picture') ? undefined : ProfilePictureFromJSON(json['profile_picture']),
+        'repostCount': json['repost_count'],
+        'trackCount': json['track_count'],
+        'isDeactivated': json['is_deactivated'],
+        'ercWallet': !exists(json, 'erc_wallet') ? undefined : json['erc_wallet'],
+        'splWallet': json['spl_wallet'],
+        'supporterCount': json['supporter_count'],
+        'supportingCount': json['supporting_count'],
     };
 }
 
@@ -227,27 +227,27 @@ export function UserToJSON(value?: User | null): any {
     }
     return {
         
-        'album_count': value.album_count,
-        'artist_pick_track_id': value.artist_pick_track_id,
+        'album_count': value.albumCount,
+        'artist_pick_track_id': value.artistPickTrackId,
         'bio': value.bio,
-        'cover_photo': CoverPhotoToJSON(value.cover_photo),
-        'followee_count': value.followee_count,
-        'follower_count': value.follower_count,
-        'does_follow_current_user': value.does_follow_current_user,
+        'cover_photo': CoverPhotoToJSON(value.coverPhoto),
+        'followee_count': value.followeeCount,
+        'follower_count': value.followerCount,
+        'does_follow_current_user': value.doesFollowCurrentUser,
         'handle': value.handle,
         'id': value.id,
-        'is_verified': value.is_verified,
+        'is_verified': value.isVerified,
         'location': value.location,
         'name': value.name,
-        'playlist_count': value.playlist_count,
-        'profile_picture': ProfilePictureToJSON(value.profile_picture),
-        'repost_count': value.repost_count,
-        'track_count': value.track_count,
-        'is_deactivated': value.is_deactivated,
-        'erc_wallet': value.erc_wallet,
-        'spl_wallet': value.spl_wallet,
-        'supporter_count': value.supporter_count,
-        'supporting_count': value.supporting_count,
+        'playlist_count': value.playlistCount,
+        'profile_picture': ProfilePictureToJSON(value.profilePicture),
+        'repost_count': value.repostCount,
+        'track_count': value.trackCount,
+        'is_deactivated': value.isDeactivated,
+        'erc_wallet': value.ercWallet,
+        'spl_wallet': value.splWallet,
+        'supporter_count': value.supporterCount,
+        'supporting_count': value.supportingCount,
     };
 }
 

@@ -25,7 +25,7 @@ export interface PlaylistAddedTimestamp {
      * @type {number}
      * @memberof PlaylistAddedTimestamp
      */
-    metadata_timestamp: number;
+    metadataTimestamp: number;
     /**
      * 
      * @type {number}
@@ -37,7 +37,7 @@ export interface PlaylistAddedTimestamp {
      * @type {string}
      * @memberof PlaylistAddedTimestamp
      */
-    track_id: string;
+    trackId: string;
 }
 
 /**
@@ -45,9 +45,9 @@ export interface PlaylistAddedTimestamp {
  */
 export function instanceOfPlaylistAddedTimestamp(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "metadata_timestamp" in value;
+    isInstance = isInstance && "metadataTimestamp" in value;
     isInstance = isInstance && "timestamp" in value;
-    isInstance = isInstance && "track_id" in value;
+    isInstance = isInstance && "trackId" in value;
 
     return isInstance;
 }
@@ -62,9 +62,9 @@ export function PlaylistAddedTimestampFromJSONTyped(json: any, ignoreDiscriminat
     }
     return {
         
-        'metadata_timestamp': json['metadata_timestamp'],
+        'metadataTimestamp': json['metadata_timestamp'],
         'timestamp': json['timestamp'],
-        'track_id': json['track_id'],
+        'trackId': json['track_id'],
     };
 }
 
@@ -77,9 +77,9 @@ export function PlaylistAddedTimestampToJSON(value?: PlaylistAddedTimestamp | nu
     }
     return {
         
-        'metadata_timestamp': value.metadata_timestamp,
+        'metadata_timestamp': value.metadataTimestamp,
         'timestamp': value.timestamp,
-        'track_id': value.track_id,
+        'track_id': value.trackId,
     };
 }
 

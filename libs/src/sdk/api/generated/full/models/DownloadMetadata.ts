@@ -31,13 +31,13 @@ export interface DownloadMetadata {
      * @type {boolean}
      * @memberof DownloadMetadata
      */
-    is_downloadable: boolean;
+    isDownloadable: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof DownloadMetadata
      */
-    requires_follow: boolean;
+    requiresFollow: boolean;
 }
 
 /**
@@ -45,8 +45,8 @@ export interface DownloadMetadata {
  */
 export function instanceOfDownloadMetadata(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "is_downloadable" in value;
-    isInstance = isInstance && "requires_follow" in value;
+    isInstance = isInstance && "isDownloadable" in value;
+    isInstance = isInstance && "requiresFollow" in value;
 
     return isInstance;
 }
@@ -62,8 +62,8 @@ export function DownloadMetadataFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'cid': !exists(json, 'cid') ? undefined : json['cid'],
-        'is_downloadable': json['is_downloadable'],
-        'requires_follow': json['requires_follow'],
+        'isDownloadable': json['is_downloadable'],
+        'requiresFollow': json['requires_follow'],
     };
 }
 
@@ -77,8 +77,8 @@ export function DownloadMetadataToJSON(value?: DownloadMetadata | null): any {
     return {
         
         'cid': value.cid,
-        'is_downloadable': value.is_downloadable,
-        'requires_follow': value.requires_follow,
+        'is_downloadable': value.isDownloadable,
+        'requires_follow': value.requiresFollow,
     };
 }
 

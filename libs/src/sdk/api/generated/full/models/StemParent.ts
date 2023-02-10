@@ -31,7 +31,7 @@ export interface StemParent {
      * @type {number}
      * @memberof StemParent
      */
-    parent_track_id: number;
+    parentTrackId: number;
 }
 
 /**
@@ -40,7 +40,7 @@ export interface StemParent {
 export function instanceOfStemParent(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "category" in value;
-    isInstance = isInstance && "parent_track_id" in value;
+    isInstance = isInstance && "parentTrackId" in value;
 
     return isInstance;
 }
@@ -56,7 +56,7 @@ export function StemParentFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     return {
         
         'category': json['category'],
-        'parent_track_id': json['parent_track_id'],
+        'parentTrackId': json['parent_track_id'],
     };
 }
 
@@ -70,7 +70,7 @@ export function StemParentToJSON(value?: StemParent | null): any {
     return {
         
         'category': value.category,
-        'parent_track_id': value.parent_track_id,
+        'parent_track_id': value.parentTrackId,
     };
 }
 

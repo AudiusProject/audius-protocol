@@ -44,13 +44,13 @@ export interface UserFull {
      * @type {number}
      * @memberof UserFull
      */
-    album_count: number;
+    albumCount: number;
     /**
      * 
      * @type {number}
      * @memberof UserFull
      */
-    artist_pick_track_id?: number;
+    artistPickTrackId?: number;
     /**
      * 
      * @type {string}
@@ -62,25 +62,25 @@ export interface UserFull {
      * @type {CoverPhoto}
      * @memberof UserFull
      */
-    cover_photo?: CoverPhoto;
+    coverPhoto?: CoverPhoto;
     /**
      * 
      * @type {number}
      * @memberof UserFull
      */
-    followee_count: number;
+    followeeCount: number;
     /**
      * 
      * @type {number}
      * @memberof UserFull
      */
-    follower_count: number;
+    followerCount: number;
     /**
      * 
      * @type {boolean}
      * @memberof UserFull
      */
-    does_follow_current_user?: boolean;
+    doesFollowCurrentUser?: boolean;
     /**
      * 
      * @type {string}
@@ -98,7 +98,7 @@ export interface UserFull {
      * @type {boolean}
      * @memberof UserFull
      */
-    is_verified: boolean;
+    isVerified: boolean;
     /**
      * 
      * @type {string}
@@ -116,55 +116,55 @@ export interface UserFull {
      * @type {number}
      * @memberof UserFull
      */
-    playlist_count: number;
+    playlistCount: number;
     /**
      * 
      * @type {ProfilePicture}
      * @memberof UserFull
      */
-    profile_picture?: ProfilePicture;
+    profilePicture?: ProfilePicture;
     /**
      * 
      * @type {number}
      * @memberof UserFull
      */
-    repost_count: number;
+    repostCount: number;
     /**
      * 
      * @type {number}
      * @memberof UserFull
      */
-    track_count: number;
+    trackCount: number;
     /**
      * 
      * @type {boolean}
      * @memberof UserFull
      */
-    is_deactivated: boolean;
+    isDeactivated: boolean;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    erc_wallet?: string;
+    ercWallet?: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    spl_wallet: string;
+    splWallet: string;
     /**
      * 
      * @type {number}
      * @memberof UserFull
      */
-    supporter_count: number;
+    supporterCount: number;
     /**
      * 
      * @type {number}
      * @memberof UserFull
      */
-    supporting_count: number;
+    supportingCount: number;
     /**
      * 
      * @type {string}
@@ -176,25 +176,25 @@ export interface UserFull {
      * @type {string}
      * @memberof UserFull
      */
-    associated_wallets_balance: string;
+    associatedWalletsBalance: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    total_balance: string;
+    totalBalance: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    waudio_balance: string;
+    waudioBalance: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    associated_sol_wallets_balance: string;
+    associatedSolWalletsBalance: string;
     /**
      * 
      * @type {number}
@@ -212,79 +212,79 @@ export interface UserFull {
      * @type {string}
      * @memberof UserFull
      */
-    created_at: string;
+    createdAt: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    creator_node_endpoint?: string;
+    creatorNodeEndpoint?: string;
     /**
      * 
      * @type {number}
      * @memberof UserFull
      */
-    current_user_followee_follow_count: number;
+    currentUserFolloweeFollowCount: number;
     /**
      * 
      * @type {boolean}
      * @memberof UserFull
      */
-    does_current_user_follow: boolean;
+    doesCurrentUserFollow: boolean;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    handle_lc: string;
+    handleLc: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    updated_at: string;
+    updatedAt: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    cover_photo_sizes?: string;
+    coverPhotoSizes?: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    cover_photo_legacy?: string;
+    coverPhotoLegacy?: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    profile_picture_sizes?: string;
+    profilePictureSizes?: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    profile_picture_legacy?: string;
+    profilePictureLegacy?: string;
     /**
      * 
      * @type {string}
      * @memberof UserFull
      */
-    metadata_multihash?: string;
+    metadataMultihash?: string;
     /**
      * 
      * @type {boolean}
      * @memberof UserFull
      */
-    has_collectibles: boolean;
+    hasCollectibles: boolean;
     /**
      * 
      * @type {PlaylistLibrary}
      * @memberof UserFull
      */
-    playlist_library?: PlaylistLibrary;
+    playlistLibrary?: PlaylistLibrary;
 }
 
 /**
@@ -292,33 +292,33 @@ export interface UserFull {
  */
 export function instanceOfUserFull(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "album_count" in value;
-    isInstance = isInstance && "followee_count" in value;
-    isInstance = isInstance && "follower_count" in value;
+    isInstance = isInstance && "albumCount" in value;
+    isInstance = isInstance && "followeeCount" in value;
+    isInstance = isInstance && "followerCount" in value;
     isInstance = isInstance && "handle" in value;
     isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "is_verified" in value;
+    isInstance = isInstance && "isVerified" in value;
     isInstance = isInstance && "name" in value;
-    isInstance = isInstance && "playlist_count" in value;
-    isInstance = isInstance && "repost_count" in value;
-    isInstance = isInstance && "track_count" in value;
-    isInstance = isInstance && "is_deactivated" in value;
-    isInstance = isInstance && "spl_wallet" in value;
-    isInstance = isInstance && "supporter_count" in value;
-    isInstance = isInstance && "supporting_count" in value;
+    isInstance = isInstance && "playlistCount" in value;
+    isInstance = isInstance && "repostCount" in value;
+    isInstance = isInstance && "trackCount" in value;
+    isInstance = isInstance && "isDeactivated" in value;
+    isInstance = isInstance && "splWallet" in value;
+    isInstance = isInstance && "supporterCount" in value;
+    isInstance = isInstance && "supportingCount" in value;
     isInstance = isInstance && "balance" in value;
-    isInstance = isInstance && "associated_wallets_balance" in value;
-    isInstance = isInstance && "total_balance" in value;
-    isInstance = isInstance && "waudio_balance" in value;
-    isInstance = isInstance && "associated_sol_wallets_balance" in value;
+    isInstance = isInstance && "associatedWalletsBalance" in value;
+    isInstance = isInstance && "totalBalance" in value;
+    isInstance = isInstance && "waudioBalance" in value;
+    isInstance = isInstance && "associatedSolWalletsBalance" in value;
     isInstance = isInstance && "blocknumber" in value;
     isInstance = isInstance && "wallet" in value;
-    isInstance = isInstance && "created_at" in value;
-    isInstance = isInstance && "current_user_followee_follow_count" in value;
-    isInstance = isInstance && "does_current_user_follow" in value;
-    isInstance = isInstance && "handle_lc" in value;
-    isInstance = isInstance && "updated_at" in value;
-    isInstance = isInstance && "has_collectibles" in value;
+    isInstance = isInstance && "createdAt" in value;
+    isInstance = isInstance && "currentUserFolloweeFollowCount" in value;
+    isInstance = isInstance && "doesCurrentUserFollow" in value;
+    isInstance = isInstance && "handleLc" in value;
+    isInstance = isInstance && "updatedAt" in value;
+    isInstance = isInstance && "hasCollectibles" in value;
 
     return isInstance;
 }
@@ -333,47 +333,47 @@ export function UserFullFromJSONTyped(json: any, ignoreDiscriminator: boolean): 
     }
     return {
         
-        'album_count': json['album_count'],
-        'artist_pick_track_id': !exists(json, 'artist_pick_track_id') ? undefined : json['artist_pick_track_id'],
+        'albumCount': json['album_count'],
+        'artistPickTrackId': !exists(json, 'artist_pick_track_id') ? undefined : json['artist_pick_track_id'],
         'bio': !exists(json, 'bio') ? undefined : json['bio'],
-        'cover_photo': !exists(json, 'cover_photo') ? undefined : CoverPhotoFromJSON(json['cover_photo']),
-        'followee_count': json['followee_count'],
-        'follower_count': json['follower_count'],
-        'does_follow_current_user': !exists(json, 'does_follow_current_user') ? undefined : json['does_follow_current_user'],
+        'coverPhoto': !exists(json, 'cover_photo') ? undefined : CoverPhotoFromJSON(json['cover_photo']),
+        'followeeCount': json['followee_count'],
+        'followerCount': json['follower_count'],
+        'doesFollowCurrentUser': !exists(json, 'does_follow_current_user') ? undefined : json['does_follow_current_user'],
         'handle': json['handle'],
         'id': json['id'],
-        'is_verified': json['is_verified'],
+        'isVerified': json['is_verified'],
         'location': !exists(json, 'location') ? undefined : json['location'],
         'name': json['name'],
-        'playlist_count': json['playlist_count'],
-        'profile_picture': !exists(json, 'profile_picture') ? undefined : ProfilePictureFromJSON(json['profile_picture']),
-        'repost_count': json['repost_count'],
-        'track_count': json['track_count'],
-        'is_deactivated': json['is_deactivated'],
-        'erc_wallet': !exists(json, 'erc_wallet') ? undefined : json['erc_wallet'],
-        'spl_wallet': json['spl_wallet'],
-        'supporter_count': json['supporter_count'],
-        'supporting_count': json['supporting_count'],
+        'playlistCount': json['playlist_count'],
+        'profilePicture': !exists(json, 'profile_picture') ? undefined : ProfilePictureFromJSON(json['profile_picture']),
+        'repostCount': json['repost_count'],
+        'trackCount': json['track_count'],
+        'isDeactivated': json['is_deactivated'],
+        'ercWallet': !exists(json, 'erc_wallet') ? undefined : json['erc_wallet'],
+        'splWallet': json['spl_wallet'],
+        'supporterCount': json['supporter_count'],
+        'supportingCount': json['supporting_count'],
         'balance': json['balance'],
-        'associated_wallets_balance': json['associated_wallets_balance'],
-        'total_balance': json['total_balance'],
-        'waudio_balance': json['waudio_balance'],
-        'associated_sol_wallets_balance': json['associated_sol_wallets_balance'],
+        'associatedWalletsBalance': json['associated_wallets_balance'],
+        'totalBalance': json['total_balance'],
+        'waudioBalance': json['waudio_balance'],
+        'associatedSolWalletsBalance': json['associated_sol_wallets_balance'],
         'blocknumber': json['blocknumber'],
         'wallet': json['wallet'],
-        'created_at': json['created_at'],
-        'creator_node_endpoint': !exists(json, 'creator_node_endpoint') ? undefined : json['creator_node_endpoint'],
-        'current_user_followee_follow_count': json['current_user_followee_follow_count'],
-        'does_current_user_follow': json['does_current_user_follow'],
-        'handle_lc': json['handle_lc'],
-        'updated_at': json['updated_at'],
-        'cover_photo_sizes': !exists(json, 'cover_photo_sizes') ? undefined : json['cover_photo_sizes'],
-        'cover_photo_legacy': !exists(json, 'cover_photo_legacy') ? undefined : json['cover_photo_legacy'],
-        'profile_picture_sizes': !exists(json, 'profile_picture_sizes') ? undefined : json['profile_picture_sizes'],
-        'profile_picture_legacy': !exists(json, 'profile_picture_legacy') ? undefined : json['profile_picture_legacy'],
-        'metadata_multihash': !exists(json, 'metadata_multihash') ? undefined : json['metadata_multihash'],
-        'has_collectibles': json['has_collectibles'],
-        'playlist_library': !exists(json, 'playlist_library') ? undefined : PlaylistLibraryFromJSON(json['playlist_library']),
+        'createdAt': json['created_at'],
+        'creatorNodeEndpoint': !exists(json, 'creator_node_endpoint') ? undefined : json['creator_node_endpoint'],
+        'currentUserFolloweeFollowCount': json['current_user_followee_follow_count'],
+        'doesCurrentUserFollow': json['does_current_user_follow'],
+        'handleLc': json['handle_lc'],
+        'updatedAt': json['updated_at'],
+        'coverPhotoSizes': !exists(json, 'cover_photo_sizes') ? undefined : json['cover_photo_sizes'],
+        'coverPhotoLegacy': !exists(json, 'cover_photo_legacy') ? undefined : json['cover_photo_legacy'],
+        'profilePictureSizes': !exists(json, 'profile_picture_sizes') ? undefined : json['profile_picture_sizes'],
+        'profilePictureLegacy': !exists(json, 'profile_picture_legacy') ? undefined : json['profile_picture_legacy'],
+        'metadataMultihash': !exists(json, 'metadata_multihash') ? undefined : json['metadata_multihash'],
+        'hasCollectibles': json['has_collectibles'],
+        'playlistLibrary': !exists(json, 'playlist_library') ? undefined : PlaylistLibraryFromJSON(json['playlist_library']),
     };
 }
 
@@ -386,47 +386,47 @@ export function UserFullToJSON(value?: UserFull | null): any {
     }
     return {
         
-        'album_count': value.album_count,
-        'artist_pick_track_id': value.artist_pick_track_id,
+        'album_count': value.albumCount,
+        'artist_pick_track_id': value.artistPickTrackId,
         'bio': value.bio,
-        'cover_photo': CoverPhotoToJSON(value.cover_photo),
-        'followee_count': value.followee_count,
-        'follower_count': value.follower_count,
-        'does_follow_current_user': value.does_follow_current_user,
+        'cover_photo': CoverPhotoToJSON(value.coverPhoto),
+        'followee_count': value.followeeCount,
+        'follower_count': value.followerCount,
+        'does_follow_current_user': value.doesFollowCurrentUser,
         'handle': value.handle,
         'id': value.id,
-        'is_verified': value.is_verified,
+        'is_verified': value.isVerified,
         'location': value.location,
         'name': value.name,
-        'playlist_count': value.playlist_count,
-        'profile_picture': ProfilePictureToJSON(value.profile_picture),
-        'repost_count': value.repost_count,
-        'track_count': value.track_count,
-        'is_deactivated': value.is_deactivated,
-        'erc_wallet': value.erc_wallet,
-        'spl_wallet': value.spl_wallet,
-        'supporter_count': value.supporter_count,
-        'supporting_count': value.supporting_count,
+        'playlist_count': value.playlistCount,
+        'profile_picture': ProfilePictureToJSON(value.profilePicture),
+        'repost_count': value.repostCount,
+        'track_count': value.trackCount,
+        'is_deactivated': value.isDeactivated,
+        'erc_wallet': value.ercWallet,
+        'spl_wallet': value.splWallet,
+        'supporter_count': value.supporterCount,
+        'supporting_count': value.supportingCount,
         'balance': value.balance,
-        'associated_wallets_balance': value.associated_wallets_balance,
-        'total_balance': value.total_balance,
-        'waudio_balance': value.waudio_balance,
-        'associated_sol_wallets_balance': value.associated_sol_wallets_balance,
+        'associated_wallets_balance': value.associatedWalletsBalance,
+        'total_balance': value.totalBalance,
+        'waudio_balance': value.waudioBalance,
+        'associated_sol_wallets_balance': value.associatedSolWalletsBalance,
         'blocknumber': value.blocknumber,
         'wallet': value.wallet,
-        'created_at': value.created_at,
-        'creator_node_endpoint': value.creator_node_endpoint,
-        'current_user_followee_follow_count': value.current_user_followee_follow_count,
-        'does_current_user_follow': value.does_current_user_follow,
-        'handle_lc': value.handle_lc,
-        'updated_at': value.updated_at,
-        'cover_photo_sizes': value.cover_photo_sizes,
-        'cover_photo_legacy': value.cover_photo_legacy,
-        'profile_picture_sizes': value.profile_picture_sizes,
-        'profile_picture_legacy': value.profile_picture_legacy,
-        'metadata_multihash': value.metadata_multihash,
-        'has_collectibles': value.has_collectibles,
-        'playlist_library': PlaylistLibraryToJSON(value.playlist_library),
+        'created_at': value.createdAt,
+        'creator_node_endpoint': value.creatorNodeEndpoint,
+        'current_user_followee_follow_count': value.currentUserFolloweeFollowCount,
+        'does_current_user_follow': value.doesCurrentUserFollow,
+        'handle_lc': value.handleLc,
+        'updated_at': value.updatedAt,
+        'cover_photo_sizes': value.coverPhotoSizes,
+        'cover_photo_legacy': value.coverPhotoLegacy,
+        'profile_picture_sizes': value.profilePictureSizes,
+        'profile_picture_legacy': value.profilePictureLegacy,
+        'metadata_multihash': value.metadataMultihash,
+        'has_collectibles': value.hasCollectibles,
+        'playlist_library': PlaylistLibraryToJSON(value.playlistLibrary),
     };
 }
 

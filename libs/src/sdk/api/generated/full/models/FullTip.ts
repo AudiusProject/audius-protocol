@@ -56,7 +56,7 @@ export interface FullTip {
      * @type {string}
      * @memberof FullTip
      */
-    created_at: string;
+    createdAt: string;
     /**
      * 
      * @type {number}
@@ -68,13 +68,13 @@ export interface FullTip {
      * @type {Array<SupporterReference>}
      * @memberof FullTip
      */
-    followee_supporters: Array<SupporterReference>;
+    followeeSupporters: Array<SupporterReference>;
     /**
      * 
      * @type {string}
      * @memberof FullTip
      */
-    tx_signature: string;
+    txSignature: string;
 }
 
 /**
@@ -85,10 +85,10 @@ export function instanceOfFullTip(value: object): boolean {
     isInstance = isInstance && "amount" in value;
     isInstance = isInstance && "sender" in value;
     isInstance = isInstance && "receiver" in value;
-    isInstance = isInstance && "created_at" in value;
+    isInstance = isInstance && "createdAt" in value;
     isInstance = isInstance && "slot" in value;
-    isInstance = isInstance && "followee_supporters" in value;
-    isInstance = isInstance && "tx_signature" in value;
+    isInstance = isInstance && "followeeSupporters" in value;
+    isInstance = isInstance && "txSignature" in value;
 
     return isInstance;
 }
@@ -106,10 +106,10 @@ export function FullTipFromJSONTyped(json: any, ignoreDiscriminator: boolean): F
         'amount': json['amount'],
         'sender': UserFullFromJSON(json['sender']),
         'receiver': UserFullFromJSON(json['receiver']),
-        'created_at': json['created_at'],
+        'createdAt': json['created_at'],
         'slot': json['slot'],
-        'followee_supporters': ((json['followee_supporters'] as Array<any>).map(SupporterReferenceFromJSON)),
-        'tx_signature': json['tx_signature'],
+        'followeeSupporters': ((json['followee_supporters'] as Array<any>).map(SupporterReferenceFromJSON)),
+        'txSignature': json['tx_signature'],
     };
 }
 
@@ -125,10 +125,10 @@ export function FullTipToJSON(value?: FullTip | null): any {
         'amount': value.amount,
         'sender': UserFullToJSON(value.sender),
         'receiver': UserFullToJSON(value.receiver),
-        'created_at': value.created_at,
+        'created_at': value.createdAt,
         'slot': value.slot,
-        'followee_supporters': ((value.followee_supporters as Array<any>).map(SupporterReferenceToJSON)),
-        'tx_signature': value.tx_signature,
+        'followee_supporters': ((value.followeeSupporters as Array<any>).map(SupporterReferenceToJSON)),
+        'tx_signature': value.txSignature,
     };
 }
 

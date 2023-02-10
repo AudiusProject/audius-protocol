@@ -32,7 +32,7 @@ export interface FullRemix {
      * @type {string}
      * @memberof FullRemix
      */
-    parent_track_id: string;
+    parentTrackId: string;
     /**
      * 
      * @type {UserFull}
@@ -44,13 +44,13 @@ export interface FullRemix {
      * @type {boolean}
      * @memberof FullRemix
      */
-    has_remix_author_reposted: boolean;
+    hasRemixAuthorReposted: boolean;
     /**
      * 
      * @type {boolean}
      * @memberof FullRemix
      */
-    has_remix_author_saved: boolean;
+    hasRemixAuthorSaved: boolean;
 }
 
 /**
@@ -58,10 +58,10 @@ export interface FullRemix {
  */
 export function instanceOfFullRemix(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "parent_track_id" in value;
+    isInstance = isInstance && "parentTrackId" in value;
     isInstance = isInstance && "user" in value;
-    isInstance = isInstance && "has_remix_author_reposted" in value;
-    isInstance = isInstance && "has_remix_author_saved" in value;
+    isInstance = isInstance && "hasRemixAuthorReposted" in value;
+    isInstance = isInstance && "hasRemixAuthorSaved" in value;
 
     return isInstance;
 }
@@ -76,10 +76,10 @@ export function FullRemixFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     }
     return {
         
-        'parent_track_id': json['parent_track_id'],
+        'parentTrackId': json['parent_track_id'],
         'user': UserFullFromJSON(json['user']),
-        'has_remix_author_reposted': json['has_remix_author_reposted'],
-        'has_remix_author_saved': json['has_remix_author_saved'],
+        'hasRemixAuthorReposted': json['has_remix_author_reposted'],
+        'hasRemixAuthorSaved': json['has_remix_author_saved'],
     };
 }
 
@@ -92,10 +92,10 @@ export function FullRemixToJSON(value?: FullRemix | null): any {
     }
     return {
         
-        'parent_track_id': value.parent_track_id,
+        'parent_track_id': value.parentTrackId,
         'user': UserFullToJSON(value.user),
-        'has_remix_author_reposted': value.has_remix_author_reposted,
-        'has_remix_author_saved': value.has_remix_author_saved,
+        'has_remix_author_reposted': value.hasRemixAuthorReposted,
+        'has_remix_author_saved': value.hasRemixAuthorSaved,
     };
 }
 
