@@ -26,7 +26,7 @@ type LongTerm struct {
 }
 
 // New creates a struct that listens to streamToStoreFrom and downloads content from the temp store to the long-term store.
-func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) *LongTerm {
+func New(thisNodePubKey, streamToStoreFrom string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) *LongTerm {
 
 	// todo: config week
 	blobDriverURL := os.Getenv("TODO_STORAGE_DRIVER_URL")
@@ -50,7 +50,7 @@ func New(streamToStoreFrom string, storageDecider decider.StorageDecider, jsc na
 		blobStore:         b,
 	}
 
-	longTerm.runStorer()
+	longTerm.runStorer(thisNodePubKey)
 	return longTerm
 }
 
@@ -191,8 +191,7 @@ func (lt *LongTerm) GetJobResultsFor(id string) ([]*ShardAndFile, error) {
 }
 
 // runStorer runs a goroutine to pull tracks from temp NATS object storage to long-term object storage.
-func (lt *LongTerm) runStorer() {
-	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: Get from config or something - same for value in NewProd() above
+func (lt *LongTerm) runStorer(thisNodePubKey string) {
 	// Create a per-node explicit pull consumer on the stream that backs the track upload status KV bucket
 	storerDurable := fmt.Sprintf("STORER_%s", thisNodePubKey)
 	_, err := lt.jsc.AddConsumer(lt.streamToStoreFrom, &nats.ConsumerConfig{

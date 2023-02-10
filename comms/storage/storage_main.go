@@ -8,8 +8,9 @@ import (
 	"os/signal"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/shared/peering"
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/storageserver"
 	"comms.audius.co/storage/telemetry"
 	"github.com/nats-io/nats.go"
@@ -18,8 +19,9 @@ import (
 
 func StorageMain() {
 
-	// TODO: shouldn't use discovery config
-	config.Init()
+	// TODO: We need to change a bunch of stuff in shared/peering/ before we can remove this.
+	//       Make each config usage in shared/peering take the needed arguments instead of the whole config.
+	discoveryConfig.Init()
 
 	ctx := context.Background()
 
@@ -40,7 +42,7 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	ss := storageserver.NewProd(jsc)
+	ss := storageserver.NewProd(config.GetStorageConfig(), jsc)
 
 	// Start server
 	go func() {

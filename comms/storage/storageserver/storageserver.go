@@ -9,7 +9,8 @@ import (
 	"os"
 	"strings"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/longterm"
 	"comms.audius.co/storage/monitor"
@@ -39,13 +40,8 @@ type StorageServer struct {
 	Monitor        *monitor.Monitor
 }
 
-func NewProd(jsc nats.JetStreamContext) *StorageServer {
-	// TODO: Standardize config with something like https://github.com/AudiusProject/audius-protocol/blob/main/comms/discovery/config/config.go#L62
-	var thisNodePubKey string
-	thisNodePubKey = os.Getenv("delegateOwnerWallet") // stage + prod
-	if thisNodePubKey == "" {
-		thisNodePubKey = os.Getenv("audius_delegate_owner_wallet") // local dev
-	}
+func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext) *StorageServer {
+	thisNodePubKey := config.DelegatePublicKey.Hex
 	var host string
 	// TODO: host config
 	switch thisNodePubKey {
@@ -81,7 +77,7 @@ func NewProd(jsc nats.JetStreamContext) *StorageServer {
 		d,
 		jsc,
 		jobsManager,
-		longterm.New("KV_"+GlobalNamespace+transcode.KvSuffix, d, jsc),
+		longterm.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, d, jsc),
 		m,
 	)
 }
@@ -269,7 +265,7 @@ func (ss *StorageServer) serveJobResultsById(c echo.Context) error {
 var embeddedStatusFiles embed.FS
 
 func getStatusStaticFiles() http.FileSystem {
-	devMode := config.Env == "standalone"
+	devMode := discoveryConfig.Env == "standalone"
 	if devMode {
 		return http.FS(os.DirFS("storage/storageserver/static"))
 	}
