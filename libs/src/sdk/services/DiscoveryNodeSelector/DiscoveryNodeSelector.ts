@@ -41,7 +41,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
-  private readonly config: DiscoveryNodeSelectorServiceConfigInternal
+  private config: DiscoveryNodeSelectorServiceConfigInternal
 
   /**
    * Whether or not we are using a backup, meaning we were
@@ -113,6 +113,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.backupServices = {}
     this.selectedNode =
       this.config.initialSelectedNode &&
+      (!this.config.allowlist ||
+        this.config.allowlist?.has(this.config.initialSelectedNode)) &&
       !this.config.blocklist?.has(this.config.initialSelectedNode)
         ? this.config.initialSelectedNode
         : null
@@ -127,6 +129,30 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.removeAllEventListeners = this.eventEmitter.removeAllListeners.bind(
       this.eventEmitter
     )
+  }
+
+  /**
+   * Updates the config.
+   * Note that setting the initial node or bootstrap nodes here does nothing as the service is already initialized.
+   * Will force reselections if health check thresholds change (as that might cause the current node to be considered unhealthy)
+   * or if the selected node is excluded per allow/blocklists
+   */
+  public updateConfig(
+    config: Exclude<
+      DiscoveryNodeSelectorServiceConfig,
+      'initialSelectedNode' | 'bootstrapServices'
+    >
+  ) {
+    this.config = mergeConfigWithDefaults(config, this.config)
+    if (this.selectedNode) {
+      if (config.healthCheckThresholds) {
+        this.selectedNode = null
+      } else if (config.allowlist && !config.allowlist.has(this.selectedNode)) {
+        this.selectedNode = null
+      } else if (config.blocklist?.has(this.selectedNode)) {
+        this.selectedNode = null
+      }
+    }
   }
 
   /**
@@ -328,6 +354,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.info(`Selected discprov ${selectedService}`, decisionTree, {
       attemptedServicesCount
     })
+    this.isBehind = false
     return selectedService
   }
 
