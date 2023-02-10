@@ -5,14 +5,6 @@ dev.discovery::
 		audius_db_url='postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable' \
 		go run main.go discovery
 
-dev.storage::
-	@	audius_discprov_env='standalone' \
-		storage_v2="true" \
-		storage_v2_single_node="true" \
-		audius_delegate_owner_wallet="0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F" \
-		audius_delegate_private_key="293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" \
-		go run main.go storage
-
 reset::
 	docker compose down --volumes
 	docker compose up comdb comnats -d
@@ -48,6 +40,9 @@ build::
 build.alpine::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 	go build -ldflags="-w -s" -o comms main.go
+
+build.weathermap::
+	cd storage/storageserver/weather-map; yarn && yarn build
 
 # this is a "fast build and push"
 # we build target specific binary on our host machine (osx)

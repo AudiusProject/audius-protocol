@@ -409,6 +409,12 @@ class ServiceRegistry {
    * Poll L1 SPFactory for spID & set spID config once recovered.
    */
   async _recoverNodeL1Identity() {
+    if (!config.get('creatorNodeEndpoint')?.startsWith('http')) {
+      config.set(
+        'creatorNodeEndpoint',
+        'https://' + config.get('creatorNodeEndpoint')
+      )
+    }
     const endpoint = config.get('creatorNodeEndpoint')
 
     const retryTimeoutMs = 5000 // 5sec

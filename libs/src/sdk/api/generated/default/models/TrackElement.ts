@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,19 +13,55 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
  * @interface TrackElement
  */
-export interface TrackElement 
-    {
-        /**
-        * 
-        * @type {string}
-        * @memberof TrackElement
-        */
-        parent_track_id: string;
-    }
+export interface TrackElement {
+    /**
+     * 
+     * @type {string}
+     * @memberof TrackElement
+     */
+    parentTrackId: string;
+}
 
+/**
+ * Check if a given object implements the TrackElement interface.
+ */
+export function instanceOfTrackElement(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "parentTrackId" in value;
+
+    return isInstance;
+}
+
+export function TrackElementFromJSON(json: any): TrackElement {
+    return TrackElementFromJSONTyped(json, false);
+}
+
+export function TrackElementFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrackElement {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'parentTrackId': json['parent_track_id'],
+    };
+}
+
+export function TrackElementToJSON(value?: TrackElement | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'parent_track_id': value.parentTrackId,
+    };
+}
 

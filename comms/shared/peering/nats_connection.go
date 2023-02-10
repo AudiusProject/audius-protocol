@@ -9,9 +9,9 @@ import (
 )
 
 func DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error) {
-	natsUrl := nats.DefaultURL
+	natsUrl := config.GetEnvDefault("NATS_SERVER_URL", nats.DefaultURL)
 
-	if peerMap != nil {
+	if len(peerMap) != 0 {
 		goodNatsUrls := []string{}
 		for _, peer := range peerMap {
 			if peer.NatsIsReachable {

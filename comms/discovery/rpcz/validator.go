@@ -26,6 +26,11 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 	methodName := schema.RPCMethod(rawRpc.Method)
 	var noTx *sqlx.Tx = nil
 
+	// Always check timestamp
+	if (time.Now().UnixMilli() - rawRpc.Timestamp > config.SignatureTimeToLiveMs) {
+		return errors.New("Invalid timestamp")
+	}
+
 	switch methodName {
 	case schema.RPCMethodChatCreate:
 		return vtor.validateChatCreate(noTx, userId, rawRpc)

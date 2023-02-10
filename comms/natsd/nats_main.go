@@ -9,6 +9,7 @@ import (
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func NatsMain() {
@@ -46,6 +47,11 @@ func startServer() {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
+
+	// Middleware
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 
 	proxyNats := func(c echo.Context) error {
 		resp, err := http.Get("http://localhost:8222/" + c.Param("info"))

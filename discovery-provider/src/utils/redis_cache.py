@@ -139,6 +139,7 @@ def cache(**kwargs):
                 "user_id" in request.args and request.args["user_id"] is not None
             )
             key = extract_key(request.path, request.args.items(), cache_prefix_override)
+            # only read cache responses w/o user id because only those are inserted
             if not has_user_id:
                 cached_resp = get_json_cached_key(redis, key)
                 if cached_resp:
@@ -151,11 +152,14 @@ def cache(**kwargs):
 
             if len(response) == 2:
                 resp, status_code = response
-                if status_code < 400:
+                # only cache responses w/o user id because only those are read
+                if status_code < 400 and not has_user_id:
                     set_json_cached_key(redis, key, resp, ttl_sec)
 
                 return resp, status_code
-            set_json_cached_key(redis, key, response, ttl_sec)
+            # only cache responses w/o user id because only those are read
+            if not has_user_id:
+                set_json_cached_key(redis, key, response, ttl_sec)
 
             return transform(response)
 

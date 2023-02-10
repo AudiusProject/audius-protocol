@@ -1,18 +1,20 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-    <meta charset="utf-8">
-    <title>status</title>
+  <meta charset="utf-8">
+  <title>status</title>
 </head>
+
 <body>
   <job-table />
   <script type="module">
 
-import {LitElement, html, css} from 'https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js';
+    import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@2/core/lit-core.min.js';
 
-class JobTable extends LitElement {
-  
-  static styles = css`
+    class JobTable extends LitElement {
+
+      static styles = css`
     * {
       font-family: sans-serif;
       box-sizing: border-box;
@@ -40,71 +42,71 @@ class JobTable extends LitElement {
     }
   `;
 
-  constructor() {
-    super()
-    this.jobs = []
-    this.fallback = false
-  }
-
-  connectedCallback() {
-    super.connectedCallback()
-
-    const loc = window.location;
-    const proto = loc.protocol == 'https:' ? 'wss:' : 'ws:'
-    const uri = `${proto}${loc.host}/storage/ws`
-    const ws = new WebSocket(uri)
-
-    ws.onopen = function() {
-      console.log('WS Connected')
-    }
-
-    ws.onclose = function() {
-      console.log('WS Close')
-    }
-
-    ws.onerror = function(event) {
-      console.log('WS Error', event)
-      this.fallback = true
-      this.pollFallback()
-      setInterval(() => this.pollFallback(), 5000)
-    }
-
-    ws.onmessage = function(evt) {
-      const data = JSON.parse(evt.data)
-      if (Array.isArray(data)) {
-        // on initial websocket connect
-        // server sends all job state
-        this.jobs = data
-      } else {
-        // subsequent messages are individual job updates
-        // update existing if found,
-        // else add new job to front of list
-        const i = this.jobs.findIndex(j => j.id == data.id)
-        if (i == -1) {
-          this.jobs.unshift(data)
-        } else {
-          this.jobs[i] = data
-        }
+      constructor() {
+        super()
+        this.jobs = []
+        this.fallback = false
       }
-      this.requestUpdate()
-    }.bind(this)
-  }
 
-  pollFallback() {
-    fetch('/storage/jobs')
-    .then(r => r.json())
-    .then(data => {
-      this.jobs = data
-      this.requestUpdate()
-    })
-  }
+      connectedCallback() {
+        super.connectedCallback()
 
-  disconnectedCallback() {
-    console.log('todo: websocket disconnect')
-  }
+        const loc = window.location;
+        const proto = loc.protocol == 'https:' ? 'wss:' : 'ws:'
+        const uri = `${proto}${loc.host}/storage/ws`
+        const ws = new WebSocket(uri)
 
-  render() {
-    return html`<div>
+        ws.onopen = function () {
+          console.log('WS Connected')
+        }
+
+        ws.onclose = function () {
+          console.log('WS Close')
+        }
+
+        ws.onerror = function (event) {
+          console.log('WS Error', event)
+          this.fallback = true
+          this.pollFallback()
+          setInterval(() => this.pollFallback(), 5000)
+        }
+
+        ws.onmessage = function (evt) {
+          const data = JSON.parse(evt.data)
+          if (Array.isArray(data)) {
+            // on initial websocket connect
+            // server sends all job state
+            this.jobs = data
+          } else {
+            // subsequent messages are individual job updates
+            // update existing if found,
+            // else add new job to front of list
+            const i = this.jobs.findIndex(j => j.id == data.id)
+            if (i == -1) {
+              this.jobs.unshift(data)
+            } else {
+              this.jobs[i] = data
+            }
+          }
+          this.requestUpdate()
+        }.bind(this)
+      }
+
+      pollFallback() {
+        fetch('/storage/jobs')
+          .then(r => r.json())
+          .then(data => {
+            this.jobs = data
+            this.requestUpdate()
+          })
+      }
+
+      disconnectedCallback() {
+        console.log('todo: websocket disconnect')
+      }
+
+      render() {
+        return html`<div>
 
       <div  style="display: flex; align-items: center; gap: 30px;">
         <h2>${this.jobs.length} jobs</h2>
@@ -175,78 +177,79 @@ class JobTable extends LitElement {
         `)}
       </table>
     </div>`;
-  }
-}
-customElements.define('job-table', JobTable);
+      }
+    }
+    customElements.define('job-table', JobTable);
 
 
-function resultLink(result_info, fallbackDescription) {
-  if (!result_info) return null
-  if (fallbackDescription === 'input') {
-    return html`
+    function resultLink(result_info, fallbackDescription) {
+      if (!result_info) return null
+      if (fallbackDescription === 'input') {
+        return html`
     ${result_info.description || fallbackDescription || 'output'}
     <a href="/storage/tmp-obj/${result_info.bucket}/${result_info.name}" target="_blank">
        [temp]
     </a>
     `
-  } else {
-    return html`
+      } else {
+        return html`
     ${result_info.description || 'output'}
     <a href="/storage/tmp-obj/${result_info.bucket}/${result_info.name}" target="_blank">
        [temp]
     </a>
-    <a href="/storage/long-term/${result_info.name}" target="_blank">
+    <a href="/storage/long-term/file/${result_info.name}" target="_blank">
       [long-term]
     </a>
   `
-  }
-}
+      }
+    }
 
-function ffprobeDisplay(probe) {
-  if (!probe) return null
-  const spans = [
-    showDuration(probe.format.duration),
-    scaleNumber(probe.format.size),
-    scaleNumber(probe.format.bit_rate),
-    probe.format.format_long_name,
-  ]
-    .filter(Boolean)
-    .map(d => html`<small>${d}</small>`)
+    function ffprobeDisplay(probe) {
+      if (!probe) return null
+      const spans = [
+        showDuration(probe.format.duration),
+        scaleNumber(probe.format.size),
+        scaleNumber(probe.format.bit_rate),
+        probe.format.format_long_name,
+      ]
+        .filter(Boolean)
+        .map(d => html`<small>${d}</small>`)
 
-  return html`<div style="display: flex; gap: 10px">
+      return html`<div style="display: flex; gap: 10px">
     ${spans}
   </div>`
-}
+    }
 
-function scaleNumber(size) {
-  if (!size) return null
-  var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1e3));
-  return (size / Math.pow(1e3, i)).toFixed(2) * 1 + ' ' + ['', 'k', 'M', 'G', 'T'][i];
-}
+    function scaleNumber(size) {
+      if (!size) return null
+      var i = size == 0 ? 0 : Math.floor(Math.log(size) / Math.log(1e3));
+      return (size / Math.pow(1e3, i)).toFixed(2) * 1 + ' ' + ['', 'k', 'M', 'G', 'T'][i];
+    }
 
-function showDate(ts) {
-  if (!ts) return ''
-  const d = new Date(ts)
-  return `${d.toLocaleTimeString()}`
-}
+    function showDate(ts) {
+      if (!ts) return ''
+      const d = new Date(ts)
+      return `${d.toLocaleTimeString()}`
+    }
 
-function showDuration(sec) {
-  if (!sec) return null;
-  var hours, minutes, seconds;
-  hours = Math.floor(sec / (60 * 60));
-  minutes = Math.floor((sec / 60) % 60);
-  seconds = Math.floor(sec % 60);
-  if (hours && minutes < 10) {
-    minutes = "0" + minutes;
-  }
-  if (seconds < 10) {
-    seconds = "0" + seconds;
-  }
-  var arr = [minutes, seconds]
-  if (hours) arr.unshift(hours)
-  return arr.join(':');
-}
+    function showDuration(sec) {
+      if (!sec) return null;
+      var hours, minutes, seconds;
+      hours = Math.floor(sec / (60 * 60));
+      minutes = Math.floor((sec / 60) % 60);
+      seconds = Math.floor(sec % 60);
+      if (hours && minutes < 10) {
+        minutes = "0" + minutes;
+      }
+      if (seconds < 10) {
+        seconds = "0" + seconds;
+      }
+      var arr = [minutes, seconds]
+      if (hours) arr.unshift(hours)
+      return arr.join(':');
+    }
 
   </script>
 </body>
+
 </html>

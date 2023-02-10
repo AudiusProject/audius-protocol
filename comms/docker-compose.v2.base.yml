@@ -1,0 +1,32 @@
+version: '3'
+services:
+  comdb:
+    container_name: comdb
+    image: postgres
+    restart: unless-stopped
+    ports:
+      - 5454:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
+
+  nats:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    image: "comms:v2"
+    restart: unless-stopped
+    stop_signal: SIGKILL
+    command:
+      - nats
+
+  storage:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    image: "comms:v2"
+    restart: unless-stopped
+    stop_signal: SIGKILL
+    command:
+      - storage

@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,25 +13,63 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
  * @interface UserSubscribers
  */
-export interface UserSubscribers 
-    {
-        /**
-        * 
-        * @type {string}
-        * @memberof UserSubscribers
-        */
-        user_id: string;
-        /**
-        * 
-        * @type {Array<string>}
-        * @memberof UserSubscribers
-        */
-        subscriber_ids?: Array<string>;
-    }
+export interface UserSubscribers {
+    /**
+     * 
+     * @type {string}
+     * @memberof UserSubscribers
+     */
+    userId: string;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof UserSubscribers
+     */
+    subscriberIds?: Array<string>;
+}
 
+/**
+ * Check if a given object implements the UserSubscribers interface.
+ */
+export function instanceOfUserSubscribers(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "userId" in value;
+
+    return isInstance;
+}
+
+export function UserSubscribersFromJSON(json: any): UserSubscribers {
+    return UserSubscribersFromJSONTyped(json, false);
+}
+
+export function UserSubscribersFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserSubscribers {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'userId': json['user_id'],
+        'subscriberIds': !exists(json, 'subscriber_ids') ? undefined : json['subscriber_ids'],
+    };
+}
+
+export function UserSubscribersToJSON(value?: UserSubscribers | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'user_id': value.userId,
+        'subscriber_ids': value.subscriberIds,
+    };
+}
 
