@@ -101,7 +101,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   hiddenDetailsTileWrapper: {
     ...flexRowCentered(),
     justifyContent: 'center',
-    marginBottom: spacing(4)
+    marginVertical: spacing(4)
   },
 
   hiddenTrackLabel: {
@@ -120,12 +120,13 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
   headerContainer: {
     ...flexRowCentered(),
-    justifyContent: 'center',
-    marginTop: spacing(2),
-    marginBottom: spacing(3)
+    justifyContent: 'center'
   },
   headerText: {
+    marginTop: spacing(4),
+    marginBottom: spacing(4),
     letterSpacing: 2,
+    lineHeight: 17,
     textAlign: 'center',
     textTransform: 'uppercase'
   },
