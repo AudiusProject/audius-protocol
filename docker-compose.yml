@@ -297,7 +297,7 @@ services:
     build: discovery-provider/plugins/notifications
     environment:
       AUDIUS_REDIS_URL: "redis://identity-service-redis:6379/00"
-      DN_DB_URL: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius-discovery"
+      DN_DB_URL: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
     volumes:
       - ./discovery-provider/plugins/notifications:/notifications
@@ -336,7 +336,7 @@ services:
     container_name: comms
     command: /comms-linux discovery
     environment:
-      audius_db_url: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius-discovery?sslmode=disable"
+      audius_db_url: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery?sslmode=disable"
     depends_on:
       - nats
     restart: unless-stopped
