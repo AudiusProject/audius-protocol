@@ -69,7 +69,7 @@ jobs:
           only: /^release-v.*$/
       type: approval
   - release-governance:
-      context: governance
+      context: governance-stage
       requires:
         - release-governance-trigger
 
