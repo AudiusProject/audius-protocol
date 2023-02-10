@@ -15,7 +15,7 @@ steps:
       name: Create branch
       command: |
         OLD_VERSION=$(jq -r .version discovery-provider/.version.json)
-        NEW_VERSION=$(echo ${NEW_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+        NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
 
         git checkout main
 

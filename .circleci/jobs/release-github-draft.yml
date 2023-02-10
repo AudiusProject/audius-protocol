@@ -12,6 +12,11 @@ steps:
   - run:
       name: Generate Changelog
       command: |
+        if [[ "$(gh release list)" == "no releases found" ]]; then
+          touch /tmp/creator-node-changelog /tmp/discovery-provider-changelog
+          exit
+        fi
+
         OLD_VERSION=$(gh release view --json tagName | jq -r ".tagName" | sed 's/.*@\(.*\)/\1/')
 
         generate-changelog() {
