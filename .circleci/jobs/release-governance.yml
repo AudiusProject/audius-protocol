@@ -23,5 +23,5 @@ steps:
       command: |
         export RELEASE_VERSION="$(jq -r .version discovery-provider/.version.json)"
 
-        cd libs
+        cd eth-contracts
         node scripts/release-governance.js
