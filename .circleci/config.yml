@@ -276,6 +276,12 @@ parameters:
   full_ci:
     type: boolean
     default: false
+  sdk_version:
+    type: string
+    default: ""
+  sdk_preid:
+    type: string
+    default: ""
 
 jobs:
   noop:
@@ -1789,6 +1795,8 @@ workflows:
           name: publish-sdk (<< pipeline.parameters.sdk_release_commit >>)
           sdk_release_commit: << pipeline.parameters.sdk_release_commit >>
           slack_mentions_user: << pipeline.parameters.slack_mentions_user >>
+          preid: << pipeline.parameters.sdk_preid >>
+          version: << pipeline.parameters.sdk_version >>
           context:
             - Audius Client
             - slack-secrets
