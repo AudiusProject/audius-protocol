@@ -26,7 +26,7 @@ fmt::
 
 test::
 	docker compose up -d comdb
-	audius_discprov_env='standalone' go test ./... -count=1
+	audius_discprov_env='standalone' test_host='com1' go test ./... -count=1
 
 
 test.load::
