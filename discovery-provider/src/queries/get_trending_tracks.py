@@ -68,6 +68,7 @@ def generate_unpopulated_trending(
                 Track.track_id.in_(ids),
                 Track.is_current == True,
                 Track.is_delete == False,
+                Track.stem_of == None,
                 Track.is_premium == False,
             )
             .all()
@@ -84,6 +85,7 @@ def generate_unpopulated_trending(
                 Track.track_id.in_(ids),
                 Track.is_current == True,
                 Track.is_delete == False,
+                Track.stem_of == None,
                 or_(
                     Track.is_premium == False,
                     not_(
@@ -161,6 +163,7 @@ def generate_unpopulated_trending_from_mat_views(
             .filter(
                 Track.is_current == True,
                 Track.is_delete == False,
+                Track.stem_of == None,
                 Track.is_premium == False,
             )
             .order_by(
@@ -185,6 +188,7 @@ def generate_unpopulated_trending_from_mat_views(
             .filter(
                 Track.is_current == True,
                 Track.is_delete == False,
+                Track.stem_of == None,
                 or_(
                     Track.is_premium == False,
                     not_(
