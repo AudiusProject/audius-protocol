@@ -431,6 +431,19 @@ def test_run(protocol_dir, service, args):
     """
     generate_env(protocol_dir, 0, 0, 0)
 
+    if service == "discovery-provider":
+        cmd = "pytest"
+    elif service == "creator-node":
+        cmd = "./node_modules/.bin/mocha"
+    elif service == "identity-service":
+        cmd = "./node_modules/.bin/mocha"
+    else:
+        click.secho(
+            "Invalid service specified",
+            fg="red",
+        )
+        return
+
     sys.exit(
         subprocess.run(
             [
@@ -572,7 +585,11 @@ def ps(protocol_dir):
                 if publisher["PublishedPort"]:
                     ports[publisher["PublishedPort"]] = publisher["TargetPort"]
 
-        if service["Service"] in ["creator-node", "discovery-provider", "discovery-provider-elasticsearch"]:
+        if service["Service"] in [
+            "creator-node",
+            "discovery-provider",
+            "discovery-provider-elasticsearch",
+        ]:
             replica = int(service["Name"].split("-")[-1])
         if service["Service"] == "creator-node":
             name = f"{service['Service']}-{replica}"

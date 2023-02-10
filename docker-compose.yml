@@ -298,7 +298,6 @@ services:
       - /usr/src/app/node_modules
       - ./dev-tools:/tmp/dev-tools
       - audius-libs:/usr/src/audius-libs
-      - /usr/src/app/build
     depends_on:
       identity-service-db:
         condition: service_healthy
