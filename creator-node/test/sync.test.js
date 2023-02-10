@@ -53,7 +53,19 @@ const sampleExportDummyCIDFromClock2Path = path.resolve(
 
 const libsMock = getLibsMock()
 
-describe('Test secondarySyncFromPrimary()', async function () {
+describe('Test secondarySyncFromPrimary()', function () {
+  before(function () {
+    Object.keys(require.cache).forEach(function (key) {
+      // exclude src/models/index from the key deletion because it initalizes a new connection pool
+      // every time and we hit a db error if we clear the cache and keep creating new pg pools
+      if (
+        key.includes('creator-node/src/') &&
+        !key.includes('creator-node/src/models/index.js')
+      ) {
+        delete require.cache[key]
+      }
+    })
+  })
   let server, app, mockServiceRegistry, userId
 
   const originalMaxExportClockValueRange = config.get(
@@ -92,10 +104,17 @@ describe('Test secondarySyncFromPrimary()', async function () {
       sandbox.restore()
     }
     await sinon.restore()
-    await server.close()
+    if (server) {
+      await server.close()
+    }
   })
 
-  describe('test /export route', async function () {
+  describe('test /export route', function () {
+    before(function () {
+      Object.keys(require.cache).forEach(function (key) {
+        delete require.cache[key]
+      })
+    })
     let cnodeUserUUID,
       sessionToken,
       sessionWalletPublicKey,
@@ -228,7 +247,12 @@ describe('Test secondarySyncFromPrimary()', async function () {
         })
     }
 
-    describe('Confirm export object matches DB state with a user and track', async function () {
+    describe('Confirm export object matches DB state with a user and track', function () {
+      before(function () {
+        Object.keys(require.cache).forEach(function (key) {
+          delete require.cache[key]
+        })
+      })
       beforeEach(setupDepsAndApp)
 
       beforeEach(createUserAndTrack)
@@ -372,7 +396,12 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
     })
 
-    describe('Confirm export works for user with data exceeding maxExportClockValueRange', async function () {
+    describe('Confirm export works for user with data exceeding maxExportClockValueRange', function () {
+      before(function () {
+        Object.keys(require.cache).forEach(function (key) {
+          delete require.cache[key]
+        })
+      })
       /** Override maxExportClockValueRange to smaller value for testing */
       beforeEach(async function () {
         maxExportClockValueRange = 10
@@ -754,7 +783,12 @@ describe('Test secondarySyncFromPrimary()', async function () {
       })
     })
 
-    describe('Confirm export throws an error with inconsistent data', async function () {
+    describe('Confirm export throws an error with inconsistent data', function () {
+      before(function () {
+        Object.keys(require.cache).forEach(function (key) {
+          delete require.cache[key]
+        })
+      })
       beforeEach(setupDepsAndApp)
 
       beforeEach(createUserAndTrack)
@@ -812,7 +846,12 @@ describe('Test secondarySyncFromPrimary()', async function () {
     })
   })
 
-  describe('Test secondarySyncFromPrimary function', async function () {
+  describe('Test secondarySyncFromPrimary function', function () {
+    before(function () {
+      Object.keys(require.cache).forEach(function (key) {
+        delete require.cache[key]
+      })
+    })
     let serviceRegistryMock, originalContentNodeEndpoint
 
     const TEST_ENDPOINT_PRIMARY = MOCK_CN1
@@ -1522,7 +1561,19 @@ describe('Test secondarySyncFromPrimary()', async function () {
   })
 })
 
-describe('Test primarySyncFromSecondary() with mocked export', async () => {
+describe('Test primarySyncFromSecondary() with mocked export', () => {
+  before(function () {
+    Object.keys(require.cache).forEach(function (key) {
+      // exclude src/models/index from the key deletion because it initalizes a new connection pool
+      // every time and we hit a db error if we clear the cache and keep creating new pg pools
+      if (
+        key.includes('creator-node/src/') &&
+        !key.includes('creator-node/src/models/index.js')
+      ) {
+        delete require.cache[key]
+      }
+    })
+  })
   let server,
     app,
     serviceRegistryMock,

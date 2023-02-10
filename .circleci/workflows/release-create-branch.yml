@@ -1,0 +1,3 @@
+when: << pipeline.parameters.run-schedule >>
+jobs:
+  - release-create-branch

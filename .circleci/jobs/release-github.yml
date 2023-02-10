@@ -1,0 +1,13 @@
+resource_class: small
+docker:
+  - image: cimg/base:2023.01
+steps:
+  - checkout
+  - gh/setup
+  - run:
+      name: Update github release
+      command: |
+        CN_VERSION="$(jq -r .version creator-node/.version.json)"
+        DP_VERSION="$(jq -r .version discovery-provider/.version.json)"
+        gh release edit --draft=false --target "$CIRCLE_SHA1" "@audius/creator-node-$CN_VERSION"
+        gh release edit --draft=false --target "$CIRCLE_SHA1" "@audius/discovery-provider-$DP_VERSION"
