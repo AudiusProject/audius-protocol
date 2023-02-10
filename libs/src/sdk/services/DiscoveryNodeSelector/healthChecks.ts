@@ -83,9 +83,9 @@ export const parseApiHealthStatusReason = ({
   }
   if (minVersion) {
     if (
-      !data.version ||
-      !data.version.version ||
-      !hasSameMajorAndMinorVersion(data.version.version, minVersion)
+      data.version &&
+      (!data.version.version ||
+        !hasSameMajorAndMinorVersion(data.version.version, minVersion))
     ) {
       return {
         health: HealthCheckStatus.UNHEALTHY,
@@ -93,7 +93,7 @@ export const parseApiHealthStatusReason = ({
       }
     }
 
-    if (semver.lt(data.version.version, minVersion)) {
+    if (data.version && semver.lt(data.version.version, minVersion)) {
       return { health: HealthCheckStatus.BEHIND, reason: 'version' }
     }
   }
