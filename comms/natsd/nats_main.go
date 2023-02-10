@@ -14,7 +14,7 @@ import (
 
 func NatsMain() {
 	config.Init()
-	peering.PollRegisteredNodes()
+	peering.PollRegisteredNodes(nil)
 
 	{
 		var err error

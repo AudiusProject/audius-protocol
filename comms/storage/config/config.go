@@ -4,10 +4,12 @@ package config
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 
+	"comms.audius.co/shared/peering"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -17,10 +19,13 @@ type PublicKeyDecoder PublicKey
 type PublicKey struct {
 	Hex string
 }
+type ServiceNodesDecoder []peering.ServiceNode
 
 type StorageConfig struct {
-	DelegatePrivateKey PrivateKeyDecoder `envconfig:"delegate_private_key"`
-	DelegatePublicKey  PublicKeyDecoder  `envconfig:"delegate_private_key"` // Derives public key from private key
+	DelegatePrivateKey     PrivateKeyDecoder   `envconfig:"delegate_private_key"`
+	DelegatePublicKey      PublicKeyDecoder    `envconfig:"delegate_private_key"` // Derives public key from private key
+	StorageDriverUrl       string              `envconfig:"storage_driver_url" default:"file:///tmp/audius_storage"`
+	DevOnlyRegisteredNodes ServiceNodesDecoder `envconfig:"dev_only_registered_nodes"`
 }
 
 var storageConfig *StorageConfig
@@ -36,8 +41,10 @@ func GetStorageConfig() *StorageConfig {
 		}
 		storageConfig = &newStorageConfig
 		log.Printf(
-			"Parsed StorageConfig:\nDelegatePrivateKey: [hidden]\nDelegatePublicKey: %v\n",
+			"Parsed StorageConfig:\nDelegatePrivateKey: [hidden]\nDelegatePublicKey: %v\nStorageDriverUrl: %v\nDevOnlyRegisteredNodes: %v\n",
 			storageConfig.DelegatePublicKey,
+			storageConfig.StorageDriverUrl,
+			storageConfig.DevOnlyRegisteredNodes,
 		)
 	}
 	return storageConfig
@@ -46,14 +53,13 @@ func GetStorageConfig() *StorageConfig {
 // convertLegacyEnvVars handles all the ugly logic of ensuring all env vars are set correctly.
 func convertLegacyEnvVars() {
 	// Ensure private key env var is set by checking deprecated env var or generating random private key
-	if os.Getenv("audius_delegate_private_key") == "" {
+	if os.Getenv("AUDIUS_DELEGATE_PRIVATE_KEY") == "" {
 		if os.Getenv("delegatePrivateKey") == "" {
-			privateKeyHex := generatePrivateKeyHex()
-			log.Print("WARN: Missing audius_delegate_private_key and deprecated fallback delegatePrivateKey env vars. Generating random private key.")
-			os.Setenv("audius_delegate_private_key", privateKeyHex)
+			log.Print("WARN: Missing 'AUDIUS_DELEGATE_PRIVATE_KEY' and deprecated fallback delegatePrivateKey env vars. Generating random private key.")
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", generatePrivateKeyHex())
 		} else {
-			log.Print("WARN: Using DEPRECATED 'delegatePrivateKey' env var. Please set 'audius_delegate_private_key' env var to the same value.")
-			os.Setenv("audius_delegate_private_key", os.Getenv("delegatePrivateKey"))
+			log.Print("WARN: Using DEPRECATED 'delegatePrivateKey' env var. Please set 'AUDIUS_DELEGATE_PRIVATE_KEY' env var to the same value.")
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", os.Getenv("delegatePrivateKey"))
 		}
 	}
 }
@@ -79,6 +85,16 @@ func (pkd *PublicKeyDecoder) Decode(value string) error {
 	}
 	publicKeyHex := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
 	*pkd = PublicKeyDecoder(PublicKey{Hex: publicKeyHex})
+	return nil
+}
+
+func (snd *ServiceNodesDecoder) Decode(value string) error {
+	var nodes []peering.ServiceNode
+	err := json.Unmarshal([]byte(value), &nodes)
+	if err != nil {
+		return fmt.Errorf("failed to decode service nodes: %v", err)
+	}
+	*snd = ServiceNodesDecoder(nodes)
 	return nil
 }
 

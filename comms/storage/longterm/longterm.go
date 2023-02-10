@@ -26,17 +26,12 @@ type LongTerm struct {
 }
 
 // New creates a struct that listens to streamToStoreFrom and downloads content from the temp store to the long-term store.
-func New(thisNodePubKey, streamToStoreFrom string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) *LongTerm {
-
-	// todo: config week
-	blobDriverURL := os.Getenv("TODO_STORAGE_DRIVER_URL")
-	if blobDriverURL == "" {
-		tempDir := "/tmp/audius_storage"
-		if err := os.MkdirAll(tempDir, os.ModePerm); err != nil {
-			log.Fatalln("failed to create fallback dir", err)
+func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) *LongTerm {
+	if strings.HasPrefix(blobDriverURL, "file://") {
+		dir := blobDriverURL[len("file://"):]
+		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+			log.Fatalln("failed to create long-term storage dir: ", err)
 		}
-		blobDriverURL = "file://" + tempDir
-		log.Printf("warning: no storage driver URL specified... falling back to %s \n", blobDriverURL)
 	}
 	b, err := blob.OpenBucket(context.Background(), blobDriverURL)
 	if err != nil {

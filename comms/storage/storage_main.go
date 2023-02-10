@@ -23,6 +23,8 @@ func StorageMain() {
 	//       Make each config usage in shared/peering take the needed arguments instead of the whole config.
 	discoveryConfig.Init()
 
+	storageConfig := config.GetStorageConfig()
+
 	ctx := context.Background()
 
 	logger := telemetry.NewConsoleLogger()
@@ -30,7 +32,7 @@ func StorageMain() {
 	defer func() { _ = tp.Shutdown(ctx) }()
 
 	jsc, err := func() (nats.JetStreamContext, error) {
-		err := peering.PollRegisteredNodes()
+		err := peering.PollRegisteredNodes(storageConfig.DevOnlyRegisteredNodes)
 		if err != nil {
 			return nil, err
 		}
@@ -42,7 +44,7 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	ss := storageserver.NewProd(config.GetStorageConfig(), jsc)
+	ss := storageserver.NewProd(storageConfig, jsc)
 
 	// Start server
 	go func() {
