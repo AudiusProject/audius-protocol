@@ -353,6 +353,14 @@ jobs:
         description: The git commit to build and release
         type: string
         default: ""
+      version:
+        description: The version to publish
+        type: string
+        default: ""
+      preid:
+        description: See npm version preid
+        type: string
+        default: ""
       slack_mentions_user:
         description: Used for CircleCI @mentions
         type: string
@@ -388,7 +396,7 @@ jobs:
           name: Bump and Publish Libs
           command: |
             export PROTOCOL_DIR=/home/circleci/project
-            libs/scripts/release.sh << parameters.sdk_release_commit >>
+            libs/scripts/release.sh << parameters.sdk_release_commit >> << parameters.version >> << parameters.preid >>
       - slack-fail:
           branch_pattern: main
           slack_mentions_user: << parameters.slack_mentions_user >>
