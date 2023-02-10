@@ -22,7 +22,7 @@ type PublicKey struct {
 type ServiceNodesDecoder []peering.ServiceNode
 
 type StorageConfig struct {
-	DelegatePrivateKey     PrivateKeyDecoder   `envconfig:"delegate_private_key"`
+	DelegatePrivateKey     PrivateKeyDecoder   `envconfig:"delegate_private_key" required:"true"`
 	DelegatePublicKey      PublicKeyDecoder    `envconfig:"delegate_private_key"` // Derives public key from private key
 	StorageDriverUrl       string              `envconfig:"storage_driver_url" default:"file:///tmp/audius_storage"`
 	DevOnlyRegisteredNodes ServiceNodesDecoder `envconfig:"dev_only_registered_nodes"`

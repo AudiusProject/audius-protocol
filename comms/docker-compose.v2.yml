@@ -13,21 +13,21 @@ x-common-variables: &storage-variables
           {
             "id": "content-node::2",
             "spId": "2",
-            "endpoint": "http://com2:8925",
+            "endpoint": "http://com2:8924",
             "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
             "type": { "id": "content-node" }
           },
           {
             "id": "content-node::3",
             "spId": "3",
-            "endpoint": "http://com3:8926",
+            "endpoint": "http://com3:8924",
             "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
             "type": { "id": "content-node" }
           },
           {
             "id": "content-node::4",
             "spId": "4",
-            "endpoint": "http://com4:8927",
+            "endpoint": "http://com4:8924",
             "delegateOwnerWallet": "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
             "type": { "id": "content-node" }
           }
