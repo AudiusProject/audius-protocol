@@ -10,4 +10,4 @@ export {
 export * from './api/chats/clientTypes'
 export * from './api/chats/serverTypes'
 export * from './services'
-export * from './bootstrapConfig'
+export * from './config'
