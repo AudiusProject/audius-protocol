@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { useDispatch } from 'react-redux'
 
-import { removeAllDownloadedFavorites } from 'app/store/offline-downloads/slice'
+import { requestRemoveAllDownloadedFavorites } from 'app/store/offline-downloads/slice'
 
 import { ConfirmationDrawer } from './ConfirmationDrawer'
 
@@ -19,7 +19,7 @@ export const RemoveDownloadedFavoritesDrawer = () => {
   const dispatch = useDispatch()
 
   const handleConfirm = useCallback(() => {
-    dispatch(removeAllDownloadedFavorites())
+    dispatch(requestRemoveAllDownloadedFavorites())
   }, [dispatch])
 
   return (

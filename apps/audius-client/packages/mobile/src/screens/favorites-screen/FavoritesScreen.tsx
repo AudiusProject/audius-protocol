@@ -1,5 +1,4 @@
 import { accountActions } from '@audius/common'
-import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 import { useEffectOnce } from 'react-use'
 
@@ -16,8 +15,7 @@ import {
 } from 'app/hooks/useIsOfflineModeEnabled'
 
 import { AlbumsTab } from './AlbumsTab'
-import { DownloadFavoritesSwitch } from './DownloadFavoritesSwitch'
-import { DownloadProgress } from './DownloadProgress'
+import { FavoritesDownloadSection } from './FavoritesDownloadSection'
 import { PlaylistsTab } from './PlaylistsTab'
 import { TracksTab } from './TracksTab'
 const { fetchSavedPlaylists, fetchSavedAlbums } = accountActions
@@ -63,12 +61,7 @@ export const FavoritesScreen = () => {
         icon={IconFavorite}
         styles={{ icon: { marginLeft: 3 } }}
       >
-        {isOfflineModeEnabled ? (
-          <View style={{ flexDirection: 'row' }}>
-            <DownloadProgress />
-            <DownloadFavoritesSwitch />
-          </View>
-        ) : null}
+        {isOfflineModeEnabled ? <FavoritesDownloadSection /> : null}
       </ScreenHeader>
       <ScreenContent isOfflineCapable={isOfflineModeEnabled}>
         {<TopTabNavigator screens={favoritesScreens} />}

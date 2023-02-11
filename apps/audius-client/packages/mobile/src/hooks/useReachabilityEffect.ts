@@ -23,7 +23,6 @@ export const useReachabilityEffect = (
   const handleReachabilityStateChange = useCallback(
     (nextReachabilityState: boolean) => {
       if (nextReachabilityState && !prevReachability && onBecomeReachable) {
-        console.info('Become reachable')
         onBecomeReachable()
       }
       if (
@@ -31,7 +30,6 @@ export const useReachabilityEffect = (
         (prevReachability || prevReachability === undefined) &&
         onBecomeUnreachable
       ) {
-        console.info('Become unreachable')
         onBecomeUnreachable()
       }
     },
