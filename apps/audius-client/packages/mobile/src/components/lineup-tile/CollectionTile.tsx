@@ -31,6 +31,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { setVisibility } from 'app/store/drawers/slice'
+import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
 
 import type { ImageProps } from '../image/FastImage'
 
@@ -125,6 +127,10 @@ const CollectionTileComponent = ({
 
   const isOwner = playlist_owner_id === currentUserId
 
+  const isCollectionMarkedForDownload = useSelector(
+    getIsCollectionMarkedForDownload(playlist_id.toString())
+  )
+
   const renderImage = useCallback(
     (props: ImageProps) => (
       <CollectionImage
@@ -197,11 +203,26 @@ const CollectionTileComponent = ({
       return
     }
     if (has_current_user_saved) {
-      dispatch(unsaveCollection(playlist_id, FavoriteSource.TILE))
+      if (isCollectionMarkedForDownload) {
+        dispatch(
+          setVisibility({
+            drawer: 'UnfavoriteDownloadedCollection',
+            visible: true,
+            data: { collectionId: playlist_id }
+          })
+        )
+      } else {
+        dispatch(unsaveCollection(playlist_id, FavoriteSource.TILE))
+      }
     } else {
       dispatch(saveCollection(playlist_id, FavoriteSource.TILE))
     }
-  }, [playlist_id, dispatch, has_current_user_saved])
+  }, [
+    playlist_id,
+    has_current_user_saved,
+    dispatch,
+    isCollectionMarkedForDownload
+  ])
 
   const handlePressRepost = useCallback(() => {
     if (playlist_id === undefined) {
