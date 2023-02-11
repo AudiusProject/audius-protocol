@@ -2,7 +2,7 @@ import type { ID } from '@audius/common'
 import { tracksSocialActions } from '@audius/common'
 import { put } from 'typed-redux-saga'
 
-import { completePlayCount, requestDownloadQueuedItem } from '../../slice'
+import { completePlayCount, requestDownloadQueuedItem } from '../../../slice'
 
 const { recordListen } = tracksSocialActions
 

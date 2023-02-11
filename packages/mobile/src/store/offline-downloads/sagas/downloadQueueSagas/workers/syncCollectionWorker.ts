@@ -16,8 +16,8 @@ import {
   getCollectionSyncStatus,
   getOfflineCollectionMetadata,
   getOfflineTrackMetadata
-} from '../../selectors'
-import type { CollectionId, OfflineItem } from '../../slice'
+} from '../../../selectors'
+import type { CollectionId, OfflineItem } from '../../../slice'
 import {
   completeCollectionSync,
   CollectionSyncStatus,
@@ -28,7 +28,7 @@ import {
   addOfflineItems,
   removeOfflineItems,
   startCollectionSync
-} from '../../slice'
+} from '../../../slice'
 
 const { SET_UNREACHABLE } = reachabilityActions
 const { getUserId } = accountSelectors
