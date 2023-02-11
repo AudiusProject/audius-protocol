@@ -1,4 +1,8 @@
-import { accountSelectors, getContext } from '@audius/common'
+import {
+  accountSelectors,
+  getContext,
+  savedPageSelectors
+} from '@audius/common'
 import { takeEvery, select, call, put } from 'typed-redux-saga'
 
 import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
@@ -8,6 +12,8 @@ import type { OfflineItem } from '../slice'
 import { addOfflineItems, requestDownloadAllFavorites } from '../slice'
 
 const { getUserId } = accountSelectors
+
+const { getLocalSaves } = savedPageSelectors
 
 export function* requestDownloadAllFavoritesSaga() {
   yield* takeEvery(requestDownloadAllFavorites.type, downloadAllFavorites)
@@ -25,31 +31,49 @@ function* downloadAllFavorites() {
     metadata: { reasons_for_download: [{ is_from_favorites: true }] }
   })
 
+  const trackReasonsForDownload = [
+    { is_from_favorites: true, collection_id: DOWNLOAD_REASON_FAVORITES }
+  ]
+
+  // Add local saves
+  const now = Date.now().toString()
+  const localSaves = yield* select(getLocalSaves)
+  const localSavesToAdd: OfflineItem[] = Object.keys(localSaves)
+    .map((id) => parseInt(id, 10))
+    .map((id) => ({
+      type: 'track',
+      id,
+      metadata: {
+        favorite_created_at: now,
+        reasons_for_download: trackReasonsForDownload
+      }
+    }))
+
+  offlineItemsToAdd.push(...localSavesToAdd)
+
+  // Add favorited tracks from api
   const apiClient = yield* getContext('apiClient')
   const allFavoritedTracks = yield* call([apiClient, apiClient.getFavorites], {
     currentUserId,
     limit: 10000
   })
 
-  if (!allFavoritedTracks) return
+  if (allFavoritedTracks) {
+    for (const favoritedTrack of allFavoritedTracks) {
+      const { save_item_id: trackId, created_at } = favoritedTrack
 
-  for (const favoritedTrack of allFavoritedTracks) {
-    const { save_item_id: trackId, created_at } = favoritedTrack
-    const downloadReason = {
-      is_from_favorites: true,
-      collection_id: DOWNLOAD_REASON_FAVORITES
+      offlineItemsToAdd.push({
+        type: 'track',
+        id: trackId,
+        metadata: {
+          favorite_created_at: created_at,
+          reasons_for_download: trackReasonsForDownload
+        }
+      })
     }
-
-    offlineItemsToAdd.push({
-      type: 'track',
-      id: trackId,
-      metadata: {
-        favorite_created_at: created_at,
-        reasons_for_download: [downloadReason]
-      }
-    })
   }
 
+  // Add favorited collections and their tracks
   const favoritedCollections = yield* select(getAccountCollections)
 
   for (const favoritedCollection of favoritedCollections) {
