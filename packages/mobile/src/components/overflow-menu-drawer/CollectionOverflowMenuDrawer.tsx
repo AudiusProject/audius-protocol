@@ -18,6 +18,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
+import { setVisibility } from 'app/store/drawers/slice'
+import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
 
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openDeletePlaylist } =
@@ -46,6 +48,9 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const id = modalId as ID
 
   const playlist = useSelector((state) => getCollection(state, { id }))
+  const isCollectionMarkedForDownload = useSelector(
+    getIsCollectionMarkedForDownload(id)
+  )
 
   const user = useSelector((state) =>
     getUser(state, { id: playlist?.playlist_owner_id })
@@ -68,8 +73,19 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
       dispatch(undoRepostCollection(id, RepostSource.OVERFLOW)),
     [OverflowAction.FAVORITE]: () =>
       dispatch(saveCollection(id, FavoriteSource.OVERFLOW)),
-    [OverflowAction.UNFAVORITE]: () =>
-      dispatch(unsaveCollection(id, FavoriteSource.OVERFLOW)),
+    [OverflowAction.UNFAVORITE]: () => {
+      if (isCollectionMarkedForDownload) {
+        dispatch(
+          setVisibility({
+            drawer: 'UnfavoriteDownloadedCollection',
+            visible: true,
+            data: { collectionId: id }
+          })
+        )
+      } else {
+        dispatch(unsaveCollection(id, FavoriteSource.OVERFLOW))
+      }
+    },
     [OverflowAction.SHARE]: () =>
       dispatch(shareCollection(id, ShareSource.OVERFLOW)),
     [OverflowAction.VIEW_ALBUM_PAGE]: () => {
