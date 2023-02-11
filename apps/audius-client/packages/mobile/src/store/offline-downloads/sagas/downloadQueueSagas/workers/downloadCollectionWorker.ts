@@ -13,8 +13,8 @@ import {
   writeFavoritesCollectionJson
 } from 'app/services/offline-downloader'
 
-import { getCollectionOfflineDownloadStatus } from '../../selectors'
-import type { CollectionId } from '../../slice'
+import { getCollectionOfflineDownloadStatus } from '../../../selectors'
+import type { CollectionId } from '../../../slice'
 import {
   errorDownload,
   OfflineDownloadStatus,
@@ -23,7 +23,7 @@ import {
   completeDownload,
   requestDownloadQueuedItem,
   startDownload
-} from '../../slice'
+} from '../../../slice'
 const { SET_UNREACHABLE } = reachabilityActions
 
 const { getUserId } = accountSelectors

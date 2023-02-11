@@ -13,7 +13,7 @@ import {
   writeTrackJson
 } from 'app/services/offline-downloader'
 
-import { getTrackOfflineDownloadStatus } from '../../selectors'
+import { getTrackOfflineDownloadStatus } from '../../../selectors'
 import {
   cancelDownload,
   completeDownload,
@@ -22,7 +22,7 @@ import {
   OfflineDownloadStatus,
   removeOfflineItems,
   startDownload
-} from '../../slice'
+} from '../../../slice'
 const { SET_UNREACHABLE } = reachabilityActions
 
 const { getUserId } = accountSelectors

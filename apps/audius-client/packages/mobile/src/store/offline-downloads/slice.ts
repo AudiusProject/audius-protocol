@@ -29,6 +29,7 @@ export type DownloadQueueItem =
   | { type: 'track'; id: ID }
   | { type: 'collection-sync'; id: CollectionId }
   | { type: 'play-count'; id: ID }
+  | { type: 'stale-track'; id: ID }
 
 export type OfflineDownloadsState = {
   trackStatus: {
@@ -69,6 +70,7 @@ export type OfflineItem =
       id: CollectionId
     }
   | { type: 'play-count'; id: ID }
+  | { type: 'stale-track'; id: ID }
 
 export type RedownloadOfflineItemsAction = PayloadAction<{
   items: DownloadQueueItem[]
@@ -95,6 +97,7 @@ export type SyncAction = PayloadAction<{ id: CollectionId }>
 export type CompleteDownloadAction = PayloadAction<
   | { type: 'track'; id: ID; completedAt: number }
   | { type: 'collection'; id: CollectionId }
+  | { type: 'stale-track'; id: ID; verifiedAt: number }
 >
 
 export enum QueueStatus {
@@ -201,6 +204,13 @@ const slice = createSlice({
           }
         } else if (item.type === 'play-count') {
           downloadQueue.push(item)
+        } else if (item.type === 'stale-track') {
+          const { id } = item
+          const trackMetadata = offlineTrackMetadata[id]
+          if (trackMetadata) {
+            trackMetadata.last_verified_time = Date.now()
+          }
+          downloadQueue.push({ type: 'stale-track', id })
         }
       }
     },
@@ -253,6 +263,8 @@ const slice = createSlice({
         state.collectionStatus[id] = OfflineDownloadStatus.LOADING
       } else if (type === 'track') {
         state.trackStatus[id] = OfflineDownloadStatus.LOADING
+      } else if (type === 'stale-track') {
+        // continue
       }
     },
     completeDownload: (state, action: CompleteDownloadAction) => {
@@ -263,9 +275,18 @@ const slice = createSlice({
         const { id, completedAt } = item
         state.trackStatus[id] = OfflineDownloadStatus.SUCCESS
         const trackMetadata = state.offlineTrackMetadata[id]
-        trackMetadata.last_verified_time = completedAt
-        trackMetadata.download_completed_time = completedAt
+        if (trackMetadata) {
+          trackMetadata.last_verified_time = completedAt
+          trackMetadata.download_completed_time = completedAt
+        }
+      } else if (item.type === 'stale-track') {
+        const { id, verifiedAt } = item
+        const trackMetadata = state.offlineTrackMetadata[id]
+        if (trackMetadata) {
+          trackMetadata.last_verified_time = verifiedAt
+        }
       }
+
       state.downloadQueue.shift()
     },
     cancelDownload: (state, action: QueueAction) => {

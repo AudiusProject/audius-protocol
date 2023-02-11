@@ -7,10 +7,11 @@ import {
   updateQueueStatus
 } from '../../slice'
 
-import { downloadCollectionWorker } from './downloadCollectionWorker'
-import { downloadTrackWorker } from './downloadTrackWorker'
-import { playCounterWorker } from './playCounterWorker'
-import { syncCollectionWorker } from './syncCollectionWorker'
+import { downloadCollectionWorker } from './workers/downloadCollectionWorker'
+import { downloadTrackWorker } from './workers/downloadTrackWorker'
+import { playCounterWorker } from './workers/playCounterWorker'
+import { staleTrackWorker } from './workers/staleTrackWorker'
+import { syncCollectionWorker } from './workers/syncCollectionWorker'
 
 export function* requestDownloadQueuedItemSaga() {
   yield* takeEvery(requestDownloadQueuedItem.type, downloadQueuedItem)
@@ -38,5 +39,7 @@ function* downloadQueuedItem() {
     yield* call(syncCollectionWorker, id)
   } else if (type === 'play-count') {
     yield* call(playCounterWorker, id)
+  } else if (type === 'stale-track') {
+    yield* call(staleTrackWorker, id)
   }
 }
