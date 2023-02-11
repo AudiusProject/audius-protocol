@@ -1,99 +1,46 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useLayoutEffect, useState } from 'react'
 
 import { reachabilitySelectors } from '@audius/common'
-import { View } from 'react-native'
+import type { SwitchProps } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Switch } from 'app/components/core'
-import { DownloadStatusIndicator } from 'app/components/offline-downloads/DownloadStatusIndicator'
-import { useDebouncedCallback } from 'app/hooks/useDebouncedCallback'
-import { useProxySelector } from 'app/hooks/useProxySelector'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
-import { getVisibility } from 'app/store/drawers/selectors'
 import { setVisibility } from 'app/store/drawers/slice'
-import { getOfflineTrackStatus } from 'app/store/offline-downloads/selectors'
-import {
-  OfflineDownloadStatus,
-  requestDownloadAllFavorites
-} from 'app/store/offline-downloads/slice'
-import { makeStyles } from 'app/styles'
+import { getCollectionDownloadStatus } from 'app/store/offline-downloads/selectors'
+import { requestDownloadAllFavorites } from 'app/store/offline-downloads/slice'
+
 const { getIsReachable } = reachabilitySelectors
 
-const useStyles = makeStyles(({ spacing }) => ({
-  root: {
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
-  downloadStatusIndicator: {
-    marginRight: spacing(1)
-  }
-}))
+type DownloadFavoritesSwitchProps = SwitchProps
 
-export const DownloadFavoritesSwitch = () => {
-  const styles = useStyles()
+export const DownloadFavoritesSwitch = (
+  props: DownloadFavoritesSwitchProps
+) => {
+  const { onValueChange, ...other } = props
   const dispatch = useDispatch()
-  const isReachable = useSelector(getIsReachable)
 
-  const isMarkedForDownload = useProxySelector((state) => {
-    const { collectionStatus } = state.offlineDownloads
-    return !!collectionStatus[DOWNLOAD_REASON_FAVORITES]
-  }, [])
-
-  const isDownloaded = useProxySelector((state) => {
-    const downloadStatus = getOfflineTrackStatus(state)
-    const tracksToDownload = Object.keys(downloadStatus)
-    if (tracksToDownload.length === 0) return false
-
-    const hasRemainingDownloads = tracksToDownload.some(
-      (trackId) =>
-        downloadStatus[trackId] === OfflineDownloadStatus.LOADING ||
-        downloadStatus[trackId] === OfflineDownloadStatus.INIT
+  const isSwitchDisabled = useSelector((state) => {
+    const isReachable = getIsReachable(state)
+    const isMarkedForDownload = getCollectionDownloadStatus(
+      state,
+      DOWNLOAD_REASON_FAVORITES
     )
+    return Boolean(!isReachable && isMarkedForDownload)
+  })
 
-    if (hasRemainingDownloads) return false
-
-    // Since downloadStatus can take a while to populate, use favorited
-    // tracks lineup as a backup
-    const favoritedTracks = state.pages.savedPage.tracks.entries
-    return favoritedTracks.every(({ id }) => {
-      return (
-        downloadStatus[id] === OfflineDownloadStatus.SUCCESS ||
-        downloadStatus[id] === OfflineDownloadStatus.ERROR ||
-        downloadStatus[id] === OfflineDownloadStatus.ABANDONED
-      )
-    })
-  }, [])
-
-  const getDownloadStatus = () => {
-    if (!isMarkedForDownload) {
-      return OfflineDownloadStatus.INACTIVE
-    }
-    if (isDownloaded) {
-      return OfflineDownloadStatus.SUCCESS
-    }
-    return OfflineDownloadStatus.LOADING
-  }
-
-  const downloadStatus = getDownloadStatus()
-  const [switchValue, setSwitchValue] = useState(isMarkedForDownload)
-  const removeDrawerVisibility = useSelector(
-    getVisibility('RemoveDownloadedFavorites')
+  const isMarkedForDownload = useSelector((state) =>
+    Boolean(getCollectionDownloadStatus(state, DOWNLOAD_REASON_FAVORITES))
   )
 
-  useEffect(() => {
-    if (
-      removeDrawerVisibility !== true &&
-      isMarkedForDownload !== switchValue
-    ) {
-      setSwitchValue(isMarkedForDownload)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isMarkedForDownload, removeDrawerVisibility])
+  const [value, setValue] = useState(isMarkedForDownload)
 
-  const handleToggleDownload = useCallback(
-    (isDownloadEnabled: boolean) => {
-      if (isDownloadEnabled) {
+  const handleValueChange = useCallback(
+    (newValue: boolean) => {
+      if (newValue) {
         dispatch(requestDownloadAllFavorites())
+        setValue(true)
+        onValueChange?.(true)
       } else {
         dispatch(
           setVisibility({
@@ -103,30 +50,25 @@ export const DownloadFavoritesSwitch = () => {
         )
       }
     },
-    [dispatch]
+    [dispatch, onValueChange]
   )
 
-  const debouncedHandleToggleDownload = useDebouncedCallback(
-    handleToggleDownload,
-    800
-  )
-
-  const handleSwitchValueChange = (isEnabled: boolean) => {
-    setSwitchValue(isEnabled)
-    debouncedHandleToggleDownload(isEnabled)
-  }
+  // When user confirms removal, turn switch off
+  useLayoutEffect(() => {
+    if (!isMarkedForDownload) {
+      setValue(false)
+      onValueChange?.(false)
+    }
+  }, [isMarkedForDownload, onValueChange])
 
   return (
-    <View style={styles.root}>
-      <DownloadStatusIndicator
-        status={downloadStatus}
-        style={styles.downloadStatusIndicator}
-      />
+    <>
       <Switch
-        value={switchValue}
-        onValueChange={handleSwitchValueChange}
-        disabled={!isReachable && !isMarkedForDownload}
+        value={value}
+        onValueChange={handleValueChange}
+        disabled={isSwitchDisabled}
+        {...other}
       />
-    </View>
+    </>
   )
 }

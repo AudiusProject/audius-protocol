@@ -7,7 +7,10 @@ import {
   getOfflineTrackMetadata
 } from '../selectors'
 import type { OfflineItem } from '../slice'
-import { removeOfflineItems, removeAllDownloadedFavorites } from '../slice'
+import {
+  removeOfflineItems,
+  requestRemoveAllDownloadedFavorites
+} from '../slice'
 
 /*
  * Saga initiated when user has requested to un-download their favorites.
@@ -16,7 +19,7 @@ import { removeOfflineItems, removeAllDownloadedFavorites } from '../slice'
  */
 export function* requestRemoveAllDownloadedFavoritesSaga() {
   yield* takeEvery(
-    removeAllDownloadedFavorites.type,
+    requestRemoveAllDownloadedFavorites.type,
     removeAllDownloadedFavoritesWorker
   )
 }

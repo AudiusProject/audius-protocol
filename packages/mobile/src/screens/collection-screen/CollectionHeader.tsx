@@ -149,13 +149,14 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
   const downloadStatus = useProxySelector(
     (state) => {
       const status = getCollectionDownloadStatus(state, playlist_id)
-      return isMarkedForDownload ? status : OfflineDownloadStatus.INACTIVE
+      return status ?? OfflineDownloadStatus.INACTIVE
     },
-    [isMarkedForDownload, playlist_id]
+    [playlist_id]
   )
 
   const [downloadSwitchValue, setDownloadSwitchValue] =
     useState(isMarkedForDownload)
+
   const removeDrawerVisibility = useSelector(
     getVisibility('RemoveDownloadedCollection')
   )

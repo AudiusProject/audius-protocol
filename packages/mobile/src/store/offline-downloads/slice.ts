@@ -232,27 +232,37 @@ const slice = createSlice({
 
           if (!offlineTrackMetadata[id]) {
             delete trackStatus[id]
-            const queueIndex = downloadQueue.findIndex(
+            const trackIndex = downloadQueue.findIndex(
               (queueItem) => queueItem.type === type && queueItem.id === id
             )
-            if (queueIndex !== -1) {
-              downloadQueue.splice(queueIndex, 1)
-            }
+            if (trackIndex !== -1) downloadQueue.splice(trackIndex, 1)
+
+            const staleTrackIndex = downloadQueue.findIndex(
+              (queueItem) =>
+                queueItem.type === 'stale-track' && queueItem.id === id
+            )
+            if (staleTrackIndex !== -1) downloadQueue.splice(staleTrackIndex, 1)
           }
         } else if (item.type === 'collection') {
-          const { type, id, metadata } = item
+          const { id, metadata } = item
           removeOfflineCollection(offlineCollectionMetadata, id, metadata)
 
           if (!offlineCollectionMetadata[id]) {
             delete collectionStatus[id]
             delete collectionSyncStatus[id]
 
-            state.downloadQueue = downloadQueue.filter(
+            const collectionIndex = downloadQueue.findIndex(
               (queueItem) =>
-                (queueItem.type === type ||
-                  queueItem.type === 'collection-sync') &&
-                queueItem.id === id
+                queueItem.type === 'collection' && queueItem.id === id
             )
+            if (collectionIndex !== -1) downloadQueue.splice(collectionIndex, 1)
+
+            const collectionSyncIndex = downloadQueue.findIndex(
+              (queueItem) =>
+                queueItem.type === 'collection-sync' && queueItem.id === id
+            )
+            if (collectionSyncIndex !== -1)
+              downloadQueue.splice(collectionSyncIndex, 1)
           }
         }
       }
@@ -347,12 +357,12 @@ const slice = createSlice({
     },
     // Lifecycle actions that trigger complex saga flows
     requestDownloadAllFavorites: () => {},
+    requestRemoveAllDownloadedFavorites: () => {},
     requestDownloadCollection: (_state, _action: CollectionAction) => {},
     requestDownloadFavoritedCollection: (
       _state,
       _action: CollectionAction
     ) => {},
-    removeAllDownloadedFavorites: () => {},
     requestRemoveDownloadedCollection: (
       _state,
       _action: RequestRemoveDownloadedCollectionAction
@@ -384,7 +394,7 @@ export const {
   requestDownloadAllFavorites,
   requestDownloadCollection,
   requestDownloadFavoritedCollection,
-  removeAllDownloadedFavorites,
+  requestRemoveAllDownloadedFavorites,
   requestRemoveDownloadedCollection,
   requestRemoveFavoritedDownloadedCollection,
   requestDownloadQueuedItem
