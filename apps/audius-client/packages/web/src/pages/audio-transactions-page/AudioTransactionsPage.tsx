@@ -35,10 +35,6 @@ const {
 const { getAudioTransactions, getAudioTransactionsCount } =
   audioTransactionsPageSelectors
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
-const {
-  GetAudioTransactionHistorySortMethodEnum,
-  GetAudioTransactionHistorySortDirectionEnum
-} = full
 
 const messages = {
   pageTitle: 'Audio Transactions History',
@@ -72,12 +68,14 @@ const Disclaimer = () => {
 export const AudioTransactionsPage = () => {
   const [offset, setOffset] = useState(0)
   const [limit, setLimit] = useState(AUDIO_TRANSACTIONS_BATCH_SIZE)
-  const [sortMethod, setSortMethod] = useState(
-    GetAudioTransactionHistorySortMethodEnum.Date
-  )
-  const [sortDirection, setSortDirection] = useState(
-    GetAudioTransactionHistorySortDirectionEnum.Desc
-  )
+  const [sortMethod, setSortMethod] =
+    useState<full.GetAudioTransactionHistorySortMethodEnum>(
+      full.GetAudioTransactionHistorySortMethodEnum.Date
+    )
+  const [sortDirection, setSortDirection] =
+    useState<full.GetAudioTransactionHistorySortDirectionEnum>(
+      full.GetAudioTransactionHistorySortDirectionEnum.Desc
+    )
   const { mainContentRef } = useContext(MainContentContext)
   const dispatch = useDispatch()
   const setVisibility = useSetVisibility()
@@ -112,13 +110,13 @@ export const AudioTransactionsPage = () => {
     (sortMethodInner: string, sortDirectionInner: string) => {
       const sortMethodRes =
         sortMethodInner === 'type'
-          ? GetAudioTransactionHistorySortMethodEnum.TransactionType
-          : GetAudioTransactionHistorySortMethodEnum.Date
+          ? full.GetAudioTransactionHistorySortMethodEnum.TransactionType
+          : full.GetAudioTransactionHistorySortMethodEnum.Date
       setSortMethod(sortMethodRes)
       const sortDirectionRes =
         sortDirectionInner === 'asc'
-          ? GetAudioTransactionHistorySortDirectionEnum.Asc
-          : GetAudioTransactionHistorySortDirectionEnum.Desc
+          ? full.GetAudioTransactionHistorySortDirectionEnum.Asc
+          : full.GetAudioTransactionHistorySortDirectionEnum.Desc
       setSortDirection(sortDirectionRes)
     },
     [setSortMethod, setSortDirection]
