@@ -62,7 +62,7 @@ const purchaseMethods: Record<
 }
 
 const parseTransaction = (tx: full.TransactionDetails): TransactionDetails => {
-  const txType = transactionTypeMap[tx.transaction_type]
+  const txType = transactionTypeMap[tx.transactionType]
   switch (txType) {
     case TransactionType.CHALLENGE_REWARD:
     case TransactionType.TRENDING_REWARD:
@@ -70,7 +70,7 @@ const parseTransaction = (tx: full.TransactionDetails): TransactionDetails => {
         signature: tx.signature,
         transactionType: txType,
         method: challengeMethods[tx.method],
-        date: formatDate(tx.transaction_date),
+        date: formatDate(tx.transactionDate),
         change: tx.change as StringAudio,
         balance: tx.balance as StringAudio,
         metadata: tx.metadata as unknown as string
@@ -79,8 +79,8 @@ const parseTransaction = (tx: full.TransactionDetails): TransactionDetails => {
       return {
         signature: tx.signature,
         transactionType: txType,
-        method: purchaseMethods[tx.transaction_type],
-        date: formatDate(tx.transaction_date),
+        method: purchaseMethods[tx.transactionType],
+        date: formatDate(tx.transactionDate),
         change: tx.change as StringAudio,
         balance: tx.balance as StringAudio,
         metadata: undefined
@@ -91,7 +91,7 @@ const parseTransaction = (tx: full.TransactionDetails): TransactionDetails => {
         signature: tx.signature,
         transactionType: txType,
         method: sendReceiveMethods[tx.method],
-        date: formatDate(tx.transaction_date),
+        date: formatDate(tx.transactionDate),
         change: tx.change as StringAudio,
         balance: tx.balance as StringAudio,
         metadata: tx.metadata as unknown as string
@@ -125,9 +125,8 @@ function* fetchAudioTransactionsAsync() {
       if (!response) {
         return
       }
-      const txDetails: TransactionDetails[] = response.map((tx) =>
-        parseTransaction(tx)
-      )
+      const txDetails: TransactionDetails[] =
+        response.data?.map((tx) => parseTransaction(tx)) ?? []
       const { offset } = action.payload
       yield put(setAudioTransactions({ txDetails, offset }))
       const userIds = txDetails
@@ -201,7 +200,7 @@ function* fetchTransactionsCount() {
     }
     yield put(
       setAudioTransactionsCount({
-        count: response as number
+        count: response.data ?? 0
       })
     )
   })
