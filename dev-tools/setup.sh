@@ -23,16 +23,17 @@ debian | ubuntu)
         python3-pip \
         docker-ce \
         docker-ce-cli \
-        containerd.io \
-        docker-compose-plugin
+        containerd.io
 
     mkdir -p ~/.docker/cli-plugins
     curl -L "https://github.com/docker/buildx/releases/download/v0.9.1/buildx-v0.9.1.linux-$(dpkg --print-architecture)" -o ~/.docker/cli-plugins/docker-buildx
+    curl -L "https://github.com/docker/compose/releases/download/v2.15.1/docker-compose-linux-$(uname -m)" -o ~/.docker/cli-plugins/docker-compose
     chmod +x ~/.docker/cli-plugins/docker-buildx
+    chmod +x ~/.docker/cli-plugins/docker-compose
 
     # Add user to docker group
     sudo usermod -aG docker "$USER"
-    
+
     # Increase file watchers
     echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
     ;;
@@ -77,4 +78,4 @@ ln -sf "$PROTOCOL_DIR/dev-tools/audius-cmd" "$HOME/.local/bin/audius-cmd"
 echo "export PROTOCOL_DIR=$PROTOCOL_DIR" >>~/.profile
 echo "export PATH=$HOME/.local/bin:$PATH" >>~/.profile
 
-[[ "$ID" =~ ^(debian|ubuntu)$ ]] && . "$PROTOCOL_DIR/dev-tools/setup-dev.sh"
+[[ "$AUDIUS_DEV" != "false" ]] && . "$PROTOCOL_DIR/dev-tools/setup-dev.sh" || true
