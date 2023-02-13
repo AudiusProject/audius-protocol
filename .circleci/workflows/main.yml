@@ -153,6 +153,8 @@ jobs:
 
   - deploy:
       name: deploy-stage-creator-node
+      requires:
+        - push-docker-images
       # filters:
       # branches:
       #   only: main
@@ -167,6 +169,8 @@ jobs:
 
   - deploy:
       name: deploy-stage-discovery-provider
+      requires:
+        - push-docker-images
       # filters:
       #   branches:
       #     only: main
@@ -180,6 +184,8 @@ jobs:
 
   - deploy:
       name: deploy-stage-identity-service
+      requires:
+        - push-docker-images
       # filters:
       #   branches:
       #     only: main
