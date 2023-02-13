@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { SmartCollectionVariant } from '@audius/common'
 import {
+  areSetsEqual,
   useProxySelector,
   Kind,
   makeUid,
@@ -18,7 +19,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
 import { store } from 'app/store'
-import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
+import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
 
 const { getCollection } = cacheCollectionsSelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
@@ -37,7 +38,10 @@ export const useCollectionLineup = (
 ) => {
   const dispatch = useDispatch()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
-  const offlineTracks = useSelector(getOfflineTracks)
+  const offlineTrackIds = useSelector(
+    (state) => new Set(getOfflineTrackIds(state) || []),
+    areSetsEqual
+  )
   const isReachable = useSelector(getIsReachable)
   const collection = useSelector((state) => {
     return getCollection(state, { id: collectionId as number })
@@ -45,35 +49,49 @@ export const useCollectionLineup = (
   const collectionTracks = useSelector(getCollectionTracksLineup)
   const collectionTrackUidMap = collectionTracks.entries.reduce(
     (acc, track) => {
-      acc[track.id] = track.uid
+      if (acc[track.id] && acc[track.id].includes(track.id)) {
+        return acc
+      }
+      acc[track.id] = acc[track.id]
+        ? acc[track.id].concat(track.uid)
+        : [track.uid]
       return acc
     },
     {}
-  )
+  ) as Record<number, string[]>
 
   const lineup = useProxySelector(getTracksLineup, [isReachable])
 
   const fetchLineupOffline = useCallback(() => {
     if (isOfflineModeEnabled && collectionId && collection) {
-      const collectionTrackIds = new Set(
-        collection?.playlist_contents?.track_ids?.map(
-          (trackData) => trackData.track
-        ) || []
-      )
-      const lineupTracks = offlineTracks
-        .filter(
-          (track) =>
-            track.offline?.reasons_for_download.some(
-              (reason) => reason.collection_id === collectionId.toString()
-            ) || collectionTrackIds.has(track.track_id)
-        )
-        .map((track) => ({
-          id: track.track_id,
-          kind: Kind.TRACKS,
-          uid:
-            collectionTrackUidMap[track.track_id] ??
-            makeUid(Kind.TRACKS, track.track_id)
-        }))
+      const trackIdEncounters = {} as Record<number, number>
+      const sortedTracks = collection.playlist_contents.track_ids
+        .filter(({ track: trackId }) => offlineTrackIds.has(trackId.toString()))
+        .map((trackData) => {
+          trackIdEncounters[trackData.track] = trackIdEncounters[
+            trackData.track
+          ]
+            ? trackIdEncounters[trackData.track] + 1
+            : 0
+          return {
+            id: trackData.track,
+            kind: Kind.TRACKS,
+            uid:
+              collectionTrackUidMap[trackData.track]?.[
+                trackIdEncounters[trackData.track]
+              ] ?? makeUid(Kind.TRACKS, trackData.track),
+
+            dateAdded:
+              typeof trackData.time === 'string'
+                ? moment(trackData.time)
+                : moment.unix(trackData.time)
+          }
+        })
+      const lineupTracks = sortedTracks.map((track) => ({
+        id: track.id,
+        kind: Kind.TRACKS,
+        uid: track.uid
+      }))
 
       const cacheTracks = lineupTracks.map((track) => ({
         id: track.id,
@@ -82,17 +100,6 @@ export const useCollectionLineup = (
       }))
 
       store.dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
-
-      // Reorder lineup tracks according to the collection
-      // TODO: This may have issues for playlists with duplicate tracks
-      const sortedTracks = collection.playlist_contents.track_ids
-        .map(({ track: trackId, time }) => ({
-          ...lineupTracks.find((track) => trackId === track.id),
-          // Borrowed from common/store/pages/collection/linups/sagas.js
-          // An artifact of non-string legacy data
-          dateAdded: typeof time === 'string' ? moment(time) : moment.unix(time)
-        }))
-        .filter((track) => track.id)
 
       dispatch(
         collectionPageLineupActions.fetchLineupMetadatasSucceeded(
@@ -110,7 +117,7 @@ export const useCollectionLineup = (
     collectionId,
     dispatch,
     isOfflineModeEnabled,
-    offlineTracks
+    offlineTrackIds
   ])
 
   // Fetch the lineup based on reachability

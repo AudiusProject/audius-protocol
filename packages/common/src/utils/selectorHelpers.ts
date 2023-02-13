@@ -9,6 +9,9 @@ export const shallowCompare = <T>(a: T, b: T) =>
     (key) => Object.prototype.hasOwnProperty.call(b, key) && a[key] === b[key]
   )
 
+export const areSetsEqual = <T>(a: Set<T>, b: Set<T>) =>
+  a.size === b.size && [...a].every((value) => b.has(value))
+
 // A selector creator that memoizes based on a shallow object comparison.
 export const createShallowSelector = createSelectorCreator(
   defaultMemoize,
