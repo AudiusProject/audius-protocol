@@ -1,5 +1,6 @@
 import { reachabilitySelectors } from '@audius/common'
 import { View } from 'react-native'
+import Animated, { SlideOutUp } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
 import IconNoWifi from 'app/assets/images/iconNoWifiSmall.svg'
@@ -43,7 +44,7 @@ export const OfflineContentBanner = () => {
   const isReachable = useSelector(getIsReachable)
   if (!isOfflineModeEnabled || isReachable) return null
   return (
-    <View>
+    <Animated.View exiting={SlideOutUp.duration(1000)}>
       <Tile style={styles.tile}>
         <View style={styles.container}>
           <View style={styles.iconRoot}>
@@ -52,6 +53,6 @@ export const OfflineContentBanner = () => {
           <Text style={styles.text}>{messages.displayingOfflineContent}</Text>
         </View>
       </Tile>
-    </View>
+    </Animated.View>
   )
 }

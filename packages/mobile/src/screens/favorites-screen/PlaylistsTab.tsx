@@ -5,6 +5,7 @@ import {
   reachabilitySelectors,
   shallowCompare
 } from '@audius/common'
+import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 
 import { CollectionList } from 'app/components/collection-list'
@@ -122,21 +123,24 @@ export const PlaylistsTab = () => {
             placeholder={messages.inputPlaceholder}
             onChangeText={setFilterValue}
           />
-          <>
-            {!isReachable && isOfflineModeEnabled ? null : (
+          {!isReachable && isOfflineModeEnabled ? null : (
+            <Animated.View layout={Layout} entering={FadeIn} exiting={FadeOut}>
               <Button
                 title='Create a New Playlist'
                 variant='commonAlt'
                 onPress={handleNavigateToNewPlaylist}
               />
-            )}
-          </>
-          <CollectionList
-            listKey='favorites-playlists'
-            scrollEnabled={false}
-            collection={userPlaylists}
-            collectionIdsToNumTracks={numPlayableTracksMap}
-          />
+            </Animated.View>
+          )}
+
+          <Animated.View layout={Layout}>
+            <CollectionList
+              listKey='favorites-playlists'
+              scrollEnabled={false}
+              collection={userPlaylists}
+              collectionIdsToNumTracks={numPlayableTracksMap}
+            />
+          </Animated.View>
         </>
       )}
     </VirtualizedScrollView>

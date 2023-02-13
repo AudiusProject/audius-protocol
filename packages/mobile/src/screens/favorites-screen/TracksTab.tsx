@@ -14,6 +14,7 @@ import {
   reachabilitySelectors
 } from '@audius/common'
 import { isEqual, debounce } from 'lodash'
+import Animated, { Layout } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Tile, VirtualizedScrollView } from 'app/components/core'
@@ -48,7 +49,7 @@ const messages = {
   inputPlaceholder: 'Filter Tracks'
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   container: {
     marginBottom: spacing(4),
     marginHorizontal: spacing(3)
@@ -60,7 +61,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   spinnerContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginVertical: 48
+    marginVertical: spacing(12)
   }
 }))
 
@@ -194,7 +195,7 @@ export const TracksTab = () => {
             onChangeText={handleChangeFilterValue}
           />
           <WithLoader loading={initialFetch}>
-            <>
+            <Animated.View layout={Layout}>
               {filteredTrackUids.length ? (
                 <Tile
                   styles={{
@@ -223,7 +224,7 @@ export const TracksTab = () => {
                   }}
                 />
               ) : null}
-            </>
+            </Animated.View>
           </WithLoader>
         </>
       )}

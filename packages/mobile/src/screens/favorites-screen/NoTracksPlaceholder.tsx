@@ -1,4 +1,5 @@
 import { View } from 'react-native'
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 
 import IconDownload from 'app/assets/images/iconDownloadGray.svg'
 import { Text, Tile } from 'app/components/core'
@@ -33,7 +34,7 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 export const NoTracksPlaceholder = () => {
   const styles = useStyles()
   return (
-    <View>
+    <Animated.View entering={FadeIn} exiting={FadeOut}>
       <Tile style={styles.tile}>
         <View style={styles.container}>
           <View style={styles.iconRoot}>
@@ -43,6 +44,6 @@ export const NoTracksPlaceholder = () => {
         </View>
       </Tile>
       <OfflinePlaceholder />
-    </View>
+    </Animated.View>
   )
 }
