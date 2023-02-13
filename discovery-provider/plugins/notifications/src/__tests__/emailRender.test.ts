@@ -46,7 +46,7 @@ describe('Render email', () => {
     ])
   })
 
-  test("Render a single follow email", async () => {
+  test("Render a single Follow email", async () => {
     let processor
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
@@ -85,7 +85,7 @@ describe('Render email', () => {
   })
 
 
-  test("Render a single repost track email", async () => {
+  test("Render a single Repost Track email", async () => {
     let processor
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
@@ -288,7 +288,7 @@ describe('Render email', () => {
     }
   })
 
-  test("Render a single message email", async () => {
+  test("Render a single Message email", async () => {
     let processor
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
@@ -315,7 +315,7 @@ describe('Render email', () => {
     }
   })
 
-  test("Render a multiple messages email", async () => {
+  test("Render a multiple Messages email", async () => {
     let processor
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
@@ -343,7 +343,7 @@ describe('Render email', () => {
     }
   })
 
-  test("Render a single message reaction email", async () => {
+  test("Render a single Message Reaction email", async () => {
     let processor
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
@@ -370,7 +370,7 @@ describe('Render email', () => {
     }
   })
 
-  test("Render a multiple message reactions email", async () => {
+  test("Render a multiple Message Reactions email", async () => {
     let processor
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
