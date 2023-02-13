@@ -113,6 +113,7 @@ jobs:
         prod-creator-2
         prod-creator-3
         prod-creator-5
+        prod-user-metadata
       service: creator-node
 
   - deploy-prod-discovery-provider-trigger:
@@ -160,11 +161,14 @@ jobs:
       #   only: main
       context: open-vpn
       hosts: >-
-        stage-creator-4
-        stage-creator-1
-        stage-creator-2
-        stage-creator-3
         stage-creator-5
+        stage-creator-6
+        stage-creator-7
+        stage-creator-8
+        stage-creator-9
+        stage-creator-10
+        stage-creator-11
+        stage-user-metadata
       service: creator-node
 
   - deploy:
@@ -180,6 +184,7 @@ jobs:
         stage-discovery-1
         stage-discovery-2
         stage-discovery-3
+        stage-discovery-5
       service: discovery-provider
 
   - deploy:
