@@ -1,9 +1,11 @@
 package natsd
 
 import (
+	"encoding/json"
 	"io"
 	"math"
 	"net/http"
+	"os"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -14,7 +16,12 @@ import (
 
 func NatsMain() {
 	config.Init()
-	peering.PollRegisteredNodes(nil)
+
+	// TODO: Make this use a separate nats config env struct
+	var overrideNodes []peering.ServiceNode
+	json.Unmarshal([]byte(os.Getenv("AUDIUS_DEV_ONLY_REGISTERED_NODES")), &overrideNodes)
+	peering.New(overrideNodes)
+	peering.PollRegisteredNodes()
 
 	{
 		var err error

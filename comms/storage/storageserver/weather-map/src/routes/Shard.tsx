@@ -34,7 +34,7 @@ export default function Shard() {
   if (!hostsAndShards) return <>Unable to query any nodes in network</>
   if (!shard) return <>No shard specified in path param</>
 
-  const natsHostsWithShard = Object.fromEntries(
+  const hostsAndShardsFilteredToThisShard = Object.fromEntries(
     Object.entries(hostsAndShards).filter(([, { shards }]) => shards.includes(shard)),
   )
 
@@ -123,10 +123,12 @@ export default function Shard() {
 
   return (
     <>
-      <Nodes hostsAndShards={natsHostsWithShard} />
+      <Nodes hostsAndShards={hostsAndShardsFilteredToThisShard} />
       <FilesTableWrapper
         shard={shard}
-        natsHostsWithShard={natsHostsWithShard}
+        hostsWithShard={Object.keys(hostsAndShardsFilteredToThisShard).map((pubKey) => {
+          return hostsAndShardsFilteredToThisShard[pubKey].host
+        })}
         highlightJobId={jobId}
         highlightFileName={fileName}
       />
