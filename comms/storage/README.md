@@ -5,23 +5,28 @@
 
 ## Quickstart
 
-Install [pipx](https://pypi.org/project/pipx/) (on macOS just run `brew install pipx && pipx ensurepath`).
+One-time:
+* `brew install pipx && pipx ensurepath` (installs [pipx](https://pypi.org/project/pipx/) - follow instructions there if not on macOS)
+* `chmod 600 ../../dev-tools/keys/dev`
 
 Run a multi node cluster and test uploads.
 
-* run with `make storage.multi` from the comms directory (one level up, where the Makefile lives)
-* visit any storage node webui at `http://node[1|2|3|4].local/storage` to test uploads (ex: http://node1.local/storage)
-* grep logs for success i.e. `docker compose logs storage1.local | grep -i storing`
-* to check nats stream status: `docker exec -ti com1.local nats stream ls -a`
-* to check weather map UI: http://node1.local/storage/weather
-* to view nats peers (same as staging+prod): http://node1.local/nats/peers
+* `cd ..` (to go to the comms/ directory with the Makefile)
+* run with `make storage.multi`
+* visit any storage node webui at `http://node[1|2|3|4]/storage` to test uploads (ex: http://node1/storage)
+* grep logs for success i.e. `docker compose logs storage1 | grep -i storing`
+* to check nats stream status: `docker exec -ti com1 nats stream ls -a`
+* to check weather map UI: http://node1/storage/weather
+* to view nats peers (same as staging+prod): http://node1/nats/peers
 * teardown with `make down`
 
 ## Development
 
-Install [pipx](https://pypi.org/project/pipx/) (on macOS just run `brew install pipx && pipx ensurepath`).
+One-time:
+* `brew install pipx && pipx ensurepath` (installs [pipx](https://pypi.org/project/pipx/) - follow instructions there if not on macOS)
+* `chmod 600 ../../dev-tools/keys/dev`
 
 Run a single node cluster with hot reloading.
 
-* run with `make storage.dev`
+* run with `make storage.dev` (from the comms/ directory with the Makefile)
 * teardown with `make down`

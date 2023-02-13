@@ -6,7 +6,7 @@ x-common-variables: &shared-vars
           {
             "id": "content-node::1",
             "spId": "1",
-            "endpoint": "http://node1.local",
+            "endpoint": "http://node1",
             "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
             "type": { "id": "content-node" }
           }
@@ -26,21 +26,21 @@ services:
       file: docker-compose.v2.base.yml
       service: sshuttle-server
 
-  com1.local:
-    container_name: com1.local
+  com1:
+    container_name: com1
     extends:
       file: docker-compose.v2.base.yml
       service: nats
     environment:
       audius_discprov_env: standalone # TODO: remove (keeping for now to make sure the standalone code path is still working)
       audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      test_host: "com1.local"
+      test_host: "com1"
       <<: *shared-vars
     depends_on:
       - comdb
 
-  storage1.local:
-    container_name: storage1.local
+  storage1:
+    container_name: storage1
     extends:
       file: docker-compose.v2.base.yml
       service: storage
@@ -52,16 +52,16 @@ services:
       audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Remove after shared/peering/ config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       <<: *shared-vars
-      NATS_SERVER_URL: "nats://com1.local:4222"
+      NATS_SERVER_URL: "nats://com1:4222"
       NAME: "storage1"
-      test_host: "com1.local"
+      test_host: "com1"
     depends_on:
-      - com1.local
+      - com1
     volumes:
       - ./:/app
   
-  node1.local:
-    container_name: node1.local
+  node1:
+    container_name: node1
     extends:
       file: docker-compose.v2.base.yml
       service: nginx

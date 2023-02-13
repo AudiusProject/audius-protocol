@@ -33,7 +33,7 @@ while sleep 5; do
 
     for addr in $alive; do
       fqdn="$(nslookup "$addr" | sed -n 's/.*name = \(.*\)/\1/p')"
-      hostname="$(sed -n 's/\([^\.]\+\.local\?\).*/\1/p' <<< "$fqdn")"
+      hostname="$(sed -n 's/\([^\.]\+\).*/\1/p' <<< "$fqdn")"
 
       echo "Adding '$addr $fqdn $hostname' to /etc/hosts"
       grep -v "$addr" /etc/hosts > /tmp/hosts
