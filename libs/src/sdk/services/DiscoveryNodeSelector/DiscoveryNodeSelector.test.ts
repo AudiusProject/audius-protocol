@@ -350,7 +350,7 @@ describe('discoveryNodeSelector', () => {
       expect(middleware.post).not.toBeUndefined()
 
       const changeHandler = jest.fn(() => {})
-      selector.addListener('change', changeHandler)
+      selector.addEventListener('change', changeHandler)
 
       const data: ApiHealthResponseData = {
         latest_chain_block: 100,
@@ -385,7 +385,7 @@ describe('discoveryNodeSelector', () => {
       expect(middleware.post).not.toBeUndefined()
 
       const changeHandler = jest.fn(() => {})
-      selector.addListener('change', changeHandler)
+      selector.addEventListener('change', changeHandler)
 
       const data: ApiHealthResponseData = {
         latest_chain_block: 100,
@@ -418,7 +418,7 @@ describe('discoveryNodeSelector', () => {
       expect(middleware.post).not.toBeUndefined()
 
       const changeHandler = jest.fn(() => {})
-      selector.addListener('change', changeHandler)
+      selector.addEventListener('change', changeHandler)
 
       const response = {
         ok: false,
@@ -449,7 +449,7 @@ describe('discoveryNodeSelector', () => {
       expect(middleware.post).not.toBeUndefined()
 
       const changeHandler = jest.fn(() => {})
-      selector.addListener('change', changeHandler)
+      selector.addEventListener('change', changeHandler)
 
       const response = {
         ok: false,
@@ -480,7 +480,7 @@ describe('discoveryNodeSelector', () => {
       expect(middleware.post).not.toBeUndefined()
 
       const changeHandler = jest.fn(() => {})
-      selector.addListener('change', changeHandler)
+      selector.addEventListener('change', changeHandler)
 
       const response = {
         ok: false,
@@ -513,7 +513,7 @@ describe('discoveryNodeSelector', () => {
       expect(middleware.post).not.toBeUndefined()
 
       const changeHandler = jest.fn(() => {})
-      selector.addListener('change', changeHandler)
+      selector.addEventListener('change', changeHandler)
 
       const data: ApiHealthResponseData = {
         latest_chain_block: 100,
