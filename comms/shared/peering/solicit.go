@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 	"sync"
+	"time"
 
 	"comms.audius.co/discovery/config"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -108,7 +110,8 @@ func solicitServer(endpoint string) (*Info, error) {
 		return nil, err
 	}
 
-	info.IsSelf = info.Address == config.WalletAddress
+	info.IsSelf = strings.EqualFold(info.Address, config.WalletAddress)
+	info.AsOf = time.Now()
 
 	return info, nil
 }

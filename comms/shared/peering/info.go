@@ -3,6 +3,7 @@ package peering
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"comms.audius.co/discovery/config"
 )
@@ -19,6 +20,7 @@ type Info struct {
 
 	IsSelf          bool
 	NatsIsReachable bool
+	AsOf            time.Time
 }
 
 func MyInfo() (*Info, error) {

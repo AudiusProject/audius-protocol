@@ -14,7 +14,6 @@ import (
 
 func NatsMain() {
 	config.Init()
-	peering.PollRegisteredNodes(nil)
 
 	{
 		var err error
@@ -25,6 +24,8 @@ func NatsMain() {
 	}
 
 	go startServer()
+
+	peering.PollRegisteredNodes(nil)
 
 	natsman := NatsManager{}
 	for n := 0; ; n++ {

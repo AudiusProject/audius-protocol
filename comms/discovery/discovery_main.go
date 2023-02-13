@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
@@ -12,6 +13,8 @@ import (
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
 	"comms.audius.co/shared/peering"
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
 	"golang.org/x/sync/errgroup"
 )
@@ -76,11 +79,30 @@ func DiscoveryMain() {
 		return err
 	})
 	if err := g.Wait(); err != nil {
+		startErrorServer(err)
 		log.Fatal(err)
 	}
 
 	e := server.NewServer(jsc, proc)
 	e.Logger.Fatal(e.Start(":8925"))
+}
+
+// this will start a simple server that will respond to all requests with the error message
+// for 10 minutes, then container will exit and restart.
+// for debugging, can be removed when everything works good
+func startErrorServer(err error) {
+	e := echo.New()
+	e.HideBanner = true
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
+
+	e.GET("*", func(c echo.Context) error {
+		return c.String(500, err.Error())
+	})
+
+	go e.Logger.Fatal(e.Start(":8925"))
+	time.Sleep(10 * time.Minute)
 }
 
 func createJetstreamStreams(jsc nats.JetStreamContext) error {
@@ -129,8 +151,13 @@ func createConsumer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) error {
 	// matrix-org/dendrite codebase has some nice examples to follow...
 
 	sub, err := jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.WalletAddress))
+	if err != nil {
+		return err
+	}
 
-	if info, err := sub.ConsumerInfo(); err == nil {
+	info, err := sub.ConsumerInfo()
+
+	if err == nil {
 		config.Logger.Info("create subscription", "sub", info)
 	}
 
