@@ -1,20 +1,17 @@
-import { takeEvery, select, put } from 'typed-redux-saga'
+import { collectionsSocialActions } from '@audius/common'
+import { put, select, takeEvery } from 'typed-redux-saga'
 
 import { getOfflineTrackMetadata } from '../selectors'
 import type { CollectionAction, OfflineItem } from '../slice'
-import {
-  removeOfflineItems,
-  requestRemoveFavoritedDownloadedCollection
-} from '../slice'
+import { removeOfflineItems } from '../slice'
 
-export function* requestRemoveFavoritedDownloadedCollectionSaga() {
-  yield* takeEvery(
-    requestRemoveFavoritedDownloadedCollection.type,
-    removeFavoritedDownloadedCollection
-  )
+const { UNSAVE_COLLECTION } = collectionsSocialActions
+
+export function* watchUnsaveCollectionSaga() {
+  yield* takeEvery(UNSAVE_COLLECTION, removeFavoritedDownloadedCollection)
 }
 
-function* removeFavoritedDownloadedCollection(action: CollectionAction) {
+export function* removeFavoritedDownloadedCollection(action: CollectionAction) {
   const { collectionId } = action.payload
 
   const offlineItemsToRemove: OfflineItem[] = []

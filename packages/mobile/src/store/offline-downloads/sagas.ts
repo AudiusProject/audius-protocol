@@ -6,13 +6,12 @@ import { requestDownloadCollectionSaga } from './sagas/requestDownloadCollection
 import { requestDownloadFavoritedCollectionSaga } from './sagas/requestDownloadFavoritedCollectionSaga'
 import { requestRemoveAllDownloadedFavoritesSaga } from './sagas/requestRemoveAllDownloadedFavoritesSaga'
 import { requestRemoveDownloadedCollectionSaga } from './sagas/requestRemoveDownloadedCollectionSaga'
-import { requestRemoveFavoritedDownloadedCollectionSaga } from './sagas/requestRemoveFavoritedDownloadedCollectionSaga'
 import { syncOfflineDataSaga } from './sagas/syncOfflineDataSaga'
 import { watchAddTrackToPlaylistSaga } from './sagas/watchAddTrackToPlaylistSaga'
 import { watchRemoveOfflineItems } from './sagas/watchRemoveOfflineItems'
 import { watchSaveCollectionSaga } from './sagas/watchSaveCollectionSaga'
 import { watchSaveTrackSaga } from './sagas/watchSaveTrackSaga'
-import { watchUnSaveTrackSaga } from './sagas/watchUnsaveTrackSaga'
+import { watchUnsaveTrackSaga } from './sagas/watchUnsaveTrackSaga'
 
 const sagas = () => {
   return [
@@ -26,14 +25,13 @@ const sagas = () => {
     requestDownloadFavoritedCollectionSaga,
     requestRemoveAllDownloadedFavoritesSaga,
     requestRemoveDownloadedCollectionSaga,
-    requestRemoveFavoritedDownloadedCollectionSaga,
 
     // Queue sagas
     ...downloadQueueSagas(),
 
     // Track/Collection watchers
     watchSaveTrackSaga,
-    watchUnSaveTrackSaga,
+    watchUnsaveTrackSaga,
     watchSaveCollectionSaga,
     watchRemoveOfflineItems,
     watchAddTrackToPlaylistSaga,

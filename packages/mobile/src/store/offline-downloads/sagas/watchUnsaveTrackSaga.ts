@@ -5,7 +5,7 @@ import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 
 import { removeOfflineItems } from '../slice'
 
-export function* watchUnSaveTrackSaga() {
+export function* watchUnsaveTrackSaga() {
   yield* takeEvery(tracksSocialActions.UNSAVE_TRACK, removeSavedTrack)
 }
 

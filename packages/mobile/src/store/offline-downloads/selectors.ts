@@ -1,6 +1,7 @@
 import type { ID, TrackMetadata } from '@audius/common'
 import { removeNullable, cacheTracksSelectors } from '@audius/common'
 
+import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import type { AppState } from 'app/store'
 
 import type { CollectionId } from './slice'
@@ -35,6 +36,9 @@ export const getCollectionDownloadStatus = (
   state: AppState,
   collectionId: CollectionId
 ) => state.offlineDownloads.collectionStatus[collectionId]
+
+export const getIsFavoritesDownloadsEnabled = (state: AppState) =>
+  Boolean(state.offlineDownloads.collectionStatus[DOWNLOAD_REASON_FAVORITES])
 
 // TODO: This should verify that the status is correct
 export const getIsCollectionMarkedForDownload =

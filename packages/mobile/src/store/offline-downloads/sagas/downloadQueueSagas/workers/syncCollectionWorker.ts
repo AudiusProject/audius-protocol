@@ -15,7 +15,8 @@ import { dispatch } from 'app/store/store'
 import {
   getCollectionSyncStatus,
   getOfflineCollectionMetadata,
-  getOfflineTrackMetadata
+  getOfflineTrackMetadata,
+  getOfflineTrackStatus
 } from '../../../selectors'
 import type { CollectionId, OfflineItem } from '../../../slice'
 import {
@@ -159,16 +160,18 @@ function* syncCollection(collectionId: ID) {
   if (!latestCollection) return CollectionSyncStatus.ERROR
 
   if (
-    !moment(latestCollection.updated_at).isAfter(currentCollection.updated_at)
+    moment(latestCollection.updated_at).isAfter(currentCollection.updated_at)
   ) {
-    return CollectionSyncStatus.SUCCESS
+    dispatch(
+      redownloadOfflineItems({
+        items: [{ type: 'collection', id: collectionId }]
+      })
+    )
   }
 
-  dispatch(
-    redownloadOfflineItems({
-      items: [{ type: 'collection', id: collectionId }]
-    })
-  )
+  // Even though updated_at should tell us when we need to update, we still
+  // check tracks here to be extra safe. Sometimes tracks are missing on
+  // initial download, and this sync helps ensure things stay more in sync
 
   const currentCollectionTrackIds =
     currentCollection.playlist_contents.track_ids.map(({ track }) => track)
@@ -204,12 +207,23 @@ function* syncCollection(collectionId: ID) {
     })
   )
 
-  dispatch(removeOfflineItems({ items: trackItemsToRemove }))
+  if (trackItemsToRemove.length > 0) {
+    dispatch(removeOfflineItems({ items: trackItemsToRemove }))
+  }
 
   // Add tracks
+
+  const offlineTrackStatus = yield* select(getOfflineTrackStatus)
+  // TODO: determine if we want to include errored tracks
+  const currentOfflineCollectionTrackIds = currentCollectionTrackIds.filter(
+    (id) => id in offlineTrackStatus
+  )
+
+  // Tracks that were added to the collection and tracks that were not queued
+  // up previously for some reason.
   const trackIdsToAdd = difference(
     latestCollectionTrackIds,
-    currentCollectionTrackIds
+    currentOfflineCollectionTrackIds
   )
 
   const trackItemsToAdd: OfflineItem[] = trackIdsToAdd.map((trackId) => ({
@@ -218,7 +232,9 @@ function* syncCollection(collectionId: ID) {
     metadata: { reasons_for_download: trackDownloadReasons }
   }))
 
-  dispatch(addOfflineItems({ items: trackItemsToAdd }))
+  if (trackItemsToAdd.length > 0) {
+    dispatch(addOfflineItems({ items: trackItemsToAdd }))
+  }
 
   return CollectionSyncStatus.SUCCESS
 }

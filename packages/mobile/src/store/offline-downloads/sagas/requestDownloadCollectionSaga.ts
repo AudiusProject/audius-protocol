@@ -1,10 +1,10 @@
 import {
   accountSelectors,
-  cacheCollectionsSelectors,
   collectionsSocialActions,
-  FavoriteSource
+  FavoriteSource,
+  getContext
 } from '@audius/common'
-import { takeEvery, select, put } from 'typed-redux-saga'
+import { takeEvery, select, put, call } from 'typed-redux-saga'
 
 import type { CollectionAction, OfflineItem } from '../slice'
 import { addOfflineItems, requestDownloadCollection } from '../slice'
@@ -12,7 +12,6 @@ import { addOfflineItems, requestDownloadCollection } from '../slice'
 const { saveCollection } = collectionsSocialActions
 
 const { getUserId } = accountSelectors
-const { getCollection } = cacheCollectionsSelectors
 
 export function* requestDownloadCollectionSaga() {
   yield* takeEvery(requestDownloadCollection.type, downloadCollection)
@@ -20,11 +19,19 @@ export function* requestDownloadCollectionSaga() {
 
 function* downloadCollection(action: CollectionAction) {
   const { collectionId } = action.payload
-  const collection = yield* select(getCollection, { id: collectionId })
+
+  const currentUserId = yield* select(getUserId)
+  if (!currentUserId) return
+
+  const apiClient = yield* getContext('apiClient')
+  const collection = yield* call([apiClient, apiClient.getCollectionMetadata], {
+    collectionId,
+    currentUserId
+  })
+
   if (!collection) return
 
   const { playlist_owner_id, has_current_user_saved } = collection
-  const currentUserId = yield* select(getUserId)
 
   const shouldSaveCollection =
     playlist_owner_id !== currentUserId && !has_current_user_saved
