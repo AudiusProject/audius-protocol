@@ -1,6 +1,6 @@
 import type { Middleware } from '../../api/generated/default'
 import type { DeepPartial } from '../../utils/deepPartial'
-import type { ReadOnlyEmitter } from '../../utils/ReadOnlyEmitter'
+import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 import type { HealthCheckThresholds } from './healthCheckTypes'
 
 export type Decision = {
@@ -84,7 +84,7 @@ export type ServiceSelectionEvents = {
 }
 
 export type DiscoveryNodeSelectorService =
-  ReadOnlyEmitter<ServiceSelectionEvents> & {
+  EventEmitterTarget<ServiceSelectionEvents> & {
     getSelectedEndpoint: () => Promise<string | null>
     createMiddleware: () => Middleware
   }

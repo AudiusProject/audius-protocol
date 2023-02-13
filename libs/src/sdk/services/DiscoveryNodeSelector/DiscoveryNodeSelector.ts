@@ -92,15 +92,11 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * Proxy to the event emitter addListener
    */
-  public addListener
+  public addEventListener
   /**
    * Proxy to the event emitter removeListener
    */
-  public removeListener
-  /**
-   * Proxy to the event emitter removeAllEventListeners
-   */
-  public removeAllListeners
+  public removeEventListener
 
   constructor(config?: DiscoveryNodeSelectorServiceConfig) {
     this.config = mergeConfigWithDefaults(
@@ -120,11 +116,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         : null
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
-    this.addListener = this.eventEmitter.addListener.bind(this.eventEmitter)
-    this.removeListener = this.eventEmitter.removeListener.bind(
+    this.addEventListener = this.eventEmitter.addListener.bind(
       this.eventEmitter
     )
-    this.removeAllListeners = this.eventEmitter.removeAllListeners.bind(
+    this.removeEventListener = this.eventEmitter.removeListener.bind(
       this.eventEmitter
     )
   }

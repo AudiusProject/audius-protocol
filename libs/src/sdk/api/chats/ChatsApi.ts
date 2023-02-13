@@ -37,9 +37,12 @@ import EventEmitter from 'events'
 import type TypedEmitter from 'typed-emitter'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
 import type { WalletApiService } from '../../services/WalletApi'
-import type { ReadOnlyEmitter } from '../../utils/ReadOnlyEmitter'
+import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 
-export class ChatsApi extends BaseAPI implements ReadOnlyEmitter<ChatEvents> {
+export class ChatsApi
+  extends BaseAPI
+  implements EventEmitterTarget<ChatEvents>
+{
   private chatSecrets: Record<string, Uint8Array> = {}
   private readonly eventEmitter: TypedEmitter<ChatEvents>
   private websocket: WebSocket | undefined
@@ -47,15 +50,11 @@ export class ChatsApi extends BaseAPI implements ReadOnlyEmitter<ChatEvents> {
   /**
    * Proxy to the event emitter addListener
    */
-  public addListener
+  public addEventListener
   /**
    * Proxy to the event emitter removeListener
    */
-  public removeListener
-  /**
-   * Proxy to the event emitter removeAllListeners
-   */
-  public removeAllListeners
+  public removeEventListener
 
   constructor(
     config: Configuration,
@@ -64,16 +63,15 @@ export class ChatsApi extends BaseAPI implements ReadOnlyEmitter<ChatEvents> {
   ) {
     super(config)
     this.eventEmitter = new EventEmitter() as TypedEmitter<ChatEvents>
-    this.addListener = this.eventEmitter.addListener.bind(this.eventEmitter)
-    this.removeListener = this.eventEmitter.removeListener.bind(
+    this.addEventListener = this.eventEmitter.addListener.bind(
       this.eventEmitter
     )
-    this.removeAllListeners = this.eventEmitter.removeAllListeners.bind(
+    this.removeEventListener = this.eventEmitter.removeListener.bind(
       this.eventEmitter
     )
 
     // Listen for discovery node selection changes and reinit websocket
-    this.discoveryNodeSelectorService.addListener('change', (endpoint) => {
+    this.discoveryNodeSelectorService.addEventListener('change', (endpoint) => {
       if (this.websocket) {
         this.websocket.close()
         this.createWebsocket(endpoint).then((ws) => {
