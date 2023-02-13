@@ -6,12 +6,12 @@ import {
   chatActions,
   decodeHashId,
   ReactionTypes,
-  useProxySelector
+  useProxySelector,
+  formatMessageDate
 } from '@audius/common'
 import type { ChatMessage } from '@audius/sdk'
 import { IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
-import dayjs from 'dayjs'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -29,14 +29,6 @@ type ChatMessageListItemProps = {
   chatId: string
   message: ChatMessage
   hasTail: boolean
-}
-
-export const formatMessageDate = (date: string) => {
-  const d = dayjs(date)
-  const today = dayjs()
-  if (d.isBefore(today, 'week')) return d.format('M/D/YY h:mm A')
-  if (d.isBefore(today, 'day')) return d.format('dddd h:mm A')
-  return d.format('h:mm A')
 }
 
 export const ChatMessageListItem = (props: ChatMessageListItemProps) => {

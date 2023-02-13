@@ -12,6 +12,7 @@ import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useDrawer } from 'app/hooks/useDrawer'
 import { ChatListScreen } from 'app/screens/chat-screen/ChatListScreen'
+import { ChatScreen } from 'app/screens/chat-screen/ChatScreen'
 import { CollectionScreen } from 'app/screens/collection-screen/CollectionScreen'
 import { ProfileScreen } from 'app/screens/profile-screen'
 import {
@@ -94,6 +95,9 @@ export type AppTabScreenParamList = {
   EditTrack: { id: ID }
   WalletConnect: undefined
   ChatList: undefined
+  Chat: {
+    chatId: string
+  }
 }
 
 const forFade = ({ current }) => ({
@@ -266,6 +270,9 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       </Stack.Group>
       <Stack.Group>
         <Stack.Screen name='ChatList' component={ChatListScreen} />
+      </Stack.Group>
+      <Stack.Group>
+        <Stack.Screen name='Chat' component={ChatScreen} />
       </Stack.Group>
     </Stack.Navigator>
   )

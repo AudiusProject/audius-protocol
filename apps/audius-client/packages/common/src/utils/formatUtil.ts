@@ -1,4 +1,5 @@
 import BN from 'bn.js'
+import dayjs from 'dayjs'
 import numeral from 'numeral'
 
 import { BNWei } from 'models/Wallet'
@@ -208,4 +209,12 @@ export const formatCapitalizeString = (word: string) => {
   const lowerCase = word.toLowerCase()
   const firstChar = word.charAt(0).toUpperCase()
   return firstChar + lowerCase.slice(1)
+}
+
+export const formatMessageDate = (date: string) => {
+  const d = dayjs(date)
+  const today = dayjs()
+  if (d.isBefore(today, 'week')) return d.format('M/D/YY h:mm A')
+  if (d.isBefore(today, 'day')) return d.format('dddd h:mm A')
+  return d.format('h:mm A')
 }
