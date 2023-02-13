@@ -29,13 +29,9 @@ const initDB = async (dbName: string) => {
 
 
 describe('Render email', () => {
-  jest.setTimeout(10000)
 
   beforeEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
-    console.log(`testName: ${testName}`)
-    console.log(`dn url ${process.env.DN_DB_URL}`)
-    console.log(`identity url ${process.env.IDENTITY_DB_URL}`)
     await Promise.all([
       createTestDB(process.env.DN_DB_URL, testName),
       createTestDB(process.env.IDENTITY_DB_URL, testName)
@@ -44,7 +40,6 @@ describe('Render email', () => {
 
   afterEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
-    console.log('dropping DBs')
     await Promise.all([
       dropTestDB(process.env.DN_DB_URL, testName),
       dropTestDB(process.env.IDENTITY_DB_URL, testName),
@@ -298,7 +293,6 @@ describe('Render email', () => {
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
       processor = await initDB(testName)
-      console.log('init db done')
 
       const notifications: DMEmailNotification[] = [
         {
@@ -314,7 +308,6 @@ describe('Render email', () => {
         notifications,
         dnDb: processor.discoveryDB
       })
-      console.log('notifHtml retrieved')
       expect(notifHtml).toMatchSnapshot();
 
     } finally {
@@ -327,7 +320,6 @@ describe('Render email', () => {
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
       processor = await initDB(testName)
-      console.log('init db done')
 
       const notifications: DMEmailNotification[] = [
         {
@@ -344,7 +336,6 @@ describe('Render email', () => {
         notifications,
         dnDb: processor.discoveryDB
       })
-      console.log('notifHtml retrieved')
       expect(notifHtml).toMatchSnapshot();
 
     } finally {
@@ -357,7 +348,6 @@ describe('Render email', () => {
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
       processor = await initDB(testName)
-      console.log('init db done')
 
       const notifications: DMEmailNotification[] = [
         {
@@ -373,7 +363,6 @@ describe('Render email', () => {
         notifications,
         dnDb: processor.discoveryDB
       })
-      console.log('notifHtml retrieved')
       expect(notifHtml).toMatchSnapshot();
 
     } finally {
@@ -386,7 +375,6 @@ describe('Render email', () => {
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
       processor = await initDB(testName)
-      console.log('init db done')
 
       const notifications: DMEmailNotification[] = [
         {
@@ -403,7 +391,6 @@ describe('Render email', () => {
         notifications,
         dnDb: processor.discoveryDB
       })
-      console.log('notifHtml retrieved')
       expect(notifHtml).toMatchSnapshot();
 
     } finally {
