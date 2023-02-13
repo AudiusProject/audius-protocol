@@ -105,4 +105,18 @@ steps:
           ssh "ubuntu@$host" -- audius-cli pull
           ssh "ubuntu@$host" -- audius-cli set-tag -y "$CIRCLE_SHA1"
           ssh "ubuntu@$host" -- audius-cli launch -y "<< parameters.service >>"
+
+          healthy=false
+          for retry in {1..100}; do
+            echo "Retry: $retry"
+            if ssh "ubuntu@$host" -- audius-cli health_check "<< parameters.service >>"; then
+              healthy=true
+              break
+            fi
+            sleep 10
+          done
+
+          if [[ "$healthy" == "false" ]]; then
+            exit 1
+          fi
         done
