@@ -71,7 +71,7 @@ steps:
       name: Wait for the connection to be established and check IP
       command: |
         counter=1
-        until [ -f /tmp/openvpn.log ] && [ "$(grep -c "Initialization Sequence Completed" /tmp/openvpn.log)" != 0 ] || [ "$counter" -ge 16 ]; do
+        until [ -f /tmp/openvpn.log ] && [ "$(grep -c "Initialization Sequence Completed" /tmp/openvpn.log)" != 0 ] || [ "$counter" -ge 15 ]; do
           ((counter++))
           echo "Attempting to connect to VPN server..."
           sleep 1;
@@ -99,9 +99,10 @@ steps:
   - run:
       name: Deploy
       command: |
+        set -x
         hosts=(<< parameters.hosts >>)
         for host in "${hosts[@]}"; do
           ssh "ubuntu@$host" -- audius-cli pull
-          ssh "ubuntu@$host" -- audius-cli set-tag "$CIRCLE_TAG"
+          ssh "ubuntu@$host" -- audius-cli set-tag "$CIRCLE_SHA1"
           ssh "ubuntu@$host" -- audius-cli launch -y "<< parameters.service >>"
         done
