@@ -2,7 +2,8 @@ import { expect, test } from '@jest/globals'
 import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
 import { reposttype } from '../types/dn'
-import { AppEmailNotification } from '../types/notifications'
+import { DMEntityType } from '../email/notifications/types'
+import { DMEmailNotification, AppEmailNotification } from '../types/notifications'
 import { createTestDB, createTracks, createUsers, dropTestDB, insertFollows, replaceDBName } from '../utils/populateDB'
 
 
@@ -27,10 +28,14 @@ const initDB = async (dbName: string) => {
 }
 
 
-describe('Render Email', () => {
+describe('Render email', () => {
+  jest.setTimeout(10000)
 
   beforeEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+    console.log(`testName: ${testName}`)
+    console.log(`dn url ${process.env.DN_DB_URL}`)
+    console.log(`identity url ${process.env.IDENTITY_DB_URL}`)
     await Promise.all([
       createTestDB(process.env.DN_DB_URL, testName),
       createTestDB(process.env.IDENTITY_DB_URL, testName)
@@ -39,13 +44,14 @@ describe('Render Email', () => {
 
   afterEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+    console.log('dropping DBs')
     await Promise.all([
       dropTestDB(process.env.DN_DB_URL, testName),
       dropTestDB(process.env.IDENTITY_DB_URL, testName),
     ])
   })
 
-  test("Render Single Follow Email", async () => {
+  test("Render a single follow email", async () => {
     let processor
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
@@ -84,7 +90,7 @@ describe('Render Email', () => {
   })
 
 
-  test("Render a single Repost Track Email", async () => {
+  test("Render a single repost track email", async () => {
     let processor
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
@@ -133,7 +139,6 @@ describe('Render Email', () => {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
       processor = await initDB(testName)
 
-
       await createTracks(processor.discoveryDB, [{
         track_id: 1,
         owner_id: 1
@@ -141,7 +146,7 @@ describe('Render Email', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      const notifications: NotificationRow[] = [
+      const notifications: AppEmailNotification[] = [
         {
           type: 'save',
           timestamp: new Date(),
@@ -151,7 +156,8 @@ describe('Render Email', () => {
             user_id: 2,
             save_item_id: 1,
             type: savetype.track
-          }
+          },
+          receiver_user_id: 1
         }
       ]
       const notifHtml = await renderEmail({
@@ -162,7 +168,6 @@ describe('Render Email', () => {
         dnDb: processor.discoveryDB
       })
       expect(notifHtml).toMatchSnapshot()
-
     } finally {
       await processor?.close()
     }
@@ -174,7 +179,6 @@ describe('Render Email', () => {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
       processor = await initDB(testName)
 
-
       await createTracks(processor.discoveryDB, [
         { track_id: 1, owner_id: 1 },
         { track_id: 2, owner_id: 2, remix_of: { tracks: [{ parent_track_id: 1 }] } },
@@ -182,7 +186,7 @@ describe('Render Email', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      const notifications: NotificationRow[] = [
+      const notifications: AppEmailNotification[] = [
         {
           type: 'remix',
           timestamp: new Date(),
@@ -192,7 +196,8 @@ describe('Render Email', () => {
           data: {
             'track_id': 2,
             'parent_track_id': 1
-          }
+          },
+          receiver_user_id: 1
         }
       ]
       const notifHtml = await renderEmail({
@@ -215,7 +220,6 @@ describe('Render Email', () => {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
       processor = await initDB(testName)
 
-
       await createTracks(processor.discoveryDB, [
         { track_id: 1, owner_id: 1 },
         { track_id: 2, owner_id: 2, remix_of: { tracks: [{ parent_track_id: 1 }] } },
@@ -223,7 +227,7 @@ describe('Render Email', () => {
 
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      const notifications: NotificationRow[] = [
+      const notifications: AppEmailNotification[] = [
         {
           type: 'cosign',
           timestamp: new Date(),
@@ -233,7 +237,8 @@ describe('Render Email', () => {
           data: {
             'track_id': 2,
             'parent_track_id': 1
-          }
+          },
+          receiver_user_id: 1
         }
       ]
       const notifHtml = await renderEmail({
@@ -250,16 +255,15 @@ describe('Render Email', () => {
     }
   })
 
-  test.only("Render a single Supporter Rank Up Email", async () => {
+  test("Render a single Supporter Rank Up Email", async () => {
     let processor
     try {
       const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
       processor = await initDB(testName)
 
-
       await new Promise(resolve => setTimeout(resolve, 10))
 
-      const notifications: NotificationRow[] = [
+      const notifications: AppEmailNotification[] = [
         {
           type: 'supporter_rank_up',
           timestamp: new Date(),
@@ -270,7 +274,8 @@ describe('Render Email', () => {
             'sender_user_id': 1,
             'receiver_user_id': 2,
             'rank': 1
-          }
+          },
+          receiver_user_id: 1
         }
       ]
       const notifHtml = await renderEmail({
@@ -288,5 +293,122 @@ describe('Render Email', () => {
     }
   })
 
+  test("Render a single message email", async () => {
+    let processor
+    try {
+      const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+      processor = await initDB(testName)
+      console.log('init db done')
+
+      const notifications: DMEmailNotification[] = [
+        {
+          type: DMEntityType.Message,
+          sender_user_id: 2,
+          receiver_user_id: 1
+        }
+      ]
+      const notifHtml = await renderEmail({
+        userId: 1,
+        email: 'joey@audius.co',
+        frequency: 'daily',
+        notifications,
+        dnDb: processor.discoveryDB
+      })
+      console.log('notifHtml retrieved')
+      expect(notifHtml).toMatchSnapshot();
+
+    } finally {
+      await processor?.close()
+    }
+  })
+
+  test("Render a multiple messages email", async () => {
+    let processor
+    try {
+      const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+      processor = await initDB(testName)
+      console.log('init db done')
+
+      const notifications: DMEmailNotification[] = [
+        {
+          type: DMEntityType.Message,
+          sender_user_id: 2,
+          receiver_user_id: 1,
+          multiple: true
+        }
+      ]
+      const notifHtml = await renderEmail({
+        userId: 1,
+        email: 'joey@audius.co',
+        frequency: 'daily',
+        notifications,
+        dnDb: processor.discoveryDB
+      })
+      console.log('notifHtml retrieved')
+      expect(notifHtml).toMatchSnapshot();
+
+    } finally {
+      await processor?.close()
+    }
+  })
+
+  test("Render a single message reaction email", async () => {
+    let processor
+    try {
+      const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+      processor = await initDB(testName)
+      console.log('init db done')
+
+      const notifications: DMEmailNotification[] = [
+        {
+          type: DMEntityType.Reaction,
+          sender_user_id: 2,
+          receiver_user_id: 1
+        }
+      ]
+      const notifHtml = await renderEmail({
+        userId: 1,
+        email: 'joey@audius.co',
+        frequency: 'daily',
+        notifications,
+        dnDb: processor.discoveryDB
+      })
+      console.log('notifHtml retrieved')
+      expect(notifHtml).toMatchSnapshot();
+
+    } finally {
+      await processor?.close()
+    }
+  })
+
+  test("Render a multiple message reactions email", async () => {
+    let processor
+    try {
+      const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+      processor = await initDB(testName)
+      console.log('init db done')
+
+      const notifications: DMEmailNotification[] = [
+        {
+          type: DMEntityType.Reaction,
+          sender_user_id: 2,
+          receiver_user_id: 1,
+          multiple: true
+        }
+      ]
+      const notifHtml = await renderEmail({
+        userId: 1,
+        email: 'joey@audius.co',
+        frequency: 'daily',
+        notifications,
+        dnDb: processor.discoveryDB
+      })
+      console.log('notifHtml retrieved')
+      expect(notifHtml).toMatchSnapshot();
+
+    } finally {
+      await processor?.close()
+    }
+  })
 
 })
