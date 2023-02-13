@@ -1,35 +1,31 @@
 import { useEffect } from 'react'
 
-import { chatActions, chatSelectors } from '@audius/common'
+import { chatActions, chatSelectors, Status } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Screen, ScrollView, ScreenContent } from 'app/components/core'
+import { Screen, FlatList, ScreenContent } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 
 import { ChatListItem } from './ChatListItem'
 
-const { getChats } = chatSelectors
+const { getChats, getChatsStatus } = chatSelectors
 
 const messages = {
   title: 'Messages'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  chatRow: {
-    borderBottomWidth: 1,
-    borderBottomColor: palette.neutralLight8
-  },
-  container: {
+  rootContainer: {
     display: 'flex',
     justifyContent: 'center',
-    alignItems: 'center',
     height: '100%'
   },
   loadingSpinner: {
     height: spacing(20),
-    widht: spacing(20)
+    width: spacing(20),
+    alignSelf: 'center'
   }
 }))
 
@@ -37,6 +33,7 @@ export const ChatListScreen = () => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const chats = useSelector(getChats)
+  const chatsStatus = useSelector(getChatsStatus)
 
   useEffect(() => {
     dispatch(chatActions.fetchMoreChats())
@@ -45,17 +42,17 @@ export const ChatListScreen = () => {
   return (
     <Screen url='/chat' title={messages.title} topbarRight={null}>
       <ScreenContent>
-        <ScrollView contentContainerStyle={styles.container}>
-          <View style={styles.chatRow}>
-            {chats.length > 0 ? (
-              chats.map((chat) => {
-                return <ChatListItem key={chat.chat_id} chat={chat} />
-              })
-            ) : (
-              <LoadingSpinner style={styles.loadingSpinner} />
-            )}
-          </View>
-        </ScrollView>
+        <View style={styles.rootContainer}>
+          {chatsStatus === Status.SUCCESS ? (
+            <FlatList
+              data={chats}
+              renderItem={({ item, index }) => <ChatListItem chat={item} />}
+              keyExtractor={(item) => item.chat_id}
+            />
+          ) : (
+            <LoadingSpinner style={styles.loadingSpinner} />
+          )}
+        </View>
       </ScreenContent>
     </Screen>
   )
