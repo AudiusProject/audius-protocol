@@ -14,8 +14,9 @@ dev.trending::
 
 # these are the dependencies required for trending to operate
 # currently only clickhouse is required but more could be added here
+# using the testdb for ch testing
 dev.trending.deps::
-	@   docker compose up chdb
+	@   docker compose up chdb testdb
 
 reset::
 	docker compose down --volumes

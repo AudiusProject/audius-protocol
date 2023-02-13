@@ -9,6 +9,16 @@ services:
     volumes:
       - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
 
+  testdb:
+    container_name: testdb
+    image: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: default_db
+
   chdb:
     container_name: chdb
     image: clickhouse/clickhouse-server
