@@ -71,7 +71,7 @@ steps:
       name: Wait for the connection to be established and check IP
       command: |
         counter=1
-        until [ -f /tmp/openvpn.log ] && [ "$(grep -c "Initialization Sequence Completed" /tmp/openvpn.log)" != 0 ] || [ "$counter" -ge 5 ]; do
+        until [ -f /tmp/openvpn.log ] && [ "$(grep -c "Initialization Sequence Completed" /tmp/openvpn.log)" != 0 ] || [ "$counter" -ge 16 ]; do
           ((counter++))
           echo "Attempting to connect to VPN server..."
           sleep 1;
@@ -79,6 +79,7 @@ steps:
 
         if [ ! -f /tmp/openvpn.log ] || (! grep -iq "Initialization Sequence Completed" /tmp/openvpn.log); then
           printf "\nUnable to establish connection within the allocated time ---> Giving up.\n"
+          exit 1
         else
           printf "\nVPN connected\n"
           printf "\nPublic IP is now %s\n" "$(curl -s http://checkip.amazonaws.com)"
