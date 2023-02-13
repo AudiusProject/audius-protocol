@@ -99,7 +99,7 @@ steps:
       name: Deploy
       command: |
         hosts=(<< parameters.hosts >>)
-        for host in "$hosts[@]"; do
+        for host in "${hosts[@]}"; do
           ssh "ubuntu@$host" -- audius-cli pull
           ssh "ubuntu@$host" -- audius-cli set-tag "$CIRCLE_TAG"
           ssh "ubuntu@$host" -- audius-cli launch -y "<< parameters.service >>"
