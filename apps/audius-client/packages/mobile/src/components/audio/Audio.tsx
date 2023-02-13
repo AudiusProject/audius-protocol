@@ -36,13 +36,13 @@ import { useEffectOnce, usePrevious } from 'react-use'
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
-import { getLocalTrackImageSource } from 'app/hooks/useLocalImage'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
   DOWNLOAD_REASON_FAVORITES,
-  getLocalAudioPath
+  getLocalAudioPath,
+  getLocalTrackCoverArtPath
 } from 'app/services/offline-downloader'
 import {
   getOfflineTrackStatus,
@@ -408,9 +408,9 @@ export const Audio = () => {
           })
         }
 
-        const localSource =
+        const localTrackImageSource =
           isNotReachable && track
-            ? await getLocalTrackImageSource(trackId)
+            ? { uri: `file://${getLocalTrackCoverArtPath(trackId.toString())}` }
             : undefined
 
         const imageUrl =
@@ -418,7 +418,7 @@ export const Audio = () => {
             cid: track ? track.cover_art_sizes || track.cover_art : null,
             user: trackOwner,
             size: SquareSizes.SIZE_1000_BY_1000,
-            localSource
+            localSource: localTrackImageSource
           })?.uri ?? DEFAULT_IMAGE_URL
 
         return {
