@@ -1,11 +1,11 @@
 * {
   box-sizing: border-box;
-  font-family: sans-serif;
 }
 
 body {
   margin: 0;
   padding: 0;
+  font-family: sans-serif;
 }
 
 .table {
@@ -21,11 +21,13 @@ body {
   background: lightyellow;
 }
 
-tr.is-behind {
-  background: navajowhite;
+.is-behind {
+  background: rgb(254 226 226);
+  color: rgb(127 29 29);
+  font-weight: bold;
 }
-tr.is-behind:hover td {
-  background: yellow;
+tr:hover td.is-behind {
+  background: rgb(254 226 226);
 }
 
 a,

@@ -72,7 +72,7 @@ async function main(isStage) {
     allSps = allSps.concat(sps)
   }
 
-  allSps = allSps.concat()
+  allSps = allSps.concat(bonus)
   sortSPs(allSps)
   console.log(allSps)
   await writeFile(dest, JSON.stringify(allSps, undefined, 2))

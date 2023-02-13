@@ -87,12 +87,14 @@ export async function fetchHealth({ queryKey }: { queryKey: string[] }) {
 
 export async function fetchUrl({ queryKey }: { queryKey: string[] }) {
   const url = queryKey[0]
-  console.log('wut', queryKey, url)
   const resp = await fetch(url)
   if (resp.status != 200) {
-    throw new Error(`${resp.status}: ${url}`)
+    return {
+      url,
+      status: resp.status,
+      error: await resp.text(),
+    }
   }
   const data = await resp.json()
-  console.log('OK', data)
   return data
 }

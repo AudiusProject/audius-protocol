@@ -135,6 +135,24 @@
     }
   },
   {
+    "id": "discovery-sandbox::4",
+    "endpoint": "https://discoveryprovider4.audius.co",
+    "isRegistered": false,
+    "delegateOwnerWallet": "0x32bF5092890bb03A45bd03AaeFAd11d4afC9a851",
+    "type": {
+      "id": "discovery-node"
+    }
+  },
+  {
+    "id": "discovery-sandbox::steve",
+    "endpoint": "https://api.steve.audius.co",
+    "isRegistered": false,
+    "delegateOwnerWallet": "0xE6D7BE81A2A21bDEA7Df5CD11750ebF3293E5c82",
+    "type": {
+      "id": "discovery-node"
+    }
+  },
+  {
     "id": "content-node::27",
     "endpoint": "https://usermetadata.audius.co",
     "isRegistered": true,

@@ -90,6 +90,15 @@
     }
   },
   {
+    "id": "discovery-sandbox::4",
+    "endpoint": "https://discoveryprovider4.staging.audius.co",
+    "isRegistered": false,
+    "delegateOwnerWallet": "0xb1C931A9ac123866372CEbb6bbAF50FfD18dd5DF",
+    "type": {
+      "id": "discovery-node"
+    }
+  },
+  {
     "id": "discovery-node::5",
     "endpoint": "https://discoveryprovider5.staging.audius.co",
     "isRegistered": true,

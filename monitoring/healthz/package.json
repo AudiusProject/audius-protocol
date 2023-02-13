@@ -8,7 +8,7 @@
     "build": "tsc && vite build",
     "deploy": "npm run build && wrangler publish",
     "preview": "vite preview",
-    "refresh": "node refreshSPs.js"
+    "refresh": "node spList.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^4.10.3",
