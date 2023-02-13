@@ -103,6 +103,6 @@ steps:
         hosts=(<< parameters.hosts >>)
         for host in "${hosts[@]}"; do
           ssh "ubuntu@$host" -- audius-cli pull
-          ssh "ubuntu@$host" -- audius-cli set-tag "$CIRCLE_SHA1"
+          ssh "ubuntu@$host" -- audius-cli set-tag -y "$CIRCLE_SHA1"
           ssh "ubuntu@$host" -- audius-cli launch -y "<< parameters.service >>"
         done
