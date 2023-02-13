@@ -154,11 +154,11 @@ jobs:
 
   - deploy:
       name: deploy-stage-creator-node
-      # requires:
-      #   - push-docker-images
-      # filters:
-      # branches:
-      #   only: main
+      requires:
+        - push-docker-images
+      filters:
+        branches:
+          only: main
       context: open-vpn
       hosts: >-
         stage-creator-5
@@ -175,9 +175,9 @@ jobs:
       name: deploy-stage-discovery-provider
       requires:
         - push-docker-images
-      # filters:
-      #   branches:
-      #     only: main
+      filters:
+        branches:
+          only: main
       context: open-vpn
       hosts: >-
         stage-discovery-4
@@ -191,9 +191,9 @@ jobs:
       name: deploy-stage-identity-service
       requires:
         - push-docker-images
-      # filters:
-      #   branches:
-      #     only: main
+      filters:
+        branches:
+          only: main
       context: open-vpn
       hosts: stage-identity
       service: identity-service
