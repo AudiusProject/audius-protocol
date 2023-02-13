@@ -25,7 +25,7 @@ PRUNE_PLAYS_QUERY = """
 # start at all plays before 2020 (328751 total)
 # TODO move to a sliding window
 current_date = datetime.now()
-cutoff_timestamp = current_date - timedelta(days=365)
+cutoff_timestamp = current_date - timedelta(days=400)
 DEFAULT_CUTOFF_TIMESTAMP = datetime.fromisoformat(cutoff_timestamp.isoformat())
 
 # max number of plays to prune per run
