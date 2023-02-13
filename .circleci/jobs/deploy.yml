@@ -94,7 +94,7 @@ steps:
       name: Configure SSH
       command: |
         git clone git@github.com:AudiusProject/audius-ssh.git audius-ssh
-        sed "/AddKeysToAgent/d" audius-ssh/ssh_config >> ~/.ssh/config
+        sed "/AddKeysToAgent/d; /UseKeychain/d" audius-ssh/ssh_config >> ~/.ssh/config
   - run:
       name: Deploy
       command: |
