@@ -367,10 +367,6 @@ const slice = createSlice({
       _state,
       _action: RequestRemoveDownloadedCollectionAction
     ) => {},
-    requestRemoveFavoritedDownloadedCollection: (
-      _state,
-      _action: RequestRemoveDownloadedCollectionAction
-    ) => {},
     requestDownloadQueuedItem: () => {}
   }
 })
@@ -396,7 +392,6 @@ export const {
   requestDownloadFavoritedCollection,
   requestRemoveAllDownloadedFavorites,
   requestRemoveDownloadedCollection,
-  requestRemoveFavoritedDownloadedCollection,
   requestDownloadQueuedItem
 } = slice.actions
 export const actions = slice.actions

@@ -3,6 +3,7 @@ import {
   getContext,
   savedPageSelectors
 } from '@audius/common'
+import moment from 'moment'
 import { takeEvery, select, call, put } from 'typed-redux-saga'
 
 import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
@@ -36,7 +37,7 @@ function* downloadAllFavorites() {
   ]
 
   // Add local saves
-  const now = Date.now().toString()
+  const favorite_created_at = moment().format('YYYY-MM-DD HH:mm:ss')
   const localSaves = yield* select(getLocalSaves)
   const localSavesToAdd: OfflineItem[] = Object.keys(localSaves)
     .map((id) => parseInt(id, 10))
@@ -44,7 +45,7 @@ function* downloadAllFavorites() {
       type: 'track',
       id,
       metadata: {
-        favorite_created_at: now,
+        favorite_created_at,
         reasons_for_download: trackReasonsForDownload
       }
     }))

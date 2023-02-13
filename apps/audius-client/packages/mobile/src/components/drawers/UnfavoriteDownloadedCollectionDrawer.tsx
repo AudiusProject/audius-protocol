@@ -5,7 +5,6 @@ import { FavoriteSource, collectionsSocialActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
-import { requestRemoveFavoritedDownloadedCollection } from 'app/store/offline-downloads/slice'
 
 import { ConfirmationDrawer } from './ConfirmationDrawer'
 
@@ -33,7 +32,6 @@ export const UnfavoriteDownloadedCollectionDrawer = () => {
 
   const handleConfirm = useCallback(() => {
     dispatch(unsaveCollection(collectionId, FavoriteSource.COLLECTION_PAGE))
-    dispatch(requestRemoveFavoritedDownloadedCollection({ collectionId }))
   }, [collectionId, dispatch])
 
   return (

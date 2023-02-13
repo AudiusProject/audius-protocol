@@ -1,13 +1,13 @@
-import { cacheCollectionsSelectors } from '@audius/common'
-import { takeEvery, select, put } from 'typed-redux-saga'
+import { accountSelectors, getContext } from '@audius/common'
+import { takeEvery, select, put, call } from 'typed-redux-saga'
 
 import type { CollectionAction, OfflineItem } from '../slice'
 import { addOfflineItems, requestDownloadFavoritedCollection } from '../slice'
 
-const { getCollection } = cacheCollectionsSelectors
+const { getUserId } = accountSelectors
 
 export function* requestDownloadFavoritedCollectionSaga() {
-  takeEvery(
+  yield* takeEvery(
     requestDownloadFavoritedCollection.type,
     downloadFavoritedCollection
   )
@@ -15,7 +15,16 @@ export function* requestDownloadFavoritedCollectionSaga() {
 
 function* downloadFavoritedCollection(action: CollectionAction) {
   const { collectionId } = action.payload
-  const collection = yield* select(getCollection, { id: collectionId })
+
+  const currentUserId = yield* select(getUserId)
+  if (!currentUserId) return
+
+  const apiClient = yield* getContext('apiClient')
+  const collection = yield* call([apiClient, apiClient.getCollectionMetadata], {
+    collectionId,
+    currentUserId
+  })
+
   if (!collection) return
 
   const offlineItemsToAdd: OfflineItem[] = []
