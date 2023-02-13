@@ -32,11 +32,6 @@ export const getCollectionSyncStatus = (
   collectionId: CollectionId
 ) => state.offlineDownloads.collectionSyncStatus[collectionId]
 
-export const getCollectionDownloadStatus = (
-  state: AppState,
-  collectionId: CollectionId
-) => state.offlineDownloads.collectionStatus[collectionId]
-
 export const getIsFavoritesDownloadsEnabled = (state: AppState) =>
   Boolean(state.offlineDownloads.collectionStatus[DOWNLOAD_REASON_FAVORITES])
 
