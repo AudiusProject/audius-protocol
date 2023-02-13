@@ -46,7 +46,7 @@ export const DownloadStatusIndicator = (
   const renderIndicator = () => {
     // If we are offline, display as download succeeded
     // since we only show the user successfully downloaded things.
-    if (!isReachable) {
+    if (!isReachable && status !== OfflineDownloadStatus.INACTIVE) {
       return (
         <IconDownloaded
           fill={styles.iconDownloaded.fill}

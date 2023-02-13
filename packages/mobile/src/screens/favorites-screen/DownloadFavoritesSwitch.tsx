@@ -1,10 +1,11 @@
-import { useCallback, useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 
 import { reachabilitySelectors } from '@audius/common'
 import type { SwitchProps } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Switch } from 'app/components/core'
+import { useThrottledCallback } from 'app/hooks/useThrottledCallback'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getCollectionDownloadStatus } from 'app/store/offline-downloads/selectors'
@@ -22,11 +23,7 @@ export const DownloadFavoritesSwitch = (
 
   const isSwitchDisabled = useSelector((state) => {
     const isReachable = getIsReachable(state)
-    const isMarkedForDownload = getCollectionDownloadStatus(
-      state,
-      DOWNLOAD_REASON_FAVORITES
-    )
-    return Boolean(!isReachable && isMarkedForDownload)
+    return !isReachable
   })
 
   const isMarkedForDownload = useSelector((state) =>
@@ -35,7 +32,7 @@ export const DownloadFavoritesSwitch = (
 
   const [value, setValue] = useState(isMarkedForDownload)
 
-  const handleValueChange = useCallback(
+  const handleValueChange = useThrottledCallback(
     (newValue: boolean) => {
       if (newValue) {
         dispatch(requestDownloadAllFavorites())
@@ -50,6 +47,7 @@ export const DownloadFavoritesSwitch = (
         )
       }
     },
+    800,
     [dispatch, onValueChange]
   )
 
@@ -62,13 +60,11 @@ export const DownloadFavoritesSwitch = (
   }, [isMarkedForDownload, onValueChange])
 
   return (
-    <>
-      <Switch
-        value={value}
-        onValueChange={handleValueChange}
-        disabled={isSwitchDisabled}
-        {...other}
-      />
-    </>
+    <Switch
+      value={value}
+      onValueChange={handleValueChange}
+      disabled={isSwitchDisabled}
+      {...other}
+    />
   )
 }
