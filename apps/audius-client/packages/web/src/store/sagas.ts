@@ -6,7 +6,8 @@ import {
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
   toastSagas,
-  vipDiscordModalSagas
+  vipDiscordModalSagas,
+  reachabilitySagas as commonReachabilitySagas
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
@@ -179,6 +180,7 @@ export default function* rootSaga() {
     tokenDashboardSagas(),
     userListModalSagas(),
     vipDiscordModalSagas(),
+    commonReachabilitySagas(),
 
     // Remote config
     remoteConfigSagas(),
