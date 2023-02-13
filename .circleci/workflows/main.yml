@@ -153,9 +153,9 @@ jobs:
 
   - deploy:
       name: deploy-stage-creator-node
-      filters:
-        branches:
-          only: main
+      # filters:
+      # branches:
+      #   only: main
       context: open-vpn
       hosts: >-
         stage-creator-4
@@ -167,9 +167,9 @@ jobs:
 
   - deploy:
       name: deploy-stage-discovery-provider
-      filters:
-        branches:
-          only: main
+      # filters:
+      #   branches:
+      #     only: main
       context: open-vpn
       hosts: >-
         stage-discovery-4
@@ -180,9 +180,9 @@ jobs:
 
   - deploy:
       name: deploy-stage-identity-service
-      filters:
-        branches:
-          only: main
+      # filters:
+      #   branches:
+      #     only: main
       context: open-vpn
       hosts: stage-identity
       service: identity-service
