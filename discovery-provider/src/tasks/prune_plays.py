@@ -1,6 +1,6 @@
 import logging
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import text
 from src.tasks.celery_app import celery
@@ -11,39 +11,22 @@ logger = logging.getLogger(__name__)
 PLAYS_ARCHIVE_TABLE_NAME = "plays_archive"
 
 PRUNE_PLAYS_QUERY = """
-    with archived as (
-        insert into
-            plays_archive
-        select
-            id,
-            user_id,
-            source,
-            play_item_id,
-            created_at,
-            updated_at,
-            slot,
-            signature,
-            :current_timestamp
-        from
-            plays
-        where
-            plays.created_at <= :cutoff_timestamp
-        order by
-            plays.created_at asc
-        limit
-            :max_batch
-        returning id
-    )
     delete from
         plays
     where
-        id in (select id from archived)
+        plays.created_at <= :cutoff_timestamp
+    order by
+        plays.created_at asc
+    limit
+        :max_batch
     """
 
 # Prune up to the cutoff date
 # start at all plays before 2020 (328751 total)
 # TODO move to a sliding window
-DEFAULT_CUTOFF_TIMESTAMP = datetime.fromisoformat("2021-12-31")
+current_date = datetime.now()
+cutoff_timestamp = current_date - timedelta(days=365)
+DEFAULT_CUTOFF_TIMESTAMP = datetime.fromisoformat(cutoff_timestamp.isoformat())
 
 # max number of plays to prune per run
 # 50000 max * 8 runs a day = 400000 plays per day
@@ -92,8 +75,7 @@ def prune_plays(self):
                 _prune_plays(session, datetime.now())
 
             logger.info(
-                f"prune_plays.py | Finished pruning and archiving to \
-                {PLAYS_ARCHIVE_TABLE_NAME} in: {time.time()-start_time} sec"
+                f"prune_plays.py | Finished pruning in: {time.time()-start_time} sec"
             )
         else:
             logger.info("prune_plays.py | Failed to acquire prune_plays_lock")
