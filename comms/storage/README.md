@@ -6,19 +6,20 @@ Storage V2 is responsible for the even distribution, replication and transcoding
 
 #### Features
 - [Replicated Sharding](#replicated-sharding)
-- [Visibility](#visibility)
-- [Transcoding](#transcoding)
-- [Blob Storage](#blob-storage)
-- [Backup and Restore](#backup-and-restore)
+- [Transcoding Pipeline](#transcoding)
+- [Configurable Blob Storage](#blob-storage)
+- [Backup and Restore Tooling](#backup-and-restore)
 - [HTTP API](#http-api)
 - [NATS Gateway](#nats-gateway)
-- [Access Control](#access-control)
+- [Content Access Control](#access-control)
 
 ---
 
 ## Quickstart
 
 To get started with a lightweight multi node cluster and test uploads.
+
+![upload-dashboard](../docs/uploads.png)
 
 ```shell
 # build and run
@@ -53,11 +54,30 @@ docker compose -f docker-compose.v2.dev.yml up -d --build
 
 ### Visibility
 
-A storage [weathermap]() provides visualization and introspection into the location of files within the network
+For visibility and troubleshooting, a storage [weathermap](./storageserver/weather-map/README.md) at `/storage/weather/` provides visualization and introspection into the location of files within the network. As well as each node's view of the hash ring.
+
+![upload-dashboard](../docs/weather.png)
 
 ### Transcoding
 
 An integrated normalization pipeline exists to encode input audio and image files into nominal output formats and compression ratios.
+
+```
+## WIP                           +-------+                    ## WIP
+                        +------->| NATS  |
+                        |        |       |
+                        |        +-------+
+                        |
++-------+         +-----+--+     +-------+         +---------------+
+|       |         |STORAGE |     | NATS  |         |JOBS MANAGER   |
+| CLIENT+-------->|SERVER  +---->|       |<--------+               |
++-------+         +-----+--+     +-------+         +---------------+
+                        |
+                        |        +-------+
+                        |        | NATS  |
+                        +------->|       |
+                                 +-------+
+```
 
 ### Blob Storage
 
@@ -115,6 +135,50 @@ docker run audius/storage-archiver -e "MODE=RESTORE" -e "<AUTHORIZATION>" -e "<B
 ### HTTP API
 
 An HTTP API exists to allow clients to inteface with storage v2.
+
+#### WIP
+
+```
+POST /file
+GET  /jobs
+GET  /jobs/:id
+GET  /tmp-obj/:bucket/:key
+GET  /long-term/shard/:shard
+GET  /long-term/file/:fileName
+GET  /job-results/:id
+```
+
+#### POST /file
+
+Upload a track from the command line
+
+```shell
+$ curl -v -F "files=@/private/var/orion/Music/mp3Archive/dub.mp3" -F "template=audio" http://0.0.0.0:9924/storage/file
+
+...
+
+[
+  {
+    "id": "cle4h8b1g000101q8l4tz2mkx",
+    "template": "audio",
+    "status": "pending",
+    "created_at": "2023-02-14T16:46:44.66288267Z",
+    "source_info": {
+      "name": "cle4h8b1g000101q8l4tz2mkx",
+      "description": "dub.mp3",
+      "options": {
+        "max_chunk_size": 131072
+      },
+      "bucket": "temp_14",
+      "nuid": "yAyElmI9R40Zjuqp7YuGgg",
+      "size": 17804422,
+      "mtime": "2023-02-14T16:46:44.66287517Z",
+      "chunks": 136,
+      "digest": "SHA-256=JxJGxEhuS7Gp9qnCRhs_CCYpHWZ7cL5HzeP0sPje0Iw="
+    }
+  }
+]
+```
 
 ### NATS Gateway
 
