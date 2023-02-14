@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/storage/telemetry"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -76,8 +77,10 @@ type JobsManager struct {
 }
 
 const (
-	KvSuffix    = "_kv"
-	objStoreTtl = time.Hour * 24
+	KvSuffix                         = "_kv"
+	temporaryObjectStoreNameTemplate = "temp_obj_%d" // if we adjust temporary settings (count, ttl, replication, placement) we should change this template to "roll forward"... delete the old ones later
+	temporaryObjectStoreCount        = 8
+	temporaryObjectStoreTTL          = time.Hour * 24
 )
 
 func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) (*JobsManager, error) {
@@ -98,15 +101,6 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		return nil, fmt.Errorf("failed to create KV work subscription: %v", err)
 	}
 
-	// create temp buckets
-	tempBucketCount := 20
-	for i := 0; i < tempBucketCount; i++ {
-		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
-			Bucket: fmt.Sprintf("temp_%d", i),
-			TTL:    objStoreTtl,
-		}, jsc)
-	}
-
 	watcher, err := kv.WatchAll()
 	if err != nil {
 		return nil, fmt.Errorf("failed to watch KV: %v", err)
@@ -119,13 +113,37 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		watcher:          watcher,
 		table:            map[string]*Job{},
 		logger:           telemetry.NewConsoleLogger(),
-		tempBucketCount:  tempBucketCount,
+		tempBucketCount:  8,
 		websockets:       map[net.Conn]bool{},
 	}
+
+	jobman.createTemporaryObjectStores()
 
 	go jobman.watch()
 
 	return jobman, nil
+}
+
+func (jobman *JobsManager) createTemporaryObjectStores() {
+	for i := 0; i < jobman.tempBucketCount; i++ {
+		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
+			Bucket:   jobman.temporaryObjectStoreName(i),
+			TTL:      temporaryObjectStoreTTL,
+			Replicas: config.NatsReplicaCount,
+			Placement: &nats.Placement{
+				Cluster: config.NatsClusterName,
+			},
+		}, jobman.jsc)
+	}
+}
+
+func (jobman *JobsManager) temporaryObjectStoreName(i int) string {
+	return fmt.Sprintf(temporaryObjectStoreNameTemplate, i)
+}
+
+func (jobman *JobsManager) randomTemporaryObjectStore() (nats.ObjectStore, error) {
+	name := jobman.temporaryObjectStoreName(rand.Intn(jobman.tempBucketCount))
+	return jobman.jsc.ObjectStore(name)
 }
 
 func (jobman *JobsManager) watch() {
@@ -181,8 +199,7 @@ func (jobman *JobsManager) Add(template JobTemplate, upload *multipart.FileHeade
 		Description: upload.Filename,
 	}
 
-	randBucket := fmt.Sprintf("temp_%d", rand.Intn(jobman.tempBucketCount))
-	objStore, err := jobman.jsc.ObjectStore(randBucket)
+	objStore, err := jobman.randomTemporaryObjectStore()
 	if err != nil {
 		return nil, err
 	}

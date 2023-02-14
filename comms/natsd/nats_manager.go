@@ -1,10 +1,14 @@
 package natsd
 
 import (
+	"fmt"
 	"log"
 	"net/url"
 	"os"
+	"path/filepath"
+	"strings"
 	"sync"
+	"time"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/shared/peering"
@@ -35,7 +39,9 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		}
 		nkeys = append(nkeys, user)
 
-		if info.NatsIsReachable && info.NatsRoute != "" {
+		// we use the Cluster Name as the username in the route username and password...
+		// only add route if the server is a member of the same cluster.
+		if info.NatsIsReachable && info.NatsRoute != "" && strings.Contains(info.NatsRoute, config.NatsClusterName) {
 			route, err := url.Parse(info.NatsRoute)
 			if err != nil {
 				config.Logger.Warn("invalid nats route url: " + info.NatsRoute)
@@ -53,6 +59,8 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		tags = append(tags, "discovery")
 	}
 
+	writeDeadline, _ := time.ParseDuration("60s")
+
 	opts := &server.Options{
 		ServerName: serverName,
 		HTTPPort:   8222,
@@ -60,9 +68,13 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		// Debug:      true,
 
 		JetStream: true,
-		StoreDir:  os.Getenv("NATS_STORE_DIR"),
+		StoreDir:  filepath.Join(os.Getenv("NATS_STORE_DIR"), config.NatsClusterName),
 
 		Tags: tags,
+
+		// increase auth timeout and write deadline
+		AuthTimeout:   60,
+		WriteDeadline: writeDeadline,
 	}
 
 	if config.NatsReplicaCount < 2 {
@@ -74,12 +86,17 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		}
 
 		opts.Cluster = server.ClusterOpts{
-			Name:        "comms",
-			Host:        "0.0.0.0",
-			Port:        6222,
-			Username:    config.NatsClusterUsername,
-			Password:    config.NatsClusterPassword,
-			NoAdvertise: true,
+			Name:      config.NatsClusterName,
+			Host:      "0.0.0.0",
+			Port:      6222,
+			Username:  config.NatsClusterUsername,
+			Password:  config.NatsClusterPassword,
+			Advertise: fmt.Sprintf("%s:6222", config.IP),
+			// NoAdvertise: true,
+
+			// increase auth timeout, bounded connection retry
+			AuthTimeout:    60,
+			ConnectRetries: 30,
 		}
 
 		opts.Routes = routes
