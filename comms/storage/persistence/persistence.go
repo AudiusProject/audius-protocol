@@ -27,6 +27,7 @@ import (
 const (
 	AWS_ACCESS_KEY_ID     = "AWS_ACCESS_KEY_ID"
 	AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
+	AWS_REGION            = "AWS_REGION"
 
 	GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS"
 
@@ -386,9 +387,10 @@ func checkStorageCredentials(blobDriverUrl string) error {
 
 		accessKey := os.Getenv(AWS_ACCESS_KEY_ID)
 		secretKey := os.Getenv(AWS_SECRET_ACCESS_KEY)
+		region := os.Getenv(AWS_REGION)
 
-		if accessKey == "" || secretKey == "" {
-			return errors.New("Missing credentials required for persistent S3 backing (i.e. AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)")
+		if accessKey == "" || secretKey == "" || region == "" {
+			return errors.New("Missing credentials required for persistent S3 backing (i.e. AWS_REGION, AWS_ACCESS_KEY_ID, and AWS_SECRET_ACCESS_KEY)")
 		}
 
 		// check for s3 env vars

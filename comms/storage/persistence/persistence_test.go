@@ -83,6 +83,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 			envVars: map[string]string{
 				AWS_ACCESS_KEY_ID:     "SOMETHING",
 				AWS_SECRET_ACCESS_KEY: "",
+				AWS_REGION:            "",
 			},
 			expectedError: true,
 		},
@@ -91,6 +92,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 			envVars: map[string]string{
 				AWS_ACCESS_KEY_ID:     "KEY",
 				AWS_SECRET_ACCESS_KEY: "SECRET",
+				AWS_REGION:            "us-east-1",
 			},
 			expectedError: false,
 		},
@@ -99,6 +101,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 			envVars: map[string]string{
 				AWS_ACCESS_KEY_ID:     "KEY",
 				AWS_SECRET_ACCESS_KEY: "SECRET",
+				AWS_REGION:            "us-east-1",
 			},
 			expectedError: false,
 		},
