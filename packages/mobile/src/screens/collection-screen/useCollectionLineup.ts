@@ -52,9 +52,14 @@ export const useCollectionLineup = (
       if (acc[track.id] && acc[track.id].includes(track.id)) {
         return acc
       }
+      const collectionTrackUid = makeUid(
+        Kind.TRACKS,
+        track.id,
+        `collection:${collectionId}`
+      )
       acc[track.id] = acc[track.id]
-        ? acc[track.id].concat(track.uid)
-        : [track.uid]
+        ? acc[track.id].concat(collectionTrackUid)
+        : [collectionTrackUid]
       return acc
     },
     {}
@@ -79,7 +84,12 @@ export const useCollectionLineup = (
             uid:
               collectionTrackUidMap[trackData.track]?.[
                 trackIdEncounters[trackData.track]
-              ] ?? makeUid(Kind.TRACKS, trackData.track),
+              ] ??
+              makeUid(
+                Kind.TRACKS,
+                trackData.track,
+                `collection:${collectionId}`
+              ),
 
             dateAdded:
               typeof trackData.time === 'string'
