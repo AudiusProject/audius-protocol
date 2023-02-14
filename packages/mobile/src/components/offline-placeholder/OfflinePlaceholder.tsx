@@ -7,6 +7,7 @@ import IconNoWifi from 'app/assets/images/iconNoWifi.svg'
 import IconRefresh from 'app/assets/images/iconRefresh.svg'
 import { Button, Text, Tile } from 'app/components/core'
 import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
 
 import { messages } from './messages'
 
@@ -52,9 +53,11 @@ export const OfflinePlaceholder = (props: OfflinePlaceholderProps) => {
     return await Promise.all([NetInfo.refresh(), wait(800)])
   })
 
+  const { neutralLight4 } = useThemeColors()
+
   const body = (
     <View style={styles.container}>
-      <IconNoWifi />
+      <IconNoWifi fill={neutralLight4} />
       <Text style={styles.header}>{messages.title}</Text>
       <Text style={styles.subHeading}>{messages.subtitle}</Text>
       <Button

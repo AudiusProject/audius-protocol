@@ -7,6 +7,7 @@ import IconNoWifi from 'app/assets/images/iconNoWifiSmall.svg'
 import { Text, Tile } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
 const { getIsReachable } = reachabilitySelectors
 
 const messages = {
@@ -42,13 +43,15 @@ export const OfflineContentBanner = () => {
   const styles = useStyles()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
+  const { neutralLight4 } = useThemeColors()
+
   if (!isOfflineModeEnabled || isReachable) return null
   return (
     <Animated.View exiting={SlideOutUp.duration(1000)}>
       <Tile style={styles.tile}>
         <View style={styles.container}>
           <View style={styles.iconRoot}>
-            <IconNoWifi style={styles.icon} />
+            <IconNoWifi style={styles.icon} fill={neutralLight4} />
           </View>
           <Text style={styles.text}>{messages.displayingOfflineContent}</Text>
         </View>

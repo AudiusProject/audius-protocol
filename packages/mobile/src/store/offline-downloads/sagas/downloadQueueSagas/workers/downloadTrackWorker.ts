@@ -48,7 +48,7 @@ function* shouldAbortDownload(trackId: ID) {
 }
 
 export function* downloadTrackWorker(trackId: ID) {
-  const queueItem = { type: 'track', id: trackId } as DownloadQueueItem
+  const queueItem: DownloadQueueItem = { type: 'track', id: trackId }
   track(
     make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_START, ...queueItem })
   )
@@ -64,7 +64,7 @@ export function* downloadTrackWorker(trackId: ID) {
     yield* call(removeDownloadedTrack, trackId)
     yield* put(requestDownloadQueuedItem())
   } else if (cancel) {
-    yield* put(cancelDownload({ type: 'track', id: trackId }))
+    yield* put(cancelDownload(queueItem))
     yield* call(removeDownloadedTrack, trackId)
   } else if (jobResult === OfflineDownloadStatus.ERROR) {
     track(
@@ -73,7 +73,7 @@ export function* downloadTrackWorker(trackId: ID) {
         ...queueItem
       })
     )
-    yield* put(errorDownload({ type: 'track', id: trackId }))
+    yield* put(errorDownload(queueItem))
     yield* call(removeDownloadedTrack, trackId)
     yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.ABANDONED) {
@@ -83,7 +83,7 @@ export function* downloadTrackWorker(trackId: ID) {
         ...queueItem
       })
     )
-    yield* put(abandonDownload({ type: 'track', id: trackId }))
+    yield* put(abandonDownload(queueItem))
     yield* call(removeDownloadedTrack, trackId)
     yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
@@ -93,9 +93,7 @@ export function* downloadTrackWorker(trackId: ID) {
         ...queueItem
       })
     )
-    yield* put(
-      completeDownload({ type: 'track', id: trackId, completedAt: Date.now() })
-    )
+    yield* put(completeDownload({ ...queueItem, completedAt: Date.now() }))
     yield* put(requestDownloadQueuedItem())
   }
 }

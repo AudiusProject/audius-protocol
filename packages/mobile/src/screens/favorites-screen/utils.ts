@@ -1,11 +1,11 @@
-import type { Collection } from '@audius/common'
+import type { Collection, ID } from '@audius/common'
 
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 
 export const buildCollectionIdsToNumPlayableTracksMap = (
   collections: Collection[],
   isOffline: boolean,
-  offlineDownloadStatus: Record<string, OfflineDownloadStatus>
+  offlineDownloadStatus: Record<ID, OfflineDownloadStatus | undefined>
 ) => {
   if (!isOffline) {
     return collections.reduce((res, nextCollection) => {

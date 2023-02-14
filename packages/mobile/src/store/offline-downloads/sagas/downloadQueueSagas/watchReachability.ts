@@ -11,7 +11,11 @@ const { SET_UNREACHABLE, SET_REACHABLE } = reachabilityActions
 
 export function* watchReachability() {
   yield* takeEvery(SET_UNREACHABLE, function* pauseQueue() {
-    yield* put(updateQueueStatus({ queueStatus: QueueStatus.PAUSED }))
+    const queueStatus = yield* select(getQueueStatus)
+
+    if (queueStatus === QueueStatus.PROCESSING) {
+      yield* put(updateQueueStatus({ queueStatus: QueueStatus.PAUSED }))
+    }
   })
 
   yield* takeEvery(SET_REACHABLE, function* startQueue() {

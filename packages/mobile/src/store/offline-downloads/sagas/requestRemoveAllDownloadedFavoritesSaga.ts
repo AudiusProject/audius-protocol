@@ -27,11 +27,7 @@ export function* requestRemoveAllDownloadedFavoritesSaga() {
 }
 
 function* removeAllDownloadedFavoritesWorker() {
-  track(
-    make({
-      eventName: EventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_OFF
-    })
-  )
+  track(make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_OFF }))
   const offlineItemsToRemove: OfflineItem[] = []
   const offlineCollectionMetadata = yield* select(getOfflineCollectionMetadata)
   const offlineCollectionIds = Object.keys(offlineCollectionMetadata).map(
