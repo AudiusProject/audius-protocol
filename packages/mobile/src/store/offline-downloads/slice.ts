@@ -277,19 +277,19 @@ const slice = createSlice({
       }
     },
     completeDownload: (state, action: CompleteDownloadAction) => {
-      const item = action.payload
-      if (item.type === 'collection') {
-        state.collectionStatus[item.id] = OfflineDownloadStatus.SUCCESS
-      } else if (item.type === 'track') {
-        const { id, completedAt } = item
+      const { type, id } = action.payload
+      if (type === 'collection') {
+        state.collectionStatus[id] = OfflineDownloadStatus.SUCCESS
+      } else if (type === 'track') {
+        const { completedAt } = action.payload
         state.trackStatus[id] = OfflineDownloadStatus.SUCCESS
         const trackMetadata = state.offlineTrackMetadata[id]
         if (trackMetadata) {
           trackMetadata.last_verified_time = completedAt
           trackMetadata.download_completed_time = completedAt
         }
-      } else if (item.type === 'stale-track') {
-        const { id, verifiedAt } = item
+      } else if (type === 'stale-track') {
+        const { verifiedAt } = action.payload
         const trackMetadata = state.offlineTrackMetadata[id]
         if (trackMetadata) {
           trackMetadata.last_verified_time = verifiedAt

@@ -11,14 +11,17 @@ import RNFetchBlob from 'rn-fetch-blob'
 import { select, call, put, all, take, race } from 'typed-redux-saga'
 
 import { createAllImageSources } from 'app/hooks/useContentNodeImage'
+import { make, track } from 'app/services/analytics'
 import {
   getLocalAudioPath,
   getLocalTrackCoverArtDestination,
   getLocalTrackDir,
   getLocalTrackJsonPath
 } from 'app/services/offline-downloader'
+import { EventNames } from 'app/types/analytics'
 
 import { getTrackOfflineDownloadStatus } from '../../../selectors'
+import type { DownloadQueueItem } from '../../../slice'
 import {
   cancelDownload,
   completeDownload,
@@ -45,7 +48,11 @@ function* shouldAbortDownload(trackId: ID) {
 }
 
 export function* downloadTrackWorker(trackId: ID) {
-  yield* put(startDownload({ type: 'track', id: trackId }))
+  const queueItem = { type: 'track', id: trackId } as DownloadQueueItem
+  track(
+    make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_START, ...queueItem })
+  )
+  yield* put(startDownload(queueItem))
 
   const { jobResult, cancel, abort } = yield* race({
     jobResult: call(downloadTrackAsync, trackId),
@@ -60,14 +67,32 @@ export function* downloadTrackWorker(trackId: ID) {
     yield* put(cancelDownload({ type: 'track', id: trackId }))
     yield* call(removeDownloadedTrack, trackId)
   } else if (jobResult === OfflineDownloadStatus.ERROR) {
+    track(
+      make({
+        eventName: EventNames.OFFLINE_MODE_DOWNLOAD_FAILURE,
+        ...queueItem
+      })
+    )
     yield* put(errorDownload({ type: 'track', id: trackId }))
     yield* call(removeDownloadedTrack, trackId)
     yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.ABANDONED) {
+    track(
+      make({
+        eventName: EventNames.OFFLINE_MODE_DOWNLOAD_FAILURE,
+        ...queueItem
+      })
+    )
     yield* put(abandonDownload({ type: 'track', id: trackId }))
     yield* call(removeDownloadedTrack, trackId)
     yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
+    track(
+      make({
+        eventName: EventNames.OFFLINE_MODE_DOWNLOAD_SUCCESS,
+        ...queueItem
+      })
+    )
     yield* put(
       completeDownload({ type: 'track', id: trackId, completedAt: Date.now() })
     )

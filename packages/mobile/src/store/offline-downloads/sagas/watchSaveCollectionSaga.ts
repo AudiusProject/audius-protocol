@@ -1,6 +1,9 @@
 import { collectionsSocialActions, FavoriteSource } from '@audius/common'
 import { takeEvery, select, put } from 'typed-redux-saga'
 
+import { make, track } from 'app/services/analytics'
+import { EventNames } from 'app/types/analytics'
+
 import { getIsFavoritesDownloadsEnabled } from '../selectors'
 import { requestDownloadFavoritedCollection } from '../slice'
 
@@ -19,6 +22,13 @@ function* checkIfShouldDownload(action: ReturnType<typeof saveCollection>) {
     isFavoritesDownloadEnabled &&
     source !== FavoriteSource.OFFLINE_DOWNLOAD
   ) {
+    track(
+      make({
+        eventName: EventNames.OFFLINE_MODE_DOWNLOAD_REQUEST,
+        type: 'collection',
+        id: collectionId
+      })
+    )
     yield* put(requestDownloadFavoritedCollection({ collectionId }))
   }
 }

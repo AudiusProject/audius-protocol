@@ -7,7 +7,9 @@ import moment from 'moment'
 import { takeEvery, select, call, put } from 'typed-redux-saga'
 
 import { getAccountCollections } from 'app/screens/favorites-screen/selectors'
+import { make, track } from 'app/services/analytics'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
+import { EventNames } from 'app/types/analytics'
 
 import type { OfflineItem } from '../slice'
 import { addOfflineItems, requestDownloadAllFavorites } from '../slice'
@@ -21,6 +23,11 @@ export function* requestDownloadAllFavoritesSaga() {
 }
 
 function* downloadAllFavorites() {
+  track(
+    make({
+      eventName: EventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_ON
+    })
+  )
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 

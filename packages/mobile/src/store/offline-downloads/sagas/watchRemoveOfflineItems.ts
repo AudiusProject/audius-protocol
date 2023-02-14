@@ -1,10 +1,12 @@
 import RNFetchBlob from 'rn-fetch-blob'
 import { takeEvery, select, call } from 'typed-redux-saga'
 
+import { make, track } from 'app/services/analytics'
 import {
   getLocalCollectionDir,
   getLocalTrackDir
 } from 'app/services/offline-downloader'
+import { EventNames } from 'app/types/analytics'
 
 import {
   getOfflineCollectionsStatus,
@@ -23,6 +25,12 @@ function* deleteItemsFromDisk(action: RemoveOfflineItemsAction) {
   const collectionStatus = yield* select(getOfflineCollectionsStatus)
 
   for (const item of items) {
+    track(
+      make({
+        eventName: EventNames.OFFLINE_MODE_REMOVE_ITEM,
+        ...item
+      })
+    )
     if (item.type === 'collection' && !collectionStatus[item.id]) {
       const collectionDirectory = yield* call(
         getLocalCollectionDir,
