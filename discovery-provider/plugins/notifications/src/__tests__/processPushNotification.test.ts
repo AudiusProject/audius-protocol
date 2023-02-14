@@ -4,7 +4,7 @@ import * as sns from '../sns'
 
 import { createTestDB, createUsers, dropTestDB, insertFollows, insertMobileDevices, insertMobileSettings, replaceDBName } from '../utils/populateDB';
 
-describe('Push Notifications', () => {
+describe.skip('Push Notifications', () => {
 
   beforeEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()

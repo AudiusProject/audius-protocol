@@ -14,7 +14,8 @@ type SendNotificationEmailProps = {
   email: string
   frequency: EmailFrequency
   notifications: EmailNotification[]
-  dnDb: Knex
+  dnDb: Knex,
+  identityDb: Knex
 }
 
 // Master function to render and send email for a given userId
@@ -23,7 +24,8 @@ export const sendNotificationEmail = async ({
   email,
   frequency,
   notifications,
-  dnDb
+  dnDb,
+  identityDb
 }: SendNotificationEmailProps) => {
   try {
     logger.debug(
@@ -45,7 +47,8 @@ export const sendNotificationEmail = async ({
       email,
       frequency,
       notifications,
-      dnDb
+      dnDb,
+      identityDb
     })
 
     const emailParams: MailDataRequired = {

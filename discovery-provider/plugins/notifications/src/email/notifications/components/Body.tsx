@@ -100,7 +100,8 @@ const snippetMap = {
     return `${notification.reactingUser.name} reacted to your tip of ${notification.amount} $AUDIO`
   },
   ['supporter_rank_up'](notification) {
-    return `${notification.sendingUser.name} became your #${notification.rank} top supporter`
+    const [user] = notification.users
+    return `${user.name} became your #${notification.rank} top supporter`
   },
   ['supporting_rank_up'](notification) {
     return `You're now ${notification.receivingUser.name}'s #${notification.rank} top supporter`
@@ -135,6 +136,7 @@ const mapNotification = (notification) => {
 // but limited to 90 characters w/ an ellipsis
 const SNIPPET_ELLIPSIS_LENGTH = 90
 const getSnippet = (notifications) => {
+  console.log(`getSnippet notifications: ${JSON.stringify(notifications)}`)
   const snippet = notifications.slice(0, 3).map(notification => {
     return snippetMap[notification.type](notification)
   }).join(', ')

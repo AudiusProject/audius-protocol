@@ -9,6 +9,7 @@ import { renderNotificationsEmail } from './components/index'
 import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { Knex } from 'knex'
 import { EntityType } from './types'
+import { mapNotifications } from '../../processNotifications/mappers/mapNotifications'
 import { CosignRemixNotification, CreatePlaylistNotification, CreateTrackNotification, FollowerMilestoneNotification, PlaylistMilestoneNotification, RemixNotification, RepostNotification, SaveNotification, SupporterRankUpNotification, SupportingRankUpNotification, TierChangeNotification, TipReceiveNotification, TipSendNotification, TrackMilestoneNotification } from '../../types/notifications'
 
 type RenderEmailProps = {
@@ -17,6 +18,7 @@ type RenderEmailProps = {
   notifications: EmailNotification[]
   frequency: EmailFrequency
   dnDb: Knex
+  identityDb: Knex
 }
 
 export type ResourceIds = {
@@ -50,10 +52,13 @@ type PlaylistResource = {
   slug: string
 }
 
+type UserResourcesDict = { [userId: number]: UserResource & { imageUrl: string } }
+type TrackResourcesDict = { [userId: number]: TrackResource & { imageUrl: string } }
+type PlaylistResourcesDict = { [userId: number]: PlaylistResource & { imageUrl: string } }
 export type Resources = {
-  users: { [userId: number]: UserResource & { imageUrl: string } }
-  tracks: { [userId: number]: TrackResource & { imageUrl: string } }
-  playlists: { [userId: number]: PlaylistResource & { imageUrl: string } }
+  users: UserResourcesDict
+  tracks: TrackResourcesDict
+  playlists: PlaylistResourcesDict
 }
 
 // TODO: Fill out defaults
@@ -165,7 +170,7 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
   return { users, tracks, playlists }
 }
 
-const getNotificationProps = async (dnDB: Knex, notifications: EmailNotification[]) => {
+const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications: EmailNotification[]) => {
   const idsToFetch: ResourceIds = {
     users: new Set(),
     tracks: new Set(),
@@ -174,40 +179,49 @@ const getNotificationProps = async (dnDB: Knex, notifications: EmailNotification
   console.log({ notifications })
 
   // TODO: change to this format
-  // for (let notification of notifications) {
-  //   const resources = notification.getResourcesForEmail()
-  //   Object.entries(resources).forEach(([key, value]) => {
-  //     idsToFetch[key] = new Set([...idsToFetch[key], ...Array.from(value)])
-  //   })
+  const mappedNotifications = mapNotifications(notifications, dnDB, identityDB)
+  for (const notification of mappedNotifications) {
+    const resourcesToFetch = notification.getResourcesForEmail()
+    Object.entries(resourcesToFetch).forEach(([key, value]: [string, Set<number>]) => {
+      // idsToFetch[key as keyof ResourceIds] = new Set([...Array.from(idsToFetch[key as keyof ResourceIds]), ...Array.from(value)])
+      const resourceTypeToFetch = idsToFetch[key as keyof ResourceIds]
+      value.forEach(resourceTypeToFetch.add, resourceTypeToFetch)
+    })
+  }
 
 
-  for (const notification of notifications) {
-    if (notification.type == 'follow') {
-      idsToFetch.users.add(notification.data.follower_user_id)
-      idsToFetch.users.add(notification.data.followee_user_id)
-    }
-    else if (notification.type == 'repost') {
-      const data: RepostNotification = notification.data
-      idsToFetch.users.add(data.user_id)
-      if (data.type == 'track') {
-        idsToFetch.tracks.add(data.repost_item_id)
-      } else {
-        idsToFetch.playlists.add(data.repost_item_id)
-      }
-    }
-    else if (notification.type == 'save') {
-      const data: SaveNotification = notification.data
-      idsToFetch.users.add(data.user_id)
-      if (data.type == 'track') {
-        idsToFetch.tracks.add(data.save_item_id)
-      } else {
-        idsToFetch.playlists.add(data.save_item_id)
-      }
-    }
-    else if (notification.type == DMEntityType.Message || notification.type == DMEntityType.Reaction) {
-      idsToFetch.users.add(notification.receiver_user_id)
-      idsToFetch.users.add((notification as DMEmailNotification).sender_user_id)
-    }
+  // for (const notification of notifications) {
+    // if (notification.type == 'follow') {
+    //   idsToFetch.users.add(notification.data.follower_user_id)
+    //   idsToFetch.users.add(notification.data.followee_user_id)
+    // }
+    // else if (notification.type == 'repost') {
+    //   const data: RepostNotification = notification.data
+    //   idsToFetch.users.add(data.user_id)
+    //   if (data.type == 'track') {
+    //     idsToFetch.tracks.add(data.repost_item_id)
+    //   } else {
+    //     idsToFetch.playlists.add(data.repost_item_id)
+    //   }
+    // }
+    // else if (notification.type == 'save') {
+    //   const data: SaveNotification = notification.data
+    //   idsToFetch.users.add(data.user_id)
+    //   if (data.type == 'track') {
+    //     idsToFetch.tracks.add(data.save_item_id)
+    //   } else {
+    //     idsToFetch.playlists.add(data.save_item_id)
+    //   }
+    // }
+    // else if (notification.type == DMEntityType.Message || notification.type == DMEntityType.Reaction) {
+    //   idsToFetch.users.add(notification.receiver_user_id)
+    //   idsToFetch.users.add((notification as DMEmailNotification).sender_user_id)
+    // }
+    // else if (notification.type == 'supporter_rank_up') {
+    //   const data: SupporterRankUpNotification = notification.data
+    //   idsToFetch.users.add(data.sender_user_id)
+    //   idsToFetch.users.add(data.receiver_user_id)
+    // }
 
     // else if (notification.type == 'milestone') {
     //   const data = notification.data
@@ -242,7 +256,7 @@ const getNotificationProps = async (dnDB: Knex, notifications: EmailNotification
     //     idsToFetch.users.add(data.playlist_id)
     //   }
     // }
-  }
+  // }
   const resources = await fetchResources(dnDB, idsToFetch)
 
   return notifications.map(notification => getEmailNotificationProps(notification, resources))
@@ -295,6 +309,15 @@ const getEmailNotificationProps = (notification: EmailNotification, resources: R
       users: [{ name: user.name, image: user.imageUrl }]
     }
   }
+  else if (notification.type == 'supporter_rank_up') {
+    const senderId = notification.data.sender_user_id
+    const user = resources.users[senderId]
+    return {
+      type: notification.type,
+      rank: notification.data.rank,
+      users: [{ name: user.name, image: user.imageUrl }]
+    }
+  }
 }
 
 const getEmailTitle = (frequency: EmailFrequency, userEmail: string) => {
@@ -338,13 +361,14 @@ export const renderEmail = async ({
   frequency,
   notifications,
   dnDb,
+  identityDb,
 }: RenderEmailProps) => {
   logger.debug(
     `renderAndSendNotificationEmail | ${userId}, ${email}, ${frequency}`
   )
 
   const notificationCount = notifications.length
-  const notificationProps = await getNotificationProps(dnDb, notifications.slice(0, 5))
+  const notificationProps = await getNotificationProps(dnDb, identityDb, notifications.slice(0, 5))
   console.log({ notificationProps })
   const renderProps = {
     copyrightYear: new Date().getFullYear().toString(),

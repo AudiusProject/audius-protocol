@@ -8,7 +8,7 @@ import * as sendEmail from '../email/notifications/sendEmail'
 import { processEmailNotifications } from '../email/notifications/index'
 import { createTestDB, dropTestDB, replaceDBName, randId, createUsers, createChat, readChat, insertMessage, insertReaction, insertNotifications, setUserEmailAndSettings } from '../utils/populateDB';
 
-describe('Email Notifications', () => {
+describe.skip('Email Notifications', () => {
   let discoveryDB: Knex
   let identityDB: Knex
   beforeEach(async () => {

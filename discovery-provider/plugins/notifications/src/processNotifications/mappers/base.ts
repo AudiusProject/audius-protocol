@@ -66,8 +66,6 @@ export abstract class BaseNotification<Type> {
     this.identityDB = identityDB
   }
 
-  abstract pushNotification(): Promise<void>
-
   /**
    * Fetches the user's notification settings
    * 
@@ -278,6 +276,10 @@ export abstract class BaseNotification<Type> {
       return acc
     }, {} as UserBrowserSettings)
     return userBrowserSettings
+  }
+
+  pushNotification() {
+    return
   }
 
   getResourcesForEmail(): ResourceIds {

@@ -268,9 +268,10 @@ const notificationMap = {
     )
   },
   ['supporter_rank_up'](notification) {
+    const user = getUsers(notification.users)
     return (
       <span className={'notificationText'}>
-        <HighlightText text={capitalize(notification.sendingUser.name)} />
+        {user}
         <BodyText text={` became your `} />
         <HighlightText text={`#${notification.rank}`} />
         <BodyText text={` Top Supporter!`} />

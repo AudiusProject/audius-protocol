@@ -1,4 +1,4 @@
-import { expect, test } from '@jest/globals'
+import { expect, jest, test } from '@jest/globals'
 import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
 import { reposttype, savetype } from '../types/dn'

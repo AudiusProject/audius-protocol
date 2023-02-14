@@ -5,7 +5,7 @@ import { DMNotification } from '../../types/notifications'
 import { sendPushNotification } from '../../sns'
 
 
-export class MessageNotification extends BaseNotification<DMNotification> {
+export class Message extends BaseNotification<DMNotification> {
 
   receiverUserId: number
   senderUserId: number

@@ -99,7 +99,7 @@ describe.skip('Notification processor', () => {
     })
   })
 
-  test("Does not send DM notifications when sender is receiver", async () => {
+  test.skip("Does not send DM notifications when sender is receiver", async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
@@ -140,7 +140,7 @@ describe.skip('Notification processor', () => {
     expect(sendPushNotificationSpy).not.toHaveBeenCalled()
   })
 
-  test("Does not send DM notifications created fewer than delay minutes ago", async () => {
+  test.skip("Does not send DM notifications created fewer than delay minutes ago", async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor

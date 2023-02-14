@@ -2,13 +2,13 @@ import { Knex } from 'knex'
 import type { RedisClientType } from 'redis'
 import { config } from './../config'
 import { logger } from './../logger'
-import { MessageNotification } from './../processNotifications/mappers/message'
-import { MessageReactionNotification } from './../processNotifications/mappers/messageReaction'
+import { Message } from './../processNotifications/mappers/message'
+import { MessageReaction } from './../processNotifications/mappers/messageReaction'
 import type { DMNotification, DMReactionNotification } from './../types/notifications'
 import { getRedisConnection } from './../utils/redisConnection'
 
 // Sort notifications in ascending order according to timestamp
-function notificationTimestampComparator(n1: MessageNotification | MessageReactionNotification, n2: MessageNotification | MessageReactionNotification): number {
+function notificationTimestampComparator(n1: Message | MessageReaction, n2: Message | MessageReaction): number {
   if (n1.notification.timestamp < n2.notification.timestamp) {
     return -1
   }
@@ -61,7 +61,7 @@ async function getUnreadReactions(discoveryDB: Knex, minTimestamp: Date, maxTime
     .andWhereRaw('chat_message_reactions.user_id != chat_member.user_id')
 }
 
-function setLastIndexedTimestamp(redis: RedisClientType, redisKey: string, maxTimestamp: Date, notifications: MessageNotification[] | MessageReactionNotification[]) {
+function setLastIndexedTimestamp(redis: RedisClientType, redisKey: string, maxTimestamp: Date, notifications: Message[] | MessageReaction[]) {
   if (notifications.length > 0) {
     notifications.sort(notificationTimestampComparator)
     const lastIndexedTimestamp = notifications[notifications.length - 1].notification.timestamp.toISOString()
@@ -80,9 +80,9 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
   const unreadReactions = await getUnreadReactions(discoveryDB, cursors.minReactionTimestamp, cursors.maxTimestamp)
 
   // Convert to notifications
-  const messageNotifications = unreadMessages.map(message => new MessageNotification(discoveryDB, identityDB, message))
-  const reactionNotifications = unreadReactions.map(reaction => new MessageReactionNotification(discoveryDB, identityDB, reaction))
-  const notifications: Array<MessageNotification | MessageReactionNotification> = messageNotifications.concat(reactionNotifications)
+  const messageNotifications = unreadMessages.map(message => new Message(discoveryDB, identityDB, message))
+  const reactionNotifications = unreadReactions.map(reaction => new MessageReaction(discoveryDB, identityDB, reaction))
+  const notifications: Array<Message | MessageReaction> = messageNotifications.concat(reactionNotifications)
 
   // Sort notifications by timestamp (asc)
   notifications.sort(notificationTimestampComparator)

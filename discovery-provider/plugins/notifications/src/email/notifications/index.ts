@@ -242,7 +242,8 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
               email: user.email,
               frequency,
               notifications: notifications,
-              dnDb: dnDb
+              dnDb: dnDb,
+              identityDb: identityDb
             })
             if (!sent) {
               // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent
