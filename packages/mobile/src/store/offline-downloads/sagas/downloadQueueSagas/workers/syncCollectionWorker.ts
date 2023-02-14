@@ -154,6 +154,8 @@ function* syncCollection(collectionId: ID) {
     {
       collectionId,
       currentUserId,
+      // Needed to ensure APIClient doesn't abort when we become unreachable,
+      // allowing this job time to self-cancel
       abortOnUnreachable: false
     }
   )

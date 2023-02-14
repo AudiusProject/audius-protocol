@@ -312,6 +312,19 @@ const slice = createSlice({
         state.collectionStatus[id] = OfflineDownloadStatus.ERROR
       } else if (type === 'track') {
         state.trackStatus[id] = OfflineDownloadStatus.ERROR
+      } else if (type === 'stale-track') {
+        // continue
+      }
+      state.downloadQueue.shift()
+    },
+    abandonDownload: (state, action: QueueAction) => {
+      const { type, id } = action.payload
+      if (type === 'collection') {
+        state.collectionStatus[id] = OfflineDownloadStatus.ABANDONED
+      } else if (type === 'track') {
+        state.trackStatus[id] = OfflineDownloadStatus.ABANDONED
+      } else if (type === 'stale-track') {
+        state.trackStatus[id] = OfflineDownloadStatus.ABANDONED
       }
       state.downloadQueue.shift()
     },
@@ -380,6 +393,7 @@ export const {
   completeDownload,
   cancelDownload,
   errorDownload,
+  abandonDownload,
   startCollectionSync,
   completeCollectionSync,
   cancelCollectionSync,

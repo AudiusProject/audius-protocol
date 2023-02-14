@@ -148,16 +148,21 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
     return isFavoritesMarkedForDownload || !isReachable
   })
 
-  const downloadStatus = useProxySelector(
-    (state) => {
-      const status = getCollectionDownloadStatus(state, playlist_id)
-      return status ?? OfflineDownloadStatus.INACTIVE
-    },
-    [playlist_id]
-  )
-
   const [downloadSwitchValue, setDownloadSwitchValue] =
     useState(isMarkedForDownload)
+
+  const downloadStatus = useProxySelector(
+    (state) => {
+      const status =
+        getCollectionDownloadStatus(state, playlist_id) ??
+        OfflineDownloadStatus.INACTIVE
+
+      return downloadSwitchValue && status === OfflineDownloadStatus.INACTIVE
+        ? OfflineDownloadStatus.INIT
+        : status
+    },
+    [playlist_id, downloadSwitchValue]
+  )
 
   const showDownloadSwitchAndIndicator =
     downloadStatus ||
