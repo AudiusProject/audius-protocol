@@ -62,7 +62,6 @@ type Persistence struct {
 // New creates a struct that listens to streamToStoreFrom and downloads content from the temp store to the persistent store.
 func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) (*Persistence, error) {
 
-	// TODO: this logic should probably be in the config module
 	rawPrefix, uri, found := strings.Cut(blobDriverURL, "://")
 
 	prefix, ok := parsePrefix(rawPrefix)
@@ -349,14 +348,11 @@ func parsePrefix(rawPrefix string) (Prefix, bool) {
 }
 
 func checkStorageCredentials(prefix Prefix) error {
-	// S3 = https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
-	// GCS = https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57
+	// TODO: this logic should probably be in the config module
 
-	// same for azure: Go CDK uses the environment variables
-	// AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_KEY, and AZURE_STORAGE_SAS_TOKEN
-	// to configure the credentials
-	// AZURE_STORAGE_ACCOUNT is required, along with one of the other two.
-
+	// S3: https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
+	// GCS: https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57
+	// AZBLOB: https://github.com/google/go-cloud/blob/master/blob/azureblob/example_test.go#L71
 	switch prefix {
 	case FILE:
 		// no credentials needed for the file storage driver
