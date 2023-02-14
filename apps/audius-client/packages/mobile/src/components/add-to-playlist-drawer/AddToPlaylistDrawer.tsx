@@ -20,6 +20,8 @@ import { CollectionImage } from 'app/components/image/CollectionImage'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles, shadow } from 'app/styles'
 
+import type { ImageProps } from '../image/FastImage'
+
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const { getTrackId, getTrackTitle } = addToPlaylistUISelectors
 const { getAccountWithOwnPlaylists } = accountSelectors
@@ -55,8 +57,14 @@ export const AddToPlaylistDrawer = () => {
   const user = useSelector(getAccountWithOwnPlaylists)
 
   const renderImage = useCallback(
-    (item) => () =>
-      <CollectionImage collection={item} size={SquareSizes.SIZE_480_BY_480} />,
+    (item) => (props?: ImageProps) =>
+      (
+        <CollectionImage
+          collection={item}
+          size={SquareSizes.SIZE_480_BY_480}
+          {...props}
+        />
+      ),
     []
   )
 
