@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 
 import {
   FeatureFlags,
@@ -12,7 +12,8 @@ import {
   FollowSource,
   tippingActions,
   premiumContentSelectors,
-  accountSelectors
+  accountSelectors,
+  removeNullable
 } from '@audius/common'
 import {
   Button,
@@ -170,7 +171,9 @@ const LockedPremiumTrackSection = ({
       )
     }
 
-    // should not reach here
+    console.warn(
+      'No entity for premium conditions... should not have reached here.'
+    )
     return null
   }, [premiumConditions, followee, tippedUser])
 
@@ -216,7 +219,9 @@ const LockedPremiumTrackSection = ({
       )
     }
 
-    // should not reach here
+    console.warn(
+      'No entity for premium conditions... should not have reached here.'
+    )
     return null
   }, [premiumConditions, goToCollection, handleFollow, handleSendTip])
 
@@ -287,7 +292,9 @@ const UnlockingPremiumTrackSection = ({
         </div>
       )
     }
-    // should not reach here
+    console.warn(
+      'No entity for premium conditions... should not have reached here.'
+    )
     return null
   }, [premiumConditions, followee, tippedUser, goToCollection])
 
@@ -376,7 +383,9 @@ const UnlockedPremiumTrackSection = ({
       )
     }
 
-    // should not reach here
+    console.warn(
+      'No entity for premium conditions... should not have reached here.'
+    )
     return null
   }, [premiumConditions, isOwner, followee, tippedUser, goToCollection])
 
@@ -429,17 +438,11 @@ export const PremiumTrackSection = ({
     premiumConditions ?? {}
   const users = useSelector<AppState, { [id: ID]: User }>((state) =>
     getUsers(state, {
-      ids: [followUserId, tipUserId].filter((id): id is number => !!id)
+      ids: [followUserId, tipUserId].filter(removeNullable)
     })
   )
-  const followee = useMemo(
-    () => (followUserId ? users[followUserId] : null),
-    [users, followUserId]
-  )
-  const tippedUser = useMemo(
-    () => (tipUserId ? users[tipUserId] : null),
-    [users, tipUserId]
-  )
+  const followee = followUserId ? users[followUserId] : null
+  const tippedUser = tipUserId ? users[tipUserId] : null
   const shouldDisplay =
     (premiumConditions ?? {}).nft_collection || followee || tippedUser
 

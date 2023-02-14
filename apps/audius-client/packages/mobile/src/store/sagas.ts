@@ -1,6 +1,7 @@
 import {
   castSagas,
   chatSagas,
+  premiumContentSagas,
   remoteConfigSagas as remoteConfig,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
@@ -103,6 +104,9 @@ export default function* rootSaga() {
 
     // Tipping
     ...tippingSagas(),
+
+    // Premium content
+    ...premiumContentSagas(),
 
     ...walletSagas(),
 

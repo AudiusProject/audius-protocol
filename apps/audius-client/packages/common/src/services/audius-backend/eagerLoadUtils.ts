@@ -1,4 +1,4 @@
-import { paramsToQueryString } from '../../utils/paramsToQueryString'
+import { paramsToQueryString } from '../../utils/stringUtils'
 import { Env } from '../env'
 import { LocalStorage } from '../local-storage'
 

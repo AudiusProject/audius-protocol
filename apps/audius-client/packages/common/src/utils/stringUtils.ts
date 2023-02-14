@@ -23,3 +23,11 @@ export const paramsToQueryString = (
     })
     .join('&')
 }
+
+/**
+ * Permalinks have the following format: '/<handle>/<track-slug>'
+ */
+export const parseTrackRouteFromPermalink = (permalink: string) => {
+  const [, handle, slug] = permalink.split('/')
+  return { slug, trackId: null, handle }
+}

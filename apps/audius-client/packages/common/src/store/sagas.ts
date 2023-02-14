@@ -5,9 +5,9 @@
 // import usersSagas from 'common/store/cache/users/sagas'
 // import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 // import signOutSagas from 'common/store/sign-out/sagas'
-// import premiumContentSagas from 'common/store/premiumContent/sagas'
 import { sagas as castSagas } from 'store/cast/sagas'
 import { chatSagas } from 'store/pages/chat'
+import { premiumContentSagas } from 'store/premium-content'
 import remoteConfigSagas from 'store/remote-config/sagas'
 
 import { CommonStoreContext } from './storeContext'
@@ -33,6 +33,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // users: usersSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
+  premiumContent: premiumContentSagas,
   chat: chatSagas,
   toast: toastSagas,
   shareModalUI: shareModalUISagas,
@@ -87,5 +88,4 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // pull in the following from web
   // once the player and dependencies are migrated
   // store/queue/sagas.ts
-  // store/premiumContent/sagas.ts
 })

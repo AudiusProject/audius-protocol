@@ -1,4 +1,5 @@
 export enum zIndex {
   SPLASH_SCREEN = 10000,
-  PLAY_BAR = 5
+  PLAY_BAR = 5,
+  PREMIUM_TRACK_TILE_CORNER_TAG = 3
 }

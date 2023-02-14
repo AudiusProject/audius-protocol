@@ -16,8 +16,7 @@ import {
   FollowingPageState,
   FollowersPageState,
   FavoritesPageState,
-  CommonState,
-  premiumContentReducer
+  CommonState
 } from '@audius/common'
 import { RouterState } from 'connected-react-router'
 
@@ -112,7 +111,4 @@ export type AppState = CommonState & {
 
   // Error Page
   error: ErrorState
-
-  // Premium content
-  premiumContent: ReturnType<typeof premiumContentReducer>
 }

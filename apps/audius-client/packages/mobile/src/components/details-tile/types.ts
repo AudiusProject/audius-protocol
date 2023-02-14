@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import type { Track, User } from '@audius/common'
 import type { TextStyle } from 'react-native'
 
-import type { SearchUser } from 'app/store/search/types'
+import type { SearchTrack, SearchUser } from 'app/store/search/types'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import type { ImageProps } from '../image/FastImage'
@@ -109,4 +109,7 @@ export type DetailsTileProps = {
 
   /** User associated with the item */
   user?: User | SearchUser
+
+  /** The track if tile is for a track */
+  track?: Track | SearchTrack
 }

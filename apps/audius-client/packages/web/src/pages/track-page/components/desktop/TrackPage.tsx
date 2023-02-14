@@ -5,7 +5,8 @@ import {
   Track,
   User,
   trackPageLineupActions,
-  QueueItem
+  QueueItem,
+  usePremiumContentAccess
 } from '@audius/common'
 import cn from 'classnames'
 
@@ -18,7 +19,6 @@ import SectionButton from 'components/section-button/SectionButton'
 import StatBanner from 'components/stat-banner/StatBanner'
 import GiantTrackTile from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
-import { usePremiumContentAccess } from 'hooks/usePremiumContentAccess'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
 import Remixes from './Remixes'
