@@ -181,5 +181,7 @@ async function writeCollectionMetadata(collection: UserCollectionMetadata) {
 
 async function removeDownloadedCollection(collectionId: CollectionId) {
   const collectionDir = getLocalCollectionDir(collectionId.toString())
+  const exists = await RNFetchBlob.fs.exists(collectionDir)
+  if (!exists) return
   return await RNFetchBlob.fs.unlink(collectionDir)
 }
