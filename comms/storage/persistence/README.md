@@ -4,19 +4,22 @@ The default storage driver url is `file:///tmp/audius_storage`.
 This is the directory on your node where files will stored post transcoding.
 
 To update the local storage location set the `storage_driver_url` environment variable
-
-By default, it tries to determine what storage driver to use based on the `storage_url` (eg s3://your-bucket)
-
-It can be manually set to override this behavior with the environment variable `storage_driver` 
-This can be useful when using self hosted storage solution such as minio (e.g. `storage_driver=gcs`)
-
-The available drivers are `s3`, `gcs`, and `azure`
-
-Side note: if the url is https:// it’ll default to s3
-
 ```
 storage_driver_url="file:///my/directory"
 ```
+
+By default, it tries to determine what storage driver to use based on the `storage_url` (eg `s3://your-bucket`)
+
+It can be manually set to override this behavior with the environment variable `storage_driver` 
+This can be useful when using self hosted storage solution such as minio
+```
+storage_driver=gcs
+```
+
+The available drivers are `file`, `s3`, `gcs`, and `azure`
+
+Side note: if the url is https:// it’ll default to s3
+
 
 **Cloud Storage**
 
@@ -35,7 +38,7 @@ storage_driver_url="s3://my-bucket?region=us-west-1"
 
 [GCS storage](https://cloud.google.com/storage/docs/creating-buckets)
 ```
-GOOGLE_APPLICATION_CREDENTIALS=""
+GOOGLE_APPLICATION_CREDENTIALS="/path/to/creds.json"
 storage_driver_url="gcs://my-bucket"
 ```
 

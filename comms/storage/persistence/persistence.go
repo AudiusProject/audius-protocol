@@ -9,22 +9,48 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"strings"
-	"golang.org/x/exp/slices"
 
+	"comms.audius.co/shared/utils"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/transcode"
 	"github.com/nats-io/nats.go"
 
 	"gocloud.dev/blob"
-	_ "gocloud.dev/blob/s3blob"
 	_ "gocloud.dev/blob/azureblob"
 	_ "gocloud.dev/blob/gcsblob"
+	_ "gocloud.dev/blob/s3blob"
 )
 
-var (
-	prefixWhitelist []string = []string{"https", "gcs", "s3", "azblob"}
+const (
+	AWS_ACCESS_KEY_ID     = "AWS_ACCESS_KEY_ID"
+	AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"
+
+	GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS"
+
+	AZURE_CLIENT_ID     = "AZURE_CLIENT_ID"
+	AZURE_CLIENT_SECRET = "AZURE_CLIENT_SECRET"
+	AZURE_TENANT_ID     = "AZURE_TENANT_ID"
 )
+
+type Prefix int
+
+const (
+	FILE Prefix = iota
+	HTTPS
+	GCS
+	S3
+	AZBLOB
+)
+
+var prefixWhitelist = map[string]Prefix{
+	"file":   FILE,
+	"https":  HTTPS,
+	"gcs":    GCS,
+	"s3":     S3,
+	"azblob": AZBLOB,
+}
 
 type Persistence struct {
 	streamToStoreFrom string
@@ -36,22 +62,26 @@ type Persistence struct {
 // New creates a struct that listens to streamToStoreFrom and downloads content from the temp store to the persistent store.
 func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) (*Persistence, error) {
 
-	// TODO: this logic should probably be on the config side
-	prefix, _, _ := strings.Cut(blobDriverURL, "://")
-	if !slices.Contains(prefixWhitelist, prefix) {
-		return nil, errors.New("blobDriverURL's prefix isn't valid. Valid prefixes include: " + strings.Join(prefixWhitelist, ","))
+	// TODO: this logic should probably be in the config module
+	rawPrefix, uri, found := strings.Cut(blobDriverURL, "://")
+
+	prefix, ok := parsePrefix(rawPrefix)
+	if !ok {
+		return nil, errors.New("blobDriverURL's prefix isn't valid. Valid prefixes include: " + strings.Join(utils.Keys(prefixWhitelist), ","))
 	}
 
-	// S3 = https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
-	// GCS = https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57
+	if found && prefix == FILE {
+		if err := os.MkdirAll(uri, os.ModePerm); err != nil {
+			log.Println("failed to create local persistent storage dir: ", err)
+			return nil, err
+		}
+	}
 
-	// same for azure: Go CDK uses the environment variables 
-	// AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_KEY, and AZURE_STORAGE_SAS_TOKEN 
-	// to configure the credentials
-	// AZURE_STORAGE_ACCOUNT is required, along with one of the other two.
+	if err := checkStorageCredentials(prefix); err != nil {
+		log.Println("persistent storage credentials missing: ", err)
+		return nil, err
+	}
 
-
-	// this won't work cause Minio takes different env vars, we need to be explicit with configs
 	b, err := blob.OpenBucket(context.Background(), blobDriverURL)
 	if err != nil {
 		log.Fatalln("failed to open bucket", blobDriverURL)
@@ -311,4 +341,59 @@ func (persist *Persistence) moveTempToPersistent(job transcode.Job) error {
 	}
 
 	return nil
+}
+
+func parsePrefix(rawPrefix string) (Prefix, bool) {
+	prefix, ok := prefixWhitelist[rawPrefix]
+	return prefix, ok
+}
+
+func checkStorageCredentials(prefix Prefix) error {
+	// S3 = https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
+	// GCS = https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57
+
+	// same for azure: Go CDK uses the environment variables
+	// AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_KEY, and AZURE_STORAGE_SAS_TOKEN
+	// to configure the credentials
+	// AZURE_STORAGE_ACCOUNT is required, along with one of the other two.
+
+	switch prefix {
+	case FILE:
+		// no credentials needed for the file storage driver
+		return nil
+	case GCS:
+		// Check for gcloud cred env vars
+		googleAppCredentials := os.Getenv(GOOGLE_APPLICATION_CREDENTIALS)
+
+		if googleAppCredentials == "" {
+			return errors.New("Missing credentials required for persistent GCS backing (i.e. GOOGLE_APPLICATION_CREDENTIALS)")
+		}
+
+		return nil
+	case AZBLOB:
+		azureClientId := os.Getenv(AZURE_CLIENT_ID)
+		azureClientSecret := os.Getenv(AZURE_CLIENT_SECRET)
+		azureTenantId := os.Getenv(AZURE_TENANT_ID)
+
+		if azureClientId == "" || azureClientSecret == "" || azureTenantId == "" {
+			return errors.New("Missing credentials required for persistent Azure backing (i.e. AXURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_TENANT_ID)")
+		}
+
+		return nil
+	case HTTPS:
+		// https defaults to S3
+		// solutions like Minio use https links for storage but use an S3 compatible API
+	case S3:
+		accessKey := os.Getenv(AWS_ACCESS_KEY_ID)
+		secretKey := os.Getenv(AWS_SECRET_ACCESS_KEY)
+
+		if accessKey == "" || secretKey == "" {
+			return errors.New("Missing credentials required for persistent S3 backing (i.e. AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY)")
+		}
+
+		// check for s3 env vars
+		return nil
+	}
+
+	return errors.New("Unknown presistent storage type")
 }
