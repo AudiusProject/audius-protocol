@@ -7,44 +7,44 @@ import (
 
 func TestParsePrefix(t *testing.T) {
 	tests := []struct {
-		input string
+		input          string
 		expectedPrefix Prefix
-		expectedOk bool
-	} {
-		 {
-			input: "file",
+		expectedOk     bool
+	}{
+		{
+			input:          "file",
 			expectedPrefix: FILE,
-			expectedOk: true,
+			expectedOk:     true,
 		},
 		{
-			input: "http",
+			input:          "http",
 			expectedPrefix: HTTP,
-			expectedOk: true,
+			expectedOk:     true,
 		},
 		{
-			input: "https",
+			input:          "https",
 			expectedPrefix: HTTP,
-			expectedOk: true,
+			expectedOk:     true,
 		},
 		{
-			input: "gcs",
+			input:          "gcs",
 			expectedPrefix: GCS,
-			expectedOk: true,
+			expectedOk:     true,
 		},
 		{
-			input: "s3",
+			input:          "s3",
 			expectedPrefix: S3,
-			expectedOk: true,
+			expectedOk:     true,
 		},
 		{
-			input: "azblob",
+			input:          "azblob",
 			expectedPrefix: AZBLOB,
-			expectedOk: true,
+			expectedOk:     true,
 		},
 		{
-			input: "s4",
+			input:          "s4",
 			expectedPrefix: 0,
-			expectedOk: false,
+			expectedOk:     false,
 		},
 	}
 
@@ -64,19 +64,24 @@ func TestParsePrefix(t *testing.T) {
 func TestCheckStorageCredentials(t *testing.T) {
 
 	tests := []struct {
-		url string
-		envVars map[string]string
+		url           string
+		envVars       map[string]string
 		expectedError bool
 	}{
 		{
-			url: "s3://my-bucket?region=us-east-1",
-			envVars: map[string]string{},
+			url:           "file:///tmp/blah",
+			envVars:       map[string]string{},
+			expectedError: false,
+		},
+		{
+			url:           "s3://my-bucket?region=us-east-1",
+			envVars:       map[string]string{},
 			expectedError: true,
 		},
 		{
 			url: "s3://my-bucket?region=us-east-1",
 			envVars: map[string]string{
-				AWS_ACCESS_KEY_ID: "SOMETHING",
+				AWS_ACCESS_KEY_ID:     "SOMETHING",
 				AWS_SECRET_ACCESS_KEY: "",
 			},
 			expectedError: true,
@@ -84,7 +89,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 		{
 			url: "s3://my-bucket?region=us-east-1",
 			envVars: map[string]string{
-				AWS_ACCESS_KEY_ID: "KEY",
+				AWS_ACCESS_KEY_ID:     "KEY",
 				AWS_SECRET_ACCESS_KEY: "SECRET",
 			},
 			expectedError: false,
@@ -92,7 +97,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 		{
 			url: "https://s3.amazon.com/my-bucket?region=us-east-1",
 			envVars: map[string]string{
-				AWS_ACCESS_KEY_ID: "KEY",
+				AWS_ACCESS_KEY_ID:     "KEY",
 				AWS_SECRET_ACCESS_KEY: "SECRET",
 			},
 			expectedError: false,
@@ -114,36 +119,36 @@ func TestCheckStorageCredentials(t *testing.T) {
 		{
 			url: "azblob://my-container",
 			envVars: map[string]string{
-				AZURE_CLIENT_ID: "",
+				AZURE_CLIENT_ID:     "",
 				AZURE_CLIENT_SECRET: "",
-				AZURE_TENANT_ID: "",
+				AZURE_TENANT_ID:     "",
 			},
 			expectedError: true,
 		},
 		{
 			url: "azblob://my-container",
 			envVars: map[string]string{
-				AZURE_CLIENT_ID: "ID",
+				AZURE_CLIENT_ID:     "ID",
 				AZURE_CLIENT_SECRET: "",
-				AZURE_TENANT_ID: "",
+				AZURE_TENANT_ID:     "",
 			},
 			expectedError: true,
 		},
 		{
 			url: "azblob://my-container",
 			envVars: map[string]string{
-				AZURE_CLIENT_ID: "ID",
+				AZURE_CLIENT_ID:     "ID",
 				AZURE_CLIENT_SECRET: "SECRET",
-				AZURE_TENANT_ID: "",
+				AZURE_TENANT_ID:     "",
 			},
 			expectedError: true,
 		},
 		{
 			url: "azblob://my-container",
 			envVars: map[string]string{
-				AZURE_CLIENT_ID: "ID",
+				AZURE_CLIENT_ID:     "ID",
 				AZURE_CLIENT_SECRET: "SECRET",
-				AZURE_TENANT_ID: "TENANT",
+				AZURE_TENANT_ID:     "TENANT",
 			},
 			expectedError: false,
 		},

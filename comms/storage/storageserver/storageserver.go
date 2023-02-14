@@ -118,8 +118,8 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	storage.GET("/jobs", ss.serveJobs)
 	storage.GET("/jobs/:id", ss.serveJobById)
 	storage.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
-	storage.GET("/long-term/shard/:shard", ss.servePersistenceKeysByShard) // QueryParam: includeMD5s=[true|false]
-	storage.GET("/long-term/file/:fileName", ss.streamPersistenceObjectByFileName)
+	storage.GET("/persistent/shard/:shard", ss.servePersistenceKeysByShard) // QueryParam: includeMD5s=[true|false]
+	storage.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName)
 	storage.GET("/ws", ss.upgradeConnToWebsocket)
 	storage.GET("/nodes-to-shards", ss.serveNodesToShards)
 	storage.GET("/job-results/:id", ss.serveJobResultsById)

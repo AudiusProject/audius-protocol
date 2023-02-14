@@ -19,6 +19,7 @@ import (
 
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/azureblob"
+	_ "gocloud.dev/blob/fileblob"
 	_ "gocloud.dev/blob/gcsblob"
 	_ "gocloud.dev/blob/s3blob"
 )
@@ -70,7 +71,7 @@ func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider
 
 	b, err := blob.OpenBucket(context.Background(), blobDriverURL)
 	if err != nil {
-		log.Fatalln("failed to open bucket", blobDriverURL)
+		log.Println("failed to open bucket", blobDriverURL)
 		return nil, err
 	}
 
@@ -342,6 +343,8 @@ func checkStorageCredentials(blobDriverUrl string) error {
 	if !ok {
 		return errors.New("blobDriverURL's prefix isn't valid. Valid prefixes include: " + strings.Join(utils.Keys(prefixWhitelist), ","))
 	}
+
+	log.Println("Persistent storage driver selected: " + rawPrefix)
 
 	// S3: https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
 	// GCS: https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57

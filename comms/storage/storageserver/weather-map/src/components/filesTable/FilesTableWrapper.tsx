@@ -44,7 +44,7 @@ export default function FilesTableWrapper({
     const jobId = fileName.substring(0, fileName.indexOf('_'))
     const nodeLinks = storageHostsWithShard.map((host) => {
       return {
-        href: `${host}/storage/long-term/file/${fileKey}`,
+        href: `${host}/storage/persistent/file/${fileKey}`,
         display: `${files[fileKey][host] ? '' : '(MISSING) '}${shortenUrl(host)}/...`,
       }
     })
