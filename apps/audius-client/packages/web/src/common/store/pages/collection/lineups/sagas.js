@@ -34,11 +34,11 @@ function* getCollectionTracks() {
     collection = yield call(waitForValue, getCollection)
   }
 
-  const track = collection.playlist_contents.track_ids
+  const tracks = collection.playlist_contents.track_ids
 
-  const trackIds = track.map((t) => t.track)
+  const trackIds = tracks.map((t) => t.track)
   // TODO: Conform all timestamps to be of the same format so we don't have to do any special work here.
-  const times = track.map((t) => t.metadata_time ?? t.time)
+  const times = tracks.map((t) => t.metadata_time ?? t.time)
 
   // Reconcile fetching this playlist with the queue.
   // Search the queue for its currently playing uids. If any are sourced
@@ -85,8 +85,8 @@ function* getCollectionTracks() {
         }
         if (uidForSource[id] && uidForSource[id].length > 0) {
           metadata.uid = uidForSource[id].shift()
-        } else if (track[i].uid) {
-          metadata.uid = track[i].uid
+        } else if (tracks[i].uid) {
+          metadata.uid = tracks[i].uid
         }
         return metadata
       })
