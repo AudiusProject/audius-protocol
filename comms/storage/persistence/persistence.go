@@ -62,21 +62,7 @@ type Persistence struct {
 // New creates a struct that listens to streamToStoreFrom and downloads content from the temp store to the persistent store.
 func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) (*Persistence, error) {
 
-	rawPrefix, uri, found := strings.Cut(blobDriverURL, "://")
-
-	prefix, ok := parsePrefix(rawPrefix)
-	if !ok {
-		return nil, errors.New("blobDriverURL's prefix isn't valid. Valid prefixes include: " + strings.Join(utils.Keys(prefixWhitelist), ","))
-	}
-
-	if found && prefix == FILE {
-		if err := os.MkdirAll(uri, os.ModePerm); err != nil {
-			log.Println("failed to create local persistent storage dir: ", err)
-			return nil, err
-		}
-	}
-
-	if err := checkStorageCredentials(prefix); err != nil {
+	if err := checkStorageCredentials(blobDriverURL); err != nil {
 		log.Println("persistent storage credentials missing: ", err)
 		return nil, err
 	}
@@ -347,8 +333,14 @@ func parsePrefix(rawPrefix string) (Prefix, bool) {
 	return prefix, ok
 }
 
-func checkStorageCredentials(prefix Prefix) error {
+func checkStorageCredentials(blobDriverUrl string) error {
 	// TODO: this logic should probably be in the config module
+	rawPrefix, uri, found := strings.Cut(blobDriverUrl, "://")
+
+	prefix, ok := parsePrefix(rawPrefix)
+	if !ok {
+		return errors.New("blobDriverURL's prefix isn't valid. Valid prefixes include: " + strings.Join(utils.Keys(prefixWhitelist), ","))
+	}
 
 	// S3: https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
 	// GCS: https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57
@@ -356,6 +348,14 @@ func checkStorageCredentials(prefix Prefix) error {
 	switch prefix {
 	case FILE:
 		// no credentials needed for the file storage driver
+		// but we do make sure the directory exists
+		if found && prefix == FILE {
+			if err := os.MkdirAll(uri, os.ModePerm); err != nil {
+				log.Println("failed to create local persistent storage dir: ", err)
+				return err
+			}
+		}
+
 		return nil
 	case GCS:
 		// Check for gcloud cred env vars
@@ -376,10 +376,10 @@ func checkStorageCredentials(prefix Prefix) error {
 		}
 
 		return nil
-	case HTTPS:
+	case HTTPS, S3:
 		// https defaults to S3
 		// solutions like Minio use https links for storage but use an S3 compatible API
-	case S3:
+
 		accessKey := os.Getenv(AWS_ACCESS_KEY_ID)
 		secretKey := os.Getenv(AWS_SECRET_ACCESS_KEY)
 
