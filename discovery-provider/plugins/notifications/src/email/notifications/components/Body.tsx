@@ -107,7 +107,7 @@ const snippetMap = {
   },
   [DMEntityType.Message](notification) {
     const [user] = notification.users
-    return `${user.name} sent you ${notification.multiple ? 'new messages' : 'a message'}`
+    return `${user.name} sent you ${notification.multiple ? 'new messages' : 'a new message'}`
   },
   [DMEntityType.Reaction](notification) {
     const [user] = notification.users
