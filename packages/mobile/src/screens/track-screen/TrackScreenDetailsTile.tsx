@@ -29,7 +29,9 @@ import {
 import { Image, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
+import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import { Tag, Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
 import type { DetailsTileDetail } from 'app/components/details-tile/types'
@@ -37,6 +39,7 @@ import type { ImageProps } from 'app/components/image/FastImage'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
+import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as record } from 'app/services/analytics'
 import { getTrackOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
@@ -61,7 +64,9 @@ const { getIsReachable } = reachabilitySelectors
 const messages = {
   track: 'track',
   remix: 'remix',
-  hiddenTrack: 'hidden track'
+  hiddenTrack: 'hidden track',
+  collectibleGated: 'collectible gated',
+  specialAccess: 'special access'
 }
 
 type TrackScreenDetailsTileProps = {
@@ -130,6 +135,21 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     textAlign: 'center',
     textTransform: 'uppercase'
   },
+  headerView: {
+    ...flexRowCentered()
+  },
+  premiumHeaderText: {
+    letterSpacing: 2,
+    textAlign: 'center',
+    textTransform: 'uppercase',
+    fontFamily: typography.fontByWeight.demiBold,
+    fontSize: typography.fontSize.small,
+    color: palette.accentBlue
+  },
+  premiumIcon: {
+    marginRight: spacing(2.5),
+    fill: palette.accentBlue
+  },
   downloadStatusIndicator: {
     marginRight: spacing(2)
   }
@@ -141,9 +161,11 @@ export const TrackScreenDetailsTile = ({
   uid,
   isLineupLoading
 }: TrackScreenDetailsTileProps) => {
+  const isPremiumContentEnabled = useIsPremiumContentEnabled()
+
   const styles = useStyles()
   const navigation = useNavigation()
-  const { accentOrange } = useThemeColors()
+  const { accentOrange, accentBlue } = useThemeColors()
 
   const isOfflineEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
@@ -164,6 +186,7 @@ export const TrackScreenDetailsTile = ({
     has_current_user_reposted,
     has_current_user_saved,
     is_unlisted,
+    is_premium: isPremium,
     mood,
     owner_id,
     play_count,
@@ -177,6 +200,9 @@ export const TrackScreenDetailsTile = ({
   } = track
 
   const isOwner = owner_id === currentUserId
+  const hideFavorite = is_unlisted || (isPremiumContentEnabled && isPremium)
+  const hideRepost =
+    is_unlisted || !isReachable || (isPremiumContentEnabled && isPremium)
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
@@ -313,6 +339,36 @@ export const TrackScreenDetailsTile = ({
     return 'neutralLight4'
   }
 
+  const renderHeaderText = () => {
+    if (isPremiumContentEnabled && isPremium) {
+      return (
+        <View style={styles.headerView}>
+          {track.premium_conditions?.nft_collection ? (
+            <IconCollectible style={styles.premiumIcon} fill={accentBlue} />
+          ) : (
+            <IconSpecialAccess style={styles.premiumIcon} fill={accentBlue} />
+          )}
+          <Text style={styles.premiumHeaderText}>
+            {track.premium_conditions?.nft_collection
+              ? messages.collectibleGated
+              : messages.specialAccess}
+          </Text>
+        </View>
+      )
+    }
+
+    return (
+      <Text
+        style={styles.headerText}
+        color={getDownloadTextColor()}
+        weight='demiBold'
+        fontSize='small'
+      >
+        {isRemix ? messages.remix : messages.track}
+      </Text>
+    )
+  }
+
   const renderHeader = () => {
     return is_unlisted ? (
       <View style={styles.hiddenDetailsTileWrapper}>
@@ -326,14 +382,7 @@ export const TrackScreenDetailsTile = ({
           size={20}
           trackId={track_id}
         />
-        <Text
-          style={styles.headerText}
-          color={getDownloadTextColor()}
-          weight='demiBold'
-          fontSize='small'
-        >
-          {isRemix ? messages.remix : messages.track}
-        </Text>
+        {renderHeaderText()}
       </View>
     )
   }
@@ -386,8 +435,8 @@ export const TrackScreenDetailsTile = ({
       renderBottomContent={renderBottomContent}
       renderHeader={is_unlisted || isOfflineEnabled ? renderHeader : undefined}
       headerText={isRemix ? messages.remix : messages.track}
-      hideFavorite={is_unlisted}
-      hideRepost={is_unlisted || !isReachable}
+      hideFavorite={hideFavorite}
+      hideRepost={hideRepost}
       hideShare={is_unlisted && !field_visibility?.share}
       hideOverflow={!isReachable}
       hideFavoriteCount={is_unlisted}
@@ -406,6 +455,7 @@ export const TrackScreenDetailsTile = ({
       repostCount={repost_count}
       saveCount={save_count}
       title={title}
+      track={track}
     />
   )
 }

@@ -19,7 +19,8 @@ import {
   cacheUsersSelectors,
   tracksSocialActions,
   shareModalUIActions,
-  playerSelectors
+  playerSelectors,
+  usePremiumContentAccess
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -33,7 +34,6 @@ import Menu from 'components/menu/Menu'
 import { OwnProps as TrackMenuProps } from 'components/menu/TrackMenu'
 import { TrackArtwork } from 'components/track/desktop/Artwork'
 import UserBadges from 'components/user-badges/UserBadges'
-import { usePremiumContentAccess } from 'hooks/usePremiumContentAccess'
 import {
   setUsers,
   setVisibility

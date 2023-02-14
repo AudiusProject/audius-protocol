@@ -104,7 +104,8 @@ export const defaultTheme = {
   skeleton: '#F7F7F9',
   skeletonHighlight: '#F2F2F4',
   statTileText: '#C675FF',
-  progressBackground: '#D9D9D9'
+  progressBackground: '#D9D9D9',
+  accentBlue: '#1ba1f1'
 }
 
 export const darkTheme = {
@@ -158,7 +159,8 @@ export const darkTheme = {
   skeleton: '#393A54',
   skeletonHighlight: '#3F415B',
   statTileText: '#C675FF',
-  progressBackground: '#D9D9D9'
+  progressBackground: '#D9D9D9',
+  accentBlue: '#1ba1f1'
 }
 
 export const matrixTheme = {
@@ -206,7 +208,8 @@ export const matrixTheme = {
   skeleton: '#1B3714',
   skeletonHighlight: '#1C5610',
   statTileText: '#184F17',
-  progressBackground: '#D9D9D9'
+  progressBackground: '#D9D9D9',
+  accentBlue: '#1ba1f1'
 }
 
 export type ThemeColors = {
@@ -261,6 +264,7 @@ export type ThemeColors = {
   skeletonHighlight: string
   statTileText: string
   progressBackground: string
+  accentBlue: string
 }
 
 const themeColorsByThemeVariant: Record<

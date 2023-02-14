@@ -111,6 +111,9 @@ const TrackTile = memo(
       ? fieldVisibility.play_count === false
       : false
 
+    const showPremiumCornerTag =
+      !isLoading && premiumConditions && (isOwner || !doesUserHaveAccess)
+
     return (
       <div
         className={cn(styles.container, {
@@ -131,7 +134,7 @@ const TrackTile = memo(
             : onTogglePlay
         }
       >
-        {!isLoading && isPremium && premiumConditions && (
+        {showPremiumCornerTag && (
           <PremiumTrackCornerTag
             doesUserHaveAccess={!!doesUserHaveAccess}
             isOwner={isOwner}
@@ -153,7 +156,7 @@ const TrackTile = memo(
         >
           {artwork}
         </div>
-        {isArtistPick && (
+        {isArtistPick && !showPremiumCornerTag && (
           <TrackBannerIcon
             type={TrackBannerIconType.STAR}
             isMatrixMode={isMatrixMode}

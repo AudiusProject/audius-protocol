@@ -1,19 +1,24 @@
+import type { PremiumConditions, Nullable } from '@audius/common'
 import { formatSeconds } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
+import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
+import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import IconStar from 'app/assets/images/iconStar.svg'
 import Text from 'app/components/text'
 import { flexRowCentered } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
+import { useColor, useThemeColors } from 'app/utils/theme'
 
 import { useStyles as useTrackTileStyles } from './styles'
 
 const messages = {
   artistPick: "Artist's Pick",
-  hiddenTrack: 'Hidden Track'
+  hiddenTrack: 'Hidden Track',
+  collectibleGated: 'Collectible Gated',
+  specialAccess: 'Special Access'
 }
 
 const flexRowEnd = (): ViewStyle => ({
@@ -47,15 +52,18 @@ type ItemProps = {
    * Label shown on the right hand side of the item
    */
   label: string
+  /**
+   * Color of icon and label
+   */
+  color: string
 }
 
-const LineupTileTopRightItem = ({ icon: Icon, label }: ItemProps) => {
-  const { neutralLight4 } = useThemeColors()
+const LineupTileTopRightItem = ({ icon: Icon, label, color }: ItemProps) => {
   const trackTileStyles = useTrackTileStyles()
   return (
     <View style={styles.item}>
-      <Icon height={16} width={16} fill={neutralLight4} style={styles.icon} />
-      <Text style={trackTileStyles.statText}>{label}</Text>
+      <Icon height={16} width={16} fill={color} style={styles.icon} />
+      <Text style={{ ...trackTileStyles.statText, color }}>{label}</Text>
     </View>
   )
 }
@@ -77,25 +85,52 @@ type Props = {
    * Whether or not to show the artist pick icon
    */
   showArtistPick?: boolean
+  /**
+   * Premium conditions to determine what icon and label to show
+   */
+  premiumConditions?: Nullable<PremiumConditions>
 }
 
 export const LineupTileTopRight = ({
   duration,
   isArtistPick,
   isUnlisted,
-  showArtistPick
+  showArtistPick,
+  premiumConditions
 }: Props) => {
+  const { neutralLight4 } = useThemeColors()
+  const accentBlue = useColor('accentBlue')
   const trackTileStyles = useTrackTileStyles()
 
   return (
     <View style={styles.topRight}>
-      {showArtistPick && isArtistPick && (
-        <LineupTileTopRightItem icon={IconStar} label={messages.artistPick} />
+      {!!premiumConditions && (
+        <LineupTileTopRightItem
+          icon={
+            premiumConditions.nft_collection
+              ? IconCollectible
+              : IconSpecialAccess
+          }
+          label={
+            premiumConditions.nft_collection
+              ? messages.collectibleGated
+              : messages.specialAccess
+          }
+          color={accentBlue}
+        />
+      )}
+      {!premiumConditions && showArtistPick && isArtistPick && (
+        <LineupTileTopRightItem
+          icon={IconStar}
+          label={messages.artistPick}
+          color={neutralLight4}
+        />
       )}
       {isUnlisted && (
         <LineupTileTopRightItem
           icon={IconHidden}
           label={messages.hiddenTrack}
+          color={neutralLight4}
         />
       )}
       <Text style={trackTileStyles.statText}>

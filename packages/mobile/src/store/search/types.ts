@@ -1,4 +1,11 @@
-import type { Repost, TrackSegment, User } from '@audius/common'
+import type {
+  Nullable,
+  PremiumConditions,
+  PremiumContentSignature,
+  Repost,
+  TrackSegment,
+  User
+} from '@audius/common'
 
 import type { CollectionImage } from 'app/models/Collection'
 import type { TrackImage } from 'app/models/Track'
@@ -71,6 +78,9 @@ export type SearchTrack = TrackImage & {
   followee_reposts: Repost[]
   has_current_user_reposted: undefined
   is_unlisted: boolean
+  is_premium: boolean
+  premium_conditions: Nullable<PremiumConditions>
+  premium_content_signature: Nullable<PremiumContentSignature>
   has_current_user_saved: undefined
   stem_of: null
   updated_at: string

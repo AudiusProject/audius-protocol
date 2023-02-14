@@ -1,30 +1,23 @@
-import {
-  cacheActions,
-  accountSelectors,
-  cacheTracksSelectors,
-  Collectible,
-  User,
-  Track,
-  getContext,
-  Kind,
-  PremiumContentSignature,
-  ID,
-  Chain,
-  FeatureFlags,
-  premiumContentSelectors,
-  premiumContentActions,
-  collectiblesActions,
-  tippingActions,
-  trackPageActions,
-  usersSocialActions,
-  TrackMetadata,
-  PremiumTrackStatus,
-  Nullable
-} from '@audius/common'
+import { Chain, Collectible, ID, Kind, PremiumContentSignature, PremiumTrackStatus, Track, TrackMetadata } from 'models'
+import { User } from 'models/User'
+import { FeatureFlags } from 'services/remote-config'
+import { accountSelectors } from 'store/account'
+import { cacheActions, cacheTracksSelectors } from 'store/cache'
+import { collectiblesActions } from 'store/collectibles'
+import { getContext } from 'store/effects'
+import { trackPageActions } from 'store/pages'
+import { usersSocialActions } from 'store/social'
+import { tippingActions } from 'store/tipping'
+import { parseTrackRouteFromPermalink } from 'utils'
 import { takeEvery, select, call, put, delay, all } from 'typed-redux-saga'
+import { Nullable } from 'utils/typeUtils'
 
-import { parseTrackRoute, TrackRouteParams } from 'utils/route/trackRouteParser'
-import { waitForWrite } from 'utils/sagaHelpers'
+import { premiumContentActions, premiumContentSelectors } from '.'
+
+type TrackRouteParams =
+  | { slug: string; trackId: null; handle: string }
+  | { slug: null; trackId: ID; handle: null }
+  | null
 
 const {
   updatePremiumContentSignatures,
@@ -200,7 +193,6 @@ function* updateCollectibleGatedTrackAccess(
     | ReturnType<typeof cacheActions.update>
 ) {
   // Halt if premium content not enabled
-  yield* waitForWrite()
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   if (!getFeatureEnabled(FeatureFlags.PREMIUM_CONTENT_ENABLED)) {
     return
@@ -318,7 +310,7 @@ function* updateCollectibleGatedTrackAccess(
   }
 }
 
-const PREMIUM_TRACK_POLL_FREQUENCY = 5000
+const PREMIUM_TRACK_POLL_FREQUENCY = 1000
 
 function* pollPremiumTrack({
   trackId,
@@ -370,7 +362,7 @@ function* updateGatedTracks(trackOwnerId: ID, gate: 'follow' | 'tip') {
         : premiumConditions?.tip_user_id
     if (isGated && ownerId === trackOwnerId) {
       statusMap[id] = 'UNLOCKING'
-      trackParamsMap[id] = parseTrackRoute(permalink)
+      trackParamsMap[id] = parseTrackRouteFromPermalink(permalink)
     }
   })
 
@@ -490,7 +482,7 @@ function* watchRemovePremiumContentSignatures() {
   )
 }
 
-const sagas = () => {
+export const sagas = () => {
   return [
     watchCollectibleGatedTracks,
     watchFollowGatedTracks,
@@ -500,5 +492,3 @@ const sagas = () => {
     watchRemovePremiumContentSignatures
   ]
 }
-
-export default sagas
