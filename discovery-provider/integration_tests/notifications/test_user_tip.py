@@ -52,7 +52,7 @@ def test_supporter_rank_up_notification(app):
             "amount": 300000000,
             "sender_user_id": 1,
             "receiver_user_id": 3,
-            'tx_signature': '2'
+            "tx_signature": "2",
         }
         assert send_notifications[0].user_ids == [1]
 
@@ -65,6 +65,6 @@ def test_supporter_rank_up_notification(app):
             "amount": 300000000,
             "sender_user_id": 1,
             "receiver_user_id": 3,
-            'tx_signature': '2'
+            "tx_signature": "2",
         }
         assert receive_notifications[0].user_ids == [3]

@@ -25,11 +25,12 @@ def test_reaction_notification(app):
     entities = {
         "user_tips": [
             {
-                "sender_user_id": i+1,
-                "receiver_user_id": i+2,
-                "signature": f'sig_{i}',
-                "amount": (i+1) * 100000000,
-            } for i in range(3)
+                "sender_user_id": i + 1,
+                "receiver_user_id": i + 2,
+                "signature": f"sig_{i}",
+                "amount": (i + 1) * 100000000,
+            }
+            for i in range(3)
         ],
     }
     populate_mock_db(db, entities)
@@ -38,12 +39,12 @@ def test_reaction_notification(app):
         "reactions": [
             {
                 "id": i + 1,
-                "sender_wallet": f'0x{i}',
-                "reacted_to": f'sig_{i}',
+                "sender_wallet": f"0x{i}",
+                "reacted_to": f"sig_{i}",
                 "timestamp": now,
-                "reaction_type": 'tip',
+                "reaction_type": "tip",
                 "reaction_value": i,
-                "tx_signature": f'tx_sig_{i}'
+                "tx_signature": f"tx_sig_{i}",
             }
             for i in range(3)
         ],
@@ -53,7 +54,10 @@ def test_reaction_notification(app):
     with db.scoped_session() as session:
 
         notifications: List[Notification] = (
-            session.query(Notification).filter(Notification.type == 'reaction').order_by(asc(Notification.slot)).all()
+            session.query(Notification)
+            .filter(Notification.type == "reaction")
+            .order_by(asc(Notification.slot))
+            .all()
         )
         assert len(notifications) == 3
         assert notifications[0].specifier == "2"
@@ -90,19 +94,21 @@ def test_reaction_notification(app):
             "reaction_value": 0,
             "receiver_user_id": 2,
             "sender_user_id": 1,
-            "tip_amount": '100000000'
-
+            "tip_amount": "100000000",
         }
         assert notifications[0].user_ids == [1]
 
         notifications: List[Notification] = (
-            session.query(Notification).filter(Notification.type == 'tip_receive').order_by(asc(Notification.slot)).all()
+            session.query(Notification)
+            .filter(Notification.type == "tip_receive")
+            .order_by(asc(Notification.slot))
+            .all()
         )
         assert len(notifications) == 3
         assert notifications[0].data == {
-          "reaction_value": 0,
-          "receiver_user_id": 2,
-          "sender_user_id": 1,
-          "amount": 100000000,
-          'tx_signature': 'sig_0'
+            "reaction_value": 0,
+            "receiver_user_id": 2,
+            "sender_user_id": 1,
+            "amount": 100000000,
+            "tx_signature": "sig_0",
         }
