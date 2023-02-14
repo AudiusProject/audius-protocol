@@ -8,7 +8,7 @@ begin
   
   if new.reaction_type = 'tip' then
 
-    select into amount, sender_user_id, receiver_user_id into tip_amount, sender_user_id, receiver_user_id from user_tips ut where ut.signature == new.reacted_to;
+    select amount, sender_user_id, receiver_user_id into tip_amount, sender_user_id, receiver_user_id from user_tips ut where ut.signature == new.reacted_to;
 
     if sender_user_id is not null and receiver_user_id is not null then
 

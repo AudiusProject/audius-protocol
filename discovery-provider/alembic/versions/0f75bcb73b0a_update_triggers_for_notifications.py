@@ -19,7 +19,7 @@ up_files = [
     "handle_reaction.sql",
     "handle_track.sql",
     "handle_user_tip.sql",
-    "handle_user_balance_change.sql",
+    "handle_user_balance_changes.sql",
     "handle_supporter_rank_ups.sql"
 ]
 
@@ -27,7 +27,7 @@ def upgrade():
     sql = build_sql(up_files)
     connection = op.get_bind()
     connection.execute(sql)
-    conn.execute(
+    connection.execute(
       """
       DELETE FROM notification where type in ('reaction', 'tip_send', 'tip_receive', 'create', 'tier_change');
       """
