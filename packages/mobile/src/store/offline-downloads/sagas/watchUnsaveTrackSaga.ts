@@ -1,7 +1,7 @@
 import { tracksSocialActions } from '@audius/common'
 import { put, takeEvery } from 'typed-redux-saga'
 
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 
 import { removeOfflineItems } from '../slice'
 

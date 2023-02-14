@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { ProgressBar } from 'app/components/progress-bar'
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import {
   getIsCollectionMarkedForDownload,
   getOfflineTrackStatus

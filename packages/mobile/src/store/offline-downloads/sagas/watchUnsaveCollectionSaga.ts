@@ -1,7 +1,10 @@
 import { collectionsSocialActions } from '@audius/common'
 import { put, select, takeEvery } from 'typed-redux-saga'
 
-import { getOfflineTrackMetadata } from '../selectors'
+import {
+  getIsCollectionMarkedForDownload,
+  getOfflineTrackMetadata
+} from '../selectors'
 import type { CollectionAction, OfflineItem } from '../slice'
 import { removeOfflineItems } from '../slice'
 
@@ -13,6 +16,11 @@ export function* watchUnsaveCollectionSaga() {
 
 export function* removeFavoritedDownloadedCollection(action: CollectionAction) {
   const { collectionId } = action.payload
+  const isCollectionMarkedForDownload = yield* select(
+    getIsCollectionMarkedForDownload(collectionId)
+  )
+
+  if (!isCollectionMarkedForDownload) return
 
   const offlineItemsToRemove: OfflineItem[] = []
 

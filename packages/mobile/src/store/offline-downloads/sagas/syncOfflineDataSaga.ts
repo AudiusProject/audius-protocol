@@ -4,7 +4,7 @@ import { waitForRead } from 'audius-client/src/utils/sagaHelpers'
 import { difference, intersection } from 'lodash'
 import { put, select, take } from 'typed-redux-saga'
 
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 
 import { getOfflineCollectionsStatus } from '../selectors'
 import type { CollectionId, OfflineItem } from '../slice'
@@ -14,7 +14,7 @@ import {
   removeOfflineItems
 } from '../slice'
 
-import { redownloadStaleTracksSaga } from './redownloadStaleTracksSaga'
+import { getStaleTracks } from './getStaleTracks'
 
 export function* syncOfflineDataSaga() {
   yield* take(doneLoadingFromDisk.type)
@@ -92,8 +92,9 @@ export function* syncOfflineDataSaga() {
     offlineItemsToAdd.push(...collectionsToAdd)
   }
 
-  const staleTracksToAdd = yield* redownloadStaleTracksSaga()
-  offlineItemsToAdd.push(...staleTracksToAdd)
+  const staleTracks = yield* getStaleTracks()
+
+  offlineItemsToAdd.push(...staleTracks)
 
   if (offlineItemsToAdd.length > 0) {
     yield* put(addOfflineItems({ items: offlineItemsToAdd }))

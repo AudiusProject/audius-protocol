@@ -2,7 +2,7 @@ import { tracksSocialActions } from '@audius/common'
 import moment from 'moment'
 import { put, takeEvery, select } from 'typed-redux-saga'
 
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 
 import { getIsFavoritesDownloadsEnabled } from '../selectors'
 import { addOfflineItems } from '../slice'

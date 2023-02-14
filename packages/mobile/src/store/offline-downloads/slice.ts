@@ -8,8 +8,7 @@ import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 import { persistReducer } from 'redux-persist'
 
-import type { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
-
+import type { DOWNLOAD_REASON_FAVORITES } from './constants'
 import {
   addOfflineCollection,
   addOfflineTrack,
