@@ -9,17 +9,23 @@ dev.storage::
 	@	audius_discprov_env='standalone' \
 		go run main.go storage
 
-dev.trending::
+dev.trending.run::
+	@echo starting dependencies
+	@	docker compose up chdb testdb -d
+	@echo waiting 6 seconds for clickhouse to be healthy
+	@ 	sleep 6
+	@echo starting trending server
 	@   go run main.go trending
 
-# these are the dependencies required for trending to operate
-# currently only clickhouse is required but more could be added here
-# using the testdb for ch testing
-dev.trending.deps::
-	@   docker compose up chdb testdb
+dev.trending.run.snapshot::
+	@echo starting development dependencies
+	@echo restoring testdb from `/trending/houseparty/discProvProduction.dump`
+	@echo migrating data from testdb into clickhouse
+	@echo starting trending server
 
-dev.trending.snapshot::
-	@   make dev.trending.deps
+dev.trending.deps::
+	@echo starting dependencies without exiting
+	@   docker compose up chdb testdb
 		
 
 reset::
