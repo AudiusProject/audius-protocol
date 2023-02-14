@@ -8,6 +8,9 @@ export const useThrottledCallback = <T extends (...args: any) => any>(
   wait: number,
   deps: DependencyList
 ) => {
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  return useMemo(() => throttle(callback, wait), [wait, ...deps])
+  return useMemo(
+    () => throttle(callback, wait, { trailing: false }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [wait, ...deps]
+  )
 }
