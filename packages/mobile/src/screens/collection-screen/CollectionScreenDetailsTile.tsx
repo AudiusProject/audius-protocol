@@ -29,7 +29,7 @@ import { formatCount } from 'app/utils/format'
 import { CollectionHeader } from './CollectionHeader'
 import { useCollectionLineup } from './useCollectionLineup'
 const { getCollectionUid, getUserUid } = collectionPageSelectors
-const { resetCollection } = collectionPageActions
+const { fetchCollection, resetCollection } = collectionPageActions
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 
@@ -94,8 +94,13 @@ export const CollectionScreenDetailsTile = ({
 
   const fetchLineup = useCallback(() => {
     dispatch(resetCollection(collectionUid, userUid))
+
+    // Need to refetch the collection after resetting
+    // Will pull from cache if it exists
+    // TODO: fix this for smart collections
+    dispatch(fetchCollection(collectionId as number))
     dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
-  }, [dispatch, collectionUid, userUid])
+  }, [dispatch, collectionUid, userUid, collectionId])
 
   const { entries, status } = useCollectionLineup(collectionId, fetchLineup)
   const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])

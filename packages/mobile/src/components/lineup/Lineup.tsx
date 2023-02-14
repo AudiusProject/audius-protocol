@@ -334,7 +334,7 @@ export const Lineup = ({
 
   useReachableEffect(
     useCallback(() => {
-      if (entries.length > 0 || status === Status.LOADING) return
+      if (status === Status.LOADING) return
       handleLoadMore(true)
       // using the latest creates infinite loop, and we only need the initial state
       // eslint-disable-next-line react-hooks/exhaustive-deps
