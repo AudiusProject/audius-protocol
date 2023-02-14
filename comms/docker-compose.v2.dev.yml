@@ -38,8 +38,6 @@ services:
       <<: *shared-vars
     depends_on:
       - comdb
-    ports:
-      - 8924:8924
 
   storage1:
     container_name: storage1
@@ -61,8 +59,6 @@ services:
       - com1
     volumes:
       - ./:/app
-    ports:
-      - 9924:8926
   
   node1:
     container_name: node1
