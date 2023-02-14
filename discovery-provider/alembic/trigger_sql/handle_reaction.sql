@@ -1,50 +1,54 @@
 create or replace function handle_reaction() returns trigger as $$
 declare
   tip_row notification%ROWTYPE;
-  sender_user_id int;
-  receiver_user_id int;
+  tip_sender_user_id int;
+  tip_receiver_user_id int;
   tip_amount bigint;
 begin
+
+  raise NOTICE 'start';
   
   if new.reaction_type = 'tip' then
 
-    select amount, sender_user_id, receiver_user_id into tip_amount, sender_user_id, receiver_user_id from user_tips ut where ut.signature == new.reacted_to;
+    raise NOTICE 'is tip';
 
-    if sender_user_id is not null and receiver_user_id is not null then
+    SELECT amount, sender_user_id, receiver_user_id 
+    INTO tip_amount, tip_sender_user_id, tip_receiver_user_id 
+    FROM user_tips ut 
+    WHERE ut.signature = new.reacted_to;
+    
+    raise NOTICE 'did select % %', tip_sender_user_id, tip_receiver_user_id;
+    raise NOTICE 'did select %', new.reacted_to;
 
-      insert into notification
+    IF tip_sender_user_id IS NOT NULL AND tip_receiver_user_id IS NOT NULL THEN
+      raise NOTICE 'have ids';
+
+      INSERT INTO notification
         (slot, user_ids, timestamp, type, specifier, group_id, data)
-      values
+      VALUES
         (
         new.slot,
-        ARRAY [sender_user_id],
+        ARRAY [tip_sender_user_id],
         new.timestamp,
         'reaction',
-        receiver_user_id,
+        tip_receiver_user_id,
         'reaction:' || 'reaction_to:' || new.reacted_to || ':reaction_type:' || new.reaction_type || ':reaction_value:' || new.reaction_value || ':timestamp:' || new.timestamp,
         json_build_object(
           'sender_wallet', new.sender_wallet,
           'reaction_type', new.reaction_type,
           'reacted_to', new.reacted_to,
           'reaction_value', new.reaction_value,
-          'receiver_user_id', receiver_user_id,
-          'sender_user_id', sender_user_id,
+          'receiver_user_id', tip_receiver_user_id,
+          'sender_user_id', tip_sender_user_id,
           'tip_amount', tip_amount::varchar(255)
         )
       )
       on conflict do nothing;
 
       -- find the notification for tip send - update the data to include reaction value
-      select * into tip_row from user_tips where user_tips.signature = new.reacted_to limit 1;
-      if tip_row is not null then
-        UPDATE notification
-        SET data = jsonb_set(
-          notification.data,
-          'reaction_value',
-          tip_row.reaction_value
-        )
-        WHERE notification.group_id = 'tip_receive:user_id:' || receiver_user_id || ':signature:' || new.reacted_to;
-      end if;
+      UPDATE notification
+      SET data = jsonb_set(data, '{reaction_value}', new.reaction_value::text::jsonb)
+      WHERE notification.group_id = 'tip_receive:user_id:' || tip_receiver_user_id || ':signature:' || new.reacted_to;
     end if;
   end if;
 

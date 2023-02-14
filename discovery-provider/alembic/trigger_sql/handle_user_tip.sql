@@ -37,6 +37,7 @@ begin
   return null;
 exception
   when others then return null;
+return null;
 end;
 $$ language plpgsql;
 
