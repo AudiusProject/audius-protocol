@@ -1,0 +1,12 @@
+<clickhouse>
+    <named_collections>
+        <testdb_data>
+            <user>postgres</user>
+            <password>pass</password>
+            <host>testdb</host>
+            <port>5432</port>
+            <database>default_db</database>
+            <connection_pool_size>8</connection_pool_size>
+        </testdb_data>
+    </named_collections>
+</clickhouse>

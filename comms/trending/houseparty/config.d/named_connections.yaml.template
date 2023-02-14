@@ -1,7 +1,0 @@
-named_collections:
-  sandbox3:
-    host: __TODO__
-    password: ________TODO_________
-    port: 5432
-    user: postgres
-    database: audius_discovery

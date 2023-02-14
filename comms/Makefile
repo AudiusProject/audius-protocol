@@ -16,7 +16,7 @@ dev.trending::
 # currently only clickhouse is required but more could be added here
 # using the testdb for ch testing
 dev.trending.deps::
-	@   docker compose up chdb testdb -d
+	@   docker compose up chdb testdb
 
 dev.trending.snapshot::
 	@   make dev.trending.deps
