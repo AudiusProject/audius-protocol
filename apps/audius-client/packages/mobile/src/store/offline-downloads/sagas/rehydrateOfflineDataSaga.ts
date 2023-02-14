@@ -9,11 +9,11 @@ import { cacheActions, Kind, makeUid } from '@audius/common'
 import { call, select, put } from 'typed-redux-saga'
 
 import {
-  DOWNLOAD_REASON_FAVORITES,
   getCollectionJson,
   getTrackJson
 } from 'app/services/offline-downloader'
 
+import { DOWNLOAD_REASON_FAVORITES } from '../constants'
 import {
   getOfflineCollectionsStatus,
   getOfflineTrackStatus

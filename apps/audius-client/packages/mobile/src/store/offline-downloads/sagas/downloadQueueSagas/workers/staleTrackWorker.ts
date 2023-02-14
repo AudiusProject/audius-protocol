@@ -26,15 +26,15 @@ const { getTrack } = cacheTracksSelectors
 
 export function* staleTrackWorker(trackId: ID) {
   yield* put(startDownload({ type: 'stale-track', id: trackId }))
-  const { jobResult, cancel, unreachable } = yield* race({
+  const { jobResult, abort, cancel } = yield* race({
     jobResult: call(handleStaleTrack, trackId),
-    cancel: call(shouldCancelJob, trackId),
-    unreachable: take(SET_UNREACHABLE)
+    abort: call(shouldAbortJob, trackId),
+    cancel: take(SET_UNREACHABLE)
   })
 
-  if (cancel) {
+  if (abort) {
     yield* put(requestDownloadQueuedItem())
-  } else if (unreachable) {
+  } else if (cancel) {
     // continue
   } else if (jobResult === OfflineDownloadStatus.ERROR) {
     yield* put(errorDownload({ type: 'stale-track', id: trackId }))
@@ -78,7 +78,7 @@ export function* handleStaleTrack(trackId: ID) {
   return OfflineDownloadStatus.SUCCESS
 }
 
-function* shouldCancelJob(trackId: ID) {
+function* shouldAbortJob(trackId: ID) {
   while (true) {
     yield* take(removeOfflineItems.type)
     const trackStatus = yield* select(getTrackOfflineDownloadStatus(trackId))

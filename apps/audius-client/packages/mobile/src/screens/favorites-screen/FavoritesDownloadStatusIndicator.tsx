@@ -1,7 +1,7 @@
 import { DownloadStatusIndicator } from 'app/components/offline-downloads'
 import { useProxySelector } from 'app/hooks/useProxySelector'
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import type { AppState } from 'app/store'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { getOfflineTrackStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'

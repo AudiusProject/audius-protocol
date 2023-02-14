@@ -9,7 +9,7 @@ import { difference } from 'lodash'
 import moment from 'moment'
 import { call, put, race, select, take } from 'typed-redux-saga'
 
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { dispatch } from 'app/store/store'
 
 import {
@@ -39,7 +39,7 @@ const isTrackFavoriteReason = (downloadReason: DownloadReason) =>
   downloadReason.is_from_favorites &&
   downloadReason.collection_id === DOWNLOAD_REASON_FAVORITES
 
-function* shouldCancelSync(collectionId: CollectionId) {
+function* shouldAbortSync(collectionId: CollectionId) {
   while (true) {
     yield* take(removeOfflineItems.type)
     const syncStatus = yield* select(getCollectionSyncStatus, collectionId)
@@ -50,20 +50,20 @@ function* shouldCancelSync(collectionId: CollectionId) {
 export function* syncCollectionWorker(collectionId: CollectionId) {
   yield* put(startCollectionSync({ id: collectionId }))
 
-  const { syncCollection, cancel, unreachable } = yield* race({
-    syncCollection: call(syncCollectionAsync, collectionId),
-    cancel: call(shouldCancelSync, collectionId),
-    unreachable: take(SET_UNREACHABLE)
+  const { jobResult, abort, cancel } = yield* race({
+    jobResult: call(syncCollectionAsync, collectionId),
+    abort: call(shouldAbortSync, collectionId),
+    cancel: take(SET_UNREACHABLE)
   })
 
-  if (cancel) {
+  if (abort) {
     yield* put(requestDownloadQueuedItem())
-  } else if (unreachable) {
+  } else if (cancel) {
     yield* put(cancelCollectionSync({ id: collectionId }))
-  } else if (syncCollection === CollectionSyncStatus.ERROR) {
+  } else if (jobResult === CollectionSyncStatus.ERROR) {
     yield* put(errorCollectionSync({ id: collectionId }))
     yield* put(requestDownloadQueuedItem())
-  } else if (syncCollection === CollectionSyncStatus.SUCCESS) {
+  } else if (jobResult === CollectionSyncStatus.SUCCESS) {
     yield* put(completeCollectionSync({ id: collectionId }))
     yield* put(requestDownloadQueuedItem())
   }
@@ -153,7 +153,8 @@ function* syncCollection(collectionId: ID) {
     [apiClient, apiClient.getCollectionMetadata],
     {
       collectionId,
-      currentUserId
+      currentUserId,
+      abortOnUnreachable: false
     }
   )
 

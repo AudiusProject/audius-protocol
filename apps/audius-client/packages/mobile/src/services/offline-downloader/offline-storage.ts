@@ -3,6 +3,7 @@ import path from 'path'
 import type {
   Collection,
   CollectionMetadata,
+  ID,
   Nullable,
   Track,
   UserMetadata,
@@ -10,8 +11,6 @@ import type {
 } from '@audius/common'
 import { allSettled } from '@audius/common'
 import RNFetchBlob from 'rn-fetch-blob'
-
-import { DOWNLOAD_REASON_FAVORITES } from './offline-downloader'
 
 const {
   fs: { dirs, exists, ls, lstat, mkdir, readFile, unlink, writeFile }
@@ -67,15 +66,6 @@ export const writeCollectionJson = async (
   )
 }
 
-// Special case for favorites which is not a real collection with metadata
-export const writeFavoritesCollectionJson = async () => {
-  const pathToWrite = getLocalCollectionDir(DOWNLOAD_REASON_FAVORITES)
-  if (await exists(pathToWrite)) {
-    await unlink(pathToWrite)
-  }
-  mkdirSafe(pathToWrite)
-}
-
 export const getCollectionJson = async (
   collectionId: string
 ): Promise<Nullable<OfflineCollection>> => {
@@ -101,12 +91,6 @@ export const getOfflineCollections = async () => {
   return await ls(collectionsDir)
 }
 
-export const purgeDownloadedCollection = async (collectionId: string) => {
-  const collectionDir = getLocalCollectionDir(collectionId)
-  if (!(await exists(collectionDir))) return
-  await unlink(collectionDir)
-}
-
 // Track Json
 
 export const getLocalTrackJsonPath = (trackId: string) => {
@@ -115,22 +99,19 @@ export const getLocalTrackJsonPath = (trackId: string) => {
 
 // Cover Art
 
-export const getLocalCollectionCoverArtDestination = (
-  collectionId: string,
-  uri: string
-) => {
-  return path.join(getLocalCollectionDir(collectionId), IMAGE_FILENAME)
+export const getCollectionCoverArtPath = (collectionId: ID) => {
+  return path.join(
+    getLocalCollectionDir(collectionId.toString()),
+    IMAGE_FILENAME
+  )
 }
 
 export const getLocalCollectionCoverArtPath = (collectionId: string) => {
   return path.join(getLocalCollectionDir(collectionId), IMAGE_FILENAME)
 }
 
-export const getLocalTrackCoverArtDestination = (
-  trackId: string,
-  uri: string
-) => {
-  return path.join(getLocalTrackDir(trackId), IMAGE_FILENAME)
+export const getLocalTrackCoverArtDestination = (trackId: ID) => {
+  return path.join(getLocalTrackDir(trackId.toString()), IMAGE_FILENAME)
 }
 
 export const getLocalTrackCoverArtPath = (trackId: string) => {
@@ -139,12 +120,8 @@ export const getLocalTrackCoverArtPath = (trackId: string) => {
 
 // Audio
 
-export const getLocalAudioPath = (trackId: string): string => {
-  return path.join(getLocalTrackDir(trackId), `${trackId}.mp3`)
-}
-
-export const isAudioAvailableOffline = async (trackId: string) => {
-  return await exists(getLocalAudioPath(trackId))
+export const getLocalAudioPath = (trackId: ID): string => {
+  return path.join(getLocalTrackDir(trackId.toString()), `${trackId}.mp3`)
 }
 
 // Storage management
@@ -171,23 +148,12 @@ export const getTrackJson = async (
   }
 }
 
-export const writeTrackJson = async (
-  trackId: string,
-  trackToWrite: UserTrackMetadata
-) => {
-  const pathToWrite = getLocalTrackJsonPath(trackId)
-  if (await exists(pathToWrite)) {
-    await unlink(pathToWrite)
-  }
-  await writeFile(pathToWrite, JSON.stringify(trackToWrite))
-}
-
 // TODO: Update this to verify that the JSON can be parsed properly?
 export const verifyTrack = async (
   trackId: string,
   expectTrue?: boolean
 ): Promise<boolean> => {
-  const audioFile = exists(getLocalAudioPath(trackId))
+  const audioFile = exists(getLocalAudioPath(parseInt(trackId, 10)))
   const jsonFile = exists(getLocalTrackJsonPath(trackId))
   const artFile = exists(path.join(getLocalTrackDir(trackId), IMAGE_FILENAME))
 
@@ -243,14 +209,6 @@ export const purgeAllDownloads = async (withLogs?: boolean) => {
   }
 }
 
-export const purgeDownloadedTrack = async (trackId: string) => {
-  const trackDir = getLocalTrackDir(trackId)
-  if (!(await exists(trackDir))) return
-  await unlink(trackDir)
-  // TODO properly delete from store + potentially move this to saga
-  // store.dispatch(unloadTrack(trackId))
-}
-
 /** Debugging method to read cached files */
 export const readDirRec = async (path: string) => {
   const files = await lstat(path)
@@ -275,6 +233,6 @@ export const readDirRoot = async () => await readDirRec(downloadsRoot)
 
 export const mkdirSafe = async (path: string) => {
   if (!(await exists(path))) {
-    await mkdir(path)
+    return await mkdir(path)
   }
 }

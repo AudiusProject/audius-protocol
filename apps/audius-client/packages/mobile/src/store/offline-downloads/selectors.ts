@@ -1,9 +1,9 @@
 import type { ID, TrackMetadata } from '@audius/common'
 import { removeNullable, cacheTracksSelectors } from '@audius/common'
 
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import type { AppState } from 'app/store'
 
+import { DOWNLOAD_REASON_FAVORITES } from './constants'
 import type { CollectionId } from './slice'
 import { OfflineDownloadStatus } from './slice'
 const { getTrack } = cacheTracksSelectors

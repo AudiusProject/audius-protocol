@@ -40,10 +40,10 @@ import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { apiClient } from 'app/services/audius-api-client'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import {
-  DOWNLOAD_REASON_FAVORITES,
   getLocalAudioPath,
   getLocalTrackCoverArtPath
 } from 'app/services/offline-downloader'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import {
   getOfflineTrackStatus,
   getIsCollectionMarkedForDownload
@@ -380,7 +380,7 @@ export const Audio = () => {
     const newTrackData = await Promise.all(
       newQueueTracks.map(async (track) => {
         const trackOwner = queueTrackOwnersMap[track.owner_id]
-        const trackId = track.track_id.toString()
+        const trackId = track.track_id
         const offlineTrackAvailable =
           trackId &&
           isOfflineModeEnabled &&

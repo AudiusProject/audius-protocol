@@ -1,17 +1,22 @@
+import type { UserCollectionMetadata } from '@audius/common'
 import {
+  removeNullable,
+  SquareSizes,
   accountSelectors,
   getContext,
   reachabilityActions
 } from '@audius/common'
-import { select, call, put, take, race } from 'typed-redux-saga'
+import RNFetchBlob from 'rn-fetch-blob'
+import { select, call, put, take, race, all } from 'typed-redux-saga'
 
+import { createAllImageSources } from 'app/hooks/useContentNodeImage'
 import {
-  downloadCollectionCoverArt,
-  DOWNLOAD_REASON_FAVORITES,
-  purgeDownloadedCollection,
-  writeCollectionJson,
-  writeFavoritesCollectionJson
+  getCollectionCoverArtPath,
+  getLocalCollectionDir,
+  getLocalCollectionJsonPath,
+  mkdirSafe
 } from 'app/services/offline-downloader'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 
 import { getCollectionOfflineDownloadStatus } from '../../../selectors'
 import type { CollectionId } from '../../../slice'
@@ -24,11 +29,13 @@ import {
   requestDownloadQueuedItem,
   startDownload
 } from '../../../slice'
+
+import { downloadFile } from './downloadFile'
 const { SET_UNREACHABLE } = reachabilityActions
 
 const { getUserId } = accountSelectors
 
-function* shouldCancelDownload(collectionId: CollectionId) {
+function* shouldAbortDownload(collectionId: CollectionId) {
   while (true) {
     yield* take(removeOfflineItems.type)
     const trackStatus = yield* select(
@@ -41,31 +48,33 @@ function* shouldCancelDownload(collectionId: CollectionId) {
 export function* downloadCollectionWorker(collectionId: CollectionId) {
   yield* put(startDownload({ type: 'collection', id: collectionId }))
 
-  const { downloadCollection, unreachable, cancel } = yield* race({
-    downloadCollection: call(downloadCollectionAsync, collectionId),
-    cancel: call(shouldCancelDownload, collectionId),
-    unreachable: take(SET_UNREACHABLE)
+  const { jobResult, cancel, abort } = yield* race({
+    jobResult: call(downloadCollectionAsync, collectionId),
+    abort: call(shouldAbortDownload, collectionId),
+    cancel: take(SET_UNREACHABLE)
   })
 
-  if (cancel) {
-    yield* call(purgeDownloadedCollection, collectionId.toString())
+  if (abort) {
+    yield* call(removeDownloadedCollection, collectionId)
     yield* put(requestDownloadQueuedItem())
-  } else if (unreachable) {
+  } else if (cancel) {
     yield* put(cancelDownload({ type: 'collection', id: collectionId }))
-    yield* call(purgeDownloadedCollection, collectionId.toString())
-  } else if (downloadCollection === OfflineDownloadStatus.ERROR) {
+    yield* call(removeDownloadedCollection, collectionId)
+  } else if (jobResult === OfflineDownloadStatus.ERROR) {
     yield* put(errorDownload({ type: 'collection', id: collectionId }))
-    yield* call(purgeDownloadedCollection, collectionId.toString())
+    yield* call(removeDownloadedCollection, collectionId)
     yield* put(requestDownloadQueuedItem())
-  } else if (downloadCollection === OfflineDownloadStatus.SUCCESS) {
+  } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
     yield* put(completeDownload({ type: 'collection', id: collectionId }))
     yield* put(requestDownloadQueuedItem())
   }
 }
 
-function* downloadCollectionAsync(collectionId: CollectionId) {
+function* downloadCollectionAsync(
+  collectionId: CollectionId
+): Generator<any, OfflineDownloadStatus> {
   if (collectionId === DOWNLOAD_REASON_FAVORITES) {
-    yield* call(writeFavoritesCollectionJson)
+    yield* call(writeFavoritesCollectionMetadata)
     return OfflineDownloadStatus.SUCCESS
   }
 
@@ -73,7 +82,8 @@ function* downloadCollectionAsync(collectionId: CollectionId) {
   const apiClient = yield* getContext('apiClient')
   const [collection] = yield* call([apiClient, apiClient.getPlaylist], {
     playlistId: collectionId,
-    currentUserId
+    currentUserId,
+    abortOnUnreachable: false
   })
 
   if (
@@ -85,16 +95,56 @@ function* downloadCollectionAsync(collectionId: CollectionId) {
   }
 
   try {
-    yield* call(downloadCollectionCoverArt, collection)
-    yield* call(
-      writeCollectionJson,
-      collectionId.toString(),
-      collection,
-      collection.user
-    )
+    yield* all([
+      call(downloadCollectionCoverArt, collection),
+      call(writeCollectionMetadata, collection)
+    ])
   } catch (e) {
     return OfflineDownloadStatus.ERROR
   }
 
   return OfflineDownloadStatus.SUCCESS
+}
+
+function* downloadCollectionCoverArt(collection: UserCollectionMetadata) {
+  const { cover_art_sizes, cover_art, user, playlist_id } = collection
+  const cid = cover_art_sizes ?? cover_art
+  const imageSources = createAllImageSources({
+    cid,
+    user,
+    size: SquareSizes.SIZE_1000_BY_1000
+  })
+
+  const coverArtUris = imageSources.map(({ uri }) => uri).filter(removeNullable)
+  const covertArtFilePath = getCollectionCoverArtPath(playlist_id)
+
+  for (const coverArtUri of coverArtUris) {
+    const response = yield* call(downloadFile, coverArtUri, covertArtFilePath)
+    const { status } = response.info()
+    if (status === 200) return
+  }
+}
+
+// Special case for favorites which is not a real collection with metadata
+async function writeFavoritesCollectionMetadata() {
+  const favoritesCollectionDirectory = getLocalCollectionDir(
+    DOWNLOAD_REASON_FAVORITES
+  )
+  return await mkdirSafe(favoritesCollectionDirectory)
+}
+
+async function writeCollectionMetadata(collection: UserCollectionMetadata) {
+  const { playlist_id } = collection
+  const collectionMetadataPath = getLocalCollectionJsonPath(
+    playlist_id.toString()
+  )
+  return await RNFetchBlob.fs.writeFile(
+    collectionMetadataPath,
+    JSON.stringify(collection)
+  )
+}
+
+async function removeDownloadedCollection(collectionId: CollectionId) {
+  const collectionDir = getLocalCollectionDir(collectionId.toString())
+  return await RNFetchBlob.fs.unlink(collectionDir)
 }

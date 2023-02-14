@@ -131,6 +131,7 @@ type GetTrackArgs = {
     urlTitle: string
     handle: string
   }
+  abortOnUnreachable?: boolean
 }
 
 type GetTracksArgs = {
@@ -228,6 +229,7 @@ type GetPlaylistFavoriteUsersArgs = {
 type GetUserArgs = {
   userId: ID
   currentUserId: Nullable<ID>
+  abortOnUnreachable?: boolean
 }
 
 type GetUserByHandleArgs = {
@@ -281,11 +283,13 @@ type GetUserRepostsByHandleArgs = {
 type GetCollectionMetadataArgs = {
   collectionId: ID
   currentUserId: ID
+  abortOnUnreachable?: boolean
 }
 
 type GetPlaylistArgs = {
   playlistId: ID
   currentUserId: Nullable<ID>
+  abortOnUnreachable?: boolean
 }
 
 type GetPlaylistByPermalinkArgs = {
@@ -844,7 +848,7 @@ export class AudiusAPIClient {
   }
 
   async getTrack(
-    { id, currentUserId, unlistedArgs }: GetTrackArgs,
+    { id, currentUserId, unlistedArgs, abortOnUnreachable }: GetTrackArgs,
     retry = true
   ) {
     const encodedTrackId = this._encodeOrThrow(id)
@@ -863,7 +867,10 @@ export class AudiusAPIClient {
       await this._getResponse(
         FULL_ENDPOINT_MAP.getTrack(encodedTrackId),
         args,
-        retry
+        retry,
+        undefined,
+        undefined,
+        abortOnUnreachable
       )
 
     if (!trackResponse) return null
@@ -983,7 +990,7 @@ export class AudiusAPIClient {
     return tracks
   }
 
-  async getUser({ userId, currentUserId }: GetUserArgs) {
+  async getUser({ userId, currentUserId, abortOnUnreachable }: GetUserArgs) {
     const encodedUserId = this._encodeOrThrow(userId)
     const encodedCurrentUserId = encodeHashId(currentUserId)
     this._assertInitialized()
@@ -993,7 +1000,11 @@ export class AudiusAPIClient {
 
     const response: Nullable<APIResponse<APIUser[]>> = await this._getResponse(
       FULL_ENDPOINT_MAP.getUser(encodedUserId),
-      params
+      params,
+      undefined,
+      undefined,
+      undefined,
+      abortOnUnreachable
     )
 
     if (!response) return []
@@ -1205,7 +1216,8 @@ export class AudiusAPIClient {
 
   async getCollectionMetadata({
     collectionId,
-    currentUserId
+    currentUserId,
+    abortOnUnreachable
   }: GetCollectionMetadataArgs) {
     this._assertInitialized()
 
@@ -1216,12 +1228,17 @@ export class AudiusAPIClient {
       params,
       false,
       PathType.RootPath,
-      headers
+      headers,
+      abortOnUnreachable
     )
     return response?.data?.[0]
   }
 
-  async getPlaylist({ playlistId, currentUserId }: GetPlaylistArgs) {
+  async getPlaylist({
+    playlistId,
+    currentUserId,
+    abortOnUnreachable
+  }: GetPlaylistArgs) {
     this._assertInitialized()
     const encodedCurrentUserId = encodeHashId(currentUserId)
     const encodedPlaylistId = this._encodeOrThrow(playlistId)
@@ -1232,7 +1249,11 @@ export class AudiusAPIClient {
     const response: Nullable<APIResponse<APIPlaylist[]>> =
       await this._getResponse(
         FULL_ENDPOINT_MAP.getPlaylist(encodedPlaylistId),
-        params
+        params,
+        undefined,
+        undefined,
+        undefined,
+        abortOnUnreachable
       )
 
     if (!response) return []
@@ -1770,13 +1791,14 @@ export class AudiusAPIClient {
     retry = true,
     pathType: PathType = PathType.VersionFullPath,
     headers?: { [key: string]: string },
-    splitArrayParams = false
+    splitArrayParams = false,
+    abortOnUnreachable = true
   ): Promise<Nullable<T>> {
     if (this.initializationState.state !== 'initialized')
       throw new Error('_getResponse called uninitialized')
 
     // If not reachable, abort
-    if (!this.isReachable) {
+    if (!this.isReachable && abortOnUnreachable) {
       console.debug(`APIClient: Not reachable, aborting request`)
       return null
     }

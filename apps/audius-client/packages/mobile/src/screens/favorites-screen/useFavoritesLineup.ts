@@ -12,8 +12,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
-import { DOWNLOAD_REASON_FAVORITES } from 'app/services/offline-downloader'
 import { store } from 'app/store'
+import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
 
 const { getSavedTracksLineup } = savedPageSelectors
