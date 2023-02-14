@@ -17,7 +17,9 @@ import (
 	"github.com/nats-io/nats.go"
 
 	"gocloud.dev/blob"
-	_ "gocloud.dev/blob/fileblob"
+	_ "gocloud.dev/blob/s3blob"
+	_ "gocloud.dev/blob/azureblob"
+	_ "gocloud.dev/blob/gcsblob"
 )
 
 var (
@@ -42,13 +44,14 @@ func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider
 
 	// S3 = https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
 	// GCS = https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57
-	// i.e. we should be good to have credentials set as env vars
 
 	// same for azure: Go CDK uses the environment variables 
 	// AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_KEY, and AZURE_STORAGE_SAS_TOKEN 
 	// to configure the credentials
 	// AZURE_STORAGE_ACCOUNT is required, along with one of the other two.
 
+
+	// this won't work cause Minio takes different env vars, we need to be explicit with configs
 	b, err := blob.OpenBucket(context.Background(), blobDriverURL)
 	if err != nil {
 		log.Fatalln("failed to open bucket", blobDriverURL)
