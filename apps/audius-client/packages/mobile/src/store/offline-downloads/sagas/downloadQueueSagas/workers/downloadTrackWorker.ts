@@ -26,8 +26,10 @@ import {
   errorDownload,
   OfflineDownloadStatus,
   removeOfflineItems,
-  startDownload
+  startDownload,
+  abandonDownload
 } from '../../../slice'
+import { isTrackDownloadable } from '../../utils/isTrackDownloadable'
 
 import { downloadFile } from './downloadFile'
 const { SET_UNREACHABLE } = reachabilityActions
@@ -61,6 +63,10 @@ export function* downloadTrackWorker(trackId: ID) {
     yield* put(errorDownload({ type: 'track', id: trackId }))
     yield* call(removeDownloadedTrack, trackId)
     yield* put(requestDownloadQueuedItem())
+  } else if (jobResult === OfflineDownloadStatus.ABANDONED) {
+    yield* put(abandonDownload({ type: 'track', id: trackId }))
+    yield* call(removeDownloadedTrack, trackId)
+    yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
     yield* put(
       completeDownload({ type: 'track', id: trackId, completedAt: Date.now() })
@@ -73,20 +79,22 @@ function* downloadTrackAsync(
   trackId: ID
 ): Generator<any, OfflineDownloadStatus> {
   const currentUserId = yield* select(getUserId)
+  if (!currentUserId) return OfflineDownloadStatus.ERROR
+
   const apiClient = yield* getContext('apiClient')
 
   const track = yield* call([apiClient, apiClient.getTrack], {
     id: trackId,
     currentUserId,
+    // Needed to ensure APIClient doesn't abort when we become unreachable,
+    // allowing this job time to self-cancel
     abortOnUnreachable: false
   })
 
-  if (
-    !track ||
-    track.is_delete ||
-    (track.is_unlisted && currentUserId !== track.user.user_id)
-  ) {
-    return OfflineDownloadStatus.ERROR
+  if (!track) return OfflineDownloadStatus.ERROR
+
+  if (!isTrackDownloadable(track, currentUserId)) {
+    return OfflineDownloadStatus.ABANDONED
   }
 
   try {

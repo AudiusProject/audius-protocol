@@ -21,6 +21,7 @@ import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants
 import { getCollectionOfflineDownloadStatus } from '../../../selectors'
 import type { CollectionId } from '../../../slice'
 import {
+  abandonDownload,
   errorDownload,
   OfflineDownloadStatus,
   cancelDownload,
@@ -29,6 +30,7 @@ import {
   requestDownloadQueuedItem,
   startDownload
 } from '../../../slice'
+import { isCollectionDownloadable } from '../../utils/isCollectionDownloadable'
 
 import { downloadFile } from './downloadFile'
 const { SET_UNREACHABLE } = reachabilityActions
@@ -64,6 +66,10 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
     yield* put(errorDownload({ type: 'collection', id: collectionId }))
     yield* call(removeDownloadedCollection, collectionId)
     yield* put(requestDownloadQueuedItem())
+  } else if (jobResult === OfflineDownloadStatus.ABANDONED) {
+    yield* put(abandonDownload({ type: 'collection', id: collectionId }))
+    yield* call(removeDownloadedCollection, collectionId)
+    yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
     yield* put(completeDownload({ type: 'collection', id: collectionId }))
     yield* put(requestDownloadQueuedItem())
@@ -79,19 +85,21 @@ function* downloadCollectionAsync(
   }
 
   const currentUserId = yield* select(getUserId)
+  if (!currentUserId) return OfflineDownloadStatus.ERROR
+
   const apiClient = yield* getContext('apiClient')
   const [collection] = yield* call([apiClient, apiClient.getPlaylist], {
     playlistId: collectionId,
     currentUserId,
+    // Needed to ensure APIClient doesn't abort when we become unreachable,
+    // allowing this job time to self-cancel
     abortOnUnreachable: false
   })
 
-  if (
-    !collection ||
-    collection.is_delete ||
-    (collection.is_private && collection.playlist_owner_id !== currentUserId)
-  ) {
-    return OfflineDownloadStatus.ERROR
+  if (!collection) return OfflineDownloadStatus.ERROR
+
+  if (!isCollectionDownloadable(collection, currentUserId)) {
+    return OfflineDownloadStatus.ABANDONED
   }
 
   try {
