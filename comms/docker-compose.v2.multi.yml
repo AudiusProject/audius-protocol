@@ -58,6 +58,8 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable
       test_host: "com1"
       <<: *shared-vars
+    ports:
+      - 8924:8924
 
   storage1:
     container_name: storage1
@@ -70,6 +72,8 @@ services:
       <<: *shared-vars
       test_host: "com1"
       NAME: "storage1"
+    ports:
+      - 9924:8926
 
   node1:
     container_name: node1
@@ -89,6 +93,8 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com2?sslmode=disable
       test_host: "com2"
       <<: *shared-vars
+    ports:
+      - 8925:8924
 
   storage2:
     container_name: storage2
@@ -101,6 +107,8 @@ services:
       <<: *shared-vars
       test_host: "com2"
       NAME: "storage2"
+    ports:
+      - 9925:8926
 
   node2:
     container_name: node2
@@ -120,6 +128,8 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com3?sslmode=disable
       test_host: "com3"
       <<: *shared-vars
+    ports:
+      - 8926:8924
 
   storage3:
     container_name: storage3
@@ -132,6 +142,8 @@ services:
       <<: *shared-vars
       test_host: "com3"
       NAME: "storage3"
+    ports:
+      - 9926:8926
 
   node3:
     container_name: node3
@@ -151,6 +163,8 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
       test_host: "com4"
       <<: *shared-vars
+    ports:
+      - 8927:8924
 
   storage4:
     container_name: storage4
@@ -163,6 +177,8 @@ services:
       <<: *shared-vars
       test_host: "com4"
       NAME: "storage4"
+    ports:
+      - 9927:8926
 
   node4:
     container_name: node4
