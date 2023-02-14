@@ -515,7 +515,6 @@ function* confirmUpdateProfile(userId, metadata) {
   yield waitForWrite()
   const apiClient = yield getContext('apiClient')
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const localStorage = yield getContext('localStorage')
   yield put(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.USERS, userId),
@@ -551,8 +550,6 @@ function* confirmUpdateProfile(userId, metadata) {
         return users[0]
       },
       function* (confirmedUser) {
-        // Store the update in local storage so it is correct upon reload
-        yield call([localStorage, 'setAudiusAccountUser'], confirmedUser)
         // Update the cached user so it no longer contains image upload artifacts
         // and contains updated profile picture / cover photo sizes if any
         const newMetadata = {
