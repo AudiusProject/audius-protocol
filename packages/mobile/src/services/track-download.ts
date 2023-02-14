@@ -67,6 +67,8 @@ const download = async ({
 
     // On failure attempt to delete the file
     try {
+      const exists = await RNFetchBlob.fs.exists(filePath)
+      if (!exists) return
       await RNFetchBlob.fs.unlink(filePath)
     } catch {}
   }

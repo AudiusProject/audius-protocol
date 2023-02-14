@@ -195,5 +195,7 @@ async function writeTrackMetadata(track: UserTrackMetadata) {
 
 async function removeDownloadedTrack(trackId: ID) {
   const trackDirectory = getLocalTrackDir(trackId.toString())
+  const exists = await RNFetchBlob.fs.exists(trackDirectory)
+  if (!exists) return
   return await RNFetchBlob.fs.unlink(trackDirectory)
 }
