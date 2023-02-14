@@ -1,3 +1,5 @@
+import json
+import logging
 from typing import Union
 
 from src.challenges.challenge_event import ChallengeEvent
@@ -14,6 +16,8 @@ from src.tasks.entity_manager.utils import (
     ManageEntityParameters,
     get_record_key,
 )
+
+logger = logging.getLogger(__name__)
 
 action_to_record_types = {
     Action.FOLLOW: [EntityType.FOLLOW, EntityType.SUBSCRIPTION],
@@ -87,20 +91,7 @@ def create_social_record(params: ManageEntityParameters):
                 is_delete=False,
             )
         elif record_type == EntityType.REPOST:
-            metadata = params.metadata.get(params.metadata_cid, {})
-            is_repost_repost = metadata.get("is_repost_repost", False)
-            create_record = Repost(
-                blockhash=params.event_blockhash,
-                blocknumber=params.block_number,
-                created_at=params.block_datetime,
-                txhash=params.txhash,
-                user_id=params.user_id,
-                repost_item_id=params.entity_id,
-                repost_type=params.entity_type.lower(),
-                is_repost_repost=is_repost_repost,
-                is_current=True,
-                is_delete=False,
-            )
+            create_record = create_repost(params)
         elif record_type == EntityType.SUBSCRIPTION:
             create_record = Subscription(
                 blockhash=params.event_blockhash,
@@ -128,6 +119,33 @@ def create_social_record(params: ManageEntityParameters):
         params.challenge_bus.dispatch(
             challenge_event, params.block_number, params.user_id
         )
+
+
+def create_repost(params):
+    if params.metadata_cid:
+        try:
+            metadata = json.loads(params.metadata_cid)
+            is_repost_repost = metadata.get("is_repost_repost", False)
+        except Exception as e:
+            logger.error(
+                f"entity_manager | social_features.py | Unable to parse repost metadata while indexing: {e}",
+                exc_info=True,
+            )
+    else:
+        is_repost_repost = False
+    create_record = Repost(
+        blockhash=params.event_blockhash,
+        blocknumber=params.block_number,
+        created_at=params.block_datetime,
+        txhash=params.txhash,
+        user_id=params.user_id,
+        repost_item_id=params.entity_id,
+        repost_type=params.entity_type.lower(),
+        is_repost_repost=is_repost_repost,
+        is_current=True,
+        is_delete=False,
+    )
+    return create_record
 
 
 def delete_social_record(params):

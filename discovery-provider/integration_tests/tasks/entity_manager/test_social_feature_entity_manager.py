@@ -164,7 +164,7 @@ def test_index_valid_social_features(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Repost",
-                        "_metadata": "QmRepostPlaylist4",
+                        "_metadata": '{"is_repost_repost": true}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -185,8 +185,6 @@ def test_index_valid_social_features(app, mocker):
             },
         ],
     }
-
-    metadata = {"QmRepostPlaylist4": {"is_repost_repost": True}}
 
     entity_manager_txs = [
         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
@@ -226,7 +224,7 @@ def test_index_valid_social_features(app, mocker):
             block_number=1,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata=metadata,
+            metadata={},
         )
 
         # Verify follows
