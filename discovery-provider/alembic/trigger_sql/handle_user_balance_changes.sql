@@ -11,7 +11,7 @@ begin
     VALUES ('bronze', 10), ('silver', 100), ('gold', 10000), ('platinum', 100000)
   ) as tier (label, val)
   WHERE
-    new.current_balance::bigint >= tier.val
+    substr(new.current_balance, 1, GREATEST(1, length(new.current_balance) - 18)) >= tier.val
   ORDER BY 
     tier.val DESC
   limit 1;
@@ -21,7 +21,7 @@ begin
     VALUES ('bronze', 10), ('silver', 100), ('gold', 10000), ('platinum', 100000)
   ) as tier (label, val)
   WHERE
-    new.previous_balance::bigint >= tier.val
+    substr(new.previous_balance, 1, GREATEST(1, length(new.previous_balance) - 18)) >= tier.val
   ORDER BY 
     tier.val DESC
   limit 1;

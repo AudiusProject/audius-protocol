@@ -1,6 +1,7 @@
 create or replace function handle_supporter_rank_up() returns trigger as $$
 declare
   user_bank_tx user_bank_txs%ROWTYPE;
+  dethroned_user_id int;
 begin
   select * into user_bank_tx from user_bank_txs where user_bank_txs.slot = new.slot limit 1;
 
@@ -28,6 +29,26 @@ begin
         json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'rank', new.rank)
       )
     on conflict do nothing;
+
+    if new.rank = 1 then 
+      select sender_user_id into dethroned_user_id from supporter_rank_ups where rank=1 and receiver_user_id=1026 order by slot desc limit 1;
+      if dethroned_user_id is not NULL then
+        -- create a notification for the sender and receiver
+        insert into notification
+          (slot, user_ids, timestamp, type, specifier, group_id, data)
+        values
+          (
+            new.slot,
+            ARRAY [dethroned_user_id],
+            user_bank_tx.created_at,
+            'supporter_dethroned',
+            new.sender_user_id,
+            'supporter_dethroned:receiver_user_id:' || new.receiver_user_id || ':slot:' || new.slot,
+            json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'dethroned_user_id', dethroned_user_id)
+          ) on conflict do nothing;
+
+      end if;
+    end if;
   end if;
   return null;
 
