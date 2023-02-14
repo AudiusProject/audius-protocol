@@ -1,10 +1,12 @@
 package discovery
 
 import (
+	"expvar"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
@@ -78,6 +80,8 @@ func DiscoveryMain() {
 	if err := g.Wait(); err != nil {
 		log.Fatal(err)
 	}
+
+	expvar.NewString("booted_at").Set(time.Now().UTC().String())
 
 	e := server.NewServer(jsc, proc)
 	e.Logger.Fatal(e.Start(":8925"))
