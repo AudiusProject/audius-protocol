@@ -178,9 +178,10 @@ def extend_send_tip(action: NotificationAction):
             "amount": to_wei_string(data["amount"]),
             "sender_user_id": encode_int_id(data["sender_user_id"]),
             "receiver_user_id": encode_int_id(data["receiver_user_id"]),
-            "tip_tx_signature": data["tx_signature"]
+            "tip_tx_signature": data["tx_signature"],
         },
     }
+
 
 def extend_receive_tip(action: NotificationAction):
     data: Union[TipReceiveNotification, TipSendNotification] = action["data"]  # type: ignore
@@ -195,7 +196,9 @@ def extend_receive_tip(action: NotificationAction):
             "sender_user_id": encode_int_id(data["sender_user_id"]),
             "receiver_user_id": encode_int_id(data["receiver_user_id"]),
             "tip_tx_signature": data["tx_signature"],
-            "reaction_value": data["reaction_value"] if "reaction_value" in data else None
+            "reaction_value": data["reaction_value"]
+            if "reaction_value" in data
+            else None,
         },
     }
 
@@ -263,7 +266,7 @@ def extend_reaction(action: NotificationAction):
             "reaction_value": data["reaction_value"],
             "receiver_user_id": encode_int_id(data["receiver_user_id"]),
             "sender_user_id": encode_int_id(data["sender_user_id"]),
-            "tip_amount": to_wei_string(data["tip_amount"])
+            "tip_amount": to_wei_string(data["tip_amount"]),
         },
     }
 

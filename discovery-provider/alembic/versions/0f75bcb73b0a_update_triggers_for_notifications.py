@@ -1,7 +1,7 @@
 """update triggers for notifications
 
 Revision ID: 0f75bcb73b0a
-Revises: a62b4e92b733
+Revises: 988f095a1d43
 Create Date: 2023-02-14 15:22:13.771266
 
 """
@@ -10,7 +10,7 @@ from src.utils.alembic_helpers import build_sql
 
 # revision identifiers, used by Alembic.
 revision = '0f75bcb73b0a'
-down_revision = 'a62b4e92b733'
+down_revision = '988f095a1d43'
 branch_labels = None
 depends_on = None
 
