@@ -75,7 +75,13 @@ export const contentAccessMiddleware = async (
             res,
             errorResponseForbidden('Incorrect CID signature')
           )
-        case 'ExpiredTimestamp':
+          case 'UnservableTrack':
+            return sendResponse(
+              req,
+              res,
+              errorResponseForbidden('Track cannot be served by this node')
+            )
+          case 'ExpiredTimestamp':
           return sendResponse(
             req,
             res,

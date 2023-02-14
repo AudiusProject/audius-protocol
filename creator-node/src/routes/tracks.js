@@ -978,25 +978,6 @@ router.get(
       )
     }
 
-    // Both the trackBlockchainId and the track CID need to checked whether
-    // they are in the blacklist. That's the only reason `trackId`
-    // is in the request. Ideally we should only check track CID but
-    // that would require another blackfill job on the Blacklist table
-    const trackIdBlacklisted = await BlacklistManager.trackIdIsInBlacklist(
-      trackId
-    )
-    const cidBlacklisted = await BlacklistManager.CIDIsInBlacklist(CID)
-    const isNotServable = cidBlacklisted || trackIdBlacklisted
-    if (isNotServable) {
-      return sendResponse(
-        req,
-        res,
-        errorResponseForbidden(
-          `trackId=${trackId} cannot be served by this node`
-        )
-      )
-    }
-
     if (libs.identityService) {
       req.logger.info(
         `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
