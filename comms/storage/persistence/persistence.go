@@ -38,7 +38,7 @@ type Prefix int
 
 const (
 	FILE Prefix = iota
-	HTTPS
+	HTTP
 	GCS
 	S3
 	AZBLOB
@@ -46,7 +46,8 @@ const (
 
 var prefixWhitelist = map[string]Prefix{
 	"file":   FILE,
-	"https":  HTTPS,
+	"http":   HTTP,
+	"https":  HTTP,
 	"gcs":    GCS,
 	"s3":     S3,
 	"azblob": AZBLOB,
@@ -376,7 +377,7 @@ func checkStorageCredentials(blobDriverUrl string) error {
 		}
 
 		return nil
-	case HTTPS, S3:
+	case HTTP, S3:
 		// https defaults to S3
 		// solutions like Minio use https links for storage but use an S3 compatible API
 
