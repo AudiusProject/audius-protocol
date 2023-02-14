@@ -1,10 +1,11 @@
 import { View } from 'react-native'
 import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
 
-import IconDownload from 'app/assets/images/iconDownloadGray.svg'
+import IconDownload from 'app/assets/images/iconDownload.svg'
 import { Text, Tile } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
 
 const messages = {
   noDownloadedTracks: 'Download Your Favorites So You Can Listen Offline!'
@@ -33,12 +34,14 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 
 export const NoTracksPlaceholder = () => {
   const styles = useStyles()
+  const { neutralLight4 } = useThemeColors()
+
   return (
     <Animated.View entering={FadeIn} exiting={FadeOut}>
       <Tile style={styles.tile}>
         <View style={styles.container}>
           <View style={styles.iconRoot}>
-            <IconDownload />
+            <IconDownload fill={neutralLight4} height={35} width={35} />
           </View>
           <Text style={styles.text}>{messages.noDownloadedTracks}</Text>
         </View>

@@ -23,11 +23,7 @@ export function* requestDownloadAllFavoritesSaga() {
 }
 
 function* downloadAllFavorites() {
-  track(
-    make({
-      eventName: EventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_ON
-    })
-  )
+  track(make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_ON }))
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 

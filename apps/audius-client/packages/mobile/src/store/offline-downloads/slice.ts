@@ -32,10 +32,10 @@ export type DownloadQueueItem =
 
 export type OfflineDownloadsState = {
   trackStatus: {
-    [key: string]: OfflineDownloadStatus
+    [Key in ID]?: OfflineDownloadStatus
   }
   collectionStatus: {
-    [key: string]: OfflineDownloadStatus
+    [Key in ID]?: OfflineDownloadStatus
   }
   collectionSyncStatus: {
     [Key in ID]?: CollectionSyncStatus

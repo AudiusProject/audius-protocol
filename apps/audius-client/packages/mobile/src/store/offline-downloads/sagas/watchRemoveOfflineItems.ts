@@ -25,12 +25,7 @@ function* deleteItemsFromDisk(action: RemoveOfflineItemsAction) {
   const collectionStatus = yield* select(getOfflineCollectionsStatus)
 
   for (const item of items) {
-    track(
-      make({
-        eventName: EventNames.OFFLINE_MODE_REMOVE_ITEM,
-        ...item
-      })
-    )
+    track(make({ eventName: EventNames.OFFLINE_MODE_REMOVE_ITEM, ...item }))
     if (item.type === 'collection' && !collectionStatus[item.id]) {
       const collectionDirectory = yield* call(
         getLocalCollectionDir,

@@ -50,10 +50,7 @@ function* shouldAbortDownload(collectionId: CollectionId) {
 }
 
 export function* downloadCollectionWorker(collectionId: CollectionId) {
-  const queueItem = {
-    type: 'collection',
-    id: collectionId
-  } as DownloadQueueItem
+  const queueItem: DownloadQueueItem = { type: 'collection', id: collectionId }
   track(
     make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_START, ...queueItem })
   )
@@ -69,7 +66,7 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
     yield* call(removeDownloadedCollection, collectionId)
     yield* put(requestDownloadQueuedItem())
   } else if (cancel) {
-    yield* put(cancelDownload({ type: 'collection', id: collectionId }))
+    yield* put(cancelDownload(queueItem))
     yield* call(removeDownloadedCollection, collectionId)
   } else if (jobResult === OfflineDownloadStatus.ERROR) {
     track(
@@ -78,7 +75,7 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
         ...queueItem
       })
     )
-    yield* put(errorDownload({ type: 'collection', id: collectionId }))
+    yield* put(errorDownload(queueItem))
     yield* call(removeDownloadedCollection, collectionId)
     yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.ABANDONED) {
@@ -88,7 +85,7 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
         ...queueItem
       })
     )
-    yield* put(abandonDownload({ type: 'collection', id: collectionId }))
+    yield* put(abandonDownload(queueItem))
     yield* call(removeDownloadedCollection, collectionId)
     yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
@@ -98,7 +95,7 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
         ...queueItem
       })
     )
-    yield* put(completeDownload({ type: 'collection', id: collectionId }))
+    yield* put(completeDownload(queueItem))
     yield* put(requestDownloadQueuedItem())
   }
 }
