@@ -98,7 +98,9 @@ export const CollectionScreenDetailsTile = ({
     // Need to refetch the collection after resetting
     // Will pull from cache if it exists
     // TODO: fix this for smart collections
-    dispatch(fetchCollection(collectionId as number))
+    if (typeof collectionId === 'number') {
+      dispatch(fetchCollection(collectionId))
+    }
     dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
   }, [dispatch, collectionUid, userUid, collectionId])
 
