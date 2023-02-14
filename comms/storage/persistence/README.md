@@ -8,7 +8,7 @@ To update the local storage location set the `storage_driver_url` environment va
 storage_driver_url="file:///my/directory"
 ```
 
-By default, it tries to determine what storage driver to use based on the `storage_url` (eg `s3://your-bucket`)
+By default, it tries to determine what storage driver to use based on the `storage_url` (eg `s3://your-bucket` uses the s3 driver)
 
 It can be manually set to override this behavior with the environment variable `storage_driver` 
 This can be useful when using self hosted storage solution such as minio
@@ -18,8 +18,7 @@ storage_driver=gcs
 
 The available drivers are `file`, `s3`, `gcs`, and `azure`
 
-Side note: if the url is https:// it’ll default to s3
-
+💡 Note: URLs beginning with https:// will default to s3
 
 **Cloud Storage**
 
