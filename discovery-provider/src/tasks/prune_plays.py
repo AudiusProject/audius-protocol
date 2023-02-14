@@ -11,22 +11,30 @@ logger = logging.getLogger(__name__)
 PLAYS_ARCHIVE_TABLE_NAME = "plays_archive"
 
 PRUNE_PLAYS_QUERY = """
+    with to_prune as (
+        select
+            id
+        from
+            plays
+        where
+            plays.created_at <= :cutoff_timestamp
+        order by
+            plays.created_at asc
+        limit
+            :max_batch
+    )
     delete from
         plays
     where
-        plays.created_at <= :cutoff_timestamp
-    order by
-        plays.created_at asc
-    limit
-        :max_batch
+        id in (select id from to_prune)
     """
 
 # Prune up to the cutoff date
 # start at all plays before 2020 (328751 total)
 # TODO move to a sliding window
 current_date = datetime.now()
-cutoff_timestamp = current_date - timedelta(days=400)
-DEFAULT_CUTOFF_TIMESTAMP = datetime.fromisoformat(cutoff_timestamp.isoformat())
+year_before_current_date = current_date - timedelta(days=400)
+DEFAULT_CUTOFF_TIMESTAMP = datetime.fromisoformat(year_before_current_date.isoformat())
 
 # max number of plays to prune per run
 # 50000 max * 8 runs a day = 400000 plays per day
@@ -35,7 +43,6 @@ DEFAULT_MAX_BATCH = 50000
 
 def _prune_plays(
     session,
-    current_timestamp,
     cutoff_timestamp=DEFAULT_CUTOFF_TIMESTAMP,
     max_batch=DEFAULT_MAX_BATCH,
 ):
@@ -44,7 +51,6 @@ def _prune_plays(
     session.execute(
         text(PRUNE_PLAYS_QUERY),
         {
-            "current_timestamp": current_timestamp,
             "cutoff_timestamp": cutoff_timestamp,
             "max_batch": max_batch,
         },
@@ -72,7 +78,7 @@ def prune_plays(self):
             logger.info("prune_plays.py | Started pruning plays")
 
             with db.scoped_session() as session:
-                _prune_plays(session, datetime.now())
+                _prune_plays(session)
 
             logger.info(
                 f"prune_plays.py | Finished pruning in: {time.time()-start_time} sec"

@@ -45,7 +45,6 @@ def test_prune_plays_old_date(app):
     with db.scoped_session() as session:
         _prune_plays(
             session,
-            CURRENT_TIMESTAMP,
             cutoff_timestamp=datetime.now() - timedelta(weeks=6),
         )
         # verify plays
@@ -87,7 +86,6 @@ def test_prune_plays_max_batch(app):
     with db.scoped_session() as session:
         _prune_plays(
             session,
-            CURRENT_TIMESTAMP,
             cutoff_timestamp=CURRENT_TIMESTAMP - timedelta(weeks=140),
             max_batch=1,
         )
@@ -127,7 +125,7 @@ def test_prune_plays_skip_prune(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-        _prune_plays(session, CURRENT_TIMESTAMP)
+        _prune_plays(session)
         # verify plays
         plays_result: List[Play] = session.query(Play).order_by(Play.id).all()
         assert len(plays_result) == 1
