@@ -6,6 +6,9 @@ import {
 } from '@audius/common'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
 
+import { make, track } from 'app/services/analytics'
+import { EventNames } from 'app/types/analytics'
+
 import type { CollectionAction, OfflineItem } from '../slice'
 import { addOfflineItems, requestDownloadCollection } from '../slice'
 
@@ -19,6 +22,12 @@ export function* requestDownloadCollectionSaga() {
 
 function* downloadCollection(action: CollectionAction) {
   const { collectionId } = action.payload
+  track(
+    make({
+      eventName: EventNames.OFFLINE_MODE_DOWNLOAD_COLLECTION_TOGGLE_ON,
+      collectionId
+    })
+  )
 
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return

@@ -10,6 +10,7 @@ import RNFetchBlob from 'rn-fetch-blob'
 import { select, call, put, take, race, all } from 'typed-redux-saga'
 
 import { createAllImageSources } from 'app/hooks/useContentNodeImage'
+import { make, track } from 'app/services/analytics'
 import {
   getCollectionCoverArtPath,
   getLocalCollectionDir,
@@ -17,9 +18,10 @@ import {
   mkdirSafe
 } from 'app/services/offline-downloader'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
+import { EventNames } from 'app/types/analytics'
 
 import { getCollectionOfflineDownloadStatus } from '../../../selectors'
-import type { CollectionId } from '../../../slice'
+import type { CollectionId, DownloadQueueItem } from '../../../slice'
 import {
   abandonDownload,
   errorDownload,
@@ -48,7 +50,14 @@ function* shouldAbortDownload(collectionId: CollectionId) {
 }
 
 export function* downloadCollectionWorker(collectionId: CollectionId) {
-  yield* put(startDownload({ type: 'collection', id: collectionId }))
+  const queueItem = {
+    type: 'collection',
+    id: collectionId
+  } as DownloadQueueItem
+  track(
+    make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_START, ...queueItem })
+  )
+  yield* put(startDownload(queueItem))
 
   const { jobResult, cancel, abort } = yield* race({
     jobResult: call(downloadCollectionAsync, collectionId),
@@ -63,14 +72,32 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
     yield* put(cancelDownload({ type: 'collection', id: collectionId }))
     yield* call(removeDownloadedCollection, collectionId)
   } else if (jobResult === OfflineDownloadStatus.ERROR) {
+    track(
+      make({
+        eventName: EventNames.OFFLINE_MODE_DOWNLOAD_FAILURE,
+        ...queueItem
+      })
+    )
     yield* put(errorDownload({ type: 'collection', id: collectionId }))
     yield* call(removeDownloadedCollection, collectionId)
     yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.ABANDONED) {
+    track(
+      make({
+        eventName: EventNames.OFFLINE_MODE_DOWNLOAD_FAILURE,
+        ...queueItem
+      })
+    )
     yield* put(abandonDownload({ type: 'collection', id: collectionId }))
     yield* call(removeDownloadedCollection, collectionId)
     yield* put(requestDownloadQueuedItem())
   } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
+    track(
+      make({
+        eventName: EventNames.OFFLINE_MODE_DOWNLOAD_SUCCESS,
+        ...queueItem
+      })
+    )
     yield* put(completeDownload({ type: 'collection', id: collectionId }))
     yield* put(requestDownloadQueuedItem())
   }

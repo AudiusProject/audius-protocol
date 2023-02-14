@@ -1,5 +1,10 @@
-import type { AllTrackingEvents as CommonTrackingEvents } from '@audius/common'
+import type {
+  AllTrackingEvents as CommonTrackingEvents,
+  ID
+} from '@audius/common'
 import { Name as CommonEventNames } from '@audius/common'
+
+import type { DownloadQueueItem } from 'app/store/offline-downloads/slice'
 
 enum MobileEventNames {
   NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification',
@@ -15,7 +20,19 @@ enum MobileEventNames {
   SHARE_TO_TIKTOK_VIDEO = 'Share to TikTok (video) - start',
   SHARE_TO_TIKTOK_VIDEO_CANCELLED = 'Share to TikTok (video) - cancelled',
   SHARE_TO_TIKTOK_VIDEO_ERROR = 'Share to TikTok (video) - error',
-  SHARE_TO_TIKTOK_VIDEO_SUCCESS = 'Share to TikTok (video) - success'
+  SHARE_TO_TIKTOK_VIDEO_SUCCESS = 'Share to TikTok (video) - success',
+
+  // Offline Mode
+  OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_ON = 'Offline Mode: Download All Toggle On',
+  OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_OFF = 'Offline Mode: Download All Toggle Off',
+  OFFLINE_MODE_DOWNLOAD_COLLECTION_TOGGLE_ON = 'Offline Mode: Download Collection Toggle On',
+  OFFLINE_MODE_DOWNLOAD_COLLECTION_TOGGLE_OFF = 'Offline Mode: Download Collection Toggle Off',
+  OFFLINE_MODE_DOWNLOAD_REQUEST = 'Offline Mode: Download Item Request',
+  OFFLINE_MODE_DOWNLOAD_START = 'Offline Mode: Download Item Start',
+  OFFLINE_MODE_DOWNLOAD_SUCCESS = 'Offline Mode: Download Item Success',
+  OFFLINE_MODE_DOWNLOAD_FAILURE = 'Offline Mode: Download Item Failure',
+  OFFLINE_MODE_REMOVE_ITEM = 'Offline Mode: Remove Item',
+  OFFLINE_MODE_PLAY = 'Offline Mode: Offline Play'
 }
 
 export const EventNames = { ...CommonEventNames, ...MobileEventNames }
@@ -79,6 +96,49 @@ type AppError = {
   message?: string
 }
 
+type OfflineModeDownloadAllToggleOn = {
+  eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_ON
+}
+
+type OfflineModeDownloadAllToggleOff = {
+  eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_OFF
+}
+
+type OfflineModeDownloadCollectionToggleOn = {
+  eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_COLLECTION_TOGGLE_ON
+  collectionId: ID
+}
+
+type OfflineModeDownloadCollectionToggleOff = {
+  eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_COLLECTION_TOGGLE_OFF
+  collectionId: ID
+}
+
+type OfflineModeDownloadRequest = DownloadQueueItem & {
+  eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_REQUEST
+}
+
+type OfflineModeDownloadStart = DownloadQueueItem & {
+  eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_START
+}
+
+type OfflineModeDownloadSuccess = DownloadQueueItem & {
+  eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_SUCCESS
+}
+
+type OfflineModeDownloadFailure = DownloadQueueItem & {
+  eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_FAILURE
+}
+
+type OfflineModeRemoveItem = DownloadQueueItem & {
+  eventName: MobileEventNames.OFFLINE_MODE_REMOVE_ITEM
+}
+
+type OfflineModePlay = {
+  eventName: MobileEventNames.OFFLINE_MODE_PLAY
+  trackId: ID
+}
+
 type MobileTrackingEvents =
   | NotificationsOpenPushNotification
   | AppError
@@ -88,6 +148,16 @@ type MobileTrackingEvents =
   | ShareToSnapchatError
   | ShareToTikTokVideo
   | ShareToTikTokVideoError
+  | OfflineModeDownloadAllToggleOn
+  | OfflineModeDownloadAllToggleOff
+  | OfflineModeDownloadCollectionToggleOn
+  | OfflineModeDownloadCollectionToggleOff
+  | OfflineModeDownloadFailure
+  | OfflineModeDownloadRequest
+  | OfflineModeDownloadStart
+  | OfflineModeDownloadSuccess
+  | OfflineModeRemoveItem
+  | OfflineModePlay
 
 export type AllEvents = CommonTrackingEvents | MobileTrackingEvents
 

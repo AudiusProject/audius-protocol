@@ -2,7 +2,9 @@ import { tracksSocialActions } from '@audius/common'
 import moment from 'moment'
 import { put, takeEvery, select } from 'typed-redux-saga'
 
+import { make, track } from 'app/services/analytics'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
+import { EventNames } from 'app/types/analytics'
 
 import { getIsFavoritesDownloadsEnabled } from '../selectors'
 import { addOfflineItems } from '../slice'
@@ -20,6 +22,13 @@ function* downloadSavedTrack(
   )
 
   if (isFavoritesDownloadEnabled) {
+    track(
+      make({
+        eventName: EventNames.OFFLINE_MODE_DOWNLOAD_REQUEST,
+        type: 'track',
+        id: trackId
+      })
+    )
     yield* put(
       addOfflineItems({
         items: [
