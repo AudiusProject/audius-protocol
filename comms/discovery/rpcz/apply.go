@@ -226,12 +226,12 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 				if err != nil {
 					config.Logger.Error("Failed to parse params")
 				}
-				payload := schema.RPCPayload{ Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams }
+				payload := schema.RPCPayload{Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams}
 				encodedUserId, err := misc.EncodeHashId(int(userId))
-				data := schema.ChatWebsocketEventData{ RPC: payload, Metadata: schema.Metadata{Timestamp: meta.Timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
+				data := schema.ChatWebsocketEventData{RPC: payload, Metadata: schema.Metadata{Timestamp: meta.Timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
 				for _, subscribedUserId := range userIds {
 					// Don't send events sent by a user to that same user
-					if (subscribedUserId != userId) {
+					if subscribedUserId != userId {
 						websocketPush(subscribedUserId, data)
 					}
 				}

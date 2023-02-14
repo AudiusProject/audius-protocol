@@ -37,10 +37,10 @@ func chatWebsocket(c echo.Context) error {
 
 	// Check that timestamp is less than 5 seconds old
 	timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
-	if err != nil || time.Now().UnixMilli() - timestamp > 5000 {
+	if err != nil || time.Now().UnixMilli()-timestamp > 5000 {
 		return c.String(400, "Invalid signature timestamp")
 	}
-	
+
 	// Websockets from the client can't send headers, so instead, the signature is a query parameter
 	// Strip out the signature query parameter to get the true signature payload
 	u, err := url.Parse(c.Request().RequestURI)

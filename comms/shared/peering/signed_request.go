@@ -19,7 +19,7 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	if c.Request().Method == "GET" {
 		// Check that timestamp is less than 5 seconds old
 		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
-		if err != nil || time.Now().UnixMilli() - timestamp > config.SignatureTimeToLiveMs {
+		if err != nil || time.Now().UnixMilli()-timestamp > config.SignatureTimeToLiveMs {
 			return nil, "", errors.New("Invalid timestamp")
 		}
 
@@ -37,7 +37,7 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	} else {
 		err = errors.New("Unsupported request method " + c.Request().Method)
 	}
-	if (err != nil) {
+	if err != nil {
 		return nil, "", err
 	}
 
@@ -45,7 +45,6 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	wallet, err := ReadSigned(sigHex, payload)
 	return payload, wallet, err
 }
-
 
 func ReadSigned(signatureHex string, signedData []byte) (string, error) {
 	sig, err := base64.StdEncoding.DecodeString(signatureHex)
