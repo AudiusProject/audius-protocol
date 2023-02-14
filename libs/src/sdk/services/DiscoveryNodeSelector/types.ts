@@ -1,6 +1,6 @@
-import type TypedEventEmitter from 'typed-emitter'
 import type { Middleware } from '../../api/generated/default'
 import type { DeepPartial } from '../../utils/deepPartial'
+import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 import type { HealthCheckThresholds } from './healthCheckTypes'
 
 export type Decision = {
@@ -83,10 +83,8 @@ export type ServiceSelectionEvents = {
   change: (endpoint: string) => void
 }
 
-export type DiscoveryNodeSelectorService = {
-  getSelectedEndpoint: () => Promise<string | null>
-  createMiddleware: () => Middleware
-  addEventListener: TypedEventEmitter<ServiceSelectionEvents>['addListener']
-  removeEventListener: TypedEventEmitter<ServiceSelectionEvents>['removeListener']
-  removeAllEventListeners: TypedEventEmitter<ServiceSelectionEvents>['removeAllListeners']
-}
+export type DiscoveryNodeSelectorService =
+  EventEmitterTarget<ServiceSelectionEvents> & {
+    getSelectedEndpoint: () => Promise<string | null>
+    createMiddleware: () => Middleware
+  }

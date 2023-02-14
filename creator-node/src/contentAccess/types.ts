@@ -9,6 +9,7 @@ export type ContentSignatureData = {
 export type ContentAccessError =
   | 'InvalidDiscoveryNode'
   | 'IncorrectCID'
+  | 'UnservableTrack'
   | 'ExpiredTimestamp'
 
 export type CheckAccessArgs = {

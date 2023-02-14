@@ -26,6 +26,7 @@ var (
 
 	IP string
 
+	NatsClusterName     = "comms"
 	NatsClusterUsername = ""
 	NatsClusterPassword = ""
 	NatsUseNkeys        = true
@@ -113,14 +114,15 @@ func Init() {
 	signed, err := NkeyPair.Sign([]byte(WalletAddress))
 	dieOnErr(err)
 	signedHex := hex.EncodeToString(signed)
-	NatsClusterUsername = signedHex[0:10]
-	NatsClusterPassword = signedHex[10:20]
+	NatsClusterUsername = NatsClusterName
+	NatsClusterPassword = signedHex[0:15]
 
 	Logger.Info("config",
 		"env", Env,
 		"wallet", WalletAddress,
 		"nkey", NkeyPublic,
 		"ip", IP,
+		"nats_cluster", NatsClusterName,
 		"nu", NatsClusterUsername,
 		"np", NatsClusterPassword)
 }

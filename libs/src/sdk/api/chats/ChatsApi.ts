@@ -37,11 +37,24 @@ import EventEmitter from 'events'
 import type TypedEmitter from 'typed-emitter'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
 import type { WalletApiService } from '../../services/WalletApi'
+import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 
-export class ChatsApi extends BaseAPI {
+export class ChatsApi
+  extends BaseAPI
+  implements EventEmitterTarget<ChatEvents>
+{
   private chatSecrets: Record<string, Uint8Array> = {}
   private readonly eventEmitter: TypedEmitter<ChatEvents>
   private websocket: WebSocket | undefined
+
+  /**
+   * Proxy to the event emitter addListener
+   */
+  public addEventListener
+  /**
+   * Proxy to the event emitter removeListener
+   */
+  public removeEventListener
 
   constructor(
     config: Configuration,
@@ -50,6 +63,12 @@ export class ChatsApi extends BaseAPI {
   ) {
     super(config)
     this.eventEmitter = new EventEmitter() as TypedEmitter<ChatEvents>
+    this.addEventListener = this.eventEmitter.addListener.bind(
+      this.eventEmitter
+    )
+    this.removeEventListener = this.eventEmitter.removeListener.bind(
+      this.eventEmitter
+    )
 
     // Listen for discovery node selection changes and reinit websocket
     this.discoveryNodeSelectorService.addEventListener('change', (endpoint) => {
@@ -533,7 +552,7 @@ export class ChatsApi extends BaseAPI {
     const payload = JSON.stringify({ ...args, timestamp: new Date().getTime() })
     await this.signAndSendRequest({
       method: 'POST',
-      headers: {},
+      headers: { 'Content-Type': 'application/json' },
       path: `/comms/mutate`,
       body: payload
     })
@@ -544,14 +563,11 @@ export class ChatsApi extends BaseAPI {
     const timestamp = new Date().getTime()
     const originalUrl = `/comms/chats/ws?timestamp=${timestamp}`
     const signatureHeader = await this.getSignatureHeader(originalUrl)
-    const host = endpoint.replace(/http(s?)/g, 'ws$1:')
+    const host = endpoint.replace(/http(s?)/g, 'ws$1')
     const url = `${host}${originalUrl}&signature=${encodeURIComponent(
       signatureHeader['x-sig']
     )}`
     const ws = new WebSocket(url)
-    ws.addEventListener('open', () => {
-      this.eventEmitter.emit('open')
-    })
     ws.addEventListener('message', (messageEvent) => {
       const handleAsync = async () => {
         const data = JSON.parse(messageEvent.data) as ChatWebsocketEventData
@@ -583,6 +599,9 @@ export class ChatsApi extends BaseAPI {
         }
       }
       handleAsync()
+    })
+    ws.addEventListener('open', () => {
+      this.eventEmitter.emit('open')
     })
     ws.addEventListener('close', () => {
       this.eventEmitter.emit('close')

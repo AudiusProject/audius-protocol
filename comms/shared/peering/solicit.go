@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"sort"
+	"strings"
 	"sync"
+	"time"
 
 	"comms.audius.co/discovery/config"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -38,7 +40,7 @@ func Solicit() map[string]*Info {
 			u := sp.Endpoint + "/nats/exchange"
 			info, err := solicitServer(u)
 			if err != nil {
-				config.Logger.Debug("get info failed", "endpoint", u, "err", err)
+				// config.Logger.Debug("get info failed", "endpoint", u, "err", err)
 			} else {
 				info.Host = sp.Endpoint
 				info.SPID = sp.SPID
@@ -108,7 +110,8 @@ func solicitServer(endpoint string) (*Info, error) {
 		return nil, err
 	}
 
-	info.IsSelf = info.Address == config.WalletAddress
+	info.IsSelf = strings.EqualFold(info.Address, config.WalletAddress)
+	info.AsOf = time.Now()
 
 	return info, nil
 }

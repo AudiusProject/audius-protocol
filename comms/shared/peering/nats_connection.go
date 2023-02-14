@@ -14,7 +14,7 @@ func DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error) {
 	if len(peerMap) != 0 {
 		goodNatsUrls := []string{}
 		for _, peer := range peerMap {
-			if peer.NatsIsReachable {
+			if peer.NatsIsReachable && peer.NatsClusterName == config.NatsClusterName {
 				u := fmt.Sprintf("nats://%s:4222", peer.IP)
 				goodNatsUrls = append(goodNatsUrls, u)
 			}
