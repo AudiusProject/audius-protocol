@@ -27,7 +27,7 @@ select
     created_at,
     updated_at,
     last_added_to
-from postgresql(sandbox3, table='playlists')
+from postgresql(testdb_data, table='playlists')
 where is_current = true
   and is_delete = false
   and is_private = false;
@@ -54,7 +54,7 @@ select
   playlist_id, 
   JSONExtractUInt(arrayJoin(JSONExtractArrayRaw(playlist_contents, 'track_ids')), 'track') as track_id,
   JSONExtractUInt(arrayJoin(JSONExtractArrayRaw(playlist_contents, 'track_ids')), 'time') as created_at
-from postgresql(sandbox3, table='playlists')
+from postgresql(testdb_data, table='playlists')
 where is_current = true
   and is_delete = false
   and is_private = false

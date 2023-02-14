@@ -26,7 +26,7 @@ select
   followee_user_id,
   created_at,
   if(is_delete, -1, 1)
-from postgresql(sandbox3, table='follows')
+from postgresql(testdb_data, table='follows')
 where is_current = true
   and blocknumber > (select max(blocknumber) from follows);
 ;

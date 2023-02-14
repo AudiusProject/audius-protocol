@@ -28,7 +28,7 @@ select
   repost_type,
   created_at,
   if(is_delete, -1, 1)
-from postgresql(sandbox3, table='reposts')
+from postgresql(testdb_data, table='reposts')
 where is_current = true
   and blocknumber > (select max(blocknumber) from reposts)
 ;

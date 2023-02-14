@@ -19,9 +19,13 @@ dev.trending.run::
 
 dev.trending.run.snapshot::
 	@echo starting development dependencies
-	@echo restoring testdb from `/trending/houseparty/discProvProduction.dump`
+	@	docker compose up chdb testdb -d
+	@echo restoring testdb from /trending/houseparty/discProvProduction.dump
+	@	docker exec -i testdb pg_restore --verbose --clean --no-acl --no-owner -U postgres -d default_db < ./trending/houseparty/discProvProduction.dump
 	@echo migrating data from testdb into clickhouse
+	@	docker-compose exec ch_server bash /sql/all.sh
 	@echo starting trending server
+	@   go run main.go trending
 
 dev.trending.deps::
 	@echo starting dependencies without exiting

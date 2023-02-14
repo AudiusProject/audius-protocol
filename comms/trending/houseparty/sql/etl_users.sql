@@ -24,5 +24,5 @@ select
   COALESCE(creator_node_endpoint, ''),
   created_at,
   updated_at
-from postgresql(sandbox3, table='users')
+from postgresql(testdb_data, table='users')
 where is_current = true;

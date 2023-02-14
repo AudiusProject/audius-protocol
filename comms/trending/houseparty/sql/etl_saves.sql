@@ -29,7 +29,7 @@ select
   save_type,
   created_at,
   if(is_delete, -1, 1)
-from postgresql(sandbox3, table='saves')
+from postgresql(testdb_data, table='saves')
 where is_current = true
   and blocknumber > (select max(blocknumber) from saves);
 ;

@@ -33,7 +33,7 @@ select
     track_segments,
     created_at,
     updated_at
-from postgresql(sandbox3, table='tracks')
+from postgresql(testdb_data, table='tracks')
 where is_current = true 
 and is_delete = false
 and is_unlisted = false;

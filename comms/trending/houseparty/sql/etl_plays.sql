@@ -17,7 +17,7 @@ select
     play_item_id,
     created_at,
     updated_at
-from postgresql(sandbox3, table='plays')
+from postgresql(testdb_data, table='plays')
 where created_at > (select max(created_at) from plays)
 ;
 
