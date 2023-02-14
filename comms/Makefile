@@ -68,3 +68,8 @@ sqlc:: reset
 quicktype::
 	cp ../libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts
 	npx quicktype --package schema --out discovery/schema/schema.go --just-types-and-package discovery/schema/*.ts
+
+# TRENDING commands
+trending.dev.run::
+	@echo starting trending server
+	@ 	  go run main.go trending

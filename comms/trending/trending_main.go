@@ -1,18 +1,23 @@
 package trending
 
 import (
-	"context"
+	"log"
 
-	"comms.audius.co/storage/telemetry"
+	"comms.audius.co/trending/config"
+	"comms.audius.co/trending/trendingserver"
 )
 
 func TrendingMain() {
-	// trendingConfig.init()
+	conf, err := config.Default()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	ctx := context.Background()
-	logger := telemetry.NewConsoleLogger()
-	tp := telemetry.InitTracing(logger)
+	ts, err := trendingserver.NewTrendingServer(*conf)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	defer func() { _ = tp.Shutdown(ctx) }()
-
+	err = ts.Run()
+	log.Fatal(err)
 }
