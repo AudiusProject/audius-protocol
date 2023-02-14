@@ -51,7 +51,7 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext) *StorageSe
 	for _, node := range allNodes {
 		fmt.Printf("checking node %v against this pubKey %q\n", node, thisNodePubKey)
 		allStorageNodePubKeys = append(allStorageNodePubKeys, node.DelegateOwnerWallet)
-		if node.DelegateOwnerWallet == thisNodePubKey {
+		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
 			host = node.Endpoint
 		}
 	}

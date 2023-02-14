@@ -40,7 +40,7 @@ func Solicit() map[string]*Info {
 			u := sp.Endpoint + "/nats/exchange"
 			info, err := solicitServer(u)
 			if err != nil {
-				config.Logger.Debug("get info failed", "endpoint", u, "err", err)
+				// config.Logger.Debug("get info failed", "endpoint", u, "err", err)
 			} else {
 				info.Host = sp.Endpoint
 				info.SPID = sp.SPID

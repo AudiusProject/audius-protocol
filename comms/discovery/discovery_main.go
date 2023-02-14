@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"time"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
@@ -13,8 +12,6 @@ import (
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
 	"comms.audius.co/shared/peering"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
 	"golang.org/x/sync/errgroup"
 )
@@ -79,7 +76,6 @@ func DiscoveryMain() {
 		return err
 	})
 	if err := g.Wait(); err != nil {
-		startErrorServer(err)
 		log.Fatal(err)
 	}
 
@@ -87,25 +83,12 @@ func DiscoveryMain() {
 	e.Logger.Fatal(e.Start(":8925"))
 }
 
-// this will start a simple server that will respond to all requests with the error message
-// for 10 minutes, then container will exit and restart.
-// for debugging, can be removed when everything works good
-func startErrorServer(err error) {
-	e := echo.New()
-	e.HideBanner = true
-	e.Use(middleware.Logger())
-	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
-
-	e.GET("*", func(c echo.Context) error {
-		return c.String(500, err.Error())
-	})
-
-	go e.Logger.Fatal(e.Start(":8925"))
-	time.Sleep(10 * time.Minute)
-}
-
 func createJetstreamStreams(jsc nats.JetStreamContext) error {
+
+	discoveryPlacement := &nats.Placement{
+		Cluster: config.NatsClusterName,
+		Tags:    []string{"discovery"},
+	}
 
 	streamInfo, err := jsc.AddStream(&nats.StreamConfig{
 		Name:     config.GlobalStreamName,
@@ -113,6 +96,7 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 		Replicas: config.NatsReplicaCount,
 		// DenyDelete: true,
 		// DenyPurge:  true,
+		Placement: discoveryPlacement,
 	})
 	if err != nil {
 		return err
@@ -122,19 +106,21 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 
 	// create kv buckets
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   config.PubkeystoreBucketName,
-		Replicas: config.NatsReplicaCount,
+		Bucket:    config.PubkeystoreBucketName,
+		Replicas:  config.NatsReplicaCount,
+		Placement: discoveryPlacement,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create pubkey kv %v", err)
 	}
 
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   config.RateLimitRulesBucketName,
-		Replicas: config.NatsReplicaCount,
+		Bucket:    config.RateLimitRulesBucketName,
+		Replicas:  config.NatsReplicaCount,
+		Placement: discoveryPlacement,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create rate limit kv %v", err)
 	}
 
 	return nil
@@ -152,6 +138,7 @@ func createConsumer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) error {
 
 	sub, err := jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.WalletAddress))
 	if err != nil {
+		config.Logger.Error(err.Error())
 		return err
 	}
 
@@ -160,6 +147,5 @@ func createConsumer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) error {
 	if err == nil {
 		config.Logger.Info("create subscription", "sub", info)
 	}
-
-	return err
+	return nil
 }

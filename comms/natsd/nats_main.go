@@ -50,7 +50,7 @@ func startServer() {
 	e.Debug = true
 
 	// Middleware
-	e.Use(middleware.Logger())
+	// e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
@@ -103,6 +103,7 @@ func startServer() {
 			"env":               config.Env,
 			"is_content":        config.IsCreatorNode,
 			"nats_is_reachable": config.NatsIsReachable,
+			"nkey":              config.NkeyPublic,
 		})
 	})
 
