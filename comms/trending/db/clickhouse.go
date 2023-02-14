@@ -54,10 +54,10 @@ func NewClickHouseDB(conf config.Config) (*ClickHouseDB, error) {
 		return nil, err
 	}
 
-	err = InitTables(conn)
-	if err != nil {
-		return nil, err
-	}
+	// err = InitTables(conn)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return &ClickHouseDB{
 		CHDB: conn,
