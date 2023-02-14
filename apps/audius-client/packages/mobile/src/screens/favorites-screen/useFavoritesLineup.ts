@@ -74,8 +74,16 @@ export const useFavoritesLineup = (fetchLineup: () => void) => {
     }
   }, [dispatch, isOfflineModeEnabled, offlineTracks, savedTracksUidMap])
 
+  const fetchLineupOnline = useCallback(() => {
+    // Because we do `fetchLineupMetadatasSucceeded` in fetchLineupOffline
+    // we need to manually set the lineup as loading here. This is so if the app is started
+    // offline and then reconnects, we show a spinner while loading instead of the empty message
+    dispatch(savedPageTracksLineupActions.setLoading())
+    fetchLineup()
+  }, [dispatch, fetchLineup])
+
   // Fetch the lineup based on reachability
-  useReachabilityEffect(fetchLineup, fetchLineupOffline)
+  useReachabilityEffect(fetchLineupOnline, fetchLineupOffline)
 
   return lineup
 }
