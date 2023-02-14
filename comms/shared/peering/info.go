@@ -12,10 +12,11 @@ type Info struct {
 	Host string
 	SPID string
 
-	Address   string
-	Nkey      string
-	IP        string
-	NatsRoute string
+	Address         string
+	Nkey            string
+	IP              string
+	NatsClusterName string
+	NatsRoute       string
 	// todo: public key for shared secret stuff?
 
 	IsSelf          bool
@@ -28,6 +29,7 @@ func MyInfo() (*Info, error) {
 		Address:         config.WalletAddress,
 		Nkey:            config.NkeyPublic,
 		IP:              config.IP,
+		NatsClusterName: config.NatsClusterName,
 		NatsRoute:       fmt.Sprintf("nats://%s:%s@%s:6222", config.NatsClusterUsername, config.NatsClusterPassword, config.IP),
 		NatsIsReachable: config.NatsIsReachable,
 	}
