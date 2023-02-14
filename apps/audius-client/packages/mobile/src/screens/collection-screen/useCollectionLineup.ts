@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { SmartCollectionVariant } from '@audius/common'
 import {
+  Uid,
   areSetsEqual,
   useProxySelector,
   Kind,
@@ -10,6 +11,7 @@ import {
   cacheCollectionsSelectors,
   collectionPageLineupActions,
   collectionPageSelectors,
+  queueSelectors,
   lineupSelectors,
   reachabilitySelectors
 } from '@audius/common'
@@ -18,12 +20,12 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
-import { store } from 'app/store'
 import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
 
 const { getCollection } = cacheCollectionsSelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
 const { makeGetTableMetadatas } = lineupSelectors
+const { getPositions } = queueSelectors
 const { getIsReachable } = reachabilitySelectors
 
 const getTracksLineup = makeGetTableMetadatas(getCollectionTracksLineup)
@@ -46,17 +48,31 @@ export const useCollectionLineup = (
   const collection = useSelector((state) => {
     return getCollection(state, { id: collectionId as number })
   })
+
+  const collectionUidSource = `collection:${collectionId}`
+  const queuePositions = useSelector(getPositions)
+  const queueTrackUids = Object.keys(queuePositions).map(Uid.fromString)
+  // Get every UID in the queue whose source references this lineup
+  // in the form of { id: [uid1, uid2] }
+  const queueUidsByTrackId: Record<number, string[]> = queueTrackUids
+    .filter((uid) => uid.source === collectionUidSource)
+    .reduce((mapping, uid) => {
+      if (uid.id in mapping) {
+        mapping[uid.id].push(uid.toString())
+      } else {
+        mapping[uid.id] = [uid.toString()]
+      }
+      return mapping
+    }, {})
+
   const collectionTracks = useSelector(getCollectionTracksLineup)
   const collectionTrackUidMap = collectionTracks.entries.reduce(
     (acc, track) => {
       if (acc[track.id] && acc[track.id].includes(track.id)) {
         return acc
       }
-      const collectionTrackUid = makeUid(
-        Kind.TRACKS,
-        track.id,
-        `collection:${collectionId}`
-      )
+      const collectionTrackUid =
+        track.uid ?? makeUid(Kind.TRACKS, track.id, collectionUidSource)
       acc[track.id] = acc[track.id]
         ? acc[track.id].concat(collectionTrackUid)
         : [collectionTrackUid]
@@ -72,29 +88,20 @@ export const useCollectionLineup = (
       const trackIdEncounters = {} as Record<number, number>
       const sortedTracks = collection.playlist_contents.track_ids
         .filter(({ track: trackId }) => offlineTrackIds.has(trackId.toString()))
-        .map((trackData) => {
-          trackIdEncounters[trackData.track] = trackIdEncounters[
-            trackData.track
-          ]
-            ? trackIdEncounters[trackData.track] + 1
+        .map(({ track: trackId, time }) => {
+          trackIdEncounters[trackId] = trackIdEncounters[trackId]
+            ? trackIdEncounters[trackId] + 1
             : 0
           return {
-            id: trackData.track,
+            id: trackId,
             kind: Kind.TRACKS,
             uid:
-              collectionTrackUidMap[trackData.track]?.[
-                trackIdEncounters[trackData.track]
-              ] ??
-              makeUid(
-                Kind.TRACKS,
-                trackData.track,
-                `collection:${collectionId}`
-              ),
+              queueUidsByTrackId[trackId]?.[trackIdEncounters[trackId]] ??
+              collectionTrackUidMap[trackId]?.[trackIdEncounters[trackId]] ??
+              makeUid(Kind.TRACKS, trackId, collectionUidSource),
 
             dateAdded:
-              typeof trackData.time === 'string'
-                ? moment(trackData.time)
-                : moment.unix(trackData.time)
+              typeof time === 'string' ? moment(time) : moment.unix(time)
           }
         })
       const lineupTracks = sortedTracks.map((track) => ({
@@ -109,7 +116,7 @@ export const useCollectionLineup = (
         metadata: track
       }))
 
-      store.dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
+      dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
 
       dispatch(
         collectionPageLineupActions.fetchLineupMetadatasSucceeded(
@@ -122,12 +129,14 @@ export const useCollectionLineup = (
       )
     }
   }, [
-    collectionTrackUidMap,
-    collection,
-    collectionId,
-    dispatch,
     isOfflineModeEnabled,
-    offlineTrackIds
+    collectionId,
+    collection,
+    dispatch,
+    offlineTrackIds,
+    queueUidsByTrackId,
+    collectionTrackUidMap,
+    collectionUidSource
   ])
 
   // Fetch the lineup based on reachability

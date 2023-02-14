@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useReachabilityEffect } from 'app/hooks/useReachabilityEffect'
-import { store } from 'app/store'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { getOfflineTracks } from 'app/store/offline-downloads/selectors'
 
@@ -56,7 +55,7 @@ export const useFavoritesLineup = (fetchLineup: () => void) => {
         metadata: track
       }))
 
-      store.dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
+      dispatch(cacheActions.add(Kind.TRACKS, cacheTracks, false, true))
 
       // Reorder lineup tracks according to favorite time
       const sortedTracks = orderBy(lineupTracks, (track) => track.dateSaved, [
