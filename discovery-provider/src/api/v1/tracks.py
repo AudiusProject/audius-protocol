@@ -1,5 +1,6 @@
 import json
 import logging
+import time
 import urllib.parse
 from typing import List
 from urllib.parse import urljoin
@@ -418,8 +419,10 @@ class TrackStream(Resource):
         This endpoint accepts the Range header for streaming.
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
         """
+        t1 = time.time()
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_stream_info(decoded_id)
+        logger.info(f"stream: db time: {time.time() - t1}")
 
         creator_nodes = info["creator_nodes"]
         track = info["track"]
@@ -457,6 +460,7 @@ class TrackStream(Resource):
             path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
         stream_url = urljoin(primary_node, path)
 
+        logger.info(f"stream: total time: {time.time() - t1} ")
         return stream_url
 
 

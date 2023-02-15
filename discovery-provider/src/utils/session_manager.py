@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class SessionManager:
     def __init__(self, db_url, db_engine_args):
-        self._engine = create_engine(db_url, **db_engine_args)
+        self._engine = create_engine(db_url, **db_engine_args, echo=True)
 
         self._session_factory = sessionmaker(bind=self._engine)
 
