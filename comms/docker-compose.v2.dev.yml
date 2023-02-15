@@ -42,6 +42,8 @@ services:
       <<: *shared-vars
     depends_on:
       - comdb
+    extra_hosts:
+      - "node1:host-gateway"
 
   storage1:
     container_name: storage1
@@ -56,10 +58,12 @@ services:
       audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Remove after shared/peering/ config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       <<: *shared-vars
-      NATS_SERVER_URL: "nats://com1:4222"
+      NATS_SERVER_URL: "nats://com1:4222" # TODO: remove when 'standalone' goes away
       NAME: "storage1"
       test_host: "com1"
     depends_on:
       - com1
     volumes:
       - ./:/app
+    extra_hosts:
+      - "node1:host-gateway"

@@ -34,6 +34,13 @@ x-common-variables: &shared-vars
         ]'
   audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
 
+x-common-variables: &extra-hosts
+  extra_hosts:
+    - "node1:host-gateway"
+    - "node2:host-gateway"
+    - "node3:host-gateway"
+    - "node4:host-gateway"
+
 services:
 
   ingress:
@@ -62,8 +69,7 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable
       test_host: "com1"
       <<: *shared-vars
-    extra_hosts:
-      - "node1:host-gateway"
+    <<: *extra-hosts
 
   storage1:
     container_name: storage1
@@ -76,8 +82,7 @@ services:
       <<: *shared-vars
       test_host: "com1"
       NAME: "storage1"
-    extra_hosts:
-      - "node1:host-gateway"
+    <<: *extra-hosts
 
   com2:
     container_name: com2
@@ -89,8 +94,7 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com2?sslmode=disable
       test_host: "com2"
       <<: *shared-vars
-    extra_hosts:
-      - "node1:host-gateway"
+    <<: *extra-hosts
 
   storage2:
     container_name: storage2
@@ -103,8 +107,7 @@ services:
       <<: *shared-vars
       test_host: "com2"
       NAME: "storage2"
-    extra_hosts:
-      - "node1:host-gateway"
+    <<: *extra-hosts
 
   com3:
     container_name: com3
@@ -116,8 +119,7 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com3?sslmode=disable
       test_host: "com3"
       <<: *shared-vars
-    extra_hosts:
-      - "node1:host-gateway"
+    <<: *extra-hosts
 
   storage3:
     container_name: storage3
@@ -130,8 +132,7 @@ services:
       <<: *shared-vars
       test_host: "com3"
       NAME: "storage3"
-    extra_hosts:
-      - "node1:host-gateway"
+    <<: *extra-hosts
 
   com4:
     container_name: com4
@@ -143,8 +144,7 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
       test_host: "com4"
       <<: *shared-vars
-    extra_hosts:
-      - "node1:host-gateway"
+    <<: *extra-hosts
 
   storage4:
     container_name: storage4
@@ -157,5 +157,4 @@ services:
       <<: *shared-vars
       test_host: "com4"
       NAME: "storage4"
-    extra_hosts:
-      - "node1:host-gateway"
+    <<: *extra-hosts
