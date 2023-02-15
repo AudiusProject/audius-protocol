@@ -40,6 +40,7 @@ func IntegrationTester(test func(c *req.Client) error) {
 	// run test on main thread
 	// provides test echo context to avoid duplicating test code
 	testClient := req.C()
+	testClient.SetBaseURL("http://localhost" + conf.FormatEchoPort())
 	err = test(testClient)
 	ErrPanic(err)
 

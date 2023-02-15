@@ -11,7 +11,7 @@ import (
 
 func TestGetHealth(t *testing.T) {
 	testutils.IntegrationTester(func(c *req.Client) error {
-		resp, err := c.R().Get("http://localhost:9876/trending/health")
+		resp, err := c.R().Get("/trending/health")
 		if err != nil {
 			return err
 		}
@@ -27,7 +27,7 @@ func TestGetHealth(t *testing.T) {
 
 func TestGetTracksTrending(t *testing.T) {
 	testutils.IntegrationTester(func(c *req.Client) error {
-		resp, err := c.R().Get("http://localhost:9876/tracks/trending")
+		resp, err := c.R().Get("/tracks/trending")
 		if err != nil {
 			return err
 		}
@@ -43,7 +43,7 @@ func TestGetTracksTrending(t *testing.T) {
 
 func TestGetPlaylistsTrending(t *testing.T) {
 	testutils.IntegrationTester(func(c *req.Client) error {
-		resp, err := c.R().Get("http://localhost:9876/playlists/trending")
+		resp, err := c.R().Get("/playlists/trending")
 		if err != nil {
 			return err
 		}
