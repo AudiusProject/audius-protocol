@@ -72,7 +72,7 @@ GROUP BY
   n.type, n.group_id, user_seen.seen_at, user_seen.prev_seen_at
 ORDER BY
   user_seen.seen_at desc NULLS LAST,
-  n.group_id asc
+  n.group_id desc
 limit :limit;
 """
 )
@@ -147,6 +147,9 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
     """
     limit = args.get("limit") or DEFAULT_LIMIT
     limit = min(limit, MAX_LIMIT)  # type: ignore
+
+    # Set valid types
+    args["valid_types"] = args.get("valid_type", []) + default_valid_types
 
     rows = session.execute(
         notification_groups_sql,
@@ -353,8 +356,6 @@ notifications_sql = notifications_sql.bindparams(
 
 
 def get_notifications(session: Session, args: GetNotificationArgs):
-    # Set valid types
-    args["valid_types"] = args.get("valid_type", []) + default_valid_types
     notifications = get_notification_groups(session, args)
     notification_ids = []
     for notification in notifications:
