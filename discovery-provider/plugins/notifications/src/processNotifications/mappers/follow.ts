@@ -58,7 +58,6 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
       }
 
     }
-    // 
 
     if (userNotifications.browser) {
       // TODO: Send out browser
