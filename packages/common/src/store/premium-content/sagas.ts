@@ -1,4 +1,15 @@
-import { Chain, Collectible, ID, Kind, PremiumContentSignature, PremiumTrackStatus, Track, TrackMetadata } from 'models'
+import { takeEvery, select, call, put, delay, all } from 'typed-redux-saga'
+
+import {
+  Chain,
+  Collectible,
+  ID,
+  Kind,
+  PremiumContentSignature,
+  PremiumTrackStatus,
+  Track,
+  TrackMetadata
+} from 'models'
 import { User } from 'models/User'
 import { FeatureFlags } from 'services/remote-config'
 import { accountSelectors } from 'store/account'
@@ -9,7 +20,6 @@ import { trackPageActions } from 'store/pages'
 import { usersSocialActions } from 'store/social'
 import { tippingActions } from 'store/tipping'
 import { parseTrackRouteFromPermalink } from 'utils'
-import { takeEvery, select, call, put, delay, all } from 'typed-redux-saga'
 import { Nullable } from 'utils/typeUtils'
 
 import { premiumContentActions, premiumContentSelectors } from '.'
@@ -174,7 +184,9 @@ function* updateNewPremiumContentSignatures({
     premiumContentSignatureMap[trackId] = premiumContentSignature
   })
 
-  yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
+  if (Object.keys(premiumContentSignatureMap).length > 0) {
+    yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
+  }
 }
 
 /**
@@ -276,7 +288,10 @@ function* updateCollectibleGatedTrackAccess(
       premiumContentSignatureMap[id] = null
     }
   })
-  yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
+
+  if (Object.keys(premiumContentSignatureMap).length > 0) {
+    yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
+  }
 
   if (!Object.keys(trackMap).length) return
 
@@ -306,7 +321,10 @@ function* updateCollectibleGatedTrackAccess(
     })
 
     // update premium content signatures
-    yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
+
+    if (Object.keys(premiumContentSignatureMap).length > 0) {
+      yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
+    }
   }
 }
 
