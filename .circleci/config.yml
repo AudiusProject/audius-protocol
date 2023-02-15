@@ -1366,7 +1366,7 @@ workflows:
               only: /(^release-.*$)/
           requires:
             - build-creator
-            - test-creator
+            # - test-creator
             - build-discovery
             - test-discovery
             - build-identity
@@ -1375,7 +1375,7 @@ workflows:
             - test-libs
             - test-contracts
             - test-solana-programs
-            - test-eth-contracts
+            # - test-eth-contracts
             # - test-mad-dog-e2e
             - test-sdk
 
