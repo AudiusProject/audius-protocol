@@ -396,5 +396,4 @@ func checkStorageCredentials(blobDriverUrl string) error {
 	}
 
 	return errors.New("Unknown presistent storage type")
-
 }
