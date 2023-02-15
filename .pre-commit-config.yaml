@@ -6,21 +6,21 @@ repos:
         stages: [commit]
 
   - repo: https://github.com/psf/black
-    rev: 23.1.0
+    rev: 22.3.0
     hooks:
       - id: black
         exclude: ^discovery-provider/alembic/
         stages: [push]
 
   - repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+    rev: 4.0.1
     hooks:
       - id: flake8
         exclude: ^discovery-provider/alembic/
         stages: [push]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.0.0
+    rev: v0.942
     hooks:
       - id: mypy
         exclude: ^discovery-provider/alembic/
@@ -33,6 +33,6 @@ repos:
         stages: [push]
 
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 5.10.1
     hooks:
       - id: isort
