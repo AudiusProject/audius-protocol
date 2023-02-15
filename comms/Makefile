@@ -87,9 +87,6 @@ tools::
 	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
 	go install github.com/rakyll/hey@latest
 
-sqlc:: reset
-	sqlc generate
-
 quicktype::
 	cp ../libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts
 	npx quicktype --package schema --out discovery/schema/schema.go --just-types-and-package discovery/schema/*.ts

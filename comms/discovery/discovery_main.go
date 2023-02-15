@@ -4,7 +4,6 @@ import (
 	"expvar"
 	"fmt"
 	"log"
-	"os"
 	"os/exec"
 	"time"
 
@@ -72,7 +71,7 @@ func DiscoveryMain() {
 		out, err := exec.Command("dbmate",
 			"--no-dump-schema",
 			"--migrations-dir", "./discovery/db/migrations",
-			"--url", os.Getenv("audius_db_url"),
+			"--url", db.MustGetAudiusDbUrl(),
 			"up").CombinedOutput()
 		fmt.Println("dbmate: ", string(out))
 		return err
@@ -89,18 +88,13 @@ func DiscoveryMain() {
 
 func createJetstreamStreams(jsc nats.JetStreamContext) error {
 
-	discoveryPlacement := &nats.Placement{
-		Cluster: config.NatsClusterName,
-		Tags:    []string{"discovery"},
-	}
-
 	streamInfo, err := jsc.AddStream(&nats.StreamConfig{
 		Name:     config.GlobalStreamName,
 		Subjects: []string{config.GlobalStreamSubject},
 		Replicas: config.NatsReplicaCount,
 		// DenyDelete: true,
 		// DenyPurge:  true,
-		Placement: discoveryPlacement,
+		Placement: config.DiscoveryPlacement(),
 	})
 	if err != nil {
 		return err
@@ -112,7 +106,7 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:    config.PubkeystoreBucketName,
 		Replicas:  config.NatsReplicaCount,
-		Placement: discoveryPlacement,
+		Placement: config.DiscoveryPlacement(),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create pubkey kv %v", err)
@@ -121,7 +115,7 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:    config.RateLimitRulesBucketName,
 		Replicas:  config.NatsReplicaCount,
-		Placement: discoveryPlacement,
+		Placement: config.DiscoveryPlacement(),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create rate limit kv %v", err)
