@@ -4,7 +4,7 @@ import {
   TwitterProfile
 } from 'store/account/types'
 
-export const MAX_HANDLE_LENGTH = 16
+export const MAX_HANDLE_LENGTH = 30
 export const MAX_DISPLAY_NAME_LENGTH = 32
 
 export const formatTwitterProfile = async (
