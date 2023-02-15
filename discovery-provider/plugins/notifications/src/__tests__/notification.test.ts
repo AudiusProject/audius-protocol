@@ -75,7 +75,7 @@ describe.skip('Notification processor', () => {
       badgeCount: 0
     }, {
       title: 'Message',
-      body: `${user1.name}: ${message}`,
+      body: `New message from ${user1.name}`,
       data: {}
     })
 
@@ -94,17 +94,12 @@ describe.skip('Notification processor', () => {
       badgeCount: 0
     }, {
       title: 'Reaction',
-      body: `${user2.name} reacted ${reaction} to your message: ${message}`,
+      body: `${user2.name} reacted ${reaction} to your message`,
       data: {}
     })
   })
 
-
-<<<<<<< Updated upstream
-  test.skip("Does not send DM notifications when sender is receiver", async () => {
-=======
   test("Does not send DM notifications when sender is receiver", async () => {
->>>>>>> Stashed changes
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
@@ -130,7 +125,7 @@ describe.skip('Notification processor', () => {
       badgeCount: 0
     }, {
       title: 'Message',
-      body: `${user1.name}: ${message}`,
+      body: `New message from ${user1.name}`,
       data: {}
     })
 
@@ -145,11 +140,7 @@ describe.skip('Notification processor', () => {
     expect(sendPushNotificationSpy).not.toHaveBeenCalled()
   })
 
-<<<<<<< Updated upstream
-  test.skip("Does not send DM notifications created fewer than delay minutes ago", async () => {
-=======
   test("Does not send DM notifications created fewer than delay minutes ago", async () => {
->>>>>>> Stashed changes
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor

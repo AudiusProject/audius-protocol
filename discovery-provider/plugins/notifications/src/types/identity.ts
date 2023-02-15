@@ -244,6 +244,7 @@ export interface UserNotificationBrowserSettingRow {
   'createdAt': Date;
   'favorites'?: boolean;
   'followers'?: boolean;
+  'messages'?: boolean;
   'milestonesAndAchievements'?: boolean;
   'remixes'?: boolean;
   'reposts'?: boolean;
@@ -255,6 +256,7 @@ export interface UserNotificationMobileSettingRow {
   'createdAt': Date;
   'favorites'?: boolean;
   'followers'?: boolean;
+  'messages'?: boolean;
   'milestonesAndAchievements'?: boolean;
   'remixes'?: boolean;
   'reposts'?: boolean;

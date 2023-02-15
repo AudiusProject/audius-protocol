@@ -3,6 +3,7 @@ import React from 'react'
 import Footer from './Footer'
 import Notification from './notifications/Notification'
 import { getNumberSuffix } from './utils'
+import { DMEntityType } from '../types'
 
 const AudiusImage = () => {
   return (
@@ -103,6 +104,14 @@ const snippetMap = {
   },
   ['supporting_rank_up'](notification) {
     return `You're now ${notification.receivingUser.name}'s #${notification.rank} top supporter`
+  },
+  [DMEntityType.Message](notification) {
+    const [user] = notification.users
+    return `${user.name} sent you ${notification.multiple ? 'new messages' : 'a new message'}`
+  },
+  [DMEntityType.Reaction](notification) {
+    const [user] = notification.users
+    return `${user.name} reacted to your message${notification.multiple ? 's' : ''}`
   }
 }
 

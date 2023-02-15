@@ -4,7 +4,6 @@ import { NotificationRow } from './dn'
 export type DMNotification = {
   sender_user_id: number
   receiver_user_id: number
-  message: string
   timestamp: Date
 }
 
@@ -12,7 +11,6 @@ export type DMReactionNotification = {
   sender_user_id: number
   receiver_user_id: number
   reaction: string
-  message: string
   timestamp: Date
 }
 
@@ -20,6 +18,7 @@ export type DMEmailNotification = {
   type: DMEntityType
   sender_user_id: number
   receiver_user_id: number
+  multiple?: boolean
 }
 
 export type AppEmailNotification = {
