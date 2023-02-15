@@ -4,7 +4,7 @@ import { put, select, takeEvery } from 'typed-redux-saga'
 import { getCollectionDownloadStatus } from 'app/components/offline-downloads/CollectionDownloadStatusIndicator'
 
 import { getOfflineCollectionMetadata } from '../selectors'
-import { addOfflineItems } from '../slice'
+import { addOfflineEntries } from '../slice'
 
 export function* watchAddTrackToPlaylistSaga() {
   yield takeEvery(
@@ -36,7 +36,7 @@ function* addOfflinePlaylistTrackIfNecessary(
   )
 
   yield* put(
-    addOfflineItems({
+    addOfflineEntries({
       items: [
         {
           type: 'track',

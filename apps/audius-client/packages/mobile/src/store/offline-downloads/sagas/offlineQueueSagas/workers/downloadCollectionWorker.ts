@@ -21,16 +21,16 @@ import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants
 import { EventNames } from 'app/types/analytics'
 
 import { getCollectionOfflineDownloadStatus } from '../../../selectors'
-import type { CollectionId, DownloadQueueItem } from '../../../slice'
+import type { CollectionId, OfflineJob } from '../../../slice'
 import {
-  abandonDownload,
-  errorDownload,
+  abandonJob,
+  errorJob,
   OfflineDownloadStatus,
-  cancelDownload,
+  cancelJob,
   removeOfflineItems,
-  completeDownload,
-  requestDownloadQueuedItem,
-  startDownload
+  completeJob,
+  requestProcessNextJob,
+  startJob
 } from '../../../slice'
 import { isCollectionDownloadable } from '../../utils/isCollectionDownloadable'
 
@@ -50,11 +50,11 @@ function* shouldAbortDownload(collectionId: CollectionId) {
 }
 
 export function* downloadCollectionWorker(collectionId: CollectionId) {
-  const queueItem: DownloadQueueItem = { type: 'collection', id: collectionId }
+  const queueItem: OfflineJob = { type: 'collection', id: collectionId }
   track(
     make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_START, ...queueItem })
   )
-  yield* put(startDownload(queueItem))
+  yield* put(startJob(queueItem))
 
   const { jobResult, cancel, abort } = yield* race({
     jobResult: call(downloadCollectionAsync, collectionId),
@@ -64,9 +64,9 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
 
   if (abort) {
     yield* call(removeDownloadedCollection, collectionId)
-    yield* put(requestDownloadQueuedItem())
+    yield* put(requestProcessNextJob())
   } else if (cancel) {
-    yield* put(cancelDownload(queueItem))
+    yield* put(cancelJob(queueItem))
     yield* call(removeDownloadedCollection, collectionId)
   } else if (jobResult === OfflineDownloadStatus.ERROR) {
     track(
@@ -75,9 +75,9 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
         ...queueItem
       })
     )
-    yield* put(errorDownload(queueItem))
+    yield* put(errorJob(queueItem))
     yield* call(removeDownloadedCollection, collectionId)
-    yield* put(requestDownloadQueuedItem())
+    yield* put(requestProcessNextJob())
   } else if (jobResult === OfflineDownloadStatus.ABANDONED) {
     track(
       make({
@@ -85,9 +85,9 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
         ...queueItem
       })
     )
-    yield* put(abandonDownload(queueItem))
+    yield* put(abandonJob(queueItem))
     yield* call(removeDownloadedCollection, collectionId)
-    yield* put(requestDownloadQueuedItem())
+    yield* put(requestProcessNextJob())
   } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
     track(
       make({
@@ -95,8 +95,8 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
         ...queueItem
       })
     )
-    yield* put(completeDownload(queueItem))
-    yield* put(requestDownloadQueuedItem())
+    yield* put(completeJob(queueItem))
+    yield* put(requestProcessNextJob())
   }
 }
 

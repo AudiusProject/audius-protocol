@@ -7,7 +7,7 @@ import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants
 import { EventNames } from 'app/types/analytics'
 
 import { getIsFavoritesDownloadsEnabled } from '../selectors'
-import { addOfflineItems } from '../slice'
+import { addOfflineEntries } from '../slice'
 
 export function* watchSaveTrackSaga() {
   yield* takeEvery(tracksSocialActions.SAVE_TRACK, downloadSavedTrack)
@@ -30,7 +30,7 @@ function* downloadSavedTrack(
       })
     )
     yield* put(
-      addOfflineItems({
+      addOfflineEntries({
         items: [
           {
             type: 'track',

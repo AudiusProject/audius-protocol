@@ -49,7 +49,7 @@ import {
   getIsCollectionMarkedForDownload
 } from 'app/store/offline-downloads/selectors'
 import {
-  addOfflineItems,
+  addOfflineEntries,
   OfflineDownloadStatus
 } from 'app/store/offline-downloads/slice'
 
@@ -306,7 +306,7 @@ export const Audio = () => {
         dispatch(recordListen(trackId))
       } else if (isOfflineModeEnabled) {
         dispatch(
-          addOfflineItems({ items: [{ type: 'play-count', id: trackId }] })
+          addOfflineEntries({ items: [{ type: 'play-count', id: trackId }] })
         )
       }
     }, RECORD_LISTEN_SECONDS)

@@ -9,8 +9,8 @@ import { takeEvery, select, put, call } from 'typed-redux-saga'
 import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
-import type { CollectionAction, OfflineItem } from '../slice'
-import { addOfflineItems, requestDownloadCollection } from '../slice'
+import type { CollectionAction, OfflineEntry } from '../slice'
+import { addOfflineEntries, requestDownloadCollection } from '../slice'
 
 const { saveCollection } = collectionsSocialActions
 
@@ -49,7 +49,7 @@ function* downloadCollection(action: CollectionAction) {
     yield* put(saveCollection(collectionId, FavoriteSource.OFFLINE_DOWNLOAD))
   }
 
-  const offlineItemsToAdd: OfflineItem[] = []
+  const offlineItemsToAdd: OfflineEntry[] = []
 
   offlineItemsToAdd.push({
     type: 'collection',
@@ -73,5 +73,5 @@ function* downloadCollection(action: CollectionAction) {
     })
   }
 
-  yield* put(addOfflineItems({ items: offlineItemsToAdd }))
+  yield* put(addOfflineEntries({ items: offlineItemsToAdd }))
 }

@@ -8,7 +8,7 @@ import {
   getOfflineCollectionMetadata,
   getOfflineTrackMetadata
 } from '../selectors'
-import type { OfflineItem } from '../slice'
+import type { OfflineEntry } from '../slice'
 import {
   removeOfflineItems,
   requestRemoveAllDownloadedFavorites
@@ -28,7 +28,7 @@ export function* requestRemoveAllDownloadedFavoritesSaga() {
 
 function* removeAllDownloadedFavoritesWorker() {
   track(make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_ALL_TOGGLE_OFF }))
-  const offlineItemsToRemove: OfflineItem[] = []
+  const offlineItemsToRemove: OfflineEntry[] = []
   const offlineCollectionMetadata = yield* select(getOfflineCollectionMetadata)
   const offlineCollectionIds = Object.keys(offlineCollectionMetadata).map(
     (id) => (id === DOWNLOAD_REASON_FAVORITES ? id : parseInt(id, 10))

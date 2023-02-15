@@ -4,7 +4,7 @@ import { make, track } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import { getOfflineTrackMetadata } from '../selectors'
-import type { CollectionAction, OfflineItem } from '../slice'
+import type { CollectionAction, OfflineEntry } from '../slice'
 import { removeOfflineItems, requestRemoveDownloadedCollection } from '../slice'
 
 export function* requestRemoveDownloadedCollectionSaga() {
@@ -23,7 +23,7 @@ function* removeDownloadedCollectionWorker(action: CollectionAction) {
     })
   )
 
-  const offlineItemsToRemove: OfflineItem[] = []
+  const offlineItemsToRemove: OfflineEntry[] = []
 
   offlineItemsToRemove.push({
     type: 'collection',

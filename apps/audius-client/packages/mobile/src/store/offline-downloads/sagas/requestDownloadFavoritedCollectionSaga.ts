@@ -1,8 +1,8 @@
 import { accountSelectors, getContext } from '@audius/common'
 import { takeEvery, select, put, call } from 'typed-redux-saga'
 
-import type { CollectionAction, OfflineItem } from '../slice'
-import { addOfflineItems, requestDownloadFavoritedCollection } from '../slice'
+import type { CollectionAction, OfflineEntry } from '../slice'
+import { addOfflineEntries, requestDownloadFavoritedCollection } from '../slice'
 
 const { getUserId } = accountSelectors
 
@@ -27,7 +27,7 @@ function* downloadFavoritedCollection(action: CollectionAction) {
 
   if (!collection) return
 
-  const offlineItemsToAdd: OfflineItem[] = []
+  const offlineItemsToAdd: OfflineEntry[] = []
 
   offlineItemsToAdd.push({
     type: 'collection',
@@ -51,5 +51,5 @@ function* downloadFavoritedCollection(action: CollectionAction) {
     })
   }
 
-  yield* put(addOfflineItems({ items: offlineItemsToAdd }))
+  yield* put(addOfflineEntries({ items: offlineItemsToAdd }))
 }

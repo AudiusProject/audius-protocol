@@ -10,13 +10,13 @@ import { put, select, call, take, race } from 'typed-redux-saga'
 
 import { getTrackOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
 import {
-  completeDownload,
-  errorDownload,
+  completeJob,
+  errorJob,
   OfflineDownloadStatus,
   redownloadOfflineItems,
   removeOfflineItems,
-  requestDownloadQueuedItem,
-  startDownload
+  requestProcessNextJob,
+  startJob
 } from 'app/store/offline-downloads/slice'
 
 const { SET_UNREACHABLE } = reachabilityActions
@@ -24,7 +24,7 @@ const { getUserId } = accountSelectors
 const { getTrack } = cacheTracksSelectors
 
 export function* staleTrackWorker(trackId: ID) {
-  yield* put(startDownload({ type: 'stale-track', id: trackId }))
+  yield* put(startJob({ type: 'stale-track', id: trackId }))
   const { jobResult, abort, cancel } = yield* race({
     jobResult: call(handleStaleTrack, trackId),
     abort: call(shouldAbortJob, trackId),
@@ -32,21 +32,21 @@ export function* staleTrackWorker(trackId: ID) {
   })
 
   if (abort) {
-    yield* put(requestDownloadQueuedItem())
+    yield* put(requestProcessNextJob())
   } else if (cancel) {
     // continue
   } else if (jobResult === OfflineDownloadStatus.ERROR) {
-    yield* put(errorDownload({ type: 'stale-track', id: trackId }))
-    yield* put(requestDownloadQueuedItem())
+    yield* put(errorJob({ type: 'stale-track', id: trackId }))
+    yield* put(requestProcessNextJob())
   } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
     yield* put(
-      completeDownload({
+      completeJob({
         type: 'stale-track',
         id: trackId,
         verifiedAt: Date.now()
       })
     )
-    yield* put(requestDownloadQueuedItem())
+    yield* put(requestProcessNextJob())
   }
 }
 
