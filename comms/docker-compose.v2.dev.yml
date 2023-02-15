@@ -30,12 +30,6 @@ services:
       file: docker-compose.v2.base.yml
       service: comdb
 
-  sshuttle-server:
-    container_name: sshuttle-server
-    extends:
-      file: docker-compose.v2.base.yml
-      service: sshuttle-server
-
   com1:
     container_name: com1
     extends:
