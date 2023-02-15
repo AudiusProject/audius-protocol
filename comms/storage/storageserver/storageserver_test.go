@@ -26,10 +26,7 @@ import (
 
 // TestE2EUpload verifies that a file gets uploaded to the storage node, transcoded, and permanently stored and replicated on the correct nodes.
 func TestE2EUpload(t *testing.T) {
-
-	// test hangs... skip
-	t.Skip()
-
+	t.Skip("TODO: Set AUDIUS_DEV_ONLY_REGISTERED_NODES env var to have 5 nodes. Also set test_host env var per node")
 	assert := assert.New(t)
 
 	// Clear state in case a previous test or debug session left something behind

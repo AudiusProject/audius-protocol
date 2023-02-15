@@ -117,7 +117,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 	var err error
 	manager.natsServer, err = server.NewServer(opts)
 	if err != nil {
-		panic(err)
+		log.Fatalln("fatal error creating nats server: ", err)
 	}
 
 	// Start the server via goroutine

@@ -32,7 +32,8 @@ func StorageMain() {
 	defer func() { _ = tp.Shutdown(ctx) }()
 
 	jsc, err := func() (nats.JetStreamContext, error) {
-		err := peering.PollRegisteredNodes(storageConfig.DevOnlyRegisteredNodes)
+		peering.New(storageConfig.DevOnlyRegisteredNodes)
+		err := peering.PollRegisteredNodes()
 		if err != nil {
 			return nil, err
 		}

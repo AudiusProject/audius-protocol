@@ -2,5 +2,6 @@ wip
 comms.audius.co
 comms-linux
 build
+sshuttle
 
 db/schema.sql
