@@ -45,7 +45,7 @@ export class MessageReactionNotification extends BaseNotification<DMReactionNoti
             targetARN: device.awsARN
           }, {
             title: 'Reaction',
-            body: `${users[this.senderUserId].name} reacted ${this.notification.reaction} to your message: ${this.notification.message}`,
+            body: `${users[this.senderUserId].name} reacted ${this.notification.reaction} to your message`,
             data: {}
           })
         }))

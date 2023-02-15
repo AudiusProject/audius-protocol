@@ -46,7 +46,7 @@ export class MessageNotification extends BaseNotification<DMNotification> {
             targetARN: device.awsARN
           }, {
             title: 'Message',
-            body: `${users[this.senderUserId].name}: ${this.notification.message}`,
+            body: `New message from ${users[this.senderUserId].name}`,
             data: {}
           })
         }))

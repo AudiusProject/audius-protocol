@@ -42,7 +42,7 @@ async function getCursors(redis: RedisClientType): Promise<{ maxTimestamp: Date;
 
 async function getUnreadMessages(discoveryDB: Knex, minTimestamp: Date, maxTimestamp: Date): Promise<DMNotification[]> {
   return await discoveryDB
-    .select('chat_message.user_id as sender_user_id', 'chat_member.user_id as receiver_user_id', 'chat_message.ciphertext as message', 'chat_message.created_at as timestamp')
+    .select('chat_message.user_id as sender_user_id', 'chat_member.user_id as receiver_user_id', 'chat_message.created_at as timestamp')
     .from('chat_message')
     .innerJoin('chat_member', 'chat_message.chat_id', 'chat_member.chat_id')
     .whereRaw('chat_message.created_at > greatest(chat_member.last_active_at, ?::timestamp)', [minTimestamp.toISOString()])
@@ -52,7 +52,7 @@ async function getUnreadMessages(discoveryDB: Knex, minTimestamp: Date, maxTimes
 
 async function getUnreadReactions(discoveryDB: Knex, minTimestamp: Date, maxTimestamp: Date): Promise<DMReactionNotification[]> {
   return await discoveryDB
-    .select('chat_message_reactions.user_id as sender_user_id', 'chat_message.user_id as receiver_user_id', 'chat_message_reactions.reaction as reaction', 'chat_message.ciphertext as message', 'chat_message_reactions.updated_at as timestamp')
+    .select('chat_message_reactions.user_id as sender_user_id', 'chat_message.user_id as receiver_user_id', 'chat_message_reactions.reaction as reaction', 'chat_message_reactions.updated_at as timestamp')
     .from('chat_message_reactions')
     .innerJoin('chat_message', 'chat_message.message_id', 'chat_message_reactions.message_id')
     .joinRaw('join chat_member on chat_member.chat_id = chat_message.chat_id and chat_member.user_id = chat_message.user_id')
