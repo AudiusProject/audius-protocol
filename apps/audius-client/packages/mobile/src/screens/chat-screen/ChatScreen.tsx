@@ -13,6 +13,8 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconSend from 'app/assets/images/iconSend.svg'
 import { TextInput, Screen, FlatList, ScreenContent } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
+import { ProfilePicture } from 'app/components/user'
+import { UserBadges } from 'app/components/user-badges'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 import { useThemePalette } from 'app/utils/theme'
@@ -70,36 +72,62 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     width: spacing(5),
     height: spacing(5),
     fill: palette.primary
+  },
+  userBadgeTitle: {
+    fontSize: typography.fontSize.medium,
+    fontWeight: '800',
+    color: palette.neutral
+  },
+  profilePicture: {
+    width: spacing(6),
+    height: spacing(6),
+    marginRight: spacing(2)
   }
 }))
 
 export const ChatScreen = () => {
   const styles = useStyles()
+  const palette = useThemePalette()
   const dispatch = useDispatch()
 
-  const [iconOpacity, setIconOpacity] = useState(0.5)
-  const [text, setText] = useState('')
   const { params } = useRoute<'Chat'>()
   const { chatId } = params
   const url = `/chat/${encodeUrlName(chatId)}`
+  const [iconOpacity, setIconOpacity] = useState(0.5)
+  const [text, setText] = useState('')
+
   const chatMessages = useSelector((state) =>
     getChatMessages(state, chatId ?? '')
   )
   const status = useSelector((state) =>
     getChatMessagesStatus(state, chatId ?? '')
   )
-  const palette = useThemePalette()
 
   useEffect(() => {
     dispatch(fetchMoreMessages({ chatId }))
   }, [dispatch, chatId])
 
-  const otherUser = useSelector((state) => getOtherChatUsers(state, chatId))
+  const [otherUser] = useSelector((state) => getOtherChatUsers(state, chatId))
 
   return (
     <Screen
       url={url}
-      title={otherUser[0] ? otherUser[0].handle : messages.title}
+      headerTitle={
+        otherUser
+          ? () => (
+              <>
+                <ProfilePicture
+                  profile={otherUser}
+                  style={styles.profilePicture}
+                />
+                <UserBadges
+                  user={otherUser}
+                  nameStyle={styles.userBadgeTitle}
+                />
+              </>
+            )
+          : messages.title
+      }
     >
       <ScreenContent>
         <View style={styles.rootContainer}>
