@@ -1,4 +1,4 @@
-FROM golang:alpine
+FROM golang:alpine AS builder
 
 RUN apk add build-base make ffmpeg
 RUN export GO111MODULE=on && \
@@ -9,6 +9,10 @@ RUN export GO111MODULE=on && \
     go install github.com/cosmtrek/air@latest
 
 WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
+
 COPY . .
 RUN make build.alpine
 

@@ -1,52 +1,27 @@
 version: '3.4'
 
-x-common-variables: &shared-vars
-   AUDIUS_DEV_ONLY_REGISTERED_NODES: '
-        [
-          {
-            "id": "content-node::1",
-            "spId": "1",
-            "endpoint": "http://node1",
-            "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "content-node::2",
-            "spId": "2",
-            "endpoint": "http://node2",
-            "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "content-node::3",
-            "spId": "3",
-            "endpoint": "http://node3",
-            "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "content-node::4",
-            "spId": "4",
-            "endpoint": "http://node4",
-            "delegateOwnerWallet": "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
-            "type": { "id": "content-node" }
-          }
-        ]'
-   audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
+x-common-variables:
+  &shared-vars
+  AUDIUS_DEV_ONLY_REGISTERED_NODES: ' [ { "id": "content-node::1", "spId": "1", "endpoint": "http://node1", "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F", "type": { "id": "content-node" } }, { "id": "content-node::2", "spId": "2", "endpoint": "http://node2", "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D", "type": { "id": "content-node" } }, { "id": "content-node::3", "spId": "3", "endpoint": "http://node3", "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B", "type": { "id": "content-node" } }, { "id": "content-node::4", "spId": "4", "endpoint": "http://node4", "delegateOwnerWallet": "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16", "type": { "id": "content-node" } } ]'
+  audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
 
 services:
+
+  ingress:
+    container_name: nginx
+    extends:
+      file: docker-compose.v2.base.yml
+      service: nginx
+    volumes:
+      - ./v2_nginx/all.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
 
   comdb:
     container_name: comdb
     extends:
       file: docker-compose.v2.base.yml
       service: comdb
-
-  sshuttle-server:
-    container_name: sshuttle-server
-    extends:
-      file: docker-compose.v2.base.yml
-      service: sshuttle-server
 
   com1:
     container_name: com1

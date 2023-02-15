@@ -12,28 +12,15 @@ reset::
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
 
-sshuttle:
-	test -d sshuttle || ( \
-		git clone https://github.com/AudiusProject/sshuttle.git && \
-		pipx install virtualenv && cd sshuttle && \
-		virtualenv -p python3 ./virtualenv && \
-		. ./virtualenv/bin/activate && ./setup.py install \
-	)
-
-sshuttle.connect:: sshuttle
-	sleep 1 && \
-	. ./sshuttle/virtualenv/bin/activate && \
-	sshuttle -N --no-latency-control -H -r "sshuttle@localhost:2223" -e "ssh -i ../dev-tools/keys/dev -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
-
 storage.dev.up::
 	docker compose -f docker-compose.v2.dev.yml up -d --build
 
 storage.multi.up::
 	docker compose -f docker-compose.v2.multi.yml up -d --build
 
-storage.dev:: down storage.dev.up sshuttle.connect
+storage.dev:: down storage.dev.up
 
-storage.multi:: down storage.multi.up sshuttle.connect
+storage.multi:: down storage.multi.up
 
 down::
 	(docker compose down --volumes || true) && \
