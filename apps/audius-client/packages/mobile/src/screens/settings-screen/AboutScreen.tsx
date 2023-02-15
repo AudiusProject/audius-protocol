@@ -2,7 +2,6 @@ import { useCallback, useState } from 'react'
 
 import { COPYRIGHT_TEXT } from 'audius-client/src/utils/copyright'
 import { View, Image, TouchableWithoutFeedback } from 'react-native'
-import VersionNumber from 'react-native-version-number'
 
 import appIcon from 'app/assets/images/appIcon.png'
 import IconCareers from 'app/assets/images/iconCareers.svg'
@@ -14,9 +13,13 @@ import { Screen, ScreenContent, Text } from 'app/components/core'
 import { toggleLocalOfflineModeOverride } from 'app/hooks/useIsOfflineModeEnabled'
 import { makeStyles } from 'app/styles'
 
+import packageInfo from '../../../package.json'
+
 import { Divider } from './Divider'
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
+
+const { version: appVersion } = packageInfo
 
 const messages = {
   title: 'About',
@@ -68,7 +71,7 @@ export const AboutScreen = () => {
               <Text variant='h2'>{messages.appName}</Text>
             </TouchableWithoutFeedback>
             <Text variant='body2'>
-              {messages.version} {VersionNumber.appVersion}
+              {messages.version} {appVersion}
             </Text>
             <Text variant='body2'>{messages.copyright}</Text>
           </View>
