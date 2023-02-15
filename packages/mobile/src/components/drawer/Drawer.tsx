@@ -642,7 +642,7 @@ export const Drawer: DrawerComponent = ({
       <ViewComponent
         style={isFullscreen ? styles.fullScreenContent : styles.content}
         onLayout={(event: LayoutChangeEvent) => {
-          if (!isFullscreen && isOpen) {
+          if (!isFullscreen) {
             const { height } = event.nativeEvent.layout
             setDrawerHeight(height + androidNavigationBarHeight)
           }
