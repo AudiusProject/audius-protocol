@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+alias stern="stern --since=10s"
+alias k="kubectl"
+alias kg="k get"
+alias kgp="k get pods"
+alias kgpl="k get pods --show-labels"
+alias kgj="k get jobs"
+alias kd="k describe"
+alias kdp="k describe pod"
+alias kk="k delete"
+alias kkp="k delete pods"
+alias kkj="k delete jobs"
+alias kl="k logs"
+
+alias sstern="stern -n kube-system --since=10s"
+alias ks="kubectl -n kube-system"
+alias ksg="ks get"
+alias ksgp="ks get pods"
+alias ksgpl="ks get pods --show-labels"
+alias ksgj="ks get jobs"
+alias ksd="ks describe"
+alias ksdp="ks describe pod"
+alias ksk="ks delete"
+alias kskp="ks delete pods"
+alias kskj="ks delete jobs"
+alias ksl="ks logs"
+
+alias kns="kubens"
+alias kx="kubectx"
+alias kt="kubetail"
+
+function b64 { echo $1 | base64 --decode; echo; }

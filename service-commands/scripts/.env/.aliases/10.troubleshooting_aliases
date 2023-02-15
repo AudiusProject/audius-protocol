@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+# networking
+alias ports_open='ss --all --numeric --processes --ipv4 --ipv6'
+alias whichip='dig +short myip.opendns.com @resolver1.opendns.com'
+
+function ports () {
+  sudo netstat -tulpn | grep $1
+}
+
+function killport () {
+  sudo kill $(lsof -t -i :${1})
+}
+
+# disk
+function large_files() {
+  du --total --human-readable --all "$@" 2>/dev/null \
+    | sort --reverse --human-numeric-sort \
+    | head --lines 20
+}

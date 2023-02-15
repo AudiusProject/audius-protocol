@@ -1,0 +1,27 @@
+# Convenience image pre-built with python, node, gcloud to use in CircleCI to run commands with A
+
+# Build this image with `docker build . -f Dockerfile.CircleCi-GCloud-Bake -t audius/circleci-gcloud-bake:latest`
+
+FROM google/cloud-sdk:357.0.0
+
+SHELL ["/bin/bash", "--login", "-c"]
+RUN apt update -y && apt upgrade -y
+RUN apt install -y sudo wget build-essential libreadline-gplv2-dev libncursesw5-dev \
+libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev libffi-dev zlib1g-dev jq
+RUN wget https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tgz
+RUN tar xzf Python-3.9.6.tgz >/dev/null
+RUN cd Python-3.9.6 && ./configure --enable-optimizations && make altinstall
+
+# install nvm
+RUN curl https://raw.githubusercontent.com/creationix/nvm/master/install.sh | bash
+
+# update path
+RUN echo "PATH=$HOME/.local/bin:$PATH" >> ~/.profile
+RUN . ~/.profile
+RUN nvm
+RUN nvm install v14.17.5
+RUN nvm use 14
+
+# symlink node & npm, otherwise won't be available to call from outside the container
+RUN sudo ln -s /root/.nvm/versions/node/v14.17.5/bin/node /usr/local/bin/
+RUN sudo ln -s /root/.nvm/versions/node/v14.17.5/bin/npm /usr/local/bin/

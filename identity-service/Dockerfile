@@ -3,7 +3,7 @@ FROM node:14.16 as builder
 RUN apt-get install make
 WORKDIR /app
 COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN target=/root/.npm npm ci
 
 FROM node:14.16-alpine
 
