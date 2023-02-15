@@ -14,6 +14,12 @@ func ErrPanic(e error) {
 	}
 }
 
+// Intakes a func that's inside a test runner.
+// Will run the trending server with the test default config
+// and shut it down if the timeout occurs or the test passes.
+//
+// WARNING: panicking in the test itself will not be caught by
+// this runner and may not shut down the server correctly
 func IntegrationTester(test func(c *req.Client) error) {
 	conf, err := config.TestDefault()
 	ErrPanic(err)
