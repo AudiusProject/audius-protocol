@@ -48,7 +48,7 @@ export type ScreenProps = {
   title?: Nullable<ReactNode>
   icon?: ComponentType<SvgProps>
   IconProps?: SvgProps
-  headerTitle?: ReactNode
+  headerTitle?: Nullable<(() => ReactNode) | string>
   style?: StyleProp<ViewStyle>
   // url used for screen view analytics
   url?: string
