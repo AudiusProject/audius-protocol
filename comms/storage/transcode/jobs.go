@@ -70,6 +70,7 @@ type JobsManager struct {
 
 	workSubscription *nats.Subscription
 	tempBucketCount  int
+	replicaCount     int
 
 	websockets map[net.Conn]bool
 
@@ -79,7 +80,6 @@ type JobsManager struct {
 const (
 	KvSuffix                         = "_kv"
 	temporaryObjectStoreNameTemplate = "temp_obj_%d" // if we adjust temporary settings (count, ttl, replication, placement) we should change this template to "roll forward"... delete the old ones later
-	temporaryObjectStoreCount        = 8
 	temporaryObjectStoreTTL          = time.Hour * 24
 )
 
@@ -114,6 +114,7 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		table:            map[string]*Job{},
 		logger:           telemetry.NewConsoleLogger(),
 		tempBucketCount:  8,
+		replicaCount:     replicaCount,
 		websockets:       map[net.Conn]bool{},
 	}
 
@@ -129,7 +130,7 @@ func (jobman *JobsManager) createTemporaryObjectStores() {
 		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
 			Bucket:   jobman.temporaryObjectStoreName(i),
 			TTL:      temporaryObjectStoreTTL,
-			Replicas: config.NatsReplicaCount,
+			Replicas: jobman.replicaCount,
 			Placement: &nats.Placement{
 				Cluster: config.NatsClusterName,
 			},
