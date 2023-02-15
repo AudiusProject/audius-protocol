@@ -59,7 +59,6 @@ from src.queries.get_track_stream_signature import (
     CID_STREAM_ENABLED,
     get_track_stream_signature,
 )
-from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_trending import get_full_trending, get_trending
