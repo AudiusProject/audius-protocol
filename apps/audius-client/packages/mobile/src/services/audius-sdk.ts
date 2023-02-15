@@ -11,6 +11,7 @@ import {
 import { keccak_256 } from '@noble/hashes/sha3'
 import * as secp from '@noble/secp256k1'
 
+import { env } from './env'
 import { audiusLibs, waitForLibsInit } from './libs'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
 
@@ -32,11 +33,10 @@ const SDK_LOADED_EVENT_NAME = 'AUDIUS_SDK_LOADED'
 const sdkEventEmitter = new EventEmitter()
 let sdkInstance: ReturnType<typeof sdk>
 
-const env = process.env.REACT_APP_ENVIRONMENT
 const bootstrapConfig =
-  env === 'development'
+  env.ENVIRONMENT === 'development'
     ? developmentConfig
-    : env === 'staging'
+    : env.ENVIRONMENT === 'staging'
     ? stagingConfig
     : productionConfig
 
