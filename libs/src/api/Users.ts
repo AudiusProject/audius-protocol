@@ -492,6 +492,7 @@ export class Users extends Base {
           async (endpoint) => await this._retrieveSpIDFromEndpoint(endpoint)
         )
       )
+      console.log(`${logPrefix} Found SPids: ${spIds}`)
 
       // Create the user with entityMananer
       const userId = await this._generateUserId()
@@ -1030,6 +1031,7 @@ export class Users extends Base {
             encodedUserId: encodedUserId!,
             blockNumber
           })
+          console.log(`Got user replica set ${replicaSet}`)
         } catch (err) {
           // Do nothing on error
         }
