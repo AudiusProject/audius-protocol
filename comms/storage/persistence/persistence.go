@@ -345,8 +345,6 @@ func checkStorageCredentials(blobDriverUrl string) error {
 		return errors.New("blobDriverURL's prefix isn't valid. Valid prefixes include: " + strings.Join(utils.Keys(prefixWhitelist), ","))
 	}
 
-	log.Println("Persistent storage driver selected: " + rawPrefix)
-
 	// S3: https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
 	// GCS: https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57
 	// AZBLOB: https://github.com/google/go-cloud/blob/master/blob/azureblob/example_test.go#L71
@@ -354,7 +352,7 @@ func checkStorageCredentials(blobDriverUrl string) error {
 	case FILE:
 		// no credentials needed for the file storage driver
 		// but we do make sure the directory exists
-		if found && prefix == FILE {
+		if found {
 			if err := os.MkdirAll(uri, os.ModePerm); err != nil {
 				log.Println("failed to create local persistent storage dir: ", err)
 				return err
@@ -398,4 +396,5 @@ func checkStorageCredentials(blobDriverUrl string) error {
 	}
 
 	return errors.New("Unknown presistent storage type")
+
 }

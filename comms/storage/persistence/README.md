@@ -8,15 +8,7 @@ To update the local storage location set the `AUDIUS_STORAGE_DRIVER_URL` environ
 AUDIUS_STORAGE_DRIVER_URL="file:///my/directory"
 ```
 
-By default, it tries to determine what storage driver to use based on the `storage_url` (eg `s3://your-bucket` uses the s3 driver)
-
-It can be manually set to override this behavior with the environment variable `storage_driver` 
-This can be useful when using self hosted storage solution such as minio
-```
-AUDIUS_STORAGE_DRIVER=gcs
-```
-
-The available drivers are `file`, `s3`, `gcs`, and `azure`
+The driver is determined based on the `storage_url` (eg `s3://your-bucket` uses the s3 driver)
 
 💡 Note: URLs beginning with https:// will default to s3
 
