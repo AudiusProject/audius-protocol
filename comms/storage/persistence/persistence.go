@@ -66,7 +66,6 @@ type Persistence struct {
 func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider decider.StorageDecider, jsc nats.JetStreamContext) (*Persistence, error) {
 
 	if err := checkStorageCredentials(blobDriverURL); err != nil {
-		log.Println("persistent storage credentials missing: ", err)
 		return nil, err
 	}
 

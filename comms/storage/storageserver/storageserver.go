@@ -75,7 +75,7 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext) *StorageSe
 
 	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)
 	if err != nil {
-		log.Fatal("Error connecting to persistent storage", "err", err)
+		log.Fatal("[!!!] Error connecting to persistent storage: ", err)
 	}
 
 	return NewCustom(
