@@ -16,6 +16,7 @@ type TrendingServer struct {
 func NewTrendingServer(conf config.Config) (*TrendingServer, error) {
 	wsv := echo.New()
 	wsv.Debug = conf.Debug
+	wsv.HideBanner = conf.HideBanner
 
 	return &TrendingServer{
 		WebServer: wsv,
@@ -31,6 +32,14 @@ func (ts *TrendingServer) Run() error {
 	wsv.GET("/trending/health", ts.GetHealth)
 
 	return wsv.Start(ts.Conf.FormatEchoPort())
+}
+
+func (ts *TrendingServer) Close() error {
+	err := ts.WebServer.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (ts *TrendingServer) GetTrendingTracks(c echo.Context) error {

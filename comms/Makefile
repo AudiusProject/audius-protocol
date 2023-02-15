@@ -73,3 +73,7 @@ quicktype::
 trending.dev.run::
 	@echo starting trending server
 	@ 	  go run main.go trending
+
+trending.test.run::
+	@echo starting trending tests
+	@	  go test -v ./trending/...

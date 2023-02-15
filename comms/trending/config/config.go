@@ -3,6 +3,7 @@ package config
 type Config struct {
 	TrendingEchoPort string
 	Debug            bool
+	HideBanner       bool
 }
 
 // TODO: read from a .env file
@@ -11,6 +12,15 @@ func Default() (*Config, error) {
 	return &Config{
 		TrendingEchoPort: "9876",
 		Debug:            true,
+		HideBanner:       false,
+	}, nil
+}
+
+func TestDefault() (*Config, error) {
+	return &Config{
+		TrendingEchoPort: "9876",
+		Debug:            true,
+		HideBanner:       true,
 	}, nil
 }
 
