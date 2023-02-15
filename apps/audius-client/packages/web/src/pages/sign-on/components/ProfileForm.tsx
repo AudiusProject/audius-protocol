@@ -29,7 +29,7 @@ const messages = {
   uploadProfilePicture: 'Upload a profile picture',
   errors: {
     tooLong: 'Sorry, handle is too long',
-    characters: 'Only use A-Z, 0-9, and underscores',
+    characters: 'Only use A-Z, 0-9, . and _',
     inUse: 'That handle has already been taken',
     twitterReserved: 'This verified Twitter handle is reserved.',
     instagramReserved: 'This verified Instagram handle is reserved.',
