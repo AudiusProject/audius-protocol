@@ -1,10 +1,10 @@
-import { expect, jest, test } from '@jest/globals';
-import { renderEmail } from '../email/notifications/renderEmail';
-import { Processor } from '../main';
-import { reposttype } from '../types/dn';
+import { expect, jest, test } from '@jest/globals'
+import { renderEmail } from '../email/notifications/renderEmail'
+import { Processor } from '../main'
+import { reposttype } from '../types/dn'
 import { DMEntityType } from '../email/notifications/types'
 import { DMEmailNotification, AppEmailNotification } from '../types/notifications'
-import { createTestDB, createTracks, createUsers, dropTestDB, insertFollows, replaceDBName } from '../utils/populateDB';
+import { createTestDB, createTracks, createUsers, dropTestDB, insertFollows, replaceDBName } from '../utils/populateDB'
 
 
 const initDB = async (dbName: string) => {
