@@ -78,3 +78,7 @@ trending.dev.run::
 trending.test.run::
 	@echo starting trending tests
 	@	  ginkgo ./trending/...
+
+trending.dev.deps::
+	@echo starting dev dependencies
+	@	docker compose -f docker-compose.trending.yml up
