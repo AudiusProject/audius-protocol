@@ -19,7 +19,7 @@ export type KeyAndMd5 = {
 export type EndpointToMd5 = { [endpoint: string]: string }
 export const fetchFilesByShardAndHost = async (shard: string, host: string) => {
   return axios
-    .get(`${host}/storage/long-term/shard/${shard}?includeMD5s=true`)
+    .get(`${host}/storage/persistent/shard/${shard}?includeMD5s=true`)
     .then((res) => {
       return { storageHost: host, files: res.data as KeyAndMd5[] }
     })

@@ -12,8 +12,8 @@ import (
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/decider"
-	"comms.audius.co/storage/longterm"
 	"comms.audius.co/storage/monitor"
+	"comms.audius.co/storage/persistence"
 	"comms.audius.co/storage/telemetry"
 	"comms.audius.co/storage/transcode"
 	"github.com/gobwas/ws"
@@ -35,7 +35,7 @@ type StorageServer struct {
 	StorageDecider decider.StorageDecider
 	Jsc            nats.JetStreamContext
 	JobsManager    *transcode.JobsManager
-	LongTerm       *longterm.LongTerm
+	Persistence    *persistence.Persistence
 	WebServer      *echo.Echo
 	Monitor        *monitor.Monitor
 }
@@ -73,23 +73,28 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext) *StorageSe
 		log.Fatal("Error setting host and shards for node", "err", err)
 	}
 
+	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)
+	if err != nil {
+		log.Fatal("[!!!] Error connecting to persistent storage: ", err)
+	}
+
 	return NewCustom(
 		GlobalNamespace,
 		d,
 		jsc,
 		jobsManager,
-		longterm.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc),
+		persistence,
 		m,
 	)
 }
 
-func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamContext, jobsManager *transcode.JobsManager, longTerm *longterm.LongTerm, m *monitor.Monitor) *StorageServer {
+func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamContext, jobsManager *transcode.JobsManager, persistence *persistence.Persistence, m *monitor.Monitor) *StorageServer {
 	ss := &StorageServer{
 		Namespace:      namespace,
 		StorageDecider: d,
 		Jsc:            jsc,
 		JobsManager:    jobsManager,
-		LongTerm:       longTerm,
+		Persistence:    persistence,
 		Monitor:        m,
 	}
 	ss.WebServer = echo.New()
@@ -113,8 +118,8 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	storage.GET("/jobs", ss.serveJobs)
 	storage.GET("/jobs/:id", ss.serveJobById)
 	storage.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
-	storage.GET("/long-term/shard/:shard", ss.serveLongTermKeysByShard) // QueryParam: includeMD5s=[true|false]
-	storage.GET("/long-term/file/:fileName", ss.streamLongTermObjectByFileName)
+	storage.GET("/persistent/shard/:shard", ss.servePersistenceKeysByShard) // QueryParam: includeMD5s=[true|false]
+	storage.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName)
 	storage.GET("/ws", ss.upgradeConnToWebsocket)
 	storage.GET("/nodes-to-shards", ss.serveNodesToShards)
 	storage.GET("/job-results/:id", ss.serveJobResultsById)
@@ -203,8 +208,8 @@ func (ss *StorageServer) streamTempObjectByBucketAndKey(c echo.Context) error {
 	return c.Stream(200, "", obj)
 }
 
-func (ss *StorageServer) streamLongTermObjectByFileName(c echo.Context) error {
-	reader, err := ss.LongTerm.Get(c.Param("fileName"))
+func (ss *StorageServer) streamPersistenceObjectByFileName(c echo.Context) error {
+	reader, err := ss.Persistence.Get(c.Param("fileName"))
 	if err != nil {
 		return err
 	}
@@ -230,7 +235,7 @@ func (ss *StorageServer) serveNodesToShards(c echo.Context) error {
 	return c.JSON(200, nodesToShards)
 }
 
-func (ss *StorageServer) serveLongTermKeysByShard(c echo.Context) error {
+func (ss *StorageServer) servePersistenceKeysByShard(c echo.Context) error {
 	// Make sure shard has namespace prefix
 	shard := c.Param("shard")
 	if idx := strings.Index(shard, "_"); idx == -1 {
@@ -239,13 +244,13 @@ func (ss *StorageServer) serveLongTermKeysByShard(c echo.Context) error {
 
 	includeMD5s := c.QueryParam("includeMD5s")
 	if includeMD5s == "true" {
-		keysAndMD5s, err := ss.LongTerm.GetKeysAndMD5sIn(shard)
+		keysAndMD5s, err := ss.Persistence.GetKeysAndMD5sIn(shard)
 		if err != nil {
 			return err
 		}
 		return c.JSON(200, keysAndMD5s)
 	} else {
-		keys, err := ss.LongTerm.GetKeysIn(shard)
+		keys, err := ss.Persistence.GetKeysIn(shard)
 		if err != nil {
 			return err
 		}
@@ -255,7 +260,7 @@ func (ss *StorageServer) serveLongTermKeysByShard(c echo.Context) error {
 
 func (ss *StorageServer) serveJobResultsById(c echo.Context) error {
 	jobID := c.Param("id")
-	results, err := ss.LongTerm.GetJobResultsFor(jobID)
+	results, err := ss.Persistence.GetJobResultsFor(jobID)
 	if err != nil {
 		return err
 	}
