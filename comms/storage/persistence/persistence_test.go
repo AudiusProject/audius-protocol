@@ -27,8 +27,8 @@ func TestParsePrefix(t *testing.T) {
 			expectedOk:     true,
 		},
 		{
-			input:          "gcs",
-			expectedPrefix: GCS,
+			input:          "gs",
+			expectedPrefix: GS,
 			expectedOk:     true,
 		},
 		{
@@ -106,14 +106,14 @@ func TestCheckStorageCredentials(t *testing.T) {
 			expectedError: false,
 		},
 		{
-			url: "gcs://my-bucket",
+			url: "gs://my-bucket",
 			envVars: map[string]string{
 				GOOGLE_APPLICATION_CREDENTIALS: "",
 			},
 			expectedError: true,
 		},
 		{
-			url: "gcs://my-bucket",
+			url: "gs://my-bucket",
 			envVars: map[string]string{
 				GOOGLE_APPLICATION_CREDENTIALS: "/the/path/to/thing.json",
 			},

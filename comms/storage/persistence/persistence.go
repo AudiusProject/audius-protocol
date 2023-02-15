@@ -41,7 +41,7 @@ type Prefix int
 const (
 	FILE Prefix = iota
 	HTTP
-	GCS
+	GS
 	S3
 	AZBLOB
 )
@@ -50,7 +50,7 @@ var prefixWhitelist = map[string]Prefix{
 	"file":   FILE,
 	"http":   HTTP,
 	"https":  HTTP,
-	"gcs":    GCS,
+	"gs":     GS,
 	"s3":     S3,
 	"azblob": AZBLOB,
 }
@@ -345,7 +345,7 @@ func checkStorageCredentials(blobDriverUrl string) error {
 	}
 
 	// S3: https://github.com/google/go-cloud/blob/master/blob/s3blob/example_test.go#L73
-	// GCS: https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57
+	// GS: https://github.com/google/go-cloud/blob/master/blob/gcsblob/example_test.go#L57
 	// AZBLOB: https://github.com/google/go-cloud/blob/master/blob/azureblob/example_test.go#L71
 	switch prefix {
 	case FILE:
@@ -359,12 +359,12 @@ func checkStorageCredentials(blobDriverUrl string) error {
 		}
 
 		return nil
-	case GCS:
+	case GS:
 		// Check for gcloud cred env vars
 		googleAppCredentials := os.Getenv(GOOGLE_APPLICATION_CREDENTIALS)
 
 		if googleAppCredentials == "" {
-			return errors.New("Missing credentials required for persistent GCS backing (i.e. GOOGLE_APPLICATION_CREDENTIALS)")
+			return errors.New("Missing credentials required for persistent GS backing (i.e. GOOGLE_APPLICATION_CREDENTIALS)")
 		}
 
 		return nil
