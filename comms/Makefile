@@ -79,6 +79,12 @@ trending.test.run::
 	@echo starting trending tests
 	@	  ginkgo ./trending/...
 
-trending.dev.deps::
+trending.dev.deps.up::
 	@echo starting dev dependencies
-	@	docker compose -f docker-compose.trending.yml up
+	@	docker compose -f docker-compose.trending.yml up -d
+	@echo sleeping since clickhouse takes a second to startup
+	@ 	sleep 6
+
+trending.dev.deps.down::
+	@echo stopping dev dependencies
+	@	docker compose -f docker-compose.trending.yml down
