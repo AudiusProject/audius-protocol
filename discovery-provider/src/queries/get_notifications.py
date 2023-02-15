@@ -60,7 +60,7 @@ WHERE
   (:valid_types is NOT NULL AND n.type in :valid_types) AND
   (
     (:timestamp_offset is NULL AND :group_id_offset is NULL) OR
-    (:timestamp_offset is NOT NULL AND :group_id_offset is NOT NULL AND n.group_id < :group_id_offset) OR
+    (:timestamp_offset is NULL AND :group_id_offset is NOT NULL AND n.group_id < :group_id_offset) OR
     (:timestamp_offset is NOT NULL AND user_seen.seen_at is NULL AND n.timestamp < :timestamp_offset) OR
     (:timestamp_offset is NOT NULL AND user_seen.seen_at is NOT NULL AND user_seen.seen_at < :timestamp_offset) OR
     (
