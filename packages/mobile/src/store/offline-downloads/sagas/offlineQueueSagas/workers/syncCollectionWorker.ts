@@ -20,6 +20,7 @@ import {
 } from '../../../selectors'
 import type { CollectionId, OfflineEntry } from '../../../slice'
 import {
+  OfflineDownloadStatus,
   completeCollectionSync,
   CollectionSyncStatus,
   errorCollectionSync,
@@ -217,13 +218,12 @@ function* syncCollection(collectionId: ID) {
   // Add tracks
 
   const offlineTrackStatus = yield* select(getOfflineTrackStatus)
-  // TODO: determine if we want to include errored tracks
   const currentOfflineCollectionTrackIds = currentCollectionTrackIds.filter(
-    (id) => id in offlineTrackStatus
+    (id) =>
+      id in offlineTrackStatus &&
+      offlineTrackStatus[id] !== OfflineDownloadStatus.ERROR
   )
 
-  // Tracks that were added to the collection and tracks that were not queued
-  // up previously for some reason.
   const trackIdsToAdd = difference(
     latestCollectionTrackIds,
     currentOfflineCollectionTrackIds

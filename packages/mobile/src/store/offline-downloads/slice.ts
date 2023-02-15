@@ -177,7 +177,10 @@ const slice = createSlice({
           const { type, id, metadata } = item
           addOfflineTrack(offlineTrackMetadata, id, metadata)
 
-          if (!trackStatus[id]) {
+          if (
+            !trackStatus[id] ||
+            trackStatus[id] === OfflineDownloadStatus.ERROR
+          ) {
             trackStatus[id] = OfflineDownloadStatus.INIT
             offlineQueue.push({ type, id })
           }
