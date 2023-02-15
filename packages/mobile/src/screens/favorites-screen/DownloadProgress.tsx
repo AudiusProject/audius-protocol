@@ -4,11 +4,7 @@ import { useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { ProgressBar } from 'app/components/progress-bar'
-import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
-import {
-  getIsCollectionMarkedForDownload,
-  getOfflineTrackStatus
-} from 'app/store/offline-downloads/selectors'
+import { getOfflineTrackStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
 
@@ -48,17 +44,8 @@ export const DownloadProgress = () => {
     (status) => status === OfflineDownloadStatus.SUCCESS
   ).length
 
-  const isMarkedForDownload = useSelector(
-    getIsCollectionMarkedForDownload(DOWNLOAD_REASON_FAVORITES)
-  )
-
   // Only render if there are active downloads
-  if (
-    numDownloadsComplete === numDownloads ||
-    !isMarkedForDownload ||
-    !isReachable
-  )
-    return null
+  if (numDownloadsComplete === numDownloads || !isReachable) return null
 
   return (
     <View style={styles.root}>
