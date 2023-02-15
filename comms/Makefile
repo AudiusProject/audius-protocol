@@ -77,7 +77,14 @@ trending.dev.run::
 
 trending.test.run::
 	@echo starting trending tests
-	@	  ginkgo ./trending/...
+	@	  ginkgo -v ./trending/...
+
+trending.test.run.full::
+	@echo starting trending dependencies
+	@	  make trending.dev.deps.up
+	@	  make trending.test.run
+	@echo tearing down trending dependencies
+	@	  make trending.dev.deps.down
 
 trending.dev.deps.up::
 	@echo starting dev dependencies

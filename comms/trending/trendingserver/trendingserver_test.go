@@ -54,7 +54,7 @@ var _ = Describe("Trendingserver Suite", Ordered, func() {
 		b, err := io.ReadAll(resp.Body)
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(string(b)).To(Equal("no tracks are trending yet :)"))
+		Expect(string(b)).To(Equal("i checked and found nothing!"))
 	})
 
 	It("can call the trending playlists endpoint", func() {
@@ -66,7 +66,7 @@ var _ = Describe("Trendingserver Suite", Ordered, func() {
 		b, err := io.ReadAll(resp.Body)
 		Expect(err).NotTo(HaveOccurred())
 
-		Expect(string(b)).To(Equal("no playlists are trending yet :)"))
+		Expect(string(b)).To(Equal("i checked and also found nothing!"))
 	})
 
 	// tear down test level constants and anything else
