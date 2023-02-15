@@ -209,7 +209,17 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     cid = event_args._metadata
                     event_type = event_args._entityType
                     action = event_args._action
-                    if not cid or event_type == EntityType.USER_REPLICA_SET:
+                    if (
+                        not cid
+                        or event_type == EntityType.USER_REPLICA_SET
+                        or action
+                        in [
+                            EntityType.REPOST,
+                            EntityType.SAVE,
+                            EntityType.FOLLOW,
+                            EntityType.SUBSCRIPTION,
+                        ]
+                    ):
                         continue
                     if action == Action.CREATE and event_type == EntityType.USER:
                         continue
