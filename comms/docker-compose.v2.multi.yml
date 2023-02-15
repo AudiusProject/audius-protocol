@@ -1,7 +1,7 @@
 version: '3.4'
 
 x-common-variables: &shared-vars
-   AUDIUS_DEV_ONLY_REGISTERED_NODES: '
+  AUDIUS_DEV_ONLY_REGISTERED_NODES: '
         [
           {
             "id": "content-node::1",
@@ -32,21 +32,32 @@ x-common-variables: &shared-vars
             "type": { "id": "content-node" }
           }
         ]'
-   audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
+  audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
+
+x-common-variables: &extra-hosts
+  extra_hosts:
+    - "node1:host-gateway"
+    - "node2:host-gateway"
+    - "node3:host-gateway"
+    - "node4:host-gateway"
 
 services:
+
+  ingress:
+    container_name: ingress
+    extends:
+      file: docker-compose.v2.base.yml
+      service: nginx
+    volumes:
+      - ./v2_nginx/ingress.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
 
   comdb:
     container_name: comdb
     extends:
       file: docker-compose.v2.base.yml
       service: comdb
-
-  sshuttle-server:
-    container_name: sshuttle-server
-    extends:
-      file: docker-compose.v2.base.yml
-      service: sshuttle-server
 
   com1:
     container_name: com1
@@ -58,6 +69,7 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable
       test_host: "com1"
       <<: *shared-vars
+    <<: *extra-hosts
 
   storage1:
     container_name: storage1
@@ -70,14 +82,7 @@ services:
       <<: *shared-vars
       test_host: "com1"
       NAME: "storage1"
-
-  node1:
-    container_name: node1
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nginx
-    volumes:
-      - ./v2_nginx/node1.conf:/etc/nginx/conf.d/default.conf
+    <<: *extra-hosts
 
   com2:
     container_name: com2
@@ -89,6 +94,7 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com2?sslmode=disable
       test_host: "com2"
       <<: *shared-vars
+    <<: *extra-hosts
 
   storage2:
     container_name: storage2
@@ -101,14 +107,7 @@ services:
       <<: *shared-vars
       test_host: "com2"
       NAME: "storage2"
-
-  node2:
-    container_name: node2
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nginx
-    volumes:
-      - ./v2_nginx/node2.conf:/etc/nginx/conf.d/default.conf
+    <<: *extra-hosts
 
   com3:
     container_name: com3
@@ -120,6 +119,7 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com3?sslmode=disable
       test_host: "com3"
       <<: *shared-vars
+    <<: *extra-hosts
 
   storage3:
     container_name: storage3
@@ -132,14 +132,7 @@ services:
       <<: *shared-vars
       test_host: "com3"
       NAME: "storage3"
-
-  node3:
-    container_name: node3
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nginx
-    volumes:
-      - ./v2_nginx/node3.conf:/etc/nginx/conf.d/default.conf
+    <<: *extra-hosts
 
   com4:
     container_name: com4
@@ -151,6 +144,7 @@ services:
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
       test_host: "com4"
       <<: *shared-vars
+    <<: *extra-hosts
 
   storage4:
     container_name: storage4
@@ -163,11 +157,4 @@ services:
       <<: *shared-vars
       test_host: "com4"
       NAME: "storage4"
-
-  node4:
-    container_name: node4
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nginx
-    volumes:
-      - ./v2_nginx/node4.conf:/etc/nginx/conf.d/default.conf
+    <<: *extra-hosts

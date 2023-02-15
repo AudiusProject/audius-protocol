@@ -35,22 +35,3 @@ services:
   
   nginx:
     image: openresty/openresty:1.21.4.1-alpine-fat
-
-  # SSH server for sshuttle
-  # we use separate container instead of host machine for dns/auto-hosts functionality
-
-  sshuttle-server:
-    build:
-      context: .
-      dockerfile: Dockerfile.sshuttle    
-    image: "comms:sshuttle"
-    command: bash /tmp/dev-tools/startup/sshuttle-server.sh
-    environment:
-      PUBLIC_KEY_FILE: "/tmp/dev-tools/keys/dev.pub"
-      USER_NAME: "sshuttle"
-    ports:
-      - "2223:2222"
-    volumes:
-      - ../dev-tools/:/tmp/dev-tools
-    deploy:
-      mode: global
