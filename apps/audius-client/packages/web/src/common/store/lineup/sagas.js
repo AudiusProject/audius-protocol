@@ -15,7 +15,6 @@ import {
 import {
   all,
   call,
-  cancel,
   delay,
   put,
   fork,
