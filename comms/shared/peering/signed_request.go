@@ -3,38 +3,60 @@ package peering
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
+	"strconv"
+	"time"
 
 	"comms.audius.co/discovery/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
 )
 
-func ReadSignedRequest(c echo.Context) (payload []byte, wallet string, err error) {
+func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
+	var payload []byte
+	var err error
 	if c.Request().Method == "GET" {
-		payload = []byte(c.Request().URL.Path)
+		// Check that timestamp is less than 5 seconds old
+		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
+		if err != nil || time.Now().UnixMilli()-timestamp > config.SignatureTimeToLiveMs {
+			fmt.Println(err)
+			return nil, "", errors.New("invalid timestamp")
+		}
+
+		// Strip out the app_name query parameter to get the true signature payload
+		u := *c.Request().URL
+		q := u.Query()
+		q.Del("app_name")
+		u.RawQuery = q.Encode()
+		payload = []byte(u.String())
 	} else if c.Request().Method == "POST" {
 		payload, err = io.ReadAll(c.Request().Body)
 	} else {
-		err = errors.New("unsupported request type")
+		err = errors.New("Unsupported request method " + c.Request().Method)
 	}
 	if err != nil {
-		return
+		return nil, "", err
 	}
 
 	sigHex := c.Request().Header.Get(config.SigHeader)
-	sig, err := base64.StdEncoding.DecodeString(sigHex)
+	wallet, err := ReadSigned(sigHex, payload)
+	return payload, wallet, err
+}
+
+func ReadSigned(signatureHex string, signedData []byte) (string, error) {
+	sig, err := base64.StdEncoding.DecodeString(signatureHex)
 	if err != nil {
 		err = errors.New("bad sig header: " + err.Error())
-		return
+		return "", err
 	}
 
 	// recover
-	hash := crypto.Keccak256Hash(payload)
+	hash := crypto.Keccak256Hash(signedData)
 	pubkey, err := crypto.SigToPub(hash[:], sig)
 	if err != nil {
-		return
+		return "", err
 	}
-	wallet = crypto.PubkeyToAddress(*pubkey).Hex()
-	return
+	wallet := crypto.PubkeyToAddress(*pubkey).Hex()
+	return wallet, nil
 }

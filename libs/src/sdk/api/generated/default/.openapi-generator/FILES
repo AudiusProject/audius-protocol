@@ -53,10 +53,8 @@ models/UserResponse.ts
 models/UserSearch.ts
 models/UserSubscribers.ts
 models/UserTrackListenCountsResponse.ts
-models/UserTrackListenCountsResponseData.ts
 models/UsersByContentNode.ts
 models/VerifyToken.ts
 models/VersionMetadata.ts
-models/WildMonthModel.ts
 models/index.ts
 runtime.ts

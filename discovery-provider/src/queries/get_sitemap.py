@@ -6,6 +6,7 @@ from lxml import etree
 from sqlalchemy import asc, func
 from sqlalchemy.orm.session import Session
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.aggregate_user import AggregateUser
@@ -112,7 +113,9 @@ def get_max_playlist_count(session: Session) -> int:
 
 def get_dynamic_root(max: int, base_route: str, limit: int = LIMIT):
     num_pages = (max // limit) + 1 if max % limit != 0 else int(max / limit)
-    root = etree.Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
+    root = etree.Element(
+        "sitemapindex", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+    )
     for num in range(num_pages):
         sitemap_el = etree.Element("sitemap")
         loc = etree.Element("loc")
@@ -155,25 +158,24 @@ def get_track_slugs(session: Session, limit: int, offset: int):
 
 
 def get_playlist_slugs(session: Session, limit: int, offset: int):
-    playlists: List[Tuple[str, str, int, str]] = (
-        session.query(
-            User.handle_lc,
-            Playlist.playlist_name,
-            Playlist.playlist_id,
-            Playlist.is_album,
+    slugs: List[Tuple[str, str, bool]] = (
+        session.query(User.handle_lc, PlaylistRoute.slug, Playlist.is_album)
+        .join(User, User.user_id == PlaylistRoute.owner_id)
+        .join(Playlist, PlaylistRoute.playlist_id == Playlist.playlist_id)
+        .filter(
+            User.is_current == True,
+            PlaylistRoute.is_current == True,
+            Playlist.is_current == True,
+            Playlist.is_private == False,
         )
-        .join(User, User.user_id == Playlist.playlist_owner_id)
-        .filter(Playlist.is_current == True, Playlist.is_private == False)
         .order_by(asc(Playlist.playlist_id))
         .limit(limit)
         .offset(offset)
         .all()
     )
-    slugs = [
-        f"{p[0]}/{'album' if p[3] else 'playlist'}/{p[1]}-{p[2]}" for p in playlists
+    return [
+        f"{slug[0]}/{'album' if slug[2] else 'playlist'}/{slug[1]}" for slug in slugs
     ]
-
-    return slugs
 
 
 def get_user_slugs(session: Session, limit: int, offset: int):

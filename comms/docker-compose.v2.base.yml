@@ -1,0 +1,56 @@
+version: '3'
+services:
+  comdb:
+    container_name: comdb
+    image: postgres
+    restart: unless-stopped
+    ports:
+      - 5454:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
+    deploy:
+      mode: global
+
+  nats:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    image: "comms:v2"
+    restart: unless-stopped
+    stop_signal: SIGKILL
+    command:
+      - nats
+
+  storage:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    image: "comms:v2"
+    restart: unless-stopped
+    stop_signal: SIGKILL
+    command:
+      - storage
+  
+  nginx:
+    image: openresty/openresty:1.21.4.1-alpine-fat
+
+  # SSH server for sshuttle
+  # we use separate container instead of host machine for dns/auto-hosts functionality
+
+  sshuttle-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.sshuttle    
+    image: "comms:sshuttle"
+    command: bash /tmp/dev-tools/startup/sshuttle-server.sh
+    environment:
+      PUBLIC_KEY_FILE: "/tmp/dev-tools/keys/dev.pub"
+      USER_NAME: "sshuttle"
+    ports:
+      - "2223:2222"
+    volumes:
+      - ../dev-tools/:/tmp/dev-tools
+    deploy:
+      mode: global

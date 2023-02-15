@@ -5,10 +5,6 @@ dev.discovery::
 		audius_db_url='postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable' \
 		go run main.go discovery
 
-dev.storage::
-	@	audius_discprov_env='standalone' \
-		go run main.go storage
-
 reset::
 	docker compose down --volumes
 	docker compose up comdb comnats -d
@@ -16,8 +12,33 @@ reset::
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
 
+sshuttle:
+	test -d sshuttle || ( \
+		git clone https://github.com/AudiusProject/sshuttle.git && \
+		pipx install virtualenv && cd sshuttle && \
+		virtualenv -p python3 ./virtualenv && \
+		. ./virtualenv/bin/activate && ./setup.py install \
+	)
+
+sshuttle.connect:: sshuttle
+	sleep 1 && \
+	. ./sshuttle/virtualenv/bin/activate && \
+	sshuttle -N --no-latency-control -H -r "sshuttle@localhost:2223" -e "ssh -i ../dev-tools/keys/dev -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+storage.dev.up::
+	docker compose -f docker-compose.v2.dev.yml up -d --build
+
+storage.multi.up::
+	docker compose -f docker-compose.v2.multi.yml up -d --build
+
+storage.dev:: down storage.dev.up sshuttle.connect
+
+storage.multi:: down storage.multi.up sshuttle.connect
+
 down::
-	docker compose down --volumes
+	(docker compose down --volumes || true) && \
+	(docker compose -f docker-compose.v2.dev.yml down -v || true) && \
+	(docker compose -f docker-compose.v2.multi.yml down -v || true)
 
 psql::
 	docker exec -it comdb psql -U postgres audius_discovery
@@ -30,7 +51,7 @@ fmt::
 
 test::
 	docker compose up -d comdb
-	audius_discprov_env='standalone' go test ./... -count=1
+	audius_discprov_env='standalone' test_host='com1' go test ./... -count=1
 
 
 test.load::
@@ -44,6 +65,9 @@ build::
 build.alpine::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 	go build -ldflags="-w -s" -o comms main.go
+
+build.weathermap::
+	cd storage/storageserver/weather-map; yarn && yarn build
 
 # this is a "fast build and push"
 # we build target specific binary on our host machine (osx)
@@ -62,9 +86,6 @@ tools::
 	CGO_ENABLED=0 go install github.com/nats-io/natscli/nats@latest
 	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
 	go install github.com/rakyll/hey@latest
-
-sqlc:: reset
-	sqlc generate
 
 quicktype::
 	cp ../libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts

@@ -1,7 +1,7 @@
 """add_is_repost_repost_column
 
 Revision ID: 988f095a1d43
-Revises: a62b4e92b733
+Revises: 6f98e9709e3e
 Create Date: 2023-02-02 21:20:03.243055
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "988f095a1d43"
-down_revision = "a62b4e92b733"
+down_revision = "6f98e9709e3e"
 branch_labels = None
 depends_on = None
 

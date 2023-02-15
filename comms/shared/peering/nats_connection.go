@@ -9,12 +9,12 @@ import (
 )
 
 func DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error) {
-	natsUrl := nats.DefaultURL
+	natsUrl := config.GetEnvDefault("NATS_SERVER_URL", nats.DefaultURL)
 
-	if peerMap != nil {
+	if len(peerMap) != 0 {
 		goodNatsUrls := []string{}
 		for _, peer := range peerMap {
-			if peer.NatsIsReachable {
+			if peer.NatsIsReachable && peer.NatsClusterName == config.NatsClusterName {
 				u := fmt.Sprintf("nats://%s:4222", peer.IP)
 				goodNatsUrls = append(goodNatsUrls, u)
 			}
@@ -25,11 +25,11 @@ func DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error) {
 
 	nc, err := DialNatsUrl(natsUrl)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to dial natsUrl %q: %v", natsUrl, err)
 	}
 	j, err := nc.JetStream()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open jetstream connection: %v", err)
 	}
 	return j, nil
 }

@@ -106,6 +106,12 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         )
 
         latest_block_from_chain = web3.eth.get_block("latest", True)
+        if os.getenv("audius_discprov_env") != "dev":
+            # index 1 block behind to avoid reverting
+            # TODO make reverting 1 block fast and remove this workaround
+            latest_block_from_chain = web3.eth.get_block(
+                latest_block_from_chain.number - 1, True
+            )
         latest_block_number_from_chain = latest_block_from_chain.number
 
         target_latest_block_number = min(
@@ -210,7 +216,17 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     cid = event_args._metadata
                     event_type = event_args._entityType
                     action = event_args._action
-                    if not cid or event_type == EntityType.USER_REPLICA_SET:
+                    if (
+                        not cid
+                        or event_type == EntityType.USER_REPLICA_SET
+                        or action
+                        in [
+                            EntityType.REPOST,
+                            EntityType.SAVE,
+                            EntityType.FOLLOW,
+                            EntityType.SUBSCRIPTION,
+                        ]
+                    ):
                         continue
                     if action == Action.CREATE and event_type == EntityType.USER:
                         continue

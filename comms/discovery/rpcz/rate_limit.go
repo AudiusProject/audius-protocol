@@ -11,10 +11,7 @@ import (
 func NewRateLimiter(jsc nats.JetStreamContext) (*RateLimiter, error) {
 
 	// kv
-	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   config.RateLimitRulesBucketName,
-		Replicas: config.NatsReplicaCount,
-	})
+	kv, err := jsc.KeyValue(config.RateLimitRulesBucketName)
 	if err != nil {
 		return nil, err
 	}

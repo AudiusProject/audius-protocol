@@ -1,0 +1,3 @@
+FROM linuxserver/openssh-server:latest
+
+RUN apk add python3 nmap

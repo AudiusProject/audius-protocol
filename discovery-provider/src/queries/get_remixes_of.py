@@ -44,13 +44,16 @@ def get_remixes_of(args):
                 track_ids=[track_id],
                 filter_deleted=False,
                 filter_unlisted=False,
-                exclude_premium=True,
             )
 
             if not parent_track_res or parent_track_res[0] is None:
                 raise exceptions.ArgumentError("Invalid track_id provided")
 
             parent_track = parent_track_res[0]
+
+            if parent_track["is_premium"]:
+                return {"tracks": [], "count": 0}
+
             track_owner_id = parent_track["owner_id"]
 
             # Get the 'children' remix tracks

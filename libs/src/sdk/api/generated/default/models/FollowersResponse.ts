@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -25,14 +26,48 @@ import {
  * @export
  * @interface FollowersResponse
  */
-export interface FollowersResponse 
-    {
-        /**
-        * 
-        * @type {Array<User>}
-        * @memberof FollowersResponse
-        */
-        data?: Array<User>;
-    }
+export interface FollowersResponse {
+    /**
+     * 
+     * @type {Array<User>}
+     * @memberof FollowersResponse
+     */
+    data?: Array<User>;
+}
 
+/**
+ * Check if a given object implements the FollowersResponse interface.
+ */
+export function instanceOfFollowersResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function FollowersResponseFromJSON(json: any): FollowersResponse {
+    return FollowersResponseFromJSONTyped(json, false);
+}
+
+export function FollowersResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): FollowersResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(UserFromJSON)),
+    };
+}
+
+export function FollowersResponseToJSON(value?: FollowersResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(UserToJSON)),
+    };
+}
 

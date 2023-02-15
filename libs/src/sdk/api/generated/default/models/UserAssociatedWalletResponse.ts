@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { EncodedUserId } from './EncodedUserId';
 import {
-    EncodedUserId,
     EncodedUserIdFromJSON,
     EncodedUserIdFromJSONTyped,
     EncodedUserIdToJSON,
@@ -25,14 +26,48 @@ import {
  * @export
  * @interface UserAssociatedWalletResponse
  */
-export interface UserAssociatedWalletResponse 
-    {
-        /**
-        * 
-        * @type {EncodedUserId}
-        * @memberof UserAssociatedWalletResponse
-        */
-        data?: EncodedUserId;
-    }
+export interface UserAssociatedWalletResponse {
+    /**
+     * 
+     * @type {EncodedUserId}
+     * @memberof UserAssociatedWalletResponse
+     */
+    data?: EncodedUserId;
+}
 
+/**
+ * Check if a given object implements the UserAssociatedWalletResponse interface.
+ */
+export function instanceOfUserAssociatedWalletResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function UserAssociatedWalletResponseFromJSON(json: any): UserAssociatedWalletResponse {
+    return UserAssociatedWalletResponseFromJSONTyped(json, false);
+}
+
+export function UserAssociatedWalletResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserAssociatedWalletResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : EncodedUserIdFromJSON(json['data']),
+    };
+}
+
+export function UserAssociatedWalletResponseToJSON(value?: UserAssociatedWalletResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': EncodedUserIdToJSON(value.data),
+    };
+}
 

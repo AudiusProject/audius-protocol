@@ -98,12 +98,12 @@ type ChatPermitRPCParams struct {
 	Permit ChatPermission `json:"permit"`
 }
 
-type RPCPayload struct {
-	Method RPCMethod        `json:"method"`
-	Params RPCPayloadParams `json:"params"`
+type RPCPayloadRequest struct {
+	Method RPCMethod               `json:"method"`
+	Params RPCPayloadRequestParams `json:"params"`
 }
 
-type RPCPayloadParams struct {
+type RPCPayloadRequestParams struct {
 	ChatID          *string           `json:"chat_id,omitempty"`
 	Invites         []TentacledInvite `json:"invites,omitempty"`
 	Message         *string           `json:"message,omitempty"`
@@ -132,6 +132,18 @@ type UserChat struct {
 
 type ChatMember struct {
 	UserID string `json:"user_id"`
+}
+
+type ChatMessageReaction struct {
+	CreatedAt string `json:"created_at"`
+	Reaction  string `json:"reaction"`
+	UserID    string `json:"user_id"`
+}
+
+type ChatMessageNullableReaction struct {
+	CreatedAt string  `json:"created_at"`
+	Reaction  *string `json:"reaction"`
+	UserID    string  `json:"user_id"`
 }
 
 type ChatMessage struct {
@@ -169,6 +181,38 @@ type Summary struct {
 	PrevCount  float64 `json:"prev_count"`
 	PrevCursor string  `json:"prev_cursor"`
 	TotalCount float64 `json:"total_count"`
+}
+
+type ChatWebsocketEventData struct {
+	Metadata Metadata   `json:"metadata"`
+	RPC      RPCPayload `json:"rpc"`
+}
+
+type Metadata struct {
+	Timestamp string `json:"timestamp"`
+	UserID    string `json:"userId"`
+}
+
+type RPCPayload struct {
+	Method    RPCMethod        `json:"method"`
+	Params    RPCPayloadParams `json:"params"`
+	Timestamp float64          `json:"timestamp"`
+}
+
+type RPCPayloadParams struct {
+	ChatID          *string         `json:"chat_id,omitempty"`
+	Invites         []StickyInvite  `json:"invites,omitempty"`
+	Message         *string         `json:"message,omitempty"`
+	MessageID       *string         `json:"message_id,omitempty"`
+	ParentMessageID *string         `json:"parent_message_id,omitempty"`
+	Reaction        *string         `json:"reaction"`
+	UserID          *string         `json:"user_id,omitempty"`
+	Permit          *ChatPermission `json:"permit,omitempty"`
+}
+
+type StickyInvite struct {
+	InviteCode string `json:"invite_code"`
+	UserID     string `json:"user_id"`
 }
 
 type ChatCreateRPCMethod string

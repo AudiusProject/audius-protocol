@@ -1,10 +1,11 @@
 package discovery
 
 import (
+	"expvar"
 	"fmt"
 	"log"
-	"os"
 	"os/exec"
+	"time"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
@@ -70,7 +71,7 @@ func DiscoveryMain() {
 		out, err := exec.Command("dbmate",
 			"--no-dump-schema",
 			"--migrations-dir", "./discovery/db/migrations",
-			"--url", os.Getenv("audius_db_url"),
+			"--url", db.MustGetAudiusDbUrl(),
 			"up").CombinedOutput()
 		fmt.Println("dbmate: ", string(out))
 		return err
@@ -78,6 +79,8 @@ func DiscoveryMain() {
 	if err := g.Wait(); err != nil {
 		log.Fatal(err)
 	}
+
+	expvar.NewString("booted_at").Set(time.Now().UTC().String())
 
 	e := server.NewServer(jsc, proc)
 	e.Logger.Fatal(e.Start(":8925"))
@@ -91,6 +94,7 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 		Replicas: config.NatsReplicaCount,
 		// DenyDelete: true,
 		// DenyPurge:  true,
+		Placement: config.DiscoveryPlacement(),
 	})
 	if err != nil {
 		return err
@@ -100,19 +104,21 @@ func createJetstreamStreams(jsc nats.JetStreamContext) error {
 
 	// create kv buckets
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   config.PubkeystoreBucketName,
-		Replicas: config.NatsReplicaCount,
+		Bucket:    config.PubkeystoreBucketName,
+		Replicas:  config.NatsReplicaCount,
+		Placement: config.DiscoveryPlacement(),
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create pubkey kv %v", err)
 	}
 
 	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   config.RateLimitRulesBucketName,
-		Replicas: config.NatsReplicaCount,
+		Bucket:    config.RateLimitRulesBucketName,
+		Replicas:  config.NatsReplicaCount,
+		Placement: config.DiscoveryPlacement(),
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create rate limit kv %v", err)
 	}
 
 	return nil
@@ -129,10 +135,15 @@ func createConsumer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) error {
 	// matrix-org/dendrite codebase has some nice examples to follow...
 
 	sub, err := jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.WalletAddress))
-
-	if info, err := sub.ConsumerInfo(); err == nil {
-		config.Logger.Info("create subscription", "sub", info)
+	if err != nil {
+		config.Logger.Error(err.Error())
+		return err
 	}
 
-	return err
+	info, err := sub.ConsumerInfo()
+
+	if err == nil {
+		config.Logger.Info("create subscription", "sub", info)
+	}
+	return nil
 }

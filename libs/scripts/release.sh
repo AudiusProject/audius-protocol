@@ -7,6 +7,15 @@ else
     GIT_COMMIT=${1}
 fi
 
+if [[ -z ${2} ]]; then
+    echo "A version must be supplied as the second parameter (See `npm version` for valid values)."
+    exit 2
+else
+    RELEASE_VERSION=${2}
+fi
+
+PREID=${3}
+
 if [[ $(whoami) != "circleci" ]]; then
     echo "This script is intended to be run through CI."
     echo "Please see:"
@@ -66,7 +75,7 @@ function git-reset () {
 function bump-version () {
     (
         # Patch the version
-        VERSION=$(npm version patch)
+        VERSION=$(npm version ${RELEASE_VERSION} --preid=${PREID})
         tmp=$(mktemp)
         jq ". += {audius: {releaseSHA: \"${GIT_COMMIT}\"}}" package.json > "$tmp" \
             && mv "$tmp" package.json

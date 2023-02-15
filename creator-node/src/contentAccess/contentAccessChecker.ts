@@ -1,6 +1,7 @@
 import { isRegisteredDiscoveryNode } from './helpers'
 import { CheckAccessArgs, CheckAccessResponse } from './types'
 import { recoverWallet, signatureHasExpired } from '../apiSigning'
+import BlacklistManager from '../blacklistManager'
 
 const CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
 
@@ -44,6 +45,23 @@ export async function checkCIDAccess({
     return {
       isValidRequest: false,
       error: 'IncorrectCID',
+      shouldCache: false
+    }
+  }
+
+  // Both the trackBlockchainId and the track CID need to checked whether
+  // they are in the blacklist. That's the only reason `trackId`
+  // is in the request. Ideally we should only check track CID but
+  // that would require another blackfill job on the Blacklist table
+  const trackIdBlacklisted = await BlacklistManager.trackIdIsInBlacklist(
+    trackId
+  )
+  const cidBlacklisted = await BlacklistManager.CIDIsInBlacklist(copy320CID)
+  const isNotServable = cidBlacklisted || trackIdBlacklisted
+  if (isNotServable) {
+    return {
+      isValidRequest: false,
+      error: 'UnservableTrack',
       shouldCache: false
     }
   }

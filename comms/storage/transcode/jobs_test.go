@@ -9,13 +9,14 @@ import (
 
 func TestJobManager(t *testing.T) {
 
+	namespace := "testing"
 	nc, err := nats.Connect(nats.DefaultURL)
 	assert.NoError(t, err)
 
 	jsc, err := nc.JetStream()
 	assert.NoError(t, err)
 
-	jobm, err := NewJobsManager(jsc, "testing", 1)
+	jobm, err := NewJobsManager(jsc, namespace, 1)
 	assert.NoError(t, err)
 
 	jobm.Update(&Job{

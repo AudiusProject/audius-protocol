@@ -2,8 +2,8 @@ package server
 
 import (
 	"encoding/json"
-	"io"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -15,6 +15,7 @@ import (
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
 	"comms.audius.co/shared/peering"
+	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
@@ -28,6 +29,50 @@ func getHealthStatus() schema.Health {
 	return schema.Health{
 		IsHealthy: true,
 	}
+}
+
+func chatWebsocket(c echo.Context) error {
+	ctx := c.Request().Context()
+
+	// Check that timestamp is less than 5 seconds old
+	timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
+	if err != nil || time.Now().UnixMilli()-timestamp > 5000 {
+		return c.String(400, "Invalid signature timestamp")
+	}
+
+	// Websockets from the client can't send headers, so instead, the signature is a query parameter
+	// Strip out the signature query parameter to get the true signature payload
+	u, err := url.Parse(c.Request().RequestURI)
+	if err != nil {
+		return c.String(400, "Could not parse URL")
+	}
+	q := u.Query()
+	q.Del("signature")
+	u.RawQuery = q.Encode()
+	signature := c.QueryParam("signature")
+	signedData := []byte(u.String())
+
+	// Now that we have the data that was actually signed, we can recover the wallet
+	wallet, err := peering.ReadSigned(signature, signedData)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	w := c.Response()
+	r := c.Request()
+
+	conn, _, _, err := ws.UpgradeHTTP(r, w)
+	if err != nil {
+		return err
+	}
+
+	rpcz.RegisterWebsocket(userId, conn)
+	return nil
 }
 
 func getChats(c echo.Context) error {
@@ -111,7 +156,6 @@ func getChat(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	logger.Debug("chat", "userId", userId, "chatId", c.Param("id"), "chat.chatId", chat.ChatID)
 	members, err := queries.ChatMembers(db.Conn, ctx, chat.ChatID)
 	if err != nil {
 		return err
@@ -188,7 +232,6 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *echo.Echo {
 	e.Debug = true
 
 	// Middleware
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
@@ -218,34 +261,9 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *echo.Echo {
 		})
 	})
 
-	// this is a WIP endpoint that matches identity relay
-	// we could use a cloudflare worker to "tee" identity requests into NATS
-	g.POST("/relay", func(c echo.Context) error {
-		// todo: do EIP-712 verification here...
-		// skip if bad...
-		payload, err := io.ReadAll(c.Request().Body)
-		if err != nil {
-			return err
-		}
-
-		// subject := "audius.comms.demo"
-		subject := "audius.staging.relay"
-
-		// Publish data to the subject
-		msg := nats.NewMsg(subject)
-		msg.Header.Add(config.SigHeader, c.Request().Header.Get(config.SigHeader))
-		msg.Data = payload
-		ok, err := jsc.PublishMsg(msg)
-		if err != nil {
-			logger.Warn(string(payload), "err", err)
-			return c.String(500, err.Error())
-		}
-
-		logger.Debug(string(payload), "seq", ok.Sequence, "relay", true)
-		return c.String(200, "ok")
-	})
-
 	g.GET("/chats", getChats)
+
+	g.GET("/chats/ws", chatWebsocket)
 
 	g.GET("/chats/:id", getChat)
 
@@ -303,13 +321,15 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *echo.Echo {
 	})
 
 	g.GET("/debug/consumer", func(c echo.Context) error {
-
 		info, err := jsc.ConsumerInfo(config.GlobalStreamName, config.WalletAddress)
 		if err != nil {
 			return err
 		}
 		return c.JSON(200, info)
 	})
+
+	g.GET("/debug/vars", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
+	g.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
 
 	return e
 }

@@ -65,8 +65,8 @@ if [ "${ARG1}" == "standalone_creator" ]; then
 
   if [ ! "${DB_EXISTS}" ]; then
     echo "DB Container doesn't exist"
-    docker run -d --name $DB_CONTAINER -p 127.0.0.1:$PG_PORT:5432 postgres:11.1
-    sleep 1
+    docker run -d --name $DB_CONTAINER -p 127.0.0.1:$PG_PORT:5432 postgres:11.1 postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
+    sleep 5
   fi
   if [ ! "${REDIS_EXISTS}" ]; then
     echo "Redis Container doesn't exist"
@@ -125,6 +125,7 @@ export minimumMemoryAvailable=2000000000
 export maxFileDescriptorsAllocatedPercentage=95
 export minimumDailySyncCount=5
 export minimumRollingSyncCount=10
+export dbConnectionPoolMax=1
 
 # tests
 run_unit_tests

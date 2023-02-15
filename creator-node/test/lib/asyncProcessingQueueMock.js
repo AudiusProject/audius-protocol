@@ -1,6 +1,8 @@
 class AsyncProcessingQueueMock {
   async startQueueMetrics() {}
 
+  async addTrackContentUploadTask() {}
+
   async getAsyncProcessingQueueJobs() {
     return {
       waiting: {
