@@ -324,20 +324,22 @@ function* fetchProfileAsync(action) {
       }
     }
 
-    const showArtistRecommendationsPercent =
-      getRemoteVar(DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_PERCENT) || 0
-    if (Math.random() < showArtistRecommendationsPercent) {
-      yield put(
-        artistRecommendationsActions.fetchRelatedArtists({
-          userId: user.user_id
-        })
-      )
+    if (!isNativeMobile) {
+      const showArtistRecommendationsPercent =
+        getRemoteVar(DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_PERCENT) || 0
+      if (Math.random() < showArtistRecommendationsPercent) {
+        yield put(
+          artistRecommendationsActions.fetchRelatedArtists({
+            userId: user.user_id
+          })
+        )
+      }
     }
 
-    // Delay so the page can load before we fetch mutual followers
-    yield delay(2000)
-
     if (!isNativeMobile) {
+      // Delay so the page can load before we fetch mutual followers
+      yield delay(2000)
+
       yield put(
         profileActions.fetchFollowUsers(
           FollowType.FOLLOWEE_FOLLOWS,

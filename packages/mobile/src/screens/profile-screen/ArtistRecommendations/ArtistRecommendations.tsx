@@ -1,5 +1,6 @@
 import { Fragment, useCallback } from 'react'
 
+import type { User } from '@audius/common'
 import {
   FollowSource,
   usersSocialActions,
@@ -127,7 +128,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   }, [suggestedArtists, isFollowingAllArtists, dispatch])
 
   const handlePressArtist = useCallback(
-    (artist) => () => {
+    (artist: User) => () => {
       navigation.push('Profile', { handle: artist.handle })
     },
     [navigation]
