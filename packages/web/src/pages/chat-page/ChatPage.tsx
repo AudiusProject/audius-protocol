@@ -1,6 +1,11 @@
-import { useCallback, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
-import { chatSelectors, FeatureFlags, useProxySelector } from '@audius/common'
+import {
+  chatActions,
+  chatSelectors,
+  FeatureFlags,
+  useProxySelector
+} from '@audius/common'
 import { ResizeObserver } from '@juggle/resize-observer'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -19,6 +24,7 @@ import { ChatMessageList } from './components/ChatMessageList'
 import { CreateChatPrompt } from './components/CreateChatPrompt'
 
 const { getOtherChatUsers } = chatSelectors
+const { connect, disconnect } = chatActions
 
 const messages = {
   messages: 'Messages'
@@ -55,6 +61,13 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
     },
     [messagesRef, currentChatId, dispatch]
   )
+
+  useEffect(() => {
+    dispatch(connect())
+    return () => {
+      dispatch(disconnect())
+    }
+  }, [dispatch])
 
   if (!isChatEnabled) {
     return null

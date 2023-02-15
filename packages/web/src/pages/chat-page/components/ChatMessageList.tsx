@@ -26,7 +26,7 @@ import styles from './ChatMessageList.module.css'
 import { ChatMessageListItem } from './ChatMessageListItem'
 import { StickyScrollList } from './StickyScrollList'
 
-const { fetchMoreMessages, markChatAsRead } = chatActions
+const { fetchMoreMessages, markChatAsRead, setActiveChat } = chatActions
 const {
   getChatMessages,
   getChatMessagesStatus,
@@ -89,13 +89,17 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         if (chatId && isScrolledToBottom(e.currentTarget)) {
           // Mark chat as read when the user reaches the bottom (saga handles no-op if already read)
           dispatch(markChatAsRead({ chatId }))
-        } else if (
-          chatId &&
-          isScrolledToTop(e.currentTarget) &&
-          status !== Status.LOADING
-        ) {
-          // Fetch more messages when user reaches the top
-          dispatch(fetchMoreMessages({ chatId }))
+          dispatch(setActiveChat({ chatId }))
+        } else {
+          dispatch(setActiveChat({ chatId: null }))
+          if (
+            chatId &&
+            isScrolledToTop(e.currentTarget) &&
+            status !== Status.LOADING
+          ) {
+            // Fetch more messages when user reaches the top
+            dispatch(fetchMoreMessages({ chatId }))
+          }
         }
       },
       [dispatch, chatId, status]
@@ -105,6 +109,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       if (chatId && status === Status.IDLE) {
         // Initial fetch
         dispatch(fetchMoreMessages({ chatId }))
+        dispatch(setActiveChat({ chatId }))
       }
     }, [dispatch, chatId, status])
 

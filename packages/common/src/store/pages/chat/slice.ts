@@ -1,5 +1,11 @@
-import type { TypedCommsResponse, UserChat, ChatMessage } from '@audius/sdk'
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import type {
+  TypedCommsResponse,
+  UserChat,
+  ChatMessage,
+  ChatMessageReaction,
+  ChatMessageNullableReaction
+} from '@audius/sdk'
+import { Action, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import dayjs from 'dayjs'
 
 import { ID, Status } from 'models'
@@ -9,7 +15,8 @@ type ChatState = {
   chatList: {
     status: Status
     summary?: TypedCommsResponse<UserChat>['summary']
-    data: UserChat[]
+    map: Record<string, UserChat>
+    order: string[]
   }
   chatMessages: Record<
     string,
@@ -19,29 +26,37 @@ type ChatState = {
       data: ChatMessage[]
     }
   >
-  optimisticReactions: Record<string, ChatMessage['reactions'][number]>
+  optimisticReactions: Record<string, ChatMessageReaction>
   optimisticChatRead: Record<string, UserChat>
+  activeChatId: string | null
 }
 
 type SetMessageReactionPayload = {
   userId: ID
   chatId: string
   messageId: string
-  reaction: string
+  reaction: string | null
 }
 
 const initialState: ChatState = {
   chatList: {
     status: Status.IDLE,
-    data: []
+    map: {},
+    order: []
   },
   chatMessages: {},
   optimisticChatRead: {},
-  optimisticReactions: {}
+  optimisticReactions: {},
+  activeChatId: null
 }
 
 const chatSortComparator = (a: UserChat, b: UserChat) =>
   dayjs(a.last_message_at).isBefore(dayjs(b.last_message_at)) ? 1 : -1
+
+const getNewChatOrder = (state: ChatState) => {
+  const allChats = Object.values(state.chatList.map)
+  return allChats.sort(chatSortComparator).map((c) => c.chat_id)
+}
 
 const slice = createSlice({
   name: 'application/pages/chat',
@@ -52,7 +67,8 @@ const slice = createSlice({
     },
     createChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
       const { chat } = action.payload
-      state.chatList.data = [chat].concat(state.chatList.data)
+      state.chatList.order.unshift(chat.chat_id)
+      state.chatList.map[chat.chat_id] = chat
     },
     fetchMoreChats: (state) => {
       // triggers saga
@@ -63,7 +79,10 @@ const slice = createSlice({
       action: PayloadAction<TypedCommsResponse<UserChat[]>>
     ) => {
       state.chatList.status = Status.SUCCESS
-      state.chatList.data = state.chatList.data.concat(action.payload.data)
+      for (const chat of action.payload.data) {
+        state.chatList.order.push(chat.chat_id)
+        state.chatList.map[chat.chat_id] = chat
+      }
       state.chatList.summary = action.payload.summary
     },
     fetchMoreChatsFailed: (state) => {
@@ -111,34 +130,38 @@ const slice = createSlice({
       // Optimistically set reaction
       const { userId, messageId, reaction } = action.payload
       const encodedUserId = encodeHashId(userId)
-      state.optimisticReactions[messageId] = {
-        user_id: encodedUserId,
-        reaction,
-        created_at: dayjs().toISOString()
+      if (reaction) {
+        state.optimisticReactions[messageId] = {
+          user_id: encodedUserId,
+          reaction,
+          created_at: dayjs().toISOString()
+        }
+      } else {
+        delete state.optimisticReactions[messageId]
       }
     },
     setMessageReactionSucceeded: (
       state,
-      action: PayloadAction<SetMessageReactionPayload>
+      action: PayloadAction<{
+        chatId: string
+        messageId: string
+        reaction: ChatMessageNullableReaction
+      }>
     ) => {
       // Set the true state
-      const { userId, chatId, messageId, reaction } = action.payload
+      const { chatId, messageId, reaction } = action.payload
       delete state.optimisticReactions[messageId]
       const index = state.chatMessages[chatId].data.findIndex(
         (message) => message.message_id === messageId
       )
-      const encodedUserId = encodeHashId(userId)
       if (index > -1) {
         const existingReactions =
           state.chatMessages[chatId].data[index].reactions ?? []
-        state.chatMessages[chatId].data[index].reactions = [
-          ...existingReactions.filter((r) => r.user_id !== encodedUserId),
-          {
-            user_id: encodedUserId,
-            reaction,
-            created_at: dayjs().toISOString()
-          }
-        ]
+        state.chatMessages[chatId].data[index].reactions =
+          existingReactions.filter((r) => r.user_id !== reaction.user_id)
+        if (reaction.reaction !== null) {
+          state.chatMessages[chatId].data[index].reactions.push(reaction)
+        }
       }
     },
     setMessageReactionFailed: (
@@ -151,16 +174,16 @@ const slice = createSlice({
     },
     fetchChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
       const { chat } = action.payload
-      if (!state.chatList.data.find((c) => c.chat_id === chat.chat_id)) {
-        state.chatList.data.push(chat)
-        state.chatList.data.sort(chatSortComparator)
+      if (!state.chatList.map[chat.chat_id]) {
+        state.chatList.order.push(chat.chat_id)
+        state.chatList.order = getNewChatOrder(state)
       }
     },
     markChatAsRead: (state, action: PayloadAction<{ chatId: string }>) => {
       // triggers saga
       // Optimistically mark as read
       const { chatId } = action.payload
-      const existingChat = state.chatList.data.find((c) => c.chat_id === chatId)
+      const existingChat = state.chatList.map[chatId]
       if (existingChat) {
         state.optimisticChatRead[chatId] = {
           ...existingChat,
@@ -176,11 +199,10 @@ const slice = createSlice({
       // Set the true state
       const { chatId } = action.payload
       delete state.optimisticChatRead[chatId]
-      const index = state.chatList.data.findIndex((c) => c.chat_id === chatId)
-      if (index > -1) {
-        state.chatList.data[index].last_read_at =
-          state.chatList.data[index].last_message_at
-        state.chatList.data[index].unread_message_count = 0
+      if (state.chatList.map[chatId]) {
+        state.chatList.map[chatId].last_read_at =
+          state.chatList.map[chatId].last_message_at
+        state.chatList.map[chatId].unread_message_count = 0
       }
     },
     markChatAsReadFailed: (
@@ -203,7 +225,34 @@ const slice = createSlice({
     ) => {
       // triggers saga to get chat if not exists
       const { chatId, message } = action.payload
-      state.chatMessages[chatId].data.unshift(message)
+      if (state.chatMessages[chatId]) {
+        state.chatMessages[chatId].data.unshift(message)
+      }
+      state.chatList.map[chatId].last_message = message.message
+      state.chatList.map[chatId].last_message_at = message.created_at
+      state.chatList.order = getNewChatOrder(state)
+    },
+    incrementUnreadCount: (
+      state,
+      action: PayloadAction<{ chatId: string }>
+    ) => {
+      const { chatId } = action.payload
+      // If we're actively reading, this will immediately get marked as read.
+      // Ignore the unread bump to prevent flicker
+      if (state.activeChatId !== chatId) {
+        state.chatList.map[chatId].unread_message_count += 1
+      }
+    },
+    /**
+     * Marks the chat as currently being read.
+     * Prevents flicker of unread status when new messages come in if actively reading.
+     */
+    setActiveChat: (
+      state,
+      action: PayloadAction<{ chatId: string | null }>
+    ) => {
+      const { chatId } = action.payload
+      state.activeChatId = chatId
     },
     sendMessageSucceeded: (
       state,
@@ -235,6 +284,12 @@ const slice = createSlice({
       if (index > -1) {
         delete state.chatMessages[chatId].data[index]
       }
+    },
+    connect: (_state, _action: Action) => {
+      // triggers middleware
+    },
+    disconnect: (_state, _action: Action) => {
+      // triggers middleware
     }
   }
 })

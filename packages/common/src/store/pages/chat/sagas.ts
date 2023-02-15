@@ -84,7 +84,7 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
 }
 
 function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
-  const { chatId, messageId, reaction } = action.payload
+  const { chatId, messageId, reaction, userId } = action.payload
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
@@ -97,7 +97,18 @@ function* doSetMessageReaction(action: ReturnType<typeof setMessageReaction>) {
       messageId,
       reaction
     })
-    yield* put(setMessageReactionSucceeded(action.payload))
+    const reactionResponse = {
+      user_id: encodeHashId(userId)!,
+      reaction,
+      created_at: dayjs().toISOString()
+    }
+    yield* put(
+      setMessageReactionSucceeded({
+        chatId,
+        messageId,
+        reaction: reactionResponse
+      })
+    )
   } catch (e) {
     console.error('setMessageReactionFailed', e)
     yield* put(setMessageReactionFailed(action.payload))

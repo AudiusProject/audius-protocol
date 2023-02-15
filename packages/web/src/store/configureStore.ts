@@ -1,4 +1,4 @@
-import { ErrorLevel } from '@audius/common'
+import { chatMiddleware, ErrorLevel } from '@audius/common'
 import { composeWithDevToolsLogOnlyInProduction } from '@redux-devtools/extension'
 import * as Sentry from '@sentry/browser'
 import { routerMiddleware, push as pushRoute } from 'connected-react-router'
@@ -7,6 +7,7 @@ import createSagaMiddleware from 'redux-saga'
 import createSentryMiddleware from 'redux-sentry-middleware'
 
 import { track as amplitudeTrack } from 'services/analytics/amplitude'
+import { audiusSdk } from 'services/audius-sdk'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import createRootReducer from 'store/reducers'
 import rootSaga from 'store/sagas'
@@ -120,6 +121,7 @@ const sagaMiddleware = createSagaMiddleware({
 })
 
 const middlewares = applyMiddleware(
+  chatMiddleware(audiusSdk),
   routerMiddleware(history),
   sagaMiddleware,
   sentryMiddleware
