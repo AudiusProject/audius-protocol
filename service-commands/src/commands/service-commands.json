@@ -1,0 +1,334 @@
+{
+  "all": {
+    "down": [
+      "A run libs down",
+      "SERVICES=$(docker ps -aq); if [ \"$SERVICES\" != \"\" ]; then docker stop ${SERVICES} && docker rm ${SERVICES}; fi",
+      "docker container prune -f",
+      "docker volume prune -f",
+      "docker network prune -f",
+      "sudo rm -rf creator-node/compose/env/tmp",
+      "sudo rm -rf discovery-provider/compose/env/tmp",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log",
+      "cd monitoring; scripts/down.sh",
+      "docker image prune -f --filter 'dangling=true' --filter 'until=360h'"
+    ]
+  },
+  "network": {
+    "up": [
+      "export DOCKER_CLIENT_TIMEOUT=360; export COMPOSE_HTTP_TIMEOUT=360; docker network create -d bridge audius_dev || true"
+    ],
+    "down": [
+      "docker network rm audius_dev || true"
+    ]
+  },
+  "contracts": {
+    "up": [
+      "cd contracts/",
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 -l 8000000 --acctKeys contracts-ganache-accounts.json --networkId 1000000000001 -a 100 -b 5 --deterministic true --db ./db",
+      "echo 'Waiting for ganache to fully come online...'",
+      "sleep 10",
+      "echo 'Migrating contracts'",
+      "cd contracts/; node_modules/.bin/truffle migrate >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
+      "echo 'Writing configs'",
+      "cd contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
+    ],
+    "down": [
+      "cd contracts/; npm run ganache-q"
+    ]
+  },
+  "contracts-predeployed": {
+    "up": [
+      "docker run --name audius_ganache_cli -d -p 8545:8545 --network=audius_dev audius/ganache:data-contracts-predeployed-f06dbfade0172e99d368882ab192e7377d6d6761",
+      "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/identity-service/contract-config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/creator-node/contract-config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/contract-config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json ~/.audius/config.json",
+      "docker cp audius_ganache_cli:/app/contract-config.json $PROTOCOL_DIR/libs/src/data-contracts/config.json",
+      "docker cp audius_ganache_cli:/app/contract_config.ini $PROTOCOL_DIR/discovery-provider/contract_config.ini",
+      "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/discovery-provider/build/contracts",
+      "docker cp audius_ganache_cli:/app/contracts/. $PROTOCOL_DIR/libs/src/data-contracts/ABIs",
+      "docker cp audius_ganache_cli:/app/build/contracts/. $PROTOCOL_DIR/contracts/build",
+      "docker cp audius_ganache_cli:/app/migration-output.json $PROTOCOL_DIR/contracts/migrations/migration-output.json"
+    ],
+    "protocol": "http",
+    "host": "localhost",
+    "port": 8545,
+    "health_check_endpoint": "",
+    "down": [
+      "cd contracts/; npm run ganache-q"
+    ]
+  },
+  "eth-contracts": {
+    "path": "eth-contracts",
+    "up": [
+      "cd eth-contracts/; sudo rm -rf build",
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev trufflesuite/ganache-cli:v6.9.1 -h 0.0.0.0 --acctKeys eth-contracts-ganache-accounts.json -a 100 -l 8000000 --networkId 1000000000000 --deterministic true --db ./db",
+      "echo 'Waiting for ganache to fully come online...'",
+      "sleep 5",
+      "echo 'Migrating eth contracts'",
+      "cd eth-contracts/; node_modules/.bin/truffle migrate --f 1 --to 12 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log",
+      "echo 'Writing configs'",
+      "cd eth-contracts/; node_modules/.bin/truffle exec scripts/migrate-contracts.js"
+    ],
+    "down": [
+      "cd eth-contracts/; npm run ganache-q; sudo rm -rf build"
+    ]
+  },
+  "eth-contracts-predeployed": {
+    "up": [
+      "docker run --name audius_ganache_cli_eth_contracts -d -p 8546:8545 --network=audius_dev audius/ganache:eth-contracts-predeployed-4d4a2073fb18b071f7dcf01fdcc4b26001162f48",
+      "docker cp audius_ganache_cli_eth_contracts:/app/migration-output.json $PROTOCOL_DIR/eth-contracts/migrations/migration-output.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/identity-service/eth-contract-config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/creator-node/eth-contract-config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json $PROTOCOL_DIR/libs/src/eth-contracts/config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contract-config.json ~/.audius/eth-config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/aao-config.json ~/.audius/aao-config.json",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth_contract_config.ini $PROTOCOL_DIR/discovery-provider/eth_contract_config.ini",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/discovery-provider/build/eth-contracts",
+      "docker cp audius_ganache_cli_eth_contracts:/app/eth-contracts/. $PROTOCOL_DIR/libs/src/eth-contracts/ABIs"
+    ],
+    "protocol": "http",
+    "host": "localhost",
+    "port": 8546,
+    "health_check_endpoint": "",
+    "down": [
+      "cd contracts/; npm run ganache-q"
+    ]
+  },
+  "solana-validator-predeployed": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 8899,
+    "health_check_endpoint": "",
+    "up": [
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev audius/solana-programs:predeployed-6cc9fdc48706622cd86951b9aa6438d606a0c46f",
+      "mkdir -p ~/.audius; docker cp solana:/solana-program-config.json ~/.audius",
+      "docker cp solana:/solana-program-config.json $PROTOCOL_DIR/solana-programs",
+      "docker cp solana:/solana-program-config.json $PROTOCOL_DIR/identity-service",
+      "mkdir -p $PROTOCOL_DIR/discovery-provider/idl/; docker cp solana:/audius-data/target/idl/audius_data.json $PROTOCOL_DIR/discovery-provider/idl/audius_data.json"
+    ],
+    "down": [
+      "docker container stop solana || true",
+      "docker container rm solana || true"
+    ]
+  },
+  "solana-validator": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 8899,
+    "health_check_endpoint": "",
+    "up": [
+      "docker run -d --name solana -p 8899:8899/tcp -p 8900-8902:8900-8902/tcp --network audius_dev --entrypoint='' solanalabs/solana:v1.9.13 sh -c 'solana-test-validator --gossip-host solana --limit-ledger-size 1000000'"
+    ],
+    "down": [
+      "docker container stop solana || true",
+      "docker container rm solana || true"
+    ]
+  },
+  "solana-programs": {
+    "path": "solana-programs",
+    "up": [
+      "cd solana-programs/; DOCKER_BUILDKIT=1 docker build . -t audius/solana-programs:local",
+      "cd solana-programs/; docker run --name audius_solana_programs --network audius_dev -e SOLANA_HOST='http://solana:8899' -v \"$PWD:/usr/src/app\" audius/solana-programs:local >> $PROTOCOL_DIR/service-commands/output.log 2>&1",
+      "mkdir -p discovery-provider/idl/ ~/.audius",
+      "docker cp audius_solana_programs:/usr/src/app/solana-program-config.json ../identity-service/solana-program-config.json",
+      "docker cp audius_solana_programs:/usr/src/app/solana-program-config.json ~/.audius/solana-program-config.json",
+      "docker cp audius_solana_programs:/usr/src/app/anchor/audius-data/target/idl/audius_data.json discovery-provider/idl/audius_data.json"
+    ],
+    "add-sender": [
+      "cd solana-programs/reward-manager/cli; cargo run create-sender --eth-operator-address $sender_address --eth-sender-address $sender_address --reward-manager $reward_manager_address"
+    ]
+  },
+  "ipfs": {
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node"
+    ]
+  },
+  "ipfs-2": {
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node-2 6011 6012"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node-2"
+    ]
+  },
+  "ipfs-3": {
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node-3 6021 6022"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node-3"
+    ]
+  },
+  "ipfs-4": {
+    "up": [
+      "libs/scripts/ipfs.sh up local-ipfs-node-4 6031 6032"
+    ],
+    "down": [
+      "libs/scripts/ipfs.sh down local-ipfs-node-4"
+    ]
+  },
+  "init-contracts-info": {
+    "up": [
+      "cd libs/; sh ./scripts/migrate_contracts.sh >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
+    ]
+  },
+  "init-token-versions": {
+    "up": [
+      "cd libs/; npm run init-local init-all"
+    ]
+  },
+  "discovery-provider": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 5000,
+    "health_check_endpoint": "health_check",
+    "up": [
+      "UP=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
+    ],
+    "up-web-server": [
+      "UP_WEB_SERVER=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
+    ],
+    "down": [
+      "cd discovery-provider; . compose/env/tmp/shellEnv#.sh; docker-compose -f compose/docker-compose.db.yml -f compose/docker-compose.elasticsearch.yml -f compose/docker-compose.redis.yml -f compose/docker-compose.backend.yml -f compose/docker-compose.ipfs.yml down",
+      "cd discovery-provider; . compose/env/unsetShellEnv.sh",
+      "sudo rm -rf solana-programs/claimable-tokens/cli/target",
+      "sudo rm -rf solana-programs/cli/target",
+      "sudo rm -rf solana-programs/reward-manager/target",
+      "sudo rm -rf discovery-provider/.venv",
+      "sudo rm -rf discovery-provider/.mypy_cache",
+      "sudo rm -f discovery-provider/*.log"
+    ],
+    "register": [
+      "cd libs/; npm run init-local register-discovery-node #",
+      "cd service-commands/; node scripts/rewardManagerLocal.js register-discovery-node #"
+    ],
+    "restart": [
+      "RESTART=true ${PROTOCOL_DIR}/discovery-provider/scripts/up.sh #"
+    ]
+  },
+  "creator-node": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 4000,
+    "health_check_endpoint": "health_check",
+    "up": [
+      "${PROTOCOL_DIR}/creator-node/scripts/up.sh #"
+    ],
+    "down": [
+      "cd creator-node; . compose/env/tmp/shellEnv#.sh; rm -rf compose/env/tmp/file-storage-#; docker-compose -f compose/docker-compose.yml down --remove-orphans"
+    ],
+    "restart": [
+      "RESTART=true ${PROTOCOL_DIR}/creator-node/scripts/up.sh #"
+    ],
+    "register": [
+      "cd libs/; npm run init-local register-cnode #"
+    ],
+    "deregister": [
+      "cd libs/; npm run init-local deregister-cnode #"
+    ],
+    "update-delegate-wallet": [
+      "cd libs/; npm run init-local update-cnode-config #"
+    ],
+    "unset-shell-env": [
+      "cd creator-node; . compose/env/unsetShellEnv.sh"
+    ]
+  },
+  "identity-service": {
+    "protocol": "http",
+    "host": "localhost",
+    "port": 7000,
+    "health_check_endpoint": "health_check",
+    "up": [
+      "cd identity-service/; docker-compose -f compose/docker-compose.full.yml up --build -d",
+      "echo 'Waiting 15 seconds...'",
+      "sleep 15"
+    ],
+    "down": [
+      "cd identity-service/; docker-compose -f compose/docker-compose.full.yml down"
+    ]
+  },
+  "distribute": {
+    "up": [
+      "node libs/initScripts/local.js distribute"
+    ]
+  },
+  "account": {
+    "up": [
+      "node libs/initScripts/local.js print-accounts"
+    ]
+  },
+  "init-repos": {
+    "up": [
+      ". $PROTOCOL_DIR/service-commands/scripts/init-repos.sh"
+    ]
+  },
+  "user-replica-set-manager": {
+    "up": [
+      "cd libs; npm run init-local update-userreplicasetmanager-init-config",
+      "cd contracts/; node_modules/.bin/truffle migrate --f 4 --to 4 >> $PROTOCOL_DIR/service-commands/output.log 2>$PROTOCOL_DIR/service-commands/error.log"
+    ]
+  },
+  "aao": {
+    "up": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Starting AAO...'",
+      "cd $AAO_DIR; ./scripts/configureLocal.sh; docker-compose -f docker-compose-dev.yml up -d",
+      "cp ~/.audius/aao-config.json $PROTOCOL_DIR/identity-service",
+      "sleep 5",
+      "echo 'AAO Started'"
+    ],
+    "register": [
+      "cd service-commands; ./scripts/registerAAO.sh"
+    ],
+    "down": [
+      "if [[ -z \"$AAO_DIR\" ]]; then echo \"!!!ERROR: need to set AAO_DIR\"; exit 1; fi",
+      "echo 'Stopping AAO...'",
+      "cd $AAO_DIR; docker-compose -f docker-compose-dev.yml down"
+    ]
+  },
+  "tn": {
+    "up": [
+      "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
+      "echo 'Starting TN...'",
+      "cd $TN_DIR; . scripts/start.sh dev",
+      "sleep 5",
+      "echo 'TN Started, registering on chain'",
+      "cd libs/; npm run init-local register-trusted-notifier"
+    ],
+    "restart": [
+      "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
+      "cd $TN_DIR; . scripts/stop.sh dev",
+      "cd $TN_DIR; . scripts/start.sh dev"
+    ],
+    "down": [
+      "if [[ -z \"$TN_DIR\" ]]; then echo \"!!!ERROR: need to set TN_DIR\"; exit 1; fi",
+      "echo 'Stopping TN...'",
+      "cd $TN_DIR; . scripts/stop.sh dev"
+    ]
+  },
+  "libs": {
+    "up": [
+      "echo 'Process spawned in background using Node.'"
+    ],
+    "down": [
+      "ps x -o '%r %a' | grep '.*/audius-protocol/service-commands/scripts/run-libs.sh$' | awk '{print -$1}' | xargs -r kill -- -9"
+    ]
+  },
+  "monitoring": {
+    "up": [
+      "cd monitoring; scripts/up.sh"
+    ],
+    "down": [
+      "cd monitoring; scripts/down.sh"
+    ]
+  }
+}

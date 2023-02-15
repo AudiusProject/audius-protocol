@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+alias d='docker'
+alias dps='d ps'
+alias dl='d logs'
+function de () {
+    d exec -ti ${@} bash
+}
+function des () {
+    d exec -ti ${@} sh
+}
+
+alias dc='docker-compose'
+alias dcps='dc ps'
+alias dcr='dc run'
+alias dcs='dc run --entrypoint bash'
+alias dcsh='dc run --entrypoint sh'
+alias dcu='dc up'
+alias dcl='dc logs -f --tail 5'
+alias dcud='dc up -d'
+alias dcb='dc build'
+alias dcd='dc down'
+
+alias docker_prune="docker rm \$(docker ps --all -q -f status=dead); docker system prune; docker network prune"
+alias docker_port_nuke="sudo systemctl stop docker; sudo rm -rf /var/lib/docker/containers/*; sudo systemctl start docker"
+
+function d_rm_container() {
+    sudo systemctl stop docker
+    sudo rm -rf /var/lib/docker/containers/${1}
+    sudo systemctl start docker
+}
+
+function d_rm_containers() {
+    sudo systemctl stop docker
+    sudo rm -rf /var/lib/docker/containers/*
+    sudo systemctl start docker
+}
+
+function d_prune_images_1w() {
+  docker image prune --filter "until=168h"
+}
+

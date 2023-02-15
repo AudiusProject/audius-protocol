@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+alias g="git"
+alias gd="git diff"
+alias gds="git diff --staged"
+alias gdss="git diff --cached --stat"
+alias gs="git status"
+alias gss="git status; git diff --stat"
+alias gb="git branch"
+alias ga="git add"
+alias gap="git add -p"
+alias gl="git log"
+alias gp="git push origin"
+alias gpt="git push origin --tags"
+alias gcb="git checkout -b"
+alias gss="git stash"
+alias gsp="git stash pop"
+
+function gp() {
+  branch=$(git branch | grep '\*' | awk '{ print $2 }')
+  git push -u origin ${branch}
+}
+
+function gc() {
+  git commit -m "$@"
+}
+function gca() {
+  git commit -am "$@"
+}
