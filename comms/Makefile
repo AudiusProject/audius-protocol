@@ -61,6 +61,7 @@ tools::
 	CGO_ENABLED=0 go install github.com/nats-io/natscli/nats@latest
 	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
 	go install github.com/rakyll/hey@latest
+	go install github.com/onsi/ginkgo/v2/ginkgo
 
 sqlc:: reset
 	sqlc generate
@@ -76,4 +77,4 @@ trending.dev.run::
 
 trending.test.run::
 	@echo starting trending tests
-	@	  go test -v ./trending/...
+	@	  ginkgo ./trending/...

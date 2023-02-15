@@ -2,57 +2,75 @@ package trendingserver_test
 
 import (
 	"io"
-	"testing"
 
-	"comms.audius.co/trending/testutils"
+	"comms.audius.co/trending/config"
+	"comms.audius.co/trending/trendingserver"
 	"github.com/imroc/req/v3"
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestGetHealth(t *testing.T) {
-	testutils.IntegrationTester(func(c *req.Client) error {
-		resp, err := c.R().Get("/trending/health")
-		if err != nil {
-			return err
-		}
-		assert.Equal(t, resp.StatusCode, 200)
-		b, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		assert.Equal(t, string(b), "healthy :)")
-		return nil
-	})
-}
+var _ = Describe("Trendingserver Suite", Ordered, func() {
+	// define test level constants
+	var conf *config.Config
+	var server *trendingserver.TrendingServer
+	var client *req.Client
 
-func TestGetTracksTrending(t *testing.T) {
-	testutils.IntegrationTester(func(c *req.Client) error {
-		resp, err := c.R().Get("/tracks/trending")
-		if err != nil {
-			return err
-		}
-		assert.Equal(t, resp.StatusCode, 200)
-		b, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		assert.Equal(t, string(b), "no tracks are trending yet :)")
-		return nil
-	})
-}
+	// set test level constants
+	BeforeAll(func() {
+		c, err := config.TestDefault()
+		Expect(err).NotTo(HaveOccurred())
+		conf = c
 
-func TestGetPlaylistsTrending(t *testing.T) {
-	testutils.IntegrationTester(func(c *req.Client) error {
-		resp, err := c.R().Get("/playlists/trending")
-		if err != nil {
-			return err
-		}
-		assert.Equal(t, resp.StatusCode, 200)
-		b, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return err
-		}
-		assert.Equal(t, string(b), "no playlists are trending yet :)")
-		return nil
+		s, err := trendingserver.NewTrendingServer(*conf)
+		Expect(err).NotTo(HaveOccurred())
+		server = s
+		// run server in separate goroutine
+		go server.Run()
+
+		tc := req.C()
+		tc.SetBaseURL("http://localhost" + conf.FormatEchoPort())
+		client = tc
 	})
-}
+
+	It("can call the trending health check", func() {
+		resp, err := client.R().Get("/trending/health")
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(resp.StatusCode).To(Equal(200))
+
+		b, err := io.ReadAll(resp.Body)
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(string(b)).To(Equal("healthy :)"))
+	})
+
+	It("can call the trending tracks endpoint", func() {
+		resp, err := client.R().Get("/tracks/trending")
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(resp.StatusCode).To(Equal(200))
+
+		b, err := io.ReadAll(resp.Body)
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(string(b)).To(Equal("no tracks are trending yet :)"))
+	})
+
+	It("can call the trending playlists endpoint", func() {
+		resp, err := client.R().Get("/playlists/trending")
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(resp.StatusCode).To(Equal(200))
+
+		b, err := io.ReadAll(resp.Body)
+		Expect(err).NotTo(HaveOccurred())
+
+		Expect(string(b)).To(Equal("no playlists are trending yet :)"))
+	})
+
+	// tear down test level constants and anything else
+	AfterAll(func() {
+		server.Close()
+	})
+})
