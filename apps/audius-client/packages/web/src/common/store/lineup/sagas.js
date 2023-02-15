@@ -24,7 +24,8 @@ import {
   take,
   takeEvery,
   takeLatest,
-  getContext
+  getContext,
+  race
 } from 'redux-saga/effects'
 
 import { getToQueue } from 'common/store/queue/sagas'
@@ -122,7 +123,7 @@ function* fetchLineupMetadatasAsync(
       )
     : initLineup.prefix
 
-  const task = yield fork(function* () {
+  function* fetchLineupMetadatasTask() {
     try {
       yield put(
         lineupActions.fetchLineupMetadatasRequested(
@@ -284,15 +285,26 @@ function* fetchLineupMetadatasAsync(
       console.error(err)
       yield put(lineupActions.fetchLineupMetadatasFailed())
     }
-  })
-  const { source: resetSource } = yield take(
-    baseLineupActions.addPrefix(lineupPrefix, baseLineupActions.RESET)
-  )
-  // If a source is specified in the reset action, make sure it matches the lineup source
-  // If not specified, cancel the fetchTrackMetdatas
-  if (!resetSource || resetSource === initSource) {
-    yield cancel(task)
   }
+
+  function* shouldCancelTask() {
+    while (true) {
+      const { source: resetSource } = yield take(
+        baseLineupActions.addPrefix(lineupPrefix, baseLineupActions.RESET)
+      )
+
+      // If a source is specified in the reset action, make sure it matches the lineup source
+      // If not specified, cancel the fetchTrackMetdatas
+      if (!resetSource || resetSource === initSource) {
+        return true
+      }
+    }
+  }
+
+  yield race({
+    task: call(fetchLineupMetadatasTask),
+    cancel: call(shouldCancelTask)
+  })
 }
 
 function* updateQueueLineup(lineupPrefix, source, lineupEntries) {

@@ -160,6 +160,8 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
     [playlist_id, downloadSwitchValue]
   )
 
+  const isReachable = useSelector(getIsReachable)
+
   const showDownloadSwitchAndIndicator =
     collection.has_current_user_saved ||
     collection.playlist_owner_id === currentUserId
@@ -214,7 +216,7 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
           weight='demiBold'
           fontSize='small'
         >
-          {downloadStatus === OfflineDownloadStatus.LOADING
+          {downloadStatus === OfflineDownloadStatus.LOADING && isReachable
             ? messages.downloading
             : headerText}
         </Text>
