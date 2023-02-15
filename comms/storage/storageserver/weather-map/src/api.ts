@@ -8,7 +8,7 @@ export type HostAndShards = {
 export const useNodesToShards = () =>
   useQuery<{ [pubKey: string]: HostAndShards }, any>('nodesToShards', () => {
     return axios
-      .get('http://localhost:9924/storage/nodes-to-shards')
+      .get(`${window.location.origin}/storage/nodes-to-shards`)
       .then((res) => res.data)
   })
 

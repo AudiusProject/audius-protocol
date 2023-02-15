@@ -3,6 +3,7 @@ package rpcz
 import (
 	"context"
 	"encoding/json"
+	"expvar"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -14,6 +15,12 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+type RPCProcessor struct {
+	validator         *Validator
+	JetstreamSequence *expvar.Int
+	ConsumerSequence  *expvar.Int
+}
+
 func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 	limiter, err := NewRateLimiter(jsc)
 	if err != nil {
@@ -23,13 +30,12 @@ func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 		db:      db.Conn,
 		limiter: limiter,
 	}
-	return &RPCProcessor{
-		validator: validator,
-	}, nil
-}
 
-type RPCProcessor struct {
-	validator *Validator
+	return &RPCProcessor{
+		validator:         validator,
+		JetstreamSequence: expvar.NewInt("jetstream_sequence"),
+		ConsumerSequence:  expvar.NewInt("consumer_sequence"),
+	}, nil
 }
 
 func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {
@@ -47,7 +53,9 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		logger.Info("invalid nats message", err)
 		return
 	}
-	logger = logger.New("seq", meta.Sequence.Stream)
+	logger = logger.New("js_seq", meta.Sequence.Stream, "consumer_seq", meta.Sequence.Consumer)
+	proc.JetstreamSequence.Set(int64(meta.Sequence.Stream))
+	proc.ConsumerSequence.Set(int64(meta.Sequence.Consumer))
 
 	// recover wallet + user
 	signatureHeader := msg.Header.Get(config.SigHeader)

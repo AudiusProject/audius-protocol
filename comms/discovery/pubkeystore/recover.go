@@ -35,7 +35,7 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 	endpoint := "https://poa-gateway.audius.co"
 
 	if config.IsStaging {
-		endpoint = "https://legacy-poa-gateway.staging.audius.co"
+		endpoint = "http://13.52.185.5:8545"
 
 		// should get dynamically from
 		// https://identityservice.staging.audius.co/health_check/poa
@@ -74,7 +74,7 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 
 	query := `
 	select wallet, blocknumber, txhash
-	from users where user_id = $1 and is_current in (true, false) 
+	from users where user_id = $1 and is_current in (true, false)
 	order by blocknumber asc;
 	`
 

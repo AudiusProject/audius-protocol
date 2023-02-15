@@ -3,8 +3,8 @@ package peering
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
-	"net/url"
 	"strconv"
 	"time"
 
@@ -20,14 +20,12 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 		// Check that timestamp is less than 5 seconds old
 		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
 		if err != nil || time.Now().UnixMilli()-timestamp > config.SignatureTimeToLiveMs {
-			return nil, "", errors.New("Invalid timestamp")
+			fmt.Println(err)
+			return nil, "", errors.New("invalid timestamp")
 		}
 
 		// Strip out the app_name query parameter to get the true signature payload
-		u, err := url.Parse(c.Request().RequestURI)
-		if err != nil {
-			return nil, "", errors.New("Invalid Request URI")
-		}
+		u := *c.Request().URL
 		q := u.Query()
 		q.Del("app_name")
 		u.RawQuery = q.Encode()

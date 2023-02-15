@@ -1,33 +1,33 @@
 version: '3.4'
 
-x-common-variables: &storage-variables
-   DEV_ONLY_REGISTERED_NODES: '
+x-common-variables: &shared-vars
+   AUDIUS_DEV_ONLY_REGISTERED_NODES: '
         [
           {
             "id": "content-node::1",
             "spId": "1",
-            "endpoint": "http://com1:8924",
+            "endpoint": "http://node1",
             "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
             "type": { "id": "content-node" }
           },
           {
             "id": "content-node::2",
             "spId": "2",
-            "endpoint": "http://com2:8924",
+            "endpoint": "http://node2",
             "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
             "type": { "id": "content-node" }
           },
           {
             "id": "content-node::3",
             "spId": "3",
-            "endpoint": "http://com3:8924",
+            "endpoint": "http://node3",
             "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
             "type": { "id": "content-node" }
           },
           {
             "id": "content-node::4",
             "spId": "4",
-            "endpoint": "http://com4:8924",
+            "endpoint": "http://node4",
             "delegateOwnerWallet": "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
             "type": { "id": "content-node" }
           }
@@ -42,6 +42,12 @@ services:
       file: docker-compose.v2.base.yml
       service: comdb
 
+  sshuttle-server:
+    container_name: sshuttle-server
+    extends:
+      file: docker-compose.v2.base.yml
+      service: sshuttle-server
+
   com1:
     container_name: com1
     extends:
@@ -51,8 +57,7 @@ services:
       audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable
       test_host: "com1"
-    ports:
-      - 8924:8924
+      <<: *shared-vars
 
   storage1:
     container_name: storage1
@@ -62,11 +67,17 @@ services:
     environment:
       audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Remove after shared/peering/ config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      <<: *storage-variables
-      test_host: "storage1"
+      <<: *shared-vars
+      test_host: "com1"
       NAME: "storage1"
-    ports:
-      - 9924:8926
+
+  node1:
+    container_name: node1
+    extends:
+      file: docker-compose.v2.base.yml
+      service: nginx
+    volumes:
+      - ./v2_nginx/node1.conf:/etc/nginx/conf.d/default.conf
 
   com2:
     container_name: com2
@@ -77,8 +88,7 @@ services:
       audius_delegate_private_key: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com2?sslmode=disable
       test_host: "com2"
-    ports:
-      - 8925:8924
+      <<: *shared-vars
 
   storage2:
     container_name: storage2
@@ -88,11 +98,17 @@ services:
     environment:
       audius_delegate_private_key: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Remove after shared/peering/ config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
-      <<: *storage-variables
-      test_host: "storage2"
+      <<: *shared-vars
+      test_host: "com2"
       NAME: "storage2"
-    ports:
-      - 9925:8926
+
+  node2:
+    container_name: node2
+    extends:
+      file: docker-compose.v2.base.yml
+      service: nginx
+    volumes:
+      - ./v2_nginx/node2.conf:/etc/nginx/conf.d/default.conf
 
   com3:
     container_name: com3
@@ -103,8 +119,7 @@ services:
       audius_delegate_private_key: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com3?sslmode=disable
       test_host: "com3"
-    ports:
-      - 8926:8924
+      <<: *shared-vars
 
   storage3:
     container_name: storage3
@@ -114,11 +129,17 @@ services:
     environment:
       audius_delegate_private_key: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Remove after shared/peering config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
-      <<: *storage-variables
-      test_host: "storage3"
+      <<: *shared-vars
+      test_host: "com3"
       NAME: "storage3"
-    ports:
-      - 9926:8926
+
+  node3:
+    container_name: node3
+    extends:
+      file: docker-compose.v2.base.yml
+      service: nginx
+    volumes:
+      - ./v2_nginx/node3.conf:/etc/nginx/conf.d/default.conf
 
   com4:
     container_name: com4
@@ -129,8 +150,7 @@ services:
       audius_delegate_private_key: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
       audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
       test_host: "com4"
-    ports:
-      - 8927:8924
+      <<: *shared-vars
 
   storage4:
     container_name: storage4
@@ -140,8 +160,14 @@ services:
     environment:
       audius_delegate_private_key: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Remove after shared/peering config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
-      <<: *storage-variables
-      test_host: "storage4"
+      <<: *shared-vars
+      test_host: "com4"
       NAME: "storage4"
-    ports:
-      - 9927:8926
+
+  node4:
+    container_name: node4
+    extends:
+      file: docker-compose.v2.base.yml
+      service: nginx
+    volumes:
+      - ./v2_nginx/node4.conf:/etc/nginx/conf.d/default.conf

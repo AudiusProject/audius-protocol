@@ -1,9 +1,11 @@
 package natsd
 
 import (
+	"encoding/json"
 	"io"
 	"math"
 	"net/http"
+	"os"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -14,7 +16,6 @@ import (
 
 func NatsMain() {
 	config.Init()
-	peering.PollRegisteredNodes(nil)
 
 	{
 		var err error
@@ -25,6 +26,12 @@ func NatsMain() {
 	}
 
 	go startServer()
+
+	// TODO: Make this use a separate nats config env struct
+	var overrideNodes []peering.ServiceNode
+	json.Unmarshal([]byte(os.Getenv("AUDIUS_DEV_ONLY_REGISTERED_NODES")), &overrideNodes)
+	peering.New(overrideNodes)
+	peering.PollRegisteredNodes()
 
 	natsman := NatsManager{}
 	for n := 0; ; n++ {
@@ -49,7 +56,7 @@ func startServer() {
 	e.Debug = true
 
 	// Middleware
-	e.Use(middleware.Logger())
+	// e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
@@ -102,6 +109,7 @@ func startServer() {
 			"env":               config.Env,
 			"is_content":        config.IsCreatorNode,
 			"nats_is_reachable": config.NatsIsReachable,
+			"nkey":              config.NkeyPublic,
 		})
 	})
 

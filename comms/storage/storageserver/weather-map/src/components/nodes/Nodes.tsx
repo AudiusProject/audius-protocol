@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 
 import { HostAndShards } from '../../api'
-import { getStorageHostFromNatsHost } from '../../util'
 
 export default function Nodes({
   hostsAndShards,
@@ -36,9 +35,7 @@ export default function Nodes({
                     </a>
                     ,{' '}
                     <a
-                      href={`${getStorageHostFromNatsHost(
-                        hostsAndShards[pubKey].host,
-                      )}/storage`}
+                      href={`${hostsAndShards[pubKey].host}/storage`}
                       target="_blank"
                       className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
                       rel="noreferrer"
