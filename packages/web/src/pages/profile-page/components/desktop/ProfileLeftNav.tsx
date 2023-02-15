@@ -188,6 +188,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
       </div>
     )
   } else if (!loading && !isDeactivated) {
+    const showUploadChip = isOwner && !isArtist
     return (
       <div className={styles.about}>
         <ProfilePageBadge userId={userId} className={styles.badge} />
@@ -206,12 +207,18 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
           <OpacityTransition render={renderTipAudioButton} />
         ) : null}
         <SupportingList />
-        <TopSupporters />
-        <ProfileMutuals />
-        {isArtist ? <ProfileTags goToRoute={goToRoute} tags={tags} /> : null}
-        {isOwner && !isArtist && (
-          <UploadChip type='track' variant='nav' onClick={onClickUploadChip} />
-        )}
+        <div className={styles.profileBottomSection}>
+          <TopSupporters />
+          <ProfileMutuals />
+          {isArtist ? <ProfileTags goToRoute={goToRoute} tags={tags} /> : null}
+          {showUploadChip ? (
+            <UploadChip
+              type='track'
+              variant='nav'
+              onClick={onClickUploadChip}
+            />
+          ) : null}
+        </div>
       </div>
     )
   } else {

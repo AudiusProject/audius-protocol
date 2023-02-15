@@ -1,5 +1,4 @@
 import cn from 'classnames'
-import PropTypes from 'prop-types'
 
 import { ReactComponent as IconPlus } from 'assets/img/iconMultiselectAdd.svg'
 import { ReactComponent as IconUpload } from 'assets/img/iconUpload.svg'
@@ -17,7 +16,31 @@ const messages = {
   firstArtistPlaylist: 'Upload Your First Playlist'
 }
 
-const UploadChip = ({ type, variant, isArtist = false, isFirst, onClick }) => {
+type UploadChipProps = {
+  type?: 'track' | 'album' | 'playlist'
+  /**
+   * nav: For display in a nav-like column
+   *
+   * card: Looks like a 'Card'
+   *
+   * tile: Looks like a 'TrackTile'
+   */
+  variant?: 'nav' | 'card' | 'tile'
+  /**
+   * Is this upload the user's first of this type
+   * */
+  isFirst?: boolean
+  onClick: () => void
+  isArtist?: boolean
+}
+
+const UploadChip = ({
+  type = 'track',
+  variant = 'tile',
+  isArtist = false,
+  isFirst = false,
+  onClick
+}: UploadChipProps) => {
   const icon =
     type === 'track' || type === 'album' ? (
       <IconUpload className={styles.iconUpload} />
@@ -57,23 +80,6 @@ const UploadChip = ({ type, variant, isArtist = false, isFirst, onClick }) => {
       <div className={styles.text}>{text}</div>
     </div>
   )
-}
-
-UploadChip.propTypes = {
-  type: PropTypes.oneOf(['track', 'album', 'playlist']).isRequired,
-  // nav: For display in a nav-like column
-  // card: Looks like a 'Card'
-  // tile: Looks like a 'TrackTile'
-  variant: PropTypes.oneOf(['nav', 'card', 'tile']).isRequired,
-  // Is this upload the user's first of this type
-  isFirst: PropTypes.bool,
-  onClick: PropTypes.func
-}
-
-UploadChip.defaultProps = {
-  type: 'track',
-  variant: 'tile',
-  onClick: () => {}
 }
 
 export default UploadChip

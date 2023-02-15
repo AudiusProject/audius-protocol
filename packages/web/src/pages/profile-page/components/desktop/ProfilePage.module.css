@@ -274,3 +274,9 @@
 .tipAudioButtonContainer {
   margin-top: 32px;
 }
+
+.profileBottomSection {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
