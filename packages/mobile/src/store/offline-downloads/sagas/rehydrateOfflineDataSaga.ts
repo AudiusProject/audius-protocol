@@ -18,7 +18,7 @@ import {
   getOfflineCollectionsStatus,
   getOfflineTrackStatus
 } from '../selectors'
-import type { DownloadQueueItem } from '../slice'
+import type { OfflineJob } from '../slice'
 import {
   redownloadOfflineItems,
   doneLoadingFromDisk,
@@ -39,8 +39,8 @@ export function* rehydrateOfflineDataSaga() {
   const collectionsToCache: CachedCollection[] = []
   const usersToCache: CachedUser[] = []
   const tracksToCache: CachedTrack[] = []
-  const collectionsToRedownload: DownloadQueueItem[] = []
-  const tracksToRedownload: DownloadQueueItem[] = []
+  const collectionsToRedownload: OfflineJob[] = []
+  const tracksToRedownload: OfflineJob[] = []
 
   const offlineCollectionStatus = yield* select(getOfflineCollectionsStatus)
   const downloadedCollectionIds = Object.keys(offlineCollectionStatus).filter(

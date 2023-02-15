@@ -1,8 +1,8 @@
 import { takeEvery, select, call, put } from 'typed-redux-saga'
 
-import { getDownloadQueue, getQueueStatus } from '../../selectors'
+import { getOfflineQueue, getQueueStatus } from '../../selectors'
 import {
-  requestDownloadQueuedItem,
+  requestProcessNextJob,
   QueueStatus,
   updateQueueStatus
 } from '../../slice'
@@ -13,16 +13,16 @@ import { playCounterWorker } from './workers/playCounterWorker'
 import { staleTrackWorker } from './workers/staleTrackWorker'
 import { syncCollectionWorker } from './workers/syncCollectionWorker'
 
-export function* requestDownloadQueuedItemSaga() {
-  yield* takeEvery(requestDownloadQueuedItem.type, downloadQueuedItem)
+export function* requestProcessNextJobSaga() {
+  yield* takeEvery(requestProcessNextJob.type, processNextJob)
 }
 
-function* downloadQueuedItem() {
+function* processNextJob() {
   const queueStatus = yield* select(getQueueStatus)
   if (queueStatus !== QueueStatus.PROCESSING) return
 
-  const downloadQueue = yield* select(getDownloadQueue)
-  const [item] = downloadQueue
+  const offlineQueue = yield* select(getOfflineQueue)
+  const [item] = offlineQueue
 
   // end of the qeueue
   if (!item) {

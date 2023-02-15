@@ -11,8 +11,8 @@ import { make, track } from 'app/services/analytics'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { EventNames } from 'app/types/analytics'
 
-import type { OfflineItem } from '../slice'
-import { addOfflineItems, requestDownloadAllFavorites } from '../slice'
+import type { OfflineEntry } from '../slice'
+import { addOfflineEntries, requestDownloadAllFavorites } from '../slice'
 
 const { getUserId } = accountSelectors
 
@@ -27,7 +27,7 @@ function* downloadAllFavorites() {
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 
-  const offlineItemsToAdd: OfflineItem[] = []
+  const offlineItemsToAdd: OfflineEntry[] = []
 
   offlineItemsToAdd.push({
     type: 'collection',
@@ -42,7 +42,7 @@ function* downloadAllFavorites() {
   // Add local saves
   const favorite_created_at = moment().format('YYYY-MM-DD HH:mm:ss')
   const localSaves = yield* select(getLocalSaves)
-  const localSavesToAdd: OfflineItem[] = Object.keys(localSaves)
+  const localSavesToAdd: OfflineEntry[] = Object.keys(localSaves)
     .map((id) => parseInt(id, 10))
     .map((id) => ({
       type: 'track',
@@ -113,5 +113,5 @@ function* downloadAllFavorites() {
     }
   }
 
-  yield* put(addOfflineItems({ items: offlineItemsToAdd }))
+  yield* put(addOfflineEntries({ items: offlineItemsToAdd }))
 }

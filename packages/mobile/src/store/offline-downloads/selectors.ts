@@ -63,8 +63,8 @@ export const getOfflineCollectionMetadata = (state: AppState) =>
 export const getOfflineCollectionsStatus = (state: AppState) =>
   state.offlineDownloads.collectionStatus
 
-export const getDownloadQueue = (state: AppState) =>
-  state.offlineDownloads.downloadQueue
+export const getOfflineQueue = (state: AppState) =>
+  state.offlineDownloads.offlineQueue
 
 export const getQueueStatus = (state: AppState) =>
   state.offlineDownloads.queueStatus

@@ -7,10 +7,10 @@ import { put, select, take } from 'typed-redux-saga'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 
 import { getOfflineCollectionsStatus } from '../selectors'
-import type { CollectionId, OfflineItem } from '../slice'
+import type { CollectionId, OfflineEntry } from '../slice'
 import {
   doneLoadingFromDisk,
-  addOfflineItems,
+  addOfflineEntries,
   removeOfflineItems
 } from '../slice'
 
@@ -57,7 +57,7 @@ export function* syncOfflineDataSaga() {
     )
   }
 
-  const offlineItemsToAdd: OfflineItem[] = []
+  const offlineItemsToAdd: OfflineEntry[] = []
 
   // Sync
   const collectionIdsToSync: CollectionId[] = intersection(
@@ -69,7 +69,7 @@ export function* syncOfflineDataSaga() {
     collectionIdsToSync.unshift(DOWNLOAD_REASON_FAVORITES)
   }
 
-  const collectionsToSync: OfflineItem[] = collectionIdsToSync.map((id) => ({
+  const collectionsToSync: OfflineEntry[] = collectionIdsToSync.map((id) => ({
     type: 'collection-sync',
     id
   }))
@@ -83,7 +83,7 @@ export function* syncOfflineDataSaga() {
       offlineCollectionIds
     )
 
-    const collectionsToAdd: OfflineItem[] = collectionIdsToAdd.map((id) => ({
+    const collectionsToAdd: OfflineEntry[] = collectionIdsToAdd.map((id) => ({
       type: 'collection',
       id,
       metadata: { reasons_for_download: [{ is_from_favorites: true }] }
@@ -97,6 +97,6 @@ export function* syncOfflineDataSaga() {
   offlineItemsToAdd.push(...staleTracks)
 
   if (offlineItemsToAdd.length > 0) {
-    yield* put(addOfflineItems({ items: offlineItemsToAdd }))
+    yield* put(addOfflineEntries({ items: offlineItemsToAdd }))
   }
 }

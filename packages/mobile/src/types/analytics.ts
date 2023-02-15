@@ -4,7 +4,7 @@ import type {
 } from '@audius/common'
 import { Name as CommonEventNames } from '@audius/common'
 
-import type { DownloadQueueItem } from 'app/store/offline-downloads/slice'
+import type { OfflineJob } from 'app/store/offline-downloads/slice'
 
 enum MobileEventNames {
   NOTIFICATIONS_OPEN_PUSH_NOTIFICATION = 'Notifications: Open Push Notification',
@@ -114,23 +114,23 @@ type OfflineModeDownloadCollectionToggleOff = {
   collectionId: ID
 }
 
-type OfflineModeDownloadRequest = DownloadQueueItem & {
+type OfflineModeDownloadRequest = OfflineJob & {
   eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_REQUEST
 }
 
-type OfflineModeDownloadStart = DownloadQueueItem & {
+type OfflineModeDownloadStart = OfflineJob & {
   eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_START
 }
 
-type OfflineModeDownloadSuccess = DownloadQueueItem & {
+type OfflineModeDownloadSuccess = OfflineJob & {
   eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_SUCCESS
 }
 
-type OfflineModeDownloadFailure = DownloadQueueItem & {
+type OfflineModeDownloadFailure = OfflineJob & {
   eventName: MobileEventNames.OFFLINE_MODE_DOWNLOAD_FAILURE
 }
 
-type OfflineModeRemoveItem = DownloadQueueItem & {
+type OfflineModeRemoveItem = OfflineJob & {
   eventName: MobileEventNames.OFFLINE_MODE_REMOVE_ITEM
 }
 

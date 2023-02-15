@@ -12,14 +12,14 @@ import {
   getOfflineCollectionsStatus,
   getOfflineTrackStatus
 } from '../selectors'
-import type { RemoveOfflineItemsAction } from '../slice'
+import type { RemoveOfflineEntriesAction } from '../slice'
 import { removeOfflineItems } from '../slice'
 
 export function* watchRemoveOfflineItems() {
   yield* takeEvery(removeOfflineItems.type, deleteItemsFromDisk)
 }
 
-function* deleteItemsFromDisk(action: RemoveOfflineItemsAction) {
+function* deleteItemsFromDisk(action: RemoveOfflineEntriesAction) {
   const { items } = action.payload
   const trackStatus = yield* select(getOfflineTrackStatus)
   const collectionStatus = yield* select(getOfflineCollectionsStatus)

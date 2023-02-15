@@ -21,16 +21,16 @@ import {
 import { EventNames } from 'app/types/analytics'
 
 import { getTrackOfflineDownloadStatus } from '../../../selectors'
-import type { DownloadQueueItem } from '../../../slice'
+import type { OfflineJob } from '../../../slice'
 import {
-  cancelDownload,
-  completeDownload,
-  requestDownloadQueuedItem,
-  errorDownload,
+  cancelJob,
+  completeJob,
+  requestProcessNextJob,
+  errorJob,
   OfflineDownloadStatus,
   removeOfflineItems,
-  startDownload,
-  abandonDownload
+  startJob,
+  abandonJob
 } from '../../../slice'
 import { isTrackDownloadable } from '../../utils/isTrackDownloadable'
 
@@ -48,11 +48,11 @@ function* shouldAbortDownload(trackId: ID) {
 }
 
 export function* downloadTrackWorker(trackId: ID) {
-  const queueItem: DownloadQueueItem = { type: 'track', id: trackId }
+  const queueItem: OfflineJob = { type: 'track', id: trackId }
   track(
     make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_START, ...queueItem })
   )
-  yield* put(startDownload(queueItem))
+  yield* put(startJob(queueItem))
 
   const { jobResult, cancel, abort } = yield* race({
     jobResult: call(downloadTrackAsync, trackId),
@@ -62,9 +62,9 @@ export function* downloadTrackWorker(trackId: ID) {
 
   if (abort) {
     yield* call(removeDownloadedTrack, trackId)
-    yield* put(requestDownloadQueuedItem())
+    yield* put(requestProcessNextJob())
   } else if (cancel) {
-    yield* put(cancelDownload(queueItem))
+    yield* put(cancelJob(queueItem))
     yield* call(removeDownloadedTrack, trackId)
   } else if (jobResult === OfflineDownloadStatus.ERROR) {
     track(
@@ -73,9 +73,9 @@ export function* downloadTrackWorker(trackId: ID) {
         ...queueItem
       })
     )
-    yield* put(errorDownload(queueItem))
+    yield* put(errorJob(queueItem))
     yield* call(removeDownloadedTrack, trackId)
-    yield* put(requestDownloadQueuedItem())
+    yield* put(requestProcessNextJob())
   } else if (jobResult === OfflineDownloadStatus.ABANDONED) {
     track(
       make({
@@ -83,9 +83,9 @@ export function* downloadTrackWorker(trackId: ID) {
         ...queueItem
       })
     )
-    yield* put(abandonDownload(queueItem))
+    yield* put(abandonJob(queueItem))
     yield* call(removeDownloadedTrack, trackId)
-    yield* put(requestDownloadQueuedItem())
+    yield* put(requestProcessNextJob())
   } else if (jobResult === OfflineDownloadStatus.SUCCESS) {
     track(
       make({
@@ -93,8 +93,8 @@ export function* downloadTrackWorker(trackId: ID) {
         ...queueItem
       })
     )
-    yield* put(completeDownload({ ...queueItem, completedAt: Date.now() }))
-    yield* put(requestDownloadQueuedItem())
+    yield* put(completeJob({ ...queueItem, completedAt: Date.now() }))
+    yield* put(requestProcessNextJob())
   }
 }
 
