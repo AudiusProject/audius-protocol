@@ -7,6 +7,7 @@ import (
 	"comms.audius.co/discovery"
 	"comms.audius.co/natsd"
 	"comms.audius.co/storage"
+	"comms.audius.co/trending"
 )
 
 func main() {
@@ -24,6 +25,8 @@ func main() {
 	case "nats":
 		// nats
 		natsd.NatsMain()
+	case "trending":
+		trending.TrendingMain()
 	default:
 		log.Println("should specify a subcommand like: discovery, storage, nats... falling back to discovery")
 		discovery.DiscoveryMain()

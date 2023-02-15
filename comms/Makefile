@@ -61,6 +61,7 @@ tools::
 	CGO_ENABLED=0 go install github.com/nats-io/natscli/nats@latest
 	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
 	go install github.com/rakyll/hey@latest
+	go install github.com/onsi/ginkgo/v2/ginkgo
 
 sqlc:: reset
 	sqlc generate
@@ -68,3 +69,12 @@ sqlc:: reset
 quicktype::
 	cp ../libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts
 	npx quicktype --package schema --out discovery/schema/schema.go --just-types-and-package discovery/schema/*.ts
+
+# TRENDING commands
+trending.dev.run::
+	@echo starting trending server
+	@ 	  go run main.go trending
+
+trending.test.run::
+	@echo starting trending tests
+	@	  ginkgo ./trending/...
