@@ -1,5 +1,5 @@
 when:
-  not: << pipeline.parameters.release-create-branch >>
+  equal: ['main', << pipeline.parameters.workflow >>]
 jobs:
   - build-gcp-image:
       context: GCP

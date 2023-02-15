@@ -1,0 +1,14 @@
+resource_class: small
+docker:
+  - image: google/cloud-sdk:412.0.0-slim
+steps:
+  - gcp-auth
+  - run:
+      name: Cleanup Image
+      command: |
+        old_images=($(gcloud compute images list --format="csv(name)[no-heading]" --filter="creationTimestamp < -P2D AND name~'audius-protocol-.*'" --sort-by=creationTimestamp))
+        if [[ "$old_images" != "" ]]; then
+          echo "Deleting images:" $old_images
+          gcloud compute images delete $old_images
+        fi
+  # TODO: cleanup zombie instances and disks as well

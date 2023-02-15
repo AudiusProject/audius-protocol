@@ -1,3 +1,4 @@
-when: << pipeline.parameters.release-create-branch >>
+when:
+  equal: ['release-create-branch', << pipeline.parameters.workflow >>]
 jobs:
   - release-create-branch
