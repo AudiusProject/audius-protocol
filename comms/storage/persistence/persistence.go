@@ -31,9 +31,8 @@ const (
 
 	GOOGLE_APPLICATION_CREDENTIALS = "GOOGLE_APPLICATION_CREDENTIALS"
 
-	AZURE_CLIENT_ID     = "AZURE_CLIENT_ID"
-	AZURE_CLIENT_SECRET = "AZURE_CLIENT_SECRET"
-	AZURE_TENANT_ID     = "AZURE_TENANT_ID"
+	AZURE_STORAGE_ACCOUNT = "AZURE_STORAGE_ACCOUNT"
+	AZURE_STORAGE_KEY     = "AZURE_STORAGE_KEY"
 )
 
 type Prefix int
@@ -369,12 +368,11 @@ func checkStorageCredentials(blobDriverUrl string) error {
 
 		return nil
 	case AZBLOB:
-		azureClientId := os.Getenv(AZURE_CLIENT_ID)
-		azureClientSecret := os.Getenv(AZURE_CLIENT_SECRET)
-		azureTenantId := os.Getenv(AZURE_TENANT_ID)
+		azureStorageAccount := os.Getenv(AZURE_STORAGE_ACCOUNT)
+		azureStorageKey := os.Getenv(AZURE_STORAGE_KEY)
 
-		if azureClientId == "" || azureClientSecret == "" || azureTenantId == "" {
-			return errors.New("Missing credentials required for persistent Azure backing (i.e. AXURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_TENANT_ID)")
+		if azureStorageAccount == "" || azureStorageKey == "" {
+			return errors.New("Missing credentials required for persistent Azure backing (i.e. AZURE_STORAGE_ACCOUNT, AZURE_STORAGE_KEY)")
 		}
 
 		return nil

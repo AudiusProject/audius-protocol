@@ -36,8 +36,7 @@ AUDIUS_STORAGE_DRIVER_URL="gcs://my-bucket"
 
 [Azure storage](https://azure.microsoft.com/en-us/products/storage/blobs)
 ```
-AZURE_CLIENT_ID="<client-id>"
-AZURE_CLIENT_SECRET="<client-secret>"
-AZURE_TENANT_ID="<tenant-id>"
+AZURE_STORAGE_ACCOUNT="<storage-account-name>"
+AZURE_STORAGE_KEY="<storage-key>"
 AUDIUS_STORAGE_DRIVER_URL="azblob://my-container"
 ```

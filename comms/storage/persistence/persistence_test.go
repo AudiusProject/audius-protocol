@@ -122,36 +122,32 @@ func TestCheckStorageCredentials(t *testing.T) {
 		{
 			url: "azblob://my-container",
 			envVars: map[string]string{
-				AZURE_CLIENT_ID:     "",
-				AZURE_CLIENT_SECRET: "",
-				AZURE_TENANT_ID:     "",
+				AZURE_STORAGE_ACCOUNT: "",
+				AZURE_STORAGE_KEY: "",
 			},
 			expectedError: true,
 		},
 		{
 			url: "azblob://my-container",
 			envVars: map[string]string{
-				AZURE_CLIENT_ID:     "ID",
-				AZURE_CLIENT_SECRET: "",
-				AZURE_TENANT_ID:     "",
+				AZURE_STORAGE_ACCOUNT: "ACCOUNT",
+				AZURE_STORAGE_KEY: "",
 			},
 			expectedError: true,
 		},
 		{
 			url: "azblob://my-container",
 			envVars: map[string]string{
-				AZURE_CLIENT_ID:     "ID",
-				AZURE_CLIENT_SECRET: "SECRET",
-				AZURE_TENANT_ID:     "",
+				AZURE_STORAGE_ACCOUNT: "",
+				AZURE_STORAGE_KEY: "KEY",
 			},
 			expectedError: true,
 		},
 		{
 			url: "azblob://my-container",
 			envVars: map[string]string{
-				AZURE_CLIENT_ID:     "ID",
-				AZURE_CLIENT_SECRET: "SECRET",
-				AZURE_TENANT_ID:     "TENANT",
+				AZURE_STORAGE_ACCOUNT: "ACCOUNT",
+				AZURE_STORAGE_KEY: "KEY",
 			},
 			expectedError: false,
 		},
