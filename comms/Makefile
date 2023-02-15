@@ -12,7 +12,7 @@ reset::
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
 
-localhosts="127.0.0.1       storage1 storage2 storage3 storage4 ingress"
+localhosts="127.0.0.1       node1 node2 node3 node4 ingress"
 storage.hosts::
 	@	if ! grep -q $(localhosts) /etc/hosts; \
 		then echo Adding development hosts to /etc/hosts; \
