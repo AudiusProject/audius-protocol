@@ -11,6 +11,7 @@ import { watchAddTrackToPlaylistSaga } from './sagas/watchAddTrackToPlaylistSaga
 import { watchRemoveOfflineItems } from './sagas/watchRemoveOfflineItems'
 import { watchSaveCollectionSaga } from './sagas/watchSaveCollectionSaga'
 import { watchSaveTrackSaga } from './sagas/watchSaveTrackSaga'
+import { watchUnsaveCollectionSaga } from './sagas/watchUnsaveCollectionSaga'
 import { watchUnsaveTrackSaga } from './sagas/watchUnsaveTrackSaga'
 
 const sagas = () => {
@@ -33,6 +34,7 @@ const sagas = () => {
     watchSaveTrackSaga,
     watchUnsaveTrackSaga,
     watchSaveCollectionSaga,
+    watchUnsaveCollectionSaga,
     watchRemoveOfflineItems,
     watchAddTrackToPlaylistSaga,
 

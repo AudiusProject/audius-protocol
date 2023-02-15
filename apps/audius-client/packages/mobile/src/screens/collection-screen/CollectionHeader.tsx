@@ -68,10 +68,6 @@ const useStyles = makeStyles(({ spacing }) => ({
     lineHeight: 17,
     textAlign: 'center',
     textTransform: 'uppercase'
-  },
-  rootLegacy: {
-    marginTop: spacing(2),
-    marginBottom: spacing(3)
   }
 }))
 
@@ -111,7 +107,7 @@ export const CollectionHeader = (props: CollectionHeaderProps) => {
   }
 
   return (
-    <View style={styles.rootLegacy}>
+    <View>
       <Text
         style={styles.headerText}
         color='neutralLight4'
@@ -165,15 +161,12 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
   )
 
   const showDownloadSwitchAndIndicator =
-    downloadStatus ||
     collection.has_current_user_saved ||
     collection.playlist_owner_id === currentUserId
 
-  // When user confirms removal, turn switch off
+  // Ensure removing or favoriting also triggers switch
   useLayoutEffect(() => {
-    if (!isMarkedForDownload) {
-      setDownloadSwitchValue(false)
-    }
+    setDownloadSwitchValue(isMarkedForDownload)
   }, [isMarkedForDownload])
 
   const handleDownloadSwitchValueChange = useThrottledCallback(
