@@ -155,11 +155,12 @@ func TestGetChats(t *testing.T) {
 	// Test GET /comms/chats
 	{
 		// Query /comms/chats
-		req, err := http.NewRequest(http.MethodGet, "/comms/chats", nil)
+		reqUrl := fmt.Sprintf("/comms/chats?timestamp=%d", time.Now().UnixMilli())
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
 		// Set sig header
-		payload := []byte(req.URL.Path)
+		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
 		req.Header.Set(config.SigHeader, sigBase64)
 
@@ -198,11 +199,12 @@ func TestGetChats(t *testing.T) {
 	// Test paginated GET /comms/chats
 	{
 		// Query /comms/chats
-		req, err := http.NewRequest(http.MethodGet, "/comms/chats", nil)
+		reqUrl := fmt.Sprintf("/comms/chats?timestamp=%d", time.Now().UnixMilli())
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
 		// Set sig header
-		payload := []byte(req.URL.Path)
+		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
 		req.Header.Set(config.SigHeader, sigBase64)
 
@@ -247,11 +249,12 @@ func TestGetChats(t *testing.T) {
 	// Test GET /comms/chats/:id
 	{
 		// Query /comms/chats/chat1
-		req, err := http.NewRequest(http.MethodGet, "/comms/chat/:id", nil)
+		reqUrl := fmt.Sprintf("/comms/chats/%s?timestamp=%d", chatId1, time.Now().UnixMilli())
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
 		// Set sig header
-		payload := []byte(req.URL.Path)
+		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
 		req.Header.Set(config.SigHeader, sigBase64)
 
@@ -375,11 +378,12 @@ func TestGetMessages(t *testing.T) {
 
 	// Test GET /comms/chats/:id/messages
 	{
-		req, err := http.NewRequest(http.MethodGet, "/comms/chats/:id/messages", nil)
+		reqUrl := fmt.Sprintf("/comms/chats/%s/messages?timestamp=%d", chatId, time.Now().UnixMilli())
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
 		// Set sig header
-		payload := []byte(req.URL.Path)
+		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
 		req.Header.Set(config.SigHeader, sigBase64)
 
@@ -421,11 +425,12 @@ func TestGetMessages(t *testing.T) {
 
 	// Test paginated GET /comms/chats/:id/messages
 	{
-		req, err := http.NewRequest(http.MethodGet, "/comms/chats/:id/messages", nil)
+		reqUrl := fmt.Sprintf("/comms/chats/%s/messages?timestamp=%d", chatId, time.Now().UnixMilli())
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
 		// Set sig header
-		payload := []byte(req.URL.Path)
+		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
 		req.Header.Set(config.SigHeader, sigBase64)
 

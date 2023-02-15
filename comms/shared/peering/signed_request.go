@@ -3,8 +3,8 @@ package peering
 import (
 	"encoding/base64"
 	"errors"
+	"fmt"
 	"io"
-	"net/url"
 	"strconv"
 	"time"
 
@@ -19,15 +19,13 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	if c.Request().Method == "GET" {
 		// Check that timestamp is less than 5 seconds old
 		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
-		if err != nil || time.Now().UnixMilli() - timestamp > config.SignatureTimeToLiveMs {
-			return nil, "", errors.New("Invalid timestamp")
+		if err != nil || time.Now().UnixMilli()-timestamp > config.SignatureTimeToLiveMs {
+			fmt.Println(err)
+			return nil, "", errors.New("invalid timestamp")
 		}
 
 		// Strip out the app_name query parameter to get the true signature payload
-		u, err := url.Parse(c.Request().RequestURI)
-		if err != nil {
-			return nil, "", errors.New("Invalid Request URI")
-		}
+		u := *c.Request().URL
 		q := u.Query()
 		q.Del("app_name")
 		u.RawQuery = q.Encode()
@@ -37,7 +35,7 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	} else {
 		err = errors.New("Unsupported request method " + c.Request().Method)
 	}
-	if (err != nil) {
+	if err != nil {
 		return nil, "", err
 	}
 
@@ -45,7 +43,6 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	wallet, err := ReadSigned(sigHex, payload)
 	return payload, wallet, err
 }
-
 
 func ReadSigned(signatureHex string, signedData []byte) (string, error) {
 	sig, err := base64.StdEncoding.DecodeString(signatureHex)
