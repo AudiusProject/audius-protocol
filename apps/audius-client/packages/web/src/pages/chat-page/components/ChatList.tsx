@@ -76,7 +76,9 @@ export const ChatList = (props: ChatListProps) => {
             <div className={styles.header}>{messages.nothingHere}</div>
             <div className={styles.subheader}>{messages.start}</div>
           </div>
-        ) : null}
+        ) : (
+          <LoadingSpinner className={styles.spinner} />
+        )}
       </InfiniteScroll>
     </div>
   )

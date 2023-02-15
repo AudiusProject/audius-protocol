@@ -1,5 +1,4 @@
 import type { UserChat } from '@audius/sdk'
-import dayjs from 'dayjs'
 import { createSelector } from 'reselect'
 
 import { Status } from 'models/Status'
@@ -11,12 +10,15 @@ const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 
 export const getChat = (state: CommonState, chatId?: string) =>
-  chatId
-    ? state.pages.chat.chatList.data?.find((chat) => chat.chat_id === chatId)
-    : undefined
+  chatId ? state.pages.chat.chatList.map[chatId] : undefined
 
-export const getChatsRaw = (state: CommonState) =>
-  state.pages.chat.chatList.data
+export const getChatsRaw = createSelector(
+  (state: CommonState) => state.pages.chat.chatList.order,
+  (state) => state.pages.chat.chatList.map,
+  (order, map) => {
+    return order.map((chatId) => map[chatId])
+  }
+)
 
 export const getChatsStatus = (state: CommonState) =>
   state.pages.chat.chatList.status
@@ -44,29 +46,13 @@ export const getOptimisticReactions = (state: CommonState) =>
 
 export const getChats = createSelector(
   [getChatsRaw, getAllChatMessages, getOptimisticReads],
-  (chats, allMessages, optimisticReads) => {
+  (chats, optimisticReads) => {
     return chats?.map((chat) => {
       // If have a clientside optimistic read status, override the server status
       if (optimisticReads?.[chat.chat_id]) {
         chat = {
           ...chat,
           ...optimisticReads[chat.chat_id]
-        }
-      }
-
-      // If have newer messages on the client than the server's version for the chat,
-      // use that instead for the last_message and last_message_at
-      const chatMessages = allMessages[chat.chat_id]?.data
-      if (
-        chatMessages &&
-        chatMessages.length > 0 &&
-        chatMessages[0] &&
-        dayjs(chatMessages[0].created_at).isAfter(chat.last_message_at)
-      ) {
-        chat = {
-          ...chat,
-          last_message_at: chatMessages[0].created_at,
-          last_message: chatMessages[0].message
         }
       }
       return chat
@@ -83,10 +69,10 @@ export const getChatMessages = createSelector(
         return {
           ...message,
           reactions: [
-            optimisticReaction,
             ...(message.reactions?.filter(
               (reaction) => optimisticReaction.user_id !== reaction.user_id
-            ) ?? [])
+            ) ?? []),
+            optimisticReaction
           ]
         }
       }

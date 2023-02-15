@@ -5,6 +5,7 @@ import {
   cacheUsersSelectors,
   chatActions,
   decodeHashId,
+  encodeHashId,
   ReactionTypes,
   useProxySelector,
   formatMessageDate
@@ -63,7 +64,11 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             userId,
             chatId,
             messageId: message.message_id,
-            reaction
+            reaction:
+              message.reactions?.find((r) => r.user_id === encodeHashId(userId))
+                ?.reaction === reaction
+                ? null
+                : reaction
           })
         )
       }
@@ -91,10 +96,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
         >
           {message.reactions?.length > 0 ? (
             message.reactions.map((reaction) => {
-              if (!(reaction.reaction in reactionMap)) {
-                console.error(
-                  `Reaction type '${reaction.reaction}' does not exist`
-                )
+              if (!reaction.reaction || !(reaction.reaction in reactionMap)) {
                 return null
               }
               const Reaction = reactionMap[reaction.reaction as ReactionTypes]
@@ -104,7 +106,7 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
                   key={reaction.user_id}
                   width={48}
                   height={48}
-                  title={reactionUsers[decodeHashId(reaction.user_id)!].name}
+                  title={reactionUsers[decodeHashId(reaction.user_id)!]?.name}
                 />
               )
             })
