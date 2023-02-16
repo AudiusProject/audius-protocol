@@ -36,7 +36,7 @@ export const publishBatch = async (params: PublishBatchCommandInput) => {
 }
 
 // NOTE: Should be 'APNS' for prod
-const ARN = process.env.AWS_SECRET_ACCESS_KEY || 'APNS_SANDBOX'
+const ARN = process.env.APN || 'APNS_SANDBOX'
 export const sendIOSMessage = async ({
   title,
   body,

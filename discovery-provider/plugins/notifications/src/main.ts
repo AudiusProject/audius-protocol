@@ -31,9 +31,9 @@ export class Processor {
     logger.info('starting!')
     // setup postgres listener
     await this.setupDB({ discoveryDBUrl, identityDBUrl })
-    await setupTriggers(this.discoveryDB)
 
     // NOTE: Temp to stop listener for app notifiations
+    // await setupTriggers(this.discoveryDB)
     //  this.listener = new Listener()
     // await this.listener.start(this.discoveryDB)
 
