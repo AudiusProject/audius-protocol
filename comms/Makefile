@@ -119,6 +119,6 @@ trending.dev.restore.up.steamroll::
 
 trending.dev.nuke::
 	@echo destroying everything and rebuilding, restoring, and running
-	@	trending.dev.deps.down
-	@	trending.dev.restore.up.steamroll
-	@	trending.dev.run
+	@	make trending.dev.deps.down
+	@	make trending.dev.restore.up.steamroll
+	@	make trending.dev.run
