@@ -17,6 +17,7 @@ import (
 
 var (
 	jsc       nats.JetStreamContext
+	kv        nats.KeyValue
 	poaClient *ethclient.Client
 
 	// on staging, and soon prod
@@ -31,6 +32,16 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 	var err error
 
 	jsc = jetstreamContext
+
+	// create kv buckets
+	kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+		Bucket:    config.PubkeystoreBucketName,
+		Replicas:  config.NatsReplicaCount,
+		Placement: config.DiscoveryPlacement(),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create pubkey kv %v", err)
+	}
 
 	endpoint := "https://poa-gateway.audius.co"
 
@@ -57,11 +68,6 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 	logger := config.Logger.New("module", "pubkeystore", "userId", userId)
 
 	conn := db.Conn
-
-	kv, err := jsc.KeyValue(config.PubkeystoreBucketName)
-	if err != nil {
-		return "", err
-	}
 
 	key := fmt.Sprintf("userId=%d", userId)
 

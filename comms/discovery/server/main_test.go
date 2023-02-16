@@ -8,18 +8,20 @@ import (
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/rpcz"
-	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
 )
 
 var (
-	testServer *echo.Echo
+	testServer *ChatServer
 )
 
 // this runs before all tests (not a per-test setup / teardown)
 func TestMain(m *testing.M) {
 	discoveryConfig := config.GetDiscoveryConfig()
 	config.Init(discoveryConfig.Keys)
+
+	// todo: config week
+	config.NatsReplicaCount = 1
 
 	// setup
 	os.Setenv("audius_db_url", "postgresql://postgres:postgres@localhost:5454/comtest?sslmode=disable")
