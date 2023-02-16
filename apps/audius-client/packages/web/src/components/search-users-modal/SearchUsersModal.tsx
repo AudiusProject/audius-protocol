@@ -84,7 +84,7 @@ export const SearchUsersModal = (props: SearchUsersModalProps) => {
       const users = getUsers(state, { ids })
       return ids.map((id) => users[id])
     },
-    [hasQuery, userIds]
+    [hasQuery, userIds, isVisible]
   )
 
   useDebounce(

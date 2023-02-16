@@ -1531,6 +1531,7 @@ export const audiusBackend = ({
   async function getFolloweeFollows(userId: ID, limit = 100, offset = 0) {
     let followers = []
     try {
+      await waitForLibsInit()
       followers = await audiusLibs.User.getMutualFollowers(
         limit,
         offset,
