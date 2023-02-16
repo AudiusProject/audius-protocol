@@ -14,6 +14,8 @@ import {
 } from 'typed-redux-saga'
 import { Action } from 'typesafe-actions'
 
+import { waitForReachability } from 'store/reachability/sagas'
+
 import { Status } from '../models/Status'
 
 /**
@@ -124,4 +126,12 @@ export function* waitForAccount() {
     null,
     (status) => status !== Status.LOADING && status !== Status.IDLE
   )
+}
+
+/**
+ * Required for all reads
+ */
+export function* waitForRead() {
+  yield* call(waitForReachability)
+  yield* call(waitForAccount)
 }

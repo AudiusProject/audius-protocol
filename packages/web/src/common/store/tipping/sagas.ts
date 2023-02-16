@@ -27,7 +27,8 @@ import {
   MAX_ARTIST_HOVER_TOP_SUPPORTING,
   MAX_PROFILE_TOP_SUPPORTERS,
   LastDismissedTip,
-  LocalStorage
+  LocalStorage,
+  processAndCacheUsers
 } from '@audius/common'
 import { PayloadAction } from '@reduxjs/toolkit'
 import BN from 'bn.js'
@@ -45,8 +46,6 @@ import {
 import { make } from 'common/store/analytics/actions'
 import { fetchUsers } from 'common/store/cache/users/sagas'
 import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
-
-import { processAndCacheUsers } from '../cache/users/utils'
 
 const { decreaseBalance } = walletActions
 const { getAccountBalance } = walletSelectors

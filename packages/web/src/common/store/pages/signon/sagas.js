@@ -14,7 +14,8 @@ import {
   settingsPageActions,
   MAX_HANDLE_LENGTH,
   PushNotificationSetting,
-  getCityAndRegion
+  getCityAndRegion,
+  processAndCacheUsers
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -36,7 +37,6 @@ import { identify, make } from 'common/store/analytics/actions'
 import * as backendActions from 'common/store/backend/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { fetchUserByHandle, fetchUsers } from 'common/store/cache/users/sagas'
-import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import { UiErrorCode } from 'store/errors/actions'

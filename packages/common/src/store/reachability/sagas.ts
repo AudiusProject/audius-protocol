@@ -1,8 +1,9 @@
-import { takeEvery } from 'typed-redux-saga'
+import { takeEvery, select, all, take } from 'typed-redux-saga'
 
 import { getContext } from 'store/commonStore'
 
 import * as reachabilityActions from './actions'
+import * as reachabilitySelectors from './selectors'
 
 function* watchSetReachable() {
   const apiClient = yield* getContext('apiClient')
@@ -18,6 +19,13 @@ function* watchSetUnreachable() {
   })
 }
 
+// Wait until reachability is either true or 'unconfirmed'
+export function* waitForReachability() {
+  const isReachable = yield* select(reachabilitySelectors.getIsReachable)
+  if (isReachable !== false) return
+  yield* all([take(reachabilityActions.SET_REACHABLE)])
+}
+
 export function sagas() {
-  return [watchSetReachable, watchSetUnreachable]
+  return [watchSetReachable, watchSetUnreachable, waitForReachability]
 }

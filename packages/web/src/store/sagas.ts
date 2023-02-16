@@ -9,7 +9,8 @@ import {
   shareModalUISagas as shareModalSagas,
   toastSagas,
   vipDiscordModalSagas,
-  reachabilitySagas as commonReachabilitySagas
+  reachabilitySagas as commonReachabilitySagas,
+  searchUsersModalSagas
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
@@ -47,7 +48,6 @@ import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import remixSettingsSagas from 'common/store/remix-settings/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
-import searchUsersModalSagas from 'common/store/search-users-modal/sagas'
 import serviceSelectionSagas from 'common/store/service-selection/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'

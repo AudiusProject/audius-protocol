@@ -5,12 +5,12 @@ import {
   makeUid,
   accountSelectors,
   cacheActions,
-  getContext
+  getContext,
+  reformatUser
 } from '@audius/common'
 import { uniqBy } from 'lodash'
 import { put, select } from 'typed-redux-saga'
 
-import { reformat as reformatUser } from 'common/store/cache/users/utils'
 import { waitForRead } from 'utils/sagaHelpers'
 const getAccountUser = accountSelectors.getAccountUser
 
