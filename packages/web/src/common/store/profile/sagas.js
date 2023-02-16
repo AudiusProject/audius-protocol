@@ -48,6 +48,8 @@ import {
   unsubscribeFromUserAsync
 } from 'common/store/social/users/sagas'
 import { waitForRead, waitForWrite } from 'utils/sagaHelpers'
+
+import { watchFetchProfileCollections } from './fetchProfileCollectionsSaga'
 const { refreshSupport } = tippingActions
 const { getIsReachable } = reachabilitySelectors
 const { getProfileUserId, getProfileFollowers, getProfileUser } =
@@ -293,10 +295,7 @@ function* fetchProfileAsync(action) {
     if (!isNativeMobile) {
       // Fetch user socials and collections after fetching the user itself
       yield fork(fetchUserSocials, action)
-    }
-    yield fork(fetchUserCollections, user.user_id)
-
-    if (!isNativeMobile) {
+      yield fork(fetchUserCollections, user.user_id)
       yield fork(fetchSupportersAndSupporting, user.user_id)
     }
 
@@ -664,6 +663,7 @@ export default function sagas() {
     watchFetchProfile,
     watchUpdateProfile,
     watchUpdateCurrentUserFollows,
-    watchSetNotificationSubscription
+    watchSetNotificationSubscription,
+    watchFetchProfileCollections
   ]
 }

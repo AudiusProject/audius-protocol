@@ -19,9 +19,6 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
-  tabContainer: {
-    flex: 1
-  },
   contentContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -42,7 +39,7 @@ export const MoodsTab = () => {
   const styles = useStyles()
 
   return (
-    <ScrollView style={styles.tabContainer}>
+    <ScrollView>
       <TabInfo header={messages.infoHeader} text={messages.infoText} />
       <View style={styles.contentContainer}>
         {tiles.map((tile, idx) => (

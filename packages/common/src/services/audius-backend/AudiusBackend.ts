@@ -1550,7 +1550,11 @@ export const audiusBackend = ({
     return followers
   }
 
-  async function getPlaylists(userId: Nullable<ID>, playlistIds: ID[]) {
+  async function getPlaylists(
+    userId: Nullable<ID>,
+    playlistIds: Nullable<ID[]>,
+    withUsers = true
+  ): Promise<CollectionMetadata[]> {
     try {
       const playlists = await withEagerOption(
         {
@@ -1561,7 +1565,7 @@ export const audiusBackend = ({
         0,
         playlistIds,
         userId,
-        true
+        withUsers
       )
       return (playlists || []).map(getCollectionImages)
     } catch (err) {

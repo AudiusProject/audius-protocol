@@ -164,6 +164,7 @@ export function* fetchUserByHandle(
 }
 
 /**
+ * @deprecated legacy method for web
  * @param {number} userId target user id
  */
 export function* fetchUserCollections(userId) {

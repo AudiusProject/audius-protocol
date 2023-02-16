@@ -30,6 +30,7 @@ export type ProfileState = {
   updateSuccess: boolean
   updateError: boolean
   collectionIds: number[]
+  collectionStatus: Status.IDLE
   mustUsedTags: string[]
   collectionSortMode: CollectionSortMode
   profileMeterDismissed: boolean
