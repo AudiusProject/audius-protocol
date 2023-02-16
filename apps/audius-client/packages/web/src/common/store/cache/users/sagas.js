@@ -9,7 +9,8 @@ import {
   cacheUsersActions as userActions,
   waitForValue,
   waitForAccount,
-  playlistLibraryHelpers
+  playlistLibraryHelpers,
+  reformatUser
 } from '@audius/common'
 import { mergeWith } from 'lodash'
 import {
@@ -31,7 +32,7 @@ import {
 import { fetchServicesFailed } from 'common/store/service-selection/slice'
 import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
-import { pruneBlobValues, reformat } from './utils'
+import { pruneBlobValues } from './utils'
 const { removePlaylistLibraryTempPlaylists } = playlistLibraryHelpers
 const { mergeCustomizer } = cacheReducer
 const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
@@ -151,7 +152,7 @@ export function* fetchUserByHandle(
     },
     retrieveFromSource,
     onBeforeAddToCache: function (users) {
-      return users.map((user) => reformat(user, audiusBackendInstance))
+      return users.map((user) => reformatUser(user, audiusBackendInstance))
     },
     kind: Kind.USERS,
     idField: 'user_id',

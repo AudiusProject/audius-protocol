@@ -113,3 +113,4 @@ export {
   SearchUsersModalState
 } from './search-users-modal/slice'
 export * as searchUsersModalSelectors from './search-users-modal/selectors'
+export { default as searchUsersModalSagas } from './search-users-modal/sagas'

@@ -5,11 +5,13 @@
 // import usersSagas from 'common/store/cache/users/sagas'
 // import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 // import signOutSagas from 'common/store/sign-out/sagas'
+
 import { sagas as castSagas } from 'store/cast/sagas'
 import { chatSagas } from 'store/pages/chat'
 import { playerSagas } from 'store/player'
 import { premiumContentSagas } from 'store/premium-content'
 import remoteConfigSagas from 'store/remote-config/sagas'
+import { searchUsersModalSagas } from 'store/ui'
 
 import { CommonStoreContext } from './storeContext'
 import {
@@ -36,6 +38,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   cast: castSagas,
   premiumContent: premiumContentSagas,
   chat: chatSagas,
+  searchUsers: searchUsersModalSagas,
   toast: toastSagas,
   shareModalUI: shareModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,

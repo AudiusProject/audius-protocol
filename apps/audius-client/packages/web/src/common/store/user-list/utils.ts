@@ -5,11 +5,11 @@ import {
   accountSelectors,
   getContext,
   AudiusAPIClient,
-  AudiusBackend
+  AudiusBackend,
+  processAndCacheUsers
 } from '@audius/common'
 import { call, select } from 'typed-redux-saga'
 
-import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import { AppState } from 'store/types'
 import { waitForRead } from 'utils/sagaHelpers'
 

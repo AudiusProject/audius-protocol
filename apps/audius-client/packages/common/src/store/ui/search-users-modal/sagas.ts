@@ -1,20 +1,19 @@
-import {
-  accountSelectors,
-  SearchKind,
-  searchUsersModalActions,
-  searchUsersModalSelectors,
-  User
-} from '@audius/common'
 import { call, put, select, takeLatest } from 'typed-redux-saga'
 
-import { processAndCacheUsers } from 'common/store/cache/users/utils'
-import { apiClient } from 'services/audius-api-client'
+import { User } from 'models/User'
+import { accountSelectors } from 'store/account'
+import { processAndCacheUsers } from 'store/cache/users/utils'
+import { getContext } from 'store/effects'
+import { SearchKind } from 'store/pages/search-results/types'
+import { searchUsersModalActions, searchUsersModalSelectors } from 'store/ui'
+
 const { getUserId } = accountSelectors
 const { searchUsers, searchUsersSucceeded } = searchUsersModalActions
 const { getUserList } = searchUsersModalSelectors
 
 function* doSearchUsers(action: ReturnType<typeof searchUsers>) {
   const { query, limit = 15 } = action.payload
+  const apiClient = yield* getContext('apiClient')
   const userList = yield* select(getUserList)
   try {
     const currentUserId = yield* select(getUserId)

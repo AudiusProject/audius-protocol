@@ -18,7 +18,8 @@ import {
   MAX_ARTIST_HOVER_TOP_SUPPORTING,
   MAX_PROFILE_SUPPORTING_TILES,
   MAX_PROFILE_TOP_SUPPORTERS,
-  collectiblesActions
+  collectiblesActions,
+  processAndCacheUsers
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -38,7 +39,6 @@ import {
   fetchUserCollections,
   fetchUserSocials
 } from 'common/store/cache/users/sagas'
-import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import feedSagas from 'common/store/pages/profile/lineups/feed/sagas.js'

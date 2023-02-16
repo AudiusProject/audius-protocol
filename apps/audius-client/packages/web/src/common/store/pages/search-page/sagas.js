@@ -3,14 +3,14 @@ import {
   accountSelectors,
   searchResultsPageActions as searchPageActions,
   searchResultsPageTracksLineupActions as tracksLineupActions,
-  SearchKind
+  SearchKind,
+  processAndCacheUsers
 } from '@audius/common'
 import { select, call, takeLatest, put, getContext } from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { fetchUsers } from 'common/store/cache/users/sagas'
-import { processAndCacheUsers } from 'common/store/cache/users/utils'
 import tracksSagas from 'common/store/pages/search-page/lineups/tracks/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
