@@ -14,6 +14,7 @@ services:
     volumes:
       - ./trending/clickhouse-vol:/var/lib/clickhouse
       - ./trending/houseparty/config.d:/etc/clickhouse-server/config.d
+      - ./trending/houseparty/sql:/sql
     healthcheck:
       test: wget --no-verbose --tries=1 --spider localhost:8123/ping || exit 1
       interval: 2s
