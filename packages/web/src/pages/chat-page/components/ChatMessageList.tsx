@@ -4,7 +4,10 @@ import {
   useCallback,
   UIEvent,
   useEffect,
-  forwardRef
+  forwardRef,
+  useRef,
+  useLayoutEffect,
+  useState
 } from 'react'
 
 import {
@@ -15,8 +18,10 @@ import {
   Status,
   hasTail
 } from '@audius/common'
-import type { ChatMessage, UserChat } from '@audius/sdk'
+import type { ChatMessage } from '@audius/sdk'
 import cn from 'classnames'
+import dayjs from 'dayjs'
+import { mergeRefs } from 'react-merge-refs'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -25,6 +30,8 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import styles from './ChatMessageList.module.css'
 import { ChatMessageListItem } from './ChatMessageListItem'
 import { StickyScrollList } from './StickyScrollList'
+
+const SPINNER_HEIGHT = 48
 
 const { fetchMoreMessages, markChatAsRead, setActiveChat } = chatActions
 const {
@@ -54,18 +61,37 @@ const isScrolledToTop = (element: HTMLElement) => {
 }
 
 /**
- * Checks if the current message is the first unread message in the given chat
- * Used to render the new messages separator indicator
+ * Checks if the current message:
+ * - Is the first unread message
+ * - Is by a different user than the current one
  */
-const isFirstUnread = (
-  chat: UserChat,
-  message: ChatMessage,
-  currentUserId: string | null,
-  prevMessage?: ChatMessage
-) =>
-  message.created_at > chat.last_read_at &&
-  (!prevMessage || prevMessage.created_at <= chat.last_read_at) &&
-  message.sender_user_id !== currentUserId
+const shouldRenderUnreadIndicator = ({
+  unreadCount,
+  lastReadAt,
+  currentMessageIndex,
+  messages,
+  currentUserId
+}: {
+  unreadCount: number
+  lastReadAt?: string
+  currentMessageIndex: number
+  messages: ChatMessage[]
+  currentUserId: string | null
+}) => {
+  if (unreadCount === 0 || !lastReadAt) {
+    return false
+  }
+  const message = messages[currentMessageIndex]
+  const prevMessage = messages[currentMessageIndex + 1]
+  const isUnread =
+    lastReadAt === undefined || dayjs(message.created_at).isAfter(lastReadAt)
+  const isPreviousMessageUnread =
+    prevMessage &&
+    (lastReadAt === undefined ||
+      dayjs(prevMessage.created_at).isAfter(lastReadAt))
+  const isAuthor = message.sender_user_id === currentUserId
+  return isUnread && !isPreviousMessageUnread && !isAuthor
+}
 
 export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
   (props, forwardedRef) => {
@@ -83,6 +109,22 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
     const chat = useSelector((state) => getChat(state, chatId))
     const userId = useSelector(accountSelectors.getUserId)
     const currentUserId = encodeHashId(userId)
+    const [unreadIndicatorEl, setUnreadIndicatorEl] =
+      useState<HTMLDivElement | null>(null)
+    const [, setLastScrolledChatId] = useState<string>()
+
+    const ref = useRef<HTMLDivElement>(null)
+
+    // A ref so that the unread separator doesn't disappear immediately when the chat is marked as read
+    // Using a ref instead of state here to prevent unwanted flickers.
+    // The chat/chatId selectors will trigger the rerenders necessary.
+    const chatFrozenRef = useRef(chat)
+    useLayoutEffect(() => {
+      if (chat && chatId !== chatFrozenRef.current?.chat_id) {
+        // Update the unread indicator when chatId changes
+        chatFrozenRef.current = chat
+      }
+    }, [chat, chatId])
 
     const handleScroll = useCallback(
       (e: UIEvent<HTMLDivElement>) => {
@@ -105,6 +147,23 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       [dispatch, chatId, status]
     )
 
+    const scrollIntoViewOnMount = useCallback((el: HTMLDivElement) => {
+      if (el) {
+        el.scrollIntoView()
+        // On initial render, can't scroll yet, as the component isn't fully rendered.
+        // Instead, queue a scroll by triggering a rerender via a state change.
+        setUnreadIndicatorEl(el)
+      }
+    }, [])
+
+    useLayoutEffect(() => {
+      if (unreadIndicatorEl) {
+        unreadIndicatorEl.scrollIntoView()
+        // One more state change, this keeps chats unread until the user scrolls to the bottom on their own
+        setLastScrolledChatId(chatId)
+      }
+    }, [unreadIndicatorEl, chatId, setLastScrolledChatId])
+
     useEffect(() => {
       if (chatId && status === Status.IDLE) {
         // Initial fetch
@@ -113,9 +172,22 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       }
     }, [dispatch, chatId, status])
 
+    // Fix for if the initial load doesn't have enough messages to cause scrolling
+    useEffect(() => {
+      if (
+        chatId &&
+        ref.current &&
+        ref.current.scrollHeight - SPINNER_HEIGHT <= ref.current.clientHeight &&
+        summary &&
+        summary.prev_count > 0
+      ) {
+        dispatch(fetchMoreMessages({ chatId }))
+      }
+    }, [dispatch, chatId, summary, chatMessages])
+
     return (
       <StickyScrollList
-        ref={forwardedRef}
+        ref={mergeRefs([forwardedRef, ref])}
         onScroll={handleScroll}
         className={cn(styles.root, classNameProp)}
         resetKey={chatId}
@@ -133,26 +205,26 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                   hasTail={hasTail(message, chatMessages[i - 1])}
                 />
                 {/* 
-              The separator has to come after the message to appear before it, 
-              since the message list order is reversed in CSS
-            */}
-                {chat &&
-                chat.unread_message_count &&
-                isFirstUnread(
-                  chat,
-                  message,
-                  currentUserId,
-                  chatMessages[i + 1]
-                ) ? (
-                  <div className={styles.separator}>
+                  The separator has to come after the message to appear above it, 
+                  since the message list order is reversed in CSS
+                */}
+                {shouldRenderUnreadIndicator({
+                  unreadCount: chatFrozenRef.current?.unread_message_count ?? 0,
+                  lastReadAt: chatFrozenRef.current?.last_read_at,
+                  currentMessageIndex: i,
+                  messages: chatMessages,
+                  currentUserId
+                }) ? (
+                  <div ref={scrollIntoViewOnMount} className={styles.separator}>
                     <span className={styles.tag}>
-                      {chat.unread_message_count} {messages.newMessages}
+                      {chatFrozenRef.current?.unread_message_count}{' '}
+                      {messages.newMessages}
                     </span>
                   </div>
                 ) : null}
               </Fragment>
             ))}
-          {summary?.prev_count ? (
+          {!summary || summary.prev_count > 0 ? (
             <LoadingSpinner className={styles.spinner} />
           ) : null}
         </div>

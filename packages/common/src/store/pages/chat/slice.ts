@@ -70,6 +70,9 @@ const slice = createSlice({
       state.chatList.order.unshift(chat.chat_id)
       state.chatList.map[chat.chat_id] = chat
     },
+    goToChat: (_state, _action: PayloadAction<{ chatId: string }>) => {
+      // triggers saga
+    },
     fetchMoreChats: (state) => {
       // triggers saga
       state.chatList.status = Status.LOADING
@@ -177,6 +180,7 @@ const slice = createSlice({
       if (!state.chatList.map[chat.chat_id]) {
         state.chatList.order.push(chat.chat_id)
         state.chatList.order = getNewChatOrder(state)
+        state.chatList.map[chat.chat_id] = chat
       }
     },
     markChatAsRead: (state, action: PayloadAction<{ chatId: string }>) => {
