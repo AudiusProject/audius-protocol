@@ -21,11 +21,11 @@ var (
 	peerMap = map[string]*Info{}
 )
 
-func Solicit() map[string]*Info {
+func (p *Peering) Solicit() map[string]*Info {
 
 	config.Logger.Info("solicit begin")
 
-	sps, err := AllNodes()
+	sps, err := p.AllNodes()
 	if err != nil {
 		config.Logger.Error("solicit failed: " + err.Error())
 		return peerMap
@@ -38,7 +38,7 @@ func Solicit() map[string]*Info {
 		wg.Add(1)
 		go func() {
 			u := sp.Endpoint + "/nats/exchange"
-			info, err := solicitServer(u)
+			info, err := p.solicitServer(u)
 			if err != nil {
 				// config.Logger.Debug("get info failed", "endpoint", u, "err", err)
 			} else {
@@ -71,7 +71,7 @@ func addPeer(info *Info) {
 	}
 }
 
-func ListPeers() []Info {
+func (p *Peering) ListPeers() []Info {
 	mu.Lock()
 	defer mu.Unlock()
 	peers := make([]Info, 0, len(peerMap))
@@ -84,7 +84,7 @@ func ListPeers() []Info {
 	return peers
 }
 
-func solicitServer(endpoint string) (*Info, error) {
+func (p *Peering) solicitServer(endpoint string) (*Info, error) {
 
 	// sign request
 	myInfo, err := MyInfo()
@@ -92,7 +92,7 @@ func solicitServer(endpoint string) (*Info, error) {
 		return nil, err
 	}
 
-	resp, err := PostSignedJSON(endpoint, myInfo)
+	resp, err := p.PostSignedJSON(endpoint, myInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +116,7 @@ func solicitServer(endpoint string) (*Info, error) {
 	return info, nil
 }
 
-func PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error) {
+func (p *Peering) PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error) {
 	payload, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err

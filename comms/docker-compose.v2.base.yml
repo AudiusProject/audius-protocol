@@ -1,4 +1,45 @@
 version: '3'
+
+x-common-env: &common-env
+  AUDIUS_DEV_ONLY_REGISTERED_NODES: '
+        [
+          {
+            "id": "content-node::1",
+            "spId": "1",
+            "endpoint": "http://node1",
+            "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
+            "type": { "id": "content-node" }
+          },
+          {
+            "id": "content-node::2",
+            "spId": "2",
+            "endpoint": "http://node2",
+            "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
+            "type": { "id": "content-node" }
+          },
+          {
+            "id": "content-node::3",
+            "spId": "3",
+            "endpoint": "http://node3",
+            "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
+            "type": { "id": "content-node" }
+          },
+          {
+            "id": "content-node::4",
+            "spId": "4",
+            "endpoint": "http://node4",
+            "delegateOwnerWallet": "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
+            "type": { "id": "content-node" }
+          }
+        ]'
+
+x-extra-hosts: &extra-hosts
+  extra_hosts:
+    - "node1:host-gateway"
+    - "node2:host-gateway"
+    - "node3:host-gateway"
+    - "node4:host-gateway"
+
 services:
   comdb:
     container_name: comdb
@@ -10,8 +51,6 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
-    deploy:
-      mode: global
 
   nats:
     build:
@@ -23,6 +62,21 @@ services:
     command:
       - nats
 
+  nats-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    image: "comms:v2"
+    restart: unless-stopped
+    stop_signal: SIGKILL
+    command:
+      - nats
+    depends_on:
+      - comdb
+    environment:
+      <<: *common-env
+    <<: *extra-hosts
+
   storage:
     build:
       context: .
@@ -32,25 +86,19 @@ services:
     stop_signal: SIGKILL
     command:
       - storage
+
+  storage-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2.dev
+    image: "comms:v2-dev"
+    restart: unless-stopped
+    stop_signal: SIGKILL
+    command:
+      - storage
+    environment:
+      <<: *common-env
+    <<: *extra-hosts
   
   nginx:
     image: openresty/openresty:1.21.4.1-alpine-fat
-
-  # SSH server for sshuttle
-  # we use separate container instead of host machine for dns/auto-hosts functionality
-
-  sshuttle-server:
-    build:
-      context: .
-      dockerfile: Dockerfile.sshuttle    
-    image: "comms:sshuttle"
-    command: bash /tmp/dev-tools/startup/sshuttle-server.sh
-    environment:
-      PUBLIC_KEY_FILE: "/tmp/dev-tools/keys/dev.pub"
-      USER_NAME: "sshuttle"
-    ports:
-      - "2223:2222"
-    volumes:
-      - ../dev-tools/:/tmp/dev-tools
-    deploy:
-      mode: global

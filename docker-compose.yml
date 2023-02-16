@@ -1,7 +1,6 @@
 version: "3.9"
 
-x-logging:
-  &default-logging
+x-logging: &default-logging
   options:
     max-size: "50m"
     max-file: "3"
@@ -34,7 +33,7 @@ services:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_USER: "postgres"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -92,7 +91,7 @@ services:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_USER: "postgres"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -128,28 +127,6 @@ services:
 
   solana-test-validator:
     image: audius/solana-programs:latest
-    # NOTE: Building solana program can take a lot of time especially on m1 (upto 30 mins) so we used pre-built images
-    # build:
-    #   context: solana-programs	
-    #   dockerfile: Dockerfile.dev	
-    #   args:	
-    #     AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}"	
-    #     TRACK_LISTEN_COUNT_PRIVATE_KEY: "${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}"	
-    #     CLAIMABLE_TOKENS_PRIVATE_KEY: "${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}"	
-    #     REWARD_MANAGER_PRIVATE_KEY: "${SOLANA_REWARD_MANAGER_SECRET_KEY}"	
-    #     AUDIUS_DATA_PRIVATE_KEY: "${SOLANA_AUDIUS_DATA_SECRET_KEY}"	
-    #     owner_private_key: "${SOLANA_OWNER_SECRET_KEY}"	
-    #     feepayer_private_key: "${SOLANA_FEEPAYER_SECRET_KEY}"	
-    #     token_private_key: "${SOLANA_TOKEN_MINT_SECRET_KEY}"	
-    #     admin_authority_private_key: "${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}"	
-    #     admin_account_private_key: "${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}"	
-    #     signer_group_private_key: "${SOLANA_SIGNER_GROUP_SECRET_KEY}"	
-    #     valid_signer_private_key: "${SOLANA_VALID_SIGNER_SECRET_KEY}"	
-    #     reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"	
-    #     reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"	
-    #     valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"	
-    volumes:
-      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
     ports:
       - "8899:8899"
     logging: *default-logging
@@ -205,7 +182,6 @@ services:
     volumes:
       - audius-libs:/usr/src/app/node_modules/@audius/sdk
       - ./dev-tools/commands/src:/usr/src/app/src
-      - ./dev-tools/commands/test:/usr/src/app/test
     depends_on:
       build-audius-libs:
         condition: service_started
@@ -219,7 +195,7 @@ services:
     image: postgres:11.4
     user: postgres
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -230,7 +206,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -242,7 +218,7 @@ services:
       context: identity-service
       args:
         git_sha: "${GIT_COMMIT}"
-    command: sh -c ". /tmp/dev-tools/startup/identity-service.sh && scripts/dev-server.sh"
+    command: scripts/dev-server.sh
     ports:
       - "7000:7000"
       - "9229:9229"
@@ -295,9 +271,10 @@ services:
       solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
     volumes:
       - ./identity-service:/usr/src/app
-      - /usr/src/app/node_modules
       - ./dev-tools:/tmp/dev-tools
       - audius-libs:/usr/src/audius-libs
+      - /usr/src/app/node_modules
+      - /usr/src/app/build
     depends_on:
       identity-service-db:
         condition: service_healthy
@@ -327,7 +304,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --fail http://localhost:9200/_cluster/health || exit 1"
+          "curl --fail http://localhost:9200/_cluster/health || exit 1",
         ]
       interval: 10s
       timeout: 5s

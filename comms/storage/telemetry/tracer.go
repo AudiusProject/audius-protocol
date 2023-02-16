@@ -27,7 +27,7 @@ func newConsoleExporter(w io.Writer) (*stdouttrace.Exporter, error) {
 	return stdouttrace.New(
 		stdouttrace.WithWriter(w),
 		// Use human-readable output.
-		stdouttrace.WithPrettyPrint(),
+		// stdouttrace.WithPrettyPrint(),
 		// Do not print timestamps for the demo.
 		// stdouttrace.WithoutTimestamps(),
 	)

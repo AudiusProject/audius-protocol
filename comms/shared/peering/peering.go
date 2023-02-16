@@ -1,7 +1,13 @@
 package peering
 
-var registeredNodesOverride []ServiceNode
+import sharedConfig "comms.audius.co/shared/config"
 
-func New(registeredNodes []ServiceNode) {
-	registeredNodesOverride = registeredNodes
+type Peering struct {
+	registeredNodesOverride []sharedConfig.ServiceNode
+}
+
+func New(registeredNodes []sharedConfig.ServiceNode) *Peering {
+	return &Peering{
+		registeredNodesOverride: registeredNodes,
+	}
 }

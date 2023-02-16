@@ -1,7 +1,7 @@
 
 dev.discovery::
 	@	audius_discprov_env='standalone' \
-		audius_delegate_private_key='293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238' \
+		AUDIUS_DELEGATE_PRIVATE_KEY='293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238' \
 		audius_db_url='postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable' \
 		go run main.go discovery
 
@@ -12,18 +12,11 @@ reset::
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
 	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
 
-sshuttle:
-	test -d sshuttle || ( \
-		git clone https://github.com/AudiusProject/sshuttle.git && \
-		pipx install virtualenv && cd sshuttle && \
-		virtualenv -p python3 ./virtualenv && \
-		. ./virtualenv/bin/activate && ./setup.py install \
-	)
-
-sshuttle.connect:: sshuttle
-	sleep 1 && \
-	. ./sshuttle/virtualenv/bin/activate && \
-	sshuttle -N --no-latency-control -H -r "sshuttle@localhost:2223" -e "ssh -i ../dev-tools/keys/dev -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+localhosts="127.0.0.1       node1 node2 node3 node4 ingress"
+storage.hosts::
+	@	if ! grep -q $(localhosts) /etc/hosts; \
+		then echo Adding development hosts to /etc/hosts; \
+		echo $(localhosts) | sudo tee -a /etc/hosts; fi
 
 storage.dev.up::
 	docker compose -f docker-compose.v2.dev.yml up -d --build
@@ -31,9 +24,9 @@ storage.dev.up::
 storage.multi.up::
 	docker compose -f docker-compose.v2.multi.yml up -d --build
 
-storage.dev:: down storage.dev.up sshuttle.connect
+storage.dev:: down storage.hosts storage.dev.up
 
-storage.multi:: down storage.multi.up sshuttle.connect
+storage.multi:: down storage.hosts storage.multi.up
 
 down::
 	(docker compose down --volumes || true) && \
