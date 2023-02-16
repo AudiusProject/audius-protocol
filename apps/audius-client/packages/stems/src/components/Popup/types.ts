@@ -38,6 +38,11 @@ export type PopupProps = {
   className?: string
 
   /**
+   * Class name to apply to the popup title
+   */
+  titleClassName?: string
+
+  /**
    * An optional container ref that controls what the popup considers
    * to be the size of the container it belongs to. If the popup expands outside
    * the bounds of the container, it repositions itself.
@@ -53,6 +58,11 @@ export type PopupProps = {
    * Show the header
    */
   showHeader?: boolean
+
+  /**
+   * Hide the close button when displaying the header
+   */
+  hideCloseButton?: boolean
 
   /**
    * Fired when a close event is dispatched, but the animation is not necessarily finished

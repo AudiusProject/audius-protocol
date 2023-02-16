@@ -51,15 +51,24 @@ const slice = createSlice({
         ...action.payload
       }
     },
-    removePremiumContentSignatures: (state, action: PayloadAction<RemovePremiumContentSignaturesPayload>) => {
-      action.payload.trackIds.forEach(trackId => {
+    removePremiumContentSignatures: (
+      state,
+      action: PayloadAction<RemovePremiumContentSignaturesPayload>
+    ) => {
+      action.payload.trackIds.forEach((trackId) => {
         delete state.premiumTrackSignatureMap[trackId]
       })
     },
-    updatePremiumTrackStatus: (state, action: PayloadAction<UpdatePremiumTrackStatusPayload>) => {
+    updatePremiumTrackStatus: (
+      state,
+      action: PayloadAction<UpdatePremiumTrackStatusPayload>
+    ) => {
       state.statusMap[action.payload.trackId] = action.payload.status
     },
-    updatePremiumTrackStatuses: (state, action: PayloadAction<UpdatePremiumTrackStatusesPayload>) => {
+    updatePremiumTrackStatuses: (
+      state,
+      action: PayloadAction<UpdatePremiumTrackStatusesPayload>
+    ) => {
       state.statusMap = {
         ...state.statusMap,
         ...action.payload
