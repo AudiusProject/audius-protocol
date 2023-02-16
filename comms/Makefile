@@ -73,18 +73,18 @@ quicktype::
 # TRENDING commands
 trending.dev.run::
 	@echo starting trending server
-	@ 	  go run main.go trending
+	@ 	go run main.go trending
 
-trending.test.run::
+trending.dev.test::
 	@echo starting trending tests
-	@	  ginkgo -v ./trending/...
+	@	ginkgo -v ./trending/...
 
-trending.test.run.full::
+trending.dev.test.full::
 	@echo starting trending dependencies
-	@	  make trending.dev.deps.up
-	@	  make trending.test.run
+	@	make trending.dev.deps.up
+	@	make trending.dev.test
 	@echo tearing down trending dependencies
-	@	  make trending.dev.deps.down
+	@	make trending.dev.deps.down
 
 trending.dev.deps.up::
 	@echo starting dev dependencies
@@ -95,3 +95,30 @@ trending.dev.deps.up::
 trending.dev.deps.down::
 	@echo stopping dev dependencies
 	@	docker compose -f docker-compose.trending.yml down
+
+trending.dev.restore::
+	@echo restoring testdb from pg dump
+	@	docker exec -i testdb pg_restore --verbose --clean --no-acl --no-owner -U postgres -d default_db < ./trending/houseparty/discProvProduction.dump
+
+trending.dev.migrate::
+	@echo migrating testdb data into chdb
+	@	docker-compose exec chdb bash /sql/all.sh
+
+trending.dev.restore.up::
+	@echo starting dependencies and restoring from existing backup
+	@	make trending.dev.deps.up
+	@	make trending.dev.restore
+	@	make trending.dev.migrate
+
+trending.dev.restore.up.steamroll::
+	@echo starting dependencies and restoring from existing backup
+	@echo ignoring errors in restore process
+	@	make trending.dev.deps.up
+	@	make trending.dev.restore -i
+	@	make trending.dev.migrate -i
+
+trending.dev.nuke::
+	@echo destroying everything and rebuilding, restoring, and running
+	@	make trending.dev.deps.down
+	@	make trending.dev.restore.up.steamroll
+	@	make trending.dev.run

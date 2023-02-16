@@ -11,7 +11,7 @@ This shares the same setup as comms, follow instructions for Setup [here](../REA
 After setting up dependencies you should be able to run from the `/comms` dir this command:
 ```
 alec in audius-protocol/comms on  as/trending-main [?] via  v1.19.5 on ☁️  alec@audius.co(us-central1)
-❯ make trending.test.run.full
+❯ make trending.dev.test.full
 ```
 
 You should see dependencies stand up, `ginkgo` test suite run, and then the dependencies tear down.
@@ -27,7 +27,7 @@ alec in audius-protocol/comms on  as/trending-main [?] via  v1.19.5 on ☁
 You can then run tests or the server against it with these commands respectively:
 ```
 alec in audius-protocol/comms on  as/plat-677-clickhouse-db-driver [?] via  v1.19.5 on ☁️  alec@audius.co(us-central1)
-❯ make trending.dev.test.run
+❯ make trending.dev.test
 
 alec in audius-protocol/comms on  as/plat-677-clickhouse-db-driver [?] via  v1.19.5 on ☁️  alec@audius.co(us-central1)
 ❯ make trending.dev.run

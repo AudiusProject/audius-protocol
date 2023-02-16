@@ -14,8 +14,21 @@ services:
     volumes:
       - ./trending/clickhouse-vol:/var/lib/clickhouse
       - ./trending/houseparty/config.d:/etc/clickhouse-server/config.d
+      - ./trending/houseparty/sql:/sql
     healthcheck:
       test: wget --no-verbose --tries=1 --spider localhost:8123/ping || exit 1
       interval: 2s
       timeout: 2s
       retries: 16
+
+  testdb:
+    container_name: testdb
+    image: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./trending/postgresql-vol:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: default_db
