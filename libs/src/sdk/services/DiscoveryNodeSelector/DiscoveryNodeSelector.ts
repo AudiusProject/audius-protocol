@@ -167,7 +167,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         const response = context.response
         const endpoint = await selectionPromise
         if (!endpoint) {
-          this.select()
+          await this.select()
         } else if (response.ok) {
           // Even when successful, copy response to read JSON body to
           // check for signs the DN is unhealthy and reselect if necessary.
