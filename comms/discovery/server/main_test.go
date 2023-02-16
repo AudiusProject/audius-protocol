@@ -18,7 +18,8 @@ var (
 
 // this runs before all tests (not a per-test setup / teardown)
 func TestMain(m *testing.M) {
-	config.Init()
+	discoveryConfig := config.GetDiscoveryConfig()
+	config.Init(discoveryConfig.Keys)
 
 	// setup
 	os.Setenv("audius_db_url", "postgresql://postgres:postgres@localhost:5454/comtest?sslmode=disable")

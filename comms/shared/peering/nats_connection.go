@@ -8,7 +8,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error) {
+func (p *Peering) DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error) {
 	natsUrl := config.GetEnvDefault("NATS_SERVER_URL", nats.DefaultURL)
 
 	if len(peerMap) != 0 {

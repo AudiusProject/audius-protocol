@@ -8,35 +8,39 @@ import (
 	"os"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
+	natsConfig "comms.audius.co/natsd/config"
+	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func NatsMain() {
-	config.Init()
+	natsConfig := natsConfig.GetNatsConfig()
+	discoveryConfig.Init(natsConfig.Keys)
 
 	{
 		var err error
-		config.NatsIsReachable, err = selfConnectionProbe(config.IP)
+		discoveryConfig.NatsIsReachable, err = selfConnectionProbe(discoveryConfig.IP)
 		if err != nil {
-			config.Logger.Warn("self connection test error " + err.Error())
+			discoveryConfig.Logger.Warn("self connection test error " + err.Error())
 		}
 	}
 
-	go startServer()
-
 	// TODO: Make this use a separate nats config env struct
-	var overrideNodes []peering.ServiceNode
+	var overrideNodes []sharedConfig.ServiceNode
 	json.Unmarshal([]byte(os.Getenv("AUDIUS_DEV_ONLY_REGISTERED_NODES")), &overrideNodes)
-	peering.New(overrideNodes)
+	peering := peering.New(overrideNodes)
+
+	go startServer(peering)
+
 	peering.PollRegisteredNodes()
 
 	natsman := NatsManager{}
 	for n := 0; ; n++ {
 		peerMap := peering.Solicit()
-		if config.NatsIsReachable {
+		if discoveryConfig.NatsIsReachable {
 			natsman.StartNats(peerMap)
 		}
 
@@ -50,7 +54,7 @@ func NatsMain() {
 	}
 }
 
-func startServer() {
+func startServer(peering *peering.Peering) {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
@@ -106,10 +110,10 @@ func startServer() {
 
 	e.GET("/nats/self", func(c echo.Context) error {
 		return redactedJson(c, map[string]interface{}{
-			"env":               config.Env,
-			"is_content":        config.IsCreatorNode,
-			"nats_is_reachable": config.NatsIsReachable,
-			"nkey":              config.NkeyPublic,
+			"env":               discoveryConfig.Env,
+			"is_content":        discoveryConfig.IsCreatorNode,
+			"nats_is_reachable": discoveryConfig.NatsIsReachable,
+			"nkey":              discoveryConfig.NkeyPublic,
 		})
 	})
 

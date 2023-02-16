@@ -18,12 +18,11 @@ import (
 )
 
 func StorageMain() {
+	storageConfig := config.GetStorageConfig()
 
 	// TODO: We need to change a bunch of stuff in shared/peering/ before we can remove this.
 	//       Make each config usage in shared/peering take the needed arguments instead of the whole config.
-	discoveryConfig.Init()
-
-	storageConfig := config.GetStorageConfig()
+	discoveryConfig.Init(storageConfig.Keys)
 
 	ctx := context.Background()
 
@@ -31,8 +30,8 @@ func StorageMain() {
 	tp := telemetry.InitTracing(logger)
 	defer func() { _ = tp.Shutdown(ctx) }()
 
+	peering := peering.New(storageConfig.DevOnlyRegisteredNodes)
 	jsc, err := func() (nats.JetStreamContext, error) {
-		peering.New(storageConfig.DevOnlyRegisteredNodes)
 		err := peering.PollRegisteredNodes()
 		if err != nil {
 			return nil, err
@@ -45,7 +44,11 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	ss := storageserver.NewProd(storageConfig, jsc)
+	allNodes, err := peering.GetContentNodes()
+	if err != nil {
+		log.Fatal("Error getting all nodes: ", err)
+	}
+	ss := storageserver.NewProd(storageConfig, jsc, allNodes)
 
 	// Start server
 	go func() {

@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/crypto"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/inconshreveable/log15"
 	"github.com/nats-io/nkeys"
 )
@@ -35,13 +35,33 @@ var (
 
 	IsStaging     = Env == "stage"
 	IsCreatorNode = false
+
+	discoveryConfig *DiscoveryConfig
 )
+
+type DiscoveryConfig struct {
+	Keys sharedConfig.KeysConfigDecoder `envconfig:"DELEGATE_PRIVATE_KEY" required:"true" json:"Keys"`
+}
+
+// GetDiscoveryConfig returns the discovery config by parsing env vars.
+func GetDiscoveryConfig() *DiscoveryConfig {
+	if discoveryConfig == nil {
+		discoveryConfig = &DiscoveryConfig{}
+		sharedConfig.EnsurePrivKeyAndLoadConf(discoveryConfig)
+	}
+	return discoveryConfig
+}
 
 func init() {
 	Logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
 }
 
-func Init() {
+func Init(keysConfig sharedConfig.KeysConfigDecoder) {
+	PrivateKey = keysConfig.DelegatePrivateKey
+	WalletAddress = keysConfig.DelegatePublicKey
+	NkeyPair = keysConfig.NkeyPair
+	NkeyPublic = keysConfig.NkeyPublic
+
 	var err error
 
 	// todo: hack for creator node config
@@ -60,40 +80,10 @@ func Init() {
 		Logger.Info("no env defaults for: " + Env)
 	}
 
-	privateKeyHex := mgetenv("audius_delegate_private_key", "delegatePrivateKey")
-	if privateKeyHex == "" {
-		privateKeyHex = generatePrivateKeyHex()
-		Logger.Warn("audius_delegate_private_key not provided. Using randomly generated private key.")
-	}
-
-	// wallet address
-	privateBytes, err := hex.DecodeString(privateKeyHex)
-	if err != nil {
-		log.Fatal("audius_delegate_private_key: invalid hex", err)
-	}
-
-	PrivateKey, err = crypto.ToECDSA(privateBytes)
-	if err != nil {
-		log.Fatal("audius_delegate_private_key: invalid key", err)
-	}
-
-	WalletAddress = crypto.PubkeyToAddress(PrivateKey.PublicKey).Hex()
-
-	// nkey
-	NkeyPair, err = nkeys.FromRawSeed(nkeys.PrefixByteUser, privateBytes)
-	if err != nil {
-		log.Fatal("audius_delegate_private_key: invalid nkey", err)
-	}
-
 	if NatsUseNkeys {
 		if err := configureNatsCliNkey(); err != nil {
 			Logger.Warn("failed to write cli nkey config: " + err.Error())
 		}
-	}
-
-	NkeyPublic, err = NkeyPair.PublicKey()
-	if err != nil {
-		log.Fatal("audius_delegate_private_key: invalid nkey", err)
 	}
 
 	// ip addr
@@ -135,29 +125,10 @@ func GetEnvDefault(k, defaultV string) string {
 	return v
 }
 
-func mgetenv(keys ...string) string {
-	for _, k := range keys {
-		v := os.Getenv(k)
-		if v != "" {
-			return v
-		}
-	}
-	return ""
-}
-
 func dieOnErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func generatePrivateKeyHex() string {
-	privateKey, err := crypto.GenerateKey()
-	if err != nil {
-		log.Fatal(err)
-	}
-	privateKeyBytes := crypto.FromECDSA(privateKey)
-	return hex.EncodeToString(privateKeyBytes)
 }
 
 func configureNatsCliNkey() error {
