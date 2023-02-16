@@ -17,6 +17,7 @@ import (
 
 var (
 	jsc       nats.JetStreamContext
+	kv        nats.KeyValue
 	poaClient *ethclient.Client
 
 	// on staging, and soon prod
@@ -33,7 +34,7 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 	jsc = jetstreamContext
 
 	// create kv buckets
-	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+	kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:    config.PubkeystoreBucketName,
 		Replicas:  config.NatsReplicaCount,
 		Placement: config.DiscoveryPlacement(),
@@ -67,11 +68,6 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 	logger := config.Logger.New("module", "pubkeystore", "userId", userId)
 
 	conn := db.Conn
-
-	kv, err := jsc.KeyValue(config.PubkeystoreBucketName)
-	if err != nil {
-		return "", err
-	}
 
 	key := fmt.Sprintf("userId=%d", userId)
 
