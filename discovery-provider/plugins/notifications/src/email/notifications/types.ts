@@ -83,8 +83,6 @@ export type ChallengeId =
   | 'send-first-tip'
   | 'first-playlist'
 
-
-
 export type NotificationType =
   | 'favorite'
   | 'repost'
