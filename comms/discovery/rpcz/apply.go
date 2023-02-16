@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"expvar"
+	"sync"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -11,17 +12,23 @@ import (
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
+	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
 	"github.com/tidwall/gjson"
 )
 
 type RPCProcessor struct {
+	sync.Mutex
+	jsc               nats.JetStreamContext
+	waiters           map[uint64]chan error
 	validator         *Validator
 	JetstreamSequence *expvar.Int
 	ConsumerSequence  *expvar.Int
 }
 
 func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
+
+	// set up validator + limiter
 	limiter, err := NewRateLimiter(jsc)
 	if err != nil {
 		return nil, err
@@ -30,16 +37,56 @@ func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 		db:      db.Conn,
 		limiter: limiter,
 	}
-
-	return &RPCProcessor{
+	proc := &RPCProcessor{
+		jsc:               jsc,
+		waiters:           make(map[uint64]chan error),
 		validator:         validator,
 		JetstreamSequence: expvar.NewInt("jetstream_sequence"),
 		ConsumerSequence:  expvar.NewInt("consumer_sequence"),
-	}, nil
+	}
+
+	// create backing stream
+	_, err = jsc.AddStream(&nats.StreamConfig{
+		Name:     config.GlobalStreamName,
+		Subjects: []string{config.GlobalStreamSubject},
+		Replicas: config.NatsReplicaCount,
+		// DenyDelete: true,
+		// DenyPurge:  true,
+		Placement: config.DiscoveryPlacement(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// create consumer
+	_, err = jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.WalletAddress))
+	if err != nil {
+		config.Logger.Error(err.Error())
+		return nil, err
+	}
+
+	return proc, nil
 }
 
 func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {
 	return proc.validator.Validate(userId, rawRpc)
+}
+
+func (proc *RPCProcessor) SubmitAndWait(msg *nats.Msg) (*nats.PubAck, error) {
+	ok, err := proc.jsc.PublishMsg(msg)
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan error)
+	proc.Lock()
+	proc.waiters[ok.Sequence] = ch
+	proc.Unlock()
+
+	// await result
+	err = <-ch
+
+	return ok, err
 }
 
 // Validates + applies a NATS message
@@ -87,7 +134,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		return
 	}
 
-	attemptApply := func(msg *nats.Msg) error {
+	attemptApply := func() error {
 
 		// write to db
 		tx, err := db.Conn.Beginx()
@@ -235,7 +282,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 					config.Logger.Error("Failed to parse params")
 				}
 				payload := schema.RPCPayload{Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams}
-				encodedUserId, err := misc.EncodeHashId(int(userId))
+				encodedUserId, _ := misc.EncodeHashId(int(userId))
 				data := schema.ChatWebsocketEventData{RPC: payload, Metadata: schema.Metadata{Timestamp: meta.Timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
 				for _, subscribedUserId := range userIds {
 					// Don't send events sent by a user to that same user
@@ -250,14 +297,15 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		return nil
 	}
 
-	for i := 1; i < 5; i++ {
-		err := attemptApply(msg)
-		if err != nil {
-			logger.Warn("apply failed "+err.Error(), "attempt", i)
-			time.Sleep(time.Second * 3)
-		} else {
-			break
-		}
+	err = retry.Do(attemptApply, retry.Attempts(5))
+
+	// notify any waiters of apply result
+	proc.Lock()
+	if waiter, ok := proc.waiters[meta.Sequence.Consumer]; ok {
+		waiter <- err
+		close(waiter)
+		delete(proc.waiters, meta.Sequence.Consumer)
 	}
+	proc.Unlock()
 
 }

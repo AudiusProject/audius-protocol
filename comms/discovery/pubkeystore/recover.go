@@ -32,6 +32,16 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 
 	jsc = jetstreamContext
 
+	// create kv buckets
+	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+		Bucket:    config.PubkeystoreBucketName,
+		Replicas:  config.NatsReplicaCount,
+		Placement: config.DiscoveryPlacement(),
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create pubkey kv %v", err)
+	}
+
 	endpoint := "https://poa-gateway.audius.co"
 
 	if config.IsStaging {
