@@ -75,14 +75,14 @@ trending.dev.run::
 	@echo starting trending server
 	@ 	  go run main.go trending
 
-trending.test.run::
+trending.dev.test::
 	@echo starting trending tests
 	@	  ginkgo -v ./trending/...
 
-trending.test.run.full::
+trending.dev.test.full::
 	@echo starting trending dependencies
 	@	  make trending.dev.deps.up
-	@	  make trending.test.run
+	@	  make trending.dev.test
 	@echo tearing down trending dependencies
 	@	  make trending.dev.deps.down
 
