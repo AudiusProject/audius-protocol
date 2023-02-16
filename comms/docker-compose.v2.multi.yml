@@ -1,45 +1,4 @@
-version: '3.4'
-
-x-common-variables: &shared-vars
-  AUDIUS_DEV_ONLY_REGISTERED_NODES: '
-        [
-          {
-            "id": "content-node::1",
-            "spId": "1",
-            "endpoint": "http://node1",
-            "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "content-node::2",
-            "spId": "2",
-            "endpoint": "http://node2",
-            "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "content-node::3",
-            "spId": "3",
-            "endpoint": "http://node3",
-            "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "content-node::4",
-            "spId": "4",
-            "endpoint": "http://node4",
-            "delegateOwnerWallet": "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
-            "type": { "id": "content-node" }
-          }
-        ]'
-  audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
-
-x-common-variables: &extra-hosts
-  extra_hosts:
-    - "node1:host-gateway"
-    - "node2:host-gateway"
-    - "node3:host-gateway"
-    - "node4:host-gateway"
+version: '3'
 
 services:
 
@@ -63,98 +22,82 @@ services:
     container_name: com1
     extends:
       file: docker-compose.v2.base.yml
-      service: nats
+      service: nats-dev
     environment:
-      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      audius_db_url: postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable
+      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       test_host: "com1"
-      <<: *shared-vars
-    <<: *extra-hosts
 
   storage1:
     container_name: storage1
     extends:
       file: docker-compose.v2.base.yml
-      service: storage
+      service: storage-dev
     environment:
-      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Remove after shared/peering/ config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      <<: *shared-vars
       test_host: "com1"
       NAME: "storage1"
-    <<: *extra-hosts
+    depends_on:
+      - com1
 
   com2:
     container_name: com2
     extends:
       file: docker-compose.v2.base.yml
-      service: nats
+      service: nats-dev
     environment:
-      audius_delegate_private_key: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
-      audius_db_url: postgresql://postgres:postgres@comdb:5432/com2?sslmode=disable
+      AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
       test_host: "com2"
-      <<: *shared-vars
-    <<: *extra-hosts
 
   storage2:
     container_name: storage2
     extends:
       file: docker-compose.v2.base.yml
-      service: storage
+      service: storage-dev
     environment:
-      audius_delegate_private_key: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Remove after shared/peering/ config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
-      <<: *shared-vars
       test_host: "com2"
       NAME: "storage2"
-    <<: *extra-hosts
+    depends_on:
+      - com2
 
   com3:
     container_name: com3
     extends:
       file: docker-compose.v2.base.yml
-      service: nats
+      service: nats-dev
     environment:
-      audius_delegate_private_key: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
-      audius_db_url: postgresql://postgres:postgres@comdb:5432/com3?sslmode=disable
+      AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
       test_host: "com3"
-      <<: *shared-vars
-    <<: *extra-hosts
 
   storage3:
     container_name: storage3
     extends:
       file: docker-compose.v2.base.yml
-      service: storage
+      service: storage-dev
     environment:
-      audius_delegate_private_key: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Remove after shared/peering config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
-      <<: *shared-vars
       test_host: "com3"
       NAME: "storage3"
-    <<: *extra-hosts
+    depends_on:
+      - com3
 
   com4:
     container_name: com4
     extends:
       file: docker-compose.v2.base.yml
-      service: nats
+      service: nats-dev
     environment:
-      audius_delegate_private_key: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
-      audius_db_url: postgresql://postgres:postgres@comdb:5432/com4?sslmode=disable
+      AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
       test_host: "com4"
-      <<: *shared-vars
-    <<: *extra-hosts
 
   storage4:
     container_name: storage4
     extends:
       file: docker-compose.v2.base.yml
-      service: storage
+      service: storage-dev
     environment:
-      audius_delegate_private_key: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Remove after shared/peering config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
-      <<: *shared-vars
       test_host: "com4"
       NAME: "storage4"
-    <<: *extra-hosts
+    depends_on:
+      - com4

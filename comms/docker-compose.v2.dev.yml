@@ -1,17 +1,5 @@
 version: '3'
 
-x-common-variables: &shared-vars
-   AUDIUS_DEV_ONLY_REGISTERED_NODES: '
-        [
-          {
-            "id": "content-node::1",
-            "spId": "1",
-            "endpoint": "http://node1",
-            "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-            "type": { "id": "content-node" }
-          }
-        ]'
-
 services:
 
   ingress:
@@ -34,30 +22,20 @@ services:
     container_name: com1
     extends:
       file: docker-compose.v2.base.yml
-      service: nats
+      service: nats-dev
     environment:
       audius_discprov_env: standalone # TODO: remove (keeping for now to make sure the standalone code path is still working)
-      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
+      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       test_host: "com1"
-      <<: *shared-vars
-    depends_on:
-      - comdb
-    extra_hosts:
-      - "node1:host-gateway"
 
   storage1:
     container_name: storage1
     extends:
       file: docker-compose.v2.base.yml
-      service: storage
-    build:
-      dockerfile: Dockerfile.v2.dev
-    image: "comms:v2-dev"
+      service: storage-dev
     environment:
       audius_discprov_env: standalone # TODO: remove (keeping for now to make sure the standalone code path is still working)
-      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Remove after shared/peering/ config is in place
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      <<: *shared-vars
       NATS_SERVER_URL: "nats://com1:4222" # TODO: remove when 'standalone' goes away
       NAME: "storage1"
       test_host: "com1"
@@ -65,5 +43,3 @@ services:
       - com1
     volumes:
       - ./:/app
-    extra_hosts:
-      - "node1:host-gateway"

@@ -6,14 +6,16 @@ import (
 	"net/http"
 
 	"comms.audius.co/discovery/config"
+	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 )
 
 type CidFetcher struct {
-	sps []peering.ServiceNode
+	sps []sharedConfig.ServiceNode
 }
 
 func NewCidFetcher() (*CidFetcher, error) {
+	peering := peering.New(nil)
 	sps, err := peering.GetContentNodes()
 	if err != nil {
 		return nil, err

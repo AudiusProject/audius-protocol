@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"strings"
 
-	"comms.audius.co/shared/peering"
+	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/monitor"
@@ -40,12 +40,8 @@ type StorageServer struct {
 	Monitor        *monitor.Monitor
 }
 
-func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext) *StorageServer {
-	thisNodePubKey := config.DelegatePublicKey.Hex
-	allNodes, err := peering.GetContentNodes()
-	if err != nil {
-		log.Fatal("Error getting all nodes: ", err)
-	}
+func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes []sharedConfig.ServiceNode) *StorageServer {
+	thisNodePubKey := config.Keys.DelegatePublicKey
 	var host string
 	var allStorageNodePubKeys []string
 	for _, node := range allNodes {
