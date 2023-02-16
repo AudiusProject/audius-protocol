@@ -140,7 +140,7 @@ describe('Email Notifications', () => {
     const message2Id = randId().toString()
     const message2Timestamp = new Date(Date.now() - config.dmNotificationDelay)
     await insertMessage(discoveryDB, user1, chatId, message2Id, message2, message2Timestamp)
-    
+
     // User 2 sent 2 reactions config.dmNotificationDelay ms ago
     const reactionTimestamp = new Date(Date.now() - config.dmNotificationDelay)
     const reaction1 = "heart"
@@ -164,7 +164,7 @@ describe('Email Notifications', () => {
         multiple: true
       }
     ]
-    await processEmailNotifications(discoveryDB, identityDB, frequency)
+    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(2)
     expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
       userId: user2,

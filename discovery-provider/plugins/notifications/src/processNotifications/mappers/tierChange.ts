@@ -3,8 +3,7 @@ import { NotificationRow, UserRow } from '../../types/dn'
 import { TierChangeNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
-import { EntityType } from '../../email/appNotifications/types'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
 type TierChangeNotificationRow = Omit<NotificationRow, 'data'> & { data: TierChangeNotification }
 export class TierChange extends BaseNotification<TierChangeNotificationRow> {

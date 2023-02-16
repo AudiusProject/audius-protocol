@@ -1,5 +1,5 @@
 import { Knex } from 'knex'
-import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { NotificationRow } from '../../types/dn'
 import { DMNotification, DMReactionNotification } from '../../types/notifications'
 

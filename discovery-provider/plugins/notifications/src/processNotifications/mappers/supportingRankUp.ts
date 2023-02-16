@@ -3,7 +3,7 @@ import { NotificationRow, UserRow } from '../../types/dn'
 import { SupportingRankUpNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
 type SupportingRankUpNotificationRow = Omit<NotificationRow, 'data'> & { data: SupportingRankUpNotification }
 export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificationRow> {

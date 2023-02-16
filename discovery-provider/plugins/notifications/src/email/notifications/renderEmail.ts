@@ -106,13 +106,13 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
     'users.profile_picture',
     'users.creator_node_endpoint',
   ).from('users').whereIn('user_id', Array.from(ids.users)).andWhere('is_current', true)
-  const users: UserResourcesDict = userRows.reduce((acc, user) => {
+  const users = userRows.reduce((acc, user) => {
     acc[user.user_id] = {
       ...user,
       imageUrl: getUserProfileUrl(user)
     }
     return acc
-  }, {} as UserResourcesDict)
+  }, {} as { [userId: number]: UserResource & { imageUrl: string } })
 
   const trackRows: TrackResource[] = await dnDb.select(
     'tracks.track_id',
@@ -129,13 +129,13 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
     .andWhere('tracks.is_current', true)
     .andWhere('users.is_current', true)
     .andWhere('track_routes.is_current', true)
-  const tracks: { [trackId: number]: TrackResource & { imageUrl: string } } = trackRows.reduce((acc, track) => {
+  const tracks = trackRows.reduce((acc, track) => {
     acc[track.track_id] = {
       ...track,
       imageUrl: getTrackCoverArt(track)
     }
     return acc
-  }, {} as TrackResourcesDict)
+  }, {} as { [trackId: number]: TrackResource & { imageUrl: string } })
 
   const playlistRows: PlaylistResource[] = await dnDb.select(
     'playlists.playlist_id',
@@ -153,13 +153,13 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
     .andWhere('users.is_current', true)
     .andWhere('playlist_routes.is_current', true)
 
-  const playlists: { [playlistId: number]: PlaylistResource & { imageUrl: string } } = playlistRows.reduce((acc, playlist) => {
+  const playlists = playlistRows.reduce((acc, playlist) => {
     acc[playlist.playlist_id] = {
       ...playlist,
       imageUrl: getPlaylistImage(playlist)
     }
     return acc
-  }, {} as PlaylistResourcesDict)
+  }, {} as { [playlistId: number]: PlaylistResource & { imageUrl: string } })
 
 
   return { users, tracks, playlists }

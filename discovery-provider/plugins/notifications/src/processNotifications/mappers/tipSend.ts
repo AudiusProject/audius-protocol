@@ -3,7 +3,7 @@ import { NotificationRow, UserRow } from '../../types/dn'
 import { TipSendNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
 type TipSendNotificationRow = Omit<NotificationRow, 'data'> & { data: TipSendNotification }
 export class TipSend extends BaseNotification<TipSendNotificationRow> {

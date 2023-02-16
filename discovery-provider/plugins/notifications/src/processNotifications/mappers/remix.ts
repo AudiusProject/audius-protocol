@@ -3,8 +3,8 @@ import { NotificationRow, UserRow } from '../../types/dn'
 import { RemixNotification, RepostNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
-import { EntityType } from '../../email/appNotifications/types'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { EntityType } from '../../email/notifications/types'
 
 type RemixNotificationRow = Omit<NotificationRow, 'data'> & { data: RemixNotification }
 export class Remix extends BaseNotification<RemixNotificationRow> {

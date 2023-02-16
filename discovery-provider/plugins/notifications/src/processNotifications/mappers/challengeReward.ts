@@ -3,8 +3,8 @@ import { NotificationRow, UserRow } from '../../types/dn'
 import { ChallengeRewardNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
-import { ChallengeId } from '../../email/appNotifications/types'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { ChallengeId } from '../../email/notifications/types'
 
 type ChallengeRewardRow = Omit<NotificationRow, 'data'> & { data: ChallengeRewardNotification }
 export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
