@@ -51,24 +51,28 @@ const { signedIn } = accountActions
  * Prefetch and cache the profile and cover photos so they are available offline
  */
 function* cacheUserImages(account) {
-  const profileImageUrl = getImageSourceOptimistic({
-    cid: account.profile_picture_sizes,
-    user: account,
-    size: SquareSizes.SIZE_150_BY_150
-  })?.uri
+  try {
+    const profileImageUrl = getImageSourceOptimistic({
+      cid: account.profile_picture_sizes,
+      user: account,
+      size: SquareSizes.SIZE_150_BY_150
+    })?.uri
 
-  if (profileImageUrl) {
-    yield call(Image.prefetch, profileImageUrl)
-  }
+    if (profileImageUrl) {
+      yield call(Image.prefetch, profileImageUrl)
+    }
 
-  const coverPhotoUrl = getImageSourceOptimistic({
-    cid: account.cover_photo_sizes,
-    user: account,
-    size: WidthSizes.SIZE_640
-  })?.uri
+    const coverPhotoUrl = getImageSourceOptimistic({
+      cid: account.cover_photo_sizes,
+      user: account,
+      size: WidthSizes.SIZE_640
+    })?.uri
 
-  if (coverPhotoUrl) {
-    yield call(Image.prefetch, coverPhotoUrl)
+    if (coverPhotoUrl) {
+      yield call(Image.prefetch, coverPhotoUrl)
+    }
+  } catch {
+    console.error('Could not cache profile images')
   }
 }
 
