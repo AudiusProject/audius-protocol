@@ -105,6 +105,12 @@
         console.log('todo: websocket disconnect')
       }
 
+      changeMimetype(event) {
+        let val = event.target.value
+        let mimetype = val === "audio" ? "audio/*" : "image/*"
+        this.shadowRoot.getElementById("picker").accept = mimetype
+      }
+
       render() {
         return html`<div>
 
@@ -116,11 +122,13 @@
             method="post" 
             enctype="multipart/form-data">
           <input 
+            id="picker"
             type="file" 
             name="files" 
+            accept="image/*"
             required
             multiple /> 
-          <select name="template">
+          <select name="template" @change="${this.changeMimetype}">
             <option>audio</option>
             <option>img_square</option>
             <option selected>img_backdrop</option>
