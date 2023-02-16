@@ -10,16 +10,13 @@ import { useSelectProfile } from './selectors'
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView)
 
 const useStyles = makeStyles(({ spacing }) => ({
+  coverPhoto: {
+    height: 96
+  },
   artistBadge: {
     position: 'absolute',
     top: spacing(5),
     right: spacing(3)
-  },
-  imageRoot: {
-    height: 96
-  },
-  image: {
-    height: '100%'
   }
 }))
 
@@ -57,7 +54,7 @@ export const CoverPhoto = ({ scrollY }: { scrollY?: Animated.Value }) => {
     <>
       <UserCoverImage
         animatedValue={scrollY}
-        styles={{ root: styles.imageRoot, image: styles.image }}
+        style={styles.coverPhoto}
         user={user}
       >
         {/*

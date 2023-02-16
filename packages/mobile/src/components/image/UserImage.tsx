@@ -1,9 +1,10 @@
 import type { Nullable, SquareSizes, User } from '@audius/common'
 
 import profilePicEmpty from 'app/assets/images/imageProfilePicEmpty2X.png'
-import type { DynamicImageProps } from 'app/components/core'
-import { DynamicImage } from 'app/components/core'
 import { useContentNodeImage } from 'app/hooks/useContentNodeImage'
+
+import type { FastImageProps } from './FastImage'
+import { FastImage } from './FastImage'
 
 type UseUserImageOptions = {
   user: Nullable<
@@ -26,11 +27,11 @@ export const useUserImage = ({ user, size }: UseUserImageOptions) => {
   })
 }
 
-export type UserImageProps = UseUserImageOptions & DynamicImageProps
+export type UserImageProps = UseUserImageOptions & Partial<FastImageProps>
 
 export const UserImage = (props: UserImageProps) => {
   const { user, size, ...imageProps } = props
   const { source, handleError } = useUserImage({ user, size })
 
-  return <DynamicImage {...imageProps} source={source} onError={handleError} />
+  return <FastImage {...imageProps} source={source} onError={handleError} />
 }

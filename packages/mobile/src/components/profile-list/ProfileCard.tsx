@@ -9,6 +9,8 @@ import { UserImage } from 'app/components/image/UserImage'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { formatCount } from 'app/utils/format'
 
+import type { ImageProps } from '../image/FastImage'
+
 const formatProfileCardSecondaryText = (followers: number) => {
   const followersText = followers === 1 ? 'Follower' : 'Followers'
   return `${formatCount(followers)} ${followersText}`
@@ -28,7 +30,9 @@ export const ProfileCard = (props: ProfileCardProps) => {
   }, [navigation, handle])
 
   const renderImage = useCallback(
-    () => <UserImage user={profile} size={SquareSizes.SIZE_480_BY_480} />,
+    (props: ImageProps) => (
+      <UserImage user={profile} size={SquareSizes.SIZE_480_BY_480} {...props} />
+    ),
     [profile]
   )
 
