@@ -20,3 +20,15 @@ services:
       interval: 2s
       timeout: 2s
       retries: 16
+
+  testdb:
+    container_name: testdb
+    image: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - - ./trending/postgresql-vol:/var/lib/postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: default_db

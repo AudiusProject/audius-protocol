@@ -7,4 +7,5 @@ db/schema.sql
 
 trending/houseparty/discProvProduction.dump
 trending/houseparty/config.d/named_connections.yaml
+trending/houseparty/discProvProduction.dump
 trending/clickhouse-vol
