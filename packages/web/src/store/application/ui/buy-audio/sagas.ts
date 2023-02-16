@@ -1,3 +1,4 @@
+/* eslint-disable new-cap */
 import {
   IntKeys,
   Name,
@@ -685,7 +686,8 @@ function* swapStep({
   const beforeSwapAudioAccountInfo = yield* call(getAudioAccountInfo, {
     tokenAccount
   })
-  const beforeSwapAudioBalance = beforeSwapAudioAccountInfo?.amount ?? new BN(0)
+  const beforeSwapAudioBalance =
+    beforeSwapAudioAccountInfo?.amount ?? new u64(0)
 
   // Swap the SOL for AUDIO
   yield* put(swapStarted())
@@ -738,7 +740,7 @@ function* swapStep({
 
 type TransferStepParams = {
   rootAccount: Keypair
-  transferAmount: BN
+  transferAmount: u64
   transactionHandler: TransactionHandler
   provider: OnRampProvider
 }
@@ -915,7 +917,7 @@ function* doBuyAudio({
         surplusAudio: parseFloat(
           formatWei(
             convertWAudioToWei(
-              audioSwappedSpl.sub(new BN(desiredAudioAmount.amount))
+              audioSwappedSpl.sub(new u64(desiredAudioAmount.amount))
             )
           ).replaceAll(',', '')
         )
@@ -1086,10 +1088,10 @@ function* recoverPurchaseIfNecessary() {
       const audioAccountInfo = yield* call(getAudioAccountInfo, {
         tokenAccount
       })
-      const audioBalance = audioAccountInfo?.amount ?? new BN(0)
+      const audioBalance = audioAccountInfo?.amount ?? new u64(0)
 
       // If the user's root wallet has $AUDIO, that usually indicates a failed transfer
-      if (audioBalance.gt(new BN(0))) {
+      if (audioBalance.gt(new u64(0))) {
         // Check we can afford to transfer
         if (
           new BN(existingBalance)
