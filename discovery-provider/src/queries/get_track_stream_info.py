@@ -1,33 +1,31 @@
-import logging  # pylint: disable=C0302
-
 from sqlalchemy import and_
 from src.models.tracks.track import Track
 from src.models.users.user import User
+from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
 
-logger = logging.getLogger(__name__)
 
-
-def get_track_user_creator_node(args):
+def get_track_stream_info(track_id: int):
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        # Get the track's owner creator node
-        user = (
-            session.query(User.creator_node_endpoint)
+        info = (
+            session.query(User.creator_node_endpoint, Track)
+            .select_from(User)
             .join(
                 Track,
                 and_(
                     Track.owner_id == User.user_id,
+                    Track.track_id == track_id,
                     Track.is_current == True,
                     Track.is_delete == False,
-                    Track.track_id == args.get("track_id"),
                 ),
             )
-            .filter(User.is_current)
+            .filter(User.is_current == True)
+            .filter(User.is_deactivated == False)
             .first()
         )
 
-        if not user:
-            return None
-        creator_nodes = user[0]
-        return creator_nodes
+        if not info:
+            return {"creator_nodes": None, "track": None}
+
+        return {"creator_nodes": info[0], "track": helpers.model_to_dictionary(info[1])}

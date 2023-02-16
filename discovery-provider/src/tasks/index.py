@@ -209,7 +209,17 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     cid = event_args._metadata
                     event_type = event_args._entityType
                     action = event_args._action
-                    if not cid or event_type == EntityType.USER_REPLICA_SET:
+                    if (
+                        not cid
+                        or event_type == EntityType.USER_REPLICA_SET
+                        or action
+                        in [
+                            EntityType.REPOST,
+                            EntityType.SAVE,
+                            EntityType.FOLLOW,
+                            EntityType.SUBSCRIPTION,
+                        ]
+                    ):
                         continue
                     if action == Action.CREATE and event_type == EntityType.USER:
                         continue
@@ -358,7 +368,6 @@ def process_state_changes(
     )(block)
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
-
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
             main_indexing_task,
@@ -393,7 +402,6 @@ UPSERT_CID_METADATA_QUERY = """
 def save_cid_metadata(
     session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]
 ):
-
     if not cid_metadata:
         return
 
@@ -591,7 +599,6 @@ def index_blocks(self, db, blocks_list):
                         )
 
                 except Exception as e:
-
                     blockhash = update_task.web3.toHex(block_hash)
                     indexing_error = IndexingError(
                         "prefetch-cids", block_number, blockhash, None, str(e)
@@ -676,7 +683,6 @@ def revert_blocks(self, db, revert_blocks_list):
     logger.info(revert_blocks_list)
 
     with db.scoped_session() as session:
-
         rebuild_playlist_index = False
         rebuild_track_index = False
         rebuild_user_index = False
@@ -960,7 +966,6 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @celery.task(name="update_discovery_provider", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
-
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py

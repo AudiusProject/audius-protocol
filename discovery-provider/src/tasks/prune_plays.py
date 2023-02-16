@@ -46,7 +46,6 @@ def _prune_plays(
     cutoff_timestamp=DEFAULT_CUTOFF_TIMESTAMP,
     max_batch=DEFAULT_MAX_BATCH,
 ):
-
     # archive and prune plays at most max_batch plays before cutoff_timestamp
     session.execute(
         text(PRUNE_PLAYS_QUERY),
