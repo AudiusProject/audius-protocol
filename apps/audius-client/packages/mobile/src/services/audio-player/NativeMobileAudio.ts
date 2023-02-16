@@ -1,4 +1,4 @@
-import type { Nullable } from '@audius/common'
+import type { Nullable, PlaybackRate } from '@audius/common'
 
 // Shim definition for audio-player needed for player sagas to not break.
 // Ideally we remove audio-player instance from sagas, and have web handle
@@ -13,9 +13,12 @@ export class NativeMobileAudio {
   stop = () => {}
   seek = () => {}
   setVolume = () => null
+  setPlaybackRate = () => null
   isBuffering = () => false
   getPosition = async () => 0
   getDuration = () => 0
+  getPlaybackRate = () => '1x' as PlaybackRate
+  getAudioPlaybackRate = () => 1.0
   onBufferingChange = () => {}
   onError = () => {}
 }

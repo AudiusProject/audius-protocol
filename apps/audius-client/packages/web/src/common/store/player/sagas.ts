@@ -293,11 +293,11 @@ export function* watchSeek() {
 }
 
 export function* watchSetPlaybackRate() {
+  const audioPlayer = yield* getContext('audioPlayer')
   yield* takeLatest(
     setPlaybackRate.type,
     function* (action: ReturnType<typeof setPlaybackRate>) {
       const { rate } = action.payload
-      const audioPlayer = yield* getContext('audioPlayer')
       audioPlayer.setPlaybackRate(rate)
     }
   )
