@@ -26,8 +26,7 @@ func StorageMain() {
 
 	ctx := context.Background()
 
-	logger := telemetry.NewConsoleLogger()
-	tp := telemetry.InitTracing(logger)
+	tp := telemetry.InitTracing(os.Stdout)
 	defer func() { _ = tp.Shutdown(ctx) }()
 
 	peering := peering.New(storageConfig.DevOnlyRegisteredNodes)

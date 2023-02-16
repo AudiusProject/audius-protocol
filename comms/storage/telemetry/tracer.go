@@ -2,10 +2,7 @@ package telemetry
 
 import (
 	"io"
-	"log"
-
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
@@ -21,17 +18,6 @@ const (
 )
 
 var tracer trace.Tracer
-
-// newExporter returns a console exporter.
-func newConsoleExporter(w io.Writer) (*stdouttrace.Exporter, error) {
-	return stdouttrace.New(
-		stdouttrace.WithWriter(w),
-		// Use human-readable output.
-		// stdouttrace.WithPrettyPrint(),
-		// Do not print timestamps for the demo.
-		// stdouttrace.WithoutTimestamps(),
-	)
-}
 
 // newResource returns a resource describing this application.
 func newResource() *resource.Resource {
@@ -49,16 +35,10 @@ func newResource() *resource.Resource {
 
 func InitTracing(w io.Writer) *sdktrace.TracerProvider {
 
-	exp, err := newConsoleExporter(w)
-	if err != nil {
-		log.Fatalf("failed to initialize exporter: %v", err)
-	}
-
 	r := newResource()
 
 	// Create a new tracer provider with a batch span processor and the given exporter.
 	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(exp),
 		sdktrace.WithResource(r),
 	)
 
