@@ -15,7 +15,8 @@ import {
   Nullable,
   FeatureFlags,
   premiumContentSelectors,
-  QueryParams
+  QueryParams,
+  Genre
 } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import {
@@ -43,10 +44,12 @@ const {
   reset,
   resetSucceeded,
   seek,
+  setPlaybackRate,
   error: errorAction
 } = playerActions
 
-const { getTrackId, getUid, getCounter, getPlaying } = playerSelectors
+const { getTrackId, getUid, getCounter, getPlaying, getPlaybackRate } =
+  playerSelectors
 
 const { recordListen } = tracksSocialActions
 const { getUser } = cacheUsersSelectors
@@ -175,7 +178,17 @@ export function* watchPlay() {
           { uid: PLAYER_SUBSCRIBER_NAME, id: trackId }
         ])
       )
+
+      if (track.genre === Genre.PODCASTS) {
+        // Make sure that the playback rate is set when playing a podcast
+        const playbackRate = yield* select(getPlaybackRate)
+        audioPlayer.setPlaybackRate(playbackRate)
+      } else if (audioPlayer.getPlaybackRate() !== '1x') {
+        // Reset playback rate when playing a regular track
+        audioPlayer.setPlaybackRate('1x')
+      }
     }
+
     // Play.
     audioPlayer.play()
     yield* put(playSucceeded({ uid, trackId }))
@@ -277,6 +290,17 @@ export function* watchSeek() {
     const audioPlayer = yield* getContext('audioPlayer')
     audioPlayer.seek(seconds)
   })
+}
+
+export function* watchSetPlaybackRate() {
+  yield* takeLatest(
+    setPlaybackRate.type,
+    function* (action: ReturnType<typeof setPlaybackRate>) {
+      const { rate } = action.payload
+      const audioPlayer = yield* getContext('audioPlayer')
+      audioPlayer.setPlaybackRate(rate)
+    }
+  )
 }
 
 // NOTE: Event listeners are attached to the audio object b/c the audio can be manipulated
@@ -387,6 +411,7 @@ const sagas = () => {
     watchStop,
     watchReset,
     watchSeek,
+    watchSetPlaybackRate,
     setAudioListeners,
     handleAudioErrors,
     handleAudioBuffering,

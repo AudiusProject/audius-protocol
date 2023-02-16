@@ -42,6 +42,26 @@
   width: 30px !important;
 }
 
+.playbackRateButton svg {
+  box-sizing: content-box;
+  height: 12px;
+  width: initial;
+  padding: 12px 0;
+}
+
+.popupTitle {
+  font-size: var(--font-size-2xs);
+  line-height: var(--font-size-2xs);
+  letter-spacing: 0.15px;
+  text-transform: uppercase;
+  color: var(--neutral);
+  padding: var(--unit-2) var(--unit-2) var(--unit);
+}
+
+.centeredItem {
+  justify-content: center;
+}
+
 .button:hover {
   transform: scale(1.05);
   opacity: 0.95;

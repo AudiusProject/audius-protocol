@@ -2,7 +2,12 @@ import { PopupProps } from '../Popup'
 
 type ApplicablePopupProps = Pick<
   PopupProps,
-  'position' | 'title' | 'zIndex' | 'containerRef'
+  | 'position'
+  | 'title'
+  | 'titleClassName'
+  | 'hideCloseButton'
+  | 'zIndex'
+  | 'containerRef'
 >
 
 export type PopupMenuProps = {

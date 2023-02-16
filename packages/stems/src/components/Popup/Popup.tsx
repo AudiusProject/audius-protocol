@@ -148,8 +148,10 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     onAfterClose,
     onClose,
     position = Position.BOTTOM_CENTER,
+    hideCloseButton = false,
     showHeader,
     title,
+    titleClassName,
     className,
     wrapperClassName,
     zIndex,
@@ -339,13 +341,21 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
                 }}
               >
                 {showHeader && (
-                  <div className={styles.header}>
-                    <IconButton
-                      aria-label={messages.close}
-                      onClick={handleClose}
-                      icon={<IconRemove className={styles.iconRemove} />}
-                    />
-                    <div className={styles.title}>{title}</div>
+                  <div
+                    className={cn(styles.header, {
+                      [styles.noAfter]: hideCloseButton
+                    })}
+                  >
+                    {hideCloseButton ? null : (
+                      <IconButton
+                        aria-label={messages.close}
+                        onClick={handleClose}
+                        icon={<IconRemove className={styles.iconRemove} />}
+                      />
+                    )}
+                    <div className={cn(styles.title, titleClassName)}>
+                      {title}
+                    </div>
                   </div>
                 )}
                 {children}

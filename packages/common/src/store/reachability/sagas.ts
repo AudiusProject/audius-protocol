@@ -2,7 +2,7 @@ import { takeEvery } from 'typed-redux-saga'
 
 import { getContext } from 'store/commonStore'
 
-import { reachabilityActions } from '.'
+import * as reachabilityActions from './actions'
 
 function* watchSetReachable() {
   const apiClient = yield* getContext('apiClient')

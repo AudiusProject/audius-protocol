@@ -21,10 +21,14 @@
   justify-content: center;
 }
 
-.header:after {
+.header::after {
   content: '';
   width: var(--unit-2);
   padding-right: var(--unit-half);
+}
+
+.header.noAfter::after {
+  content: none !important;
 }
 
 .title {

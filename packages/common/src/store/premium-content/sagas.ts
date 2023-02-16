@@ -22,7 +22,8 @@ import { tippingActions } from 'store/tipping'
 import { parseTrackRouteFromPermalink } from 'utils'
 import { Nullable } from 'utils/typeUtils'
 
-import { premiumContentActions, premiumContentSelectors } from '.'
+import * as premiumContentSelectors from './selectors'
+import { actions as premiumContentActions } from './slice'
 
 type TrackRouteParams =
   | { slug: string; trackId: null; handle: string }

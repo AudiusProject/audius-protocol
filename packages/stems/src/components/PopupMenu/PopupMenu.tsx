@@ -13,7 +13,17 @@ import { PopupMenuItem, PopupMenuProps } from './types'
  */
 export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
   function PopupMenu(
-    { items, onClose, position, renderTrigger, title, zIndex, containerRef },
+    {
+      items,
+      onClose,
+      position,
+      renderTrigger,
+      hideCloseButton,
+      title,
+      titleClassName,
+      zIndex,
+      containerRef
+    },
     ref
   ) {
     const clickInsideRef = useRef<any>()
@@ -53,10 +63,12 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           }}
           isVisible={isPopupVisible}
           showHeader={Boolean(title)}
+          hideCloseButton={hideCloseButton}
           onClose={handlePopupClose}
           position={position}
           ref={ref}
           title={title || ''}
+          titleClassName={titleClassName}
           zIndex={zIndex}
           containerRef={containerRef}
         >

@@ -1,5 +1,6 @@
 import {
   castSagas,
+  playerSagas as commonPlayerSagas,
   chatSagas,
   premiumContentSagas,
   remoteConfigSagas,
@@ -140,6 +141,7 @@ export default function* rootSaga() {
 
     // Playback
     playerSagas(),
+    commonPlayerSagas(),
     queueSagas(),
 
     // Wallet
