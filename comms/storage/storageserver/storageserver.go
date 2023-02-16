@@ -185,7 +185,6 @@ func (ss *StorageServer) serveFileUpload(c echo.Context) error {
 
 		contentType := file.Header.Get("Content-Type")
 		if !strings.HasPrefix(contentType, expectedContentType) {
-			// return fmt.Errorf("unexpected content type, expected=%s", expectedContentType)
 			return echo.NewHTTPError(400, "invalid Content-Type, expected=" + expectedContentType)
 		}
 
