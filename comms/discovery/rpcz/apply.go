@@ -3,6 +3,7 @@ package rpcz
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"expvar"
 	"sync"
 	"time"
@@ -78,13 +79,24 @@ func (proc *RPCProcessor) SubmitAndWait(msg *nats.Msg) (*nats.PubAck, error) {
 		return nil, err
 	}
 
+	// register waiter
 	ch := make(chan error)
 	proc.Lock()
 	proc.waiters[ok.Sequence] = ch
 	proc.Unlock()
 
 	// await result
-	err = <-ch
+	select {
+	case err = <-ch:
+	case <-time.After(10 * time.Second):
+		err = errors.New("apply timed out after 10 seconds")
+	}
+
+	// deregister waiter
+	proc.Lock()
+	delete(proc.waiters, ok.Sequence)
+	close(ch)
+	proc.Unlock()
 
 	return ok, err
 }
@@ -303,8 +315,6 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	proc.Lock()
 	if waiter, ok := proc.waiters[meta.Sequence.Consumer]; ok {
 		waiter <- err
-		close(waiter)
-		delete(proc.waiters, meta.Sequence.Consumer)
 	}
 	proc.Unlock()
 
