@@ -20,25 +20,16 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   cardContent: {
     paddingHorizontal: spacing(2)
   },
-  imgContainer: {
-    paddingTop: spacing(2),
-    paddingHorizontal: spacing(1)
-  },
-  userCardImg: {
-    backgroundColor: '#ddd',
-    borderRadius: 6,
-    overflow: 'hidden',
-    paddingBottom: '100%'
-  },
-  userImg: {
-    borderRadius: 1000
-  },
-  collectionCardImg: {
+  cardImage: {
     borderRadius: 6,
     height: 152,
     width: 152,
     marginTop: spacing(2),
     alignSelf: 'center'
+  },
+  userImage: {
+    borderRadius: 152 / 2,
+    backgroundColor: '#ddd'
   },
   textContainer: {
     paddingVertical: spacing(1)
@@ -104,20 +95,9 @@ export const Card = (props: CardProps) => {
       styles={{ root: style, content: styles.cardContent }}
       {...TileProps}
     >
-      {props.type === 'user' ? (
-        <View style={styles.imgContainer}>
-          <View
-            style={[
-              styles.userCardImg,
-              props.type === 'user' && styles.userImg
-            ]}
-          >
-            {renderImage()}
-          </View>
-        </View>
-      ) : (
-        renderImage({ style: styles.collectionCardImg })
-      )}
+      {renderImage({
+        style: [styles.cardImage, props.type === 'user' && styles.userImage]
+      })}
       <View style={styles.textContainer}>
         <Text
           numberOfLines={1}

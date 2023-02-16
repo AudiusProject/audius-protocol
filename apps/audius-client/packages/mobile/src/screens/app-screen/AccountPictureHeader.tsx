@@ -65,7 +65,7 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
         <ProfilePicture
           profile={accountUser}
           style={styles.root}
-          firstOpacity={0}
+          priority='high'
         />
         {hasClaimableRewards ? (
           <View style={styles.notificationBubbleRoot}>

@@ -1,6 +1,6 @@
 import type { User } from '@audius/common'
 import { formatCount } from '@audius/common'
-import type { ImageStyle, StyleProp, ViewStyle } from 'react-native'
+import type { StyleProp, ViewStyle } from 'react-native'
 import { View, Text } from 'react-native'
 
 import { makeStyles } from 'app/styles'
@@ -98,7 +98,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
           <ProfilePicture
             profile={user}
             key={user.user_id}
-            style={{ ...(styles.image as ImageStyle), ...imageStyles }}
+            style={[styles.image, imageStyles]}
             navigationType={navigationType}
             interactive={interactive}
           />
@@ -107,7 +107,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
         <View style={styles.imageExtraRoot}>
           <ProfilePicture
             profile={users[limit - 1]}
-            style={{ ...(styles.image as ImageStyle), ...imageStyles }}
+            style={[styles.image, imageStyles]}
             navigationType={navigationType}
             interactive={interactive}
           />
