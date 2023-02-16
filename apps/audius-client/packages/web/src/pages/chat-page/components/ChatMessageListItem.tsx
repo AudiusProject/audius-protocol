@@ -13,6 +13,7 @@ import {
 import type { ChatMessage } from '@audius/sdk'
 import { IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
+import Linkify from 'linkify-react'
 import { useDispatch } from 'react-redux'
 
 import { useSelector } from 'common/hooks/useSelector'
@@ -84,7 +85,9 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
       })}
     >
       <div className={styles.bubble}>
-        <div className={styles.text}>{message.message}</div>
+        <div className={styles.text}>
+          <Linkify options={{ target: '_blank' }}>{message.message}</Linkify>
+        </div>
         <div
           ref={reactionButtonRef}
           className={cn(styles.reactionsButton, {

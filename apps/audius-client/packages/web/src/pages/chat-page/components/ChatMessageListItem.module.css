@@ -1,7 +1,7 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--unit-2);
   align-items: flex-start;
 }
 
@@ -22,6 +22,11 @@
   background-color: var(--bubble-color);
 }
 
+.bubble a {
+  color: var(--neutral);
+  text-decoration: underline !important;
+}
+
 .bubble:hover {
   --bubble-color: var(--neutral-light-10);
   filter: var(--drop-shadow-far);
@@ -30,6 +35,10 @@
 .isAuthor .bubble {
   color: var(--white);
   --bubble-color: var(--secondary-light-2);
+}
+
+.isAuthor .bubble a {
+  color: var(--white);
 }
 
 .isAuthor .bubble:hover {
@@ -91,8 +100,8 @@
 }
 
 .reactionsButton:not(.hasReaction) path {
-  width: 24px;
-  height: 24px;
+  width: var(--unit-6);
+  height: var(--unit-6);
   fill: var(--secondary);
 }
 

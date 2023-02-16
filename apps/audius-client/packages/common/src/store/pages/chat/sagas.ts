@@ -1,8 +1,9 @@
-import { ChatCreateRPC, ChatMessageRPC } from '@audius/sdk'
+import { ChatMessage, ChatMessageRPC, TypedCommsResponse } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
 import { getAccountUser, getUserId } from 'store/account/selectors'
+import { setVisibility } from 'store/ui/modals/slice'
 
 import { decodeHashId, encodeHashId } from '../../../utils'
 import { cacheUsersActions } from '../../cache'
@@ -14,6 +15,7 @@ import { actions as chatActions } from './slice'
 const {
   createChat,
   createChatSucceeded,
+  goToChat,
   fetchMoreChats,
   fetchMoreChatsSucceeded,
   fetchMoreChatsFailed,
@@ -42,7 +44,7 @@ function* doFetchMoreChats() {
     const before = summary?.prev_cursor
     const response = yield* call([sdk.chats, sdk.chats.getAll], {
       before,
-      limit: 10
+      limit: 30
     })
     const userIds = new Set<number>([])
     for (const chat of response.data) {
@@ -67,16 +69,48 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
+
+    // Ensure we get a chat so we can check the unread count
+    yield* call(fetchChatIfNecessary, { chatId })
+    const chat = yield* select((state) => getChat(state, chatId))
     const summary = yield* select((state) =>
       getChatMessagesSummary(state, chatId)
     )
-    const before = summary?.prev_cursor
-    const response = yield* call([sdk.chats, sdk.chats!.getMessages], {
-      chatId,
-      before,
-      limit: 15
-    })
-    yield* put(fetchMoreMessagesSucceeded({ chatId, response }))
+
+    // Paginate through messages until we get to the unread indicator
+    let lastResponse: TypedCommsResponse<ChatMessage[]> | undefined
+    let before = summary?.prev_cursor
+    let hasMoreUnread = true
+    let data: ChatMessage[] = []
+    while (hasMoreUnread) {
+      const limit = 50
+      const response = yield* call([sdk.chats, sdk.chats!.getMessages], {
+        chatId,
+        before,
+        limit
+      })
+      // Only save the last response summary. Pagination is one-way
+      lastResponse = response
+      data = data.concat(response.data)
+      // If the unread count is greater than the previous fetched messages (next_cursor)
+      // plus this batch (limit), we should keep fetching
+      hasMoreUnread =
+        !!chat?.unread_message_count &&
+        chat.unread_message_count > (response.summary?.next_count ?? 0) + limit
+      before = response.summary?.prev_cursor
+    }
+    if (!lastResponse) {
+      throw new Error('No responses gathered')
+    }
+    yield* put(
+      fetchMoreMessagesSucceeded({
+        chatId,
+        response: {
+          ...lastResponse,
+          data
+        }
+      })
+    )
   } catch (e) {
     console.error('fetchNewChatMessagesFailed', e)
     yield* put(fetchMoreMessagesFailed({ chatId }))
@@ -120,17 +154,39 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
-    const user = yield* select(getAccountUser)
-    if (!user) {
+    const currentUserId = yield* select(getUserId)
+    if (!currentUserId) {
       throw new Error('User not found')
     }
-    const res = yield* call([sdk.chats, sdk.chats.create], {
-      userId: encodeHashId(user.user_id),
-      invitedUserIds: userIds.map((id) => encodeHashId(id))
-    })
-    const chatId = (res as ChatCreateRPC).params.chat_id
-    const { data: chat } = yield* call([sdk.chats, sdk.chats.get], { chatId })
-    yield* put(createChatSucceeded({ chat }))
+    // Try to get existing chat:
+    const chatId = [currentUserId, ...userIds]
+      .map((id) => encodeHashId(id))
+      .sort()
+      .join(':')
+    try {
+      yield* call(fetchChatIfNecessary, { chatId })
+    } catch {}
+    const existingChat = yield* select((state) => getChat(state, chatId))
+    if (existingChat) {
+      // Simply navigate to the existing chat
+      yield* put(setVisibility({ modal: 'CreateChat', visible: false }))
+      yield* put(goToChat({ chatId: existingChat.chat_id }))
+    } else {
+      // Create new chat and navigate to it
+      yield* call([sdk.chats, sdk.chats.create], {
+        userId: encodeHashId(currentUserId),
+        invitedUserIds: userIds.map((id) => encodeHashId(id))
+      })
+
+      const res = yield* call([sdk.chats, sdk.chats.get], { chatId })
+      const chat = res.data
+      if (!chat) {
+        throw new Error("Chat couldn't be found after creating")
+      }
+      yield* put(createChatSucceeded({ chat }))
+      yield* put(setVisibility({ modal: 'CreateChat', visible: false }))
+      yield* put(goToChat({ chatId: chat.chat_id }))
+    }
   } catch (e) {
     console.error('createChatFailed', e)
   }
@@ -142,7 +198,7 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const chat = yield* select((state) => getChat(state, chatId))
-    if (!chat || chat?.unread_message_count > 0) {
+    if (!chat || dayjs(chat?.last_read_at).isBefore(chat?.last_message_at)) {
       yield* call([sdk.chats, sdk.chats.read], { chatId })
       yield* put(markChatAsReadSucceeded({ chatId }))
     }
@@ -206,8 +262,8 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   }
 }
 
-function* fetchChatIfNecessary(action: ReturnType<typeof addMessage>) {
-  const { chatId } = action.payload
+function* fetchChatIfNecessary(args: { chatId: string }) {
+  const { chatId } = args
   const existingChat = yield* select((state) => getChat(state, chatId))
   if (!existingChat) {
     const audiusSdk = yield* getContext('audiusSdk')
@@ -220,7 +276,7 @@ function* fetchChatIfNecessary(action: ReturnType<typeof addMessage>) {
 }
 
 function* watchAddMessage() {
-  yield takeEvery(addMessage, fetchChatIfNecessary)
+  yield takeEvery(addMessage, ({ payload }) => fetchChatIfNecessary(payload))
 }
 
 function* watchSendMessage() {

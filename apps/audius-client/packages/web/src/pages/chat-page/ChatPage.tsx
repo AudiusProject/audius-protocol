@@ -97,7 +97,8 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
                 ref={messagesRef}
                 style={{
                   marginTop: `-${headerBounds.height}px`,
-                  paddingTop: `${headerBounds.height}px`
+                  paddingTop: `${headerBounds.height}px`,
+                  scrollPaddingTop: `${headerBounds.height}px`
                 }}
                 className={styles.messageList}
                 chatId={currentChatId}
