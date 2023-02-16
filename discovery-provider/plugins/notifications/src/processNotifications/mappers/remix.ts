@@ -87,9 +87,9 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
   formatEmailProps(resources: Resources) {
     return {
       type: this.notification.type,
-      remixTrack: resources.tracks[this.trackId],
       parentTrack: resources.tracks[this.parentTrackId],
       parentTrackUser: resources.users[this.parentTrackUserId],
+      remixTrack: resources.tracks[this.trackId],
       remixUser: resources.users[this.remixUserId],
     }
   }

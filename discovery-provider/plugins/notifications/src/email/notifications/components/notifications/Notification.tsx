@@ -11,7 +11,6 @@ import {
   TrebleClefIcon
 } from './Icons'
 
-import { capitalize } from '../utils'
 import { ChallengeId, Entity, EntityType, DMEntityType, User } from '../../types'
 
 const getRankSuffix = (num) => {
@@ -210,7 +209,7 @@ const notificationMap = {
     )
   },
   ['remix'](notification) {
-    const { remixUser, remixTrack, parentTrackUser, parentTrack } = notification
+    const { remixUser, remixTrack } = notification
     return (
       <span className={'notificationText'}>
         <HighlightText text={remixTrack.title} />
@@ -225,7 +224,7 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         <HighlightText text={parentTrackUser.name} />
-        <BodyText text={` Co-signed your Remix of `} />
+        <BodyText text={` co-signed your remix of `} />
         <HighlightText text={parentTrack.title} />
       </span>
     )
@@ -269,7 +268,7 @@ const notificationMap = {
   ['reaction'](notification) {
     return (
       <span className={'notificationText'}>
-        <HighlightText text={capitalize(notification.reactingUser.name)} />
+        <HighlightText text={notification.reactingUser.name} />
         <BodyText text={` reacted to your tip of `} />
         <HighlightText text={notification.amount} />
         <BodyText text={` $AUDIO`} />
@@ -279,7 +278,7 @@ const notificationMap = {
   ['supporter_rank_up'](notification) {
     return (
       <span className={'notificationText'}>
-        <HighlightText text={capitalize(notification.sendingUser.name)} />
+        <HighlightText text={notification.sendingUser.name} />
         <BodyText text={` became your `} />
         <HighlightText text={`#${notification.rank}`} />
         <BodyText text={` Top Supporter!`} />
@@ -290,7 +289,7 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         <BodyText text={`You're now `} />
-        <HighlightText text={capitalize(notification.receivingUser.name)} />
+        <HighlightText text={notification.receivingUser.name} />
         <BodyText text={`'s `} />
         <HighlightText text={`#${notification.rank}`} />
         <BodyText text={` Top Supporter!`} />
@@ -300,7 +299,7 @@ const notificationMap = {
   ['tip_receive'](notification) {
     return (
       <span className={'notificationText'}>
-        <HighlightText text={capitalize(notification.sendingUser.name)} />
+        <HighlightText text={notification.sendingUser.name} />
         <BodyText text={` sent you a tip of `} />
         <HighlightText text={notification.amount} />
         <BodyText text={` $AUDIO`} />

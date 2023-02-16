@@ -137,7 +137,6 @@ const mapNotification = (notification) => {
 // but limited to 90 characters w/ an ellipsis
 const SNIPPET_ELLIPSIS_LENGTH = 90
 const getSnippet = (notifications) => {
-  console.log(`getSnippet notifications: ${JSON.stringify(notifications)}`)
   const snippet = notifications.slice(0, 3).map(notification => {
     return snippetMap[notification.type](notification)
   }).join(', ')

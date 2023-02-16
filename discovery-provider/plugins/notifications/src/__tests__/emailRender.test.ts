@@ -88,6 +88,7 @@ describe('Render email', () => {
   test("Render a single Repost Track email", async () => {
     await createTracks(processor.discoveryDB, [{
       track_id: 1,
+      title: "track 1",
       owner_id: 1
     }])
     await new Promise(resolve => setTimeout(resolve, 10))
@@ -121,6 +122,7 @@ describe('Render email', () => {
   test("Render a single Save Track Email", async () => {
     await createTracks(processor.discoveryDB, [{
       track_id: 1,
+      title: "track 1",
       owner_id: 1
     }])
     await new Promise(resolve => setTimeout(resolve, 10))
@@ -153,8 +155,19 @@ describe('Render email', () => {
 
   test("Render a single Remix Track Email", async () => {
     await createTracks(processor.discoveryDB, [
-      { track_id: 1, owner_id: 1 },
-      { track_id: 2, owner_id: 2, remix_of: { tracks: [{ parent_track_id: 1 }] } },
+      {
+        track_id: 1,
+        title: "track 1",
+        owner_id: 1
+      },
+      {
+        track_id: 2,
+        title: "track 2",
+        owner_id: 2,
+        remix_of:
+          { tracks: [{ parent_track_id: 1 }]
+          }
+      },
     ])
     await new Promise(resolve => setTimeout(resolve, 10))
 
@@ -185,8 +198,19 @@ describe('Render email', () => {
 
   test("Render a single Remix Cosign Track Email", async () => {
     await createTracks(processor.discoveryDB, [
-      { track_id: 1, owner_id: 1 },
-      { track_id: 2, owner_id: 2, remix_of: { tracks: [{ parent_track_id: 1 }] } },
+      {
+        track_id: 1,
+        title: "track 1",
+        owner_id: 1,
+        remix_of:
+          { tracks: [{ parent_track_id: 2 }] 
+          }
+      },
+      {
+        track_id: 2,
+        title: "track 2",
+        owner_id: 2
+      },
     ])
     await new Promise(resolve => setTimeout(resolve, 10))
 
@@ -196,10 +220,10 @@ describe('Render email', () => {
         timestamp: new Date(),
         specifier: '2',
         user_ids: [1],
-        group_id: 'remix:track:2:parent_track:1:blocknumber:1',
+        group_id: 'remix:track:1:parent_track:2:blocknumber:1',
         data: {
-          'track_id': 2,
-          'parent_track_id': 1
+          'track_id': 1,
+          'parent_track_id': 2
         },
         receiver_user_id: 1
       }
