@@ -63,7 +63,10 @@ const ExploreScreen = () => {
         iconProps={{ height: 30 }}
       />
       <ScreenContent>
-        <TopTabNavigator screens={exploreScreens} />
+        <TopTabNavigator
+          screens={exploreScreens}
+          screenOptions={{ lazy: true }}
+        />
       </ScreenContent>
     </Screen>
   )

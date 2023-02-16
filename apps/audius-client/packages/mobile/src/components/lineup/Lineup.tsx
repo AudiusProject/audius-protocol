@@ -206,6 +206,7 @@ export const Lineup = ({
   header,
   LineupEmptyComponent,
   isTrending,
+  lazy,
   leadingElementId,
   leadingElementDelineator,
   lineup: lineupProp,
@@ -232,8 +233,9 @@ export const Lineup = ({
   const [refreshing, setRefreshing] = useState(refreshingProp)
   const selectedLineup = useSelector(lineupSelector)
   const lineup = selectedLineup ?? lineupProp
-  const { status, entries } = lineup
+  const { status, entries, inView: lineupInView } = lineup
   const lineupLength = entries.length
+  const inView = lazy ? lineupInView : true
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true)
@@ -334,27 +336,25 @@ export const Lineup = ({
 
   useReachableEffect(
     useCallback(() => {
-      if (status === Status.LOADING) return
+      if (status === Status.LOADING || !inView) return
       handleLoadMore(true)
-      // using the latest creates infinite loop, and we only need the initial state
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [entries])
+    }, [status, inView, handleLoadMore])
   )
 
   // When scrolled past the end threshold of the lineup and the lineup is not loading,
   // trigger another load
   useEffect(() => {
-    if (isPastLoadThreshold && status !== Status.LOADING) {
+    if (isPastLoadThreshold && status !== Status.LOADING && inView) {
       setIsPastLoadThreshold(false)
       handleLoadMore()
     }
-  }, [isPastLoadThreshold, status, handleLoadMore])
+  }, [isPastLoadThreshold, status, handleLoadMore, inView])
 
   useEffect(() => {
-    if (selfLoad && lineupLength === 0 && status !== Status.LOADING) {
+    if (selfLoad && status === Status.IDLE && inView) {
       handleLoadMore()
     }
-  }, [handleLoadMore, selfLoad, lineupLength, status])
+  }, [handleLoadMore, selfLoad, lineupLength, status, inView])
 
   const togglePlay = useCallback(
     ({ uid, id, source }: TogglePlayConfig) => {
@@ -401,6 +401,7 @@ export const Lineup = ({
 
     const getSkeletonCount = () => {
       const shouldCalculateSkeletons =
+        inView &&
         items.length < limit &&
         // Lineup has more items to load
         hasMore &&
@@ -456,6 +457,7 @@ export const Lineup = ({
 
     return [{ delineate: false, data }]
   }, [
+    inView,
     count,
     countOrDefault,
     delineate,
