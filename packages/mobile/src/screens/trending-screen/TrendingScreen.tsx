@@ -62,7 +62,10 @@ export const TrendingScreen = () => {
         <TrendingFilterButton />
       </ScreenHeader>
       <ScreenContent>
-        <TopTabNavigator screens={trendingScreens} />
+        <TopTabNavigator
+          screens={trendingScreens}
+          screenOptions={{ lazy: true }}
+        />
       </ScreenContent>
     </Screen>
   )

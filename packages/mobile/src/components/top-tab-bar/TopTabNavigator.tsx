@@ -14,18 +14,13 @@ type TabNavigatorProps = {
   screenOptions?: MaterialTopTabNavigationOptions
 }
 
-export const TabNavigator = ({
-  initialScreenName,
-  children,
-  screenOptions
-}: TabNavigatorProps) => {
+export const TabNavigator = (props: TabNavigatorProps) => {
+  const { initialScreenName, children, screenOptions } = props
   return (
     <Tab.Navigator
       initialRouteName={initialScreenName}
       tabBar={(props) => <TopTabBar {...props} />}
-      screenOptions={{
-        ...screenOptions
-      }}
+      screenOptions={screenOptions}
     >
       {children}
     </Tab.Navigator>
@@ -63,14 +58,16 @@ export const tabScreen = (config: TabScreenConfig) => {
 type TopTabsProps = {
   initialScreenName?: string
   screens?: ScreenConfig[]
+  screenOptions?: MaterialTopTabNavigationOptions
 }
 
-export const TopTabNavigator = ({
-  initialScreenName,
-  screens
-}: TopTabsProps) => {
+export const TopTabNavigator = (props: TopTabsProps) => {
+  const { initialScreenName, screens, screenOptions } = props
   return (
-    <TabNavigator initialScreenName={initialScreenName}>
+    <TabNavigator
+      initialScreenName={initialScreenName}
+      screenOptions={screenOptions}
+    >
       {screens?.map((screen) => tabScreen({ key: screen.name, ...screen }))}
     </TabNavigator>
   )
