@@ -33,8 +33,9 @@ export class Processor {
     await this.setupDB({ discoveryDBUrl, identityDBUrl })
     await setupTriggers(this.discoveryDB)
 
-    this.listener = new Listener()
-    await this.listener.start(this.discoveryDB)
+    // NOTE: Temp to stop listener for app notifiations
+    //  this.listener = new Listener()
+    // await this.listener.start(this.discoveryDB)
 
     this.appNotificationsProcessor = new AppNotificationsProcessor(this.discoveryDB, this.identityDB)
   }
@@ -57,7 +58,8 @@ export class Processor {
     logger.info('processing events')
     this.isRunning = true
     while (this.isRunning) {
-      await sendAppNotifications(this.listener, this.appNotificationsProcessor)
+      // NOTE: Temp to stop app notifiations
+      // await sendAppNotifications(this.listener, this.appNotificationsProcessor)
       await sendDMNotifications(this.discoveryDB, this.identityDB)
 
       // free up event loop + batch queries to postgres

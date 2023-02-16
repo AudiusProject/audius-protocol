@@ -92,7 +92,7 @@ export const BodyText = ({ text, className }: { text: string, className?: string
   </span>
 )
 
-export export const getUsers = (users: User[]) => {
+export const getUsers = (users: User[]) => {
   const [firstUser] = users
   if (users.length > 1) {
     const userCount = users.length - 1

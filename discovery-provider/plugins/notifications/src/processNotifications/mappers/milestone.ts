@@ -3,8 +3,8 @@ import { NotificationRow, UserRow } from '../../types/dn'
 import { FollowerMilestoneNotification, PlaylistMilestoneNotification, TrackMilestoneNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
-import { ChallengeId } from '../../email/appNotifications/types'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { ChallengeId } from '../../email/notifications/types'
 
 // export type FollowerMilestoneNotification = {
 //   type: string

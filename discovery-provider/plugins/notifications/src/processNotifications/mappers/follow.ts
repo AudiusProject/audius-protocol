@@ -3,7 +3,7 @@ import { NotificationRow, UserRow } from '../../types/dn'
 import { FollowNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
 type FollowNotificationRow = Omit<NotificationRow, 'data'> & { data: FollowNotification }
 export class Follow extends BaseNotification<FollowNotificationRow> {

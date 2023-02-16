@@ -3,8 +3,7 @@ import { NotificationRow, UserRow } from '../../types/dn'
 import { CosignRemixNotification, RepostNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
-import { EntityType } from '../../email/appNotifications/types'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
 type CosignRemixNotificationRow = Omit<NotificationRow, 'data'> & { data: CosignRemixNotification }
 export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
