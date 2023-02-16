@@ -13,7 +13,6 @@ from alembic import op
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.types import String
 
-
 # revision identifiers, used by Alembic.
 revision = '9b4e12c0c428'
 down_revision = '64e82a907294'
