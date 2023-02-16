@@ -150,6 +150,15 @@ const notificationMap = {
       </span>
     )
   },
+  ['save'](notification) {
+    const user = getUsers(notification.users)
+    const entity = getEntity(notification.entity)
+    return (
+      <span className={'notificationText'}>
+        {user}<BodyText text={` saved your `} />{entity}
+      </span>
+    )
+  },
   ['announcement'](notification) {
     return <BodyText className={'notificationText'} text={notification.text} />
   },
@@ -268,10 +277,9 @@ const notificationMap = {
     )
   },
   ['supporter_rank_up'](notification) {
-    const user = getUsers(notification.users)
     return (
       <span className={'notificationText'}>
-        {user}
+        <HighlightText text={capitalize(notification.sendingUser.name)} />
         <BodyText text={` became your `} />
         <HighlightText text={`#${notification.rank}`} />
         <BodyText text={` Top Supporter!`} />
@@ -300,18 +308,18 @@ const notificationMap = {
     )
   },
   [DMEntityType.Message](notification) {
-    const user = getUsers(notification.users)
     return (
       <span className={'notificationText'}>
-        {user}<BodyText text={` sent you ${notification.multiple ? 'new messages' : 'a new message'}`} />
+        <HighlightText text={notification.sendingUser.name} />
+        <BodyText text={` sent you ${notification.multiple ? 'new messages' : 'a new message'}`} />
       </span>
     )
   },
   [DMEntityType.Reaction](notification) {
-    const user = getUsers(notification.users)
     return (
       <span className={'notificationText'}>
-        {user}<BodyText text={` reacted to your message${notification.multiple ? 's' : ''}`} />
+        <HighlightText text={notification.sendingUser.name} />
+        <BodyText text={` reacted to your message${notification.multiple ? 's' : ''}`} />
       </span>
     )
   }

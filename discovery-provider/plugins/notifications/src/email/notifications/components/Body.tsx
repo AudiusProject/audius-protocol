@@ -55,6 +55,10 @@ const snippetMap = {
     const [user] = notification.users
     return `${user.name} followed you`
   },
+  ['save'](notification) {
+    const [user] = notification.users
+    return `${user.name} saved your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+  },
   ['announcement'](notification) {
     return notification.text
   },
@@ -100,19 +104,16 @@ const snippetMap = {
     return `${notification.reactingUser.name} reacted to your tip of ${notification.amount} $AUDIO`
   },
   ['supporter_rank_up'](notification) {
-    const [user] = notification.users
-    return `${user.name} became your #${notification.rank} top supporter`
+    return `${notification.sendingUser.name} became your #${notification.rank} top supporter`
   },
   ['supporting_rank_up'](notification) {
     return `You're now ${notification.receivingUser.name}'s #${notification.rank} top supporter`
   },
   [DMEntityType.Message](notification) {
-    const [user] = notification.users
-    return `${user.name} sent you ${notification.multiple ? 'new messages' : 'a new message'}`
+    return `${notification.sendingUser.name} sent you ${notification.multiple ? 'new messages' : 'a new message'}`
   },
   [DMEntityType.Reaction](notification) {
-    const [user] = notification.users
-    return `${user.name} reacted to your message${notification.multiple ? 's' : ''}`
+    return `${notification.sendingUser.name} reacted to your message${notification.multiple ? 's' : ''}`
   }
 }
 

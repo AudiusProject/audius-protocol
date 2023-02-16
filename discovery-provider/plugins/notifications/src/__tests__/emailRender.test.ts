@@ -36,11 +36,11 @@ describe('Render email', () => {
 
   beforeEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
-    processor = await initDB(testName)
     await Promise.all([
       createTestDB(process.env.DN_DB_URL, testName),
       createTestDB(process.env.IDENTITY_DB_URL, testName)
     ])
+    processor = await initDB(testName)
   })
 
   afterEach(async () => {
@@ -55,7 +55,7 @@ describe('Render email', () => {
 
   test("Render a single Follow email", async () => {
     await insertFollows(processor.discoveryDB, [
-      { follower_user_id: 1, followee_user_id: 2 }
+      { follower_user_id: 2, followee_user_id: 1 }
     ])
     await new Promise(resolve => setTimeout(resolve, 10))
 
@@ -63,14 +63,14 @@ describe('Render email', () => {
       {
         type: 'follow',
         timestamp: new Date(),
-        specifier: '1',
-        group_id: 'follow:1',
+        specifier: '2',
+        group_id: 'follow:2',
         data: {
-          follower_user_id: 1,
-          followee_user_id: 2
+          follower_user_id: 2,
+          followee_user_id: 1
         },
-        user_ids: [2],
-        receiver_user_id: 2
+        user_ids: [1],
+        receiver_user_id: 1
       }
     ]
     const notifHtml = await renderEmail({
@@ -78,7 +78,8 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     expect(notifHtml).toMatchSnapshot();
   })
@@ -102,8 +103,8 @@ describe('Render email', () => {
           repost_item_id: 1,
           type: reposttype.track
         },
-        user_ids: [2],
-        receiver_user_id: 2,
+        user_ids: [1],
+        receiver_user_id: 1,
       }
     ]
     const notifHtml = await renderEmail({
@@ -111,20 +112,17 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     expect(notifHtml).toMatchSnapshot()
   })
 
   test("Render a single Save Track Email", async () => {
-    const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
-    processor = await initDB(testName)
-
     await createTracks(processor.discoveryDB, [{
       track_id: 1,
       owner_id: 1
     }])
-
     await new Promise(resolve => setTimeout(resolve, 10))
 
     const notifications: AppEmailNotification[] = [
@@ -132,6 +130,7 @@ describe('Render email', () => {
         type: 'save',
         timestamp: new Date(),
         specifier: '2',
+        user_ids: [1],
         group_id: 'save:track:1',
         data: {
           user_id: 2,
@@ -146,7 +145,8 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     expect(notifHtml).toMatchSnapshot()
   })
@@ -177,7 +177,8 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     expect(notifHtml).toMatchSnapshot()
   })
@@ -193,8 +194,8 @@ describe('Render email', () => {
       {
         type: 'cosign',
         timestamp: new Date(),
-        specifier: '1',
-        user_ids: [2],
+        specifier: '2',
+        user_ids: [1],
         group_id: 'remix:track:2:parent_track:1:blocknumber:1',
         data: {
           'track_id': 2,
@@ -208,7 +209,8 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     expect(notifHtml).toMatchSnapshot()
   })
@@ -218,12 +220,12 @@ describe('Render email', () => {
       {
         type: 'supporter_rank_up',
         timestamp: new Date(),
-        specifier: '1',
+        specifier: '2',
         user_ids: [1],
         group_id: 'supporter_rank_up:1:slot:1',
         data: {
-          'sender_user_id': 1,
-          'receiver_user_id': 2,
+          'sender_user_id': 2,
+          'receiver_user_id': 1,
           'rank': 1
         },
         receiver_user_id: 1
@@ -234,7 +236,8 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     console.log(notifHtml)
     expect(notifHtml).toMatchSnapshot()
@@ -253,7 +256,8 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     expect(notifHtml).toMatchSnapshot();
   })
@@ -272,7 +276,8 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     expect(notifHtml).toMatchSnapshot();
   })
@@ -290,7 +295,8 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     expect(notifHtml).toMatchSnapshot();
   })
@@ -309,7 +315,8 @@ describe('Render email', () => {
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
-      dnDb: processor.discoveryDB
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
     })
     expect(notifHtml).toMatchSnapshot();
   })

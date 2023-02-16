@@ -1,7 +1,7 @@
 import { Knex } from 'knex'
 import { BaseNotification } from './base'
 import { DMEmailNotification } from '../../types/notifications'
-import { ResourceIds } from '../../email/notifications/renderEmail'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
 
 export class MessageEmail extends BaseNotification<DMEmailNotification> {
@@ -18,6 +18,15 @@ export class MessageEmail extends BaseNotification<DMEmailNotification> {
   getResourcesForEmail(): ResourceIds {
     return {
       users: new Set([this.receiverUserId, this.senderUserId])
+    }
+  }
+
+  formatEmailProps(resources: Resources) {
+    const sendingUser = resources.users[this.senderUserId]
+    return {
+      type: this.notification.type,
+      multiple: this.notification.multiple,
+      sendingUser: { name: sendingUser.name }
     }
   }
 

@@ -86,6 +86,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
   formatEmailProps(resources: Resources) {
     return {
       type: this.notification.type,
+      remixTrack: resources.tracks[this.trackId],
       parentTracks: [resources.tracks[this.parentTrackId]],
       parentTrackUser: resources.users[this.parentTrackUserId],
       remixUser: resources.users[this.remixUserId],

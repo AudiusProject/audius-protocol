@@ -10,6 +10,7 @@ import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { Knex } from 'knex'
 import { EntityType } from './types'
 import { mapNotifications } from '../../processNotifications/mappers/mapNotifications'
+import { BaseNotification } from '../../processNotifications/mappers/base'
 import { CosignRemixNotification, CreatePlaylistNotification, CreateTrackNotification, FollowerMilestoneNotification, PlaylistMilestoneNotification, RemixNotification, RepostNotification, SaveNotification, SupporterRankUpNotification, SupportingRankUpNotification, TierChangeNotification, TipReceiveNotification, TipSendNotification, TrackMilestoneNotification } from '../../types/notifications'
 
 type RenderEmailProps = {
@@ -178,146 +179,20 @@ const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications:
   }
   console.log({ notifications })
 
-  // TODO: change to this format
-  const mappedNotifications = mapNotifications(notifications, dnDB, identityDB)
+  const mappedNotifications: BaseNotification<any>[] = mapNotifications(notifications, dnDB, identityDB)
   for (const notification of mappedNotifications) {
     const resourcesToFetch = notification.getResourcesForEmail()
-    Object.entries(resourcesToFetch).forEach(([key, value]: [string, Set<number>]) => {
-      // idsToFetch[key as keyof ResourceIds] = new Set([...Array.from(idsToFetch[key as keyof ResourceIds]), ...Array.from(value)])
-      const resourceTypeToFetch = idsToFetch[key as keyof ResourceIds]
-      value.forEach(resourceTypeToFetch.add, resourceTypeToFetch)
+    console.log({ resourcesToFetch })
+    Object.entries(resourcesToFetch).forEach(([key, value]) => {
+      (value as Set<number>).forEach(idsToFetch[key as keyof ResourceIds].add, idsToFetch[key as keyof ResourceIds])
     })
+    console.log({ idsToFetch })
   }
 
-
-  // for (const notification of notifications) {
-    // if (notification.type == 'follow') {
-    //   idsToFetch.users.add(notification.data.follower_user_id)
-    //   idsToFetch.users.add(notification.data.followee_user_id)
-    // }
-    // else if (notification.type == 'repost') {
-    //   const data: RepostNotification = notification.data
-    //   idsToFetch.users.add(data.user_id)
-    //   if (data.type == 'track') {
-    //     idsToFetch.tracks.add(data.repost_item_id)
-    //   } else {
-    //     idsToFetch.playlists.add(data.repost_item_id)
-    //   }
-    // }
-    // else if (notification.type == 'save') {
-    //   const data: SaveNotification = notification.data
-    //   idsToFetch.users.add(data.user_id)
-    //   if (data.type == 'track') {
-    //     idsToFetch.tracks.add(data.save_item_id)
-    //   } else {
-    //     idsToFetch.playlists.add(data.save_item_id)
-    //   }
-    // }
-    // else if (notification.type == DMEntityType.Message || notification.type == DMEntityType.Reaction) {
-    //   idsToFetch.users.add(notification.receiver_user_id)
-    //   idsToFetch.users.add((notification as DMEmailNotification).sender_user_id)
-    // }
-    // else if (notification.type == 'supporter_rank_up') {
-    //   const data: SupporterRankUpNotification = notification.data
-    //   idsToFetch.users.add(data.sender_user_id)
-    //   idsToFetch.users.add(data.receiver_user_id)
-    // }
-
-    // else if (notification.type == 'milestone') {
-    //   const data = notification.data
-    //   // TODO: figure out
-
-    //   if (notification.data.track_id) {
-    //     const data: TrackMilestoneNotification = notification.data
-    //     idsToFetch.tracks.add(data.track_id)
-    //   }
-    //   if (notification.data.playlist_id) {
-    //     const data: PlaylistMilestoneNotification = notification.data
-    //     idsToFetch.playlists.add(data.playlist_id)
-    //   }
-    //   if (notification.data.user_id) {
-    //     const data: FollowerMilestoneNotification = notification.data
-    //     continue
-    //   }
-    // }
-    // else if (notification.type == 'reaction') {
-    //   // TODO:
-    // }
-    // else if (notification.type == 'challenge_reward') {
-    //   const data: SupportingRankUpNotification = notification.data
-    //   continue
-    // }
-    // else if (notification.type == 'create') {
-    //   if (notification.data.track_id) {
-    //     const data: CreateTrackNotification = notification.data
-    //     idsToFetch.tracks.add(data.track_id)
-    //   } else if (notification.data.playlist_id) {
-    //     const data: CreatePlaylistNotification = notification.data
-    //     idsToFetch.users.add(data.playlist_id)
-    //   }
-    // }
-  // }
   const resources = await fetchResources(dnDB, idsToFetch)
+  console.log({ resources })
 
-  return notifications.map(notification => getEmailNotificationProps(notification, resources))
-}
-
-const getEmailNotificationProps = (notification: EmailNotification, resources: Resources) => {
-  if (notification.type == 'follow') {
-    const followerId = notification.data.follower_user_id
-    const user = resources.users[followerId]
-    return {
-      type: 'follow',
-      users: [{ name: user.name, image: user.imageUrl }]
-    }
-  }
-  else if (notification.type == 'save') {
-    const data: SaveNotification = notification.data
-    const reposter = resources.users[data.user_id]
-    const users = [{ name: reposter.name, image: reposter.imageUrl }]
-    console.log(JSON.stringify(notification, null, ' '))
-    let entity
-    if (data.type === EntityType.Track) {
-      const track = resources.tracks[data.save_item_id]
-      entity = { type: EntityType.Track, name: track.title, image: track.imageUrl }
-    } else {
-      const playlist = resources.playlists[data.save_item_id]
-      entity = { type: EntityType.Playlist, name: playlist.playlist_name, image: playlist.imageUrl }
-    }
-    return { type: notification.type, users, entity }
-  }
-  else if (notification.type == 'repost') {
-    const data: RepostNotification = notification.data
-    const reposter = resources.users[data.user_id]
-    const users = [{ name: reposter.name, image: reposter.imageUrl }]
-    console.log(JSON.stringify(notification, null, ' '))
-    let entity
-    if (data.type === EntityType.Track) {
-      const track = resources.tracks[data.repost_item_id]
-      entity = { type: EntityType.Track, name: track.title, image: track.imageUrl }
-    } else {
-      const playlist = resources.playlists[data.repost_item_id]
-      entity = { type: EntityType.Playlist, name: playlist.playlist_name, image: playlist.imageUrl }
-    }
-    return { type: 'repost', users, entity }
-  }
-  else if (notification.type == DMEntityType.Message || notification.type == DMEntityType.Reaction) {
-    const user = resources.users[(notification as DMEmailNotification).sender_user_id]
-    return {
-      type: notification.type,
-      multiple: (notification as DMEmailNotification).multiple,
-      users: [{ name: user.name, image: user.imageUrl }]
-    }
-  }
-  else if (notification.type == 'supporter_rank_up') {
-    const senderId = notification.data.sender_user_id
-    const user = resources.users[senderId]
-    return {
-      type: notification.type,
-      rank: notification.data.rank,
-      users: [{ name: user.name, image: user.imageUrl }]
-    }
-  }
+  return mappedNotifications.map(notification => notification.formatEmailProps(resources))
 }
 
 const getEmailTitle = (frequency: EmailFrequency, userEmail: string) => {
