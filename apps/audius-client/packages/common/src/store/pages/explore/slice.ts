@@ -6,7 +6,9 @@ import ExplorePageState, { ExploreContent, ExplorePageTabs } from './types'
 
 const initialState: ExplorePageState = {
   playlists: [],
+  playlistsStatus: Status.IDLE,
   profiles: [],
+  profilesStatus: Status.IDLE,
   status: Status.SUCCESS,
   tab: ExplorePageTabs.FOR_YOU
 }
@@ -41,6 +43,18 @@ const slice = createSlice({
     },
     setTab: (state, action: PayloadAction<SetTabPayload>) => {
       state.tab = action.payload.tab
+    },
+    fetchPlaylists: (state) => {
+      state.playlistsStatus = Status.LOADING
+    },
+    fetchPlaylistsSucceded: (state) => {
+      state.playlistsStatus = Status.SUCCESS
+    },
+    fetchProfiles: (state) => {
+      state.profilesStatus = Status.LOADING
+    },
+    fetchProfilesSucceded: (state) => {
+      state.profilesStatus = Status.SUCCESS
     }
   }
 })
@@ -49,6 +63,10 @@ export const {
   fetchExplore,
   fetchExploreSucceeded,
   fetchExploreFailed,
+  fetchPlaylists,
+  fetchPlaylistsSucceded,
+  fetchProfiles,
+  fetchProfilesSucceded,
   setTab
 } = slice.actions
 

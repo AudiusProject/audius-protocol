@@ -4,7 +4,8 @@ import {
   makeUid,
   UserCollectionMetadata,
   cacheActions,
-  getContext
+  getContext,
+  CollectionMetadata
 } from '@audius/common'
 import { put, call } from 'redux-saga/effects'
 
@@ -13,20 +14,29 @@ import { addUsersFromCollections } from './addUsersFromCollections'
 import { reformat } from './reformat'
 import { retrieveTracksForCollections } from './retrieveCollections'
 
+function isUserCollections(
+  collections: CollectionMetadata[] | UserCollectionMetadata[]
+): collections is UserCollectionMetadata[] {
+  const [collection] = collections
+  return collection && 'user' in collections
+}
+
 /**
  * Processes and caches a collection
- * @param {Collection} collections collections to cache
- * @param {boolean} shouldRetrieveTracks whether or not to retrieve the tracks inside the collection (we don't need
+ * @param collections collections to cache
+ * @param shouldRetrieveTracks whether or not to retrieve the tracks inside the collection (we don't need
  *  to do this for displaying collection cards)
- * @param {Array<ID>} excludedTrackIds optional track ids to exclude from retrieve
+ * @param excludedTrackIds optional track ids to exclude from retrieve
  */
 export function* processAndCacheCollections(
-  collections: UserCollectionMetadata[],
+  collections: CollectionMetadata[] | UserCollectionMetadata[],
   shouldRetrieveTracks = true,
   excludedTrackIds: ID[] = []
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield addUsersFromCollections(collections)
+  if (isUserCollections(collections)) {
+    yield addUsersFromCollections(collections)
+  }
   yield addTracksFromCollections(collections)
 
   let reformattedCollections = collections.map((c) =>

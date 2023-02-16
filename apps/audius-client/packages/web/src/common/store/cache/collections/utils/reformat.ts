@@ -1,4 +1,10 @@
-import { UserCollectionMetadata, Variant, AudiusBackend } from '@audius/common'
+import {
+  UserCollectionMetadata,
+  Variant,
+  AudiusBackend,
+  Collection,
+  CollectionMetadata
+} from '@audius/common'
 import { omit } from 'lodash'
 
 /**
@@ -6,9 +12,9 @@ import { omit } from 'lodash'
  * This method should *always* be called before a collection is cached.
  */
 export const reformat = (
-  collection: UserCollectionMetadata,
+  collection: CollectionMetadata | UserCollectionMetadata,
   audiusBackendInstance: AudiusBackend
-) => {
+): Collection => {
   const withoutUser = omit(collection, 'user')
   const withImages = audiusBackendInstance.getCollectionImages(withoutUser)
   withImages.variant = Variant.USER_GENERATED

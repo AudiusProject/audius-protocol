@@ -15,7 +15,9 @@ export type ExploreContent = {
 export default interface ExplorePageState {
   status: Status
   playlists: ID[]
+  playlistsStatus: Status
   profiles: ID[]
+  profilesStatus: Status
   tab: ExplorePageTabs
 }
 
