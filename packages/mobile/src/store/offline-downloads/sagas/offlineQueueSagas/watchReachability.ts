@@ -19,9 +19,10 @@ export function* watchReachability() {
   })
 
   yield* takeEvery(SET_REACHABLE, function* startQueue() {
+    const queueStatus = yield* select(getQueueStatus)
     const offlineQueue = yield* select(getOfflineQueue)
 
-    if (offlineQueue.length > 0) {
+    if (offlineQueue.length > 0 && queueStatus === QueueStatus.PAUSED) {
       yield* put(updateQueueStatus({ queueStatus: QueueStatus.PROCESSING }))
       yield* put(requestProcessNextJob())
     }
