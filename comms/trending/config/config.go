@@ -1,9 +1,18 @@
 package config
 
 type Config struct {
+	Debug bool
+
+	// echo config
 	TrendingEchoPort string
-	Debug            bool
 	HideBanner       bool
+
+	// clickhouse config
+	DatabaseAddress  string
+	DatabaseUsername string
+	DatabasePassword string
+	DatabaseName     string
+	MaxExecutionTime uint64
 }
 
 // TODO: read from a .env file
@@ -13,6 +22,11 @@ func Default() (*Config, error) {
 		TrendingEchoPort: "9876",
 		Debug:            true,
 		HideBanner:       false,
+		DatabaseAddress:  "127.0.0.1:9000",
+		DatabaseUsername: "default",
+		DatabasePassword: "",
+		DatabaseName:     "default",
+		MaxExecutionTime: 60,
 	}, nil
 }
 
@@ -21,6 +35,11 @@ func TestDefault() (*Config, error) {
 		TrendingEchoPort: "9876",
 		Debug:            true,
 		HideBanner:       true,
+		DatabaseAddress:  "127.0.0.1:9000",
+		DatabaseUsername: "default",
+		DatabasePassword: "",
+		DatabaseName:     "default",
+		MaxExecutionTime: 60,
 	}, nil
 }
 

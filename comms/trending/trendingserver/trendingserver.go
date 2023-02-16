@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"comms.audius.co/trending/config"
+	"comms.audius.co/trending/db"
 	"github.com/labstack/echo/v4"
 )
 
@@ -11,6 +12,7 @@ import (
 type TrendingServer struct {
 	WebServer *echo.Echo
 	Conf      config.Config
+	Database  db.DB
 }
 
 func NewTrendingServer(conf config.Config) (*TrendingServer, error) {
@@ -18,9 +20,17 @@ func NewTrendingServer(conf config.Config) (*TrendingServer, error) {
 	wsv.Debug = conf.Debug
 	wsv.HideBanner = conf.HideBanner
 
+	// can swap with any DB type
+	db, err := db.NewClickHouseDB(conf)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return &TrendingServer{
 		WebServer: wsv,
 		Conf:      conf,
+		Database:  db,
 	}, nil
 }
 
@@ -43,13 +53,25 @@ func (ts *TrendingServer) Close() error {
 }
 
 func (ts *TrendingServer) GetTrendingTracks(c echo.Context) error {
-	return c.String(http.StatusOK, "no tracks are trending yet :)")
+	res, err := ts.Database.QueryTrendingTracks()
+	if err != nil {
+		return err
+	}
+	return c.String(http.StatusOK, res)
 }
 
 func (ts *TrendingServer) GetTrendingPlaylists(c echo.Context) error {
-	return c.String(http.StatusOK, "no playlists are trending yet :)")
+	res, err := ts.Database.QueryTrendingPlaylists()
+	if err != nil {
+		return err
+	}
+	return c.String(http.StatusOK, res)
 }
 
 func (ts *TrendingServer) GetHealth(c echo.Context) error {
-	return c.String(http.StatusOK, "healthy :)")
+	res := ts.Database.CheckHealth()
+	if res {
+		return c.String(http.StatusOK, "healthy :)")
+	}
+	return c.String(http.StatusInternalServerError, "BANG!")
 }
