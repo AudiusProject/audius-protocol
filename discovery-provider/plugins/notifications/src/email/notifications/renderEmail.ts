@@ -182,16 +182,11 @@ const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications:
   const mappedNotifications: BaseNotification<any>[] = mapNotifications(notifications, dnDB, identityDB)
   for (const notification of mappedNotifications) {
     const resourcesToFetch = notification.getResourcesForEmail()
-    console.log({ resourcesToFetch })
     Object.entries(resourcesToFetch).forEach(([key, value]) => {
       (value as Set<number>).forEach(idsToFetch[key as keyof ResourceIds].add, idsToFetch[key as keyof ResourceIds])
     })
-    console.log({ idsToFetch })
   }
-
   const resources = await fetchResources(dnDB, idsToFetch)
-  console.log({ resources })
-
   return mappedNotifications.map(notification => notification.formatEmailProps(resources))
 }
 
