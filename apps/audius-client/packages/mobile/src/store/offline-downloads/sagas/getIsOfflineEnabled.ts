@@ -9,7 +9,7 @@ export function* getIsOfflineEnabled() {
 
   const isOfflineModeEnabled = yield* call(
     remoteConfigInstance.getFeatureEnabled,
-    FeatureFlags.OFFLINE_MODE_ENABLED
+    FeatureFlags.OFFLINE_MODE_RELEASE
   )
 
   const localStorage = yield* getContext('localStorage')

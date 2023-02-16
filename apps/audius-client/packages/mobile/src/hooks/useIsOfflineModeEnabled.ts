@@ -4,7 +4,7 @@ import { useAsync } from 'react-use'
 
 import { useFeatureFlag } from './useRemoteConfig'
 
-const OFFLINE_OVERRIDE_ASYNC_STORAGE_KEY = 'offline_mode_enabled_local_override'
+const OFFLINE_OVERRIDE_ASYNC_STORAGE_KEY = 'offline_mode_release_local_override'
 
 // DO NOT CHECK IN VALUE: true
 const hardCodeOverride = false
@@ -32,6 +32,6 @@ export const useReadOfflineOverride = () =>
 
 // TODO: remove helpers when feature is shipped
 export const useIsOfflineModeEnabled = () =>
-  useFeatureFlag(FeatureFlags.OFFLINE_MODE_ENABLED).isEnabled ||
+  useFeatureFlag(FeatureFlags.OFFLINE_MODE_RELEASE).isEnabled ||
   asyncOverride ||
   hardCodeOverride
