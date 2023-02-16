@@ -1,17 +1,16 @@
-# Storage V2
+# Storage V2 :package:
 
-This project is a ground up re-write of the Audius distributed storage system.
+Storage V2 is responsible for the transcoding, even distribution and retrieval of user supplied content.
 
-Storage V2 is responsible for the even distribution, replication and transcoding of content across as many nodes in the network as possible. The project values simplicity and robustness in its design and implementation.
+> This project values simplicity in all areas of design.
 
-#### Features
+**Features**
 - [Replicated Sharding](#replicated-sharding)
-- [Transcoding Pipeline](#transcoding)
+- [A Transcoding Pipeline](#transcoding)
 - [Configurable Blob Storage](#blob-storage)
 - [Backup and Restore Tooling](#backup-and-restore)
-- [HTTP API](#http-api)
-- [NATS Gateway](#nats-gateway)
 - [Content Access Control](#access-control)
+- [An HTTP API](#http-api)
 
 ---
 
@@ -19,65 +18,78 @@ Storage V2 is responsible for the even distribution, replication and transcoding
 
 To get started with a lightweight multi node cluster and test uploads.
 
+<sub>The upload dashboard</sub>
 ![upload-dashboard](../docs/uploads.png)
 
+**BUILD AND RUN**
+
 ```shell
-# build and run
-docker compose -f docker-compose.v2.yml up -d --build
+# on the first run, make will password prompt
+# to add a single required route to /etc/hosts
+make storage.multi
 
-# to test an upload visit the storage node webui at
-open http://0.0.0.0:9924/storage
+# then you can visit the web ui to test uploads
+open http://node1/storage
 
-# grep logs for success i.e. 
-docker compose logs storage1 | grep -i storing
+# you can also curl uploads
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1/storage/file
+
+# after some uploads, you can see which nodes stored what files 
+docker logs storage1 2>&1 | grep -i storing
 
 # to check nats stream status
 docker exec -ti com1 nats stream ls -a
 
+# explore the weathermap for a visual layout of the sharded filesystem
+open http://node1/storage/weather
+
 # teardown
-docker compose -f docker-compose.v2.yml down -v
+make down
 ```
 
 **DEVELOP**
 
-To get started with development, you can run a single node cluster. Hot reloading will be enabled on the `storage1` container.
+Switch to dev mode to enable hot reloading on the `storage1` container. We intentionally do not mount the `natsd` source. As to keep NATS running across storage server restarts. If working on `comms/natsd` consider mounting the source.
 
-```
-docker compose -f docker-compose.v2.dev.yml up -d --build
+```shell
+# run a single node cluster
+# tears down any previously running docker compose environment
+make storage.dev
+
+# tail
+docker logs -f storage1
+
+# now change some go files...
+...
+  storage/storageserver/storageserver.go has changed
+  building...
+  running...
 ```
 
 ---
 
+# Features
+
 ### Replicated Sharding
 
-[rendevous hashing](https://en.wikipedia.org/wiki/Rendezvous_hashing) is used to ensure all nodes in the network agree on **who** should store **what** data.
+<i>TODO: Docs</i>
+
+[Rendezvous hashing](https://en.wikipedia.org/wiki/Rendezvous_hashing) is used to ensure all nodes in the network agree on **who** should store **what** data.
 
 ### Visibility
 
-For visibility and troubleshooting, a storage [weathermap](./storageserver/weather-map/README.md) at `/storage/weather/` provides visualization and introspection into the location of files within the network. As well as each node's view of the hash ring.
+For visibility and troubleshooting, a storage weathermap at `/storage/weather` provides visualization and introspection into the location of files within the network. As well as each node's view of the hash ring.
 
-![upload-dashboard](../docs/weather.png)
+<sub>The storage weathermap</sub>
+![storage-weathermap](../docs/weather.png)
+
+For weathermap **development** workflow see [./storageserver/weather-map/README.md](./storageserver/weather-map/README.md)
 
 ### Transcoding
 
-An integrated normalization pipeline exists to encode input audio and image files into nominal output formats and compression ratios.
+<i>TODO: Docs</i>
 
-```
-## WIP                           +-------+                    ## WIP
-                        +------->| NATS  |
-                        |        |       |
-                        |        +-------+
-                        |
-+-------+         +-----+--+     +-------+         +---------------+
-|       |         |STORAGE |     | NATS  |         |JOBS MANAGER   |
-| CLIENT+-------->|SERVER  +---->|       |<--------+               |
-+-------+         +-----+--+     +-------+         +---------------+
-                        |
-                        |        +-------+
-                        |        | NATS  |
-                        +------->|       |
-                                 +-------+
-```
+An integrated normalization pipeline exists to encode input audio and image files into nominal output formats and compression ratios.
 
 ### Blob Storage
 
@@ -90,7 +102,7 @@ This is the directory on your node where files will stored post transcoding.
 
 To update the local storage location set the `storage_driver_url` environment variable
 
-```
+```shell
 storage_driver_url="file:///my/directory"
 ```
 
@@ -103,23 +115,22 @@ To use cloud object storage instead of local storage, you will need to:
 - provision credentials that allow access to your bucket
 
 [S3 storage](https://aws.amazon.com/s3/)
-```
+```shell
 AWS_ACCESS_KEY_ID="<my-access-key-id>"
 AWS_SECRET_ACCESS_KEY="<my-secret-access-key>"
 storage_driver_url="s3://my-bucket?region=us-west-1"
 ```
 
 [GCS storage](https://cloud.google.com/storage/docs/creating-buckets)
-```
+```shell
 GOOGLE_APPLICATION_CREDENTIALS=""
 storage_driver_url="gcs://my-bucket"
 ```
 
 [Azure storage](https://azure.microsoft.com/en-us/products/storage/blobs)
-```
-AZURE_CLIENT_ID=""
-AZURE_CLIENT_SECRET=""
-AZURE_TENANT_ID=""
+```shell
+AZURE_STORAGE_ACCOUNT=""
+AZURE_STORAGE_KEY=""
 storage_driver_url="azblob://my-container"
 ```
 
@@ -127,18 +138,28 @@ storage_driver_url="azblob://my-container"
 
 Tooling exists to allow a node operator to backup and restore their storage node data.
 
-```
+```shell
+# the below is illustrative and is in active development
 docker run audius/storage-archiver -e "MODE=BACKUP"  -e "<AUTHORIZATION>" -e "<BUCKET_NAME>" -d
 docker run audius/storage-archiver -e "MODE=RESTORE" -e "<AUTHORIZATION>" -e "<BUCKET_NAME>" -d
 ```
+
+### Access Control
+
+<i>TODO: Docs</i>
+Signature validation. Compliance.
+
+### NATS Gateway
+
+<i>TODO: Docs</i>
+The project uses [NATS](https://nats.io) as a connective substrate between nodes.
 
 ### HTTP API
 
 An HTTP API exists to allow clients to inteface with storage v2.
 
-#### WIP
-
-```
+```shell
+# TODO: Docs
 POST /file
 GET  /jobs
 GET  /jobs/:id
@@ -148,14 +169,12 @@ GET  /long-term/file/:fileName
 GET  /job-results/:id
 ```
 
-#### POST /file
+**POST /file**
 
-Upload a track from the command line
+<i>Example: Upload a track</i>
 
 ```shell
-$ curl -v -F "files=@/private/var/orion/Music/mp3Archive/dub.mp3" -F "template=audio" http://0.0.0.0:9924/storage/file
-
-...
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1/storage/file
 
 [
   {
@@ -180,22 +199,8 @@ $ curl -v -F "files=@/private/var/orion/Music/mp3Archive/dub.mp3" -F "template=a
 ]
 ```
 
-### NATS Gateway
-
-The project uses [NATS](https://nats.io) as a connective substrate between nodes.
-
-### Access Control
-
-Signature validation.
-
 ---
 
-## Infrastructure
-
-> This section is specific to Tiki Labs
-
----
-
-## License
+# License
 
 Distributed under the Apache Version 2.0 license found in the [LICENSE](../../LICENSE) file
