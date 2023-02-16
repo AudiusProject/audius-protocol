@@ -102,7 +102,7 @@ trending.dev.restore::
 
 trending.dev.migrate::
 	@echo migrating testdb data into chdb
-	@	docker-compose exec ch_server bash /sql/all.sh
+	@	docker-compose exec chdb bash /sql/all.sh
 
 trending.dev.restore.up::
 	@echo starting dependencies and restoring from existing backup
