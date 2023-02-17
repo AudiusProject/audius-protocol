@@ -35,6 +35,10 @@
                 <data android:scheme="audius" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".tiktokapi.TikTokEntryActivity"
+            android:exported="true">
+        </activity>
 
         <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_name" android:value="Activity"/>
         <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_description" android:value="Your activity on Audius"/>

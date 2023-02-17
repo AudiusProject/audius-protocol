@@ -30,7 +30,7 @@
 				<key>CFBundleURLSchemes</key>
 				<array>
 					<string>audius</string>
-          <string>$(TIKTOK_APP_ID)</string>
+					<string>awa9re2w7ec3xrn6</string>
 				</array>
 			</dict>
 		</array>
@@ -45,13 +45,15 @@
 			<string>instagram-stories</string>
 			<string>instagram</string>
 			<string>itms-apps</string>
-      <string>snapchat</string>
-      <string>tiktoksharesdk</string>
-      <string>snssdk1180</string>
-      <string>snssdk1233</string>
+			<string>snapchat</string>
+			<string>tiktok</string>
+			<string>tiktokopensdk</string>
+			<string>tiktoksharesdk</string>
+			<string>snssdk1180</string>
+			<string>snssdk1233</string>
 		</array>
     <key>TikTokAppID</key>
-    <string>$(TIKTOK_APP_ID)</string>
+	<string>awa9re2w7ec3xrn6</string>
     <key>SCSDKClientId</key>
     <string>$(SCSDK_CLIENT_ID)</string>
     <key>SCSDKRedirectUrl</key>
