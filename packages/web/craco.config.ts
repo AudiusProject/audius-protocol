@@ -52,6 +52,12 @@ export default {
               exclude: /node_modules/,
               use: ['raw-loader', 'glslify-loader'],
               type: 'javascript/auto'
+            },
+            {
+              test: /\.m?js$/,
+              resolve: {
+                fullySpecified: false // disable the behavior
+              }
             }
           ]
         },
