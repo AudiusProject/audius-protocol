@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-import { FeatureFlags, tokenDashboardPageSelectors } from '@audius/common'
+import { tokenDashboardPageSelectors } from '@audius/common'
 import type {
   RenderQrcodeModalProps,
   WalletService
@@ -9,14 +9,13 @@ import {
   useWalletConnect,
   useWalletConnectContext
 } from '@walletconnect/react-native-dapp'
-import { Platform, View } from 'react-native'
+import { View, Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Text } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useDrawer } from 'app/hooks/useDrawer'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import type { AppState } from 'app/store'
 import { getData } from 'app/store/drawers/selectors'
 import { makeStyles } from 'app/styles'
@@ -31,6 +30,9 @@ const { getError } = tokenDashboardPageSelectors
 
 const SUPPORTED_SERVICES = new Set(['MetaMask', 'Rainbow'])
 const MODAL_NAME = 'ConnectWallets'
+
+const isSolanaPhone =
+  Platform.OS === 'android' && Platform.constants.Model === 'Saga'
 
 const messages = {
   title: 'Select Wallet',
@@ -74,9 +76,6 @@ export const WalletConnectDrawer = () => {
   const styles = useStyles()
   const { walletServices } = useWalletConnectContext()
   const canConnectNewWallet = useCanConnectNewWallet()
-  const { isEnabled: isSolPhoneEnabled } = useFeatureFlag(
-    FeatureFlags.SOLANA_PHONE_WALLET_CONNECT
-  )
 
   const supportedWalletServices = walletServices?.filter((service) =>
     SUPPORTED_SERVICES.has(service.name)
@@ -109,10 +108,11 @@ export const WalletConnectDrawer = () => {
           ) : null}
         </View>
         <View style={styles.walletConnectionList}>
-          {Platform.OS === 'android' && isSolPhoneEnabled ? (
+          {isSolanaPhone ? (
             <SolanaPhoneOption />
-          ) : null}
-          <PhantomWalletConnectOption />
+          ) : (
+            <PhantomWalletConnectOption />
+          )}
           {supportedWalletServices?.map((walletService: WalletService) => {
             return (
               <EthWalletConnectOption

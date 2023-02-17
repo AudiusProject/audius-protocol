@@ -6,11 +6,8 @@ import LogoEth from 'app/assets/images/logoEth.svg'
 import LogoSol from 'app/assets/images/logoSol.svg'
 import { makeStyles, shadow } from 'app/styles'
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
+const useStyles = makeStyles(({ palette }) => ({
   root: {
-    height: spacing(6),
-    width: spacing(6),
-    borderRadius: spacing(6) / 2,
     borderWidth: 1,
     borderColor: palette.neutralLight7,
     backgroundColor: palette.staticWhite,
@@ -23,15 +20,28 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
 export type ChainLogoProps = {
   chain: Chain
   style?: StyleProp<ViewStyle>
+  size?: number
 }
 
 export const ChainLogo = (props: ChainLogoProps) => {
-  const { chain, style } = props
+  const { chain, style, size = 24 } = props
   const styles = useStyles()
+  const rootStyle = [
+    styles.root,
+    style,
+    { height: size, width: size, borderRadius: size / 2 }
+  ]
+
+  const solIconSize = size * (2 / 3)
+  const ethIconSize = solIconSize * (9 / 8)
 
   return (
-    <View style={[styles.root, style]}>
-      {chain === 'eth' ? <LogoEth height={18} /> : <LogoSol height={16} />}
+    <View style={rootStyle}>
+      {chain === 'eth' ? (
+        <LogoEth height={ethIconSize} />
+      ) : (
+        <LogoSol height={solIconSize} />
+      )}
     </View>
   )
 }

@@ -16,16 +16,24 @@ const messages = {
   copied: 'Copied To Clipboard!'
 }
 
-const useStyles = makeStyles(({ spacing, palette }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   root: {
-    marginTop: spacing(12),
+    marginTop: spacing(6),
     flex: 1
   },
   linkedWalletsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginLeft: spacing(2),
-    marginRight: spacing(14)
+    paddingHorizontal: spacing(6),
+    flexDirection: 'row'
+  },
+  linkedWalletsText: {
+    flex: 6
+  },
+  audioAmountText: {
+    flex: 2,
+    textAlign: 'right'
+  },
+  gap: {
+    flex: 2
   },
   divider: {
     marginVertical: spacing(3)
@@ -75,6 +83,7 @@ export const LinkedWallets = () => {
     <View style={styles.root}>
       <View style={styles.linkedWalletsHeader}>
         <Text
+          style={styles.linkedWalletsText}
           fontSize='medium'
           textTransform='uppercase'
           weight='bold'
@@ -83,6 +92,7 @@ export const LinkedWallets = () => {
           {messages.linkedWallets}
         </Text>
         <Text
+          style={styles.audioAmountText}
           fontSize='medium'
           textTransform='uppercase'
           weight='bold'
@@ -90,6 +100,7 @@ export const LinkedWallets = () => {
         >
           {messages.audio}
         </Text>
+        <View style={styles.gap} />
       </View>
       <Divider style={styles.divider} />
       <FlatList

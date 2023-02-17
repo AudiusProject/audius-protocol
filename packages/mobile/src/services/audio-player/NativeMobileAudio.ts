@@ -21,4 +21,7 @@ export class NativeMobileAudio {
   getAudioPlaybackRate = () => 1.0
   onBufferingChange = () => {}
   onError = () => {}
+  setPlaybackRate = () => {}
+  getPlaybackRate = () => '1x' as const
+  getAudioPlaybackRate = () => 1
 }

@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { tokenDashboardPageSelectors } from '@audius/common'
+import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Button } from 'app/components/core'
@@ -20,8 +21,8 @@ const messages = {
 }
 
 const useStyles = makeStyles(({ spacing }) => ({
-  connectButton: {
-    marginTop: spacing(6)
+  root: {
+    margin: spacing(6)
   }
 }))
 
@@ -48,13 +49,15 @@ export const ConnectNewWalletButton = () => {
     : messages.connect
 
   return (
-    <Button
-      style={styles.connectButton}
-      title={title}
-      variant='primary'
-      size='large'
-      onPress={handleConnectWallet}
-      disabled={!canConnectNewWallet}
-    />
+    <View style={styles.root}>
+      <Button
+        title={title}
+        variant='primary'
+        size='large'
+        fullWidth
+        onPress={handleConnectWallet}
+        disabled={!canConnectNewWallet}
+      />
+    </View>
   )
 }

@@ -24,8 +24,10 @@ const messages = {
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
   root: {
     paddingVertical: spacing(4),
-    paddingHorizontal: spacing(4),
     flex: 1
+  },
+  header: {
+    marginHorizontal: spacing(6)
   },
   subtitle: {
     textAlign: 'center',
@@ -60,12 +62,14 @@ export const WalletConnectScreen = () => {
     >
       <ScreenContent>
         <View style={styles.root}>
-          <Text weight='bold' style={styles.subtitle}>
-            {messages.subtitle}
-          </Text>
-          <Text weight='medium' fontSize='medium' style={styles.text}>
-            {messages.text}
-          </Text>
+          <View style={styles.header}>
+            <Text weight='bold' style={styles.subtitle}>
+              {messages.subtitle}
+            </Text>
+            <Text weight='medium' fontSize='medium' style={styles.text}>
+              {messages.text}
+            </Text>
+          </View>
           <ConnectNewWalletButton />
           <LinkedWallets />
         </View>
