@@ -18,7 +18,7 @@ function isUserCollections(
   collections: CollectionMetadata[] | UserCollectionMetadata[]
 ): collections is UserCollectionMetadata[] {
   const [collection] = collections
-  return collection && 'user' in collections
+  return collection && 'user' in collection
 }
 
 /**
