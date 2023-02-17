@@ -122,6 +122,7 @@ const TrackAvailabilityModalContainer = (props) => {
         didUpdateState={props.didUpdateAvailabilityState}
         metadataState={props.availabilityState}
         isRemix={props.isRemix}
+        isUpload={props.isUpload}
       />
     )
   }
@@ -534,6 +535,7 @@ const AdvancedForm = (props) => {
           didUpdateAvailabilityState={didUpdateAvailabilityState}
           availabilityState={availabilityState}
           isRemix={!!props.defaultFields.remix_of?.tracks?.length}
+          isUpload={props.isUpload}
         />
       )}
       <div
@@ -897,6 +899,9 @@ FormTile.propTypes = {
   /** Transform artwork function to apply. */
   transformArtworkFunction: PropTypes.func,
 
+  /** Whether we are in the track upload flow */
+  isUpload: PropTypes.bool,
+
   /** Whether to show the unlisted/public button the modal */
   showUnlistedToggle: PropTypes.bool,
   /** In the unlisted visibility modal, do we let the user toggle
@@ -939,6 +944,7 @@ FormTile.defaultProps = {
   transformArtworkFunction: resizeImage,
   onChangeOrder: () => {},
   onChangeField: () => {},
+  isUpload: true,
   showUnlistedToggle: true,
   showHideTrackSectionInModal: true,
   children: [],

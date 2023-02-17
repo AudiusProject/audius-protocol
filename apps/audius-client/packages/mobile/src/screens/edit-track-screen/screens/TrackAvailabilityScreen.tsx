@@ -95,6 +95,8 @@ export const TrackAvailabilityScreen = () => {
   const [{ value: isUnlisted }] = useField<boolean>('is_unlisted')
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
   const isRemix = !!remixOf
+  const [{ value: trackId }] = useField<boolean>('track_id')
+  const isUpload = !trackId
 
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getVerifiedUserCollections
@@ -102,7 +104,8 @@ export const TrackAvailabilityScreen = () => {
   const numEthCollectibles = Object.keys(ethCollectionMap).length
   const numSolCollectibles = Object.keys(solCollectionMap).length
   const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
-  const isCollectibleGateDisabled = hasNoCollectibles || isRemix
+  const noCollectibleGate = hasNoCollectibles || isRemix || !isUpload
+  const noSpecialAccess = isRemix || !isUpload
 
   const initialAvailability = useMemo(() => {
     if ('nft_collection' in (premiumConditions ?? {})) {
@@ -127,12 +130,12 @@ export const TrackAvailabilityScreen = () => {
     {
       label: specialAccessAvailability,
       value: specialAccessAvailability,
-      disabled: isRemix
+      disabled: noSpecialAccess
     },
     {
       label: collectibleGatedAvailability,
       value: collectibleGatedAvailability,
-      disabled: isCollectibleGateDisabled
+      disabled: noCollectibleGate
     },
     { label: hiddenAvailability, value: hiddenAvailability }
   ]
@@ -146,13 +149,13 @@ export const TrackAvailabilityScreen = () => {
     [specialAccessAvailability]: isSpecialAccessGateEnabled ? (
       <SpecialAccessAvailability
         selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
-        disabled={isRemix}
+        disabled={noSpecialAccess}
       />
     ) : null,
     [collectibleGatedAvailability]: isNFTGateEnabled ? (
       <CollectibleGatedAvailability
         selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
-        disabled={isCollectibleGateDisabled}
+        disabled={noCollectibleGate}
       />
     ) : null,
     [hiddenAvailability]: (

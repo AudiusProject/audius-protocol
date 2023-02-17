@@ -21,7 +21,9 @@ import {
   IconCollectible,
   IconLock,
   IconSpecialAccess,
-  IconUnlocked
+  IconUnlocked,
+  LogoEth,
+  LogoSol
 } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -125,10 +127,17 @@ const LockedPremiumTrackSection = ({
           <div>{messages.unlockCollectibleGatedTrack}</div>
           <div className={styles.premiumContentSectionCollection}>
             {premiumConditions.nft_collection.imageUrl && (
-              <img
-                src={premiumConditions.nft_collection.imageUrl}
-                alt={`${premiumConditions.nft_collection.name} nft collection`}
-              />
+              <div className={styles.collectionIconsContainer}>
+                <img
+                  src={premiumConditions.nft_collection.imageUrl}
+                  alt={`${premiumConditions.nft_collection.name} nft collection`}
+                />
+                {premiumConditions.nft_collection.chain === Chain.Eth ? (
+                  <LogoEth className={styles.collectionChainIcon} />
+                ) : (
+                  <LogoSol className={styles.collectionChainIcon} />
+                )}
+              </div>
             )}
             {premiumConditions.nft_collection.name}
           </div>

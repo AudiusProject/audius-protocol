@@ -11,22 +11,21 @@
   border: none;
 }
 
-.radioItem::before {
+.radioButton {
   position: absolute;
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  content: ' ';
   background: var(--neutral-light-6);
   box-shadow: inset 2px 2px 2px rgba(0, 0, 0, 0.1);
 }
 
-.selected.radioItem::before {
+.selected.radioButton {
   background: var(--white);
   border: 6px solid var(--secondary);
 }
 
-.disabled.radioItem::before {
+.disabled.radioButton {
   background: var(--neutral-light-7);
   border: unset;
 }
@@ -36,6 +35,11 @@
 }
 
 .radioItemContent {
-  width: calc(100% - 28px);
-  margin-left: 28px;
+  width: 100%;
+}
+
+.radioItemContent > *:not(.radioButton) {
+  position: relative;
+  left: 32px;
+  width: calc(100% - 32px);
 }

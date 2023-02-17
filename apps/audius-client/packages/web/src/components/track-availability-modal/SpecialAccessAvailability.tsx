@@ -43,6 +43,7 @@ export const SpecialAccessAvailability = ({
         }
       }}
       className={styles.specialAccessRadioItem}
+      contentClassName={styles.specialAccessRadioItemContent}
     >
       <div>{messages.followersOnly}</div>
     </ModalRadioItem>,

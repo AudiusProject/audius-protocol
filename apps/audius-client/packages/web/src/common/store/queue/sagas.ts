@@ -22,7 +22,10 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  getContext
+  premiumContentSelectors,
+  getContext,
+  FeatureFlags,
+  Track
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -43,6 +46,8 @@ const {
   getUndershot
 } = queueSelectors
 
+const { getPremiumTrackSignatureMap } = premiumContentSelectors
+
 const { getTrackId: getPlayerTrackId, getUid: getPlayerUid } = playerSelectors
 
 const { add, clear, next, pause, play, queueAutoplay, previous, remove } =
@@ -54,6 +59,30 @@ const { getCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
+
+function* doesUserHaveTrackAccess(track: Nullable<Track>) {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isPremiumContentEnabled = getFeatureEnabled(
+    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  )
+  if (!isPremiumContentEnabled) {
+    return true
+  }
+
+  const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
+
+  const {
+    track_id: trackId,
+    is_premium: isPremium,
+    premium_content_signature: premiumContentSignature
+  } = track ?? {}
+
+  const hasPremiumContentSignature =
+    !!premiumContentSignature ||
+    !!(trackId && premiumTrackSignatureMap[trackId])
+
+  return !isPremium || hasPremiumContentSignature
+}
 
 export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
   if (entry.kind === Kind.COLLECTIONS) {
@@ -302,8 +331,16 @@ export function* watchNext() {
     const id = (yield* select(getQueueTrackId)) as ID
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
-    // Skip deleted or owner deactivated track
-    if (track && (track.is_delete || user?.is_deactivated)) {
+    const doesUserHaveAccess = yield* call(
+      doesUserHaveTrackAccess,
+      track ?? null
+    )
+
+    // Skip deleted, owner deactivated, or locked premium track
+    if (
+      track &&
+      (track.is_delete || user?.is_deactivated || !doesUserHaveAccess)
+    ) {
       yield* put(next({ skip }))
     } else {
       const uid = yield* select(getUid)
@@ -383,10 +420,17 @@ export function* watchPrevious() {
       const track = yield* select(getTrack, { id })
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
+      const doesUserHaveAccess = yield* call(
+        doesUserHaveTrackAccess,
+        track ?? null
+      )
 
       // If we move to a previous song that's been
-      // deleted, skip over it.
-      if (track && (track.is_delete || user?.is_deactivated)) {
+      // deleted or to which the user does not have access, skip over it.
+      if (
+        track &&
+        (track.is_delete || user?.is_deactivated || !doesUserHaveAccess)
+      ) {
         yield* put(previous())
       } else {
         const index = yield* select(getIndex)

@@ -10,6 +10,7 @@ type ModalRadioItemProps = {
   onClick: (e: any) => void
   disabled?: boolean
   className?: string
+  contentClassName?: string
 }
 
 export const ModalRadioItem = ({
@@ -17,17 +18,21 @@ export const ModalRadioItem = ({
   onClick,
   children,
   disabled = false,
-  className
+  className,
+  contentClassName
 }: ModalRadioItemProps) => {
   return (
-    <div
-      className={cn(
-        styles.radioItem,
-        { [styles.selected]: selected, [styles.disabled]: disabled },
-        className
-      )}
-    >
-      <div className={styles.radioItemContent} onClick={onClick}>
+    <div className={cn(styles.radioItem, className)}>
+      <div
+        className={cn(styles.radioItemContent, contentClassName)}
+        onClick={onClick}
+      >
+        <span
+          className={cn(styles.radioButton, {
+            [styles.selected]: selected,
+            [styles.disabled]: disabled
+          })}
+        />
         {children}
       </div>
     </div>
