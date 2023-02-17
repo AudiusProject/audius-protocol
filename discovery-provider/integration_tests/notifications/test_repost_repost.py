@@ -221,3 +221,57 @@ def test_repost_repost_notification_within_month(app, entities):
             data=notification_data(user_id=3, repost_repost_item_id=100),
             user_ids=[],
         )
+
+
+def test_repost_repost_notification_mult_reposts(app, entities):
+    """Tests that a repost notification is created on repost  correctly"""
+    with app.app_context():
+        db = get_db()
+
+    populate_mock_db(db, entities)
+    repost_entities = {
+        "reposts": [
+            {
+                "user_id": 1,
+                "repost_item_id": 100,
+                "repost_type": RepostType.track,
+                "is_current": False,
+                "is_delete": False,
+                "is_repost_repost": False,
+            },
+            {
+                "user_id": 1,
+                "repost_item_id": 100,
+                "repost_type": RepostType.track,
+                "is_repost_repost": False,
+            },
+            {
+                "user_id": 3,
+                "repost_item_id": 100,
+                "repost_type": RepostType.track,
+                "is_repost_repost": True,
+            },
+        ],
+    }
+    populate_mock_db(db, repost_entities)
+
+    with db.scoped_session() as session:
+        notifications: List[Notification] = (
+            session.query(Notification)
+            .filter(Notification.type == "repost_repost")
+            .all()
+        )
+        # User 1 reposted content 2020-01-01, notify content owner
+        assert len(notifications) == 1
+        # User 3 reposted user 1's repost over a month later
+        # User 1 should not be notified
+        assert_notification(
+            notification=notifications[0],
+            specifier="3",
+            group_id="repost_repost:100:type:track",
+            type="repost_repost",
+            slot=None,
+            blocknumber=7,
+            data=notification_data(user_id=3, repost_repost_item_id=100),
+            user_ids=[1],
+        )
