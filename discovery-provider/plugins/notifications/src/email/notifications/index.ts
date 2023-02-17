@@ -236,6 +236,7 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
     const hours = 1
     const startOffset = now.clone().subtract(days, 'days').subtract(hours, 'hours')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
+    console.log(`usersCanNotify: ${JSON.stringify(users)}`)
     if (Object.keys(users).length == 0) {
       // TODO remove
       console.log("No users to notify")
@@ -244,6 +245,7 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
 
     const notifications = await getNotifications(dnDb, frequency, startOffset, Object.keys(users))
     const groupedNotifications = groupNotifications(notifications, users)
+    console.log({ groupedNotifications })
 
     // TODO Validate their timezones to send at the right time!
 

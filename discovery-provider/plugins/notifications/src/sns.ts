@@ -53,6 +53,7 @@ export const sendIOSMessage = async ({
   targetARN: string
 }) => {
   const message = JSON.stringify({
+    ['default']: 'Default message',
     [ARN]: {
       aps: {
         alert: {
