@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import { useState, useEffect } from 'react'
 
 import type { Modals } from '@audius/common'
 
@@ -38,6 +39,29 @@ import { VipDiscordDrawer } from '../components/vip-discord-drawer'
 import { useDrawer } from '../hooks/useDrawer'
 import type { Drawer } from '../store/drawers/slice'
 
+/*
+ * Conditionally renders a drawer based on visibility state
+ */
+const useIsDrawerVisible = (visibleState: boolean | 'closing') => {
+  const [isVisible, setIsVisible] = useState(false)
+
+  // We need to wait some time before unmounting the drawer to let
+  // animations clear entirely
+  useEffect(() => {
+    let visibilityTimeout: NodeJS.Timeout
+    if (visibleState === false) {
+      visibilityTimeout = setTimeout(() => {
+        setIsVisible(false)
+      }, 100)
+    } else if (visibleState === true) {
+      setIsVisible(true)
+    }
+    return () => clearTimeout(visibilityTimeout)
+  }, [visibleState])
+
+  return isVisible
+}
+
 type CommonDrawerProps = {
   modal: ComponentType
   modalName: Modals
@@ -46,11 +70,12 @@ type CommonDrawerProps = {
 /*
  * Conditionally renders the drawers hooked up to audius-client/src/common/ui/modal slice
  */
-const CommonDrawer = ({ modal: Modal, modalName }: CommonDrawerProps) => {
+const CommonDrawer = (props: CommonDrawerProps) => {
+  const { modal: Modal, modalName } = props
   const { modalState } = useDrawerState(modalName)
+  const isVisible = useIsDrawerVisible(modalState)
 
-  if (modalState === false) return null
-
+  if (!isVisible) return null
   return <Modal />
 }
 
@@ -62,14 +87,12 @@ type NativeDrawerProps = {
 /*
  * Conditionally renders the drawers hooked up to native store/drawers slice
  */
-export const NativeDrawer = ({
-  drawer: Drawer,
-  drawerName
-}: NativeDrawerProps) => {
+export const NativeDrawer = (props: NativeDrawerProps) => {
+  const { drawer: Drawer, drawerName } = props
   const { visibleState } = useDrawer(drawerName)
+  const isVisible = useIsDrawerVisible(visibleState)
 
-  if (visibleState === false) return null
-
+  if (!isVisible) return null
   return <Drawer />
 }
 
@@ -123,7 +146,7 @@ export const Drawers = () => {
     <>
       {commonDrawers.map(([modalName, Modal]) => {
         return (
-          <CommonDrawer modal={Modal} modalName={modalName} key={modalName} />
+          <CommonDrawer key={modalName} modal={Modal} modalName={modalName} />
         )
       })}
       {nativeDrawers.map(([drawerName, Drawer]) => (
