@@ -8,6 +8,7 @@ address = "0.0.0.0:8686"
 type = "docker_logs"
 docker_host = "/var/run/docker.sock"
 include_containers = [ "audius/" ]
+exclude_containers = []
 
 [sinks.axiom]
 type = "axiom"
