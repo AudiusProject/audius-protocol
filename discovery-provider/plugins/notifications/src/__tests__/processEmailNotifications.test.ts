@@ -335,8 +335,8 @@ describe('Email Notifications', () => {
     await setUserEmailAndSettings(identityDB, userFrequency, user2)
 
     // User 2 received an email notifications 5 days and 15 minutes ago
-    const previousEmail1Timestamp = new Date(moment().clone().subtract(15, 'minutes').utc().valueOf())
-    const previousEmail2Timestamp = new Date(moment().clone().subtract(5, 'days').utc().valueOf())
+    const previousEmail1Timestamp = new Date(moment.utc().clone().subtract(15, 'minutes').valueOf())
+    const previousEmail2Timestamp = new Date(moment.utc().clone().subtract(5, 'days').valueOf())
     await insertNotificationEmails(identityDB, [
       {
         emailFrequency: enum_NotificationEmails_emailFrequency[emailFrequency],

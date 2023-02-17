@@ -34,7 +34,6 @@ const Results = Object.freeze({
 const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment): Promise<EmailUsers> => {
   const validLastEmailOffset = startOffset.subtract(2, 'hours')
   console.log(`processEmailNotifications: valid last email offset: ${validLastEmailOffset}`)
-  // need to get the max timestamp email (last sent)
   const userRows: { blockchainUserId: number, email: string }[] = await identityDb
     .select(
       'Users.blockchainUserId',
