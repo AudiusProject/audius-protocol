@@ -32,8 +32,8 @@ var seedCmd = &cobra.Command{
 	./comms storage seed image
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		imageCmd.Execute()
-		audioCmd.Execute()
+		imageCmd.Run(cmd, args)
+		audioCmd.Run(cmd, args)
 	},
 }
 
