@@ -313,7 +313,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 
 	// notify any waiters of apply result
 	proc.Lock()
-	if waiter, ok := proc.waiters[meta.Sequence.Consumer]; ok {
+	if waiter, ok := proc.waiters[meta.Sequence.Stream]; ok {
 		waiter <- err
 	}
 	proc.Unlock()
