@@ -57,7 +57,7 @@ func (ts *TrendingServer) GetTrendingTracks(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.String(http.StatusOK, res)
+	return OKRes(c, res)
 }
 
 func (ts *TrendingServer) GetTrendingPlaylists(c echo.Context) error {
@@ -65,7 +65,7 @@ func (ts *TrendingServer) GetTrendingPlaylists(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.String(http.StatusOK, res)
+	return OKRes(c, res)
 }
 
 func (ts *TrendingServer) GetHealth(c echo.Context) error {
@@ -74,4 +74,8 @@ func (ts *TrendingServer) GetHealth(c echo.Context) error {
 		return c.String(http.StatusOK, "healthy :)")
 	}
 	return c.String(http.StatusInternalServerError, "BANG!")
+}
+
+func OKRes(c echo.Context, i interface{}) error {
+	return c.JSON(http.StatusOK, i)
 }

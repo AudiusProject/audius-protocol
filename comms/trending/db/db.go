@@ -2,6 +2,6 @@ package db
 
 type DB interface {
 	CheckHealth() bool
-	QueryTrendingTracks() (string, error)
-	QueryTrendingPlaylists() (string, error)
+	QueryTrendingTracks() ([]TrackEntity, error)
+	QueryTrendingPlaylists() ([]PlaylistEntity, error)
 }

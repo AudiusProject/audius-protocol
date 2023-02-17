@@ -64,10 +64,10 @@ func (ch ClickHouseDB) CheckHealth() bool {
 	return nil == ch.CHDB.Ping(context.Background())
 }
 
-func (ch ClickHouseDB) QueryTrendingTracks() (string, error) {
-	return "i checked and found nothing!", nil
+func (ch ClickHouseDB) QueryTrendingTracks() ([]TrackEntity, error) {
+	return []TrackEntity{}, nil
 }
 
-func (ch ClickHouseDB) QueryTrendingPlaylists() (string, error) {
-	return "i checked and also found nothing!", nil
+func (ch ClickHouseDB) QueryTrendingPlaylists() ([]PlaylistEntity, error) {
+	return []PlaylistEntity{}, nil
 }
