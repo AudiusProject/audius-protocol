@@ -66,32 +66,19 @@ func (ch ClickHouseDB) CheckHealth() bool {
 
 func (ch ClickHouseDB) QueryTrendingTracks() ([]TrackEntity, error) {
 	// for now select first 10 tracks
-	query := `
-		select * from tracks order by track_id limit 0,10;
-	`
-	var result []struct {
-		TrackID       uint32    `ch:"track_id"`
-		OwnerID       uint32    `ch:"owner_id"`
-		RouteID       string    `ch:"route_id"`
-		IsUnlisted    bool      `ch:"is_unlisted"`
-		Title         string    `ch:"title"`
-		Tags          string    `ch:"tags"`
-		Genre         string    `ch:"genre"`
-		Mood          string    `ch:"mood"`
-		TrackSegments string    `ch:"track_segments"`
-		CreatedAt     time.Time `ch:"created_at"`
-		UpdatedAt     time.Time `ch:"updated_at"`
-	}
+	query := `select * from tracks order by track_id limit 0,10;`
+	var result = []TrackEntity{}
 	if err := ch.CHDB.Select(context.Background(), &result, query); err != nil {
 		return nil, err
 	}
-	var te []TrackEntity = []TrackEntity{}
-	for _, r := range result {
-		te = append(te, TrackEntity(r))
-	}
-	return te, nil
+	return result, nil
 }
 
 func (ch ClickHouseDB) QueryTrendingPlaylists() ([]PlaylistEntity, error) {
-	return []PlaylistEntity{}, nil
+	query := `select * from playlists order by playlist_id limit 0,10;`
+	var result = []PlaylistEntity{}
+	if err := ch.CHDB.Select(context.Background(), &result, query); err != nil {
+		return nil, err
+	}
+	return result, nil
 }
