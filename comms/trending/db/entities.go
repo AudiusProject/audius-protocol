@@ -2,6 +2,7 @@ package db
 
 import "time"
 
+// fields must match name and casing in clickhouse
 type TrackEntity struct {
 	TrackID       uint32
 	OwnerID       uint32
