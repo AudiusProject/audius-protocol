@@ -190,6 +190,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_premium=track_meta.get("is_premium", False),
                 premium_conditions=track_meta.get("premium_conditions", None),
                 is_playlist_upload=track_meta.get("is_playlist_upload", False),
+                track_cid=track_meta.get("track_cid", None),
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
