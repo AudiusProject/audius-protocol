@@ -32,7 +32,9 @@ const Results = Object.freeze({
 })
 
 const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment): Promise<EmailUsers> => {
-  const validLastEmailOffset = startOffset.subtract(2, 'hour')
+  const validLastEmailOffset = startOffset.subtract(2, 'hours')
+  console.log(`processEmailNotifications: valid last email offset: ${validLastEmailOffset}`)
+  // need to get the max timestamp email (last sent)
   const userRows: { blockchainUserId: number, email: string }[] = await identityDb
     .select(
       'Users.blockchainUserId',
@@ -40,7 +42,15 @@ const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, st
     )
     .from('Users')
     .join('UserNotificationSettings', 'UserNotificationSettings.userId', 'Users.blockchainUserId')
-    .leftJoin('NotificationEmails', 'NotificationEmails.userId', 'Users.blockchainUserId')
+    .leftJoin('NotificationEmails', function () {
+      this
+        .on('NotificationEmails.userId', '=', 'Users.blockchainUserId')
+        .andOn(
+          'NotificationEmails.timestamp',
+          '=',
+          identityDb.raw('(SELECT MAX(timestamp) FROM "NotificationEmails" e WHERE e."userId" = "Users"."blockchainUserId")')
+        )
+    })
     .where('Users.isEmailDeliverable', true)
     .where(function () {
       this.where('NotificationEmails', null).orWhere('NotificationEmails.timestamp', '<', validLastEmailOffset)
@@ -219,13 +229,13 @@ const groupNotifications = (notifications: EmailNotification[], users: EmailUser
 
 export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, frequency: EmailFrequency) {
   try {
-    const now = moment()
+    const now = moment.utc()
     let days = 1
     if (frequency == 'weekly') {
       days = 7
     }
     const hours = 1
-    const startOffset = now.clone().subtract(days, 'days').subtract(hours, 'hour')
+    const startOffset = now.clone().subtract(days, 'days').subtract(hours, 'hours')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
     if (Object.keys(users).length == 0) {
       // TODO remove

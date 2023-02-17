@@ -79,7 +79,9 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
   const cursors = await getCursors(redis)
   console.log(`dmNotifications task: retrieved redis cursors: ${JSON.stringify(cursors)}`)
   const unreadMessages = await getUnreadMessages(discoveryDB, cursors.minMessageTimestamp, cursors.maxTimestamp)
+  console.log(`dmNotifications: unread message notifications: ${JSON.stringify(unreadMessages)}`)
   const unreadReactions = await getUnreadReactions(discoveryDB, cursors.minReactionTimestamp, cursors.maxTimestamp)
+  console.log(`dmNotifications: unread message reaction notifications: ${JSON.stringify(unreadReactions)}`)
 
   // Convert to notifications
   const messageNotifications = unreadMessages.map(message => new Message(discoveryDB, identityDB, message))

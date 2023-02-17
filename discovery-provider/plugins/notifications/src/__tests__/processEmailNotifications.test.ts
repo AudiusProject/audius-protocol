@@ -1,16 +1,21 @@
 import { expect, jest, test } from '@jest/globals';
+import moment from 'moment-timezone'
 import { Knex } from 'knex'
 
 import { DMEntityType } from '../email/notifications/types'
+import { enum_NotificationEmails_emailFrequency } from '../types/identity'
 import { config } from '../config'
 import { getDB } from '../conn'
 import * as sendEmail from '../email/notifications/sendEmail'
 import { processEmailNotifications } from '../email/notifications/index'
-import { createTestDB, dropTestDB, replaceDBName, randId, createUsers, createChat, readChat, insertMessage, insertReaction, insertNotifications, setUserEmailAndSettings } from '../utils/populateDB';
+import { createTestDB, dropTestDB, replaceDBName, randId, createUsers, createChat, readChat, insertMessage, insertReaction, insertNotifications, insertNotificationEmails, setUserEmailAndSettings } from '../utils/populateDB';
 
 describe('Email Notifications', () => {
   let discoveryDB: Knex
   let identityDB: Knex
+  const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
+    .mockImplementation(() => Promise.resolve(true))
+
   beforeEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
     await Promise.all([
@@ -35,9 +40,6 @@ describe('Email Notifications', () => {
   })
 
   test("Process unread message", async () => {
-    const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
-      .mockImplementation(() => Promise.resolve(true))
-
     // Setup users and settings
     const user1 = 1
     const user2 = 2
@@ -72,9 +74,6 @@ describe('Email Notifications', () => {
   })
 
   test("Process unread reaction", async () => {
-    const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
-      .mockImplementation(() => Promise.resolve(true))
-
     // Setup users and settings
     const user1 = 1
     const user2 = 2
@@ -119,9 +118,6 @@ describe('Email Notifications', () => {
   })
 
   test("Process multiple unread messages", async () => {
-    const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
-      .mockImplementation(() => Promise.resolve(true))
-
     // Setup users and settings
     const user1 = 1
     const user2 = 2
@@ -187,9 +183,6 @@ describe('Email Notifications', () => {
   })
 
   test("Do not process message notifications before delay", async () => {
-    const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
-      .mockImplementation(() => Promise.resolve(true))
-
     // Setup users and settings
     const user1 = 1
     const user2 = 2
@@ -210,8 +203,6 @@ describe('Email Notifications', () => {
     // User 2 reacts now
     const reactionTimestamp = new Date(Date.now())
     await readChat(discoveryDB, user2, chatId, reactionTimestamp)
-
-    // User 2 reacted to user 1's message config.dmNotificationDelay ms ago
     const reaction = "heart"
     await insertReaction(discoveryDB, user2, messageId, reaction, reactionTimestamp)
 
@@ -243,9 +234,6 @@ describe('Email Notifications', () => {
   })
 
   test("Unread message notifications are included in live email notification triggered by an app notification", async () => {
-    const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
-      .mockImplementation(() => Promise.resolve(true))
-
     // Setup users and settings
     const user1 = 1
     const user2 = 2
@@ -299,9 +287,6 @@ describe('Email Notifications', () => {
   })
 
   test("Process new app notification", async () => {
-    const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
-      .mockImplementation(() => Promise.resolve(true))
-
     // Setup users and settings
     const user1 = 1
     const user2 = 2
@@ -337,5 +322,43 @@ describe('Email Notifications', () => {
       dnDb: discoveryDB,
       identityDb: identityDB
     })
+  })
+
+  test("Do not send emails to users that have received an email recently", async () => {
+    // Setup users and settings
+    const user1 = 1
+    const user2 = 2
+    const userFrequency = 'live'
+    const emailFrequency = 'daily'
+    await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
+    await setUserEmailAndSettings(identityDB, userFrequency, user1)
+    await setUserEmailAndSettings(identityDB, userFrequency, user2)
+
+    // User 2 received an email notifications 5 days and 15 minutes ago
+    const previousEmail1Timestamp = new Date(moment().clone().subtract(15, 'minutes').utc().valueOf())
+    const previousEmail2Timestamp = new Date(moment().clone().subtract(5, 'days').utc().valueOf())
+    await insertNotificationEmails(identityDB, [
+      {
+        emailFrequency: enum_NotificationEmails_emailFrequency[emailFrequency],
+        timestamp: previousEmail1Timestamp,
+        userId: user2
+      },
+      {
+        emailFrequency: enum_NotificationEmails_emailFrequency[emailFrequency],
+        timestamp: previousEmail2Timestamp,
+        userId: user2
+      },
+    ])
+
+    // User 1 sent message config.dmNotificationDelay mins ago
+    const message = "hi from user 1"
+    const messageId = randId().toString()
+    const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
+    const chatId = randId().toString()
+    await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
+    await insertMessage(discoveryDB, user1, chatId, messageId, message, messageTimestamp)
+
+    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
+    expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(0)
   })
 })
