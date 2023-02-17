@@ -39,7 +39,7 @@ to quickly create a Cobra application.`,
 			}
 
 			filename := fmt.Sprintf("seed-%d.png", i)
-			err = uploadPng(imageData, filename)
+			err = uploadPng(NODE1, imageData, filename)
 			if err != nil {
 				fmt.Printf("error uploading image %d\n", i)
 				continue
@@ -71,7 +71,9 @@ func getRandomPng(seed string) ([]byte, error) {
 	return body, nil
 }
 
-func uploadPng(imageData []byte, filename string) error {
+func uploadPng(node string, imageData []byte, filename string) error {
+	route := "/storage/file"
+
 	values := map[string]io.Reader{
 		"files":    bytes.NewReader(imageData),
 		"template": strings.NewReader("img_square"),
@@ -113,7 +115,8 @@ func uploadPng(imageData []byte, filename string) error {
 	w.Close()
 
 	// Submit the request
-	res, err := http.Post(fmt.Sprintf("%s/storage/file", NODE1), w.FormDataContentType(), &b)
+	url := fmt.Sprintf("%s%s", node, route)
+	res, err := http.Post(url, w.FormDataContentType(), &b)
 	if err != nil {
 		fmt.Printf("Error doing Post %+v\n", err)
 		return err
