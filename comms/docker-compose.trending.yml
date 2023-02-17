@@ -6,6 +6,7 @@ services:
      - "8123:8123"
      - "9000:9000"
      - "9009:9009"
+     - "9005:9005" # postgres port
     ulimits:
       nproc: 65535
       nofile:
