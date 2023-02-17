@@ -263,7 +263,6 @@ describe('Render email', () => {
       dnDb: processor.discoveryDB,
       identityDb: processor.identityDB
     })
-    console.log(notifHtml)
     expect(notifHtml).toMatchSnapshot()
   })
 

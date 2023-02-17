@@ -7,6 +7,7 @@ import { program } from 'commander'
 import { Knex } from 'knex'
 import { AppNotificationsProcessor } from './processNotifications/indexAppNotifications'
 import { sendDMNotifications } from './tasks/dmNotifications'
+import { processEmailNotifications } from './email/notifications/index'
 import { sendAppNotifications } from './tasks/appNotifications'
 
 export class Processor {
@@ -61,6 +62,9 @@ export class Processor {
       // NOTE: Temp to stop app notifiations
       // await sendAppNotifications(this.listener, this.appNotificationsProcessor)
       await sendDMNotifications(this.discoveryDB, this.identityDB)
+      // NOTE: Temp to test DM notifs in staging
+      // TODO change to 'live'
+      await processEmailNotifications(this.discoveryDB, this.identityDB, 'daily')
 
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))

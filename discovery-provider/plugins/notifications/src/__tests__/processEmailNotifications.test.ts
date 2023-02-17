@@ -8,7 +8,7 @@ import * as sendEmail from '../email/notifications/sendEmail'
 import { processEmailNotifications } from '../email/notifications/index'
 import { createTestDB, dropTestDB, replaceDBName, randId, createUsers, createChat, readChat, insertMessage, insertReaction, insertNotifications, setUserEmailAndSettings } from '../utils/populateDB';
 
-describe.skip('Email Notifications', () => {
+describe('Email Notifications', () => {
   let discoveryDB: Knex
   let identityDB: Knex
   beforeEach(async () => {
@@ -66,7 +66,8 @@ describe.skip('Email Notifications', () => {
       email: user2Email,
       frequency: emailFrequency,
       notifications: expectedNotifications,
-      dnDb: discoveryDB
+      dnDb: discoveryDB,
+      identityDb: identityDB
     })
   })
 
@@ -112,7 +113,8 @@ describe.skip('Email Notifications', () => {
       email: user1Email,
       frequency: emailFrequency,
       notifications: expectedNotifications,
-      dnDb: discoveryDB
+      dnDb: discoveryDB,
+      identityDb: identityDB
     })
   })
 
@@ -171,14 +173,16 @@ describe.skip('Email Notifications', () => {
       email: user2Email,
       frequency: emailFrequency,
       notifications: expectedUser2Notifications,
-      dnDb: discoveryDB
+      dnDb: discoveryDB,
+      identityDb: identityDB
     })
     expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
       userId: user1,
       email: user1Email,
       frequency: emailFrequency,
       notifications: expectedUser1Notifications,
-      dnDb: discoveryDB
+      dnDb: discoveryDB,
+      identityDb: identityDB
     })
   })
 
@@ -289,7 +293,8 @@ describe.skip('Email Notifications', () => {
       email: user2Email,
       frequency: frequency,
       notifications: expect.arrayContaining(expectedNotifications),
-      dnDb: discoveryDB
+      dnDb: discoveryDB,
+      identityDb: identityDB
     })
   })
 
@@ -329,7 +334,8 @@ describe.skip('Email Notifications', () => {
       email: user2Email,
       frequency: frequency,
       notifications: expectedNotifications,
-      dnDb: discoveryDB
+      dnDb: discoveryDB,
+      identityDb: identityDB
     })
   })
 })
