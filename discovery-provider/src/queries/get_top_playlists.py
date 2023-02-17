@@ -2,7 +2,6 @@ import enum
 import logging
 from typing import Optional, TypedDict
 
-from flask import request
 from sqlalchemy import desc
 from src import exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
