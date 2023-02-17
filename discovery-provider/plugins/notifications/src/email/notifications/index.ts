@@ -32,9 +32,7 @@ const Results = Object.freeze({
 })
 
 const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment): Promise<EmailUsers> => {
-  // NOTE: Temp to test in staging
-  // const validLastEmailOffset = startOffset.subtract(2, 'hour')
-  const validLastEmailOffset = moment() // TODO remove
+  const validLastEmailOffset = startOffset.subtract(2, 'hour')
   const userRows: { blockchainUserId: number, email: string }[] = await identityDb
     .select(
       'Users.blockchainUserId',
@@ -129,11 +127,14 @@ WHERE chat_message_reactions.updated_at > :start_offset AND chat_message_reactio
 `
 
 const getNotifications = async (dnDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment, userIds: string[]): Promise<EmailNotification[]> => {
-  const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
-    start_offset: startOffset,
-    user_ids: [[userIds]]
-  })
-  const appNotifications: EmailNotification[] = appNotificationsResp.rows
+  // NOTE: Temp while testing DM notifs on staging
+  // const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
+  //   start_offset: startOffset,
+  //   user_ids: [[userIds]]
+  // })
+  // const appNotifications: EmailNotification[] = appNotificationsResp.rows
+  // TODO remove
+  const appNotifications: EmailNotification[] = []
 
   // This logic is to handle a 'live' frequency exception for message notifications so as to not spam users with
   // live email notifications for every new message action.
@@ -227,6 +228,8 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
     const startOffset = now.clone().subtract(days, 'days').subtract(hours, 'hour')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
     if (Object.keys(users).length == 0) {
+      // TODO remove
+      console.log("No users to notify")
       return
     }
 

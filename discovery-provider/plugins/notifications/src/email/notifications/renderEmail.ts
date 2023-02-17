@@ -177,7 +177,6 @@ const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications:
     tracks: new Set(),
     playlists: new Set(),
   }
-  console.log({ notifications })
 
   const mappedNotifications: BaseNotification<any>[] = mapNotifications(notifications, dnDB, identityDB)
   for (const notification of mappedNotifications) {
@@ -239,7 +238,6 @@ export const renderEmail = async ({
 
   const notificationCount = notifications.length
   const notificationProps = await getNotificationProps(dnDb, identityDb, notifications.slice(0, 5))
-  console.log({ notificationProps })
   const renderProps = {
     copyrightYear: new Date().getFullYear().toString(),
     notifications: notificationProps,

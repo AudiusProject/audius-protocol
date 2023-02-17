@@ -66,9 +66,10 @@ function setLastIndexedTimestamp(redis: RedisClientType, redisKey: string, maxTi
     notifications.sort(notificationTimestampComparator)
     const lastIndexedTimestamp = notifications[notifications.length - 1].notification.timestamp.toISOString()
     redis.set(redisKey, lastIndexedTimestamp)
-    console.log(`setting last indexed timestamp to ${lastIndexedTimestamp} for key ${redisKey}`)
+    console.log(`dmNotifications task: setting last indexed timestamp to ${lastIndexedTimestamp} for key ${redisKey}`)
   } else {
     redis.set(redisKey, maxTimestamp.toISOString())
+    console.log(`dmNotifications task: setting last indexed timestamp to ${maxTimestamp.toISOString()} for key ${redisKey}`)
   }
 }
 
@@ -76,6 +77,7 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
   // Query DN for unread messages and reactions between min and max cursors
   const redis = await getRedisConnection()
   const cursors = await getCursors(redis)
+  console.log(`dmNotifications task: retrieved redis cursors: ${JSON.stringify(cursors)}`)
   const unreadMessages = await getUnreadMessages(discoveryDB, cursors.minMessageTimestamp, cursors.maxTimestamp)
   const unreadReactions = await getUnreadReactions(discoveryDB, cursors.minReactionTimestamp, cursors.maxTimestamp)
 
@@ -97,6 +99,6 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
   setLastIndexedTimestamp(redis, config.lastIndexedReactionRedisKey, cursors.maxTimestamp, reactionNotifications)
 
   if (notifications.length > 0) {
-    logger.info('processed new DM notifications')
+    logger.info('dmNotifications task: processed new DM push notifications')
   }
 }
