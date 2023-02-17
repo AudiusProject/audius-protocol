@@ -134,16 +134,16 @@ def fetch_unavailable_track_ids(node: str, session: Session) -> List[int]:
         unavailable_cids = set(resp["data"]["individualSegments"])
         track_ids_from_cids = (
             session.query(Track.track_id)
-            .join(User, Track.owner_id == User.user_id, isouter=True)  # left join
             .filter(
-                User.is_current == True,
                 Track.is_current == True,
                 Track.track_cid.in_(unavailable_cids),
             )
             .all()
         )
-        unavailable_track_ids = set(resp["data"]["trackIds"] + track_ids_from_cids)
-        
+        unavailable_track_ids = list(
+            set(resp["data"]["trackIds"] + [track[0] for track in track_ids_from_cids])
+        )
+
     except Exception as e:
         logger.warn(
             f"update_track_is_available.py | Could not fetch unavailable tracks from {node}: {e}"
