@@ -62,14 +62,19 @@ export const useStyles = makeStyles(({ palette }) => ({
     top: 24,
     left: 24
   },
-  background: {
+  backgroundRoot: {
     position: 'absolute',
-    backgroundColor: 'black',
     top: 0,
     height: '100%',
     width: '100%'
   },
-
+  background: {
+    position: 'absolute',
+    top: 0,
+    height: '100%',
+    width: '100%',
+    backgroundColor: 'black'
+  },
   skirt: {
     backgroundColor: palette.neutralLight10,
     width: '100%',
@@ -262,8 +267,6 @@ export const Drawer: DrawerComponent = ({
   const [drawerHeight, setDrawerHeight] = useState(
     isFullscreen ? FULL_DRAWER_HEIGHT : 0
   )
-  // isBackgroundVisible will be true until the close animation finishes
-  const [isBackgroundVisible, setIsBackgroundVisible] = useState(false)
 
   // Initial position of the drawer when closed
   const initialPosition = FULL_DRAWER_HEIGHT + insets.bottom
@@ -345,7 +348,6 @@ export const Drawer: DrawerComponent = ({
         animationStyle,
         finished: ({ finished }) => {
           if (finished) {
-            setIsBackgroundVisible(false)
             onClosed?.()
             onFinished?.()
           }
@@ -391,7 +393,6 @@ export const Drawer: DrawerComponent = ({
     if (isOpen) {
       isOpenIntent.current = true
       slideIn(openPosition)
-      setIsBackgroundVisible(true)
     } else {
       isOpenIntent.current = false
       if (!isOpen && shouldCloseToInitialOffset) {
@@ -604,29 +605,23 @@ export const Drawer: DrawerComponent = ({
   })
 
   const renderBackground = () => {
-    const renderBackgroundView = (options?: { pointerEvents: 'none' }) => (
-      <Animated.View
-        pointerEvents={options?.pointerEvents}
-        style={[styles.background, { opacity: backgroundOpacityAnim.current }]}
-      />
-    )
-    // The background should be visible and touchable when the drawer is open
-    if (isOpen) {
-      return (
+    return (
+      <View
+        pointerEvents={isOpen ? undefined : 'none'}
+        style={styles.backgroundRoot}
+      >
         <TouchableWithoutFeedback
           onPress={isGestureSupported ? onClose : undefined}
         >
-          {renderBackgroundView()}
+          <Animated.View
+            style={[
+              styles.background,
+              { opacity: backgroundOpacityAnim.current }
+            ]}
+          />
         </TouchableWithoutFeedback>
-      )
-    }
-
-    // The background should be visible and not touchable as the drawer is closing
-    // (isOpen is false but isBackgroundVisible is true)
-    // This is to prevent blocking touches as the drawer is closing
-    if (isBackgroundVisible) {
-      return renderBackgroundView({ pointerEvents: 'none' })
-    }
+      </View>
+    )
   }
 
   const renderContent = () => {
