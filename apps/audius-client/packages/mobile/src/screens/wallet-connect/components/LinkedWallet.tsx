@@ -14,6 +14,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { useThemeColors } from 'app/utils/theme'
 
 import { useCanConnectNewWallet } from '../useCanConnectNewWallet'
@@ -35,19 +36,16 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   linkedWallet: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    paddingHorizontal: spacing(6)
   },
   linkedWalletData: {
+    flex: 6,
     flexDirection: 'row',
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginRight: spacing(5)
+    alignItems: 'center'
   },
   linkedWalletKey: {
     flexDirection: 'row',
-    alignItems: 'center',
-    maxWidth: 80
+    alignItems: 'center'
   },
   linkedWalletLogo: {
     marginRight: spacing(2)
@@ -59,26 +57,34 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     flexDirection: 'row',
     alignItems: 'center'
   },
+  addressText: {
+    maxWidth: 125
+  },
   copyIcon: {
     marginBottom: spacing(0.5),
-    marginLeft: 10
+    marginLeft: spacing(1)
   },
   audioAmount: {
-    marginRight: spacing(2)
+    flex: 2,
+    textAlign: 'right'
   },
   statusSection: {
-    marginLeft: spacing(2),
-    padding: spacing(3)
+    flex: 2,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    height: 42
   },
-  iconContainer: {
+  removeButton: {
+    paddingVertical: spacing(2),
+    paddingHorizontal: spacing(3),
     backgroundColor: palette.neutralLight10,
     borderColor: palette.neutralLight8,
     borderWidth: 1,
     borderRadius: 6
   },
   removeIcon: {
-    height: 20,
-    width: 20
+    height: spacing(6),
+    width: spacing(6)
   },
   loading: {
     marginLeft: -1,
@@ -115,41 +121,42 @@ export const LinkedWallet = ({
     <View style={styles.linkedWallet}>
       <View style={styles.linkedWalletData}>
         <View style={styles.linkedWalletKey}>
-          <ChainLogo chain={chain} style={styles.chainIcon} />
+          <ChainLogo chain={chain} style={styles.chainIcon} size={spacing(8)} />
           <TouchableOpacity style={styles.address} onPress={handlePressAddress}>
             <Text
               fontSize='medium'
               weight='demiBold'
               ellipsizeMode='middle'
               numberOfLines={1}
+              style={styles.addressText}
             >
               {address}
             </Text>
             <IconCopy
               fill={neutralLight4}
               style={styles.copyIcon}
-              height={16}
-              width={16}
+              height={spacing(4)}
+              width={spacing(4)}
             />
           </TouchableOpacity>
         </View>
-        <Text style={styles.audioAmount}>{formatWei(audioBalance, true)}</Text>
       </View>
-      {isLoading ? (
-        <View style={styles.statusSection}>
+      <Text style={styles.audioAmount}>{formatWei(audioBalance, true, 0)}</Text>
+      <View style={styles.statusSection}>
+        {isLoading ? (
           <LoadingSpinner style={styles.loading} />
-        </View>
-      ) : (
-        <IconButton
-          isDisabled={!canConnectNewWallet}
-          icon={IconRemoveTrack}
-          styles={{
-            root: [styles.statusSection, styles.iconContainer],
-            icon: styles.removeIcon
-          }}
-          onPress={onRequestRemoveWallet}
-        />
-      )}
+        ) : (
+          <IconButton
+            isDisabled={!canConnectNewWallet}
+            icon={IconRemoveTrack}
+            styles={{
+              root: styles.removeButton,
+              icon: styles.removeIcon
+            }}
+            onPress={onRequestRemoveWallet}
+          />
+        )}
+      </View>
     </View>
   )
 }
