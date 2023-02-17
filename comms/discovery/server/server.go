@@ -21,17 +21,133 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
+func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
+	e := echo.New()
+	e.HideBanner = true
+	e.Debug = true
+
+	// Middleware
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
+
+	s := &ChatServer{
+		Echo: e,
+		jsc:  jsc,
+		proc: proc,
+	}
+
+	e.GET("/", func(c echo.Context) error {
+		return c.String(http.StatusOK, "comms are UP... but this is /... see /comms")
+	})
+
+	g := e.Group("/comms")
+
+	g.GET("", func(c echo.Context) error {
+		return c.String(http.StatusOK, "comms are UP: v1")
+	})
+
+	g.GET("/pubkey/:id", s.getPubkey)
+	g.GET("/chats", s.getChats)
+	g.GET("/chats/ws", s.chatWebsocket)
+	g.GET("/chats/:id", s.getChat)
+	g.GET("/chats/:id/messages", s.getMessages)
+	g.POST("/mutate", s.mutate)
+
+	g.GET("/debug/stream", func(c echo.Context) error {
+
+		info, err := jsc.StreamInfo(config.GlobalStreamName)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, info)
+	})
+
+	g.GET("/debug/consumer", func(c echo.Context) error {
+		info, err := jsc.ConsumerInfo(config.GlobalStreamName, config.WalletAddress)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, info)
+	})
+
+	g.GET("/debug/vars", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
+	g.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
+
+	return s
+}
+
 var (
 	logger = config.Logger
 )
 
-func getHealthStatus() schema.Health {
+type ChatServer struct {
+	*echo.Echo
+	jsc  nats.JetStreamContext
+	proc *rpcz.RPCProcessor
+}
+
+func (s *ChatServer) mutate(c echo.Context) error {
+	payload, wallet, err := peering.ReadSignedRequest(c)
+	if err != nil {
+		return c.JSON(400, "bad request: "+err.Error())
+	}
+
+	// unmarshal RPC and call validator
+	var rawRpc schema.RawRPC
+	err = json.Unmarshal(payload, &rawRpc)
+	if err != nil {
+		return c.JSON(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, c.Request().Context(), wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	// call validator
+	err = s.proc.Validate(userId, rawRpc)
+	if err != nil {
+		return c.JSON(400, "bad request: "+err.Error())
+	}
+
+	// Publish data to the subject
+	subject := "audius.rpc"
+	msg := nats.NewMsg(subject)
+	msg.Header.Add(config.SigHeader, c.Request().Header.Get(config.SigHeader))
+	msg.Data = payload
+
+	ok, err := s.proc.SubmitAndWait(msg)
+	if err != nil {
+		logger.Warn(string(payload), "wallet", wallet, "err", err)
+		return err
+	}
+	logger.Debug(string(payload), "seq", ok.Sequence, "wallet", wallet, "relay", true)
+	return c.JSON(200, ok)
+}
+
+func (s *ChatServer) getHealthStatus() schema.Health {
 	return schema.Health{
 		IsHealthy: true,
 	}
 }
 
-func chatWebsocket(c echo.Context) error {
+func (s *ChatServer) getPubkey(c echo.Context) error {
+	id, err := misc.DecodeHashId(c.Param("id"))
+	if err != nil {
+		return c.String(400, "bad id parameter: "+err.Error())
+	}
+
+	pubkey, err := pubkeystore.RecoverUserPublicKeyBase64(c.Request().Context(), id)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(200, map[string]interface{}{
+		"data": pubkey,
+	})
+}
+
+func (s *ChatServer) chatWebsocket(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	// Check that timestamp is less than 5 seconds old
@@ -75,7 +191,7 @@ func chatWebsocket(c echo.Context) error {
 	return nil
 }
 
-func getChats(c echo.Context) error {
+func (s *ChatServer) getChats(c echo.Context) error {
 	ctx := c.Request().Context()
 	_, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
@@ -134,14 +250,14 @@ func getChats(c echo.Context) error {
 	}
 	responseSummary := ToSummaryResponse(beforeCursorPos.Format(time.RFC3339Nano), afterCursorPos.Format(time.RFC3339Nano), summary)
 	response := schema.CommsResponse{
-		Health:  getHealthStatus(),
+		Health:  s.getHealthStatus(),
 		Data:    responseData,
 		Summary: &responseSummary,
 	}
 	return c.JSON(200, response)
 }
 
-func getChat(c echo.Context) error {
+func (s *ChatServer) getChat(c echo.Context) error {
 	ctx := c.Request().Context()
 	_, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
@@ -161,13 +277,13 @@ func getChat(c echo.Context) error {
 		return err
 	}
 	response := schema.CommsResponse{
-		Health: getHealthStatus(),
+		Health: s.getHealthStatus(),
 		Data:   ToChatResponse(chat, members),
 	}
 	return c.JSON(200, response)
 }
 
-func getMessages(c echo.Context) error {
+func (s *ChatServer) getMessages(c echo.Context) error {
 	ctx := c.Request().Context()
 	_, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
@@ -219,117 +335,9 @@ func getMessages(c echo.Context) error {
 	}
 	responseSummary := ToSummaryResponse(beforeCursorPos.Format(time.RFC3339Nano), afterCursorPos.Format(time.RFC3339Nano), summary)
 	response := schema.CommsResponse{
-		Health:  getHealthStatus(),
+		Health:  s.getHealthStatus(),
 		Data:    Map(messages, ToMessageResponse),
 		Summary: &responseSummary,
 	}
 	return c.JSON(200, response)
-}
-
-func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *echo.Echo {
-	e := echo.New()
-	e.HideBanner = true
-	e.Debug = true
-
-	// Middleware
-	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
-
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "comms are UP... but this is /... see /comms")
-	})
-
-	g := e.Group("/comms")
-
-	g.GET("", func(c echo.Context) error {
-		return c.String(http.StatusOK, "comms are UP: v1")
-	})
-
-	g.GET("/pubkey/:id", func(c echo.Context) error {
-		id, err := misc.DecodeHashId(c.Param("id"))
-		if err != nil {
-			return c.String(400, "bad id parameter: "+err.Error())
-		}
-
-		pubkey, err := pubkeystore.RecoverUserPublicKeyBase64(c.Request().Context(), id)
-		if err != nil {
-			return err
-		}
-
-		return c.JSON(200, map[string]interface{}{
-			"data": pubkey,
-		})
-	})
-
-	g.GET("/chats", getChats)
-
-	g.GET("/chats/ws", chatWebsocket)
-
-	g.GET("/chats/:id", getChat)
-
-	g.GET("/chats/:id/messages", getMessages)
-
-	// this is the "mutation" RPC encpoint
-	// it will forward RPC to NATS.
-	g.POST("/mutate", func(c echo.Context) error {
-		payload, wallet, err := peering.ReadSignedRequest(c)
-		if err != nil {
-			return c.JSON(400, "bad request: "+err.Error())
-		}
-
-		// unmarshal RPC and call validator
-		var rawRpc schema.RawRPC
-		err = json.Unmarshal(payload, &rawRpc)
-		if err != nil {
-			return c.JSON(400, "bad request: "+err.Error())
-		}
-
-		userId, err := queries.GetUserIDFromWallet(db.Conn, c.Request().Context(), wallet)
-		if err != nil {
-			return c.String(400, "wallet not found: "+err.Error())
-		}
-
-		// call validator
-		err = proc.Validate(userId, rawRpc)
-		if err != nil {
-			return c.JSON(400, "bad request: "+err.Error())
-		}
-
-		subject := "audius.dms.demo"
-
-		// Publish data to the subject
-		msg := nats.NewMsg(subject)
-		msg.Header.Add(config.SigHeader, c.Request().Header.Get(config.SigHeader))
-		msg.Data = payload
-		ok, err := jsc.PublishMsg(msg)
-		if err != nil {
-			logger.Warn(string(payload), "wallet", wallet, "err", err)
-			return c.JSON(500, err.Error())
-		}
-
-		logger.Debug(string(payload), "seq", ok.Sequence, "wallet", wallet, "relay", true)
-		return c.JSON(200, "ok")
-	})
-
-	g.GET("/debug/stream", func(c echo.Context) error {
-
-		info, err := jsc.StreamInfo(config.GlobalStreamName)
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, info)
-	})
-
-	g.GET("/debug/consumer", func(c echo.Context) error {
-		info, err := jsc.ConsumerInfo(config.GlobalStreamName, config.WalletAddress)
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, info)
-	})
-
-	g.GET("/debug/vars", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
-	g.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
-
-	return e
 }

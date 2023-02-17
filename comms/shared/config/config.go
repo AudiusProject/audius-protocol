@@ -50,6 +50,10 @@ func EnsurePrivKeyAndLoadConf[T any](config *T) {
 
 // EnsurePrivateKeyIsSet ensures there's a value for the env var `AUDIUS_DELEGATE_PRIVATE_KEY` by first falling back to `delegatePrivateKey` and then generating a random private key if neither is set.
 func EnsurePrivateKeyIsSet() {
+	if os.Getenv("AUDIUS_DELEGATE_PRIVATE_KEY") == "" && os.Getenv("audius_delegate_private_key") != "" {
+		os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", os.Getenv("audius_delegate_private_key"))
+	}
+
 	// Ensure private key env var is set by checking deprecated env var or generating random private key
 	if os.Getenv("AUDIUS_DELEGATE_PRIVATE_KEY") == "" {
 		if os.Getenv("delegatePrivateKey") == "" {
