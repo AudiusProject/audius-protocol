@@ -2,8 +2,10 @@ import {
   Collection,
   explorePageCollectionsActions,
   ExploreCollectionsVariant,
-  getContext
+  getContext,
+  UserCollectionMetadata
 } from '@audius/common'
+import { uniq } from 'lodash'
 import { takeEvery, call, put } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
@@ -53,7 +55,7 @@ function* watchFetch() {
 
     const { variant, moods } = action.payload
 
-    let collections
+    let collections: UserCollectionMetadata[] | Collection[] | undefined
     if (variant === ExploreCollectionsVariant.MOOD) {
       collections = yield* call(
         fetchMap[ExploreCollectionsVariant.MOOD],
@@ -62,7 +64,7 @@ function* watchFetch() {
     } else if (variant === ExploreCollectionsVariant.DIRECT_LINK) {
       // no-op
     } else {
-      collections = yield* call(fetchMap[variant]) as any
+      collections = yield* call(fetchMap[variant])
     }
     if (!collections) return
 
@@ -72,7 +74,9 @@ function* watchFetch() {
       /* shouldRetrieveTracks= */ false
     )
 
-    const collectionIds = collections.map((c: Collection) => c.playlist_id)
+    const collectionIds = uniq(
+      collections.map((c: UserCollectionMetadata | Collection) => c.playlist_id)
+    )
 
     yield* put(
       fetchSucceeded({
