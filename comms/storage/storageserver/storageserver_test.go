@@ -14,6 +14,7 @@ import (
 	"time"
 
 	sharedConfig "comms.audius.co/shared/config"
+	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/transcode"
 	"github.com/labstack/echo/v4"
@@ -27,7 +28,7 @@ import (
 
 // TestE2EUpload verifies that a file gets uploaded to the storage node, transcoded, and permanently stored and replicated on the correct nodes.
 func TestE2EUpload(t *testing.T) {
-	t.Skip("TODO: Set AUDIUS_DEV_ONLY_REGISTERED_NODES env var to have 5 nodes. Also set test_host env var per node")
+	t.Skip("TODO: Connect to already-running containers instead of spinning up a new cluster")
 	assert := assert.New(t)
 
 	// Clear state in case a previous test or debug session left something behind
@@ -172,18 +173,18 @@ func runBasicJetStreamServer(clientPort int, clusterPort int, seedPort int) *ser
 	return runServer(&opts)
 }
 
-func client(t *testing.T, s *server.Server, opts ...nats.Option) *nats.Conn {
+func client(t *testing.T, s *server.Server) *nats.Conn {
 	t.Helper()
-	nc, err := nats.Connect(s.ClientURL(), opts...)
+	nc, err := peering.New(&config.GetStorageConfig().PeeringConfig).DialNatsUrl(s.ClientURL())
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 	return nc
 }
 
-func jsClient(t *testing.T, s *server.Server, opts ...nats.Option) (*nats.Conn, nats.JetStreamContext) {
+func jsClient(t *testing.T, s *server.Server) (*nats.Conn, nats.JetStreamContext) {
 	t.Helper()
-	nc := client(t, s, opts...)
+	nc := client(t, s)
 	js, err := nc.JetStream(nats.MaxWait(10 * time.Second))
 	if err != nil {
 		t.Fatalf("Unexpected error getting JetStream context: %v", err)

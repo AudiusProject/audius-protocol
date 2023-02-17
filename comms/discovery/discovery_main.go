@@ -19,7 +19,7 @@ import (
 
 func DiscoveryMain() {
 	discoveryConfig := config.GetDiscoveryConfig()
-	config.Init(discoveryConfig.Keys)
+	config.Init(discoveryConfig.PeeringConfig.Keys, discoveryConfig.PeeringConfig.TestHost)
 
 	// dial datasources in parallel
 	g := errgroup.Group{}
@@ -28,7 +28,7 @@ func DiscoveryMain() {
 	var proc *rpcz.RPCProcessor
 
 	g.Go(func() error {
-		peering := peering.New(nil)
+		peering := peering.New(&discoveryConfig.PeeringConfig)
 		err := peering.PollRegisteredNodes()
 		if err != nil {
 			return err

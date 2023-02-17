@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"comms.audius.co/discovery/config"
+	natsConfig "comms.audius.co/natsd/config"
+	"comms.audius.co/shared/peering"
 	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/assert"
 )
@@ -31,7 +33,7 @@ func TestNatsThing(t *testing.T) {
 	_ = cf
 
 	// Connect to NATS
-	nc, err := nats.Connect(nats.DefaultURL)
+	nc, err := peering.New(&natsConfig.GetNatsConfig().PeeringConfig).DialNats(nil)
 	assert.NoError(t, err)
 
 	// Create JetStream Context

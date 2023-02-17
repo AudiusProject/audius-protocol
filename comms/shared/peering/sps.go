@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	discoveryConfig "comms.audius.co/discovery/config"
@@ -19,9 +18,9 @@ var (
 )
 
 func (p *Peering) PollRegisteredNodes() error {
-	if len(p.registeredNodesOverride) > 0 {
+	if p.Config.DevOnlyRegisteredNodes != nil {
 		mu.Lock()
-		for _, sp := range p.registeredNodesOverride {
+		for _, sp := range p.Config.DevOnlyRegisteredNodes {
 			allNodes[sp.ID] = sp
 		}
 		mu.Unlock()
@@ -29,7 +28,7 @@ func (p *Peering) PollRegisteredNodes() error {
 	}
 
 	// don't start polling for
-	if discoveryConfig.Env == "standalone" || os.Getenv("test_host") != "" {
+	if p.Config.TestHost != "" {
 		return nil
 	}
 
@@ -61,13 +60,9 @@ func (p *Peering) PollRegisteredNodes() error {
 }
 
 func (p *Peering) listNodes(typeFilter string) ([]sharedConfig.ServiceNode, error) {
-	// make storage.multi, make storage.dev, and in the future make test
-	if len(p.registeredNodesOverride) > 0 {
-		return p.registeredNodesOverride, nil
-	}
-	// make dev.discovery
-	if discoveryConfig.Env == "standalone" {
-		return []sharedConfig.ServiceNode{}, nil
+	// overrides for tests and local dev
+	if p.Config.DevOnlyRegisteredNodes != nil {
+		return p.Config.DevOnlyRegisteredNodes, nil
 	}
 
 	result := []sharedConfig.ServiceNode{}

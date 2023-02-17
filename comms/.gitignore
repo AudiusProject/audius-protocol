@@ -2,5 +2,7 @@ wip
 comms.audius.co
 comms-linux
 build
+nats_store
+tmp
 
 db/schema.sql

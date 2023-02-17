@@ -61,6 +61,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 
 	writeDeadline, _ := time.ParseDuration("60s")
 
+	log.Printf("store dir: %s\n", filepath.Join(os.Getenv("NATS_STORE_DIR"), config.NatsClusterName))
 	opts := &server.Options{
 		ServerName: serverName,
 		HTTPPort:   8222,
@@ -76,33 +77,27 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		AuthTimeout:   60,
 		WriteDeadline: writeDeadline,
 	}
-
-	if config.NatsReplicaCount < 2 {
-		config.Logger.Info("starting NATS in standalone mode", "peer count", len(routes))
-	} else {
-		config.Logger.Info("starting NATS in cluster mode... ")
-		if config.NatsClusterUsername == "" {
-			log.Fatal("config.NatsClusterUsername not set")
-		}
-
-		opts.Cluster = server.ClusterOpts{
-			Name:      config.NatsClusterName,
-			Host:      "0.0.0.0",
-			Port:      6222,
-			Username:  config.NatsClusterUsername,
-			Password:  config.NatsClusterPassword,
-			Advertise: fmt.Sprintf("%s:6222", config.IP),
-			// NoAdvertise: true,
-
-			// increase auth timeout, bounded connection retry
-			AuthTimeout:    60,
-			ConnectRetries: 30,
-		}
-
-		opts.Routes = routes
-		opts.Nkeys = nkeys
-
+	config.Logger.Info("starting NATS in cluster mode... ")
+	if config.NatsClusterUsername == "" {
+		log.Fatal("config.NatsClusterUsername not set")
 	}
+
+	opts.Cluster = server.ClusterOpts{
+		Name:      config.NatsClusterName,
+		Host:      "0.0.0.0",
+		Port:      6222,
+		Username:  config.NatsClusterUsername,
+		Password:  config.NatsClusterPassword,
+		Advertise: fmt.Sprintf("%s:6222", config.IP),
+		// NoAdvertise: true,
+
+		// increase auth timeout, bounded connection retry
+		AuthTimeout:    60,
+		ConnectRetries: 30,
+	}
+
+	opts.Routes = routes
+	opts.Nkeys = nkeys
 
 	// this is kinda jank... probably want a better way to check if natsServer is initialized and health
 	// but will do for now

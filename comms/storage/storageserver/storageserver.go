@@ -41,7 +41,7 @@ type StorageServer struct {
 }
 
 func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes []sharedConfig.ServiceNode) *StorageServer {
-	thisNodePubKey := config.Keys.DelegatePublicKey
+	thisNodePubKey := config.PeeringConfig.Keys.DelegatePublicKey
 	var host string
 	var allStorageNodePubKeys []string
 	for _, node := range allNodes {
@@ -181,7 +181,7 @@ func (ss *StorageServer) serveFileUpload(c echo.Context) error {
 
 		contentType := file.Header.Get("Content-Type")
 		if !strings.HasPrefix(contentType, expectedContentType) {
-			return echo.NewHTTPError(400, "invalid Content-Type, expected=" + expectedContentType)
+			return echo.NewHTTPError(400, "invalid Content-Type, expected="+expectedContentType)
 		}
 
 		job, err := ss.JobsManager.Add(transcode.JobTemplate(template), file)

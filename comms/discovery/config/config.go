@@ -8,7 +8,7 @@ import (
 	"os/exec"
 	"strings"
 
-	sharedConfig "comms.audius.co/shared/config"
+	shared "comms.audius.co/shared/config"
 	"github.com/inconshreveable/log15"
 	"github.com/nats-io/nkeys"
 )
@@ -29,7 +29,6 @@ var (
 	NatsClusterName     = "comms"
 	NatsClusterUsername = ""
 	NatsClusterPassword = ""
-	NatsUseNkeys        = true
 	NatsReplicaCount    = 3
 	NatsIsReachable     = false
 
@@ -40,14 +39,14 @@ var (
 )
 
 type DiscoveryConfig struct {
-	Keys sharedConfig.KeysConfigDecoder `envconfig:"DELEGATE_PRIVATE_KEY" required:"true" json:"Keys"`
+	PeeringConfig shared.PeeringConfig `json:"PeeringConfig"`
 }
 
 // GetDiscoveryConfig returns the discovery config by parsing env vars.
 func GetDiscoveryConfig() *DiscoveryConfig {
 	if discoveryConfig == nil {
 		discoveryConfig = &DiscoveryConfig{}
-		sharedConfig.EnsurePrivKeyAndLoadConf(discoveryConfig)
+		shared.EnsurePrivKeyAndLoadConf(discoveryConfig)
 	}
 	return discoveryConfig
 }
@@ -56,7 +55,7 @@ func init() {
 	Logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
 }
 
-func Init(keysConfig sharedConfig.KeysConfigDecoder) {
+func Init(keysConfig shared.KeysConfigDecoder, testHost string) {
 	PrivateKey = keysConfig.DelegatePrivateKey
 	WalletAddress = keysConfig.DelegatePublicKey
 	NkeyPair = keysConfig.NkeyPair
@@ -73,26 +72,21 @@ func Init(keysConfig sharedConfig.KeysConfigDecoder) {
 		IsCreatorNode = true
 	}
 
-	switch Env {
-	case "standalone":
-		envStandalone()
-	default:
-		Logger.Info("no env defaults for: " + Env)
-	}
-
-	if NatsUseNkeys {
-		if err := configureNatsCliNkey(); err != nil {
-			Logger.Warn("failed to write cli nkey config: " + err.Error())
-		}
+	if err := configureNatsCliNkey(); err != nil {
+		Logger.Warn("failed to write cli nkey config: " + err.Error())
 	}
 
 	// ip addr
-	for i := 0; i < 5; i++ {
-		IP, err = getIp()
-		if err != nil {
-			Logger.Warn("getIp failed", "attempt", i, "err", err)
-		} else {
-			break
+	if testHost != "" {
+		IP = testHost
+	} else {
+		for i := 0; i < 5; i++ {
+			IP, err = getIp()
+			if err != nil {
+				Logger.Warn("getIp failed", "attempt", i, "err", err)
+			} else {
+				break
+			}
 		}
 	}
 
@@ -132,10 +126,6 @@ func dieOnErr(err error) {
 }
 
 func configureNatsCliNkey() error {
-	if !NatsUseNkeys {
-		return nil
-	}
-
 	var err error
 
 	bytes, err := NkeyPair.Seed()

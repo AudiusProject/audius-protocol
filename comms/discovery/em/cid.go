@@ -15,7 +15,7 @@ type CidFetcher struct {
 }
 
 func NewCidFetcher() (*CidFetcher, error) {
-	peering := peering.New(nil)
+	peering := peering.New(&sharedConfig.PeeringConfig{})
 	sps, err := peering.GetContentNodes()
 	if err != nil {
 		return nil, err

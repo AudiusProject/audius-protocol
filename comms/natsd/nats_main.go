@@ -1,16 +1,13 @@
 package natsd
 
 import (
-	"encoding/json"
 	"io"
 	"math"
 	"net/http"
-	"os"
 	"time"
 
 	discoveryConfig "comms.audius.co/discovery/config"
 	natsConfig "comms.audius.co/natsd/config"
-	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -18,7 +15,7 @@ import (
 
 func NatsMain() {
 	natsConfig := natsConfig.GetNatsConfig()
-	discoveryConfig.Init(natsConfig.Keys)
+	discoveryConfig.Init(natsConfig.PeeringConfig.Keys, natsConfig.PeeringConfig.TestHost)
 
 	{
 		var err error
@@ -28,10 +25,7 @@ func NatsMain() {
 		}
 	}
 
-	// TODO: Make this use a separate nats config env struct
-	var overrideNodes []sharedConfig.ServiceNode
-	json.Unmarshal([]byte(os.Getenv("AUDIUS_DEV_ONLY_REGISTERED_NODES")), &overrideNodes)
-	peering := peering.New(overrideNodes)
+	peering := peering.New(&natsConfig.PeeringConfig)
 
 	go startServer(peering)
 
@@ -110,7 +104,7 @@ func startServer(peering *peering.Peering) {
 
 	e.GET("/nats/self", func(c echo.Context) error {
 		return redactedJson(c, map[string]interface{}{
-			"env":               discoveryConfig.Env,
+			"is_staging":        peering.Config.IsStaging,
 			"is_content":        discoveryConfig.IsCreatorNode,
 			"nats_is_reachable": discoveryConfig.NatsIsReachable,
 			"nkey":              discoveryConfig.NkeyPublic,

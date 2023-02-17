@@ -1,11 +1,11 @@
 package config
 
 import (
-	sharedConfig "comms.audius.co/shared/config"
+	shared "comms.audius.co/shared/config"
 )
 
 type NatsConfig struct {
-	Keys sharedConfig.KeysConfigDecoder `envconfig:"DELEGATE_PRIVATE_KEY" required:"true" json:"Keys"`
+	PeeringConfig shared.PeeringConfig `json:"PeeringConfig"`
 }
 
 var natsConfig *NatsConfig
@@ -14,7 +14,7 @@ var natsConfig *NatsConfig
 func GetNatsConfig() *NatsConfig {
 	if natsConfig == nil {
 		natsConfig = &NatsConfig{}
-		sharedConfig.EnsurePrivKeyAndLoadConf(natsConfig)
+		shared.EnsurePrivKeyAndLoadConf(natsConfig)
 	}
 	return natsConfig
 }

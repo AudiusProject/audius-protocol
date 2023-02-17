@@ -41,6 +41,30 @@ x-extra-hosts: &extra-hosts
     - "node4:host-gateway"
 
 services:
+  test:
+    container_name: test
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+      target: builder
+    image: "comms:v2-test"
+    environment:
+      <<: *common-env
+      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
+      AUDIUS_TEST_HOST: "nats1"
+      NATS_SERVER_URL: "nats://nats1:4222"
+      audius_db_url: "postgresql://postgres:postgres@comdb:5432/audius_discovery?sslmode=disable"
+    command: -c .air.test.toml
+    extra_hosts:
+      - "node1:host-gateway"
+      - "node2:host-gateway"
+      - "node3:host-gateway"
+      - "node4:host-gateway"
+      - "localhost:host-gateway"
+      - "127.0.0.1:host-gateway"
+    volumes:
+      - ./:/app
+
   comdb:
     container_name: comdb
     image: postgres
@@ -56,7 +80,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.v2
-    image: "comms:v2"
+    image: "nats:v2"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
@@ -66,32 +90,64 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.v2
-    image: "comms:v2"
+      target: builder
+    image: "nats:v2-dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
       - nats
     depends_on:
-      - comdb
+      comdb:
+        condition: service_started
+      ingress:
+        condition: service_started
     environment:
-      <<: *common-env
+      <<: *common-env # TODO: think this can just be environment: *common-env. same for others below
     <<: *extra-hosts
+    healthcheck:
+      # does the cluster have 4 nodes peered?
+      test: wget -qO- http://localhost:8924/nats/jsz | grep -o '"cluster_size":[[:space:]]*[0-9]*' | awk '{if ($$2 != 4) {exit 1}}'
+      interval: 5s
+      retries: 15
+      start_period: 10s
+      timeout: 1s
+    volumes:
+      - ./natsd:/app/natsd
+      - ./shared:/app/shared
+      - ./discovery:/app/discovery # remove after config refactor
 
   storage:
     build:
       context: .
       dockerfile: Dockerfile.v2
-    image: "comms:v2"
+    image: "storage:v2"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
       - storage
 
+  discovery-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+      target: builder
+    image: "discovery:v2-dev"
+    restart: unless-stopped
+    stop_signal: SIGKILL
+    command:
+      - discovery
+    environment:
+      <<: *common-env
+    <<: *extra-hosts
+    volumes:
+      - ./:/app
+
   storage-dev:
     build:
       context: .
-      dockerfile: Dockerfile.v2.dev
-    image: "comms:v2-dev"
+      dockerfile: Dockerfile.v2
+      target: builder
+    image: "storage:v2-dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
@@ -99,6 +155,17 @@ services:
     environment:
       <<: *common-env
     <<: *extra-hosts
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8926/storage || exit 1
+      interval: 3s
+      retries: 10
+      start_period: 20s
+      timeout: 1s
+    depends_on:
+      ingress:
+        condition: service_started
+    volumes:
+      - ./:/app
   
   nginx:
     image: openresty/openresty:1.21.4.1-alpine-fat
