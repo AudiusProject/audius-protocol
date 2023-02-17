@@ -1,0 +1,64 @@
+package client
+
+import (
+	"fmt"
+	"math/rand"
+	"os"
+	"os/exec"
+	"io/ioutil"
+	"net/http"
+	"time"
+)
+
+const (
+	IMAGE_GENERATOR = "https://api.dicebear.com/5.x/pixel-art/png"
+)
+
+func GenerateWhiteNoise() ([]byte, error){
+
+	id := rand.Int()
+	tmpFile := fmt.Sprintf("tmp-%d.mp3", id)
+
+	duration := 60 + 10
+	cmd := exec.Command("ffmpeg", "-y", // Yes to all
+		"-f", // audio/video filtering framework
+		"lavfi", // provides generic audio filtering for audio/video signals
+		"-i", // input flag
+		fmt.Sprintf("anoisesrc=d=%d", duration), // generate a noise audio signal for the duration
+		tmpFile,
+    )
+
+    err := cmd.Start() // Start a process on another goroutine
+	if err != nil {
+		return nil, err
+	}
+
+    err = cmd.Wait() // wait until ffmpeg finish
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := os.ReadFile(tmpFile)
+
+	return data, nil 
+}
+
+func GetRandomPng() ([]byte, error) {
+	rand.Seed(time.Now().UnixNano())
+
+	seed := rand.Int()
+	url := fmt.Sprintf("%s?seed=%d", IMAGE_GENERATOR, seed)
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+

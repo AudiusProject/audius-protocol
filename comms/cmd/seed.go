@@ -12,7 +12,6 @@ const (
 	NODE2           = "http://node2"
 	NODE3           = "http://node3"
 	NODE4           = "http://node4"
-	IMAGE_GENERATOR = "https://api.dicebear.com/5.x/pixel-art/png"
 )
 
 var idToNode = map[int]string {
