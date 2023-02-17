@@ -37,16 +37,6 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-	// create streams
-	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:    config.RateLimitRulesBucketName,
-		Replicas:  config.NatsReplicaCount,
-		Placement: config.DiscoveryPlacement(),
-	})
-	if err != nil {
-		log.Fatalf("failed to create rate limit kv %v", err)
-	}
-
 	// setup test validator
 	limiter, err := NewRateLimiter(jsc)
 	if err != nil {

@@ -190,7 +190,7 @@ func TestGetChats(t *testing.T) {
 			},
 		)
 		assert.NoError(t, err)
-		if assert.NoError(t, getChats(c)) {
+		if assert.NoError(t, testServer.getChats(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
@@ -240,7 +240,7 @@ func TestGetChats(t *testing.T) {
 			},
 		)
 		assert.NoError(t, err)
-		if assert.NoError(t, getChats(c)) {
+		if assert.NoError(t, testServer.getChats(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
@@ -276,7 +276,7 @@ func TestGetChats(t *testing.T) {
 			},
 		)
 		assert.NoError(t, err)
-		if assert.NoError(t, getChat(c)) {
+		if assert.NoError(t, testServer.getChat(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
@@ -295,12 +295,7 @@ func TestGetMessages(t *testing.T) {
 	assert.NoError(t, err)
 	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
 
-	// Set up db
-	_, err = db.Conn.Exec("truncate table chat cascade")
-	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate table users cascade")
-	assert.NoError(t, err)
-
+	// seed db
 	tx := db.Conn.MustBegin()
 
 	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
@@ -417,7 +412,7 @@ func TestGetMessages(t *testing.T) {
 			},
 		)
 		assert.NoError(t, err)
-		if assert.NoError(t, getMessages(c)) {
+		if assert.NoError(t, testServer.getMessages(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
@@ -470,7 +465,7 @@ func TestGetMessages(t *testing.T) {
 			},
 		)
 		assert.NoError(t, err)
-		if assert.NoError(t, getMessages(c)) {
+		if assert.NoError(t, testServer.getMessages(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
