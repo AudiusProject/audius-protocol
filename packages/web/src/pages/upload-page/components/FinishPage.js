@@ -195,6 +195,11 @@ class FinishPage extends Component {
                   ? track.metadata.artwork.url
                   : placeholderArt
               }}
+              isTrack
+              doesUserHaveAccess
+              isOwner
+              isPremium={track.metadata.is_premium}
+              premiumConditions={track.metadata.premium_conditions}
               {...tileProps}
             />
           </div>

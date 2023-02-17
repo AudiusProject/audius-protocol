@@ -140,7 +140,8 @@ function* watchFetchTrack() {
       slug,
       canBeUnlisted,
       forceRetrieveFromSource,
-      withRemixes = true
+      withRemixes = true,
+      skipSideEffects = false
     } = action
     try {
       let track
@@ -172,7 +173,7 @@ function* watchFetchTrack() {
           yield put(pushRoute(NOT_FOUND_PAGE))
           return
         }
-      } else {
+      } else if (!skipSideEffects) {
         yield put(trackPageActions.setTrackId(track.track_id))
         // Add hero track to lineup early so that we can play it ASAP
         // (instead of waiting for the entire lineup to load)

@@ -19,6 +19,7 @@ import { getContext } from 'store/effects'
 import { trackPageActions } from 'store/pages'
 import { usersSocialActions } from 'store/social'
 import { tippingActions } from 'store/tipping'
+import { musicConfettiActions } from 'store/music-confetti'
 import { parseTrackRouteFromPermalink } from 'utils'
 import { Nullable } from 'utils/typeUtils'
 
@@ -39,6 +40,7 @@ const {
 } = premiumContentActions
 
 const { refreshTipGatedTracks } = tippingActions
+const { show: showConfetti } = musicConfettiActions
 
 const { updateUserEthCollectibles, updateUserSolCollectibles } =
   collectiblesActions
@@ -348,10 +350,19 @@ function* pollPremiumTrack({
     const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
     if (premiumTrackSignatureMap[trackId]) {
       yield* put(updatePremiumTrackStatus({ trackId, status: 'UNLOCKED' }))
+      yield* put(showConfetti())
       break
     }
     yield* put(
-      trackPageActions.fetchTrack(null, slug, handle, false, true, false)
+      trackPageActions.fetchTrack(
+        null /* trackId */,
+        slug,
+        handle,
+        false /* canBeUnlisted */,
+        true /* forceRetrieveFromSource */,
+        false /* withRemixes */,
+        true /* skipSideEffects */
+      )
     )
     yield* delay(frequency)
   }

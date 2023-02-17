@@ -167,6 +167,7 @@ export const CollectibleGatedAvailability = ({
             size='large'
             dropdownStyle={styles.dropdown}
             dropdownInputStyle={styles.dropdownInput}
+            disabled={disabled}
           />
         </div>
       )}

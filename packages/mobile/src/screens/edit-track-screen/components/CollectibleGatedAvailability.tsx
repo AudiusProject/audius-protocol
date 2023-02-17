@@ -191,8 +191,10 @@ export const CollectibleGatedAvailability = ({
   }, [premiumConditions, selected, setTrackAvailabilityFields])
 
   const handlePickACollection = useCallback(() => {
-    navigation.navigate('NFTCollections')
-  }, [navigation])
+    if (!disabled) {
+      navigation.navigate('NFTCollections')
+    }
+  }, [disabled, navigation])
 
   return (
     <View style={styles.root}>

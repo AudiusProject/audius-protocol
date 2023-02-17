@@ -82,22 +82,14 @@
   fill: var(--neutral);
 }
 
-.specialAccessRadioItem {
-  align-items: center;
-}
-
 .specialAccessRadioItem:not(:first-child) {
   border: none;
   padding: 0;
 }
 
-.specialAccessRadioItem:last-child {
-  margin-bottom: 0;
-}
-
-.specialAccessRadioItem > div {
-  width: calc(100% - 32px);
-  margin-left: 32px;
+.specialAccessRadioItemContent {
+  display: flex;
+  align-items: center;
 }
 
 .availabilityRowTitle {

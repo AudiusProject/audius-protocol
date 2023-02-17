@@ -56,6 +56,7 @@ const defaultAvailabilityFields = {
 type TrackAvailabilityModalProps = {
   isOpen: boolean
   isRemix: boolean
+  isUpload: boolean
   metadataState: TrackMetadataState
   didUpdateState: (newState: TrackMetadataState) => void
   onClose: () => void
@@ -66,6 +67,7 @@ type TrackAvailabilityModalProps = {
 const TrackAvailabilityModal = ({
   isOpen,
   isRemix,
+  isUpload,
   metadataState,
   didUpdateState,
   onClose
@@ -80,7 +82,8 @@ const TrackAvailabilityModal = ({
   const numEthCollectibles = Object.keys(ethCollectionMap).length
   const numSolCollectibles = Object.keys(solCollectionMap).length
   const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
-  const isCollectibleGateDisabled = hasNoCollectibles || isRemix
+  const noCollectibleGate = hasNoCollectibles || isRemix || !isUpload
+  const noSpecialAccess = isRemix || !isUpload
 
   const accountUserId = useSelector(getUserId)
   const defaultSpecialAccess = useMemo(
@@ -195,17 +198,17 @@ const TrackAvailabilityModal = ({
         key='special-access'
         selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
         onClick={
-          isRemix
+          noSpecialAccess
             ? noOp
             : handleSelectionClick(TrackAvailabilityType.SPECIAL_ACCESS)
         }
-        disabled={isRemix}
+        disabled={noSpecialAccess}
       >
         <SpecialAccessAvailability
           selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
           state={metadataState}
           onStateUpdate={updatePremiumContentFields}
-          disabled={isRemix}
+          disabled={noSpecialAccess}
         />
       </ModalRadioItem>
     )
@@ -216,17 +219,17 @@ const TrackAvailabilityModal = ({
         key='collectible-gated'
         selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
         onClick={
-          isCollectibleGateDisabled
+          noCollectibleGate
             ? noOp
             : handleSelectionClick(TrackAvailabilityType.COLLECTIBLE_GATED)
         }
-        disabled={isCollectibleGateDisabled}
+        disabled={noCollectibleGate}
       >
         <CollectibleGatedAvailability
           selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
           state={metadataState}
           onStateUpdate={updatePremiumContentFields}
-          disabled={isCollectibleGateDisabled}
+          disabled={noCollectibleGate}
         />
       </ModalRadioItem>
     )

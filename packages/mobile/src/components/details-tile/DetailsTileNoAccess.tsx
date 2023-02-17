@@ -3,6 +3,7 @@ import { useCallback } from 'react'
 
 import type { PremiumConditions, ID } from '@audius/common'
 import {
+  Chain,
   FollowSource,
   usersSocialActions,
   tippingActions,
@@ -16,6 +17,8 @@ import IconExternalLink from 'app/assets/images/iconExternalLink.svg'
 import IconFollow from 'app/assets/images/iconFollow.svg'
 import IconLock from 'app/assets/images/iconLock.svg'
 import IconTip from 'app/assets/images/iconTip.svg'
+import LogoEth from 'app/assets/images/logoEth.svg'
+import LogoSol from 'app/assets/images/logoSol.svg'
 import { Button, useLink } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import UserBadges from 'app/components/user-badges'
@@ -87,13 +90,31 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     ...flexRowCentered(),
     marginTop: spacing(2)
   },
+  collectionImages: {
+    ...flexRowCentered(),
+    marginRight: spacing(6)
+  },
   collectionImage: {
-    marginRight: spacing(2),
     borderWidth: 1,
     borderColor: palette.neutralLight7,
     borderRadius: spacing(1),
     width: spacing(8),
     height: spacing(8)
+  },
+  collectionChainImageContainer: {
+    backgroundColor: palette.white,
+    position: 'absolute',
+    left: spacing(6),
+    padding: spacing(1),
+    width: spacing(6),
+    height: spacing(6),
+    borderWidth: 1,
+    borderColor: palette.neutralLight7,
+    borderRadius: 16
+  },
+  collectionChainImage: {
+    top: -spacing(0.25),
+    left: -spacing(1.25)
   },
   icon: {
     color: palette.white
@@ -180,10 +201,19 @@ export const DetailsTileNoAccess = ({
           </Text>
           <View style={styles.collectionContainer}>
             {nftCollection.imageUrl && (
-              <Image
-                source={{ uri: nftCollection.imageUrl }}
-                style={styles.collectionImage}
-              />
+              <View style={styles.collectionImages}>
+                <Image
+                  source={{ uri: nftCollection.imageUrl }}
+                  style={styles.collectionImage}
+                />
+                <View style={styles.collectionChainImageContainer}>
+                  {nftCollection.chain === Chain.Eth ? (
+                    <LogoEth style={styles.collectionChainImage} height={16} />
+                  ) : (
+                    <LogoSol style={styles.collectionChainImage} height={16} />
+                  )}
+                </View>
+              </View>
             )}
             <Text style={styles.description}>{nftCollection.name}</Text>
           </View>
