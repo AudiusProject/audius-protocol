@@ -16,6 +16,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var imageCount int
+
 // imageCmd represents the image command
 var imageCmd = &cobra.Command{
 	Use:   "image",
@@ -27,11 +29,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		for i := 0; i < 10; i++ {
+		for i := 0; i < imageCount; i++ {
 
-			imageData, err := getRandomPng(string(rune(i)))
+			seed := fmt.Sprintf("%d", i)
+			imageData, err := getRandomPng(seed)
 			if err != nil {
-				fmt.Printf("error fetching image %d\n", i)
+				fmt.Printf("error fetching image %d - %+v\n", i, err)
 				continue
 			}
 
@@ -49,16 +52,7 @@ to quickly create a Cobra application.`,
 
 func init() {
 	seedCmd.AddCommand(imageCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// imageCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// imageCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	imageCmd.Flags().IntVarP(&imageCount, "count", "c", 100, "the number of random images")
 }
 
 func getRandomPng(seed string) ([]byte, error) {
@@ -94,23 +88,22 @@ func uploadPng(imageData []byte, filename string) error {
 		}
 		// Add an image file
 		if _, ok := r.(*bytes.Reader); ok {
-			fmt.Println(filename)
 			h := make(textproto.MIMEHeader)
 			h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, key, filename))
 			h.Set("Content-Type", "image/png")
 			if fw, err = w.CreatePart(h); err != nil {
-				fmt.Printf("Error creating file form field %+v", err)
+				fmt.Printf("Error creating file form field %+v\n", err)
 				return err
 			}
 		} else {
 			// Add other fields
 			if fw, err = w.CreateFormField(key); err != nil {
-				fmt.Printf("Error creating form field %+v", err)
+				fmt.Printf("Error creating form field %+v\n", err)
 				return err
 			}
 		}
 		if _, err = io.Copy(fw, r); err != nil {
-			fmt.Printf("Error doing io.Copy %+v", err)
+			fmt.Printf("Error doing io.Copy %+v\n", err)
 			return err
 		}
 
@@ -122,14 +115,14 @@ func uploadPng(imageData []byte, filename string) error {
 	// Submit the request
 	res, err := http.Post(fmt.Sprintf("%s/storage/file", NODE1), w.FormDataContentType(), &b)
 	if err != nil {
-		fmt.Printf("Error doing Post %+v", err)
+		fmt.Printf("Error doing Post %+v\n", err)
 		return err
 	}
 
 	// Check the response
 	if res.StatusCode != http.StatusOK {
 		err = fmt.Errorf("bad status: %s", res.Status)
-		fmt.Printf("Bad status code %+v", err)
+		fmt.Printf("Bad status code %+v\n", err)
 
 		return err
 	}
