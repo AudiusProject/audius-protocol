@@ -208,8 +208,8 @@ export const setTikTokInfo = (
   profileImage,
   requiresUserReview
 })
-export const setTikTokError = (error: any): SetInstagramErrorAction => ({
-  type: SET_INSTAGRAM_ERROR,
+export const setTikTokError = (error: any): SetTikTokErrorAction => ({
+  type: SET_TIKTOK_ERROR,
   error
 })
 

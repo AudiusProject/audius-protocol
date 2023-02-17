@@ -1662,6 +1662,19 @@ index 627b86d..0000000
 -"Authorization failed" = "Isiqnisekiso sehlulekile";
 -"User canceled authorization"= "Umsebenzisi ukhansele isiqinisekiso";
 -"OK" = "OK";
+diff --git a/node_modules/react-native-tiktok/ios/Tiktok.swift b/node_modules/react-native-tiktok/ios/Tiktok.swift
+index ce31978..af2093e 100644
+--- a/node_modules/react-native-tiktok/ios/Tiktok.swift
++++ b/node_modules/react-native-tiktok/ios/Tiktok.swift
+@@ -7,7 +7,7 @@ class Tiktok: UIViewController {
+     
+   @objc
+   func auth(_ callback: @escaping RCTResponseSenderBlock) {
+-    let scopes = ["user.info.basic,video.list"] // list your scopes
++    let scopes = ["user.info.basic"] // list your scopes
+     let scopesSet = NSOrderedSet(array:scopes)
+     let request = TikTokOpenSDKAuthRequest()
+     request.permissions = scopesSet
 diff --git a/node_modules/react-native-tiktok/react-native-tiktok.podspec b/node_modules/react-native-tiktok/react-native-tiktok.podspec
 index 95c0dbe..f457069 100644
 --- a/node_modules/react-native-tiktok/react-native-tiktok.podspec

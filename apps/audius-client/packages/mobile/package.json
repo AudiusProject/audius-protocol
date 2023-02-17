@@ -55,6 +55,7 @@
     "@react-native-clipboard/clipboard": "1.9.0",
     "@react-native-community/blur": "4.3.0",
     "@react-native-community/cli-platform-ios": "9.0.0",
+    "@react-native-cookies/cookies": "6.2.1",
     "@react-native-community/datetimepicker": "6.7.1",
     "@react-native-community/hooks": "2.8.1",
     "@react-native-community/netinfo": "9.3.0",
