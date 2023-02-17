@@ -1,6 +1,3 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
@@ -8,10 +5,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -21,31 +20,34 @@ var imageCount int
 // imageCmd represents the image command
 var imageCmd = &cobra.Command{
 	Use:   "image",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "seed random images",
+	Long: `seed random background images (img_background)
+	and square images (img_square) to random storage nodes.
+	The images are pulled from "dicebear" api
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	./comms storage seed image # defaults to 100 images
+	./comms storage seed image --count 10 # seeds 10 images
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		for i := 0; i < imageCount; i++ {
-
-			seed := fmt.Sprintf("%d", i)
-			imageData, err := getRandomPng(seed)
+			imageData, err := getRandomPng()
 			if err != nil {
 				fmt.Printf("error fetching image %d - %+v\n", i, err)
 				continue
 			}
 
-			filename := fmt.Sprintf("seed-%d.png", i)
-			err = uploadPng(NODE1, imageData, filename)
+			filename := fmt.Sprintf("image-seed-%d.png", i)
+
+			nodeNumber := rand.Intn(4)
+			node := idToNode[nodeNumber]
+
+			err = uploadPng(node, imageData, filename)
 			if err != nil {
 				fmt.Printf("error uploading image %d\n", i)
 				continue
 			}
 
-			fmt.Printf("Done %d\n", i)
+			fmt.Printf("[%d] Done (%s)\n", i, node)
 		}
 	},
 }
@@ -55,8 +57,11 @@ func init() {
 	imageCmd.Flags().IntVarP(&imageCount, "count", "c", 100, "the number of random images")
 }
 
-func getRandomPng(seed string) ([]byte, error) {
-	url := fmt.Sprintf("%s?seed=%s", IMAGE_GENERATOR, seed)
+func getRandomPng() ([]byte, error) {
+	rand.Seed(time.Now().UnixNano())
+
+	seed := rand.Int()
+	url := fmt.Sprintf("%s?seed=%d", IMAGE_GENERATOR, seed)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err
@@ -72,11 +77,20 @@ func getRandomPng(seed string) ([]byte, error) {
 }
 
 func uploadPng(node string, imageData []byte, filename string) error {
+	rand.Seed(time.Now().UnixNano())
+
 	route := "/storage/file"
+
+	var imageType string
+	if rand.Float32() < 0.5 {
+		imageType = "img_background"
+	} else {
+		imageType = "img_square"
+	}
 
 	values := map[string]io.Reader{
 		"files":    bytes.NewReader(imageData),
-		"template": strings.NewReader("img_square"),
+		"template": strings.NewReader(imageType),
 	}
 
 	var b bytes.Buffer

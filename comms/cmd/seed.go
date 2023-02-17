@@ -15,31 +15,29 @@ const (
 	IMAGE_GENERATOR = "https://api.dicebear.com/5.x/pixel-art/png"
 )
 
+var idToNode = map[int]string {
+	0: NODE1,
+	1: NODE2,
+	2: NODE3,
+	3: NODE4,
+}
+
 // seedCmd represents the seed command
 var seedCmd = &cobra.Command{
 	Use:   "seed",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "populate storage with test data",
+	Long: `Upload test images or audio to the jetstream
+	and persistent storage.
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	./comms storage seed audio
+	./comms storage seed image
+	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		imageCmd.Execute()
+		audioCmd.Execute()
 	},
 }
 
 func init() {
 	storageCmd.AddCommand(seedCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// seedCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// seedCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
