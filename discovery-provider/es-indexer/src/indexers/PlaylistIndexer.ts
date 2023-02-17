@@ -74,8 +74,14 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
 
         tracks: {
           properties: {
-            mood: lowerKeyword,
-            genre: lowerKeyword,
+            mood: {
+              type: 'text',
+              term_vector: 'yes',
+            },
+            genre: {
+              type: 'text',
+              term_vector: 'yes',
+            },
             tags: lowerKeyword,
             play_count: { type: 'integer' },
             repost_count: { type: 'integer' },
