@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"math/rand"
-
+	"sync"
 
 	"github.com/spf13/cobra"
 
@@ -22,30 +22,40 @@ var audioCmd = &cobra.Command{
 	./comms storage seed audio --count 10 # seeds 10 audio files
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		wg := sync.WaitGroup{}
 		for i := 0; i < audioCount; i++ {
-			audioData, err := client.GenerateWhiteNoise()
-			if err != nil {
-				fmt.Printf("error generating audio %d - %+v\n", i, err)
-				continue
-			}
-
-			filename := fmt.Sprintf("audio-seed-%d.mp3", i)
-
-			nodeNumber := rand.Intn(4)
-			node := idToNode[nodeNumber]
-
-			err = client.UploadAudio(node, audioData, filename)
-			if err != nil {
-				fmt.Printf("error uploading audio %d\n", i)
-				continue
-			}
-
-			fmt.Printf("[%d] Done (%s)\n", i, node)
+			wg.Add(1)
+			go generateAndUpload(i, &wg)
 		}
+
+		wg.Wait()
 	},
 }
 
 func init() {
 	seedCmd.AddCommand(audioCmd)
 	audioCmd.Flags().IntVarP(&audioCount, "count", "c", 100, "the number of random audio files")
+}
+
+func generateAndUpload(i int, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	audioData, err := client.GenerateWhiteNoise()
+	if err != nil {
+		fmt.Printf("error generating audio %d - %+v\n", i, err)
+		return
+	}
+
+	filename := fmt.Sprintf("audio-seed-%d.mp3", i)
+
+	nodeNumber := rand.Intn(4)
+	node := idToNode[nodeNumber]
+
+	err = client.UploadAudio(node, audioData, filename)
+	if err != nil {
+		fmt.Printf("error uploading audio %d\n", i)
+		return
+	}
+
+	fmt.Printf("[%d] Done (%s)\n", i, node)
 }
