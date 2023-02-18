@@ -10,7 +10,6 @@ import (
 
 var imageCount int
 
-// imageCmd represents the image command
 var imageCmd = &cobra.Command{
 	Use:   "image",
 	Short: "seed random images",

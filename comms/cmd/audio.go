@@ -12,7 +12,6 @@ import (
 
 var audioCount int
 
-// audioCmd represents the audio command
 var audioCmd = &cobra.Command{
 	Use:   "audio",
 	Short: "seed random audio",

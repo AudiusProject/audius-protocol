@@ -1,6 +1,4 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
+
 package cmd
 
 import (
@@ -15,7 +13,6 @@ var ClientList = []client.StorageClient{
 	client.NewStorageClient("http://node4"),
 }
 
-// seedCmd represents the seed command
 var seedCmd = &cobra.Command{
 	Use:   "seed",
 	Short: "populate storage with test data",
