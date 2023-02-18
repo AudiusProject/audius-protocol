@@ -15,25 +15,40 @@ const { getIsReachable } = reachabilitySelectors
  */
 export const useReachabilityEffect = (
   onBecomeReachable: OnBecomeReachable | null,
-  onBecomeUnreachable: OnBecomeUnreachable | null
+  onBecomeUnreachable: OnBecomeUnreachable | null,
+  // Determine if this effect should be called on first render
+  // in addition to reachability changes
+  includeFirstRender = true
 ) => {
   const currentReachability = useSelector(getIsReachable)
   const prevReachability = usePrevious(currentReachability)
 
   const handleReachabilityStateChange = useCallback(
     (nextReachabilityState: boolean) => {
-      if (nextReachabilityState && !prevReachability && onBecomeReachable) {
+      const wasUnreachable = includeFirstRender
+        ? !prevReachability
+        : prevReachability !== undefined && !prevReachability
+
+      const wasReachable = includeFirstRender
+        ? prevReachability
+        : prevReachability !== undefined && prevReachability
+
+      if (nextReachabilityState && wasUnreachable && onBecomeReachable) {
         onBecomeReachable()
-      }
-      if (
+      } else if (
         !nextReachabilityState &&
-        (prevReachability || prevReachability === undefined) &&
+        wasReachable &&
         onBecomeUnreachable
       ) {
         onBecomeUnreachable()
       }
     },
-    [onBecomeReachable, onBecomeUnreachable, prevReachability]
+    [
+      onBecomeReachable,
+      onBecomeUnreachable,
+      prevReachability,
+      includeFirstRender
+    ]
   )
 
   useEffect(() => {
@@ -41,12 +56,16 @@ export const useReachabilityEffect = (
   }, [currentReachability, handleReachabilityStateChange])
 }
 
-export const useReachableEffect = (onBecomeReachable: OnBecomeReachable) => {
-  useReachabilityEffect(onBecomeReachable, null)
+export const useReachableEffect = (
+  onBecomeReachable: OnBecomeReachable,
+  includeFirstRender = true
+) => {
+  useReachabilityEffect(onBecomeReachable, null, includeFirstRender)
 }
 
 export const useUnreachableEffect = (
-  onBecomeUnreachable: OnBecomeUnreachable
+  onBecomeUnreachable: OnBecomeUnreachable,
+  includeFirstRender = true
 ) => {
-  useReachabilityEffect(null, onBecomeUnreachable)
+  useReachabilityEffect(null, onBecomeUnreachable, includeFirstRender)
 }
