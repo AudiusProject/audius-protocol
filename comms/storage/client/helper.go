@@ -18,6 +18,7 @@ func GenerateWhiteNoise() ([]byte, error){
 
 	id := rand.Int()
 	tmpFile := fmt.Sprintf("tmp-%d.mp3", id)
+	defer os.Remove(tmpFile)
 
 	duration := 60 + 10
 	cmd := exec.Command("ffmpeg", "-y", // Yes to all
