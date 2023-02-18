@@ -68,10 +68,12 @@ function setLastIndexedTimestamp(redis: RedisClientType, redisKey: string, maxTi
     notifications.sort(notificationTimestampComparator)
     const lastIndexedTimestamp = notifications[notifications.length - 1].notification.timestamp.toISOString()
     redis.set(redisKey, lastIndexedTimestamp)
-    console.log(`dmNotifications task: setting last indexed timestamp to ${lastIndexedTimestamp} for key ${redisKey}`)
+    // TODO remove
+    // console.log(`dmNotifications task: setting last indexed timestamp to ${lastIndexedTimestamp} for key ${redisKey}`)
   } else {
     redis.set(redisKey, maxTimestamp.toISOString())
-    console.log(`dmNotifications task: setting last indexed timestamp to ${maxTimestamp.toISOString()} for key ${redisKey}`)
+    // TODO remove
+    // console.log(`dmNotifications task: setting last indexed timestamp to ${maxTimestamp.toISOString()} for key ${redisKey}`)
   }
 }
 
@@ -79,11 +81,18 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
   // Query DN for unread messages and reactions between min and max cursors
   const redis = await getRedisConnection()
   const cursors = await getCursors(redis)
-  console.log(`dmNotifications task: retrieved redis cursors: ${JSON.stringify(cursors)}`)
+  // TODO remove
+  // console.log(`dmNotifications task: retrieved redis cursors: ${JSON.stringify(cursors)}`)
   const unreadMessages = await getUnreadMessages(discoveryDB, cursors.minMessageTimestamp, cursors.maxTimestamp)
-  console.log(`dmNotifications: unread message notifications: ${JSON.stringify(unreadMessages)}`)
+  if (unreadMessages.length > 0) {
+    // TODO remove
+    console.log(`dmNotifications: unread message notifications: ${JSON.stringify(unreadMessages)}`)
+  }
   const unreadReactions = await getUnreadReactions(discoveryDB, cursors.minReactionTimestamp, cursors.maxTimestamp)
-  console.log(`dmNotifications: unread message reaction notifications: ${JSON.stringify(unreadReactions)}`)
+  if (unreadReactions.length > 0) {
+    // TODO remove
+    console.log(`dmNotifications: unread message reaction notifications: ${JSON.stringify(unreadReactions)}`)
+  }
 
   // Convert to notifications
   const messageNotifications = unreadMessages.map(message => new Message(discoveryDB, identityDB, message))

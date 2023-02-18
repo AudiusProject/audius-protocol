@@ -236,10 +236,12 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
     }
     const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
+    if (Object.keys(users).length == 0) {
+      return
+    }
 
     const notifications = await getNotifications(dnDb, frequency, startOffset, Object.keys(users))
     const groupedNotifications = groupNotifications(notifications, users)
-    console.log({ groupedNotifications })
 
     // TODO Validate their timezones to send at the right time!
 
