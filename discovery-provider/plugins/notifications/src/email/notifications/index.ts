@@ -32,13 +32,12 @@ const Results = Object.freeze({
 })
 
 const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, startOffset: moment.Moment): Promise<EmailUsers> => {
-  const validLastEmailOffset = startOffset.subtract(2, 'hours')
-  console.log(`processEmailNotifications: valid last email offset: ${validLastEmailOffset}`)
+  // const validLastEmailOffset = startOffset.subtract(2, 'hours')
   const userRows: { blockchainUserId: number, email: string }[] = await identityDb
     .with(
       'lastEmailSentAt',
       identityDb.raw(`
-        SELECT distinct ON ("userId")
+        SELECT DISTINCT ON ("userId")
           "userId",
           "timestamp"
         FROM "NotificationEmails"
@@ -54,7 +53,7 @@ const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, st
     .leftJoin('lastEmailSentAt', 'lastEmailSentAt.userId', 'Users.blockchainUserId')
     .where('Users.isEmailDeliverable', true)
     .where(function () {
-      this.where('lastEmailSentAt.timestamp', null).orWhere('lastEmailSentAt.timestamp', '<', validLastEmailOffset)
+      this.where('lastEmailSentAt.timestamp', null).orWhere('lastEmailSentAt.timestamp', '<', startOffset)
     })
     .modify(function (queryBuilder: Knex.QueryBuilder) {
       // This logic is to handle a 'live' frequency exception for message notifications so as to not spam users with
@@ -235,15 +234,8 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
     if (frequency == 'weekly') {
       days = 7
     }
-    const hours = 1
-    const startOffset = now.clone().subtract(days, 'days').subtract(hours, 'hours')
+    const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
-    console.log(`usersCanNotify: ${JSON.stringify(users)}`)
-    if (Object.keys(users).length == 0) {
-      // TODO remove
-      console.log("No users to notify")
-      return
-    }
 
     const notifications = await getNotifications(dnDb, frequency, startOffset, Object.keys(users))
     const groupedNotifications = groupNotifications(notifications, users)
@@ -300,7 +292,7 @@ export async function processEmailNotifications(dnDb: Knex, identityDb: Knex, fr
       {
         job: processEmailNotifications
       },
-      `processEmailNotifications | time after looping over users to send notification email`
+      `processEmailNotifications | finished looping over users to send notification emails`
     )
   } catch (e) {
     logger.error(

@@ -69,7 +69,7 @@ export const sendNotificationEmail = async ({
       {
         job: 'renderAndSendNotificationEmail',
       },
-      `renderAndSendNotificationEmail | ${userId}, ${email}, in sec`
+      `renderAndSendNotificationEmail | sent email to ${userId} at ${email}`
     )
     return true
   } catch (e) {
