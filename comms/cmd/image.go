@@ -5,7 +5,6 @@ import (
 	"math/rand"
 
 	"comms.audius.co/shared/utils"
-	"comms.audius.co/storage/client"
 	"github.com/spf13/cobra"
 )
 

@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/cobra"
 
 	"comms.audius.co/shared/utils"
-	"comms.audius.co/storage/client"
 )
 
 var audioCount int
