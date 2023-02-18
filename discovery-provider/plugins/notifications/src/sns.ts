@@ -58,7 +58,7 @@ export const sendIOSMessage = async ({
   targetARN: string
 }) => {
   const message = JSON.stringify({
-    ['default']: 'Default message',
+    ['default']: body,
     [ARN]: {
       aps: {
         alert: {
@@ -93,7 +93,7 @@ export const sendAndroidMessage = async ({
   playSound: boolean,
 }) => {
   const message = JSON.stringify({
-    default: 'Default message',
+    default: body,
     GCM: {
       notification: {
         ...(title ? { title } : {}),

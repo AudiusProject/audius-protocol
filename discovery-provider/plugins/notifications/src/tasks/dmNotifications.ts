@@ -45,8 +45,9 @@ async function getUnreadMessages(discoveryDB: Knex, minTimestamp: Date, maxTimes
     .select('chat_message.user_id as sender_user_id', 'chat_member.user_id as receiver_user_id', 'chat_message.created_at as timestamp')
     .from('chat_message')
     .innerJoin('chat_member', 'chat_message.chat_id', 'chat_member.chat_id')
-    .whereRaw('chat_message.created_at > greatest(chat_member.last_active_at, ?::timestamp)', [minTimestamp.toISOString()])
-    .andWhere('chat_message.created_at', '<=', maxTimestamp.toISOString())
+    // Javascript dates are limited to 3 decimal places (milliseconds). Truncate the postgresql timestamp to match.
+    .whereRaw(`date_trunc('milliseconds', chat_message.created_at) > greatest(chat_member.last_active_at, ?::timestamp)`, [minTimestamp.toISOString()])
+    .andWhereRaw(`date_trunc('milliseconds', chat_message.created_at) <= ?`, [maxTimestamp.toISOString()])
     .andWhereRaw('chat_message.user_id != chat_member.user_id')
 }
 
@@ -56,8 +57,9 @@ async function getUnreadReactions(discoveryDB: Knex, minTimestamp: Date, maxTime
     .from('chat_message_reactions')
     .innerJoin('chat_message', 'chat_message.message_id', 'chat_message_reactions.message_id')
     .joinRaw('join chat_member on chat_member.chat_id = chat_message.chat_id and chat_member.user_id = chat_message.user_id')
-    .whereRaw('chat_message_reactions.updated_at > greatest(chat_member.last_active_at, ?)', [minTimestamp.toISOString()])
-    .andWhere('chat_message_reactions.updated_at', '<=', maxTimestamp.toISOString())
+    // Javascript dates are limited to 3 decimal places (milliseconds). Truncate the postgresql timestamp to match.
+    .whereRaw(`date_trunc('milliseconds', chat_message_reactions.updated_at) > greatest(chat_member.last_active_at, ?)`, [minTimestamp.toISOString()])
+    .andWhereRaw(`date_trunc('milliseconds', chat_message_reactions.updated_at) <= ? `, [maxTimestamp.toISOString()])
     .andWhereRaw('chat_message_reactions.user_id != chat_member.user_id')
 }
 
