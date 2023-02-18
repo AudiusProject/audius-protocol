@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+const (
+	IMAGE_GENERATOR = "https://api.dicebear.com/5.x/pixel-art/png"
+)
+
 func Keys[K comparable, V any](m map[K]V) []K {
 	keys := make([]K, 0, len(m))
 	for k := range m {
@@ -17,11 +21,6 @@ func Keys[K comparable, V any](m map[K]V) []K {
 	}
 	return keys
 }
-
-
-const (
-	IMAGE_GENERATOR = "https://api.dicebear.com/5.x/pixel-art/png"
-)
 
 func GenerateWhiteNoise() ([]byte, error) {
 
