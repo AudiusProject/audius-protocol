@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"comms.audius.co/shared/utils"
 	"comms.audius.co/storage/client"
 )
 
@@ -39,7 +40,7 @@ func init() {
 func generateAndUpload(i int, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	audioData, err := client.GenerateWhiteNoise()
+	audioData, err := utils.GenerateWhiteNoise()
 	if err != nil {
 		fmt.Printf("error generating audio %d - %+v\n", i, err)
 		return

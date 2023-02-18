@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 
+	"comms.audius.co/shared/utils"
 	"comms.audius.co/storage/client"
 	"github.com/spf13/cobra"
 )
@@ -22,7 +23,7 @@ var imageCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		for i := 0; i < imageCount; i++ {
-			imageData, err := client.GetRandomPng()
+			imageData, err := utils.GetRandomPng()
 			if err != nil {
 				fmt.Printf("error fetching image %d - %+v\n", i, err)
 				continue
