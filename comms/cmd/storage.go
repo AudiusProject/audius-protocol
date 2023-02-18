@@ -12,7 +12,7 @@ import (
 var storageCmd = &cobra.Command{
 	Use:   "storage",
 	Short: "",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		storage.StorageMain()
 	},

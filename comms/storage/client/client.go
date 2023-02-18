@@ -27,14 +27,14 @@ var uploadTypeMap = map[UploadType]string{
 }
 
 type StorageClient struct {
-	Endpoint   string
-	Client *http.Client
+	Endpoint string
+	Client   *http.Client
 }
 
 func NewStorageClient(endpoint string) StorageClient {
-	return StorageClient {
+	return StorageClient{
 		Endpoint: endpoint,
-		Client: &http.Client{},
+		Client:   &http.Client{},
 	}
 }
 

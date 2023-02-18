@@ -12,7 +12,7 @@ import (
 var discoveryCmd = &cobra.Command{
 	Use:   "discovery",
 	Short: "",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		discovery.DiscoveryMain()
 	},
