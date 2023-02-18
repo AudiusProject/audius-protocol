@@ -35,24 +35,26 @@ const getUsersCanNotify = async (identityDb: Knex, frequency: EmailFrequency, st
   const validLastEmailOffset = startOffset.subtract(2, 'hours')
   console.log(`processEmailNotifications: valid last email offset: ${validLastEmailOffset}`)
   const userRows: { blockchainUserId: number, email: string }[] = await identityDb
+    .with(
+      'lastEmailSentAt',
+      identityDb.raw(`
+        SELECT distinct ON ("userId")
+          "userId",
+          "timestamp"
+        FROM "NotificationEmails"
+        ORDER BY "userId", "timestamp" DESC
+      `)
+    )
     .select(
       'Users.blockchainUserId',
       'Users.email'
     )
     .from('Users')
     .join('UserNotificationSettings', 'UserNotificationSettings.userId', 'Users.blockchainUserId')
-    .leftJoin('NotificationEmails', function () {
-      this
-        .on('NotificationEmails.userId', '=', 'Users.blockchainUserId')
-        .andOn(
-          'NotificationEmails.timestamp',
-          '=',
-          identityDb.raw('(SELECT MAX(timestamp) FROM "NotificationEmails" e WHERE e."userId" = "Users"."blockchainUserId")')
-        )
-    })
+    .leftJoin('lastEmailSentAt', 'lastEmailSentAt.userId', 'Users.blockchainUserId')
     .where('Users.isEmailDeliverable', true)
     .where(function () {
-      this.where('NotificationEmails', null).orWhere('NotificationEmails.timestamp', '<', validLastEmailOffset)
+      this.where('lastEmailSentAt.timestamp', null).orWhere('lastEmailSentAt.timestamp', '<', validLastEmailOffset)
     })
     .modify(function (queryBuilder: Knex.QueryBuilder) {
       // This logic is to handle a 'live' frequency exception for message notifications so as to not spam users with
