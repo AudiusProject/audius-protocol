@@ -10,6 +10,7 @@ import { AppNotificationsProcessor } from './processNotifications/indexAppNotifi
 import { sendDMNotifications } from './tasks/dmNotifications'
 import { processEmailNotifications } from './email/notifications/index'
 import { sendAppNotifications } from './tasks/appNotifications'
+import { getRedisConnection } from './utils/redisConnection'
 
 export class Processor {
 
@@ -61,6 +62,11 @@ export class Processor {
     // process events
     logger.info('processing events')
     this.isRunning = true
+    // NOTE: Temp for testing
+    // TODO remove
+    const redis = await getRedisConnection()
+    await redis.set(config.lastIndexedMessageRedisKey, new Date(Date.now()).toISOString())
+    await redis.set(config.lastIndexedReactionRedisKey, new Date(Date.now()).toISOString())
     while (this.isRunning) {
       // NOTE: Temp to stop app notifiations
       // await sendAppNotifications(this.listener, this.appNotificationsProcessor)
