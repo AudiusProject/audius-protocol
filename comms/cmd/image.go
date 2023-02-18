@@ -30,7 +30,12 @@ var imageCmd = &cobra.Command{
 
 			filename := fmt.Sprintf("image-seed-%d.png", i)
 
-			nodeNumber := rand.Intn(4)
+			var nodeNumber int
+			if multi {
+				nodeNumber = rand.Intn(4)
+			} else {
+				nodeNumber = 0
+			}
 			storageClient := ClientList[nodeNumber]
 
 			err = storageClient.UploadPng(imageData, filename)

@@ -6,6 +6,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var multi bool
+
 var ClientList = []client.StorageClient{
 	client.NewStorageClient("http://node1"),
 	client.NewStorageClient("http://node2"),
@@ -30,4 +32,6 @@ var seedCmd = &cobra.Command{
 
 func init() {
 	storageCmd.AddCommand(seedCmd)
+
+	seedCmd.PersistentFlags().BoolVarP(&multi, "multi", "m", false, "whether to seed a single node or multi node setup")
 }
