@@ -33,15 +33,15 @@ var imageCmd = &cobra.Command{
 			filename := fmt.Sprintf("image-seed-%d.png", i)
 
 			nodeNumber := rand.Intn(4)
-			node := idToNode[nodeNumber]
+			storageClient := ClientList[nodeNumber]
 
-			err = client.UploadPng(node, imageData, filename)
+			err = storageClient.UploadPng(imageData, filename)
 			if err != nil {
 				fmt.Printf("error uploading image %d\n", i)
 				continue
 			}
 
-			fmt.Printf("[%d] Done (%s)\n", i, node)
+			fmt.Printf("[%d] Done (%s)\n", i, storageClient.Endpoint)
 		}
 	},
 }

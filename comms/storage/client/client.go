@@ -12,18 +12,38 @@ import (
 	"time"
 )
 
+type UploadType int
+
+const (
+	AUDIO UploadType = iota
+	IMG_BACKGROUND
+	IMG_SQUARE
+)
+
+var uploadTypeMap = map[UploadType]string{
+	AUDIO:          "audio",
+	IMG_BACKGROUND: "img_background",
+	IMG_SQUARE:     "img_square",
+}
+
 type StorageClient struct {
-	client http.Client
+	Endpoint   string
+	Client *http.Client
 }
 
-func UploadAudio(node string, audioData []byte, filename string) error {
-	rand.Seed(time.Now().UnixNano())
+func NewStorageClient(endpoint string) StorageClient {
+	return StorageClient {
+		Endpoint: endpoint,
+		Client: &http.Client{},
+	}
+}
 
+func (sc *StorageClient) Upload(data []byte, dataType UploadType, contentType string, filename string) error {
 	route := "/storage/file"
 
 	values := map[string]io.Reader{
-		"files":    bytes.NewReader(audioData),
-		"template": strings.NewReader("audio"),
+		"files":    bytes.NewReader(data),
+		"template": strings.NewReader(uploadTypeMap[dataType]),
 	}
 
 	var b bytes.Buffer
@@ -39,7 +59,7 @@ func UploadAudio(node string, audioData []byte, filename string) error {
 		if _, ok := r.(*bytes.Reader); ok {
 			h := make(textproto.MIMEHeader)
 			h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, key, filename))
-			h.Set("Content-Type", "audio/mpeg")
+			h.Set("Content-Type", contentType)
 			if fw, err = w.CreatePart(h); err != nil {
 				fmt.Printf("Error creating file form field %+v\n", err)
 				return err
@@ -62,8 +82,8 @@ func UploadAudio(node string, audioData []byte, filename string) error {
 	w.Close()
 
 	// Submit the request
-	url := fmt.Sprintf("%s%s", node, route)
-	res, err := http.Post(url, w.FormDataContentType(), &b)
+	url := fmt.Sprintf("%s%s", sc.Endpoint, route)
+	res, err := sc.Client.Post(url, w.FormDataContentType(), &b)
 	if err != nil {
 		fmt.Printf("Error doing Post %+v\n", err)
 		return err
@@ -80,73 +100,19 @@ func UploadAudio(node string, audioData []byte, filename string) error {
 	return nil
 }
 
-func UploadPng(node string, imageData []byte, filename string) error {
+func (sc *StorageClient) UploadAudio(audioData []byte, filename string) error {
+	return sc.Upload(audioData, AUDIO, "audio/mpeg", filename)
+}
+
+func (sc *StorageClient) UploadPng(imageData []byte, filename string) error {
 	rand.Seed(time.Now().UnixNano())
 
-	route := "/storage/file"
-
-	var imageType string
+	var imageType UploadType
 	if rand.Float32() < 0.5 {
-		imageType = "img_background"
+		imageType = IMG_BACKGROUND
 	} else {
-		imageType = "img_square"
+		imageType = IMG_SQUARE
 	}
 
-	values := map[string]io.Reader{
-		"files":    bytes.NewReader(imageData),
-		"template": strings.NewReader(imageType),
-	}
-
-	var b bytes.Buffer
-	w := multipart.NewWriter(&b)
-	for key, r := range values {
-		var fw io.Writer
-		var err error
-
-		if x, ok := r.(io.Closer); ok {
-			defer x.Close()
-		}
-		// Add an image file
-		if _, ok := r.(*bytes.Reader); ok {
-			h := make(textproto.MIMEHeader)
-			h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, key, filename))
-			h.Set("Content-Type", "image/png")
-			if fw, err = w.CreatePart(h); err != nil {
-				fmt.Printf("Error creating file form field %+v\n", err)
-				return err
-			}
-		} else {
-			// Add other fields
-			if fw, err = w.CreateFormField(key); err != nil {
-				fmt.Printf("Error creating form field %+v\n", err)
-				return err
-			}
-		}
-		if _, err = io.Copy(fw, r); err != nil {
-			fmt.Printf("Error doing io.Copy %+v\n", err)
-			return err
-		}
-
-	}
-	// Don't forget to close the multipart writer.
-	// If you don't close it, your request will be missing the terminating boundary.
-	w.Close()
-
-	// Submit the request
-	url := fmt.Sprintf("%s%s", node, route)
-	res, err := http.Post(url, w.FormDataContentType(), &b)
-	if err != nil {
-		fmt.Printf("Error doing Post %+v\n", err)
-		return err
-	}
-
-	// Check the response
-	if res.StatusCode != http.StatusOK {
-		err = fmt.Errorf("bad status: %s", res.Status)
-		fmt.Printf("Bad status code %+v\n", err)
-
-		return err
-	}
-
-	return nil
+	return sc.Upload(imageData, imageType, "image/png", filename)
 }

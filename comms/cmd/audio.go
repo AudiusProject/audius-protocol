@@ -49,13 +49,13 @@ func generateAndUpload(i int, wg *sync.WaitGroup) {
 	filename := fmt.Sprintf("audio-seed-%d.mp3", i)
 
 	nodeNumber := rand.Intn(4)
-	node := idToNode[nodeNumber]
+	storageClient := ClientList[nodeNumber]
 
-	err = client.UploadAudio(node, audioData, filename)
+	err = storageClient.UploadAudio(audioData, filename)
 	if err != nil {
 		fmt.Printf("error uploading audio %d\n", i)
 		return
 	}
 
-	fmt.Printf("[%d] Done (%s)\n", i, node)
+	fmt.Printf("[%d] Done (%s)\n", i, storageClient.Endpoint)
 }

@@ -4,21 +4,15 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"comms.audius.co/storage/client"
 	"github.com/spf13/cobra"
 )
 
-const (
-	NODE1           = "http://node1"
-	NODE2           = "http://node2"
-	NODE3           = "http://node3"
-	NODE4           = "http://node4"
-)
-
-var idToNode = map[int]string {
-	0: NODE1,
-	1: NODE2,
-	2: NODE3,
-	3: NODE4,
+var ClientList = []client.StorageClient{
+	client.NewStorageClient("http://node1"),
+	client.NewStorageClient("http://node2"),
+	client.NewStorageClient("http://node3"),
+	client.NewStorageClient("http://node4"),
 }
 
 // seedCmd represents the seed command
