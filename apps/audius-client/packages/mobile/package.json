@@ -1,6 +1,6 @@
 {
   "name": "audius-mobile-client",
-  "version": "1.5.10",
+  "version": "1.5.11",
   "private": true,
   "scripts": {
     "jetifier": "jetifier",
@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@amplitude/react-native": "2.6.0",
-    "@audius/common": "1.5.10",
+    "@audius/common": "1.5.11",
     "@audius/sdk": "2.0.2-alpha.2",
     "@fingerprintjs/fingerprintjs-pro-react-native": "2.0.0-test.2",
     "@gorhom/portal": "1.0.9",
@@ -55,11 +55,11 @@
     "@react-native-clipboard/clipboard": "1.9.0",
     "@react-native-community/blur": "4.3.0",
     "@react-native-community/cli-platform-ios": "9.0.0",
-    "@react-native-cookies/cookies": "6.2.1",
     "@react-native-community/datetimepicker": "6.7.1",
     "@react-native-community/hooks": "2.8.1",
     "@react-native-community/netinfo": "9.3.0",
     "@react-native-community/push-notification-ios": "1.10.1",
+    "@react-native-cookies/cookies": "6.2.1",
     "@react-native-firebase/analytics": "14.12.0",
     "@react-native-firebase/app": "14.12.0",
     "@react-native-firebase/crashlytics": "14.12.0",
@@ -79,7 +79,7 @@
     "@svgr/core": "5.5.0",
     "@walletconnect/react-native-dapp": "1.8.0",
     "array.prototype.flat": "1.2.5",
-    "audius-client": "1.5.10",
+    "audius-client": "1.5.11",
     "big-integer": "1.6.51",
     "bn.js": "5.2.0",
     "bs58": "5.0.0",
