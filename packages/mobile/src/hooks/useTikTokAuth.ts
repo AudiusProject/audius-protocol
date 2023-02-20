@@ -53,44 +53,49 @@ const authenticate = async (): Promise<Credentials> => {
       errorMessage: string
     ) => {
       if (error) {
-        reject(new Error(errorMessage))
+        return reject(new Error(errorMessage))
       }
 
       // Need to set a csrf cookie because it is required for web
       await CookieManager.set(Config.IDENTITY_SERVICE, {
         name: 'csrfState',
-        value: 'true',
-        secure: true
+        value: 'true'
       })
 
-      const response = await fetch(
-        `${Config.IDENTITY_SERVICE}/tiktok/access_token`,
-        {
-          credentials: 'include',
-          method: 'POST',
-          body: JSON.stringify({
-            code,
-            state: 'true'
-          }),
-          headers: {
-            'Content-Type': 'application/json'
+      try {
+        const response = await fetch(
+          `${Config.IDENTITY_SERVICE}/tiktok/access_token`,
+          {
+            credentials: 'include',
+            method: 'POST',
+            body: JSON.stringify({
+              code,
+              state: 'true'
+            }),
+            headers: {
+              'Content-Type': 'application/json'
+            }
           }
+        )
+
+        if (!response.ok) {
+          return reject(
+            new Error(response.status + ' ' + (await response.text()))
+          )
         }
-      )
 
-      if (!response.ok) {
-        reject(new Error(response.status + ' ' + (await response.text())))
+        const {
+          data: { access_token, open_id, expires_in }
+        } = await response.json()
+
+        return resolve({
+          accessToken: access_token,
+          openId: open_id,
+          expiresIn: expires_in
+        })
+      } catch (e) {
+        return reject(e)
       }
-
-      const {
-        data: { access_token, open_id, expires_in }
-      } = await response.json()
-
-      resolve({
-        accessToken: access_token,
-        openId: open_id,
-        expiresIn: expires_in
-      })
     }
 
     // Needed for Android

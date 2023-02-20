@@ -69,7 +69,7 @@ public class MainActivity extends ReactActivity {
     RNBootSplash.init(this);
     super.onCreate(null);
     RNBars.init(this, "light-content");
-    TikTokOpenApiFactory.init(new TikTokOpenConfig("awa9re2w7ec3xrn6"));
+    TikTokOpenApiFactory.init(new TikTokOpenConfig(BuildConfig.TIKTOK_APP_ID));
 
     // lazy load Google Cast context
     CastContext.getSharedInstance(this);
