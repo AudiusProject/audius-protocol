@@ -1,8 +1,12 @@
+import { useCallback, useRef } from 'react'
+
 import LottieView from 'lottie-react-native'
+import type AnimatedLottieView from 'lottie-react-native'
 import type { StyleProp, ViewStyle } from 'react-native'
 import { StyleSheet } from 'react-native'
 
 import loadingSpinner from 'app/assets/animations/loadingSpinner.json'
+import { useEnterForeground } from 'app/hooks/useAppState'
 import { useThemeColors } from 'app/utils/theme'
 
 const styles = StyleSheet.create({
@@ -30,8 +34,19 @@ type LoadingSpinnerProps = {
 const LoadingSpinner = (props: LoadingSpinnerProps) => {
   const { neutralLight4 } = useThemeColors()
   const color = props.color ?? props.fill ?? neutralLight4
+  const ref = useRef<AnimatedLottieView>(null)
+
+  // Fix paused animation when entering foreground
+  // see: https://github.com/lottie-react-native/lottie-react-native/issues/412
+  useEnterForeground(
+    useCallback(() => {
+      ref.current?.play()
+    }, [])
+  )
+
   return (
     <LottieView
+      ref={ref}
       style={[styles.spinner, props.style]}
       source={loadingSpinner}
       autoPlay
