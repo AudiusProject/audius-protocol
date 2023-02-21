@@ -196,7 +196,7 @@ def extend_receive_tip(action: NotificationAction):
             "sender_user_id": encode_int_id(data["sender_user_id"]),
             "receiver_user_id": encode_int_id(data["receiver_user_id"]),
             "tip_tx_signature": data["tx_signature"],
-            "reaction_value": data["reaction_value"]
+            "reaction_value": data["reaction_value"]  # type: ignore
             if "reaction_value" in data
             else None,
         },
