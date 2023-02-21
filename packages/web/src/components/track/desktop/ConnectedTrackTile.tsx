@@ -1,6 +1,7 @@
 import {
   memo,
   useState,
+  useMemo,
   useCallback,
   useEffect,
   MouseEvent,
@@ -75,6 +76,7 @@ type OwnProps = {
   hasLoaded: (index: number) => void
   isTrending: boolean
   showRankIcon: boolean
+  isFeed: boolean
 }
 
 type ConnectedTrackTileProps = OwnProps &
@@ -108,6 +110,7 @@ const ConnectedTrackTile = memo(
     undoRepostTrack,
     shareTrack,
     isTrending,
+    isFeed = false,
     showRankIcon
   }: ConnectedTrackTileProps) => {
     const trackWithFallback = getTrackWithFallback(track)
@@ -306,13 +309,22 @@ const ConnectedTrackTile = memo(
       }
     }, [saveTrack, unsaveTrack, trackId, isFavorited])
 
+    const onRepostMetadata = useMemo(() => {
+      return isFeed
+        ? // If we're on the feed, and someone i follow has
+          // reposted the content i am reposting,
+          // is_repost_repost is true
+          { is_repost_repost: followee_reposts.length !== 0 }
+        : { is_repost_repost: false }
+    }, [followee_reposts, isFeed])
+
     const onClickRepost = useCallback(() => {
       if (isReposted) {
         undoRepostTrack(trackId)
       } else {
-        repostTrack(trackId)
+        repostTrack(trackId, onRepostMetadata)
       }
-    }, [repostTrack, undoRepostTrack, trackId, isReposted])
+    }, [repostTrack, undoRepostTrack, trackId, isReposted, onRepostMetadata])
 
     const onClickShare = useCallback(() => {
       shareTrack(trackId)
@@ -423,8 +435,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.TILE
         })
       ),
-    repostTrack: (trackId: ID) =>
-      dispatch(repostTrack(trackId, RepostSource.TILE)),
+    repostTrack: (trackId: ID, metadata: { is_repost_repost: boolean }) =>
+      dispatch(repostTrack(trackId, RepostSource.TILE, metadata)),
     undoRepostTrack: (trackId: ID) =>
       dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
     saveTrack: (trackId: ID) =>

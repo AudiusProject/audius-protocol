@@ -65,7 +65,7 @@ export function* repostTrackAsync(
   })
   yield* put(event)
 
-  yield* call(confirmRepostTrack, action.trackId, user)
+  yield* call(confirmRepostTrack, action.trackId, user, action.metadata)
 
   const tracks = yield* select(getTracks, { ids: [action.trackId] })
   const track = tracks[action.trackId]
@@ -138,7 +138,11 @@ export function* repostTrackAsync(
   }
 }
 
-export function* confirmRepostTrack(trackId: ID, user: User) {
+export function* confirmRepostTrack(
+  trackId: ID,
+  user: User,
+  metadata?: { is_repost_repost: boolean }
+) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
@@ -146,7 +150,8 @@ export function* confirmRepostTrack(trackId: ID, user: User) {
       function* () {
         const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.repostTrack,
-          trackId
+          trackId,
+          metadata
         )
         const confirmed = yield* call(
           confirmTransaction,

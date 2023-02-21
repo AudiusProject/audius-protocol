@@ -63,7 +63,6 @@ export function* repostCollectionAsync(
   if (!user) return
 
   yield* call(adjustUserField, { user, fieldName: 'repost_count', delta: 1 })
-
   let collection = action.metadata
   if (!collection) {
     const collections = yield* select(getCollections, {
@@ -83,7 +82,8 @@ export function* repostCollectionAsync(
     confirmRepostCollection,
     collection.playlist_owner_id,
     action.collectionId,
-    user
+    user,
+    action.metadata
   )
 
   yield* put(
@@ -102,7 +102,8 @@ export function* repostCollectionAsync(
 export function* confirmRepostCollection(
   ownerId: ID,
   collectionId: ID,
-  user: User
+  user: User,
+  metadata: { is_repost_repost: boolean }
 ) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
@@ -111,7 +112,8 @@ export function* confirmRepostCollection(
       function* () {
         const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.repostCollection,
-          collectionId
+          collectionId,
+          metadata
         )
         const confirmed = yield* call(
           confirmTransaction,
