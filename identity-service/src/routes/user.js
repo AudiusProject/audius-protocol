@@ -26,7 +26,7 @@ const isEmailDeliverable = async (email, logger) => {
 
   try {
     const [_, body] = await sendgridClient.request(request)
-    return body.result.verdict != 'Invalid'
+    return body.result.verdict !== 'Invalid'
   } catch (err) {
     // Couldn't figure out if delivable, so say it was
     logger.error(`Unable to validate email for ${email}`, err)
