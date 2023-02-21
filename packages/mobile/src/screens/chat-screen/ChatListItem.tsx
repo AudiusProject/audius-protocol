@@ -41,7 +41,11 @@ export const ChatListItem = ({ chat }: { chat: UserChat }) => {
   }, [navigation, currentChatId])
 
   if (!users[0]) {
-    return <LoadingSpinner />
+    return (
+      <View style={styles.root}>
+        <LoadingSpinner />
+      </View>
+    )
   }
 
   return (

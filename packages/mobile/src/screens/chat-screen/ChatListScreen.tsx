@@ -25,7 +25,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   rootContainer: {
     display: 'flex',
     justifyContent: 'center',
-    height: '100%'
+    flexGrow: 1
+  },
+  spinnerContainer: {
+    height: spacing(28)
   },
   loadingSpinner: {
     height: spacing(20),
@@ -69,7 +72,9 @@ export const ChatListScreen = () => {
               keyExtractor={(item) => item.chat_id}
             />
           ) : (
-            <LoadingSpinner style={styles.loadingSpinner} />
+            <View style={styles.spinnerContainer}>
+              <LoadingSpinner style={styles.loadingSpinner} />
+            </View>
           )}
         </View>
       </ScreenContent>
