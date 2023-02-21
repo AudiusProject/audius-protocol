@@ -3,6 +3,7 @@ package trendingserver_test
 import (
 	"io"
 
+	. "comms.audius.co/trending/codegen"
 	"comms.audius.co/trending/config"
 	"comms.audius.co/trending/trendingserver"
 	"github.com/imroc/req/v3"
@@ -50,11 +51,11 @@ var _ = Describe("Trendingserver Suite", Ordered, func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(resp.StatusCode).To(Equal(200))
+		var res TracksResponse
+		err = resp.UnmarshalJson(&res)
 
-		b, err := io.ReadAll(resp.Body)
+		// just check it validated types for now
 		Expect(err).NotTo(HaveOccurred())
-
-		Expect(string(b)).To(Equal("i checked and found nothing!"))
 	})
 
 	It("can call the trending playlists endpoint", func() {
@@ -62,11 +63,11 @@ var _ = Describe("Trendingserver Suite", Ordered, func() {
 		Expect(err).NotTo(HaveOccurred())
 
 		Expect(resp.StatusCode).To(Equal(200))
+		var res TrendingPlaylistsResponse
+		err = resp.UnmarshalJson(&res)
 
-		b, err := io.ReadAll(resp.Body)
+		// just check it validated types for now
 		Expect(err).NotTo(HaveOccurred())
-
-		Expect(string(b)).To(Equal("i checked and also found nothing!"))
 	})
 
 	// tear down test level constants and anything else
