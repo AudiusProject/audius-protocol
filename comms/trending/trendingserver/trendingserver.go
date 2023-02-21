@@ -3,6 +3,7 @@ package trendingserver
 import (
 	"net/http"
 
+	"comms.audius.co/trending/codegen"
 	"comms.audius.co/trending/config"
 	"comms.audius.co/trending/db"
 	"github.com/labstack/echo/v4"
@@ -53,19 +54,21 @@ func (ts *TrendingServer) Close() error {
 }
 
 func (ts *TrendingServer) GetTrendingTracks(c echo.Context) error {
-	res, err := ts.Database.QueryTrendingTracks()
+	_, err := ts.Database.QueryTrendingTracks()
 	if err != nil {
 		return err
 	}
-	return c.String(http.StatusOK, res)
+	mockRes := codegen.NewTracksResponseWithDefaults()
+	return intoRes(c, mockRes)
 }
 
 func (ts *TrendingServer) GetTrendingPlaylists(c echo.Context) error {
-	res, err := ts.Database.QueryTrendingPlaylists()
+	_, err := ts.Database.QueryTrendingPlaylists()
 	if err != nil {
 		return err
 	}
-	return c.String(http.StatusOK, res)
+	mockRes := codegen.NewTrendingPlaylistsResponseWithDefaults()
+	return intoRes(c, mockRes)
 }
 
 func (ts *TrendingServer) GetHealth(c echo.Context) error {
@@ -74,4 +77,12 @@ func (ts *TrendingServer) GetHealth(c echo.Context) error {
 		return c.String(http.StatusOK, "healthy :)")
 	}
 	return c.String(http.StatusInternalServerError, "BANG!")
+}
+
+func intoRes(c echo.Context, res interface{}) error {
+	err := c.JSON(http.StatusOK, res)
+	if err != nil {
+		return err
+	}
+	return nil
 }

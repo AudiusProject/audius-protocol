@@ -71,6 +71,11 @@ quicktype::
 	npx quicktype --package schema --out discovery/schema/schema.go --just-types-and-package discovery/schema/*.ts
 
 # TRENDING commands
+trending.dev.generate.stage::
+	@echo generating api spec from stage
+	@	rm -rf ./trending/codegen
+	@	docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate -i https://discoveryprovider.staging.audius.co/v1/swagger.json -g go -o /local/trending/codegen --global-property models,supportingFiles=utils.go,modelDocs=false,apiDocs=false --additional-properties=isGoSubmodule=true,packageName=codegen
+		
 trending.dev.run::
 	@echo starting trending server
 	@ 	go run main.go trending
