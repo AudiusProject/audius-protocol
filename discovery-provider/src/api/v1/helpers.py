@@ -645,6 +645,13 @@ notifications_parser.add_argument(
     type=int,
     description="The number of notifications to return",
 )
+notifications_parser.add_argument(
+    "valid_types",
+    required=False,
+    type=str,
+    action="append",
+    description="Additional valid notification types to return",
+)
 
 
 def success_response(entity):
