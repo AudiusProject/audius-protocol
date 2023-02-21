@@ -219,8 +219,8 @@ def extend_supporter_rank_up(action: NotificationAction):
     }
 
 
-def extend_supporter_dethroned(action: Notification):
-    data: Union[SupporterDethronedNotification] = action["data"]  # type: ignore
+def extend_supporter_dethroned(action: NotificationAction):
+    data: SupporterDethronedNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],

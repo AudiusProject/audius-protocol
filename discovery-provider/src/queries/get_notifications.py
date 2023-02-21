@@ -218,12 +218,14 @@ class TipReceiveNotification(TypedDict):
     amount: int
     sender_user_id: int
     receiver_user_id: int
+    tx_signature: str
 
 
 class TipSendNotification(TypedDict):
     amount: int
     sender_user_id: int
     receiver_user_id: int
+    tx_signature: str
 
 
 class ChallengeRewardNotification(TypedDict):
