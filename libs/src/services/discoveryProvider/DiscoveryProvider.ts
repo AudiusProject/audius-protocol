@@ -63,9 +63,9 @@ export type UserProfile = {
   handle: string
   verified: boolean
   profilePicture:
-  | { '150x150': string; '480x480': string; '1000x1000': string }
-  | null
-  | undefined
+    | { '150x150': string; '480x480': string; '1000x1000': string }
+    | null
+    | undefined
   sub: number
   iat: string
 }
@@ -869,14 +869,13 @@ export class DiscoveryProvider {
     encodedUserId,
     timestamp,
     groupId,
-    limit,
+    limit
   }: {
-    encodedUserId: string,
-    timestamp: number,
-    groupId?: string,
+    encodedUserId: string
+    timestamp: number
+    groupId?: string
     limit?: number
   }) {
-
     const req = Requests.getUserNotifications({
       encodedUserId,
       timestamp,
@@ -1238,12 +1237,12 @@ export class DiscoveryProvider {
     blockNumber?: number
   ): Promise<
     | {
-      latest_indexed_block: number
-      latest_chain_block: number
-      latest_indexed_slot_plays: number
-      latest_chain_slot_plays: number
-      data: Response
-    }
+        latest_indexed_block: number
+        latest_chain_block: number
+        latest_indexed_slot_plays: number
+        latest_chain_slot_plays: number
+        data: Response
+      }
     | undefined
     | null
   > {

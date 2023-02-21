@@ -655,11 +655,11 @@ export const getUserNotifications = ({
   encodedUserId,
   timestamp,
   groupId,
-  limit,
+  limit
 }: {
-  encodedUserId: string,
-  timestamp: number,
-  groupId?: string,
+  encodedUserId: string
+  timestamp: number
+  groupId?: string
   limit?: number
 }) => {
   return {
