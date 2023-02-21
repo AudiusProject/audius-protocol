@@ -10,7 +10,8 @@ import (
 	"comms.audius.co/shared/utils"
 )
 
-var audioCount int
+var audioCount uint
+var durationMean uint
 
 var audioCmd = &cobra.Command{
 	Use:   "audio",
@@ -22,7 +23,7 @@ var audioCmd = &cobra.Command{
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
 		wg := sync.WaitGroup{}
-		for i := 0; i < audioCount; i++ {
+		for i := 0; i < int(audioCount); i++ {
 			wg.Add(1)
 			go generateAndUpload(i, &wg)
 		}
@@ -33,13 +34,14 @@ var audioCmd = &cobra.Command{
 
 func init() {
 	seedCmd.AddCommand(audioCmd)
-	audioCmd.Flags().IntVarP(&audioCount, "count", "c", 100, "the number of random audio files")
+	audioCmd.Flags().UintVarP(&audioCount, "count", "c", 100, "the number of random audio files")
+	audioCmd.Flags().UintVarP(&durationMean, "mean", "c", 60, "the mean amount of seconds the audio files are")
 }
 
 func generateAndUpload(i int, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	audioData, err := utils.GenerateWhiteNoise()
+	audioData, err := utils.GenerateWhiteNoise(durationMean)
 	if err != nil {
 		fmt.Printf("error generating audio %d - %+v\n", i, err)
 		return

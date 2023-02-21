@@ -22,13 +22,15 @@ func Keys[K comparable, V any](m map[K]V) []K {
 	return keys
 }
 
-func GenerateWhiteNoise() ([]byte, error) {
+func GenerateWhiteNoise(meanDuration uint) ([]byte, error) {
 
 	id := rand.Int()
 	tmpFile := fmt.Sprintf("tmp-%d.mp3", id)
 	defer os.Remove(tmpFile)
 
-	duration := 60 + 10
+	// duration are within a normal distribution
+	duration := int((rand.NormFloat64() * 10.0) + float64(meanDuration))
+
 	cmd := exec.Command("ffmpeg", "-y", // Yes to all
 		"-f",                                    // audio/video filtering framework
 		"lavfi",                                 // provides generic audio filtering for audio/video signals
