@@ -16,11 +16,10 @@ import {
   chatSelectors,
   encodeHashId,
   Status,
-  hasTail
+  hasTail,
+  isEarliestUnread
 } from '@audius/common'
-import type { ChatMessage } from '@audius/sdk'
 import cn from 'classnames'
-import dayjs from 'dayjs'
 import { mergeRefs } from 'react-merge-refs'
 import { useDispatch } from 'react-redux'
 
@@ -58,39 +57,6 @@ const isScrolledToBottom = (element: HTMLElement) => {
 
 const isScrolledToTop = (element: HTMLElement) => {
   return element.scrollTop < SCROLL_TOP_THRESHOLD
-}
-
-/**
- * Checks if the current message:
- * - Is the first unread message
- * - Is by a different user than the current one
- */
-const shouldRenderUnreadIndicator = ({
-  unreadCount,
-  lastReadAt,
-  currentMessageIndex,
-  messages,
-  currentUserId
-}: {
-  unreadCount: number
-  lastReadAt?: string
-  currentMessageIndex: number
-  messages: ChatMessage[]
-  currentUserId: string | null
-}) => {
-  if (unreadCount === 0 || !lastReadAt) {
-    return false
-  }
-  const message = messages[currentMessageIndex]
-  const prevMessage = messages[currentMessageIndex + 1]
-  const isUnread =
-    lastReadAt === undefined || dayjs(message.created_at).isAfter(lastReadAt)
-  const isPreviousMessageUnread =
-    prevMessage &&
-    (lastReadAt === undefined ||
-      dayjs(prevMessage.created_at).isAfter(lastReadAt))
-  const isAuthor = message.sender_user_id === currentUserId
-  return isUnread && !isPreviousMessageUnread && !isAuthor
 }
 
 export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
@@ -208,7 +174,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                   The separator has to come after the message to appear above it, 
                   since the message list order is reversed in CSS
                 */}
-                {shouldRenderUnreadIndicator({
+                {isEarliestUnread({
                   unreadCount: chatFrozenRef.current?.unread_message_count ?? 0,
                   lastReadAt: chatFrozenRef.current?.last_read_at,
                   currentMessageIndex: i,

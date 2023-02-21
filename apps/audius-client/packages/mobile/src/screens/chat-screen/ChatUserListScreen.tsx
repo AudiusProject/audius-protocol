@@ -203,8 +203,8 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
     }
 
     return (
-      <TouchableHighlight onPress={() => handlePress(item)} key={item.key}>
-        <View style={styles.userContainer}>
+      <TouchableHighlight onPress={() => handlePress(item)}>
+        <View style={styles.userContainer} key={item.key}>
           <ProfilePicture profile={item} style={styles.profilePicture} />
           <View style={styles.userNameContainer}>
             <UserBadges user={item} nameStyle={styles.userName} />
