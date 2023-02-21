@@ -39,7 +39,7 @@ export enum FeatureFlags {
   SAFE_FAST_CACHE = 'safe_fast_cache',
   ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED = 'entity_manager_view_playlist_enabled',
   ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED = 'entity_manager_view_notifications_enabled',
-  SHARE_VIDEO_TO_TIKTOK = 'share_video_to_tiktok',
+  SHARE_VIDEO_TO_TIKTOK = 'share_video_to_tiktok_2',
   PODCAST_CONTROL_UPDATES_ENABLED = 'podcast_control_updates_enabled'
 }
 
