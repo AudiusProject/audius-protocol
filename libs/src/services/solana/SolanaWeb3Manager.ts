@@ -251,10 +251,16 @@ export class SolanaWeb3Manager {
     }
   }
 
+  async doesUserbankExist(sourceEthAddress?: string) {
+    const userbank = await this.deriveUserBank(sourceEthAddress)
+    const tokenAccount = await this.getTokenAccountInfo(userbank.toString())
+    return !!tokenAccount
+  }
+
   /**
-   * Creates a solana bank account from the web3 provider's eth address
+   * Creates a solana bank account, either for optional `recipientEthAddress` or from the web3 provider's eth address
    */
-  async createUserBank(feePayerOverride: string) {
+  async createUserBank(feePayerOverride: string, recipientEthAddress?: string) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -263,7 +269,7 @@ export class SolanaWeb3Manager {
 
     const ethAddress = this.web3Manager.getWalletAddress()
     return await createUserBankFrom({
-      ethAddress,
+      ethAddress: recipientEthAddress ?? ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAKey,
       feePayerKey:
         SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
@@ -272,6 +278,38 @@ export class SolanaWeb3Manager {
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       transactionHandler: this.transactionHandler
     })
+  }
+
+  /**
+   * Creates a userbank if needed.
+   * Returns the userbank address as `userbank` if it was created or already existed, or `error` if it failed to create.
+   */
+  async createUserBankIfNeeded(
+    feePayerOverride: string,
+    sourceEthAddress?: string
+  ): Promise<
+    | { error: string; errorCode: string | number | null }
+    | {
+        didExist: boolean
+        userbank: solanaWeb3.PublicKey
+      }
+  > {
+    const didExist = await this.doesUserbankExist(sourceEthAddress)
+    if (!didExist) {
+      const response = await this.createUserBank(
+        feePayerOverride,
+        sourceEthAddress
+      )
+      if (response.error) {
+        return {
+          error: response.error,
+          errorCode: response.errorCode
+        }
+      }
+    }
+
+    const derived = await this.deriveUserBank(sourceEthAddress)
+    return { userbank: derived, didExist }
   }
 
   /**
@@ -302,17 +340,20 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Gets a solana bank account from the current web3 provider's eth address
+   * Gets a solana bank account from `sourceEthAddress` or the current web3 provider's eth address.
    */
-  async deriveUserBank() {
+  async deriveUserBank(sourceEthAddress?: string) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
       )
     }
-    const ethAddress = this.web3Manager.getWalletAddress()
+
+    const derivationSourceAddress =
+      sourceEthAddress ?? this.web3Manager.getWalletAddress()
+
     const bank = await getBankAccountAddress(
-      ethAddress,
+      derivationSourceAddress,
       this.claimableTokenPDAKey,
       this.solanaTokenKey
     )
