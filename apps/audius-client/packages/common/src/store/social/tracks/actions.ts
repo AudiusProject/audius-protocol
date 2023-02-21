@@ -29,7 +29,15 @@ export const SHARE_TRACK = 'SOCIAL/SHARE_TRACK'
 
 export const repostTrack = createCustomAction(
   REPOST_TRACK,
-  (trackId: ID, source: RepostSource) => ({ trackId, source })
+  (
+    trackId: ID,
+    source: RepostSource,
+    metadata?: { is_repost_repost: boolean }
+  ) => ({
+    trackId,
+    source,
+    metadata
+  })
 )
 
 export const undoRepostTrack = createCustomAction(

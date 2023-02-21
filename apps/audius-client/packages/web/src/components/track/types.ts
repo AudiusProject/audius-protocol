@@ -59,6 +59,7 @@ export type TrackTileProps = TileProps & {
   artistName: string
   artistHandle: string
   artistIsVerified: boolean
+  isFeed?: boolean
   ordered?: boolean
   uploading?: boolean
   uploadPercent?: number
@@ -90,6 +91,7 @@ export type PlaylistTileProps = TileProps & {
   playTrack: (uid: UID) => void
   disableActions?: boolean
   ordered?: boolean
+  isFeed?: boolean
   uploading?: boolean
   uploadPercent?: number
   ownerId: ID

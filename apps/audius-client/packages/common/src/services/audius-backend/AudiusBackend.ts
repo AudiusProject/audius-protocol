@@ -1172,9 +1172,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function repostTrack(trackId: ID) {
+  async function repostTrack(
+    trackId: ID,
+    metadata?: { is_repost_repost: boolean }
+  ) {
     try {
-      return await audiusLibs.EntityManager.repostTrack(trackId)
+      return await audiusLibs.EntityManager.repostTrack(
+        trackId,
+        JSON.stringify(metadata)
+      )
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
@@ -1190,9 +1196,15 @@ export const audiusBackend = ({
     }
   }
 
-  async function repostCollection(playlistId: ID) {
+  async function repostCollection(
+    playlistId: ID,
+    metadata?: { is_repost_repost: boolean }
+  ) {
     try {
-      return audiusLibs.EntityManager.repostPlaylist(playlistId)
+      return audiusLibs.EntityManager.repostPlaylist(
+        playlistId,
+        JSON.stringify(metadata)
+      )
     } catch (err) {
       console.error(getErrorMessage(err))
       throw err
