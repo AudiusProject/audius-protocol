@@ -93,9 +93,11 @@ def test_fetch_unavailable_track_ids(mock_requests, app):
     mock_get: reference to the mock requests.get
     look at test_index_tracks.py for ref
     """
-    track_ids = [1, 2, 3, 4, 5, 6, 7]
+
+    track_ids = [1, 2, 3, 4, 5, 6]
+    individual_segments = ["cid1", "cid2", "cid7"]
     mock_return = {
-        "data": {"values": track_ids},
+        "data": {"trackIds": track_ids, "individualSegments": individual_segments},
         "signer": "signer",
         "timestamp": "2022-05-19T19:50:56.630Z",
         "signature": "signature",
@@ -103,9 +105,14 @@ def test_fetch_unavailable_track_ids(mock_requests, app):
 
     mock_requests.get.return_value = _mock_response(mock_return, mock_return)
 
-    fetch_response = fetch_unavailable_track_ids("http://content_node.com")
+    with app.app_context():
+        db = get_db()
+    _seed_db_with_data(db)
 
-    assert fetch_response == track_ids
+    with db.scoped_session() as session:
+        fetch_response = fetch_unavailable_track_ids("http://content_node.com", session)
+
+    assert fetch_response == [1, 2, 3, 4, 5, 6, 7]
 
 
 @mock.patch("src.tasks.update_track_is_available.check_track_is_available")
@@ -326,13 +333,13 @@ def test_update_track_is_available(
 def _seed_db_with_data(db):
     test_entities = {
         "tracks": [
-            {"track_id": 1, "owner_id": 1, "is_current": True},
-            {"track_id": 2, "owner_id": 1, "is_current": True},
+            {"track_id": 1, "owner_id": 1, "is_current": True, "track_cid": "cid1"},
+            {"track_id": 2, "owner_id": 1, "is_current": True, "track_cid": "cid2"},
             {"track_id": 3, "owner_id": 2, "is_current": True},
             {"track_id": 4, "owner_id": 3, "is_current": True},
             {"track_id": 5, "owner_id": 3, "is_current": True},
             {"track_id": 6, "owner_id": 3, "is_current": True},
-            {"track_id": 7, "owner_id": 3, "is_current": True},
+            {"track_id": 7, "owner_id": 3, "is_current": True, "track_cid": "cid7"},
             # Data that this query should not pick up because track ids are not queried
             {"track_id": 8, "owner_id": 3, "is_current": True},
             {"track_id": 9, "owner_id": 3, "is_current": True},

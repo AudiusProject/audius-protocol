@@ -3,7 +3,7 @@ import { CheckAccessArgs, CheckAccessResponse } from './types'
 import { recoverWallet, signatureHasExpired } from '../apiSigning'
 import BlacklistManager from '../blacklistManager'
 
-const CONTENT_SIGNATURE_MAX_TTL_MS = 6 * 60 * 60 * 1000 // 6 hours
+const CONTENT_SIGNATURE_MAX_TTL_MS = 48 * 60 * 60 * 1000 // 48 hours
 
 /**
  * Checks that all content headers are passed in.
