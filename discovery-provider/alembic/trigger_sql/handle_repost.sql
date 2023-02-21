@@ -131,18 +131,18 @@ begin
 	    )
 	insert into notification
 		(blocknumber, user_ids, timestamp, type, specifier, group_id, data)
-		values
-		(
-			new.blocknumber,
+		SELECT blocknumber_val, user_ids_val, timestamp_val, type_val, specifier_val, group_id_val, data_val
+		FROM (
+			SELECT new.blocknumber AS blocknumber_val,
 			ARRAY(
 				SELECT user_id
 				FROM
 					followee_repost_repost_ids
-			),
-			new.created_at,
-			'repost_repost',
-			new.user_id,
-			'repost_repost:' || new.repost_item_id || ':type:' || new.repost_type,
+			) AS user_ids_val,
+			new.created_at AS timestamp_val,
+			'repost_repost' AS type_val,
+			new.user_id AS specifier_val,
+			'repost_repost:' || new.repost_item_id || ':type:' || new.repost_type AS group_id_val,
 			json_build_object(
 				'repost_repost_item_id',
 				new.repost_item_id,
@@ -150,8 +150,10 @@ begin
 				new.user_id,
 				'type',
 				new.repost_type
-			)
-		) on conflict do nothing;
+			) AS data_val
+		) sub
+		WHERE user_ids_val IS NOT NULL AND array_length(user_ids_val, 1) > 0
+		on conflict do nothing;
 	end if;
 
     -- create a notification for remix cosign

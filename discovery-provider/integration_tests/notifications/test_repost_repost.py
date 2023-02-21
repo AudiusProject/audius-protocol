@@ -207,20 +207,9 @@ def test_repost_repost_notification_within_month(app, entities):
             .filter(Notification.type == "repost_repost")
             .all()
         )
-        # User 1 reposted content 2020-01-01, notify content owner
-        assert len(notifications) == 1
         # User 3 reposted user 1's repost over a month later
         # User 1 should not be notified
-        assert_notification(
-            notification=notifications[0],
-            specifier="3",
-            group_id="repost_repost:100:type:track",
-            type="repost_repost",
-            slot=None,
-            blocknumber=6,
-            data=notification_data(user_id=3, repost_repost_item_id=100),
-            user_ids=[],
-        )
+        assert len(notifications) == 0
 
 
 def test_repost_repost_notification_mult_reposts(app, entities):

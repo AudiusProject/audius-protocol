@@ -27,11 +27,9 @@ def test_repost_notification(app):
                 "user_id": 1,
                 "repost_item_id": 100,
                 "repost_type": RepostType.track,
-                "is_repost_repost": False,
             }
         ],
     }
-    populate_mock_db(db, entities)
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
