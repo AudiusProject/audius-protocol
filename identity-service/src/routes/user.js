@@ -1,3 +1,4 @@
+const sendgridClient = require('@sendgrid/client')
 const axios = require('axios')
 const models = require('../models')
 const {
@@ -8,6 +9,34 @@ const {
 const authMiddleware = require('../authMiddleware')
 const captchaMiddleware = require('../captchaMiddleware')
 const config = require('../config')
+
+sendgridClient.setApiKey(config.get('sendgridEmailValidationKey'))
+
+const isEmailDeliverable = async (email, logger) => {
+  const data = {
+    email,
+    source: 'signup',
+  };
+
+  const request = {
+    url: '/v3/validations/email',
+    method: 'POST',
+    body: data,
+  };
+
+  try {
+    const [_, body] = await sendgridClient.request(request)
+    return body['result']['verdict'] != 'Invalid'
+  } catch (err) {
+    // Couldn't figure out if delivable, so say it was
+    logger.error(
+      `Unable to validate email for ${email}`,
+      err
+    )
+    return true
+  }
+}
+
 
 module.exports = function (app) {
   /**
@@ -39,31 +68,14 @@ module.exports = function (app) {
           req.headers['x-forwarded-for'] || req.connection.remoteAddress
 
         try {
-          let isEmailDeliverable = true
-          try {
-            const checkValidEmailUrl = `https://api.seon.io/SeonRestService/email-verification/v1.0/${encodeURIComponent(
-              email
-            )}`
-            const checkEmailResponse = await axios.get(checkValidEmailUrl, {
-              headers: { 'X-API-KEY': config.get('seonApiKey') }
-            })
-            // Need to be careful this isn't null, otherwise we'll get a SQL
-            // validation error
-            isEmailDeliverable = !!checkEmailResponse.data.data.deliverable
-          } catch (err) {
-            req.logger.error(
-              `Unable to fetch validate email from seon for ${email}`,
-              err
-            )
-          }
-
+          const isDeliverable = await isEmailDeliverable(email, req.logger)
           await models.User.create({
             email,
             // Store non checksummed wallet address
             walletAddress: body.walletAddress.toLowerCase(),
             lastSeenDate: Date.now(),
             IP,
-            isEmailDeliverable
+            isEmailDeliverable: isDeliverable
           })
 
           return successResponse()
