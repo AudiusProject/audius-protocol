@@ -1,4 +1,3 @@
-
 package contentaccess
 
 import (
@@ -6,14 +5,19 @@ import (
 	"errors"
 	"time"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"comms.audius.co/shared/utils"
+	"github.com/ethereum/go-ethereum/crypto"
+)
+
+const (
+	EXPIRATION_TIME = 300_000
 )
 
 type SignatureData struct {
-	Cid string
+	Cid       string
 	Timestamp int64
-	TrackId int64
+	TrackId   int64
+	ShouldCache bool
 }
 
 func recoverWallet(signatureData SignatureData, signature string) (string, error) {
@@ -31,10 +35,9 @@ func recoverWallet(signatureData SignatureData, signature string) (string, error
 	return string(recoveredSigner[:]), nil
 }
 
-func isExpired(signatureData SignatureData, signature string) bool {
-	signatureTimestamp := time.Unix(signatureData.Timestamp, 0)
-	currentTimestamp := time.Now()
-	return currentTimestamp.Sub(signatureTimestamp) > 300_000
+func isExpired(signatureData SignatureData) bool {
+	currentTimestamp := time.Now().Unix()
+	return (currentTimestamp - signatureData.Timestamp) > EXPIRATION_TIME
 }
 
 func isCidMatch(signatureData SignatureData, requestedCid string) bool {
@@ -46,7 +49,7 @@ func VerifySignature(
 	signature string,
 	requestedCid string,
 ) (bool, error) {
-	if (!isCidMatch(signatureData, requestedCid)) {
+	if !isCidMatch(signatureData, requestedCid) {
 		return false, errors.New("Signed cid does not match requested cid.")
 	}
 
@@ -55,11 +58,11 @@ func VerifySignature(
 		return false, errors.New("Wallet recovery failed")
 	}
 
-	if (!IsValidDiscoveryNode(wallet)) {
+	if !utils.IsValidDiscoveryNode(wallet) {
 		return false, errors.New("Signature is not from valid discovery node.")
 	}
 
-	if (isExpired(signatureData, signature)) {
+	if isExpired(signatureData) {
 		return false, errors.New("Signature has expired.")
 	}
 
