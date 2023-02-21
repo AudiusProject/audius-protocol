@@ -73,7 +73,8 @@ quicktype::
 # TRENDING commands
 trending.dev.generate.stage::
 	@echo generating api spec from stage
-	@	docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate -i https://discoveryprovider.staging.audius.co/v1/swagger.json -g go -o /local/trending/codegen --global-property models,supportingFiles=utils.go --additional-properties=isGoSubmodule=true,packageName=codegen
+	@	rm -rf ./trending/codegen
+	@	docker run --rm -v "${PWD}:/local" openapitools/openapi-generator-cli generate -i https://discoveryprovider.staging.audius.co/v1/swagger.json -g go -o /local/trending/codegen --global-property models,supportingFiles=utils.go,modelDocs=false,apiDocs=false --additional-properties=isGoSubmodule=true,packageName=codegen
 		
 trending.dev.run::
 	@echo starting trending server
