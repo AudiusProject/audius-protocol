@@ -115,7 +115,7 @@ begin
 	        from reposts r
 	        where
 	            r.repost_item_id = new.repost_item_id
-	            and new.created_at + INTERVAL '-1 month' < r.created_at
+	            and new.created_at - INTERVAL '1 month' < r.created_at
 	            and new.created_at > r.created_at
 				and r.is_delete is false
 				and r.is_current is true
