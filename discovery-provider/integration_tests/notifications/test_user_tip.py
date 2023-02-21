@@ -44,7 +44,7 @@ def test_supporter_rank_up_notification(app):
         assert len(receive_notifications) == 3
 
         assert send_notifications[0].specifier == "1"
-        assert send_notifications[0].group_id == "tip_send:user_id:1:slot:2"
+        assert send_notifications[0].group_id == "tip_send:user_id:1:signature:2"
         assert send_notifications[0].type == "tip_send"
         assert send_notifications[0].slot == 2
         assert send_notifications[0].blocknumber == None
@@ -52,11 +52,12 @@ def test_supporter_rank_up_notification(app):
             "amount": 300000000,
             "sender_user_id": 1,
             "receiver_user_id": 3,
+            "tx_signature": "2",
         }
         assert send_notifications[0].user_ids == [1]
 
         assert receive_notifications[0].specifier == "3"
-        assert receive_notifications[0].group_id == "tip_receive:user_id:3:slot:2"
+        assert receive_notifications[0].group_id == "tip_receive:user_id:3:signature:2"
         assert receive_notifications[0].type == "tip_receive"
         assert receive_notifications[0].slot == 2
         assert receive_notifications[0].blocknumber == None
@@ -64,5 +65,6 @@ def test_supporter_rank_up_notification(app):
             "amount": 300000000,
             "sender_user_id": 1,
             "receiver_user_id": 3,
+            "tx_signature": "2",
         }
         assert receive_notifications[0].user_ids == [3]

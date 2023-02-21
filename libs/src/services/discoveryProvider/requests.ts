@@ -651,6 +651,27 @@ export const getNotifications = (
   }
 }
 
+export const getUserNotifications = ({
+  encodedUserId,
+  timestamp,
+  groupId,
+  limit,
+}: {
+  encodedUserId: string,
+  timestamp: number,
+  groupId?: string,
+  limit?: number
+}) => {
+  return {
+    endpoint: `v1/full/notifications/${encodedUserId}`,
+    queryParams: {
+      timestamp,
+      group_id: groupId,
+      limit
+    }
+  }
+}
+
 export const getUserSubscribers = (encodedUserId: string, timeout: number) => {
   return {
     endpoint: `v1/full/users/${encodedUserId}/subscribers`,

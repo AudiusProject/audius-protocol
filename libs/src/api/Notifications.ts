@@ -1,9 +1,9 @@
 import type { TransactionReceipt } from 'web3-core'
+import { Base, BaseConstructorArgs, Services } from './base'
 import {
   Action,
   EntityType
 } from '../services/dataContracts/EntityManagerClient'
-import { Base, BaseConstructorArgs } from './base'
 
 type AnnouncementData = {}
 
@@ -111,5 +111,26 @@ export class Notifications extends Base {
       )
       return { error: errorMessage }
     }
+  }
+
+
+  async getNotifications({
+    encodedUserId,
+    timestamp,
+    groupId,
+    limit
+  }: {
+    encodedUserId: string,
+    timestamp: number,
+    groupId?: string,
+    limit?: number
+  }): Promise<any> {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return await this.discoveryProvider.getUserNotifications({
+      encodedUserId,
+      timestamp,
+      groupId,
+      limit,
+    })
   }
 }
