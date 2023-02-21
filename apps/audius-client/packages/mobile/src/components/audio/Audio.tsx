@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useRef, useEffect, useCallback, useState } from 'react'
 
 import type { Track } from '@audius/common'
 import {
@@ -32,7 +32,7 @@ import TrackPlayer, {
   TrackType
 } from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffectOnce, usePrevious } from 'react-use'
+import { useAsync, usePrevious } from 'react-use'
 
 import { DEFAULT_IMAGE_URL } from 'app/components/image/TrackImage'
 import { getImageSourceOptimistic } from 'app/hooks/useContentNodeImage'
@@ -217,16 +217,15 @@ export const Audio = () => {
   )
 
   // Perform initial setup for the track player
-  const setupTrackPlayer = async () => {
-    if (isAudioSetup) return
-    await TrackPlayer.setupPlayer()
+  useAsync(async () => {
+    try {
+      await TrackPlayer.setupPlayer()
+      await updatePlayerOptions()
+    } catch (e) {
+      // The player has already been set up
+    }
     setIsAudioSetup(true)
-    await updatePlayerOptions()
-  }
-
-  useEffectOnce(() => {
-    setupTrackPlayer()
-  })
+  }, [])
 
   // When component unmounts (App is closed), reset
   useEffect(() => {
@@ -407,62 +406,57 @@ export const Audio = () => {
       ? queueTracks.slice(refUids.length)
       : queueTracks
 
-    const newTrackData = await Promise.all(
-      newQueueTracks.map(async (track) => {
-        const trackOwner = queueTrackOwnersMap[track.owner_id]
-        const trackId = track.track_id
-        const offlineTrackAvailable =
-          trackId &&
-          isOfflineModeEnabled &&
-          offlineAvailabilityByTrackId[trackId]
+    const newTrackData = newQueueTracks.map((track) => {
+      const trackOwner = queueTrackOwnersMap[track.owner_id]
+      const trackId = track.track_id
+      const offlineTrackAvailable =
+        trackId && isOfflineModeEnabled && offlineAvailabilityByTrackId[trackId]
 
-        // Get Track url
-        let url: string
-        let isM3u8 = false
-        if (offlineTrackAvailable && isCollectionMarkedForDownload) {
-          const audioFilePath = getLocalAudioPath(trackId)
-          url = `file://${audioFilePath}`
-        } else if (isStreamMp3Enabled && isReachable) {
-          url = apiClient.makeUrl(
-            `/tracks/${encodeHashId(track.track_id)}/stream`
-          )
-        } else {
-          isM3u8 = true
-          const ownerGateways =
-            audiusBackendInstance.getCreatorNodeIPFSGateways(
-              trackOwner.creator_node_endpoint
-            )
-          url = hlsUtils.generateM3U8Variants({
-            segments: track?.track_segments ?? [],
-            gateways: ownerGateways
-          })
-        }
+      // Get Track url
+      let url: string
+      let isM3u8 = false
+      if (offlineTrackAvailable && isCollectionMarkedForDownload) {
+        const audioFilePath = getLocalAudioPath(trackId)
+        url = `file://${audioFilePath}`
+      } else if (isStreamMp3Enabled && isReachable) {
+        url = apiClient.makeUrl(
+          `/tracks/${encodeHashId(track.track_id)}/stream`
+        )
+      } else {
+        isM3u8 = true
+        const ownerGateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
+          trackOwner.creator_node_endpoint
+        )
+        url = hlsUtils.generateM3U8Variants({
+          segments: track.track_segments ?? [],
+          gateways: ownerGateways
+        })
+      }
 
-        const localTrackImageSource =
-          isNotReachable && track
-            ? { uri: `file://${getLocalTrackCoverArtPath(trackId.toString())}` }
-            : undefined
+      const localTrackImageSource =
+        isNotReachable && track
+          ? { uri: `file://${getLocalTrackCoverArtPath(trackId.toString())}` }
+          : undefined
 
-        const imageUrl =
-          getImageSourceOptimistic({
-            cid: track ? track.cover_art_sizes || track.cover_art : null,
-            user: trackOwner,
-            size: SquareSizes.SIZE_1000_BY_1000,
-            localSource: localTrackImageSource
-          })?.uri ?? DEFAULT_IMAGE_URL
+      const imageUrl =
+        getImageSourceOptimistic({
+          cid: track ? track.cover_art_sizes || track.cover_art : null,
+          user: trackOwner,
+          size: SquareSizes.SIZE_1000_BY_1000,
+          localSource: localTrackImageSource
+        })?.uri ?? DEFAULT_IMAGE_URL
 
-        return {
-          url,
-          type: isM3u8 ? TrackType.HLS : TrackType.Default,
-          title: track?.title,
-          artist: trackOwner?.name,
-          genre: track?.genre,
-          date: track?.created_at,
-          artwork: imageUrl,
-          duration: track?.duration
-        }
-      })
-    )
+      return {
+        url,
+        type: isM3u8 ? TrackType.HLS : TrackType.Default,
+        title: track.title,
+        artist: trackOwner.name,
+        genre: track.genre,
+        date: track.created_at,
+        artwork: imageUrl,
+        duration: track?.duration
+      }
+    })
 
     if (isQueueAppend) {
       await TrackPlayer.add(newTrackData)
@@ -531,20 +525,28 @@ export const Audio = () => {
   }, [repeatMode])
 
   useEffect(() => {
-    handleRepeatModeChange()
-  }, [handleRepeatModeChange, repeatMode])
+    if (isAudioSetup) {
+      handleRepeatModeChange()
+    }
+  }, [handleRepeatModeChange, repeatMode, isAudioSetup])
 
   useEffect(() => {
-    handleQueueChange()
-  }, [handleQueueChange, queueTrackUids])
+    if (isAudioSetup) {
+      handleQueueChange()
+    }
+  }, [handleQueueChange, queueTrackUids, isAudioSetup])
 
   useEffect(() => {
-    handleQueueIdxChange()
-  }, [handleQueueIdxChange, queueIndex])
+    if (isAudioSetup) {
+      handleQueueIdxChange()
+    }
+  }, [handleQueueIdxChange, queueIndex, isAudioSetup])
 
   useEffect(() => {
-    handleTogglePlay()
-  }, [handleTogglePlay, playing])
+    if (isAudioSetup) {
+      handleTogglePlay()
+    }
+  }, [handleTogglePlay, playing, isAudioSetup])
 
   return null
 }
