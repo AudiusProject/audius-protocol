@@ -10,21 +10,9 @@ import (
 	"net/textproto"
 	"strings"
 	"time"
+
+	"comms.audius.co/storage/transcode"
 )
-
-type UploadType int
-
-const (
-	AUDIO UploadType = iota
-	IMG_BACKGROUND
-	IMG_SQUARE
-)
-
-var uploadTypeMap = map[UploadType]string{
-	AUDIO:          "audio",
-	IMG_BACKGROUND: "img_background",
-	IMG_SQUARE:     "img_square",
-}
 
 type StorageClient struct {
 	Endpoint string
@@ -38,12 +26,12 @@ func NewStorageClient(endpoint string) StorageClient {
 	}
 }
 
-func (sc *StorageClient) Upload(data []byte, dataType UploadType, contentType string, filename string) error {
+func (sc *StorageClient) Upload(data []byte, jobType transcode.JobTemplate, contentType string, filename string) error {
 	route := "/storage/file"
 
 	values := map[string]io.Reader{
 		"files":    bytes.NewReader(data),
-		"template": strings.NewReader(uploadTypeMap[dataType]),
+		"template": strings.NewReader(string(jobType)),
 	}
 
 	var b bytes.Buffer
@@ -101,17 +89,17 @@ func (sc *StorageClient) Upload(data []byte, dataType UploadType, contentType st
 }
 
 func (sc *StorageClient) UploadAudio(audioData []byte, filename string) error {
-	return sc.Upload(audioData, AUDIO, "audio/mpeg", filename)
+	return sc.Upload(audioData, transcode.JobTemplateAudio, "audio/mpeg", filename)
 }
 
 func (sc *StorageClient) UploadPng(imageData []byte, filename string) error {
 	rand.Seed(time.Now().UnixNano())
 
-	var imageType UploadType
+	var imageType transcode.JobTemplate
 	if rand.Float32() < 0.5 {
-		imageType = IMG_BACKGROUND
+		imageType = transcode.JobTemplateImgBackdrop
 	} else {
-		imageType = IMG_SQUARE
+		imageType = transcode.JobTemplateImgSquare
 	}
 
 	return sc.Upload(imageData, imageType, "image/png", filename)
