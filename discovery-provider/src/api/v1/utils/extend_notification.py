@@ -196,7 +196,7 @@ def extend_receive_tip(action: NotificationAction):
             "sender_user_id": encode_int_id(data["sender_user_id"]),
             "receiver_user_id": encode_int_id(data["receiver_user_id"]),
             "tip_tx_signature": data["tx_signature"],
-            "reaction_value": data["reaction_value"]
+            "reaction_value": data["reaction_value"]  # type: ignore
             if "reaction_value" in data
             else None,
         },
@@ -219,8 +219,8 @@ def extend_supporter_rank_up(action: NotificationAction):
     }
 
 
-def extend_supporter_dethroned(action: Notification):
-    data: Union[SupporterDethronedNotification] = action["data"]  # type: ignore
+def extend_supporter_dethroned(action: NotificationAction):
+    data: SupporterDethronedNotification = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
         "type": action["type"],

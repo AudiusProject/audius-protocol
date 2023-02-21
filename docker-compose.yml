@@ -294,12 +294,26 @@ services:
 
   # discovery-provider
 
+  discovery-provider-notifications:
+    build: discovery-provider/plugins/notifications
+    environment:
+      AUDIUS_REDIS_URL: "redis://identity-service-redis:6379/00"
+      DN_DB_URL: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
+      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
+    volumes:
+      - ./discovery-provider/plugins/notifications:/notifications
+    deploy:
+      mode: global
+
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
       ES_JAVA_OPTS: -Xms512m -Xmx512m
+    depends_on:
+      identity-service-redis:
+        condition: service_healthy
     healthcheck:
       test:
         [
@@ -353,6 +367,8 @@ services:
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - solana-programs-idl:/audius-discovery-provider/idl
       - ./dev-tools:/tmp/dev-tools
+    expose:
+      - "5432"
     depends_on:
       poa-ganache:
         condition: service_healthy

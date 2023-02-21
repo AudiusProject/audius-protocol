@@ -26,4 +26,15 @@ async function clearDatabase() {
   await sequelize.query('CREATE SCHEMA public')
 }
 
+if (require.main === module) {
+  runMigrations()
+    .then(() => {
+      process.exit(0)
+    })
+    .catch(() => {
+      console.error('error in running migrations')
+      process.exit(1)
+    })
+}
+
 module.exports = { runMigrations, clearDatabase }

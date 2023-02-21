@@ -10,14 +10,6 @@ from sqlalchemy.orm.session import Session
 logger = logging.getLogger(__name__)
 
 
-class GetNotificationArgs(TypedDict):
-    user_id: int
-    timestamp: Optional[datetime]
-    group_id: Optional[str]
-    limit: Optional[int]
-    valid_types: Optional[List[str]]
-
-
 notification_groups_sql = text(
     """
 --- Create Intervals of user seen
@@ -141,6 +133,14 @@ default_valid_types = [
 ]
 
 
+class GetNotificationArgs(TypedDict):
+    user_id: int
+    timestamp: Optional[datetime]
+    group_id: Optional[str]
+    limit: Optional[int]
+    valid_types: Optional[List[NotificationType]]
+
+
 def get_notification_groups(session: Session, args: GetNotificationArgs):
     """
     Gets the user's notifications in the database
@@ -149,7 +149,7 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
     limit = min(limit, MAX_LIMIT)  # type: ignore
 
     # Set valid types
-    args["valid_types"] = args.get("valid_type", []) + default_valid_types
+    args["valid_types"] = args.get("valid_types", []) + default_valid_types  # type: ignore
 
     rows = session.execute(
         notification_groups_sql,
@@ -218,12 +218,15 @@ class TipReceiveNotification(TypedDict):
     amount: int
     sender_user_id: int
     receiver_user_id: int
+    tx_signature: str
+    reaction_value: Optional[int]
 
 
 class TipSendNotification(TypedDict):
     amount: int
     sender_user_id: int
     receiver_user_id: int
+    tx_signature: str
 
 
 class ChallengeRewardNotification(TypedDict):
