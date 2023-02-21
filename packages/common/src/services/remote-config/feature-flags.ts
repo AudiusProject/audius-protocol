@@ -29,7 +29,7 @@ export enum FeatureFlags {
   SHARE_TO_STORY = 'share_to_story_2',
   READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED = 'read_subscribers_from_discovery_enabled',
   MOBILE_WALLET_CONNECT = 'mobile_wallet_connect_final',
-  COMPLETE_PROFILE_WITH_TIKTOK = 'complete_profile_with_tiktok',
+  COMPLETE_PROFILE_WITH_TIKTOK = 'complete_profile_with_tiktok_2',
   VERIFY_HANDLE_WITH_TIKTOK = 'verify_handle_with_tiktok',
   AUDIO_TRANSACTIONS_HISTORY = 'audio_transactions_history',
   RATE_CTA_ENABLED = 'rate_cta_enabled_v2',

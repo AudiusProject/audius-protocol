@@ -41,6 +41,9 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => {
       width: '100%',
       flexShrink: 1
     },
+    disabled: {
+      color: palette.neutralLight2
+    },
     prefix: {
       ...inputText
     }
@@ -76,6 +79,7 @@ export const FormTextInput = ({
     name,
     validate: required ? validateRequired : undefined
   })
+  const disabled = other.editable === false
 
   return (
     <View
@@ -98,9 +102,13 @@ export const FormTextInput = ({
       ) : (
         <Text style={[styles.label, stylesProp?.label]}>{label}</Text>
       )}
-      {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
+      {prefix ? (
+        <Text style={[styles.prefix, disabled && styles.disabled]}>
+          {prefix}
+        </Text>
+      ) : null}
       <TextInput
-        style={styles.input}
+        style={[styles.input, disabled && styles.disabled]}
         onBlur={onBlur(name)}
         onChangeText={onChange(name)}
         value={value ?? ''}
