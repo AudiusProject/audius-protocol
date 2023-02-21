@@ -15,28 +15,24 @@ sendgridClient.setApiKey(config.get('sendgridEmailValidationKey'))
 const isEmailDeliverable = async (email, logger) => {
   const data = {
     email,
-    source: 'signup',
-  };
+    source: 'signup'
+  }
 
   const request = {
     url: '/v3/validations/email',
     method: 'POST',
-    body: data,
-  };
+    body: data
+  }
 
   try {
     const [_, body] = await sendgridClient.request(request)
-    return body['result']['verdict'] != 'Invalid'
+    return body.result.verdict != 'Invalid'
   } catch (err) {
     // Couldn't figure out if delivable, so say it was
-    logger.error(
-      `Unable to validate email for ${email}`,
-      err
-    )
+    logger.error(`Unable to validate email for ${email}`, err)
     return true
   }
 }
-
 
 module.exports = function (app) {
   /**
