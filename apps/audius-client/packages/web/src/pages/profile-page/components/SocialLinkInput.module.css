@@ -43,3 +43,7 @@
 .hasValue .input.handle input {
   padding-left: 44px;
 }
+
+.disabled input {
+  color: var(--neutral-light-2);
+}

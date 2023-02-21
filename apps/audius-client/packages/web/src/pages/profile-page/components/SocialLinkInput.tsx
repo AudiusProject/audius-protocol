@@ -150,7 +150,8 @@ const SocialLinkInput = ({
       {isHandle && <span className={styles.at}>{'@'}</span>}
       <Input
         className={cn(styles.input, className, {
-          [styles.handle]: isHandle
+          [styles.handle]: isHandle,
+          [styles.disabled]: isDisabled
         })}
         characterLimit={200}
         size='small'

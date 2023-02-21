@@ -64,7 +64,7 @@
 .btn .btnIcon path:first-child {
   fill: #cc0fe0 !important;
 }
-.disabledBtn .btnIcon path:first-child,
+.disabledBtn .btnIcon path:nth-child(2),
 .btn .btnIcon path:nth-child(2) {
   fill: white !important;
 }
