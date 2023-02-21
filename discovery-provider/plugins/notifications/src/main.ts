@@ -1,13 +1,16 @@
+import { Knex } from 'knex'
+import moment from 'moment-timezone'
 import { config } from './config'
 import { Listener } from './listener'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
 import { getDB } from './conn'
 import { program } from 'commander'
-import { Knex } from 'knex'
 import { AppNotificationsProcessor } from './processNotifications/indexAppNotifications'
 import { sendDMNotifications } from './tasks/dmNotifications'
+import { processEmailNotifications } from './email/notifications/index'
 import { sendAppNotifications } from './tasks/appNotifications'
+import { getRedisConnection } from './utils/redisConnection'
 
 export class Processor {
 
@@ -16,9 +19,11 @@ export class Processor {
   appNotificationsProcessor: AppNotificationsProcessor
   isRunning: boolean
   listener: Listener
+  lastDailyEmailSent: moment.Moment | null
 
   constructor() {
     this.isRunning = false
+    this.lastDailyEmailSent = null
   }
 
   init = async ({
@@ -57,10 +62,22 @@ export class Processor {
     // process events
     logger.info('processing events')
     this.isRunning = true
+    // NOTE: Temp for testing
+    // TODO remove
+    const redis = await getRedisConnection()
+    await redis.set(config.lastIndexedMessageRedisKey, new Date(Date.now()).toISOString())
+    await redis.set(config.lastIndexedReactionRedisKey, new Date(Date.now()).toISOString())
     while (this.isRunning) {
       // NOTE: Temp to stop app notifiations
       // await sendAppNotifications(this.listener, this.appNotificationsProcessor)
       await sendDMNotifications(this.discoveryDB, this.identityDB)
+
+      // NOTE: Temp to test DM email notifs in staging
+      // TODO run job for all email frequencies
+      if (!this.lastDailyEmailSent || this.lastDailyEmailSent < moment.utc().subtract(1, 'days')) {
+        await processEmailNotifications(this.discoveryDB, this.identityDB, 'daily')
+        this.lastDailyEmailSent = moment.utc()
+      }
 
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))

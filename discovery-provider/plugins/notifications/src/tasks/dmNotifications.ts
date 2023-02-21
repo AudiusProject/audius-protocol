@@ -2,13 +2,13 @@ import { Knex } from 'knex'
 import type { RedisClientType } from 'redis'
 import { config } from './../config'
 import { logger } from './../logger'
-import { MessageNotification } from './../processNotifications/mappers/message'
-import { MessageReactionNotification } from './../processNotifications/mappers/messageReaction'
+import { Message } from './../processNotifications/mappers/message'
+import { MessageReaction } from './../processNotifications/mappers/messageReaction'
 import type { DMNotification, DMReactionNotification } from './../types/notifications'
 import { getRedisConnection } from './../utils/redisConnection'
 
 // Sort notifications in ascending order according to timestamp
-function notificationTimestampComparator(n1: MessageNotification | MessageReactionNotification, n2: MessageNotification | MessageReactionNotification): number {
+function notificationTimestampComparator(n1: Message | MessageReaction, n2: Message | MessageReaction): number {
   if (n1.notification.timestamp < n2.notification.timestamp) {
     return -1
   }
@@ -45,8 +45,9 @@ async function getUnreadMessages(discoveryDB: Knex, minTimestamp: Date, maxTimes
     .select('chat_message.user_id as sender_user_id', 'chat_member.user_id as receiver_user_id', 'chat_message.created_at as timestamp')
     .from('chat_message')
     .innerJoin('chat_member', 'chat_message.chat_id', 'chat_member.chat_id')
-    .whereRaw('chat_message.created_at > greatest(chat_member.last_active_at, ?::timestamp)', [minTimestamp.toISOString()])
-    .andWhere('chat_message.created_at', '<=', maxTimestamp.toISOString())
+    // Javascript dates are limited to 3 decimal places (milliseconds). Truncate the postgresql timestamp to match.
+    .whereRaw(`date_trunc('milliseconds', chat_message.created_at) > greatest(chat_member.last_active_at, ?::timestamp)`, [minTimestamp.toISOString()])
+    .andWhereRaw(`date_trunc('milliseconds', chat_message.created_at) <= ?`, [maxTimestamp.toISOString()])
     .andWhereRaw('chat_message.user_id != chat_member.user_id')
 }
 
@@ -56,19 +57,23 @@ async function getUnreadReactions(discoveryDB: Knex, minTimestamp: Date, maxTime
     .from('chat_message_reactions')
     .innerJoin('chat_message', 'chat_message.message_id', 'chat_message_reactions.message_id')
     .joinRaw('join chat_member on chat_member.chat_id = chat_message.chat_id and chat_member.user_id = chat_message.user_id')
-    .whereRaw('chat_message_reactions.updated_at > greatest(chat_member.last_active_at, ?)', [minTimestamp.toISOString()])
-    .andWhere('chat_message_reactions.updated_at', '<=', maxTimestamp.toISOString())
+    // Javascript dates are limited to 3 decimal places (milliseconds). Truncate the postgresql timestamp to match.
+    .whereRaw(`date_trunc('milliseconds', chat_message_reactions.updated_at) > greatest(chat_member.last_active_at, ?)`, [minTimestamp.toISOString()])
+    .andWhereRaw(`date_trunc('milliseconds', chat_message_reactions.updated_at) <= ? `, [maxTimestamp.toISOString()])
     .andWhereRaw('chat_message_reactions.user_id != chat_member.user_id')
 }
 
-function setLastIndexedTimestamp(redis: RedisClientType, redisKey: string, maxTimestamp: Date, notifications: MessageNotification[] | MessageReactionNotification[]) {
+function setLastIndexedTimestamp(redis: RedisClientType, redisKey: string, maxTimestamp: Date, notifications: Message[] | MessageReaction[]) {
   if (notifications.length > 0) {
     notifications.sort(notificationTimestampComparator)
     const lastIndexedTimestamp = notifications[notifications.length - 1].notification.timestamp.toISOString()
     redis.set(redisKey, lastIndexedTimestamp)
-    console.log(`setting last indexed timestamp to ${lastIndexedTimestamp} for key ${redisKey}`)
+    // TODO remove
+    // console.log(`dmNotifications task: setting last indexed timestamp to ${lastIndexedTimestamp} for key ${redisKey}`)
   } else {
     redis.set(redisKey, maxTimestamp.toISOString())
+    // TODO remove
+    // console.log(`dmNotifications task: setting last indexed timestamp to ${maxTimestamp.toISOString()} for key ${redisKey}`)
   }
 }
 
@@ -76,13 +81,23 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
   // Query DN for unread messages and reactions between min and max cursors
   const redis = await getRedisConnection()
   const cursors = await getCursors(redis)
+  // TODO remove
+  // console.log(`dmNotifications task: retrieved redis cursors: ${JSON.stringify(cursors)}`)
   const unreadMessages = await getUnreadMessages(discoveryDB, cursors.minMessageTimestamp, cursors.maxTimestamp)
+  if (unreadMessages.length > 0) {
+    // TODO remove
+    console.log(`dmNotifications: unread message notifications: ${JSON.stringify(unreadMessages)}`)
+  }
   const unreadReactions = await getUnreadReactions(discoveryDB, cursors.minReactionTimestamp, cursors.maxTimestamp)
+  if (unreadReactions.length > 0) {
+    // TODO remove
+    console.log(`dmNotifications: unread message reaction notifications: ${JSON.stringify(unreadReactions)}`)
+  }
 
   // Convert to notifications
-  const messageNotifications = unreadMessages.map(message => new MessageNotification(discoveryDB, identityDB, message))
-  const reactionNotifications = unreadReactions.map(reaction => new MessageReactionNotification(discoveryDB, identityDB, reaction))
-  const notifications: Array<MessageNotification | MessageReactionNotification> = messageNotifications.concat(reactionNotifications)
+  const messageNotifications = unreadMessages.map(message => new Message(discoveryDB, identityDB, message))
+  const reactionNotifications = unreadReactions.map(reaction => new MessageReaction(discoveryDB, identityDB, reaction))
+  const notifications: Array<Message | MessageReaction> = messageNotifications.concat(reactionNotifications)
 
   // Sort notifications by timestamp (asc)
   notifications.sort(notificationTimestampComparator)
@@ -97,6 +112,6 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
   setLastIndexedTimestamp(redis, config.lastIndexedReactionRedisKey, cursors.maxTimestamp, reactionNotifications)
 
   if (notifications.length > 0) {
-    logger.info('processed new DM notifications')
+    logger.info('dmNotifications task: processed new DM push notifications')
   }
 }

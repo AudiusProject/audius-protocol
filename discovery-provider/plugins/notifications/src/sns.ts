@@ -18,7 +18,9 @@ const snsClient = new SNSClient({ region, credentials: { accessKeyId, secretAcce
 export const publish = async (params: PublishCommandInput) => {
   try {
     const data = await snsClient.send(new PublishCommand(params))
-    console.log("Success.", data)
+    // TODO remove?
+    console.log("sns send success")
+    // console.log("Success.", data)
     return data // For unit tests.
   } catch (err) {
     console.log("Error", err.stack)
@@ -28,7 +30,10 @@ export const publish = async (params: PublishCommandInput) => {
 export const publishBatch = async (params: PublishBatchCommandInput) => {
   try {
     const data = await snsClient.send(new PublishBatchCommand(params))
-    console.log("Success.", data)
+    // TODO remove?
+    console.log("sns batch send success")
+    // console.log("Success.", data)
+    // console.log("Success.", data)
     return data // For unit tests.
   } catch (err) {
     console.log("Error", err.stack)
@@ -53,6 +58,7 @@ export const sendIOSMessage = async ({
   targetARN: string
 }) => {
   const message = JSON.stringify({
+    ['default']: body,
     [ARN]: {
       aps: {
         alert: {
@@ -87,6 +93,7 @@ export const sendAndroidMessage = async ({
   playSound: boolean,
 }) => {
   const message = JSON.stringify({
+    default: body,
     GCM: {
       notification: {
         ...(title ? { title } : {}),

@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { SupporterRankUpNotification, RepostNotification } from '../../types/notifications'
+import { SupporterRankUpNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
@@ -18,7 +18,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
     const userIds: number[] = this.notification.user_ids!
     this.rank = this.notification.data.rank
     this.receiverUserId = this.notification.data.receiver_user_id
-    this.senderUserId = this.notification.data.receiver_user_id
+    this.senderUserId = this.notification.data.sender_user_id
   }
 
   async pushNotification() {

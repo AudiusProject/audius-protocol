@@ -1,7 +1,7 @@
 import { Knex } from 'knex'
 
 import { logger } from '../logger'
-import { FollowNotification } from '../types/notifications'
+import { mapNotifications } from '../processNotifications/mappers/mapNotifications'
 import { NotificationRow } from '../types/dn'
 import { Follow } from './mappers/follow'
 import { Repost } from './mappers/repost'
@@ -37,21 +37,12 @@ export class AppNotificationsProcessor {
   }
 
   async process(notifications: NotificationRow[]) {
-    const mappedNotifications = notifications.map(this.mapNotification).filter(Boolean)
+    const mappedNotifications = mapNotifications(notifications, this.dnDB, this.identityDB)
     for (const notification of mappedNotifications) {
       await notification.pushNotification()
     }
 
     logger.info({ notifications })
-  }
-
-
-  mapNotification = (notification: NotificationRow) => {
-    if (notification.type == 'follow') {
-      const followNotification = notification as NotificationRow & { data: FollowNotification }
-      return new Follow(this.dnDB, this.identityDB, followNotification)
-    }
-    logger.info(`Notification type: ${notification.type} has no handler`)
   }
 
 }

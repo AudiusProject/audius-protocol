@@ -78,8 +78,8 @@ export class Save extends BaseNotification<SaveNotificationRow> {
   }
 
   getResourcesForEmail(): ResourceIds {
-    let tracks = new Set<number>()
-    let playlists = new Set<number>()
+    const tracks = new Set<number>()
+    const playlists = new Set<number>()
     if (this.saveType === EntityType.Track) {
       tracks.add(this.saveItemId)
     } else {

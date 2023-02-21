@@ -4,7 +4,7 @@ import { UserRow } from '../../types/dn'
 import { DMReactionNotification } from '../../types/notifications'
 import { sendPushNotification } from '../../sns'
 
-export class MessageReactionNotification extends BaseNotification<DMReactionNotification> {
+export class MessageReaction extends BaseNotification<DMReactionNotification> {
 
   receiverUserId: number
   senderUserId: number

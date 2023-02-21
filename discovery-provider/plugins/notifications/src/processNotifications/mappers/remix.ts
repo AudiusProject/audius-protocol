@@ -89,6 +89,7 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       type: this.notification.type,
       parentTrack: resources.tracks[this.parentTrackId],
       parentTrackUser: resources.users[this.parentTrackUserId],
+      remixTrack: resources.tracks[this.trackId],
       remixUser: resources.users[this.remixUserId],
     }
   }

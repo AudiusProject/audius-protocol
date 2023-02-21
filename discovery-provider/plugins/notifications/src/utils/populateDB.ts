@@ -2,7 +2,7 @@ import { Knex } from 'knex'
 import { EmailFrequency } from '../processNotifications/mappers/base'
 import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow, NotificationRow } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
-import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow } from '../types/identity'
+import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow, NotificationEmailRow } from '../types/identity'
 import { getDB } from '../conn'
 
 export const replaceDBName = (connectionString: string, testName: string) => {
@@ -101,10 +101,20 @@ export const insertFollows = async (db: Knex, follows: CreateFollow[]) => {
     .into('follows')
 }
 type CreateNotification = Pick<NotificationRow, 'id' | 'specifier' | 'group_id' | 'type' | 'timestamp' | 'user_ids'> & Partial<NotificationRow>
-  export const insertNotifications = async (db: Knex, notifications: CreateNotification[]) => {
-    await db.insert(notifications)
-    .into('notification')
-  }
+export const insertNotifications = async (db: Knex, notifications: CreateNotification[]) => {
+  await db.insert(notifications)
+  .into('notification')
+}
+
+type CreateNotificationEmail = Pick<NotificationEmailRow, 'emailFrequency' | 'timestamp' | 'userId'> & Partial<NotificationEmailRow>
+export const insertNotificationEmails = async (db: Knex, notificationEmails: CreateNotificationEmail[]) => {
+  await db.insert(notificationEmails.map(email => ({
+    createdAt: email.timestamp,
+    updatedAt: email.timestamp,
+    ...email
+  })))
+  .into('NotificationEmails')
+}
 
 export const setUserEmailAndSettings = async (db: Knex, frequency: EmailFrequency, userId: number): Promise<IdentityUserRow> => {
   const user = {

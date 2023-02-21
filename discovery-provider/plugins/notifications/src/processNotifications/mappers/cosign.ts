@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { CosignRemixNotification, RepostNotification } from '../../types/notifications'
+import { CosignRemixNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
@@ -16,10 +16,10 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
   constructor(dnDB: Knex, identityDB: Knex, notification: CosignRemixNotificationRow) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
-    this.parentTrackUserId = userIds[0]
+    this.remixUserId = userIds[0]
+    this.parentTrackUserId = parseInt(this.notification.specifier)
     this.parentTrackId = this.notification.data.parent_track_id
     this.trackId = this.notification.data.track_id
-    this.remixUserId = parseInt(this.notification.specifier)
   }
 
   async pushNotification() {
@@ -88,6 +88,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       type: this.notification.type,
       parentTracks: [resources.tracks[this.parentTrackId]],
       parentTrackUser: resources.users[this.parentTrackUserId],
+      remixTrack: resources.tracks[this.trackId],
       remixUser: resources.users[this.remixUserId],
     }
   }
