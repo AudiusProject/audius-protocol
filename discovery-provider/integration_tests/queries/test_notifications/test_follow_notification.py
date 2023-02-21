@@ -48,6 +48,7 @@ def test_get_notifications(app):
                 {
                     "specifier": "2",
                     "type": "follow",
+                    "group_id": "follow:1",
                     "timestamp": t2,
                     "data": {"follower_user_id": 2, "followee_user_id": 1},
                 }
@@ -73,6 +74,7 @@ def test_get_notifications(app):
                     "specifier": "4",
                     "timestamp": t2,
                     "type": "follow",
+                    "group_id": "follow:3",
                     "data": {"follower_user_id": 4, "followee_user_id": 3},
                 }
             ]
