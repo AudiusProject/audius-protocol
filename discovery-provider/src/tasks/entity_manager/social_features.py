@@ -131,6 +131,7 @@ def create_repost(params):
                 f"entity_manager | social_features.py | Unable to parse repost metadata while indexing: {e}",
                 exc_info=True,
             )
+            is_repost_repost = False
     else:
         is_repost_repost = False
     create_record = Repost(
