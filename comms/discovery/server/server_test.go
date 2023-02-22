@@ -119,16 +119,11 @@ func TestGetChats(t *testing.T) {
 	assert.NoError(t, err)
 	encodedUser2, err := misc.EncodeHashId(int(user2Id))
 	assert.NoError(t, err)
-	encodedUser3, err := misc.EncodeHashId(int(user3Id))
-	assert.NoError(t, err)
 	expectedMember1 := schema.ChatMember{
 		UserID: encodedUser1,
 	}
 	expectedMember2 := schema.ChatMember{
 		UserID: encodedUser2,
-	}
-	expectedMember3 := schema.ChatMember{
-		UserID: encodedUser3,
 	}
 	expectedChat1Data := schema.UserChat{
 		ChatID:             chatId1,
@@ -139,16 +134,6 @@ func TestGetChats(t *testing.T) {
 		ChatMembers: []schema.ChatMember{
 			expectedMember1,
 			expectedMember2,
-		},
-	}
-	expectedChat2Data := schema.UserChat{
-		ChatID:             chatId2,
-		LastMessageAt:      chat2CreatedAt.Format(time.RFC3339Nano),
-		InviteCode:         chatId2,
-		UnreadMessageCount: float64(0),
-		ChatMembers: []schema.ChatMember{
-			expectedMember1,
-			expectedMember3,
 		},
 	}
 
@@ -171,14 +156,14 @@ func TestGetChats(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
+		// Excludes chats with no messages in response
 		expectedData := []schema.UserChat{
-			expectedChat2Data,
 			expectedChat1Data,
 		}
 		expectedSummary := schema.Summary{
-			TotalCount: float64(2),
+			TotalCount: float64(1),
 			NextCount:  float64(0),
-			NextCursor: chat2CreatedAt.Format(time.RFC3339Nano),
+			NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
 			PrevCount:  float64(0),
 			PrevCursor: message2CreatedAt.Format(time.RFC3339Nano),
 		}
@@ -198,6 +183,18 @@ func TestGetChats(t *testing.T) {
 
 	// Test paginated GET /comms/chats
 	{
+		// Insert 1 message into chat 2 so that it is included in the /chats response
+		tx := db.Conn.MustBegin()
+		messageId3 := strconv.Itoa(seededRand.Int())
+		message3CreatedAt := time.Now().UTC().Add(-time.Minute * time.Duration(15))
+		message3 := "chat2 first message"
+		_, err = tx.Exec("insert into chat_message (message_id, chat_id, user_id, created_at, ciphertext) values ($1, $2, $3, $4, $5)", messageId3, chatId2, user1Id, message3CreatedAt, message3)
+		assert.NoError(t, err)
+		_, err = tx.Exec("update chat set last_message_at = $1, last_message = $2 where chat_id = $3", message3CreatedAt, message3, chatId2)
+		assert.NoError(t, err)
+		err = tx.Commit()
+		assert.NoError(t, err)
+
 		// Query /comms/chats
 		reqUrl := fmt.Sprintf("/comms/chats?timestamp=%d", time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
