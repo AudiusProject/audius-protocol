@@ -17,6 +17,7 @@ var (
 )
 
 func (p *Peering) PollRegisteredNodes() error {
+	// overrides for tests and local dev
 	if p.Config.DevOnlyRegisteredNodes != nil {
 		mu.Lock()
 		for _, sp := range p.Config.DevOnlyRegisteredNodes {
@@ -54,11 +55,6 @@ func (p *Peering) PollRegisteredNodes() error {
 }
 
 func (p *Peering) listNodes(typeFilter string) ([]sharedConfig.ServiceNode, error) {
-	// overrides for tests and local dev
-	if p.Config.DevOnlyRegisteredNodes != nil {
-		return p.Config.DevOnlyRegisteredNodes, nil
-	}
-
 	result := []sharedConfig.ServiceNode{}
 	mu.Lock()
 	for _, node := range allNodes {
