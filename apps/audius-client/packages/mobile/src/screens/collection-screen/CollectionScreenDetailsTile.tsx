@@ -9,7 +9,6 @@ import {
   PlaybackSource,
   formatSecondsAsText,
   collectionPageLineupActions as tracksActions,
-  collectionPageSelectors,
   reachabilitySelectors
 } from '@audius/common'
 import { View } from 'react-native'
@@ -28,8 +27,7 @@ import { formatCount } from 'app/utils/format'
 
 import { CollectionHeader } from './CollectionHeader'
 import { useCollectionLineup } from './useCollectionLineup'
-const { getCollectionUid, getUserUid } = collectionPageSelectors
-const { fetchCollection, resetCollection } = collectionPageActions
+const { resetAndFetchCollectionTracks } = collectionPageActions
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
 
@@ -89,20 +87,9 @@ export const CollectionScreenDetailsTile = ({
 
   const isReachable = useSelector(getIsReachable)
 
-  const collectionUid = useSelector(getCollectionUid)
-  const userUid = useSelector(getUserUid)
-
   const fetchLineup = useCallback(() => {
-    dispatch(resetCollection(collectionUid, userUid))
-
-    // Need to refetch the collection after resetting
-    // Will pull from cache if it exists
-    // TODO: fix this for smart collections
-    if (typeof collectionId === 'number') {
-      dispatch(fetchCollection(collectionId))
-    }
-    dispatch(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
-  }, [dispatch, collectionUid, userUid, collectionId])
+    dispatch(resetAndFetchCollectionTracks(collectionId))
+  }, [dispatch, collectionId])
 
   const { entries, status } = useCollectionLineup(collectionId, fetchLineup)
   const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
