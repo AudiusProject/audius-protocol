@@ -445,7 +445,6 @@ def test_up(protocol_dir, service):
                 f"--project-name={protocol_dir.name}-test",
                 f"--project-directory={protocol_dir}",
                 "up",
-                "--build",
                 "-d",
                 f"test-{service}",
             ]
