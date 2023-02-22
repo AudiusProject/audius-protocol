@@ -150,10 +150,16 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     // PROD doesn't have sendToNethermindOnly and should default to POA
     // STAGE defaults to nethermind but can send to POA when it has both addresses
     const relayPromises = []
+    // both have the possibility of being relayed together
+    const relayRecipients = {
+      poa: false,
+      nethermind: false,
+    }
     if (
       !sendToNethermindOnly ||
       (sendToNethermindOnly && nethermindContractAddress)
     ) {
+      relayRecipients.poa = true
       relayPromises.push(
         createAndSendTransaction(
           wallet,
@@ -178,6 +184,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
         nethermindContractAddress = contractAddress
         nethermindEncodedABI = encodedABI
       }
+      relayRecipients.nethermind = true
       relayPromises.push(
         relayToNethermind(
           nethermindEncodedABI,
@@ -223,6 +230,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       nonce: txParams.nonce,
       txLatency, // time the tx took to submit
       reqLatency, // time the request has taken up to this point
+      relayRecipients
     }
     await redis.zadd(
       'relayTxAttempts',
