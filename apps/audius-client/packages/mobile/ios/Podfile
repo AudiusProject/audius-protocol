@@ -13,6 +13,7 @@ project 'AudiusReactNative',
 target 'AudiusReactNative' do
   permissions_path = '../node_modules/react-native-permissions/ios'
   pod 'Permission-Notifications', :path => "#{permissions_path}/Notifications"
+  pod 'Permission-PhotoLibraryAddOnly', :path => "#{permissions_path}/PhotoLibraryAddOnly"
 
   pod 'React-logger', :path => '../node_modules/react-native/ReactCommon/logger'
   pod 'React-perflogger', :path => '../node_modules/react-native/ReactCommon/reactperflogger'
