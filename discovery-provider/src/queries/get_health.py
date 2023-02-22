@@ -106,14 +106,14 @@ def _get_query_insights():
 
 def _get_chain_health():
     try:
-        health_res = requests.get(LOCAL_RPC + '/health')
+        health_res = requests.get(LOCAL_RPC + "/health")
         chain_res = health_res.json()
 
         web3 = get_nethermind_web3()
-        latest_block = web3.eth.get_block('latest')
-        chain_res['block_number'] = latest_block.number
-        chain_res['hash'] = latest_block.hash.hex
-        chain_res['chain_id'] = web3.eth.chain_id
+        latest_block = web3.eth.get_block("latest")
+        chain_res["block_number"] = latest_block.number
+        chain_res["hash"] = latest_block.hash.hex()
+        chain_res["chain_id"] = web3.eth.chain_id
         return chain_res
     except:
         pass
