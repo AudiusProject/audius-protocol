@@ -1,6 +1,7 @@
 import datetime
 import logging
 from typing import List
+from unittest import TestCase
 
 import pytest
 from integration_tests.utils import populate_mock_db
@@ -47,7 +48,7 @@ def assert_notification(
     assert notification.slot == slot
     assert notification.blocknumber == blocknumber
     assert notification.data == data
-    assert notification.user_ids == user_ids
+    TestCase().assertCountEqual(notification.user_ids, user_ids)
 
 
 # ========================================== Start Tests ==========================================
