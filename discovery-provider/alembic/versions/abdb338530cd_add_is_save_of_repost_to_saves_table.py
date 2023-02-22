@@ -19,7 +19,7 @@ def upgrade():
     op.add_column(
         "saves",
         sa.Column(
-            "is_favorite_of_repost",
+            "is_save_of_repost",
             sa.Boolean(),
             nullable=False,
             server_default="false",
@@ -28,4 +28,4 @@ def upgrade():
 
 
 def downgrade():
-    op.drop_column("reposts", "is_favorite_of_repost")
+    op.drop_column("reposts", "is_save_of_repost")

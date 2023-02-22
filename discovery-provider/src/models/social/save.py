@@ -39,7 +39,7 @@ class Save(Base, RepresentableMixin):
         nullable=False,
     )
 
-    is_favorite_of_repost = Column(Boolean, nullable=False, server_default="false")
+    is_save_of_repost = Column(Boolean, nullable=False, server_default="false")
 
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
