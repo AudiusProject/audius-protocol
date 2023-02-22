@@ -41,3 +41,14 @@ func GenerateSignature[T any](data map[string]T, privateKey *ecdsa.PrivateKey) (
 
 	return signedResponse, nil
 }
+
+func GenerateSignatureForString(data []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	toSignHash := crypto.Keccak256(data)
+	signedResponse, err := crypto.Sign(toSignHash, privateKey)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return signedResponse, nil
+}
+

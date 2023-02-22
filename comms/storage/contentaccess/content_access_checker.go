@@ -30,7 +30,7 @@ func (sd SignatureData) toMap() map[string]interface{} {
 }
 
 func recoverWallet(signatureData SignatureData, signature []byte) (string, error) {
-	stringData, err := json.Marshal(signatureData)
+	stringData, err := json.Marshal(signatureData.toMap())
 	if err != nil {
 		return "", err
 	}
@@ -62,12 +62,12 @@ func VerifySignature(
 		return false, errors.New("Signed cid does not match requested cid.")
 	}
 
-	wallet, err := recoverWallet(signatureData, signature)
+	signer, err := recoverWallet(signatureData, signature)
 	if err != nil {
 		return false, errors.New("Wallet recovery failed")
 	}
 
-	if !utils.IsValidDiscoveryNode(wallet) {
+	if !utils.IsValidDiscoveryNode(signer) {
 		return false, errors.New("Signature is not from valid discovery node.")
 	}
 

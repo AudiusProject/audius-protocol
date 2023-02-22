@@ -21,7 +21,7 @@ func ContentAccessMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return echo.ErrBadRequest
 		}
 
-		isValidSignature, err := VerifySignature(*signatureData, signature, requestedCid)
+		isValidSignature, err := VerifySignature(*signatureData, []byte(signature), requestedCid)
 		if err != nil {
 			return echo.ErrBadGateway
 		}
@@ -41,39 +41,64 @@ func parseQueryParams(values url.Values) (*SignatureData, []byte, error) {
 		return nil, nil, err
 	}
 
-	unmarshalledSignature := make(map[string]string)
-	err = json.Unmarshal([]byte(decodedSignature), &unmarshalledSignature)
+	signature, rawData, err := parseSignature(decodedSignature)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	signature := unmarshalledSignature["signature"]
-
-	rawData := unmarshalledSignature["data"]
-	rawSignatureData := make(map[string]interface{})
-	err = json.Unmarshal([]byte(rawData), &rawSignatureData)
+	signatureData, err := parseSignatureData(rawData)
 	if err != nil {
 		return nil, nil, err
+	}
+
+	return signatureData, signature, nil
+}
+
+func parseSignature(rawSignature string) ([]byte, string, error) {
+	unmarshalledSignature := make(map[string][]byte)
+	err := json.Unmarshal([]byte(rawSignature), &unmarshalledSignature)
+	if err != nil {
+		return nil, "", err
+	}
+
+	signature, ok := unmarshalledSignature["signature"]
+	if !ok {
+		return nil, "", fmt.Errorf("could not decode signature")
+	}
+
+	rawData, ok := unmarshalledSignature["data"]
+	if !ok {
+		return nil, "", fmt.Errorf("could not decode raw data")
+	}
+
+	return signature, string(rawData), nil
+}
+
+func parseSignatureData(rawData string) (*SignatureData, error) {
+	rawSignatureData := make(map[string]interface{})
+	err := json.Unmarshal([]byte(rawData), &rawSignatureData)
+	if err != nil {
+		return nil, err
 	}
 
 	unsignedCid, ok := rawSignatureData["cid"].(string)
 	if !ok {
-		return nil, nil, fmt.Errorf("`cid` couldn't be parsed from the signature data, got=%s", unsignedCid)
+		return nil, fmt.Errorf("`cid` couldn't be parsed from the signature data, got=%s", unsignedCid)
 	}
 
 	unsignedTimestamp, ok := rawSignatureData["timestamp"].(float64)
 	if !ok {
-		return nil, nil, fmt.Errorf("`timestamp` couldn't be parsed from the signature data, got=%+v", unsignedTimestamp)
+		return nil, fmt.Errorf("`timestamp` couldn't be parsed from the signature data, got=%+v", unsignedTimestamp)
 	}
 
 	unsignedTrackId, ok := rawSignatureData["trackId"].(float64)
 	if !ok {
-		return nil, nil, fmt.Errorf("`trackId` couldn't be parsed from the signature data, got=%+v", unsignedTrackId)
+		return nil, fmt.Errorf("`trackId` couldn't be parsed from the signature data, got=%+v", unsignedTrackId)
 	}
 
 	unsignedShouldCache, ok := rawSignatureData["shouldCache"].(bool)
 	if !ok {
-		return nil, nil, fmt.Errorf("`shouldCache` couldn't be parsed from the signature data, got=%+v", unsignedShouldCache)
+		return nil, fmt.Errorf("`shouldCache` couldn't be parsed from the signature data, got=%+v", unsignedShouldCache)
 	}
 
 	signatureData := &SignatureData{
@@ -83,5 +108,5 @@ func parseQueryParams(values url.Values) (*SignatureData, []byte, error) {
 		ShouldCache: unsignedShouldCache,
 	}
 
-	return signatureData, []byte(signature), nil
+	return signatureData, nil
 }

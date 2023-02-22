@@ -1,6 +1,7 @@
 package contentaccess
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -70,6 +71,7 @@ func TestVerifySignature(t *testing.T) {
 func TestParseQueryParams(t *testing.T) {
 	tests := []struct{
 		testData SignatureData
+		// testData string
 		shouldError bool
 	}{
 		{
@@ -79,6 +81,7 @@ func TestParseQueryParams(t *testing.T) {
 				Timestamp: time.Now().Unix(),
 				TrackId: 12345,
 			},
+			// `{"cid":"Qmblah","shouldCache":true,"timestamp":12345678,"trackId":12345}`,
 			false,
 		},
 	}
@@ -88,8 +91,10 @@ func TestParseQueryParams(t *testing.T) {
 		t.Fatal("Key generation failed")
 	}
 
+
 	for _, tt := range tests {
 		signature, err := utils.GenerateSignature(tt.testData.toMap(), privKey)
+		// signature, err := utils.GenerateSignatureForString([]byte(tt.testData), privKey)
 		if err != nil {
 			t.Fatalf("Failed to generate signature for %+v", tt.testData)
 		}
@@ -99,9 +104,9 @@ func TestParseQueryParams(t *testing.T) {
 			t.Fatal("marshalling signature data failed")
 		}
 
-		marshalledPayload, err := json.Marshal(map[string]interface{}{
-			"signature": string(signature),
-			"data": string(marshalledData),
+		marshalledPayload, err := json.Marshal(map[string][]byte{
+			"signature": signature,
+			"data": marshalledData,
 		})	
 		if err != nil {
 			t.Fatal("marshalling signature payload failed")
@@ -117,12 +122,13 @@ func TestParseQueryParams(t *testing.T) {
 			t.Fatalf("incorrect error, want=%+v, got=%+v", tt.shouldError, actualError)
 		}
 
-		if !cmp.Equal(actualSignature, signature) {
-			t.Fatalf("incorrect signature, want=%+v (length=%d), got=%+v (length=%d)", signature, len(signature), actualSignature, len(actualSignature))
-		}
-
 		if actualData == nil || !cmp.Equal(*actualData, tt.testData) {
 			t.Fatalf("incorrect signature data, want=%+v, got=%+v", tt.testData, actualData)
 		}
+
+		if !bytes.Equal(actualSignature, signature) {
+			t.Fatalf("incorrect signature, got (length=%d), want (length=%d)", len(signature), len(actualSignature))
+		}
+
 	}
 }
