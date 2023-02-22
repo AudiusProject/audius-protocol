@@ -9,9 +9,9 @@ orbs:
   continuation: circleci/continuation@0.3.1
 
 parameters:
-  release-create-branch:
-    type: boolean
-    default: false
+  workflow:
+    type: string
+    default: 'main'
 
 jobs:
   circleci-setup:

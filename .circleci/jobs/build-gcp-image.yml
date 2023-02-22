@@ -4,23 +4,24 @@ docker:
 steps:
   - gcp-auth
   - run:
-      name: Early Exit
+      name: Choose GCP Image
       command: |
-        available="$(gcloud compute images list --filter "name=(
-          'audius-protocol-<< pipeline.git.base_revision >>'
-          'audius-protocol-<< pipeline.git.revision >>'
-        )" --format "csv(name)[no-heading]")"
+        # Image Preference:
+        #   1. GCP image built for this commit (exit early in this case)
+        #   2. GCP image built for previous commit
+        #   3. Latest audius-protocol GCP image
+        #   4. debian-11
 
-        if echo "$available" | grep '^audius-protocol-<< pipeline.git.revision >>$' &>/dev/null; then
+        IMAGE_FLAG=""  # Default is debian-11
+        if gcloud compute images describe 'audius-protocol-<< pipeline.git.revision >>' &>/dev/null; then
           circleci-agent step halt
+        elif gcloud compute images describe 'audius-protocol-<< pipeline.git.base_revision >>' &>/dev/null; then
+          IMAGE_FLAG='--image=audius-protocol-<< pipeline.git.base_revision >>'
+        elif gcloud compute images describe-from-family audius-protocol &>/dev/null; then
+          IMAGE_FLAG="--image-family=audius-protocol"
         fi
 
-        image_flag=""  # Default is debian-11
-        if echo "$available" | grep '^audius-protocol-<< pipeline.git.base_revision >>$' &>/dev/null; then
-          image_flag="--image=audius-protocol-<<pipeline.git.base_revision>>"
-        fi
-
-        echo "export IMAGE_FLAG='$image_flag'" >> "$BASH_ENV"
+        echo "export IMAGE_FLAG='$IMAGE_FLAG'" >> "$BASH_ENV"
   - gcp-run:
       instance-name: circleci-$CIRCLE_BUILD_NUM-build
       create-instance-args: >-
