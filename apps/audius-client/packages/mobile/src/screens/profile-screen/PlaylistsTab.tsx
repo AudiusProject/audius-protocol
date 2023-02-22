@@ -15,6 +15,8 @@ import { useSelectProfile } from './selectors'
 const { getProfilePlaylists, getCollectionsStatus } = profilePageSelectors
 const { fetchCollections } = profilePageActions
 
+const emptyPlaylists = []
+
 export const PlaylistsTab = () => {
   const { handle, playlist_count } = useSelectProfile([
     'handle',
@@ -36,7 +38,7 @@ export const PlaylistsTab = () => {
   return (
     <CollectionList
       listKey='profile-playlists'
-      collection={playlists}
+      collection={playlist_count > 0 ? playlists : emptyPlaylists}
       ListEmptyComponent={<EmptyProfileTile tab='playlists' />}
       disableTopTabScroll
       showsVerticalScrollIndicator={false}

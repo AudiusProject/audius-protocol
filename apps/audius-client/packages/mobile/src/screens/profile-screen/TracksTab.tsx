@@ -56,7 +56,7 @@ export const TracksTab = () => {
       limit={track_count}
       loadMore={loadMore}
       disableTopTabScroll
-      ListEmptyComponent={<EmptyProfileTile tab='tracks' />}
+      LineupEmptyComponent={<EmptyProfileTile tab='tracks' />}
       showsVerticalScrollIndicator={false}
     />
   )
