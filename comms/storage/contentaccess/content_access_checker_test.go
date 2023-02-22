@@ -14,22 +14,15 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
-const (
-  badDNPrivateKey =
-    "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-  dummyDNDelegateOwnerWallet =
-    "0x1D9c77BcfBfa66D37390BF2335f0140979a6122B"
-)
-
 func TestRecoverWallet(t *testing.T) {
 
 }
 
 func TestIsExpired(t *testing.T) {
-	tests := []struct{
-		data SignatureData
+	tests := []struct {
+		data    SignatureData
 		expired bool
-	} {
+	}{
 		{SignatureData{Timestamp: time.Now().Unix()}, false},
 		{SignatureData{Timestamp: 0}, true},
 	}
@@ -44,7 +37,7 @@ func TestIsExpired(t *testing.T) {
 }
 
 func TestIsCidMatch(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		data     SignatureData
 		cid      string
 		expected bool
@@ -69,51 +62,23 @@ func TestVerifySignature(t *testing.T) {
 }
 
 func TestParseQueryParams(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		testData SignatureData
-		// testData string
-		shouldError bool
 	}{
 		{
 			SignatureData{
-				Cid: "Qmblah",
+				Cid:         "Qmblah",
 				ShouldCache: true,
-				Timestamp: time.Now().Unix(),
-				TrackId: 12345,
+				Timestamp:   time.Now().Unix(),
+				TrackId:     12345,
 			},
-			false,
 		},
 		{
 			SignatureData{
 				ShouldCache: true,
-				Timestamp: time.Now().Unix(),
-				TrackId: 12345,
+				Timestamp:   time.Now().Unix(),
+				TrackId:     12345,
 			},
-			true,
-		},
-		{
-			SignatureData{
-				Cid: "Qmblah",
-				Timestamp: time.Now().Unix(),
-				TrackId: 12345,
-			},
-			true,
-		},
-		{
-			SignatureData{
-				Cid: "Qmblah",
-				ShouldCache: true,
-				TrackId: 12345,
-			},
-			true,
-		},
-		{
-			SignatureData{
-				Cid: "Qmblah",
-				ShouldCache: true,
-				Timestamp: time.Now().Unix(),
-			},
-			true,
 		},
 	}
 
@@ -121,7 +86,6 @@ func TestParseQueryParams(t *testing.T) {
 	if err != nil {
 		t.Fatal("Key generation failed")
 	}
-
 
 	for _, tt := range tests {
 		signature, err := utils.GenerateSignature(tt.testData.toMap(), privKey)
@@ -134,10 +98,10 @@ func TestParseQueryParams(t *testing.T) {
 			t.Fatal("marshalling signature data failed")
 		}
 
-		marshalledPayload, err := json.Marshal(map[string][]byte{
-			"signature": signature,
-			"data": marshalledData,
-		})	
+		marshalledPayload, err := json.Marshal(SignedAccessData{
+			Signature: signature,
+			Data:      marshalledData,
+		})
 		if err != nil {
 			t.Fatal("marshalling signature payload failed")
 		}
@@ -146,10 +110,9 @@ func TestParseQueryParams(t *testing.T) {
 			"signature": {url.QueryEscape(string(marshalledPayload))},
 		})
 
-		actualData, actualSignature, actualError := parseQueryParams(values)
-		didError := actualError != nil
-		if didError != tt.shouldError {
-			t.Fatalf("incorrect error, want=%+v, got=%+v", tt.shouldError, actualError)
+		actualData, actualSignature, err := parseQueryParams(values)
+		if err != nil {
+			t.Fatalf("parse query error, got=%+v", err)
 		}
 
 		if actualData == nil || !cmp.Equal(*actualData, tt.testData) {

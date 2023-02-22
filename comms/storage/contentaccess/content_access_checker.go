@@ -13,19 +13,24 @@ const (
 	EXPIRATION_TIME = 300_000
 )
 
+type SignedAccessData struct {
+	Signature []byte          `json:"signature"`
+	Data      json.RawMessage `json:"data"`
+}
+
 type SignatureData struct {
-	Cid       string
-	ShouldCache bool
-	Timestamp int64
-	TrackId   int64
+	Cid         string `json:"cid"`
+	ShouldCache bool   `json:"shouldCache"`
+	Timestamp   int64  `json:"timestamp"`
+	TrackId     int64  `json:"trackId"`
 }
 
 func (sd SignatureData) toMap() map[string]interface{} {
 	return map[string]interface{}{
-		"cid": sd.Cid,
+		"cid":         sd.Cid,
 		"shouldCache": sd.ShouldCache,
-		"timestamp": sd.Timestamp,
-		"trackId": sd.TrackId,
+		"timestamp":   sd.Timestamp,
+		"trackId":     sd.TrackId,
 	}
 }
 
