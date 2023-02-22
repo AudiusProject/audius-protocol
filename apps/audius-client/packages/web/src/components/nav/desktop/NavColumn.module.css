@@ -118,11 +118,13 @@ svg.logo path {
 
 .navColumn .accountWrapper .userInfoWrapper {
   margin-left: 16px;
+  margin-right: 16px;
   text-align: left;
   white-space: nowrap;
   word-break: keep-all;
   overflow: hidden;
 }
+
 .navColumn .accountWrapper .userInfoWrapper .name {
   font-size: var(--font-s);
   line-height: 17px;
@@ -131,14 +133,18 @@ svg.logo path {
   padding-right: 4px;
   color: var(--neutral);
   cursor: pointer;
+  align-items: center;
+  display: flex;
+}
+
+.navColumn .accountWrapper .userInfoWrapper .name .nameText {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: flex;
-  align-items: center;
 }
 
 .badge {
+  flex-shrink: 0;
   margin-left: 4px;
 }
 
@@ -154,6 +160,7 @@ svg.logo path {
   line-height: 14px;
   cursor: pointer;
   padding-right: 4px;
+  width: 100%;
 }
 
 .navColumn .accountWrapper .userInfoWrapper .handle {

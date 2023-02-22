@@ -62,12 +62,26 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     marginBottom: spacing(3),
     borderWidth: 1
   },
-  accountName: { flexDirection: 'row' },
-  accountBadges: { alignSelf: 'center' },
+  accountName: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingRight: spacing(2)
+  },
+  name: {
+    flexShrink: 1
+  },
+  accountBadges: {
+    flexGrow: 1,
+    alignSelf: 'center'
+  },
+  handle: {
+    paddingRight: spacing(3)
+  },
   tokens: {
+    position: 'absolute',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingRight: spacing(4)
+    right: spacing(4)
   },
   tokenBadge: {
     marginRight: spacing(1)
@@ -121,7 +135,7 @@ const WrappedLeftNavDrawer = () => {
         <TouchableOpacity onPress={handlePressAccount}>
           <ProfilePicture profile={accountUser} style={styles.accountImage} />
           <View style={styles.accountName}>
-            <Text variant='h1' noGutter>
+            <Text numberOfLines={1} style={styles.name} variant='h1' noGutter>
               {name}
             </Text>
             <UserBadges
@@ -130,7 +144,12 @@ const WrappedLeftNavDrawer = () => {
               style={styles.accountBadges}
             />
           </View>
-          <Text weight='medium' fontSize='medium'>
+          <Text
+            style={styles.handle}
+            numberOfLines={1}
+            weight='medium'
+            fontSize='medium'
+          >
             @{handle}
           </Text>
         </TouchableOpacity>

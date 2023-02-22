@@ -25,6 +25,7 @@
   margin: 34px auto;
   display: flex;
   justify-content: space-between;
+  width: 100%;
 }
 
 .artist {
@@ -33,6 +34,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  max-width: 200px;
 }
 
 .imageWrapper {
@@ -61,6 +63,14 @@
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.name span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .iconVerified {
@@ -75,6 +85,10 @@
   letter-spacing: 0.2px;
   line-height: 20px;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .callToAction {
