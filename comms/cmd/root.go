@@ -9,9 +9,8 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "comms",
 	Short: "The Audius Protocol implemented in Go",
-	Long: ``,
+	Long:  ``,
 }
-
 
 func Execute() {
 	err := rootCmd.Execute()
