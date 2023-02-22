@@ -38,7 +38,7 @@ var audioCmd = &cobra.Command{
 func init() {
 	seedCmd.AddCommand(audioCmd)
 	audioCmd.Flags().UintVarP(&audioCount, "count", "c", 100, "the number of random audio files")
-	audioCmd.Flags().UintVarP(&durationMean, "mean", "a", 60, "the mean amount of seconds the audio files are")
+	audioCmd.Flags().UintVarP(&durationMean, "mean", "m", 60, "the mean amount of seconds the audio files are")
 }
 
 func generateAndUpload(i int, wg *sync.WaitGroup) {
@@ -53,10 +53,10 @@ func generateAndUpload(i int, wg *sync.WaitGroup) {
 	filename := fmt.Sprintf("audio-seed-%d.mp3", i)
 
 	var nodeNumber int
-	if multi {
-		nodeNumber = rand.Intn(4)
-	} else {
+	if single {
 		nodeNumber = 0
+	} else {
+		nodeNumber = rand.Intn(4)
 	}
 	storageClient := ClientList[nodeNumber]
 

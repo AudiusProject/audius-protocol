@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var multi bool
+var single bool
 
 var ClientList []client.StorageClient
 
@@ -35,7 +35,7 @@ var seedCmd = &cobra.Command{
 func init() {
 	storageCmd.AddCommand(seedCmd)
 
-	seedCmd.PersistentFlags().BoolVarP(&multi, "multi", "m", true, "whether to seed a single node or multi node setup")
+	seedCmd.PersistentFlags().BoolVarP(&single, "single", "s", false, "whether to seed a single node or multi node setup")
 }
 
 func initClients() {
@@ -73,7 +73,6 @@ func initClients() {
 	ClientList = make([]client.StorageClient, len(cnodes))
 	for _, cnode := range cnodes {
 		storageClient := client.StorageClient{Endpoint: cnode.Endpoint}
-		fmt.Println(storageClient.Endpoint)
 		ClientList = append(ClientList, storageClient)
 	}
 }

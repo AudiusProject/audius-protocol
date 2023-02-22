@@ -33,10 +33,10 @@ var imageCmd = &cobra.Command{
 			filename := fmt.Sprintf("image-seed-%d.png", i)
 
 			var nodeNumber int
-			if multi {
-				nodeNumber = rand.Intn(4)
-			} else {
+			if single {
 				nodeNumber = 0
+			} else {
+				nodeNumber = rand.Intn(4)
 			}
 			storageClient := ClientList[nodeNumber]
 
