@@ -66,7 +66,8 @@ const sendTransaction = async (
   req,
   resetNonce = false,
   txProps,
-  reqBodySHA
+  reqBodySHA,
+  reqStartTime,
 ) => {
   let resp = null
   try {
@@ -187,9 +188,13 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     }
     const relayTxs = await Promise.allSettled(relayPromises)
 
+    // set after txs are successfully submitted
+    let txLatency = null
+
     if (relayTxs.length === 1) {
       txParams = relayTxs[0].value.txParams
       txReceipt = relayTxs[0].value.receipt
+      txLatency = relayTxs[0].value.timeToComplete
     } else if (relayTxs.length === 2) {
       const [poaTx, nethermindTx] = relayTxs.map((result) => result?.value)
       console.log(
@@ -200,18 +205,24 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       if (sendToNethermindOnly) {
         txParams = nethermindTx.txParams
         txReceipt = nethermindTx.receipt
+        txLatency = nethermindTx.timeToComplete
       } else {
         txParams = poaTx.txParams
         txReceipt = poaTx.receipt
+        txLatency = poaTx.timeToComplete
       }
     }
 
+    const end = new Date().getTime()
+    const reqLatency = end - reqStartTime
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
       reqBodySHA,
       txParams,
       senderAddress,
-      nonce: txParams.nonce
+      nonce: txParams.nonce,
+      txLatency, // time the tx took to submit
+      reqLatency, // time the request has taken up to this point
     }
     await redis.zadd(
       'relayTxAttempts',
@@ -411,6 +422,7 @@ const createAndSendTransaction = async (
   if (address !== sender.publicKey.toLowerCase()) {
     throw new Error('Invalid relayerPublicKey')
   }
+  const start = new Date().getTime()
   const gasPrice = await getGasPrice(logger, web3)
   const nonce = await web3.eth.getTransactionCount(address)
   gasLimit = gasLimit ? web3.utils.numberToHex(gasLimit) : DEFAULT_GAS_LIMIT
@@ -438,8 +450,13 @@ const createAndSendTransaction = async (
       16
     )}, gasLimit ${DEFAULT_GAS_LIMIT}, nonce ${nonce}`
   )
+  const end = new Date().getTime()
+  const took = end - start
+  logger.info(
+    `createAndSendTransaction ok txhash: ${signedTx.transactionHash} took: ${took}`
+  )
   const receipt = await web3.eth.sendSignedTransaction(signedTx)
-  return { receipt, txParams }
+  return { receipt, txParams, timeToComplete: took }
 }
 
 //
@@ -500,7 +517,8 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
     )
     return {
       txParams: transaction,
-      receipt
+      receipt,
+      timeToComplete: took,
     }
   } catch (err) {
     console.log('relayToNethermind error:', err.toString())
