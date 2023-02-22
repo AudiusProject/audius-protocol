@@ -4,11 +4,18 @@ docker:
 steps:
   - gcp-auth
   - run:
-      name: Cleanup Image
+      name: Cleanup Images
       command: |
         old_images=$(gcloud compute images list --format="csv(name)[no-heading]" --filter="creationTimestamp < -P2D AND name~'audius-protocol-.*'" --sort-by=creationTimestamp)
         if [[ "$old_images" != "" ]]; then
           echo "Deleting images:" $old_images
           gcloud compute images delete --quiet $old_images
         fi
-  # TODO: cleanup zombie instances and disks as well
+  - run:
+      name: Cleanup Instances
+      command: |
+        old_instances=$(gcloud compute instances list --format="csv(name)[no-heading]" --filter="creationTimestamp < -P2H AND name~'circleci-.*'" --sort-by=creationTimestamp)
+        if [[ "$old_instances" != "" ]]; then
+          echo "Deleting instances:" $old_instances
+          gcloud compute instances delete --quiet $old_instances
+        fi
