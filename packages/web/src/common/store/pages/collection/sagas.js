@@ -3,9 +3,17 @@ import {
   makeUid,
   cacheActions,
   collectionPageActions as collectionActions,
-  collectionPageLineupActions as tracksActions
+  collectionPageLineupActions as tracksActions,
+  collectionPageSelectors
 } from '@audius/common'
-import { call, put, takeLatest, takeEvery } from 'redux-saga/effects'
+import {
+  call,
+  put,
+  select,
+  take,
+  takeLatest,
+  takeEvery
+} from 'redux-saga/effects'
 
 import {
   retrieveCollections,
@@ -13,6 +21,8 @@ import {
 } from 'common/store/cache/collections/utils'
 
 import tracksSagas from './lineups/sagas'
+const { getCollectionUid, getUserUid } = collectionPageSelectors
+const { fetchCollection } = collectionActions
 
 function* watchFetchCollection() {
   yield takeLatest(collectionActions.FETCH_COLLECTION, function* (action) {
@@ -76,6 +86,42 @@ function* watchResetCollection() {
   })
 }
 
+/**
+ * Used for mobile CollectionScreen
+ */
+function* watchResetAndFetchCollectionTracks() {
+  yield takeEvery(
+    collectionActions.RESET_AND_FETCH_COLLECTION_TRACKS,
+    function* (action) {
+      const collectionUid = yield select(getCollectionUid)
+      const userUid = yield select(getUserUid)
+
+      if (collectionUid && userUid) {
+        // Reset collection so that lineup is not shared between separate instances
+        // of the CollectionScreen
+        yield put(collectionActions.resetCollection(collectionUid, userUid))
+        yield take(tracksActions.reset().type)
+      }
+
+      // Need to refetch the collection after resetting
+      // Will pull from cache if it exists
+      // TODO: fix this for smart collections
+      if (typeof collectionId === 'number') {
+        yield put(fetchCollection(action.collectionId))
+      }
+
+      yield take(collectionActions.fetchCollectionSucceeded)
+
+      yield put(tracksActions.fetchLineupMetadatas(0, 200, false, undefined))
+    }
+  )
+}
+
 export default function sagas() {
-  return [...tracksSagas(), watchFetchCollection, watchResetCollection]
+  return [
+    ...tracksSagas(),
+    watchFetchCollection,
+    watchResetCollection,
+    watchResetAndFetchCollectionTracks
+  ]
 }
