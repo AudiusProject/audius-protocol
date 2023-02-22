@@ -81,8 +81,39 @@ func TestParseQueryParams(t *testing.T) {
 				Timestamp: time.Now().Unix(),
 				TrackId: 12345,
 			},
-			// `{"cid":"Qmblah","shouldCache":true,"timestamp":12345678,"trackId":12345}`,
 			false,
+		},
+		{
+			SignatureData{
+				ShouldCache: true,
+				Timestamp: time.Now().Unix(),
+				TrackId: 12345,
+			},
+			true,
+		},
+		{
+			SignatureData{
+				Cid: "Qmblah",
+				Timestamp: time.Now().Unix(),
+				TrackId: 12345,
+			},
+			true,
+		},
+		{
+			SignatureData{
+				Cid: "Qmblah",
+				ShouldCache: true,
+				TrackId: 12345,
+			},
+			true,
+		},
+		{
+			SignatureData{
+				Cid: "Qmblah",
+				ShouldCache: true,
+				Timestamp: time.Now().Unix(),
+			},
+			true,
 		},
 	}
 
@@ -94,7 +125,6 @@ func TestParseQueryParams(t *testing.T) {
 
 	for _, tt := range tests {
 		signature, err := utils.GenerateSignature(tt.testData.toMap(), privKey)
-		// signature, err := utils.GenerateSignatureForString([]byte(tt.testData), privKey)
 		if err != nil {
 			t.Fatalf("Failed to generate signature for %+v", tt.testData)
 		}
