@@ -61,7 +61,6 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 
 	writeDeadline, _ := time.ParseDuration("60s")
 
-	log.Printf("store dir: %s\n", filepath.Join(os.Getenv("NATS_STORE_DIR"), config.GetNatsConfig().PeeringConfig.NatsClusterName))
 	opts := &server.Options{
 		ServerName: serverName,
 		HTTPPort:   8222,

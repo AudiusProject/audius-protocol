@@ -64,7 +64,9 @@ func EnsurePrivateKeyIsSet() {
 	if os.Getenv("AUDIUS_DELEGATE_PRIVATE_KEY") == "" {
 		if os.Getenv("delegatePrivateKey") == "" {
 			log.Print("WARN: Missing 'AUDIUS_DELEGATE_PRIVATE_KEY' and deprecated fallback delegatePrivateKey env vars. Generating random private key.")
-			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", generatePrivateKeyHex())
+			privKey := generatePrivateKeyHex()
+			fmt.Println("Generated private key: ", privKey)
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", privKey)
 		} else {
 			log.Print("WARN: Using DEPRECATED 'delegatePrivateKey' env var. Please set 'AUDIUS_DELEGATE_PRIVATE_KEY' env var to the same value.")
 			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", os.Getenv("delegatePrivateKey"))
@@ -99,7 +101,7 @@ func (kcd *KeysConfigDecoder) Decode(value string) error {
 
 	privateKey, err := crypto.ToECDSA(privateBytes)
 	if err != nil {
-		return fmt.Errorf("fAUDIUS_DELEGATE_PRIVATE_KEY: failed to convert private key to ecdsa: %v", err)
+		return fmt.Errorf("AUDIUS_DELEGATE_PRIVATE_KEY: failed to convert private key to ecdsa: %v", err)
 	}
 
 	nKeyPair, err := nkeys.FromRawSeed(nkeys.PrefixByteUser, privateBytes)

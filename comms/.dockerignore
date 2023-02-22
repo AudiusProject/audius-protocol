@@ -4,3 +4,8 @@ comms-linux
 wip
 .vscode
 *.md
+.git
+tmp
+build
+!storage/storageserver/weather-map/dist
+storage/storageserver/weather-map

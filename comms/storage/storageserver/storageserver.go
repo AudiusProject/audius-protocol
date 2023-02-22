@@ -3,7 +3,6 @@ package storageserver
 
 import (
 	"embed"
-	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
@@ -45,7 +44,6 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes [
 	var host string
 	var allStorageNodePubKeys []string
 	for _, node := range allNodes {
-		fmt.Printf("checking node %v against this pubKey %q\n", node, thisNodePubKey)
 		allStorageNodePubKeys = append(allStorageNodePubKeys, node.DelegateOwnerWallet)
 		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
 			host = node.Endpoint

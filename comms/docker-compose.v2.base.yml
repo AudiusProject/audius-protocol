@@ -35,21 +35,21 @@ x-common-env: &common-env
             "id": "discovery-node::1",
             "spId": "5",
             "endpoint": "http://node1-discovery",
-            "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
+            "delegateOwnerWallet": "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e",
             "type": { "id": "discovery-node" }
           },
           {
             "id": "discovery-node::2",
             "spId": "6",
             "endpoint": "http://node2-discovery",
-            "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
+            "delegateOwnerWallet": "0x9262c9A1b172fF2A9C027B55862389d00b68A26a",
             "type": { "id": "discovery-node" }
           },
           {
             "id": "discovery-node::3",
             "spId": "7",
             "endpoint": "http://node3-discovery",
-            "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
+            "delegateOwnerWallet": "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4",
             "type": { "id": "discovery-node" }
           }
         ]'
@@ -184,7 +184,6 @@ services:
         condition: service_started
     volumes:
       - ./storage:/app/storage
-      - ./discovery:/app/discovery # remove after config refactor
   
   nginx:
     image: openresty/openresty:1.21.4.1-alpine-fat

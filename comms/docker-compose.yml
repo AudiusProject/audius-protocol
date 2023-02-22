@@ -160,7 +160,7 @@ services:
       file: docker-compose.v2.base.yml
       service: discovery-dev
     environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
+      AUDIUS_DELEGATE_PRIVATE_KEY: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" # Public key: "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e"
       NATS_SERVER_URL: "nats://nats1-discovery:4222"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
     depends_on:
@@ -172,7 +172,7 @@ services:
       file: docker-compose.v2.base.yml
       service: discovery-dev
     environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
+      AUDIUS_DELEGATE_PRIVATE_KEY: "d2b12371a062b73ce665288f894844ab75760d0ed0c580ff19d21b54d260ceb2" # Public key: "0x9262c9A1b172fF2A9C027B55862389d00b68A26a"
       NATS_SERVER_URL: "nats://nats2-discovery:4222"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
     depends_on:
@@ -184,7 +184,7 @@ services:
       file: docker-compose.v2.base.yml
       service: discovery-dev
     environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
+      AUDIUS_DELEGATE_PRIVATE_KEY: "6569932dff9fbe7c04382f87ac7098f90e7aa5cb0fe636b4e5c3cb4e30668812" # Public key: "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4"
       NATS_SERVER_URL: "nats://nats3-discovery:4222"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
     depends_on:

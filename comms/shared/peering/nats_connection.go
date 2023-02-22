@@ -10,7 +10,6 @@ import (
 
 func (p *Peering) DialNats(peerMap map[string]*Info) (*nats.Conn, error) {
 	natsUrl := config.GetEnvDefault("NATS_SERVER_URL", nats.DefaultURL)
-	fmt.Println("natsUrl: " + natsUrl)
 
 	if len(peerMap) != 0 {
 		goodNatsUrls := []string{}
