@@ -53,6 +53,10 @@ test.load::
 storage.seed.audio::
 	docker exec -it storage1 sh -c "./comms storage seed audio"
 
+storage.seed.image::
+	docker exec -it storage1 sh -c "./comms storage seed image"
+
+
 build::
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-comms:latest
 	docker push audius/wip-comms:latest
