@@ -23,7 +23,11 @@ var audioCmd = &cobra.Command{
 	./comms storage seed audio --mean 3600 # average audio duration is 1hr
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		initClients()
+		clientCount, err := initClients()
+		if err != nil || clientCount < 1 {
+			fmt.Println("Couldn't find any clients")
+			return
+		}
 
 		wg := sync.WaitGroup{}
 		for i := 0; i < int(audioCount); i++ {
@@ -59,6 +63,10 @@ func generateAndUpload(i int, wg *sync.WaitGroup) {
 		nodeNumber = rand.Intn(4)
 	}
 	storageClient := ClientList[nodeNumber]
+	if storageClient == nil {
+		fmt.Printf("storage client %d is nil\n", nodeNumber)
+		return
+	}
 
 	err = storageClient.UploadAudio(audioData, filename)
 	if err != nil {

@@ -21,7 +21,11 @@ var imageCmd = &cobra.Command{
 	./comms storage seed image --count 10 # seeds 10 images
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
-		initClients()
+		clientCount, err := initClients()
+		if err != nil || clientCount < 1 {
+			fmt.Println("Couldn't find any clients")
+			return
+		}
 
 		for i := 0; i < imageCount; i++ {
 			imageData, err := utils.GetRandomPng()

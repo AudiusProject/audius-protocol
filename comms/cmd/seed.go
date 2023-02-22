@@ -14,7 +14,7 @@ import (
 
 var single bool
 
-var ClientList []client.StorageClient
+var ClientList []*client.StorageClient
 
 var seedCmd = &cobra.Command{
 	Use:   "seed",
@@ -38,7 +38,7 @@ func init() {
 	seedCmd.PersistentFlags().BoolVarP(&single, "single", "s", false, "whether to seed a single node or multi node setup")
 }
 
-func initClients() {
+func initClients() (int, error) {
 	storageConfig := config.GetStorageConfig()
 
 	// TODO: We need to change a bunch of stuff in shared/peering/ before we can remove this.
@@ -61,18 +61,20 @@ func initClients() {
 	err = peering.PollRegisteredNodes()
 	if err != nil {
 		fmt.Println("[ERROR] could not poll registered nodes")
-		return
+		return 0, err
 	}
 
 	cnodes, err := peering.GetContentNodes()
 	if err != nil {
 		fmt.Println("[ERROR] could not get content nodes")
-		return
+		return 0, err
 	}
 
-	ClientList = make([]client.StorageClient, len(cnodes))
+	ClientList = make([]*client.StorageClient, 0)
 	for _, cnode := range cnodes {
-		storageClient := client.StorageClient{Endpoint: cnode.Endpoint}
-		ClientList = append(ClientList, storageClient)
+		storageClient := client.NewStorageClient(cnode.Endpoint)
+		ClientList = append(ClientList, &storageClient)
 	}
+
+	return len(ClientList), nil
 }
