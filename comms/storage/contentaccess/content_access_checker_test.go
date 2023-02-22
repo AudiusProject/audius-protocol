@@ -2,16 +2,18 @@ package contentaccess
 
 import (
 	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"encoding/json"
 	"net/url"
 	"testing"
 	"time"
 
 	"comms.audius.co/shared/utils"
+	"github.com/google/go-cmp/cmp"
 )
 
 const (
-  dummyDNPrivateKey =
-    "0x3873ed01bfb13621f9301487cc61326580614a5b99f3c33cf39c6f9da3a19cad"
   badDNPrivateKey =
     "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
   dummyDNDelegateOwnerWallet =
@@ -67,43 +69,60 @@ func TestVerifySignature(t *testing.T) {
 
 func TestParseQueryParams(t *testing.T) {
 	tests := []struct{
-		signature string
-		expectedData SignatureData
-		expectedSignature string
+		testData SignatureData
 		shouldError bool
 	}{
 		{
-			"",
 			SignatureData{
+				Cid: "Qmblah",
+				ShouldCache: true,
+				Timestamp: time.Now().Unix(),
+				TrackId: 12345,
 			},
-			"",
 			false,
 		},
 	}
 
+	privKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatal("Key generation failed")
+	}
+
 	for _, tt := range tests {
-		privKey := ecdsa.PrivateKey(dummyDNPrivateKey);
-		signature, err := utils.GenerateSignature(tt.signature, privKey)
+		signature, err := utils.GenerateSignature(tt.testData.toMap(), privKey)
 		if err != nil {
-			t.Fatalf("Failed to generate signature for %+v", tt.signature)
+			t.Fatalf("Failed to generate signature for %+v", tt.testData)
+		}
+
+		marshalledData, err := json.Marshal(tt.testData.toMap())
+		if err != nil {
+			t.Fatal("marshalling signature data failed")
+		}
+
+		marshalledPayload, err := json.Marshal(map[string]interface{}{
+			"signature": string(signature),
+			"data": string(marshalledData),
+		})	
+		if err != nil {
+			t.Fatal("marshalling signature payload failed")
 		}
 
 		values := url.Values(map[string][]string{
-			"signature": {string(signature)},
+			"signature": {url.QueryEscape(string(marshalledPayload))},
 		})
 
 		actualData, actualSignature, actualError := parseQueryParams(values)
-
-		if *actualData != tt.expectedData {
-			t.Fatalf("incorrect signature data, want=%+v, got=%+v", tt.expectedData, actualData)
-		}
-
-		if actualSignature != tt.expectedSignature {
-			t.Fatalf("incorrect signature, want=%+v, got=%+v", tt.expectedSignature, actualSignature)
-		}
-
-		if (actualError != nil) == tt.shouldError {
+		didError := actualError != nil
+		if didError != tt.shouldError {
 			t.Fatalf("incorrect error, want=%+v, got=%+v", tt.shouldError, actualError)
+		}
+
+		if !cmp.Equal(actualSignature, signature) {
+			t.Fatalf("incorrect signature, want=%+v (length=%d), got=%+v (length=%d)", signature, len(signature), actualSignature, len(actualSignature))
+		}
+
+		if actualData == nil || !cmp.Equal(*actualData, tt.testData) {
+			t.Fatalf("incorrect signature data, want=%+v, got=%+v", tt.testData, actualData)
 		}
 	}
 }

@@ -2,7 +2,7 @@ package contentaccess
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
 	"net/url"
 
 	"github.com/labstack/echo/v4"
@@ -34,17 +34,17 @@ func ContentAccessMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func parseQueryParams(values url.Values) (*SignatureData, string, error) {
+func parseQueryParams(values url.Values) (*SignatureData, []byte, error) {
 	encodedSignature := values.Get("signature")
 	decodedSignature, err := url.QueryUnescape(encodedSignature)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 
 	unmarshalledSignature := make(map[string]string)
 	err = json.Unmarshal([]byte(decodedSignature), &unmarshalledSignature)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 
 	signature := unmarshalledSignature["signature"]
@@ -53,35 +53,35 @@ func parseQueryParams(values url.Values) (*SignatureData, string, error) {
 	rawSignatureData := make(map[string]interface{})
 	err = json.Unmarshal([]byte(rawData), &rawSignatureData)
 	if err != nil {
-		return nil, "", err
+		return nil, nil, err
 	}
 
 	unsignedCid, ok := rawSignatureData["cid"].(string)
 	if !ok {
-		return nil, "", errors.New("`cid` couldn't be parsed from the signature data")
+		return nil, nil, fmt.Errorf("`cid` couldn't be parsed from the signature data, got=%s", unsignedCid)
 	}
 
-	unsignedTimestamp, ok := rawSignatureData["timestamp"].(int64)
+	unsignedTimestamp, ok := rawSignatureData["timestamp"].(float64)
 	if !ok {
-		return nil, "", errors.New("`timestamp` couldn't be parsed from the signature data")
+		return nil, nil, fmt.Errorf("`timestamp` couldn't be parsed from the signature data, got=%+v", unsignedTimestamp)
 	}
 
-	unsignedTrackId, ok := rawSignatureData["trackId"].(int64)
+	unsignedTrackId, ok := rawSignatureData["trackId"].(float64)
 	if !ok {
-		return nil, "", errors.New("`trackId` couldn't be parsed from the signature data")
+		return nil, nil, fmt.Errorf("`trackId` couldn't be parsed from the signature data, got=%+v", unsignedTrackId)
 	}
 
 	unsignedShouldCache, ok := rawSignatureData["shouldCache"].(bool)
 	if !ok {
-		return nil, "", errors.New("`shouldCache` couldn't be parsed from the signature data")
+		return nil, nil, fmt.Errorf("`shouldCache` couldn't be parsed from the signature data, got=%+v", unsignedShouldCache)
 	}
 
 	signatureData := &SignatureData{
 		Cid:         unsignedCid,
-		Timestamp:   unsignedTimestamp,
-		TrackId:     unsignedTrackId,
+		Timestamp:   int64(unsignedTimestamp),
+		TrackId:     int64(unsignedTrackId),
 		ShouldCache: unsignedShouldCache,
 	}
 
-	return signatureData, signature, nil
+	return signatureData, []byte(signature), nil
 }

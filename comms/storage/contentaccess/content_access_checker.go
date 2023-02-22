@@ -15,19 +15,28 @@ const (
 
 type SignatureData struct {
 	Cid       string
+	ShouldCache bool
 	Timestamp int64
 	TrackId   int64
-	ShouldCache bool
 }
 
-func recoverWallet(signatureData SignatureData, signature string) (string, error) {
+func (sd SignatureData) toMap() map[string]interface{} {
+	return map[string]interface{}{
+		"cid": sd.Cid,
+		"shouldCache": sd.ShouldCache,
+		"timestamp": sd.Timestamp,
+		"trackId": sd.TrackId,
+	}
+}
+
+func recoverWallet(signatureData SignatureData, signature []byte) (string, error) {
 	stringData, err := json.Marshal(signatureData)
 	if err != nil {
 		return "", err
 	}
 
 	hashData := crypto.Keccak256(stringData)
-	recoveredSigner, err := crypto.Ecrecover(hashData, []byte(signature))
+	recoveredSigner, err := crypto.Ecrecover(hashData, signature)
 	if err != nil {
 		return "", err
 	}
@@ -46,7 +55,7 @@ func isCidMatch(signatureData SignatureData, requestedCid string) bool {
 
 func VerifySignature(
 	signatureData SignatureData,
-	signature string,
+	signature []byte,
 	requestedCid string,
 ) (bool, error) {
 	if !isCidMatch(signatureData, requestedCid) {
