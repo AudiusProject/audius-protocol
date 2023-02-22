@@ -33,11 +33,14 @@ import {
   startJob
 } from '../../../slice'
 import { isCollectionDownloadable } from '../../utils/isCollectionDownloadable'
+import { retryOfflineJob } from '../../utils/retryOfflineJob'
 
 import { downloadFile } from './downloadFile'
 const { SET_UNREACHABLE } = reachabilityActions
 
 const { getUserId } = accountSelectors
+
+const MAX_RETRY_COUNT = 3
 
 function* shouldAbortDownload(collectionId: CollectionId) {
   while (true) {
@@ -57,7 +60,12 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
   yield* put(startJob(queueItem))
 
   const { jobResult, cancel, abort } = yield* race({
-    jobResult: call(downloadCollectionAsync, collectionId),
+    jobResult: retryOfflineJob(
+      MAX_RETRY_COUNT,
+      1000,
+      downloadCollectionAsync,
+      collectionId
+    ),
     abort: call(shouldAbortDownload, collectionId),
     cancel: take(SET_UNREACHABLE)
   })

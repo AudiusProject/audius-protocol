@@ -66,7 +66,9 @@ export function* handleStaleTrack(trackId: ID) {
 
   if (moment(latestTrack.updated_at).isAfter(currentTrack.updated_at)) {
     yield* put(
-      redownloadOfflineItems({ items: [{ type: 'track', id: trackId }] })
+      redownloadOfflineItems({
+        items: [{ type: 'track', id: trackId }]
+      })
     )
   }
 

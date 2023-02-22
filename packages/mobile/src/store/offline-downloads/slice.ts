@@ -25,7 +25,7 @@ export type TrackOfflineMetadataPayload = {
 
 export type OfflineJob =
   | { type: 'collection'; id: CollectionId }
-  | { type: 'track'; id: ID }
+  | { type: 'track'; id: ID; requeueCount?: number }
   | { type: 'collection-sync'; id: CollectionId }
   | { type: 'play-count'; id: ID }
   | { type: 'stale-track'; id: ID }
@@ -58,7 +58,11 @@ export type RequestRemoveFavoritedDownloadedCollectionAction = PayloadAction<{
 }>
 
 export type OfflineEntry =
-  | { type: 'track'; id: ID; metadata: OfflineTrackMetadata }
+  | {
+      type: 'track'
+      id: ID
+      metadata: OfflineTrackMetadata
+    }
   | {
       type: 'collection'
       id: CollectionId
@@ -315,6 +319,11 @@ const slice = createSlice({
         state.collectionStatus[id] = OfflineDownloadStatus.ERROR
       } else if (type === 'track') {
         state.trackStatus[id] = OfflineDownloadStatus.ERROR
+        // re-queue the track
+        state.offlineQueue.push({
+          ...action.payload,
+          requeueCount: (action.payload.requeueCount ?? 0) + 1
+        })
       } else if (type === 'stale-track') {
         // continue
       }

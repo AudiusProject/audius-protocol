@@ -50,12 +50,19 @@ export const getCollectionDownloadStatus = (
     trackStatuses.every(
       (status) =>
         status === OfflineDownloadStatus.SUCCESS ||
-        status === OfflineDownloadStatus.ERROR
+        status === OfflineDownloadStatus.ERROR ||
+        status === OfflineDownloadStatus.ABANDONED
     )
   )
     return OfflineDownloadStatus.SUCCESS
 
-  if (trackStatuses.every((status) => status === OfflineDownloadStatus.ERROR))
+  if (
+    trackStatuses.every(
+      (status) =>
+        status === OfflineDownloadStatus.ERROR ||
+        status === OfflineDownloadStatus.ABANDONED
+    )
+  )
     return OfflineDownloadStatus.ERROR
 
   if (
@@ -63,7 +70,8 @@ export const getCollectionDownloadStatus = (
       (status) =>
         status === OfflineDownloadStatus.INIT ||
         status === OfflineDownloadStatus.SUCCESS ||
-        status === OfflineDownloadStatus.ERROR
+        status === OfflineDownloadStatus.ERROR ||
+        status === OfflineDownloadStatus.ABANDONED
     )
   )
     return OfflineDownloadStatus.LOADING
