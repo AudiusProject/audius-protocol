@@ -32,5 +32,9 @@ export const messages = {
   loadingSnapchatSubtitle: 'Preparing to open Snapchat',
   loadingTikTokSubtitle: 'Preparing to open TikTok',
   cancel: 'Cancel',
-  nftPlaylistShareText: ''
+  nftPlaylistShareText: '',
+  addToPhotoLibraryDenied:
+    'You must allow Audius to add to your photo library in order to share to TikTok.',
+  addToPhotoLibraryBlocked:
+    'Audius is blocked from adding to your photo library. Please give Audius access to Photos in your Security & Privacy settings in order to use Share to TikTok.'
 }
