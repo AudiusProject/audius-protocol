@@ -117,16 +117,17 @@ begin
 	            r.repost_item_id = new.repost_item_id
 	            and new.created_at - INTERVAL '1 month' < r.created_at
 	            and new.created_at > r.created_at
-				and r.is_delete is false
-				and r.is_current is true
+              and r.is_delete is false
+              and r.is_current is true
+              and r.repost_type = new.repost_type
 	            and r.user_id in (
 	                select
 	                    followee_user_id
 	                from follows
 	                where
 	                    follower_user_id = new.user_id
-						and is_delete is false
-						and is_current is true
+                      and is_delete is false
+                      and is_current is true
 	            )
 	    )
 	insert into notification
