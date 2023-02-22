@@ -348,7 +348,7 @@ const NavColumn = ({
                   />
                   <div className={styles.userInfoWrapper}>
                     <div className={styles.name} onClick={goToProfile}>
-                      {name}
+                      <div className={styles.nameText}>{name}</div>
                       <UserBadges
                         userId={account.user_id}
                         badgeSize={12}
