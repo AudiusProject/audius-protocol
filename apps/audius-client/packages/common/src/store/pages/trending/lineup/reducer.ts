@@ -22,6 +22,12 @@ type ResetSucceededAction = {
   type: typeof RESET_SUCCEEDED
 }
 
+export const makeInitialState = (prefix: string) => ({
+  ...initialState,
+  entryIds: new Set() as Set<UID>,
+  prefix
+})
+
 const makeActionsMap = (initialState: TrendingLineupState) => {
   return {
     [RESET_SUCCEEDED](
@@ -35,11 +41,7 @@ const makeActionsMap = (initialState: TrendingLineupState) => {
 }
 
 const makeTrendingReducer = (prefix: string) => {
-  const newInitialState = {
-    ...initialState,
-    entryIds: new Set() as Set<UID>,
-    prefix
-  }
+  const newInitialState = makeInitialState(prefix)
   const newActionsMap = makeActionsMap(newInitialState)
 
   return (state = newInitialState, action: ResetSucceededAction) => {

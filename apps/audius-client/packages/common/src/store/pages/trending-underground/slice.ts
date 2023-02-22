@@ -3,9 +3,11 @@ import { combineReducers, createSlice } from '@reduxjs/toolkit'
 import { asLineup } from 'store/lineup/reducer'
 
 import { PREFIX } from './lineup/actions'
-import trendingReducer from './lineup/reducer'
+import trendingReducer, {
+  initialState as initialLineupState
+} from './lineup/reducer'
 
-const initialState = {}
+const initialState = { trending: initialLineupState }
 
 const slice = createSlice({
   name: 'application/pages/trendingUnderground',

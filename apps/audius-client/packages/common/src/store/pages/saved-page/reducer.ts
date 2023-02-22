@@ -13,7 +13,9 @@ import {
   REMOVE_LOCAL_SAVE,
   END_FETCHING
 } from 'store/pages/saved-page/actions'
-import tracksReducer from 'store/pages/saved-page/lineups/tracks/reducer'
+import tracksReducer, {
+  initialState as initialLineupState
+} from 'store/pages/saved-page/lineups/tracks/reducer'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
 
@@ -23,7 +25,8 @@ const initialState = {
   saves: [],
   initialFetch: false,
   hasReachedEnd: false,
-  fetchingMore: false
+  fetchingMore: false,
+  tracks: initialLineupState
 }
 
 const actionsMap = {

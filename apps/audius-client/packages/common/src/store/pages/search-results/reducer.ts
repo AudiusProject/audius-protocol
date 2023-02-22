@@ -14,7 +14,9 @@ import {
   FetchSearchPageTagsFailedAction
 } from 'store/pages/search-results/actions'
 import { PREFIX } from 'store/pages/search-results/lineup/tracks/actions'
-import tracksReducer from 'store/pages/search-results/lineup/tracks/reducer'
+import tracksReducer, {
+  initialState as initialLineupState
+} from 'store/pages/search-results/lineup/tracks/reducer'
 
 import { Status } from '../../../models'
 
@@ -71,21 +73,7 @@ const initialState: SearchPageState = {
   albumIds: undefined,
   playlistIds: undefined,
   artistIds: undefined,
-  tracks: {
-    entries: [],
-    order: {},
-    total: 0,
-    deleted: 0,
-    nullCount: 0,
-    status: Status.LOADING,
-    hasMore: true,
-    inView: false,
-    prefix: '',
-    page: 0,
-    isMetadataLoading: false,
-    maxEntries: null,
-    containsDeleted: false
-  }
+  tracks: initialLineupState
 }
 
 const actionsMap = {

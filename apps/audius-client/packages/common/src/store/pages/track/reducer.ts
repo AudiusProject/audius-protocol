@@ -1,7 +1,9 @@
 // @ts-nocheck
 // TODO(nkang) - convert to TS
 import { asLineup } from 'store/lineup/reducer'
-import tracksReducer from 'store/pages/track/lineup/reducer'
+import tracksReducer, {
+  initialState as initialLineupState
+} from 'store/pages/track/lineup/reducer'
 
 import {
   SET_TRACK_ID,
@@ -23,7 +25,8 @@ const initialState = {
     week: null,
     month: null,
     year: null
-  }
+  },
+  tracks: initialLineupState
 }
 
 const actionsMap = {

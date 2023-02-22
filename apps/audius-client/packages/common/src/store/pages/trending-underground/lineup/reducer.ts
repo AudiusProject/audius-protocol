@@ -5,7 +5,7 @@ import { LineupState, Track } from '../../../../models'
 
 import { PREFIX } from './actions'
 
-const initialState: LineupState<Track> = {
+export const initialState: LineupState<Track> = {
   ...initialLineupState,
   prefix: PREFIX
 }
