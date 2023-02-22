@@ -22,6 +22,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// NOTE compatibility issue between go and postgres: https://github.com/lib/pq/issues/227
+
 func TestSig(t *testing.T) {
 	privateKey, err := crypto.GenerateKey()
 	assert.NoError(t, err)
@@ -71,6 +73,10 @@ func TestGetChats(t *testing.T) {
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
 	_, err = db.Conn.Exec("truncate table users cascade")
+	assert.NoError(t, err)
+	_, err = db.Conn.Exec("truncate table chat_member cascade")
+	assert.NoError(t, err)
+	_, err = db.Conn.Exec("truncate table chat_message cascade")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -133,7 +139,7 @@ func TestGetChats(t *testing.T) {
 	expectedChat1Data := schema.UserChat{
 		ChatID:             chatId1,
 		LastMessage:        message2,
-		LastMessageAt:      message2CreatedAt.Format(time.RFC3339Nano),
+		LastMessageAt:      message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		InviteCode:         chatId1,
 		UnreadMessageCount: float64(0),
 		ChatMembers: []schema.ChatMember{
@@ -143,7 +149,7 @@ func TestGetChats(t *testing.T) {
 	}
 	expectedChat2Data := schema.UserChat{
 		ChatID:             chatId2,
-		LastMessageAt:      chat2CreatedAt.Format(time.RFC3339Nano),
+		LastMessageAt:      chat2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		InviteCode:         chatId2,
 		UnreadMessageCount: float64(0),
 		ChatMembers: []schema.ChatMember{
@@ -178,9 +184,9 @@ func TestGetChats(t *testing.T) {
 		expectedSummary := schema.Summary{
 			TotalCount: float64(2),
 			NextCount:  float64(0),
-			NextCursor: chat2CreatedAt.Format(time.RFC3339Nano),
+			NextCursor: chat2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 			PrevCount:  float64(0),
-			PrevCursor: message2CreatedAt.Format(time.RFC3339Nano),
+			PrevCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
@@ -228,9 +234,9 @@ func TestGetChats(t *testing.T) {
 		expectedSummary := schema.Summary{
 			TotalCount: float64(2),
 			NextCount:  float64(1),
-			NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
+			NextCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 			PrevCount:  float64(0),
-			PrevCursor: message2CreatedAt.Format(time.RFC3339Nano),
+			PrevCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
@@ -259,7 +265,7 @@ func TestGetChats(t *testing.T) {
 		req.Header.Set(config.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
-		c := testServer.NewContext(req, rec)
+		c := testServer.NewContext(req, rec) // test
 
 		// Set path params
 		c.SetParamNames("id")
@@ -294,6 +300,16 @@ func TestGetMessages(t *testing.T) {
 	privateKey2, err := crypto.GenerateKey()
 	assert.NoError(t, err)
 	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
+
+	// Set up db
+	_, err = db.Conn.Exec("truncate table chat cascade")
+	assert.NoError(t, err)
+	_, err = db.Conn.Exec("truncate table users cascade")
+	assert.NoError(t, err)
+	_, err = db.Conn.Exec("truncate table chat_member cascade")
+	assert.NoError(t, err)
+	_, err = db.Conn.Exec("truncate table chat_message cascade")
+	assert.NoError(t, err)
 
 	// seed db
 	tx := db.Conn.MustBegin()
@@ -347,12 +363,12 @@ func TestGetMessages(t *testing.T) {
 	}
 	expectedMessage1ReactionsData := []schema.Reaction{
 		{
-			CreatedAt: reaction1CreatedAt.Format(time.RFC3339Nano),
+			CreatedAt: reaction1CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 			Reaction:  reaction1,
 			UserID:    encodedUser1,
 		},
 		{
-			CreatedAt: reaction2CreatedAt.Format(time.RFC3339Nano),
+			CreatedAt: reaction2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 			Reaction:  reaction2,
 			UserID:    encodedUser2,
 		},
@@ -361,14 +377,14 @@ func TestGetMessages(t *testing.T) {
 		MessageID:    messageId1,
 		SenderUserID: encodedUser1,
 		Message:      message1,
-		CreatedAt:    message1CreatedAt.Format(time.RFC3339Nano),
+		CreatedAt:    message1CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		Reactions:    expectedMessage1ReactionsData,
 	}
 	expectedMessage2Data := schema.ChatMessage{
 		MessageID:    messageId2,
 		SenderUserID: encodedUser2,
 		Message:      message2,
-		CreatedAt:    message2CreatedAt.Format(time.RFC3339Nano),
+		CreatedAt:    message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 	}
 
 	// Test GET /comms/chats/:id/messages
@@ -400,9 +416,9 @@ func TestGetMessages(t *testing.T) {
 		expectedSummary := schema.Summary{
 			TotalCount: float64(2),
 			NextCount:  float64(0),
-			NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
+			NextCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 			PrevCount:  float64(0),
-			PrevCursor: message1CreatedAt.Format(time.RFC3339Nano),
+			PrevCursor: message1CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
@@ -453,9 +469,9 @@ func TestGetMessages(t *testing.T) {
 		expectedSummary := schema.Summary{
 			TotalCount: float64(2),
 			NextCount:  float64(0),
-			NextCursor: message2CreatedAt.Format(time.RFC3339Nano),
+			NextCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 			PrevCount:  float64(1),
-			PrevCursor: message2CreatedAt.Format(time.RFC3339Nano),
+			PrevCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{

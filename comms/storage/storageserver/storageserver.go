@@ -66,7 +66,7 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes [
 	m := monitor.New(jsc)
 	err = m.SetHostAndShardsForNode(thisNodePubKey, host, d.ShardsStored)
 	if err != nil {
-		log.Fatal("Error setting host and shards for node", "err", err)
+		log.Fatalf("Error setting host and shards for node: %v", err)
 	}
 
 	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)

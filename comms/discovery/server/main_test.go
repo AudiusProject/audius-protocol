@@ -26,6 +26,21 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if _, err = db.Conn.Exec("truncate table chat cascade"); err != nil {
+		log.Fatal(err)
+	}
+	if _, err = db.Conn.Exec("truncate table users cascade"); err != nil {
+		log.Fatal(err)
+	}
+	if _, err = db.Conn.Exec("truncate table chat_member cascade"); err != nil {
+		log.Fatal(err)
+	}
+	if _, err = db.Conn.Exec("truncate table chat_message cascade"); err != nil {
+		log.Fatal(err)
+	}
+	if _, err = db.Conn.Exec("truncate table rpc_log cascade"); err != nil {
+		log.Fatal(err)
+	}
 
 	// connect to NATS and create JetStream Context
 	nc, err := peering.New(&discoveryConfig.PeeringConfig).DialNats(nil)
@@ -39,6 +54,8 @@ func TestMain(m *testing.M) {
 
 	// clear nats state
 	jsc.DeleteKeyValue(config.RateLimitRulesBucketName)
+	jsc.DeleteStream("audius")
+	jsc.DeleteStream("audius.rpc")
 
 	proc, err := rpcz.NewProcessor(jsc)
 	if err != nil {

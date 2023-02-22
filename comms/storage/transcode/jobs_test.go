@@ -10,7 +10,7 @@ import (
 
 func TestJobManager(t *testing.T) {
 
-	namespace := "testing"
+	namespace := "testing_storage"
 	nc, err := peering.New(&config.GetStorageConfig().PeeringConfig).DialNats(nil)
 	assert.NoError(t, err)
 

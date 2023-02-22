@@ -144,10 +144,5 @@ func configureNatsCliNkey() error {
 		return err
 	}
 
-	_, err = exec.Command("nats", "context", "select", "default").Output()
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
