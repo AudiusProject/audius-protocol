@@ -89,7 +89,7 @@ export const ProfileTabNavigator = ({
     name: 'Reposts',
     Icon: IconRepost,
     component: RepostsTab,
-    initialParams,
+    initialParams: isArtist ? { ...initialParams, lazy: true } : initialParams,
     refreshing,
     onRefresh,
     scrollY: animatedValue
