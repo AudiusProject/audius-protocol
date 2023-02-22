@@ -33,11 +33,15 @@ import {
   abandonJob
 } from '../../../slice'
 import { isTrackDownloadable } from '../../utils/isTrackDownloadable'
+import { retryOfflineJob } from '../../utils/retryOfflineJob'
 
 import { downloadFile } from './downloadFile'
 const { SET_UNREACHABLE } = reachabilityActions
 
 const { getUserId } = accountSelectors
+
+const MAX_RETRY_COUNT = 3
+const MAX_REQUEUE_COUNT = 3
 
 function* shouldAbortDownload(trackId: ID) {
   while (true) {
@@ -47,15 +51,20 @@ function* shouldAbortDownload(trackId: ID) {
   }
 }
 
-export function* downloadTrackWorker(trackId: ID) {
-  const queueItem: OfflineJob = { type: 'track', id: trackId }
+export function* downloadTrackWorker(trackId: ID, requeueCount?: number) {
+  const queueItem: OfflineJob = { type: 'track', id: trackId, requeueCount }
   track(
     make({ eventName: EventNames.OFFLINE_MODE_DOWNLOAD_START, ...queueItem })
   )
   yield* put(startJob(queueItem))
 
   const { jobResult, cancel, abort } = yield* race({
-    jobResult: call(downloadTrackAsync, trackId),
+    jobResult: retryOfflineJob(
+      MAX_RETRY_COUNT,
+      1000,
+      downloadTrackAsync,
+      trackId
+    ),
     abort: call(shouldAbortDownload, trackId),
     cancel: take(SET_UNREACHABLE)
   })
@@ -64,8 +73,8 @@ export function* downloadTrackWorker(trackId: ID) {
     yield* call(removeDownloadedTrack, trackId)
     yield* put(requestProcessNextJob())
   } else if (cancel) {
-    yield* put(cancelJob(queueItem))
     yield* call(removeDownloadedTrack, trackId)
+    yield* put(cancelJob(queueItem))
   } else if (jobResult === OfflineDownloadStatus.ERROR) {
     track(
       make({
@@ -73,8 +82,12 @@ export function* downloadTrackWorker(trackId: ID) {
         ...queueItem
       })
     )
-    yield* put(errorJob(queueItem))
     yield* call(removeDownloadedTrack, trackId)
+    if ((requeueCount ?? 0) < MAX_REQUEUE_COUNT - 1) {
+      yield* put(errorJob(queueItem))
+    } else {
+      yield* put(abandonJob(queueItem))
+    }
     yield* put(requestProcessNextJob())
   } else if (jobResult === OfflineDownloadStatus.ABANDONED) {
     track(
