@@ -351,7 +351,7 @@ dependencies {
 
     implementation project(':react-native-google-cast')
     
-    implementation 'com.bytedance.ies.ugc.aweme:opensdk-oversea-external:0.2.1.0'
+    implementation 'com.bytedance.ies.ugc.aweme:opensdk-oversea-external:0.2.0.2'
 
     // Add the Firebase SDK for Crashlytics.
     implementation 'com.google.firebase:firebase-analytics:17.2.2'
