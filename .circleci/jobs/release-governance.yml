@@ -1,0 +1,41 @@
+docker:
+  - image: cimg/node:14.16
+steps:
+  - checkout
+
+  - restore_cache:
+      keys:
+        - sdk-cache-{{ checksum "libs/package-lock.json" }}
+        - sdk-cache-
+  - run:
+      name: Install sdk
+      command: |
+        cd libs
+        npm install
+        npm run build:sdk
+  - save_cache:
+      key: sdk-cache-{{ checksum "libs/package-lock.json" }}
+      paths:
+        - ./libs/node_modules
+
+  - restore_cache:
+      keys:
+        - eth-contracts-cache-{{ checksum "eth-contracts/package-lock.json" }}
+        - eth-contracts-cache-
+  - run:
+      name: Install eth-contracts dependencies
+      command: |
+        cd eth-contracts
+        npm install
+  - save_cache:
+      key: eth-contracts-cache-{{ checksum "eth-contracts/package-lock.json" }}
+      paths:
+        - ./eth-contracts/node_modules
+
+  - run:
+      name: Governance Release
+      command: |
+        export RELEASE_VERSION="$(jq -r .version discovery-provider/.version.json)"
+
+        cd eth-contracts
+        node scripts/release-governance.js

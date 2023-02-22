@@ -21,7 +21,7 @@ def test_get_save_notifications(app):
                     "blocknumber": 10,
                     # No tier change, none -> none
                     "previous_balance": 0,
-                    "current_balance": 20,
+                    "current_balance": 20000000000000000000,
                 },
             ],
             "users": [{"user_id": i + 1} for i in range(2)],
@@ -41,5 +41,5 @@ def test_get_save_notifications(app):
             u1_notifiations[0]["actions"][0]["data"] = {
                 "new_tier": "bronze",
                 "new_tier_value": 10,
-                "current_value": "20",
+                "current_value": "20000000000000000000",
             }

@@ -1,19 +1,13 @@
 import logging
 from collections import defaultdict
 from datetime import datetime
+from enum import Enum
 from typing import Dict, List, Optional, TypedDict, Union
 
 from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
 
 logger = logging.getLogger(__name__)
-
-
-class GetNotificationArgs(TypedDict):
-    user_id: int
-    timestamp: Optional[int]
-    group_id: Optional[str]
-    limit: Optional[int]
 
 
 notification_groups_sql = text(
@@ -31,6 +25,7 @@ WITH user_seen as (
     seen_at desc
 )
 SELECT
+    n.type,
     n.group_id as group_id,
     array_agg(n.id),
     CASE 
@@ -53,23 +48,28 @@ FROM
 LEFT JOIN user_seen on
   user_seen.seen_at >= n.timestamp and user_seen.prev_seen_at < n.timestamp
 WHERE
-  :user_id = ANY(n.user_ids) AND
+  ARRAY[:user_id] && n.user_ids AND
+  (:valid_types is NOT NULL AND n.type in :valid_types) AND
   (
-    (:timestamp_offset is NULL) OR
-    (user_seen.seen_at is NULL AND n.timestamp < :timestamp_offset) OR
-    (:timestamp_offset is NOT NULL AND user_seen.seen_at < :timestamp_offset) OR
+    (:timestamp_offset is NULL AND :group_id_offset is NULL) OR
+    (:timestamp_offset is NULL AND :group_id_offset is NOT NULL AND n.group_id < :group_id_offset) OR
+    (:timestamp_offset is NOT NULL AND user_seen.seen_at is NULL AND n.timestamp < :timestamp_offset) OR
+    (:timestamp_offset is NOT NULL AND user_seen.seen_at is NOT NULL AND user_seen.seen_at < :timestamp_offset) OR
     (
         :group_id_offset is NOT NULL AND :timestamp_offset is NOT NULL AND 
         (user_seen.seen_at = :timestamp_offset AND n.group_id < :group_id_offset)
     )
   )
 GROUP BY
-  n.group_id, user_seen.seen_at, user_seen.prev_seen_at
+  n.type, n.group_id, user_seen.seen_at, user_seen.prev_seen_at
 ORDER BY
   user_seen.seen_at desc NULLS LAST,
   n.group_id desc
 limit :limit;
 """
+)
+notification_groups_sql = notification_groups_sql.bindparams(
+    bindparam("valid_types", expanding=True)
 )
 
 
@@ -78,12 +78,69 @@ DEFAULT_LIMIT = 20
 
 
 class NotificationGroup(TypedDict):
+    type: str
     group_id: str
     notification_ids: List[int]
     is_seen: bool
     seen_at: datetime
     prev_seen_at: datetime
     count: int
+
+
+class NotificationType(str, Enum):
+    ANNOUNCEMENT = "announcement"
+    FOLLOW = "follow"
+    REPOST = "repost"
+    SAVE = "save"
+    REMIX = "remix"
+    COSIGN = "cosign"
+    CREATE = "create"
+    TIP_RECEIVE = "tip_receive"
+    TIP_SEND = "tip_send"
+    CHALLENGE_REWARD = "challenge_reward"
+    REPOST_REPOST = "repost_repost"
+    REACTION = "reaction"
+    SUPPORTER_DETRONED = "supporter_dethroned"
+    SUPPORTER_RANK_UP = "supporter_rank_up"
+    SUPPORTING_RANK_UP = "supporting_rank_up"
+    MILESTONE = "milestone"
+    TRACK_MILESTONE = "track_milestone"
+    PLAYLIST_MILSTONE = "playlist_milestone"
+    TIER_CHANGE = "tier_change"
+    TRENDING = "trending"
+
+    def __str__(self) -> str:
+        return str.__str__(self)
+
+
+default_valid_types = [
+    NotificationType.REPOST,
+    NotificationType.REPOST_REPOST,
+    NotificationType.SAVE,
+    NotificationType.FOLLOW,
+    NotificationType.TIP_SEND,
+    NotificationType.TIP_RECEIVE,
+    NotificationType.MILESTONE,
+    NotificationType.SUPPORTER_RANK_UP,
+    NotificationType.SUPPORTING_RANK_UP,
+    NotificationType.CHALLENGE_REWARD,
+    NotificationType.TIER_CHANGE,
+    NotificationType.CREATE,
+    NotificationType.REMIX,
+    NotificationType.COSIGN,
+    NotificationType.TRENDING,
+    NotificationType.SUPPORTER_DETRONED,
+    NotificationType.ANNOUNCEMENT,
+    NotificationType.REACTION,
+]
+
+
+class GetNotificationArgs(TypedDict):
+    user_id: int
+    timestamp: Optional[datetime]
+    group_id: Optional[str]
+    limit: Optional[int]
+    valid_types: Optional[List[NotificationType]]
 
 
 def get_notification_groups(session: Session, args: GetNotificationArgs):
@@ -93,6 +150,9 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
     limit = args.get("limit") or DEFAULT_LIMIT
     limit = min(limit, MAX_LIMIT)  # type: ignore
 
+    # Set valid types
+    args["valid_types"] = args.get("valid_types", []) + default_valid_types  # type: ignore
+
     rows = session.execute(
         notification_groups_sql,
         {
@@ -100,17 +160,19 @@ def get_notification_groups(session: Session, args: GetNotificationArgs):
             "limit": limit,
             "timestamp_offset": args.get("timestamp", None),
             "group_id_offset": args.get("group_id", None),
+            "valid_types": args.get("valid_types", None),
         },
     )
 
     res: List[NotificationGroup] = [
         {
-            "group_id": r[0],
-            "notification_ids": r[1],
-            "is_seen": r[2] if r[2] != None else False,
-            "seen_at": r[3],
-            "prev_seen_at": r[4],
-            "count": r[5],
+            "type": r[0],
+            "group_id": r[1],
+            "notification_ids": r[2],
+            "is_seen": r[3] if r[3] != None else False,
+            "seen_at": r[4],
+            "prev_seen_at": r[5],
+            "count": r[6],
         }
         for r in rows
     ]
@@ -126,6 +188,12 @@ class RepostNotification(TypedDict):
     type: str
     user_id: int
     repost_item_id: int
+
+
+class RepostRepostNotification(TypedDict):
+    type: str
+    user_id: int
+    repost_repost_item_id: int
 
 
 class SaveNotification(TypedDict):
@@ -158,12 +226,15 @@ class TipReceiveNotification(TypedDict):
     amount: int
     sender_user_id: int
     receiver_user_id: int
+    tx_signature: str
+    reaction_value: Optional[int]
 
 
 class TipSendNotification(TypedDict):
     amount: int
     sender_user_id: int
     receiver_user_id: int
+    tx_signature: str
 
 
 class ChallengeRewardNotification(TypedDict):
@@ -177,6 +248,9 @@ class ReactionNotification(TypedDict):
     reaction_type: str
     reaction_value: int
     sender_wallet: str
+    receiver_user_id: int
+    sender_user_id: int
+    tip_amount: int
 
 
 class SupporterRankUpNotification(TypedDict):
@@ -189,6 +263,12 @@ class SupportingRankUpNotification(TypedDict):
     rank: int
     sender_user_id: int
     receiver_user_id: int
+
+
+class SupporterDethronedNotification(TypedDict):
+    sender_user_id: int
+    receiver_user_id: int
+    dethroned_user_id: int
 
 
 class FollowerMilestoneNotification(TypedDict):
@@ -215,9 +295,24 @@ class TierChangeNotification(TypedDict):
     current_value: str
 
 
+class TrendingNotification(TypedDict):
+    rank: int
+    genre: str
+    track_id: int
+    time_range: str
+
+
+class AnnouncementNotification(TypedDict):
+    title: str
+    short_description: str
+    long_description: Optional[str]
+
+
 NotificationData = Union[
+    AnnouncementNotification,
     FollowNotification,
     RepostNotification,
+    RepostRepostNotification,
     SaveNotification,
     RemixNotification,
     CosignRemixNotification,
@@ -229,21 +324,25 @@ NotificationData = Union[
     ReactionNotification,
     SupporterRankUpNotification,
     SupportingRankUpNotification,
+    SupporterDethronedNotification,
     FollowerMilestoneNotification,
     TrackMilestoneNotification,
     PlaylistMilestoneNotification,
     TierChangeNotification,
+    TrendingNotification,
 ]
 
 
 class NotificationAction(TypedDict):
     specifier: str
     type: str
+    group_id: str
     timestamp: datetime
     data: NotificationData
 
 
 class Notification(TypedDict):
+    type: str
     group_id: str
     is_seen: bool
     seen_at: datetime
@@ -257,7 +356,8 @@ SELECT
     type,
     specifier,
     timestamp,
-    data
+    data,
+    group_id
 FROM notification n
 WHERE n.id in :notification_ids
 """
@@ -276,13 +376,13 @@ def get_notifications(session: Session, args: GetNotificationArgs):
     rows = session.execute(notifications_sql, {"notification_ids": notification_ids})
 
     notification_id_data: Dict[int, NotificationAction] = defaultdict()
-
     for row in rows:
         notification_id_data[row[0]] = {
             "type": row[1],
             "specifier": row[2],
             "timestamp": row[3],
             "data": row[4],
+            "group_id": row[5],
         }
 
     notifications_and_actions = [
@@ -294,5 +394,4 @@ def get_notifications(session: Session, args: GetNotificationArgs):
         }
         for notification in notifications
     ]
-
     return notifications_and_actions

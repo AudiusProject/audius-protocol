@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 from integration_tests.utils import populate_mock_db
@@ -6,6 +7,8 @@ from src.utils.db_session import get_db
 
 t1 = datetime(2020, 10, 10, 10, 35, 0)
 times = [t1 - timedelta(hours=i) for i in range(200)]
+
+logger = logging.getLogger(__name__)
 
 
 def test_get_notifications(app):
@@ -56,5 +59,7 @@ def test_get_notifications(app):
                 "timestamp": timestamp,
             }
             u1_notification_2 = get_notifications(session, args_2)
+            logger.info(u1_notification_2)
+            logger.info(u1_notification_1)
             assert len(u1_notification_2) == 4
             assert u1_notification_2[0] == u1_notification_1[9]

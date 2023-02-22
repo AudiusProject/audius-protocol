@@ -67,6 +67,7 @@ def test_remix_track_notifications(app):
                     "specifier": "2",
                     "type": "remix",
                     "timestamp": t1,
+                    "group_id": "remix:track:2:parent_track:1:blocknumber:4",
                     "data": {"parent_track_id": 1, "track_id": 2},
                 }
             ]
@@ -83,6 +84,7 @@ def test_remix_track_notifications(app):
                     "specifier": "1",
                     "type": "cosign",
                     "timestamp": t1,
+                    "group_id": "cosign:parent_track1:original_track:2",
                     "data": {"track_id": 2, "track_owner_id": 2, "parent_track_id": 1},
                 }
             ]

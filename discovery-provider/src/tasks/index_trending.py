@@ -247,7 +247,7 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
         latest_notification_query = text(
             """
                 SELECT 
-                    DISTINCT specifier,
+                    DISTINCT ON (specifier) specifier,
                     timestamp,
                     data
                 FROM notification
@@ -255,6 +255,7 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
                     type=:type AND
                     specifier in :track_ids
                 ORDER BY
+                    specifier desc,
                     timestamp desc
             """
         )

@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import List, Union
 
 from src.queries.get_notifications import (
+    AnnouncementNotification,
     ChallengeRewardNotification,
     CosignRemixNotification,
     CreatePlaylistNotification,
@@ -16,21 +17,26 @@ from src.queries.get_notifications import (
     ReactionNotification,
     RemixNotification,
     RepostNotification,
+    RepostRepostNotification,
     SaveNotification,
+    SupporterDethronedNotification,
     SupporterRankUpNotification,
     SupportingRankUpNotification,
     TierChangeNotification,
     TipReceiveNotification,
     TipSendNotification,
     TrackMilestoneNotification,
+    TrendingNotification,
 )
 from src.utils.helpers import encode_int_id
+from src.utils.spl_audio import to_wei_string
 
 logger = logging.getLogger(__name__)
 
 
 def extend_notification(notification: Notification):
     formatted = {
+        "type": notification["type"],
         "group_id": notification["group_id"],
         "is_seen": notification["is_seen"],
     }
@@ -90,6 +96,22 @@ def extend_repost(action: NotificationAction):
     }
 
 
+def extend_repost_of_a_repost(action: NotificationAction):
+    data: RepostRepostNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "type": data["type"],
+            "user_id": encode_int_id(data["user_id"]),
+            "repost_repost_item_id": encode_int_id(data["repost_repost_item_id"]),
+        },
+    }
+
+
 def extend_save(action: NotificationAction):
     data: SaveNotification = action["data"]  # type: ignore
     return {
@@ -118,6 +140,7 @@ def extend_remix(action: NotificationAction):
         "data": {
             "parent_track_id": encode_int_id(data["parent_track_id"]),
             "track_id": encode_int_id(data["track_id"]),
+            "track_owner_id": encode_int_id(int(action["specifier"])),
         },
     }
 
@@ -132,6 +155,7 @@ def extend_cosign(action: NotificationAction):
         else action["timestamp"],
         "data": {
             "track_owner_id": encode_int_id(data["track_owner_id"]),
+            "parent_track_owner_id": encode_int_id(int(action["specifier"])),
             "parent_track_id": encode_int_id(data["parent_track_id"]),
             "track_id": encode_int_id(data["track_id"]),
         },
@@ -149,15 +173,17 @@ def extend_create(action: NotificationAction):
     }
     if "track_id" in action["data"]:
         track_data: CreateTrackNotification = action["data"]  # type: ignore
-        notification["track_id"] = encode_int_id(track_data["track_id"])
+        notification["data"]["track_id"] = encode_int_id(track_data["track_id"])
     else:
         playlist_data: CreatePlaylistNotification = action["data"]  # type: ignore
-        notification["is_album"] = playlist_data["is_album"]
-        notification["playlist_id"] = (encode_int_id(playlist_data["playlist_id"]),)
+        notification["data"]["is_album"] = playlist_data["is_album"]
+        notification["data"]["playlist_id"] = (
+            encode_int_id(playlist_data["playlist_id"]),
+        )
     return notification
 
 
-def extend_tip(action: NotificationAction):
+def extend_send_tip(action: NotificationAction):
     data: Union[TipReceiveNotification, TipSendNotification] = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
@@ -166,14 +192,35 @@ def extend_tip(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "amount": data["amount"],
+            "amount": to_wei_string(data["amount"]),
             "sender_user_id": encode_int_id(data["sender_user_id"]),
             "receiver_user_id": encode_int_id(data["receiver_user_id"]),
+            "tip_tx_signature": data["tx_signature"],
         },
     }
 
 
-def extend_support_rank_up(action: NotificationAction):
+def extend_receive_tip(action: NotificationAction):
+    data: Union[TipReceiveNotification, TipSendNotification] = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "amount": to_wei_string(data["amount"]),
+            "sender_user_id": encode_int_id(data["sender_user_id"]),
+            "receiver_user_id": encode_int_id(data["receiver_user_id"]),
+            "tip_tx_signature": data["tx_signature"],
+            "reaction_value": data["reaction_value"]  # type: ignore
+            if "reaction_value" in data
+            else None,
+        },
+    }
+
+
+def extend_supporter_rank_up(action: NotificationAction):
     data: Union[SupporterRankUpNotification, SupportingRankUpNotification] = action["data"]  # type: ignore
     return {
         "specifier": encode_int_id(int(action["specifier"])),
@@ -189,6 +236,22 @@ def extend_support_rank_up(action: NotificationAction):
     }
 
 
+def extend_supporter_dethroned(action: NotificationAction):
+    data: SupporterDethronedNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "dethroned_user_id": encode_int_id(data["dethroned_user_id"]),
+            "sender_user_id": encode_int_id(data["sender_user_id"]),
+            "receiver_user_id": encode_int_id(data["receiver_user_id"]),
+        },
+    }
+
+
 def extend_challenge_reward(action: NotificationAction):
     data: ChallengeRewardNotification = action["data"]  # type: ignore
     return {
@@ -198,7 +261,7 @@ def extend_challenge_reward(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "amount": data["amount"],
+            "amount": to_wei_string(data["amount"]),
             "specifier": data["specifier"],
             "challenge_id": data["challenge_id"],
         },
@@ -218,36 +281,59 @@ def extend_reaction(action: NotificationAction):
             "reaction_type": data["reaction_type"],
             "sender_wallet": data["sender_wallet"],
             "reaction_value": data["reaction_value"],
+            "receiver_user_id": encode_int_id(data["receiver_user_id"]),
+            "sender_user_id": encode_int_id(data["sender_user_id"]),
+            "tip_amount": to_wei_string(data["tip_amount"]),
         },
     }
 
 
 def extend_milestone(action: NotificationAction):
+    type = action["type"].lower()
+    logger.info("notification mapping")
     notification = {
         "specifier": encode_int_id(int(action["specifier"])),
-        "type": action["type"],
+        "type": type,
         "timestamp": datetime.timestamp(action["timestamp"])
         if action["timestamp"]
         else action["timestamp"],
     }
-    if "track_id" in action["data"]:
+
+    if action["group_id"].startswith("milestone:PLAYLIST_REPOST_COUNT") or action[
+        "group_id"
+    ].startswith("milestone:PLAYLIST_SAVE_COUNT"):
+        group_id_parts = action["group_id"].split(":")
+        id = int(group_id_parts[3])
+        playlist_data: PlaylistMilestoneNotification = action["data"]  # type: ignore
+        notification["data"] = {
+            "type": playlist_data["type"].lower(),
+            "threshold": playlist_data["threshold"],
+            "playlist_id": encode_int_id(id),
+        }
+    elif action["group_id"].startswith("milestone:TRACK_SAVE_COUNT") or action[
+        "group_id"
+    ].startswith("milestone:TRACK_REPOST_COUNT"):
+        group_id_parts = action["group_id"].split(":")
+        id = int(group_id_parts[3])
+        playlist_data: PlaylistMilestoneNotification = action["data"]  # type: ignore
+        notification["data"] = {
+            "type": playlist_data["type"].lower(),
+            "threshold": playlist_data["threshold"],
+            "track_id": encode_int_id(id),
+        }
+
+    elif action["group_id"].startswith("milestone:LISTEN_COUNT"):
         track_data: TrackMilestoneNotification = action["data"]  # type: ignore
         notification["data"] = {
-            "type": track_data["type"],
+            "type": track_data["type"].lower(),
             "threshold": track_data["threshold"],
             "track_id": encode_int_id(track_data["track_id"]),
         }
-    if "playlist_id" in action["data"]:
-        playlist_data: PlaylistMilestoneNotification = action["data"]  # type: ignore
-        notification["data"] = {
-            "type": playlist_data["type"],
-            "threshold": playlist_data["threshold"],
-            "playlist_id": encode_int_id(playlist_data["playlist_id"]),
-        }
-    if "user_id" in action["data"]:
+    elif action["group_id"].startswith("milestone:FOLLOWER_COUNT"):
+        logger.info("notification mapping found follower ")
         user_data: FollowerMilestoneNotification = action["data"]  # type: ignore
         notification["data"] = {
-            "type": user_data["type"],
+            "type": user_data["type"].lower(),
             "threshold": user_data["threshold"],
             "user_id": encode_int_id(user_data["user_id"]),
         }
@@ -267,19 +353,54 @@ def extend_tier_change(action: NotificationAction):
     return notification
 
 
+def extend_trending(action: NotificationAction):
+    data: TrendingNotification = action["data"]  # type: ignore
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "rank": data["rank"],
+            "genre": data["genre"],
+            "track_id": encode_int_id(data["track_id"]),
+            "time_range": data["time_range"],
+        },
+    }
+    return notification
+
+
+def extend_announcement(action: NotificationAction):
+    data: AnnouncementNotification = action["data"]  # type: ignore
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": data,
+    }
+    return notification
+
+
 notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
+    "repost_repost": extend_repost_of_a_repost,
     "save": extend_save,
-    "milstone": extend_milestone,
+    "milestone": extend_milestone,
     "remix": extend_remix,
     "cosign": extend_cosign,
     "create": extend_create,
-    "tip_receive": extend_tip,
-    "tip_send": extend_tip,
-    "supporting_rank_up": extend_support_rank_up,
-    "supporter_rank_up": extend_support_rank_up,
+    "tip_receive": extend_receive_tip,
+    "tip_send": extend_send_tip,
+    "supporting_rank_up": extend_supporter_rank_up,
+    "supporter_rank_up": extend_supporter_rank_up,
+    "supporter_dethroned": extend_supporter_dethroned,
     "challenge_reward": extend_challenge_reward,
     "reaction": extend_reaction,
     "tier_change": extend_tier_change,
+    "trending": extend_trending,
+    "announcement": extend_announcement,
 }

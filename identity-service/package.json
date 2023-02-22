@@ -12,6 +12,7 @@
   "scripts": {
     "start": "nodemon --config nodemon.json src/index.ts | ./node_modules/.bin/bunyan || exit 0",
     "render:email": "rimraf src/notifications/renderEmail && babel src/notifications/components/ -d src/notifications/renderEmail",
+    "db:migrate": "node src/migrationManager.js",
     "test": "./scripts/run-tests.sh",
     "test:debug": "./scripts/run-tests.sh -d",
     "coverage": "nyc npm run test",
@@ -39,6 +40,7 @@
     "@opentelemetry/semantic-conventions": "^1.5.0",
     "@opentelemetry/tracing": "^0.24.0",
     "@optimizely/optimizely-sdk": "^4.6.0",
+    "@sendgrid/client": "^7.7.0",
     "@sendgrid/mail": "^7.7.0",
     "@sentry/node": "^6.2.5",
     "@sentry/tracing": "^6.2.5",
