@@ -42,30 +42,28 @@ func parseQueryParams(values url.Values) (*SignatureData, []byte, error) {
 		return nil, nil, err
 	}
 
-	signature, rawData, err := parseSignature(decodedSignature)
+	signedAccessData, err := parseSignature(decodedSignature)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	signatureData, err := parseSignatureData(rawData)
+	signatureData, err := parseSignatureData(signedAccessData.Data)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	return signatureData, signature, nil
+	return signatureData, signedAccessData.Signature, nil
 }
 
-func parseSignature(rawSignature string) ([]byte, json.RawMessage, error) {
+func parseSignature(rawSignature string) (*SignedAccessData, error) {
 	var unmarshalledSignature SignedAccessData
 	err := json.Unmarshal([]byte(rawSignature), &unmarshalledSignature)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	signature := unmarshalledSignature.Signature
-	rawData := unmarshalledSignature.Data
 
-	return signature, rawData, nil
+	return &unmarshalledSignature, nil
 }
 
 func parseSignatureData(rawData json.RawMessage) (*SignatureData, error) {
