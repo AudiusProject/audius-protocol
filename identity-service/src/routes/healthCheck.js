@@ -40,7 +40,9 @@ const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
 module.exports = function (app) {
   /**
    * Relay health check endpoint. Takes the query params startBlock, endBlock, maxTransactions, and maxErrors.
-   * If those query params are not specified, use default values.
+   * If those query params are not specified, use default values. In the `txLatencies` field if two elements exist
+   * the first one belongs to POA and the second to Nethermind. Otherwise there will be one element and that belongs
+   * to the entry in `relayRecipients` that returned `true`.
    */
   /*
   There are a few scenarios where a health check should return unhealthy

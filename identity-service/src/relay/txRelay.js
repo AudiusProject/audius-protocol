@@ -196,12 +196,12 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     const relayTxs = await Promise.allSettled(relayPromises)
 
     // set after txs are successfully submitted
-    let txLatency = null
+    let txLatencies = []
 
     if (relayTxs.length === 1) {
       txParams = relayTxs[0].value.txParams
       txReceipt = relayTxs[0].value.receipt
-      txLatency = relayTxs[0].value.timeToComplete
+      txLatency.push(relayTxs[0].value.timeToComplete)
     } else if (relayTxs.length === 2) {
       const [poaTx, nethermindTx] = relayTxs.map((result) => result?.value)
       console.log(
@@ -212,12 +212,13 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       if (sendToNethermindOnly) {
         txParams = nethermindTx.txParams
         txReceipt = nethermindTx.receipt
-        txLatency = nethermindTx.timeToComplete
       } else {
         txParams = poaTx.txParams
         txReceipt = poaTx.receipt
-        txLatency = poaTx.timeToComplete
       }
+      // push both
+      txLatencies.push(poaTx.timeToComplete)
+      txLatencies.push(nethermindTx.timeToComplete)
     }
 
     const end = new Date().getTime()
@@ -228,9 +229,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       txParams,
       senderAddress,
       nonce: txParams.nonce,
-      txLatency, // time the tx took to submit
       reqLatency, // time the request has taken up to this point
-      relayRecipients
+      relayRecipients,
+      txLatencies, // when two elements are present, the first is always POA
     }
     await redis.zadd(
       'relayTxAttempts',
