@@ -2,8 +2,12 @@
 // TODO(nkang) - convert to TS
 
 import { asLineup } from 'store/lineup/reducer'
-import feedReducer from 'store/pages/profile/lineups/feed/reducer'
-import tracksReducer from 'store/pages/profile/lineups/tracks/reducer'
+import feedReducer, {
+  initialState as initialFeedLineupState
+} from 'store/pages/profile/lineups/feed/reducer'
+import tracksReducer, {
+  initialState as initialTracksLineupState
+} from 'store/pages/profile/lineups/tracks/reducer'
 import { FollowType, CollectionSortMode } from 'store/pages/profile/types'
 
 import { Status } from '../../../models'
@@ -48,7 +52,10 @@ const initialProfileState = {
 
   [FollowType.FOLLOWERS]: { status: Status.IDLE, userIds: [] },
   [FollowType.FOLLOWEES]: { status: Status.IDLE, userIds: [] },
-  [FollowType.FOLLOWEE_FOLLOWS]: { status: Status.IDLE, userIds: [] }
+  [FollowType.FOLLOWEE_FOLLOWS]: { status: Status.IDLE, userIds: [] },
+
+  feed: initialFeedLineupState,
+  tracks: initialTracksLineupState
 }
 
 const updateProfile = (state, action, data) => {

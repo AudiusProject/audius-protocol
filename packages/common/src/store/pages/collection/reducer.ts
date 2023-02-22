@@ -1,5 +1,7 @@
 // @ts-nocheck
-import tracksReducer from 'store/pages/collection/lineup/reducer'
+import tracksReducer, {
+  initialState as initialLineupState
+} from 'store/pages/collection/lineup/reducer'
 
 import { Status } from '../../../models/Status'
 import { asLineup } from '../../../store/lineup/reducer'
@@ -19,7 +21,8 @@ export const initialState = {
   collectionUid: null,
   userUid: null,
   status: null,
-  smartCollectionVariant: null
+  smartCollectionVariant: null,
+  tracks: initialLineupState
 }
 
 const actionsMap = {

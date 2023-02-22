@@ -4,7 +4,7 @@ import { PREFIX } from 'store/pages/search-results/lineup/tracks/actions'
 
 import { LineupState, Track } from '../../../../../models'
 
-const initialState: LineupState<Track> = {
+export const initialState: LineupState<Track> = {
   ...initialLineupState,
   prefix: PREFIX,
   containsDeleted: false

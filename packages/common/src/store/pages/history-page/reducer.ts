@@ -3,9 +3,13 @@
 import { asLineup } from 'store/lineup/reducer'
 
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
-import tracksReducer from './lineups/tracks/reducer'
+import tracksReducer, {
+  initialState as initialLineupState
+} from './lineups/tracks/reducer'
 
-const initialState = {}
+const initialState = {
+  tracks: initialLineupState
+}
 
 const actionsMap = {}
 

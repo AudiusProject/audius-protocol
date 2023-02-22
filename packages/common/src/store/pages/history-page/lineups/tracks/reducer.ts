@@ -5,7 +5,7 @@ import { initialLineupState } from 'store/lineup/reducer'
 
 import { PREFIX } from './actions'
 
-const initialState = {
+export const initialState = {
   ...initialLineupState,
   prefix: PREFIX
 }

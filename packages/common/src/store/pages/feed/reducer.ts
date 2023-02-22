@@ -6,13 +6,16 @@ import {
   SET_FEED_FILTER
 } from 'store/pages/feed/actions'
 import { PREFIX as FeedPrefix } from 'store/pages/feed/lineup/actions'
-import feedReducer from 'store/pages/feed/lineup/reducer'
+import feedReducer, {
+  initialState as feedLinupInitialState
+} from 'store/pages/feed/lineup/reducer'
 
 import { FeedFilter } from '../../../models'
 
 const initialState = {
   suggestedFollows: [],
-  feedFilter: FeedFilter.ALL
+  feedFilter: FeedFilter.ALL,
+  feed: feedLinupInitialState
 }
 
 const actionsMap = {
@@ -32,15 +35,7 @@ const actionsMap = {
 
 const feedLineupReducer = asLineup(FeedPrefix, feedReducer)
 
-const reducer = (state, action) => {
-  // On first run, create our initial state
-  if (!state) {
-    return {
-      ...initialState,
-      feed: feedLineupReducer(state, action)
-    }
-  }
-
+const reducer = (state = initialState, action) => {
   const feed = feedLineupReducer(state.feed, action)
   if (feed !== state.feed) return { ...state, feed }
 

@@ -15,7 +15,12 @@ import { GENRES } from 'utils/genres'
 
 import { TimeRange } from '../../../models'
 
-import { trendingWeek, trendingMonth, trendingAllTime } from './lineup/reducer'
+import {
+  trendingWeek,
+  trendingMonth,
+  trendingAllTime,
+  makeInitialState
+} from './lineup/reducer'
 
 const urlParams = new URLSearchParams(window.location.search)
 const genre = urlParams.get('genre')
@@ -26,7 +31,10 @@ const initialState = {
     ? timeRange
     : TimeRange.WEEK,
   trendingGenre: Object.values(GENRES).includes(genre) ? genre : null,
-  lastFetchedTrendingGenre: null
+  lastFetchedTrendingGenre: null,
+  trendingWeek: makeInitialState(TRENDING_WEEK_PREFIX),
+  trendingMonth: makeInitialState(TRENDING_MONTH_PREFIX),
+  trendingAllTime: makeInitialState(TRENDING_ALL_TIME_PREFIX)
 }
 
 const actionsMap = {
@@ -57,17 +65,7 @@ const trendingAllTimeReducer = asLineup(
   trendingAllTime
 )
 
-const reducer = (state, action) => {
-  // On first run, create our initial state
-  if (!state) {
-    return {
-      ...initialState,
-      trendingWeek: trendingWeekReducer(state, action),
-      trendingMonth: trendingMonthReducer(state, action),
-      trendingAllTime: trendingAllTimeReducer(state, action)
-    }
-  }
-
+const reducer = (state = initialState, action) => {
   const trendingWeek = trendingWeekReducer(state.trendingWeek, action)
   if (trendingWeek !== state.trendingWeek) return { ...state, trendingWeek }
 
