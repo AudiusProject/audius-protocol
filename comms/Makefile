@@ -50,6 +50,12 @@ test::
 test.load::
 	hey -n 10000 -c 50 http://localhost:8926/storage/jobs
 
+storage.seed.audio::
+	docker exec -it storage1 sh -c "./comms storage seed audio"
+
+storage.seed.image::
+	docker exec -it storage1 sh -c "./comms storage seed image"
+
 
 build::
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/wip-comms:latest
