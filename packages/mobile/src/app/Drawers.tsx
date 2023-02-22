@@ -1,5 +1,4 @@
 import type { ComponentType } from 'react'
-import { useState, useEffect } from 'react'
 
 import type { Modals } from '@audius/common'
 
@@ -39,29 +38,6 @@ import { VipDiscordDrawer } from '../components/vip-discord-drawer'
 import { useDrawer } from '../hooks/useDrawer'
 import type { Drawer } from '../store/drawers/slice'
 
-/*
- * Conditionally renders a drawer based on visibility state
- */
-const useIsDrawerVisible = (visibleState: boolean | 'closing') => {
-  const [isVisible, setIsVisible] = useState(false)
-
-  // We need to wait some time before unmounting the drawer to let
-  // animations clear entirely
-  useEffect(() => {
-    let visibilityTimeout: NodeJS.Timeout
-    if (visibleState === false) {
-      visibilityTimeout = setTimeout(() => {
-        setIsVisible(false)
-      }, 100)
-    } else if (visibleState === true) {
-      setIsVisible(true)
-    }
-    return () => clearTimeout(visibilityTimeout)
-  }, [visibleState])
-
-  return isVisible
-}
-
 type CommonDrawerProps = {
   modal: ComponentType
   modalName: Modals
@@ -73,9 +49,9 @@ type CommonDrawerProps = {
 const CommonDrawer = (props: CommonDrawerProps) => {
   const { modal: Modal, modalName } = props
   const { modalState } = useDrawerState(modalName)
-  const isVisible = useIsDrawerVisible(modalState)
 
-  if (!isVisible) return null
+  if (!modalState) return null
+
   return <Modal />
 }
 
@@ -90,9 +66,9 @@ type NativeDrawerProps = {
 export const NativeDrawer = (props: NativeDrawerProps) => {
   const { drawer: Drawer, drawerName } = props
   const { visibleState } = useDrawer(drawerName)
-  const isVisible = useIsDrawerVisible(visibleState)
 
-  if (!isVisible) return null
+  if (!visibleState) return null
+
   return <Drawer />
 }
 
