@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	"comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 

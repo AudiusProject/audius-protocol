@@ -8,11 +8,13 @@ import (
 	"sync"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
+	natsdConfig "comms.audius.co/natsd/config"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
 	"github.com/tidwall/gjson"
@@ -48,19 +50,19 @@ func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 
 	// create backing stream
 	_, err = jsc.AddStream(&nats.StreamConfig{
-		Name:     config.GlobalStreamName,
-		Subjects: []string{config.GlobalStreamSubject},
-		Replicas: config.NatsReplicaCount,
+		Name:     discoveryConfig.GlobalStreamName,
+		Subjects: []string{discoveryConfig.GlobalStreamSubject},
+		Replicas: natsdConfig.NatsReplicaCount,
 		// DenyDelete: true,
 		// DenyPurge:  true,
-		Placement: config.DiscoveryPlacement(),
+		Placement: discoveryConfig.DiscoveryPlacement(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	// create consumer
-	_, err = jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey))
+	_, err = jsc.Subscribe(discoveryConfig.GlobalStreamSubject, proc.Apply, nats.Durable(discoveryConfig.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey))
 	if err != nil {
 		logger.Error(err.Error())
 		return nil, err
@@ -117,7 +119,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	proc.ConsumerSequence.Set(int64(meta.Sequence.Consumer))
 
 	// recover wallet + user
-	signatureHeader := msg.Header.Get(config.SigHeader)
+	signatureHeader := msg.Header.Get(sharedConfig.SigHeader)
 	wallet, err := misc.RecoverWallet(msg.Data, signatureHeader)
 	if err != nil {
 		logger.Warn("unable to recover wallet, skipping")

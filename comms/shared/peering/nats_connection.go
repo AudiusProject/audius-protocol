@@ -2,14 +2,17 @@ package peering
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
-	"comms.audius.co/discovery/config"
 	"github.com/nats-io/nats.go"
 )
 
 func (p *Peering) DialNats(peerMap map[string]*Info) (*nats.Conn, error) {
-	natsUrl := config.GetEnvDefault("NATS_SERVER_URL", nats.DefaultURL)
+	natsUrl := os.Getenv("NATS_SERVER_URL")
+	if len(natsUrl) == 0 {
+		natsUrl = nats.DefaultURL
+	}
 
 	if len(peerMap) != 0 {
 		goodNatsUrls := []string{}

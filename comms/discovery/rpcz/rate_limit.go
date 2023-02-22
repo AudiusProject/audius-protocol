@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"comms.audius.co/discovery/config"
+	natsdConfig "comms.audius.co/natsd/config"
 	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
 )
@@ -19,7 +20,7 @@ func NewRateLimiter(jsc nats.JetStreamContext) (*RateLimiter, error) {
 			var err error
 			kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
 				Bucket:    config.RateLimitRulesBucketName,
-				Replicas:  config.NatsReplicaCount,
+				Replicas:  natsdConfig.NatsReplicaCount,
 				Placement: config.DiscoveryPlacement(),
 			})
 			if err != nil {

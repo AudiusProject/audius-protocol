@@ -12,6 +12,7 @@ import (
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -27,7 +28,7 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 	var noTx *sqlx.Tx = nil
 
 	// Always check timestamp
-	if time.Now().UnixMilli()-rawRpc.Timestamp > config.SignatureTimeToLiveMs {
+	if time.Now().UnixMilli()-rawRpc.Timestamp > sharedConfig.SignatureTimeToLiveMs {
 		return errors.New("Invalid timestamp")
 	}
 

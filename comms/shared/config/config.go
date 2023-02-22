@@ -13,7 +13,6 @@ import (
 	"github.com/nats-io/nkeys"
 )
 
-// TODO: Doesn't really belong in config, but it can't be in peering because of import cycles
 type ServiceNode struct {
 	ID                  string `json:"id"`
 	SPID                string `json:"spID"`

@@ -1,6 +1,6 @@
 version: '3'
 
-x-common-env: &common-env
+x-dev-env: &dev-env
   AUDIUS_DEV_ONLY_REGISTERED_NODES: '
         [
           {
@@ -73,7 +73,7 @@ services:
       target: builder
     image: "comms:v2-test"
     environment:
-      <<: *common-env
+      <<: *dev-env
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       AUDIUS_TEST_HOST: "nats1-storage"
       NATS_SERVER_URL: "nats://nats1-storage:4222"
@@ -119,8 +119,7 @@ services:
         condition: service_started
       ingress:
         condition: service_started
-    environment:
-      <<: *common-env # TODO: think this can just be environment: *common-env. same for others below
+    environment: *dev-env
     <<: *extra-hosts
     healthcheck:
       # does the cluster have at least 7 nodes peered (4 storage, 3 discovery)?
@@ -132,7 +131,6 @@ services:
     volumes:
       - ./natsd:/app/natsd
       - ./shared:/app/shared
-      - ./discovery:/app/discovery # remove after config refactor
 
   storage:
     build:
@@ -154,11 +152,11 @@ services:
     stop_signal: SIGKILL
     command:
       - discovery
-    environment:
-      <<: *common-env
+    environment: *dev-env
     <<: *extra-hosts
     volumes:
       - ./discovery:/app/discovery
+      - ./shared:/app/shared
 
   storage-dev:
     build:
@@ -170,8 +168,7 @@ services:
     stop_signal: SIGKILL
     command:
       - storage
-    environment:
-      <<: *common-env
+    environment: *dev-env
     <<: *extra-hosts
     healthcheck:
       test: wget --no-verbose --tries=1 --spider http://localhost:8926/storage || exit 1
@@ -184,6 +181,9 @@ services:
         condition: service_started
     volumes:
       - ./storage:/app/storage
+      - ./shared:/app/shared
+      - /app/storage/storageserver/weather-map # exclude weather-map and its heavy node_modules
+      - ./storage/storageserver/weather-map/dist:/app/storage/storageserver/weather-map/dist
   
   nginx:
     image: openresty/openresty:1.21.4.1-alpine-fat

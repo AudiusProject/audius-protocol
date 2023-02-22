@@ -13,10 +13,10 @@ import (
 	"testing"
 	"time"
 
-	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
@@ -168,7 +168,7 @@ func TestGetChats(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(config.SigHeader, sigBase64)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -212,7 +212,7 @@ func TestGetChats(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(config.SigHeader, sigBase64)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -262,7 +262,7 @@ func TestGetChats(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(config.SigHeader, sigBase64)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec) // test
@@ -396,7 +396,7 @@ func TestGetMessages(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(config.SigHeader, sigBase64)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -443,7 +443,7 @@ func TestGetMessages(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(config.SigHeader, sigBase64)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)

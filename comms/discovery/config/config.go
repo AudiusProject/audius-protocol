@@ -1,18 +1,10 @@
 package config
 
 import (
-	"os"
-
 	shared "comms.audius.co/shared/config"
 )
 
-var (
-	// TODO: Consolidate - peering also has this. Maybe they should be hardcoded constants outside of peering
-	NatsReplicaCount = 3
-	NatsIsReachable  = false
-
-	discoveryConfig *DiscoveryConfig
-)
+var discoveryConfig *DiscoveryConfig
 
 type DiscoveryConfig struct {
 	PeeringConfig shared.PeeringConfig `json:"PeeringConfig"`
@@ -25,12 +17,4 @@ func GetDiscoveryConfig() *DiscoveryConfig {
 		shared.EnsurePrivKeyAndLoadConf(discoveryConfig)
 	}
 	return discoveryConfig
-}
-
-func GetEnvDefault(k, defaultV string) string {
-	v := os.Getenv(k)
-	if len(v) == 0 {
-		return defaultV
-	}
-	return v
 }

@@ -21,9 +21,6 @@ RUN apk add curl && cd /tmp && \
   chmod +x /usr/local/bin/dbmate
 
 EXPOSE 4222
-# Cluster name is comms, so empty dir means nats will try (and fail) to store files at comms, which is a binary
-# TODO: Just use envconfig for NATS_STORE_DIR and set its default to nats_store so we don't do env here
-ENV NATS_STORE_DIR="nats_store"
 VOLUME ["/tmp"]
 ENTRYPOINT ["air"]
 

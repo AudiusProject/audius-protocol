@@ -8,13 +8,14 @@ import (
 	"strconv"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
+	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 	"github.com/gobwas/ws"
 	"github.com/inconshreveable/log15"
@@ -57,7 +58,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 
 	g.GET("/debug/stream", func(c echo.Context) error {
 
-		info, err := jsc.StreamInfo(config.GlobalStreamName)
+		info, err := jsc.StreamInfo(discoveryConfig.GlobalStreamName)
 		if err != nil {
 			return err
 		}
@@ -65,7 +66,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	})
 
 	g.GET("/debug/consumer", func(c echo.Context) error {
-		info, err := jsc.ConsumerInfo(config.GlobalStreamName, config.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey)
+		info, err := jsc.ConsumerInfo(discoveryConfig.GlobalStreamName, discoveryConfig.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey)
 		if err != nil {
 			return err
 		}
@@ -119,7 +120,7 @@ func (s *ChatServer) mutate(c echo.Context) error {
 	// Publish data to the subject
 	subject := "audius.rpc"
 	msg := nats.NewMsg(subject)
-	msg.Header.Add(config.SigHeader, c.Request().Header.Get(config.SigHeader))
+	msg.Header.Add(sharedConfig.SigHeader, c.Request().Header.Get(sharedConfig.SigHeader))
 	msg.Data = payload
 
 	ok, err := s.proc.SubmitAndWait(msg)

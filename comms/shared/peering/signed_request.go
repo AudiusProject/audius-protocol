@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	"comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
 )

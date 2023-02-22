@@ -107,7 +107,17 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 
 	// work subscription using kv's underlying stream
 	kvStreamName := "KV_" + kvBucketName
-	workSubscription, err := jsc.QueueSubscribeSync("", kvStreamName, nats.AckWait(time.Minute), nats.BindStream(kvStreamName))
+	var workSubscription *nats.Subscription
+	err = retry.Do(
+		func() error {
+			var err error
+			workSubscription, err = jsc.QueueSubscribeSync("", kvStreamName, nats.AckWait(time.Minute), nats.BindStream(kvStreamName))
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create KV work subscription: %v", err)
 	}
@@ -138,14 +148,18 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 
 func (jobman *JobsManager) createTemporaryObjectStores() {
 	for i := 0; i < jobman.tempBucketCount; i++ {
-		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
-			Bucket:   jobman.temporaryObjectStoreName(i),
-			TTL:      temporaryObjectStoreTTL,
-			Replicas: jobman.replicaCount,
-			Placement: &nats.Placement{
-				Cluster: config.GetStorageConfig().PeeringConfig.NatsClusterName,
+		retry.Do(
+			func() error {
+				return createObjStoreIfNotExists(&nats.ObjectStoreConfig{
+					Bucket:   jobman.temporaryObjectStoreName(i),
+					TTL:      temporaryObjectStoreTTL,
+					Replicas: jobman.replicaCount,
+					Placement: &nats.Placement{
+						Cluster: config.GetStorageConfig().PeeringConfig.NatsClusterName,
+					},
+				}, jobman.jsc)
 			},
-		}, jobman.jsc)
+		)
 	}
 }
 

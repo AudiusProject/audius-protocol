@@ -1,19 +1,11 @@
 up:: down etchosts migrate
 	docker compose up -d --build
 
-# discovery:: down migrate
-# 	docker compose up discovery1 -d --build
-
-# TODO: Make the above be an actual container `comms` instead of `go run main.go discovery` because then it can reference `nats`
-
 localhosts="127.0.0.1       node1-storage node2-storage node3-storage node4-storage node1-discovery ingress"
 etchosts::
 	@	if ! grep -q $(localhosts) /etc/hosts; \
 		then echo Adding development hosts to /etc/hosts; \
 		echo $(localhosts) | sudo tee -a /etc/hosts; fi
-
-# storage:: down storage.hosts
-# 	docker compose up storage1 storage2 storage3 storage4 -d --build
 
 down::
 	(docker compose down --volumes || true)
@@ -21,19 +13,11 @@ down::
 psql::
 	docker exec -it comdb psql -U postgres audius_discovery
 
-
-
-
 fmt::
 	go fmt ./...
 
-# TODO: Add "migrate storage.hosts up" but make it not have to re-run up and migrate every time
 test::
 	docker logs -f test
-
-# test::
-# 	docker compose up test -d
-# 	audius_discprov_env='standalone' AUDIUS_TEST_HOST='nats1' go test ./... -count=1
 
 migrate::
 	docker compose up comdb -d && \

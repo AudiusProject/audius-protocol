@@ -8,8 +8,9 @@ import (
 	"os"
 	"strings"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
+	natsdConfig "comms.audius.co/natsd/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
@@ -37,9 +38,9 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 
 	// create kv buckets
 	kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:    config.PubkeystoreBucketName,
-		Replicas:  config.NatsReplicaCount,
-		Placement: config.DiscoveryPlacement(),
+		Bucket:    discoveryConfig.PubkeystoreBucketName,
+		Replicas:  natsdConfig.NatsReplicaCount,
+		Placement: discoveryConfig.DiscoveryPlacement(),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create pubkey kv %v", err)
@@ -47,7 +48,7 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 
 	endpoint := "https://poa-gateway.audius.co"
 
-	if config.GetDiscoveryConfig().PeeringConfig.IsStaging {
+	if discoveryConfig.GetDiscoveryConfig().PeeringConfig.IsStaging {
 		endpoint = "http://13.52.185.5:8545"
 
 		// should get dynamically from

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -68,7 +67,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 		// Debug:      true,
 
 		JetStream: true,
-		StoreDir:  filepath.Join(os.Getenv("NATS_STORE_DIR"), config.GetNatsConfig().PeeringConfig.NatsClusterName),
+		StoreDir:  filepath.Join(config.GetNatsConfig().NatsStoreDir, config.GetNatsConfig().PeeringConfig.NatsClusterName),
 
 		Tags: tags,
 
