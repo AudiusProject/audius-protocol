@@ -19,7 +19,6 @@ var (
 // this runs before all tests (not a per-test setup / teardown)
 func TestMain(m *testing.M) {
 	discoveryConfig := config.GetDiscoveryConfig()
-	config.Init(discoveryConfig.PeeringConfig.Keys, discoveryConfig.PeeringConfig.TestHost)
 
 	// setup
 	err := db.Dial()

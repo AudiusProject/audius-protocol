@@ -30,19 +30,19 @@ To get started with a lightweight multi node cluster and test uploads.
 make
 
 # then you can visit the web ui to test uploads
-open http://node1/storage
+open http://node1-storage/storage
 
 # you can also curl uploads
-curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1/storage/file
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/file
 
 # after some uploads, you can see which nodes stored what files 
 docker logs storage1 2>&1 | grep -i storing
 
 # to check nats stream status
-docker exec -ti nats1 nats stream ls -a
+docker exec -ti nats1-storage nats stream ls -a
 
 # explore the weathermap for a visual layout of the sharded filesystem
-open http://node1/storage/weather
+open http://node1-storage/storage/weather
 
 # tail logs to see hot reloading
 docker logs -f storage1
@@ -165,7 +165,7 @@ GET  /job-results/:id
 <i>Example: Upload a track</i>
 
 ```shell
-curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1/storage/file
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/file
 
 [
   {

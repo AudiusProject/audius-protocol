@@ -6,26 +6,23 @@ import (
 	"net/http"
 	"time"
 
-	discoveryConfig "comms.audius.co/discovery/config"
-	natsConfig "comms.audius.co/natsd/config"
+	"comms.audius.co/natsd/config"
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func NatsMain() {
-	natsConfig := natsConfig.GetNatsConfig()
-	discoveryConfig.Init(natsConfig.PeeringConfig.Keys, natsConfig.PeeringConfig.TestHost)
+	natsConfig := config.GetNatsConfig()
+	peering := peering.New(&natsConfig.PeeringConfig)
 
 	{
 		var err error
-		discoveryConfig.NatsIsReachable, err = selfConnectionProbe(discoveryConfig.IP)
+		peering.NatsIsReachable, err = selfConnectionProbe(peering.IP)
 		if err != nil {
-			discoveryConfig.Logger.Warn("self connection test error " + err.Error())
+			peering.Logger.Warn("self connection test error " + err.Error())
 		}
 	}
-
-	peering := peering.New(&natsConfig.PeeringConfig)
 
 	go startServer(peering)
 
@@ -34,8 +31,8 @@ func NatsMain() {
 	natsman := NatsManager{}
 	for n := 0; ; n++ {
 		peerMap := peering.Solicit()
-		if discoveryConfig.NatsIsReachable {
-			natsman.StartNats(peerMap)
+		if peering.NatsIsReachable {
+			natsman.StartNats(peerMap, natsConfig.IsStorageNode, peering)
 		}
 
 		// poll with exponential backoff:
@@ -105,9 +102,9 @@ func startServer(peering *peering.Peering) {
 	e.GET("/nats/self", func(c echo.Context) error {
 		return redactedJson(c, map[string]interface{}{
 			"is_staging":        peering.Config.IsStaging,
-			"is_content":        discoveryConfig.IsCreatorNode,
-			"nats_is_reachable": discoveryConfig.NatsIsReachable,
-			"nkey":              discoveryConfig.NkeyPublic,
+			"is_storage_node":   config.GetNatsConfig().IsStorageNode,
+			"nats_is_reachable": peering.NatsIsReachable,
+			"nkey":              peering.Config.Keys.NkeyPublic,
 		})
 	})
 

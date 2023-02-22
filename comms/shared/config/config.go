@@ -39,6 +39,7 @@ type KeysConfigDecoder KeysConfig
 type PeeringConfig struct {
 	Keys                   KeysConfigDecoder   `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" required:"true" json:"Keys"`
 	DevOnlyRegisteredNodes ServiceNodesDecoder `envconfig:"AUDIUS_DEV_ONLY_REGISTERED_NODES" json:"DevOnlyRegisteredNodes"`
+	NatsClusterName        string              `envconfig:"AUDIUS_NATS_CLUSTER_NAME" default:"comms" json:"NatsClusterName"`
 	TestHost               string              `envconfig:"AUDIUS_TEST_HOST" json:"TestHost"`
 	IsStaging              bool                `envconfig:"AUDIUS_IS_STAGING" json:"IsStaging"`
 }

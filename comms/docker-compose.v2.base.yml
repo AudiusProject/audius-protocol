@@ -6,39 +6,63 @@ x-common-env: &common-env
           {
             "id": "content-node::1",
             "spId": "1",
-            "endpoint": "http://node1",
+            "endpoint": "http://node1-storage",
             "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
             "type": { "id": "content-node" }
           },
           {
             "id": "content-node::2",
             "spId": "2",
-            "endpoint": "http://node2",
+            "endpoint": "http://node2-storage",
             "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
             "type": { "id": "content-node" }
           },
           {
             "id": "content-node::3",
             "spId": "3",
-            "endpoint": "http://node3",
+            "endpoint": "http://node3-storage",
             "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
             "type": { "id": "content-node" }
           },
           {
             "id": "content-node::4",
             "spId": "4",
-            "endpoint": "http://node4",
+            "endpoint": "http://node4-storage",
             "delegateOwnerWallet": "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
             "type": { "id": "content-node" }
+          },
+          {
+            "id": "discovery-node::1",
+            "spId": "5",
+            "endpoint": "http://node1-discovery",
+            "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
+            "type": { "id": "discovery-node" }
+          },
+          {
+            "id": "discovery-node::2",
+            "spId": "6",
+            "endpoint": "http://node2-discovery",
+            "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
+            "type": { "id": "discovery-node" }
+          },
+          {
+            "id": "discovery-node::3",
+            "spId": "7",
+            "endpoint": "http://node3-discovery",
+            "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
+            "type": { "id": "discovery-node" }
           }
         ]'
 
 x-extra-hosts: &extra-hosts
   extra_hosts:
-    - "node1:host-gateway"
-    - "node2:host-gateway"
-    - "node3:host-gateway"
-    - "node4:host-gateway"
+    - "node1-storage:host-gateway"
+    - "node2-storage:host-gateway"
+    - "node3-storage:host-gateway"
+    - "node4-storage:host-gateway"
+    - "node1-discovery:host-gateway"
+    - "node2-discovery:host-gateway"
+    - "node3-discovery:host-gateway"
 
 services:
   test:
@@ -51,17 +75,11 @@ services:
     environment:
       <<: *common-env
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      AUDIUS_TEST_HOST: "nats1"
-      NATS_SERVER_URL: "nats://nats1:4222"
+      AUDIUS_TEST_HOST: "nats1-storage"
+      NATS_SERVER_URL: "nats://nats1-storage:4222"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/audius_discovery?sslmode=disable"
     command: -c .air.test.toml
-    extra_hosts:
-      - "node1:host-gateway"
-      - "node2:host-gateway"
-      - "node3:host-gateway"
-      - "node4:host-gateway"
-      - "localhost:host-gateway"
-      - "127.0.0.1:host-gateway"
+    <<: *extra-hosts
     volumes:
       - ./:/app
 
@@ -105,8 +123,8 @@ services:
       <<: *common-env # TODO: think this can just be environment: *common-env. same for others below
     <<: *extra-hosts
     healthcheck:
-      # does the cluster have 4 nodes peered?
-      test: wget -qO- http://localhost:8924/nats/jsz | grep -o '"cluster_size":[[:space:]]*[0-9]*' | awk '{if ($$2 != 4) {exit 1}}'
+      # does the cluster have at least 7 nodes peered (4 storage, 3 discovery)?
+      test: wget -qO- http://localhost:8924/nats/jsz | grep -o '"cluster_size":[[:space:]]*[0-9]*' | awk '{if ($$2 < 7) {exit 1}}'
       interval: 5s
       retries: 15
       start_period: 10s
@@ -140,7 +158,7 @@ services:
       <<: *common-env
     <<: *extra-hosts
     volumes:
-      - ./:/app
+      - ./discovery:/app/discovery
 
   storage-dev:
     build:
@@ -165,7 +183,8 @@ services:
       ingress:
         condition: service_started
     volumes:
-      - ./:/app
+      - ./storage:/app/storage
+      - ./discovery:/app/discovery # remove after config refactor
   
   nginx:
     image: openresty/openresty:1.21.4.1-alpine-fat

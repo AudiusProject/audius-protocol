@@ -23,11 +23,11 @@ var (
 
 func (p *Peering) Solicit() map[string]*Info {
 
-	config.Logger.Info("solicit begin")
+	p.Logger.Info("solicit begin")
 
 	sps, err := p.AllNodes()
 	if err != nil {
-		config.Logger.Error("solicit failed: " + err.Error())
+		p.Logger.Error("solicit failed: " + err.Error())
 		return peerMap
 	}
 
@@ -40,7 +40,7 @@ func (p *Peering) Solicit() map[string]*Info {
 			u := sp.Endpoint + "/nats/exchange"
 			info, err := p.solicitServer(u)
 			if err != nil {
-				// config.Logger.Debug("get info failed", "endpoint", u, "err", err)
+				// p.Logger.Debug("get info failed", "endpoint", u, "err", err)
 			} else {
 				info.Host = sp.Endpoint
 				info.SPID = sp.SPID
@@ -55,18 +55,18 @@ func (p *Peering) Solicit() map[string]*Info {
 
 	wg.Wait()
 
-	config.Logger.Info("solicit done", "sps", len(sps), "peers", len(peerMap))
+	p.Logger.Info("solicit done", "sps", len(sps), "peers", len(peerMap))
 
 	return peerMap
 
 }
 
-func addPeer(info *Info) {
+func (p *Peering) addPeer(info *Info) {
 	mu.Lock()
 	defer mu.Unlock()
 
 	if _, known := peerMap[info.IP]; !known {
-		config.Logger.Info("adding peer", "info", info)
+		p.Logger.Info("adding peer", "info", info)
 		peerMap[info.IP] = info
 	}
 }
@@ -87,7 +87,7 @@ func (p *Peering) ListPeers() []Info {
 func (p *Peering) solicitServer(endpoint string) (*Info, error) {
 
 	// sign request
-	myInfo, err := MyInfo()
+	myInfo, err := p.MyInfo()
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +110,7 @@ func (p *Peering) solicitServer(endpoint string) (*Info, error) {
 		return nil, err
 	}
 
-	info.IsSelf = strings.EqualFold(info.Address, config.WalletAddress)
+	info.IsSelf = strings.EqualFold(info.Address, p.Config.Keys.DelegatePublicKey)
 	info.AsOf = time.Now()
 
 	return info, nil
@@ -123,7 +123,7 @@ func (p *Peering) PostSignedJSON(endpoint string, obj interface{}) (*http.Respon
 	}
 
 	hash := crypto.Keccak256Hash(payload)
-	signature, err := crypto.Sign(hash.Bytes(), config.PrivateKey)
+	signature, err := crypto.Sign(hash.Bytes(), p.Config.Keys.DelegatePrivateKey)
 	if err != nil {
 		return nil, err
 	}

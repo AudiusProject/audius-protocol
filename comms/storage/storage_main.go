@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"time"
 
-	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/storageserver"
@@ -18,13 +17,6 @@ import (
 
 func StorageMain() {
 	storageConfig := config.GetStorageConfig()
-
-	// TODO: We need to change a bunch of stuff in shared/peering/ before we can remove this.
-	//       Make each config usage in shared/peering take the needed arguments instead of the whole config.
-	discoveryConfig.Init(storageConfig.PeeringConfig.Keys, storageConfig.PeeringConfig.TestHost)
-
-	ctx := context.Background()
-
 	peering := peering.New(&storageConfig.PeeringConfig)
 	jsc, err := func() (nats.JetStreamContext, error) {
 		err := peering.PollRegisteredNodes()

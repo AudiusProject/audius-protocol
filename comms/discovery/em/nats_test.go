@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"os"
 	"testing"
 	"time"
 
-	"comms.audius.co/discovery/config"
 	natsConfig "comms.audius.co/natsd/config"
 	"comms.audius.co/shared/peering"
 	"github.com/nats-io/nats.go"
@@ -26,14 +26,15 @@ func TestAbi(t *testing.T) {
 func TestNatsThing(t *testing.T) {
 	t.Skip()
 
-	config.IsStaging = true // dagron
+	os.Setenv("AUDIUS_IS_STAGING", "true")
 
 	cf, err := NewCidFetcher()
 	assert.NoError(t, err)
 	_ = cf
 
 	// Connect to NATS
-	nc, err := peering.New(&natsConfig.GetNatsConfig().PeeringConfig).DialNats(nil)
+	p := peering.New(&natsConfig.GetNatsConfig().PeeringConfig)
+	nc, err := p.DialNats(nil)
 	assert.NoError(t, err)
 
 	// Create JetStream Context
@@ -79,7 +80,7 @@ func TestNatsThing(t *testing.T) {
 		if action.Metadata != "" && action.EntityType != "UserReplicaSet" {
 			j, err := cf.Fetch(action.UserID, action.Metadata)
 			if err != nil {
-				config.Logger.Warn(err.Error())
+				p.Logger.Warn(err.Error())
 			} else {
 				action.MetadataJSON = j
 			}

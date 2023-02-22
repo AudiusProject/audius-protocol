@@ -1,13 +1,15 @@
 version: '3'
 
 x-nats-nodes-healthy: &nats-nodes-healthy
-  nats1:
+  nats1-storage:
     condition: service_healthy
-  nats2:
+  nats2-storage:
     condition: service_healthy
-  nats3:
+  nats3-storage:
     condition: service_healthy
-  nats4:
+  nats4-storage:
+    condition: service_healthy
+  nats1-discovery:
     condition: service_healthy
   
 services:
@@ -37,41 +39,72 @@ services:
       file: docker-compose.v2.base.yml
       service: comdb
 
-  nats1:
-    container_name: nats1
+  nats1-storage:
+    container_name: nats1-storage
     extends:
       file: docker-compose.v2.base.yml
       service: nats-dev
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      AUDIUS_TEST_HOST: "nats1"
+      AUDIUS_TEST_HOST: "nats1-storage"
+      AUDIUS_IS_STORAGE_NODE: "true"
 
-  nats2:
-    container_name: nats2
+  nats2-storage:
+    container_name: nats2-storage
     extends:
       file: docker-compose.v2.base.yml
       service: nats-dev
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
-      AUDIUS_TEST_HOST: "nats2"
+      AUDIUS_TEST_HOST: "nats2-storage"
+      AUDIUS_IS_STORAGE_NODE: "true"
 
-  nats3:
-    container_name: nats3
+  nats3-storage:
+    container_name: nats3-storage
     extends:
       file: docker-compose.v2.base.yml
       service: nats-dev
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
-      AUDIUS_TEST_HOST: "nats3"
+      AUDIUS_TEST_HOST: "nats3-storage"
+      AUDIUS_IS_STORAGE_NODE: "true"
 
-  nats4:
-    container_name: nats4
+  nats4-storage:
+    container_name: nats4-storage
     extends:
       file: docker-compose.v2.base.yml
       service: nats-dev
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
-      AUDIUS_TEST_HOST: "nats4"
+      AUDIUS_TEST_HOST: "nats4-storage"
+      AUDIUS_IS_STORAGE_NODE: "true"
+
+  nats1-discovery:
+    container_name: nats1-discovery
+    extends:
+      file: docker-compose.v2.base.yml
+      service: nats-dev
+    environment:
+      AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
+      AUDIUS_TEST_HOST: "nats1-discovery"
+
+  nats2-discovery:
+    container_name: nats2-discovery
+    extends:
+      file: docker-compose.v2.base.yml
+      service: nats-dev
+    environment:
+      AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
+      AUDIUS_TEST_HOST: "nats2-discovery"
+
+  nats3-discovery:
+    container_name: nats3-discovery
+    extends:
+      file: docker-compose.v2.base.yml
+      service: nats-dev
+    environment:
+      AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
+      AUDIUS_TEST_HOST: "nats3-discovery"
   
   storage1:
     container_name: storage1
@@ -80,7 +113,7 @@ services:
       service: storage-dev
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      AUDIUS_TEST_HOST: "nats1"
+      AUDIUS_TEST_HOST: "nats1-storage"
       NAME: "storage1"
     depends_on:
       <<: *nats-nodes-healthy
@@ -92,7 +125,7 @@ services:
       service: storage-dev
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
-      AUDIUS_TEST_HOST: "nats2"
+      AUDIUS_TEST_HOST: "nats2-storage"
       NAME: "storage2"
     depends_on:
       <<: *nats-nodes-healthy
@@ -104,7 +137,7 @@ services:
       service: storage-dev
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
-      AUDIUS_TEST_HOST: "nats3"
+      AUDIUS_TEST_HOST: "nats3-storage"
       NAME: "storage3"
     depends_on:
       <<: *nats-nodes-healthy
@@ -116,7 +149,7 @@ services:
       service: storage-dev
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
-      AUDIUS_TEST_HOST: "nats4"
+      AUDIUS_TEST_HOST: "nats4-storage"
       NAME: "storage4"
     depends_on:
       <<: *nats-nodes-healthy
@@ -128,8 +161,31 @@ services:
       service: discovery-dev
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      NATS_SERVER_URL: "nats://nats1:4222"
-      AUDIUS_DEV_ONLY_REGISTERED_NODES: "[]"
+      NATS_SERVER_URL: "nats://nats1-discovery:4222"
+      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
+    depends_on:
+      <<: *nats-nodes-healthy
+    
+  discovery2:
+    container_name: discovery2
+    extends:
+      file: docker-compose.v2.base.yml
+      service: discovery-dev
+    environment:
+      AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
+      NATS_SERVER_URL: "nats://nats2-discovery:4222"
+      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
+    depends_on:
+      <<: *nats-nodes-healthy
+
+  discovery3:
+    container_name: discovery3
+    extends:
+      file: docker-compose.v2.base.yml
+      service: discovery-dev
+    environment:
+      AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
+      NATS_SERVER_URL: "nats://nats3-discovery:4222"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
     depends_on:
       <<: *nats-nodes-healthy

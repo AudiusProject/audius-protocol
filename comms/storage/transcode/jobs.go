@@ -15,8 +15,9 @@ import (
 	"sync"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/telemetry"
+	"github.com/avast/retry-go"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/lucsky/cuid"
@@ -86,10 +87,20 @@ const (
 func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) (*JobsManager, error) {
 	// kv
 	kvBucketName := prefix + KvSuffix
-	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   kvBucketName,
-		Replicas: replicaCount,
-	})
+	var kv nats.KeyValue
+	err := retry.Do(
+		func() error {
+			var err error
+			kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+				Bucket:   kvBucketName,
+				Replicas: replicaCount,
+			})
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create KV: %v", err)
 	}
@@ -132,7 +143,7 @@ func (jobman *JobsManager) createTemporaryObjectStores() {
 			TTL:      temporaryObjectStoreTTL,
 			Replicas: jobman.replicaCount,
 			Placement: &nats.Placement{
-				Cluster: config.NatsClusterName,
+				Cluster: config.GetStorageConfig().PeeringConfig.NatsClusterName,
 			},
 		}, jobman.jsc)
 	}

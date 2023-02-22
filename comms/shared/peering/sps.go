@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	discoveryConfig "comms.audius.co/discovery/config"
 	sharedConfig "comms.audius.co/shared/config"
 	"github.com/avast/retry-go"
 )
@@ -27,16 +26,11 @@ func (p *Peering) PollRegisteredNodes() error {
 		return nil
 	}
 
-	// don't start polling for
-	if p.Config.TestHost != "" {
-		return nil
-	}
-
 	refresh := func() error {
-		discoveryConfig.Logger.Debug("refreshing SPs")
-		sps, err := queryServiceNodes(discoveryConfig.IsStaging)
+		p.Logger.Debug("refreshing SPs")
+		sps, err := queryServiceNodes(p.Config.IsStaging)
 		if err != nil {
-			discoveryConfig.Logger.Warn("refresh SPs failed " + err.Error())
+			p.Logger.Warn("refresh SPs failed " + err.Error())
 			return err
 		}
 		mu.Lock()

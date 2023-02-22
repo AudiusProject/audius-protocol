@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 	"comms.audius.co/discovery/schema"
 	"comms.audius.co/shared/peering"
 	"github.com/gobwas/ws"
+	"github.com/inconshreveable/log15"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
@@ -63,7 +65,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	})
 
 	g.GET("/debug/consumer", func(c echo.Context) error {
-		info, err := jsc.ConsumerInfo(config.GlobalStreamName, config.WalletAddress)
+		info, err := jsc.ConsumerInfo(config.GlobalStreamName, config.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey)
 		if err != nil {
 			return err
 		}
@@ -77,8 +79,12 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 }
 
 var (
-	logger = config.Logger
+	logger = log15.New()
 )
+
+func init() {
+	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
+}
 
 type ChatServer struct {
 	*echo.Echo

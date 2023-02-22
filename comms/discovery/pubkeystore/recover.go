@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
 	"strings"
 
 	"comms.audius.co/discovery/config"
@@ -12,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
+	"github.com/inconshreveable/log15"
 	"github.com/nats-io/nats.go"
 )
 
@@ -45,7 +47,7 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 
 	endpoint := "https://poa-gateway.audius.co"
 
-	if config.IsStaging {
+	if config.GetDiscoveryConfig().PeeringConfig.IsStaging {
 		endpoint = "http://13.52.185.5:8545"
 
 		// should get dynamically from
@@ -65,7 +67,8 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error) {
 	var err error
 
-	logger := config.Logger.New("module", "pubkeystore", "userId", userId)
+	logger := log15.New("module", "pubkeystore", "userId", userId)
+	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
 
 	conn := db.Conn
 

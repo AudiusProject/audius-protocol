@@ -1,4 +1,4 @@
-up:: down storage.hosts migrate
+up:: down etchosts migrate
 	docker compose up -d --build
 
 # discovery:: down migrate
@@ -6,8 +6,8 @@ up:: down storage.hosts migrate
 
 # TODO: Make the above be an actual container `comms` instead of `go run main.go discovery` because then it can reference `nats`
 
-localhosts="127.0.0.1       node1 node2 node3 node4 ingress"
-storage.hosts::
+localhosts="127.0.0.1       node1-storage node2-storage node3-storage node4-storage node1-discovery ingress"
+etchosts::
 	@	if ! grep -q $(localhosts) /etc/hosts; \
 		then echo Adding development hosts to /etc/hosts; \
 		echo $(localhosts) | sudo tee -a /etc/hosts; fi

@@ -18,13 +18,13 @@ func (p *Peering) DialNats(peerMap map[string]*Info) (*nats.Conn, error) {
 			goodNatsUrls = append(goodNatsUrls, natsUrl)
 		}
 		for _, peer := range peerMap {
-			if peer.NatsIsReachable && peer.NatsClusterName == config.NatsClusterName {
+			if peer.NatsIsReachable && peer.NatsClusterName == p.Config.NatsClusterName {
 				u := fmt.Sprintf("nats://%s:4222", peer.IP)
 				goodNatsUrls = append(goodNatsUrls, u)
 			}
 		}
 		natsUrl = strings.Join(goodNatsUrls, ",")
-		config.Logger.Info("nats client url: " + natsUrl)
+		p.Logger.Info("nats client url: " + natsUrl)
 	}
 
 	nc, err := p.DialNatsUrl(natsUrl)
@@ -51,7 +51,7 @@ func (p *Peering) NatsConnectionTest(natsUrl string) bool {
 	nc, err := p.DialNatsUrl(natsUrl)
 	ok := false
 	if err != nil {
-		config.Logger.Warn("nats connection test failed", "url", natsUrl, "err", err)
+		p.Logger.Warn("nats connection test failed", "url", natsUrl, "err", err)
 	} else {
 		// servers := nc.Servers()
 		// fmt.Println("nc servers", servers)
