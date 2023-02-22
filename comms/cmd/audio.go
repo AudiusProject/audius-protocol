@@ -23,6 +23,8 @@ var audioCmd = &cobra.Command{
 	./comms storage seed audio --mean 3600 # average audio duration is 1hr
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		initClients()
+
 		wg := sync.WaitGroup{}
 		for i := 0; i < int(audioCount); i++ {
 			wg.Add(1)

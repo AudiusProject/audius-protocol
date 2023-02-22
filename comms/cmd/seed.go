@@ -22,6 +22,7 @@ var seedCmd = &cobra.Command{
 	./comms storage seed image
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		initClients()
 		imageCmd.Run(cmd, args)
 		audioCmd.Run(cmd, args)
 	},
@@ -31,7 +32,9 @@ func init() {
 	storageCmd.AddCommand(seedCmd)
 
 	seedCmd.PersistentFlags().BoolVarP(&multi, "multi", "m", true, "whether to seed a single node or multi node setup")
+}
 
+func initClients() {
 	p := peering.New(nil)
 
 	err := p.PollRegisteredNodes()
@@ -49,7 +52,6 @@ func init() {
 	ClientList = make([]client.StorageClient, len(cnodes))
 	for _, cnode := range cnodes {
 		storageClient := client.StorageClient{Endpoint: cnode.Endpoint}
-		fmt.Println(storageClient.Endpoint)
 		ClientList = append(ClientList, storageClient)
 	}
 }
