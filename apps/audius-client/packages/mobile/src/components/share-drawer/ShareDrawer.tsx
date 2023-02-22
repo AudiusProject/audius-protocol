@@ -123,8 +123,7 @@ export const ShareDrawer = () => {
     handleShareToInstagramStory,
     handleShareToSnapchat,
     handleShareToTikTok: handleShareVideoToTiktok,
-    selectedPlatform,
-    shouldRenderShareToStorySticker
+    selectedPlatform
   } = useShareToStory({ content, viewShotRef })
 
   const handleCopyLink = useCallback(() => {
@@ -264,7 +263,7 @@ export const ShareDrawer = () => {
   return (
     <>
       {/* Redundant `content?.type === 'track'` needed to make TS happy */}
-      {content?.type === 'track' && shouldRenderShareToStorySticker ? (
+      {content?.type === 'track' ? (
         <ViewShot
           style={styles.viewShot}
           ref={viewShotRef}

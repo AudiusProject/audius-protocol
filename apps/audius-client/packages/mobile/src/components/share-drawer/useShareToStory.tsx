@@ -124,8 +124,6 @@ export const useShareToStory = ({
   const { toast } = useToast()
   const dispatch = useDispatch()
   const cancelRef = useRef(false)
-  const [shouldRenderShareToStorySticker, setShouldRenderShareToStorySticker] =
-    useState(false)
   const [selectedPlatform, setSelectedPlatform] =
     useState<ShareToStoryPlatform | null>(null)
   const trackTitle =
@@ -295,9 +293,6 @@ export const useShareToStory = ({
 
         // Step 1: Render and take a screenshot of the sticker:
         // Note: We have to capture the sticker image first because it doesn't work if you get the dominant colors first (mysterious).
-        if (!shouldRenderShareToStorySticker) {
-          setShouldRenderShareToStorySticker(true)
-        }
         const encodedTrackId = encodeHashId(content.track.track_id)
         const streamMp3Url = apiClient.makeUrl(
           `/tracks/${encodedTrackId}/stream`
@@ -449,7 +444,6 @@ export const useShareToStory = ({
       content,
       toggleProgressDrawer,
       captureStickerImage,
-      shouldRenderShareToStorySticker,
       pasteToInstagramApp,
       pasteToSnapchatApp,
       handleError,
@@ -526,7 +520,6 @@ export const useShareToStory = ({
     handleShareToInstagramStory,
     handleShareToTikTok,
     selectedPlatform,
-    shouldRenderShareToStorySticker,
     cancelStory
   }
 }

@@ -1,7 +1,7 @@
 import type { Track, User } from '@audius/common'
 import { SquareSizes } from '@audius/common'
 import type { StyleProp, ViewStyle } from 'react-native'
-import { Image, View } from 'react-native'
+import { View } from 'react-native'
 
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontal.svg'
 import { Divider, Text } from 'app/components/core'
@@ -9,7 +9,7 @@ import UserBadges from 'app/components/user-badges'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
-import { useTrackImage } from '../image/TrackImage'
+import { TrackImage } from '../image/TrackImage'
 
 const messages = {
   by: 'by',
@@ -83,23 +83,16 @@ export const ShareToStorySticker = ({
 }: ShareToStoryStickerProps) => {
   const styles = useStyles()
 
-  const trackImage = useTrackImage({
-    track,
-    user,
-    size: SquareSizes.SIZE_480_BY_480
-  })
   const { neutralLight2, staticNeutralLight8 } = useThemeColors()
   return (
     <View style={[styles.container, style]}>
       <View>
-        {trackImage ? (
-          <Image
-            style={styles.trackImage}
-            onLoad={onLoad}
-            source={trackImage.source}
-            onError={trackImage.handleError}
-          />
-        ) : null}
+        <TrackImage
+          size={SquareSizes.SIZE_480_BY_480}
+          style={styles.trackImage}
+          track={track}
+          onLoad={onLoad}
+        />
         <Text
           color='staticNeutral'
           allowFontScaling={false}
