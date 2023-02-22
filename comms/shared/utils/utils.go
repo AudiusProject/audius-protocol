@@ -28,14 +28,21 @@ func GenerateWhiteNoise(meanDuration uint) ([]byte, error) {
 	tmpFile := fmt.Sprintf("tmp-%d.mp3", id)
 	defer os.Remove(tmpFile)
 
-	// duration are within a normal distribution
+	// duration are within a normal distribution (std = 10sec, mean = meanDuration)
+	// TODO: would it be useful to have other random distributions? e.g. exponentional?
 	duration := int((rand.NormFloat64() * 10.0) + float64(meanDuration))
 
+	// no negative durations
+	if duration <= 0 {
+		duration = 1
+	}
+
+	whitenoiseFunction := fmt.Sprintf("anoisesrc=d=%d", duration)
 	cmd := exec.Command("ffmpeg", "-y", // Yes to all
 		"-f",                                    // audio/video filtering framework
 		"lavfi",                                 // provides generic audio filtering for audio/video signals
 		"-i",                                    // input flag
-		fmt.Sprintf("anoisesrc=d=%d", duration), // generate a noise audio signal for the duration
+		whitenoiseFunction, // generate a noise audio signal for the duration
 		tmpFile,
 	)
 

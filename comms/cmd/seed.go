@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/client"
 	"github.com/spf13/cobra"
@@ -31,14 +33,23 @@ func init() {
 	seedCmd.PersistentFlags().BoolVarP(&multi, "multi", "m", true, "whether to seed a single node or multi node setup")
 
 	p := peering.New(nil)
+
+	err := p.PollRegisteredNodes()
+	if err != nil {
+		fmt.Println("[ERROR] could not poll registered nodes")
+		return
+	}
+
 	cnodes, err := p.GetContentNodes()
 	if err != nil {
-
+		fmt.Println("[ERROR] could not get content nodes")
+		return
 	}
 
 	ClientList = make([]client.StorageClient, len(cnodes))
 	for _, cnode := range cnodes {
 		storageClient := client.StorageClient{Endpoint: cnode.Endpoint}
+		fmt.Println(storageClient.Endpoint)
 		ClientList = append(ClientList, storageClient)
 	}
 }
