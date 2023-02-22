@@ -1,6 +1,7 @@
 package rpcz
 
 import (
+	"fmt"
 	"strconv"
 	"sync"
 
@@ -11,9 +12,13 @@ import (
 func NewRateLimiter(jsc nats.JetStreamContext) (*RateLimiter, error) {
 
 	// kv
-	kv, err := jsc.KeyValue(config.RateLimitRulesBucketName)
+	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
+		Bucket:    config.RateLimitRulesBucketName,
+		Replicas:  config.NatsReplicaCount,
+		Placement: config.DiscoveryPlacement(),
+	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create rate limit kv %v", err)
 	}
 
 	watcher, err := kv.WatchAll()

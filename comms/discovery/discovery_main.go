@@ -18,7 +18,8 @@ import (
 )
 
 func DiscoveryMain() {
-	config.Init()
+	discoveryConfig := config.GetDiscoveryConfig()
+	config.Init(discoveryConfig.Keys)
 
 	// dial datasources in parallel
 	g := errgroup.Group{}
@@ -27,6 +28,7 @@ func DiscoveryMain() {
 	var proc *rpcz.RPCProcessor
 
 	g.Go(func() error {
+		peering := peering.New(nil)
 		err := peering.PollRegisteredNodes()
 		if err != nil {
 			return err
@@ -40,18 +42,8 @@ func DiscoveryMain() {
 			return err
 		}
 
-		// create streams
-		err = createJetstreamStreams(jsc)
-		if err != nil {
-			return err
-		}
-
+		// create RPC processor
 		proc, err = rpcz.NewProcessor(jsc)
-		if err != nil {
-			return err
-		}
-
-		err = createConsumer(jsc, proc)
 		if err != nil {
 			return err
 		}
@@ -84,66 +76,4 @@ func DiscoveryMain() {
 
 	e := server.NewServer(jsc, proc)
 	e.Logger.Fatal(e.Start(":8925"))
-}
-
-func createJetstreamStreams(jsc nats.JetStreamContext) error {
-
-	streamInfo, err := jsc.AddStream(&nats.StreamConfig{
-		Name:     config.GlobalStreamName,
-		Subjects: []string{config.GlobalStreamSubject},
-		Replicas: config.NatsReplicaCount,
-		// DenyDelete: true,
-		// DenyPurge:  true,
-		Placement: config.DiscoveryPlacement(),
-	})
-	if err != nil {
-		return err
-	}
-
-	config.Logger.Info("create stream", "strm", streamInfo)
-
-	// create kv buckets
-	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:    config.PubkeystoreBucketName,
-		Replicas:  config.NatsReplicaCount,
-		Placement: config.DiscoveryPlacement(),
-	})
-	if err != nil {
-		return fmt.Errorf("failed to create pubkey kv %v", err)
-	}
-
-	_, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:    config.RateLimitRulesBucketName,
-		Replicas:  config.NatsReplicaCount,
-		Placement: config.DiscoveryPlacement(),
-	})
-	if err != nil {
-		return fmt.Errorf("failed to create rate limit kv %v", err)
-	}
-
-	return nil
-}
-
-func createConsumer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) error {
-
-	// ------------------------------------------------------------------------------
-	// TEMP: Subscribe to the subject for the demo
-	// this is the "processor" for DM messages... which just inserts them into comm log table for now
-	// it assumes that nats message has the signature header
-	// but this is not the case for identity relay messages, for instance, which should have their own consumer
-	// also, should be a pull consumer with explicit ack.
-	// matrix-org/dendrite codebase has some nice examples to follow...
-
-	sub, err := jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.WalletAddress))
-	if err != nil {
-		config.Logger.Error(err.Error())
-		return err
-	}
-
-	info, err := sub.ConsumerInfo()
-
-	if err == nil {
-		config.Logger.Info("create subscription", "sub", info)
-	}
-	return nil
 }

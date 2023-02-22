@@ -205,7 +205,12 @@ export class ChatsApi
       'create'
     )
 
-    const chatId = cuid()
+    const chatId = [
+      requestParameters.userId,
+      ...requestParameters.invitedUserIds
+    ]
+      .sort()
+      .join(':')
     const chatSecret = secp.utils.randomPrivateKey()
     this.chatSecrets[chatId] = chatSecret
     const invites = await this.createInvites(

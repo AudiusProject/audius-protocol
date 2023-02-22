@@ -9,28 +9,19 @@ import (
 	"os"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/avast/retry-go"
 )
 
-type ServiceNode struct {
-	ID                  string `json:"id"`
-	SPID                string `json:"spID"`
-	Endpoint            string `json:"endpoint"`
-	DelegateOwnerWallet string `json:"delegateOwnerWallet"`
-	Type                struct {
-		ID string `json:"id"`
-	} `json:"type"`
-}
-
 var (
-	allNodes = map[string]ServiceNode{}
+	allNodes = map[string]sharedConfig.ServiceNode{}
 )
 
-func PollRegisteredNodes() error {
-	if len(registeredNodesOverride) > 0 {
+func (p *Peering) PollRegisteredNodes() error {
+	if len(p.registeredNodesOverride) > 0 {
 		mu.Lock()
-		for _, sp := range registeredNodesOverride {
+		for _, sp := range p.registeredNodesOverride {
 			allNodes[sp.ID] = sp
 		}
 		mu.Unlock()
@@ -38,15 +29,15 @@ func PollRegisteredNodes() error {
 	}
 
 	// don't start polling for
-	if config.Env == "standalone" || os.Getenv("test_host") != "" {
+	if discoveryConfig.Env == "standalone" || os.Getenv("test_host") != "" {
 		return nil
 	}
 
 	refresh := func() error {
-		config.Logger.Debug("refreshing SPs")
-		sps, err := queryServiceNodes(config.IsStaging)
+		discoveryConfig.Logger.Debug("refreshing SPs")
+		sps, err := queryServiceNodes(discoveryConfig.IsStaging)
 		if err != nil {
-			config.Logger.Warn("refresh SPs failed " + err.Error())
+			discoveryConfig.Logger.Warn("refresh SPs failed " + err.Error())
 			return err
 		}
 		mu.Lock()
@@ -69,17 +60,17 @@ func PollRegisteredNodes() error {
 
 }
 
-func listNodes(typeFilter string) ([]ServiceNode, error) {
+func (p *Peering) listNodes(typeFilter string) ([]sharedConfig.ServiceNode, error) {
 	// make storage.multi, make storage.dev, and in the future make test
-	if len(registeredNodesOverride) > 0 {
-		return registeredNodesOverride, nil
+	if len(p.registeredNodesOverride) > 0 {
+		return p.registeredNodesOverride, nil
 	}
 	// make dev.discovery
-	if config.Env == "standalone" {
-		return []ServiceNode{}, nil
+	if discoveryConfig.Env == "standalone" {
+		return []sharedConfig.ServiceNode{}, nil
 	}
 
-	result := []ServiceNode{}
+	result := []sharedConfig.ServiceNode{}
 	mu.Lock()
 	for _, node := range allNodes {
 		if typeFilter == "" || node.Type.ID == typeFilter {
@@ -90,35 +81,16 @@ func listNodes(typeFilter string) ([]ServiceNode, error) {
 	return result, nil
 }
 
-func AllNodes() ([]ServiceNode, error) {
-	return listNodes("")
+func (p *Peering) AllNodes() ([]sharedConfig.ServiceNode, error) {
+	return p.listNodes("")
 }
 
-func GetDiscoveryNodes() ([]ServiceNode, error) {
-	return listNodes("discovery-node")
+func (p *Peering) GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error) {
+	return p.listNodes("discovery-node")
 }
 
-func GetContentNodes() ([]ServiceNode, error) {
-	return listNodes("content-node")
-}
-
-var testNodes = []ServiceNode{
-	{
-		Endpoint:            "http://node1",
-		DelegateOwnerWallet: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-	},
-	{
-		Endpoint:            "http://node2",
-		DelegateOwnerWallet: "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
-	},
-	{
-		Endpoint:            "http://node3",
-		DelegateOwnerWallet: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
-	},
-	{
-		Endpoint:            "http://node4",
-		DelegateOwnerWallet: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
-	},
+func (p *Peering) GetContentNodes() ([]sharedConfig.ServiceNode, error) {
+	return p.listNodes("content-node")
 }
 
 var (
@@ -141,14 +113,14 @@ var (
 	`
 )
 
-func queryServiceNodes(isStaging bool) ([]ServiceNode, error) {
+func queryServiceNodes(isStaging bool) ([]sharedConfig.ServiceNode, error) {
 
 	endpoint := prodEndpoint
 	if isStaging {
 		endpoint = stagingEndpoint
 	}
 
-	allNodes := []ServiceNode{}
+	allNodes := []sharedConfig.ServiceNode{}
 
 	for {
 		input := map[string]interface{}{
@@ -160,7 +132,7 @@ func queryServiceNodes(isStaging bool) ([]ServiceNode, error) {
 
 		output := struct {
 			Data struct {
-				ServiceNodes []ServiceNode
+				ServiceNodes []sharedConfig.ServiceNode
 			}
 		}{}
 

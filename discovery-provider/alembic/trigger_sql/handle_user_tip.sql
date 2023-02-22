@@ -11,8 +11,13 @@ begin
       new.created_at, 
       'tip_receive',
       new.receiver_user_id,
-      'tip_receive:user_id:' || new.receiver_user_id || ':slot:' || new.slot,
-      json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'amount', new.amount)
+      'tip_receive:user_id:' || new.receiver_user_id || ':signature:' || new.signature,
+      json_build_object(
+        'sender_user_id', new.sender_user_id,
+        'receiver_user_id', new.receiver_user_id,
+        'amount', new.amount,
+        'tx_signature', new.signature
+      )
     ),
     ( 
       new.slot,
@@ -20,13 +25,19 @@ begin
       new.created_at, 
       'tip_send',
       new.sender_user_id,
-      'tip_send:user_id:' || new.sender_user_id || ':slot:' || new.slot,
-      json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'amount', new.amount)
+      'tip_send:user_id:' || new.sender_user_id || ':signature:' || new.signature,
+      json_build_object(
+        'sender_user_id', new.sender_user_id,
+        'receiver_user_id', new.receiver_user_id,
+        'amount', new.amount,
+        'tx_signature', new.signature
+      )
     )
     on conflict do nothing;
   return null;
 exception
   when others then return null;
+return null;
 end;
 $$ language plpgsql;
 
