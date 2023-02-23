@@ -66,8 +66,7 @@ const sendTransaction = async (
   req,
   resetNonce = false,
   txProps,
-  reqBodySHA,
-  reqStartTime,
+  reqBodySHA
 ) => {
   let resp = null
   try {
@@ -80,14 +79,13 @@ const sendTransaction = async (
       req,
       secondaryWeb3,
       txProps,
-      reqBodySHA,
-      reqStartTime
+      reqBodySHA
     )
   }
   return resp
 }
 
-const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartTime) => {
+const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   let {
     contractRegistryKey,
     contractAddress,
@@ -98,6 +96,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartT
     gasLimit
   } = txProps
   const redis = req.app.get('redis')
+  const startTransactionLatency = new Date().getTime()
 
   // SEND to both nethermind and POA
   // sendToNethermindOnly indicates relay should respond with that receipt
@@ -233,7 +232,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartT
     }
 
     const end = new Date().getTime()
-    const reqLatency = end - reqStartTime
+    const totalTransactionLatency = end - startTransactionLatency
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
       reqBodySHA,
@@ -241,6 +240,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartT
       senderAddress,
       nonce: txParams.nonce,
       relayStats,
+      totalTransactionLatency,
     }
     await redis.zadd(
       'relayTxAttempts',

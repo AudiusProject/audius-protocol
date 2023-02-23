@@ -114,7 +114,6 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       const { uuid, userId, handle } = req.body
       const audiusLibsInstance = req.app.get('audiusLibs')
-      const reqStartTime = new Date().getTime()
       try {
         const instagramObj = await models.InstagramUser.findOne({
           where: { uuid }
@@ -156,8 +155,7 @@ module.exports = function (app) {
                 req,
                 false,
                 txProps,
-                'instagramVerified',
-                reqStartTime
+                'instagramVerified'
               )
               await verifiedUserReporter.report({ userId, handle })
             } catch (e) {

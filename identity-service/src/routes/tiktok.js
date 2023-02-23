@@ -131,7 +131,6 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       const { uuid, userId, handle } = req.body
       const audiusLibsInstance = req.app.get('audiusLibs')
-      const reqStartTime = new Date().getTime()
 
       try {
         const tikTokObj = await models.TikTokUser.findOne({
@@ -176,8 +175,7 @@ module.exports = function (app) {
                 req,
                 false,
                 txProps,
-                'tikTokVerified',
-                reqStartTime
+                'tikTokVerified'
               )
               await verifiedUserReporter.report({ userId, handle })
             } catch (e) {

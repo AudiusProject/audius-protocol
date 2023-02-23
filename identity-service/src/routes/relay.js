@@ -25,7 +25,6 @@ module.exports = function (app) {
     handleResponse(async (req, res, next) => {
       const body = req.body
       const redis = req.app.get('redis')
-      const reqStartTime = new Date().getTime()
 
       // TODO: Use auth middleware to derive this
       const user = await models.User.findOne({
@@ -147,8 +146,7 @@ module.exports = function (app) {
             req,
             false, // resetNonce
             txProps,
-            reqBodySHA,
-            reqStartTime
+            reqBodySHA
           )
         } catch (e) {
           if (e.message.includes('nonce')) {
@@ -162,8 +160,7 @@ module.exports = function (app) {
               req,
               true, // resetNonce
               txProps,
-              reqBodySHA,
-              reqStartTime
+              reqBodySHA
             )
             // no need to return success response here, regular code execution will continue after catch()
           } else {
