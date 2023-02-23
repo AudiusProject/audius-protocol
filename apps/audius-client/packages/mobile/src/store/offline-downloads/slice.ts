@@ -30,13 +30,17 @@ export type OfflineJob =
   | { type: 'play-count'; id: ID }
   | { type: 'stale-track'; id: ID }
 
+export type TrackStatus = {
+  [Key in ID]?: OfflineDownloadStatus
+}
+
+export type CollectionStatus = {
+  [Key in ID]?: OfflineDownloadStatus
+}
+
 export type OfflineDownloadsState = {
-  trackStatus: {
-    [Key in ID]?: OfflineDownloadStatus
-  }
-  collectionStatus: {
-    [Key in ID]?: OfflineDownloadStatus
-  }
+  trackStatus: TrackStatus
+  collectionStatus: CollectionStatus
   collectionSyncStatus: {
     [Key in ID]?: CollectionSyncStatus
   }
