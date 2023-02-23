@@ -304,6 +304,23 @@ services:
       - tests
       - notifications
 
+  # comms
+
+  test-comms-migrations:
+    build:
+      context: comms
+      dockerfile: Dockerfile.dev
+    command: /comms-linux discovery-migrations
+    environment:
+      audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable"
+    depends_on:
+      test-discovery-provider-migrations:
+        condition: service_completed_successfully
+    logging: *default-logging
+    profiles:
+      - tests
+      - notifications
+
   # identity-service
 
   identity-service-db:

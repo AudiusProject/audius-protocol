@@ -325,8 +325,29 @@ services:
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
     volumes:
       - ./discovery-provider/plugins/notifications:/notifications
+    depends_on:
+      comms-migrations:
+        condition: service_completed_successfully
+      discovery-provider:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      identity-service-redis:
+        condition: service_healthy
     deploy:
       mode: global
+
+  comms-migrations:
+    build:
+      context: comms
+      dockerfile: Dockerfile.dev
+    command: /comms-linux discovery-migrations
+    environment:
+      audius_db_url: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
+    depends_on:
+      discovery-provider:
+        condition: service_healthy
+    logging: *default-logging
 
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
@@ -352,47 +373,6 @@ services:
       replicas: "${ELASTICSEARCH_REPLICAS}"
     profiles:
       - elasticsearch
-
-  comms:
-    build:
-      context: comms
-      dockerfile: DockerfileM1
-    container_name: comms
-    command: /comms-linux discovery
-    environment:
-      audius_db_url: "postgres://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery?sslmode=disable"
-    depends_on:
-      - nats
-    restart: unless-stopped
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
-
-  nats:
-    build:
-      context: comms
-      dockerfile: DockerfileM1
-    container_name: nats
-    command: /comms-linux nats
-    restart: unless-stopped
-    ports:
-      - "6222:6222"
-      - "4222:4222"
-    environment:
-      - NATS_STORE_DIR=/nats
-    volumes:
-      - /var/k8s/nats:/nats
-    logging:
-      options:
-        max-size: 10m
-        max-file: 3
-        mode: non-blocking
-        max-buffer-size: 100m
-      driver: json-file
 
   discovery-provider:
     build:

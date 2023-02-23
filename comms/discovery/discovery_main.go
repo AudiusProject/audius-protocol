@@ -2,9 +2,7 @@ package discovery
 
 import (
 	"expvar"
-	"fmt"
 	"log"
-	"os/exec"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -60,13 +58,7 @@ func DiscoveryMain() {
 		return db.Dial()
 	})
 	g.Go(func() error {
-		out, err := exec.Command("dbmate",
-			"--no-dump-schema",
-			"--migrations-dir", "./discovery/db/migrations",
-			"--url", db.MustGetAudiusDbUrl(),
-			"up").CombinedOutput()
-		fmt.Println("dbmate: ", string(out))
-		return err
+		return db.RunMigrations()
 	})
 	if err := g.Wait(); err != nil {
 		log.Fatal(err)
