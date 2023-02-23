@@ -34,19 +34,19 @@ func (sd SignatureData) toMap() map[string]interface{} {
 	}
 }
 
-func recoverWallet(signatureData SignatureData, signature []byte) (string, error) {
+func recoverWallet(signatureData SignatureData, signature []byte) ([]byte, error) {
 	stringData, err := json.Marshal(signatureData)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	hashData := crypto.Keccak256(stringData)
 	recoveredSigner, err := crypto.Ecrecover(hashData, signature)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return string(recoveredSigner[:]), nil
+	return recoveredSigner, nil
 }
 
 func isExpired(signatureData SignatureData) bool {
@@ -72,7 +72,7 @@ func VerifySignature(
 		return false, errors.New("Wallet recovery failed")
 	}
 
-	if !utils.IsValidDiscoveryNode(signer) {
+	if !utils.IsValidDiscoveryNode(string(signer)) {
 		return false, errors.New("Signature is not from valid discovery node.")
 	}
 

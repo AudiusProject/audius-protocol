@@ -11,44 +11,36 @@ import (
 	"time"
 
 	"comms.audius.co/shared/utils"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/go-cmp/cmp"
 )
 
 func TestRecoverWallet(t *testing.T) {
-	tests := []struct {
-		testData SignatureData
-	}{
-		{
-			SignatureData{
-				Cid:         "Qmblah",
-				ShouldCache: true,
-				Timestamp:   time.Now().Unix(),
-				TrackId:     12345,
-			},
-		},
+
+	signatureData := SignatureData{
+		Cid:         "Qmblah",
+		ShouldCache: true,
+		Timestamp:   time.Now().Unix(),
+		TrackId:     12345,
 	}
 
-	privKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privKey, err := crypto.GenerateKey()
 	if err != nil {
 		t.Fatal("Key generation failed")
 	}
+	signature, err := utils.GenerateSignature(signatureData.toMap(), privKey)
+	if err != nil {
+		t.Fatalf("Failed to generate signature for %+v", signatureData)
+	}
+	expectedSigner := crypto.FromECDSAPub(&privKey.PublicKey)
 
-	for _, tt := range tests {
-		signature, err := utils.GenerateSignature(tt.testData.toMap(), privKey)
-		if err != nil {
-			t.Fatalf("Failed to generate signature for %+v", tt.testData)
-		}
+	actualSigner, err := recoverWallet(signatureData, signature)
+	if err != nil {
+		t.Fatalf("recover wallet errored with %+v", err)
+	}
 
-		actualSigner, err := recoverWallet(tt.testData, signature)
-		if err != nil {
-			t.Fatalf("recover wallet errored with %+v", err)
-		}
-
-		expectedSigner := utils.MarshalPubECDSA(&privKey.PublicKey)
-
-		if actualSigner != string(expectedSigner) {
-			t.Fatalf("public key doesn't match signer, want=%+v, got=%+v", expectedSigner, []byte(actualSigner))
-		}
+	if !bytes.Equal(actualSigner, expectedSigner) {
+		t.Fatalf("public key doesn't match signer, want=%+v, got=%+v", expectedSigner, []byte(actualSigner))
 	}
 }
 
