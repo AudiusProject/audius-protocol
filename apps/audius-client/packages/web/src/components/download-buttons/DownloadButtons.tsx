@@ -5,7 +5,8 @@ import {
   ButtonState,
   ButtonType,
   useDownloadTrackButtons,
-  toastActions
+  toastActions,
+  FeatureFlags
 } from '@audius/common'
 import { IconDownload, IconButton } from '@audius/stems'
 import cn from 'classnames'
@@ -20,6 +21,7 @@ import {
 } from 'common/store/pages/signon/actions'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Tooltip from 'components/tooltip/Tooltip'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './DownloadButtons.module.css'
@@ -135,6 +137,7 @@ type DownloadButtonsProps = {
   ) => void
   isOwner: boolean
   following: boolean
+  isPremium: boolean
   isHidden?: boolean
   className?: string
 }
@@ -143,9 +146,13 @@ const DownloadButtons = ({
   trackId,
   isOwner,
   following,
+  isPremium,
   onDownload,
   className
 }: DownloadButtonsProps) => {
+  const { isEnabled: isPremiumContentEnabled } = useFlag(
+    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  )
   const dispatch = useDispatch()
   const { location } = useHistory()
   const { pathname } = location
@@ -167,6 +174,10 @@ const DownloadButtons = ({
   })
   const shouldHide = buttons.length === 0
   if (shouldHide) {
+    return null
+  }
+
+  if (isPremiumContentEnabled && isPremium) {
     return null
   }
 

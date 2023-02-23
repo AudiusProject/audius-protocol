@@ -332,6 +332,7 @@ class GiantTrackTile extends PureComponent {
         trackId={this.props.trackId}
         isOwner={this.props.isOwner}
         following={this.props.following}
+        isPremium={this.props.isPremium}
         onDownload={this.props.onDownload}
       />
     )

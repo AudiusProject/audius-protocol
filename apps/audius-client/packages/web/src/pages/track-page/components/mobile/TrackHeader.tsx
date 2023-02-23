@@ -89,6 +89,7 @@ type TrackHeaderProps = {
   saveCount: number
   repostCount: number
   isUnlisted: boolean
+  isPremium: boolean
   isRemix: boolean
   fieldVisibility: FieldVisibility
   coSign: Remix | null
@@ -129,6 +130,7 @@ const TrackHeader = ({
   isSaved,
   isReposted,
   isUnlisted,
+  isPremium,
   isRemix,
   fieldVisibility,
   coSign,
@@ -243,6 +245,7 @@ const TrackHeader = ({
         trackId={trackId}
         isOwner={isOwner}
         following={isFollowing}
+        isPremium={isPremium}
         onDownload={onDownload}
       />
     )
