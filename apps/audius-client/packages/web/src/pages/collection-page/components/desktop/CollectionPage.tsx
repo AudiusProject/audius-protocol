@@ -65,14 +65,11 @@ export type CollectionPageProps = {
     status: string
     entries: CollectionTrack[]
   }
-  columns?: any
   userId?: ID | null
   userPlaylists?: any
   isQueued: () => boolean
   onHeroTrackClickArtistName: () => void
   onPlay: (record: CollectionPageTrackRecord) => void
-  onHeroTrackShare: (record: CollectionPageTrackRecord) => void
-  onHeroTrackSave?: (record: CollectionPageTrackRecord) => void
   onClickRow: (record: CollectionPageTrackRecord, index: number) => void
   onClickSave?: (record: CollectionPageTrackRecord) => void
   allowReordering: boolean
@@ -80,9 +77,6 @@ export type CollectionPageProps = {
     trackMetadata: CollectionTrack[]
   ) => [CollectionPageTrackRecord[], number]
   onFilterChange: (evt: ChangeEvent<HTMLInputElement>) => void
-  onHeroTrackEdit: () => void
-  onPublish: () => void
-  onHeroTrackRepost?: any
   onClickTrackName: (record: CollectionPageTrackRecord) => void
   onClickArtistName: (record: CollectionPageTrackRecord) => void
   onClickRepostTrack: (record: CollectionPageTrackRecord) => void
@@ -94,8 +88,6 @@ export type CollectionPageProps = {
     uid: string,
     timestamp: number
   ) => void
-  onFollow: () => void
-  onUnfollow: () => void
   onClickReposts?: () => void
   onClickFavorites?: () => void
   onClickDescriptionExternalLink: (e: any) => void
@@ -111,20 +103,13 @@ const CollectionPage = ({
   playing,
   type,
   collection: { status, metadata, user },
-  columns,
   tracks,
   userId,
-  userPlaylists,
   getFilteredData,
   isQueued,
   onHeroTrackClickArtistName,
   onFilterChange,
   onPlay,
-  onHeroTrackEdit,
-  onPublish,
-  onHeroTrackShare,
-  onHeroTrackSave,
-  onHeroTrackRepost,
   onClickRow,
   onClickSave,
   onClickTrackName,
@@ -133,8 +118,6 @@ const CollectionPage = ({
   onSortTracks,
   onReorderTracks,
   onClickRemove,
-  onFollow,
-  onUnfollow,
   onClickReposts,
   onClickFavorites,
   onClickDescriptionExternalLink
@@ -163,9 +146,6 @@ const CollectionPage = ({
   const playlistOwnerHandle = user?.handle ?? ''
   const playlistOwnerId = user?.user_id ?? null
   const isOwner = userId === playlistOwnerId
-  const isFollowing = user?.does_current_user_follow ?? false
-  const isSaved =
-    metadata?.has_current_user_saved || playlistId in (userPlaylists ?? {})
 
   const variant = metadata?.variant ?? null
   const gradient =
@@ -186,11 +166,7 @@ const CollectionPage = ({
     playlistName,
     description,
     isPrivate,
-    isAlbum,
-    isPublishing,
-    playlistSaveCount,
-    playlistRepostCount,
-    isReposted
+    isAlbum
   } = computeCollectionMetadataProps(metadata)
 
   const topSection = (
@@ -206,29 +182,15 @@ const CollectionPage = ({
       coverArtSizes={coverArtSizes}
       description={description}
       isOwner={isOwner}
-      isAlbum={isAlbum}
       numTracks={tracks.entries.length}
       modified={lastModified}
       duration={duration}
       isPublished={!isPrivate}
-      isPublishing={isPublishing}
-      isReposted={isReposted}
-      isSaved={isSaved}
-      isFollowing={isFollowing}
-      reposts={playlistRepostCount}
-      saves={playlistSaveCount}
       playing={queuedAndPlaying}
       // Actions
       onClickArtistName={onHeroTrackClickArtistName}
       onFilterChange={onFilterChange}
       onPlay={onPlay}
-      onEdit={onHeroTrackEdit}
-      onPublish={onPublish}
-      onShare={onHeroTrackShare}
-      onSave={onHeroTrackSave}
-      onRepost={onHeroTrackRepost}
-      onFollow={onFollow}
-      onUnfollow={onUnfollow}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
       onClickDescriptionExternalLink={onClickDescriptionExternalLink}
