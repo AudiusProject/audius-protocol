@@ -3,6 +3,7 @@ package discovery
 import (
 	"expvar"
 	"log"
+	"net/http"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -11,6 +12,7 @@ import (
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
 	"comms.audius.co/shared/peering"
+	"github.com/Doist/unfurlist"
 	"github.com/nats-io/nats.go"
 	"golang.org/x/sync/errgroup"
 )
@@ -68,6 +70,23 @@ func DiscoveryMain() {
 
 	expvar.NewString("booted_at").Set(time.Now().UTC().String())
 
+	// Start unfurlist server on :8926 to unfurl urls
+	config := unfurlist.WithBlocklistPrefixes(
+		[]string{
+			"http://localhost",
+			"http://127",
+			"http://10",
+			"http://169.254",
+			"http://172.16",
+			"http://192.168",
+			"http://::1",
+			"http://fe80::",
+		},
+	)
+	http.Handle("/comms/unfurl", unfurlist.New(config))
+	go http.ListenAndServe(":8926", nil)
+
+	// Start comms server on :8925
 	e := server.NewServer(jsc, proc)
 	e.Logger.Fatal(e.Start(":8925"))
 }
