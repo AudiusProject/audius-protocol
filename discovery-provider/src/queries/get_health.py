@@ -41,6 +41,7 @@ from src.utils.redis_constants import (
     trending_tracks_last_completion_redis_key,
     user_balances_refresh_last_completion_redis_key,
 )
+from src.utils.web3_provider import LOCAL_RPC, get_nethermind_web3
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -61,8 +62,6 @@ infra_setup = shared_config["discprov"]["infra_setup"]
 min_number_of_cpus: int = 8  # 8 cpu
 min_total_memory: int = 15500000000  # 15.5 GB of RAM
 min_filesystem_size: int = 240000000000  # 240 GB of file system storage
-
-CHAIN_HEALTH_ENDPOINT = "http://chain:8545/health"
 
 
 def get_elapsed_time_redis(redis, redis_key):
@@ -107,8 +106,15 @@ def _get_query_insights():
 
 def _get_chain_health():
     try:
-        response = requests.get(CHAIN_HEALTH_ENDPOINT, timeout=0.02)
-        return response.json()
+        health_res = requests.get(LOCAL_RPC + "/health")
+        chain_res = health_res.json()
+
+        web3 = get_nethermind_web3(LOCAL_RPC)
+        latest_block = web3.eth.get_block("latest")
+        chain_res["block_number"] = latest_block.number
+        chain_res["hash"] = latest_block.hash.hex()
+        chain_res["chain_id"] = web3.eth.chain_id
+        return chain_res
     except:
         pass
 
