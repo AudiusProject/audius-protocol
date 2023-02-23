@@ -169,6 +169,10 @@
   padding: 0 16px;
 }
 
+.buttonTextFormatting {
+  text-transform: uppercase;
+}
+
 .buttonFormatting .buttonTextFormatting {
   font-size: var(--font-s);
   font-weight: var(--font-bold);
