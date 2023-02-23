@@ -8,6 +8,7 @@ wip
 .gitignore
 .editorconfig
 tmp
-build
 storage/storageserver/weather-map/*
 !storage/storageserver/weather-map/dist
+# needed for make build.fast
+!build/comms-linux-amd64
