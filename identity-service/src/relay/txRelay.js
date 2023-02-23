@@ -149,6 +149,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     // send to POA
     // PROD doesn't have sendToNethermindOnly and should default to POA
     // STAGE defaults to nethermind but can send to POA when it has both addresses
+    const relayPromises = []
 
     // relay stats object that gets filled out as relay occurs
     const relayStats = {
