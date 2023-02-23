@@ -71,7 +71,7 @@ const sendTransaction = async (
 ) => {
   let resp = null
   try {
-    resp = await sendTransactionInternal(req, primaryWeb3, txProps, reqBodySHA)
+    resp = await sendTransactionInternal(req, primaryWeb3, txProps, reqBodySHA, reqStartTime)
   } catch (e) {
     req.logger.error(
       `txRelay - sendTransaction Error - ${e}. Retrying with secondary web3.`
@@ -80,13 +80,14 @@ const sendTransaction = async (
       req,
       secondaryWeb3,
       txProps,
-      reqBodySHA
+      reqBodySHA,
+      reqStartTime
     )
   }
   return resp
 }
 
-const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
+const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartTime) => {
   let {
     contractRegistryKey,
     contractAddress,
@@ -475,6 +476,8 @@ const createAndSendTransaction = async (
 let inFlight = 0
 
 async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
+  console.log(`txRelay - relayToNethermind input params: ${encodedABI} ${contractAddress} ${gasLimit}`)
+
   // generate a new private key per transaction (gas is free)
   const accounts = new Accounts(config.get('nethermindWeb3Provider'))
 
@@ -516,6 +519,8 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
     const receipt = await nethermindWeb3.eth.sendSignedTransaction(
       signedTx.rawTransaction
     )
+
+    console.log(`txRelay - relayToNethermind receipt: ${receipt}`)
     receipt.blockNumber += config.get('finalPOABlock')
 
     const end = new Date().getTime()
