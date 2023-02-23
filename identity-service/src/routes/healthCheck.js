@@ -33,6 +33,7 @@ const RELAY_HEALTH_ACCOUNTS = new Set(
 const ETH_RELAY_HEALTH_ACCOUNTS = new Set(
   config.get('ethRelayerWallets').map((wallet) => wallet.publicKey)
 )
+const RELAY_HEALTH_MAX_LATENCY = 15 // seconds
 
 // flatten one level of nexted arrays
 const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
@@ -40,9 +41,7 @@ const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
 module.exports = function (app) {
   /**
    * Relay health check endpoint. Takes the query params startBlock, endBlock, maxTransactions, and maxErrors.
-   * If those query params are not specified, use default values. In the `txLatencies` field if two elements exist
-   * the first one belongs to POA and the second to Nethermind. Otherwise there will be one element and that belongs
-   * to the entry in `relayRecipients` that returned `true`.
+   * If those query params are not specified, use default values.
    */
   /*
   There are a few scenarios where a health check should return unhealthy
@@ -69,6 +68,7 @@ module.exports = function (app) {
       const minTransactions =
         parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
       const isVerbose = req.query.verbose || false
+      const maxRelayLatency = req.query.maxRelayLatency || RELAY_HEALTH_MAX_LATENCY
 
       // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
       const startBlockNumber = Math.max(endBlockNumber - blockDiff, 0)
@@ -101,6 +101,10 @@ module.exports = function (app) {
         return errorResponseServerError(
           `Invalid number of transactions and/or errors. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`
         )
+      }
+
+      if (maxRelayLatency < 2) {
+        return errorResponseServerError(`Invalid maxRelayLatency, must be greater than 2. Given ${maxRelayLatency}`)
       }
 
       const failureTxs = {} // senderAddress: [<txHash>]
@@ -178,6 +182,13 @@ module.exports = function (app) {
         maxBlockTime
       )
       if (txCounter < minTransactions) isError = true
+
+      for (const tx in successfulTxsInRedis) {
+        if (tx.totalTransactionLatency > maxRelayLatency) {
+          isError = true
+          break
+        }
+      }
 
       const serverResponse = {
         blockchain: {
