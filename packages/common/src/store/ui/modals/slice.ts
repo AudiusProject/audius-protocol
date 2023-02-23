@@ -35,7 +35,7 @@ const initialState: ModalsState = {
   VipDiscord: false,
   StripeOnRamp: false,
   CreateChat: false,
-  InboxSettings: false
+  InboxSettings: false,
   LockedContent: false
 }
 
