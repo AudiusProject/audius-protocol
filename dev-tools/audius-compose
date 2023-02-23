@@ -208,63 +208,40 @@ def build(
 
 
 @cli.command()
+@click.argument("services", nargs=-1)
 @click.pass_context
-def push(ctx):
+def push(ctx, services):
     protocol_dir = ctx.obj
+    services = services or ["creator-node", "discovery-provider", "identity-service"]
+
     git_commit = get_git_commit(protocol_dir)
 
     if not git_commit:
         raise click.ClickException("Failed to get git commit")
 
-    ctx.invoke(
-        build, services=["creator-node", "discovery-provider", "identity-service"]
-    )
+    ctx.invoke(build, services=services)
 
     try:
-        # TODO: Find if there is a better way to find source image names
-        subprocess.run(
-            [
-                "docker",
-                "tag",
-                f"{protocol_dir.name}-creator-node",
-                f"audius/creator-node:{git_commit}",
-            ],
-            check=True,
-        )
-        subprocess.run(
-            [
-                "docker",
-                "tag",
-                f"{protocol_dir.name}-discovery-provider",
-                f"audius/discovery-provider:{git_commit}",
-            ],
-            check=True,
-        )
-        subprocess.run(
-            [
-                "docker",
-                "tag",
-                f"{protocol_dir.name}-identity-service",
-                f"audius/identity-service:{git_commit}",
-            ],
-            check=True,
-        )
+        for service in services:
+            # TODO: Find if there is a better way to find source image names
+            subprocess.run(
+                [
+                    "docker",
+                    "tag",
+                    f"{protocol_dir.name}-{service}",
+                    f"audius/{service}:{git_commit}",
+                ],
+                check=True,
+            )
     except subprocess.CalledProcessError:
         raise click.ClickException("Failed to tag images")
 
     try:
-        subprocess.run(
-            ["docker", "push", f"audius/creator-node:{git_commit}"],
-            check=True,
-        )
-        subprocess.run(
-            ["docker", "push", f"audius/discovery-provider:{git_commit}"],
-            check=True,
-        )
-        subprocess.run(
-            ["docker", "push", f"audius/identity-service:{git_commit}"],
-            check=True,
-        )
+        for service in services:
+            subprocess.run(
+                ["docker", "push", f"audius/{service}:{git_commit}"],
+                check=True,
+            )
     except subprocess.CalledProcessError:
         raise click.ClickException("Failed to push images")
 
@@ -431,19 +408,6 @@ def test_run(protocol_dir, service, args):
     """
     generate_env(protocol_dir, 0, 0, 0)
 
-    if service == "discovery-provider":
-        cmd = "pytest"
-    elif service == "creator-node":
-        cmd = "./node_modules/.bin/mocha"
-    elif service == "identity-service":
-        cmd = "./node_modules/.bin/mocha"
-    else:
-        click.secho(
-            "Invalid service specified",
-            fg="red",
-        )
-        return
-
     sys.exit(
         subprocess.run(
             [
@@ -481,7 +445,6 @@ def test_up(protocol_dir, service):
                 f"--project-name={protocol_dir.name}-test",
                 f"--project-directory={protocol_dir}",
                 "up",
-                "--build",
                 "-d",
                 f"test-{service}",
             ]

@@ -1,6 +1,7 @@
 import logging
 
 from integration_tests.utils import populate_mock_db
+from src.models.notifications.notification import Notification
 from src.queries.get_notifications import get_notifications
 from src.utils.db_session import get_db
 

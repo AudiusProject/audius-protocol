@@ -123,7 +123,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 			url: "azblob://my-container",
 			envVars: map[string]string{
 				AZURE_STORAGE_ACCOUNT: "",
-				AZURE_STORAGE_KEY: "",
+				AZURE_STORAGE_KEY:     "",
 			},
 			expectedError: true,
 		},
@@ -131,7 +131,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 			url: "azblob://my-container",
 			envVars: map[string]string{
 				AZURE_STORAGE_ACCOUNT: "ACCOUNT",
-				AZURE_STORAGE_KEY: "",
+				AZURE_STORAGE_KEY:     "",
 			},
 			expectedError: true,
 		},
@@ -139,7 +139,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 			url: "azblob://my-container",
 			envVars: map[string]string{
 				AZURE_STORAGE_ACCOUNT: "",
-				AZURE_STORAGE_KEY: "KEY",
+				AZURE_STORAGE_KEY:     "KEY",
 			},
 			expectedError: true,
 		},
@@ -147,7 +147,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 			url: "azblob://my-container",
 			envVars: map[string]string{
 				AZURE_STORAGE_ACCOUNT: "ACCOUNT",
-				AZURE_STORAGE_KEY: "KEY",
+				AZURE_STORAGE_KEY:     "KEY",
 			},
 			expectedError: false,
 		},

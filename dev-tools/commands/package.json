@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "test": "bats test"
+    "test": "BATS_TEST_TIMEOUT=30 bats test"
   },
   "author": "Audius",
   "license": "Apache-2.0",

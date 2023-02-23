@@ -12,6 +12,7 @@ from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
 
 web3: Optional[Web3] = None
+LOCAL_RPC = "http://chain:8545"
 
 
 def get_web3():
@@ -27,8 +28,9 @@ def get_web3():
     return web3
 
 
-def get_nethermind_web3():
-    web3endpoint = os.getenv("audius_web3_nethermind_rpc")
+def get_nethermind_web3(web3endpoint=None):
+    if not web3endpoint:
+        web3endpoint = os.getenv("audius_web3_nethermind_rpc")
     web3 = Web3(HTTPProvider(web3endpoint))
 
     # required middleware for POA

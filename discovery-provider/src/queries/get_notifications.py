@@ -98,6 +98,7 @@ class NotificationType(str, Enum):
     TIP_RECEIVE = "tip_receive"
     TIP_SEND = "tip_send"
     CHALLENGE_REWARD = "challenge_reward"
+    REPOST_REPOST = "repost_repost"
     REACTION = "reaction"
     SUPPORTER_DETRONED = "supporter_dethroned"
     SUPPORTER_RANK_UP = "supporter_rank_up"
@@ -114,6 +115,7 @@ class NotificationType(str, Enum):
 
 default_valid_types = [
     NotificationType.REPOST,
+    NotificationType.REPOST_REPOST,
     NotificationType.SAVE,
     NotificationType.FOLLOW,
     NotificationType.TIP_SEND,
@@ -374,7 +376,6 @@ def get_notifications(session: Session, args: GetNotificationArgs):
     rows = session.execute(notifications_sql, {"notification_ids": notification_ids})
 
     notification_id_data: Dict[int, NotificationAction] = defaultdict()
-
     for row in rows:
         notification_id_data[row[0]] = {
             "type": row[1],
@@ -393,5 +394,4 @@ def get_notifications(session: Session, args: GetNotificationArgs):
         }
         for notification in notifications
     ]
-
     return notifications_and_actions
