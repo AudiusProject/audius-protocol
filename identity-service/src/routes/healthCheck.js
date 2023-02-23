@@ -184,7 +184,7 @@ module.exports = function (app) {
       if (txCounter < minTransactions) isError = true
 
       for (const tx in successfulTxsInRedis) {
-        if (tx.totalTransactionLatency > maxRelayLatency) {
+        if ((tx.totalTransactionLatency / 1000) > maxRelayLatency) {
           isError = true
           break
         }
