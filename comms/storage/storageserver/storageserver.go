@@ -40,13 +40,14 @@ type StorageServer struct {
 }
 
 func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes []sharedConfig.ServiceNode) *StorageServer {
-	thisNodePubKey := config.PeeringConfig.Keys.DelegatePublicKey
+	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
 	var host string
 	var allStorageNodePubKeys []string
 	for _, node := range allNodes {
 		allStorageNodePubKeys = append(allStorageNodePubKeys, node.DelegateOwnerWallet)
 		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
 			host = node.Endpoint
+			break
 		}
 	}
 	if host == "" {
