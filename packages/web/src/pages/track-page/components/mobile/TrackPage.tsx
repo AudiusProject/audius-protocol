@@ -218,6 +218,7 @@ const TrackPage = ({
             onRepost={onRepost}
             onDownload={onDownload}
             isUnlisted={defaults.isUnlisted}
+            isPremium={defaults.isPremium}
             isRemix={!!defaults.remixParentTrackId}
             fieldVisibility={defaults.fieldVisibility}
             goToFavoritesPage={goToFavoritesPage}

@@ -123,6 +123,7 @@ const TrackAvailabilityModalContainer = (props) => {
         metadataState={props.availabilityState}
         isRemix={props.isRemix}
         isUpload={props.isUpload}
+        onChangeField={props.onChangeField}
       />
     )
   }
@@ -365,6 +366,7 @@ const BasicForm = (props) => {
   }
 
   const renderBottomMenu = () => {
+    const isPremium = props.defaultFields.is_premium ?? false
     return (
       <div className={styles.menu}>
         {props.type === 'track' && props.showPreview ? (
@@ -378,7 +380,7 @@ const BasicForm = (props) => {
           })}
         >
           {renderRemixSwitch()}
-          {renderDownloadButton()}
+          {(!isPremiumContentEnabled || !isPremium) && renderDownloadButton()}
           {renderAdvancedButton()}
         </div>
       </div>
@@ -444,7 +446,7 @@ const AdvancedForm = (props) => {
     !(props.defaultFields?.field_visibility?.remixes ?? true)
   )
 
-  // Need to update two fields in the metadata.
+  // Update fields in the metadata.
   const didUpdateAvailabilityState = (newState) => {
     props.onChangeField('is_unlisted', newState.unlisted)
     props.onChangeField('field_visibility', {
@@ -533,6 +535,7 @@ const AdvancedForm = (props) => {
           isAvailabilityModalOpen={isAvailabilityModalOpen}
           setIsAvailabilityModalOpen={setIsAvailabilityModalOpen}
           didUpdateAvailabilityState={didUpdateAvailabilityState}
+          onChangeField={props.onChangeField}
           availabilityState={availabilityState}
           isRemix={!!props.defaultFields.remix_of?.tracks?.length}
           isUpload={props.isUpload}
