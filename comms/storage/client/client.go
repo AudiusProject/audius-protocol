@@ -104,3 +104,9 @@ func (sc *StorageClient) UploadPng(imageData []byte, filename string) error {
 
 	return sc.Upload(imageData, imageType, "image/png", filename)
 }
+
+func (sc *StorageClient) HealthCheck() (*http.Response, error) {
+	route := "/health"
+
+	return sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))	
+}
