@@ -70,7 +70,7 @@ const sendTransaction = async (
 ) => {
   let resp = null
   try {
-    resp = await sendTransactionInternal(req, primaryWeb3, txProps, reqBodySHA, reqStartTime)
+    resp = await sendTransactionInternal(req, primaryWeb3, txProps, reqBodySHA)
   } catch (e) {
     req.logger.error(
       `txRelay - sendTransaction Error - ${e}. Retrying with secondary web3.`
@@ -248,8 +248,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       JSON.stringify(redisLogParams)
     )
     req.logger.info(
-      `L2 - txRelay - sending a transaction for wallet ${
-        wallet.publicKey
+      `L2 - txRelay - sending a transaction for wallet ${wallet.publicKey
       } to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(
         txParams.gasPrice,
         16
@@ -461,8 +460,7 @@ const createAndSendTransaction = async (
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   console.log(
-    `txRelay - sending a transaction for sender ${
-      sender.publicKey
+    `txRelay - sending a transaction for sender ${sender.publicKey
     } to ${receiverAddress}, gasPrice ${parseInt(
       gasPrice,
       16
