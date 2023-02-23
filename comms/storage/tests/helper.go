@@ -4,11 +4,15 @@ import (
 	"context"
 	"net/http"
 
-	"comms.audius.co/storage/storageserver"
+	discoveryConfig "comms.audius.co/discovery/config"
+	"comms.audius.co/shared/peering"
 	storageclient "comms.audius.co/storage/client"
+	"comms.audius.co/storage/config"
+	"comms.audius.co/storage/storageserver"
+	"github.com/nats-io/nats.go"
 )
 
-func SpawnServer() (*storageclient.StorageClient, *storageserver.StorageServer, err) {
+func SpawnServer() (*storageclient.StorageClient, *storageserver.StorageServer, error) {
 	storageConfig := config.GetStorageConfig()
 
 	// TODO: We need to change a bunch of stuff in shared/peering/ before we can remove this.
