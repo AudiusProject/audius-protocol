@@ -3,7 +3,8 @@ import { useMemo } from 'react'
 import {
   profilePageSelectors,
   profilePageFeedLineupActions as feedActions,
-  useProxySelector
+  useProxySelector,
+  Status
 } from '@audius/common'
 import { useRoute } from '@react-navigation/native'
 
@@ -31,6 +32,9 @@ export const RepostsTab = () => {
     [handleLower]
   )
 
+  // This prevents showing empty tile before lineup has started to fetch content
+  const canShowEmptyTile = repost_count === 0 || lineup.status !== Status.IDLE
+
   return (
     <Lineup
       selfLoad
@@ -39,7 +43,9 @@ export const RepostsTab = () => {
       lineup={lineup}
       limit={repost_count}
       disableTopTabScroll
-      LineupEmptyComponent={<EmptyProfileTile tab='reposts' />}
+      LineupEmptyComponent={
+        canShowEmptyTile ? <EmptyProfileTile tab='reposts' /> : undefined
+      }
       showsVerticalScrollIndicator={false}
       extraFetchOptions={extraFetchOptions}
     />
