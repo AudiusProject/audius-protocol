@@ -21,10 +21,10 @@ import {
 import cn from 'classnames'
 import { debounce } from 'lodash'
 
-import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCircle.svg'
 import { ReactComponent as IconRemix } from 'assets/img/iconRemix.svg'
 import Input from 'components/data-entry/Input'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { HelpCallout } from 'components/help-callout/HelpCallout'
 import Switch from 'components/switch/Switch'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -187,20 +187,16 @@ const RemixSettingsModal = ({
           />
         </ModalHeader>
         <ModalContent>
-          {isPremium && (
-            <div className={styles.disableInfo}>
-              <IconQuestionCircle className={styles.disableInfoIcon} />
-              <div>
-                <span>{messages.changeAvailabilityPrefix}</span>
-                <span>
-                  {'nft_collection' in (premiumConditions ?? {})
-                    ? messages.collectibleGated
-                    : messages.specialAccess}
-                </span>
-                <span>{messages.changeAvailabilitySuffix}</span>
-              </div>
-            </div>
-          )}
+          {isPremium ? (
+            <HelpCallout
+              className={styles.disableInfo}
+              text={`${messages.changeAvailabilityPrefix} ${
+                'nft_collection' in (premiumConditions ?? {})
+                  ? messages.collectibleGated
+                  : messages.specialAccess
+              } ${messages.changeAvailabilitySuffix}`}
+            />
+          ) : null}
           <div className={styles.toggleRow}>
             <span className={cn({ [styles.remixDisabled]: isPremium })}>
               {messages.markAsRemix}

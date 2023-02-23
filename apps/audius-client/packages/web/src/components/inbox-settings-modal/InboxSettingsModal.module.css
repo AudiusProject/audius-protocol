@@ -1,0 +1,16 @@
+.modalBody {
+  max-width: 640px;
+}
+
+.modalContent > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.icon path {
+  fill: var(--neutral);
+}
+
+.doneButton {
+  margin: auto;
+}

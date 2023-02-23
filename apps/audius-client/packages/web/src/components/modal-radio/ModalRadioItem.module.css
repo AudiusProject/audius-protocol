@@ -1,0 +1,69 @@
+.root:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.root {
+  display: flex;
+  gap: var(--unit-2);
+  padding: var(--unit-6) 0;
+  border-top: 1px solid var(--neutral-light-7);
+  cursor: pointer;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  height: var(--unit-9);
+  flex: 0 0 auto;
+}
+
+.labelContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+}
+
+.optionTitle {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
+  margin-left: var(--unit-2);
+  font-size: var(--font-2xl);
+  font-weight: var(--font-bold);
+  line-height: 150%;
+}
+
+.root:has(.input:disabled) .optionTitle {
+  opacity: 0.5;
+}
+
+.optionDescription {
+  display: flex;
+  flex-direction: column;
+  gap: var(--unit-2);
+  margin-left: var(--unit-2);
+  font-weight: var(--font-medium);
+  font-size: var(--font-l);
+  line-height: 140%;
+}
+
+.root:has(.input:checked) .optionTitle {
+  color: var(--secondary);
+}
+.optionTitle path {
+  fill: var(--neutral);
+}
+.root:has(.input:checked) .optionTitle path {
+  fill: var(--secondary);
+}
+
+.collapsibleContainer {
+  /** Unfortunately, this calculates to overflow: auto hidden; */
+  overflow: visible hidden;
+  /** Hack to hide horizontal scrollbars **/
+  padding: 0 150px;
+  margin: 0 -150px;
+  transition: height var(--quick);
+}

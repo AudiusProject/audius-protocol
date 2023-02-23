@@ -1,5 +1,5 @@
-.modalWrapper > div {
-  width: 720px;
+.modalBody {
+  max-width: 720px;
 }
 
 .modalHeader {
@@ -21,121 +21,7 @@
 }
 
 .isRemix {
-  display: flex;
-  align-items: center;
   margin-bottom: var(--unit-6);
-  padding: var(--unit-2) 18px;
-  background: var(--neutral-light-9);
-  border: 1px solid var(--neutral-light-7);
-  border-radius: var(--unit-2);
-  font-weight: var(--font-medium);
-  line-height: 140%;
-}
-
-.isRemixIcon {
-  margin-right: 18px;
-  width: var(--unit-5);
-  height: var(--unit-5);
-  flex-shrink: 0;
-}
-
-.isRemixIcon path {
-  fill: var(--neutral);
-}
-
-.section {
-  display: flex;
-  align-items: center;
-  color: var(--neutral);
-  font-size: var(--font-m);
-  font-weight: var(--font-medium);
-  line-height: 20px;
-  transition: opacity 0.2s ease-in-out;
-  transform: translate3d(0, 0, 0);
-  opacity: 1;
-}
-
-.section:not(:last-child) {
-  margin-bottom: 12px;
-}
-
-.sectionTitleClassname {
-  font-weight: 600;
-  font-size: var(--font-l);
-}
-
-.switchContainer {
-  margin-left: auto;
-  display: flex;
-  height: 100%;
-  justify-content: flex-start;
-  align-items: center;
-}
-
-.availabilityRowIcon {
-  margin: 0 10px;
-  width: 24px;
-  height: 24px;
-}
-
-.availabilityRowIcon path {
-  fill: var(--neutral);
-}
-
-.specialAccessRadioItem:not(:first-child) {
-  border: none;
-  padding: 0;
-}
-
-.specialAccessRadioItemContent {
-  display: flex;
-  align-items: center;
-}
-
-.availabilityRowTitle {
-  display: flex;
-  margin-bottom: 8px;
-  font-weight: var(--font-bold);
-  font-size: 22px;
-}
-
-.availabilityRowDescription {
-  font-weight: var(--font-medium);
-  font-size: 18px;
-  line-height: 140%;
-  margin-left: 8px;
-}
-
-.availabilityRowSelection {
-  margin-top: 8px;
-  padding: 16px;
-  background: var(--neutral-light-10);
-  border: 1px solid var(--neutral-light-7);
-  border-radius: 4px;
-  font-weight: 600;
-  font-size: var(--font-l);
-}
-
-.collectibleGated {
-  padding: 0;
-  margin-top: var(--unit-6);
-}
-
-.hiddenSection {
-  display: flex;
-}
-
-.availabilityRowSelection.hiddenSection .hiddenSectionColumn {
-  width: 304px;
-  margin-bottom: 0;
-}
-
-.hiddenSectionColumn:first-child {
-  margin-right: 12px;
-}
-
-.hiddenSectionColumn:last-child {
-  margin-left: 12px;
 }
 
 .doneButtonContainer {
@@ -147,106 +33,22 @@
   font-size: var(--font-l);
 }
 
-.selected.availabilityRowTitle {
-  color: var(--secondary);
-}
-
-.selected path {
-  fill: var(--secondary);
-}
-
-.disabled.availabilityRowTitle {
-  color: var(--neutral-light-6);
-}
-
-.disabled path {
-  fill: var(--neutral-light-6);
-}
-
-.supportersInfo {
-  margin-left: 8px;
-}
-
-.supportersInfo path {
-  fill: var(--neutral-light-7);
-}
-
 .learnMore {
   display: flex;
   align-items: center;
   width: fit-content;
-  margin: 16px 6px 0 8px;
   color: var(--secondary);
   font-weight: var(--font-bold);
   font-size: var(--font-s);
 }
 
 .learnMoreArrow {
-  width: 16px;
-  height: 16px;
+  width: var(--unit-4);
+  height: var(--unit-4);
 }
 
-.collectibleGated .dropdownInput:has(:global(.ant-select)) {
-  height: 72px;
-}
-
-.dropdownInput :global(.ant-select-selection-item),
-.dropdownInput :global(.ant-select-selection-placeholder) > div {
+.innerDescription {
   display: flex;
-  align-items: center;
-}
-
-.collectibleGated .dropdown :global(.ant-select-item) {
-  padding: 16px;
-  height: unset;
-}
-
-.dropdownRow {
-  display: flex;
-  align-items: center;
-}
-
-.dropdownRow > span {
-  margin-left: 8px;
-  font-weight: var(--font-demi-bold);
-  font-size: var(--font-l);
-}
-
-:global(.ant-select-selection-item) .dropdownRow > img {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-}
-
-:global(.ant-select-item) .dropdownRow > img {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-}
-
-.noCollectibles {
-  display: flex;
-  align-items: center;
-  margin: 24px 0 8px 8px;
-  padding: 8px 16px;
-  background: var(--neutral-light-9);
-  border: 1px solid var(--neutral-light-7);
-  border-radius: 8px;
-}
-
-.noCollectibleIcon {
-  margin-left: 2px;
-  width: var(--unit-6);
-  height: var(--unit-6);
-}
-
-.noCollectibleIcon path {
-  fill: var(--neutral);
-}
-
-.noCollectibleText {
-  margin-left: 18px;
-  font-weight: var(--font-medium);
-  font-size: var(--font-m);
-  line-height: 140%;
+  flex-direction: column;
+  gap: var(--unit-4);
 }

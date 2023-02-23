@@ -1,98 +1,81 @@
+import { ChangeEvent, useCallback } from 'react'
+
 import { accountSelectors, TrackAvailabilityType } from '@audius/common'
-import { IconInfo, IconSpecialAccess } from '@audius/stems'
-import cn from 'classnames'
+import { IconInfo, RadioButton, RadioButtonGroup } from '@audius/stems'
 import { useSelector } from 'react-redux'
 
-import { ModalRadioGroup } from 'components/modal-radio/ModalRadioGroup'
-import { ModalRadioItem } from 'components/modal-radio/ModalRadioItem'
 import Tooltip from 'components/tooltip/Tooltip'
 
-import styles from './TrackAvailabilityModal.module.css'
+import styles from './SpecialAccessAvailability.module.css'
 import { TrackAvailabilitySelectionProps } from './types'
 
 const { getUserId } = accountSelectors
 
 const messages = {
-  specialAccess: 'Special Access',
-  specialAccessSubtitle:
-    'Special Access tracks are only available to users who meet certain criteria, such as following the artist.',
   followersOnly: 'Available to Followers Only',
   supportersOnly: 'Available to Supporters Only',
   supportersInfo: 'Supporters are users who have sent you a tip'
 }
 
+enum SpecialAccessType {
+  TIP = 'tip',
+  FOLLOW = 'follow'
+}
+
 export const SpecialAccessAvailability = ({
-  selected,
   state,
-  onStateUpdate,
-  disabled = false
+  onStateUpdate
 }: TrackAvailabilitySelectionProps) => {
   const accountUserId = useSelector(getUserId)
+  const specialAccessType = state.premium_conditions?.tip_user_id
+    ? SpecialAccessType.TIP
+    : SpecialAccessType.FOLLOW
 
-  const radioItems = [
-    <ModalRadioItem
-      key='follow'
-      selected={!!state.premium_conditions?.follow_user_id}
-      onClick={(e) => {
-        e.stopPropagation()
-        if (accountUserId) {
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const type = e.target.value as SpecialAccessType
+      if (accountUserId) {
+        if (type === SpecialAccessType.FOLLOW) {
           onStateUpdate(
             { follow_user_id: accountUserId },
             TrackAvailabilityType.SPECIAL_ACCESS
           )
-        }
-      }}
-      className={styles.specialAccessRadioItem}
-      contentClassName={styles.specialAccessRadioItemContent}
-    >
-      <div>{messages.followersOnly}</div>
-    </ModalRadioItem>,
-    <ModalRadioItem
-      key='tip'
-      selected={!!state.premium_conditions?.tip_user_id}
-      onClick={(e) => {
-        e.stopPropagation()
-        if (accountUserId) {
+        } else if (type === SpecialAccessType.TIP) {
           onStateUpdate(
             { tip_user_id: accountUserId },
             TrackAvailabilityType.SPECIAL_ACCESS
           )
         }
-      }}
-      className={styles.specialAccessRadioItem}
+      }
+    },
+    [onStateUpdate, accountUserId]
+  )
+
+  return (
+    <RadioButtonGroup
+      className={styles.root}
+      name={'special-access-type'}
+      onChange={handleChange}
+      value={specialAccessType}
     >
-      <div>
+      <label className={styles.row}>
+        <RadioButton
+          className={styles.radio}
+          value={SpecialAccessType.FOLLOW}
+        />
+        {messages.followersOnly}
+      </label>
+      <label className={styles.row}>
+        <RadioButton className={styles.radio} value={SpecialAccessType.TIP} />
         {messages.supportersOnly}
         <Tooltip
           text={messages.supportersInfo}
           mouseEnterDelay={0.1}
-          mount='body'
+          mount={'parent'}
         >
-          <IconInfo className={styles.supportersInfo} />
+          <IconInfo className={styles.icon} />
         </Tooltip>
-      </div>
-    </ModalRadioItem>
-  ]
-
-  return (
-    <div>
-      <div
-        className={cn(styles.availabilityRowTitle, {
-          [styles.selected]: selected,
-          [styles.disabled]: disabled
-        })}
-      >
-        <IconSpecialAccess className={styles.availabilityRowIcon} />
-        <span>{messages.specialAccess}</span>
-      </div>
-      <div className={styles.availabilityRowDescription}>
-        {messages.specialAccessSubtitle}
-      </div>
-      {selected && (
-        <div className={styles.availabilityRowSelection}>
-          <ModalRadioGroup items={radioItems} />
-        </div>
-      )}
-    </div>
+      </label>
+    </RadioButtonGroup>
   )
 }

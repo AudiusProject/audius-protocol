@@ -15,6 +15,8 @@
 .left .options {
   margin-left: auto;
   padding-bottom: 5px; /* fix for line-height on header causing vertical misalignment */
+  display: flex;
+  gap: var(--unit-6);
 }
 
 .header {
@@ -35,7 +37,7 @@
 .right {
   display: flex;
   align-items: flex-end;
-  padding: 16px;
+  padding: var(--unit-4);
 }
 
 .icon path {

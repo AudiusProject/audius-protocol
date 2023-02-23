@@ -45,7 +45,8 @@ class DropdownInput extends Component {
       isRequired,
       error,
       id,
-      focused = this.state.focused
+      focused = this.state.focused,
+      popupContainer: popupContainerProp
     } = this.props
     let { placeholder } = this.props
 
@@ -102,7 +103,7 @@ class DropdownInput extends Component {
         }
       : {}
 
-    let popupContainer = null
+    let popupContainer = popupContainerProp ?? null
     switch (mount) {
       case 'parent':
         popupContainer = (triggerNode) => triggerNode.parentNode
@@ -113,7 +114,7 @@ class DropdownInput extends Component {
         break
       }
       default:
-        popupContainer = null
+        popupContainer = popupContainerProp ?? null
     }
 
     return (
