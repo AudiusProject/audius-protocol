@@ -31,5 +31,6 @@ export type Modals =
   | 'VipDiscord'
   | 'StripeOnRamp'
   | 'CreateChat'
+  | 'LockedContent'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }

@@ -1,10 +1,17 @@
-import { accountSelectors, usePremiumContentAccess } from '@audius/common'
+import { useCallback } from 'react'
+
+import {
+  accountSelectors,
+  premiumContentActions,
+  usePremiumContentAccess
+} from '@audius/common'
 import { View } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
 import type { LineupTileProps } from 'app/components/lineup-tile/types'
 import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
 import { PremiumTrackCornerTag } from 'app/screens/track-screen/PremiumTrackCornerTag'
+import { setVisibility } from 'app/store/drawers/slice'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
 import {
@@ -18,6 +25,7 @@ import { LineupTileStats } from './LineupTileStats'
 import { LineupTileTopRight } from './LineupTileTopRight'
 
 const { getUserId } = accountSelectors
+const { setLockedContentId } = premiumContentActions
 
 export const LineupTile = ({
   children,
@@ -64,14 +72,19 @@ export const LineupTile = ({
   const premiumConditions = isTrack ? item.premium_conditions : null
   const isArtistPick = artist_pick_track_id === id
   const { doesUserHaveAccess } = usePremiumContentAccess(isTrack ? item : null)
+  const dispatch = useDispatch()
+
+  const handlePress = useCallback(() => {
+    if (isPremiumContentEnabled && trackId && !doesUserHaveAccess) {
+      dispatch(setLockedContentId({ id: trackId }))
+      dispatch(setVisibility({ drawer: 'LockedContent', visible: true }))
+    } else {
+      onPress?.()
+    }
+  }, [isPremiumContentEnabled, trackId, doesUserHaveAccess, dispatch, onPress])
 
   return (
-    <LineupTileRoot
-      onPress={
-        !isPremiumContentEnabled || doesUserHaveAccess ? onPress : undefined
-      }
-      {...TileProps}
-    >
+    <LineupTileRoot onPress={handlePress} {...TileProps}>
       {isPremiumContentEnabled && premiumConditions && (
         <PremiumTrackCornerTag
           doesUserHaveAccess={doesUserHaveAccess}

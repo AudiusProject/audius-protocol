@@ -84,13 +84,17 @@ type PremiumTrackAccessSectionProps = {
   tippedUser: Nullable<User>
   goToCollection: () => void
   isOwner: boolean
+  className?: string
+  buttonClassName?: string
 }
 
 const LockedPremiumTrackSection = ({
   premiumConditions,
   followee,
   tippedUser,
-  goToCollection
+  goToCollection,
+  className,
+  buttonClassName
 }: PremiumTrackAccessSectionProps) => {
   const dispatch = useDispatch()
   const account = useSelector(getAccountUser)
@@ -235,7 +239,7 @@ const LockedPremiumTrackSection = ({
   }, [premiumConditions, goToCollection, handleFollow, handleSendTip])
 
   return (
-    <div className={styles.premiumContentSectionLocked}>
+    <div className={className}>
       <div>
         <div className={styles.premiumContentSectionTitle}>
           <IconLock className={styles.lockedIcon} />
@@ -243,7 +247,9 @@ const LockedPremiumTrackSection = ({
         </div>
         {renderLockedDescription()}
       </div>
-      <div className={styles.premiumContentSectionButton}>{renderButton()}</div>
+      <div className={cn(styles.premiumContentSectionButton, buttonClassName)}>
+        {renderButton()}
+      </div>
     </div>
   )
 }
@@ -252,7 +258,8 @@ const UnlockingPremiumTrackSection = ({
   premiumConditions,
   followee,
   tippedUser,
-  goToCollection
+  goToCollection,
+  className
 }: PremiumTrackAccessSectionProps) => {
   const renderUnlockingDescription = useCallback(() => {
     if (premiumConditions.nft_collection) {
@@ -308,7 +315,7 @@ const UnlockingPremiumTrackSection = ({
   }, [premiumConditions, followee, tippedUser, goToCollection])
 
   return (
-    <div className={styles.premiumContentSectionLocked}>
+    <div className={className}>
       <div>
         <div className={styles.premiumContentSectionTitle}>
           <IconLock className={styles.lockedIcon} />
@@ -327,7 +334,8 @@ const UnlockedPremiumTrackSection = ({
   followee,
   tippedUser,
   goToCollection,
-  isOwner
+  isOwner,
+  className
 }: PremiumTrackAccessSectionProps) => {
   const renderUnlockedDescription = useCallback(() => {
     if (premiumConditions.nft_collection) {
@@ -399,7 +407,7 @@ const UnlockedPremiumTrackSection = ({
   }, [premiumConditions, isOwner, followee, tippedUser, goToCollection])
 
   return (
-    <div className={styles.premiumContentSectionUnlocked}>
+    <div className={className}>
       <div className={styles.premiumContentSectionTitle}>
         {isOwner ? (
           premiumConditions.nft_collection ? (
@@ -429,6 +437,9 @@ type PremiumTrackSectionProps = {
   premiumConditions: PremiumConditions
   doesUserHaveAccess: boolean
   isOwner: boolean
+  wrapperClassName?: string
+  className?: string
+  buttonClassName?: string
 }
 
 export const PremiumTrackSection = ({
@@ -436,7 +447,10 @@ export const PremiumTrackSection = ({
   trackId,
   premiumConditions,
   doesUserHaveAccess,
-  isOwner
+  isOwner,
+  wrapperClassName,
+  className,
+  buttonClassName
 }: PremiumTrackSectionProps) => {
   const { isEnabled: isPremiumContentEnabled } = useFlag(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
@@ -479,13 +493,16 @@ export const PremiumTrackSection = ({
 
   if (doesUserHaveAccess) {
     return (
-      <div className={cn(styles.premiumContentSection, fadeIn)}>
+      <div
+        className={cn(styles.premiumContentSection, fadeIn, wrapperClassName)}
+      >
         <UnlockedPremiumTrackSection
           premiumConditions={premiumConditions}
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
           isOwner={isOwner}
+          className={className}
         />
       </div>
     )
@@ -493,26 +510,31 @@ export const PremiumTrackSection = ({
 
   if (premiumTrackStatus === 'UNLOCKING') {
     return (
-      <div className={cn(styles.premiumContentSection, fadeIn)}>
+      <div
+        className={cn(styles.premiumContentSection, fadeIn, wrapperClassName)}
+      >
         <UnlockingPremiumTrackSection
           premiumConditions={premiumConditions}
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
           isOwner={isOwner}
+          className={className}
         />
       </div>
     )
   }
 
   return (
-    <div className={cn(styles.premiumContentSection, fadeIn)}>
+    <div className={cn(styles.premiumContentSection, fadeIn, wrapperClassName)}>
       <LockedPremiumTrackSection
         premiumConditions={premiumConditions}
         followee={followee}
         tippedUser={tippedUser}
         goToCollection={handleGoToCollection}
         isOwner={isOwner}
+        className={cn(styles.premiumContentSectionLocked, className)}
+        buttonClassName={buttonClassName}
       />
     </div>
   )

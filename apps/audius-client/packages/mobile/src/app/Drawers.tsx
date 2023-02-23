@@ -17,6 +17,7 @@ import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
 import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
 import { ForgotPasswordDrawer } from 'app/components/forgot-password-drawer'
+import { LockedContentDrawer } from 'app/components/locked-content-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
@@ -104,7 +105,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   RateCallToAction: RateCtaDrawer,
   RemoveDownloadedCollection: RemoveDownloadedCollectionDrawer,
   RemoveDownloadedFavorites: RemoveDownloadedFavoritesDrawer,
-  UnfavoriteDownloadedCollection: UnfavoriteDownloadedCollectionDrawer
+  UnfavoriteDownloadedCollection: UnfavoriteDownloadedCollectionDrawer,
+  LockedContent: LockedContentDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

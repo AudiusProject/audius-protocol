@@ -205,6 +205,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 16px;
 }
 
 .premiumContentSectionTitle {
@@ -240,7 +241,6 @@
 .premiumContentSectionButton {
   display: flex;
   width: 250px;
-  margin-left: 16px;
 }
 
 .premiumContentSectionButton button {

@@ -17,7 +17,8 @@ import { TrackAvailabilitySelectionProps } from './types'
 
 const { getVerifiedUserCollections } = collectiblesSelectors
 
-const LEARN_MORE_URL = ''
+const LEARN_MORE_URL =
+  'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
