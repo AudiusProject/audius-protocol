@@ -99,6 +99,6 @@ export const getCollectiblesRoute = (
   collectibleId?: string,
   fullUrl?: boolean
 ) =>
-  `${fullUrl ? AUDIUS_URL : ''}${encodeUrlName(handle)}/collectibles${
+  `${fullUrl ? AUDIUS_URL : ''}/${encodeUrlName(handle)}/collectibles${
     collectibleId ? `/${getHash(collectibleId)}` : ''
   }`
