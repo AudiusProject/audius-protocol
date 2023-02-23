@@ -11,6 +11,7 @@ import (
 
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/storage/config"
+	"comms.audius.co/storage/contentaccess"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/monitor"
 	"comms.audius.co/storage/persistence"
@@ -100,6 +101,8 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 
 	ss.WebServer.Use(otelecho.Middleware("storage"))
 	telemetry.AddPrometheusMiddlware(ss.WebServer)
+
+	ss.WebServer.Use(contentaccess.ContentAccessMiddleware)
 
 	// Register endpoints at /storage
 	storage := ss.WebServer.Group("/storage")

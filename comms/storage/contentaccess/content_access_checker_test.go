@@ -16,7 +16,6 @@ import (
 )
 
 func TestRecoverWallet(t *testing.T) {
-
 	signatureData := SignatureData{
 		Cid:         "Qmblah",
 		ShouldCache: true,
