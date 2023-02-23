@@ -9,7 +9,7 @@ import (
 var jobsCmd = &cobra.Command{
 	Use:   "jobs",
 	Short: "",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		clientCount, err := initClients()
 		if err != nil || clientCount < 1 {
@@ -17,18 +17,15 @@ var jobsCmd = &cobra.Command{
 			return
 		}
 
-		for _, client := range ClientList {
-			jobs, err := client.GetJobs()
-			if err != nil {
-				fmt.Printf("getting jobs error, %+v\n", jobs)
-				continue
-			}
+		client := ClientList[0]
+		jobs, err := client.GetJobs()
+		if err != nil {
+			fmt.Printf("getting jobs error, %+v\n", jobs)
+			return
+		}
 
-			fmt.Printf("[%s] => %+v jobs\n", client.Endpoint, len(jobs))
-
-			for _, job := range jobs {
-				fmt.Printf("[%s] => %+v\n", client.Endpoint, job.ID)
-			}
+		for _, job := range jobs {
+			fmt.Printf("%+v\n", job.ID)
 		}
 	},
 }
