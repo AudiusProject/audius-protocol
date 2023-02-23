@@ -13,7 +13,8 @@ import {
   useInstanceVar,
   ProfileUser,
   collectibleDetailsUISelectors,
-  collectibleDetailsUIActions
+  collectibleDetailsUIActions,
+  getHash
 } from '@audius/common'
 import {
   Button,
@@ -54,8 +55,7 @@ import { copyToClipboard, getCopyableLink } from 'utils/clipboardUtil'
 import {
   BASE_GA_URL,
   PROFILE_PAGE_COLLECTIBLE_DETAILS,
-  doesMatchRoute,
-  getHash
+  doesMatchRoute
 } from 'utils/route'
 import zIndex from 'utils/zIndex'
 

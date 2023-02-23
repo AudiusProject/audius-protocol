@@ -1,4 +1,4 @@
-import type { UserCollection, ShareModalContent } from '@audius/common'
+import type { ShareModalContent } from '@audius/common'
 
 import {
   getCollectionRoute,
@@ -21,17 +21,11 @@ export const getContentUrl = (content: ShareModalContent) => {
     }
     case 'album': {
       const { album, artist } = content
-      return getCollectionRoute(
-        { ...album, user: artist } as unknown as UserCollection,
-        true
-      )
+      return getCollectionRoute({ ...album, user: artist }, true)
     }
     case 'playlist': {
       const { playlist, creator } = content
-      return getCollectionRoute(
-        { ...playlist, user: creator } as unknown as UserCollection,
-        true
-      )
+      return getCollectionRoute({ ...playlist, user: creator }, true)
     }
     // TODO: add audioNFTPlaylist link
     case 'audioNftPlaylist': {
