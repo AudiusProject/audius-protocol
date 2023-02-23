@@ -353,6 +353,47 @@ services:
     profiles:
       - elasticsearch
 
+  comms:
+    build:
+      context: comms
+      dockerfile: DockerfileM1
+    container_name: comms
+    command: /comms-linux discovery
+    environment:
+      audius_db_url: "postgres://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery?sslmode=disable"
+    depends_on:
+      - nats
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
+  nats:
+    build:
+      context: comms
+      dockerfile: DockerfileM1
+    container_name: nats
+    command: /comms-linux nats
+    restart: unless-stopped
+    ports:
+      - "6222:6222"
+      - "4222:4222"
+    environment:
+      - NATS_STORE_DIR=/nats
+    volumes:
+      - /var/k8s/nats:/nats
+    logging:
+      options:
+        max-size: 10m
+        max-file: 3
+        mode: non-blocking
+        max-buffer-size: 100m
+      driver: json-file
+
   discovery-provider:
     build:
       context: discovery-provider
