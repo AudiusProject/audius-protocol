@@ -279,9 +279,7 @@ services:
       - discovery
 
   test-discovery-provider-notifications:
-    extends:
-      file: docker-compose.yml
-      service: discovery-provider-notifications
+    build: discovery-provider/plugins/notifications
     command: sh -c "npm run test:watch"
     environment:
       AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
