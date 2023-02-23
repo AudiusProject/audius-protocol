@@ -94,16 +94,6 @@ services:
     volumes:
       - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
 
-  nats:
-    build:
-      context: .
-      dockerfile: Dockerfile.v2
-    image: "nats:v2"
-    restart: unless-stopped
-    stop_signal: SIGKILL
-    command:
-      - nats
-
   nats-dev:
     build:
       context: .
@@ -131,16 +121,6 @@ services:
     volumes:
       - ./natsd:/app/natsd
       - ./shared:/app/shared
-
-  storage:
-    build:
-      context: .
-      dockerfile: Dockerfile.v2
-    image: "storage:v2"
-    restart: unless-stopped
-    stop_signal: SIGKILL
-    command:
-      - storage
 
   discovery-dev:
     build:
