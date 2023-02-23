@@ -3,6 +3,7 @@ package contentaccess
 import (
 	"encoding/json"
 	"net/url"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -28,6 +29,8 @@ func ContentAccessMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		if !isValidSignature {
 			return echo.ErrBadRequest
 		}
+
+		c.Response().Header().Set("shouldCache", strconv.FormatBool(signatureData.ShouldCache))
 
 		return next(c)
 	}
