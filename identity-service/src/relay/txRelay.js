@@ -202,7 +202,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartT
     if (relayTxs.length === 1) {
       txParams = relayTxs[0].value.txParams
       txReceipt = relayTxs[0].value.receipt
-      txLatency.push(relayTxs[0].value.timeToComplete)
+      txLatencies.push(relayTxs[0].value.timeToComplete)
     } else if (relayTxs.length === 2) {
       const [poaTx, nethermindTx] = relayTxs.map((result) => result?.value)
       console.log(
