@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -9,8 +10,10 @@ import (
 	"net/http"
 	"net/textproto"
 	"strings"
+	"sync"
 	"time"
 
+	"comms.audius.co/shared/utils"
 	"comms.audius.co/storage/transcode"
 )
 
@@ -105,8 +108,76 @@ func (sc *StorageClient) UploadPng(imageData []byte, filename string) error {
 	return sc.Upload(imageData, imageType, "image/png", filename)
 }
 
+func (sc *StorageClient) SeedAudio(audioCount int) {
+	wg := sync.WaitGroup{}
+	for i := 0; i < int(audioCount); i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			audioData, err := utils.GenerateWhiteNoise(60)
+			if err != nil {
+				return
+			}
+
+			filename := fmt.Sprintf("audio-seed-%d.mp3", id)
+			err = sc.UploadAudio(audioData, filename)
+			if err != nil {
+				return
+			}
+		}(i)
+	}
+
+	wg.Wait()
+}
+
 func (sc *StorageClient) HealthCheck() (*http.Response, error) {
-	route := "/health"
+	route := "/storage/health"
 
 	return sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
+}
+
+func (sc *StorageClient) GetJobs() ([]*transcode.Job, error) {
+	route := "/storage/jobs"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var jobs []*transcode.Job
+	err = json.Unmarshal(body, &jobs)
+	if err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
+}
+
+func (sc *StorageClient) GetJob(jobId string) (*transcode.Job, error) {
+	route := "/storage/jobs"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, jobId))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var job transcode.Job
+	err = json.Unmarshal(body, &job)
+	if err != nil {
+		return nil, err
+	}
+
+	return &job, nil
 }
