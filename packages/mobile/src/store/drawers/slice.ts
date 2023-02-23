@@ -19,6 +19,7 @@ export type Drawer =
   | 'RemoveDownloadedFavorites'
   | 'UnfavoriteDownloadedCollection'
   | 'RateCallToAction'
+  | 'LockedContent'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -39,6 +40,7 @@ export type DrawerData = {
   RemoveDownloadedCollection: {
     collectionId: ID
   }
+  LockedContent: undefined
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -60,6 +62,7 @@ const initialState: DrawersState = {
   RemoveDownloadedFavorites: false,
   UnfavoriteDownloadedCollection: false,
   RateCallToAction: false,
+  LockedContent: false,
   data: null
 }
 

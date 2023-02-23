@@ -1,5 +1,6 @@
 import type { ID, PremiumConditions } from '@audius/common'
 import { removeNullable, cacheUsersSelectors } from '@audius/common'
+import type { ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
@@ -12,13 +13,15 @@ type DetailsTilePremiumAccessProps = {
   premiumConditions: PremiumConditions
   isOwner: boolean
   doesUserHaveAccess: boolean
+  style?: ViewStyle
 }
 
 export const DetailsTilePremiumAccess = ({
   trackId,
   premiumConditions,
   isOwner,
-  doesUserHaveAccess
+  doesUserHaveAccess,
+  style
 }: DetailsTilePremiumAccessProps) => {
   const { follow_user_id: followUserId, tip_user_id: tipUserId } =
     premiumConditions ?? {}
@@ -39,6 +42,7 @@ export const DetailsTilePremiumAccess = ({
       <DetailsTileHasAccess
         premiumConditions={premiumConditions}
         isOwner={isOwner}
+        style={style}
       />
     )
   }
@@ -47,6 +51,7 @@ export const DetailsTilePremiumAccess = ({
     <DetailsTileNoAccess
       trackId={trackId}
       premiumConditions={premiumConditions}
+      style={style}
     />
   )
 }

@@ -28,7 +28,8 @@ const messages = {
     'No Collectibles found. To enable this option, link a wallet containing a collectible.'
 }
 
-const LEARN_MORE_URL = ''
+const LEARN_MORE_URL =
+  'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 
 const { getVerifiedUserCollections } = collectiblesSelectors
 

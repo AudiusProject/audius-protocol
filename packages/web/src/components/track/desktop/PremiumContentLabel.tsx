@@ -1,10 +1,6 @@
-import { useCallback } from 'react'
-
 import { PremiumConditions, FeatureFlags, Nullable } from '@audius/common'
 import { IconCollectible, IconSpecialAccess, IconUnlocked } from '@audius/stems'
 import cn from 'classnames'
-import { push as pushRoute } from 'connected-react-router'
-import { useDispatch } from 'react-redux'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 
@@ -19,22 +15,15 @@ const messages = {
 export const PremiumContentLabel = ({
   premiumConditions,
   doesUserHaveAccess,
-  isOwner,
-  permalink
+  isOwner
 }: {
   premiumConditions?: Nullable<PremiumConditions>
   doesUserHaveAccess: boolean
   isOwner: boolean
-  permalink: string
 }) => {
   const { isEnabled: isPremiumContentEnabled } = useFlag(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
   )
-  const dispatch = useDispatch()
-
-  const handleClick = useCallback(() => {
-    dispatch(pushRoute(permalink))
-  }, [dispatch, permalink])
 
   if (!isPremiumContentEnabled) {
     return null
@@ -42,18 +31,12 @@ export const PremiumContentLabel = ({
 
   if (isOwner) {
     return premiumConditions?.nft_collection ? (
-      <div
-        className={cn(styles.premiumContent, styles.topRightIconLabel)}
-        onClick={handleClick}
-      >
+      <div className={cn(styles.premiumContent, styles.topRightIconLabel)}>
         <IconCollectible className={styles.topRightIcon} />
         {messages.collectibleGated}
       </div>
     ) : (
-      <div
-        className={cn(styles.premiumContent, styles.topRightIconLabel)}
-        onClick={handleClick}
-      >
+      <div className={cn(styles.premiumContent, styles.topRightIconLabel)}>
         <IconSpecialAccess className={styles.topRightIcon} />
         {messages.specialAccess}
       </div>
@@ -62,10 +45,7 @@ export const PremiumContentLabel = ({
 
   if (doesUserHaveAccess) {
     return (
-      <div
-        className={cn(styles.premiumContent, styles.topRightIconLabel)}
-        onClick={handleClick}
-      >
+      <div className={cn(styles.premiumContent, styles.topRightIconLabel)}>
         <IconUnlocked className={styles.topRightIcon} />
         {messages.unlocked}
       </div>
@@ -74,10 +54,7 @@ export const PremiumContentLabel = ({
 
   if (premiumConditions?.nft_collection) {
     return (
-      <div
-        className={cn(styles.premiumContent, styles.topRightIconLabel)}
-        onClick={handleClick}
-      >
+      <div className={cn(styles.premiumContent, styles.topRightIconLabel)}>
         <IconCollectible className={styles.topRightIcon} />
         {messages.collectibleGated}
       </div>
@@ -85,10 +62,7 @@ export const PremiumContentLabel = ({
   }
 
   return (
-    <div
-      className={cn(styles.premiumContent, styles.topRightIconLabel)}
-      onClick={handleClick}
-    >
+    <div className={cn(styles.premiumContent, styles.topRightIconLabel)}>
       <IconSpecialAccess className={styles.topRightIcon} />
       {messages.specialAccess}
     </div>

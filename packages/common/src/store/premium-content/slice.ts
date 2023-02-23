@@ -6,11 +6,13 @@ import { Nullable } from 'utils'
 type PremiumContentState = {
   premiumTrackSignatureMap: { [id: ID]: Nullable<PremiumContentSignature> }
   statusMap: { [id: ID]: PremiumTrackStatus }
+  lockedContentId: Nullable<ID>
 }
 
 const initialState: PremiumContentState = {
   premiumTrackSignatureMap: {},
-  statusMap: {}
+  statusMap: {},
+  lockedContentId: null
 }
 
 type UpdatePremiumContentSignaturesPayload = {
@@ -36,6 +38,10 @@ type RefreshPremiumTrackPayload = {
     | { slug: string; trackId: null; handle: string }
     | { slug: null; trackId: ID; handle: null }
     | null
+}
+
+type SetLockedContentIdPayload = {
+  id: ID
 }
 
 const slice = createSlice({
@@ -75,9 +81,18 @@ const slice = createSlice({
       }
     },
     refreshPremiumTrack: (
-      _,
-      __: PayloadAction<RefreshPremiumTrackPayload>
-    ) => {}
+      _state,
+      _action: PayloadAction<RefreshPremiumTrackPayload>
+    ) => {},
+    setLockedContentId: (
+      state,
+      action: PayloadAction<SetLockedContentIdPayload>
+    ) => {
+      state.lockedContentId = action.payload.id
+    },
+    resetLockedContentId: (state) => {
+      state.lockedContentId = null
+    }
   }
 })
 
@@ -86,7 +101,9 @@ export const {
   removePremiumContentSignatures,
   updatePremiumTrackStatus,
   updatePremiumTrackStatuses,
-  refreshPremiumTrack
+  refreshPremiumTrack,
+  setLockedContentId,
+  resetLockedContentId
 } = slice.actions
 
 export const reducer = slice.reducer

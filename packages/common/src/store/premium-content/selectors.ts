@@ -5,3 +5,6 @@ export const getPremiumTrackSignatureMap = (state: CommonState) =>
 
 export const getPremiumTrackStatusMap = (state: CommonState) =>
   state.premiumContent.statusMap
+
+export const getLockedContentId = (state: CommonState) =>
+  state.premiumContent.lockedContentId

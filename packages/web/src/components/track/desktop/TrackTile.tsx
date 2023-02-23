@@ -1,11 +1,18 @@
 import { memo, MouseEvent, useCallback } from 'react'
 
-import { formatCount, pluralize, formatSeconds } from '@audius/common'
+import {
+  formatCount,
+  pluralize,
+  formatSeconds,
+  premiumContentActions
+} from '@audius/common'
 import { IconCrown, IconHidden } from '@audius/stems'
 import cn from 'classnames'
+import { useDispatch } from 'react-redux'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
+import { useModalState } from 'common/hooks/useModalState'
 import Skeleton from 'components/skeleton/Skeleton'
 
 import { PremiumTrackCornerTag } from '../PremiumTrackCornerTag'
@@ -18,6 +25,8 @@ import {
 import { BottomRow } from './BottomRow'
 import { PremiumContentLabel } from './PremiumContentLabel'
 import styles from './TrackTile.module.css'
+
+const { setLockedContentId } = premiumContentActions
 
 const messages = {
   getPlays: (listenCount: number) => ` ${pluralize('Play', listenCount)}`,
@@ -96,7 +105,17 @@ const TrackTile = memo(
     isTrack,
     trackId
   }: TrackTileProps) => {
+    const dispatch = useDispatch()
+    const [, setModalVisibility] = useModalState('LockedContent')
+
     const hasOrdering = order !== undefined
+
+    const hidePlays = fieldVisibility
+      ? fieldVisibility.play_count === false
+      : false
+
+    const showPremiumCornerTag =
+      !isLoading && premiumConditions && (isOwner || !doesUserHaveAccess)
 
     const onClickTitleWrapper = useCallback(
       (e: MouseEvent) => {
@@ -107,12 +126,28 @@ const TrackTile = memo(
       [onClickTitle]
     )
 
-    const hidePlays = fieldVisibility
-      ? fieldVisibility.play_count === false
-      : false
+    const onClickTile = useCallback(() => {
+      if (isLoading || isDisabled) {
+        return
+      }
 
-    const showPremiumCornerTag =
-      !isLoading && premiumConditions && (isOwner || !doesUserHaveAccess)
+      if (isTrack && trackId && !doesUserHaveAccess) {
+        dispatch(setLockedContentId({ id: trackId }))
+        setModalVisibility(true)
+        return
+      }
+
+      onTogglePlay()
+    }, [
+      dispatch,
+      isLoading,
+      isDisabled,
+      isTrack,
+      trackId,
+      doesUserHaveAccess,
+      setModalVisibility,
+      onTogglePlay
+    ])
 
     return (
       <div
@@ -128,11 +163,7 @@ const TrackTile = memo(
           // Standalone means that this tile is not w/ a playlist
           [styles.standalone]: !!standalone
         })}
-        onClick={
-          isLoading || isDisabled || (isTrack && !doesUserHaveAccess)
-            ? undefined
-            : onTogglePlay
-        }
+        onClick={onClickTile}
       >
         {showPremiumCornerTag && (
           <PremiumTrackCornerTag
@@ -225,7 +256,6 @@ const TrackTile = memo(
                   premiumConditions={premiumConditions}
                   doesUserHaveAccess={!!doesUserHaveAccess}
                   isOwner={isOwner}
-                  permalink={permalink}
                 />
               )}
               {isUnlisted && (
