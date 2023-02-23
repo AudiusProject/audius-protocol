@@ -78,5 +78,7 @@ export {
 } from './components/RadioPillButton'
 export {
   RadioButtonGroup,
-  RadioButtonGroupProps
+  RadioButtonGroupProps,
+  RadioGroupContext
 } from './components/RadioButtonGroup'
+export { RadioButton, RadioButtonProps } from './components/RadioButton'

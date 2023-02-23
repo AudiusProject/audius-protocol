@@ -1,18 +1,9 @@
-import { IconHidden } from '@audius/stems'
-import cn from 'classnames'
-
 import Switch from '../switch/Switch'
 
-import styles from './TrackAvailabilityModal.module.css'
-import {
-  TrackAvailabilitySelectionProps,
-  UnlistedTrackMetadataField
-} from './types'
+import styles from './HiddenAvailability.module.css'
+import { TrackMetadataState, UnlistedTrackMetadataField } from './types'
 
 const messages = {
-  hidden: 'Hidden',
-  hiddenSubtitle:
-    "Hidden tracks won't be visible to your followers. Only you will see them on your profile. Anyone who has the link will be able to listen.",
   showGenre: 'Show Genre',
   showMood: 'Show Mood',
   showTags: 'Show Tags',
@@ -23,10 +14,10 @@ const messages = {
 // The order of toggles in the modal
 const unlistedTrackMetadataOrder = [
   UnlistedTrackMetadataField.GENRE,
-  UnlistedTrackMetadataField.MOOD,
-  UnlistedTrackMetadataField.TAGS,
   UnlistedTrackMetadataField.SHARE,
-  UnlistedTrackMetadataField.PLAYS
+  UnlistedTrackMetadataField.MOOD,
+  UnlistedTrackMetadataField.PLAYS,
+  UnlistedTrackMetadataField.TAGS
 ]
 
 const hiddenTrackMetadataMap = {
@@ -38,86 +29,42 @@ const hiddenTrackMetadataMap = {
   [UnlistedTrackMetadataField.PLAYS]: messages.showPlayCount
 }
 
-type HiddenTrackMetadataSectionProps = {
-  title: string
-  isVisible: boolean
-  isDisabled: boolean
-  didSet: (enabled: boolean) => void
+const defaultHiddenFields = {
+  unlisted: true,
+  genre: true,
+  mood: true,
+  tags: true,
+  plays: false,
+  share: false
 }
 
-const HiddenTrackMetadataSection = ({
-  title,
-  isVisible,
-  isDisabled,
-  didSet
-}: HiddenTrackMetadataSectionProps) => {
-  return (
-    <div className={styles.section}>
-      <span className={styles.sectionTitleClassname}>{title}</span>
-      <div className={styles.switchContainer}>
-        <Switch
-          isOn={isVisible}
-          handleToggle={(e) => {
-            e.stopPropagation()
-            didSet(!isVisible)
-          }}
-          isDisabled={isDisabled}
-        />
-      </div>
-    </div>
-  )
+type HiddenAvailabilityProps = {
+  state: TrackMetadataState
+  toggleField: (field: UnlistedTrackMetadataField) => void
 }
 
 export const HiddenAvailability = ({
-  selected,
   state,
-  onStateUpdate
-}: TrackAvailabilitySelectionProps) => {
+  toggleField
+}: HiddenAvailabilityProps) => {
   return (
-    <div>
-      <div
-        className={cn(styles.availabilityRowTitle, {
-          [styles.selected]: selected
-        })}
-      >
-        <IconHidden className={styles.availabilityRowIcon} />
-        <span>{messages.hidden}</span>
-      </div>
-      <div className={styles.availabilityRowDescription}>
-        {messages.hiddenSubtitle}
-      </div>
-      {selected && (
-        <div
-          className={cn(styles.availabilityRowSelection, styles.hiddenSection)}
-        >
-          <div className={styles.hiddenSectionColumn}>
-            {unlistedTrackMetadataOrder.slice(0, 3).map((label, i) => {
-              return (
-                <HiddenTrackMetadataSection
-                  key={i}
-                  isDisabled={false}
-                  isVisible={state[label]}
-                  title={hiddenTrackMetadataMap[label]}
-                  didSet={onStateUpdate(label)}
-                />
-              )
-            })}
+    <div className={styles.root}>
+      {unlistedTrackMetadataOrder.map((field) => {
+        return (
+          <div className={styles.switchRow} key={field}>
+            <span className={styles.switchLabel}>
+              {hiddenTrackMetadataMap[field]}
+            </span>
+            <Switch
+              key={field}
+              isOn={state.unlisted ? state[field] : defaultHiddenFields[field]}
+              handleToggle={() => toggleField(field)}
+            />
           </div>
-          <div className={styles.hiddenSectionColumn}>
-            {unlistedTrackMetadataOrder.slice(3).map((label, i) => {
-              return (
-                <HiddenTrackMetadataSection
-                  key={i}
-                  isDisabled={false}
-                  isVisible={state[label]}
-                  title={hiddenTrackMetadataMap[label]}
-                  didSet={onStateUpdate(label)}
-                />
-              )
-            })}
-          </div>
-        </div>
-      )}
+        )
+      })}
+      {/* Dummy row for spacing consistency */}
+      <div className={styles.switchRow}></div>
     </div>
   )
 }
