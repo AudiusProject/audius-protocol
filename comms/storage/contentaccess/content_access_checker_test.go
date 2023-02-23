@@ -15,7 +15,41 @@ import (
 )
 
 func TestRecoverWallet(t *testing.T) {
+	tests := []struct {
+		testData SignatureData
+	}{
+		{
+			SignatureData{
+				Cid:         "Qmblah",
+				ShouldCache: true,
+				Timestamp:   time.Now().Unix(),
+				TrackId:     12345,
+			},
+		},
+	}
 
+	privKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		t.Fatal("Key generation failed")
+	}
+
+	for _, tt := range tests {
+		signature, err := utils.GenerateSignature(tt.testData.toMap(), privKey)
+		if err != nil {
+			t.Fatalf("Failed to generate signature for %+v", tt.testData)
+		}
+
+		actualSigner, err := recoverWallet(tt.testData, signature)
+		if err != nil {
+			t.Fatalf("recover wallet errored with %+v", err)
+		}
+
+		expectedSigner := utils.MarshalPubECDSA(&privKey.PublicKey)
+
+		if actualSigner != string(expectedSigner) {
+			t.Fatalf("public key doesn't match signer, want=%+v, got=%+v", expectedSigner, []byte(actualSigner))
+		}
+	}
 }
 
 func TestIsExpired(t *testing.T) {

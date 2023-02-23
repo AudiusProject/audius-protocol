@@ -35,7 +35,7 @@ func (sd SignatureData) toMap() map[string]interface{} {
 }
 
 func recoverWallet(signatureData SignatureData, signature []byte) (string, error) {
-	stringData, err := json.Marshal(signatureData.toMap())
+	stringData, err := json.Marshal(signatureData)
 	if err != nil {
 		return "", err
 	}
