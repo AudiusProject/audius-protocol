@@ -150,17 +150,24 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartT
     // send to POA
     // PROD doesn't have sendToNethermindOnly and should default to POA
     // STAGE defaults to nethermind but can send to POA when it has both addresses
-    const relayPromises = []
-    // both have the possibility of being relayed together
-    const relayRecipients = {
-      poa: false,
-      nethermind: false,
+
+    // relay stats object that gets filled out as relay occurs
+    const relayStats = {
+      poa: {
+        isRecipient: false,
+        txSubmissionTime: null
+      },
+      nethermind: {
+        isRecipient: false,
+        txSubmissionTime: null
+      },
     }
+
     if (
       !sendToNethermindOnly ||
       (sendToNethermindOnly && nethermindContractAddress)
     ) {
-      relayRecipients.poa = true
+      relayStats.poa.isRecipient = true
       relayPromises.push(
         createAndSendTransaction(
           wallet,
@@ -185,7 +192,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartT
         nethermindContractAddress = contractAddress
         nethermindEncodedABI = encodedABI
       }
-      relayRecipients.nethermind = true
+      relayStats.nethermind.isRecipient = true
       relayPromises.push(
         relayToNethermind(
           nethermindEncodedABI,
@@ -196,13 +203,16 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartT
     }
     const relayTxs = await Promise.allSettled(relayPromises)
 
-    // set after txs are successfully submitted
-    let txLatencies = []
-
     if (relayTxs.length === 1) {
       txParams = relayTxs[0].value.txParams
       txReceipt = relayTxs[0].value.receipt
-      txLatencies.push(relayTxs[0].value.timeToComplete)
+      // infer tx type and populate time
+      if (relayStats.nethermind.isRecipient) {
+        relayStats.nethermind.txSubmissionTime = relayTxs[0].value.timeToComplete
+      } else {
+        relayStats.poa.txSubmissionTime = relayTxs[0].value.timeToComplete
+      }
+
     } else if (relayTxs.length === 2) {
       const [poaTx, nethermindTx] = relayTxs.map((result) => result?.value)
       console.log(
@@ -217,9 +227,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartT
         txParams = poaTx.txParams
         txReceipt = poaTx.receipt
       }
-      // push both
-      txLatencies.push(poaTx.timeToComplete)
-      txLatencies.push(nethermindTx.timeToComplete)
+      // populate both, we want stats if relay went to both chains
+      relayStats.nethermind.txSubmissionTime = nethermindTx.timeToComplete
+      relayStats.poa.txSubmissionTime = poaTx.timeToComplete
     }
 
     const end = new Date().getTime()
@@ -230,9 +240,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA, reqStartT
       txParams,
       senderAddress,
       nonce: txParams.nonce,
-      reqLatency, // time the request has taken up to this point
-      relayRecipients,
-      txLatencies, // when two elements are present, the first is always POA
+      relayStats,
     }
     await redis.zadd(
       'relayTxAttempts',
