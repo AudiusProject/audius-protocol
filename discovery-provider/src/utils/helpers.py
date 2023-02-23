@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import time
+import unicodedata
 from functools import reduce
 from json.encoder import JSONEncoder
 from typing import Optional, cast
@@ -325,7 +326,8 @@ def create_track_route_id(title, handle):
     Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
     """
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
-    # Strip out invalid character
+    sanitized_title = unicodedata.normalize('NFC', sanitized_title)
+    # Strip out invalid characters
     sanitized_title = re.sub(
         r"!|%|\`|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00",
         "",
@@ -361,7 +363,8 @@ def sanitize_slug(title, record_id, collision_id=0):
     (PlaylistName="My Awesome Playlist'~~", collision_id=2) => "my-awesome-playlist-2"
     """
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
-    # Strip out invalid character
+    sanitized_title = unicodedata.normalize('NFC', sanitized_title)
+    # Strip out invalid characters
     sanitized_title = re.sub(
         r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|\’|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"|~",
         "",
