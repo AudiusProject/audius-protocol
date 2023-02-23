@@ -109,7 +109,7 @@ def _get_chain_health():
         health_res = requests.get(LOCAL_RPC + "/health")
         chain_res = health_res.json()
 
-        web3 = get_nethermind_web3()
+        web3 = get_nethermind_web3(LOCAL_RPC)
         latest_block = web3.eth.get_block("latest")
         chain_res["block_number"] = latest_block.number
         chain_res["hash"] = latest_block.hash.hex()

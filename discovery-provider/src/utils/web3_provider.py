@@ -2,6 +2,7 @@
 Interface for using a web3 provider
 """
 
+import os
 from typing import Optional
 
 from src.utils import helpers
@@ -27,8 +28,10 @@ def get_web3():
     return web3
 
 
-def get_nethermind_web3():
-    web3 = Web3(HTTPProvider(LOCAL_RPC))
+def get_nethermind_web3(web3endpoint=None):
+    if not web3endpoint:
+        web3endpoint = os.getenv("audius_web3_nethermind_rpc")
+    web3 = Web3(HTTPProvider(web3endpoint))
 
     # required middleware for POA
     # https://web3py.readthedocs.io/en/latest/middleware.html#proof-of-authority
