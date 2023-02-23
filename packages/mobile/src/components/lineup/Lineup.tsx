@@ -538,7 +538,6 @@ export const Lineup = ({
           }
           return null
         }}
-        listKey={listKey}
         scrollIndicatorInsets={{ right: Number.MIN_VALUE }}
       />
     </View>

@@ -104,10 +104,7 @@ export const SmartCollectionScreen = (props: SmartCollectionScreenProps) => {
   )
 
   return (
-    <VirtualizedScrollView
-      listKey={`playlist-screen-${playlistName}`}
-      style={styles.root}
-    >
+    <VirtualizedScrollView style={styles.root}>
       <CollectionScreenDetailsTile
         collectionId={variant}
         description={playlistDescription}

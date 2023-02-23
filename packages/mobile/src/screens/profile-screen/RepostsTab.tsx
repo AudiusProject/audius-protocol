@@ -33,7 +33,6 @@ export const RepostsTab = () => {
 
   return (
     <Lineup
-      listKey='profile-reposts'
       selfLoad
       lazy={lazy}
       actions={feedActions}
