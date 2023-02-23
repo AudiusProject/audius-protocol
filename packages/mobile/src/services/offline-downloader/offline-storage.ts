@@ -13,17 +13,13 @@ import { allSettled } from '@audius/common'
 import RNFetchBlob from 'rn-fetch-blob'
 
 const {
-  fs: { dirs, exists, ls, lstat, mkdir, readFile, unlink, writeFile }
+  fs: { dirs, exists, ls, mkdir, readFile, unlink, writeFile }
 } = RNFetchBlob
 
 export type OfflineCollection = Collection & { user: UserMetadata }
 
 export const downloadsRoot = path.join(dirs.DocumentDir, 'downloads')
 const IMAGE_FILENAME = '1000x1000.jpg'
-
-export const getPathFromRoot = (string: string) => {
-  return string.replace(downloadsRoot, '~')
-}
 
 export const getLocalCollectionsRoot = () => {
   return path.join(downloadsRoot, `/collections`)
@@ -194,42 +190,12 @@ export const verifyCollection = async (
   return booleanResults.every((result) => result)
 }
 
-export const purgeAllDownloads = async (withLogs?: boolean) => {
+export const purgeAllDownloads = async () => {
   if (await exists(downloadsRoot)) {
-    if (withLogs) {
-      console.log(`Before purge:`)
-    }
-    await readDirRec(downloadsRoot)
     await unlink(downloadsRoot)
     await mkdirSafe(downloadsRoot)
-    if (withLogs) {
-      console.log(`After purge:`)
-    }
-    await readDirRec(downloadsRoot)
   }
 }
-
-/** Debugging method to read cached files */
-export const readDirRec = async (path: string) => {
-  const files = await lstat(path)
-  if (files.length === 0) {
-    console.log(`${getPathFromRoot(path)} - empty`)
-  }
-  files.forEach((item) => {
-    if (item.type === 'file') {
-      console.log(`${getPathFromRoot(item.path)} - ${item.size} bytes`)
-    }
-  })
-  await Promise.all(
-    files.map(async (item) => {
-      if (item.type === 'directory') {
-        await readDirRec(item.path)
-      }
-    })
-  )
-}
-
-export const readDirRoot = async () => await readDirRec(downloadsRoot)
 
 export const mkdirSafe = async (path: string) => {
   if (!(await exists(path))) {
