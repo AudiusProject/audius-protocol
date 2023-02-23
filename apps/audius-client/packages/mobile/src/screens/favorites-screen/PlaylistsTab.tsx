@@ -37,7 +37,7 @@ export const PlaylistsTab = () => {
   const isReachable = useSelector(getIsReachable)
 
   return (
-    <VirtualizedScrollView listKey='favorites-playlists-view'>
+    <VirtualizedScrollView>
       {!userPlaylists?.length && !filterValue ? (
         isOfflineModeEnabled && !isReachable ? (
           <NoTracksPlaceholder />
@@ -64,7 +64,6 @@ export const PlaylistsTab = () => {
 
           <Animated.View layout={Layout}>
             <CollectionList
-              listKey='favorites-playlists'
               scrollEnabled={false}
               collection={userPlaylists}
               collectionIdsToNumTracks={collectionIdsToNumTracks}

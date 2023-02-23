@@ -130,7 +130,6 @@ export const CollectiblesTab = () => {
   return (
     <FlatList
       ref={ref}
-      listKey='profile-collectibles'
       keyExtractor={(item) => item.id}
       ListHeaderComponent={
         <Tile styles={{ root: styles.header, content: styles.headerContent }}>

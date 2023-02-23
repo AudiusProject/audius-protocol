@@ -180,7 +180,7 @@ export const TracksTab = () => {
   }, [])
 
   return (
-    <VirtualizedScrollView listKey='favorites-screen'>
+    <VirtualizedScrollView>
       {!isLoading && filteredTrackUids.length === 0 && !filterValue ? (
         isOfflineModeEnabled && !isReachable ? (
           <NoTracksPlaceholder />

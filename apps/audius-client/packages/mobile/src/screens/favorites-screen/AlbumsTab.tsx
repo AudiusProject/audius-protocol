@@ -28,7 +28,7 @@ export const AlbumsTab = () => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
 
   return (
-    <VirtualizedScrollView listKey='favorites-albums-view'>
+    <VirtualizedScrollView>
       {!userAlbums?.length && !filterValue ? (
         isOfflineModeEnabled && !isReachable ? (
           <NoTracksPlaceholder />
@@ -44,7 +44,6 @@ export const AlbumsTab = () => {
             onChangeText={setFilterValue}
           />
           <CollectionList
-            listKey='favorites-albums'
             scrollEnabled={false}
             collection={userAlbums}
             collectionIdsToNumTracks={collectionIdsToNumTracks}
