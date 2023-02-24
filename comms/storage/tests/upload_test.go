@@ -52,7 +52,7 @@ func TestPersistence(t *testing.T) {
 		t.Fatalf("incorrect number of jobs, want=%d, got=%d", jobsCount, len(jobs))
 	}
 
-	// figure out which bucket each job should be in
+	// figure out which node each job's results should be stored on
 	jobToNodes := map[string][]string{}
 	for _, job := range jobs {
 		nodes, err := client.GetStorageNodesFor(job.ID)
