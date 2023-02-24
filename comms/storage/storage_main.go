@@ -31,11 +31,7 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	allNodes, err := peering.GetContentNodes()
-	if err != nil {
-		log.Fatal("Error getting all nodes: ", err)
-	}
-	ss := storageserver.NewProd(storageConfig, jsc, allNodes)
+	ss := storageserver.NewProd(storageConfig, jsc, peering)
 
 	// Start server
 	go func() {

@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strings"
 
-	sharedConfig "comms.audius.co/shared/config"
+	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/monitor"
@@ -37,13 +37,18 @@ type StorageServer struct {
 	Persistence    *persistence.Persistence
 	WebServer      *echo.Echo
 	Monitor        *monitor.Monitor
+	Peering        *peering.Peering
 }
 
-func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes []sharedConfig.ServiceNode) *StorageServer {
+func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *peering.Peering) *StorageServer {
+	allContentNodes, err := peering.GetContentNodes()
+	if err != nil {
+		log.Fatal("Error getting content nodes: ", err)
+	}
 	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
 	var host string
 	var allStorageNodePubKeys []string
-	for _, node := range allNodes {
+	for _, node := range allContentNodes {
 		allStorageNodePubKeys = append(allStorageNodePubKeys, strings.ToLower(node.DelegateOwnerWallet))
 		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
 			host = node.Endpoint
