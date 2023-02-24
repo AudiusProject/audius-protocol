@@ -1,5 +1,6 @@
 const AnalyticsProvider = require('../analytics')
 
+// "Relay POA: Start" for example
 const eventName = (chain, event) => (`Relay ${chain}: ${event}`)
 
 module.exports = class RelayReporter {
@@ -12,7 +13,7 @@ module.exports = class RelayReporter {
         this.analyticsProvider = new AnalyticsProvider()
     }
 
-    async reportStart({ chain, userId }) {
+    async reportStart({ chain, userId, totalTime, txSubmissionTime, contractAddress,  }) {
         await this.report({ eventName: eventName('Start', chain), userId, data: {} })
     }
 
