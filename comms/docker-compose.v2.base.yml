@@ -1,6 +1,7 @@
 version: '3'
 
 x-dev-env: &dev-env
+  NATS_ENABLE_JETSTREAM: true
   AUDIUS_DEV_ONLY_REGISTERED_NODES: '
         [
           {
@@ -164,6 +165,6 @@ services:
       - ./shared:/app/shared
       - /app/storage/storageserver/weather-map # exclude weather-map and its heavy node_modules
       - ./storage/storageserver/weather-map/dist:/app/storage/storageserver/weather-map/dist
-  
+
   nginx:
     image: openresty/openresty:1.21.4.1-alpine-fat
