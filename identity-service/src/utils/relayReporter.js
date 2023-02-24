@@ -13,16 +13,33 @@ module.exports = class RelayReporter {
         this.analyticsProvider = new AnalyticsProvider()
     }
 
-    async reportStart({ chain, userId, totalTime, txSubmissionTime, contractAddress,  }) {
-        await this.report({ eventName: eventName('Start', chain), userId, data: {} })
+    async reportStart({ chain, userId, contractAddress, nethermindContractAddress, senderAddress }) {
+        await this.report({ eventName: eventName('Start', chain), userId, data: {
+            contractAddress, 
+            nethermindContractAddress,
+            senderAddress
+        } })
     }
 
-    async reportSuccess({ chain, userId }) {
-        await this.report({ eventName: eventName('Success', chain), userId, data: {} })
+    async reportSuccess({ chain, userId, totalTime, txSubmissionTime, contractAddress, nethermindContractAddress, senderAddress }) {
+        await this.report({ eventName: eventName('Success', chain), userId, data: {
+            totalTime,
+            txSubmissionTime,
+            contractAddress, 
+            nethermindContractAddress,
+            senderAddress
+        } })
     }
 
-    async reportError({ chain, userId }) {
-        await this.report({ eventName: eventName('Error', chain), userId, data: {} })
+    async reportError({ chain, userId, totalTime, txSubmissionTime, contractAddress, nethermindContractAddress, senderAddress, errMsg }) {
+        await this.report({ eventName: eventName('Error', chain), userId, data: {
+            totalTime,
+            txSubmissionTime,
+            contractAddress, 
+            nethermindContractAddress,
+            senderAddress,
+            errMsg
+        } })
     }
 
     async report({ eventName, userId, data }) {
