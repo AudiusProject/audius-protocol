@@ -33,6 +33,7 @@ const RELAY_HEALTH_ACCOUNTS = new Set(
 const ETH_RELAY_HEALTH_ACCOUNTS = new Set(
   config.get('ethRelayerWallets').map((wallet) => wallet.publicKey)
 )
+const RELAY_HEALTH_MAX_LATENCY = 15 // seconds
 
 // flatten one level of nexted arrays
 const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
@@ -67,6 +68,7 @@ module.exports = function (app) {
       const minTransactions =
         parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
       const isVerbose = req.query.verbose || false
+      const maxRelayLatency = req.query.maxRelayLatency || RELAY_HEALTH_MAX_LATENCY
 
       // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
       const startBlockNumber = Math.max(endBlockNumber - blockDiff, 0)
@@ -99,6 +101,10 @@ module.exports = function (app) {
         return errorResponseServerError(
           `Invalid number of transactions and/or errors. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`
         )
+      }
+
+      if (maxRelayLatency < 2) {
+        return errorResponseServerError(`Invalid maxRelayLatency, must be greater than 2. Given ${maxRelayLatency}`)
       }
 
       const failureTxs = {} // senderAddress: [<txHash>]
@@ -176,6 +182,13 @@ module.exports = function (app) {
         maxBlockTime
       )
       if (txCounter < minTransactions) isError = true
+
+      for (const tx in successfulTxsInRedis) {
+        if ((tx.totalTransactionLatency / 1000) > maxRelayLatency) {
+          isError = true
+          break
+        }
+      }
 
       const serverResponse = {
         blockchain: {
