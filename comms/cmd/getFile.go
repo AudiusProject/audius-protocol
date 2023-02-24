@@ -34,11 +34,11 @@ var getFileCmd = &cobra.Command{
 			return
 		}
 
-		if outputFile == "" {
-			outputFile = filename
+		if outputFile != "" {
+			os.WriteFile(outputFile, audioData, 0777)
 		}
 
-		os.WriteFile(outputFile, audioData, 0777)
+		os.Stdout.Write(audioData)
 	},
 }
 
