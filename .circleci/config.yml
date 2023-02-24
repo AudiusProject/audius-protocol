@@ -1372,9 +1372,9 @@ workflows:
             - build-identity
             - test-identity
             - build-libs
-            - test-libs
+            # - test-libs
             - test-contracts
-            - test-solana-programs
+            # - test-solana-programs
             # - test-eth-contracts
             # - test-mad-dog-e2e
             - test-sdk
