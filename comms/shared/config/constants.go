@@ -2,5 +2,5 @@ package config
 
 var (
 	SigHeader             = "x-sig"
-	SignatureTimeToLiveMs = int64(60000)
+	SignatureTimeToLiveMs = int64(60_000)
 )
