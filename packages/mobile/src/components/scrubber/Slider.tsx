@@ -82,10 +82,11 @@ type SliderProps = {
    * Callback invoked when focus is gained on the scrubber
    */
   onPressIn: () => void
+  onPressOut: () => void
   /**
    * Callback invoked when focus is lost on the scrubber
    */
-  onPressOut: (percentComplete: number) => void
+  onNewPosition: (percentComplete: number) => void
   /**
    * Callback invoked when dragging on the scrubber. A drag
    * begins by grabbing the handle or pressing the rail
@@ -108,6 +109,7 @@ export const Slider = memo((props: SliderProps) => {
     duration,
     onPressIn,
     onPressOut,
+    onNewPosition,
     onDrag,
     onDragRelease
   } = props
@@ -195,24 +197,23 @@ export const Slider = memo((props: SliderProps) => {
     [isPlaying, duration, play]
   )
 
+  const handlePressOut = useCallback(() => {
+    handlePressHandleOut()
+    onPressOut()
+  }, [handlePressHandleOut, onPressOut])
+
   const onReleaseRail = useCallback(
     (e: GestureResponderEvent) => {
       const newPosition = e.nativeEvent.pageX - railPageX
       const percentComplete = newPosition / railWidth
-      onPressOut(percentComplete)
-      handlePressHandleOut()
+      onNewPosition(percentComplete)
+      handlePressOut()
       animateFromNowToEnd(percentComplete)
     },
-    [
-      onPressOut,
-      handlePressHandleOut,
-      railPageX,
-      railWidth,
-      animateFromNowToEnd
-    ]
+    [onNewPosition, handlePressOut, railPageX, railWidth, animateFromNowToEnd]
   )
 
-  const onPressHandle = useCallback(
+  const onPressInHandle = useCallback(
     (event: GestureResponderEvent) => {
       const newPosition = event.nativeEvent.pageX - railPageX
       setHandlePosition(newPosition)
@@ -225,10 +226,10 @@ export const Slider = memo((props: SliderProps) => {
 
   const onReleaseHandle = useCallback(
     (percentComplete: number) => {
-      onPressOut(percentComplete)
+      onNewPosition(percentComplete)
       animateFromNowToEnd(percentComplete)
     },
-    [onPressOut, animateFromNowToEnd]
+    [onNewPosition, animateFromNowToEnd]
   )
 
   const panResponder = useMemo(
@@ -380,8 +381,8 @@ export const Slider = memo((props: SliderProps) => {
         ]}
       >
         <Animated.View
-          onTouchStart={onPressHandle}
-          onTouchEnd={handlePressHandleOut}
+          onTouchStart={onPressInHandle}
+          onTouchEnd={handlePressOut}
           hitSlop={{ top: 16, bottom: 16, right: 16, left: 16 }}
           style={[styles.handle, { transform: [{ scale: handleScale }] }]}
         />
