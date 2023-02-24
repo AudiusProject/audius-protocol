@@ -1,37 +1,28 @@
 package natsd
 
 import (
-	"encoding/json"
 	"io"
 	"math"
 	"net/http"
-	"os"
 	"time"
 
-	discoveryConfig "comms.audius.co/discovery/config"
-	natsConfig "comms.audius.co/natsd/config"
-	sharedConfig "comms.audius.co/shared/config"
+	"comms.audius.co/natsd/config"
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 func NatsMain() {
-	natsConfig := natsConfig.GetNatsConfig()
-	discoveryConfig.Init(natsConfig.Keys)
+	natsConfig := config.GetNatsConfig()
+	peering := peering.New(&natsConfig.PeeringConfig)
 
 	{
 		var err error
-		discoveryConfig.NatsIsReachable, err = selfConnectionProbe(discoveryConfig.IP)
+		peering.NatsIsReachable, err = selfConnectionProbe(peering.IP)
 		if err != nil {
-			discoveryConfig.Logger.Warn("self connection test error " + err.Error())
+			peering.Logger.Warn("self connection test error " + err.Error())
 		}
 	}
-
-	// TODO: Make this use a separate nats config env struct
-	var overrideNodes []sharedConfig.ServiceNode
-	json.Unmarshal([]byte(os.Getenv("AUDIUS_DEV_ONLY_REGISTERED_NODES")), &overrideNodes)
-	peering := peering.New(overrideNodes)
 
 	go startServer(peering)
 
@@ -40,8 +31,8 @@ func NatsMain() {
 	natsman := NatsManager{}
 	for n := 0; ; n++ {
 		peerMap := peering.Solicit()
-		if discoveryConfig.NatsIsReachable {
-			natsman.StartNats(peerMap)
+		if peering.NatsIsReachable {
+			natsman.StartNats(peerMap, natsConfig.IsStorageNode, peering)
 		}
 
 		// poll with exponential backoff:
@@ -110,10 +101,10 @@ func startServer(peering *peering.Peering) {
 
 	e.GET("/nats/self", func(c echo.Context) error {
 		return redactedJson(c, map[string]interface{}{
-			"env":               discoveryConfig.Env,
-			"is_content":        discoveryConfig.IsCreatorNode,
-			"nats_is_reachable": discoveryConfig.NatsIsReachable,
-			"nkey":              discoveryConfig.NkeyPublic,
+			"is_staging":        peering.Config.IsStaging,
+			"is_storage_node":   config.GetNatsConfig().IsStorageNode,
+			"nats_is_reachable": peering.NatsIsReachable,
+			"nkey":              peering.Config.Keys.NkeyPublic,
 		})
 	})
 

@@ -6,9 +6,8 @@ import (
 )
 
 type StorageConfig struct {
-	Keys                   shared.KeysConfigDecoder   `envconfig:"DELEGATE_PRIVATE_KEY" required:"true" json:"Keys"`
-	StorageDriverUrl       string                     `envconfig:"STORAGE_DRIVER_URL" default:"file:///tmp/audius_storage" json:"StorageDriverUrl"`
-	DevOnlyRegisteredNodes shared.ServiceNodesDecoder `envconfig:"DEV_ONLY_REGISTERED_NODES" json:"DevOnlyRegisteredNodes"`
+	PeeringConfig    shared.PeeringConfig `json:"PeeringConfig"`
+	StorageDriverUrl string               `envconfig:"AUDIUS_STORAGE_DRIVER_URL" default:"file:///tmp/audius_storage" json:"StorageDriverUrl"`
 }
 
 var storageConfig *StorageConfig

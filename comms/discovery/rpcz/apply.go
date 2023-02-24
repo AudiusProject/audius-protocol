@@ -8,11 +8,13 @@ import (
 	"sync"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
+	natsdConfig "comms.audius.co/natsd/config"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
 	"github.com/tidwall/gjson"
@@ -48,21 +50,21 @@ func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 
 	// create backing stream
 	_, err = jsc.AddStream(&nats.StreamConfig{
-		Name:     config.GlobalStreamName,
-		Subjects: []string{config.GlobalStreamSubject},
-		Replicas: config.NatsReplicaCount,
+		Name:     discoveryConfig.GlobalStreamName,
+		Subjects: []string{discoveryConfig.GlobalStreamSubject},
+		Replicas: natsdConfig.NatsReplicaCount,
 		// DenyDelete: true,
 		// DenyPurge:  true,
-		Placement: config.DiscoveryPlacement(),
+		Placement: discoveryConfig.DiscoveryPlacement(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	// create consumer
-	_, err = jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.WalletAddress))
+	_, err = jsc.Subscribe(discoveryConfig.GlobalStreamSubject, proc.Apply, nats.Durable(discoveryConfig.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey))
 	if err != nil {
-		config.Logger.Error(err.Error())
+		logger.Error(err.Error())
 		return nil, err
 	}
 
@@ -104,7 +106,7 @@ func (proc *RPCProcessor) SubmitAndWait(msg *nats.Msg) (*nats.PubAck, error) {
 // Validates + applies a NATS message
 func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	var err error
-	logger := config.Logger.New()
+	logger := logger.New()
 
 	// get seq
 	meta, err := msg.Metadata()
@@ -117,7 +119,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	proc.ConsumerSequence.Set(int64(meta.Sequence.Consumer))
 
 	// recover wallet + user
-	signatureHeader := msg.Header.Get(config.SigHeader)
+	signatureHeader := msg.Header.Get(sharedConfig.SigHeader)
 	wallet, err := misc.RecoverWallet(msg.Data, signatureHeader)
 	if err != nil {
 		logger.Warn("unable to recover wallet, skipping")
@@ -286,12 +288,12 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			var userIds []int32
 			err = db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1`, chatId)
 			if err != nil {
-				config.Logger.Warn("failed to load chat members for websocket push " + err.Error())
+				logger.Warn("failed to load chat members for websocket push " + err.Error())
 			} else {
 				var parsedParams schema.RPCPayloadParams
 				err := json.Unmarshal(rawRpc.Params, &parsedParams)
 				if err != nil {
-					config.Logger.Error("Failed to parse params")
+					logger.Error("Failed to parse params")
 				}
 				payload := schema.RPCPayload{Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams}
 				encodedUserId, _ := misc.EncodeHashId(int(userId))
@@ -309,7 +311,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		return nil
 	}
 
-	err = retry.Do(attemptApply, retry.Attempts(5))
+	err = retry.Do(attemptApply, retry.Delay(300*time.Millisecond))
 
 	// notify any waiters of apply result
 	proc.Lock()

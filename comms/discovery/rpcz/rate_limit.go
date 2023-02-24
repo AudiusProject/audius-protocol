@@ -6,17 +6,29 @@ import (
 	"sync"
 
 	"comms.audius.co/discovery/config"
+	natsdConfig "comms.audius.co/natsd/config"
+	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
 )
 
 func NewRateLimiter(jsc nats.JetStreamContext) (*RateLimiter, error) {
 
 	// kv
-	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:    config.RateLimitRulesBucketName,
-		Replicas:  config.NatsReplicaCount,
-		Placement: config.DiscoveryPlacement(),
-	})
+	var kv nats.KeyValue
+	err := retry.Do(
+		func() error {
+			var err error
+			kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+				Bucket:    config.RateLimitRulesBucketName,
+				Replicas:  natsdConfig.NatsReplicaCount,
+				Placement: config.DiscoveryPlacement(),
+			})
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create rate limit kv %v", err)
 	}
@@ -52,7 +64,7 @@ func (limiter *RateLimiter) watch() {
 
 		val, err := strconv.Atoi(string(change.Value()))
 		if err != nil {
-			config.Logger.Warn("invalid rate limit value", "key", change.Key(), "err", err)
+			logger.Warn("invalid rate limit value", "key", change.Key(), "err", err)
 		} else {
 			limiter.Lock()
 			limiter.limits[change.Key()] = val

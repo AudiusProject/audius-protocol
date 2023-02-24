@@ -6,10 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
-	discoveryConfig "comms.audius.co/discovery/config"
 	sharedConfig "comms.audius.co/shared/config"
 	"github.com/avast/retry-go"
 )
@@ -19,25 +17,21 @@ var (
 )
 
 func (p *Peering) PollRegisteredNodes() error {
-	if len(p.registeredNodesOverride) > 0 {
+	// overrides for tests and local dev
+	if p.Config.DevOnlyRegisteredNodes != nil {
 		mu.Lock()
-		for _, sp := range p.registeredNodesOverride {
+		for _, sp := range p.Config.DevOnlyRegisteredNodes {
 			allNodes[sp.ID] = sp
 		}
 		mu.Unlock()
 		return nil
 	}
 
-	// don't start polling for
-	if discoveryConfig.Env == "standalone" || os.Getenv("test_host") != "" {
-		return nil
-	}
-
 	refresh := func() error {
-		discoveryConfig.Logger.Debug("refreshing SPs")
-		sps, err := queryServiceNodes(discoveryConfig.IsStaging)
+		p.Logger.Debug("refreshing SPs")
+		sps, err := queryServiceNodes(p.Config.IsStaging)
 		if err != nil {
-			discoveryConfig.Logger.Warn("refresh SPs failed " + err.Error())
+			p.Logger.Warn("refresh SPs failed " + err.Error())
 			return err
 		}
 		mu.Lock()
@@ -61,15 +55,6 @@ func (p *Peering) PollRegisteredNodes() error {
 }
 
 func (p *Peering) listNodes(typeFilter string) ([]sharedConfig.ServiceNode, error) {
-	// make storage.multi, make storage.dev, and in the future make test
-	if len(p.registeredNodesOverride) > 0 {
-		return p.registeredNodesOverride, nil
-	}
-	// make dev.discovery
-	if discoveryConfig.Env == "standalone" {
-		return []sharedConfig.ServiceNode{}, nil
-	}
-
 	result := []sharedConfig.ServiceNode{}
 	mu.Lock()
 	for _, node := range allNodes {
