@@ -100,7 +100,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   const startTransactionLatency = new Date().getTime()
   const reporter = new RelayReporter( {
     // report analytics everywhere except local
-    shouldReportAnalytics: config.get('development') !== 'development'
+    shouldReportAnalytics: config.get('environment') !== 'development'
   })
 
   const user = await models.User.findOne({
