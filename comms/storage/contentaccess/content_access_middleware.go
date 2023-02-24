@@ -23,7 +23,7 @@ func ContentAccessMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 		isValidSignature, err := VerifySignature(*signatureData, []byte(signature), requestedCid)
 		if err != nil {
-			return echo.ErrBadGateway
+			return echo.ErrBadRequest
 		}
 
 		if !isValidSignature {
