@@ -20,7 +20,7 @@ debian | ubuntu)
     sudo apt-get install -y \
         git \
         python3.10 \
-        python3.10-pip \
+        python3-pip \
         docker-ce \
         docker-ce-cli \
         containerd.io
