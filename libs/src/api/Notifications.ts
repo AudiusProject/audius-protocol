@@ -113,16 +113,15 @@ export class Notifications extends Base {
     }
   }
 
-
   async getNotifications({
     encodedUserId,
     timestamp,
     groupId,
     limit
   }: {
-    encodedUserId: string,
-    timestamp: number,
-    groupId?: string,
+    encodedUserId: string
+    timestamp: number
+    groupId?: string
     limit?: number
   }): Promise<any> {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
@@ -130,7 +129,7 @@ export class Notifications extends Base {
       encodedUserId,
       timestamp,
       groupId,
-      limit,
+      limit
     })
   }
 }
