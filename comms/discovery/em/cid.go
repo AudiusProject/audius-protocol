@@ -5,7 +5,6 @@ import (
 	"io"
 	"net/http"
 
-	"comms.audius.co/discovery/config"
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 )
@@ -15,7 +14,7 @@ type CidFetcher struct {
 }
 
 func NewCidFetcher() (*CidFetcher, error) {
-	peering := peering.New(nil)
+	peering := peering.New(&sharedConfig.PeeringConfig{})
 	sps, err := peering.GetContentNodes()
 	if err != nil {
 		return nil, err
@@ -35,7 +34,7 @@ func (cf *CidFetcher) Fetch(userId int64, cid string) ([]byte, error) {
 		u := sp.Endpoint + "/content/" + cid
 		resp, err := http.Get(u)
 		if err != nil {
-			config.Logger.Debug(u, "err", err)
+			peering.New(&sharedConfig.PeeringConfig{}).Logger.Debug(u, "err", err)
 			continue
 		}
 

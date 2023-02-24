@@ -12,7 +12,6 @@ notification_action = ns.model(
     "notification_action",
     {
         "specifier": fields.String(required=True),
-        "type": fields.String(required=True),
         "timestamp": fields.Integer(required=True),
         "data": Any,
     },
@@ -21,16 +20,7 @@ notification_action = ns.model(
 notification = ns.model(
     "notification",
     {
-        "group_id": fields.String(required=True),
-        "is_seen": fields.Boolean(required=True),
-        "seen_at": fields.Integer(required=False),
-        "actions": fields.List(fields.Nested(notification_action)),
-    },
-)
-
-notification = ns.model(
-    "notification",
-    {
+        "type": fields.String(required=True),
         "group_id": fields.String(required=True),
         "is_seen": fields.Boolean(required=True),
         "seen_at": fields.Integer(required=False),

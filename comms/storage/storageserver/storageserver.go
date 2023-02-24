@@ -3,7 +3,6 @@ package storageserver
 
 import (
 	"embed"
-	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
@@ -42,12 +41,11 @@ type StorageServer struct {
 }
 
 func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes []sharedConfig.ServiceNode) *StorageServer {
-	thisNodePubKey := config.Keys.DelegatePublicKey
+	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
 	var host string
 	var allStorageNodePubKeys []string
 	for _, node := range allNodes {
-		fmt.Printf("checking node %v against this pubKey %q\n", node, thisNodePubKey)
-		allStorageNodePubKeys = append(allStorageNodePubKeys, node.DelegateOwnerWallet)
+		allStorageNodePubKeys = append(allStorageNodePubKeys, strings.ToLower(node.DelegateOwnerWallet))
 		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
 			host = node.Endpoint
 		}
@@ -67,7 +65,7 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes [
 	m := monitor.New(jsc)
 	err = m.SetHostAndShardsForNode(thisNodePubKey, host, d.ShardsStored)
 	if err != nil {
-		log.Fatal("Error setting host and shards for node", "err", err)
+		log.Fatalf("Error setting host and shards for node: %v", err)
 	}
 
 	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)
@@ -184,7 +182,7 @@ func (ss *StorageServer) serveFileUpload(c echo.Context) error {
 
 		contentType := file.Header.Get("Content-Type")
 		if !strings.HasPrefix(contentType, expectedContentType) {
-			return echo.NewHTTPError(400, "invalid Content-Type, expected=" + expectedContentType)
+			return echo.NewHTTPError(400, "invalid Content-Type, expected="+expectedContentType)
 		}
 
 		job, err := ss.JobsManager.Add(transcode.JobTemplate(template), file)

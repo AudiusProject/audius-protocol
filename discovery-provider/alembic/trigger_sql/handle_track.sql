@@ -48,7 +48,7 @@ begin
           new.updated_at,
           'create',
           new.owner_id,
-          'create:track:' || new.track_id,
+          'create:track:user_id:' || new.owner_id,
           json_build_object('track_id', new.track_id)
         )
         on conflict do nothing;

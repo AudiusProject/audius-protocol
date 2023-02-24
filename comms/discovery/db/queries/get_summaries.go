@@ -51,6 +51,7 @@ WITH user_chats AS (
   FROM chat_member
   JOIN chat ON chat.chat_id = chat_member.chat_id
   WHERE chat_member.user_id = $1
+	  AND chat.last_message IS NOT NULL
 	  AND (chat_member.cleared_history_at IS NULL
 		  OR chat.last_message_at > chat_member.cleared_history_at)
 )

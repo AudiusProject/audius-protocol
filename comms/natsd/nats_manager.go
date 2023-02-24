@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	"comms.audius.co/natsd/config"
 	"comms.audius.co/shared/peering"
 	"github.com/nats-io/nats-server/v2/server"
 )
@@ -20,7 +19,7 @@ type NatsManager struct {
 	mu         sync.Mutex
 }
 
-func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
+func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorageNode bool, peering *peering.Peering) {
 
 	manager.mu.Lock()
 	defer manager.mu.Unlock()
@@ -41,20 +40,20 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 
 		// we use the Cluster Name as the username in the route username and password...
 		// only add route if the server is a member of the same cluster.
-		if info.NatsIsReachable && info.NatsRoute != "" && strings.Contains(info.NatsRoute, config.NatsClusterName) {
+		if info.NatsIsReachable && info.NatsRoute != "" && strings.Contains(info.NatsRoute, config.GetNatsConfig().PeeringConfig.NatsClusterName) {
 			route, err := url.Parse(info.NatsRoute)
 			if err != nil {
-				config.Logger.Warn("invalid nats route url: " + info.NatsRoute)
+				peering.Logger.Warn("invalid nats route url: " + info.NatsRoute)
 			} else {
 				routes = append(routes, route)
 			}
 		}
 	}
 
-	serverName := config.WalletAddress
-	if config.IsCreatorNode {
+	serverName := peering.Config.Keys.DelegatePublicKey
+	if isStorageNode {
 		tags = append(tags, "storage")
-		serverName = "storage_" + config.WalletAddress
+		serverName = "storage_" + peering.Config.Keys.DelegatePublicKey
 	} else {
 		tags = append(tags, "discovery")
 	}
@@ -68,7 +67,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		// Debug:      true,
 
 		JetStream: true,
-		StoreDir:  filepath.Join(os.Getenv("NATS_STORE_DIR"), config.NatsClusterName),
+		StoreDir:  filepath.Join(config.GetNatsConfig().NatsStoreDir, config.GetNatsConfig().PeeringConfig.NatsClusterName),
 
 		Tags: tags,
 
@@ -76,39 +75,33 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info) {
 		AuthTimeout:   60,
 		WriteDeadline: writeDeadline,
 	}
-
-	if config.NatsReplicaCount < 2 {
-		config.Logger.Info("starting NATS in standalone mode", "peer count", len(routes))
-	} else {
-		config.Logger.Info("starting NATS in cluster mode... ")
-		if config.NatsClusterUsername == "" {
-			log.Fatal("config.NatsClusterUsername not set")
-		}
-
-		opts.Cluster = server.ClusterOpts{
-			Name:      config.NatsClusterName,
-			Host:      "0.0.0.0",
-			Port:      6222,
-			Username:  config.NatsClusterUsername,
-			Password:  config.NatsClusterPassword,
-			Advertise: fmt.Sprintf("%s:6222", config.IP),
-			// NoAdvertise: true,
-
-			// increase auth timeout, bounded connection retry
-			AuthTimeout:    60,
-			ConnectRetries: 30,
-		}
-
-		opts.Routes = routes
-		opts.Nkeys = nkeys
-
+	peering.Logger.Info("starting NATS in cluster mode... ")
+	if peering.NatsClusterUsername == "" {
+		log.Fatal("config.NatsClusterUsername not set")
 	}
+
+	opts.Cluster = server.ClusterOpts{
+		Name:      config.GetNatsConfig().PeeringConfig.NatsClusterName,
+		Host:      "0.0.0.0",
+		Port:      6222,
+		Username:  peering.NatsClusterUsername,
+		Password:  peering.NatsClusterPassword,
+		Advertise: fmt.Sprintf("%s:6222", peering.IP),
+		// NoAdvertise: true,
+
+		// increase auth timeout, bounded connection retry
+		AuthTimeout:    60,
+		ConnectRetries: 30,
+	}
+
+	opts.Routes = routes
+	opts.Nkeys = nkeys
 
 	// this is kinda jank... probably want a better way to check if natsServer is initialized and health
 	// but will do for now
 	if manager.natsServer != nil {
 		if err := manager.natsServer.ReloadOptions(opts); err != nil {
-			config.Logger.Warn("error in nats ReloadOptions", "err", err)
+			peering.Logger.Warn("error in nats ReloadOptions", "err", err)
 		}
 		return
 	}

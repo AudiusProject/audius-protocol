@@ -26,6 +26,10 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - chain
+      - poa
 
   eth-ganache:
     build:
@@ -41,6 +45,10 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - chain
+      - eth
 
   # NOTE: We don't need solana but services have depend_on solana-test-validator
   # so we use a dummy container
@@ -54,11 +62,61 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - chain
+      - solana
 
   build-audius-libs:
     extends:
       file: docker-compose.yml
       service: build-audius-libs
+    profiles:
+      - tests
+      - libs
+
+  # libs
+
+  test-audius-libs:
+    extends:
+      file: docker-compose.yml
+      service: build-audius-libs
+    # TODO: also run integration test current blocker is that integration tests
+    # use config.json which was removed with the addition of audius-compose
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:unit)' -
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  # poa-contracts
+
+  test-poa-contracts:
+    build:
+      context: contracts
+      dockerfile: Dockerfile.dev
+      args:
+        bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
+        bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
+        bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test)' -
+    logging: *default-logging
+    deploy:
+      mode: global
+
+  # poa-contracts
+
+  test-eth-contracts:
+    build:
+      context: eth-contracts
+      dockerfile: Dockerfile.dev
+      args:
+        CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
+        DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
+        antiAbuseOracleAddresses: "${AAO_WALLET_ADDRESSES}"
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test)' -
+    logging: *default-logging
+    deploy:
+      mode: global
 
   # creator-node
 
@@ -75,6 +133,9 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - creator
 
   creator-node-redis:
     image: redis:6.2
@@ -85,13 +146,17 @@ services:
     logging: *default-logging
     deploy:
       mode: global
-      replicas: 1 # Override default replicas
+      replicas: 1  # Override default replicas
+    profiles:
+      - tests
+      - creator
 
   test-creator-node:
     extends:
       file: docker-compose.yml
       service: creator-node
-    command: "sleep infinity"
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npx mocha "$$@")' -
+    command: ""
     environment:
       storagePath: "./test_file_storage"
 
@@ -115,6 +180,7 @@ services:
       replicas: 1
     profiles:
       - tests
+      - creator
 
   # discovery-provider
 
@@ -124,7 +190,10 @@ services:
       service: discovery-provider-elasticsearch
     deploy:
       mode: global
-      replicas: 1 # Override default replicas
+      replicas: 1  # Override default replicas
+    profiles:
+      - tests
+      - discovery
 
   discovery-provider-db:
     image: postgres:11.4
@@ -133,12 +202,16 @@ services:
     environment:
       POSTGRES_DB: "discovery_provider"
     healthcheck:
-      test: ["CMD", "pg_isready"]
-      interval: 10s
-      timeout: 5s
+      test: [ "CMD", "pg_isready" ]
+      interval: 1s
+      timeout: 2s
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - notifications
+      - tests
+      - discovery
 
   discovery-provider-redis:
     image: redis:7.0
@@ -149,12 +222,35 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - notifications
+      - tests
+      - discovery
+
+  test-discovery-provider-migrations:
+    extends:
+      file: docker-compose.yml
+      service: discovery-provider
+    command: sh -c "./scripts/run-migrations.sh"
+    environment:
+      audius_db_url: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+    depends_on:
+      discovery-provider-db:
+        condition: service_healthy
+    logging: *default-logging
+    deploy:
+      mode: replicas
+      replicas: 1
+    profiles:
+      - tests
+      - notifications
 
   test-discovery-provider:
     extends:
       file: docker-compose.yml
       service: discovery-provider
-    command: sleep infinity
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; pytest "$$@")' -
+    command: ""
     environment:
       audius_db_url: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
       audius_db_url_read_replica: "postgresql+psycopg2://postgres:postgres@discovery-provider-db:5432/discovery_provider"
@@ -165,6 +261,7 @@ services:
       audius_elasticsearch_run_indexer: "true"
     volumes:
       - ./discovery-provider:/audius-discovery-provider
+      - /audius-discovery-provider/es-indexer/node_modules
     depends_on:
       discovery-provider-elasticsearch:
         condition: service_healthy
@@ -179,6 +276,33 @@ services:
     profiles:
       - tests
       - elasticsearch
+      - discovery
+
+  test-discovery-provider-notifications:
+    extends:
+      file: docker-compose.yml
+      service: discovery-provider-notifications
+    command: sh -c "npm run test:watch"
+    environment:
+      AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
+      DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
+      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/identity_service"
+    volumes:
+      - ./discovery-provider/plugins/notifications:/notifications
+    depends_on:
+      test-discovery-provider-migrations:
+        condition: service_completed_successfully
+      test-identity-service-migrations:
+        condition: service_completed_successfully
+      discovery-provider-redis:
+        condition: service_healthy
+    logging: *default-logging
+    deploy:
+      mode: replicas
+      replicas: 1
+    profiles:
+      - tests
+      - notifications
 
   # identity-service
 
@@ -186,13 +310,19 @@ services:
     image: postgres:11.4
     user: postgres
     command: postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
+    environment:
+      POSTGRES_DB: "identity_service"
     healthcheck:
-      test: ["CMD", "pg_isready"]
-      interval: 10s
-      timeout: 5s
+      test: [ "CMD", "pg_isready" ]
+      interval: 1s
+      timeout: 2s
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - notifications
+      - identity
 
   identity-service-redis:
     image: redis:7.0
@@ -204,15 +334,39 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
+      - identity
+
+  test-identity-service-migrations:
+    extends:
+      file: docker-compose.yml
+      service: identity-service
+    command: sh -c "npm run db:migrate"
+    environment:
+      dbUrl: "postgresql://postgres:postgres@identity-service-db:5432/identity_service"
+    depends_on:
+      identity-service-db:
+        condition: service_healthy
+    logging: *default-logging
+    deploy:
+      mode: global
+    profiles:
+      - tests
+      - notifications
 
   test-identity-service:
     extends:
       file: docker-compose.yml
       service: identity-service
-    command: sleep infinity
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npx mocha "$$@")' -
+    command: ""
     environment:
       isTestRun: "true"
       environment: "test"
+    profiles:
+      - tests
+      - identity
 
 volumes:
   poa-contracts-abis:

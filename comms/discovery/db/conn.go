@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"comms.audius.co/discovery/config"
+	"github.com/inconshreveable/log15"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -42,7 +42,8 @@ func Dial() error {
 		log.Fatal("invalid db string: "+dsn, "err", err)
 	}
 
-	logger := config.Logger.New("host", dbUrl.Host, "db", dbUrl.Path)
+	logger := log15.New("host", dbUrl.Host, "db", dbUrl.Path)
+	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
 
 	Conn, err = sqlx.Open("postgres", dsn)
 	if err != nil {

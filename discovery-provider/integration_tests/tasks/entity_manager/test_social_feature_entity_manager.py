@@ -164,8 +164,22 @@ def test_index_valid_social_features(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Repost",
-                        "_metadata": "",
+                        "_metadata": '{"is_repost_repost": true}',
                         "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "RepostPlaylistTx5": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 3,
+                        "_action": "Repost",
+                        "_metadata": "",
+                        "_signer": "user3wallet",
                     }
                 )
             },
@@ -302,16 +316,23 @@ def test_index_valid_social_features(app, mocker):
 
         # Verify repost
         all_reposts: List[Repost] = session.query(Repost).all()
-        assert len(all_reposts) == 3
+        assert len(all_reposts) == 4
 
         current_reposts: List[Repost] = (
             session.query(Repost).filter(Repost.is_current == True).all()
         )
-        assert len(current_reposts) == 1
-        current_repost = current_reposts[0]
-        assert current_repost.is_delete == False
-        assert current_repost.repost_type == EntityType.PLAYLIST.value.lower()
-        assert current_repost.repost_item_id == 1
+        assert len(current_reposts) == 2
+        assert current_reposts[0].is_delete == False
+        assert current_reposts[0].repost_type == EntityType.PLAYLIST.value.lower()
+        assert current_reposts[0].repost_item_id == 1
+        assert current_reposts[0].user_id == 1
+        assert current_reposts[0].is_repost_repost == True
+
+        assert current_reposts[1].is_delete == False
+        assert current_reposts[1].repost_type == EntityType.PLAYLIST.value.lower()
+        assert current_reposts[1].repost_item_id == 1
+        assert current_reposts[1].user_id == 3
+        assert current_reposts[1].is_repost_repost == False
 
     with db.scoped_session() as session:
         aggregate_playlists: List[AggregatePlaylist] = (
@@ -321,7 +342,7 @@ def test_index_valid_social_features(app, mocker):
         )
         assert len(aggregate_playlists) == 1
         aggregate_playlist = aggregate_playlists[0]
-        assert aggregate_playlist.repost_count == 1
+        assert aggregate_playlist.repost_count == 2
     calls = [
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
         mock.call.dispatch(ChallengeEvent.follow, 1, 1),
@@ -626,3 +647,82 @@ def test_index_entity_update_and_social_feature(app, mocker):
 
         all_milestones: List[Milestone] = session.query(Milestone).all()
         assert len(all_milestones) == 1
+
+
+def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
+    "Tests a playlist update and repost in the same block"
+    bus_mock = mocker.patch(
+        "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
+    )
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+
+    """
+    const resp = await this.manageEntity({
+        userId,
+        entityType: EntityType.USER,
+        entityId: followeeUserId,
+        action: isUnfollow ? Action.UNFOLLOW : Action.FOLLOW,
+        metadataMultihash: ''
+      })
+    """
+    tx_receipts = {
+        "RepostPlaylistTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 11,
+                        # metadata is formatted invalid, should be string
+                        "_metadata": 1,
+                        "_action": "Repost",
+                        "_signer": "user11wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": i, "handle": f"user-{i}", "wallet": f"user{i}wallet"}
+            for i in range(1, 13)
+        ],
+        "playlists": [{"playlist_id": 1, "playlist_owner_id": 10}],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=2,
+            block_timestamp=1585336422,
+            block_hash=0,
+            metadata={},
+        )
+        all_reposts: List[Repost] = session.query(Repost).all()
+        assert len(all_reposts) == 1
+        assert all_reposts[0].is_repost_repost == False

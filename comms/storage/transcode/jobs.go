@@ -15,8 +15,9 @@ import (
 	"sync"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/telemetry"
+	"github.com/avast/retry-go"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/lucsky/cuid"
@@ -86,17 +87,37 @@ const (
 func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) (*JobsManager, error) {
 	// kv
 	kvBucketName := prefix + KvSuffix
-	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   kvBucketName,
-		Replicas: replicaCount,
-	})
+	var kv nats.KeyValue
+	err := retry.Do(
+		func() error {
+			var err error
+			kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+				Bucket:   kvBucketName,
+				Replicas: replicaCount,
+			})
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create KV: %v", err)
 	}
 
 	// work subscription using kv's underlying stream
 	kvStreamName := "KV_" + kvBucketName
-	workSubscription, err := jsc.QueueSubscribeSync("", kvStreamName, nats.AckWait(time.Minute), nats.BindStream(kvStreamName))
+	var workSubscription *nats.Subscription
+	err = retry.Do(
+		func() error {
+			var err error
+			workSubscription, err = jsc.QueueSubscribeSync("", kvStreamName, nats.AckWait(time.Minute), nats.BindStream(kvStreamName))
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create KV work subscription: %v", err)
 	}
@@ -127,14 +148,18 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 
 func (jobman *JobsManager) createTemporaryObjectStores() {
 	for i := 0; i < jobman.tempBucketCount; i++ {
-		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
-			Bucket:   jobman.temporaryObjectStoreName(i),
-			TTL:      temporaryObjectStoreTTL,
-			Replicas: jobman.replicaCount,
-			Placement: &nats.Placement{
-				Cluster: config.NatsClusterName,
+		retry.Do(
+			func() error {
+				return createObjStoreIfNotExists(&nats.ObjectStoreConfig{
+					Bucket:   jobman.temporaryObjectStoreName(i),
+					TTL:      temporaryObjectStoreTTL,
+					Replicas: jobman.replicaCount,
+					Placement: &nats.Placement{
+						Cluster: config.GetStorageConfig().PeeringConfig.NatsClusterName,
+					},
+				}, jobman.jsc)
 			},
-		}, jobman.jsc)
+		)
 	}
 }
 

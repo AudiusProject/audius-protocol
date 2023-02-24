@@ -3,6 +3,7 @@ package decider
 
 import (
 	"fmt"
+	"strings"
 
 	"comms.audius.co/storage/sharder"
 	"github.com/nats-io/nats.go"
@@ -72,7 +73,7 @@ func (d *RendezvousDecider) computeShardsNodeStores(publicKey string) []string {
 	hash := d.getHashRing()
 	for _, shard := range d.sharder.Shards {
 		for _, pubKeyThatStores := range hash.GetN(d.replicationFactor, shard) {
-			if pubKeyThatStores == d.thisNodePubKey {
+			if strings.EqualFold(pubKeyThatStores, d.thisNodePubKey) {
 				shards = append(shards, shard)
 			}
 		}

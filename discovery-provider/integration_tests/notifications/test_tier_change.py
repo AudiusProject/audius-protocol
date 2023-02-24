@@ -21,35 +21,35 @@ def test_tier_change(app):
                 "blocknumber": 10,
                 # No tier change, none -> none
                 "previous_balance": 0,
-                "current_balance": 6,
+                "current_balance": 6 * 1000000000000000000,
             },
             {
                 "user_id": 2,
                 "blocknumber": 11,
                 # Tier change, none -> bronze
                 "previous_balance": 0,
-                "current_balance": 10,
+                "current_balance": 10 * 1000000000000000000,
             },
             {
                 "user_id": 3,
                 "blocknumber": 12,
                 # Tier change, none -> bronze
                 "previous_balance": 0,
-                "current_balance": 15,
+                "current_balance": 15 * 1000000000000000000,
             },
             {
                 "user_id": 4,
                 "blocknumber": 13,
                 # Tier change, none -> platinum
                 "previous_balance": 0,
-                "current_balance": 200000,
+                "current_balance": 200000 * 1000000000000000000,
             },
             {
                 "user_id": 5,
                 "blocknumber": 14,
                 # No tier change, gold -> gold
-                "previous_balance": 12000,
-                "current_balance": 90000,
+                "previous_balance": 12000 * 1000000000000000000,
+                "current_balance": 90000 * 1000000000000000000,
             },
         ],
     }
@@ -69,7 +69,7 @@ def test_tier_change(app):
         assert notifications[0].data == {
             "new_tier": "bronze",
             "new_tier_value": 10,
-            "current_value": "10",
+            "current_value": "10000000000000000000",
         }
 
         assert notifications[1].user_ids == [3]
@@ -80,7 +80,7 @@ def test_tier_change(app):
         assert notifications[1].data == {
             "new_tier": "bronze",
             "new_tier_value": 10,
-            "current_value": "15",
+            "current_value": "15000000000000000000",
         }
 
         assert notifications[2].user_ids == [4]
@@ -92,15 +92,15 @@ def test_tier_change(app):
         assert notifications[2].data == {
             "new_tier": "platinum",
             "new_tier_value": 100000,
-            "current_value": "200000",
+            "current_value": "200000000000000000000000",
         }
 
         session.execute(
             """
             update user_balance_changes
             set 
-              previous_balance = 10,
-              current_balance = 9999999,
+              previous_balance = 10000000000000000000,
+              current_balance = 9999999000000000000000000,
               blocknumber=20
             where user_id = 2;
             """
@@ -122,15 +122,15 @@ def test_tier_change(app):
         assert notifications[0].data == {
             "new_tier": "platinum",
             "new_tier_value": 100000,
-            "current_value": "9999999",
+            "current_value": "9999999000000000000000000",
         }
 
         session.execute(
             """
             update user_balance_changes
             set 
-              previous_balance = 9999999,
-              current_balance = 10000,
+              previous_balance = 9999999000000000000000000,
+              current_balance = 10000000000000000000000,
               blocknumber=22
             where user_id = 2;
             """

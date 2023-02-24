@@ -13,9 +13,6 @@ import (
 	"github.com/nats-io/nkeys"
 )
 
-const Prefix = "AUDIUS"
-
-// TODO: Doesn't really belong in config, but it can't be in peering because of import cycles
 type ServiceNode struct {
 	ID                  string `json:"id"`
 	SPID                string `json:"spID"`
@@ -29,19 +26,27 @@ type ServiceNode struct {
 type ServiceNodesDecoder []ServiceNode
 
 type KeysConfig struct {
-	DelegatePrivateKey *ecdsa.PrivateKey `envconfig:"DELEGATE_PRIVATE_KEY" required:"true" json:"-"`
+	DelegatePrivateKey *ecdsa.PrivateKey `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" required:"true" json:"-"`
 
 	// Fields derived from DelegatePrivateKey
-	DelegatePublicKey string        `envconfig:"DELEGATE_PRIVATE_KEY" json:"DelegatePublicKey"`
-	NkeyPair          nkeys.KeyPair `envconfig:"DELEGATE_PRIVATE_KEY" json:"-"`
-	NkeyPublic        string        `envconfig:"DELEGATE_PRIVATE_KEY" json:"NkeyPublic"`
+	DelegatePublicKey string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"DelegatePublicKey"`
+	NkeyPair          nkeys.KeyPair `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"-"`
+	NkeyPublic        string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"NkeyPublic"`
 }
 type KeysConfigDecoder KeysConfig
+
+type PeeringConfig struct {
+	Keys                   KeysConfigDecoder   `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" required:"true" json:"Keys"`
+	DevOnlyRegisteredNodes ServiceNodesDecoder `envconfig:"AUDIUS_DEV_ONLY_REGISTERED_NODES" json:"DevOnlyRegisteredNodes"`
+	NatsClusterName        string              `envconfig:"AUDIUS_NATS_CLUSTER_NAME" default:"comms" json:"NatsClusterName"`
+	TestHost               string              `envconfig:"AUDIUS_TEST_HOST" json:"TestHost"`
+	IsStaging              bool                `envconfig:"AUDIUS_IS_STAGING" json:"IsStaging"`
+}
 
 // EnsurePrivKeyAndLoadConf ensures the private key env var is set and loads a config struct from env vars.
 func EnsurePrivKeyAndLoadConf[T any](config *T) {
 	EnsurePrivateKeyIsSet()
-	if err := envconfig.Process(Prefix, config); err != nil {
+	if err := envconfig.Process("", config); err != nil {
 		log.Fatalf("failed to load %T: %v", *config, err.Error())
 	}
 	configBytes, _ := json.MarshalIndent(config, "", "\t")
@@ -58,7 +63,9 @@ func EnsurePrivateKeyIsSet() {
 	if os.Getenv("AUDIUS_DELEGATE_PRIVATE_KEY") == "" {
 		if os.Getenv("delegatePrivateKey") == "" {
 			log.Print("WARN: Missing 'AUDIUS_DELEGATE_PRIVATE_KEY' and deprecated fallback delegatePrivateKey env vars. Generating random private key.")
-			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", generatePrivateKeyHex())
+			privKey := generatePrivateKeyHex()
+			fmt.Println("Generated private key: ", privKey)
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", privKey)
 		} else {
 			log.Print("WARN: Using DEPRECATED 'delegatePrivateKey' env var. Please set 'AUDIUS_DELEGATE_PRIVATE_KEY' env var to the same value.")
 			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", os.Getenv("delegatePrivateKey"))
@@ -93,7 +100,7 @@ func (kcd *KeysConfigDecoder) Decode(value string) error {
 
 	privateKey, err := crypto.ToECDSA(privateBytes)
 	if err != nil {
-		return fmt.Errorf("fAUDIUS_DELEGATE_PRIVATE_KEY: failed to convert private key to ecdsa: %v", err)
+		return fmt.Errorf("AUDIUS_DELEGATE_PRIVATE_KEY: failed to convert private key to ecdsa: %v", err)
 	}
 
 	nKeyPair, err := nkeys.FromRawSeed(nkeys.PrefixByteUser, privateBytes)
