@@ -18,6 +18,9 @@ declare global {
 }
 
 const IS_SAFARI = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+const IS_UI_WEBVIEW = /(iPhone|iPod|iPad).*AppleWebKit/i.test(
+  navigator.userAgent
+)
 
 const FADE_IN_EVENT = new Event('fade-in')
 const FADE_OUT_EVENT = new Event('fade-out')
@@ -154,7 +157,7 @@ export class AudioPlayer {
 
   _initContext = () => {
     this.audio.addEventListener('canplay', () => {
-      if (!this.audioCtx && !IS_SAFARI) {
+      if (!this.audioCtx && !IS_SAFARI && !IS_UI_WEBVIEW) {
         // Set up WebAudio API handles
         const AudioContext = window.AudioContext || window.webkitAudioContext
         try {
