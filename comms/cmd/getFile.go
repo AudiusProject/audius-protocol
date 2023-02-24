@@ -38,7 +38,7 @@ var getFileCmd = &cobra.Command{
 			outputFile = filename
 		}
 
-		os.WriteFile(outputFile, audioData, 777)
+		os.WriteFile(outputFile, audioData, 0777)
 	},
 }
 
