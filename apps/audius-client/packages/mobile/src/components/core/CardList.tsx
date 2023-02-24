@@ -18,10 +18,16 @@ export type CardListProps<ItemT> = FlatListProps<ItemT> & {
   LoadingCardComponent?: ComponentType
   disableTopTabScroll?: boolean
   FlatListComponent?: ComponentType<FlatListProps<ItemT | LoadingCard>>
+  // If total count is known, use this to aid in rendering the right number
+  // of skeletons
+  totalCount?: number
 }
 
 type LoadingCard = { _loading: true }
-const skeletonData: LoadingCard[] = Array(5).fill({ _loading: true })
+
+const getSkeletonData = (skeletonCount = 6): LoadingCard[] => {
+  return Array(Math.min(skeletonCount, 6)).fill({ _loading: true })
+}
 
 const DefaultLoadingCard = () => null
 
@@ -50,6 +56,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
     isLoading: isLoadingProp,
     LoadingCardComponent = DefaultLoadingCard,
     FlatListComponent = FlatList,
+    totalCount,
     ...other
   } = props
 
@@ -64,12 +71,12 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
     })
   }, disableTopTabScroll)
 
-  const data = useMemo(
-    () => [...(dataProp ?? []), ...(isLoading ? skeletonData : [])],
-    [dataProp, isLoading]
-  )
+  const data = useMemo(() => {
+    const skeletonData = isLoading ? getSkeletonData(totalCount) : []
+    return [...(dataProp ?? []), ...skeletonData]
+  }, [dataProp, isLoading, totalCount])
 
-  const dataLength = data?.length ?? 0
+  const dataLength = data.length
 
   const handleRenderItem: ListRenderItem<ItemT> = useCallback(
     (info) => {
