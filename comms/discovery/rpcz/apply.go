@@ -283,30 +283,8 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			return err
 		}
 
-		// send out websocket events?
-		if chatId := gjson.GetBytes(rawRpc.Params, "chat_id").String(); chatId != "" {
-			var userIds []int32
-			err = db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1`, chatId)
-			if err != nil {
-				logger.Warn("failed to load chat members for websocket push " + err.Error())
-			} else {
-				var parsedParams schema.RPCPayloadParams
-				err := json.Unmarshal(rawRpc.Params, &parsedParams)
-				if err != nil {
-					logger.Error("Failed to parse params")
-				}
-				payload := schema.RPCPayload{Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams}
-				encodedUserId, _ := misc.EncodeHashId(int(userId))
-				data := schema.ChatWebsocketEventData{RPC: payload, Metadata: schema.Metadata{Timestamp: meta.Timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
-				for _, subscribedUserId := range userIds {
-					// Don't send events sent by a user to that same user
-					if subscribedUserId != userId {
-						websocketPush(subscribedUserId, data)
-					}
-				}
-			}
-
-		}
+		// send out websocket events fire + forget style
+		go websocketNotify(rawRpc, userId, meta.Timestamp)
 
 		return nil
 	}
@@ -320,4 +298,31 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	}
 	proc.Unlock()
 
+}
+
+func websocketNotify(rawRpc schema.RawRPC, userId int32, timestamp time.Time) {
+	if chatId := gjson.GetBytes(rawRpc.Params, "chat_id").String(); chatId != "" {
+		var userIds []int32
+		err := db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1`, chatId)
+		if err != nil {
+			logger.Warn("failed to load chat members for websocket push " + err.Error())
+		} else {
+			var parsedParams schema.RPCPayloadParams
+			err := json.Unmarshal(rawRpc.Params, &parsedParams)
+			if err != nil {
+				logger.Error("Failed to parse params")
+				return
+			}
+			payload := schema.RPCPayload{Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams}
+			encodedUserId, _ := misc.EncodeHashId(int(userId))
+			data := schema.ChatWebsocketEventData{RPC: payload, Metadata: schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
+			for _, subscribedUserId := range userIds {
+				// Don't send events sent by a user to that same user
+				if subscribedUserId != userId {
+					websocketPush(subscribedUserId, data)
+				}
+			}
+		}
+
+	}
 }
