@@ -44,10 +44,9 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes [
 	var host string
 	var allStorageNodePubKeys []string
 	for _, node := range allNodes {
-		allStorageNodePubKeys = append(allStorageNodePubKeys, node.DelegateOwnerWallet)
+		allStorageNodePubKeys = append(allStorageNodePubKeys, strings.ToLower(node.DelegateOwnerWallet))
 		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
 			host = node.Endpoint
-			break
 		}
 	}
 	if host == "" {
