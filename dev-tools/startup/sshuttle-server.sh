@@ -4,7 +4,7 @@
 # - installs python3 which is required by sshuttle
 # - keeps /etc/hosts updated so sshuttle's auto-hosts functionality is fast
 
-apk add python3 nmap
+apk add python3.10 nmap
 
 # Splits cidr to /24 ranges
 function split_cidr {

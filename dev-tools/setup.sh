@@ -19,8 +19,8 @@ debian | ubuntu)
     sudo apt-get update
     sudo apt-get install -y \
         git \
-        python3 \
-        python3-pip \
+        python3.10 \
+        python3.10-pip \
         docker-ce \
         docker-ce-cli \
         containerd.io
@@ -43,8 +43,8 @@ debian | ubuntu)
         exit 1
     fi
 
-    if ! command -v python3 &>/dev/null; then
-        echo "Python3 is not installed. Please install python3 and try again."
+    if ! command -v python3.10 &>/dev/null; then
+        echo "Python3.10 is not installed. Please install python3.10 and try again."
         exit 1
     fi
 
