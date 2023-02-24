@@ -84,7 +84,7 @@ func DiscoveryMain() {
 		},
 	)
 	http.Handle("/comms/unfurl", unfurlist.New(config))
-	go http.ListenAndServe(":8926", nil)
+	go http.ListenAndServe(":8927", nil)
 
 	// Start comms server on :8925
 	e := server.NewServer(jsc, proc)
