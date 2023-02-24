@@ -12,20 +12,24 @@ import { getIsSettingUp } from 'audius-client/src/common/store/backend/selectors
 import { make } from 'common/store/analytics/actions'
 import { takeLatest, put, call } from 'typed-redux-saga'
 
-import { ENTROPY_KEY, THEME_STORAGE_KEY } from 'app/constants/storage-keys'
+import {
+  ENTROPY_KEY,
+  SEARCH_HISTORY_KEY,
+  THEME_STORAGE_KEY
+} from 'app/constants/storage-keys'
 import { audiusBackendInstance } from 'app/services/audius-backend-instance'
 import { localStorage } from 'app/services/local-storage'
 
 import { resetOAuthState } from '../oauth/actions'
 import { clearOfflineDownloads } from '../offline-downloads/slice'
-import { clearHistory } from '../search/slice'
+import { clearHistory } from '../search/searchSlice'
 import { disablePushNotifications } from '../settings/sagas'
 
 const { resetAccount } = accountActions
 const { signOut: signOutAction } = signOutActions
 const { setTheme } = themeActions
 
-const storageKeysToRemove = [THEME_STORAGE_KEY, ENTROPY_KEY]
+const storageKeysToRemove = [THEME_STORAGE_KEY, ENTROPY_KEY, SEARCH_HISTORY_KEY]
 
 function* signOut() {
   yield* put(make(Name.SETTINGS_LOG_OUT, {}))

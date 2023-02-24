@@ -10,8 +10,8 @@ import type { TextInputRef } from 'app/components/core'
 import { TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { updateQuery } from 'app/store/search/searchSlice'
 import { getSearchQuery } from 'app/store/search/selectors'
-import { updateQuery } from 'app/store/search/slice'
 
 // Amount of time to wait before focusing TextInput
 // after the SearchBar renders

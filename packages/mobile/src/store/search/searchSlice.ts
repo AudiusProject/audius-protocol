@@ -1,5 +1,4 @@
 import type { Nullable } from '@audius/common'
-import { Status } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
@@ -8,13 +7,11 @@ import { persistReducer } from 'redux-persist'
 export type SearchState = {
   query: string
   history: string[]
-  status: Status
 }
 
 const initialState: SearchState = {
   query: '',
-  history: [],
-  status: Status.IDLE
+  history: []
 }
 
 export type UpdateQueryAction = PayloadAction<{
@@ -38,7 +35,6 @@ const slice = createSlice({
     },
     setHistory: (state, action: SetSearchHistoryAction) => {
       state.history = action.payload.searchHistory
-      state.status = Status.SUCCESS
     },
     clearHistory: (state) => {
       state.history = []
@@ -52,15 +48,11 @@ const slice = createSlice({
         (term) => term !== trimmedItem
       )
       state.history = [trimmedItem, ...filteredSearch]
-    },
-    fetchHistory: (state, _action) => {
-      state.status = Status.LOADING
     }
   }
 })
 
-export const { updateQuery, setHistory, clearHistory, addItem, fetchHistory } =
-  slice.actions
+export const { updateQuery, setHistory, clearHistory, addItem } = slice.actions
 
 const searchPersistConfig = {
   key: 'search',

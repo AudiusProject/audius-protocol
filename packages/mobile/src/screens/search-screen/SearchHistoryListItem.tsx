@@ -8,7 +8,7 @@ import { useDispatch } from 'react-redux'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { updateQuery } from 'app/store/search/slice'
+import { updateQuery } from 'app/store/search/searchSlice'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
