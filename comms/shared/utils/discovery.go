@@ -27,23 +27,13 @@ func IsValidDiscoveryNode(wallet string) bool {
 	return includes
 }
 
-func GenerateSignature[T any](data map[string]T, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+func GenerateSignature[T any](data T, privateKey *ecdsa.PrivateKey) ([]byte, error) {
 	toSignStr, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 
 	toSignHash := crypto.Keccak256(toSignStr)
-	signedResponse, err := crypto.Sign(toSignHash, privateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	return signedResponse, nil
-}
-
-func GenerateSignatureForString(data []byte, privateKey *ecdsa.PrivateKey) ([]byte, error) {
-	toSignHash := crypto.Keccak256(data)
 	signedResponse, err := crypto.Sign(toSignHash, privateKey)
 	if err != nil {
 		return nil, err
