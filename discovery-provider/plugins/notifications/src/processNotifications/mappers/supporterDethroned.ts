@@ -17,37 +17,37 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
     this.receiverUserId = this.notification.data.receiver_user_id
-    this.senderUserId = this.notification.data.receiver_user_id
+    this.senderUserId = this.notification.data.sender_user_id
     this.dethronedUserId = this.notification.data.dethroned_user_id
   }
 
   async pushNotification() {
+    console.log('mde to push')
 
     const res: Array<{ user_id: number, name: string, handle: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'handle', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
-      .whereIn('user_id', [this.receiverUserId, this.senderUserId])
+      .whereIn('user_id', [this.receiverUserId, this.senderUserId, this.dethronedUserId])
     const users = res.reduce((acc, user) => {
       acc[user.user_id] = { name: user.name, handle: user.handle, isDeactivated: user.is_deactivated }
       return acc
     }, {} as Record<number, { name: string, handle: string, isDeactivated: boolean }>)
 
 
-    if (users?.[this.senderUserId]?.isDeactivated) {
+    if (users?.[this.dethronedUserId]?.isDeactivated) {
       return
     }
 
-    const userNotifications = await super.getShouldSendNotification(this.senderUserId)
+    const userNotifications = await super.getShouldSendNotification(this.dethronedUserId)
     const newTopSupporterHandle = users[this.senderUserId]?.handle
     const supportedUserName = users[this.receiverUserId]?.name
-
     // If the user has devices to the notification to, proceed
-    if ((userNotifications.mobile?.[this.senderUserId]?.devices ?? []).length > 0) {
-      const devices: Device[] = userNotifications.mobile?.[this.senderUserId].devices
+    if ((userNotifications.mobile?.[this.dethronedUserId]?.devices ?? []).length > 0) {
+      const devices: Device[] = userNotifications.mobile?.[this.dethronedUserId].devices
       await Promise.all(devices.map(device => {
         return sendPushNotification({
           type: device.type,
-          badgeCount: userNotifications.mobile[this.senderUserId].badgeCount,
+          badgeCount: userNotifications.mobile[this.dethronedUserId].badgeCount,
           targetARN: device.awsARN
         }, {
           title: "👑 You've Been Dethroned!",

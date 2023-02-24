@@ -4,7 +4,6 @@ import { SupporterRankUpNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import { EntityType } from '../../email/notifications/types'
 import { capitalize } from '../../email/notifications/components/utils'
 
 type SupporterRankUpNotificationRow = Omit<NotificationRow, 'data'> & { data: SupporterRankUpNotification }
@@ -23,7 +22,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
   }
 
   async pushNotification() {
-
+    console.log('in suporter rank up')
     const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)

@@ -9,10 +9,11 @@ import {
   createTestDB,
   dropTestDB,
   replaceDBName,
-  createSupporterRankUp
+  createSupporterRankUp,
+  createUserBankTx
 } from '../../utils/populateDB'
 
-describe('Supporter Rank Up Notification', () => {
+describe('Supporting Rank Up Notification', () => {
   let processor: Processor
 
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
@@ -41,17 +42,18 @@ describe('Supporter Rank Up Notification', () => {
     ])
   })
 
-  test("Process push notification for tip receive", async () => {
+  test("Process push notification for supporting rank up", async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    // NOTE: User tips stored as a string with 8 significant digits
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 1 }])
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 3, receiver_user_id: 1, rank: 1 }])
-
-    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
+    await createUserBankTx(processor.discoveryDB, [{ signature: '1', slot: 1 }])
+    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 2 }])
+    await insertMobileSettings(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
     await new Promise(resolve => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
-    const reactionNotifications = pending?.appNotifications.filter(n => n.type === 'tip_receive')
+
+    console.log(pending?.appNotifications)
+
+    const reactionNotifications = pending?.appNotifications.filter(n => n.type === 'supporting_rank_up')
 
     expect(reactionNotifications).toHaveLength(1)
     // Assert single pending
@@ -59,11 +61,11 @@ describe('Supporter Rank Up Notification', () => {
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
-      targetARN: 'arn:1',
+      targetARN: 'arn:2',
       badgeCount: 0
     }, {
-      title: 'You Received a Tip!',
-      body: `User_2 sent you a tip of 5 $AUDIO`,
+      title: `#2 Top Supporter`,
+      body: `You're now user_1's #2 Top Supporter!`,
       data: {}
     })
   })

@@ -13,7 +13,7 @@ import {
   createUserBankTx
 } from '../../utils/populateDB'
 
-describe('Supporter Dethroned Notification', () => {
+describe('Supporter Rank Up Notification', () => {
   let processor: Processor
 
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
@@ -42,30 +42,30 @@ describe('Supporter Dethroned Notification', () => {
     ])
   })
 
-
-  test("Process push notification for tip receive", async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }, { user_id: 3 }])
+  test("Process push notification for supporter rank up", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createUserBankTx(processor.discoveryDB, [{ signature: '1', slot: 1 }])
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 1 }])
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 3, receiver_user_id: 1, rank: 1 }])
-
-    await insertMobileSettings(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
+    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 2 }])
+    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
     await new Promise(resolve => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
-    const dethronedNotifications = pending.appNotifications.filter(n => n.type === 'supporter_dethroned')
-    expect(dethronedNotifications).toHaveLength(1)
 
+    console.log(pending?.appNotifications)
+
+    const reactionNotifications = pending?.appNotifications.filter(n => n.type === 'supporter_rank_up')
+
+    expect(reactionNotifications).toHaveLength(1)
     // Assert single pending
-    await processor.appNotificationsProcessor.process(dethronedNotifications)
+    await processor.appNotificationsProcessor.process(reactionNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
-      targetARN: 'arn:2',
+      targetARN: 'arn:1',
       badgeCount: 0
     }, {
-      title: "👑 You've Been Dethroned!",
-      body: `Handle_3 dethroned you as user_1's #1 Top Supporter! Tip to reclaim your spot?`,
+      title: `#2 Top Supporter`,
+      body: `User_2 became your #2 Top Supporter!`,
       data: {}
     })
   })

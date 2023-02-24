@@ -10,10 +10,12 @@ import {
   dropTestDB,
   replaceDBName,
   createSupporterRankUp,
-  createUserBankTx
+  createUserBankTx,
+  createChallengeReward,
+  createRewardManagerTx
 } from '../../utils/populateDB'
 
-describe('Supporter Dethroned Notification', () => {
+describe('Challenge Reward Notification', () => {
   let processor: Processor
 
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
@@ -42,30 +44,32 @@ describe('Supporter Dethroned Notification', () => {
     ])
   })
 
-
-  test("Process push notification for tip receive", async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }, { user_id: 3 }])
-    await createUserBankTx(processor.discoveryDB, [{ signature: '1', slot: 1 }])
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 1 }])
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 3, receiver_user_id: 1, rank: 1 }])
-
-    await insertMobileSettings(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
+  test("Process push notification for challenge reward rank up", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createRewardManagerTx(processor.discoveryDB, [{ slot: 1, signature: '0x1' }])
+    await createChallengeReward(processor.discoveryDB, [{
+      challenge_id: 'profile-completion',
+      user_id: 1,
+      specifier: '1',
+      amount: '100000000'
+    }])
+    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
     await new Promise(resolve => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
-    const dethronedNotifications = pending.appNotifications.filter(n => n.type === 'supporter_dethroned')
-    expect(dethronedNotifications).toHaveLength(1)
+    const reactionNotifications = pending?.appNotifications.filter(n => n.type === 'challenge_reward')
 
+    expect(reactionNotifications).toHaveLength(1)
     // Assert single pending
-    await processor.appNotificationsProcessor.process(dethronedNotifications)
+    await processor.appNotificationsProcessor.process(reactionNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
-      targetARN: 'arn:2',
+      targetARN: 'arn:1',
       badgeCount: 0
     }, {
-      title: "👑 You've Been Dethroned!",
-      body: `Handle_3 dethroned you as user_1's #1 Top Supporter! Tip to reclaim your spot?`,
+      title: `✅️ Complete your Profile`,
+      body: `You’ve earned 1 $AUDIO for completing this challenge!`,
       data: {}
     })
   })

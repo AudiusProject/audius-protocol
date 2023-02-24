@@ -17,7 +17,8 @@ import {
   TipSendNotification,
   TipReceiveNotification,
   SupporterDethronedNotification,
-  SupportingRankUpNotification
+  SupportingRankUpNotification,
+  ChallengeRewardNotification
 } from '../../types/notifications'
 import { Follow } from './follow'
 import { Repost } from './repost'
@@ -32,6 +33,7 @@ import { TipSend } from './tipSend'
 import { TipReceive } from './tipReceive'
 import { SupporterDethroned } from './supporterDethroned'
 import { SupportingRankUp } from './supportingRankUp'
+import { ChallengeReward } from './challengeReward'
 
 export const mapNotifications = (notifications: (NotificationRow | EmailNotification)[], dnDb: Knex, identityDb: Knex) => {
   return notifications.map((notification) => mapNotification(notification, dnDb, identityDb)).filter(Boolean)
@@ -81,6 +83,10 @@ const mapNotification = (notification: NotificationRow | EmailNotification, dnDb
   else if (notification.type == 'tip_send') {
     const tipSendNotification = notification as NotificationRow & { data: TipSendNotification }
     return new TipSend(dnDb, identityDb, tipSendNotification)
+  }
+  else if (notification.type == 'challenge_reward') {
+    const challengeRewardNotification = notification as NotificationRow & { data: ChallengeRewardNotification }
+    return new ChallengeReward(dnDb, identityDb, challengeRewardNotification)
   }
   else if (notification.type == 'reaction') {
     const reactionNotification = notification as NotificationRow & { data: ReactionNotification }

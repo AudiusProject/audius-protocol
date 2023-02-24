@@ -7,7 +7,7 @@
     "dev": "nodemon",
     "sql-ts": "ts-node scripts/sql-ts.ts",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000",
-    "test:watch": "jest --watchAll -- supporterDethroned.test.ts",
+    "test:watch": "jest --watchAll -- challengeReward.test.ts",
     "test": "jest",
     "test-push": "ts-node scripts/test-push-notification.ts"
   },

@@ -105,7 +105,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
           badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
           targetARN: device.awsARN
         }, {
-          title: this.challengeInfoMap[this.challengeId],
+          title: this.challengeInfoMap[this.challengeId].title,
           body: this.getPushBodyText(),
           data: {}
         })
