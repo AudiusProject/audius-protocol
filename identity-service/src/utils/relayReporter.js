@@ -1,20 +1,18 @@
 const AnalyticsProvider = require('../analytics')
 
-// "Relay POA: Start" for example
-const eventName = (chain, event) => (`Relay ${chain}: ${event}`)
+// "Relay: Start" for example
+const eventName = (event) => (`Relay: ${event}`)
 
 module.exports = class RelayReporter {
     constructor({
-        shouldReportAnalytics = true,
-        childLogger = console,
+        shouldReportAnalytics = true
     }) {
-        this.childLogger = childLogger
         this.shouldReportAnalytics = shouldReportAnalytics
         this.analyticsProvider = new AnalyticsProvider()
     }
 
-    async reportStart({ chain, userId, contractAddress, nethermindContractAddress, senderAddress }) {
-        await this.report({ eventName: eventName('Start', chain), userId, data: {
+    async reportStart({ userId, contractAddress, nethermindContractAddress, senderAddress }) {
+        await this.report({ eventName: eventName('Start'), userId, data: {
             contractAddress, 
             nethermindContractAddress,
             senderAddress
@@ -22,7 +20,8 @@ module.exports = class RelayReporter {
     }
 
     async reportSuccess({ chain, userId, totalTime, txSubmissionTime, contractAddress, nethermindContractAddress, senderAddress }) {
-        await this.report({ eventName: eventName('Success', chain), userId, data: {
+        await this.report({ eventName: eventName('Success'), userId, data: {
+            chain,
             totalTime,
             txSubmissionTime,
             contractAddress, 
@@ -32,7 +31,8 @@ module.exports = class RelayReporter {
     }
 
     async reportError({ chain, userId, totalTime, txSubmissionTime, contractAddress, nethermindContractAddress, senderAddress, errMsg }) {
-        await this.report({ eventName: eventName('Error', chain), userId, data: {
+        await this.report({ eventName: eventName('Error'), userId, data: {
+            chain,
             totalTime,
             txSubmissionTime,
             contractAddress, 
