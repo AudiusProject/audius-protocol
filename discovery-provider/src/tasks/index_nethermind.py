@@ -16,6 +16,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
@@ -216,19 +217,14 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     cid = event_args._metadata
                     event_type = event_args._entityType
                     action = event_args._action
-                    if (
-                        not cid
-                        or event_type == EntityType.USER_REPLICA_SET
-                        or action
-                        in [
-                            EntityType.REPOST,
-                            EntityType.SAVE,
-                            EntityType.FOLLOW,
-                            EntityType.SUBSCRIPTION,
-                        ]
-                    ):
+                    if not cid or event_type == EntityType.USER_REPLICA_SET:
                         continue
                     if action == Action.CREATE and event_type == EntityType.USER:
+                        continue
+                    if (
+                        action == Action.CREATE
+                        and event_type == EntityType.NOTIFICATION
+                    ):
                         continue
 
                     cids_txhash_set.add((cid, txhash))
@@ -376,6 +372,7 @@ def process_state_changes(
     )(block)
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
+
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
             main_indexing_task,
@@ -590,6 +587,7 @@ def index_blocks(self, db, blocks_list):
                         )
 
                 except Exception as e:
+
                     blockhash = web3.toHex(block_hash)
                     indexing_error = IndexingError(
                         "prefetch-cids", block_number, blockhash, None, str(e)
@@ -680,6 +678,7 @@ def revert_blocks(self, db, revert_blocks_list):
     logger.info(revert_blocks_list)
 
     with db.scoped_session() as session:
+
         rebuild_playlist_index = False
         rebuild_track_index = False
         rebuild_user_index = False
@@ -712,6 +711,11 @@ def revert_blocks(self, db, revert_blocks_list):
             )
             revert_follow_entries = (
                 session.query(Follow).filter(Follow.blockhash == revert_hash).all()
+            )
+            revert_subscription_entries = (
+                session.query(Subscription)
+                .filter(Subscription.blockhash == revert_hash)
+                .all()
             )
             revert_playlist_entries = (
                 session.query(Playlist).filter(Playlist.blockhash == revert_hash).all()
@@ -798,6 +802,23 @@ def revert_blocks(self, db, revert_blocks_list):
                 # remove outdated follow entry
                 logger.info(f"Reverting follow: {follow_to_revert}")
                 session.delete(follow_to_revert)
+
+            for subscription_to_revert in revert_subscription_entries:
+                previous_subscription_entry = (
+                    session.query(Subscription)
+                    .filter(
+                        Subscription.subscriber_id
+                        == subscription_to_revert.subscriber_id
+                    )
+                    .filter(Subscription.user_id == subscription_to_revert.user_id)
+                    .filter(Subscription.blocknumber < revert_block_number)
+                    .order_by(Subscription.blocknumber.desc())
+                    .first()
+                )
+                if previous_subscription_entry:
+                    previous_subscription_entry.is_current = True
+                logger.info(f"Reverting subscription: {subscription_to_revert}")
+                session.delete(subscription_to_revert)
 
             for playlist_to_revert in revert_playlist_entries:
                 playlist_id = playlist_to_revert.playlist_id
@@ -941,6 +962,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @celery.task(name="update_discovery_provider_nethermind", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
+
     # ask identity did you switch relay
     # start indexing from the start block we've configured (stage/prod may be different)
 
@@ -1088,10 +1110,7 @@ def update_task(self):
 
                 # Add blocks to 'block remove' list from here as we traverse to the
                 # valid intersect block
-                while (
-                    traverse_block.blockhash != intersect_block_hash
-                    and undo_operations_required
-                ):
+                while traverse_block.blockhash != intersect_block_hash:
                     revert_blocks_list.append(traverse_block)
                     parent_query = session.query(Block).filter(
                         Block.blockhash == traverse_block.parenthash
