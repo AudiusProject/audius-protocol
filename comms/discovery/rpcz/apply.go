@@ -142,6 +142,15 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	proc.JetstreamSequence.Set(int64(meta.Sequence.Stream))
 	proc.ConsumerSequence.Set(int64(meta.Sequence.Consumer))
 
+	// notify any waiters of apply result
+	defer func() {
+		proc.Lock()
+		if waiter, ok := proc.waiters[meta.Sequence.Stream]; ok {
+			waiter <- err
+		}
+		proc.Unlock()
+	}()
+
 	// recover wallet + user
 	signatureHeader := msg.Header.Get(sharedConfig.SigHeader)
 	wallet, err := misc.RecoverWallet(msg.Data, signatureHeader)
@@ -333,13 +342,6 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	if err != nil {
 		logger.Warn("apply failed", "err", err)
 	}
-
-	// notify any waiters of apply result
-	proc.Lock()
-	if waiter, ok := proc.waiters[meta.Sequence.Stream]; ok {
-		waiter <- err
-	}
-	proc.Unlock()
 
 }
 
