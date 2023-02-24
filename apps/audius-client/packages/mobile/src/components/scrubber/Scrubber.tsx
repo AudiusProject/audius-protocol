@@ -70,7 +70,12 @@ export const Scrubber = (props: ScrubberProps) => {
     setIsInteracting(true)
   }, [onPressIn])
 
-  const handlePressOut = useCallback(
+  const handlePressOut = useCallback(() => {
+    onPressOut()
+    setIsInteracting(false)
+  }, [onPressOut])
+
+  const handleNewPosition = useCallback(
     (percentComplete: number) => {
       const newPosition = percentComplete * duration
       if (duration) {
@@ -105,6 +110,7 @@ export const Scrubber = (props: ScrubberProps) => {
         isPlaying={isPlaying}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
+        onNewPosition={handleNewPosition}
         onDrag={handleDrag}
         onDragRelease={handleDragRelease}
         duration={duration}
