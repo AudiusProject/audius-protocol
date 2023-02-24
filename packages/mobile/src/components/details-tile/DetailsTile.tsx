@@ -302,18 +302,17 @@ export const DetailsTile = ({
                   premiumConditions={premiumConditions}
                 />
               )}
-            {!isPremiumContentEnabled ||
-              (doesUserHaveAccess && (
-                <Button
-                  styles={{ text: styles.playButtonText }}
-                  title={isPlaying ? messages.pause : messages.play}
-                  size='large'
-                  iconPosition='left'
-                  icon={isPlaying ? IconPause : IconPlay}
-                  onPress={handlePressPlay}
-                  fullWidth
-                />
-              ))}
+            {!isPremiumContentEnabled || doesUserHaveAccess ? (
+              <Button
+                styles={{ text: styles.playButtonText }}
+                title={isPlaying ? messages.pause : messages.play}
+                size='large'
+                iconPosition='left'
+                icon={isPlaying ? IconPause : IconPlay}
+                onPress={handlePressPlay}
+                fullWidth
+              />
+            ) : null}
             <DetailsTileActionButtons
               hasReposted={!!hasReposted}
               hasSaved={!!hasSaved}
