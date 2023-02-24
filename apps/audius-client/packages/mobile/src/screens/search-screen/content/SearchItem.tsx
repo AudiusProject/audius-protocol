@@ -11,7 +11,7 @@ import { TrackImage } from 'app/components/image/TrackImage'
 import { UserImage } from 'app/components/image/UserImage'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { addItem } from 'app/store/search/slice'
+import { addItem } from 'app/store/search/searchSlice'
 import type {
   SearchPlaylist,
   SearchTrack,

@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 
 import { Divider, TextButton } from 'app/components/core'
-import { clearHistory } from 'app/store/search/slice'
+import { clearHistory } from 'app/store/search/searchSlice'
 import { makeStyles } from 'app/styles'
 
 const messages = {

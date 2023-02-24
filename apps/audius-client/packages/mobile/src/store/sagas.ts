@@ -66,6 +66,7 @@ import notificationsSagas from './notifications/sagas'
 import oauthSagas from './oauth/sagas'
 import offlineDownloadSagas from './offline-downloads/sagas'
 import rateCtaSagas from './rate-cta/sagas'
+import { searchSagas } from './search/searchSagas'
 import settingsSagas from './settings/sagas'
 import signOutSagas from './sign-out/sagas'
 import signUpSagas from './sign-up/sagas'
@@ -164,6 +165,7 @@ export default function* rootSaga() {
     ...remixSettingsSagas(),
     ...offlineDownloadSagas(),
     ...reachabilitySagas(),
+    ...searchSagas(),
 
     initKeyboardEvents,
     ...remoteConfig(),

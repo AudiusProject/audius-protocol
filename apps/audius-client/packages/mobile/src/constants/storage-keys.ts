@@ -7,3 +7,4 @@ export const ENTROPY_KEY = 'hedgehog-entropy-key'
 export const THEME_STORAGE_KEY = 'theme'
 export const OFFLINE_OVERRIDE_STORAGE_KEY =
   'offline_mode_release_local_override'
+export const SEARCH_HISTORY_KEY = '@search-history'
