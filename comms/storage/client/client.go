@@ -224,3 +224,27 @@ func (sc *StorageClient) GetStorageNodesFor(jobId string) ([]string, error) {
 
 	return nodes, nil
 }
+
+func (sc *StorageClient) GetKeysByShard(shard string) (*[]string, error) {
+	route := "/storage/persistence/shard"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, shard))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var keys []string
+	err = json.Unmarshal(body, &keys)
+	if err != nil {
+		return nil, err
+	}
+
+	return &keys, nil
+}
+

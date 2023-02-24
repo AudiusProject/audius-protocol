@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"comms.audius.co/shared/utils"
+	"golang.org/x/exp/slices"
 )
 
 func TestAudioUpload(t *testing.T) {
@@ -69,9 +70,20 @@ func TestPersistence(t *testing.T) {
 		jobToNodes[job.ID] = nodes
 	}
 
-	t.Log(jobToNodes)
-
 	// make sure it's there
+	for jobId, nodes := range jobToNodes {
+		for _, node := range nodes {
+			shard := jobId[len(jobId)-2:]
+			keys, err := client.GetKeysByShard(shard)
+			if err != nil {
+				continue
+			}
+
+			if !slices.Contains(*keys, jobId) {
+				t.Fatalf("jobId `%s` is missing from keysByShard on node %s", jobId, node)
+			}
+		}
+	}
 
 
 	// shutdown server
