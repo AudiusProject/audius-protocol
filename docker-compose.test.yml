@@ -281,9 +281,7 @@ services:
       - discovery
 
   test-discovery-provider-notifications:
-    extends:
-      file: docker-compose.yml
-      service: discovery-provider-notifications
+    build: discovery-provider/plugins/notifications
     command: sh -c "npm run test:watch"
     environment:
       AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
@@ -302,6 +300,23 @@ services:
     deploy:
       mode: replicas
       replicas: 1
+    profiles:
+      - tests
+      - notifications
+
+  # comms
+
+  test-comms-migrations:
+    build:
+      context: comms
+      dockerfile: Dockerfile
+    command: /comms-linux discovery-migrations
+    environment:
+      audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable"
+    depends_on:
+      test-discovery-provider-migrations:
+        condition: service_completed_successfully
+    logging: *default-logging
     profiles:
       - tests
       - notifications
