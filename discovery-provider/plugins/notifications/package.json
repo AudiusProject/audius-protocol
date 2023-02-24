@@ -7,7 +7,7 @@
     "dev": "nodemon",
     "sql-ts": "ts-node scripts/sql-ts.ts",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000",
-    "test:watch": "jest --watchAll",
+    "test:watch": "jest --watchAll -- supporterDethroned.test.ts",
     "test": "jest",
     "test-push": "ts-node scripts/test-push-notification.ts"
   },
@@ -30,6 +30,7 @@
   "dependencies": {
     "@aws-sdk/client-sns": "^3.245.0",
     "@sendgrid/mail": "^7.7.0",
+    "bn.js": "^5.2.1",
     "commander": "9.2.0",
     "knex": "2.4.1",
     "lodash": "4.17.21",

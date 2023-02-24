@@ -37,11 +37,10 @@ export class Processor {
     // setup postgres listener
     await this.setupDB({ discoveryDBUrl, identityDBUrl })
 
-    // NOTE: Temp to stop listener for app notifiations
-    // await setupTriggers(this.discoveryDB)
-    //  this.listener = new Listener()
-    // await this.listener.start(this.discoveryDB)
-
+    // Comment out to prevent app notifications until complete
+    this.listener = new Listener()
+    await this.listener.start(this.discoveryDB)
+    await setupTriggers(this.discoveryDB)
     this.appNotificationsProcessor = new AppNotificationsProcessor(this.discoveryDB, this.identityDB)
   }
 
@@ -68,8 +67,8 @@ export class Processor {
     await redis.set(config.lastIndexedMessageRedisKey, new Date(Date.now()).toISOString())
     await redis.set(config.lastIndexedReactionRedisKey, new Date(Date.now()).toISOString())
     while (this.isRunning) {
-      // NOTE: Temp to stop app notifiations
-      // await sendAppNotifications(this.listener, this.appNotificationsProcessor)
+      // Comment out to prevent app notifications until complete
+      await sendAppNotifications(this.listener, this.appNotificationsProcessor)
       await sendDMNotifications(this.discoveryDB, this.identityDB)
 
       // NOTE: Temp to test DM email notifs in staging

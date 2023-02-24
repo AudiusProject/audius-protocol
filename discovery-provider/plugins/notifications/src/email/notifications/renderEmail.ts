@@ -130,7 +130,7 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
     'track_routes.slug'
   ).from('tracks')
     .join('users', 'users.user_id', 'tracks.owner_id')
-    .join('track_routes', 'track_routes.track_id', 'tracks.owner_id')
+    .join('track_routes', 'track_routes.track_id', 'tracks.track_id')
     .whereIn('tracks.track_id', Array.from(ids.tracks))
     .andWhere('tracks.is_current', true)
     .andWhere('users.is_current', true)
@@ -181,6 +181,7 @@ const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications:
   const mappedNotifications: BaseNotification<any>[] = mapNotifications(notifications, dnDB, identityDB)
   for (const notification of mappedNotifications) {
     const resourcesToFetch = notification.getResourcesForEmail()
+    console.log({ resourcesToFetch })
     Object.entries(resourcesToFetch).forEach(([key, value]) => {
       (value as Set<number>).forEach(idsToFetch[key as keyof ResourceIds].add, idsToFetch[key as keyof ResourceIds])
     })

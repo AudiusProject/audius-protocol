@@ -36,10 +36,10 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
       return
     }
 
-    // TODO: Fetch the remix track and parent track
-
     // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.senderUserId)
+
+    const receivingUserName = users[this.receiverUserId]?.name
 
     // If the user has devices to the notification to, proceed
     if ((userNotifications.mobile?.[this.senderUserId]?.devices ?? []).length > 0) {
@@ -53,8 +53,8 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
             badgeCount: userNotifications.mobile[this.senderUserId].badgeCount,
             targetARN: device.awsARN
           }, {
-            title: 'Favorite',
-            body: ``,
+            title: `#${this.rank} Top Supporter`,
+            body: `You're now ${receivingUserName}'s #${this.rank} Top Supporter!`,
             data: {}
           })
         }))

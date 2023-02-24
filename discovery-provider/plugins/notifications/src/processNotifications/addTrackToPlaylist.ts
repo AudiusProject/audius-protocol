@@ -1,25 +1,21 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { TipReceiveNotification } from '../../types/notifications'
+import { AddTrackToPlaylistdNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import { capitalize } from 'lodash'
-import { formatWei } from '../../utils/format'
+import { ResourceIds, Resources } from '../../email/appNotifications/renderEmail'
 
-type TipReceiveNotificationRow = Omit<NotificationRow, 'data'> & { data: TipReceiveNotification }
-export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
+type AddTrackToPlaylistdNotificationRow = Omit<NotificationRow, 'data'> & { data: AddTrackToPlaylistdNotification }
+export class AddTrackToPlaylistd extends BaseNotification<AddTrackToPlaylistdNotificationRow> {
 
-  senderUserId: number
-  receiverUserId: number
-  amount: number
+  trackId: number
+  playlistId: number
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: TipReceiveNotificationRow) {
+  constructor(dnDB: Knex, identityDB: Knex, notification: AddTrackToPlaylistdNotificationRow) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
-    this.amount = this.notification.data.amount
-    this.receiverUserId = this.notification.data.receiver_user_id
-    this.senderUserId = this.notification.data.sender_user_id
+    this.trackId = notification.data.track_id
+    this.playlistId = notification.data.playlist_id
   }
 
   async pushNotification() {
@@ -34,27 +30,29 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
 
-    if (users?.[this.receiverUserId]?.isDeactivated) {
+    if (users?.[this.senderUserId]?.isDeactivated) {
       return
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
+    const userNotifications = await super.getShouldSendNotification(this.senderUserId)
 
-    const sendingUserName = users[this.senderUserId]?.name
-    const tipAmount = formatWei(this.amount.toString(), 'sol')
+    // TODO: fetch this info
+    const playlistOwnerName = ''
+    const trackTitle = ''
+    const playlistName = ''
 
     // If the user has devices to the notification to, proceed
-    if ((userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length > 0) {
-      const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
+    if ((userNotifications.mobile?.[this.senderUserId]?.devices ?? []).length > 0) {
+      const devices: Device[] = userNotifications.mobile?.[this.senderUserId].devices
       await Promise.all(devices.map(device => {
         return sendPushNotification({
           type: device.type,
-          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+          badgeCount: userNotifications.mobile[this.senderUserId].badgeCount,
           targetARN: device.awsARN
         }, {
-          title: 'You Received a Tip!',
-          body: `${capitalize(sendingUserName)} sent you a tip of ${tipAmount} $AUDIO`,
+          title: 'Your track got on a playlist! 💿',
+          body: `${playlistOwnerName} added ${trackTitle} to their playlist ${playlistName}`,
           data: {}
         })
       }))
@@ -80,11 +78,10 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
   }
 
   formatEmailProps(resources: Resources) {
-    const sendingUser = resources.users[this.senderUserId]
+    const receiverUserId = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      sendingUser: { name: sendingUser.name },
-      amount: this.amount
+      receiverUserId: { name: receiverUserId.name },
     }
   }
 
