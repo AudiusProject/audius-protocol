@@ -290,7 +290,7 @@ func (sc *StorageClient) GetFile(filename string) ([]byte, error) {
 	return body, nil
 }
 
-func (sc *StorageClient) GetJobResultFor(jobId string) ([]*persistence.ShardAndFile, error) {
+func (sc *StorageClient) GetJobResultsFor(jobId string) ([]*persistence.ShardAndFile, error) {
 	route := "/storage/job-results"
 
 	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, jobId))
