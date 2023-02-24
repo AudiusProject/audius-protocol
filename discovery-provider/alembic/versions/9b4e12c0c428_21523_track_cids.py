@@ -40,7 +40,7 @@ def build_sql():
     inner_sql = """UPDATE tracks
     SET track_cid = data_table.track_cid
     FROM (SELECT unnest(:track_ids) AS track_id, unnest(:track_cids) AS track_cid) AS data_table
-    WHERE tracks.is_current = True AND tracks.track_id = data_table.track_id;"""
+    WHERE tracks.is_current = True AND tracks.track_id = data_table.track_id::int;"""
 
     sql = sa.text("begin; \n\n " + inner_sql + " \n\n commit;")
     sql = sql.bindparams(sa.bindparam("track_ids", ARRAY(String)))

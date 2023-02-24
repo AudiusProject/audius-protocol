@@ -23,40 +23,28 @@ To get started with a lightweight multi node cluster and test uploads.
 
 **BUILD AND RUN**
 
+(from the comms/ directory with the Makefile - one level up from here)
 ```shell
 # on the first run, make will password prompt
 # to add a single required route to /etc/hosts
-make storage.multi
+make
 
 # then you can visit the web ui to test uploads
-open http://node1/storage
+open http://node1-storage/storage
 
 # you can also curl uploads
-curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1/storage/file
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/file
 
 # after some uploads, you can see which nodes stored what files 
 docker logs storage1 2>&1 | grep -i storing
 
 # to check nats stream status
-docker exec -ti com1 nats stream ls -a
+docker exec -ti nats1-storage nats stream ls -a
 
 # explore the weathermap for a visual layout of the sharded filesystem
-open http://node1/storage/weather
+open http://node1-storage/storage/weather
 
-# teardown
-make down
-```
-
-**DEVELOP**
-
-Switch to dev mode to enable hot reloading on the `storage1` container. We intentionally do not mount the `natsd` source. As to keep NATS running across storage server restarts. If working on `comms/natsd` consider mounting the source.
-
-```shell
-# run a single node cluster
-# tears down any previously running docker compose environment
-make storage.dev
-
-# tail
+# tail logs to see hot reloading
 docker logs -f storage1
 
 # now change some go files...
@@ -65,6 +53,9 @@ docker logs -f storage1
   building...
   running...
 ```
+
+# teardown
+`make down`
 
 ---
 
@@ -174,7 +165,7 @@ GET  /job-results/:id
 <i>Example: Upload a track</i>
 
 ```shell
-curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1/storage/file
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/file
 
 [
   {

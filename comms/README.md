@@ -23,10 +23,9 @@ Verify setup:
 
 ### Run + test
 
-* `make reset` - starts postgres + nats containers (first time)
-* `make` - dev on discovery
-* `make dev.storage` - dev on storage (make sure a JetStream-enabled NATS server is running first with `nats-server -p 4222 -js`)
-* `make test`
+* `make` - dev on discovery or storage (view logs with `docker logs -f discovery1` or `docker logs -f storage1`)
+* `make test` - view test output (tests run automatically when changing files)
+* the above both hot reload, so you don't need to do `make` again unless you break hot reloading (e.g., creating/deleting files)
 
 Re-run make after code changes
 
@@ -36,7 +35,7 @@ Use [dbmate](https://github.com/amacneil/dbmate):
 
 * `cd discovery && dbmate new create_cool_table`
 * edit migration file
-* `make reset` to run migration
+* `make migrate` to run migration
 
 ### Typings
 

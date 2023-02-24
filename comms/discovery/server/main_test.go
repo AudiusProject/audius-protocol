@@ -8,6 +8,7 @@ import (
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/rpcz"
+	"comms.audius.co/shared/peering"
 	"github.com/nats-io/nats.go"
 )
 
@@ -17,21 +18,30 @@ var (
 
 // this runs before all tests (not a per-test setup / teardown)
 func TestMain(m *testing.M) {
-	discoveryConfig := config.GetDiscoveryConfig()
-	config.Init(discoveryConfig.Keys)
-
-	// todo: config week
-	config.NatsReplicaCount = 1
-
 	// setup
-	os.Setenv("audius_db_url", "postgresql://postgres:postgres@localhost:5454/comtest?sslmode=disable")
 	err := db.Dial()
 	if err != nil {
 		log.Fatal(err)
 	}
+	if _, err = db.Conn.Exec("truncate table chat cascade"); err != nil {
+		log.Fatal(err)
+	}
+	if _, err = db.Conn.Exec("truncate table users cascade"); err != nil {
+		log.Fatal(err)
+	}
+	if _, err = db.Conn.Exec("truncate table chat_member cascade"); err != nil {
+		log.Fatal(err)
+	}
+	if _, err = db.Conn.Exec("truncate table chat_message cascade"); err != nil {
+		log.Fatal(err)
+	}
+	if _, err = db.Conn.Exec("truncate table rpc_log cascade"); err != nil {
+		log.Fatal(err)
+	}
 
 	// connect to NATS and create JetStream Context
-	nc, err := nats.Connect(nats.DefaultURL)
+	discoveryConfig := config.GetDiscoveryConfig()
+	nc, err := peering.New(&discoveryConfig.PeeringConfig).DialNats(nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -39,6 +49,11 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// clear nats state
+	jsc.DeleteKeyValue(config.RateLimitRulesBucketName)
+	jsc.DeleteStream("audius")
+	jsc.DeleteStream("audius.rpc")
 
 	proc, err := rpcz.NewProcessor(jsc)
 	if err != nil {
