@@ -15,7 +15,9 @@ import (
 
 	"comms.audius.co/shared/utils"
 	"comms.audius.co/storage/monitor"
+	"comms.audius.co/storage/persistence"
 	"comms.audius.co/storage/transcode"
+	"github.com/nats-io/nats.go"
 	"golang.org/x/exp/slices"
 )
 
@@ -248,3 +250,65 @@ func (sc *StorageClient) GetKeysByShard(shard string) (*[]string, error) {
 	return &keys, nil
 }
 
+func (sc *StorageClient) GetObjFromTmpStore(bucket string, key string) (*nats.ObjectResult, error) {
+	route := "/storage/tmp-obj"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s/%s", sc.Endpoint, route, bucket, key))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var obj nats.ObjectResult
+	err = json.Unmarshal(body, &obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return &obj, nil
+}
+
+func (sc *StorageClient) GetFile(filename string) ([]byte, error) {
+	route := "/storage/persistent/file"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, filename))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func (sc *StorageClient) GetJobResultFor(jobId string) ([]*persistence.ShardAndFile, error) {
+	route := "/storage/job-results"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, jobId))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var shardAndFile []*persistence.ShardAndFile
+	err = json.Unmarshal(body, &shardAndFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return shardAndFile, nil
+}
