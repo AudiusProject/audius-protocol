@@ -27,7 +27,7 @@ func TestRecoverWallet(t *testing.T) {
 	if err != nil {
 		t.Fatal("Key generation failed")
 	}
-	signature, err := utils.GenerateSignature(signatureData.toMap(), privKey)
+	signature, err := utils.GenerateSignature(signatureData, privKey)
 	if err != nil {
 		t.Fatalf("Failed to generate signature for %+v", signatureData)
 	}
@@ -113,12 +113,12 @@ func TestParseQueryParams(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		signature, err := utils.GenerateSignature(tt.testData.toMap(), privKey)
+		signature, err := utils.GenerateSignature(tt.testData, privKey)
 		if err != nil {
 			t.Fatalf("Failed to generate signature for %+v", tt.testData)
 		}
 
-		marshalledData, err := json.Marshal(tt.testData.toMap())
+		marshalledData, err := json.Marshal(tt.testData)
 		if err != nil {
 			t.Fatal("marshalling signature data failed")
 		}

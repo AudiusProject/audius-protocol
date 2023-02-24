@@ -25,15 +25,6 @@ type SignatureData struct {
 	TrackId     int64  `json:"trackId"`
 }
 
-func (sd SignatureData) toMap() map[string]interface{} {
-	return map[string]interface{}{
-		"cid":         sd.Cid,
-		"shouldCache": sd.ShouldCache,
-		"timestamp":   sd.Timestamp,
-		"trackId":     sd.TrackId,
-	}
-}
-
 func recoverWallet(signatureData SignatureData, signature []byte) ([]byte, error) {
 	stringData, err := json.Marshal(signatureData)
 	if err != nil {
