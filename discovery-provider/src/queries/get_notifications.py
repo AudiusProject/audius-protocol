@@ -190,10 +190,10 @@ class RepostNotification(TypedDict):
     repost_item_id: int
 
 
-class RepostRepostNotification(TypedDict):
+class RepostOfRepostNotification(TypedDict):
     type: str
     user_id: int
-    repost_repost_item_id: int
+    repost_of_repost_item_id: int
 
 
 class SaveNotification(TypedDict):
@@ -312,7 +312,7 @@ NotificationData = Union[
     AnnouncementNotification,
     FollowNotification,
     RepostNotification,
-    RepostRepostNotification,
+    RepostOfRepostNotification,
     SaveNotification,
     RemixNotification,
     CosignRemixNotification,

@@ -46,25 +46,25 @@ def test_get_repost_repost_notifications(app):
                     "user_id": 2,
                     "repost_item_id": 1,
                     "repost_type": "track",
-                    "is_repost_repost": True,
+                    "is_repost_of_repost": True,
                 },
                 {
                     "user_id": 3,
                     "repost_item_id": 1,
                     "repost_type": "track",
-                    "is_repost_repost": True,
+                    "is_repost_of_repost": True,
                 },
                 {
                     "user_id": 3,
                     "repost_item_id": 1,
                     "repost_type": "playlist",
-                    "is_repost_repost": True,
+                    "is_repost_of_repost": True,
                 },
                 {
                     "user_id": 5,
                     "repost_item_id": 1,
                     "repost_type": "playlist",
-                    "is_repost_repost": True,
+                    "is_repost_of_repost": True,
                 },
             ]
         }
