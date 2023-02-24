@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"comms.audius.co/discovery"
+	"comms.audius.co/discovery/db"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +16,17 @@ var discoveryCmd = &cobra.Command{
 	},
 }
 
+// discoveryMigrationsCmd represents the discovery-migrations command
+var discoveryMigrationsCmd = &cobra.Command{
+	Use:   "discovery-migrations",
+	Short: "",
+	Long:  ``,
+	Run: func(cmd *cobra.Command, args []string) {
+		db.RunMigrations()
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(discoveryCmd)
+	rootCmd.AddCommand(discoveryMigrationsCmd)
 }

@@ -3,14 +3,15 @@ package transcode
 import (
 	"testing"
 
-	"github.com/nats-io/nats.go"
+	"comms.audius.co/shared/peering"
+	"comms.audius.co/storage/config"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestJobManager(t *testing.T) {
 
-	namespace := "testing"
-	nc, err := nats.Connect(nats.DefaultURL)
+	namespace := "testing_storage"
+	nc, err := peering.New(&config.GetStorageConfig().PeeringConfig).DialNats(nil)
 	assert.NoError(t, err)
 
 	jsc, err := nc.JetStream()

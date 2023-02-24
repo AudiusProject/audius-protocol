@@ -3,13 +3,12 @@ package storageserver
 
 import (
 	"embed"
-	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"strings"
 
-	sharedConfig "comms.audius.co/shared/config"
+	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/monitor"
@@ -38,15 +37,19 @@ type StorageServer struct {
 	Persistence    *persistence.Persistence
 	WebServer      *echo.Echo
 	Monitor        *monitor.Monitor
+	Peering        *peering.Peering
 }
 
-func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes []sharedConfig.ServiceNode) *StorageServer {
-	thisNodePubKey := config.Keys.DelegatePublicKey
+func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *peering.Peering) *StorageServer {
+	allContentNodes, err := peering.GetContentNodes()
+	if err != nil {
+		log.Fatal("Error getting content nodes: ", err)
+	}
+	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
 	var host string
 	var allStorageNodePubKeys []string
-	for _, node := range allNodes {
-		fmt.Printf("checking node %v against this pubKey %q\n", node, thisNodePubKey)
-		allStorageNodePubKeys = append(allStorageNodePubKeys, node.DelegateOwnerWallet)
+	for _, node := range allContentNodes {
+		allStorageNodePubKeys = append(allStorageNodePubKeys, strings.ToLower(node.DelegateOwnerWallet))
 		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
 			host = node.Endpoint
 		}
@@ -66,7 +69,7 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, allNodes [
 	m := monitor.New(jsc)
 	err = m.SetHostAndShardsForNode(thisNodePubKey, host, d.ShardsStored)
 	if err != nil {
-		log.Fatal("Error setting host and shards for node", "err", err)
+		log.Fatalf("Error setting host and shards for node: %v", err)
 	}
 
 	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)

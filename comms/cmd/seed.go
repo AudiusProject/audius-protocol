@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 
-	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/client"
 	"comms.audius.co/storage/config"
@@ -41,11 +40,7 @@ func init() {
 func initClients() (int, error) {
 	storageConfig := config.GetStorageConfig()
 
-	// TODO: We need to change a bunch of stuff in shared/peering/ before we can remove this.
-	//       Make each config usage in shared/peering take the needed arguments instead of the whole config.
-	discoveryConfig.Init(storageConfig.Keys)
-
-	peering := peering.New(storageConfig.DevOnlyRegisteredNodes)
+	peering := peering.New(&storageConfig.PeeringConfig)
 	_, err := func() (nats.JetStreamContext, error) {
 		err := peering.PollRegisteredNodes()
 		if err != nil {
