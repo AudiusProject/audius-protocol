@@ -52,8 +52,27 @@ func TestPersistence(t *testing.T) {
 	}
 
 	// figure out which bucket each job should be in
+	nodesToShards, err := client.GetNodesToShards()
+	if err != nil {
+		t.Fatalf("failed to get nodes to shards, %+v", err)
+	}
+
+	t.Log(nodesToShards)
+	jobToNodes := map[string][]string{}
+	for _, job := range jobs {
+		nodes, err := client.GetStorageNodesFor(job.ID)
+		if err != nil {
+			jobToNodes[job.ID] = []string{}
+			continue
+		}
+
+		jobToNodes[job.ID] = nodes
+	}
+
+	t.Log(jobToNodes)
 
 	// make sure it's there
+
 
 	// shutdown server
 	if err := server.WebServer.Shutdown(context.Background()); err != nil {

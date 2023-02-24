@@ -14,7 +14,9 @@ import (
 	"time"
 
 	"comms.audius.co/shared/utils"
+	"comms.audius.co/storage/monitor"
 	"comms.audius.co/storage/transcode"
+	"golang.org/x/exp/slices"
 )
 
 type StorageClient struct {
@@ -180,4 +182,45 @@ func (sc *StorageClient) GetJob(jobId string) (*transcode.Job, error) {
 	}
 
 	return &job, nil
+}
+
+func (sc *StorageClient) GetNodesToShards() (*map[string]monitor.HostAndShards, error) {
+	route := "/storage/nodes-to-shards"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var nodesToShards map[string]monitor.HostAndShards
+	err = json.Unmarshal(body, &nodesToShards)
+	if err != nil {
+		return nil, err
+	}
+
+	return &nodesToShards, nil
+}
+
+func (sc *StorageClient) GetStorageNodesFor(jobId string) ([]string, error) {
+	nodesToShards, err := sc.GetNodesToShards()
+	if err != nil {
+		return nil, err
+	}
+
+	shard := jobId[len(jobId)-2:]
+
+	nodes := []string{}
+	for _, hostAndShards := range *nodesToShards {
+		if slices.Contains(hostAndShards.Shards, shard) {
+			nodes = append(nodes, hostAndShards.Host)
+		}
+	}
+
+	return nodes, nil
 }
