@@ -217,13 +217,23 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     cid = event_args._metadata
                     event_type = event_args._entityType
                     action = event_args._action
-                    if not cid or event_type == EntityType.USER_REPLICA_SET:
-                        continue
                     if action == Action.CREATE and event_type == EntityType.USER:
                         continue
                     if (
                         action == Action.CREATE
                         and event_type == EntityType.NOTIFICATION
+                    ):
+                        continue
+                    if (
+                        not cid
+                        or event_type == EntityType.USER_REPLICA_SET
+                        or action
+                        in [
+                            EntityType.REPOST,
+                            EntityType.SAVE,
+                            EntityType.FOLLOW,
+                            EntityType.SUBSCRIPTION,
+                        ]
                     ):
                         continue
 
@@ -817,7 +827,6 @@ def revert_blocks(self, db, revert_blocks_list):
                 )
                 if previous_subscription_entry:
                     previous_subscription_entry.is_current = True
-                logger.info(f"Reverting subscription: {subscription_to_revert}")
                 session.delete(subscription_to_revert)
 
             for playlist_to_revert in revert_playlist_entries:
