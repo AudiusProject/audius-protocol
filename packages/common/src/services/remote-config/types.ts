@@ -315,7 +315,10 @@ export enum StringKeys {
   COINBASE_PAY_ALLOWED_COUNTRIES_2_LETTER = 'COINBASE_PAY_ALLOWED_COUNTRIES_2_LETTER',
 
   /** 2-Letter ISO Country Codes of Allowed Countries for Link by Stripe */
-  STRIPE_ALLOWED_COUNTRIES_2_LETTER = 'STRIPE_ALLOWED_COUNTRIES_2_LETTER'
+  STRIPE_ALLOWED_COUNTRIES_2_LETTER = 'STRIPE_ALLOWED_COUNTRIES_2_LETTER',
+
+  /** Text to display on related features when Solana/$AUDIO features are degraded */
+  AUDIO_FEATURES_DEGRADED_TEXT = 'AUDIO_FEATURES_DEGRADED_TEXT'
 }
 
 export type AllRemoteConfigKeys =

@@ -22,7 +22,8 @@ import {
   useGetFirstOrTopSupporter,
   OnRampProvider,
   buyAudioActions,
-  FeatureFlags
+  FeatureFlags,
+  StringKeys
 } from '@audius/common'
 import {
   IconTrophy,
@@ -41,7 +42,7 @@ import IconNoTierBadge from 'assets/img/tokenBadgeNoTier.png'
 import { OnRampButton } from 'components/on-ramp-button'
 import Tooltip from 'components/tooltip/Tooltip'
 import { audioTierMapPng } from 'components/user-badges/UserBadges'
-import { useFlag } from 'hooks/useRemoteConfig'
+import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
 
@@ -110,6 +111,9 @@ export const SendTip = () => {
 
   const { isEnabled: isStripeBuyAudioEnabled } = useFlag(
     FeatureFlags.BUY_AUDIO_STRIPE_ENABLED
+  )
+  const audioFeaturesDegradedText = useRemoteVar(
+    StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
 
   useEffect(() => {
@@ -182,37 +186,34 @@ export const SendTip = () => {
     </div>
   )
 
-  const topBanner =
-    !hasInsufficientBalance && isFirstSupporter ? (
-      <TopBanner icon={<IconTrophy />} text={messages.becomeFirstSupporter} />
-    ) : !hasInsufficientBalance && amountToTipToBecomeTopSupporter ? (
-      <TopBanner
-        icon={<IconTrophy />}
-        text={
-          <>
-            {messages.becomeTopSupporterPrefix}
-            <span className={styles.amount}>
-              {formatWei(
-                amountToTipToBecomeTopSupporter ?? new BN('0'),
-                true,
-                0
-              )}
-            </span>
-            {messages.becomeTopSupporterSuffix}
-          </>
-        }
+  const topBanner = audioFeaturesDegradedText ? (
+    <TopBanner text={audioFeaturesDegradedText} />
+  ) : !hasInsufficientBalance && isFirstSupporter ? (
+    <TopBanner icon={<IconTrophy />} text={messages.becomeFirstSupporter} />
+  ) : !hasInsufficientBalance && amountToTipToBecomeTopSupporter ? (
+    <TopBanner
+      icon={<IconTrophy />}
+      text={
+        <>
+          {messages.becomeTopSupporterPrefix}
+          <span className={styles.amount}>
+            {formatWei(amountToTipToBecomeTopSupporter ?? new BN('0'), true, 0)}
+          </span>
+          {messages.becomeTopSupporterSuffix}
+        </>
+      }
+    />
+  ) : isStripeBuyAudioEnabled ? (
+    <div>
+      <OnRampButton
+        buttonPrefix={messages.buyAudioPrefix}
+        provider={OnRampProvider.STRIPE}
+        className={styles.buyAudioButton}
+        textClassName={styles.buyAudioButtonText}
+        onClick={handleBuyWithStripeClicked}
       />
-    ) : isStripeBuyAudioEnabled ? (
-      <div>
-        <OnRampButton
-          buttonPrefix={messages.buyAudioPrefix}
-          provider={OnRampProvider.STRIPE}
-          className={styles.buyAudioButton}
-          textClassName={styles.buyAudioButtonText}
-          onClick={handleBuyWithStripeClicked}
-        />
-      </div>
-    ) : null
+    </div>
+  ) : null
 
   return receiver ? (
     <div

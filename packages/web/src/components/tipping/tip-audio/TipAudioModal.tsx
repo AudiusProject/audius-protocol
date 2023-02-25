@@ -5,9 +5,11 @@ import {
   tippingSelectors,
   tippingActions,
   TippingSendStatus,
-  walletActions
+  walletActions,
+  StringKeys
 } from '@audius/common'
 import { Modal, ModalHeader, ModalTitle } from '@audius/stems'
+import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { animated, Transition } from 'react-spring/renderprops'
 import { usePrevious } from 'react-use'
@@ -15,6 +17,7 @@ import { usePrevious } from 'react-use'
 import { ReactComponent as IconVerifiedGreen } from 'assets/img/iconVerifiedGreen.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 import { ConfirmSendTip } from './ConfirmSendTip'
 import { SendTip } from './SendTip'
@@ -108,6 +111,10 @@ export const TipAudioModal = () => {
   const sendStatus = useSelector(getSendStatus)
   const previousSendStatus = usePrevious(sendStatus)
 
+  const audioFeaturesDegradedText = useRemoteVar(
+    StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
+  )
+
   const onClose = useCallback(() => {
     dispatch(resetSend())
   }, [dispatch])
@@ -129,7 +136,9 @@ export const TipAudioModal = () => {
     <Modal
       isOpen={sendStatus !== null}
       onClose={onClose}
-      bodyClassName={styles.modalBody}
+      bodyClassName={cn(styles.modalBody, {
+        [styles.biggerModalBody]: !!audioFeaturesDegradedText
+      })}
       dismissOnClickOutside={
         sendStatus !== 'SENDING' && sendStatus !== 'CONVERTING'
       }
