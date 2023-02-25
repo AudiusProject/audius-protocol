@@ -1,7 +1,7 @@
 """backfill_subscriptions
 
 Revision ID: cda3f4983d1e
-Revises: 2fad3671bf9f
+Revises: abdb338530cd
 Create Date: 2022-11-09 21:23:20.095764
 
 """
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'cda3f4983d1e'
-down_revision = '2fad3671bf9f'
+down_revision = 'abdb338530cd'
 branch_labels = None
 depends_on = None
 
@@ -55,12 +55,12 @@ INSERT INTO subscriptions (subscriber_id, user_id, is_current, is_delete) SELECT
     WHERE NOT EXISTS (
         SELECT *
         FROM subscriptions
-        WHERE subscriptions.created_at >= '2023-01-10 05:00:00' AND subscriptions.is_current = true AND subscriptions.subscriber_id = csv.subscriber_id AND subscriptions.user_id = csv.user_id
+        WHERE subscriptions.created_at >= '2023-02-25 02:14:00' AND subscriptions.is_current = true AND subscriptions.subscriber_id = csv.subscriber_id AND subscriptions.user_id = csv.user_id
     )
 ) AS identity_records;
 
 DELETE FROM subscriptions
-WHERE created_at < '2023-01-10 05:00:00' AND is_current = true AND is_delete = true AND EXISTS (
+WHERE created_at < '2023-02-25 02:14:00' AND is_current = true AND is_delete = true AND EXISTS (
     SELECT *
     FROM (
         SELECT
