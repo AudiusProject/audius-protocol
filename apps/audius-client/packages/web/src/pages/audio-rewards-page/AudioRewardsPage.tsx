@@ -2,6 +2,7 @@ import { ReactNode, useContext, useEffect } from 'react'
 
 import {
   FeatureFlags,
+  StringKeys,
   tokenDashboardPageActions,
   walletActions
 } from '@audius/common'
@@ -15,7 +16,7 @@ import NavContext, {
   RightPreset
 } from 'components/nav/store/context'
 import Page from 'components/page/Page'
-import { useFlag } from 'hooks/useRemoteConfig'
+import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
 import { useRequiresAccount } from 'hooks/useRequiresAccount'
 import { useWithMobileStyle } from 'hooks/useWithMobileStyle'
 import { isMobile } from 'utils/clientUtil'
@@ -54,11 +55,22 @@ const RewardsContent = () => {
 
   const isBuyAudioEnabled = isCoinbaseEnabled || isStripeEnabled
 
+  const audioFeaturesDegradedText = useRemoteVar(
+    StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
+  )
+
   useRequiresAccount(TRENDING_PAGE)
 
   return (
     <>
       <WalletModal />
+      {audioFeaturesDegradedText ? (
+        <div className={styles.topBanner}>
+          <span className={styles.topBannerText}>
+            {audioFeaturesDegradedText}
+          </span>
+        </div>
+      ) : null}
       {isBuyAudioEnabled ? (
         <WalletManagementTile />
       ) : (
