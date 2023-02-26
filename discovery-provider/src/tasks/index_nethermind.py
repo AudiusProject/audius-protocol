@@ -148,7 +148,6 @@ def update_latest_block_redis():
 
 
 def fetch_tx_receipt(transaction):
-    web3 = update_task.web3
     tx_hash = web3.toHex(transaction["hash"])
     receipt = web3.eth.get_transaction_receipt(tx_hash)
     response = {}
@@ -347,7 +346,6 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
 
 
 def add_indexed_block_to_db(db_session, block):
-    web3 = update_task.web3
     current_block_query = db_session.query(Block).filter_by(is_current=True)
 
     block_model = Block(
@@ -419,7 +417,6 @@ def create_and_raise_indexing_error(err, redis):
 
 
 def index_blocks(self, db, blocks_list):
-    web3 = update_task.web3
     redis = update_task.redis
     shared_config = update_task.shared_config
 
@@ -597,7 +594,6 @@ def index_blocks(self, db, blocks_list):
                         )
 
                 except Exception as e:
-
                     blockhash = web3.toHex(block_hash)
                     indexing_error = IndexingError(
                         "prefetch-cids", block_number, blockhash, None, str(e)
@@ -688,7 +684,6 @@ def revert_blocks(self, db, revert_blocks_list):
     logger.info(revert_blocks_list)
 
     with db.scoped_session() as session:
-
         rebuild_playlist_index = False
         rebuild_track_index = False
         rebuild_user_index = False
@@ -971,7 +966,6 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @celery.task(name="update_discovery_provider_nethermind", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
-
     # ask identity did you switch relay
     # start indexing from the start block we've configured (stage/prod may be different)
 
@@ -979,7 +973,6 @@ def update_task(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = update_task.db
-    web3 = web3_provider.get_nethermind_web3()
     redis = update_task.redis
 
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
@@ -1020,14 +1013,14 @@ def update_task(self):
     # blocking_timeout is duration it waits to try to acquire lock
     # timeout is the duration the lock is held
     update_lock = redis.lock(
-        "disc_prov_lock", blocking_timeout=25, timeout=DEFAULT_LOCK_TIMEOUT
+        "disc_prov_lock_nethermind", blocking_timeout=25, timeout=DEFAULT_LOCK_TIMEOUT
     )
     try:
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             logger.info(
-                f"index_nethermind.py | {self.request.id} | update_task | Acquired disc_prov_lock"
+                f"index_nethermind.py | {self.request.id} | update_task | Acquired disc_prov_lock_nethermind"
             )
 
             latest_block = get_latest_block(db, final_poa_block)
@@ -1080,7 +1073,7 @@ def update_task(self):
                     reached_initial_block = latest_block.number == final_poa_block + 1
                     if reached_initial_block:
                         block_intersection_found = True
-                        intersect_block_hash = latest_block.parentHash
+                        intersect_block_hash = web3.toHex(latest_block.parentHash)
                     else:
                         latest_block = dict(web3.eth.get_block(parent_hash, True))
                         latest_block["number"] += final_poa_block
@@ -1119,7 +1112,10 @@ def update_task(self):
 
                 # Add blocks to 'block remove' list from here as we traverse to the
                 # valid intersect block
-                while traverse_block.blockhash != intersect_block_hash:
+                while (
+                    traverse_block.blockhash != intersect_block_hash
+                    and undo_operations_required
+                ):
                     revert_blocks_list.append(traverse_block)
                     parent_query = session.query(Block).filter(
                         Block.blockhash == traverse_block.parenthash
@@ -1147,7 +1143,7 @@ def update_task(self):
             )
         else:
             logger.info(
-                f"index_nethermind.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock"
+                f"index_nethermind.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock_nethermind"
             )
     except Exception as e:
         logger.error(f"Fatal error in main loop {e}", exc_info=True)

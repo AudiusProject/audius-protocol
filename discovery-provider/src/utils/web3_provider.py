@@ -5,10 +5,10 @@ Interface for using a web3 provider
 import os
 from typing import Optional
 
-from src.models.indexing.block import Block
-from src.utils import db_session, helpers
+from src.utils import helpers, redis_connection
 from src.utils.config import shared_config
 from src.utils.multi_provider import MultiProvider
+from src.utils.redis_constants import most_recent_indexed_block_redis_key
 from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
 
@@ -23,17 +23,14 @@ def get_web3():
     # pylint: disable=W0603
     global web3
     final_poa_block = helpers.get_final_poa_block(shared_config)
-    db = db_session.get_db_read_replica()
-    with db.scoped_session() as session:
-        latest_block_query = session.query(Block).filter(Block.is_current == True).all()
-
-        if len(latest_block_query) != 1:
-            raise Exception("Expected SINGLE row marked as current")
-
-        latest_block_record = helpers.model_to_dictionary(latest_block_query[0])
-        latest_indexed_block_num = latest_block_record["number"] or 0
-
-    if final_poa_block and latest_indexed_block_num >= final_poa_block:
+    redis = redis_connection.get_redis()
+    cached_current_block = redis.get(most_recent_indexed_block_redis_key)
+    if (
+        final_poa_block
+        and cached_current_block
+        and int(cached_current_block) >= final_poa_block
+    ):
+        # use ACDC web3 if POA is finished
         return get_nethermind_web3()
 
     # fallback to POA endpoint
