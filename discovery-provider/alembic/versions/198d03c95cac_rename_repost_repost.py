@@ -1,7 +1,7 @@
 """rename repost repost
 
 Revision ID: 198d03c95cac
-Revises: abdb338530cd
+Revises: cda3f4983d1e
 Create Date: 2023-02-24 21:51:29.932807
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "198d03c95cac"
-down_revision = "abdb338530cd"
+down_revision = "cda3f4983d1e"
 branch_labels = None
 depends_on = None
 
