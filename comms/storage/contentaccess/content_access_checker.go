@@ -66,7 +66,7 @@ func VerifySignature(
 	}
 
 	if !utils.IsValidDiscoveryNode(p, string(signer)) {
-		return false, errors.New("Signature is not from valid discovery node.")
+		return false, errors.New("signature is not from valid discovery node")
 	}
 
 	if isExpired(signatureData) {
