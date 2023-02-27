@@ -726,3 +726,113 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
         all_reposts: List[Repost] = session.query(Repost).all()
         assert len(all_reposts) == 1
         assert all_reposts[0].is_repost_repost == False
+
+
+def test_index_social_feature_for_save_of_repost(app, mocker):
+    "Tests a playlist update and repost in the same block"
+    bus_mock = mocker.patch(
+        "src.challenges.challenge_event_bus.ChallengeEventBus", autospec=True
+    )
+
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(None, web3, challenge_event_bus=bus_mock)
+
+    """
+    const resp = await this.manageEntity({
+        userId,
+        entityType: EntityType.USER,
+        entityId: followeeUserId,
+        action: isUnfollow ? Action.UNFOLLOW : Action.FOLLOW,
+        metadataMultihash: ''
+      })
+    """
+    tx_receipts = {
+        "SaveTrackTx3": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Save",
+                        "_metadata": '{"is_save_of_repost": true}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "SaveTrackTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 2,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Save",
+                        "_metadata": '{"is_save_of_repost": false}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "SaveTrackTx5": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 3,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Save",
+                        "_metadata": 1,
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
+    entities = {
+        "users": [
+            {"user_id": i, "handle": f"user-{i}", "wallet": f"user{i}wallet"}
+            for i in range(1, 13)
+        ],
+        "playlists": [
+            {"playlist_id": i, "playlist_owner_id": 10} for i in range(1, 10)
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=2,
+            block_timestamp=1585336422,
+            block_hash=0,
+            metadata={},
+        )
+        all_saves: List[Save] = session.query(Save).all()
+        assert len(all_saves) == 3
+        assert all_saves[0].is_save_of_repost == True
+        assert all_saves[1].is_save_of_repost == False
+        assert all_saves[2].is_save_of_repost == False
