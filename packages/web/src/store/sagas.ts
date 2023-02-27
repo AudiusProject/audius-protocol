@@ -10,7 +10,8 @@ import {
   toastSagas,
   vipDiscordModalSagas,
   reachabilitySagas as commonReachabilitySagas,
-  searchUsersModalSagas
+  searchUsersModalSagas,
+  solanaSagas
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
@@ -82,7 +83,6 @@ import errorSagas from 'store/errors/sagas'
 import reachabilitySagas from 'store/reachability/sagas'
 import routingSagas from 'store/routing/sagas'
 import signOutSagas from 'store/sign-out/sagas'
-import solanaSagas from 'store/solana/sagas'
 import tokenDashboardSagas from 'store/token-dashboard/sagas'
 
 import notificationSagasWeb from './notifications/sagas'
@@ -192,6 +192,7 @@ export default function* rootSaga() {
 
     // Tipping
     tippingSagas(),
+    solanaSagas(),
 
     // Premium content
     premiumContentSagas(),

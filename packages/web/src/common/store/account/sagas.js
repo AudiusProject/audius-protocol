@@ -3,19 +3,14 @@ import {
   accountSelectors,
   cacheActions,
   profilePageActions,
-  solanaSelectors,
   accountActions,
   recordIP,
-  createUserBankIfNeeded
+  solanaSelectors,
+  createUserBankIfNeeded,
+  getContext,
+  FeatureFlags
 } from '@audius/common'
-import {
-  call,
-  put,
-  fork,
-  select,
-  takeEvery,
-  getContext
-} from 'redux-saga/effects'
+import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
 import { identify } from 'common/store/analytics/actions'
 import { retrieveCollections } from 'common/store/cache/collections/utils'
@@ -25,8 +20,8 @@ import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
 
 import disconnectedWallets from './disconnected_wallet_fix.json'
 
-const { getFeePayer } = solanaSelectors
 const { fetchProfile } = profilePageActions
+const { getFeePayer } = solanaSelectors
 
 const {
   getUserId,
@@ -95,10 +90,10 @@ function* recordIPIfNotRecent(handle) {
 
 // Tasks to be run on account successfully fetched, e.g.
 // recording metrics, setting user data
-function* onSignedIn({ payload: { account, isSignUp = false } }) {
+function* onSignedIn({ payload: { account } }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const analytics = yield getContext('analytics')
   const sentry = yield getContext('sentry')
+  const analytics = yield getContext('analytics')
   if (account && account.handle) {
     // Set analytics user context
     const traits = {
@@ -123,14 +118,10 @@ function* onSignedIn({ payload: { account, isSignUp = false } }) {
   // This could happen if the user creates a new playlist and then leaves their session.
   yield fork(addPlaylistsNotInLibrary)
 
+  // Create userbank only if lazy is not enabled
   const feePayerOverride = yield select(getFeePayer)
-  yield call(
-    createUserBankIfNeeded,
-    analytics.track,
-    audiusBackendInstance,
-    feePayerOverride
-  )
-  if (!isSignUp) {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  if (!getFeatureEnabled(FeatureFlags.LAZY_USERBANK_CREATION_ENABLED)) {
     yield call(
       createUserBankIfNeeded,
       analytics.track,

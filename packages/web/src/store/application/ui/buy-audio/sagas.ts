@@ -21,12 +21,13 @@ import {
   walletSelectors,
   BNWei,
   createUserBankIfNeeded,
-  deriveUserBank,
   modalsActions,
   AmountObject,
   FeatureFlags,
   ErrorLevel,
-  LocalStorage
+  LocalStorage,
+  solanaSelectors,
+  deriveUserBankPubkey
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import type { RouteInfo } from '@jup-ag/core'
@@ -65,6 +66,8 @@ import { JupiterSingleton } from 'services/audius-backend/Jupiter'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
+
+const { getFeePayer } = solanaSelectors
 
 const {
   calculateAudioPurchaseInfo,
@@ -218,7 +221,7 @@ function* getTransactionFees({
       routeInfo: route,
       userPublicKey: rootAccount
     })
-    const userBank = yield* call(deriveUserBank, audiusBackendInstance)
+    const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
     const transferTransaction = yield* call(
       createTransferToUserBankTransaction,
       {
@@ -367,8 +370,19 @@ function* getAudioPurchaseInfo({
     }
 
     // Ensure userbank is created
+    const feePayerOverride = yield* select(getFeePayer)
+    if (!feePayerOverride) {
+      console.error(`getAudioPurchaseInfo: unexpectedly no fee payer override`)
+      return
+    }
+
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, track, audiusBackendInstance)
+      yield* call(
+        createUserBankIfNeeded,
+        track,
+        audiusBackendInstance,
+        feePayerOverride
+      )
     })
 
     // Setup
@@ -752,7 +766,7 @@ function* transferStep({
 }: TransferStepParams) {
   yield* put(transferStarted())
 
-  const userBank = yield* call(deriveUserBank, audiusBackendInstance)
+  const userBank = yield* call(deriveUserBankPubkey, audiusBackendInstance)
   const transferTransaction = yield* call(createTransferToUserBankTransaction, {
     userBank,
     fromAccount: rootAccount.publicKey,
@@ -851,8 +865,18 @@ function* doBuyAudio({
     )
 
     // Ensure userbank is created
+    const feePayerOverride = yield* select(getFeePayer)
+    if (!feePayerOverride) {
+      console.error('doBuyAudio: unexpectedly no fee payer override')
+      return
+    }
     yield* fork(function* () {
-      yield* call(createUserBankIfNeeded, track, audiusBackendInstance)
+      yield* call(
+        createUserBankIfNeeded,
+        track,
+        audiusBackendInstance,
+        feePayerOverride
+      )
     })
 
     // STEP ONE: Wait for purchase

@@ -1,94 +1,102 @@
-import { AccountInfo } from '@solana/spl-token'
-import { PublicKey } from '@solana/web3.js'
+import type { AudiusLibs } from '@audius/sdk'
 
-import { Nullable } from 'utils/typeUtils'
-
-import { AnalyticsEvent, Name } from '../../models'
+import { AnalyticsEvent, Name, SolanaWalletAddress } from '../../models'
 
 import { AudiusBackend } from './AudiusBackend'
 
-export const deriveUserBank = async (audiusBackendInstance: AudiusBackend) => {
-  const audiusLibs = await audiusBackendInstance.getAudiusLibs()
-  return (await audiusLibs.solanaWeb3Manager.deriveUserBank()) as PublicKey
+export const deriveUserBankPubkey = async (
+  audiusBackendInstance: AudiusBackend,
+  sourceEthAddress?: string
+) => {
+  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
+  return await audiusLibs.solanaWeb3Manager!.deriveUserBank(sourceEthAddress)
 }
 
-export const doesUserBankExist = async (
-  audiusBackendInstance: AudiusBackend
+export const deriveUserBankAddress = async (
+  audiusBackendInstance: AudiusBackend,
+  sourceEthAddress?: string
 ) => {
-  const audiusLibs = await audiusBackendInstance.getAudiusLibs()
-  const userBank: PublicKey =
-    await audiusLibs.solanaWeb3Manager.deriveUserBank()
-  const doesExist = await checkIsCreatedTokenAccount(
-    userBank.toString(),
-    audiusBackendInstance
+  const pubkey = await deriveUserBankPubkey(
+    audiusBackendInstance,
+    sourceEthAddress
   )
-  return doesExist
+  return pubkey.toString() as SolanaWalletAddress
 }
 
-export const checkIsCreatedTokenAccount = async (
-  addr: string,
-  audiusBackendInstance: AudiusBackend
-) => {
-  const audiusLibs = await audiusBackendInstance.getAudiusLibs()
-  const tokenAccount: Nullable<AccountInfo> =
-    await audiusLibs.solanaWeb3Manager.getTokenAccountInfo(addr)
-  return tokenAccount != null
-}
-
-export const createUserBank = async (
-  feePayerOverride = null,
-  audiusBackendInstance: AudiusBackend
-) => {
-  const audiusLibs = await audiusBackendInstance.getAudiusLibs()
-  return audiusLibs.solanaWeb3Manager.createUserBank(feePayerOverride)
-}
-
+/**
+ * Attempts to create a userbank.
+ * Returns the userbank pubkey if it created or already existed; otherwise returns null if error.
+ */
 export const createUserBankIfNeeded = async (
   recordAnalytics: (event: AnalyticsEvent, callback?: () => void) => void,
   audiusBackendInstance: AudiusBackend,
-  feePayerOverride = null
+  feePayerOverride: string,
+  sourceEthAddress?: string
 ) => {
-  const audiusLibs = await audiusBackendInstance.getAudiusLibs()
-  const userId = audiusLibs.Account.getCurrentUser().user_id
-  try {
-    const userbankExists = await doesUserBankExist(audiusBackendInstance)
-    if (userbankExists) return
-    console.warn(`Userbank doesn't exist, attempting to create...`)
-    await recordAnalytics({
-      eventName: Name.CREATE_USER_BANK_REQUEST,
-      properties: { userId }
-    })
-    const { error, errorCode } = await createUserBank(
-      feePayerOverride,
-      audiusBackendInstance
+  const audiusLibs: AudiusLibs = await audiusBackendInstance.getAudiusLibs()
+
+  const recipientEthAddress =
+    sourceEthAddress ?? audiusLibs.Account!.getCurrentUser()?.wallet
+
+  if (!recipientEthAddress) {
+    console.error(
+      "createUserBankIfNeeded: Unexpectedly couldn't get recipient eth address"
     )
-    if (error || errorCode) {
+    return null
+  }
+
+  try {
+    const res = await audiusLibs.solanaWeb3Manager!.createUserBankIfNeeded(
+      feePayerOverride,
+      sourceEthAddress
+    )
+
+    // If it already existed, return early
+    if ('didExist' in res && res.didExist) {
+      console.log('Userbank already exists')
+      return res.userbank.toString() as SolanaWalletAddress
+    }
+
+    // Otherwise we must have tried to create one
+    console.info(`Userbank doesn't exist, attempted to create...`)
+
+    recordAnalytics({
+      eventName: Name.CREATE_USER_BANK_REQUEST,
+      properties: { recipientEthAddress }
+    })
+
+    // Handle error case
+    if ('error' in res) {
       console.error(
-        `Failed to create userbank, with err: ${error}, ${errorCode}`
+        `Failed to create userbank, with err: ${res.error}, ${res.errorCode}`
       )
-      await recordAnalytics({
+      recordAnalytics({
         eventName: Name.CREATE_USER_BANK_FAILURE,
         properties: {
-          userId,
-          errorCode,
-          error: (error as any).toString()
+          recipientEthAddress,
+          errorCode: res.errorCode,
+          error: (res.error as any).toString()
         }
       })
-    } else {
-      console.log(`Successfully created userbank!`)
-      await recordAnalytics({
-        eventName: Name.CREATE_USER_BANK_SUCCESS,
-        properties: { userId }
-      })
+      return null
     }
+
+    // Handle success case
+    console.log(`Successfully created userbank!`)
+    recordAnalytics({
+      eventName: Name.CREATE_USER_BANK_SUCCESS,
+      properties: { recipientEthAddress }
+    })
+    return res.userbank.toString() as SolanaWalletAddress
   } catch (err) {
-    await recordAnalytics({
+    recordAnalytics({
       eventName: Name.CREATE_USER_BANK_FAILURE,
       properties: {
-        userId,
+        recipientEthAddress,
         errorMessage: (err as any).toString()
       }
     })
     console.error(`Failed to create userbank, with err: ${err}`)
+    return null
   }
 }

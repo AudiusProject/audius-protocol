@@ -34,7 +34,7 @@ export type UserMetadata = {
   profile_picture_sizes: Nullable<CID>
   metadata_multihash: Nullable<CID>
   erc_wallet: WalletAddress
-  spl_wallet: SolanaWalletAddress
+  spl_wallet: Nullable<SolanaWalletAddress>
   has_collectibles: boolean
   collectibles?: CollectiblesMetadata
   collectiblesOrderUnset?: boolean
