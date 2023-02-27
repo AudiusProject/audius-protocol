@@ -361,7 +361,9 @@
   width: 100%;
 }
 
-.bottomRow.premiumContent {
+.bottomRow .premiumContent {
+  display: flex;
+  align-items: center;
   width: fit-content;
   padding: 2px 8px;
   border: 1px solid var(--neutral-light-4);
@@ -370,13 +372,13 @@
   color: var(--neutral-light-4);
 }
 
-.bottomRow.premiumContent svg {
+.bottomRow .premiumContent svg {
   width: 16px;
   height: 16px;
   margin-right: 8px;
 }
 
-.bottomRow.premiumContent path {
+.bottomRow .premiumContent path {
   fill: var(--neutral-light-4);
 }
 

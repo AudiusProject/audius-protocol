@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react'
 
-import type { Track } from '@audius/common'
+import type { ID, QueryParams, Track } from '@audius/common'
 import {
   cacheUsersSelectors,
   cacheTracksSelectors,
@@ -234,6 +234,52 @@ export const Audio = () => {
     }
   }, [reset])
 
+  // Map of user signature for gated tracks
+  const [gatedQueryParamsMap, setGatedQueryParamsMap] = useState<{
+    [trackId: ID]: QueryParams
+  }>({})
+
+  const handleGatedQueryParams = useCallback(
+    async (tracks: Track[]) => {
+      const queryParamsMap: { [trackId: ID]: QueryParams } = {}
+
+      for (const track of tracks) {
+        const {
+          track_id: trackId,
+          is_premium: isPremium,
+          premium_content_signature
+        } = track
+
+        if (gatedQueryParamsMap[trackId]) {
+          queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
+        } else if (isPremiumContentEnabled && isPremium) {
+          const data = `Premium content user signature at ${Date.now()}`
+          const signature = await audiusBackendInstance.getSignature(data)
+          const premiumContentSignature =
+            premium_content_signature || premiumTrackSignatureMap[trackId]
+          queryParamsMap[trackId] = {
+            user_data: data,
+            user_signature: signature
+          }
+          if (premiumContentSignature) {
+            queryParamsMap[trackId].premium_content_signature = JSON.stringify(
+              premiumContentSignature
+            )
+          }
+        }
+      }
+
+      setGatedQueryParamsMap(queryParamsMap)
+      return queryParamsMap
+    },
+    [
+      isPremiumContentEnabled,
+      premiumTrackSignatureMap,
+      gatedQueryParamsMap,
+      setGatedQueryParamsMap
+    ]
+  )
+
   useTrackPlayerEvents(playerEvents, async (event) => {
     const duration = await TrackPlayer.getDuration()
     const position = await TrackPlayer.getPosition()
@@ -406,6 +452,8 @@ export const Audio = () => {
       ? queueTracks.slice(refUids.length)
       : queueTracks
 
+    const queryParamsMap = await handleGatedQueryParams(newQueueTracks)
+
     const newTrackData = newQueueTracks.map((track) => {
       const trackOwner = queueTrackOwnersMap[track.owner_id]
       const trackId = track.track_id
@@ -419,9 +467,17 @@ export const Audio = () => {
         const audioFilePath = getLocalAudioPath(trackId)
         url = `file://${audioFilePath}`
       } else if (isStreamMp3Enabled && isReachable) {
-        url = apiClient.makeUrl(
-          `/tracks/${encodeHashId(track.track_id)}/stream`
-        )
+        const queryParams = queryParamsMap[track.track_id]
+        if (queryParams) {
+          url = apiClient.makeUrl(
+            `/tracks/${encodeHashId(track.track_id)}/stream`,
+            queryParams
+          )
+        } else {
+          url = apiClient.makeUrl(
+            `/tracks/${encodeHashId(track.track_id)}/stream`
+          )
+        }
       } else {
         isM3u8 = true
         const ownerGateways = audiusBackendInstance.getCreatorNodeIPFSGateways(
@@ -484,7 +540,8 @@ export const Audio = () => {
     queueTrackUids,
     queueTracks,
     didOfflineToggleChange,
-    isCollectionMarkedForDownload
+    isCollectionMarkedForDownload,
+    handleGatedQueryParams
   ])
 
   const handleQueueIdxChange = useCallback(async () => {

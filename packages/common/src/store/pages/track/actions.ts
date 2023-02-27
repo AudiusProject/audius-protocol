@@ -40,8 +40,7 @@ export const fetchTrack = (
   handle?: string,
   canBeUnlisted?: boolean,
   forceRetrieveFromSource?: boolean,
-  withRemixes?: boolean,
-  skipSideEffects?: boolean
+  withRemixes?: boolean
 ) => ({
   type: FETCH_TRACK,
   trackId,
@@ -49,8 +48,7 @@ export const fetchTrack = (
   handle,
   canBeUnlisted,
   forceRetrieveFromSource,
-  withRemixes,
-  skipSideEffects
+  withRemixes
 })
 export const fetchTrackSucceeded = (trackId) => ({
   type: FETCH_TRACK_SUCCEEDED,

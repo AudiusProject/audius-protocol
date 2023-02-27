@@ -236,6 +236,11 @@
   display: flex;
   align-items: center;
   margin-top: 8px;
+  width: fit-content;
+}
+
+.premiumContentSectionCollection:hover {
+  cursor: pointer;
 }
 
 .premiumContentSectionButton {

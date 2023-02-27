@@ -2,6 +2,7 @@ import { createSelector } from 'reselect'
 import { getUserId } from '../account/selectors'
 import { Chain, Collectible, EthCollectionMap, ID, SolCollectionMap } from '../../models'
 import { CommonState } from '../commonStore'
+import { removeNullable } from 'utils/typeUtils'
 
 export const getAllUserCollectibles = (state: CommonState) =>
   state.collectibles.userCollectibles
@@ -19,6 +20,21 @@ export const getVerifiedUserCollections = createSelector(
   getAllUserCollectibles,
   getSolCollections,
   (accountUserId, allUserCollectibles, solCollections) => {
+    const getCollectionMintAddress = (collectible: Collectible) => {
+      const key = collectible.solanaChainMetadata?.collection?.key
+      if (!key) return null
+      return typeof key === 'string' ? key : key.toBase58()
+    }
+
+    const findExternalLink = (mint: string) => {
+      const solCollectibles = collectibles[Chain.Sol] ?? []
+      const collectible = solCollectibles.find(collectible => {
+        const collectionMintAddress = getCollectionMintAddress(collectible)
+        return collectionMintAddress === mint
+      })
+      return collectible?.externalLink ?? null
+    }
+
     const collectibles = accountUserId ? allUserCollectibles[accountUserId] ?? defaultCollectibles : defaultCollectibles
 
     // Ethereum collections
@@ -59,10 +75,8 @@ export const getVerifiedUserCollections = createSelector(
             (collectible: Collectible) =>
               !!collectible.solanaChainMetadata?.collection?.verified
           )
-          .map((collectible: Collectible) => {
-            const key = collectible.solanaChainMetadata!.collection!.key
-            return typeof key === 'string' ? key : key.toBase58()
-          })
+          .map(getCollectionMintAddress)
+          .filter(removeNullable)
       )
     ]
     validSolCollectionMints.forEach((mint) => {
@@ -71,7 +85,7 @@ export const getVerifiedUserCollections = createSelector(
       solCollectionMap[mint] = {
         name: data.name.replaceAll('\x00', ''),
         img: imageUrl ?? null,
-        externalLink: null
+        externalLink: findExternalLink(mint)
       }
     })
 

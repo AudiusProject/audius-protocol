@@ -547,7 +547,8 @@ export enum FollowSource {
   OVERFLOW = 'overflow',
   USER_LIST = 'user list',
   ARTIST_RECOMMENDATIONS_POPUP = 'artist recommendations popup',
-  EMPTY_FEED = 'empty feed'
+  EMPTY_FEED = 'empty feed',
+  LOCKED_CONTENT_MODAL = 'locked content modal'
 }
 
 type Share = {
@@ -1230,6 +1231,7 @@ export type TipSource =
   | 'dethroned'
   | 'buyAudio'
   | 'trackPage'
+  | 'lockedContentModal'
 
 type TipAudioRequest = {
   eventName: Name.TIP_AUDIO_REQUEST

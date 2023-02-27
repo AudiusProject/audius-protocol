@@ -110,15 +110,20 @@ export const BottomRow = ({
   }
 
   if (isPremiumContentEnabled && isTrack && !isLoading && !doesUserHaveAccess) {
-    return premiumTrackStatus === 'UNLOCKING' ? (
-      <div className={cn(styles.premiumContent, styles.bottomRow)}>
-        <LoadingSpinner className={styles.spinner} />
-        {messages.unlocking}
-      </div>
-    ) : (
-      <div className={cn(styles.premiumContent, styles.bottomRow)}>
-        <IconLock />
-        {messages.locked}
+    return (
+      <div className={styles.bottomRow}>
+        {premiumTrackStatus === 'UNLOCKING' ? (
+          <div className={styles.premiumContent}>
+            <LoadingSpinner className={styles.spinner} />
+            {messages.unlocking}
+          </div>
+        ) : (
+          <div className={styles.premiumContent}>
+            <IconLock />
+            {messages.locked}
+          </div>
+        )}
+        {!isLoading ? <div>{rightActions}</div> : null}
       </div>
     )
   }
@@ -179,7 +184,7 @@ export const BottomRow = ({
           {renderShareButton()}
         </div>
       )}
-      {!isLoading && <div>{rightActions}</div>}
+      {!isLoading ? <div>{rightActions}</div> : null}
     </div>
   )
 }
