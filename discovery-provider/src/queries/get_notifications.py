@@ -98,7 +98,7 @@ class NotificationType(str, Enum):
     TIP_RECEIVE = "tip_receive"
     TIP_SEND = "tip_send"
     CHALLENGE_REWARD = "challenge_reward"
-    REPOST_REPOST = "repost_repost"
+    REPOST_OF_REPOST = "repost_of_repost"
     REACTION = "reaction"
     SUPPORTER_DETRONED = "supporter_dethroned"
     SUPPORTER_RANK_UP = "supporter_rank_up"
@@ -115,7 +115,7 @@ class NotificationType(str, Enum):
 
 default_valid_types = [
     NotificationType.REPOST,
-    NotificationType.REPOST_REPOST,
+    NotificationType.REPOST_OF_REPOST,
     NotificationType.SAVE,
     NotificationType.FOLLOW,
     NotificationType.TIP_SEND,
