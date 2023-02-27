@@ -164,7 +164,7 @@ def test_index_valid_social_features(app, mocker):
                         "_entityType": "Playlist",
                         "_userId": 1,
                         "_action": "Repost",
-                        "_metadata": '{"is_repost_repost": true}',
+                        "_metadata": '{"is_repost_of_repost": true}',
                         "_signer": "user1wallet",
                     }
                 )
@@ -326,13 +326,13 @@ def test_index_valid_social_features(app, mocker):
         assert current_reposts[0].repost_type == EntityType.PLAYLIST.value.lower()
         assert current_reposts[0].repost_item_id == 1
         assert current_reposts[0].user_id == 1
-        assert current_reposts[0].is_repost_repost == True
+        assert current_reposts[0].is_repost_of_repost == True
 
         assert current_reposts[1].is_delete == False
         assert current_reposts[1].repost_type == EntityType.PLAYLIST.value.lower()
         assert current_reposts[1].repost_item_id == 1
         assert current_reposts[1].user_id == 3
-        assert current_reposts[1].is_repost_repost == False
+        assert current_reposts[1].is_repost_of_repost == False
 
     with db.scoped_session() as session:
         aggregate_playlists: List[AggregatePlaylist] = (
@@ -725,4 +725,4 @@ def test_index_social_feature_hits_exceptions_on_repost(app, mocker):
         )
         all_reposts: List[Repost] = session.query(Repost).all()
         assert len(all_reposts) == 1
-        assert all_reposts[0].is_repost_repost == False
+        assert all_reposts[0].is_repost_of_repost == False

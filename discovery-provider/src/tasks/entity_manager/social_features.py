@@ -125,15 +125,15 @@ def create_repost(params):
     if params.metadata_cid:
         try:
             metadata = json.loads(params.metadata_cid)
-            is_repost_repost = metadata.get("is_repost_repost", False)
+            is_repost_of_repost = metadata.get("is_repost_of_repost", False)
         except Exception as e:
             logger.error(
                 f"entity_manager | social_features.py | Unable to parse repost metadata while indexing: {e}",
                 exc_info=True,
             )
-            is_repost_repost = False
+            is_repost_of_repost = False
     else:
-        is_repost_repost = False
+        is_repost_of_repost = False
     create_record = Repost(
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,
@@ -142,7 +142,7 @@ def create_repost(params):
         user_id=params.user_id,
         repost_item_id=params.entity_id,
         repost_type=params.entity_type.lower(),
-        is_repost_repost=is_repost_repost,
+        is_repost_of_repost=is_repost_of_repost,
         is_current=True,
         is_delete=False,
     )
