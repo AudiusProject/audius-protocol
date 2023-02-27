@@ -32,7 +32,7 @@ module.exports = function (app) {
       let url = 'https://open-api.tiktok.com/platform/oauth/connect/'
 
       url += `?client_key=${config.get('tikTokAPIKey')}`
-      url += '&scope=user.info.basic,share.sound.create'
+      url += '&scope=user.info.basic'
       url += '&response_type=code'
       url += `&redirect_uri=${redirectUrl || config.get('tikTokAuthOrigin')}`
       url += '&state=' + csrfState
