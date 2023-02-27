@@ -5,34 +5,37 @@ import (
 	"net/url"
 	"strconv"
 
+	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
 )
 
-func ContentAccessMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+func ContentAccessMiddleware(peering *peering.Peering) (func(next echo.HandlerFunc) echo.HandlerFunc) {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
 
-		requestedCid := c.Param("CID")
-		if requestedCid == "" {
-			return echo.ErrBadRequest
+			requestedCid := c.Param("CID")
+			if requestedCid == "" {
+				return echo.ErrBadRequest
+			}
+
+			signatureData, signature, err := parseQueryParams(c.QueryParams())
+			if err != nil {
+				return echo.ErrBadRequest
+			}
+
+			isValidSignature, err := VerifySignature(peering, *signatureData, []byte(signature), requestedCid)
+			if err != nil {
+				return echo.ErrBadRequest
+			}
+
+			if !isValidSignature {
+				return echo.ErrBadRequest
+			}
+
+			c.Response().Header().Set("shouldCache", strconv.FormatBool(signatureData.ShouldCache))
+
+			return next(c)
 		}
-
-		signatureData, signature, err := parseQueryParams(c.QueryParams())
-		if err != nil {
-			return echo.ErrBadRequest
-		}
-
-		isValidSignature, err := VerifySignature(*signatureData, []byte(signature), requestedCid)
-		if err != nil {
-			return echo.ErrBadRequest
-		}
-
-		if !isValidSignature {
-			return echo.ErrBadRequest
-		}
-
-		c.Response().Header().Set("shouldCache", strconv.FormatBool(signatureData.ShouldCache))
-
-		return next(c)
 	}
 }
 
@@ -63,7 +66,6 @@ func parseSignature(rawSignature string) (*SignedAccessData, error) {
 		return nil, err
 	}
 
-
 	return &unmarshalledSignature, nil
 }
 
@@ -76,3 +78,4 @@ func parseSignatureData(rawData json.RawMessage) (*SignatureData, error) {
 
 	return &signatureData, nil
 }
+

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"comms.audius.co/shared/peering"
 	"comms.audius.co/shared/utils"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -50,6 +51,7 @@ func isCidMatch(signatureData SignatureData, requestedCid string) bool {
 }
 
 func VerifySignature(
+	p *peering.Peering,
 	signatureData SignatureData,
 	signature []byte,
 	requestedCid string,
@@ -63,7 +65,7 @@ func VerifySignature(
 		return false, errors.New("Wallet recovery failed")
 	}
 
-	if !utils.IsValidDiscoveryNode(string(signer)) {
+	if !utils.IsValidDiscoveryNode(p, string(signer)) {
 		return false, errors.New("Signature is not from valid discovery node.")
 	}
 

@@ -100,7 +100,7 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	ss.WebServer.Use(otelecho.Middleware("storage"))
 	telemetry.AddPrometheusMiddlware(ss.WebServer)
 
-	ss.WebServer.Use(contentaccess.ContentAccessMiddleware)
+	ss.WebServer.Use(contentaccess.ContentAccessMiddleware(ss.Peering))
 
 	// Register endpoints at /storage
 	storage := ss.WebServer.Group("/storage")

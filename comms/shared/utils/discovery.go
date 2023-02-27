@@ -9,9 +9,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func IsValidDiscoveryNode(wallet string) bool {
-
-	p := peering.New(nil)
+func IsValidDiscoveryNode(p *peering.Peering ,wallet string) bool {
 
 	nodes, err := p.GetDiscoveryNodes()
 	if err != nil {
