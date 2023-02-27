@@ -26,16 +26,15 @@ def column_exists(table_name, column_name):
 def upgrade():
     if column_exists("reposts", "is_repost_repost"):
         op.drop_column("reposts", "is_repost_repost")
-    if not column_exists("reposts", "is_repost_of_repost"):
-        op.add_column(
-            "reposts",
-            sa.Column(
-                "is_repost_of_repost",
-                sa.Boolean(),
-                nullable=False,
-                server_default="false",
-            ),
-        )
+    op.add_column(
+        "reposts",
+        sa.Column(
+            "is_repost_of_repost",
+            sa.Boolean(),
+            nullable=False,
+            server_default="false",
+        ),
+    )
 
 
 def downgrade():

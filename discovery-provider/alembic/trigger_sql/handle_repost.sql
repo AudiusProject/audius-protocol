@@ -119,7 +119,6 @@ begin
 	            and new.created_at > r.created_at
               and r.is_delete is false
               and r.is_current is true
-              and
 	            and r.user_id in (
 	                select
 	                    followee_user_id
