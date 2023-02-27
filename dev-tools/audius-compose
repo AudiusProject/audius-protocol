@@ -175,6 +175,7 @@ def cli(ctx, protocol_dir):
 @click.option("-c", "--creator-node-replicas", default=4, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=3, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
+@click.option("--no-cache", "--no-cache", is_flag=True)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def build(
@@ -182,6 +183,7 @@ def build(
     creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
+    no_cache,
     services,
 ):
     generate_env(
@@ -191,6 +193,8 @@ def build(
         elasticsearch_replicas,
     )
 
+    print("--no-cache=" + "true" if no_cache else "false")
+
     proc = subprocess.run(
         [
             "docker",
@@ -199,6 +203,7 @@ def build(
             f"--file={protocol_dir / 'docker-compose.yml'}",
             "--profile=*",
             "build",
+            "--no-cache" if no_cache else "",
             *services,
         ],
     )

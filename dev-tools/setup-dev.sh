@@ -16,7 +16,7 @@ cd $PROTOCOL_DIR/libs
 nvm use
 npm i
 npm run build
-npm link
+# npm link
 
-cd $PROTOCOL_DIR/libs
-npm link
+# cd $PROTOCOL_DIR/libs
+# npm link

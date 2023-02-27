@@ -68,11 +68,11 @@ fi
 # index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
 if [[ "$devMode" == "true" ]]; then
     if [ "$link_libs" = true ]; then
-        cd ../audius-libs
-        npm link
-        cd ../app
-        npm link @audius/sdk
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/dist | tee >(logger)
+        # cd ../audius-libs
+        # npm link
+        # cd ../app
+        # npm link @audius/sdk
+        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
     else
         npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
     fi

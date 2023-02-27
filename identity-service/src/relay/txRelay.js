@@ -160,7 +160,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       nethermind: {
         isRecipient: false,
         txSubmissionTime: null
-      },
+      }
     }
 
     if (
@@ -208,11 +208,11 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       txReceipt = relayTxs[0].value.receipt
       // infer tx type and populate time
       if (relayStats.nethermind.isRecipient) {
-        relayStats.nethermind.txSubmissionTime = relayTxs[0].value.timeToComplete
+        relayStats.nethermind.txSubmissionTime =
+          relayTxs[0].value.timeToComplete
       } else {
         relayStats.poa.txSubmissionTime = relayTxs[0].value.timeToComplete
       }
-
     } else if (relayTxs.length === 2) {
       const [poaTx, nethermindTx] = relayTxs.map((result) => result?.value)
       console.log(
@@ -241,7 +241,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       senderAddress,
       nonce: txParams.nonce,
       relayStats,
-      totalTransactionLatency,
+      totalTransactionLatency
     }
     await redis.zadd(
       'relayTxAttempts',
@@ -249,7 +249,8 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       JSON.stringify(redisLogParams)
     )
     req.logger.info(
-      `L2 - txRelay - sending a transaction for wallet ${wallet.publicKey
+      `L2 - txRelay - sending a transaction for wallet ${
+        wallet.publicKey
       } to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(
         txParams.gasPrice,
         16
@@ -461,7 +462,8 @@ const createAndSendTransaction = async (
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   console.log(
-    `txRelay - sending a transaction for sender ${sender.publicKey
+    `txRelay - sending a transaction for sender ${
+      sender.publicKey
     } to ${receiverAddress}, gasPrice ${parseInt(
       gasPrice,
       16
@@ -483,7 +485,9 @@ const createAndSendTransaction = async (
 let inFlight = 0
 
 async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
-  console.log(`txRelay - relayToNethermind input params: ${encodedABI} ${contractAddress} ${gasLimit}`)
+  console.log(
+    `txRelay - relayToNethermind input params: ${encodedABI} ${contractAddress} ${gasLimit}`
+  )
 
   // generate a new private key per transaction (gas is free)
   const accounts = new Accounts(config.get('nethermindWeb3Provider'))
@@ -539,7 +543,7 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
     return {
       txParams: transaction,
       receipt,
-      timeToComplete: took,
+      timeToComplete: took
     }
   } catch (err) {
     console.log('relayToNethermind error:', err.toString())
