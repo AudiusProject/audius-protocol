@@ -108,9 +108,9 @@ begin
 	-- notify followees of the reposter who have reposted the same content
 	-- within the last month
 	if new.is_delete is false
-	and new.is_repost_repost is true then
+	and new.is_repost_of_repost is true then
 	with
-	    followee_repost_repost_ids as (
+	    followee_repost_of_repost_ids as (
 	        select user_id
 	        from reposts r
 	        where
@@ -119,7 +119,6 @@ begin
 	            and new.created_at > r.created_at
               and r.is_delete is false
               and r.is_current is true
-              and r.repost_type = new.repost_type
 	            and r.user_id in (
 	                select
 	                    followee_user_id
@@ -138,14 +137,14 @@ begin
 			ARRAY(
 				SELECT user_id
 				FROM
-					followee_repost_repost_ids
+					followee_repost_of_repost_ids
 			) AS user_ids_val,
 			new.created_at AS timestamp_val,
-			'repost_repost' AS type_val,
+			'repost_of_repost' AS type_val,
 			new.user_id AS specifier_val,
-			'repost_repost:' || new.repost_item_id || ':type:' || new.repost_type AS group_id_val,
+			'repost_of_repost:' || new.repost_item_id || ':type:' || new.repost_type AS group_id_val,
 			json_build_object(
-				'repost_repost_item_id',
+				'repost_of_repost_item_id',
 				new.repost_item_id,
 				'user_id',
 				new.user_id,
