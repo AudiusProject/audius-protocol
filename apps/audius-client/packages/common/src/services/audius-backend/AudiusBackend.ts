@@ -422,8 +422,7 @@ export const audiusBackend = ({
     creatorNodeGateways = [] as string[],
     cache = true,
     asUrl = true,
-    trackId: Nullable<ID> = null,
-    premiumContentHeaders = {}
+    trackId: Nullable<ID> = null
   ) {
     await waitForLibsInit()
     try {
@@ -434,8 +433,7 @@ export const audiusBackend = ({
         // If requesting a url (we mean a blob url for the file),
         // otherwise, default to JSON
         asUrl ? 'blob' : 'json',
-        trackId,
-        premiumContentHeaders
+        trackId
       )
       if (asUrl) {
         const url = nativeMobile

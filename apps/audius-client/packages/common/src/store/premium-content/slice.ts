@@ -32,14 +32,6 @@ type UpdatePremiumTrackStatusesPayload = {
   [id: ID]: PremiumTrackStatus
 }
 
-type RefreshPremiumTrackPayload = {
-  trackId: ID
-  trackParams:
-    | { slug: string; trackId: null; handle: string }
-    | { slug: null; trackId: ID; handle: null }
-    | null
-}
-
 type SetLockedContentIdPayload = {
   id: ID
 }
@@ -80,10 +72,6 @@ const slice = createSlice({
         ...action.payload
       }
     },
-    refreshPremiumTrack: (
-      _state,
-      _action: PayloadAction<RefreshPremiumTrackPayload>
-    ) => {},
     setLockedContentId: (
       state,
       action: PayloadAction<SetLockedContentIdPayload>
@@ -101,7 +89,6 @@ export const {
   removePremiumContentSignatures,
   updatePremiumTrackStatus,
   updatePremiumTrackStatuses,
-  refreshPremiumTrack,
   setLockedContentId,
   resetLockedContentId
 } = slice.actions
