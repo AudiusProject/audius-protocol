@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	"comms.audius.co/shared/peering"
+	"comms.audius.co/shared/config"
 	"comms.audius.co/shared/utils"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -26,19 +26,26 @@ type SignatureData struct {
 	TrackId     int64  `json:"trackId"`
 }
 
-func recoverWallet(signatureData SignatureData, signature []byte) ([]byte, error) {
+func recoverWallet(signatureData SignatureData, signature []byte) (string, error) {
 	stringData, err := json.Marshal(signatureData)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	hashData := crypto.Keccak256(stringData)
 	recoveredSigner, err := crypto.Ecrecover(hashData, signature)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return recoveredSigner, nil
+	recoveredPublicKey, err := crypto.UnmarshalPubkey(recoveredSigner)
+	if err != nil {
+		return "", err
+	}
+
+	recoveredAddress := crypto.PubkeyToAddress(*recoveredPublicKey).Hex()
+
+	return recoveredAddress, nil
 }
 
 func isExpired(signatureData SignatureData) bool {
@@ -51,26 +58,28 @@ func isCidMatch(signatureData SignatureData, requestedCid string) bool {
 }
 
 func VerifySignature(
-	p *peering.Peering,
+	dnodes []config.ServiceNode,
 	signatureData SignatureData,
 	signature []byte,
 	requestedCid string,
 ) (bool, error) {
 	if !isCidMatch(signatureData, requestedCid) {
-		return false, errors.New("Signed cid does not match requested cid.")
+		return false, errors.New("signed cid does not match requested cid")
 	}
 
 	signer, err := recoverWallet(signatureData, signature)
 	if err != nil {
-		return false, errors.New("Wallet recovery failed")
+		return false, errors.New("wallet recovery failed")
 	}
 
-	if !utils.IsValidDiscoveryNode(p, string(signer)) {
+
+
+	if !utils.IsValidDiscoveryNode(dnodes, string(signer)) {
 		return false, errors.New("signature is not from valid discovery node")
 	}
 
 	if isExpired(signatureData) {
-		return false, errors.New("Signature has expired.")
+		return false, errors.New("signature has expired")
 	}
 
 	return true, nil

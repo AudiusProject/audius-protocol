@@ -27,7 +27,12 @@ func ContentAccessMiddleware(peering *peering.Peering) func(next echo.HandlerFun
 				return echo.ErrBadRequest
 			}
 
-			isValidSignature, err := VerifySignature(peering, *signatureData, []byte(signature), requestedCid)
+			nodes, err := peering.GetDiscoveryNodes()
+			if err != nil {
+				return echo.ErrInternalServerError
+			}
+
+			isValidSignature, err := VerifySignature(nodes, *signatureData, []byte(signature), requestedCid)
 			if err != nil {
 				return echo.ErrBadRequest
 			}

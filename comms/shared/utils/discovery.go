@@ -3,25 +3,20 @@ package utils
 import (
 	"crypto/ecdsa"
 	"encoding/json"
+	"strings"
 
-	"comms.audius.co/shared/peering"
+	"comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"golang.org/x/exp/slices"
 )
 
-func IsValidDiscoveryNode(p *peering.Peering ,wallet string) bool {
-
-	nodes, err := p.GetDiscoveryNodes()
-	if err != nil {
-		return false
-	}
-
+func IsValidDiscoveryNode(nodes []config.ServiceNode, wallet string) bool {
 	wallets := make([]string, len(nodes))
 	for _, value := range nodes {
-		wallets = append(wallets, value.DelegateOwnerWallet)
+		wallets = append(wallets, strings.ToLower(value.DelegateOwnerWallet))
 	}
 
-	includes := slices.Contains(wallets, wallet)
+	includes := slices.Contains(wallets, strings.ToLower(wallet))
 	return includes
 }
 

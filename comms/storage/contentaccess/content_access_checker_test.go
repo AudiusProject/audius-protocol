@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"comms.audius.co/shared/config"
 	"comms.audius.co/shared/utils"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/go-cmp/cmp"
@@ -31,15 +32,15 @@ func TestRecoverWallet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to generate signature for %+v", signatureData)
 	}
-	expectedSigner := crypto.FromECDSAPub(&privKey.PublicKey)
+	expectedAddress := crypto.PubkeyToAddress(privKey.PublicKey).Hex()
 
-	actualSigner, err := recoverWallet(signatureData, signature)
+	actualAddress, err := recoverWallet(signatureData, signature)
 	if err != nil {
 		t.Fatalf("recover wallet errored with %+v", err)
 	}
 
-	if !bytes.Equal(actualSigner, expectedSigner) {
-		t.Fatalf("public key doesn't match signer, want=%+v, got=%+v", expectedSigner, []byte(actualSigner))
+	if actualAddress != expectedAddress {
+		t.Fatalf("public key doesn't match signer, want=%+v, got=%+v", expectedAddress, actualAddress)
 	}
 }
 
@@ -84,6 +85,80 @@ func TestIsCidMatch(t *testing.T) {
 
 func TestVerifySignature(t *testing.T) {
 
+	correctCID := "Qmblah"
+
+	correctSignatureData := SignatureData{
+		Cid:         correctCID,
+		ShouldCache: true,
+		Timestamp:   time.Now().Unix(),
+		TrackId:     12345,
+	}
+
+	privKey, err := crypto.GenerateKey()
+	if err != nil {
+		t.Fatal("Key generation failed")
+	}
+	correctSignature, err := utils.GenerateSignature(correctSignatureData, privKey)
+	if err != nil {
+		t.Fatalf("Failed to generate signature for %+v", correctSignatureData)
+	}
+	expectedWallet := crypto.PubkeyToAddress(privKey.PublicKey).Hex()
+
+	correctDiscoveryNode := config.ServiceNode{
+		ID:                  "blah",
+		SPID:                "1",
+		Endpoint:            "http://node1.com",
+		DelegateOwnerWallet: expectedWallet,
+		Type: struct {
+			ID string "json:\"id\""
+		}{
+			ID: "discovery-node",
+		},
+	}
+
+	tests := map[string]struct {
+		dnodes         []config.ServiceNode
+		signatureData  SignatureData
+		signature      []byte
+		requestedCid   string
+		expectedResult bool
+	}{
+		"incorrect CID": {
+			[]config.ServiceNode{},
+			SignatureData{
+				Cid: "NotTheSame",
+			},
+			[]byte{},
+			"Qmblahblah",
+			false,
+		},
+		"incorrect wallet": {
+			[]config.ServiceNode{
+				correctDiscoveryNode,
+			},
+			correctSignatureData,
+			[]byte("0xincorrectsignature"),
+			correctCID,
+			false,
+		},
+		"happy path": {
+			[]config.ServiceNode{
+				correctDiscoveryNode,
+			},
+			correctSignatureData,
+			correctSignature,
+			correctCID,
+			true,
+		},
+	}
+
+	for testName, tt := range tests {
+		actualResult, err := VerifySignature(tt.dnodes, tt.signatureData, tt.signature, tt.requestedCid)
+
+		if actualResult != tt.expectedResult {
+			t.Fatalf("incorrect result for `%s`, want=%t, got=%t, err=%+v", testName, tt.expectedResult, actualResult, err)
+		}
+	}
 }
 
 func TestParseQueryParams(t *testing.T) {
