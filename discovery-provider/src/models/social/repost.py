@@ -44,7 +44,7 @@ class Repost(Base, RepresentableMixin):
     # Column denotes whether the repost object is a repost of a repost,
     # which is used to notify the initial reposter that a follower reposted
     # their reposted content.
-    is_repost_repost = Column(Boolean, nullable=False, server_default="false")
+    is_repost_of_repost = Column(Boolean, nullable=False, server_default="false")
     created_at = Column(DateTime, nullable=False, index=True)
     txhash = Column(
         String,
