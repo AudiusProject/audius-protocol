@@ -3,7 +3,6 @@ package contentaccess
 import (
 	"encoding/json"
 	"net/url"
-	"strconv"
 
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
