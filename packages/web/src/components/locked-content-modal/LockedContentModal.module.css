@@ -6,6 +6,11 @@
   font-weight: var(--font-heavy);
   color: var(--neutral-light-2);
 }
+.modalHeader.mobile {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
 
 .modalHeader h2 {
   color: var(--neutral-light-2);

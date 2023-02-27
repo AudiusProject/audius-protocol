@@ -341,17 +341,21 @@ const UnlockedPremiumTrackSection = ({
     if (premiumConditions.nft_collection) {
       return isOwner ? (
         <div>
-          <span>{messages.ownCollectibleGatedPrefix}</span>
-          <span className={styles.collectibleName} onClick={goToCollection}>
-            &nbsp;{premiumConditions.nft_collection.name}&nbsp;
+          <span>
+            {messages.ownCollectibleGatedPrefix}
+            <span className={styles.collectibleName} onClick={goToCollection}>
+              {premiumConditions.nft_collection.name}
+            </span>
           </span>
         </div>
       ) : (
         <div>
           <IconVerifiedGreen className={styles.verifiedGreenIcon} />
-          <span>{messages.aCollectibleFrom}</span>
-          <span className={styles.collectibleName} onClick={goToCollection}>
-            &nbsp;{premiumConditions.nft_collection.name}&nbsp;
+          <span>
+            {messages.aCollectibleFrom}
+            <span className={styles.collectibleName} onClick={goToCollection}>
+              {premiumConditions.nft_collection.name}
+            </span>
           </span>
           <span>{messages.unlockedCollectibleGatedTrackSuffix}</span>
         </div>

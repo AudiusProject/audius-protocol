@@ -4,7 +4,7 @@ import cn from 'classnames'
 
 import { useFlag } from 'hooks/useRemoteConfig'
 
-import styles from './TrackTile.module.css'
+import styles from './desktop/TrackTile.module.css'
 
 const messages = {
   collectibleGated: 'Collectible Gated',
