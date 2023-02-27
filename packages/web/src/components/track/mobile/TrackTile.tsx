@@ -192,20 +192,20 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
 
   return (
     <div className={styles.container}>
-      {showPremiumCornerTag && (
+      {showPremiumCornerTag ? (
         <PremiumTrackCornerTag
           doesUserHaveAccess={!!doesUserHaveAccess}
           isOwner={isOwner}
           premiumConditions={premiumConditions}
         />
-      )}
-      {props.showArtistPick && props.isArtistPick && (
+      ) : null}
+      {!showPremiumCornerTag && props.showArtistPick && props.isArtistPick ? (
         <TrackBannerIcon
           type={TrackBannerIconType.STAR}
           isMobile
           isMatrixMode={isMatrix}
         />
-      )}
+      ) : null}
       {props.isUnlisted && (
         <TrackBannerIcon
           type={TrackBannerIconType.HIDDEN}

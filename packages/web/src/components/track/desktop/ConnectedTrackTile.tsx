@@ -21,14 +21,16 @@ import {
   tracksSocialActions,
   shareModalUIActions,
   playerSelectors,
-  usePremiumContentAccess
+  usePremiumContentAccess,
+  premiumContentActions
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
+import { useModalState } from 'common/hooks/useModalState'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import Draggable from 'components/dragndrop/Draggable'
 import Menu from 'components/menu/Menu'
@@ -62,6 +64,7 @@ const { getUserFromTrack } = cacheUsersSelectors
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
   tracksSocialActions
 const { getUserHandle } = accountSelectors
+const { setLockedContentId } = premiumContentActions
 
 type OwnProps = {
   uid: UID
@@ -152,6 +155,8 @@ const ConnectedTrackTile = memo(
       usePremiumContentAccess(trackWithFallback)
     const loading = isLoading || isUserAccessTBD
 
+    const dispatch = useDispatch()
+    const [, setLockedContentVisibility] = useModalState('LockedContent')
     const menuRef = useRef<HTMLDivElement>(null)
 
     const onClickStatRepost = () => {
@@ -343,9 +348,25 @@ const ConnectedTrackTile = memo(
           menuRef.current
         )
         if (shouldSkipTogglePlay) return
+
+        // Show the locked content modal if gated track and user does not have access.
+        // Also skip toggle play in this case.
+        if (trackId && !doesUserHaveAccess) {
+          dispatch(setLockedContentId({ id: trackId }))
+          setLockedContentVisibility(true)
+          return
+        }
+
         togglePlay(uid, trackId)
       },
-      [togglePlay, uid, trackId]
+      [
+        togglePlay,
+        uid,
+        trackId,
+        doesUserHaveAccess,
+        dispatch,
+        setLockedContentVisibility
+      ]
     )
 
     if (is_delete || user?.is_deactivated) return null

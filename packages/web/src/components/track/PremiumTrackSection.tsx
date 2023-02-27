@@ -31,6 +31,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
 import { ReactComponent as IconVerifiedGreen } from 'assets/img/iconVerifiedGreen.svg'
+import { useModalState } from 'common/hooks/useModalState'
 import { showRequiresAccountModal } from 'common/store/pages/signon/actions'
 import FollowButton from 'components/follow-button/FollowButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -97,16 +98,32 @@ const LockedPremiumTrackSection = ({
   buttonClassName
 }: PremiumTrackAccessSectionProps) => {
   const dispatch = useDispatch()
+  const [modalVisibility, setModalVisibility] = useModalState('LockedContent')
+  const source = modalVisibility ? 'lockedContentModal' : 'trackPage'
+  const followSource = modalVisibility
+    ? FollowSource.LOCKED_CONTENT_MODAL
+    : FollowSource.TRACK_PAGE
   const account = useSelector(getAccountUser)
 
   const handleSendTip = useCallback(() => {
     if (account) {
-      dispatch(beginTip({ user: tippedUser, source: 'trackPage' }))
+      dispatch(beginTip({ user: tippedUser, source }))
     } else {
       dispatch(pushRoute(SIGN_UP_PAGE))
       dispatch(showRequiresAccountModal())
     }
-  }, [dispatch, account, tippedUser])
+
+    if (modalVisibility) {
+      setModalVisibility(false)
+    }
+  }, [
+    dispatch,
+    account,
+    tippedUser,
+    source,
+    modalVisibility,
+    setModalVisibility
+  ])
 
   const handleFollow = useCallback(() => {
     if (account) {
@@ -114,22 +131,36 @@ const LockedPremiumTrackSection = ({
         dispatch(
           socialActions.followUser(
             premiumConditions.follow_user_id,
-            FollowSource.TRACK_PAGE
+            followSource
           )
         )
       }
     } else {
       dispatch(pushRoute(SIGN_UP_PAGE))
       dispatch(showRequiresAccountModal())
+
+      if (modalVisibility) {
+        setModalVisibility(false)
+      }
     }
-  }, [dispatch, account, premiumConditions])
+  }, [
+    dispatch,
+    account,
+    premiumConditions,
+    followSource,
+    modalVisibility,
+    setModalVisibility
+  ])
 
   const renderLockedDescription = useCallback(() => {
     if (premiumConditions.nft_collection) {
       return (
         <div className={styles.premiumContentSectionDescription}>
           <div>{messages.unlockCollectibleGatedTrack}</div>
-          <div className={styles.premiumContentSectionCollection}>
+          <div
+            className={styles.premiumContentSectionCollection}
+            onClick={goToCollection}
+          >
             {premiumConditions.nft_collection.imageUrl && (
               <div className={styles.collectionIconsContainer}>
                 <img
@@ -143,7 +174,7 @@ const LockedPremiumTrackSection = ({
                 )}
               </div>
             )}
-            {premiumConditions.nft_collection.name}
+            <span>{premiumConditions.nft_collection.name}</span>
           </div>
         </div>
       )
@@ -188,7 +219,7 @@ const LockedPremiumTrackSection = ({
       'No entity for premium conditions... should not have reached here.'
     )
     return null
-  }, [premiumConditions, followee, tippedUser])
+  }, [premiumConditions, followee, tippedUser, goToCollection])
 
   const renderButton = useCallback(() => {
     if (premiumConditions.nft_collection) {
@@ -356,6 +387,7 @@ const UnlockedPremiumTrackSection = ({
             <span className={styles.collectibleName} onClick={goToCollection}>
               {premiumConditions.nft_collection.name}
             </span>
+            &nbsp;
           </span>
           <span>{messages.unlockedCollectibleGatedTrackSuffix}</span>
         </div>
