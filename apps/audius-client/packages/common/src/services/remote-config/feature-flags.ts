@@ -40,7 +40,8 @@ export enum FeatureFlags {
   ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED = 'entity_manager_view_playlist_enabled',
   ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED = 'entity_manager_view_notifications_enabled',
   SHARE_VIDEO_TO_TIKTOK = 'share_video_to_tiktok_2',
-  PODCAST_CONTROL_UPDATES_ENABLED = 'podcast_control_updates_enabled'
+  PODCAST_CONTROL_UPDATES_ENABLED = 'podcast_control_updates_enabled',
+  LAZY_USERBANK_CREATION_ENABLED = 'lazy_userbank_creation_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -96,5 +97,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED]: false,
   [FeatureFlags.ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED]: false,
   [FeatureFlags.SHARE_VIDEO_TO_TIKTOK]: false,
-  [FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED]: false
+  [FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED]: false,
+  [FeatureFlags.LAZY_USERBANK_CREATION_ENABLED]: false
 }

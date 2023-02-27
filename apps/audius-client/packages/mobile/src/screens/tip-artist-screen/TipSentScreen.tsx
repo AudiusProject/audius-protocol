@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 
+import type { SolanaWalletAddress } from '@audius/common'
 import {
   formatNumberCommas,
   accountSelectors,
@@ -99,8 +100,9 @@ export const TipSentScreen = () => {
           account && recipient
             ? make({
                 eventName: EventNames.TIP_AUDIO_TWITTER_SHARE,
-                senderWallet: account.spl_wallet,
-                recipientWallet: recipient.spl_wallet,
+                senderWallet: account.spl_wallet ?? ('' as SolanaWalletAddress),
+                recipientWallet:
+                  recipient.spl_wallet ?? ('' as SolanaWalletAddress),
                 senderHandle: account.handle,
                 recipientHandle: recipient.handle,
                 amount: sendAmount,

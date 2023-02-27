@@ -1,18 +1,27 @@
+import { useEffect } from 'react'
+
 import {
   SolanaWalletAddress,
   WalletAddress,
-  FeatureFlags
+  FeatureFlags,
+  createUserBankIfNeeded,
+  solanaSelectors
 } from '@audius/common'
 import { Button, ButtonType, LogoSol } from '@audius/stems'
 import cn from 'classnames'
 
+import { useSelector } from 'common/hooks/useSelector'
 import { useLocalStorage } from 'hooks/useLocalStorage'
+import { track } from 'services/analytics'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 import { ModalBodyWrapper } from '../WalletModal'
 
 import ClickableAddress from './ClickableAddress'
 import styles from './ReceiveBody.module.css'
+
+const { getFeePayer } = solanaSelectors
 
 type ReceiveBodyProps = {
   wallet: WalletAddress
@@ -48,12 +57,23 @@ const useLocalStorageClickedReceiveUnderstand = (): [boolean, () => void] => {
   return [hasClickedUnderstand, onClickUnderstand]
 }
 
+const useCreateUserbankIfNeeded = () => {
+  const feePayerOverride = useSelector(getFeePayer)
+
+  useEffect(() => {
+    if (!feePayerOverride) return
+    createUserBankIfNeeded(track, audiusBackendInstance, feePayerOverride)
+  }, [feePayerOverride])
+}
+
 const ReceiveBody = ({ wallet, solWallet }: ReceiveBodyProps) => {
   const useSolSPLAudio = getFeatureEnabled(
     FeatureFlags.ENABLE_SPL_AUDIO
   ) as boolean
   const [hasClickedUnderstand, onClickUnderstand] =
     useLocalStorageClickedReceiveUnderstand()
+
+  useCreateUserbankIfNeeded()
 
   const renderReceiveEth = () => {
     return (

@@ -4,13 +4,15 @@ import {
   Name,
   formatNumberCommas,
   accountSelectors,
-  tippingSelectors
+  tippingSelectors,
+  deriveUserBankAddress
 } from '@audius/common'
 import { Button, ButtonType, IconTwitterBird, IconCheck } from '@audius/stems'
 import cn from 'classnames'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { useRecord, make } from 'common/store/analytics/actions'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import { openTwitterLink } from 'utils/tweet'
 
 import { ProfileInfo } from '../../profile-info/ProfileInfo'
@@ -34,7 +36,7 @@ export const TipSent = () => {
   const sendTipData = useSelector(getSendTipData)
   const { user: recipient, amount: sendAmount, source } = sendTipData
 
-  const handleShareClick = useCallback(() => {
+  const handleShareClick = useCallback(async () => {
     const formattedSendAmount = formatNumberCommas(sendAmount)
     if (account && recipient) {
       let recipientAndAmount = `${recipient.name} ${formattedSendAmount}`
@@ -43,10 +45,16 @@ export const TipSent = () => {
       }
       const message = `${messages.twitterCopyPrefix}${recipientAndAmount}${messages.twitterCopySuffix}`
       openTwitterLink(null, message)
+
+      const [senderWallet, recipientWallet] = await Promise.all([
+        deriveUserBankAddress(audiusBackendInstance, account.erc_wallet),
+        deriveUserBankAddress(audiusBackendInstance, recipient.erc_wallet)
+      ])
+
       record(
         make(Name.TIP_AUDIO_TWITTER_SHARE, {
-          senderWallet: account.spl_wallet,
-          recipientWallet: recipient.spl_wallet,
+          senderWallet,
+          recipientWallet,
           senderHandle: account.handle,
           recipientHandle: recipient.handle,
           amount: sendAmount,
