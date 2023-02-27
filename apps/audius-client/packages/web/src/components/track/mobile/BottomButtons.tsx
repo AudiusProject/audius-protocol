@@ -1,9 +1,14 @@
 import { memo } from 'react'
 
+import { FeatureFlags, PremiumTrackStatus } from '@audius/common'
+import { IconLock } from '@audius/stems'
+
 import FavoriteButton from 'components/alt-button/FavoriteButton'
 import MoreButton from 'components/alt-button/MoreButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import ShareButton from 'components/alt-button/ShareButton'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './BottomButtons.module.css'
 
@@ -18,10 +23,22 @@ type BottomButtonsProps = {
   isDarkMode: boolean
   isUnlisted?: boolean
   isShareHidden?: boolean
+  isTrack?: boolean
+  doesUserHaveAccess?: boolean
+  premiumTrackStatus?: PremiumTrackStatus
   isMatrixMode: boolean
 }
 
+const messages = {
+  locked: 'LOCKED',
+  unlocking: 'UNLOCKING'
+}
+
 const BottomButtons = (props: BottomButtonsProps) => {
+  const { isEnabled: isPremiumContentEnabled } = useFlag(
+    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  )
+
   const repostButton = () => {
     return (
       <RepostButton
@@ -59,6 +76,20 @@ const BottomButtons = (props: BottomButtonsProps) => {
     )
   }
 
+  const premiumStatus = () => {
+    return props.premiumTrackStatus === 'UNLOCKING' ? (
+      <div className={styles.premiumContent}>
+        <LoadingSpinner className={styles.spinner} />
+        {messages.unlocking}
+      </div>
+    ) : (
+      <div className={styles.premiumContent}>
+        <IconLock />
+        {messages.locked}
+      </div>
+    )
+  }
+
   const moreButton = () => {
     return (
       <MoreButton
@@ -69,12 +100,25 @@ const BottomButtons = (props: BottomButtonsProps) => {
     )
   }
 
-  return props.isUnlisted ? (
-    <div className={styles.bottomButtons}>
-      {shareButton()}
-      {moreButton()}
-    </div>
-  ) : (
+  if (isPremiumContentEnabled && props.isTrack && !props.doesUserHaveAccess) {
+    return (
+      <div className={styles.bottomButtons}>
+        {premiumStatus()}
+        {moreButton()}
+      </div>
+    )
+  }
+
+  if (props.isUnlisted) {
+    return (
+      <div className={styles.bottomButtons}>
+        {shareButton()}
+        {moreButton()}
+      </div>
+    )
+  }
+
+  return (
     <div className={styles.bottomButtons}>
       {repostButton()}
       {favoriteButton()}

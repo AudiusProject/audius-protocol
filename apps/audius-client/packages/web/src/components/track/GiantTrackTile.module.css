@@ -420,11 +420,16 @@
 .premiumContentSectionDescription > div {
   display: flex;
   align-items: center;
+  text-align: left;
+  line-height: 150%;
   flex-wrap: wrap;
 }
 
 .premiumContentSectionDescription > div > span {
   flex-shrink: 0;
+  text-align: left;
+  line-height: 150%;
+  max-width: 100%;
 }
 
 .premiumContentSectionDescription .spinner {
