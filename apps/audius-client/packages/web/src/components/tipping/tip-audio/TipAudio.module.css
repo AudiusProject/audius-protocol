@@ -10,11 +10,11 @@
 
 .modalBody {
   width: 488px;
-  min-height: 492px;
+  height: 492px;
   max-height: 95vh;
 }
-.biggerModalBody {
-  min-height: 548px;
+.modalBody.biggerModalBody {
+  height: 548px;
 }
 
 .modalContentContainer {
