@@ -115,7 +115,6 @@ class NotificationType(str, Enum):
 
 default_valid_types = [
     NotificationType.REPOST,
-    NotificationType.REPOST_OF_REPOST,
     NotificationType.SAVE,
     NotificationType.FOLLOW,
     NotificationType.TIP_SEND,
