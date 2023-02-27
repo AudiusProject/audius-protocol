@@ -454,7 +454,7 @@ def index_blocks(self, db, blocks_list):
         final_poa_block = helpers.get_final_poa_block(shared_config)
         if final_poa_block and block_number > final_poa_block:
             logger.info("index.py | skipping block {block_number} past final_poa_block")
-            continue
+            break
 
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
