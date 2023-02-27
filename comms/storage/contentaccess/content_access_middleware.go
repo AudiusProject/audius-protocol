@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func ContentAccessMiddleware(peering *peering.Peering) (func(next echo.HandlerFunc) echo.HandlerFunc) {
+func ContentAccessMiddleware(peering *peering.Peering) func(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 
@@ -32,7 +32,15 @@ func ContentAccessMiddleware(peering *peering.Peering) (func(next echo.HandlerFu
 				return echo.ErrBadRequest
 			}
 
-			c.Response().Header().Set("shouldCache", strconv.FormatBool(signatureData.ShouldCache))
+			// If content is gated, set cache-control to no-cache.
+    		// Otherwise, set the CID cache-control so that client caches the response for 30 days.
+    		// The contentAccessMiddleware sets the req.contentAccess object so that we do not
+    		// have to make another database round trip to get this info.
+			if signatureData.ShouldCache {
+				c.Response().Header().Add("cache-control", "public, max-age=2592000, immutable")
+			} else {
+				c.Response().Header().Add("cache-control", "no-cache")
+			}
 
 			return next(c)
 		}
@@ -78,4 +86,3 @@ func parseSignatureData(rawData json.RawMessage) (*SignatureData, error) {
 
 	return &signatureData, nil
 }
-

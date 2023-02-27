@@ -105,8 +105,6 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	ss.WebServer.Use(otelecho.Middleware("storage"))
 	telemetry.AddPrometheusMiddlware(ss.WebServer)
 
-	ss.WebServer.Use(contentaccess.ContentAccessMiddleware(ss.Peering))
-
 	// Register endpoints at /storage
 	storage := ss.WebServer.Group("/storage")
 
@@ -121,7 +119,7 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	storage.GET("/jobs/:id", ss.serveJobById)
 	storage.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
 	storage.GET("/persistent/shard/:shard", ss.servePersistenceKeysByShard) // QueryParam: includeMD5s=[true|false]
-	storage.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName)
+	storage.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName, contentaccess.ContentAccessMiddleware(ss.Peering))
 	storage.GET("/ws", ss.upgradeConnToWebsocket)
 	storage.GET("/nodes-to-shards", ss.serveNodesToShards)
 	storage.GET("/job-results/:id", ss.serveJobResultsById)
