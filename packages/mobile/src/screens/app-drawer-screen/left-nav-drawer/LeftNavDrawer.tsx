@@ -17,6 +17,7 @@ import { useSelector } from 'react-redux'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconListeningHistory from 'app/assets/images/iconListeningHistory.svg'
+import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import IconUser from 'app/assets/images/iconUser.svg'
@@ -175,7 +176,7 @@ const WrappedLeftNavDrawer = () => {
       />
       {isChatEnabled ? (
         <LeftNavLink
-          icon={IconUser}
+          icon={IconMessage}
           label={'Messages'}
           to='ChatList'
           params={{}}
