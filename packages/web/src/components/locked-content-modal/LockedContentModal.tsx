@@ -10,13 +10,13 @@ import {
 } from '@audius/common'
 import {
   IconLock,
-  Modal,
   ModalContent,
   ModalHeader,
   ModalTitle,
   IconCollectible,
   IconSpecialAccess
 } from '@audius/stems'
+import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
@@ -24,6 +24,8 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
+import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
+import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './LockedContentModal.module.css'
@@ -98,18 +100,22 @@ export const LockedContentModal = () => {
     dispatch(resetLockedContentId())
   }, [setIsOpen, dispatch])
 
+  const mobile = isMobile()
+
   return (
-    <Modal
+    <ModalDrawer
       isOpen={isOpen}
       onClose={handleClose}
       bodyClassName={styles.modalBody}
       dismissOnClickOutside
+      isFullscreen={false}
+      useGradientTitle={false}
     >
       <ModalHeader
-        className={styles.modalHeader}
+        className={cn(styles.modalHeader, { [styles.mobile]: mobile })}
         onClose={handleClose}
         dismissButtonClassName={styles.modalHeaderDismissButton}
-        showDismissButton
+        showDismissButton={!mobile}
       >
         <ModalTitle
           title={messages.howToUnlock}
@@ -133,6 +139,6 @@ export const LockedContentModal = () => {
           </div>
         )}
       </ModalContent>
-    </Modal>
+    </ModalDrawer>
   )
 }

@@ -266,7 +266,7 @@ export const DetailsTile = ({
   return (
     <Tile styles={{ root: styles.root, content: styles.tileContent }}>
       <View style={styles.topContent}>
-        {renderCornerTag?.()}
+        {renderCornerTag()}
         {renderHeader ? (
           renderHeader()
         ) : (

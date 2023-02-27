@@ -18,13 +18,16 @@ import {
   RepostType,
   repostsUserListActions,
   favoritesUserListActions,
-  playerSelectors
+  playerSelectors,
+  usePremiumContentAccess,
+  FeatureFlags
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { TrackTileProps } from 'components/track/types'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 import {
   profilePage,
@@ -83,9 +86,12 @@ const ConnectedTrackTile = memo(
     showRankIcon,
     isFeed = false
   }: ConnectedTrackTileProps) => {
+    const trackWithFallback = getTrackWithFallback(track)
     const {
       is_delete,
       is_unlisted,
+      is_premium: isPremium,
+      premium_conditions: premiumConditions,
       track_id,
       title,
       permalink,
@@ -101,12 +107,19 @@ const ConnectedTrackTile = memo(
       play_count,
       _co_sign,
       duration
-    } = getTrackWithFallback(track)
+    } = trackWithFallback
 
     const { artist_pick_track_id, user_id, handle, name, is_verified } =
       getUserWithFallback(user)
 
     const isOwner = user_id === currentUserId
+
+    const { isEnabled: isPremiumContentEnabled } = useFlag(
+      FeatureFlags.PREMIUM_CONTENT_ENABLED
+    )
+    const { isUserAccessTBD, doesUserHaveAccess } =
+      usePremiumContentAccess(trackWithFallback)
+    const loading = isBuffering || isUserAccessTBD
 
     const toggleSave = (trackId: ID) => {
       if (has_current_user_saved) {
@@ -162,17 +175,21 @@ const ConnectedTrackTile = memo(
       }
 
     const onClickOverflow = (trackId: ID) => {
-      const overflowActions = [
-        !isOwner
+      const repostAction =
+        !isOwner && (!isPremiumContentEnabled || doesUserHaveAccess)
           ? has_current_user_reposted
             ? OverflowAction.UNREPOST
             : OverflowAction.REPOST
-          : null,
-        !isOwner
+          : null
+      const favoriteAction =
+        !isOwner && (!isPremiumContentEnabled || doesUserHaveAccess)
           ? has_current_user_saved
             ? OverflowAction.UNFAVORITE
             : OverflowAction.FAVORITE
-          : null,
+          : null
+      const overflowActions = [
+        repostAction,
+        favoriteAction,
         OverflowAction.ADD_TO_PLAYLIST,
         OverflowAction.VIEW_TRACK_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE
@@ -219,7 +236,7 @@ const ConnectedTrackTile = memo(
         permalink={permalink}
         togglePlay={togglePlay}
         isActive={uid === playingUid}
-        isLoading={isBuffering}
+        isLoading={loading}
         isPlaying={uid === playingUid && isPlaying}
         goToArtistPage={goToArtistPage}
         goToTrackPage={goToTrackPage}
@@ -235,6 +252,9 @@ const ConnectedTrackTile = memo(
         isMatrix={isMatrix()}
         isTrending={isTrending}
         isUnlisted={is_unlisted}
+        isPremium={isPremium}
+        premiumConditions={premiumConditions}
+        doesUserHaveAccess={doesUserHaveAccess}
         showRankIcon={showRankIcon}
       />
     )

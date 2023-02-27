@@ -15,6 +15,7 @@ import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import Skeleton from 'components/skeleton/Skeleton'
 
+import { PremiumContentLabel } from '../PremiumContentLabel'
 import { PremiumTrackCornerTag } from '../PremiumTrackCornerTag'
 import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
 import {
@@ -23,7 +24,6 @@ import {
 } from '../types'
 
 import { BottomRow } from './BottomRow'
-import { PremiumContentLabel } from './PremiumContentLabel'
 import styles from './TrackTile.module.css'
 
 const { setLockedContentId } = premiumContentActions

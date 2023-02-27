@@ -9,6 +9,7 @@ import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import IconStar from 'app/assets/images/iconStar.svg'
 import Text from 'app/components/text'
+import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
 import { flexRowCentered } from 'app/styles'
 import { useColor, useThemeColors } from 'app/utils/theme'
 
@@ -98,13 +99,14 @@ export const LineupTileTopRight = ({
   showArtistPick,
   premiumConditions
 }: Props) => {
+  const isPremiumContentEnabled = useIsPremiumContentEnabled()
   const { neutralLight4 } = useThemeColors()
   const accentBlue = useColor('accentBlue')
   const trackTileStyles = useTrackTileStyles()
 
   return (
     <View style={styles.topRight}>
-      {!!premiumConditions && (
+      {isPremiumContentEnabled && !!premiumConditions ? (
         <LineupTileTopRightItem
           icon={
             premiumConditions.nft_collection
@@ -118,14 +120,16 @@ export const LineupTileTopRight = ({
           }
           color={accentBlue}
         />
-      )}
-      {!premiumConditions && showArtistPick && isArtistPick && (
+      ) : null}
+      {(!isPremiumContentEnabled || !premiumConditions) &&
+      showArtistPick &&
+      isArtistPick ? (
         <LineupTileTopRightItem
           icon={IconStar}
           label={messages.artistPick}
           color={neutralLight4}
         />
-      )}
+      ) : null}
       {isUnlisted && (
         <LineupTileTopRightItem
           icon={IconHidden}
