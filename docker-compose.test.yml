@@ -157,7 +157,7 @@ services:
     extends:
       file: docker-compose.yml
       service: creator-node
-    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npx mocha "$$@")' -
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; ./node_modules/.bin/mocha "$$@")' -
     command: ""
     environment:
       storagePath: "./test_file_storage"
@@ -376,7 +376,7 @@ services:
     extends:
       file: docker-compose.yml
       service: identity-service
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npx mocha "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; ./node_modules/.bin/mocha "$$@")' -
     command: ""
     environment:
       isTestRun: "true"
