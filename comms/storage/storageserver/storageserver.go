@@ -232,7 +232,7 @@ func (ss *StorageServer) streamPersistenceObjectByFileName(c echo.Context) error
 	if ok {
 		// If content is gated, set cache-control to no-cache.
 		// Otherwise, set the CID cache-control so that client caches the response for 30 days.
-		// The contentAccessMiddleware sets the req.contentAccess object so that we do not
+		// The contentAccessMiddleware sets the req.ShouldCache object so that we do not
 		// have to make another database round trip to get this info.
 		if customContext.ShouldCache {
 			c.Response().Header().Add("cache-control", "public, max-age=2592000, immutable")
