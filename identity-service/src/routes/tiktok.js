@@ -68,8 +68,18 @@ module.exports = function (app) {
         // Fetch user's accessToken
         const accessTokenResponse = await axios.post(urlAccessToken)
         const {
-          data: { access_token: accessToken }
+          data: {
+            access_token: accessToken,
+            error_code: errorCode,
+            description: errorMessage
+          }
         } = accessTokenResponse.data
+
+        if (errorCode) {
+          return errorResponseBadRequest(
+            `Received error from tiktok oauth: ${errorCode} ${errorMessage}`
+          )
+        }
 
         // Fetch TikTok user from the TikTok API
         const userResponse = await axios.post(
