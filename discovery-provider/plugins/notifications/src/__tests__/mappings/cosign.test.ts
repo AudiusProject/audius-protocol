@@ -1,11 +1,6 @@
 import { expect, jest, test } from '@jest/globals'
-import { Knex } from 'knex'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
-import { getRedisConnection } from './../../utils/redisConnection'
-import { config } from './../../config'
-import { getDB } from '../../conn'
-import * as sendEmail from '../../email/notifications/sendEmail'
 
 import {
   createUsers,

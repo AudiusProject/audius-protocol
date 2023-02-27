@@ -34,7 +34,6 @@ describe('Push Notifications', () => {
     const redis = await getRedisConnection()
     redis.del(config.lastIndexedMessageRedisKey)
     redis.del(config.lastIndexedReactionRedisKey)
-    console.log('init processor')
     processor = new Processor()
     await processor.init({
       identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
@@ -80,7 +79,6 @@ describe('Push Notifications', () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
-    console.log('start processor')
     processor.start()
     // Let notifications job run for 1 cycle to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval))
@@ -130,7 +128,6 @@ describe('Push Notifications', () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
-    console.log('start processor')
     processor.start()
     // Let notifications job run for 1 cycle to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval))
@@ -171,7 +168,6 @@ describe('Push Notifications', () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
-    console.log('start processor')
     processor.start()
     // Let notifications job run for 1 cycle to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval))
@@ -200,7 +196,6 @@ describe('Push Notifications', () => {
     await insertMessage(processor.discoveryDB, user1.userId, chatId, messageId, message, messageTimestamp)
 
     // Start processor
-    console.log('start processor')
     processor.start()
     // Let notifications job run for 1 cycle to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval))
@@ -217,7 +212,6 @@ describe('Push Notifications', () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
-    console.log('start processor')
     processor.start()
     // Let notifications job run for 1 cycle to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval))

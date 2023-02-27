@@ -18,7 +18,10 @@ import {
   TipReceiveNotification,
   SupporterDethronedNotification,
   SupportingRankUpNotification,
-  ChallengeRewardNotification
+  ChallengeRewardNotification,
+  AddTrackToPlaylistNotification,
+  CreateTrackNotification,
+  CreatePlaylistNotification
 } from '../../types/notifications'
 import { Follow } from './follow'
 import { Repost } from './repost'
@@ -34,6 +37,8 @@ import { TipReceive } from './tipReceive'
 import { SupporterDethroned } from './supporterDethroned'
 import { SupportingRankUp } from './supportingRankUp'
 import { ChallengeReward } from './challengeReward'
+import { AddTrackToPlaylist } from './addTrackToPlaylist'
+import { Create } from './create'
 
 export const mapNotifications = (notifications: (NotificationRow | EmailNotification)[], dnDb: Knex, identityDb: Knex) => {
   return notifications.map((notification) => mapNotification(notification, dnDb, identityDb)).filter(Boolean)
@@ -87,6 +92,14 @@ const mapNotification = (notification: NotificationRow | EmailNotification, dnDb
   else if (notification.type == 'challenge_reward') {
     const challengeRewardNotification = notification as NotificationRow & { data: ChallengeRewardNotification }
     return new ChallengeReward(dnDb, identityDb, challengeRewardNotification)
+  }
+  else if (notification.type == 'track_added_to_playlist') {
+    const addTrackToPlaylistNotification = notification as NotificationRow & { data: AddTrackToPlaylistNotification }
+    return new AddTrackToPlaylist(dnDb, identityDb, addTrackToPlaylistNotification)
+  }
+  else if (notification.type == 'create') {
+    const createNotification = notification as NotificationRow & { data: CreateTrackNotification | CreatePlaylistNotification }
+    return new Create(dnDb, identityDb, createNotification)
   }
   else if (notification.type == 'reaction') {
     const reactionNotification = notification as NotificationRow & { data: ReactionNotification }

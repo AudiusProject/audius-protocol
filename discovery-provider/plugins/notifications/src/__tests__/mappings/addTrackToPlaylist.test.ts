@@ -2,6 +2,7 @@ import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
 
+
 import {
   createUsers,
   insertMobileDevices,
@@ -9,11 +10,13 @@ import {
   createTestDB,
   dropTestDB,
   replaceDBName,
-  createChallengeReward,
-  createRewardManagerTx
+  createTracks,
+  createPlaylists,
+  createBlocks
 } from '../../utils/populateDB'
 
-describe('Challenge Reward Notification', () => {
+
+describe('Add track to playlist notification', () => {
   let processor: Processor
 
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
@@ -42,34 +45,33 @@ describe('Challenge Reward Notification', () => {
     ])
   })
 
-  test("Process push notification for challenge reward rank up", async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createRewardManagerTx(processor.discoveryDB, [{ slot: 1, signature: '0x1' }])
-    await createChallengeReward(processor.discoveryDB, [{
-      challenge_id: 'profile-completion',
-      user_id: 1,
-      specifier: '1',
-      amount: '100000000'
+  test("Process push notification for add track to playlist", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2, name: 'user_2' }])
+    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1, title: 'title_track' }])
+    const createdAt = new Date()
+    const trackAddedTime = Math.floor(new Date(createdAt.getTime() + 60 * 1000).getTime() / 1000)
+    await createBlocks(processor.discoveryDB, [{ number: 1 }])
+    await createPlaylists(processor.discoveryDB, [{
+      blocknumber: 1,
+      playlist_owner_id: 2, playlist_name: 'title_of_playlist', created_at: createdAt, playlist_id: 55,
+      playlist_contents: { "track_ids": [{ "time": trackAddedTime, "track": 10 }] }
     }])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
     await new Promise(resolve => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
-    const reactionNotifications = pending?.appNotifications.filter(n => n.type === 'challenge_reward')
-
-    expect(reactionNotifications).toHaveLength(1)
+    expect(pending?.appNotifications).toHaveLength(1)
     // Assert single pending
-    await processor.appNotificationsProcessor.process(reactionNotifications)
+    await processor.appNotificationsProcessor.process(pending.appNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
       badgeCount: 0
     }, {
-      title: `✅️ Complete your Profile`,
-      body: `You’ve earned 1 $AUDIO for completing this challenge!`,
+      title: 'Your track got on a playlist! 💿',
+      body: `user_2 added title_track to their playlist title_of_playlist`,
       data: {}
     })
   })
-
 })

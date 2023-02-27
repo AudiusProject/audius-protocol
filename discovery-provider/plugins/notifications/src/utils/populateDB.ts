@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import { EmailFrequency } from '../processNotifications/mappers/base'
-import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow, NotificationRow, PlaylistRow, BlockRow, UserTipRow, ReactionRow, UserBankAccountRow, UserBankTxRow, ChallengeDisbursementRow, RewardManagerTxRow } from '../types/dn'
+import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow, NotificationRow, PlaylistRow, BlockRow, UserTipRow, ReactionRow, UserBankAccountRow, UserBankTxRow, ChallengeDisbursementRow, RewardManagerTxRow, SubscriptionRow } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow, NotificationEmailRow } from '../types/identity'
 import { getDB } from '../conn'
@@ -216,6 +216,16 @@ export const createRewardManagerTx = async (db: Knex, rewards: RewardManagerTx[]
     .into('reward_manager_txs')
 }
 
+
+type CreateSubscription = Pick<SubscriptionRow, 'subscriber_id' | 'user_id'> & Partial<SubscriptionRow>
+export const createSubscription = async (db: Knex, subscriptions: CreateSubscription[]) => {
+  await db.insert(subscriptions.map(sub => ({
+    is_delete: false,
+    is_current: true,
+    ...sub,
+  })))
+    .into('subscriptions')
+}
 
 type CreateNotification = Pick<NotificationRow, 'id' | 'specifier' | 'group_id' | 'type' | 'timestamp' | 'user_ids'> & Partial<NotificationRow>
 export const insertNotifications = async (db: Knex, notifications: CreateNotification[]) => {

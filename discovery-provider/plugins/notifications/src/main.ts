@@ -5,7 +5,7 @@ import { Listener } from './listener'
 import { logger } from './logger'
 import { setupTriggers } from './setup'
 import { getDB } from './conn'
-import { program } from 'commander'
+
 import { AppNotificationsProcessor } from './processNotifications/indexAppNotifications'
 import { sendDMNotifications } from './tasks/dmNotifications'
 import { processEmailNotifications } from './email/notifications/index'
@@ -61,8 +61,6 @@ export class Processor {
     // process events
     logger.info('processing events')
     this.isRunning = true
-    // NOTE: Temp for testing
-    // TODO remove
     const redis = await getRedisConnection()
     await redis.set(config.lastIndexedMessageRedisKey, new Date(Date.now()).toISOString())
     await redis.set(config.lastIndexedReactionRedisKey, new Date(Date.now()).toISOString())

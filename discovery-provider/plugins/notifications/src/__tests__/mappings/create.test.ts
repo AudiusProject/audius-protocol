@@ -6,23 +6,17 @@ import { config } from './../../config'
 
 import {
   createUsers,
-  insertFollows,
   insertMobileDevices,
   insertMobileSettings,
   createTestDB,
   dropTestDB,
   replaceDBName,
-  createReposts,
   createTracks,
-  createPlaylists
+  createPlaylists,
+  createSubscription,
 } from '../../utils/populateDB'
 
-import { AppEmailNotification } from '../../types/notifications'
-import { renderEmail } from '../../email/notifications/renderEmail'
-import { reposttype } from '../../types/dn'
-import { EntityType } from '../../email/notifications/types'
-
-describe('Repost Notification', () => {
+describe('Create Notification', () => {
   let processor: Processor
 
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
@@ -54,14 +48,13 @@ describe('Repost Notification', () => {
     ])
   })
 
-  test("Process push notification for repost track", async () => {
+  test("Process push notification for create track", async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createSubscription(processor.discoveryDB, [{ subscriber_id: 2, user_id: 1 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
-    await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 10, repost_type: reposttype.track
-    }])
-    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
+
+    await insertMobileSettings(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
     await new Promise(resolve => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(1)
@@ -70,23 +63,22 @@ describe('Repost Notification', () => {
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
-      targetARN: 'arn:1',
+      targetARN: 'arn:2',
       badgeCount: 0
     }, {
-      title: 'New Repost',
-      body: 'user_2 reposted your track track_title_10',
+      title: 'New Artist Update',
+      body: `user_1 released a new track`,
       data: {}
     })
   })
 
-  test("Process push notification for repost playlist", async () => {
+  test("Process push notification for create playlist", async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createPlaylists(processor.discoveryDB, [{ playlist_id: 20, playlist_owner_id: 1, is_album: false }])
-    await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 20, repost_type: reposttype.playlist
-    }])
-    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
+    await createSubscription(processor.discoveryDB, [{ subscriber_id: 2, user_id: 1 }])
+    await createPlaylists(processor.discoveryDB, [{ playlist_id: 10, playlist_owner_id: 1, playlist_name: 'I am a playlist' }])
+
+    await insertMobileSettings(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
     await new Promise(resolve => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(1)
@@ -95,23 +87,22 @@ describe('Repost Notification', () => {
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
-      targetARN: 'arn:1',
+      targetARN: 'arn:2',
       badgeCount: 0
     }, {
-      title: 'New Repost',
-      body: 'user_2 reposted your playlist playlist_name_20',
+      title: 'New Artist Update',
+      body: 'user_1 released a new playlist I am a playlist',
       data: {}
     })
   })
 
-  test("Process push notification for repost album", async () => {
+  test("Process push notification for create album", async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createPlaylists(processor.discoveryDB, [{ playlist_id: 30, playlist_owner_id: 1, is_album: true }])
-    await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 30, repost_type: reposttype.playlist
-    }])
-    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
+    await createSubscription(processor.discoveryDB, [{ subscriber_id: 2, user_id: 1 }])
+    await createPlaylists(processor.discoveryDB, [{ playlist_id: 10, playlist_owner_id: 1, playlist_name: 'I am an album', is_album: true }])
+
+    await insertMobileSettings(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
     await new Promise(resolve => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(1)
@@ -120,48 +111,13 @@ describe('Repost Notification', () => {
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
-      targetARN: 'arn:1',
+      targetARN: 'arn:2',
       badgeCount: 0
     }, {
-      title: 'New Repost',
-      body: 'user_2 reposted your album playlist_name_30',
+      title: 'New Artist Update',
+      body: 'user_1 released a new album I am an album',
       data: {}
     })
-  })
-
-  test("Render a single email", async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
-    await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 10, repost_type: reposttype.track
-    }])
-
-    await new Promise(resolve => setTimeout(resolve, 10))
-
-    const notifications: AppEmailNotification[] = [
-      {
-        type: 'repost',
-        timestamp: new Date(),
-        specifier: '2',
-        group_id: 'repost:10:type:track',
-        data: {
-          type: EntityType.Track,
-          user_id: 2,
-          repost_item_id: 10
-        },
-        user_ids: [1],
-        receiver_user_id: 1
-      }
-    ]
-    const notifHtml = await renderEmail({
-      userId: 1,
-      email: 'joey@audius.co',
-      frequency: 'daily',
-      notifications,
-      dnDb: processor.discoveryDB,
-      identityDb: processor.identityDB
-    })
-    expect(notifHtml).toMatchSnapshot()
   })
 
 })

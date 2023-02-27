@@ -22,7 +22,6 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
   }
 
   async pushNotification() {
-    console.log('in suporter rank up')
     const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)

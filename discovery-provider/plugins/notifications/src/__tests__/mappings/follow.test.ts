@@ -1,8 +1,6 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
-import { getRedisConnection } from './../../utils/redisConnection'
-import { config } from './../../config'
 import * as sendEmail from '../../email/notifications/sendEmail'
 
 import {
@@ -25,9 +23,6 @@ describe('Follow Notification', () => {
     .mockImplementation(() => Promise.resolve(true))
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
-
-  // Mock current date for test result consistency
-  // Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
 
   beforeEach(async () => {
     jest.setTimeout(30 * 1000)

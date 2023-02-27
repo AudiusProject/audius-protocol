@@ -1,8 +1,6 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
-import { getRedisConnection } from '../../utils/redisConnection'
-import { config } from '../../config'
 
 import {
   createUsers,
@@ -18,9 +16,6 @@ import {
   createReposts,
 } from '../../utils/populateDB'
 
-import { AppEmailNotification } from '../../types/notifications'
-import { renderEmail } from '../../email/notifications/renderEmail'
-import { EntityType } from '../../email/notifications/types'
 import { reposttype, savetype } from '../../types/dn'
 
 describe('Milestone Notification', () => {
@@ -54,7 +49,6 @@ describe('Milestone Notification', () => {
 
   test("Process push notification for follow count milestone", async () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
-    console.log('stating')
     await insertFollows(processor.discoveryDB, new Array(10).fill(null).map((_, ind) => ({ followee_user_id: 1, follower_user_id: ind + 2 })))
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -66,7 +60,6 @@ describe('Milestone Notification', () => {
     expect(milestoneNotifications).toHaveLength(1)
     // Assert single pending
 
-    console.log(milestoneNotifications)
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
@@ -82,7 +75,6 @@ describe('Milestone Notification', () => {
 
   test("Process push notification for track repost milestone", async () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
-    console.log('stating')
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createReposts(processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({ repost_type: reposttype.track, repost_item_id: 2, user_id: ind + 2 })))
@@ -96,7 +88,6 @@ describe('Milestone Notification', () => {
     expect(milestoneNotifications).toHaveLength(1)
     // Assert single pending
 
-    console.log(milestoneNotifications)
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
@@ -112,7 +103,6 @@ describe('Milestone Notification', () => {
 
   test("Process push notification for playlist repost milestone", async () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
-    console.log('stating')
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createReposts(processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({ repost_type: reposttype.playlist, repost_item_id: 32, user_id: ind + 2 })))
@@ -126,7 +116,6 @@ describe('Milestone Notification', () => {
     expect(milestoneNotifications).toHaveLength(1)
     // Assert single pending
 
-    console.log(milestoneNotifications)
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
@@ -142,7 +131,6 @@ describe('Milestone Notification', () => {
 
   test("Process push notification for track save milestone", async () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
-    console.log('stating')
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createSaves(processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({ save_type: savetype.track, save_item_id: 2, user_id: ind + 2 })))
@@ -156,7 +144,6 @@ describe('Milestone Notification', () => {
     expect(milestoneNotifications).toHaveLength(1)
     // Assert single pending
 
-    console.log(milestoneNotifications)
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
@@ -172,7 +159,6 @@ describe('Milestone Notification', () => {
 
   test("Process push notification for playlist save milestone", async () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
-    console.log('stating')
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createSaves(processor.discoveryDB,
       new Array(10).fill(null).map((_, ind) => ({ save_type: savetype.playlist, save_item_id: 32, user_id: ind + 2 })))
@@ -186,7 +172,6 @@ describe('Milestone Notification', () => {
     expect(milestoneNotifications).toHaveLength(1)
     // Assert single pending
 
-    console.log(milestoneNotifications)
     await processor.appNotificationsProcessor.process(milestoneNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({

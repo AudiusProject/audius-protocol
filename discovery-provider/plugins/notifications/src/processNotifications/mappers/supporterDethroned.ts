@@ -22,7 +22,6 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
   }
 
   async pushNotification() {
-    console.log('mde to push')
 
     const res: Array<{ user_id: number, name: string, handle: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'handle', 'is_deactivated')
       .from<UserRow>('users')

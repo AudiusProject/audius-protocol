@@ -40,8 +40,6 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
       return acc
     }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
-    console.log({ users })
-
     if (users?.[this.senderUserId]?.isDeactivated) {
       return
     }

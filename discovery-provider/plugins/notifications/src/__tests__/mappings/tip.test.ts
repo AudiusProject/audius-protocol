@@ -10,13 +10,7 @@ import {
   dropTestDB,
   replaceDBName,
   createUserTip,
-  createReaction
 } from '../../utils/populateDB'
-
-import { AppEmailNotification } from '../../types/notifications'
-import { renderEmail } from '../../email/notifications/renderEmail'
-import { reposttype } from '../../types/dn'
-import { EntityType } from '../../email/notifications/types'
 
 describe('Tip Notification', () => {
   let processor: Processor

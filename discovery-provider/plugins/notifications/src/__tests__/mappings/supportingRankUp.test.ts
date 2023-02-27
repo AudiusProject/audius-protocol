@@ -51,8 +51,6 @@ describe('Supporting Rank Up Notification', () => {
     await new Promise(resolve => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
 
-    console.log(pending?.appNotifications)
-
     const reactionNotifications = pending?.appNotifications.filter(n => n.type === 'supporting_rank_up')
 
     expect(reactionNotifications).toHaveLength(1)
