@@ -13,7 +13,10 @@ import {
   InputSendDataAction,
   walletActions,
   getContext,
-  ErrorLevel
+  ErrorLevel,
+  createUserBankIfNeeded,
+  solanaSelectors,
+  SolanaWalletAddress
 } from '@audius/common'
 import type { AudiusLibs } from '@audius/sdk'
 import BN from 'bn.js'
@@ -23,6 +26,8 @@ import { make } from 'common/store/analytics/actions'
 import { SETUP_BACKEND_SUCCEEDED } from 'common/store/backend/actions'
 import { reportToSentry } from 'store/errors/reportToSentry'
 import { waitForWrite } from 'utils/sagaHelpers'
+
+const { getFeePayer } = solanaSelectors
 
 const ATA_SIZE = 165 // Size allocated for an associated token account
 
@@ -69,6 +74,7 @@ function* sendAsync({
   // WalletClient relies on audiusBackendInstance. Use waitForWrite to ensure it's initialized
   yield* waitForWrite()
   const walletClient = yield* getContext('walletClient')
+  const { track } = yield* getContext('analytics')
 
   const account = yield* select(getAccountUser)
   const weiBNAmount = stringWeiToBN(weiAudioAmount)
@@ -99,6 +105,17 @@ function* sendAsync({
         recipient: recipientWallet
       })
     )
+
+    // Ensure user has userbank
+
+    const audiusBackend = yield* getContext('audiusBackendInstance')
+    const feePayer = yield* select(getFeePayer)
+    if (!feePayer) {
+      console.error(`sendAsync: unexpectedly no fee payer`)
+      return
+    }
+    yield* call(createUserBankIfNeeded, track, audiusBackend, feePayer)
+
     // If transferring spl wrapped audio and there are insufficent funds with only the
     // user bank balance, transfer all eth AUDIO to spl wrapped audio
     if (chain === Chain.Sol && weiBNAmount.gt(waudioWeiAmount)) {
@@ -112,7 +129,7 @@ function* sendAsync({
       try {
         yield* call(
           [walletClient, 'sendWAudioTokens'],
-          recipientWallet,
+          recipientWallet as SolanaWalletAddress,
           weiBNAmount
         )
       } catch (e) {

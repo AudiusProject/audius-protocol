@@ -1,7 +1,12 @@
 import BN from 'bn.js'
 
 import { ID } from 'models/Identifiers'
-import { BNWei, StringWei, WalletAddress } from 'models/Wallet'
+import {
+  BNWei,
+  SolanaWalletAddress,
+  StringWei,
+  WalletAddress
+} from 'models/Wallet'
 import { stringWeiToBN } from 'utils/wallet'
 
 import { AudiusAPIClient } from '../audius-api-client'
@@ -171,7 +176,10 @@ export class WalletClient {
     }
   }
 
-  async sendWAudioTokens(address: WalletAddress, amount: BNWei): Promise<void> {
+  async sendWAudioTokens(
+    address: SolanaWalletAddress,
+    amount: BNWei
+  ): Promise<void> {
     if (amount.lt(MIN_TRANSFERRABLE_WEI)) {
       throw new Error('Insufficient Audio to transfer')
     }

@@ -1,12 +1,11 @@
-import { solanaActions, getContext } from '@audius/common'
-import { put, call, take } from 'typed-redux-saga'
+import { put, call } from 'typed-redux-saga'
 
-import * as backendActions from 'common/store/backend/actions'
-const { setFeePayer } = solanaActions
+import { getContext } from '../effects'
+
+import { setFeePayer } from './slice'
 
 function* watchForFeePayer() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield take(backendActions.SETUP_BACKEND_SUCCEEDED)
   const { feePayer, error } = yield* call(
     audiusBackendInstance.getRandomFeePayer as () => Promise<
       | {
@@ -23,8 +22,6 @@ function* watchForFeePayer() {
   }
 }
 
-const sagas = () => {
+export const sagas = () => {
   return [watchForFeePayer]
 }
-
-export default sagas
