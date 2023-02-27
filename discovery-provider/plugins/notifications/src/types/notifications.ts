@@ -166,6 +166,12 @@ export type TierChangeNotification = {
   current_value: string
 }
 
+export type AnnouncementNotification = {
+  title: string
+  short_description: string
+  long_description?: string
+}
+
 export type NotificationData =
   | DMNotification
   | DMReactionNotification
@@ -189,3 +195,4 @@ export type NotificationData =
   | TierChangeNotification
   | SupporterDethronedNotification
   | AddTrackToPlaylistNotification
+  | AnnouncementNotification
