@@ -111,7 +111,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   })
   const userId = user.blockchainUserId
 
-  await reporter.reportStart({ userId, contractAddress, nethermindContractAddress, senderAddress })
+  reporter.reportStart({ userId, contractAddress, nethermindContractAddress, senderAddress })
 
   // SEND to both nethermind and POA
   // sendToNethermindOnly indicates relay should respond with that receipt
@@ -227,10 +227,10 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       // infer tx type and populate time
       if (relayStats.nethermind.isRecipient) {
         relayStats.nethermind.txSubmissionTime = relayTxs[0].value.timeToComplete
-        await reporter.reportSuccess({ chain: 'nethermind', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.nethermind.txSubmissionTime })
+        reporter.reportSuccess({ chain: 'acdc', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.nethermind.txSubmissionTime })
       } else {
         relayStats.poa.txSubmissionTime = relayTxs[0].value.timeToComplete
-        await reporter.reportSuccess({ chain: 'poa', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.poa.txSubmissionTime })
+        reporter.reportSuccess({ chain: 'poa', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.poa.txSubmissionTime })
       }
 
     } else if (relayTxs.length === 2) {
@@ -250,8 +250,8 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       // populate both, we want stats if relay went to both chains
       relayStats.nethermind.txSubmissionTime = nethermindTx.timeToComplete
       relayStats.poa.txSubmissionTime = poaTx.timeToComplete
-      await reporter.reportSuccess({ chain: 'poa', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.poa.txSubmissionTime })
-      await reporter.reportSuccess({ chain: 'nethermind', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.nethermind.txSubmissionTime })
+      reporter.reportSuccess({ chain: 'poa', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.poa.txSubmissionTime })
+      reporter.reportSuccess({ chain: 'acdc', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.nethermind.txSubmissionTime })
     }
 
     redisLogParams = {
@@ -295,8 +295,8 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     )
     const end = new Date().getTime()
     const totalTransactionLatency = end - startTransactionLatency
-    await reporter.reportError({ chain: 'poa', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.poa.txSubmissionTime, errMsg: e.toString() })
-    await reporter.reportError({ chain: 'nethermind', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.nethermind.txSubmissionTime, errMsg: e.toString() })
+    reporter.reportError({ chain: 'poa', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.poa.txSubmissionTime, errMsg: e.toString() })
+    reporter.reportError({ chain: 'acdc', userId, contractAddress, nethermindContractAddress, senderAddress, totalTime: totalTransactionLatency, txSubmissionTime: relayStats.nethermind.txSubmissionTime, errMsg: e.toString() })
     throw e
   } finally {
     await Lock.clearLock(generateWalletLockKey(wallet.publicKey))
