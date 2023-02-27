@@ -118,7 +118,9 @@ def get_latest_block(db: SessionManager, final_poa_block):
             target_latest_block_number, latest_block_number_from_chain
         )
         if final_poa_block:
-            target_latest_block_number = min(target_latest_block_number, final_poa_block)
+            target_latest_block_number = min(
+                target_latest_block_number, final_poa_block
+            )
 
         logger.info(
             f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
@@ -448,6 +450,12 @@ def index_blocks(self, db, blocks_list):
         block_number, block_hash, latest_block_timestamp = itemgetter(
             "number", "hash", "timestamp"
         )(block)
+
+        final_poa_block = helpers.get_final_poa_block(shared_config)
+        if final_poa_block and block_number > final_poa_block:
+            logger.info("index.py | skipping block {block_number} past final_poa_block")
+            continue
+
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
