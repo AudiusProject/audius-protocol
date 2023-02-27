@@ -33,17 +33,15 @@ export const isEarliestUnread = ({
   messages: ChatMessage[]
   currentUserId: string | null
 }) => {
-  if (unreadCount === 0 || !lastReadAt) {
+  if (unreadCount === 0) {
     return false
   }
   const message = messages[currentMessageIndex]
   const prevMessage = messages[currentMessageIndex + 1]
-  const isUnread =
-    lastReadAt === undefined || dayjs(message.created_at).isAfter(lastReadAt)
+  const isUnread = !lastReadAt || dayjs(message.created_at).isAfter(lastReadAt)
   const isPreviousMessageUnread =
     prevMessage &&
-    (lastReadAt === undefined ||
-      dayjs(prevMessage.created_at).isAfter(lastReadAt))
+    (!lastReadAt || dayjs(prevMessage.created_at).isAfter(lastReadAt))
   const isAuthor = message.sender_user_id === currentUserId
   return isUnread && !isPreviousMessageUnread && !isAuthor
 }
