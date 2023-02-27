@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/url"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -59,6 +60,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 	}
 
 	writeDeadline, _ := time.ParseDuration("60s")
+	enableJetstream := os.Getenv("NATS_ENABLE_JETSTREAM") == "true"
 
 	opts := &server.Options{
 		ServerName: serverName,
@@ -66,7 +68,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 		Logtime:    true,
 		// Debug:      true,
 
-		JetStream: true,
+		JetStream: enableJetstream,
 		StoreDir:  filepath.Join(config.GetNatsConfig().NatsStoreDir, config.GetNatsConfig().PeeringConfig.NatsClusterName),
 
 		Tags: tags,

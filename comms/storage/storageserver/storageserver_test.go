@@ -13,7 +13,6 @@ import (
 	"testing"
 	"time"
 
-	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/transcode"
@@ -141,7 +140,7 @@ func startNatsCluster(t *testing.T) [5]*testServer {
 		case 3:
 			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb")
 		}
-		ss := NewProd(config.GetStorageConfig(), jsc, []sharedConfig.ServiceNode{}) // TODO: Pass all nodes
+		ss := NewProd(config.GetStorageConfig(), jsc, nil) // TODO: Pass all nodes
 		go ss.WebServer.Start(fmt.Sprintf("127.0.0.1:%d", 1222+i+5))
 		nodes[i].ss = ss
 	}

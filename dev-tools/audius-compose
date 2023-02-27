@@ -540,7 +540,6 @@ def ps(protocol_dir):
             continue
 
         name = service["Service"]
-        replica = int(service["Name"].split("-")[-1])
         status = service["Health"] or service["State"]
 
         ports = {}

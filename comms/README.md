@@ -35,7 +35,7 @@ Use [dbmate](https://github.com/amacneil/dbmate):
 
 * `cd discovery && dbmate new create_cool_table`
 * edit migration file
-* `make migrate` to run migration
+* running `make` will run migration
 
 ### Typings
 
