@@ -96,7 +96,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     gasLimit
   } = txProps
   const redis = req.app.get('redis')
-
+  nethermindContractAddress = null
   // SEND to both nethermind and POA
   // sendToNethermindOnly indicates relay should respond with that receipt
   const currentBlock = await web3.eth.getBlockNumber()
@@ -219,8 +219,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       JSON.stringify(redisLogParams)
     )
     req.logger.info(
-      `L2 - txRelay - sending a transaction for wallet ${
-        wallet.publicKey
+      `L2 - txRelay - sending a transaction for wallet ${wallet.publicKey
       } to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(
         txParams.gasPrice,
         16
@@ -431,8 +430,7 @@ const createAndSendTransaction = async (
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   console.log(
-    `txRelay - sending a transaction for sender ${
-      sender.publicKey
+    `txRelay - sending a transaction for sender ${sender.publicKey
     } to ${receiverAddress}, gasPrice ${parseInt(
       gasPrice,
       16
