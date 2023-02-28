@@ -11,10 +11,10 @@ import (
 	"testing"
 	"time"
 
-	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
 )
@@ -68,7 +68,7 @@ func TestMutateEndpoint(t *testing.T) {
 
 	req, err := http.NewRequest(http.MethodPost, "/comms/mutate", bytes.NewReader(payload))
 	assert.NoError(t, err)
-	req.Header.Set(config.SigHeader, sigBase64)
+	req.Header.Set(sharedConfig.SigHeader, sigBase64)
 
 	// simulate request
 	rec := httptest.NewRecorder()

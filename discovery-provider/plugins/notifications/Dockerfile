@@ -1,4 +1,4 @@
-FROM --platform=linux/amd64 node:16-slim
+FROM node:16-slim
 
 WORKDIR /notifications
 

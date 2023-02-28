@@ -56,7 +56,7 @@ services:
     image: alpine:3.14
     command: sleep inf
     healthcheck:
-      test: [ "CMD", "true" ]
+      test: ["CMD", "true"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -87,6 +87,8 @@ services:
     logging: *default-logging
     deploy:
       mode: global
+    profiles:
+      - tests
 
   # poa-contracts
 
@@ -146,7 +148,7 @@ services:
     logging: *default-logging
     deploy:
       mode: global
-      replicas: 1  # Override default replicas
+      replicas: 1 # Override default replicas
     profiles:
       - tests
       - creator
@@ -155,7 +157,7 @@ services:
     extends:
       file: docker-compose.yml
       service: creator-node
-    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npx mocha "$$@")' -
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; ./node_modules/.bin/mocha "$$@")' -
     command: ""
     environment:
       storagePath: "./test_file_storage"
@@ -190,7 +192,7 @@ services:
       service: discovery-provider-elasticsearch
     deploy:
       mode: global
-      replicas: 1  # Override default replicas
+      replicas: 1 # Override default replicas
     profiles:
       - tests
       - discovery
@@ -202,7 +204,7 @@ services:
     environment:
       POSTGRES_DB: "discovery_provider"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -279,9 +281,7 @@ services:
       - discovery
 
   test-discovery-provider-notifications:
-    extends:
-      file: docker-compose.yml
-      service: discovery-provider-notifications
+    build: discovery-provider/plugins/notifications
     command: sh -c "npm run test:watch"
     environment:
       AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
@@ -304,6 +304,23 @@ services:
       - tests
       - notifications
 
+  # comms
+
+  test-comms-migrations:
+    build:
+      context: comms
+      dockerfile: Dockerfile
+    command: /comms-linux discovery-migrations
+    environment:
+      audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable"
+    depends_on:
+      test-discovery-provider-migrations:
+        condition: service_completed_successfully
+    logging: *default-logging
+    profiles:
+      - tests
+      - notifications
+
   # identity-service
 
   identity-service-db:
@@ -313,7 +330,7 @@ services:
     environment:
       POSTGRES_DB: "identity_service"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -359,7 +376,7 @@ services:
     extends:
       file: docker-compose.yml
       service: identity-service
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npx mocha "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; ./node_modules/.bin/mocha "$$@")' -
     command: ""
     environment:
       isTestRun: "true"

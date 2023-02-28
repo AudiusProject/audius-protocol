@@ -1,4 +1,5 @@
 import logging  # pylint: disable=C0302
+import os
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Tuple, TypedDict
@@ -860,7 +861,11 @@ def notifications():
             playlist_contents = entry.playlist_contents
 
             final_poa_block = helpers.get_final_poa_block(shared_config)
-            if final_poa_block:
+
+            if final_poa_block and web3.provider.endpoint_uri == os.getenv(
+                "audius_web3_nethermind_rpc"
+            ):
+                # if migrated to ACDC
                 min_block_number -= final_poa_block
                 max_block_number -= final_poa_block
 

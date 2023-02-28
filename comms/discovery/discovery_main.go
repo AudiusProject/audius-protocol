@@ -2,9 +2,7 @@ package discovery
 
 import (
 	"expvar"
-	"fmt"
 	"log"
-	"os/exec"
 	"time"
 
 	"comms.audius.co/discovery/config"
@@ -18,9 +16,6 @@ import (
 )
 
 func DiscoveryMain() {
-	discoveryConfig := config.GetDiscoveryConfig()
-	config.Init(discoveryConfig.Keys)
-
 	// dial datasources in parallel
 	g := errgroup.Group{}
 
@@ -28,7 +23,8 @@ func DiscoveryMain() {
 	var proc *rpcz.RPCProcessor
 
 	g.Go(func() error {
-		peering := peering.New(nil)
+		discoveryConfig := config.GetDiscoveryConfig()
+		peering := peering.New(&discoveryConfig.PeeringConfig)
 		err := peering.PollRegisteredNodes()
 		if err != nil {
 			return err
@@ -60,13 +56,7 @@ func DiscoveryMain() {
 		return db.Dial()
 	})
 	g.Go(func() error {
-		out, err := exec.Command("dbmate",
-			"--no-dump-schema",
-			"--migrations-dir", "./discovery/db/migrations",
-			"--url", db.MustGetAudiusDbUrl(),
-			"up").CombinedOutput()
-		fmt.Println("dbmate: ", string(out))
-		return err
+		return db.RunMigrations()
 	})
 	if err := g.Wait(); err != nil {
 		log.Fatal(err)

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"os"
 	"testing"
 
-	"comms.audius.co/discovery/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,7 +16,7 @@ func TestRecovery(t *testing.T) {
 	var err error
 
 	// dagron
-	config.IsStaging = true
+	os.Setenv("AUDIUS_IS_STAGING", "true")
 	err = Dial(nil)
 	assert.NoError(t, err)
 

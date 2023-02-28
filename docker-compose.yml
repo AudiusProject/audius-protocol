@@ -325,8 +325,29 @@ services:
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
     volumes:
       - ./discovery-provider/plugins/notifications:/notifications
+    depends_on:
+      comms-migrations:
+        condition: service_completed_successfully
+      discovery-provider:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      identity-service-redis:
+        condition: service_healthy
     deploy:
       mode: global
+
+  comms-migrations:
+    build:
+      context: comms
+      dockerfile: Dockerfile
+    command: /comms-linux discovery-migrations
+    environment:
+      audius_db_url: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
+    depends_on:
+      discovery-provider:
+        condition: service_healthy
+    logging: *default-logging
 
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0

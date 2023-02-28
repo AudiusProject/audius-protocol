@@ -1,8 +1,7 @@
 import logging
 
 from integration_tests.utils import populate_mock_db
-from src.models.notifications.notification import Notification
-from src.queries.get_notifications import get_notifications
+from src.queries.get_notifications import NotificationType, get_notifications
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ def assert_notification(
         )
 
 
-def test_get_repost_repost_notifications(app):
+def test_get_repost_of_repost_notifications(app):
     with app.app_context():
         db_mock = get_db()
 
@@ -47,63 +46,75 @@ def test_get_repost_repost_notifications(app):
                     "user_id": 2,
                     "repost_item_id": 1,
                     "repost_type": "track",
-                    "is_repost_repost": True,
+                    "is_repost_of_repost": True,
                 },
                 {
                     "user_id": 3,
                     "repost_item_id": 1,
                     "repost_type": "track",
-                    "is_repost_repost": True,
+                    "is_repost_of_repost": True,
                 },
                 {
                     "user_id": 3,
                     "repost_item_id": 1,
                     "repost_type": "playlist",
-                    "is_repost_repost": True,
+                    "is_repost_of_repost": True,
                 },
                 {
                     "user_id": 5,
                     "repost_item_id": 1,
                     "repost_type": "playlist",
-                    "is_repost_repost": True,
+                    "is_repost_of_repost": True,
                 },
             ]
         }
         populate_mock_db(db_mock, test_actions)
 
         with db_mock.scoped_session() as session:
-            args = {"limit": 10, "user_id": 4}
+            args = {
+                "limit": 10,
+                "user_id": 4,
+                "valid_types": [NotificationType.REPOST_OF_REPOST],
+            }
             user4_notifications = get_notifications(session, args)
             assert len(user4_notifications) == 3
             assert_notification(
                 notification=user4_notifications[0],
-                group_id="repost_repost:1:type:track",
+                group_id="repost_of_repost:1:type:track",
                 is_seen=False,
                 actions_length=2,
                 reposter_user_ids=[2, 3],
             )
             assert_notification(
                 notification=user4_notifications[1],
-                group_id="repost_repost:1:type:playlist",
+                group_id="repost_of_repost:1:type:playlist",
                 is_seen=False,
                 actions_length=1,
                 reposter_user_ids=[3],
             )
-            assert "repost_repost" not in user4_notifications[2]["group_id"]
+            assert "repost_of_repost" not in user4_notifications[2]["group_id"]
 
-            args = {"limit": 10, "user_id": 3}
+            args = {
+                "limit": 10,
+                "user_id": 3,
+                "valid_types": [NotificationType.REPOST_OF_REPOST],
+            }
             user3_notifications = get_notifications(session, args)
             assert len(user3_notifications) == 2
             assert_notification(
                 notification=user3_notifications[0],
-                group_id="repost_repost:1:type:playlist",
+                group_id="repost_of_repost:1:type:playlist",
                 is_seen=False,
                 actions_length=1,
                 reposter_user_ids=[5],
             )
-            assert "repost_repost" not in user3_notifications[1]["group_id"]
+            assert "repost_of_repost" not in user3_notifications[1]["group_id"]
 
-            args = {"limit": 10, "user_id": 1}
+            args = {
+                "limit": 10,
+                "user_id": 1,
+                "valid_types": [NotificationType.REPOST_OF_REPOST],
+            }
             user1_notifications = get_notifications(session, args)
             for notif in user1_notifications:
-                assert "repost_repost" not in notif["group_id"]
+                assert "repost_of_repost" not in notif["group_id"]

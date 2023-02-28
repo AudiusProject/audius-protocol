@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
-	"comms.audius.co/discovery/config"
 )
 
 type Info struct {
@@ -24,14 +22,14 @@ type Info struct {
 	AsOf            time.Time
 }
 
-func MyInfo() (*Info, error) {
+func (p *Peering) MyInfo() (*Info, error) {
 	info := &Info{
-		Address:         config.WalletAddress,
-		Nkey:            config.NkeyPublic,
-		IP:              config.IP,
-		NatsClusterName: config.NatsClusterName,
-		NatsRoute:       fmt.Sprintf("nats://%s:%s@%s:6222", config.NatsClusterUsername, config.NatsClusterPassword, config.IP),
-		NatsIsReachable: config.NatsIsReachable,
+		Address:         p.Config.Keys.DelegatePublicKey,
+		Nkey:            p.Config.Keys.NkeyPublic,
+		IP:              p.IP,
+		NatsClusterName: p.Config.NatsClusterName,
+		NatsRoute:       fmt.Sprintf("nats://%s:%s@%s:6222", p.NatsClusterUsername, p.NatsClusterPassword, p.IP),
+		NatsIsReachable: p.NatsIsReachable,
 	}
 	return info, nil
 }

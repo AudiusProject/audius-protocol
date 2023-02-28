@@ -1,54 +1,38 @@
+up:: down etchosts migrate
+	docker compose up -d --build
 
-dev.discovery::
-	@	audius_discprov_env='standalone' \
-		AUDIUS_DELEGATE_PRIVATE_KEY='293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238' \
-		audius_db_url='postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable' \
-		go run main.go discovery
-
-reset::
-	docker compose down --volumes
-	docker compose up comdb comnats -d
-	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
-		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
-	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
-
-localhosts="127.0.0.1       node1 node2 node3 node4 ingress"
-storage.hosts::
+localhosts="127.0.0.1       node1-storage node2-storage node3-storage node4-storage node1-discovery ingress"
+etchosts::
 	@	if ! grep -q $(localhosts) /etc/hosts; \
 		then echo Adding development hosts to /etc/hosts; \
 		echo $(localhosts) | sudo tee -a /etc/hosts; fi
 
-storage.dev.up::
-	docker compose -f docker-compose.v2.dev.yml up -d --build
-
-storage.multi.up::
-	docker compose -f docker-compose.v2.multi.yml up -d --build
-
-storage.dev:: down storage.hosts storage.dev.up
-
-storage.multi:: down storage.hosts storage.multi.up
-
 down::
-	(docker compose down --volumes || true) && \
-	(docker compose -f docker-compose.v2.dev.yml down -v || true) && \
-	(docker compose -f docker-compose.v2.multi.yml down -v || true)
+	(docker compose down --volumes || true)
 
 psql::
 	docker exec -it comdb psql -U postgres audius_discovery
-
-
-
 
 fmt::
 	go fmt ./...
 
 test::
-	docker compose up -d comdb
-	audius_discprov_env='standalone' test_host='com1' go test ./... -count=1
+	docker logs -f test
 
+migrate::
+	docker compose up comdb -d && \
+	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
+		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
+	(docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery" || true)
 
 test.load::
 	hey -n 10000 -c 50 http://localhost:8926/storage/jobs
+
+storage.seed.audio::
+	docker exec -it storage1 sh -c "./comms storage seed audio"
+
+storage.seed.image::
+	docker exec -it storage1 sh -c "./comms storage seed image"
 
 
 build::

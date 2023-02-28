@@ -1,8 +1,6 @@
 package config
 
 var (
-	SigHeader = "x-sig"
-
 	PubkeystoreBucketName = "pubkeyStore"
 
 	// Rate limit config
@@ -18,8 +16,6 @@ var (
 		RateLimitMaxNumMessagesPerRecipient: 1000,
 		RateLimitMaxNumNewChats:             100,
 	}
-
-	SignatureTimeToLiveMs = int64(60000)
 
 	GlobalStreamName    = "audius"
 	GlobalStreamSubject = "audius.>"

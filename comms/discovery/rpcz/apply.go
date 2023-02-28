@@ -8,11 +8,13 @@ import (
 	"sync"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
+	natsdConfig "comms.audius.co/natsd/config"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
 	"github.com/tidwall/gjson"
@@ -48,23 +50,32 @@ func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 
 	// create backing stream
 	_, err = jsc.AddStream(&nats.StreamConfig{
-		Name:     config.GlobalStreamName,
-		Subjects: []string{config.GlobalStreamSubject},
-		Replicas: config.NatsReplicaCount,
+		Name:     discoveryConfig.GlobalStreamName,
+		Subjects: []string{discoveryConfig.GlobalStreamSubject},
+		Replicas: natsdConfig.NatsReplicaCount,
 		// DenyDelete: true,
 		// DenyPurge:  true,
-		Placement: config.DiscoveryPlacement(),
+		Placement: discoveryConfig.DiscoveryPlacement(),
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	// create consumer
-	_, err = jsc.Subscribe(config.GlobalStreamSubject, proc.Apply, nats.Durable(config.WalletAddress))
+	// messages processed in parallel via work chan
+	work := make(chan *nats.Msg)
+	workerCount := 5
+	for i := 0; i < workerCount; i++ {
+		go proc.startWorker(work)
+	}
+
+	durableId := discoveryConfig.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey
+	sub, err := jsc.ChanSubscribe(discoveryConfig.GlobalStreamSubject, work, nats.Durable(durableId), nats.AckExplicit())
 	if err != nil {
-		config.Logger.Error(err.Error())
+		logger.Error(err.Error())
 		return nil, err
 	}
+	sub.SetPendingLimits(-1, -1)
 
 	return proc, nil
 }
@@ -101,10 +112,25 @@ func (proc *RPCProcessor) SubmitAndWait(msg *nats.Msg) (*nats.PubAck, error) {
 	return ok, err
 }
 
+func (proc *RPCProcessor) startWorker(work chan *nats.Msg) {
+	for msg := range work {
+		proc.Apply(msg)
+	}
+}
+
 // Validates + applies a NATS message
 func (proc *RPCProcessor) Apply(msg *nats.Msg) {
+	defer msg.Ack()
+
 	var err error
-	logger := config.Logger.New()
+	logger := logger.New()
+
+	startTime := time.Now()
+	takeSplit := func() time.Duration {
+		split := time.Since(startTime)
+		startTime = time.Now()
+		return split
+	}
 
 	// get seq
 	meta, err := msg.Metadata()
@@ -116,13 +142,23 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 	proc.JetstreamSequence.Set(int64(meta.Sequence.Stream))
 	proc.ConsumerSequence.Set(int64(meta.Sequence.Consumer))
 
+	// notify any waiters of apply result
+	defer func() {
+		proc.Lock()
+		if waiter, ok := proc.waiters[meta.Sequence.Stream]; ok {
+			waiter <- err
+		}
+		proc.Unlock()
+	}()
+
 	// recover wallet + user
-	signatureHeader := msg.Header.Get(config.SigHeader)
+	signatureHeader := msg.Header.Get(sharedConfig.SigHeader)
 	wallet, err := misc.RecoverWallet(msg.Data, signatureHeader)
 	if err != nil {
 		logger.Warn("unable to recover wallet, skipping")
 		return
 	}
+	logger.Debug("recovered wallet", "took", takeSplit())
 
 	userId, err := queries.GetUserIDFromWallet(db.Conn, context.Background(), wallet)
 	if err != nil {
@@ -130,6 +166,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		return
 	}
 	logger = logger.New("wallet", wallet, "userId", userId)
+	logger.Debug("got user", "took", takeSplit())
 
 	// parse raw rpc
 	var rawRpc schema.RawRPC
@@ -145,6 +182,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		logger.Info(err.Error())
 		return
 	}
+	logger.Debug("did validation", "took", takeSplit())
 
 	attemptApply := func() error {
 
@@ -153,6 +191,8 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		if err != nil {
 			return err
 		}
+		defer tx.Rollback()
+		logger.Debug("begin tx", "took", takeSplit())
 
 		query := `
 		INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING
@@ -171,6 +211,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			logger.Info("rpc already in log, skipping duplicate seq number", "seq", meta.Sequence.Stream)
 			return nil
 		}
+		logger.Debug("inserted RPC", "took", takeSplit())
 
 		switch schema.RPCMethod(rawRpc.Method) {
 		case schema.RPCMethodChatCreate:
@@ -276,46 +317,57 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			logger.Warn("no handler for ", rawRpc.Method)
 		}
 
+		logger.Debug("called handler", "took", takeSplit())
+
 		err = tx.Commit()
 		if err != nil {
 			return err
 		}
+		logger.Debug("commited", "took", takeSplit())
 
-		// send out websocket events?
-		if chatId := gjson.GetBytes(rawRpc.Params, "chat_id").String(); chatId != "" {
-			var userIds []int32
-			err = db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1`, chatId)
-			if err != nil {
-				config.Logger.Warn("failed to load chat members for websocket push " + err.Error())
-			} else {
-				var parsedParams schema.RPCPayloadParams
-				err := json.Unmarshal(rawRpc.Params, &parsedParams)
-				if err != nil {
-					config.Logger.Error("Failed to parse params")
-				}
-				payload := schema.RPCPayload{Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams}
-				encodedUserId, _ := misc.EncodeHashId(int(userId))
-				data := schema.ChatWebsocketEventData{RPC: payload, Metadata: schema.Metadata{Timestamp: meta.Timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
-				for _, subscribedUserId := range userIds {
-					// Don't send events sent by a user to that same user
-					if subscribedUserId != userId {
-						websocketPush(subscribedUserId, data)
-					}
-				}
-			}
-
-		}
+		// send out websocket events fire + forget style
+		websocketNotify(rawRpc, userId, meta.Timestamp)
+		logger.Debug("websocket push done", "took", takeSplit())
 
 		return nil
 	}
 
-	err = retry.Do(attemptApply, retry.Attempts(5))
+	err = retry.Do(
+		attemptApply,
+		retry.Delay(300*time.Millisecond),
+		retry.OnRetry(func(n uint, err error) {
+			logger.Warn("apply attempt failed", "attempt", n, "err", err)
+		}))
 
-	// notify any waiters of apply result
-	proc.Lock()
-	if waiter, ok := proc.waiters[meta.Sequence.Consumer]; ok {
-		waiter <- err
+	if err != nil {
+		logger.Warn("apply failed", "err", err)
 	}
-	proc.Unlock()
 
+}
+
+func websocketNotify(rawRpc schema.RawRPC, userId int32, timestamp time.Time) {
+	if chatId := gjson.GetBytes(rawRpc.Params, "chat_id").String(); chatId != "" {
+		var userIds []int32
+		err := db.Conn.Select(&userIds, `select user_id from chat_member where chat_id = $1`, chatId)
+		if err != nil {
+			logger.Warn("failed to load chat members for websocket push " + err.Error())
+		} else {
+			var parsedParams schema.RPCPayloadParams
+			err := json.Unmarshal(rawRpc.Params, &parsedParams)
+			if err != nil {
+				logger.Error("Failed to parse params")
+				return
+			}
+			payload := schema.RPCPayload{Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams}
+			encodedUserId, _ := misc.EncodeHashId(int(userId))
+			data := schema.ChatWebsocketEventData{RPC: payload, Metadata: schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
+			for _, subscribedUserId := range userIds {
+				// Don't send events sent by a user to that same user
+				if subscribedUserId != userId {
+					websocketPush(subscribedUserId, data)
+				}
+			}
+		}
+
+	}
 }
