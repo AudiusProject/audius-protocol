@@ -30,9 +30,8 @@ begin
       )
     on conflict do nothing;
 
-    if new.rank = 1 then 
-      select sender_user_id into dethroned_user_id from supporter_rank_ups where rank=1 order by slot desc limit 1;
-      if dethroned_user_id is not NULL then
+    if new.rank = 1 then
+      select sender_user_id into dethroned_user_id from supporter_rank_ups where rank=1 and receiver_user_id=new.receiver_user_id and slot < new.slot order by slot desc limit 1;
         -- create a notification for the sender and receiver
         insert into notification
           (slot, user_ids, timestamp, type, specifier, group_id, data)
