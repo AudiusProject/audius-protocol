@@ -1030,44 +1030,44 @@ def update_task(self):
                 current_hash = web3.toHex(latest_block.hash)
                 parent_hash = web3.toHex(latest_block.parentHash)
 
-                    latest_block_db_query = session.query(Block).filter(
-                        Block.blockhash == current_hash
-                        and Block.parenthash == parent_hash
-                        and Block.is_current == True
+                latest_block_db_query = session.query(Block).filter(
+                    Block.blockhash == current_hash
+                    and Block.parenthash == parent_hash
+                    and Block.is_current == True
+                )
+
+                # Exit loop if we are up to date
+                if latest_block_db_query.count() > 0:
+                    block_intersection_found = True
+                    intersect_block_hash = current_hash
+                    continue
+
+                index_blocks_list.append(latest_block)
+
+                parent_block_query = session.query(Block).filter(
+                    Block.blockhash == parent_hash
+                )
+
+                # Intersection is considered found if current block parenthash is
+                # present in Blocks table
+                block_intersection_found = parent_block_query.count() > 0
+
+                num_blocks = len(index_blocks_list)
+                if num_blocks % 50 == 0:
+                    logger.info(
+                        f"index_nethermind.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
                     )
 
-                    # Exit loop if we are up to date
-                    if latest_block_db_query.count() > 0:
-                        block_intersection_found = True
-                        intersect_block_hash = current_hash
-                        continue
-
-                    index_blocks_list.append(latest_block)
-
-                    parent_block_query = session.query(Block).filter(
-                        Block.blockhash == parent_hash
-                    )
-
-                    # Intersection is considered found if current block parenthash is
-                    # present in Blocks table
-                    block_intersection_found = parent_block_query.count() > 0
-
-                    num_blocks = len(index_blocks_list)
-                    if num_blocks % 50 == 0:
-                        logger.info(
-                            f"index_nethermind.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
-                        )
-
-                    # Special case for initial block 0x0 or first block number after final_poa_block
-                    reached_initial_block = latest_block.number == final_poa_block + 1
-                    if reached_initial_block:
-                        block_intersection_found = True
-                        intersect_block_hash = web3.toHex(latest_block.parentHash)
-                    else:
-                        latest_block = dict(web3.eth.get_block(parent_hash, True))
-                        latest_block["number"] += final_poa_block
-                        latest_block = AttributeDict(latest_block)
-                        intersect_block_hash = web3.toHex(latest_block.hash)
+                # Special case for initial block 0x0 or first block number after final_poa_block
+                reached_initial_block = latest_block.number == final_poa_block + 1
+                if reached_initial_block:
+                    block_intersection_found = True
+                    intersect_block_hash = web3.toHex(latest_block.parentHash)
+                else:
+                    latest_block = dict(web3.eth.get_block(parent_hash, True))
+                    latest_block["number"] += final_poa_block
+                    latest_block = AttributeDict(latest_block)
+                    intersect_block_hash = web3.toHex(latest_block.hash)
 
                 # Determine whether current indexed data (is_current == True) matches the
                 # intersection block hash
