@@ -10,6 +10,7 @@ import (
 
 	sharedConfig "comms.audius.co/shared/config"
 	"github.com/avast/retry-go"
+	"golang.org/x/exp/slog"
 )
 
 var (
@@ -28,10 +29,10 @@ func (p *Peering) PollRegisteredNodes() error {
 	}
 
 	refresh := func() error {
-		p.Logger.Debug("refreshing SPs")
+		slog.Debug("refreshing SPs")
 		sps, err := queryServiceNodes(p.Config.IsStaging)
 		if err != nil {
-			p.Logger.Warn("refresh SPs failed " + err.Error())
+			slog.Warn("refresh SPs failed " + err.Error())
 			return err
 		}
 		mu.Lock()

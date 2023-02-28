@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"strings"
 
@@ -16,6 +15,7 @@ import (
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/transcode"
 	"github.com/nats-io/nats.go"
+	"golang.org/x/exp/slog"
 
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/azureblob"
@@ -70,7 +70,7 @@ func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider
 
 	b, err := blob.OpenBucket(context.Background(), blobDriverURL)
 	if err != nil {
-		log.Println("failed to open bucket", blobDriverURL)
+		slog.Error("failed to open bucket" + blobDriverURL, err)
 		return nil, err
 	}
 
@@ -81,7 +81,11 @@ func New(thisNodePubKey, streamToStoreFrom, blobDriverURL string, storageDecider
 		blobStore:         b,
 	}
 
-	persistence.runStorer(thisNodePubKey)
+	err = persistence.runStorer(thisNodePubKey)
+	if err != nil {
+		return nil, err
+	}
+
 	return persistence, nil
 }
 
@@ -222,7 +226,7 @@ func (persist *Persistence) GetJobResultsFor(id string) ([]*ShardAndFile, error)
 }
 
 // runStorer runs a goroutine to pull tracks from temp NATS object storage to persistent object storage.
-func (persist *Persistence) runStorer(thisNodePubKey string) {
+func (persist *Persistence) runStorer(thisNodePubKey string) error {
 	// Create a per-node explicit pull consumer on the stream that backs the track upload status KV bucket
 	storerDurable := fmt.Sprintf("STORER_%s", thisNodePubKey)
 	_, err := persist.jsc.AddConsumer(persist.streamToStoreFrom, &nats.ConsumerConfig{
@@ -232,14 +236,16 @@ func (persist *Persistence) runStorer(thisNodePubKey string) {
 		ReplayPolicy:  nats.ReplayInstantPolicy,
 	})
 	if err != nil {
-		log.Fatalf("Error creating consumer for persistent file storer: %q\n", err)
+		slog.Error("Error creating consumer for persistent file storer", err)
+		return err
 	}
 
 	// Create a subscription on the consumer for every node
 	// Subject can be empty since it defaults to all subjects bound to the stream
 	storerSub, err := persist.jsc.PullSubscribe("", storerDurable, nats.BindStream(persist.streamToStoreFrom))
 	if err != nil {
-		log.Fatalf("Error creating subscription for persistent file storer: %q\n", err)
+		slog.Error("Error creating subscription for persistent file storer", err)
+		return err
 	}
 
 	// Watch KV store to download files to persistent storage
@@ -250,7 +256,7 @@ func (persist *Persistence) runStorer(thisNodePubKey string) {
 			if err == nil {
 				msg := msgs[0]
 				if err := persist.processMessage(msg); err != nil {
-					log.Printf("persistent processMessage failed: %q\n", err)
+					slog.Error("persistent processMessage failed", err)
 					msg.Nak()
 				} else {
 					msg.Ack()
@@ -260,6 +266,8 @@ func (persist *Persistence) runStorer(thisNodePubKey string) {
 			}
 		}
 	}()
+
+	return nil
 }
 
 // processMessage will move file to persistent storage if this server is responsible for the shard.
@@ -270,7 +278,7 @@ func (persist *Persistence) processMessage(msg *nats.Msg) error {
 	job := transcode.Job{}
 	err := json.Unmarshal(msg.Data, &job)
 	if err != nil {
-		log.Printf("invalid job input: %q\n", err)
+		slog.Error("invalid job input", err)
 		return nil
 	}
 
@@ -352,7 +360,7 @@ func checkStorageCredentials(blobDriverUrl string) error {
 		// but we do make sure the directory exists
 		if found {
 			if err := os.MkdirAll(uri, os.ModePerm); err != nil {
-				log.Println("failed to create local persistent storage dir: ", err)
+				slog.Error("failed to create local persistent storage dir", err)
 				return err
 			}
 		}
@@ -392,5 +400,5 @@ func checkStorageCredentials(blobDriverUrl string) error {
 		return nil
 	}
 
-	return errors.New("Unknown presistent storage type")
+	return errors.New("unknown presistent storage type")
 }

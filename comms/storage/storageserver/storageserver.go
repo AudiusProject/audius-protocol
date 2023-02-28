@@ -3,8 +3,8 @@ package storageserver
 
 import (
 	"embed"
+	"errors"
 	"io/fs"
-	"log"
 	"net/http"
 	"strings"
 
@@ -21,6 +21,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	"golang.org/x/exp/slog"
 )
 
 const (
@@ -41,11 +42,13 @@ type StorageServer struct {
 	Peering        *peering.Peering
 }
 
-func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *peering.Peering) *StorageServer {
+func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *peering.Peering) (*StorageServer, error) {
 	allContentNodes, err := peering.GetContentNodes()
 	if err != nil {
-		log.Fatal("Error getting content nodes: ", err)
+		slog.Error("Error getting content nodes", err)
+		return nil, err
 	}
+
 	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
 	var host string
 	var allStorageNodePubKeys []string
@@ -56,26 +59,29 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *p
 		}
 	}
 	if host == "" {
-		log.Fatal("Could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
+		return nil, errors.New("could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
 	}
 
 	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, thisNodePubKey, allStorageNodePubKeys, jsc)
 
 	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
-		log.Fatal("failed to start jobs manager: ", err)
+		slog.Error("failed to start jobs manager", err)
+		return nil, err
 	}
 	jobsManager.StartWorkers(NumJobWorkers)
 
 	m := monitor.New(jsc)
 	err = m.SetHostAndShardsForNode(thisNodePubKey, host, d.ShardsStored)
 	if err != nil {
-		log.Fatalf("Error setting host and shards for node: %v", err)
+		slog.Error("Error setting host and shards for node", err)
+		return nil, err
 	}
 
 	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)
 	if err != nil {
-		log.Fatal("[!!!] Error connecting to persistent storage: ", err)
+		slog.Error("[!!!] Error connecting to persistent storage", err)
+		return nil, err
 	}
 
 	return NewCustom(
@@ -85,7 +91,7 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *p
 		jobsManager,
 		persistence,
 		m,
-	)
+	), nil
 }
 
 func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamContext, jobsManager *transcode.JobsManager, persistence *persistence.Persistence, m *monitor.Monitor) *StorageServer {
