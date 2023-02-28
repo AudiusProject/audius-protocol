@@ -11,6 +11,8 @@ type NatsConfig struct {
 	IsStorageNode   bool                 `envconfig:"AUDIUS_IS_STORAGE_NODE" json:"IsStorageNode"`
 	EnableJetstream bool                 `envconfig:"AUDIUS_NATS_ENABLE_JETSTREAM" default:"false" json:"EnableJetstream"`
 	StoreDir        string               `envconfig:"AUDIUS_NATS_STORE_DIR" default:"/nats" json:"StoreDir"`
+	// TODO: should this be here?
+	// ObjStorePlacementTags []string             `envconfig:"AUDIUS_NATS_OBJ_STORE_PLACEMENT_TAGS" default:"type:content-node" json:"ObjStorePlacementTags"`
 }
 
 var natsConfig *NatsConfig

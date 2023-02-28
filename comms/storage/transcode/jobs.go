@@ -163,6 +163,7 @@ func (jobman *JobsManager) createTemporaryObjectStores() {
 					Replicas: jobman.replicaCount,
 					Placement: &nats.Placement{
 						Cluster: config.GetStorageConfig().PeeringConfig.NatsClusterName,
+						Tags:    config.GetStorageConfig().ObjStorePlacementTags,
 					},
 				}, jobman.jsc)
 			},
