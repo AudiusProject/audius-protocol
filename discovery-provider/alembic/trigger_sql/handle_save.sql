@@ -131,10 +131,10 @@ begin
                     select
                         followee_user_id
                     from follows
-                    -- where
-                    --     follower_user_id = new.user_id
-                    --     and is_delete is false
-                    --     and is_current is true
+                    where
+                        follower_user_id = new.user_id
+                        and is_delete is false
+                        and is_current is true
                 )
         )
     insert into notification

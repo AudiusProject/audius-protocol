@@ -73,6 +73,9 @@ def test_save_repost_notification(app, entities):
                 "repost_type": RepostType.playlist,
             },
         ],
+    }
+
+    save_entities = {
         "saves": [
             {
                 "user_id": 3,
@@ -89,6 +92,7 @@ def test_save_repost_notification(app, entities):
         ],
     }
     populate_mock_db(db, repost_entities)
+    populate_mock_db(db, save_entities)
 
     with db.scoped_session() as session:
         save_repost_notifications: List[Notification] = (
@@ -96,23 +100,6 @@ def test_save_repost_notification(app, entities):
             .filter(Notification.type == "save_of_repost")
             .all()
         )
-        save_notifications: List[Notification] = (
-            session.query(Notification).filter(Notification.type == "save").all()
-        )
-        saves: List[Save] = session.query(Save).all()
-        reposts: List[Repost] = session.query(Repost).all()
-        print("reposts")
-        for repost in reposts:
-            print(repost)
-        print("saves")
-        for save in saves:
-            print(save)
-        print("save notif")
-        for notif in save_notifications:
-            print(notif)
-        print("save repost notif")
-        for notification in save_repost_notifications:
-            print(notification)
         assert len(save_repost_notifications) == 1
         # Check repost of a repost notifications
         assert_notification(
@@ -121,7 +108,7 @@ def test_save_repost_notification(app, entities):
             group_id="save_of_repost:100:type:track",
             type="save_of_repost",
             slot=None,
-            blocknumber=5,
+            blocknumber=7,
             data=notification_data(user_id=3, save_of_repost_item_id=100),
             # user 3 follows user 4, who has reposted this track
             # so notify user 4
@@ -129,158 +116,131 @@ def test_save_repost_notification(app, entities):
         )
 
 
-# def test_repost_repost_notification_multiple_followees_repost(app, entities):
-#     """Tests that a repost notification is created on repost  correctly"""
-#     with app.app_context():
-#         db = get_db()
+def test_save_repost_notification_multiple_followees_repost(app, entities):
+    """Tests that a repost notification is created on repost  correctly"""
+    with app.app_context():
+        db = get_db()
 
-#     populate_mock_db(db, entities)
-#     repost_entities = {
-#         "reposts": [
-#             {
-#                 "user_id": 1,
-#                 "repost_item_id": 100,
-#                 "repost_type": RepostType.track,
-#             },
-#             {
-#                 "user_id": 4,
-#                 "repost_item_id": 100,
-#                 "repost_type": RepostType.track,
-#             }],
-#         "saves": [
-#             {
-#                 "user_id": 3,
-#                 "save_item_id": 100,
-#                 "save_type": SaveType.track,
-#                 "is_save_of_repost": True,
-#             },
-#         ],
-#     }
-#     populate_mock_db(db, repost_entities)
+    populate_mock_db(db, entities)
+    repost_entities = {
+        "reposts": [
+            {
+                "user_id": 1,
+                "repost_item_id": 100,
+                "repost_type": RepostType.track,
+            },
+            {
+                "user_id": 4,
+                "repost_item_id": 100,
+                "repost_type": RepostType.track,
+            },
+        ],
+    }
+    save_entities = {
+        "saves": [
+            {
+                "user_id": 3,
+                "save_item_id": 100,
+                "save_type": SaveType.track,
+                "is_save_of_repost": True,
+            },
+        ],
+    }
+    populate_mock_db(db, repost_entities)
+    populate_mock_db(db, save_entities)
 
-#     with db.scoped_session() as session:
-#         notifications: List[Notification] = (
-#             session.query(Notification)
-#             .filter(Notification.type == "save_of_repost")
-#             .all()
-#         )
-#         notifs_general: List[Notification] = session.query(
-#             Notification
-#         ).all()
-#         for notif in notifs_general:
-#             print(notif)
-#         saves: List[Save] = session.query(
-#             Save
-#         ).all()
-#         reposts: List[Repost] = session.query(
-#             Repost
-#         ).all()
-#         print('reposts')
-#         for repost in reposts:
-#             print(repost)
-#         print('saves')
-#         for save in saves:
-#             print(save)
-#         assert len(notifications) == 1
-#         assert_notification(
-#             notification=notifications[0],
-#             specifier="3",
-#             group_id="save_of_repost:100:type:track",
-#             type="save_of_repost",
-#             slot=None,
-#             blocknumber=7,
-#             data=notification_data(user_id=3, save_of_repost_item_id=100),
-#             # User 1 follows both 3 and 4, who have both reposted the track
-#             # notify users 3, 4
-#             user_ids=[1, 4],
-#         )
+    with db.scoped_session() as session:
+        notifications: List[Notification] = (
+            session.query(Notification)
+            .filter(Notification.type == "save_of_repost")
+            .all()
+        )
+        assert len(notifications) == 1
+        assert_notification(
+            notification=notifications[0],
+            specifier="3",
+            group_id="save_of_repost:100:type:track",
+            type="save_of_repost",
+            slot=None,
+            blocknumber=7,
+            data=notification_data(user_id=3, save_of_repost_item_id=100),
+            # User 1 follows both 3 and 4, who have both reposted the track
+            # notify users 3, 4
+            user_ids=[1, 4],
+        )
 
 
-# def test_repost_repost_notification_within_month(app, entities):
-#     """Tests that a repost notification is created on repost  correctly"""
-#     with app.app_context():
-#         db = get_db()
+def test_save_repost_notification_within_month(app, entities):
+    """Tests that a repost notification is created on repost  correctly"""
+    with app.app_context():
+        db = get_db()
 
-#     populate_mock_db(db, entities)
-#     repost_entities = {
-#         "reposts": [
-#             {
-#                 "user_id": 1,
-#                 "created_at": datetime.date.today() - datetime.timedelta(days=31),
-#                 "repost_item_id": 100,
-#                 "repost_type": RepostType.track,
-#                 "is_repost_repost": False,
-#             },
-#             {
-#                 "user_id": 3,
-#                 "repost_item_id": 100,
-#                 "repost_type": RepostType.track,
-#                 "is_repost_repost": True,
-#             },
-#         ],
-#     }
-#     populate_mock_db(db, repost_entities)
+    populate_mock_db(db, entities)
+    repost_entities = {
+        "reposts": [
+            {
+                "user_id": 1,
+                "created_at": datetime.date.today() - datetime.timedelta(days=31),
+                "repost_item_id": 100,
+                "repost_type": RepostType.track,
+            },
+        ],
+        "saves": [
+            {
+                "user_id": 3,
+                "save_item_id": 100,
+                "save_type": SaveType.track,
+                "is_save_of_repost": True,
+            },
+        ],
+    }
+    populate_mock_db(db, repost_entities)
 
-#     with db.scoped_session() as session:
-#         notifications: List[Notification] = (
-#             session.query(Notification)
-#             .filter(Notification.type == "repost_repost")
-#             .all()
-#         )
-#         # User 3 reposted user 1's repost over a month later
-#         # User 1 should not be notified
-#         assert len(notifications) == 0
+    with db.scoped_session() as session:
+        notifications: List[Notification] = (
+            session.query(Notification)
+            .filter(Notification.type == "save_of_repost")
+            .all()
+        )
+        # User 3 reposted user 1's repost over a month later
+        # User 1 should not be notified
+        assert len(notifications) == 0
 
 
-# def test_repost_repost_notification_mult_reposts(app, entities):
-#     """Tests that a repost notification is created on repost  correctly"""
-#     with app.app_context():
-#         db = get_db()
+def test_save_repost_notification_non_current_repost(app, entities):
+    """Tests that a repost notification is created on repost  correctly"""
+    with app.app_context():
+        db = get_db()
 
-#     populate_mock_db(db, entities)
-#     repost_entities = {
-#         "reposts": [
-#             {
-#                 "user_id": 1,
-#                 "repost_item_id": 100,
-#                 "repost_type": RepostType.track,
-#                 "is_current": False,
-#                 "is_delete": False,
-#                 "is_repost_repost": False,
-#             },
-#             {
-#                 "user_id": 1,
-#                 "repost_item_id": 100,
-#                 "repost_type": RepostType.track,
-#                 "is_repost_repost": False,
-#             },
-#             {
-#                 "user_id": 3,
-#                 "repost_item_id": 100,
-#                 "repost_type": RepostType.track,
-#                 "is_repost_repost": True,
-#             },
-#         ],
-#     }
-#     populate_mock_db(db, repost_entities)
+    populate_mock_db(db, entities)
+    repost_entities = {
+        "reposts": [
+            {
+                "user_id": 1,
+                "repost_item_id": 100,
+                "repost_type": RepostType.track,
+                "is_current": False,
+                "is_delete": False,
+            },
+        ]
+    }
+    save_entities = {
+        "saves": [
+            {
+                "user_id": 3,
+                "save_item_id": 100,
+                "save_type": SaveType.track,
+                "is_save_of_repost": True,
+            },
+        ],
+    }
+    populate_mock_db(db, repost_entities)
+    populate_mock_db(db, save_entities)
 
-#     with db.scoped_session() as session:
-#         notifications: List[Notification] = (
-#             session.query(Notification)
-#             .filter(Notification.type == "repost_repost")
-#             .all()
-#         )
-#         # User 1 reposted content 2020-01-01, notify content owner
-#         assert len(notifications) == 1
-#         # User 3 reposted user 1's repost over a month later
-#         # User 1 should not be notified
-#         assert_notification(
-#             notification=notifications[0],
-#             specifier="3",
-#             group_id="repost_repost:100:type:track",
-#             type="repost_repost",
-#             slot=None,
-#             blocknumber=7,
-#             data=notification_data(user_id=3, save_of_repost_item_id=100),
-#             user_ids=[1],
-#         )
+    with db.scoped_session() as session:
+        notifications: List[Notification] = (
+            session.query(Notification)
+            .filter(Notification.type == "save_of_repost")
+            .all()
+        )
+        assert len(notifications) == 0
