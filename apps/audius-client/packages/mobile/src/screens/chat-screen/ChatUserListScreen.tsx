@@ -6,6 +6,7 @@ import {
   searchUsersModalActions,
   useProxySelector,
   cacheUsersSelectors,
+  chatActions,
   Status
 } from '@audius/common'
 import { Text, View } from 'react-native'
@@ -20,14 +21,13 @@ import { Screen, FlatList, ScreenContent, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
-import { useNavigation } from 'app/hooks/useNavigation'
-import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 const { searchUsers } = searchUsersModalActions
 const { getUserList } = searchUsersModalSelectors
 const { getUsers } = cacheUsersSelectors
+const { createChat } = chatActions
 
 const DEBOUNCE_MS = 100
 
@@ -154,7 +154,6 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
   const palette = useThemeColors()
   const [query, setQuery] = useState('')
   const [hasQuery, setHasQuery] = useState(false)
-  const navigation = useNavigation<AppTabScreenParamList>()
   const dispatch = useDispatch()
 
   const { userIds, status } = useSelector(getUserList)
@@ -194,8 +193,9 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
     }
   }, [hasQuery, query, status, defaultUserList, dispatch])
 
-  const handlePress = (item) =>
-    navigation.navigate('Chat', { chatId: item.chat_id })
+  const handlePress = (item) => {
+    dispatch(createChat({ userIds: [item.user_id] }))
+  }
 
   const renderItem = ({ item, index }) => {
     if (!item) {
@@ -234,6 +234,7 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
       url='/chat'
       title={messages.title}
       icon={IconCompose}
+      variant='secondary'
       topbarRight={null}
     >
       <ScreenContent>
