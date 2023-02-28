@@ -37,7 +37,7 @@ func NatsMain() {
 	for n := 0; ; n++ {
 		peerMap := peering.Solicit()
 		if peering.NatsIsReachable {
-			natsman.StartNats(peerMap, natsConfig.IsStorageNode, peering)
+			natsman.StartNats(peerMap, peering)
 		}
 
 		// poll with exponential backoff:
@@ -107,7 +107,6 @@ func startServer(peering *peering.NatsPeering) {
 	e.GET("/nats/self", func(c echo.Context) error {
 		return redactedJson(c, map[string]interface{}{
 			"is_staging":        peering.Config.IsStaging,
-			"is_storage_node":   config.GetNatsConfig().IsStorageNode,
 			"nats_is_reachable": peering.NatsIsReachable,
 			"nkey":              peering.Config.Keys.NkeyPublic,
 		})

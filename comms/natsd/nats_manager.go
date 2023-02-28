@@ -52,10 +52,6 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 	}
 
 	serverName := peering.Config.Keys.DelegatePublicKey
-	if isStorageNode {
-		// TODO: standardize
-		serverName = "storage_" + peering.Config.Keys.DelegatePublicKey
-	}
 	allNodes, _ := peering.AllNodes()
 	for _, node := range allNodes {
 		if node.DelegateOwnerWallet == peering.Config.Keys.DelegatePublicKey {
