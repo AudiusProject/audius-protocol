@@ -53,11 +53,12 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 
 	serverName := peering.Config.Keys.DelegatePublicKey
 	if isStorageNode {
-		tags = append(tags, "storage")
 		serverName = "storage_" + peering.Config.Keys.DelegatePublicKey
+		tags = append(tags, "type:storage")
 	} else {
-		tags = append(tags, "discovery")
+		tags = append(tags, "type:discovery")
 	}
+	tags = append(tags, "sp:"+config.GetNatsConfig().SpOwnerWallet)
 
 	writeDeadline, _ := time.ParseDuration("60s")
 

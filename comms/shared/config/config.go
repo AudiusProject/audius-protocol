@@ -18,6 +18,7 @@ type ServiceNode struct {
 	SPID                string `json:"spID"`
 	Endpoint            string `json:"endpoint"`
 	DelegateOwnerWallet string `json:"delegateOwnerWallet"`
+	SpOwnerWallet       string `json:"spOwnerWallet"`
 	Type                struct {
 		ID string `json:"id"`
 	} `json:"type"`
@@ -46,6 +47,7 @@ type PeeringConfig struct {
 // EnsurePrivKeyAndLoadConf ensures the private key env var is set and loads a config struct from env vars.
 func EnsurePrivKeyAndLoadConf[T any](config *T) error {
 	EnsurePrivateKeyIsSet()
+	EnsureSPOwnerWalletIsSet()
 	if err := envconfig.Process("", config); err != nil {
 		slog.Error(fmt.Sprintf("failed to load %T", *config), err)
 		return err
@@ -54,6 +56,13 @@ func EnsurePrivKeyAndLoadConf[T any](config *T) error {
 	slog.Info(fmt.Sprintf("Parsed %T: %s", *config, string(configBytes)))
 
 	return nil
+}
+
+func EnsureSPOwnerWalletIsSet() {
+	// TODO: update for discovery
+	if os.Getenv("AUDIUS_SP_OWNER_WALLET") == "" && os.Getenv("spOwnerWallet") != "" {
+		os.Setenv("AUDIUS_SP_OWNER_WALLET", os.Getenv("spOwnerWallet"))
+	}
 }
 
 // EnsurePrivateKeyIsSet ensures there's a value for the env var `AUDIUS_DELEGATE_PRIVATE_KEY` by first falling back to `delegatePrivateKey` and then generating a random private key if neither is set.
