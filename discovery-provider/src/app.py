@@ -320,14 +320,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_track_is_available",
         ],
         beat_schedule={
-            "update_discovery_provider": {
-                "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=indexing_interval_sec),
-            },
-            "update_discovery_provider_nethermind": {
-                "task": "update_discovery_provider_nethermind",
-                "schedule": timedelta(seconds=indexing_interval_sec),
-            },
             "aggregate_metrics": {
                 "task": "aggregate_metrics",
                 "schedule": timedelta(minutes=METRICS_INTERVAL),
@@ -433,6 +425,9 @@ def configure_celery(celery, test_config=None):
     # backfill cid data if url is provided
     if "backfill_cid_data_url" in shared_config["discprov"]:
         celery.send_task("backfill_cid_data")
+
+    celery.send_task("update_discovery_provider")
+    celery.send_task("update_discovery_provider_nethermind")
 
     # Initialize DB object for celery task context
     db = SessionManager(
