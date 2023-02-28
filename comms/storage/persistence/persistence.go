@@ -289,10 +289,10 @@ func (persist *Persistence) processMessage(msg *nats.Msg) error {
 			return fmt.Errorf("failed to determine if should store %q: %q", job.ID, err)
 		}
 		if shouldStore {
-			fmt.Printf("Storing file with ID %q\n", job.ID)
+			slog.With("jobId", job.ID).Info("storing file with ID")
 			return persist.moveTempToPersistent(job)
 		} else {
-			fmt.Printf("Not storing file with ID %q\n", job.ID)
+			slog.With("jobId", job.ID).Info("not storing file with ID")
 		}
 	}
 

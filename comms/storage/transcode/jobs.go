@@ -524,7 +524,7 @@ func (jobman *JobsManager) startWorker(workerNumber int) {
 		var job *Job
 		err = json.Unmarshal(msg.Data, &job)
 		if err != nil {
-			fmt.Println("invalid job json", string(msg.Data), err)
+			slog.Error("invalid job json: " + string(msg.Data), err)
 			msg.Ack()
 			continue
 		}

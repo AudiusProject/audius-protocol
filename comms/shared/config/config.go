@@ -50,7 +50,7 @@ func EnsurePrivKeyAndLoadConf[T any](config *T) error {
 		slog.Error(fmt.Sprintf("failed to load %T", *config), err)
 		return err
 	}
-	configBytes, _ := json.MarshalIndent(config, "", "\t")
+	configBytes, _ := json.Marshal(config)
 	slog.Info(fmt.Sprintf("Parsed %T: %s", *config, string(configBytes)))
 
 	return nil
