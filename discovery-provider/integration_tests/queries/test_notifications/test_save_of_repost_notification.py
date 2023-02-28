@@ -20,7 +20,7 @@ def assert_notification(
         )
 
 
-def test_get_repost_repost_notifications(app):
+def test_get_save_of_repost_notifications(app):
     with app.app_context():
         db_mock = get_db()
 

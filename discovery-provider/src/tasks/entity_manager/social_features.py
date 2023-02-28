@@ -157,7 +157,7 @@ def create_repost(params):
         user_id=params.user_id,
         repost_item_id=params.entity_id,
         repost_type=params.entity_type.lower(),
-        is_repost_repost=bool(is_repost_of_repost),
+        is_repost_of_repost=is_repost_of_repost,
         is_current=True,
         is_delete=False,
     )

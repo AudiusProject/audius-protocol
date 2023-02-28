@@ -98,7 +98,7 @@ class NotificationType(str, Enum):
     TIP_RECEIVE = "tip_receive"
     TIP_SEND = "tip_send"
     CHALLENGE_REWARD = "challenge_reward"
-    REPOST_REPOST = "repost_repost"
+    REPOST_OF_REPOST = "repost_of_repost"
     SAVE_OF_REPOST = "save_of_repost"
     REACTION = "reaction"
     SUPPORTER_DETRONED = "supporter_dethroned"
@@ -116,7 +116,6 @@ class NotificationType(str, Enum):
 
 default_valid_types = [
     NotificationType.REPOST,
-    NotificationType.REPOST_REPOST,
     NotificationType.SAVE,
     NotificationType.FOLLOW,
     NotificationType.TIP_SEND,
@@ -192,10 +191,10 @@ class RepostNotification(TypedDict):
     repost_item_id: int
 
 
-class RepostRepostNotification(TypedDict):
+class RepostOfRepostNotification(TypedDict):
     type: str
     user_id: int
-    repost_repost_item_id: int
+    repost_of_repost_item_id: int
 
 
 class SaveOfRepostNotification(TypedDict):
@@ -320,7 +319,7 @@ NotificationData = Union[
     AnnouncementNotification,
     FollowNotification,
     RepostNotification,
-    RepostRepostNotification,
+    RepostOfRepostNotification,
     SaveOfRepostNotification,
     SaveNotification,
     RemixNotification,

@@ -51,8 +51,8 @@ export type RepostNotification = {
   type: EntityType
   user_id: number
   repost_item_id: number
-
 }
+
 export type SaveNotification = {
   type: EntityType
   user_id: number
@@ -106,6 +106,9 @@ export type ReactionNotification = {
   reaction_type: string
   reaction_value: number
   sender_wallet: string
+  receiver_user_id: number
+  sender_user_id: number
+  tip_amount: string
 }
 
 export type SupporterRankUpNotification = {
@@ -120,20 +123,39 @@ export type SupportingRankUpNotification = {
   receiver_user_id: number
 }
 
+export type SupporterDethronedNotification = {
+  sender_user_id: number
+  receiver_user_id: number
+  dethroned_user_id: number
+}
+
+export enum MilestoneType {
+  FOLLOWER_COUNT = 'FOLLOWER_COUNT',
+  TRACK_REPOST_COUNT = 'TRACK_REPOST_COUNT',
+  TRACK_SAVE_COUNT = 'TRACK_SAVE_COUNT',
+  PLAYLIST_REPOST_COUNT = 'PLAYLIST_REPOST_COUNT',
+  PLAYLIST_SAVE_COUNT = 'PLAYLIST_SAVE_COUNT',
+}
+
+export type AddTrackToPlaylistNotification = {
+  track_id: number
+  playlist_id: number
+}
+
 export type FollowerMilestoneNotification = {
-  type: string
+  type: MilestoneType.FOLLOWER_COUNT
   user_id: number
   threshold: number
 }
 
 export type TrackMilestoneNotification = {
-  type: string
+  type: MilestoneType.TRACK_REPOST_COUNT | MilestoneType.TRACK_SAVE_COUNT
   track_id: number
   threshold: number
 }
 
 export type PlaylistMilestoneNotification = {
-  type: string
+  type: MilestoneType.PLAYLIST_REPOST_COUNT | MilestoneType.PLAYLIST_SAVE_COUNT
   playlist_id: number
   threshold: number
 }
@@ -142,6 +164,12 @@ export type TierChangeNotification = {
   new_tier: string
   new_tier_value: number
   current_value: string
+}
+
+export type AnnouncementNotification = {
+  title: string
+  short_description: string
+  long_description?: string
 }
 
 export type NotificationData =
@@ -165,3 +193,6 @@ export type NotificationData =
   | TrackMilestoneNotification
   | PlaylistMilestoneNotification
   | TierChangeNotification
+  | SupporterDethronedNotification
+  | AddTrackToPlaylistNotification
+  | AnnouncementNotification

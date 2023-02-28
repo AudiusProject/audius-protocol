@@ -130,7 +130,7 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
     'track_routes.slug'
   ).from('tracks')
     .join('users', 'users.user_id', 'tracks.owner_id')
-    .join('track_routes', 'track_routes.track_id', 'tracks.owner_id')
+    .join('track_routes', 'track_routes.track_id', 'tracks.track_id')
     .whereIn('tracks.track_id', Array.from(ids.tracks))
     .andWhere('tracks.is_current', true)
     .andWhere('users.is_current', true)
