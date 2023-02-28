@@ -48,7 +48,7 @@ services:
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       AUDIUS_TEST_HOST: "nats1-storage"
       AUDIUS_IS_STORAGE_NODE: "true"
-      AUDIUS_SP_OWNER_WALLET: "0x"
+      AUDIUS_SP_OWNER_WALLET: "0x339511506f7BfB5f5d7042b450B9D450626dbB91" # Private key: "0d9d7c47c3c5068caf9907a66091cdf00927373363dcd1b0ecba2dbfb0756db5"
 
   nats2-storage:
     container_name: nats2-storage
@@ -59,7 +59,7 @@ services:
       AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
       AUDIUS_TEST_HOST: "nats2-storage"
       AUDIUS_IS_STORAGE_NODE: "true"
-      AUDIUS_SP_OWNER_WALLET: "0x"
+      AUDIUS_SP_OWNER_WALLET: "0x11327A21bc4dE71a1274D7C1e2c94D50AdeeBB88" # Private key: "ff64e09709e304d453dc068fa0892358158472b2c0b99ee5f778de0b7820d9c3"
 
   nats3-storage:
     container_name: nats3-storage
@@ -70,7 +70,7 @@ services:
       AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
       AUDIUS_TEST_HOST: "nats3-storage"
       AUDIUS_IS_STORAGE_NODE: "true"
-      AUDIUS_SP_OWNER_WALLET: "0x"
+      AUDIUS_SP_OWNER_WALLET: "0x339511506f7BfB5f5d7042b450B9D450626dbB91" # Private key: "0d9d7c47c3c5068caf9907a66091cdf00927373363dcd1b0ecba2dbfb0756db5"
 
   nats4-storage:
     container_name: nats4-storage
@@ -81,7 +81,7 @@ services:
       AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
       AUDIUS_TEST_HOST: "nats4-storage"
       AUDIUS_IS_STORAGE_NODE: "true"
-      AUDIUS_SP_OWNER_WALLET: "0x"
+      AUDIUS_SP_OWNER_WALLET: "0x11327A21bc4dE71a1274D7C1e2c94D50AdeeBB88" # Private key: "ff64e09709e304d453dc068fa0892358158472b2c0b99ee5f778de0b7820d9c3"
 
   nats1-discovery:
     container_name: nats1-discovery
@@ -91,7 +91,7 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" # Public key: "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e"
       AUDIUS_TEST_HOST: "nats1-discovery"
-      AUDIUS_SP_OWNER_WALLET: "0x"
+      AUDIUS_SP_OWNER_WALLET: "0x339511506f7BfB5f5d7042b450B9D450626dbB91" # Private key: "0d9d7c47c3c5068caf9907a66091cdf00927373363dcd1b0ecba2dbfb0756db5"
 
   nats2-discovery:
     container_name: nats2-discovery
@@ -101,7 +101,7 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "d2b12371a062b73ce665288f894844ab75760d0ed0c580ff19d21b54d260ceb2" # Public key: "0x9262c9A1b172fF2A9C027B55862389d00b68A26a"
       AUDIUS_TEST_HOST: "nats2-discovery"
-      AUDIUS_SP_OWNER_WALLET: "0x"
+      AUDIUS_SP_OWNER_WALLET: "0x11327A21bc4dE71a1274D7C1e2c94D50AdeeBB88" # Private key: "ff64e09709e304d453dc068fa0892358158472b2c0b99ee5f778de0b7820d9c3"
 
   nats3-discovery:
     container_name: nats3-discovery
@@ -111,7 +111,7 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "6569932dff9fbe7c04382f87ac7098f90e7aa5cb0fe636b4e5c3cb4e30668812" # Public key: "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4"
       AUDIUS_TEST_HOST: "nats3-discovery"
-      AUDIUS_SP_OWNER_WALLET: "0x"
+      AUDIUS_SP_OWNER_WALLET: "0x339511506f7BfB5f5d7042b450B9D450626dbB91" # Private key: "0d9d7c47c3c5068caf9907a66091cdf00927373363dcd1b0ecba2dbfb0756db5"
   
   storage1:
     container_name: storage1
