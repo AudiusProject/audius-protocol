@@ -33,7 +33,7 @@ begin
 
     if new.rank = 1 then
       select sender_user_id into dethroned_user_id from supporter_rank_ups where rank=1 and receiver_user_id=new.receiver_user_id order by slot desc limit 1;
-      select true into has_previous_supporter from supporter_rank_ups where rank=new.receiver_user_id and receiver_user_id=1 HAVING COUNT(*) >= 2;
+      select true into has_previous_supporter from supporter_rank_ups where rank=1 and receiver_user_id=new.receiver_user_id HAVING COUNT(*) >= 2;
       if has_previous_supporter is true and dethroned_user_id is not NULL then
         -- create a notification for the sender and receiver
         insert into notification
