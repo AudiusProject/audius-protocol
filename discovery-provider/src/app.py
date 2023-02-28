@@ -285,6 +285,10 @@ def configure_celery(celery, test_config=None):
             if "url_read_replica" in test_config["db"]:
                 database_url_read_replica = test_config["db"]["url_read_replica"]
 
+    indexing_interval_sec = int(
+        shared_config["discprov"]["block_processing_interval_sec"]
+    )
+
     # Update celery configuration
     celery.conf.update(
         imports=[
@@ -316,6 +320,10 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_track_is_available",
         ],
         beat_schedule={
+            "update_discovery_provider": {
+                "task": "update_discovery_provider",
+                "schedule": timedelta(seconds=indexing_interval_sec),
+            },
             "aggregate_metrics": {
                 "task": "aggregate_metrics",
                 "schedule": timedelta(minutes=METRICS_INTERVAL),
@@ -422,7 +430,6 @@ def configure_celery(celery, test_config=None):
     if "backfill_cid_data_url" in shared_config["discprov"]:
         celery.send_task("backfill_cid_data")
 
-    celery.send_task("update_discovery_provider")
     celery.send_task("update_discovery_provider_nethermind")
 
     # Initialize DB object for celery task context
