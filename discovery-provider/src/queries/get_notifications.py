@@ -123,7 +123,6 @@ default_valid_types = [
     NotificationType.MILESTONE,
     NotificationType.SUPPORTER_RANK_UP,
     NotificationType.SUPPORTING_RANK_UP,
-    NotificationType.SAVE_OF_REPOST,
     NotificationType.CHALLENGE_REWARD,
     NotificationType.TIER_CHANGE,
     NotificationType.CREATE,

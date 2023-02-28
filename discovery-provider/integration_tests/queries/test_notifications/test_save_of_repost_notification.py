@@ -1,7 +1,7 @@
 import logging
 
 from integration_tests.utils import populate_mock_db
-from src.queries.get_notifications import get_notifications
+from src.queries.get_notifications import NotificationType, get_notifications
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -38,43 +38,52 @@ def test_get_save_of_repost_notifications(app):
         }
         populate_mock_db(db_mock, test_entities)
 
-        test_actions = {
+        test_reposts = {
             "reposts": [
                 {"user_id": 4, "repost_item_id": 1, "repost_type": "track"},
                 {"user_id": 4, "repost_item_id": 1, "repost_type": "playlist"},
-            ],
+            ]
+        }
+        test_saves = {
             "saves": [
                 {
                     "user_id": 2,
-                    "repost_item_id": 1,
-                    "repost_type": "track",
+                    "save_item_id": 1,
+                    "save_type": "track",
                     "is_save_of_repost": True,
                 },
                 {
                     "user_id": 3,
-                    "repost_item_id": 1,
-                    "repost_type": "track",
+                    "save_item_id": 1,
+                    "save_type": "track",
                     "is_save_of_repost": True,
                 },
                 {
                     "user_id": 3,
-                    "repost_item_id": 1,
-                    "repost_type": "playlist",
+                    "save_item_id": 1,
+                    "save_type": "playlist",
                     "is_save_of_repost": True,
                 },
                 {
                     "user_id": 5,
-                    "repost_item_id": 1,
-                    "repost_type": "playlist",
+                    "save_item_id": 1,
+                    "save_type": "playlist",
                     "is_save_of_repost": True,
                 },
             ],
         }
-        populate_mock_db(db_mock, test_actions)
+        populate_mock_db(db_mock, test_reposts)
+        populate_mock_db(db_mock, test_saves)
 
         with db_mock.scoped_session() as session:
-            args = {"limit": 10, "user_id": 4}
+            args = {
+                "limit": 10,
+                "user_id": 4,
+                "valid_types": [NotificationType.SAVE_OF_REPOST],
+            }
             user4_notifications = get_notifications(session, args)
+            for notif in user4_notifications:
+                print(notif)
             assert len(user4_notifications) == 3
             assert_notification(
                 notification=user4_notifications[0],
@@ -92,19 +101,20 @@ def test_get_save_of_repost_notifications(app):
             )
             assert "save_of_repost" not in user4_notifications[2]["group_id"]
 
-            args = {"limit": 10, "user_id": 3}
+            args = {
+                "limit": 10,
+                "user_id": 3,
+                "valid_types": [NotificationType.SAVE_OF_REPOST],
+            }
             user3_notifications = get_notifications(session, args)
-            assert len(user3_notifications) == 2
-            assert_notification(
-                notification=user3_notifications[0],
-                group_id="save_of_repost:1:type:playlist",
-                is_seen=False,
-                actions_length=1,
-                reposter_user_ids=[5],
-            )
-            assert "save_of_repost" not in user3_notifications[1]["group_id"]
+            for notif in user3_notifications:
+                assert "save_of_repost" not in notif["group_id"]
 
-            args = {"limit": 10, "user_id": 1}
+            args = {
+                "limit": 10,
+                "user_id": 1,
+                "valid_types": [NotificationType.SAVE_OF_REPOST],
+            }
             user1_notifications = get_notifications(session, args)
             for notif in user1_notifications:
                 assert "save_of_repost" not in notif["group_id"]
