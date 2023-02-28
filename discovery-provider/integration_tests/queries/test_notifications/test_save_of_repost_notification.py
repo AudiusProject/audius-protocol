@@ -82,8 +82,6 @@ def test_get_save_of_repost_notifications(app):
                 "valid_types": [NotificationType.SAVE_OF_REPOST],
             }
             user4_notifications = get_notifications(session, args)
-            for notif in user4_notifications:
-                print(notif)
             assert len(user4_notifications) == 3
             assert_notification(
                 notification=user4_notifications[0],
