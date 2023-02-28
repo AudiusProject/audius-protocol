@@ -26,10 +26,11 @@ export const SHARE_AUDIO_NFT_PLAYLIST = 'SOCIAL/SHARE_AUDIO_NFT_PLAYLIST'
 
 export const repostCollection = createCustomAction(
   REPOST_COLLECTION,
-  (collectionId: ID, source: RepostSource, metadata?: any) => ({
+  (collectionId: ID, source: RepostSource, isFeed = false, metadata?: any) => ({
     collectionId,
     metadata,
-    source
+    source,
+    isFeed
   })
 )
 

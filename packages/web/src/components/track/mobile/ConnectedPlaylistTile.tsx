@@ -112,22 +112,13 @@ const ConnectedPlaylistTile = memo(
       }
     }, [collection, unsaveCollection, saveCollection])
 
-    const onRepostMetadata = useMemo(() => {
-      return isFeed
-        ? // If we're on the feed, and someone i follow has
-          // reposted the content i am reposting,
-          // is_repost_repost is true
-          { is_repost_repost: collection.followee_reposts.length !== 0 }
-        : { is_repost_repost: false }
-    }, [collection.followee_reposts, isFeed])
-
     const toggleRepost = useCallback(() => {
       if (collection.has_current_user_reposted) {
         unrepostCollection(collection.playlist_id)
       } else {
-        repostCollection(collection.playlist_id, onRepostMetadata)
+        repostCollection(collection.playlist_id, isFeed)
       }
-    }, [collection, unrepostCollection, repostCollection, onRepostMetadata])
+    }, [collection, unrepostCollection, repostCollection, isFeed])
 
     const getRoute = useCallback(() => {
       return collection.is_album
@@ -337,10 +328,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(saveCollection(collectionId, FavoriteSource.TILE)),
     unsaveCollection: (collectionId: ID) =>
       dispatch(unsaveCollection(collectionId, FavoriteSource.TILE)),
-    repostCollection: (
-      collectionId: ID,
-      metadata: { is_repost_repost: boolean }
-    ) => dispatch(repostCollection(collectionId, RepostSource.TILE, metadata)),
+    repostCollection: (collectionId: ID, isFeed: boolean) =>
+      dispatch(repostCollection(collectionId, RepostSource.TILE, isFeed)),
     unrepostCollection: (collectionId: ID) =>
       dispatch(undoRepostCollection(collectionId, RepostSource.TILE)),
     clickOverflow: (collectionId: ID, overflowActions: OverflowAction[]) =>

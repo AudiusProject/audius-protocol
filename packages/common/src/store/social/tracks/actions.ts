@@ -29,14 +29,10 @@ export const SHARE_TRACK = 'SOCIAL/SHARE_TRACK'
 
 export const repostTrack = createCustomAction(
   REPOST_TRACK,
-  (
-    trackId: ID,
-    source: RepostSource,
-    metadata?: { is_repost_repost: boolean }
-  ) => ({
+  (trackId: ID, source: RepostSource, isFeed = false) => ({
     trackId,
     source,
-    metadata
+    isFeed
   })
 )
 
