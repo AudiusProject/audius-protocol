@@ -1,4 +1,5 @@
 import {
+  accountSelectors,
   Collection,
   explorePageCollectionsActions,
   ExploreCollectionsVariant,
@@ -6,37 +7,51 @@ import {
   UserCollectionMetadata
 } from '@audius/common'
 import { uniq } from 'lodash'
-import { takeEvery, call, put } from 'typed-redux-saga'
+import { takeEvery, call, select, put } from 'typed-redux-saga'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { requiresAccount } from 'common/utils/requiresAccount'
 import { EXPLORE_PAGE } from 'utils/route'
 import { waitForRead } from 'utils/sagaHelpers'
+
+const { getAccountUser } = accountSelectors
 const { fetch, fetchSucceeded } = explorePageCollectionsActions
 
 function* fetchLetThemDJ() {
   const explore = yield* getContext('explore')
+  const user = yield* select(getAccountUser)
   const collections = yield* call(
     [explore, 'getTopCollections'],
     'playlist',
-    true
+    true,
+    20,
+    user?.user_id
   )
   return collections
 }
 
 function* fetchTopAlbums() {
   const explore = yield* getContext('explore')
+  const user = yield* select(getAccountUser)
   const collections = yield* call(
     [explore, 'getTopCollections'],
     'album',
-    false
+    false,
+    20,
+    user?.user_id
   )
   return collections
 }
 
 function* fetchMoodPlaylists(moods: string[]) {
   const explore = yield* getContext('explore')
-  const collections = yield* call([explore, 'getTopPlaylistsForMood'], moods)
+  const user = yield* select(getAccountUser)
+  const collections = yield* call(
+    [explore, 'getTopPlaylistsForMood'],
+    moods,
+    20,
+    user?.user_id
+  )
   return collections
 }
 

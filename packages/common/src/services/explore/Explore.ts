@@ -215,7 +215,8 @@ export class Explore {
   async getTopCollections(
     type?: 'playlist' | 'album',
     followeesOnly?: boolean,
-    limit = 20
+    limit = 20,
+    userId?: number
   ): Promise<Collection[]> {
     try {
       const libs = await this.audiusBackendInstance.getAudiusLibs()
@@ -224,7 +225,8 @@ export class Explore {
         limit,
         mood: undefined,
         filter: followeesOnly ? 'followees' : undefined,
-        withUsers: true
+        withUsers: true,
+        encodedUserId: userId ? encodeHashId(userId) : undefined
       })
       const adapted = playlists.map(responseAdapter.makePlaylist)
       return adapted
@@ -236,7 +238,8 @@ export class Explore {
 
   async getTopPlaylistsForMood(
     moods: string[],
-    limit = 16
+    limit = 16,
+    userId?: number
   ): Promise<UserCollectionMetadata[]> {
     try {
       const libs = await this.audiusBackendInstance.getAudiusLibs()
@@ -246,7 +249,8 @@ export class Explore {
           limit,
           mood,
           filter: undefined,
-          withUsers: true
+          withUsers: true,
+          encodedUserId: userId ? encodeHashId(userId) : undefined
         })
       })
       const playlistsByMood: CollectionWithScore[] = await Promise.all(requests)
