@@ -1176,7 +1176,7 @@ export const audiusBackend = ({
 
   async function repostTrack(
     trackId: ID,
-    metadata?: { is_repost_repost: boolean }
+    metadata?: { is_repost_of_repost: boolean }
   ) {
     try {
       return await audiusLibs.EntityManager.repostTrack(
@@ -1200,7 +1200,7 @@ export const audiusBackend = ({
 
   async function repostCollection(
     playlistId: ID,
-    metadata?: { is_repost_repost: boolean }
+    metadata?: { is_repost_of_repost: boolean }
   ) {
     try {
       return audiusLibs.EntityManager.repostPlaylist(
