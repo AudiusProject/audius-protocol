@@ -1,7 +1,7 @@
 """backfill_subscriptions
 
 Revision ID: cda3f4983d1e
-Revises: abdb338530cd
+Revises: 7f44be320e10
 Create Date: 2022-11-09 21:23:20.095764
 
 """
@@ -12,10 +12,11 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = 'cda3f4983d1e'
-down_revision = 'abdb338530cd'
+revision = "cda3f4983d1e"
+down_revision = "7f44be320e10"
 branch_labels = None
 depends_on = None
+
 
 def build_sql(env):
     if env == "stage":
@@ -23,7 +24,7 @@ def build_sql(env):
     elif env == "prod":
         path = Path(__file__).parent.joinpath("../csvs/prod_subscriptions.csv")
 
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         subscriber_ids = []
         user_ids = []
         for entry in f:
@@ -32,16 +33,16 @@ def build_sql(env):
             user_ids.append(int(user_id.strip()))
     num_records = len(subscriber_ids)
     params = {
-        'subscriber_ids': subscriber_ids,
-        'user_ids': user_ids,
-        'is_currents': [True] * num_records,
-        'is_deletes': [False] * num_records,
+        "subscriber_ids": subscriber_ids,
+        "user_ids": user_ids,
+        "is_currents": [True] * num_records,
+        "is_deletes": [False] * num_records,
     }
-# Do not backfill any subscriptions updated after the backfill data was pulled.
-# In cases where discovery has an is_current=true, is_delete=true record created before the backfill data was
-# pulled from identity, but the subscriber, user pair is in the identity csv, meaning there should
-# be an active subscription, the INSERT will create 2 is_current=true records for the subscriber, user pair.
-# As identity is the source of truth, DELETE the is_delete=true record.
+    # Do not backfill any subscriptions updated after the backfill data was pulled.
+    # In cases where discovery has an is_current=true, is_delete=true record created before the backfill data was
+    # pulled from identity, but the subscriber, user pair is in the identity csv, meaning there should
+    # be an active subscription, the INSERT will create 2 is_current=true records for the subscriber, user pair.
+    # As identity is the source of truth, DELETE the is_delete=true record.
     inner_sql = """
 INSERT INTO subscriptions (subscriber_id, user_id, is_current, is_delete) SELECT * FROM (
     SELECT *
@@ -79,12 +80,14 @@ WHERE created_at < '2023-02-25 02:14:00' AND is_current = true AND is_delete = t
 
     return (sql, params)
 
+
 def upgrade():
     env = os.getenv("audius_discprov_env")
     if env == "stage" or env == "prod":
         connection = op.get_bind()
         sql, params = build_sql(env)
         connection.execute(sql, params)
+
 
 def downgrade():
     pass
