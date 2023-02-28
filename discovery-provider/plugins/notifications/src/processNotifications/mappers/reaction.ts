@@ -1,27 +1,36 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { SupportingRankUpNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { ReactionNotification } from '../../types/notifications'
+import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { capitalize } from '../../email/notifications/components/utils'
+import { formatWei } from '../../utils/format'
 
-type SupportingRankUpNotificationRow = Omit<NotificationRow, 'data'> & { data: SupportingRankUpNotification }
-export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificationRow> {
+type ReactionNotificationRow = Omit<NotificationRow, 'data'> & { data: ReactionNotification }
+export class Reaction extends BaseNotification<ReactionNotificationRow> {
 
-  senderUserId: number
+  reactedTo: string
+  reactionType: string
+  reactionValue: number
+  senderWallet: string
   receiverUserId: number
-  rank: number
+  senderUserId: number
+  tipAmount: string
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: SupportingRankUpNotificationRow) {
+  constructor(dnDB: Knex, identityDB: Knex, notification: ReactionNotificationRow) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
-    this.rank = this.notification.data.rank
+    this.reactedTo = this.notification.data.reacted_to
+    this.reactionType = this.notification.data.reaction_type
+    this.reactionValue = this.notification.data.reaction_value
+    this.senderWallet = this.notification.data.sender_wallet
     this.receiverUserId = this.notification.data.receiver_user_id
     this.senderUserId = this.notification.data.sender_user_id
+    this.tipAmount = this.notification.data.tip_amount
   }
 
   async pushNotification() {
-
     const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
@@ -31,7 +40,6 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
       return acc
     }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
-
     if (users?.[this.senderUserId]?.isDeactivated) {
       return
     }
@@ -39,30 +47,26 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
     // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.senderUserId)
 
-    const receivingUserName = users[this.receiverUserId]?.name
+    const reactingUserName = users[this.receiverUserId]?.name
+    const tipAmount = formatWei(this.tipAmount, 'sol')
 
     // If the user has devices to the notification to, proceed
     if ((userNotifications.mobile?.[this.senderUserId]?.devices ?? []).length > 0) {
-      const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.senderUserId].settings
       const devices: Device[] = userNotifications.mobile?.[this.senderUserId].devices
-      // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['favorites']) {
-        await Promise.all(devices.map(device => {
-          return sendPushNotification({
-            type: device.type,
-            badgeCount: userNotifications.mobile[this.senderUserId].badgeCount,
-            targetARN: device.awsARN
-          }, {
-            title: `#${this.rank} Top Supporter`,
-            body: `You're now ${receivingUserName}'s #${this.rank} Top Supporter!`,
-            data: {}
-          })
-        }))
-        // TODO: increment badge count
-      }
+      await Promise.all(devices.map(device => {
+        return sendPushNotification({
+          type: device.type,
+          badgeCount: userNotifications.mobile[this.senderUserId].badgeCount,
+          targetARN: device.awsARN
+        }, {
+          title: `${capitalize(reactingUserName)} reacted`,
+          body: `${capitalize(reactingUserName)} reacted to your tip of ${tipAmount} $AUDIO`,
+          data: {}
+        })
+      }))
+      // TODO: increment badge count
 
     }
-    // 
 
     if (userNotifications.browser) {
       // TODO: Send out browser
@@ -81,11 +85,10 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
   }
 
   formatEmailProps(resources: Resources) {
-    const sendingUser = resources.users[this.senderUserId]
+    const receiverUserId = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      sendingUser: { name: sendingUser.name },
-      rank: this.rank
+      receiverUserId: { name: receiverUserId.name },
     }
   }
 

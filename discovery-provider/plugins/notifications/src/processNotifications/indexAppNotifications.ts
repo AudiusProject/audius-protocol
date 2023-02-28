@@ -11,8 +11,9 @@ import { CosignRemix } from './mappers/cosign'
 import { SupporterRankUp } from './mappers/supporterRankUp'
 import { SupportingRankUp } from './mappers/supportingRankUp'
 import { TierChange } from './mappers/tierChange'
-import { TipReceiveSend } from './mappers/tipReceive'
+import { TipReceive } from './mappers/tipReceive'
 import { TipSend } from './mappers/tipSend'
+import { Milestone } from './mappers/milestone'
 
 export type NotificationProcessor =
   | Follow
@@ -20,10 +21,11 @@ export type NotificationProcessor =
   | Save
   | Remix
   | CosignRemix
+  | Milestone
   | SupporterRankUp
   | SupportingRankUp
   | TierChange
-  | TipReceiveSend
+  | TipReceive
   | TipSend
 
 export class AppNotificationsProcessor {
