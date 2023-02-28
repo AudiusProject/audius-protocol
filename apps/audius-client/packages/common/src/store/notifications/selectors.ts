@@ -86,8 +86,9 @@ export const getNotificationUser = (
   notification: Notification
 ) => {
   if (
-    notification.type === NotificationType.Milestone &&
-    notification.achievement === Achievement.Followers
+    notification.type === NotificationType.TierChange ||
+    (notification.type === NotificationType.Milestone &&
+      notification.achievement === Achievement.Followers)
   ) {
     return getAccountUser(state)
   } else if ('userId' in notification) {

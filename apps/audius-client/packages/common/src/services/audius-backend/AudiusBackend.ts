@@ -53,7 +53,11 @@ import {
 } from '../../services/remote-config'
 import {
   BrowserNotificationSetting,
-  PushNotificationSetting
+  DiscoveryNotification,
+  PushNotificationSetting,
+  NotificationType,
+  Entity,
+  Achievement
 } from '../../store'
 import { CIDCache } from '../../store/cache/CIDCache'
 import {
@@ -2084,6 +2088,302 @@ export const audiusBackend = ({
     }
   }
 
+  function getDiscoveryEntityType(type: string) {
+    if (type === 'track') {
+      return Entity.Track
+    }
+    return Entity.Playlist
+  }
+
+  function formatBaseNotification(notification: DiscoveryNotification) {
+    const timestamp = notification.actions[0].timestamp
+    return {
+      groupId: notification.group_id,
+      timestamp: new Date(timestamp * 1000).toString(),
+      isViewed: notification.seen_at == null,
+      id: `timestamp:${timestamp}:group_id:${notification.group_id}`
+    }
+  }
+
+  function mapDiscoveryNotification(notification: DiscoveryNotification) {
+    if (notification.type === 'follow') {
+      const userIds = notification.actions.map((action) => {
+        const data = action.data
+        return decodeHashId(data.follower_user_id)
+      })
+      return {
+        type: NotificationType.Follow,
+        userIds,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'repost') {
+      let entityId
+      let entityType
+      const userIds = notification.actions.map((action) => {
+        const data = action.data
+        entityId = decodeHashId(data.repost_item_id)
+        entityType = getDiscoveryEntityType(data.type)
+        return decodeHashId(data.user_id)
+      })
+      return {
+        type: NotificationType.Repost,
+        userIds,
+        entityId,
+        entityType,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'save') {
+      let entityId
+      let entityType
+      const userIds = notification.actions.map((action) => {
+        const data = action.data
+        entityId = decodeHashId(data.save_item_id)
+        entityType = getDiscoveryEntityType(data.type)
+        return decodeHashId(data.user_id)
+      })
+      return {
+        type: NotificationType.Favorite,
+        userIds,
+        entityId,
+        entityType,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'tip_send') {
+      const data = notification.actions[0].data
+      const amount = data.amount
+      const receiverUserId = decodeHashId(data.receiver_user_id) as number
+      return {
+        type: NotificationType.TipSend,
+        entityId: receiverUserId,
+        entityType: Entity.User,
+        amount: amount!.toString(),
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'tip_receive') {
+      const data = notification.actions[0].data
+      const amount = data.amount
+      const senderUserId = decodeHashId(data.sender_user_id) as number
+      return {
+        type: NotificationType.TipReceive,
+        entityId: senderUserId,
+        amount: amount!.toString(),
+        entityType: Entity.User,
+        tipTxSignature: data.tip_tx_signature,
+        reactionValue: data.reaction_value,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'supporter_rank_up') {
+      const data = notification.actions[0].data
+      const senderUserId = decodeHashId(data.receiver_user_id)
+      return {
+        type: NotificationType.SupporterRankUp,
+        entityId: senderUserId,
+        rank: data.rank,
+        entityType: Entity.User,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'supporting_rank_up') {
+      const data = notification.actions[0].data
+      const receiverUserId = decodeHashId(data.receiver_user_id)
+      return {
+        type: NotificationType.SupportingRankUp,
+        entityId: receiverUserId,
+        rank: data.rank,
+        entityType: Entity.User,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'supporter_dethroned') {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.SupporterDethroned,
+        entityType: Entity.User,
+        entityId: decodeHashId(data.sender_user_id),
+        supportedUserId: decodeHashId(data.receiver_user_id),
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'challenge_reward') {
+      const data = notification.actions[0].data
+      const challengeId = data.challenge_id
+      return {
+        type: NotificationType.ChallengeReward,
+        challengeId,
+        entityType: Entity.User,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'tier_change') {
+      const data = notification.actions[0].data
+      const tier = data.new_tier
+      const userId = decodeHashId(notification.actions[0].specifier)
+      return {
+        type: NotificationType.TierChange,
+        tier,
+        userId,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'create') {
+      let entityType
+      const entityIds = notification.actions.map((action) => {
+        const data = action.data
+        if ('playlist_id' in data) {
+          entityType = data.is_album ? Entity.Album : Entity.Playlist
+          return decodeHashId(data.playlist_id)
+        }
+        entityType = Entity.Track
+        return decodeHashId(data.track_id)
+      })
+      const userId = decodeHashId(notification.actions[0].specifier)
+      return {
+        type: NotificationType.UserSubscription,
+        userId,
+        entityIds,
+        entityType,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'remix') {
+      let childTrackId, parentTrackId, trackOwnerId
+      notification.actions.forEach((action) => {
+        const data = action.data
+        childTrackId = decodeHashId(data.track_id)
+        parentTrackId = decodeHashId(data.parent_track_id)
+        trackOwnerId = decodeHashId(data.track_owner_id)
+      })
+      return {
+        type: NotificationType.RemixCreate,
+        entityType: Entity.Track,
+        parentTrackId,
+        childTrackId,
+        userId: trackOwnerId,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'cosign') {
+      const data = notification.actions[0].data
+      const entityType = Entity.Track
+      const entityIds = [decodeHashId(data.parent_track_id)]
+      const childTrackId = decodeHashId(data.track_id)
+      const parentTrackUserId = decodeHashId(notification.actions[0].specifier)
+      const userId = decodeHashId(data.track_owner_id)
+
+      return {
+        type: NotificationType.RemixCosign,
+        userId,
+        entityType,
+        entityIds,
+        parentTrackUserId,
+        childTrackId,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'trending') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.TrendingTrack,
+        rank: data.rank,
+        genre: data.genre,
+        time: data.time_range,
+        entityType: Entity.Track,
+        entityId: decodeHashId(data.track_id),
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'milestone') {
+      const data = notification.actions[0].data
+      if ('track_id' in data) {
+        let achievement
+        if (data.type === 'track_repost_count') {
+          achievement = Achievement.Reposts
+        } else if (data.type === 'track_save_count') {
+          achievement = Achievement.Favorites
+        } else {
+          achievement = Achievement.Listens
+        }
+        return {
+          type: NotificationType.Milestone,
+          entityType: Entity.Track,
+          entityId: decodeHashId(data.track_id),
+          value: data.threshold,
+          achievement,
+          ...formatBaseNotification(notification)
+        }
+      } else if ('playlist_id' in data) {
+        let achievement
+        if (data.type === 'playlist_repost_count') {
+          achievement = Achievement.Reposts
+        } else {
+          achievement = Achievement.Favorites
+        }
+        return {
+          type: NotificationType.Milestone,
+          entityType: Entity.Playlist,
+          entityId: decodeHashId(data.playlist_id),
+          value: data.threshold,
+          achievement,
+          ...formatBaseNotification(notification)
+        }
+      } else if ('user_id' in data) {
+        return {
+          type: NotificationType.Milestone,
+          entityType: Entity.User,
+          entityId: decodeHashId(data.user_id),
+          achievement: Achievement.Followers,
+          value: data.threshold,
+          ...formatBaseNotification(notification)
+        }
+      }
+    } else if (notification.type === 'announcement') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.Announcement,
+        title: data.title,
+        shortDescription: data.short_description,
+        longDescription: data.long_description,
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'reaction') {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.Reaction,
+        entityId: decodeHashId(data.receiver_user_id),
+        entityType: Entity.User,
+        reactionValue: data.reaction_value,
+        reactionType: data.reaction_type,
+        reactedToEntity: {
+          tx_signature: data.reacted_to,
+          amount: data.tip_amount,
+          tip_sender_id: decodeHashId(data.sender_user_id)
+        },
+        ...formatBaseNotification(notification)
+      }
+    }
+
+    return notification
+  }
+
+  async function getDiscoveryNotifications({
+    timestamp,
+    groupIdOffset,
+    limit
+  }: {
+    timestamp?: number | undefined
+    groupIdOffset?: string | undefined
+    limit?: number | undefined
+  }) {
+    await waitForLibsInit()
+    const account = audiusLibs.Account.getCurrentUser()
+    if (!account) return
+    const encodedUserId = encodeHashId(account.user_id)
+
+    const response = await audiusLibs.Notifications.getNotifications({
+      encodedUserId,
+      timestamp,
+      groupId: groupIdOffset,
+      limit
+    })
+
+    return {
+      notifications: response.notifications.map(mapDiscoveryNotification)
+    }
+  }
+
   async function getNotifications({
     limit,
     timeOffset,
@@ -2108,7 +2408,7 @@ export const audiusBackend = ({
         : ''
       // TODO: withRemix, withTrending, withRewards are always true and should be removed in a future release
       const notifications = await fetch(
-        `${identityServiceUrl}/notifications?${limitQuery}${timeOffsetQuery}${handleQuery}${withDethronedQuery}&withTips=true&withRewards=true&withRemix=true&withTrendingTrack=true`,
+        `${identityServiceUrl}/notifications?${limitQuery}${timeOffsetQuery}${handleQuery}${withDethronedQuery}}&withTips=true&withRewards=true&withRemix=true&withTrendingTrack=true`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -3197,6 +3497,7 @@ export const audiusBackend = ({
     getImageUrl,
     getLatestTxReceipt,
     getNotifications,
+    getDiscoveryNotifications,
     getPlaylists,
     getPushNotificationSettings,
     getRandomFeePayer,
