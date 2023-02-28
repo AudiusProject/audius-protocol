@@ -4,12 +4,16 @@ package storageserver
 import (
 	"embed"
 	"io/fs"
+	"log"
 	"net/http"
-	"os"
+	"strings"
 
-	"comms.audius.co/discovery/config"
+	"comms.audius.co/shared/peering"
+	"comms.audius.co/storage/config"
+	"comms.audius.co/storage/contentaccess"
 	"comms.audius.co/storage/decider"
-	"comms.audius.co/storage/longterm"
+	"comms.audius.co/storage/monitor"
+	"comms.audius.co/storage/persistence"
 	"comms.audius.co/storage/telemetry"
 	"comms.audius.co/storage/transcode"
 	"github.com/gobwas/ws"
@@ -25,65 +29,78 @@ const (
 	NumJobWorkers     int    = 3
 )
 
-// TODO: Not clear how we'll use the commented out code below yet. Maybe remove
-
-// type NodeStatus string
-
-// const (
-// 	NodeStatusOk           NodeStatus = "ok"
-// 	NodeStatusDraining     NodeStatus = "draining"
-// 	NodeStatusDeregistered NodeStatus = "deregistered"
-// )
-
-// type Node struct {
-// 	Status string `json:"status"`
-// }
-
 // StorageServer lives for the lifetime of the program and holds connections and managers.
 type StorageServer struct {
 	Namespace      string
 	StorageDecider decider.StorageDecider
 	Jsc            nats.JetStreamContext
 	JobsManager    *transcode.JobsManager
-	LongTerm       *longterm.LongTerm
+	Persistence    *persistence.Persistence
 	WebServer      *echo.Echo
+	Monitor        *monitor.Monitor
+	Peering        *peering.Peering
 }
 
-func NewProd(jsc nats.JetStreamContext) *StorageServer {
-	// TODO: config refactor
-	var allStorageNodePubKeys []string
-	if os.Getenv("storage_v2_single_node") == "true" {
-		allStorageNodePubKeys = []string{"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"}
-	} else {
-		allStorageNodePubKeys = []string{
-			"0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-			"0x90b8d2655A7C268d0fA31758A714e583AE54489D",
-			"0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
-			"0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
-		} // TODO: get dynamically (from KV store?) and re-initialize on change
+func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *peering.Peering) *StorageServer {
+	allContentNodes, err := peering.GetContentNodes()
+	if err != nil {
+		log.Fatal("Error getting content nodes: ", err)
 	}
-	thisNodePubKey := os.Getenv("audius_delegate_owner_wallet") // TODO: get dynamically
-	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, allStorageNodePubKeys, thisNodePubKey, jsc)
+	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
+	var host string
+	var allStorageNodePubKeys []string
+	for _, node := range allContentNodes {
+		allStorageNodePubKeys = append(allStorageNodePubKeys, strings.ToLower(node.DelegateOwnerWallet))
+		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
+			host = node.Endpoint
+		}
+	}
+	if host == "" {
+		log.Fatal("Could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
+	}
+
+	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, thisNodePubKey, allStorageNodePubKeys, jsc)
+
 	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
-		panic(err)
+		log.Fatal("failed to start jobs manager: ", err)
 	}
 	jobsManager.StartWorkers(NumJobWorkers)
 
-	return NewCustom(GlobalNamespace, d, jsc, jobsManager, longterm.New("KV_"+GlobalNamespace+transcode.KvSuffix, d, jsc))
+	m := monitor.New(jsc)
+	err = m.SetHostAndShardsForNode(thisNodePubKey, host, d.ShardsStored)
+	if err != nil {
+		log.Fatalf("Error setting host and shards for node: %v", err)
+	}
+
+	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)
+	if err != nil {
+		log.Fatal("[!!!] Error connecting to persistent storage: ", err)
+	}
+
+	return NewCustom(
+		GlobalNamespace,
+		d,
+		jsc,
+		jobsManager,
+		persistence,
+		m,
+	)
 }
 
-func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamContext, jobsManager *transcode.JobsManager, longTerm *longterm.LongTerm) *StorageServer {
+func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamContext, jobsManager *transcode.JobsManager, persistence *persistence.Persistence, m *monitor.Monitor) *StorageServer {
 	ss := &StorageServer{
 		Namespace:      namespace,
 		StorageDecider: d,
 		Jsc:            jsc,
 		JobsManager:    jobsManager,
-		LongTerm:       longTerm,
+		Persistence:    persistence,
+		Monitor:        m,
 	}
 	ss.WebServer = echo.New()
 	ss.WebServer.HideBanner = true
 	ss.WebServer.Debug = true
+	ss.WebServer.Use(middleware.CORS())
 
 	ss.WebServer.Use(otelecho.Middleware("storage"))
 	telemetry.AddPrometheusMiddlware(ss.WebServer)
@@ -96,16 +113,23 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 
 	storage.GET("", ss.serveStatusUI)
 	storage.GET("/", ss.serveStatusUI)
-	storage.GET("/static/*", ss.serveStaticAssets)
+	storage.GET("/static/*", ss.serveStatusStaticAssets)
 	storage.POST("/file", ss.serveFileUpload)
 	storage.GET("/jobs", ss.serveJobs)
 	storage.GET("/jobs/:id", ss.serveJobById)
 	storage.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
-	storage.GET("/long-term/:fileName", ss.streamLongTermObjectByFileName)
+	storage.GET("/persistent/shard/:shard", ss.servePersistenceKeysByShard) // QueryParam: includeMD5s=[true|false]
+	storage.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName)
+	storage.GET("/stream/:fileName", ss.streamPersistenceObjectByFileName, contentaccess.ContentAccessMiddleware(ss.Peering))
 	storage.GET("/ws", ss.upgradeConnToWebsocket)
+	storage.GET("/nodes-to-shards", ss.serveNodesToShards)
+	storage.GET("/job-results/:id", ss.serveJobResultsById)
 
-	// TODO: Embed static /weather-map files in binary and server from the route below.
-	// weatherMap := ss.WebServer.Group("/weather-map")
+	// Register endpoints at /storage/weather for React weather map
+	weatherMap := storage.Group("/weather")
+	weatherMap.GET("", ss.serveWeatherMapUI)
+	weatherMap.GET("/**", ss.serveWeatherMapUI)
+	weatherMap.GET("/assets/*", echo.WrapHandler(http.StripPrefix("/storage/weather/", http.FileServer(getWeatherMapStaticFiles()))))
 
 	return ss
 }
@@ -115,7 +139,7 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
  **/
 
 func (ss *StorageServer) serveStatusUI(c echo.Context) error {
-	staticFs := getStaticFiles()
+	staticFs := getStatusStaticFiles()
 	f, err := staticFs.Open("status.html")
 	if err != nil {
 		return err
@@ -123,11 +147,20 @@ func (ss *StorageServer) serveStatusUI(c echo.Context) error {
 	return c.Stream(200, "text/html", f)
 }
 
-func (ss *StorageServer) serveStaticAssets(c echo.Context) error {
-	staticFs := getStaticFiles()
+func (ss *StorageServer) serveStatusStaticAssets(c echo.Context) error {
+	staticFs := getStatusStaticFiles()
 	assetHandler := http.FileServer(staticFs)
 	echo.WrapHandler(http.StripPrefix("storage/storageserver/static/", assetHandler))
 	return nil
+}
+
+func (ss *StorageServer) serveWeatherMapUI(c echo.Context) error {
+	weatherMapFs := getWeatherMapStaticFiles()
+	f, err := weatherMapFs.Open("index.html")
+	if err != nil {
+		return err
+	}
+	return c.Stream(200, "text/html", f)
 }
 
 func (ss *StorageServer) serveFileUpload(c echo.Context) error {
@@ -142,7 +175,20 @@ func (ss *StorageServer) serveFileUpload(c echo.Context) error {
 	files := form.File["files"]
 	defer form.RemoveAll()
 
+	var expectedContentType string
+	if template == "audio" {
+		expectedContentType = "audio"
+	} else {
+		expectedContentType = "image"
+	}
+
 	for _, file := range files {
+
+		contentType := file.Header.Get("Content-Type")
+		if !strings.HasPrefix(contentType, expectedContentType) {
+			return echo.NewHTTPError(400, "invalid Content-Type, expected="+expectedContentType)
+		}
+
 		job, err := ss.JobsManager.Add(transcode.JobTemplate(template), file)
 		if err != nil {
 			return err
@@ -176,11 +222,25 @@ func (ss *StorageServer) streamTempObjectByBucketAndKey(c echo.Context) error {
 	return c.Stream(200, "", obj)
 }
 
-func (ss *StorageServer) streamLongTermObjectByFileName(c echo.Context) error {
-	reader, err := ss.LongTerm.Get(c.Param("fileName"))
+func (ss *StorageServer) streamPersistenceObjectByFileName(c echo.Context) error {
+	reader, err := ss.Persistence.Get(c.Param("fileName"))
 	if err != nil {
 		return err
 	}
+
+	customContext, ok := c.(contentaccess.CustomRequest)
+	if ok {
+		// If content is gated, set cache-control to no-cache.
+		// Otherwise, set the CID cache-control so that client caches the response for 30 days.
+		// The contentAccessMiddleware sets the req.ShouldCache object so that we do not
+		// have to make another database round trip to get this info.
+		if customContext.ShouldCache {
+			c.Response().Header().Add("cache-control", "public, max-age=2592000, immutable")
+		} else {
+			c.Response().Header().Add("cache-control", "no-cache")
+		}
+	}
+
 	// TODO: mime type?
 	return c.Stream(200, "", reader)
 }
@@ -195,16 +255,63 @@ func (ss *StorageServer) upgradeConnToWebsocket(c echo.Context) error {
 	return nil
 }
 
-//go:embed static
-var embededFiles embed.FS
+func (ss *StorageServer) serveNodesToShards(c echo.Context) error {
+	nodesToShards, err := ss.Monitor.GetNodesToShards()
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, nodesToShards)
+}
 
-func getStaticFiles() http.FileSystem {
-	devMode := config.Env == "standalone"
-	if devMode {
-		return http.FS(os.DirFS("storage/storageserver/static"))
+func (ss *StorageServer) servePersistenceKeysByShard(c echo.Context) error {
+	// Make sure shard has namespace prefix
+	shard := c.Param("shard")
+	if idx := strings.Index(shard, "_"); idx == -1 {
+		shard = ss.Namespace + "_" + shard
 	}
 
-	fsys, err := fs.Sub(embededFiles, "static")
+	includeMD5s := c.QueryParam("includeMD5s")
+	if includeMD5s == "true" {
+		keysAndMD5s, err := ss.Persistence.GetKeysAndMD5sIn(shard)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, keysAndMD5s)
+	} else {
+		keys, err := ss.Persistence.GetKeysIn(shard)
+		if err != nil {
+			return err
+		}
+		return c.JSON(200, keys)
+	}
+}
+
+func (ss *StorageServer) serveJobResultsById(c echo.Context) error {
+	jobID := c.Param("id")
+	results, err := ss.Persistence.GetJobResultsFor(jobID)
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, results)
+}
+
+//go:embed static
+var embeddedStatusFiles embed.FS
+
+func getStatusStaticFiles() http.FileSystem {
+	fsys, err := fs.Sub(embeddedStatusFiles, "static")
+	if err != nil {
+		panic(err)
+	}
+
+	return http.FS(fsys)
+}
+
+//go:embed weather-map/dist
+var embeddedWeatherMapFiles embed.FS
+
+func getWeatherMapStaticFiles() http.FileSystem {
+	fsys, err := fs.Sub(embeddedWeatherMapFiles, "weather-map/dist")
 	if err != nil {
 		panic(err)
 	}

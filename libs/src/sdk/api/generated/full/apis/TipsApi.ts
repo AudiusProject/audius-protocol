@@ -1,5 +1,5 @@
-// @ts-nocheck
 /* tslint:disable */
+// @ts-nocheck
 /* eslint-disable */
 /**
  * API
@@ -15,52 +15,24 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  GetTipsResponse,
+} from '../models';
 import {
-    GetTipsResponse,
     GetTipsResponseFromJSON,
     GetTipsResponseToJSON,
 } from '../models';
 
 export interface GetTipsRequest {
-    /**
-     * The number of items to skip. Useful for pagination (page number * limit)
-     */
     offset?: number;
-    /**
-     * The number of items to fetch
-     */
     limit?: number;
-    /**
-     * The user ID of the user making the request
-     */
     userId?: string;
-    /**
-     * Only include tips to recipients that have this many followers
-     */
     receiverMinFollowers?: number;
-    /**
-     * Only include tips to recipients that are verified
-     */
     receiverIsVerified?: boolean;
-    /**
-     * Only include tips involving the user\&#39;s followers in the given capacity. Requires user_id to be set.
-     */
     currentUserFollows?: GetTipsCurrentUserFollowsEnum;
-    /**
-     * Only include the most recent tip for a user was involved in the given capacity.  Eg. \&#39;sender\&#39; will ensure that each tip returned has a unique sender, using the most recent tip sent by a user if that user has sent multiple tips.     
-     */
     uniqueBy?: GetTipsUniqueByEnum;
-    /**
-     * The minimum Solana slot to pull tips from
-     */
     minSlot?: number;
-    /**
-     * The maximum Solana slot to pull tips from
-     */
     maxSlot?: number;
-    /**
-     * A list of transaction signatures of tips to fetch
-     */
     txSignatures?: Array<string>;
 }
 
@@ -72,7 +44,7 @@ export class TipsApi extends runtime.BaseAPI {
     /**
      * Gets the most recent tips on the network
      */
-    async getTips(requestParameters: GetTipsRequest = {}): Promise<NonNullable<GetTipsResponse["data"]>> {
+    async getTipsRaw(requestParameters: GetTipsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GetTipsResponse>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -117,30 +89,40 @@ export class TipsApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        return this.request({
+        const response = await this.request({
             path: `/tips`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<GetTipsResponse["data"]>>;
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GetTipsResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the most recent tips on the network
+     */
+    async getTips(requestParameters: GetTipsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GetTipsResponse> {
+        const response = await this.getTipsRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
 }
 
 /**
-    * @export
-    * @enum {string}
-    */
-export enum GetTipsCurrentUserFollowsEnum {
-    Sender = 'sender',
-    Receiver = 'receiver',
-    SenderOrReceiver = 'sender_or_receiver'
-}
+ * @export
+ */
+export const GetTipsCurrentUserFollowsEnum = {
+    Sender: 'sender',
+    Receiver: 'receiver',
+    SenderOrReceiver: 'sender_or_receiver'
+} as const;
+export type GetTipsCurrentUserFollowsEnum = typeof GetTipsCurrentUserFollowsEnum[keyof typeof GetTipsCurrentUserFollowsEnum];
 /**
-    * @export
-    * @enum {string}
-    */
-export enum GetTipsUniqueByEnum {
-    Sender = 'sender',
-    Receiver = 'receiver'
-}
+ * @export
+ */
+export const GetTipsUniqueByEnum = {
+    Sender: 'sender',
+    Receiver: 'receiver'
+} as const;
+export type GetTipsUniqueByEnum = typeof GetTipsUniqueByEnum[keyof typeof GetTipsUniqueByEnum];

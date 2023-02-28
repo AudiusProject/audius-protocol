@@ -93,7 +93,7 @@ def get_contract_info_if_exists(self, address):
     return None
 
 
-def get_latest_block(db: SessionManager):
+def get_latest_block(db: SessionManager, final_poa_block):
     latest_block = None
     block_processing_window = int(
         update_task.shared_config["discprov"]["block_processing_window"]
@@ -117,6 +117,10 @@ def get_latest_block(db: SessionManager):
         target_latest_block_number = min(
             target_latest_block_number, latest_block_number_from_chain
         )
+        if final_poa_block:
+            target_latest_block_number = min(
+                target_latest_block_number, final_poa_block
+            )
 
         logger.info(
             f"index.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
@@ -209,7 +213,17 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     cid = event_args._metadata
                     event_type = event_args._entityType
                     action = event_args._action
-                    if not cid or event_type == EntityType.USER_REPLICA_SET:
+                    if (
+                        not cid
+                        or event_type == EntityType.USER_REPLICA_SET
+                        or action
+                        in [
+                            EntityType.REPOST,
+                            EntityType.SAVE,
+                            EntityType.FOLLOW,
+                            EntityType.SUBSCRIPTION,
+                        ]
+                    ):
                         continue
                     if action == Action.CREATE and event_type == EntityType.USER:
                         continue
@@ -358,7 +372,6 @@ def process_state_changes(
     )(block)
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
-
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
             main_indexing_task,
@@ -393,7 +406,6 @@ UPSERT_CID_METADATA_QUERY = """
 def save_cid_metadata(
     session: Session, cid_metadata: Dict[str, Dict], cid_type: Dict[str, str]
 ):
-
     if not cid_metadata:
         return
 
@@ -438,6 +450,12 @@ def index_blocks(self, db, blocks_list):
         block_number, block_hash, latest_block_timestamp = itemgetter(
             "number", "hash", "timestamp"
         )(block)
+
+        final_poa_block = helpers.get_final_poa_block(shared_config)
+        if final_poa_block and block_number > final_poa_block:
+            logger.info("index.py | skipping block {block_number} past final_poa_block")
+            break
+
         logger.info(
             f"index.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
@@ -591,7 +609,6 @@ def index_blocks(self, db, blocks_list):
                         )
 
                 except Exception as e:
-
                     blockhash = update_task.web3.toHex(block_hash)
                     indexing_error = IndexingError(
                         "prefetch-cids", block_number, blockhash, None, str(e)
@@ -676,7 +693,6 @@ def revert_blocks(self, db, revert_blocks_list):
     logger.info(revert_blocks_list)
 
     with db.scoped_session() as session:
-
         rebuild_playlist_index = False
         rebuild_track_index = False
         rebuild_user_index = False
@@ -960,7 +976,6 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 @celery.task(name="update_discovery_provider", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def update_task(self):
-
     # Cache custom task class properties
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
@@ -1000,7 +1015,7 @@ def update_task(self):
             f"index.py | {self.request.id} | update_task | Acquired disc_prov_lock"
         )
 
-        latest_block = get_latest_block(db)
+        latest_block = get_latest_block(db, final_poa_block)
 
         # Capture block information between latest and target block hash
         index_blocks_list = []

@@ -76,7 +76,7 @@ export type ChatPermitRPC = {
   }
 }
 
-export type RPCPayload =
+export type RPCPayloadRequest =
   | ChatCreateRPC
   | ChatDeleteRPC
   | ChatInviteRPC
@@ -87,32 +87,44 @@ export type RPCPayload =
   | ChatUnblockRPC
   | ChatPermitRPC
 
+export type RPCPayload = RPCPayloadRequest & { timestamp: number }
+
 export type RPCMethod = RPCPayload['method']
 
 export type UserChat = {
   // User agnostic
   chat_id: string
+  last_message: string
   last_message_at: string
   chat_members: Array<{ user_id: string }>
 
   // User specific
-  last_message: string
   invite_code: string
   unread_message_count: number
   last_read_at: string
   cleared_history_at: string
 }
 
+export type ChatMessageReaction = {
+  user_id: string
+  created_at: string
+  reaction: string
+}
+
+export type ChatMessageNullableReaction =
+  | ChatMessageReaction
+  | {
+      user_id: string
+      created_at: string
+      reaction: null
+    }
+
 export type ChatMessage = {
   message_id: string
   sender_user_id: string
   created_at: string
   message: string
-  reactions: Array<{
-    user_id: string
-    created_at: string
-    reaction: string
-  }>
+  reactions: ChatMessageReaction[]
 }
 
 export type ChatInvite = {
@@ -156,4 +168,12 @@ export type CommsResponse = {
   // Overridden in client types but left as any for the server.
   // quicktype/golang doesn't do well with union types
   data: any
+}
+
+export type ChatWebsocketEventData = {
+  rpc: RPCPayload
+  metadata: {
+    userId: string
+    timestamp: string
+  }
 }

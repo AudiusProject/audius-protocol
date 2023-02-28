@@ -3,6 +3,8 @@ package peering
 import (
 	"fmt"
 	"testing"
+
+	sharedConfig "comms.audius.co/shared/config"
 )
 
 func TestPeers(t *testing.T) {
@@ -17,7 +19,7 @@ func TestPeers(t *testing.T) {
 
 	output := struct {
 		Data struct {
-			ServiceNodes []ServiceNode
+			ServiceNodes []sharedConfig.ServiceNode
 		}
 	}{}
 

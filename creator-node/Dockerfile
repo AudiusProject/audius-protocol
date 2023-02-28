@@ -3,7 +3,7 @@ FROM node:14.16 AS builder
 RUN apt-get install make
 WORKDIR /app
 COPY package*.json ./
-RUN target=/root/.npm npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 FROM alpine:3.14 AS base
 
@@ -23,8 +23,7 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         curl \
         docker=20.10.11-r1 \
         libpq=11.12-r0 \
-        nodejs=14.20.1-r0 \
-        npm \
+        nodejs=14.21.3-r0 \
         postgresql-client=11.12-r0 \
         postgresql-contrib=11.12-r0 \
         postgresql-libs=11.12-r0 \
@@ -61,7 +60,7 @@ COPY --from=builder /app/node_modules node_modules
 COPY . .
 
 # Compile js code to typescript based on tsconfig.build.json
-RUN npx tsc --project tsconfig.build.json
+RUN ./node_modules/.bin/tsc --project tsconfig.build.json
 
 # ARGs can be optionally defined with --build-arg while doing docker build eg in CI and then set to env vars
 ARG git_sha

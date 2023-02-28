@@ -11,8 +11,8 @@ import (
 // that's not "on chain"
 // after validating request came from a registered peer
 // this server should respond with connection info
-func ExchangeEndpoint(c echo.Context) error {
-	registeredNodes, err := AllNodes()
+func (p *Peering) ExchangeEndpoint(c echo.Context) error {
+	registeredNodes, err := p.AllNodes()
 	if err != nil {
 		return err
 	}
@@ -42,9 +42,9 @@ func ExchangeEndpoint(c echo.Context) error {
 		return c.String(400, "recovered wallet not a registered service provider")
 	}
 
-	addPeer(&theirInfo)
+	p.addPeer(&theirInfo)
 
-	myInfo, err := MyInfo()
+	myInfo, err := p.MyInfo()
 	if err != nil {
 		return err
 	}

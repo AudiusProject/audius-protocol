@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"comms.audius.co/storage/bucketer"
+	"comms.audius.co/storage/sharder"
 	"github.com/nats-io/nats.go"
 	"github.com/tysonmote/rendezvous"
 )
@@ -16,31 +16,31 @@ type RendezvousDecider struct {
 	replicationFactor     int
 	allStorageNodePubKeys []string
 	thisNodePubKey        string
-	bucketer              *bucketer.Bucketer
-	BucketsStored         []string
+	sharder               *sharder.Sharder
+	ShardsStored          []string
 	jsc                   nats.JetStreamContext
 }
 
 // NewRendezvousDecider creates a storage decider that makes this node store content based on a rendezvous hash.
-func NewRendezvousDecider(namespace string, replicationFactor int, allStorageNodePubKeys []string, thisNodePubKey string, jsc nats.JetStreamContext) *RendezvousDecider {
+func NewRendezvousDecider(namespace string, replicationFactor int, thisNodePubKey string, allStorageNodePubKeys []string, jsc nats.JetStreamContext) *RendezvousDecider {
 	d := RendezvousDecider{
 		namespace:             namespace,
 		replicationFactor:     replicationFactor,
 		allStorageNodePubKeys: allStorageNodePubKeys,
 		thisNodePubKey:        thisNodePubKey,
-		bucketer:              bucketer.New(2),
+		sharder:               sharder.New(2),
 		jsc:                   jsc,
 	}
-	d.BucketsStored = d.computeShardsNodeStores(thisNodePubKey)
+	d.ShardsStored = d.computeShardsNodeStores(thisNodePubKey)
 	return &d
 }
 
-// ShouldStore returns true if this node is responsible for storing the bucket that the content with ID id falls into.
+// ShouldStore returns true if this node is responsible for storing the shard that the content with ID id falls into.
 func (d *RendezvousDecider) ShouldStore(id string) (bool, error) {
-	for _, shardNodeStores := range d.BucketsStored {
-		shardForId, err := d.bucketer.GetBucketForId(id)
+	for _, shardNodeStores := range d.ShardsStored {
+		shardForId, err := d.sharder.GetShardForId(id)
 		if err != nil {
-			return false, fmt.Errorf("could not parse bucket for id %q: %v", id, err)
+			return false, fmt.Errorf("could not parse shard for id %q: %v", id, err)
 		}
 		if shardForId == shardNodeStores {
 			return true, nil
@@ -49,51 +49,31 @@ func (d *RendezvousDecider) ShouldStore(id string) (bool, error) {
 	return false, nil
 }
 
-func (d *RendezvousDecider) OnChange(prevBuckets []string, curBuckets []string) error {
+func (d *RendezvousDecider) OnChange(prevShards []string, curShards []string) error {
 	// TODO: find diff
 	// TODO: soft delete
 	// TODO: fetch
 	return nil
 }
 
-func (d *RendezvousDecider) GetNamespacedShardFor(any string) (string, error) {
-	var shard string
-	var err error
-	if d.bucketer.SuffixLength == len(any) {
-		// Case 1: any is a (non namespaced) shard of 2 characters
-		shard = any
-	} else {
-		// Case 2: any is a file name (a string that ends with <cuid>_<string>.<extension>)
-		// Check if shard contains a period
-		if idx := strings.LastIndex(any, "_"); idx != -1 {
-			cuid := any[:idx]
-			if len(cuid) == 25 {
-				shard, err = d.bucketer.GetBucketForId(cuid)
-				if err != nil {
-					return "", fmt.Errorf("%q is in the form of fileName but could not be parsed into a shard: %v", any, err)
-				}
-			}
-		} else if len(any) == 25 {
-			// Case 3: any is a job ID (cuid)
-			shard, err = d.bucketer.GetBucketForId(any)
-			if err != nil {
-				return "", fmt.Errorf("%q is in the form of job ID (cuid) but could not be parsed into a shard: %v", any, err)
-			}
-		}
+func (d *RendezvousDecider) GetNamespacedShardForID(id string) (string, error) {
+	if len(id) != 25 {
+		return "", fmt.Errorf("id %q is not a valid base36 cuid2 with 25 characters", id)
 	}
-	if shard == "" {
-		return "", fmt.Errorf("could not parse shard from %q", any)
+	shard, err := d.sharder.GetShardForId(id)
+	if err != nil {
+		return "", fmt.Errorf("%q is in the form of job ID (cuid) but could not be parsed into a shard: %v", id, err)
 	}
-	return fmt.Sprintf("%s_%s", d.namespace, shard), nil
+	return d.namespace + "_" + shard, nil
 }
 
 // computeShardsNodeStores determines the shards that this node is responsible for storing based on all nodes in the storage network.
 func (d *RendezvousDecider) computeShardsNodeStores(publicKey string) []string {
 	shards := []string{}
 	hash := d.getHashRing()
-	for _, shard := range d.bucketer.Buckets {
+	for _, shard := range d.sharder.Shards {
 		for _, pubKeyThatStores := range hash.GetN(d.replicationFactor, shard) {
-			if pubKeyThatStores == d.thisNodePubKey {
+			if strings.EqualFold(pubKeyThatStores, d.thisNodePubKey) {
 				shards = append(shards, shard)
 			}
 		}

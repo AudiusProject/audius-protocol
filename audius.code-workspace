@@ -36,5 +36,20 @@
     {
       "path": "comms"
     }
-  ]
+  ],
+  "settings": {
+    "jest.disabledWorkspaceFolders": [
+      "solana-programs",
+      "identity-service",
+      "monitoring",
+      "mad-dog",
+      "discovery-provider",
+      "eth-contracts",
+      "comms",
+      "dev-tools",
+      "service-commands",
+      "contracts",
+      "creator-node"
+    ]
+  }
 }

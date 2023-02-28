@@ -71,7 +71,10 @@ export class EntityManager extends Base {
   /** Social Features */
   createSocialMethod =
     (entityType: EntityType, action: Action) =>
-    async (entityId: number): Promise<EntityManagerResponse> => {
+    async (
+      entityId: number,
+      metadata: string = ''
+    ): Promise<EntityManagerResponse> => {
       const responseValues: EntityManagerResponse =
         this.getDefaultEntityManagerResponseValues()
       try {
@@ -80,7 +83,7 @@ export class EntityManager extends Base {
           entityType,
           entityId,
           action,
-          metadataMultihash: ''
+          metadataMultihash: metadata
         })
       } catch (e) {
         const error = (e as Error).message

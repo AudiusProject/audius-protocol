@@ -1,10 +1,12 @@
 from typing import Optional, TypedDict
 
-from sqlalchemy import desc
+from sqlalchemy import desc, text
 from sqlalchemy.orm.session import Session
+from sqlalchemy.sql.elements import not_, or_
 from src.models.tracks.track import Track
 from src.models.tracks.track_trending_score import TrackTrendingScore
 from src.premium_content.premium_content_constants import (
+    SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
 )
 from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
@@ -41,10 +43,14 @@ def generate_unpopulated_trending(
     time_range,
     strategy,
     exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+    exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     limit=TRENDING_LIMIT,
 ):
+    # We use limit * 2 here to apply a soft limit so that
+    # when we later filter out premium or collectible gated tracks,
+    # we will probabilistically satisfy the given limit.
     trending_tracks = generate_trending(
-        session, time_range, genre, limit, 0, strategy.version
+        session, time_range, genre, limit * 2, 0, strategy.version
     )
 
     track_scores = [
@@ -62,6 +68,7 @@ def generate_unpopulated_trending(
                 Track.track_id.in_(ids),
                 Track.is_current == True,
                 Track.is_delete == False,
+                Track.stem_of == None,
                 Track.is_premium == False,
             )
             .all()
@@ -69,6 +76,33 @@ def generate_unpopulated_trending(
         non_premium_track_id_set = set(map(lambda t: t[0], non_premium_track_ids))
         track_scores = list(
             filter(lambda t: t["track_id"] in non_premium_track_id_set, track_scores)
+        )
+    elif exclude_collectible_gated:
+        ids = [track["track_id"] for track in track_scores]
+        non_collectible_gated_track_ids = (
+            session.query(Track.track_id)
+            .filter(
+                Track.track_id.in_(ids),
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.stem_of == None,
+                or_(
+                    Track.is_premium == False,
+                    not_(
+                        text("CAST(premium_conditions AS TEXT) LIKE '%nft_collection%'")
+                    ),
+                ),
+            )
+            .all()
+        )
+        non_collectible_gated_track_id_set = set(
+            map(lambda t: t[0], non_collectible_gated_track_ids)
+        )
+        track_scores = list(
+            filter(
+                lambda t: t["track_id"] in non_collectible_gated_track_id_set,
+                track_scores,
+            )
         )
 
     sorted_track_scores = sorted(
@@ -89,6 +123,7 @@ def generate_unpopulated_trending_from_mat_views(
     time_range,
     strategy,
     exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+    exclude_collectible_gated=SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
     limit=TRENDING_LIMIT,
 ):
 
@@ -128,7 +163,38 @@ def generate_unpopulated_trending_from_mat_views(
             .filter(
                 Track.is_current == True,
                 Track.is_delete == False,
+                Track.stem_of == None,
                 Track.is_premium == False,
+            )
+            .order_by(
+                desc(trending_track_ids_subquery.c.score),
+                desc(trending_track_ids_subquery.c.track_id),
+            )
+            .limit(limit)
+            .all()
+        )
+    elif exclude_collectible_gated:
+        trending_track_ids_subquery = trending_track_ids_query.subquery()
+        trending_track_ids = (
+            session.query(
+                trending_track_ids_subquery.c.track_id,
+                trending_track_ids_subquery.c.score,
+                Track.track_id,
+            )
+            .join(
+                trending_track_ids_subquery,
+                Track.track_id == trending_track_ids_subquery.c.track_id,
+            )
+            .filter(
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.stem_of == None,
+                or_(
+                    Track.is_premium == False,
+                    not_(
+                        text("CAST(premium_conditions AS TEXT) LIKE '%nft_collection%'")
+                    ),
+                ),
             )
             .order_by(
                 desc(trending_track_ids_subquery.c.score),

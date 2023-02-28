@@ -6,38 +6,32 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/avast/retry-go"
 )
 
-type ServiceNode struct {
-	ID                  string
-	SPID                string
-	Endpoint            string
-	DelegateOwnerWallet string
-	Type                struct {
-		ID string
-	}
-}
-
 var (
-	allNodes = map[string]ServiceNode{}
+	allNodes = map[string]sharedConfig.ServiceNode{}
 )
 
-func PollRegisteredNodes() error {
-	// don't start polling for
-	if config.Env == "standalone" || os.Getenv("test_host") != "" {
+func (p *Peering) PollRegisteredNodes() error {
+	// overrides for tests and local dev
+	if p.Config.DevOnlyRegisteredNodes != nil {
+		mu.Lock()
+		for _, sp := range p.Config.DevOnlyRegisteredNodes {
+			allNodes[sp.ID] = sp
+		}
+		mu.Unlock()
 		return nil
 	}
 
 	refresh := func() error {
-		config.Logger.Debug("refreshing SPs")
-		sps, err := queryServiceNodes(config.IsStaging)
+		p.Logger.Debug("refreshing SPs")
+		sps, err := queryServiceNodes(p.Config.IsStaging)
 		if err != nil {
-			config.Logger.Warn("refresh SPs failed " + err.Error())
+			p.Logger.Warn("refresh SPs failed " + err.Error())
 			return err
 		}
 		mu.Lock()
@@ -60,19 +54,8 @@ func PollRegisteredNodes() error {
 
 }
 
-func listNodes(typeFilter string) ([]ServiceNode, error) {
-	if config.Env == "standalone" {
-		return []ServiceNode{}, nil
-	}
-	// TODO: config refactor
-	if os.Getenv("storage_v2") == "true" {
-		return v2DevNodes, nil
-	}
-	if os.Getenv("test_host") != "" {
-		return testDiscoveryNodes, nil
-	}
-
-	result := []ServiceNode{}
+func (p *Peering) listNodes(typeFilter string) ([]sharedConfig.ServiceNode, error) {
+	result := []sharedConfig.ServiceNode{}
 	mu.Lock()
 	for _, node := range allNodes {
 		if typeFilter == "" || node.Type.ID == typeFilter {
@@ -83,55 +66,16 @@ func listNodes(typeFilter string) ([]ServiceNode, error) {
 	return result, nil
 }
 
-func AllNodes() ([]ServiceNode, error) {
-	return listNodes("")
+func (p *Peering) AllNodes() ([]sharedConfig.ServiceNode, error) {
+	return p.listNodes("")
 }
 
-func GetDiscoveryNodes() ([]ServiceNode, error) {
-	return listNodes("discovery-node")
+func (p *Peering) GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error) {
+	return p.listNodes("discovery-node")
 }
 
-func GetContentNodes() ([]ServiceNode, error) {
-	return listNodes("content-node")
-}
-
-var testDiscoveryNodes = []ServiceNode{
-	{
-		Endpoint:            "http://com1:8925",
-		DelegateOwnerWallet: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-	},
-	{
-		Endpoint:            "http://com2:8925",
-		DelegateOwnerWallet: "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
-	},
-	{
-		Endpoint:            "http://com3:8925",
-		DelegateOwnerWallet: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
-	},
-	{
-		Endpoint:            "http://com4:8925",
-		DelegateOwnerWallet: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
-	},
-}
-
-// TODO: config refactor
-var v2DevNodes = []ServiceNode{
-	{
-		Endpoint:            "http://com1:8924",
-		DelegateOwnerWallet: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-	},
-	{
-		Endpoint:            "http://com2:8924",
-		DelegateOwnerWallet: "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
-	},
-	{
-		Endpoint:            "http://com3:8924",
-		DelegateOwnerWallet: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
-	},
-	{
-		Endpoint:            "http://com4:8924",
-		DelegateOwnerWallet: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
-	},
+func (p *Peering) GetContentNodes() ([]sharedConfig.ServiceNode, error) {
+	return p.listNodes("content-node")
 }
 
 var (
@@ -154,14 +98,14 @@ var (
 	`
 )
 
-func queryServiceNodes(isStaging bool) ([]ServiceNode, error) {
+func queryServiceNodes(isStaging bool) ([]sharedConfig.ServiceNode, error) {
 
 	endpoint := prodEndpoint
 	if isStaging {
 		endpoint = stagingEndpoint
 	}
 
-	allNodes := []ServiceNode{}
+	allNodes := []sharedConfig.ServiceNode{}
 
 	for {
 		input := map[string]interface{}{
@@ -173,7 +117,7 @@ func queryServiceNodes(isStaging bool) ([]ServiceNode, error) {
 
 		output := struct {
 			Data struct {
-				ServiceNodes []ServiceNode
+				ServiceNodes []sharedConfig.ServiceNode
 			}
 		}{}
 

@@ -6,30 +6,33 @@ import (
 	"net/http"
 	"time"
 
-	"comms.audius.co/discovery/config"
+	"comms.audius.co/natsd/config"
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func NatsMain() {
-	config.Init()
-	peering.PollRegisteredNodes()
+	natsConfig := config.GetNatsConfig()
+	peering := peering.New(&natsConfig.PeeringConfig)
 
 	{
 		var err error
-		config.NatsIsReachable, err = selfConnectionProbe(config.IP)
+		peering.NatsIsReachable, err = selfConnectionProbe(peering.IP)
 		if err != nil {
-			config.Logger.Warn("self connection test error " + err.Error())
+			peering.Logger.Warn("self connection test error " + err.Error())
 		}
 	}
 
-	go startServer()
+	go startServer(peering)
+
+	peering.PollRegisteredNodes()
 
 	natsman := NatsManager{}
 	for n := 0; ; n++ {
 		peerMap := peering.Solicit()
-		if config.NatsIsReachable {
-			natsman.StartNats(peerMap)
+		if peering.NatsIsReachable {
+			natsman.StartNats(peerMap, natsConfig.IsStorageNode, peering)
 		}
 
 		// poll with exponential backoff:
@@ -42,10 +45,15 @@ func NatsMain() {
 	}
 }
 
-func startServer() {
+func startServer(peering *peering.Peering) {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
+
+	// Middleware
+	// e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+	e.Use(middleware.CORS())
 
 	proxyNats := func(c echo.Context) error {
 		resp, err := http.Get("http://localhost:8222/" + c.Param("info"))
@@ -93,9 +101,10 @@ func startServer() {
 
 	e.GET("/nats/self", func(c echo.Context) error {
 		return redactedJson(c, map[string]interface{}{
-			"env":               config.Env,
-			"is_content":        config.IsCreatorNode,
-			"nats_is_reachable": config.NatsIsReachable,
+			"is_staging":        peering.Config.IsStaging,
+			"is_storage_node":   config.GetNatsConfig().IsStorageNode,
+			"nats_is_reachable": peering.NatsIsReachable,
+			"nkey":              peering.Config.Keys.NkeyPublic,
 		})
 	})
 

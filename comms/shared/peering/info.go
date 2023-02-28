@@ -3,31 +3,33 @@ package peering
 import (
 	"fmt"
 	"strings"
-
-	"comms.audius.co/discovery/config"
+	"time"
 )
 
 type Info struct {
 	Host string
 	SPID string
 
-	Address   string
-	Nkey      string
-	IP        string
-	NatsRoute string
+	Address         string
+	Nkey            string
+	IP              string
+	NatsClusterName string
+	NatsRoute       string
 	// todo: public key for shared secret stuff?
 
 	IsSelf          bool
 	NatsIsReachable bool
+	AsOf            time.Time
 }
 
-func MyInfo() (*Info, error) {
+func (p *Peering) MyInfo() (*Info, error) {
 	info := &Info{
-		Address:         config.WalletAddress,
-		Nkey:            config.NkeyPublic,
-		IP:              config.IP,
-		NatsRoute:       fmt.Sprintf("nats://%s:%s@%s:6222", config.NatsClusterUsername, config.NatsClusterPassword, config.IP),
-		NatsIsReachable: config.NatsIsReachable,
+		Address:         p.Config.Keys.DelegatePublicKey,
+		Nkey:            p.Config.Keys.NkeyPublic,
+		IP:              p.IP,
+		NatsClusterName: p.Config.NatsClusterName,
+		NatsRoute:       fmt.Sprintf("nats://%s:%s@%s:6222", p.NatsClusterUsername, p.NatsClusterPassword, p.IP),
+		NatsIsReachable: p.NatsIsReachable,
 	}
 	return info, nil
 }

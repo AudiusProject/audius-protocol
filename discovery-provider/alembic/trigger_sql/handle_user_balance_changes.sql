@@ -8,20 +8,20 @@ declare
 begin
   SELECT label, val into new_tier, new_tier_value
   FROM (
-    VALUES ('bronze', 10), ('silver', 100), ('gold', 10000), ('platinum', 100000)
+    VALUES ('bronze', 10::bigint), ('silver', 100::bigint), ('gold', 10000::bigint), ('platinum', 100000::bigint)
   ) as tier (label, val)
   WHERE
-    new.current_balance::bigint >= tier.val
+    substr(new.current_balance, 1, GREATEST(1, length(new.current_balance) - 18))::bigint >= tier.val
   ORDER BY 
     tier.val DESC
   limit 1;
 
   SELECT label, val into previous_tier, previous_tier_value
   FROM (
-    VALUES ('bronze', 10), ('silver', 100), ('gold', 10000), ('platinum', 100000)
+    VALUES ('bronze', 10::bigint), ('silver', 100::bigint), ('gold', 10000::bigint), ('platinum', 100000::bigint)
   ) as tier (label, val)
   WHERE
-    new.previous_balance::bigint >= tier.val
+    substr(new.previous_balance, 1, GREATEST(1, length(new.previous_balance) - 18))::bigint >= tier.val
   ORDER BY 
     tier.val DESC
   limit 1;
@@ -38,7 +38,11 @@ begin
         'tier_change',
         new.user_id,
         'tier_change:user_id:' || new.user_id ||  ':tier:' || new_tier || ':blocknumber:' || new.blocknumber,
-        json_build_object('new_tier', new_tier, 'new_tier_value', new_tier_value, 'current_value', new.current_balance)
+        json_build_object(
+          'new_tier', new_tier,
+          'new_tier_value', new_tier_value,
+          'current_value', new.current_balance
+        )
       )
     on conflict do nothing;
     return null;

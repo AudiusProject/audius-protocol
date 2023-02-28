@@ -54,11 +54,11 @@ from src.queries.get_stems_of import get_stems_of
 from src.queries.get_subsequent_tracks import get_subsequent_tracks
 from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
+from src.queries.get_track_stream_info import get_track_stream_info
 from src.queries.get_track_stream_signature import (
     CID_STREAM_ENABLED,
     get_track_stream_signature,
 )
-from src.queries.get_track_user_creator_node import get_track_user_creator_node
 from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_trending import get_full_trending, get_trending
@@ -418,30 +418,15 @@ class TrackStream(Resource):
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
         """
         decoded_id = decode_with_abort(track_id, ns)
-        args = {"track_id": decoded_id}
-        creator_nodes = get_track_user_creator_node(args)
-        if creator_nodes is None:
+        info = get_track_stream_info(decoded_id)
+
+        creator_nodes = info["creator_nodes"]
+        track = info["track"]
+        if not creator_nodes or not track:
             abort_not_found(track_id, ns)
+
         creator_nodes = creator_nodes.split(",")
-        if not creator_nodes:
-            abort_not_found(track_id, ns)
-
-        # before redirecting to content node,
-        # make sure the track isn't deleted and the user isn't deactivated
-        args = {
-            "id": [decoded_id],
-            "with_users": True,
-            "skip_unlisted_filter": True,
-        }
-        tracks = get_tracks(args)
-
-        if not tracks:
-            abort_not_found(track_id, ns)
-
-        track = tracks[0]
-        if track["is_delete"] or track["user"]["is_deactivated"]:
-            abort_not_found(track_id, ns)
-
+        primary_node = creator_nodes[0]
         request_args = stream_parser.parse_args()
 
         # signature for the track to be included as a query param in the redirect to CN
@@ -458,7 +443,6 @@ class TrackStream(Resource):
         if not signature:
             abort_not_found(track_id, ns)
 
-        primary_node = creator_nodes[0]
         signature_param = urllib.parse.quote(json.dumps(signature))
         track_cid = track["track_cid"]
         if not track_cid:

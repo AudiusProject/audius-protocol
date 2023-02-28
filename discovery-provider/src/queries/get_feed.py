@@ -218,6 +218,14 @@ def get_feed_sql(args):
                 )
             reposted_tracks = reposted_tracks.order_by(desc(Track.created_at)).all()
 
+            # filter out premium track reposts from feed
+            reposted_tracks = list(
+                filter(
+                    lambda track: track["is_premium"] == False,  # not a premium track
+                    reposted_tracks,
+                )
+            )
+
             if not tracks_only:
                 # Query playlists reposted by followees, excluding playlists already fetched from above
                 reposted_playlists = session.query(Playlist).filter(
@@ -248,6 +256,18 @@ def get_feed_sql(args):
             playlists_to_process = created_playlists + reposted_playlists
 
         tracks = helpers.query_result_to_list(tracks_to_process)
+
+        # filter out collectible gated tracks from feed
+        tracks = list(
+            filter(
+                lambda item: ("premium_conditions" not in item)  # not a track
+                or (item["premium_conditions"] is None)  # not a premium track
+                or (
+                    "nft_collection" not in item["premium_conditions"]
+                ),  # not a collectible gated track
+                tracks,
+            )
+        )
 
         playlists = helpers.query_result_to_list(playlists_to_process)
 

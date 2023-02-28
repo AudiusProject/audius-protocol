@@ -865,6 +865,26 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
+  async getUserNotifications({
+    encodedUserId,
+    timestamp,
+    groupId,
+    limit
+  }: {
+    encodedUserId: string
+    timestamp: number
+    groupId?: string
+    limit?: number
+  }) {
+    const req = Requests.getUserNotifications({
+      encodedUserId,
+      timestamp,
+      groupId,
+      limit
+    })
+    return await this._makeRequest(req)
+  }
+
   async getURSMContentNodes(ownerWallet: string | null = null) {
     const req = Requests.getURSMContentNodes(ownerWallet)
     return await this._makeRequest(req)

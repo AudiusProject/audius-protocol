@@ -9,7 +9,7 @@ from collections import defaultdict
 from typing import Any, Dict
 
 import redis
-from celery.schedules import crontab, timedelta
+from celery.schedules import timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
@@ -320,10 +320,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_track_is_available",
         ],
         beat_schedule={
-            "update_metrics": {
-                "task": "update_metrics",
-                "schedule": crontab(minute=0, hour="*"),
-            },
             "aggregate_metrics": {
                 "task": "aggregate_metrics",
                 "schedule": timedelta(minutes=METRICS_INTERVAL),
@@ -464,6 +460,8 @@ def configure_celery(celery, test_config=None):
     # Clear existing locks used in tasks if present
     redis_inst.delete(eth_indexing_last_scanned_block_key)
     redis_inst.delete("disc_prov_lock")
+    redis_inst.delete("disc_prov_lock_nethermind")
+
     redis_inst.delete("network_peers_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")

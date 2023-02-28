@@ -3,15 +3,10 @@ package config
 import (
 	"io"
 	"net/http"
-	"os"
 	"strings"
 )
 
 func getIp() (string, error) {
-	if testHost := os.Getenv("test_host"); testHost != "" {
-		return testHost, nil
-	}
-
 	resp, err := http.Get("https://icanhazip.com/")
 	if err != nil {
 		return "", err

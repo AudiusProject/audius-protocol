@@ -1,8 +1,6 @@
 package config
 
 var (
-	SigHeader = "x-sig"
-
 	PubkeystoreBucketName = "pubkeyStore"
 
 	// Rate limit config

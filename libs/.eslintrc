@@ -26,6 +26,9 @@
     "mocha/no-mocha-arrows": "off",
     "mocha/max-top-level-suites": "off"
   },
+  "ignorePatterns": [
+    "jest.config.ts"
+  ],
   "overrides": [
     {
       "files": "**/*.ts",

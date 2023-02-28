@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
@@ -247,7 +248,7 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
         latest_notification_query = text(
             """
                 SELECT 
-                    DISTINCT specifier,
+                    DISTINCT ON (specifier) specifier,
                     timestamp,
                     data
                 FROM notification
@@ -255,6 +256,7 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
                     type=:type AND
                     specifier in :track_ids
                 ORDER BY
+                    specifier desc,
                     timestamp desc
             """
         )
@@ -375,7 +377,9 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
 
 def get_block(web3, block_number: int):
     final_poa_block = helpers.get_final_poa_block(shared_config)
-    if final_poa_block:
+    if final_poa_block and web3.provider.endpoint_uri == os.getenv(
+        "audius_web3_nethermind_rpc"
+    ):
         nethermind_block_number = block_number - final_poa_block
         return web3.eth.get_block(nethermind_block_number, True)
     else:

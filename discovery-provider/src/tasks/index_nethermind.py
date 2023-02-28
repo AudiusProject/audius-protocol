@@ -17,6 +17,7 @@ from src.models.playlists.playlist import Playlist
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.associated_wallet import AssociatedWallet
@@ -107,6 +108,12 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         )
 
         latest_block_from_chain = web3.eth.get_block("latest", True)
+        if os.getenv("audius_discprov_env") != "dev":
+            # index 1 block behind to avoid reverting
+            # TODO make reverting 1 block fast and remove this workaround
+            latest_block_from_chain = web3.eth.get_block(
+                latest_block_from_chain.number - 1, True
+            )
         latest_block_number_from_chain = latest_block_from_chain.number
 
         target_latest_block_number = min(
@@ -142,7 +149,6 @@ def update_latest_block_redis():
 
 
 def fetch_tx_receipt(transaction):
-    web3 = update_task.web3
     tx_hash = web3.toHex(transaction["hash"])
     receipt = web3.eth.get_transaction_receipt(tx_hash)
     response = {}
@@ -211,9 +217,24 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     cid = event_args._metadata
                     event_type = event_args._entityType
                     action = event_args._action
-                    if not cid or event_type == EntityType.USER_REPLICA_SET:
-                        continue
                     if action == Action.CREATE and event_type == EntityType.USER:
+                        continue
+                    if (
+                        action == Action.CREATE
+                        and event_type == EntityType.NOTIFICATION
+                    ):
+                        continue
+                    if (
+                        not cid
+                        or event_type == EntityType.USER_REPLICA_SET
+                        or action
+                        in [
+                            EntityType.REPOST,
+                            EntityType.SAVE,
+                            EntityType.FOLLOW,
+                            EntityType.SUBSCRIPTION,
+                        ]
+                    ):
                         continue
 
                     cids_txhash_set.add((cid, txhash))
@@ -326,7 +347,6 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
 
 
 def add_indexed_block_to_db(db_session, block):
-    web3 = update_task.web3
     current_block_query = db_session.query(Block).filter_by(is_current=True)
 
     block_model = Block(
@@ -398,7 +418,6 @@ def create_and_raise_indexing_error(err, redis):
 
 
 def index_blocks(self, db, blocks_list):
-    web3 = update_task.web3
     redis = update_task.redis
     shared_config = update_task.shared_config
 
@@ -576,7 +595,6 @@ def index_blocks(self, db, blocks_list):
                         )
 
                 except Exception as e:
-
                     blockhash = web3.toHex(block_hash)
                     indexing_error = IndexingError(
                         "prefetch-cids", block_number, blockhash, None, str(e)
@@ -667,7 +685,6 @@ def revert_blocks(self, db, revert_blocks_list):
     logger.info(revert_blocks_list)
 
     with db.scoped_session() as session:
-
         rebuild_playlist_index = False
         rebuild_track_index = False
         rebuild_user_index = False
@@ -700,6 +717,11 @@ def revert_blocks(self, db, revert_blocks_list):
             )
             revert_follow_entries = (
                 session.query(Follow).filter(Follow.blockhash == revert_hash).all()
+            )
+            revert_subscription_entries = (
+                session.query(Subscription)
+                .filter(Subscription.blockhash == revert_hash)
+                .all()
             )
             revert_playlist_entries = (
                 session.query(Playlist).filter(Playlist.blockhash == revert_hash).all()
@@ -786,6 +808,22 @@ def revert_blocks(self, db, revert_blocks_list):
                 # remove outdated follow entry
                 logger.info(f"Reverting follow: {follow_to_revert}")
                 session.delete(follow_to_revert)
+
+            for subscription_to_revert in revert_subscription_entries:
+                previous_subscription_entry = (
+                    session.query(Subscription)
+                    .filter(
+                        Subscription.subscriber_id
+                        == subscription_to_revert.subscriber_id
+                    )
+                    .filter(Subscription.user_id == subscription_to_revert.user_id)
+                    .filter(Subscription.blocknumber < revert_block_number)
+                    .order_by(Subscription.blocknumber.desc())
+                    .first()
+                )
+                if previous_subscription_entry:
+                    previous_subscription_entry.is_current = True
+                session.delete(subscription_to_revert)
 
             for playlist_to_revert in revert_playlist_entries:
                 playlist_id = playlist_to_revert.playlist_id
@@ -937,7 +975,6 @@ def update_task(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = update_task.db
-    web3 = web3_provider.get_nethermind_web3()
     redis = update_task.redis
 
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
@@ -975,7 +1012,6 @@ def update_task(self):
         logger.info(
             f"index_nethermind.py | {self.request.id} | update_task | Acquired disc_prov_lock"
         )
-
         latest_block = get_latest_block(db, final_poa_block)
 
         # Capture block information between latest and target block hash
@@ -994,10 +1030,59 @@ def update_task(self):
                 current_hash = web3.toHex(latest_block.hash)
                 parent_hash = web3.toHex(latest_block.parentHash)
 
-                latest_block_db_query = session.query(Block).filter(
-                    Block.blockhash == current_hash
-                    and Block.parenthash == parent_hash
-                    and Block.is_current == True
+                    latest_block_db_query = session.query(Block).filter(
+                        Block.blockhash == current_hash
+                        and Block.parenthash == parent_hash
+                        and Block.is_current == True
+                    )
+
+                    # Exit loop if we are up to date
+                    if latest_block_db_query.count() > 0:
+                        block_intersection_found = True
+                        intersect_block_hash = current_hash
+                        continue
+
+                    index_blocks_list.append(latest_block)
+
+                    parent_block_query = session.query(Block).filter(
+                        Block.blockhash == parent_hash
+                    )
+
+                    # Intersection is considered found if current block parenthash is
+                    # present in Blocks table
+                    block_intersection_found = parent_block_query.count() > 0
+
+                    num_blocks = len(index_blocks_list)
+                    if num_blocks % 50 == 0:
+                        logger.info(
+                            f"index_nethermind.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
+                        )
+
+                    # Special case for initial block 0x0 or first block number after final_poa_block
+                    reached_initial_block = latest_block.number == final_poa_block + 1
+                    if reached_initial_block:
+                        block_intersection_found = True
+                        intersect_block_hash = web3.toHex(latest_block.parentHash)
+                    else:
+                        latest_block = dict(web3.eth.get_block(parent_hash, True))
+                        latest_block["number"] += final_poa_block
+                        latest_block = AttributeDict(latest_block)
+                        intersect_block_hash = web3.toHex(latest_block.hash)
+
+                # Determine whether current indexed data (is_current == True) matches the
+                # intersection block hash
+                # Important when determining whether undo operations are necessary
+                base_query = session.query(Block)
+                base_query = base_query.filter(Block.is_current == True)
+                db_block_query = base_query.all()
+
+                assert len(db_block_query) == 1, "Expected SINGLE row marked as current"
+                db_current_block = db_block_query[0]
+
+                # Check current block
+                undo_operations_required = (
+                    db_current_block.blockhash != intersect_block_hash
+                    and not reached_initial_block
                 )
 
                 # Exit loop if we are up to date
@@ -1089,11 +1174,30 @@ def update_task(self):
         # Perform revert operations
         revert_blocks(self, db, revert_blocks_list)
 
-        # Perform indexing operations
-        index_blocks(self, db, index_blocks_list)
-        logger.info(
-            f"index_nethermind.py | update_task | {self.request.id} | Processing complete within session"
-        )
+                    if parent_query.count() == 0:
+                        logger.info(
+                            f"index_nethermind.py | update_task | Special case exit traverse block parenthash - "
+                            f"{traverse_block.parenthash}"
+                        )
+                        break
+                    traverse_block = parent_query[0]
+
+                # Ensure revert blocks list is available after session scope
+                session.expunge_all()
+
+            # Exit DB scope, revert/index functions will manage their own sessions
+            # Perform revert operations
+            revert_blocks(self, db, revert_blocks_list)
+
+            # Perform indexing operations
+            index_blocks(self, db, index_blocks_list)
+            logger.info(
+                f"index_nethermind.py | update_task | {self.request.id} | Processing complete within session"
+            )
+        else:
+            logger.info(
+                f"index_nethermind.py | update_task | {self.request.id} | Failed to acquire disc_prov_lock_nethermind"
+            )
     except Exception as e:
         logger.error(f"Fatal error in main loop {e}", exc_info=True)
         raise e
