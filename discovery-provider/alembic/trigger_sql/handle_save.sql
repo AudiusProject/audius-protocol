@@ -92,8 +92,6 @@ begin
   end if;
 
   begin
-    raise notice 'asdf woo new row %', new;
-
     -- create a notification for the saved content's owner
     if new.is_delete is false then
       insert into notification
