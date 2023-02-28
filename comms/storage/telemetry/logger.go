@@ -37,7 +37,13 @@ type TracingHandler struct {
 }
 
 func InitDefault() {
-	slog.SetDefault(slog.New(NewTracingHandler(NewHandler(&options{Level: "info", Output: "stdout"}))))
+	logger := slog.New(NewTracingHandler(NewHandler(&options{Level: "info", Output: "stdout", Format: "json"})))
+	slog.SetDefault(logger)
+}
+
+func DiscardLogs() {
+	logger := slog.New(slog.NewTextHandler(io.Discard))
+	slog.SetDefault(logger)
 }
 
 // New create a new *slog.Logger with tracing handler wrapper

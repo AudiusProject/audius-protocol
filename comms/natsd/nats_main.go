@@ -2,6 +2,7 @@ package natsd
 
 import (
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"time"
@@ -10,17 +11,21 @@ import (
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/exp/slog"
 )
 
 func NatsMain() {
 	natsConfig := config.GetNatsConfig()
-	peering := peering.New(&natsConfig.PeeringConfig)
+	peering, err := peering.New(&natsConfig.PeeringConfig)
+	if err != nil {
+		log.Fatalf("failed to create peering instance, %+v", err)
+	}
 
 	{
 		var err error
 		peering.NatsIsReachable, err = selfConnectionProbe(peering.IP)
 		if err != nil {
-			peering.Logger.Warn("self connection test error " + err.Error())
+			slog.Warn("self connection test error " + err.Error())
 		}
 	}
 

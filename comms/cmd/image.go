@@ -5,6 +5,7 @@ import (
 	"math/rand"
 
 	"comms.audius.co/shared/utils"
+	"comms.audius.co/storage/telemetry"
 	"github.com/spf13/cobra"
 )
 
@@ -21,9 +22,10 @@ var imageCmd = &cobra.Command{
 	./comms storage seed image --count 10 # seeds 10 images
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		telemetry.DiscardLogs()
 		clientCount, err := initClients()
 		if err != nil || clientCount < 1 {
-			fmt.Println("Couldn't find any clients")
+			fmt.Printf("Couldn't find any clients, %+v\n", err)
 			return
 		}
 
