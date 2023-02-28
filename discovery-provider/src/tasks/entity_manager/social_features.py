@@ -147,7 +147,7 @@ def create_save(params):
 
 def create_repost(params):
     is_repost_of_repost = get_attribute_from_record_metadata(
-        "is_repost_repost", params.metadata_cid
+        "is_repost_of_repost", params.metadata_cid
     )
     create_record = Repost(
         blockhash=params.event_blockhash,
@@ -157,7 +157,7 @@ def create_repost(params):
         user_id=params.user_id,
         repost_item_id=params.entity_id,
         repost_type=params.entity_type.lower(),
-        is_repost_of_repost=is_repost_of_repost,
+        is_repost_of_repost=bool(is_repost_of_repost),
         is_current=True,
         is_delete=False,
     )
