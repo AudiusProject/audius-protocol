@@ -146,16 +146,14 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
                 getScrollParent={getScrollParent}
               >
                 <div className={styles.content}>
-                  {notifications
-                    .filter(({ isHidden }: any) => !isHidden)
-                    .map((notification: Notifications) => {
-                      return (
-                        <Notification
-                          key={notification.id}
-                          notification={notification}
-                        />
-                      )
-                    })}
+                  {notifications.map((notification: Notifications) => {
+                    return (
+                      <Notification
+                        key={notification.id}
+                        notification={notification}
+                      />
+                    )
+                  })}
                   {status === Status.LOADING ? (
                     <div className={styles.spinnerContainer} key={'loading'}>
                       <Lottie
