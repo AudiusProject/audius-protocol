@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
-FROM alpine:3.14 AS base
+FROM node:14.16-alpine as base
 
 WORKDIR /usr/src/app
 
@@ -23,7 +23,6 @@ RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositor
         curl \
         docker=20.10.11-r1 \
         libpq=11.12-r0 \
-        nodejs=14.21.3-r0 \
         postgresql-client=11.12-r0 \
         postgresql-contrib=11.12-r0 \
         postgresql-libs=11.12-r0 \
