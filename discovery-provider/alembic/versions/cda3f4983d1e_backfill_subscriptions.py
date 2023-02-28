@@ -1,7 +1,7 @@
 """backfill_subscriptions
 
 Revision ID: cda3f4983d1e
-Revises: abdb338530cd
+Revises: 7f44be320e10
 Create Date: 2022-11-09 21:23:20.095764
 
 """
@@ -13,7 +13,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = 'cda3f4983d1e'
-down_revision = 'abdb338530cd'
+down_revision = '7f44be320e10'
 branch_labels = None
 depends_on = None
 
