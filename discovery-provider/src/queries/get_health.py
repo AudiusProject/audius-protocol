@@ -298,7 +298,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "audius_db_url", ""
     )
 
-    discovery_nodes = get_all_other_nodes.get_all_other_nodes_cached()[0]
+    discovery_nodes = get_all_other_nodes.get_all_other_nodes_cached(redis)[0]
 
     health_results = {
         "web": {
