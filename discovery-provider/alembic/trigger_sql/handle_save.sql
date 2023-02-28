@@ -126,16 +126,16 @@ begin
                 and r.is_delete is false
                 and r.is_current is true
                 and r.repost_type::text = new.save_type::text
-                -- and r.user_id = ANY(ARRAY[1,2,3,4])
-                -- (
-                --     select
-                --         followee_user_id
-                --     from follows
-                --     where
-                --         follower_user_id = new.user_id
-                --         and is_delete is false
-                --         and is_current is true
-                -- )
+                and r.user_id in
+                (
+                    select
+                        followee_user_id
+                    from follows
+                    -- where
+                    --     follower_user_id = new.user_id
+                    --     and is_delete is false
+                    --     and is_current is true
+                )
         )
     insert into notification
       (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
