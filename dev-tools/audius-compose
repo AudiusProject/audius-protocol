@@ -360,12 +360,12 @@ def connect(protocol_dir, remote):
     subprocess.run(
         [
             "sshuttle",
-            "-N",
             "--no-latency-control",
-            "-H",
-            "-r",
+            "--auto-nets",
+            "--auto-hosts",
+            "--remote",
             f"sshuttle@{host}:2222",
-            "-e",
+            "--ssh-cmd",
             f"ssh -i {protocol_dir}/dev-tools/keys/dev -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
         ]
     )
