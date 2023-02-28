@@ -285,10 +285,6 @@ def configure_celery(celery, test_config=None):
             if "url_read_replica" in test_config["db"]:
                 database_url_read_replica = test_config["db"]["url_read_replica"]
 
-    indexing_interval_sec = int(
-        shared_config["discprov"]["block_processing_interval_sec"]
-    )
-
     # Update celery configuration
     celery.conf.update(
         imports=[

@@ -973,7 +973,6 @@ def update_task(self):
     # Details regarding custom task context can be found in wiki
     # Custom Task definition can be found in src/app.py
     db = update_task.db
-    redis = update_task.redis
 
     final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
     current_block_query_results = None
