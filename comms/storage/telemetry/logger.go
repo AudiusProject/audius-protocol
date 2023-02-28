@@ -8,7 +8,6 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-
 // Option is an application option.
 type Option func(o *options)
 
