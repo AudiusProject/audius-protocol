@@ -49,6 +49,7 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *p
 		return nil, err
 	}
 
+changes
 	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
 	var host string
 	var allStorageNodePubKeys []string
