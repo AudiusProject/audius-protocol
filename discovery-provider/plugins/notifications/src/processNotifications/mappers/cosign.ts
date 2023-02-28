@@ -49,7 +49,6 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
     const parentTrackUserName = users[this.parentTrackUserId]?.name
     const remixTrackTitle = tracks[this.trackId]?.title
 
-    // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.parentTrackUserId)
 
     // If the user has devices to the notification to, proceed
@@ -59,8 +58,6 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       // If the user's settings for the follow notification is set to true, proceed
       if (userMobileSettings['favorites']) {
         await Promise.all(devices.map(device => {
-          // return `${notification.parentTrackUser.name} Co-Signed your Remix of ${notification.remixTrack.title}`
-
           return sendPushNotification({
             type: device.type,
             badgeCount: userNotifications.mobile[this.parentTrackUserId].badgeCount,

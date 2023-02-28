@@ -19,26 +19,26 @@ export async function setupTriggers(db: Knex) {
     .where('routine_name', '=', functionName)
     .count({ count: '*' })
 
-  // let skip = parseInt(count) == 1
+  let skip = parseInt(count) == 1
 
-  // if (skip) {
-  // logger.info(`function ${functionName} already exists... skipping`)
-  // } else {
-  // drop existing triggers
-  logger.info(`dropping any existing triggers`)
-  await db.raw(`drop trigger if exists trg_notification on notification;`)
+  if (skip) {
+    logger.info(`function ${functionName} already exists... skipping`)
+  } else {
+    // drop existing triggers
+    logger.info(`dropping any existing triggers`)
+    await db.raw(`drop trigger if exists trg_notification on notification;`)
 
-  // create function
-  logger.info(`creating plpgsql function`)
-  await db.raw(trigger)
+    // create function
+    logger.info(`creating plpgsql function`)
+    await db.raw(trigger)
 
-  // create triggers
-  logger.info(`creating triggers`)
-  // if (process.argv[2] !== 'drop') {
-  await db.raw(`
+    // create triggers
+    logger.info(`creating triggers`)
+    if (process.argv[2] !== 'drop') {
+      await db.raw(`
         create trigger trg_notification
           after insert on notification
           for each row execute procedure ${functionName}();`)
-  // }
-  // }
+    }
+  }
 }
