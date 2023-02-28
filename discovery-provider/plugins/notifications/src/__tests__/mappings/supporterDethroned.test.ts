@@ -43,11 +43,12 @@ describe('Supporter Dethroned Notification', () => {
   })
 
 
-  test("Process push notification for tip receive", async () => {
+  test("Process push notification for supporter dethroned receive", async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }, { user_id: 3 }])
-    await createUserBankTx(processor.discoveryDB, [{ signature: '1', slot: 1 }])
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 1 }])
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 3, receiver_user_id: 1, rank: 1 }])
+    await createUserBankTx(processor.discoveryDB, [{ signature: '1', slot: 1 }, { signature: '2', slot: 2 }])
+
+    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 1, slot: 1 }])
+    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 3, receiver_user_id: 1, rank: 1, slot: 2 }])
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }, { userId: 2 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }, { userId: 2 }])

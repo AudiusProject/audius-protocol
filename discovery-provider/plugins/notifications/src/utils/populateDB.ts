@@ -1,6 +1,6 @@
 import { Knex } from 'knex'
 import { EmailFrequency } from '../processNotifications/mappers/base'
-import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow, NotificationRow, PlaylistRow, BlockRow, UserTipRow, ReactionRow, UserBankAccountRow, UserBankTxRow, ChallengeDisbursementRow, RewardManagerTxRow, SubscriptionRow } from '../types/dn'
+import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow, NotificationRow, PlaylistRow, BlockRow, UserTipRow, ReactionRow, UserBankAccountRow, UserBankTxRow, ChallengeDisbursementRow, RewardManagerTxRow, SubscriptionRow, SupporterRankUpRow } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow, NotificationEmailRow } from '../types/identity'
 import { getDB } from '../conn'
@@ -121,7 +121,7 @@ export const createBlocks = async (db: Knex, blocks: createBlocks[]) => {
     .into('blocks')
 }
 
-type CreateSupporterRankUp = Pick<SupporterRankUpNotification, 'sender_user_id' | 'receiver_user_id' | 'rank'> & Partial<SupporterRankUpNotification>
+type CreateSupporterRankUp = Pick<SupporterRankUpRow, 'sender_user_id' | 'receiver_user_id' | 'rank'> & Partial<SupporterRankUpRow>
 export const createSupporterRankUp = async (db: Knex, rankUps: CreateSupporterRankUp[]) => {
   await db.insert(rankUps.map(rankUp => ({
     slot: 1,
