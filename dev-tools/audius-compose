@@ -287,7 +287,7 @@ def load_env(protocol_dir, service, environment):
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
 @click.option("-w", "--wait", is_flag=True, help="Wait for services to be healthy")
-@click.option("--args", "--args", type=str)
+@click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
