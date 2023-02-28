@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,14 +13,15 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { PlaylistArtwork } from './PlaylistArtwork';
 import {
-    PlaylistArtwork,
     PlaylistArtworkFromJSON,
     PlaylistArtworkFromJSONTyped,
     PlaylistArtworkToJSON,
 } from './PlaylistArtwork';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -31,68 +32,127 @@ import {
  * @export
  * @interface Playlist
  */
-export interface Playlist 
-    {
-        /**
-        * 
-        * @type {PlaylistArtwork}
-        * @memberof Playlist
-        */
-        artwork?: PlaylistArtwork;
-        /**
-        * 
-        * @type {string}
-        * @memberof Playlist
-        */
-        description?: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof Playlist
-        */
-        permalink?: string;
-        /**
-        * 
-        * @type {string}
-        * @memberof Playlist
-        */
-        id: string;
-        /**
-        * 
-        * @type {boolean}
-        * @memberof Playlist
-        */
-        is_album: boolean;
-        /**
-        * 
-        * @type {string}
-        * @memberof Playlist
-        */
-        playlist_name: string;
-        /**
-        * 
-        * @type {number}
-        * @memberof Playlist
-        */
-        repost_count: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof Playlist
-        */
-        favorite_count: number;
-        /**
-        * 
-        * @type {number}
-        * @memberof Playlist
-        */
-        total_play_count: number;
-        /**
-        * 
-        * @type {User}
-        * @memberof Playlist
-        */
-        user: User;
-    }
+export interface Playlist {
+    /**
+     * 
+     * @type {PlaylistArtwork}
+     * @memberof Playlist
+     */
+    artwork?: PlaylistArtwork;
+    /**
+     * 
+     * @type {string}
+     * @memberof Playlist
+     */
+    description?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Playlist
+     */
+    permalink?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Playlist
+     */
+    id: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Playlist
+     */
+    isAlbum: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof Playlist
+     */
+    playlistName: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof Playlist
+     */
+    repostCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Playlist
+     */
+    favoriteCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Playlist
+     */
+    totalPlayCount: number;
+    /**
+     * 
+     * @type {User}
+     * @memberof Playlist
+     */
+    user: User;
+}
 
+/**
+ * Check if a given object implements the Playlist interface.
+ */
+export function instanceOfPlaylist(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "id" in value;
+    isInstance = isInstance && "isAlbum" in value;
+    isInstance = isInstance && "playlistName" in value;
+    isInstance = isInstance && "repostCount" in value;
+    isInstance = isInstance && "favoriteCount" in value;
+    isInstance = isInstance && "totalPlayCount" in value;
+    isInstance = isInstance && "user" in value;
+
+    return isInstance;
+}
+
+export function PlaylistFromJSON(json: any): Playlist {
+    return PlaylistFromJSONTyped(json, false);
+}
+
+export function PlaylistFromJSONTyped(json: any, ignoreDiscriminator: boolean): Playlist {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'artwork': !exists(json, 'artwork') ? undefined : PlaylistArtworkFromJSON(json['artwork']),
+        'description': !exists(json, 'description') ? undefined : json['description'],
+        'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
+        'id': json['id'],
+        'isAlbum': json['is_album'],
+        'playlistName': json['playlist_name'],
+        'repostCount': json['repost_count'],
+        'favoriteCount': json['favorite_count'],
+        'totalPlayCount': json['total_play_count'],
+        'user': UserFromJSON(json['user']),
+    };
+}
+
+export function PlaylistToJSON(value?: Playlist | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'artwork': PlaylistArtworkToJSON(value.artwork),
+        'description': value.description,
+        'permalink': value.permalink,
+        'id': value.id,
+        'is_album': value.isAlbum,
+        'playlist_name': value.playlistName,
+        'repost_count': value.repostCount,
+        'favorite_count': value.favoriteCount,
+        'total_play_count': value.totalPlayCount,
+        'user': UserToJSON(value.user),
+    };
+}
 

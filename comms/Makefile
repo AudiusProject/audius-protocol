@@ -1,44 +1,38 @@
+up:: down etchosts migrate
+	docker compose up -d --build
 
-dev.discovery::
-	@	audius_discprov_env='standalone' \
-		audius_delegate_private_key='293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238' \
-		audius_db_url='postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable' \
-		go run main.go discovery
-
-dev.storage::
-	@	audius_discprov_env='standalone' \
-		storage_v2="true" \
-		storage_v2_single_node="true" \
-		audius_delegate_owner_wallet="0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F" \
-		audius_delegate_private_key="293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" \
-		go run main.go storage
-
-reset::
-	docker compose down --volumes
-	docker compose up comdb comnats -d
-	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
-		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
-	docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery"
+localhosts="127.0.0.1       node1-storage node2-storage node3-storage node4-storage node1-discovery ingress"
+etchosts::
+	@	if ! grep -q $(localhosts) /etc/hosts; \
+		then echo Adding development hosts to /etc/hosts; \
+		echo $(localhosts) | sudo tee -a /etc/hosts; fi
 
 down::
-	docker compose down --volumes
+	(docker compose down --volumes || true)
 
 psql::
 	docker exec -it comdb psql -U postgres audius_discovery
-
-
-
 
 fmt::
 	go fmt ./...
 
 test::
-	docker compose up -d comdb
-	audius_discprov_env='standalone' go test ./... -count=1
+	docker logs -f test
 
+migrate::
+	docker compose up comdb -d && \
+	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
+		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
+	(docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery" || true)
 
 test.load::
 	hey -n 10000 -c 50 http://localhost:8926/storage/jobs
+
+storage.seed.audio::
+	docker exec -it storage1 sh -c "./comms storage seed audio"
+
+storage.seed.image::
+	docker exec -it storage1 sh -c "./comms storage seed image"
 
 
 build::
@@ -48,6 +42,9 @@ build::
 build.alpine::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64
 	go build -ldflags="-w -s" -o comms main.go
+
+build.weathermap::
+	cd storage/storageserver/weather-map; yarn && yarn build
 
 # this is a "fast build and push"
 # we build target specific binary on our host machine (osx)
@@ -66,9 +63,6 @@ tools::
 	CGO_ENABLED=0 go install github.com/nats-io/natscli/nats@latest
 	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
 	go install github.com/rakyll/hey@latest
-
-sqlc:: reset
-	sqlc generate
 
 quicktype::
 	cp ../libs/src/sdk/api/chats/serverTypes.ts discovery/schema/schema.ts

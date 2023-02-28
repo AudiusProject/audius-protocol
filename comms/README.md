@@ -23,10 +23,9 @@ Verify setup:
 
 ### Run + test
 
-* `make reset` - starts postgres + nats containers (first time)
-* `make` - dev on discovery
-* `make dev.storage` - dev on storage (make sure a JetStream-enabled NATS server is running first with `nats-server -p 4222 -js`)
-* `make test`
+* `make` - dev on discovery or storage (view logs with `docker logs -f discovery1` or `docker logs -f storage1`)
+* `make test` - view test output (tests run automatically when changing files)
+* the above both hot reload, so you don't need to do `make` again unless you break hot reloading (e.g., creating/deleting files)
 
 Re-run make after code changes
 
@@ -36,7 +35,7 @@ Use [dbmate](https://github.com/amacneil/dbmate):
 
 * `cd discovery && dbmate new create_cool_table`
 * edit migration file
-* `make reset` to run migration
+* running `make` will run migration
 
 ### Typings
 
@@ -51,13 +50,6 @@ Currently docker build + push is done locally and some bash scripts are used to 
 * Authenticate on Dockerhub
 * `bash bash_scripts/deploy.sh`
 
-### Storage V2 Dev
+## Storage
 
-> Storage V2 is rapidly evolving within `comms` and as such uses split off infra for development
-> (keeping this as platform independent as possible)
-
-* run with `docker compose -f docker-compose.v2.yml up -d --build`
-* visit any storage node webui at `http://0.0.0.0:992[4|5|6|7]/storage` to test uploads
-* grep logs for success i.e. `docker compose logs storage1 | grep -i storing`
-* to check nats stream status `docker exec -ti com1 nats stream ls -a`
-* teardown `docker compose -f docker-compose.v2.yml down -v`
+See [storage/README.md](./storage/README.md)

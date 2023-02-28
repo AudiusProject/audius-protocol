@@ -72,7 +72,7 @@ def test_track_create_notification(app):
         assert len(notifications) == 1
         notification = notifications[0]
         assert notification.specifier == "1"
-        assert notification.group_id == "create:track:20"
+        assert notification.group_id == "create:track:user_id:1"
         assert notification.type == "create"
         assert notification.slot == None
         assert notification.data == {

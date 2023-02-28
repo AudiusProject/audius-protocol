@@ -9,7 +9,7 @@ from collections import defaultdict
 from typing import Any, Dict
 
 import redis
-from celery.schedules import crontab, timedelta
+from celery.schedules import timedelta
 from flask import Flask
 from flask.json import JSONEncoder
 from flask_cors import CORS
@@ -327,10 +327,6 @@ def configure_celery(celery, test_config=None):
             "update_discovery_provider_nethermind": {
                 "task": "update_discovery_provider_nethermind",
                 "schedule": timedelta(seconds=indexing_interval_sec),
-            },
-            "update_metrics": {
-                "task": "update_metrics",
-                "schedule": crontab(minute=0, hour="*"),
             },
             "aggregate_metrics": {
                 "task": "aggregate_metrics",

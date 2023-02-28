@@ -12,6 +12,7 @@ import (
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
+	sharedConfig "comms.audius.co/shared/config"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -25,6 +26,11 @@ type Validator struct {
 func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 	methodName := schema.RPCMethod(rawRpc.Method)
 	var noTx *sqlx.Tx = nil
+
+	// Always check timestamp
+	if time.Now().UnixMilli()-rawRpc.Timestamp > sharedConfig.SignatureTimeToLiveMs {
+		return errors.New("Invalid timestamp")
+	}
 
 	switch methodName {
 	case schema.RPCMethodChatCreate:
@@ -44,7 +50,7 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 	case schema.RPCMethodChatUnblock:
 		return vtor.validateChatUnblock(noTx, userId, rawRpc)
 	default:
-		config.Logger.Debug("no validator for " + rawRpc.Method)
+		logger.Debug("no validator for " + rawRpc.Method)
 	}
 
 	return nil
@@ -300,7 +306,7 @@ func (vtor *Validator) validateNewChatRateLimit(q db.Queryable, users []int32) e
 		return err
 	}
 	if numChats >= maxNumChats {
-		config.Logger.Info("hit rate limit (new chats)", "users", users)
+		logger.Info("hit rate limit (new chats)", "users", users)
 		return errors.New("An invited user has exceeded the maximum number of new chats")
 	}
 
@@ -331,10 +337,10 @@ func (vtor *Validator) validateNewMessageRateLimit(q db.Queryable, userId int32,
 	}
 	if counts.TotalCount >= maxNumMessages || counts.MaxCountPerChat >= maxNumMessagesPerRecipient {
 		if counts.TotalCount >= maxNumMessages {
-			config.Logger.Info("hit rate limit (total count new messages)", "user", userId, "chat", chatId)
+			logger.Info("hit rate limit (total count new messages)", "user", userId, "chat", chatId)
 		}
 		if counts.MaxCountPerChat >= maxNumMessagesPerRecipient {
-			config.Logger.Info("hit rate limit (new messages per recipient)", "user", userId, "chat", chatId)
+			logger.Info("hit rate limit (new messages per recipient)", "user", userId, "chat", chatId)
 		}
 		return errors.New("User has exceeded the maximum number of new messages")
 	}

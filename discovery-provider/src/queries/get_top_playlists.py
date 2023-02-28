@@ -2,7 +2,6 @@ import enum
 import logging
 from typing import Optional, TypedDict
 
-from flask import request
 from sqlalchemy import desc
 from src import exceptions
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
@@ -40,7 +39,9 @@ class TopPlaylistKind(str, enum.Enum):
 
 
 def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
-    skip_es = request.args.get("es") == "0"
+    # disable es while making mapping changes to fix scoring
+    # skip_es = request.args.get("es") == "0"
+    skip_es = True
     use_es = esclient and not skip_es
     if use_es:
         try:

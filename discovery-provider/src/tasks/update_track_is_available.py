@@ -54,7 +54,7 @@ def fetch_unavailable_track_ids_in_network(
 
     for node in content_nodes:
         # Keep mapping of spId to set of unavailable tracks
-        unavailable_track_ids = fetch_unavailable_track_ids(node["endpoint"])
+        unavailable_track_ids = fetch_unavailable_track_ids(node["endpoint"], session)
         spID_unavailable_tracks_key = get_unavailable_tracks_redis_key(node["spID"])
 
         # Clear redis for existing data
@@ -123,15 +123,27 @@ def update_tracks_is_available_status(db: SessionManager, redis: Redis) -> None:
             )
 
 
-def fetch_unavailable_track_ids(node: str) -> List[int]:
+def fetch_unavailable_track_ids(node: str, session: Session) -> List[int]:
     """Fetches unavailable tracks from Content Node. Returns empty list if request fails"""
     unavailable_track_ids = []
 
     try:
         resp = requests.get(
-            f"{node}/blacklist/tracks", timeout=REQUESTS_TIMEOUT_SECONDS
+            f"{node}/blacklist", timeout=REQUESTS_TIMEOUT_SECONDS
         ).json()
-        unavailable_track_ids = resp["data"]["values"]
+        unavailable_cids = set(resp["data"]["individualSegments"])
+        track_ids_from_cids = (
+            session.query(Track.track_id)
+            .filter(
+                Track.is_current == True,
+                Track.track_cid.in_(unavailable_cids),
+            )
+            .all()
+        )
+        unavailable_track_ids = list(
+            set(resp["data"]["trackIds"] + [track[0] for track in track_ids_from_cids])
+        )
+
     except Exception as e:
         logger.warn(
             f"update_track_is_available.py | Could not fetch unavailable tracks from {node}: {e}"

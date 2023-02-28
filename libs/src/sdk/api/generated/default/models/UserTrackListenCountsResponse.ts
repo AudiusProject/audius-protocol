@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,26 +13,61 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { MonthlyAggregatePlay } from './MonthlyAggregatePlay';
 import {
-    UserTrackListenCountsResponseData,
-    UserTrackListenCountsResponseDataFromJSON,
-    UserTrackListenCountsResponseDataFromJSONTyped,
-    UserTrackListenCountsResponseDataToJSON,
-} from './UserTrackListenCountsResponseData';
+    MonthlyAggregatePlayFromJSON,
+    MonthlyAggregatePlayFromJSONTyped,
+    MonthlyAggregatePlayToJSON,
+} from './MonthlyAggregatePlay';
 
 /**
  * 
  * @export
  * @interface UserTrackListenCountsResponse
  */
-export interface UserTrackListenCountsResponse 
-    {
-        /**
-        * 
-        * @type {UserTrackListenCountsResponseData}
-        * @memberof UserTrackListenCountsResponse
-        */
-        data?: UserTrackListenCountsResponseData;
-    }
+export interface UserTrackListenCountsResponse {
+    /**
+     * 
+     * @type {{ [key: string]: MonthlyAggregatePlay; }}
+     * @memberof UserTrackListenCountsResponse
+     */
+    data?: { [key: string]: MonthlyAggregatePlay; };
+}
 
+/**
+ * Check if a given object implements the UserTrackListenCountsResponse interface.
+ */
+export function instanceOfUserTrackListenCountsResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function UserTrackListenCountsResponseFromJSON(json: any): UserTrackListenCountsResponse {
+    return UserTrackListenCountsResponseFromJSONTyped(json, false);
+}
+
+export function UserTrackListenCountsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): UserTrackListenCountsResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : (mapValues(json['data'], MonthlyAggregatePlayFromJSON)),
+    };
+}
+
+export function UserTrackListenCountsResponseToJSON(value?: UserTrackListenCountsResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : (mapValues(value.data, MonthlyAggregatePlayToJSON)),
+    };
+}
 

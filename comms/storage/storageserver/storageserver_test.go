@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"comms.audius.co/shared/peering"
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/transcode"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats-server/v2/server"
@@ -25,7 +27,11 @@ import (
 
 // TestE2EUpload verifies that a file gets uploaded to the storage node, transcoded, and permanently stored and replicated on the correct nodes.
 func TestE2EUpload(t *testing.T) {
+	t.Skip("TODO: Connect to already-running containers instead of spinning up a new cluster")
 	assert := assert.New(t)
+
+	// Clear state in case a previous test or debug session left something behind
+	os.RemoveAll("/tmp/test-server_*")
 
 	// Start 5 storage nodes (NATS cluster and web servers)
 	nodes := startNatsCluster(t)
@@ -35,7 +41,7 @@ func TestE2EUpload(t *testing.T) {
 		}
 	}()
 
-	// TODO: Upload file with a hash that will fall in the 'aa' bucket
+	// TODO: Upload file with a hash that will fall in the 'aa' shard
 	jobman, err := transcode.NewJobsManager(nodes[0].ss.Jsc, nodes[0].ss.Namespace, 1)
 	if err != nil {
 		panic(err)
@@ -71,9 +77,9 @@ func TestE2EUpload(t *testing.T) {
 		assert.Equal("null\n", rec.Body.String()) // TODO: This passes now but shouldn't be "null\n"
 	}
 
-	// TODO: Verify that file is stored in the 'aa' bucket on exactly 3 of the 5 nodes
+	// TODO: Verify that file is stored in the 'aa' shard on exactly 3 of the 5 nodes
 
-	// TODO: Verify that all other buckets are empty
+	// TODO: Verify that all other shard are empty
 }
 
 type testServer struct {
@@ -124,7 +130,17 @@ func startNatsCluster(t *testing.T) [5]*testServer {
 	// Start each node's web server
 	for i, node := range nodes {
 		_, jsc := jsClient(t, node.s)
-		ss := NewProd(jsc)
+		switch i {
+		case 0:
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238")
+		case 1:
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc")
+		case 2:
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c")
+		case 3:
+			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb")
+		}
+		ss := NewProd(config.GetStorageConfig(), jsc, nil) // TODO: Pass all nodes
 		go ss.WebServer.Start(fmt.Sprintf("127.0.0.1:%d", 1222+i+5))
 		nodes[i].ss = ss
 	}
@@ -156,18 +172,18 @@ func runBasicJetStreamServer(clientPort int, clusterPort int, seedPort int) *ser
 	return runServer(&opts)
 }
 
-func client(t *testing.T, s *server.Server, opts ...nats.Option) *nats.Conn {
+func client(t *testing.T, s *server.Server) *nats.Conn {
 	t.Helper()
-	nc, err := nats.Connect(s.ClientURL(), opts...)
+	nc, err := peering.New(&config.GetStorageConfig().PeeringConfig).DialNatsUrl(s.ClientURL())
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}
 	return nc
 }
 
-func jsClient(t *testing.T, s *server.Server, opts ...nats.Option) (*nats.Conn, nats.JetStreamContext) {
+func jsClient(t *testing.T, s *server.Server) (*nats.Conn, nats.JetStreamContext) {
 	t.Helper()
-	nc := client(t, s, opts...)
+	nc := client(t, s)
 	js, err := nc.JetStream(nats.MaxWait(10 * time.Second))
 	if err != nil {
 		t.Fatalf("Unexpected error getting JetStream context: %v", err)

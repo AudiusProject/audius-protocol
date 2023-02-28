@@ -1,0 +1,436 @@
+#1 [audius-protocol-test-eth-ganache internal] load build definition from Dockerfile.dev
+#1 transferring dockerfile: 36B done
+#1 DONE 0.0s
+
+#2 [audius-protocol-test-poa-ganache internal] load build definition from Dockerfile.dev
+#2 transferring dockerfile: 36B done
+#2 DONE 0.0s
+
+#3 [audius-protocol-test-poa-ganache internal] load .dockerignore
+#3 transferring context: 34B done
+#3 DONE 0.0s
+
+#4 [audius-protocol-test-eth-ganache internal] load .dockerignore
+#4 transferring context: 34B done
+#4 DONE 0.0s
+
+#5 [audius-protocol-test-eth-ganache internal] load metadata for docker.io/library/node:16
+#5 ...
+
+#6 [audius-protocol-test-eth-ganache internal] load metadata for docker.io/library/node:16-slim
+#6 DONE 0.7s
+
+#5 [audius-protocol-test-eth-ganache internal] load metadata for docker.io/library/node:16
+#5 DONE 0.7s
+
+#7 [audius-protocol-test-eth-ganache internal] load build context
+#7 transferring context: 4.04kB done
+#7 DONE 0.0s
+
+#8 [audius-protocol-test-eth-ganache builder 3/3] RUN --mount=type=cache,target=/root/.npm npm ci
+#8 CACHED
+
+#9 [audius-protocol-test-eth-ganache stage-1 4/5] COPY . .
+#9 CACHED
+
+#10 [audius-protocol-test-eth-ganache stage-1 3/5] COPY --from=builder /node_modules ./node_modules
+#10 CACHED
+
+#11 [audius-protocol-test-eth-ganache builder 2/3] COPY package*.json ./
+#11 CACHED
+
+#12 [audius-protocol-test-eth-ganache stage-1 5/5] RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000000
+#12 CACHED
+
+#13 [audius-protocol-test-eth-ganache stage-1 1/5] FROM docker.io/library/node:16-slim@sha256:94c1f79b70d120cf40858f5cb57929aad20922224bd06b94a04e8501da56bd96
+#13 DONE 0.0s
+
+#14 [audius-protocol-test-eth-ganache builder 1/3] FROM docker.io/library/node:16@sha256:a4baed9809deba446900d6e2bc6b92c3fe6ccff9ca2873f8d54e263595b02533
+#14 DONE 0.0s
+
+#15 [audius-protocol-test-poa-ganache internal] load build context
+#15 transferring context: 5.51kB done
+#15 DONE 0.0s
+
+#16 [audius-protocol-test-poa-ganache builder 2/3] COPY package*.json ./
+#16 CACHED
+
+#17 [audius-protocol-test-poa-ganache stage-1 3/5] COPY --from=builder /node_modules ./node_modules
+#17 CACHED
+
+#18 [audius-protocol-test-poa-ganache stage-1 4/5] COPY . .
+#18 CACHED
+
+#19 [audius-protocol-test-poa-ganache stage-1 2/5] WORKDIR /usr/src/app
+#19 CACHED
+
+#20 [audius-protocol-test-poa-ganache builder 3/3] RUN --mount=type=cache,target=/root/.npm npm ci
+#20 CACHED
+
+#21 [audius-protocol-test-poa-ganache stage-1 5/5] RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000001
+#21 CACHED
+
+#22 [audius-protocol-test-eth-ganache] exporting to image
+#22 exporting layers done
+#22 writing image sha256:15a2760cfb19e2f67dd37030c54df2686394beb1d4705872bb22df526d329d88 done
+#22 naming to docker.io/library/audius-protocol-test-poa-ganache done
+#22 writing image sha256:2ca6656b813019d1f7d7b6186a8cde0c72d11e255daca84b8b0ec0310aff02bf done
+#22 naming to docker.io/library/audius-protocol-test-eth-ganache done
+#22 DONE 0.0s
+#1 [audius-protocol-test-eth-ganache internal] load build definition from Dockerfile.dev
+#1 transferring dockerfile: 36B done
+#1 DONE 0.0s
+
+#2 [audius-protocol-test-poa-ganache internal] load build definition from Dockerfile.dev
+#2 transferring dockerfile: 36B done
+#2 DONE 0.0s
+
+#3 [audius-protocol-test-test-discovery-provider internal] load build definition from Dockerfile
+#3 transferring dockerfile: 32B done
+#3 DONE 0.0s
+
+#4 [audius-protocol-test-eth-ganache internal] load .dockerignore
+#4 transferring context: 34B done
+#4 DONE 0.0s
+
+#5 [audius-protocol-test-poa-ganache internal] load .dockerignore
+#5 transferring context: 34B done
+#5 DONE 0.0s
+
+#6 [audius-protocol-test-test-discovery-provider internal] load .dockerignore
+#6 transferring context: 34B done
+#6 DONE 0.0s
+
+#7 [audius-protocol-test-test-discovery-provider internal] load metadata for docker.io/library/alpine:3.14
+#7 DONE 0.0s
+
+#8 [audius-protocol-test-poa-ganache internal] load metadata for docker.io/library/node:16
+#8 DONE 0.2s
+
+#9 [audius-protocol-test-eth-ganache internal] load metadata for docker.io/library/node:16-slim
+#9 DONE 0.2s
+
+#10 [audius-protocol-test-eth-ganache builder 1/3] FROM docker.io/library/node:16@sha256:a4baed9809deba446900d6e2bc6b92c3fe6ccff9ca2873f8d54e263595b02533
+#10 DONE 0.0s
+
+#11 [audius-protocol-test-eth-ganache stage-1 1/5] FROM docker.io/library/node:16-slim@sha256:94c1f79b70d120cf40858f5cb57929aad20922224bd06b94a04e8501da56bd96
+#11 DONE 0.0s
+
+#12 [audius-protocol-test-eth-ganache internal] load build context
+#12 transferring context: 4.04kB done
+#12 DONE 0.0s
+
+#13 [audius-protocol-test-eth-ganache builder 3/3] RUN --mount=type=cache,target=/root/.npm npm ci
+#13 CACHED
+
+#14 [audius-protocol-test-eth-ganache stage-1 3/5] COPY --from=builder /node_modules ./node_modules
+#14 CACHED
+
+#15 [audius-protocol-test-eth-ganache builder 2/3] COPY package*.json ./
+#15 CACHED
+
+#16 [audius-protocol-test-eth-ganache stage-1 4/5] COPY . .
+#16 CACHED
+
+#17 [audius-protocol-test-eth-ganache stage-1 5/5] RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000000
+#17 CACHED
+
+#18 [audius-protocol-test-poa-ganache internal] load build context
+#18 transferring context: 5.51kB done
+#18 DONE 0.0s
+
+#19 [audius-protocol-test-poa-ganache stage-1 2/5] WORKDIR /usr/src/app
+#19 CACHED
+
+#20 [audius-protocol-test-poa-ganache builder 3/3] RUN --mount=type=cache,target=/root/.npm npm ci
+#20 CACHED
+
+#21 [audius-protocol-test-poa-ganache builder 2/3] COPY package*.json ./
+#21 CACHED
+
+#22 [audius-protocol-test-poa-ganache stage-1 3/5] COPY --from=builder /node_modules ./node_modules
+#22 CACHED
+
+#23 [audius-protocol-test-poa-ganache stage-1 4/5] COPY . .
+#23 CACHED
+
+#24 [audius-protocol-test-poa-ganache stage-1 5/5] RUN ./scripts/setup-predeployed-ganache.sh /usr/db 1000000000001
+#24 CACHED
+
+#25 [audius-protocol-test-poa-ganache] exporting to image
+#25 exporting layers done
+#25 writing image sha256:2ca6656b813019d1f7d7b6186a8cde0c72d11e255daca84b8b0ec0310aff02bf done
+#25 naming to docker.io/library/audius-protocol-test-eth-ganache done
+#25 writing image sha256:15a2760cfb19e2f67dd37030c54df2686394beb1d4705872bb22df526d329d88 done
+#25 naming to docker.io/library/audius-protocol-test-poa-ganache done
+#25 DONE 0.0s
+
+#26 [audius-protocol-test-test-discovery-provider internal] load metadata for docker.io/audius/contracts:1.0.0
+#26 DONE 0.6s
+
+#27 [audius-protocol-test-test-discovery-provider stage-1  1/15] FROM docker.io/library/alpine:3.14
+#27 DONE 0.0s
+
+#28 [audius-protocol-test-test-discovery-provider contracts 1/1] FROM docker.io/audius/contracts:1.0.0@sha256:256d0ceb29de2f9e2a6844ed3b54a8d8734a68ad11c38e772cc9c90a81d2a814
+#28 DONE 0.0s
+
+#29 [audius-protocol-test-test-discovery-provider internal] load build context
+#29 transferring context: 267.33kB 0.1s done
+#29 DONE 0.1s
+
+#28 [audius-protocol-test-test-discovery-provider contracts 1/1] FROM docker.io/audius/contracts:1.0.0@sha256:256d0ceb29de2f9e2a6844ed3b54a8d8734a68ad11c38e772cc9c90a81d2a814
+#28 CACHED
+
+#30 [audius-protocol-test-test-discovery-provider stage-1  8/15] COPY nginx_conf /usr/local/openresty/conf/
+#30 CACHED
+
+#31 [audius-protocol-test-test-discovery-provider stage-1  2/15] WORKDIR /audius-discovery-provider
+#31 CACHED
+
+#32 [audius-protocol-test-test-discovery-provider stage-1 11/15] COPY requirements.txt requirements.txt
+#32 CACHED
+
+#33 [audius-protocol-test-test-discovery-provider stage-1  4/15] COPY scripts/wait /wait
+#33 CACHED
+
+#34 [audius-protocol-test-test-discovery-provider stage-1  6/15] RUN curl -O 'http://openresty.org/package/admin@openresty.com-5ea678a6.rsa.pub' &&     mv 'admin@openresty.com-5ea678a6.rsa.pub' /etc/apk/keys/ &&     source /etc/os-release &&     MAJOR_VER=`echo $VERSION_ID | sed 's/\.[0-9]\+$//'` &&     echo "http://openresty.org/package/alpine/v$MAJOR_VER/main" | tee -a /etc/apk/repositories &&     apk update &&     apk add openresty=1.19.9.1-r0 openresty-opm &&     opm get spacewander/lua-resty-rsa &&     opm get ledgetech/lua-resty-http &&     mkdir /usr/local/openresty/conf /usr/local/openresty/logs
+#34 CACHED
+
+#35 [audius-protocol-test-test-discovery-provider stage-1  3/15] RUN mkdir -p /prometheus_data
+#35 CACHED
+
+#36 [audius-protocol-test-test-discovery-provider stage-1  9/15] COPY scripts/init-db.sh scripts/init-db.sh
+#36 CACHED
+
+#37 [audius-protocol-test-test-discovery-provider stage-1 10/15] RUN bash scripts/init-db.sh
+#37 CACHED
+
+#38 [audius-protocol-test-test-discovery-provider stage-1  5/15] RUN apk update &&     apk add         alpine-sdk         bash         curl         docker         libffi-dev         libseccomp-dev         linux-headers         nodejs         npm         py3-numpy         py3-pip         py3-scipy         py3-wheel         python3         python3-dev         redis         rsyslog         sudo         gcc         musl-dev
+#38 CACHED
+
+#39 [audius-protocol-test-test-discovery-provider stage-1  7/15] RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories &&     apk update &&     apk add         libpq=11.12-r0         postgresql-client=11.12-r0         postgresql-contrib=11.12-r0         postgresql-dev=11.12-r0         postgresql-libs=11.12-r0         postgresql=11.12-r0
+#39 CACHED
+
+#40 [audius-protocol-test-test-discovery-provider stage-1 12/15] RUN python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt --no-cache-dir
+#40 CACHED
+
+#41 [audius-protocol-test-test-discovery-provider stage-1 13/15] COPY . .
+#41 DONE 0.6s
+
+#42 [audius-protocol-test-test-discovery-provider stage-1 14/15] RUN --mount=type=cache,target=/root/.npm cd es-indexer && npm ci && npm run build
+#42 2.665 
+#42 2.665 added 290 packages, and audited 291 packages in 2s
+#42 2.674 
+#42 2.674 6 vulnerabilities (1 low, 4 high, 1 critical)
+#42 2.674 
+#42 2.674 To address all issues, run:
+#42 2.674   npm audit fix
+#42 2.674 
+#42 2.674 Run `npm audit` for details.
+#42 2.900 
+#42 2.900 > es-indexer@1.0.0 build
+#42 2.900 > tsc
+#42 2.900 
+#42 DONE 5.1s
+
+#43 [audius-protocol-test-test-discovery-provider stage-1 15/15] COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
+#43 DONE 0.0s
+
+#25 [audius-protocol-test-test-discovery-provider] exporting to image
+#25 exporting layers
+#25 exporting layers 0.6s done
+#25 writing image sha256:f8487528de79a2e9315f1d06ec5edae70a15242abe0eea03eaf134e6751ffe07 done
+#25 naming to docker.io/library/audius-protocol-test-test-discovery-provider done
+#25 DONE 0.6s
+============================= test session starts ==============================
+platform linux -- Python 3.9.16, pytest-6.2.5, py-1.11.0, pluggy-1.0.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /audius-discovery-provider, configfile: pytest.ini
+plugins: postgresql-2.4.1, asyncio-0.17.2, dotenv-0.5.2, celery-4.3.0, cov-2.6.0, anchorpy-0.8.3, mock-3.6.1, web3-6.0.0b1, anyio-3.6.2, xprocess-0.18.1
+asyncio: mode=legacy
+collecting ... collected 1 item
+
+integration_tests/test_migration_idempotency.py::test_migration_idempotency Running migration f775fb87f5ff
+Running migration f775fb87f5ff
+Running migration 7104383ac0fe
+Running migration 7104383ac0fe
+Running migration a6d2e50a8efa
+Running migration a6d2e50a8efa
+Running migration 8e4dda8255fd
+Running migration 8e4dda8255fd
+Running migration 3ea8467836d8
+Running migration 3ea8467836d8
+Running migration 49e904b2b9fd
+Running migration 49e904b2b9fd
+Running migration b734b7b47fca
+Running migration b734b7b47fca
+Running migration dc7f691adc79
+Running migration dc7f691adc79
+Running migration 98e2a0a25ada
+Running migration 98e2a0a25ada
+Running migration d3325cbc0bec
+Running migration d3325cbc0bec
+Running migration d180b0c624de
+Running migration d180b0c624de
+Running migration df4709b4391b
+Running migration df4709b4391b
+Running migration 58c87cf2c7e6
+Running migration 58c87cf2c7e6
+Running migration d321f0a00721
+Running migration d321f0a00721
+Running migration 37a4458bb72c
+Running migration 37a4458bb72c
+Running migration 11060779bb3a
+Running migration 11060779bb3a
+Running migration 2dbbc9c484e3
+Running migration 2dbbc9c484e3
+Running migration 3a3f2c9f5320
+Running migration 3a3f2c9f5320
+Running migration a9215207bb7c
+Running migration a9215207bb7c
+Running migration 2cfd17a60647
+Running migration 2cfd17a60647
+Running migration 8c10373f2615
+Running migration 8c10373f2615
+Running migration 378ef6680606
+Running migration 378ef6680606
+Running migration 5ea8fd4ae1fb
+Running migration 5ea8fd4ae1fb
+Running migration 35198266d709
+Running migration 35198266d709
+Running migration f11f9e83b28b
+Running migration f11f9e83b28b
+Running migration 0d2067242dd5
+Running migration 0d2067242dd5
+Running migration a83814aeb4a1
+Running migration a83814aeb4a1
+Running migration 5e17e0480ca7
+Running migration 5e17e0480ca7
+Running migration 88daa6a4f269
+Running migration 88daa6a4f269
+Running migration cdf1f6197fc6
+Running migration cdf1f6197fc6
+Running migration 38642fb2948d
+Running migration 38642fb2948d
+Running migration d615bdcc0e56
+Running migration d615bdcc0e56
+Running migration 60cc872cd012
+Running migration 60cc872cd012
+Running migration 0dbe054f29f8
+Running migration 0dbe054f29f8
+Running migration b3f2c32a2796
+Running migration b3f2c32a2796
+Running migration 08becec375f3
+Running migration 08becec375f3
+Running migration ab56e2d974a6
+Running migration ab56e2d974a6
+Running migration 90ad232bfe92
+Running migration 90ad232bfe92
+Running migration 35584b65c55e
+Running migration 35584b65c55e
+Running migration d0dfb103535b
+Running migration d0dfb103535b
+Running migration b0623220e904
+Running migration b0623220e904
+Running migration 58b26285cdcf
+Running migration 58b26285cdcf
+Running migration 9931f7fd118f
+Running migration 9931f7fd118f
+Running migration f1e86fba0357
+Running migration f1e86fba0357
+Running migration 5d3f95470222
+Running migration 5d3f95470222
+Running migration 551f5fc03862
+Running migration 551f5fc03862
+Running migration aab240348d73
+Running migration aab240348d73
+Running migration a8752810936c
+Running migration a8752810936c
+Running migration 42d5afb85d42
+Running migration 42d5afb85d42
+Running migration 03dbd1b775c5
+Running migration 03dbd1b775c5
+Running migration ab4f1c314c43
+Running migration ab4f1c314c43
+Running migration fcb40409e0a4
+Running migration fcb40409e0a4
+Running migration 93fc0b994aba
+Running migration 93fc0b994aba
+Running migration 3e99d419fd63
+Running migration 3e99d419fd63
+Running migration f91c041d1d8d
+Running migration f91c041d1d8d
+Running migration 6adee41cb531
+Running migration 6adee41cb531
+Running migration bead88b41a20
+Running migration bead88b41a20
+Running migration 959f15b94094
+Running migration 959f15b94094
+Running migration 1eec1d124caf
+Running migration 1eec1d124caf
+Running migration 21e5635c83a9
+Running migration 21e5635c83a9
+Running migration 7b843f2d3a0d
+Running migration 7b843f2d3a0d
+Running migration 3cdcb5e303f8
+Running migration 3cdcb5e303f8
+Running migration fe2c3daaa912
+Running migration fe2c3daaa912
+Running migration ec3b20d7bce3
+Running migration ec3b20d7bce3
+Running migration f6f009132212
+Running migration f6f009132212
+Running migration 1b6e405ef358
+Running migration 1b6e405ef358
+Running migration 4efaecad96fc
+Running migration 4efaecad96fc
+Running migration 2fad3671bf9f
+Running migration 2fad3671bf9f
+Running migration efafdb22df81
+Running migration efafdb22df81
+Running migration 36ed02ac38f7
+Running migration 36ed02ac38f7
+Running migration 6a9f01e775d5
+Running migration 6a9f01e775d5
+Running migration 72b030bb3dcb
+Running migration 72b030bb3dcb
+Running migration a62b4e92b733
+Running migration a62b4e92b733
+Running migration 6f98e9709e3e
+Running migration 6f98e9709e3e
+Running migration 988f095a1d43
+Running migration 988f095a1d43
+Running migration 64e82a907294
+Running migration 64e82a907294
+Running migration 0f75bcb73b0a
+Running migration 0f75bcb73b0a
+Running migration 9b4e12c0c428
+Running migration 9b4e12c0c428
+Running migration abdb338530cd
+Running migration abdb338530cd
+Running migration cda3f4983d1e
+Running migration cda3f4983d1e
+Running migration 198d03c95cac
+Running migration 198d03c95cac
+PASSED
+
+=============================== warnings summary ===============================
+../usr/lib/python3.9/site-packages/sqlalchemy/orm/query.py:196
+  /usr/lib/python3.9/site-packages/sqlalchemy/orm/query.py:196: SyntaxWarning: "is not" with a literal. Did you mean "!="?
+    if entities is not ():
+
+src/queries/queries.py:712
+  /audius-discovery-provider/src/queries/queries.py:712: DeprecationWarning: invalid escape sequence \d
+    number = re.search("(\d+)\.xml$", file_name)  # noqa: W605
+
+../usr/lib/python3.9/site-packages/pytest_asyncio/plugin.py:191
+  /usr/lib/python3.9/site-packages/pytest_asyncio/plugin.py:191: DeprecationWarning: The 'asyncio_mode' default value will change to 'strict' in future, please explicitly use 'asyncio_mode=strict' or 'asyncio_mode=auto' in pytest configuration file.
+    config.issue_config_time_warning(LEGACY_MODE, stacklevel=2)
+
+integration_tests/test_migration_idempotency.py::test_migration_idempotency
+  alembic/env.py:31: DeprecationWarning: invalid escape sequence \s
+    """
+
+-- Docs: https://docs.pytest.org/en/stable/warnings.html
+======================== 1 passed, 4 warnings in 12.14s ========================
+pytest-xprocess reminder::Be sure to terminate the started process by running 'pytest --xkill' if you have not explicitly done so in your fixture with 'xprocess.getinfo(<process_name>).terminate()'.

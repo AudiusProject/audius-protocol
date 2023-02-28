@@ -1,18 +1,18 @@
 const si = require('systeminformation')
-const disk = require('diskusage')
+const checkDiskSpace = require('check-disk-space').default
 
 const DiskManager = require('../diskManager')
 
 const getStoragePathSize = async () => {
   const storagePath = DiskManager.getConfigStoragePath()
-  const { total } = await disk.check(storagePath)
-  return total
+  const { size } = await checkDiskSpace(storagePath)
+  return size
 }
 
 const getStoragePathUsed = async () => {
   const storagePath = DiskManager.getConfigStoragePath()
-  const { available, total } = await disk.check(storagePath)
-  const used = total - available
+  const { free, size } = await checkDiskSpace(storagePath)
+  const used = size - free
   return used
 }
 

@@ -1,8 +1,9 @@
 import {
   BaseAPI,
   Configuration,
-  RequiredError,
-  WalletAPI
+  HTTPQuery,
+  RequestOpts,
+  RequiredError
 } from '../generated/default'
 import * as aes from 'micro-aes-gcm'
 import { base64 } from '@scure/base'
@@ -10,15 +11,17 @@ import cuid from 'cuid'
 
 import * as secp from '@noble/secp256k1'
 import type {
-  RPCPayload,
   ChatInvite,
   UserChat,
-  ChatMessage
+  ChatMessage,
+  ChatWebsocketEventData,
+  RPCPayloadRequest
 } from './serverTypes'
 import type {
   ChatBlockRequest,
   ChatCreateRequest,
   ChatDeleteRequest,
+  ChatEvents,
   ChatGetAllRequest,
   ChatGetMessagesRequest,
   ChatGetRequest,
@@ -29,22 +32,66 @@ import type {
   ChatReadRequest,
   TypedCommsResponse
 } from './clientTypes'
+import WebSocket from 'isomorphic-ws'
+import EventEmitter from 'events'
+import type TypedEmitter from 'typed-emitter'
+import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
+import type { WalletApiService } from '../../services/WalletApi'
+import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 
-export class ChatsApi extends BaseAPI {
+export class ChatsApi
+  extends BaseAPI
+  implements EventEmitterTarget<ChatEvents>
+{
   private chatSecrets: Record<string, Uint8Array> = {}
-  private readonly walletApi: WalletAPI
+  private readonly eventEmitter: TypedEmitter<ChatEvents>
+  private websocket: WebSocket | undefined
 
-  constructor(params: Configuration) {
-    super(params)
-    this.assertNotNullOrUndefined(
-      params.walletApi,
-      'params.walletApi',
-      'constructor'
+  /**
+   * Proxy to the event emitter addListener
+   */
+  public addEventListener
+  /**
+   * Proxy to the event emitter removeListener
+   */
+  public removeEventListener
+
+  constructor(
+    config: Configuration,
+    private readonly walletService: WalletApiService,
+    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService
+  ) {
+    super(config)
+    this.eventEmitter = new EventEmitter() as TypedEmitter<ChatEvents>
+    this.addEventListener = this.eventEmitter.addListener.bind(
+      this.eventEmitter
     )
-    this.walletApi = params.walletApi!
+    this.removeEventListener = this.eventEmitter.removeListener.bind(
+      this.eventEmitter
+    )
+
+    // Listen for discovery node selection changes and reinit websocket
+    this.discoveryNodeSelectorService.addEventListener('change', (endpoint) => {
+      if (this.websocket) {
+        this.websocket.close()
+        this.createWebsocket(endpoint).then((ws) => {
+          this.websocket = ws
+        })
+      }
+    })
   }
 
   // #region QUERY
+
+  public async listen() {
+    const endpoint =
+      await this.discoveryNodeSelectorService.getSelectedEndpoint()
+    if (endpoint) {
+      this.websocket = await this.createWebsocket(endpoint)
+    } else {
+      throw new Error('No services available to listen to')
+    }
+  }
 
   public async get(requestParameters: ChatGetRequest) {
     this.assertNotNullOrUndefined(
@@ -63,28 +110,31 @@ export class ChatsApi extends BaseAPI {
 
   public async getAll(requestParameters?: ChatGetAllRequest) {
     const path = `/comms/chats`
-    const queryParameters: any = {}
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
     if (requestParameters?.limit) {
-      queryParameters.limit = requestParameters.limit
+      query['limit'] = requestParameters.limit
     }
     if (requestParameters?.before) {
-      queryParameters.before = requestParameters.before
+      query['before'] = requestParameters.before
     }
     if (requestParameters?.after) {
-      queryParameters.after = requestParameters.after
+      query['after'] = requestParameters.after
     }
-    const response = (await this.request({
+    const response = await this.signAndSendRequest({
       method: 'GET',
+      headers: {},
       path,
-      headers: await this.getSignatureHeader(path),
-      query: queryParameters
-    })) as TypedCommsResponse<UserChat[]>
+      query
+    })
+    const json = (await response.json()) as TypedCommsResponse<UserChat[]>
 
     const decrypted = await Promise.all(
-      response.data.map(async (c) => await this.decryptLastChatMessage(c))
+      json.data.map(async (c) => await this.decryptLastChatMessage(c))
     )
     return {
-      ...response,
+      ...json,
       data: decrypted
     }
   }
@@ -100,24 +150,27 @@ export class ChatsApi extends BaseAPI {
 
     const sharedSecret = await this.getChatSecret(requestParameters.chatId)
     const path = `/comms/chats/${requestParameters.chatId}/messages`
-    const queryParameters: any = {}
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
     if (requestParameters.limit) {
-      queryParameters.limit = requestParameters.limit
+      query['limit'] = requestParameters.limit
     }
     if (requestParameters.before) {
-      queryParameters.before = requestParameters.before
+      query['before'] = requestParameters.before
     }
     if (requestParameters.after) {
-      queryParameters.after = requestParameters.after
+      query['after'] = requestParameters.after
     }
-    const response = (await this.request({
+    const response = await this.signAndSendRequest({
       method: 'GET',
+      headers: {},
       path,
-      headers: await this.getSignatureHeader(path),
-      query: queryParameters
-    })) as TypedCommsResponse<ChatMessage[]>
+      query
+    })
+    const json = (await response.json()) as TypedCommsResponse<ChatMessage[]>
     const decrypted = await Promise.all(
-      response.data.map(async (m) => ({
+      json.data.map(async (m) => ({
         ...m,
         message: await this.decryptString(
           sharedSecret,
@@ -126,7 +179,7 @@ export class ChatsApi extends BaseAPI {
       }))
     )
     return {
-      ...response,
+      ...json,
       data: decrypted
     }
   }
@@ -152,7 +205,12 @@ export class ChatsApi extends BaseAPI {
       'create'
     )
 
-    const chatId = cuid()
+    const chatId = [
+      requestParameters.userId,
+      ...requestParameters.invitedUserIds
+    ]
+      .sort()
+      .join(':')
     const chatSecret = secp.utils.randomPrivateKey()
     this.chatSecrets[chatId] = chatSecret
     const invites = await this.createInvites(
@@ -381,7 +439,9 @@ export class ChatsApi extends BaseAPI {
     inviteePublicKey: Uint8Array,
     chatSecret: Uint8Array
   ) {
-    const sharedSecret = await this.walletApi.getSharedSecret(inviteePublicKey)
+    const sharedSecret = await this.walletService.getSharedSecret(
+      inviteePublicKey
+    )
     const encryptedChatSecret = await this.encrypt(sharedSecret, chatSecret)
     const inviteCode = new Uint8Array(65 + encryptedChatSecret.length)
     inviteCode.set(userPublicKey)
@@ -392,7 +452,9 @@ export class ChatsApi extends BaseAPI {
   private async readInviteCode(inviteCode: Uint8Array) {
     const friendPublicKey = inviteCode.slice(0, 65)
     const chatSecretEncrypted = inviteCode.slice(65)
-    const sharedSecret = await this.walletApi.getSharedSecret(friendPublicKey)
+    const sharedSecret = await this.walletService.getSharedSecret(
+      friendPublicKey
+    )
     return await this.decrypt(sharedSecret, chatSecretEncrypted)
   }
 
@@ -416,19 +478,28 @@ export class ChatsApi extends BaseAPI {
     const sharedSecret = await this.getChatSecret(c.chat_id)
     return {
       ...c,
-      last_message: c.last_message
-        ? await this.decryptString(sharedSecret, base64.decode(c.last_message))
-        : ''
+      last_message:
+        c.last_message && c.last_message.length > 0
+          ? await this.decryptString(
+              sharedSecret,
+              base64.decode(c.last_message)
+            )
+          : ''
     }
   }
 
   private async getRaw(chatId: string) {
     const path = `/comms/chats/${chatId}`
-    return (await this.request({
+    const queryParameters: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+    const response = await this.signAndSendRequest({
       method: 'GET',
+      headers: {},
       path,
-      headers: await this.getSignatureHeader(path)
-    })) as TypedCommsResponse<UserChat>
+      query: queryParameters
+    })
+    return (await response.json()) as TypedCommsResponse<UserChat>
   }
 
   private async getChatSecret(chatId: string) {
@@ -450,26 +521,100 @@ export class ChatsApi extends BaseAPI {
       method: 'GET',
       headers: {}
     })
-    return base64.decode(response.data)
+    const json = await response.json()
+    return base64.decode(json.data)
   }
 
   private async getSignatureHeader(payload: string) {
-    const [allSignatureBytes, recoveryByte] = await this.walletApi.sign(payload)
+    const [allSignatureBytes, recoveryByte] = await this.walletService.sign(
+      payload
+    )
     const signatureBytes = new Uint8Array(65)
     signatureBytes.set(allSignatureBytes, 0)
     signatureBytes[64] = recoveryByte
     return { 'x-sig': base64.encode(signatureBytes) }
   }
 
-  private async sendRpc(args: RPCPayload) {
-    const payload = JSON.stringify(args)
-    await this.request({
-      path: `/comms/mutate`,
+  private async signAndSendRequest(request: RequestOpts) {
+    const payload =
+      request.method === 'GET'
+        ? request.query
+          ? `${request.path}?${this.configuration.queryParamsStringify(
+              request.query
+            )}`
+          : request.path
+        : request.body
+    return await this.request({
+      ...request,
+      headers: {
+        ...request.headers,
+        ...(await this.getSignatureHeader(payload))
+      }
+    })
+  }
+
+  private async sendRpc(args: RPCPayloadRequest) {
+    const payload = JSON.stringify({ ...args, timestamp: new Date().getTime() })
+    await this.signAndSendRequest({
       method: 'POST',
-      headers: await this.getSignatureHeader(payload),
+      headers: { 'Content-Type': 'application/json' },
+      path: `/comms/mutate`,
       body: payload
     })
     return args
+  }
+
+  private async createWebsocket(endpoint: string) {
+    const timestamp = new Date().getTime()
+    const originalUrl = `/comms/chats/ws?timestamp=${timestamp}`
+    const signatureHeader = await this.getSignatureHeader(originalUrl)
+    const host = endpoint.replace(/http(s?)/g, 'ws$1')
+    const url = `${host}${originalUrl}&signature=${encodeURIComponent(
+      signatureHeader['x-sig']
+    )}`
+    const ws = new WebSocket(url)
+    ws.addEventListener('message', (messageEvent) => {
+      const handleAsync = async () => {
+        const data = JSON.parse(messageEvent.data) as ChatWebsocketEventData
+        if (data.rpc.method === 'chat.message') {
+          const sharedSecret = await this.getChatSecret(data.rpc.params.chat_id)
+          this.eventEmitter.emit('message', {
+            chatId: data.rpc.params.chat_id,
+            message: {
+              message_id: data.rpc.params.message_id,
+              message: await this.decryptString(
+                sharedSecret,
+                base64.decode(data.rpc.params.message)
+              ),
+              sender_user_id: data.metadata.userId,
+              created_at: data.metadata.timestamp,
+              reactions: []
+            }
+          })
+        } else if (data.rpc.method === 'chat.react') {
+          this.eventEmitter.emit('reaction', {
+            chatId: data.rpc.params.chat_id,
+            messageId: data.rpc.params.message_id,
+            reaction: {
+              reaction: data.rpc.params.reaction,
+              user_id: data.metadata.userId,
+              created_at: data.metadata.timestamp
+            }
+          })
+        }
+      }
+      handleAsync()
+    })
+    ws.addEventListener('open', () => {
+      this.eventEmitter.emit('open')
+    })
+    ws.addEventListener('close', () => {
+      this.eventEmitter.emit('close')
+    })
+    ws.addEventListener('error', (e) => {
+      this.eventEmitter.emit('error', e)
+    })
+    return ws
   }
 
   // #endregion

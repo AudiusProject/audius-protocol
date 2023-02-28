@@ -1,4 +1,3 @@
-import type { DiscoveryProvider } from '../../services/discoveryProvider'
 import { BASE_PATH, RequiredError } from './generated/default/runtime'
 
 import {
@@ -6,13 +5,26 @@ import {
   StreamTrackRequest,
   TracksApi as GeneratedTracksApi
 } from './generated/default'
+import type { DiscoveryNodeSelectorService } from '../services/DiscoveryNodeSelector'
 
-export class TracksApi extends GeneratedTracksApi {
-  discoveryNode: DiscoveryProvider
+// Subclass type masking adapted from Damir Arh's method:
+// https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
+// Get the type of the generated TracksApi excluding streamTrack
+type GeneratedTracksApiWithoutStream = new (config: Configuration) => {
+  [P in Exclude<keyof GeneratedTracksApi, 'streamTrack'>]: GeneratedTracksApi[P]
+}
 
-  constructor(configuration: Configuration, discoveryNode: DiscoveryProvider) {
+// Create a new "class" that masks our generated TracksApi with the new type
+const TracksApiWithoutStream: GeneratedTracksApiWithoutStream =
+  GeneratedTracksApi
+
+// Extend that new class
+export class TracksApi extends TracksApiWithoutStream {
+  constructor(
+    configuration: Configuration,
+    private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService
+  ) {
     super(configuration)
-    this.discoveryNode = discoveryNode
   }
 
   /**
@@ -33,7 +45,7 @@ export class TracksApi extends GeneratedTracksApi {
       `{${'track_id'}}`,
       encodeURIComponent(String(requestParameters.trackId))
     )
-    const host = await this.discoveryNode.getHealthyDiscoveryProviderEndpoint(0)
+    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
     return `${host}${BASE_PATH}${path}`
   }
 }

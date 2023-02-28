@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"mime/multipart"
 	"net"
@@ -16,7 +15,9 @@ import (
 	"sync"
 	"time"
 
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/telemetry"
+	"github.com/avast/retry-go"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/lucsky/cuid"
@@ -70,6 +71,7 @@ type JobsManager struct {
 
 	workSubscription *nats.Subscription
 	tempBucketCount  int
+	replicaCount     int
 
 	websockets map[net.Conn]bool
 
@@ -77,40 +79,52 @@ type JobsManager struct {
 }
 
 const (
-	KvSuffix    = "_kv"
-	objStoreTtl = time.Hour * 24
+	KvSuffix                         = "_kv"
+	temporaryObjectStoreNameTemplate = "temp_obj_%d" // if we adjust temporary settings (count, ttl, replication, placement) we should change this template to "roll forward"... delete the old ones later
+	temporaryObjectStoreTTL          = time.Hour * 24
 )
 
 func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) (*JobsManager, error) {
 	// kv
 	kvBucketName := prefix + KvSuffix
-	kv, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:   kvBucketName,
-		Replicas: replicaCount,
-	})
+	var kv nats.KeyValue
+	err := retry.Do(
+		func() error {
+			var err error
+			kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+				Bucket:   kvBucketName,
+				Replicas: replicaCount,
+			})
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to create KV: %v", err)
 	}
 
 	// work subscription using kv's underlying stream
 	kvStreamName := "KV_" + kvBucketName
-	workSubscription, err := jsc.QueueSubscribeSync("", kvStreamName, nats.AckWait(time.Minute), nats.BindStream(kvStreamName))
+	var workSubscription *nats.Subscription
+	err = retry.Do(
+		func() error {
+			var err error
+			workSubscription, err = jsc.QueueSubscribeSync("", kvStreamName, nats.AckWait(time.Minute), nats.BindStream(kvStreamName))
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
 	if err != nil {
-		return nil, err
-	}
-
-	// create temp buckets
-	tempBucketCount := 20
-	for i := 0; i < tempBucketCount; i++ {
-		createObjStoreIfNotExists(&nats.ObjectStoreConfig{
-			Bucket: fmt.Sprintf("temp_%d", i),
-			TTL:    objStoreTtl,
-		}, jsc)
+		return nil, fmt.Errorf("failed to create KV work subscription: %v", err)
 	}
 
 	watcher, err := kv.WatchAll()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to watch KV: %v", err)
 	}
 
 	jobman := &JobsManager{
@@ -120,13 +134,42 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		watcher:          watcher,
 		table:            map[string]*Job{},
 		logger:           telemetry.NewConsoleLogger(),
-		tempBucketCount:  tempBucketCount,
+		tempBucketCount:  8,
+		replicaCount:     replicaCount,
 		websockets:       map[net.Conn]bool{},
 	}
+
+	jobman.createTemporaryObjectStores()
 
 	go jobman.watch()
 
 	return jobman, nil
+}
+
+func (jobman *JobsManager) createTemporaryObjectStores() {
+	for i := 0; i < jobman.tempBucketCount; i++ {
+		retry.Do(
+			func() error {
+				return createObjStoreIfNotExists(&nats.ObjectStoreConfig{
+					Bucket:   jobman.temporaryObjectStoreName(i),
+					TTL:      temporaryObjectStoreTTL,
+					Replicas: jobman.replicaCount,
+					Placement: &nats.Placement{
+						Cluster: config.GetStorageConfig().PeeringConfig.NatsClusterName,
+					},
+				}, jobman.jsc)
+			},
+		)
+	}
+}
+
+func (jobman *JobsManager) temporaryObjectStoreName(i int) string {
+	return fmt.Sprintf(temporaryObjectStoreNameTemplate, i)
+}
+
+func (jobman *JobsManager) randomTemporaryObjectStore() (nats.ObjectStore, error) {
+	name := jobman.temporaryObjectStoreName(rand.Intn(jobman.tempBucketCount))
+	return jobman.jsc.ObjectStore(name)
 }
 
 func (jobman *JobsManager) watch() {
@@ -182,15 +225,13 @@ func (jobman *JobsManager) Add(template JobTemplate, upload *multipart.FileHeade
 		Description: upload.Filename,
 	}
 
-	randBucket := fmt.Sprintf("temp_%d", rand.Intn(jobman.tempBucketCount))
-	objStore, err := jobman.jsc.ObjectStore(randBucket)
+	objStore, err := jobman.randomTemporaryObjectStore()
 	if err != nil {
-		log.Println("FUUU", randBucket, err)
 		return nil, err
 	}
 	info, err := objStore.Put(meta, f)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to put object: %v", err)
 	}
 
 	job := &Job{

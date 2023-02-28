@@ -38,6 +38,9 @@ class Save(Base, RepresentableMixin):
         primary_key=True,
         nullable=False,
     )
+
+    is_save_of_repost = Column(Boolean, nullable=False, server_default="false")
+
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
     created_at = Column(DateTime, nullable=False)

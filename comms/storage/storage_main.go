@@ -8,25 +8,16 @@ import (
 	"os/signal"
 	"time"
 
-	"comms.audius.co/discovery/config"
 	"comms.audius.co/shared/peering"
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/storageserver"
-	"comms.audius.co/storage/telemetry"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/prometheus-nats-exporter/exporter"
 )
 
 func StorageMain() {
-
-	// TODO: shouldn't use discovery config
-	config.Init()
-
-	ctx := context.Background()
-
-	logger := telemetry.NewConsoleLogger()
-	tp := telemetry.InitTracing(logger)
-	defer func() { _ = tp.Shutdown(ctx) }()
-
+	storageConfig := config.GetStorageConfig()
+	peering := peering.New(&storageConfig.PeeringConfig)
 	jsc, err := func() (nats.JetStreamContext, error) {
 		err := peering.PollRegisteredNodes()
 		if err != nil {
@@ -40,7 +31,7 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	ss := storageserver.NewProd(jsc)
+	ss := storageserver.NewProd(storageConfig, jsc, peering)
 
 	// Start server
 	go func() {
