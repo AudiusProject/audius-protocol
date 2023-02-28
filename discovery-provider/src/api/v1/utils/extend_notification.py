@@ -405,6 +405,7 @@ notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
     "repost_of_repost": extend_repost_of_a_repost,
+    "save_of_repost": extend_save_of_repost,
     "save": extend_save,
     "milestone": extend_milestone,
     "remix": extend_remix,
