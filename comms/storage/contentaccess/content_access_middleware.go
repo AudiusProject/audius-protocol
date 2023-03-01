@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
@@ -60,6 +61,9 @@ func parseQueryParams(values url.Values) (*SignatureData, []byte, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+
+	// Remove the "0x" signatures since it'll break hex decoding
+	signedAccessData.Signature = strings.TrimPrefix(signedAccessData.Signature, "0x")
 
 	rawSignature, err := hex.DecodeString(signedAccessData.Signature)
 	if err != nil {
