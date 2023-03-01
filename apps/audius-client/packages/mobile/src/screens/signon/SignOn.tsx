@@ -646,6 +646,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
                     email,
                     () => {
                       // On available email, move to create password
+                      dispatch(signOnActions.startSignUp())
                       navigation.push('CreatePassword')
                       setIsWorking(false)
                     },

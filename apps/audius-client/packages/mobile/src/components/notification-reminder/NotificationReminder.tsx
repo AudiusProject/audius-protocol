@@ -1,20 +1,19 @@
 import { useCallback } from 'react'
 
-import { accountSelectors } from '@audius/common'
+import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
 import { checkNotifications, RESULTS } from 'react-native-permissions'
 import { useDispatch, useSelector } from 'react-redux'
 import type { Dispatch } from 'redux'
 
 import useSessionCount from 'app/hooks/useSessionCount'
 import { setVisibility } from 'app/store/drawers/slice'
-const getHasAccount = accountSelectors.getHasAccount
 
 const FIRST_REMINDER_SESSION = 10
 const REMINDER_FREQUENCY = 10
 
 export const NotificationReminder = () => {
-  const hasAccount = useSelector(getHasAccount)
-  if (hasAccount) {
+  const hasCompletedAccount = useSelector(getHasCompletedAccount)
+  if (hasCompletedAccount) {
     return <NotificationReminderInternal />
   }
   return null
