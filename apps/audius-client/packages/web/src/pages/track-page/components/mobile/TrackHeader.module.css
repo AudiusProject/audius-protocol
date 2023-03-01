@@ -294,8 +294,9 @@
 }
 
 .cornerTag {
-  top: 14px;
-  left: var(--unit-3);
+  position: relative;
+  top: -10px;
+  left: calc(-50vw + 58px);
 }
 
 .premiumContentLabel {

@@ -1,7 +1,10 @@
 import { StyleSheet, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
+import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
+import IconLock from 'app/assets/images/iconLock.svg'
+import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import IconStar from 'app/assets/images/iconStar.svg'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -33,7 +36,10 @@ const styles = StyleSheet.create({
 
 export enum LineupTileBannerIconType {
   STAR = 'star',
-  HIDDEN = 'hidden'
+  HIDDEN = 'hidden',
+  LOCKED = 'locked',
+  COLLECTIBLE_GATED = 'collectible gated',
+  SPECIAL_ACCESS = 'special access'
 }
 
 export const LineupTileBannerIcon = ({
@@ -46,7 +52,8 @@ export const LineupTileBannerIcon = ({
     neutralLight3,
     pageHeaderGradientColor2,
     secondary,
-    staticWhite
+    staticWhite,
+    accentBlue
   } = useThemeColors()
 
   const { icon: Icon, colors } = {
@@ -57,6 +64,18 @@ export const LineupTileBannerIcon = ({
     [LineupTileBannerIconType.HIDDEN]: {
       icon: IconHidden,
       colors: [neutral, neutralLight3]
+    },
+    [LineupTileBannerIconType.LOCKED]: {
+      icon: IconLock,
+      colors: [accentBlue, accentBlue]
+    },
+    [LineupTileBannerIconType.COLLECTIBLE_GATED]: {
+      icon: IconCollectible,
+      colors: [accentBlue, accentBlue]
+    },
+    [LineupTileBannerIconType.SPECIAL_ACCESS]: {
+      icon: IconSpecialAccess,
+      colors: [accentBlue, accentBlue]
     }
   }[type]
 

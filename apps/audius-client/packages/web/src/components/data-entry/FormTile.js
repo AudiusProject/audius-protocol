@@ -271,7 +271,7 @@ const BasicForm = (props) => {
           if (!trackId) {
             setIsRemix(false)
             props.onChangeField('remix_of', null)
-          } else {
+          } else if (isRemix) {
             props.onChangeField(
               'remix_of',
               createRemixOfMetadata({ parentTrackId: trackId })
@@ -512,7 +512,7 @@ const AdvancedForm = (props) => {
           if (!trackId) {
             setIsRemix(false)
             props.onChangeField('remix_of', null)
-          } else {
+          } else if (isRemix) {
             props.onChangeField(
               'remix_of',
               createRemixOfMetadata({ parentTrackId: trackId })

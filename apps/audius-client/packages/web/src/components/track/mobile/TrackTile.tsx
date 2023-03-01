@@ -7,7 +7,8 @@ import {
   PremiumConditions,
   Nullable,
   premiumContentSelectors,
-  premiumContentActions
+  premiumContentActions,
+  FeatureFlags
 } from '@audius/common'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
@@ -20,9 +21,9 @@ import FavoriteButton from 'components/alt-button/FavoriteButton'
 import RepostButton from 'components/alt-button/RepostButton'
 import Skeleton from 'components/skeleton/Skeleton'
 import { PremiumContentLabel } from 'components/track/PremiumContentLabel'
-import { PremiumTrackCornerTag } from 'components/track/PremiumTrackCornerTag'
 import { TrackTileProps } from 'components/track/types'
 import UserBadges from 'components/user-badges/UserBadges'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { profilePage } from 'utils/route'
 
 import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
@@ -127,6 +128,9 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     permalink,
     artistHandle
   } = props
+  const { isEnabled: isPremiumContentEnabled } = useFlag(
+    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  )
 
   const hideShare: boolean = props.fieldVisibility
     ? props.fieldVisibility.share === false
@@ -144,7 +148,17 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     : undefined
 
   const showPremiumCornerTag =
-    !isLoading && premiumConditions && (isOwner || !doesUserHaveAccess)
+    isPremiumContentEnabled &&
+    !isLoading &&
+    premiumConditions &&
+    (isOwner || !doesUserHaveAccess)
+  const cornerTagIconType = showPremiumCornerTag
+    ? isOwner
+      ? premiumConditions.nft_collection
+        ? TrackBannerIconType.COLLECTIBLE_GATED
+        : TrackBannerIconType.SPECIAL_ACCESS
+      : TrackBannerIconType.LOCKED
+    : null
 
   const onToggleSave = useCallback(() => toggleSave(id), [toggleSave, id])
 
@@ -192,12 +206,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
 
   return (
     <div className={styles.container}>
-      {showPremiumCornerTag ? (
-        <PremiumTrackCornerTag
-          doesUserHaveAccess={!!doesUserHaveAccess}
-          isOwner={isOwner}
-          premiumConditions={premiumConditions}
-        />
+      {showPremiumCornerTag && cornerTagIconType ? (
+        <TrackBannerIcon type={cornerTagIconType} isMatrixMode={isMatrix} />
       ) : null}
       {!showPremiumCornerTag && props.showArtistPick && props.isArtistPick ? (
         <TrackBannerIcon

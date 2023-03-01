@@ -35,13 +35,15 @@ import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import { PremiumTrackCornerTag } from 'components/track/PremiumTrackCornerTag'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
+import TrackBannerIcon, {
+  TrackBannerIconType
+} from 'components/track/TrackBannerIcon'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { moodMap } from 'utils/moods'
-import { isDarkMode } from 'utils/theme/theme'
+import { isDarkMode, isMatrix } from 'utils/theme/theme'
 
 import HiddenTrackHeader from '../HiddenTrackHeader'
 
@@ -314,12 +316,23 @@ const TrackHeader = ({
   )
 
   const renderCornerTag = () => {
-    if (isPremiumContentEnabled && premiumConditions) {
+    const showPremiumCornerTag =
+      isPremiumContentEnabled &&
+      !isLoading &&
+      premiumConditions &&
+      (isOwner || !doesUserHaveAccess)
+    const cornerTagIconType = showPremiumCornerTag
+      ? isOwner
+        ? premiumConditions.nft_collection
+          ? TrackBannerIconType.COLLECTIBLE_GATED
+          : TrackBannerIconType.SPECIAL_ACCESS
+        : TrackBannerIconType.LOCKED
+      : null
+    if (showPremiumCornerTag && cornerTagIconType) {
       return (
-        <PremiumTrackCornerTag
-          doesUserHaveAccess={doesUserHaveAccess}
-          isOwner={isOwner}
-          premiumConditions={premiumConditions}
+        <TrackBannerIcon
+          type={cornerTagIconType}
+          isMatrixMode={isMatrix()}
           className={styles.cornerTag}
         />
       )

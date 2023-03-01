@@ -1,5 +1,7 @@
 .artistPick {
   position: absolute;
+  top: 0;
+  left: 0;
   z-index: 10;
   width: 80px;
   height: 80px;
@@ -13,6 +15,10 @@
   width: 80px;
   height: 80px;
   overflow: hidden;
+}
+
+.gated {
+  background: var(--accent-blue);
 }
 
 .star {
@@ -37,7 +43,8 @@
   top: 0;
   margin-left: 5px;
   margin-top: 2px;
-  width: 17px;
+  width: var(--unit-4);
+  height: var(--unit-6);
 }
 
 .isMobile svg {
