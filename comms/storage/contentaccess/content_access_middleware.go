@@ -1,6 +1,7 @@
 package contentaccess
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -33,7 +34,7 @@ func ContentAccessMiddleware(p peering.Peering) func(next echo.HandlerFunc) echo
 				return echo.ErrInternalServerError
 			}
 
-			err = VerifySignature(nodes, *signatureData, []byte(signature), requestedCid)
+			err = VerifySignature(nodes, *signatureData, signature, requestedCid)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
@@ -60,7 +61,12 @@ func parseQueryParams(values url.Values) (*SignatureData, []byte, error) {
 		return nil, nil, err
 	}
 
-	return signatureData, signedAccessData.Signature, nil
+	rawSignature, err := hex.DecodeString(signedAccessData.Signature)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return signatureData, rawSignature, nil
 }
 
 func parseSignature(rawSignature string) (*SignedAccessData, error) {

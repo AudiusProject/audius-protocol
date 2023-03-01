@@ -2,8 +2,10 @@ package tests
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"testing"
@@ -42,10 +44,12 @@ func TestContentAccessMiddleware(t *testing.T) {
 	if err != nil {
 		t.Fatal("Key generation failed")
 	}
-	correctSignature, err := utils.GenerateSignature(correctSignatureData, privKey)
+	rawCorrectSignature, err := utils.GenerateSignature(correctSignatureData, privKey)
 	if err != nil {
 		t.Fatalf("Failed to generate signature for %+v", correctSignatureData)
 	}
+
+	correctSignature := hex.EncodeToString(rawCorrectSignature)
 	expectedWallet := crypto.PubkeyToAddress(privKey.PublicKey).Hex()
 
 	correctDiscoveryNode := sharedConfig.ServiceNode{
@@ -64,7 +68,7 @@ func TestContentAccessMiddleware(t *testing.T) {
 
 	tests := map[string]struct {
 		signedData   contentaccess.SignatureData
-		signature    []byte
+		signature    string
 		requestedCid string
 		statusCode   int
 	}{
@@ -82,7 +86,7 @@ func TestContentAccessMiddleware(t *testing.T) {
 		},
 		"incorrect wallet": {
 			correctSignatureData,
-			[]byte("0xincorrectsignature"),
+			"0xincorrectsignature",
 			correctCID,
 			echo.ErrBadRequest.Code,
 		},
@@ -112,9 +116,15 @@ func TestContentAccessMiddleware(t *testing.T) {
 			t.Fatalf("http request failed, %+v", err)
 		}
 
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("failed to read body, %+v", err)
+		}
+		defer resp.Body.Close()
+
 		// check response
 		if resp.StatusCode != tt.statusCode {
-			t.Fatalf("status code doesn't match up, want=%d, got=%d", tt.statusCode, resp.StatusCode)
+			t.Fatalf("status code doesn't match up, want=%d, got=%d, %+v", tt.statusCode, resp.StatusCode, string(body))
 		}
 
 	}
