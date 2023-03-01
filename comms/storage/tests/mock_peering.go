@@ -13,6 +13,10 @@ var nodes []sharedConfig.ServiceNode
 
 type MockPeering struct{}
 
+func (mp *MockPeering) AddNode(node sharedConfig.ServiceNode) {
+	nodes = append(nodes, node)
+}
+
 func (mp *MockPeering) AllNodes() ([]sharedConfig.ServiceNode, error) {
 	return nodes, nil
 }

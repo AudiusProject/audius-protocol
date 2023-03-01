@@ -60,7 +60,7 @@ func TestContentAccessMiddleware(t *testing.T) {
 		},
 	}
 
-	nodes = []sharedConfig.ServiceNode{correctDiscoveryNode}
+	mp.AddNode(correctDiscoveryNode)
 
 	tests := map[string]struct {
 		signedData   contentaccess.SignatureData
