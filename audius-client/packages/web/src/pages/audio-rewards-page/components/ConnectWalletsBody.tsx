@@ -36,6 +36,8 @@ const ConnectWalletsBody = ({ className }: ConnectWalletsBodyProps) => {
     dispatch(connectNewWallet())
   }, [dispatch])
 
+  const { errorMessage } = useSelector(getAssociatedWallets)
+
   const {
     status,
     confirmingWallet,
@@ -75,6 +77,7 @@ const ConnectWalletsBody = ({ className }: ConnectWalletsBodyProps) => {
           hideCollectibles
         />
       )}
+      {errorMessage && <div className={styles.error}>{errorMessage}</div>}
     </div>
   )
 }
