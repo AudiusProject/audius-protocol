@@ -149,7 +149,6 @@ const WalletsTable = ({
   const {
     status,
     confirmingWallet,
-    errorMessage,
     connectedEthWallets: ethWallets,
     connectedSolWallets: solWallets
   } = useSelector(getAssociatedWallets)
@@ -251,7 +250,6 @@ const WalletsTable = ({
           isConfirmRemoving={false}
         />
       )}
-      {errorMessage && <div className={styles.error}>{errorMessage}</div>}
     </div>
   )
 }
