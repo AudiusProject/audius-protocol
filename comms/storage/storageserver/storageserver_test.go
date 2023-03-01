@@ -46,7 +46,7 @@ func TestE2EUpload(t *testing.T) {
 	assert.NoError(err)
 	jobman.StartWorkers(3)
 
-	url := "/storage/file"
+	url := "/storage/api/v1/file"
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("object", "test.mp3") // TODO: This could be a randomly generated file

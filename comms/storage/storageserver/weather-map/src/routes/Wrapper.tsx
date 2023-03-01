@@ -1,6 +1,6 @@
 import { Link, Outlet } from 'react-router-dom'
 
-import Search from '../components/search/Search'
+import Search from '../components/search/SearchBar'
 
 export default function Wrapper() {
   return (
@@ -8,8 +8,10 @@ export default function Wrapper() {
       <div className="py-10">
         <header>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h1 className="bg-gradient-to-r from-purple-400 to-purple-800 bg-clip-text text-center text-5xl font-extrabold leading-tight tracking-tight text-transparent lg:text-7xl">
-              <Link to="/">Weather Map</Link>
+            <h1 className="bg-gradient-to-r from-purple-400 to-purple-800 bg-clip-text text-center text-5xl font-extrabold leading-tight tracking-tight text-transparent lg:h-20 lg:text-7xl">
+              <Link className="h-full" to="/">
+                Storage v2
+              </Link>
             </h1>
           </div>
         </header>

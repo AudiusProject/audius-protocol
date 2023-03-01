@@ -33,7 +33,7 @@ make
 open http://node1-storage/storage
 
 # you can also curl uploads
-curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/file
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/api/v1/file
 
 # after some uploads, you can see which nodes stored what files 
 docker logs storage1 2>&1 | grep -i storing
@@ -165,7 +165,7 @@ GET  /job-results/:id
 <i>Example: Upload a track</i>
 
 ```shell
-curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/file
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/api/v1/file
 
 [
   {

@@ -27,7 +27,7 @@ func NewStorageClient(endpoint string) StorageClient {
 }
 
 func (sc *StorageClient) Upload(data []byte, jobType transcode.JobTemplate, contentType string, filename string) error {
-	route := "/storage/file"
+	route := "/storage/api/v1/file"
 
 	values := map[string]io.Reader{
 		"files":    bytes.NewReader(data),

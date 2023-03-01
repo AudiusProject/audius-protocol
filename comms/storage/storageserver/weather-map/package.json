@@ -4,12 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build --base=/storage/weather/",
-    "preview": "vite preview",
+    "dev": "tsc && vite build --base=/storage/ --watch",
+    "build": "tsc && vite build --base=/storage/",
     "lint:fix": "eslint ./src --ext .jsx,.js,.ts,.tsx --quiet --fix --ignore-path ./.gitignore",
     "lint:format": "prettier  --loglevel warn --write \"./**/*.{js,jsx,ts,tsx,css,md,json}\" ",
-    "lint": "yarn lint:format && yarn lint:fix "
+    "lint": "yarn lint:format && yarn lint:fix"
   },
   "dependencies": {
     "@headlessui/react": "^1.7.9",
