@@ -11,11 +11,10 @@ import {
   createTestDB,
   dropTestDB,
   replaceDBName,
-  createTracks,
-  createPlaylists,
-  createSubscription,
   insertNotifications,
 } from '../../utils/populateDB'
+import { AnnouncementNotification, AppEmailNotification } from '../../types/notifications'
+import { renderEmail } from '../../email/notifications/renderEmail'
 
 describe('Announcement Notification', () => {
   let processor: Processor
@@ -83,4 +82,31 @@ describe('Announcement Notification', () => {
     })
   })
 
+  test("Render a single announcement email", async () => {
+    const data: AnnouncementNotification = {
+      title: "This is an announcement",
+      short_description: 'This is some information about the announcement we need to display'
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'announcement',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'announcement:blocknumber:1',
+        data,
+        user_ids: [1],
+        receiver_user_id: 1
+      }
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+    expect(notifHtml).toMatchSnapshot()
+  })
 })

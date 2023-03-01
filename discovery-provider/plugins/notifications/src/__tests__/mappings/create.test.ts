@@ -15,6 +15,8 @@ import {
   createPlaylists,
   createSubscription,
 } from '../../utils/populateDB'
+import { renderEmail } from '../../email/notifications/renderEmail'
+import { AppEmailNotification, CreatePlaylistNotification, CreateTrackNotification } from '../../types/notifications'
 
 describe('Create Notification', () => {
   let processor: Processor
@@ -72,6 +74,50 @@ describe('Create Notification', () => {
     })
   })
 
+  test("Process email notification for create tracks", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createSubscription(processor.discoveryDB, [{ subscriber_id: 2, user_id: 1 }])
+    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }, { track_id: 11, owner_id: 1 }])
+    const data: CreateTrackNotification = {
+      track_id: 10,
+    }
+    const data2: CreateTrackNotification = {
+      track_id: 11,
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'create',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'create:track:user_id:1',
+        data,
+        user_ids: [2],
+        receiver_user_id: 2
+      },
+      {
+        type: 'create',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'create:track:user_id:1',
+        data,
+        user_ids: [2],
+        receiver_user_id: 2
+      }
+    ]
+
+    const notifHtml = await renderEmail({
+      userId: 2,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+
+    expect(notifHtml).toMatchSnapshot()
+  })
+
   test("Process push notification for create playlist", async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createSubscription(processor.discoveryDB, [{ subscriber_id: 2, user_id: 1 }])
@@ -96,6 +142,39 @@ describe('Create Notification', () => {
     })
   })
 
+
+  test("Process email notification for create playlist", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createSubscription(processor.discoveryDB, [{ subscriber_id: 2, user_id: 1 }])
+    await createPlaylists(processor.discoveryDB, [{ playlist_id: 10, playlist_owner_id: 1, playlist_name: 'I am a playlist' }])
+    const data: CreatePlaylistNotification = {
+      playlist_id: 10,
+      is_album: false
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'create',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'create:playlist:1',
+        data,
+        user_ids: [2],
+        receiver_user_id: 2
+      },
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+
+    expect(notifHtml).toMatchSnapshot()
+  })
+
   test("Process push notification for create album", async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createSubscription(processor.discoveryDB, [{ subscriber_id: 2, user_id: 1 }])
@@ -118,6 +197,38 @@ describe('Create Notification', () => {
       body: 'user_1 released a new album I am an album',
       data: {}
     })
+  })
+
+  test("Process email notification for create album", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createSubscription(processor.discoveryDB, [{ subscriber_id: 2, user_id: 1 }])
+    await createPlaylists(processor.discoveryDB, [{ is_album: true, playlist_id: 10, playlist_owner_id: 1, playlist_name: 'I am an album' }])
+    const data: CreatePlaylistNotification = {
+      playlist_id: 10,
+      is_album: true
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'create',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'create:playlist:10',
+        data,
+        user_ids: [2],
+        receiver_user_id: 2
+      },
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+
+    expect(notifHtml).toMatchSnapshot()
   })
 
 })

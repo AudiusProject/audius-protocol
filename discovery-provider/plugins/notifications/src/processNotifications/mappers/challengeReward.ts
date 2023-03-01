@@ -5,6 +5,7 @@ import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { ChallengeId } from '../../email/notifications/types'
+import { formatWei } from '../../utils/format'
 
 type ChallengeRewardRow = Omit<NotificationRow, 'data'> & { data: ChallengeRewardNotification }
 export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
@@ -132,11 +133,12 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUserId = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      receiverUserId: { name: receiverUserId.name },
-      amount: this.amount
+      challengeId: this.challengeId,
+      receiverUserId: { name: receiverUser.name },
+      rewardAmount: formatWei(this.amount.toString(), 'sol')
     }
   }
 

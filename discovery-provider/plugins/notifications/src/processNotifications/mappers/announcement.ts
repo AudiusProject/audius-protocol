@@ -69,7 +69,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
   }
 
   formatEmailProps(resources: Resources) {
-    return { type: this.notification.type }
+    return {
+      type: this.notification.type,
+      title: this.notification.data.title,
+      text: this.notification.data.short_description,
+    }
   }
 
 }

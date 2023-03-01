@@ -1,6 +1,8 @@
 import { expect, jest, test } from '@jest/globals'
+import { renderEmail } from '../../email/notifications/renderEmail'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
+import { AppEmailNotification, SupporterRankUpNotification } from '../../types/notifications'
 
 import {
   createUsers,
@@ -66,6 +68,41 @@ describe('Supporter Rank Up Notification', () => {
       body: `User_2 became your #2 Top Supporter!`,
       data: {}
     })
+  })
+
+
+  test("Process email notification for supporter rank up", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createUserBankTx(processor.discoveryDB, [{ signature: '1', slot: 1 }])
+    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 2 }])
+
+    const data: SupporterRankUpNotification = {
+      rank: 2,
+      sender_user_id: 2,
+      receiver_user_id: 1
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'supporter_rank_up',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'supporter_rank_up:2:slot:145422128',
+        data,
+        user_ids: [2],
+        receiver_user_id: 2
+      },
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+
+    expect(notifHtml).toMatchSnapshot()
   })
 
 })
