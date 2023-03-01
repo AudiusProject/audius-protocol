@@ -74,7 +74,7 @@ func TestContentAccessMiddleware(t *testing.T) {
 			correctCID,
 			http.StatusOK,
 		},
-		"empty CID": {
+		"incorrect CID": {
 			correctSignatureData,
 			correctSignature,
 			"whoa",

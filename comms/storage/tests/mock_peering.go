@@ -9,12 +9,12 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-var dnodes []sharedConfig.ServiceNode
+var nodes []sharedConfig.ServiceNode
 
 type MockPeering struct{}
 
 func (mp *MockPeering) AllNodes() ([]sharedConfig.ServiceNode, error) {
-	return nil, nil
+	return nodes, nil
 }
 func (mp *MockPeering) DialJetstream(peerMap map[string]*peering.Info) (nats.JetStreamContext, error) {
 	return nil, nil
@@ -29,9 +29,25 @@ func (mp *MockPeering) ExchangeEndpoint(c echo.Context) error {
 	return nil
 }
 func (mp *MockPeering) GetContentNodes() ([]sharedConfig.ServiceNode, error) {
-	return nil, nil
+	var cnodes []sharedConfig.ServiceNode
+
+	for _, node := range nodes {
+		if node.Type.ID == "content-node" {
+			cnodes = append(cnodes, node)
+		}
+	}
+
+	return cnodes, nil
 }
 func (mp *MockPeering) GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error) {
+	var dnodes []sharedConfig.ServiceNode
+
+	for _, node := range nodes {
+		if node.Type.ID == "discovery-node" {
+			dnodes = append(dnodes, node)
+		}
+	}
+
 	return dnodes, nil
 }
 func (mp *MockPeering) ListPeers() []peering.Info {
