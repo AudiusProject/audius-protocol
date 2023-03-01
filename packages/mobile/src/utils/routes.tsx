@@ -10,7 +10,7 @@ export const getTrackRoute = (
   track: { permalink: string },
   fullUrl = false
 ) => {
-  const route = `/${encodeUrlName(track.permalink)}`
+  const route = track.permalink
   return fullUrl ? `${AUDIUS_URL}${route}` : route
 }
 
