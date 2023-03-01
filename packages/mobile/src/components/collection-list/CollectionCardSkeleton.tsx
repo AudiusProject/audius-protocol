@@ -6,7 +6,7 @@ import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
-    height: 212
+    height: 218
   },
   cardContent: {
     paddingHorizontal: spacing(2)
