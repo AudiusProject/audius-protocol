@@ -1,4 +1,9 @@
-import { SolanaClient, CommonStoreContext, OpenSeaClient } from '@audius/common'
+import {
+  SolanaClient,
+  CommonStoreContext,
+  OpenSeaClient,
+  FeatureFlags
+} from '@audius/common'
 import * as Sentry from '@sentry/browser'
 
 import * as analytics from 'services/analytics'
@@ -24,7 +29,11 @@ export const storeContext: CommonStoreContext = {
   getLocalStorageItem: async (key: string) => window.localStorage.getItem(key),
   setLocalStorageItem: async (key: string, value: string) =>
     window.localStorage.setItem(key, value),
-  getFeatureEnabled,
+  // Note: casting return type to Promise<boolean> to maintain pairity with mobile, but
+  // it may be best to update mobile to not be async
+  getFeatureEnabled: getFeatureEnabled as unknown as (
+    flag: FeatureFlags
+  ) => Promise<boolean>,
   analytics,
   remoteConfigInstance,
   audiusBackendInstance,

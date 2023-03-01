@@ -99,11 +99,11 @@ export function* watchPlay() {
       const streamMp3IsEnabled = yield* call(
         getFeatureEnabled,
         FeatureFlags.STREAM_MP3
-      ) ?? false
+      )
       const isPremiumContentEnabled = yield* call(
         getFeatureEnabled,
         FeatureFlags.PREMIUM_CONTENT_ENABLED
-      ) ?? false
+      )
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
       const remoteConfigInstance = yield* getContext('remoteConfigInstance')
