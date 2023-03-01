@@ -1,10 +1,10 @@
 import { useSearchParams } from 'react-router-dom'
 
-import { useNodesToShards } from '../api'
+import { useNodeStatuses } from '../api'
 import Nodes from '../components/nodes/Nodes'
 
 export default function Home() {
-  const { isLoading, error, data: hostsAndShards } = useNodesToShards()
+  const { isLoading, error, data: nodeStatuses } = useNodeStatuses()
   const [searchParams] = useSearchParams()
 
   let demo = false
@@ -14,21 +14,23 @@ export default function Home() {
 
   if (isLoading) return <>Loading...</>
   if (error) return <>An error has occurred: ${JSON.stringify(error)}</>
-  if (!hostsAndShards) return <>Unable to query any nodes in network</>
+  if (!nodeStatuses) return <>Unable to query any nodes in network</>
 
-  // Add to hostsAndShards for the dev environment since we only have 4 nodes
+  // Add to nodeStatuses for the dev environment since we only have 4 nodes
   if (demo) {
-    hostsAndShards[`0x123456789_${0}`] = {
+    nodeStatuses[`0x123456789_${0}`] = {
       host: `http://demo:1234`,
+      lastOk: new Date().toISOString(),
       shards: ['DEMO'],
     }
     for (let i = 1; i < 50; i++) {
-      hostsAndShards[`0x123456789_${i}`] = {
+      nodeStatuses[`0x123456789_${i}`] = {
         host: `http://fake:${8000 + i}`,
+        lastOk: new Date().toISOString(),
         shards: ['aa', 'bb', 'cc', 'dd'],
       }
     }
   }
 
-  return <Nodes hostsAndShards={hostsAndShards} />
+  return <Nodes nodeStatuses={nodeStatuses} />
 }

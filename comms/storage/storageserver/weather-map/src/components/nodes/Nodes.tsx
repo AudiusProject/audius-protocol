@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
 
-import { HostAndShards } from '../../api'
+import { NodeStatus } from '../../api'
+import { formatDateTime } from '../../util'
 
 export default function Nodes({
-  hostsAndShards,
+  nodeStatuses,
 }: {
-  hostsAndShards: { [pubKey: string]: HostAndShards }
+  nodeStatuses: { [pubKey: string]: NodeStatus }
 }) {
   function truncatePubKey(pubKey: string) {
     if (pubKey.length <= 12) return pubKey
@@ -15,7 +16,7 @@ export default function Nodes({
   return (
     <div>
       <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {Object.keys(hostsAndShards).map((pubKey) => (
+        {Object.keys(nodeStatuses).map((pubKey) => (
           <li
             key={pubKey}
             className="col-span-1 max-h-32 divide-y divide-gray-200 overflow-y-scroll rounded-lg bg-white shadow-md"
@@ -24,9 +25,9 @@ export default function Nodes({
               <div className="flex-1 truncate">
                 <div className="flex items-center space-x-3">
                   <h3 className="truncate text-sm font-medium text-gray-900">
-                    {hostsAndShards[pubKey].host} (
+                    {nodeStatuses[pubKey].host} (
                     <a
-                      href={`${hostsAndShards[pubKey].host}/nats`}
+                      href={`${nodeStatuses[pubKey].host}/nats`}
                       target="_blank"
                       className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
                       rel="noreferrer"
@@ -35,7 +36,7 @@ export default function Nodes({
                     </a>
                     ,{' '}
                     <a
-                      href={`${hostsAndShards[pubKey].host}/storage`}
+                      href={`${nodeStatuses[pubKey].host}/storage`}
                       target="_blank"
                       className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
                       rel="noreferrer"
@@ -48,10 +49,13 @@ export default function Nodes({
                 <p className="mt-1 truncate text-sm text-gray-500">
                   {truncatePubKey(pubKey)}
                 </p>
+                <p className="mt-1 truncate text-sm text-gray-500">
+                  Last healthy: {formatDateTime(new Date(nodeStatuses[pubKey].lastOk))}
+                </p>
               </div>
 
               <div className="center text-center">
-                {hostsAndShards[pubKey].shards.map((shard) => (
+                {nodeStatuses[pubKey].shards.map((shard) => (
                   <span key={`${pubKey}_${shard}`}>
                     <Link
                       to={`/shard/${shard}`}

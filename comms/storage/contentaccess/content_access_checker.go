@@ -62,25 +62,23 @@ func VerifySignature(
 	signatureData SignatureData,
 	signature []byte,
 	requestedCid string,
-) (bool, error) {
+) error {
 	if !isCidMatch(signatureData, requestedCid) {
-		return false, errors.New("signed cid does not match requested cid")
+		return errors.New("signed cid does not match requested cid")
 	}
 
 	signer, err := recoverWallet(signatureData, signature)
 	if err != nil {
-		return false, errors.New("wallet recovery failed")
+		return errors.New("wallet recovery failed")
 	}
 
-
-
 	if !utils.IsValidDiscoveryNode(dnodes, string(signer)) {
-		return false, errors.New("signature is not from valid discovery node")
+		return errors.New("signature is not from valid discovery node")
 	}
 
 	if isExpired(signatureData) {
-		return false, errors.New("signature has expired")
+		return errors.New("signature has expired")
 	}
 
-	return true, nil
+	return nil
 }

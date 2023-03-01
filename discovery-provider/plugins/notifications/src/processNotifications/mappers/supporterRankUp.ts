@@ -4,7 +4,7 @@ import { SupporterRankUpNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import { EntityType } from '../../email/notifications/types'
+import { capitalize } from '../../email/notifications/components/utils'
 
 type SupporterRankUpNotificationRow = Omit<NotificationRow, 'data'> & { data: SupporterRankUpNotification }
 export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificationRow> {
@@ -22,7 +22,6 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
   }
 
   async pushNotification() {
-
     const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
@@ -40,26 +39,25 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
     // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
 
+    const sendingUserName = users[this.senderUserId]?.name
+
     // If the user has devices to the notification to, proceed
     if ((userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length > 0) {
       const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.receiverUserId].settings
       const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['favorites']) {
-        await Promise.all(devices.map(device => {
-          return sendPushNotification({
-            type: device.type,
-            badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
-            targetARN: device.awsARN
-          }, {
-            title: 'Favorite',
-            body: ``,
-            data: {}
-          })
-        }))
-        // TODO: increment badge count
-      }
-
+      await Promise.all(devices.map(device => {
+        return sendPushNotification({
+          type: device.type,
+          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+          targetARN: device.awsARN
+        }, {
+          title: `#${this.rank} Top Supporter`,
+          body: `${capitalize(sendingUserName)} became your #${this.rank} Top Supporter!`,
+          data: {}
+        })
+      }))
+      // TODO: increment badge count
     }
     // 
 

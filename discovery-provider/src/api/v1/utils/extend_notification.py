@@ -19,6 +19,7 @@ from src.queries.get_notifications import (
     RepostNotification,
     RepostOfRepostNotification,
     SaveNotification,
+    SaveOfRepostNotification,
     SupporterDethronedNotification,
     SupporterRankUpNotification,
     SupportingRankUpNotification,
@@ -107,7 +108,23 @@ def extend_repost_of_a_repost(action: NotificationAction):
         "data": {
             "type": data["type"],
             "user_id": encode_int_id(data["user_id"]),
-            "repost_repost_item_id": encode_int_id(data["repost_of_repost_item_id"]),
+            "repost_of_repost_item_id": encode_int_id(data["repost_of_repost_item_id"]),
+        },
+    }
+
+
+def extend_save_of_repost(action: NotificationAction):
+    data: SaveOfRepostNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "type": data["type"],
+            "user_id": encode_int_id(data["user_id"]),
+            "save_of_repost_item_id": encode_int_id(data["save_of_repost_item_id"]),
         },
     }
 
@@ -388,6 +405,7 @@ notification_action_handler = {
     "follow": extend_follow,
     "repost": extend_repost,
     "repost_of_repost": extend_repost_of_a_repost,
+    "save_of_repost": extend_save_of_repost,
     "save": extend_save,
     "milestone": extend_milestone,
     "remix": extend_remix,

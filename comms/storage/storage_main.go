@@ -38,8 +38,8 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	ss, err := storageserver.NewProd(storageConfig, jsc, peering)
-	if err != nil {
+	ss, err := storageserver.New(storageConfig, jsc, peering)
+  if err != nil {
 		log.Fatalf("failed to create prod server: %+v", err)
 	}
 

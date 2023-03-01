@@ -28,8 +28,15 @@ AWS_SECRET_ACCESS_KEY=""
 # Discovery DB Connection String
 DN_DB_URL=""
 
+# Discovery Redis Conection string
+AUDIUS_REDIS_URL=""
+
 # Identity DB Connection String
 IDENTITY_DB_URL=""
 
+# Email sending API Key
+SENDGRID_API_KEY="
+
 ```
 
+`docker run --env-file StageDiscoveryNotificationPlugin.env jwolee/discovery-notificatino-plugin`

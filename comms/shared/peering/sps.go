@@ -17,7 +17,7 @@ var (
 	allNodes = map[string]sharedConfig.ServiceNode{}
 )
 
-func (p *Peering) PollRegisteredNodes() error {
+func (p *NatsPeering) PollRegisteredNodes() error {
 	// overrides for tests and local dev
 	if p.Config.DevOnlyRegisteredNodes != nil {
 		mu.Lock()
@@ -55,7 +55,7 @@ func (p *Peering) PollRegisteredNodes() error {
 
 }
 
-func (p *Peering) listNodes(typeFilter string) ([]sharedConfig.ServiceNode, error) {
+func (p *NatsPeering) listNodes(typeFilter string) ([]sharedConfig.ServiceNode, error) {
 	result := []sharedConfig.ServiceNode{}
 	mu.Lock()
 	for _, node := range allNodes {
@@ -67,15 +67,15 @@ func (p *Peering) listNodes(typeFilter string) ([]sharedConfig.ServiceNode, erro
 	return result, nil
 }
 
-func (p *Peering) AllNodes() ([]sharedConfig.ServiceNode, error) {
+func (p *NatsPeering) AllNodes() ([]sharedConfig.ServiceNode, error) {
 	return p.listNodes("")
 }
 
-func (p *Peering) GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error) {
+func (p *NatsPeering) GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error) {
 	return p.listNodes("discovery-node")
 }
 
-func (p *Peering) GetContentNodes() ([]sharedConfig.ServiceNode, error) {
+func (p *NatsPeering) GetContentNodes() ([]sharedConfig.ServiceNode, error) {
 	return p.listNodes("content-node")
 }
 

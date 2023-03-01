@@ -16,6 +16,7 @@ import (
 	"comms.audius.co/storage/persistence"
 	"comms.audius.co/storage/telemetry"
 	"comms.audius.co/storage/transcode"
+	"github.com/avast/retry-go"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -25,24 +26,27 @@ import (
 )
 
 const (
-	GlobalNamespace   string = "0"
-	ReplicationFactor int    = 3
-	NumJobWorkers     int    = 3
+	GlobalNamespace    string = "0"
+	ReplicationFactor  int    = 3
+	NumJobWorkers      int    = 3
+	HealthyNodesKVName string = "healthyNodes"
 )
 
 // StorageServer lives for the lifetime of the program and holds connections and managers.
 type StorageServer struct {
 	Namespace      string
+	Config         *config.StorageConfig
+	Host           string
 	StorageDecider decider.StorageDecider
 	Jsc            nats.JetStreamContext
 	JobsManager    *transcode.JobsManager
 	Persistence    *persistence.Persistence
 	WebServer      *echo.Echo
 	Monitor        *monitor.Monitor
-	Peering        *peering.Peering
+	Peering        peering.Peering
 }
 
-func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *peering.Peering) (*StorageServer, error) {
+func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peering.Peering) (*StorageServer, error) {
 	allContentNodes, err := peering.GetContentNodes()
 	if err != nil {
 		slog.Error("Error getting content nodes", err)
@@ -51,58 +55,79 @@ func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *p
 
 	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
 	var host string
-	var allStorageNodePubKeys []string
 	for _, node := range allContentNodes {
-		allStorageNodePubKeys = append(allStorageNodePubKeys, strings.ToLower(node.DelegateOwnerWallet))
 		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
 			host = node.Endpoint
+			break
 		}
 	}
 	if host == "" {
 		return nil, errors.New("could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
 	}
 
-	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, thisNodePubKey, allStorageNodePubKeys, jsc)
+	var healthyNodesKV nats.KeyValue
+	err = retry.Do(
+		func() error {
+			var err error
+			healthyNodesKV, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+				Bucket:      HealthyNodesKVName,
+				Description: "Source of truth where every node reads the list of healthy nodes from",
+				History:     20,
+			})
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		log.Fatalf("failed to create healthyNodes KV: %v", err)
+	}
 
+	m := monitor.New(GlobalNamespace, healthyNodesKV, config.HealthTTLHours, jsc)
+	err = m.UpdateHealthyNodeSetOnInterval(config.RebalanceIntervalHours)
+	if err != nil {
+		slog.Error("error starting interval to update set of healthy nodes", err)
+		return nil, err
+	}
+
+	d := decider.NewRendezvousDecider(
+		GlobalNamespace,
+		ReplicationFactor,
+		thisNodePubKey,
+		healthyNodesKV,
+		jsc,
+	)
 	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
-		slog.Error("failed to start jobs manager", err)
+		slog.Error("error creating jobs manager", err)
 		return nil, err
 	}
 	jobsManager.StartWorkers(NumJobWorkers)
 
-	m := monitor.New(jsc)
-	err = m.SetHostAndShardsForNode(thisNodePubKey, host, d.ShardsStored)
-	if err != nil {
-		slog.Error("Error setting host and shards for node", err)
-		return nil, err
-	}
-
 	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)
 	if err != nil {
-		slog.Error("[!!!] Error connecting to persistent storage", err)
+		slog.Error("eror connecting to persistent storage", err)
 		return nil, err
 	}
 
-	return NewCustom(
-		GlobalNamespace,
-		d,
-		jsc,
-		jobsManager,
-		persistence,
-		m,
-	), nil
-}
-
-func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamContext, jobsManager *transcode.JobsManager, persistence *persistence.Persistence, m *monitor.Monitor) *StorageServer {
 	ss := &StorageServer{
-		Namespace:      namespace,
+		Namespace:      GlobalNamespace,
+		Config:         config,
 		StorageDecider: d,
 		Jsc:            jsc,
 		JobsManager:    jobsManager,
 		Persistence:    persistence,
 		Monitor:        m,
 	}
+	ss.createWebServer()
+
+	m.SetNodeStatusOKOnInterval(thisNodePubKey, host, d, config.ReportOKIntervalSeconds)
+
+	return ss
+}
+
+func (ss *StorageServer) createWebServer() {
 	ss.WebServer = echo.New()
 	ss.WebServer.HideBanner = true
 	ss.WebServer.Debug = true
@@ -128,7 +153,7 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	storage.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName)
 	storage.GET("/stream/:fileName", ss.streamPersistenceObjectByFileName, contentaccess.ContentAccessMiddleware(ss.Peering))
 	storage.GET("/ws", ss.upgradeConnToWebsocket)
-	storage.GET("/nodes-to-shards", ss.serveNodesToShards)
+	storage.GET("/nodes-statuses", ss.serveNodeStatuses)
 	storage.GET("/job-results/:id", ss.serveJobResultsById)
 
 	// Register endpoints at /storage/weather for React weather map
@@ -136,8 +161,6 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	weatherMap.GET("", ss.serveWeatherMapUI)
 	weatherMap.GET("/**", ss.serveWeatherMapUI)
 	weatherMap.GET("/assets/*", echo.WrapHandler(http.StripPrefix("/storage/weather/", http.FileServer(getWeatherMapStaticFiles()))))
-
-	return ss
 }
 
 /**
@@ -261,12 +284,12 @@ func (ss *StorageServer) upgradeConnToWebsocket(c echo.Context) error {
 	return nil
 }
 
-func (ss *StorageServer) serveNodesToShards(c echo.Context) error {
-	nodesToShards, err := ss.Monitor.GetNodesToShards()
+func (ss *StorageServer) serveNodeStatuses(c echo.Context) error {
+	nodeStatuses, err := ss.Monitor.GetNodeStatuses()
 	if err != nil {
 		return err
 	}
-	return c.JSON(200, nodesToShards)
+	return c.JSON(200, nodeStatuses)
 }
 
 func (ss *StorageServer) servePersistenceKeysByShard(c echo.Context) error {

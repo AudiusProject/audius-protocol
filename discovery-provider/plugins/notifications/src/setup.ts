@@ -37,7 +37,7 @@ export async function setupTriggers(db: Knex) {
     if (process.argv[2] !== 'drop') {
       await db.raw(`
         create trigger trg_notification
-          after insert or update on notification
+          after insert on notification
           for each row execute procedure ${functionName}();`)
     }
   }

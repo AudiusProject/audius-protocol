@@ -50,7 +50,7 @@ func NatsMain() {
 	}
 }
 
-func startServer(peering *peering.Peering) {
+func startServer(peering *peering.NatsPeering) {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true

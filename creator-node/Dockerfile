@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN --mount=type=cache,target=/root/.npm npm ci
 
-FROM alpine:3.14 AS base
+FROM node:14.16-alpine as base
 
 WORKDIR /usr/src/app
 
@@ -19,21 +19,19 @@ COPY scripts/wait /usr/bin/wait
 RUN echo 'http://dl-cdn.alpinelinux.org/alpine/v3.10/main' >> /etc/apk/repositories && \
     apk update && \
     apk add \
-        bash=5.1.16-r0 \
-        curl \
-        docker=20.10.11-r1 \
-        libpq=11.12-r0 \
-        nodejs=14.21.3-r0 \
-        postgresql-client=11.12-r0 \
-        postgresql-contrib=11.12-r0 \
-        postgresql-libs=11.12-r0 \
-        postgresql=11.12-r0 \
-        py3-pip \
-        python3 \
-        python3-dev \
-        redis \
-        rsyslog=8.2012.0-r3 \
-        sudo=1.9.5p2-r0
+    bash \
+    curl \
+    libpq=11.12-r0 \
+    postgresql-client=11.12-r0 \
+    postgresql-contrib=11.12-r0 \
+    postgresql-libs=11.12-r0 \
+    postgresql=11.12-r0 \
+    py3-pip \
+    python3 \
+    python3-dev \
+    redis \
+    rsyslog \
+    sudo=1.9.5p2-r0
 
 # Install openresty with public key
 RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/repositories && \

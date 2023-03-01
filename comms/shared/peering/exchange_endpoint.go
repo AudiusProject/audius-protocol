@@ -11,7 +11,7 @@ import (
 // that's not "on chain"
 // after validating request came from a registered peer
 // this server should respond with connection info
-func (p *Peering) ExchangeEndpoint(c echo.Context) error {
+func (p *NatsPeering) ExchangeEndpoint(c echo.Context) error {
 	registeredNodes, err := p.AllNodes()
 	if err != nil {
 		return err

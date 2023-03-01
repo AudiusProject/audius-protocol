@@ -22,7 +22,7 @@ type Info struct {
 	AsOf            time.Time
 }
 
-func (p *Peering) MyInfo() (*Info, error) {
+func (p *NatsPeering) MyInfo() (*Info, error) {
 	info := &Info{
 		Address:         p.Config.Keys.DelegatePublicKey,
 		Nkey:            p.Config.Keys.NkeyPublic,

@@ -69,7 +69,7 @@ docker logs -f storage1
 
 ### Visibility
 
-For visibility and troubleshooting, a storage weathermap at `/storage/weather` provides visualization and introspection into the location of files within the network. As well as each node's view of the hash ring.
+For visibility and troubleshooting, a storage weathermap at `/storage/weather` provides visualization and introspection into the location of files within the network. As well as each node's view of the set of healthy nodes used in rendezvous hashing.
 
 <sub>The storage weathermap</sub>
 ![storage-weathermap](../docs/weather.png)

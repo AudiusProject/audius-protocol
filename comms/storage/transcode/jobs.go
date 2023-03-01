@@ -120,7 +120,17 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		return nil, fmt.Errorf("failed to create KV work subscription: %v", err)
 	}
 
-	watcher, err := kv.WatchAll()
+	var watcher nats.KeyWatcher
+	err = retry.Do(
+		func() error {
+			var err error
+			watcher, err = kv.WatchAll()
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to watch KV: %v", err)
 	}
