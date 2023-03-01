@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -9,9 +10,15 @@ import (
 	"net/http"
 	"net/textproto"
 	"strings"
+	"sync"
 	"time"
 
+	"comms.audius.co/shared/utils"
+	"comms.audius.co/storage/monitor"
+	"comms.audius.co/storage/persistence"
 	"comms.audius.co/storage/transcode"
+	"github.com/nats-io/nats.go"
+	"golang.org/x/exp/slices"
 )
 
 type StorageClient struct {
@@ -103,4 +110,205 @@ func (sc *StorageClient) UploadPng(imageData []byte, filename string) error {
 	}
 
 	return sc.Upload(imageData, imageType, "image/png", filename)
+}
+
+func (sc *StorageClient) SeedAudio(audioCount int) {
+	wg := sync.WaitGroup{}
+	for i := 0; i < int(audioCount); i++ {
+		wg.Add(1)
+		go func(id int) {
+			defer wg.Done()
+			audioData, err := utils.GenerateWhiteNoise(60)
+			if err != nil {
+				return
+			}
+
+			filename := fmt.Sprintf("audio-seed-%d.mp3", id)
+			err = sc.UploadAudio(audioData, filename)
+			if err != nil {
+				return
+			}
+		}(i)
+	}
+
+	wg.Wait()
+}
+
+func (sc *StorageClient) HealthCheck() (*http.Response, error) {
+	route := "/storage/health"
+
+	return sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
+}
+
+func (sc *StorageClient) GetJobs() ([]*transcode.Job, error) {
+	route := "/storage/jobs"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var jobs []*transcode.Job
+	err = json.Unmarshal(body, &jobs)
+	if err != nil {
+		return nil, err
+	}
+
+	return jobs, nil
+}
+
+func (sc *StorageClient) GetJob(jobId string) (*transcode.Job, error) {
+	route := "/storage/jobs"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, jobId))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var job transcode.Job
+	err = json.Unmarshal(body, &job)
+	if err != nil {
+		return nil, err
+	}
+
+	return &job, nil
+}
+
+func (sc *StorageClient) GetNodesToShards() (*map[string]monitor.HostAndShards, error) {
+	route := "/storage/nodes-to-shards"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var nodesToShards map[string]monitor.HostAndShards
+	err = json.Unmarshal(body, &nodesToShards)
+	if err != nil {
+		return nil, err
+	}
+
+	return &nodesToShards, nil
+}
+
+func (sc *StorageClient) GetStorageNodesFor(jobId string) ([]string, error) {
+	nodesToShards, err := sc.GetNodesToShards()
+	if err != nil {
+		return nil, err
+	}
+
+	shard := jobId[len(jobId)-2:]
+
+	nodes := []string{}
+	for _, hostAndShards := range *nodesToShards {
+		if slices.Contains(hostAndShards.Shards, shard) {
+			nodes = append(nodes, hostAndShards.Host)
+		}
+	}
+
+	return nodes, nil
+}
+
+func (sc *StorageClient) GetKeysByShard(shard string) (*[]string, error) {
+	route := "/storage/persistence/shard"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, shard))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var keys []string
+	err = json.Unmarshal(body, &keys)
+	if err != nil {
+		return nil, err
+	}
+
+	return &keys, nil
+}
+
+func (sc *StorageClient) GetObjFromTmpStore(bucket string, key string) (*nats.ObjectResult, error) {
+	route := "/storage/tmp-obj"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s/%s", sc.Endpoint, route, bucket, key))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var obj nats.ObjectResult
+	err = json.Unmarshal(body, &obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return &obj, nil
+}
+
+func (sc *StorageClient) GetFile(filename string) ([]byte, error) {
+	route := "/storage/persistent/file"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, filename))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func (sc *StorageClient) GetJobResultsFor(jobId string) ([]*persistence.ShardAndFile, error) {
+	route := "/storage/job-results"
+
+	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, jobId))
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var shardAndFile []*persistence.ShardAndFile
+	err = json.Unmarshal(body, &shardAndFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return shardAndFile, nil
 }

@@ -290,6 +290,7 @@ def validate_social_feature(params: ManageEntityParameters):
 
     if should_check_entity_access(params.action, params.entity_type):
         premium_content_access = premium_content_access_checker.check_access(
+            session=params.session,
             user_id=params.user_id,
             premium_content_id=params.entity_id,
             premium_content_type="track",

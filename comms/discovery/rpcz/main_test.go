@@ -27,7 +27,12 @@ func TestMain(m *testing.M) {
 	}
 
 	// connect to NATS and create JetStream Context
-	nc, err := peering.New(&discoveryConfig.PeeringConfig).DialNats(nil)
+	p, err := peering.New(&discoveryConfig.PeeringConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	nc, err := p.DialNats(nil)
 	if err != nil {
 		log.Fatal(err)
 	}

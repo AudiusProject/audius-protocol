@@ -3,7 +3,6 @@ package peering
 import (
 	"encoding/base64"
 	"errors"
-	"fmt"
 	"io"
 	"strconv"
 	"time"
@@ -11,6 +10,7 @@ import (
 	"comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/exp/slog"
 )
 
 func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
@@ -20,7 +20,7 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 		// Check that timestamp is less than 5 seconds old
 		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
 		if err != nil || time.Now().UnixMilli()-timestamp > config.SignatureTimeToLiveMs {
-			fmt.Println(err)
+			slog.Error("", err)
 			return nil, "", errors.New("invalid timestamp")
 		}
 

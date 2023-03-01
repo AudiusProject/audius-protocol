@@ -7,6 +7,7 @@ import (
 
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
+	"golang.org/x/exp/slog"
 )
 
 type CidFetcher struct {
@@ -14,7 +15,11 @@ type CidFetcher struct {
 }
 
 func NewCidFetcher() (*CidFetcher, error) {
-	peering := peering.New(&sharedConfig.PeeringConfig{})
+	peering, err := peering.New(&sharedConfig.PeeringConfig{})
+	if err != nil {
+		return nil, err
+	}
+
 	sps, err := peering.GetContentNodes()
 	if err != nil {
 		return nil, err
@@ -34,7 +39,7 @@ func (cf *CidFetcher) Fetch(userId int64, cid string) ([]byte, error) {
 		u := sp.Endpoint + "/content/" + cid
 		resp, err := http.Get(u)
 		if err != nil {
-			peering.New(&sharedConfig.PeeringConfig{}).Logger.Debug(u, "err", err)
+			slog.Debug(u, "err", err)
 			continue
 		}
 
