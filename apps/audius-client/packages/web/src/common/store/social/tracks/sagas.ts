@@ -348,7 +348,12 @@ export function* saveTrackAsync(
   })
   yield* put(event)
 
-  yield* call(confirmSaveTrack, action.trackId, user)
+  const saveMetadata = action.isFeed
+    ? // If we're on the feed, and the content
+      // being saved is a repost
+      { is_save_of_repost: track.followee_reposts.length !== 0 }
+    : { is_save_of_repost: false }
+  yield* call(confirmSaveTrack, action.trackId, user, saveMetadata)
 
   const eagerlyUpdatedMetadata: Partial<Track> = {
     has_current_user_saved: true,
@@ -410,7 +415,11 @@ export function* saveTrackAsync(
   }
 }
 
-export function* confirmSaveTrack(trackId: ID, user: User) {
+export function* confirmSaveTrack(
+  trackId: ID,
+  user: User,
+  metadata?: { is_save_of_repost: boolean }
+) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
@@ -418,7 +427,8 @@ export function* confirmSaveTrack(trackId: ID, user: User) {
       function* () {
         const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.saveTrack,
-          trackId
+          trackId,
+          metadata
         )
         const confirmed = yield* call(
           confirmTransaction,

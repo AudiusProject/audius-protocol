@@ -125,7 +125,7 @@ const ConnectedTrackTile = memo(
       if (has_current_user_saved) {
         unsaveTrack(trackId)
       } else {
-        saveTrack(trackId)
+        saveTrack(trackId, isFeed)
       }
     }
 
@@ -277,8 +277,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.TILE
         })
       ),
-    saveTrack: (trackId: ID) =>
-      dispatch(saveTrack(trackId, FavoriteSource.TILE)),
+    saveTrack: (trackId: ID, isFeed: boolean) =>
+      dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed)),
     unsaveTrack: (trackId: ID) =>
       dispatch(unsaveTrack(trackId, FavoriteSource.TILE)),
     repostTrack: (trackId: ID, isFeed: boolean) =>

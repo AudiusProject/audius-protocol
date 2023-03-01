@@ -108,9 +108,9 @@ const ConnectedPlaylistTile = memo(
       if (collection.has_current_user_saved) {
         unsaveCollection(collection.playlist_id)
       } else {
-        saveCollection(collection.playlist_id)
+        saveCollection(collection.playlist_id, isFeed)
       }
-    }, [collection, unsaveCollection, saveCollection])
+    }, [collection, unsaveCollection, saveCollection, isFeed])
 
     const toggleRepost = useCallback(() => {
       if (collection.has_current_user_reposted) {
@@ -324,8 +324,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
           source: ShareSource.TILE
         })
       ),
-    saveCollection: (collectionId: ID) =>
-      dispatch(saveCollection(collectionId, FavoriteSource.TILE)),
+    saveCollection: (collectionId: ID, isFeed: boolean) =>
+      dispatch(saveCollection(collectionId, FavoriteSource.TILE, isFeed)),
     unsaveCollection: (collectionId: ID) =>
       dispatch(unsaveCollection(collectionId, FavoriteSource.TILE)),
     repostCollection: (collectionId: ID, isFeed: boolean) =>

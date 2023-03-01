@@ -309,9 +309,9 @@ const ConnectedTrackTile = memo(
       if (isFavorited) {
         unsaveTrack(trackId)
       } else {
-        saveTrack(trackId)
+        saveTrack(trackId, isFeed)
       }
-    }, [saveTrack, unsaveTrack, trackId, isFavorited])
+    }, [isFavorited, unsaveTrack, trackId, saveTrack, isFeed])
 
     const onClickRepost = useCallback(() => {
       if (isReposted) {
@@ -450,8 +450,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(repostTrack(trackId, RepostSource.TILE, isFeed)),
     undoRepostTrack: (trackId: ID) =>
       dispatch(undoRepostTrack(trackId, RepostSource.TILE)),
-    saveTrack: (trackId: ID) =>
-      dispatch(saveTrack(trackId, FavoriteSource.TILE)),
+    saveTrack: (trackId: ID, isFeed: boolean) =>
+      dispatch(saveTrack(trackId, FavoriteSource.TILE, isFeed)),
     unsaveTrack: (trackId: ID) =>
       dispatch(unsaveTrack(trackId, FavoriteSource.TILE)),
 

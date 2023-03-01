@@ -48,7 +48,11 @@ export const trackRepostFailed = createCustomAction(
 
 export const saveTrack = createCustomAction(
   SAVE_TRACK,
-  (trackId: ID, source: FavoriteSource) => ({ trackId, source })
+  (trackId: ID, source: FavoriteSource, isFeed = false) => ({
+    trackId,
+    source,
+    isFeed
+  })
 )
 
 export const saveTrackSucceeded = createCustomAction(
