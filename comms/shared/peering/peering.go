@@ -2,7 +2,6 @@ package peering
 
 import (
 	"encoding/hex"
-	"log"
 	"net/http"
 	"os"
 	"os/exec"
