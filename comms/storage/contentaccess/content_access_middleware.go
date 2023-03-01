@@ -2,6 +2,7 @@ package contentaccess
 
 import (
 	"encoding/json"
+	"net/http"
 	"net/url"
 
 	"comms.audius.co/shared/peering"
@@ -19,12 +20,12 @@ func ContentAccessMiddleware(p peering.IPeering) func(next echo.HandlerFunc) ech
 
 			requestedCid := c.Param("CID")
 			if requestedCid == "" {
-				return echo.ErrBadRequest
+				return echo.NewHTTPError(http.StatusBadRequest, "missing CID parameter")
 			}
 
 			signatureData, signature, err := parseQueryParams(c.QueryParams())
 			if err != nil {
-				return echo.ErrBadRequest
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 
 			nodes, err := p.GetDiscoveryNodes()
@@ -34,7 +35,7 @@ func ContentAccessMiddleware(p peering.IPeering) func(next echo.HandlerFunc) ech
 
 			err = VerifySignature(nodes, *signatureData, []byte(signature), requestedCid)
 			if err != nil {
-				return echo.ErrBadRequest
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 
 			return next(c)

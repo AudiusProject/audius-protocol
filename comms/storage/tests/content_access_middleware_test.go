@@ -1,4 +1,4 @@
-package contentaccess
+package tests
 
 import (
 	"context"
@@ -9,72 +9,29 @@ import (
 	"testing"
 	"time"
 
-	sharedConfig "comms.audius.co/shared/config"
-	"comms.audius.co/shared/peering"
-	"comms.audius.co/shared/utils"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
-	"github.com/nats-io/nats.go"
+
+	sharedConfig "comms.audius.co/shared/config"
+	"comms.audius.co/shared/utils"
+	"comms.audius.co/storage/contentaccess"
 )
 
-var dnodes []sharedConfig.ServiceNode
-
-type mockpeering struct{}
-
-func (mp *mockpeering) AllNodes() ([]sharedConfig.ServiceNode, error) {
-	return nil, nil
-}
-func (mp *mockpeering) DialJetstream(peerMap map[string]*peering.Info) (nats.JetStreamContext, error) {
-	return nil, nil
-}
-func (mp *mockpeering) DialNats(peerMap map[string]*peering.Info) (*nats.Conn, error) {
-	return nil, nil
-}
-func (mp *mockpeering) DialNatsUrl(natsUrl string) (*nats.Conn, error) {
-	return nil, nil
-}
-func (mp *mockpeering) ExchangeEndpoint(c echo.Context) error {
-	return nil
-}
-func (mp *mockpeering) GetContentNodes() ([]sharedConfig.ServiceNode, error) {
-	return nil, nil
-}
-func (mp *mockpeering) GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error) {
-	return dnodes, nil
-}
-func (mp *mockpeering) ListPeers() []peering.Info {
-	return nil
-}
-func (mp *mockpeering) MyInfo() (*peering.Info, error) {
-	return nil, nil
-}
-func (mp *mockpeering) NatsConnectionTest(natsUrl string) bool {
-	return true
-}
-func (mp *mockpeering) PollRegisteredNodes() error {
-	return nil
-}
-func (mp *mockpeering) PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error) {
-	return nil, nil
-}
-func (mp *mockpeering) Solicit() map[string]*peering.Info {
-	return nil
-}
 func TestContentAccessMiddleware(t *testing.T) {
-	mp := &mockpeering{}
+	mp := &MockPeering{}
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
 
 	e.GET("/stream/:CID", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Success")
-	}, ContentAccessMiddleware(mp))
+	}, contentaccess.ContentAccessMiddleware(mp))
 
 	go e.Start(":7000")
 
 	correctCID := "Qmblah"
 
-	correctSignatureData := SignatureData{
+	correctSignatureData := contentaccess.SignatureData{
 		Cid:         correctCID,
 		ShouldCache: true,
 		Timestamp:   time.Now().Unix(),
@@ -106,7 +63,7 @@ func TestContentAccessMiddleware(t *testing.T) {
 	dnodes = []sharedConfig.ServiceNode{correctDiscoveryNode}
 
 	tests := map[string]struct {
-		signedData   SignatureData
+		signedData   contentaccess.SignatureData
 		signature    []byte
 		requestedCid string
 		statusCode   int
@@ -131,14 +88,14 @@ func TestContentAccessMiddleware(t *testing.T) {
 		},
 	}
 
-	for _, tt := range tests {
+	for testName, tt := range tests {
 		// make request
 		marshalledSignatureData, err := json.Marshal(tt.signedData)
 		if err != nil {
 			t.Fatalf("could not marshal signed data, %+v", err)
 		}
 
-		marshalledAccessData, err := json.Marshal(SignedAccessData{
+		marshalledAccessData, err := json.Marshal(contentaccess.SignedAccessData{
 			Signature: tt.signature,
 			Data:      marshalledSignatureData,
 		})
@@ -149,7 +106,7 @@ func TestContentAccessMiddleware(t *testing.T) {
 		signatureParam := url.QueryEscape(string(marshalledAccessData))
 		req := fmt.Sprintf("http://localhost:7000/stream/%s?signature=%s",tt.requestedCid ,signatureParam)
 
-		t.Log(req)
+		t.Log(testName, req)
 		resp, err := http.Get(req)
 		if err != nil {
 			t.Fatalf("http request failed, %+v", err)
