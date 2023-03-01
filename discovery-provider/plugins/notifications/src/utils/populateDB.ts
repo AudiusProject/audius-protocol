@@ -1,9 +1,11 @@
 import { Knex } from 'knex'
 import { EmailFrequency } from '../processNotifications/mappers/base'
-import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow, NotificationRow } from '../types/dn'
+import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow, NotificationRow, PlaylistRow, BlockRow, UserTipRow, ReactionRow, UserBankAccountRow, UserBankTxRow, ChallengeDisbursementRow, RewardManagerTxRow, SubscriptionRow, SupporterRankUpRow } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow, NotificationEmailRow } from '../types/identity'
 import { getDB } from '../conn'
+import { SupporterRankUpNotification } from '../types/notifications'
+import { ChallengeReward } from '../processNotifications/mappers/challengeReward'
 
 export const replaceDBName = (connectionString: string, testName: string) => {
   const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
@@ -26,7 +28,6 @@ export const dropTestDB = async (connectionString: string, testName: string) => 
   const db = await getDB(postgresConnection)
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
   await db.destroy()
-
 }
 
 type CreateTrack = Pick<TrackRow, 'owner_id' | 'track_id'> & Partial<TrackRow>
@@ -34,8 +35,11 @@ export const createTracks = async (db: Knex, tracks: CreateTrack[]) => {
   await db.insert(tracks.map(track => ({
     is_delete: false,
     is_current: true,
+    is_unlisted: false,
+    is_available: true,
     created_at: new Date(),
     updated_at: new Date(),
+    title: `track_title_${track.track_id}`,
     track_segments: [],
     ...track,
   })))
@@ -54,6 +58,78 @@ export const createTracks = async (db: Knex, tracks: CreateTrack[]) => {
     .into('track_routes')
 }
 
+type CreatePlaylist = Pick<PlaylistRow, 'playlist_owner_id' | 'playlist_id'> & Partial<PlaylistRow>
+export const createPlaylists = async (db: Knex, playlists: CreatePlaylist[]) => {
+  await db.insert(playlists.map(playlist => ({
+    is_delete: false,
+    is_private: false,
+    is_current: true,
+    is_album: false,
+    created_at: new Date(),
+    updated_at: new Date(),
+    playlist_name: `playlist_name_${playlist.playlist_id}`,
+    description: `description_${playlist.playlist_id}`,
+    playlist_contents: [],
+    ...playlist,
+  })))
+    .into('playlists')
+  await db.insert(playlists.map(playlist => ({
+    is_current: true,
+    slug: `playlist_${playlist.playlist_id}`,
+    title_slug: `playlist_${playlist.playlist_id}`,
+    collision_id: playlist.playlist_id,
+    blockhash: `0x${playlist.playlist_id}`,
+    blocknumber: 1,
+    txhash: `0x${playlist.playlist_id}`,
+    playlist_id: playlist.playlist_id,
+    owner_id: playlist.playlist_owner_id
+  })))
+    .into('playlist_routes')
+}
+
+type CreateUserTip = Pick<UserTipRow, 'sender_user_id' | 'receiver_user_id'> & Partial<UserTipRow>
+export const createUserTip = async (db: Knex, userTips: CreateUserTip[]) => {
+  await db.insert(userTips.map(userTip => ({
+    amount: '1' + '00000000',
+    signature: `sig_${userTip.sender_user_id}_${userTip.receiver_user_id}`,
+    slot: 1,
+    ...userTip,
+  })))
+    .into('user_tips')
+}
+
+type CreateReaction = Pick<ReactionRow, 'reacted_to' | 'reaction_type' | 'sender_wallet' | 'reaction_value'> & Partial<ReactionRow>
+export const createReaction = async (db: Knex, reactions: CreateReaction[]) => {
+  await db.insert(reactions.map(reaction => ({
+    slot: 1,
+    timestamp: new Date(),
+    ...reaction,
+  })))
+    .into('reactions')
+}
+
+
+type createBlocks = Partial<BlockRow>
+export const createBlocks = async (db: Knex, blocks: createBlocks[]) => {
+  await db.insert(blocks.map((block, ind) => ({
+    blockhash: '0x2',
+    parenthash: '0x0',
+    is_current: false,
+    number: ind,
+    ...block,
+  })))
+    .into('blocks')
+}
+
+type CreateSupporterRankUp = Pick<SupporterRankUpRow, 'sender_user_id' | 'receiver_user_id' | 'rank'> & Partial<SupporterRankUpRow>
+export const createSupporterRankUp = async (db: Knex, rankUps: CreateSupporterRankUp[]) => {
+  await db.insert(rankUps.map(rankUp => ({
+    slot: 1,
+    ...rankUp,
+  })))
+    .into('supporter_rank_ups')
+}
+
 type CreateUser = Pick<DNUserRow, 'user_id'> & Partial<DNUserRow>
 export const createUsers = async (db: Knex, users: CreateUser[]) => {
   await db.insert(users.map(user => ({
@@ -61,6 +137,8 @@ export const createUsers = async (db: Knex, users: CreateUser[]) => {
     created_at: new Date(),
     updated_at: new Date(),
     name: `user_${user.user_id}`,
+    handle: `handle_${user.user_id}`,
+    wallet: `0x${user.user_id}`,
     creator_node_endpoint: `https://dn1.io,https://dn2.io,https://dn3.io`,
     ...user,
   })))
@@ -100,10 +178,59 @@ export const insertFollows = async (db: Knex, follows: CreateFollow[]) => {
   })))
     .into('follows')
 }
+
+type CreateUserBank = Pick<UserBankAccountRow, 'signature' | 'ethereum_address' | 'bank_account'> & Partial<UserBankAccountRow>
+export const createUserBank = async (db: Knex, userBanks: CreateUserBank[]) => {
+  await db.insert(userBanks.map(userBlock => ({
+    created_at: new Date(),
+    ...userBlock,
+  })))
+    .into('user_bank_accounts')
+}
+
+type CreateUserBankTx = Partial<UserBankTxRow>
+export const createUserBankTx = async (db: Knex, txs: CreateUserBankTx[]) => {
+  await db.insert(txs.map(tx => ({
+    created_at: new Date(),
+    ...tx,
+  })))
+    .into('user_bank_txs')
+}
+
+type CreateChallengeReward = Pick<ChallengeDisbursementRow, 'challenge_id' | 'user_id' | 'specifier' | 'amount'> & Partial<ChallengeDisbursementRow>
+export const createChallengeReward = async (db: Knex, rewards: CreateChallengeReward[]) => {
+  await db.insert(rewards.map(reward => ({
+    slot: 1,
+    signature: '0x1',
+    ...reward,
+  })))
+    .into('challenge_disbursements')
+}
+
+type RewardManagerTx = Partial<RewardManagerTxRow>
+export const createRewardManagerTx = async (db: Knex, rewards: RewardManagerTx[]) => {
+  await db.insert(rewards.map(reward => ({
+    created_at: new Date(),
+    ...reward,
+  })))
+    .into('reward_manager_txs')
+}
+
+
+type CreateSubscription = Pick<SubscriptionRow, 'subscriber_id' | 'user_id'> & Partial<SubscriptionRow>
+export const createSubscription = async (db: Knex, subscriptions: CreateSubscription[]) => {
+  await db.insert(subscriptions.map(sub => ({
+    is_delete: false,
+    is_current: true,
+    ...sub,
+  })))
+    .into('subscriptions')
+}
+
 type CreateNotification = Pick<NotificationRow, 'id' | 'specifier' | 'group_id' | 'type' | 'timestamp' | 'user_ids'> & Partial<NotificationRow>
 export const insertNotifications = async (db: Knex, notifications: CreateNotification[]) => {
   await db.insert(notifications)
-  .into('notification')
+    .into('notification')
 }
 
 type CreateNotificationEmail = Pick<NotificationEmailRow, 'emailFrequency' | 'timestamp' | 'userId'> & Partial<NotificationEmailRow>
@@ -113,7 +240,7 @@ export const insertNotificationEmails = async (db: Knex, notificationEmails: Cre
     updatedAt: email.timestamp,
     ...email
   })))
-  .into('NotificationEmails')
+    .into('NotificationEmails')
 }
 
 export const setUserEmailAndSettings = async (db: Knex, frequency: EmailFrequency, userId: number): Promise<IdentityUserRow> => {
@@ -124,7 +251,7 @@ export const setUserEmailAndSettings = async (db: Knex, frequency: EmailFrequenc
     handle: `user_${userId}`,
     email: `user_${userId}@gmail.com`,
     blockchainUserId: userId,
-  } 
+  }
   await db.insert(user).into('Users')
   await db.insert({
     createdAt: new Date(),

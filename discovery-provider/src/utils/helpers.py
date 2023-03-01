@@ -538,9 +538,7 @@ def get_account_index(instruction: TransactionMessageInstruction, index: int):
 def get_final_poa_block(shared_config) -> Optional[int]:
     # get final poa block from identity and cache result
     # marks the transition to nethermind
-    # returns None if still on POA
-    if os.getenv("audius_discprov_env") != "stage":
-        return None
+    # depend on identity responding with final_poa_block or the redis cached value
 
     redis = redis_connection.get_redis()
     cached_final_poa_block = redis.get(final_poa_block_redis_key)
@@ -558,7 +556,10 @@ def get_final_poa_block(shared_config) -> Optional[int]:
         response.raise_for_status()
         response_json = response.json()
 
-        final_poa_block = int(response_json.get("finalPOABlock", None))
+        if not response_json.get("finalPOABlock"):
+            return None
+
+        final_poa_block = int(response_json.get("finalPOABlock"))
 
         redis.set(final_poa_block_redis_key, final_poa_block)
     except requests.exceptions.ConnectionError:

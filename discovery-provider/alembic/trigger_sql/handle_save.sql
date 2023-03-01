@@ -109,6 +109,59 @@ begin
       on conflict do nothing;
     end if;
 
+    -- notify followees of the favoriter who have reposted the same content
+    -- within the last month
+    if new.is_delete is false
+    and new.is_save_of_repost is true then
+    with
+        followee_save_repost_ids as (
+            select user_id
+            from reposts r
+            where
+                r.repost_item_id = new.save_item_id
+                and new.created_at - INTERVAL '1 month' < r.created_at
+                and new.created_at > r.created_at
+                and r.is_delete is false
+                and r.is_current is true
+                and r.repost_type::text = new.save_type::text
+                and r.user_id in
+                (
+                    select
+                        followee_user_id
+                    from follows
+                    where
+                        follower_user_id = new.user_id
+                        and is_delete is false
+                        and is_current is true
+                )
+        )
+    insert into notification
+      (blocknumber, user_ids, timestamp, type, specifier, group_id, data)
+      SELECT blocknumber_val, user_ids_val, timestamp_val, type_val, specifier_val, group_id_val, data_val
+      FROM (
+        SELECT new.blocknumber AS blocknumber_val,
+        ARRAY(
+          SELECT user_id
+          FROM
+            followee_save_repost_ids
+        ) AS user_ids_val,
+        new.created_at AS timestamp_val,
+        'save_of_repost' AS type_val,
+        new.user_id AS specifier_val,
+        'save_of_repost:' || new.save_item_id || ':type:' || new.save_type AS group_id_val,
+        json_build_object(
+          'save_of_repost_item_id',
+          new.save_item_id,
+          'user_id',
+          new.user_id,
+          'type',
+          new.save_type
+        ) AS data_val
+      ) sub
+      WHERE user_ids_val IS NOT NULL AND array_length(user_ids_val, 1) > 0
+      on conflict do nothing;
+    end if;
+
     -- create a notification for remix cosign
     if new.is_delete is false and new.save_type = 'track' and track_remix_of is not null then
       select

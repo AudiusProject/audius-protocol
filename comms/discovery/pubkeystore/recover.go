@@ -5,13 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
 	"strings"
 
-	"comms.audius.co/discovery/config"
+	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
+	natsdConfig "comms.audius.co/natsd/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
+	"github.com/inconshreveable/log15"
 	"github.com/nats-io/nats.go"
 )
 
@@ -35,9 +38,9 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 
 	// create kv buckets
 	kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:    config.PubkeystoreBucketName,
-		Replicas:  config.NatsReplicaCount,
-		Placement: config.DiscoveryPlacement(),
+		Bucket:    discoveryConfig.PubkeystoreBucketName,
+		Replicas:  natsdConfig.NatsReplicaCount,
+		Placement: discoveryConfig.DiscoveryPlacement(),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create pubkey kv %v", err)
@@ -45,7 +48,7 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 
 	endpoint := "https://poa-gateway.audius.co"
 
-	if config.IsStaging {
+	if discoveryConfig.GetDiscoveryConfig().PeeringConfig.IsStaging {
 		endpoint = "http://13.52.185.5:8545"
 
 		// should get dynamically from
@@ -65,7 +68,8 @@ func Dial(jetstreamContext nats.JetStreamContext) error {
 func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error) {
 	var err error
 
-	logger := config.Logger.New("module", "pubkeystore", "userId", userId)
+	logger := log15.New("module", "pubkeystore", "userId", userId)
+	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
 
 	conn := db.Conn
 

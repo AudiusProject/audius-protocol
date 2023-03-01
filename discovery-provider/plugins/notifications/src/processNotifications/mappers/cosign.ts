@@ -1,5 +1,5 @@
 import { Knex } from 'knex'
-import { NotificationRow, UserRow } from '../../types/dn'
+import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import { CosignRemixNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
@@ -33,14 +33,22 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       return acc
     }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
+    const trackRes: Array<{ track_id: number, title: string }> = await this.dnDB.select('track_id', 'title')
+      .from<TrackRow>('tracks')
+      .where('is_current', true)
+      .whereIn('track_id', [this.trackId, this.parentTrackId])
+    const tracks = trackRes.reduce((acc, track) => {
+      acc[track.track_id] = { title: track.title }
+      return acc
+    }, {} as Record<number, { title: string }>)
 
     if (users?.[this.parentTrackUserId]?.isDeactivated) {
       return
     }
 
-    // TODO: Fetch the cosign remix track and parent track
+    const parentTrackUserName = users[this.parentTrackUserId]?.name
+    const remixTrackTitle = tracks[this.trackId]?.title
 
-    // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.parentTrackUserId)
 
     // If the user has devices to the notification to, proceed
@@ -55,8 +63,8 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
             badgeCount: userNotifications.mobile[this.parentTrackUserId].badgeCount,
             targetARN: device.awsARN
           }, {
-            title: 'Favorite',
-            body: ``,
+            title: 'New Track Co-Sign! 🔥',
+            body: `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`,
             data: {}
           })
         }))

@@ -1,5 +1,5 @@
 import { Knex } from 'knex'
-import { NotificationRow, UserRow } from '../../types/dn'
+import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import { RemixNotification, RepostNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
@@ -34,6 +34,15 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       return acc
     }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
+    const trackRes: Array<{ track_id: number, title: string }> = await this.dnDB.select('track_id', 'title')
+      .from<TrackRow>('tracks')
+      .where('is_current', true)
+      .whereIn('track_id', [this.trackId, this.parentTrackId])
+    const tracks = trackRes.reduce((acc, track) => {
+      acc[track.track_id] = { title: track.title }
+      return acc
+    }, {} as Record<number, { title: string }>)
+
 
     if (users?.[this.parentTrackUserId]?.isDeactivated) {
       return
@@ -44,25 +53,28 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.parentTrackUserId)
 
+    // TODO Fill this out
+    const parentTrackTitle = tracks[this.parentTrackId]?.title
+    const remixUserName = users[this.remixUserId]?.name
+    const remixTitle = tracks[this.trackId]?.title
+
     // If the user has devices to the notification to, proceed
     if ((userNotifications.mobile?.[this.parentTrackUserId]?.devices ?? []).length > 0) {
       const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.parentTrackUserId].settings
       const devices: Device[] = userNotifications.mobile?.[this.parentTrackUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['favorites']) {
-        await Promise.all(devices.map(device => {
-          return sendPushNotification({
-            type: device.type,
-            badgeCount: userNotifications.mobile[this.parentTrackUserId].badgeCount,
-            targetARN: device.awsARN
-          }, {
-            title: 'Favorite',
-            body: ``,
-            data: {}
-          })
-        }))
-        // TODO: increment badge count
-      }
+      await Promise.all(devices.map(device => {
+        return sendPushNotification({
+          type: device.type,
+          badgeCount: userNotifications.mobile[this.parentTrackUserId].badgeCount,
+          targetARN: device.awsARN
+        }, {
+          title: 'New Remix Of Your Track ♻️',
+          body: `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`,
+          data: {}
+        })
+      }))
+      // TODO: increment badge count
 
     }
     // 

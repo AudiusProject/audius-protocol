@@ -288,7 +288,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_current=repost_meta.get("is_current", True),
                 is_delete=repost_meta.get("is_delete", False),
                 created_at=repost_meta.get("created_at", datetime.now()),
-                is_repost_repost=repost_meta.get("is_repost_repost", False),
+                is_repost_of_repost=repost_meta.get("is_repost_of_repost", False),
             )
             session.add(repost)
         for i, save_meta in enumerate(saves):
@@ -302,6 +302,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_current=save_meta.get("is_current", True),
                 is_delete=save_meta.get("is_delete", False),
                 created_at=save_meta.get("created_at", datetime.now()),
+                is_save_of_repost=save_meta.get("is_save_of_repost", False),
             )
             session.add(save)
 

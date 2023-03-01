@@ -18,15 +18,5 @@ npm i
 npm run build
 npm link
 
-cd $PROTOCOL_DIR/service-commands
-npm i
-npm link @audius/sdk
-npm link
-
-cd $PROTOCOL_DIR/mad-dog
-npm i
-npm link @audius/sdk
-npm link @audius/service-commands
-
 cd $PROTOCOL_DIR/libs
 npm link

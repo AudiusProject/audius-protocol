@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"os"
 	"strings"
 	"testing"
 
-	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
+	sharedConfig "comms.audius.co/shared/config"
+	"comms.audius.co/shared/peering"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -19,7 +21,7 @@ import (
 func TestEmChain(t *testing.T) {
 	t.Skip()
 
-	config.IsStaging = true // dagron
+	os.Setenv("AUDIUS_IS_STAGING", "true")
 
 	db.Dial()
 
@@ -102,7 +104,7 @@ func TestEmChain(t *testing.T) {
 		if action.Metadata != "" && strings.HasPrefix(action.Metadata, "Qm") {
 			j, err := cf.Fetch(action.UserID, action.Metadata)
 			if err != nil {
-				config.Logger.Warn(err.Error())
+				peering.New(&sharedConfig.PeeringConfig{}).Logger.Warn(err.Error())
 			} else {
 				action.MetadataJSON = j
 			}

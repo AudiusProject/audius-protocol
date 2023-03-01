@@ -4,7 +4,7 @@ import logging
 import re
 import time
 from decimal import Decimal
-from typing import List, Optional, TypedDict
+from typing import List, Optional, Tuple, TypedDict
 
 import base58
 from redis import Redis
@@ -369,31 +369,15 @@ def process_user_bank_tx_details(
         )
 
 
-def parse_user_bank_transaction(
-    session: Session,
+def get_sol_tx_info(
     solana_client_manager: SolanaClientManager,
-    tx_sig,
-    redis,
-    challenge_event_bus: ChallengeEventBus,
+    tx_sig: str,
 ):
     tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-    tx_slot = tx_info["result"]["slot"]
-    timestamp = tx_info["result"]["blockTime"]
-    parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
-
-    logger.debug(
-        f"index_user_bank.py | parse_user_bank_transaction |\
-    {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
-    )
-
-    process_user_bank_tx_details(
-        session, redis, tx_info, tx_sig, parsed_timestamp, challenge_event_bus
-    )
-    session.add(UserBankTx(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp))
-    return (tx_info["result"], tx_sig)
+    return (tx_info, tx_sig)
 
 
-def process_user_bank_txs():
+def process_user_bank_txs() -> None:
     solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
     challenge_bus: ChallengeEventBus = index_user_bank.challenge_event_bus
     db = index_user_bank.db
@@ -493,49 +477,70 @@ def process_user_bank_txs():
                         f"index_user_bank.py | sliced tx_sigs from {prev_len} to {len(transaction_signatures)} entries"
                     )
 
-    # Reverse batches aggregated so oldest transactions are processed first
-    transaction_signatures.reverse()
+        # Reverse batches aggregated so oldest transactions are processed first
+        transaction_signatures.reverse()
 
-    last_tx_sig: Optional[str] = None
-    last_tx = None
-    if transaction_signatures and transaction_signatures[-1]:
-        last_tx_sig = transaction_signatures[-1][0]
+        last_tx_sig: Optional[str] = None
+        last_tx = None
+        if transaction_signatures and transaction_signatures[-1]:
+            last_tx_sig = transaction_signatures[-1][0]
 
-    num_txs_processed = 0
-    for tx_sig_batch in transaction_signatures:
-        logger.info(f"index_user_bank.py | processing {tx_sig_batch}")
-        batch_start_time = time.time()
-        # Process each batch in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            with db.scoped_session() as session:
+        num_txs_processed = 0
+        for tx_sig_batch in transaction_signatures:
+            logger.info(f"index_user_bank.py | processing {tx_sig_batch}")
+            batch_start_time = time.time()
+
+            tx_infos: List[Tuple[ConfirmedTransaction, str]] = []
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
-                        parse_user_bank_transaction,
-                        session,
+                        get_sol_tx_info,
                         solana_client_manager,
                         tx_sig,
-                        redis,
-                        challenge_bus,
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
                 for future in concurrent.futures.as_completed(parse_sol_tx_futures):
                     try:
-                        # No return value expected here so we just ensure all futures are resolved
-                        tx_info, tx_sig = future.result()
-                        if tx_info and last_tx_sig and last_tx_sig == tx_sig:
-                            last_tx = tx_info
-
-                        num_txs_processed += 1
+                        tx_infos.append(future.result())
                     except Exception as exc:
                         logger.error(f"index_user_bank.py | error {exc}", exc_info=True)
                         raise
 
-        batch_end_time = time.time()
-        batch_duration = batch_end_time - batch_start_time
-        logger.info(
-            f"index_user_bank.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
-        )
+            # Sort by slot
+            # Note: while it's possible (even likely) to have multiple tx in the same slot,
+            # these transactions can't be dependent on one another, so we don't care which order
+            # we process them.
+            tx_infos.sort(key=lambda info: info[0]["result"]["slot"])
+
+            for (tx_info, tx_sig) in tx_infos:
+                if tx_info and last_tx_sig and last_tx_sig == tx_sig:
+                    last_tx = tx_info["result"]
+                num_txs_processed += 1
+
+                tx_slot = tx_info["result"]["slot"]
+                timestamp = tx_info["result"]["blockTime"]
+                parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
+
+                logger.debug(
+                    f"index_user_bank.py | parse_user_bank_transaction |\
+                {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
+                )
+
+                process_user_bank_tx_details(
+                    session, redis, tx_info, tx_sig, parsed_timestamp, challenge_bus
+                )
+                session.add(
+                    UserBankTx(
+                        signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp
+                    )
+                )
+
+            batch_end_time = time.time()
+            batch_duration = batch_end_time - batch_start_time
+            logger.info(
+                f"index_user_bank.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
+            )
 
     if last_tx and last_tx_sig:
         cache_latest_sol_user_bank_db_tx(

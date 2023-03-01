@@ -52,7 +52,7 @@ def get_remixes_of(args):
             parent_track = parent_track_res[0]
 
             if parent_track["is_premium"]:
-                return {"tracks": [], "count": 0}
+                return ([], [], 0)
 
             track_owner_id = parent_track["owner_id"]
 
