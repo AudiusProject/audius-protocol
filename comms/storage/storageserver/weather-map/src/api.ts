@@ -1,14 +1,15 @@
 import axios from 'axios'
 import { useQueries, useQuery, UseQueryOptions } from 'react-query'
 
-export type HostAndShards = {
+export type NodeStatus = {
   host: string
+  lastOk: string
   shards: string[]
 }
-export const useNodesToShards = () =>
-  useQuery<{ [pubKey: string]: HostAndShards }, any>('nodesToShards', () => {
+export const useNodeStatuses = () =>
+  useQuery<{ [pubKey: string]: NodeStatus }, any>('nodeStatuses', () => {
     return axios
-      .get(`${window.location.origin}/storage/nodes-to-shards`)
+      .get(`${window.location.origin}/storage/nodes-statuses`)
       .then((res) => res.data)
   })
 

@@ -31,7 +31,7 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	ss := storageserver.NewProd(storageConfig, jsc, peering)
+	ss := storageserver.New(storageConfig, jsc, peering)
 
 	// Start server
 	go func() {
