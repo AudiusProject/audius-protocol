@@ -1,4 +1,5 @@
 import { tokenDashboardPageActions } from '@audius/common'
+import * as Sentry from '@sentry/browser'
 import { put, takeEvery } from 'typed-redux-saga'
 
 import { addWalletToUser } from 'common/store/pages/token-dashboard/addWalletToUser'
@@ -10,42 +11,60 @@ import { disconnectWallet } from './disconnectWallet'
 import { establishWalletConnection } from './establishWalletConnection'
 import { getWalletAddress } from './getWalletAddress'
 import { signMessage } from './signMessage'
+
 const { connectNewWallet } = tokenDashboardPageActions
 
-const { setIsConnectingWallet } = tokenDashboardPageActions
+const { setIsConnectingWallet, setModalState, resetStatus } =
+  tokenDashboardPageActions
 
 function* handleConnectNewWallet() {
-  const connection = yield* establishWalletConnection()
-  if (!connection) return
+  try {
+    const connection = yield* establishWalletConnection()
+    if (!connection) return
 
-  const { chain } = connection
+    const { chain } = connection
 
-  const walletAddress = yield* getWalletAddress(connection)
-  if (!walletAddress) return
+    const walletAddress = yield* getWalletAddress(connection)
+    if (!walletAddress) return
 
-  const isNewWallet = yield* checkIsNewWallet(walletAddress, chain)
-  if (!isNewWallet) return
+    const isNewWallet = yield* checkIsNewWallet(walletAddress, chain)
+    if (!isNewWallet) return
 
-  const { balance, collectibleCount } = yield* getWalletInfo(
-    walletAddress,
-    chain
-  )
+    const { balance, collectibleCount } = yield* getWalletInfo(
+      walletAddress,
+      chain
+    )
 
-  yield* put(
-    setIsConnectingWallet({
-      wallet: walletAddress,
-      chain,
-      balance,
-      collectibleCount
-    })
-  )
+    yield* put(
+      setIsConnectingWallet({
+        wallet: walletAddress,
+        chain,
+        balance,
+        collectibleCount
+      })
+    )
 
-  const signature = yield* signMessage(connection)
-  const updatedUserMetadata = yield* associateNewWallet(signature)
+    const signature = yield* signMessage(connection)
+    const updatedUserMetadata = yield* associateNewWallet(signature)
 
-  const disconnect = () => disconnectWallet(connection)
+    const disconnect = () => disconnectWallet(connection)
 
-  yield* addWalletToUser(updatedUserMetadata, disconnect)
+    yield* addWalletToUser(updatedUserMetadata, disconnect)
+  } catch (e) {
+    // Very likely we hit error path here i.e. user closes the web3 popup. Log it and restart
+    const err = `Caught error during handleConnectNewWallet:  ${e}, resetting to initial state`
+    console.warn(err)
+    Sentry.captureException(err)
+    yield* put(
+      setModalState({
+        modalState: {
+          stage: 'CONNECT_WALLETS',
+          flowState: { stage: 'ADD_WALLET' }
+        }
+      })
+    )
+    yield* put(resetStatus())
+  }
 }
 
 export function* watchConnectNewWallet() {
