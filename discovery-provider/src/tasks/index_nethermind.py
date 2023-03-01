@@ -226,13 +226,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     if (
                         not cid
                         or event_type == EntityType.USER_REPLICA_SET
-                        or action
-                        in [
-                            EntityType.REPOST,
-                            EntityType.SAVE,
-                            EntityType.FOLLOW,
-                            EntityType.SUBSCRIPTION,
-                        ]
+                        or action in [Action.REPOST, Action.SAVE, Action.FOLLOW]
                     ):
                         continue
 
@@ -380,7 +374,6 @@ def process_state_changes(
     )(block)
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
-
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
             main_indexing_task,
