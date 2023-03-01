@@ -39,6 +39,7 @@ export enum NotificationType {
   Follow = 'Follow',
   Favorite = 'Favorite',
   Repost = 'Repost',
+  RepostOfRepost = 'RepostOfRepost',
   Milestone = 'Milestone',
   RemixCreate = 'RemixCreate',
   RemixCosign = 'RemixCosign',
@@ -62,6 +63,9 @@ export enum PushNotificationType {
   RepostTrack = 'RepostTrack',
   RepostPlaylist = 'RepostPlaylist',
   RepostAlbum = 'RepostAlbum',
+  RepostOfRepostTrack = 'RepostOfRepostTrack',
+  RepostOfRepostPlaylist = 'RepostOfRepostPlaylist',
+  RepostOfRepostAlbum = 'RepostOfRepostAlbum',
   MilestoneListen = 'MilestoneListen',
   MilestoneRepost = 'MilestoneRepost',
   MilestoneFavorite = 'MilestoneFavorite',
@@ -387,6 +391,36 @@ export type RepostPushNotification = {
     | PushNotificationType.RepostAlbum
     | PushNotificationType.RepostPlaylist
     | PushNotificationType.RepostTrack
+  actions: [
+    {
+      blocknumber: number
+      actionEntityId: ID
+      actionEntityType: Entity.User
+    }
+  ]
+  metadata: {
+    entity_owner_id: ID
+    entity_type: Entity.Album | Entity.Playlist | Entity.Track
+    entity_id: ID
+  }
+}
+
+export type RepostOfRepostNotification = BaseNotification & {
+  type: NotificationType.RepostOfRepost
+  entityId: ID
+  userIds: ID[]
+  entityType: Entity.Playlist | Entity.Album | Entity.Track
+}
+
+export type RepostOfRepostPushNotification = {
+  blocknumber: number
+  entityId: ID
+  initiator: ID
+  timestamp: string
+  type:
+    | PushNotificationType.RepostOfRepostAlbum
+    | PushNotificationType.RepostOfRepostPlaylist
+    | PushNotificationType.RepostOfRepostTrack
   actions: [
     {
       blocknumber: number
@@ -741,6 +775,7 @@ export type Notification =
   | UserSubscriptionNotification
   | FollowNotification
   | RepostNotification
+  | RepostOfRepostNotification
   | FavoriteNotification
   | MilestoneNotification
   | RemixCreateNotification
