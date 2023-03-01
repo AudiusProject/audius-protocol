@@ -78,10 +78,10 @@ export function* followUser(
   yield* put(event)
 
   yield* call(confirmFollowUser, action.userId, accountId)
-  const shouldAutoSubscribe =
-    ((yield* call(getFeatureEnabled, FeatureFlags.AUTO_SUBSCRIBE_ON_FOLLOW)) as
-      | boolean
-      | null) ?? false
+  const shouldAutoSubscribe = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.AUTO_SUBSCRIBE_ON_FOLLOW
+  )
   if (shouldAutoSubscribe) {
     yield* put(
       setNotificationSubscription(
