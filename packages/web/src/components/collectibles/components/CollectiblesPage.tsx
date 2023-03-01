@@ -95,6 +95,10 @@ export const collectibleMessages = {
   done: 'Done'
 }
 
+const dedupe = (list: any[]) => {
+  return [...new Set(list)]
+}
+
 type CollectiblesPageProps = {
   userId: number | null
   name: string
@@ -239,7 +243,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
             (acc, curr) => ({ ...acc, [curr.id]: {} }),
             {}
           ),
-          order: collectibleList.map((c) => c.id)
+          order: dedupe(collectibleList.map((c) => c.id))
         }
         setCollectiblesMetadata(newMetadata)
         if (ethCollectibleList) {
@@ -252,10 +256,24 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         /**
          * include collectibles returned by OpenSea which have not been stored in the user preferences
          */
+        const dedupedCollectiblesOrder = dedupe(profile.collectibles.order)
         const metadata: CollectiblesMetadata = {
           ...profile.collectibles,
-          order: [...profile.collectibles.order]
+          order: dedupedCollectiblesOrder
         }
+
+        // Remove duplicates in user collectibles order if any
+        if (
+          isUserOnTheirProfile &&
+          updateProfile &&
+          profile.collectibles.order.length !== dedupedCollectiblesOrder.length
+        ) {
+          updateProfile({
+            ...profile,
+            collectibles: metadata
+          })
+        }
+
         /**
          * Update id of collectibles to use correct format
          */
@@ -280,12 +298,15 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
         const newCollectiblesMap = collectibleList
           .map((c) => c.id)
           .filter((id) => !collectiblesMetadataKeySet.has(id))
-          .reduce((acc, curr) => ({ ...acc, [curr]: {} }), {})
+          .reduce((acc: { [key: string]: object }, curr: string) => {
+            acc[curr] = {}
+            return acc
+          }, {})
 
         const newMetadata = {
           ...metadata,
           ...newCollectiblesMap,
-          order: metadata.order.concat(Object.keys(newCollectiblesMap))
+          order: dedupe(metadata.order.concat(Object.keys(newCollectiblesMap)))
         }
         setCollectiblesMetadata(newMetadata)
         if (ethCollectibleList) {
@@ -303,6 +324,8 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     ethCollectibleList,
     solanaCollectibleList,
     collectiblesMetadata,
+    isUserOnTheirProfile,
+    updateProfile,
     getHasSetEthCollectibles,
     setHasSetEthCollectibles,
     getHasSetSolanaCollectibles,
@@ -320,9 +343,16 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
   const handleDoneClick = useCallback(() => {
     setIsEditingPreferences(false)
     if (updateProfile) {
+      // There was a previous bug where NFTs may have been duplicated.
+      // To be on the safe side and ensure that this doesn't happen anymore,
+      // we turn the order array into a set, then back into an array.
+      const dedupedCollectiblesMetadata = {
+        ...collectiblesMetadata,
+        order: dedupe(collectiblesMetadata?.order ?? [])
+      }
       updateProfile({
         ...profile,
-        collectibles: { ...collectiblesMetadata }
+        collectibles: dedupedCollectiblesMetadata
       })
     }
   }, [setIsEditingPreferences, updateProfile, profile, collectiblesMetadata])
@@ -331,7 +361,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
     (id: string) => () => {
       setCollectiblesMetadata({
         ...collectiblesMetadata,
-        order: (collectiblesMetadata?.order ?? []).concat(id)
+        order: dedupe((collectiblesMetadata?.order ?? []).concat(id))
       })
     },
     [setCollectiblesMetadata, collectiblesMetadata]
@@ -342,8 +372,10 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       setCollectiblesMetadata({
         ...collectiblesMetadata,
         [id]: collectiblesMetadata?.id ?? {},
-        order: (collectiblesMetadata?.order ?? []).filter(
-          (tokenId) => tokenId !== id
+        order: dedupe(
+          (collectiblesMetadata?.order ?? []).filter(
+            (tokenId) => tokenId !== id
+          )
         )
       })
     },
@@ -399,16 +431,18 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
 
     setCollectiblesMetadata({
       ...collectiblesMetadata,
-      order: newCollectibleList
-        .map((c) => c.id)
-        .filter((id) => (collectiblesMetadata?.order || []).includes(id))
+      order: dedupe(
+        newCollectibleList
+          .map((c) => c.id)
+          .filter((id) => (collectiblesMetadata?.order || []).includes(id))
+      )
     })
   }
 
   const getVisibleCollectibles = useCallback(() => {
     if (collectibleList) {
       if (!hasCollectibles && collectiblesMetadata?.order === undefined) {
-        return [...collectibleList]
+        return dedupe(collectibleList)
       }
 
       const collectibleMap: {
@@ -419,7 +453,7 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       )
       const collectibleKeySet = new Set(Object.keys(collectibleMap))
 
-      const visible = collectiblesMetadata?.order
+      const visible = dedupe(collectiblesMetadata?.order ?? [])
         .filter((id) => collectibleKeySet.has(id))
         .map((id) => collectibleMap[id])
       return visible || []
@@ -439,7 +473,9 @@ const CollectiblesPage = (props: CollectiblesPageProps) => {
       const visibleCollectibleKeySet = new Set(
         getVisibleCollectibles().map((c) => c.id)
       )
-      return collectibleList.filter((c) => !visibleCollectibleKeySet.has(c.id))
+      return dedupe(
+        collectibleList.filter((c) => !visibleCollectibleKeySet.has(c.id))
+      )
     }
     return []
   }, [getVisibleCollectibles, collectibleList])

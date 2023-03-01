@@ -131,6 +131,8 @@ export class OpenSeaClient {
   }
 
   async getAllCollectibles(wallets: string[]): Promise<CollectibleState> {
+    const lowercasedWallets = wallets.map(wallet => wallet.toLowerCase())
+
     return Promise.all([
       this.getCollectiblesForMultipleWallets(wallets),
       this.getCreatedCollectiblesForMultipleWallets(wallets),
@@ -227,11 +229,18 @@ export class OpenSeaClient {
           const { token_id, asset_contract } = event.asset
           const id = `${token_id}:::${asset_contract?.address ?? ''}`
           if (ownedCollectibleKeySet.has(id)) {
-            collectiblesMap[id] = {
-              ...collectiblesMap[id],
-              dateLastTransferred: event.created_date
+            // Remove collectible if it was transferred out from
+            // one of the user's wallets.
+            if (lowercasedWallets.includes(event.from_account.address.toLowerCase())) {
+              ownedCollectibleKeySet.delete(id)
+              delete collectiblesMap[id]
+            } else {
+                collectiblesMap[id] = {
+                ...collectiblesMap[id],
+                dateLastTransferred: event.created_date
+              }
             }
-          } else if (wallets.includes(event.to_account.address)) {
+          } else if (lowercasedWallets.includes(event.to_account.address.toLowerCase())) {
             ownedCollectibleKeySet.add(id)
             collectiblesMap[id] = await transferEventToCollectible(event)
           }
