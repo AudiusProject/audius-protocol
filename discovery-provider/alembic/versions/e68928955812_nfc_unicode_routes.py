@@ -1,7 +1,7 @@
 """nfc_unicode_routes
 
 Revision ID: e68928955812
-Revises: 9b4e12c0c428
+Revises: abf8419b2dd5
 Create Date: 2023-02-23 02:09:31.901048
 
 """
@@ -14,7 +14,7 @@ from sqlalchemy.types import Boolean, Integer, String
 
 # revision identifiers, used by Alembic.
 revision = "e68928955812"
-down_revision = "9b4e12c0c428"
+down_revision = "abf8419b2dd5"
 branch_labels = None
 depends_on = None
 
