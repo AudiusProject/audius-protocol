@@ -3,8 +3,8 @@ package storageserver
 
 import (
 	"embed"
+	"errors"
 	"io/fs"
-	"log"
 	"net/http"
 	"strings"
 
@@ -22,6 +22,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	"golang.org/x/exp/slog"
 )
 
 const (
@@ -45,12 +46,13 @@ type StorageServer struct {
 	Peering        peering.Peering
 }
 
-
-func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peering.Peering) *StorageServer {
+func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peering.Peering) (*StorageServer, error) {
 	allContentNodes, err := peering.GetContentNodes()
 	if err != nil {
-		log.Fatal("Error getting content nodes: ", err)
+		slog.Error("Error getting content nodes", err)
+		return nil, err
 	}
+
 	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
 	var host string
 	for _, node := range allContentNodes {
@@ -60,7 +62,7 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 		}
 	}
 	if host == "" {
-		log.Fatal("Could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
+		return nil, errors.New("could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
 	}
 
 	var healthyNodesKV nats.KeyValue
@@ -85,7 +87,8 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 	m := monitor.New(GlobalNamespace, healthyNodesKV, config.HealthTTLHours, jsc)
 	err = m.UpdateHealthyNodeSetOnInterval(config.RebalanceIntervalHours)
 	if err != nil {
-		log.Fatal("error starting interval to update set of healthy nodes: ", err)
+		slog.Error("error starting interval to update set of healthy nodes", err)
+		return nil, err
 	}
 
 	d := decider.NewRendezvousDecider(
@@ -97,13 +100,15 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 	)
 	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
-		log.Fatal("error creating jobs manager: ", err)
+		slog.Error("error creating jobs manager", err)
+		return nil, err
 	}
 	jobsManager.StartWorkers(NumJobWorkers)
 
 	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)
 	if err != nil {
-		log.Fatal("error connecting to persistent storage: ", err)
+		slog.Error("eror connecting to persistent storage", err)
+		return nil, err
 	}
 
 	ss := &StorageServer{

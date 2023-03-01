@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/nats-io/nats.go"
+	"golang.org/x/exp/slog"
 )
 
 func (p *NatsPeering) DialNats(peerMap map[string]*Info) (*nats.Conn, error) {
@@ -26,7 +27,7 @@ func (p *NatsPeering) DialNats(peerMap map[string]*Info) (*nats.Conn, error) {
 			}
 		}
 		natsUrl = strings.Join(goodNatsUrls, ",")
-		p.Logger.Info("nats client url: " + natsUrl)
+		slog.Info("nats client url: " + natsUrl)
 	}
 
 	nc, err := p.DialNatsUrl(natsUrl)
@@ -53,7 +54,7 @@ func (p *NatsPeering) NatsConnectionTest(natsUrl string) bool {
 	nc, err := p.DialNatsUrl(natsUrl)
 	ok := false
 	if err != nil {
-		p.Logger.Warn("nats connection test failed", "url", natsUrl, "err", err)
+		slog.With("url", natsUrl).Error("nats connection test failed", err)
 	} else {
 		// servers := nc.Servers()
 		// fmt.Println("nc servers", servers)

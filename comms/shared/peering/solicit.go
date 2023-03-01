@@ -13,6 +13,7 @@ import (
 
 	"comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/crypto"
+	"golang.org/x/exp/slog"
 )
 
 // todo: this should probably live in a struct
@@ -23,11 +24,11 @@ var (
 
 func (p *NatsPeering) Solicit() map[string]*Info {
 
-	p.Logger.Info("solicit begin")
+	slog.Info("solicit begin")
 
 	sps, err := p.AllNodes()
 	if err != nil {
-		p.Logger.Error("solicit failed: " + err.Error())
+		slog.Error("solicit failed", err)
 		return peerMap
 	}
 
@@ -55,7 +56,7 @@ func (p *NatsPeering) Solicit() map[string]*Info {
 
 	wg.Wait()
 
-	p.Logger.Info("solicit done", "sps", len(sps), "peers", len(peerMap))
+	slog.Info("solicit done", "sps", len(sps), "peers", len(peerMap))
 
 	return peerMap
 
@@ -66,7 +67,7 @@ func (p *NatsPeering) addPeer(info *Info) {
 	defer mu.Unlock()
 
 	if _, known := peerMap[info.IP]; !known {
-		p.Logger.Info("adding peer", "info", info)
+		slog.Info("adding peer", "info", info)
 		peerMap[info.IP] = info
 	}
 }

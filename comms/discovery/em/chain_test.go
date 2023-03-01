@@ -10,12 +10,11 @@ import (
 	"testing"
 
 	"comms.audius.co/discovery/db"
-	sharedConfig "comms.audius.co/shared/config"
-	"comms.audius.co/shared/peering"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slog"
 )
 
 func TestEmChain(t *testing.T) {
@@ -104,7 +103,7 @@ func TestEmChain(t *testing.T) {
 		if action.Metadata != "" && strings.HasPrefix(action.Metadata, "Qm") {
 			j, err := cf.Fetch(action.UserID, action.Metadata)
 			if err != nil {
-				peering.New(&sharedConfig.PeeringConfig{}).Logger.Warn(err.Error())
+				slog.Error("", err)
 			} else {
 				action.MetadataJSON = j
 			}
