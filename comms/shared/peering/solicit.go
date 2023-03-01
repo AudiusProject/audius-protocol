@@ -21,7 +21,7 @@ var (
 	peerMap = map[string]*Info{}
 )
 
-func (p *Peering) Solicit() map[string]*Info {
+func (p *NatsPeering) Solicit() map[string]*Info {
 
 	p.Logger.Info("solicit begin")
 
@@ -61,7 +61,7 @@ func (p *Peering) Solicit() map[string]*Info {
 
 }
 
-func (p *Peering) addPeer(info *Info) {
+func (p *NatsPeering) addPeer(info *Info) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -71,7 +71,7 @@ func (p *Peering) addPeer(info *Info) {
 	}
 }
 
-func (p *Peering) ListPeers() []Info {
+func (p *NatsPeering) ListPeers() []Info {
 	mu.Lock()
 	defer mu.Unlock()
 	peers := make([]Info, 0, len(peerMap))
@@ -84,7 +84,7 @@ func (p *Peering) ListPeers() []Info {
 	return peers
 }
 
-func (p *Peering) solicitServer(endpoint string) (*Info, error) {
+func (p *NatsPeering) solicitServer(endpoint string) (*Info, error) {
 
 	// sign request
 	myInfo, err := p.MyInfo()
@@ -116,7 +116,7 @@ func (p *Peering) solicitServer(endpoint string) (*Info, error) {
 	return info, nil
 }
 
-func (p *Peering) PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error) {
+func (p *NatsPeering) PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error) {
 	payload, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err

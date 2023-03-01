@@ -6,6 +6,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"encoding/json"
+	"errors"
 	"net/url"
 	"testing"
 	"time"
@@ -121,7 +122,7 @@ func TestVerifySignature(t *testing.T) {
 		signatureData  SignatureData
 		signature      []byte
 		requestedCid   string
-		expectedResult bool
+		expectedResult error
 	}{
 		"incorrect CID": {
 			[]config.ServiceNode{},
@@ -130,7 +131,7 @@ func TestVerifySignature(t *testing.T) {
 			},
 			[]byte{},
 			"Qmblahblah",
-			false,
+			errors.New("signed cid does not match requested cid"),
 		},
 		"incorrect wallet": {
 			[]config.ServiceNode{
@@ -139,7 +140,7 @@ func TestVerifySignature(t *testing.T) {
 			correctSignatureData,
 			[]byte("0xincorrectsignature"),
 			correctCID,
-			false,
+			errors.New("wallet recovery failed"),
 		},
 		"happy path": {
 			[]config.ServiceNode{
@@ -148,15 +149,15 @@ func TestVerifySignature(t *testing.T) {
 			correctSignatureData,
 			correctSignature,
 			correctCID,
-			true,
+			nil,
 		},
 	}
 
 	for testName, tt := range tests {
-		actualResult, err := VerifySignature(tt.dnodes, tt.signatureData, tt.signature, tt.requestedCid)
+		actualResult := VerifySignature(tt.dnodes, tt.signatureData, tt.signature, tt.requestedCid)
 
-		if actualResult != tt.expectedResult {
-			t.Fatalf("incorrect result for `%s`, want=%t, got=%t, err=%+v", testName, tt.expectedResult, actualResult, err)
+		if actualResult != tt.expectedResult && actualResult.Error() != tt.expectedResult.Error() {
+			t.Fatalf("incorrect result for `%s`, want=%+v, got=%+v", testName, tt.expectedResult, actualResult)
 		}
 	}
 }

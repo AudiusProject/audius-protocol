@@ -13,7 +13,7 @@ type CustomRequest struct {
 	ShouldCache bool
 }
 
-func ContentAccessMiddleware(peering *peering.Peering) func(next echo.HandlerFunc) echo.HandlerFunc {
+func ContentAccessMiddleware(p peering.IPeering) func(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 
@@ -27,17 +27,13 @@ func ContentAccessMiddleware(peering *peering.Peering) func(next echo.HandlerFun
 				return echo.ErrBadRequest
 			}
 
-			nodes, err := peering.GetDiscoveryNodes()
+			nodes, err := p.GetDiscoveryNodes()
 			if err != nil {
 				return echo.ErrInternalServerError
 			}
 
-			isValidSignature, err := VerifySignature(nodes, *signatureData, []byte(signature), requestedCid)
+			err = VerifySignature(nodes, *signatureData, []byte(signature), requestedCid)
 			if err != nil {
-				return echo.ErrBadRequest
-			}
-
-			if !isValidSignature {
 				return echo.ErrBadRequest
 			}
 
