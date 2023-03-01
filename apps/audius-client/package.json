@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "link": "lerna link",
-    "postinstall": "lerna bootstrap --no-ci && npm run build && npm run install-hooks && cd packages/mobile/ios && if command -v pod > /dev/null; then pod install; fi",
+    "preinstall": "./scripts/preinstall.sh",
+    "postinstall": "./scripts/postinstall.sh",
     "build": "lerna run build --scope=@audius/stems --scope=@audius/common",
     "install-hooks": "mookme init --only-hook --skip-types-selection",
     "lint": "lerna run lint",

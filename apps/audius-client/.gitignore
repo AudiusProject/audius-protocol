@@ -11,3 +11,6 @@ lerna-debug.log
 
 .yalc
 yalc.lock
+
+# ignored until ci has custom image with correct python version
+.python-version
