@@ -81,7 +81,8 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 		},
 	)
 	if err != nil {
-		log.Fatalf("failed to create healthyNodes KV: %v", err)
+		slog.Error("failed to create healthyNodes KV", err)
+		return nil, err
 	}
 
 	m := monitor.New(GlobalNamespace, healthyNodesKV, config.HealthTTLHours, jsc)
@@ -124,7 +125,7 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 
 	m.SetNodeStatusOKOnInterval(thisNodePubKey, host, d, config.ReportOKIntervalSeconds)
 
-	return ss
+	return ss, nil
 }
 
 func (ss *StorageServer) createWebServer() {
