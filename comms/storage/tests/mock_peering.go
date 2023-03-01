@@ -15,9 +15,12 @@ type MockPeering struct{
 	MockMyInfo *peering.Info
 }
 
-func NewMockPeering(myInfo *peering.Info, nodes []sharedConfig.ServiceNode) {
-	mockMyInfo = myInfo
-	mockNodes = nodes
+func NewMockPeering(myInfo *peering.Info, peers []peering.Info, nodes []sharedConfig.ServiceNode) *MockPeering {
+	return &MockPeering{
+		MockNodes: nodes,
+		MockPeers: peers,
+		MockMyInfo: myInfo,
+	}
 }
 
 func (mp *MockPeering) AddNode(node sharedConfig.ServiceNode) {
