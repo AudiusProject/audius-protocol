@@ -12,6 +12,7 @@ import { AddTrackToPlaylistNotification } from './AddTrackToPlaylistNotification
 import { AnnouncementNotification } from './AnnouncementNotification'
 import { ChallengeRewardNotification } from './ChallengeRewardNotification'
 import { FavoriteNotification } from './FavoriteNotification'
+import { FavoriteOfRepostNotification } from './FavoriteOfRepostNotification'
 import { FollowNotification } from './FollowNotification'
 import { MilestoneNotification } from './MilestoneNotification'
 import { RemixCosignNotification } from './RemixCosignNotification'
@@ -95,6 +96,9 @@ export const Notification = (props: NotificationProps) => {
       }
       case NotificationType.RepostOfRepost: {
         return <RepostOfRepostNotification notification={notification} />
+      }
+      case NotificationType.FavoriteOfRepost: {
+        return <FavoriteOfRepostNotification notification={notification} />
       }
       case NotificationType.TierChange: {
         return <TierChangeNotification notification={notification} />

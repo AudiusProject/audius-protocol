@@ -20,9 +20,10 @@ import {
   TipSentNotification,
   TipReceivedNotification,
   AddTrackToPlaylistNotification,
-  SupporterDethronedNotification
+  SupporterDethronedNotification,
+  RepostOfRepostNotification,
+  FavoriteOfRepostNotification
 } from './Notifications'
-import { RepostOfRepostNotification } from './Notifications/RepostOfRepostNotification'
 
 type NotificationListItemProps = {
   notification: Notification
@@ -51,6 +52,8 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <RepostNotification notification={notification} />
       case NotificationType.RepostOfRepost:
         return <RepostOfRepostNotification notification={notification} />
+      case NotificationType.FavoriteOfRepost:
+        return <FavoriteOfRepostNotification notification={notification} />
       case NotificationType.TierChange:
         return <TierChangeNotification notification={notification} />
       case NotificationType.Reaction:

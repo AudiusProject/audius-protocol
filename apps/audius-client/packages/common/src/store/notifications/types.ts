@@ -40,6 +40,7 @@ export enum NotificationType {
   Favorite = 'Favorite',
   Repost = 'Repost',
   RepostOfRepost = 'RepostOfRepost',
+  FavoriteOfRepost = 'FavoriteOfRepost',
   Milestone = 'Milestone',
   RemixCreate = 'RemixCreate',
   RemixCosign = 'RemixCosign',
@@ -66,6 +67,9 @@ export enum PushNotificationType {
   RepostOfRepostTrack = 'RepostOfRepostTrack',
   RepostOfRepostPlaylist = 'RepostOfRepostPlaylist',
   RepostOfRepostAlbum = 'RepostOfRepostAlbum',
+  FavoriteOfRepostTrack = 'FavoriteOfRepostTrack',
+  FavoriteOfRepostPlaylist = 'FavoriteOfRepostPlaylist',
+  FavoriteOfRepostAlbum = 'FavoriteOfRepostAlbum',
   MilestoneListen = 'MilestoneListen',
   MilestoneRepost = 'MilestoneRepost',
   MilestoneFavorite = 'MilestoneFavorite',
@@ -435,6 +439,36 @@ export type RepostOfRepostPushNotification = {
   }
 }
 
+export type FavoriteOfRepostNotification = BaseNotification & {
+  type: NotificationType.FavoriteOfRepost
+  entityId: ID
+  userIds: ID[]
+  entityType: Entity.Playlist | Entity.Album | Entity.Track
+}
+
+export type FavoriteOfRepostPushNotification = {
+  blocknumber: number
+  entityId: ID
+  initiator: ID
+  timestamp: string
+  type:
+    | PushNotificationType.FavoriteOfRepostAlbum
+    | PushNotificationType.FavoriteOfRepostPlaylist
+    | PushNotificationType.FavoriteOfRepostTrack
+  actions: [
+    {
+      blocknumber: number
+      actionEntityId: ID
+      actionEntityType: Entity.User
+    }
+  ]
+  metadata: {
+    entity_owner_id: ID
+    entity_type: Entity.Album | Entity.Playlist | Entity.Track
+    entity_id: ID
+  }
+}
+
 export type FavoriteNotification = BaseNotification & {
   type: NotificationType.Favorite
   entityId: ID
@@ -776,6 +810,7 @@ export type Notification =
   | FollowNotification
   | RepostNotification
   | RepostOfRepostNotification
+  | FavoriteOfRepostNotification
   | FavoriteNotification
   | MilestoneNotification
   | RemixCreateNotification
