@@ -90,7 +90,10 @@ function* fetchProfileCustomizedCollectibles(user) {
         cacheActions.update(Kind.USERS, [
           {
             id: user.user_id,
-            metadata
+            metadata: {
+              ...metadata,
+              collectiblesOrderUnset: false
+            }
           }
         ])
       )
