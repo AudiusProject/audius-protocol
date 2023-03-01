@@ -35,6 +35,8 @@ export const SIGN_IN_SUCCEEDED = 'SIGN_ON/SIGN_IN_SUCCEEDED'
 export const SIGN_IN_FAILED = 'SIGN_ON/SIGN_IN_FAILED'
 
 export const SIGN_UP = 'SIGN_ON/SIGN_UP'
+export const START_SIGN_UP = 'SIGN_ON/START_SIGN_UP'
+export const FINISH_SIGN_UP = 'SIGN_ON/FINISH_SIGN_UP'
 export const SIGN_UP_SUCCEEDED = 'SIGN_ON/SIGN_UP_SUCCEEDED'
 export const SIGN_UP_SUCCEEDED_WITH_ID = 'SIGN_ON/SIGN_UP_SUCCEEDED_WITH_ID'
 export const SIGN_UP_FAILED = 'SIGN_ON/SIGN_UP_FAILED'
@@ -166,6 +168,20 @@ export function validateHandleFailed(error: string) {
  */
 export function signUp() {
   return { type: SIGN_UP }
+}
+
+/**
+ * When the user starts the sign up flow
+ */
+export function startSignUp() {
+  return { type: START_SIGN_UP }
+}
+
+/**
+ * When the user finishes the sign up flow
+ */
+export function finishSignUp() {
+  return { type: FINISH_SIGN_UP }
 }
 
 export const signUpSucceeded = () => ({ type: SIGN_UP_SUCCEEDED })

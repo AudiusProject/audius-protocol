@@ -23,6 +23,8 @@ import {
   GO_TO_PAGE,
   SET_STATUS,
   SIGN_UP,
+  START_SIGN_UP,
+  FINISH_SIGN_UP,
   SIGN_UP_SUCCEEDED,
   SIGN_UP_FAILED,
   SIGN_IN,
@@ -67,7 +69,8 @@ const initialState = {
   status: 'editing', // 'editing', 'loading', 'success', or 'failure'
   toastText: null,
   page: Pages.EMAIL,
-  startedSignOnProcess: false,
+  startedSignUpProcess: false,
+  finishedSignUpProcess: false,
   followArtists: {
     selectedCategory: FollowArtistsCategory.FEATURED,
     categories: {},
@@ -313,8 +316,19 @@ const actionsMap = {
   [SIGN_UP](state, action) {
     return {
       ...state,
-      startedSignOnProcess: true,
       status: 'loading'
+    }
+  },
+  [START_SIGN_UP](state, action) {
+    return {
+      ...state,
+      startedSignUpProcess: true
+    }
+  },
+  [FINISH_SIGN_UP](state, action) {
+    return {
+      ...state,
+      finishedSignUpProcess: true
     }
   },
   [SIGN_UP_SUCCEEDED](state, action) {

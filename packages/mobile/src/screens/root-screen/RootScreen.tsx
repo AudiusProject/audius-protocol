@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { accountSelectors, Status } from '@audius/common'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
+import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
 import { Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -18,7 +19,7 @@ import { AppDrawerScreen } from '../app-drawer-screen'
 
 import { ThemedStatusBar } from './StatusBar'
 
-const { getAccountStatus, getHasAccount } = accountSelectors
+const { getAccountStatus } = accountSelectors
 
 const IS_IOS = Platform.OS === 'ios'
 
@@ -37,7 +38,7 @@ const Stack = createNativeStackNavigator()
 export const RootScreen = () => {
   const dispatch = useDispatch()
   const accountStatus = useSelector(getAccountStatus)
-  const hasAccount = useSelector(getHasAccount)
+  const showHomeStack = useSelector(getHasCompletedAccount)
   const { updateRequired } = useUpdateRequired()
   const [isLoaded, setIsLoaded] = useState(false)
 
@@ -69,7 +70,7 @@ export const RootScreen = () => {
         >
           {updateRequired ? (
             <Stack.Screen name='UpdateStack' component={UpdateRequiredScreen} />
-          ) : hasAccount ? (
+          ) : showHomeStack ? (
             <Stack.Screen name='HomeStack' component={AppDrawerScreen} />
           ) : (
             <Stack.Screen name='SignOnStack' component={SignOnScreen} />
