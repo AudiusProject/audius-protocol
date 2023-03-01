@@ -1,15 +1,20 @@
 import { memo, MouseEvent, useCallback } from 'react'
 
-import { formatCount, pluralize, formatSeconds } from '@audius/common'
+import {
+  formatCount,
+  pluralize,
+  formatSeconds,
+  FeatureFlags
+} from '@audius/common'
 import { IconCrown, IconHidden } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
 import Skeleton from 'components/skeleton/Skeleton'
+import { useFlag } from 'hooks/useRemoteConfig'
 
 import { PremiumContentLabel } from '../PremiumContentLabel'
-import { PremiumTrackCornerTag } from '../PremiumTrackCornerTag'
 import TrackBannerIcon, { TrackBannerIconType } from '../TrackBannerIcon'
 import {
   TrackTileSize,
@@ -96,6 +101,10 @@ const TrackTile = memo(
     isTrack,
     trackId
   }: TrackTileProps) => {
+    const { isEnabled: isPremiumContentEnabled } = useFlag(
+      FeatureFlags.PREMIUM_CONTENT_ENABLED
+    )
+
     const hasOrdering = order !== undefined
 
     const hidePlays = fieldVisibility
@@ -103,7 +112,17 @@ const TrackTile = memo(
       : false
 
     const showPremiumCornerTag =
-      !isLoading && premiumConditions && (isOwner || !doesUserHaveAccess)
+      isPremiumContentEnabled &&
+      !isLoading &&
+      premiumConditions &&
+      (isOwner || !doesUserHaveAccess)
+    const cornerTagIconType = showPremiumCornerTag
+      ? isOwner
+        ? premiumConditions.nft_collection
+          ? TrackBannerIconType.COLLECTIBLE_GATED
+          : TrackBannerIconType.SPECIAL_ACCESS
+        : TrackBannerIconType.LOCKED
+      : null
 
     const onClickTitleWrapper = useCallback(
       (e: MouseEvent) => {
@@ -130,13 +149,6 @@ const TrackTile = memo(
         })}
         onClick={!isLoading && !isDisabled ? onTogglePlay : undefined}
       >
-        {showPremiumCornerTag && (
-          <PremiumTrackCornerTag
-            doesUserHaveAccess={!!doesUserHaveAccess}
-            isOwner={isOwner}
-            premiumConditions={premiumConditions}
-          />
-        )}
         {/* prefix ordering */}
         <RankAndIndexIndicator
           hasOrdering={hasOrdering}
@@ -152,6 +164,12 @@ const TrackTile = memo(
         >
           {artwork}
         </div>
+        {showPremiumCornerTag && cornerTagIconType ? (
+          <TrackBannerIcon
+            type={cornerTagIconType}
+            isMatrixMode={isMatrixMode}
+          />
+        ) : null}
         {isArtistPick && !showPremiumCornerTag ? (
           <TrackBannerIcon
             type={TrackBannerIconType.STAR}

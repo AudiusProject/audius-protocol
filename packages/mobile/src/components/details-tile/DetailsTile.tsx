@@ -19,8 +19,12 @@ import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { PremiumTrackCornerTag } from 'app/screens/track-screen/PremiumTrackCornerTag'
 import { flexRowCentered, makeStyles } from 'app/styles'
+
+import {
+  LineupTileBannerIcon,
+  LineupTileBannerIconType
+} from '../lineup-tile/LineupTileBannerIcon'
 
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
@@ -222,14 +226,20 @@ export const DetailsTile = ({
   }, [onPressPlay])
 
   const renderCornerTag = () => {
-    if (isPremiumContentEnabled && premiumConditions) {
-      return (
-        <PremiumTrackCornerTag
-          doesUserHaveAccess={doesUserHaveAccess}
-          isOwner={isOwner}
-          premiumConditions={premiumConditions}
-        />
-      )
+    const showPremiumCornerTag =
+      isPremiumContentEnabled &&
+      premiumConditions &&
+      (isOwner || !doesUserHaveAccess)
+    const cornerTagIconType = showPremiumCornerTag
+      ? isOwner
+        ? premiumConditions.nft_collection
+          ? LineupTileBannerIconType.COLLECTIBLE_GATED
+          : LineupTileBannerIconType.SPECIAL_ACCESS
+        : LineupTileBannerIconType.LOCKED
+      : null
+
+    if (showPremiumCornerTag && cornerTagIconType) {
+      return <LineupTileBannerIcon type={cornerTagIconType} />
     }
     return null
   }
