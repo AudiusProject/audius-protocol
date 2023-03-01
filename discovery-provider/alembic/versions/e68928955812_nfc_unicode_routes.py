@@ -113,6 +113,7 @@ def track_route_updates(connection):
                 :txhashes,
                 :is_currents
             )
+            ON CONFLICT DO NOTHING;
         """
     )
     sql = sql.bindparams(sa.bindparam("slugs", ARRAY(String)))
@@ -223,6 +224,7 @@ def playlist_route_updates(connection):
                 :txhashes,
                 :is_currents
             )
+            ON CONFLICT DO NOTHING;
         """
     )
     sql = sql.bindparams(sa.bindparam("slugs", ARRAY(String)))
