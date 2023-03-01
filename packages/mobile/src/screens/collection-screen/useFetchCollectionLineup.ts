@@ -4,16 +4,13 @@ import type { SmartCollectionVariant } from '@audius/common'
 import {
   Uid,
   areSetsEqual,
-  useProxySelector,
   Kind,
   makeUid,
   cacheActions,
   cacheCollectionsSelectors,
   collectionPageLineupActions,
   collectionPageSelectors,
-  queueSelectors,
-  lineupSelectors,
-  reachabilitySelectors
+  queueSelectors
 } from '@audius/common'
 import moment from 'moment'
 import { useDispatch, useSelector } from 'react-redux'
@@ -24,17 +21,13 @@ import { getOfflineTrackIds } from 'app/store/offline-downloads/selectors'
 
 const { getCollection } = cacheCollectionsSelectors
 const { getCollectionTracksLineup } = collectionPageSelectors
-const { makeGetTableMetadatas } = lineupSelectors
 const { getPositions } = queueSelectors
-const { getIsReachable } = reachabilitySelectors
-
-const getTracksLineup = makeGetTableMetadatas(getCollectionTracksLineup)
 
 /**
  * Returns a collection lineup, supports boths online and offline
  * @param collectionId the numeric collection id
  */
-export const useCollectionLineup = (
+export const useFetchCollectionLineup = (
   collectionId: number | SmartCollectionVariant | null,
   fetchLineup: () => void
 ) => {
@@ -44,7 +37,6 @@ export const useCollectionLineup = (
     (state) => new Set(getOfflineTrackIds(state) || []),
     areSetsEqual
   )
-  const isReachable = useSelector(getIsReachable)
   const collection = useSelector((state) => {
     return getCollection(state, { id: collectionId as number })
   })
@@ -80,8 +72,6 @@ export const useCollectionLineup = (
     },
     {}
   ) as Record<number, string[]>
-
-  const lineup = useProxySelector(getTracksLineup, [isReachable])
 
   const fetchLineupOffline = useCallback(() => {
     if (isOfflineModeEnabled && collectionId && collection) {
@@ -141,6 +131,4 @@ export const useCollectionLineup = (
 
   // Fetch the lineup based on reachability
   useReachabilityEffect(fetchLineup, fetchLineupOffline)
-
-  return lineup
 }

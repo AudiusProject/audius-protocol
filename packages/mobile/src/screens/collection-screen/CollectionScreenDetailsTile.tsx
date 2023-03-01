@@ -2,6 +2,8 @@ import { useCallback, useMemo } from 'react'
 
 import type { ID, Maybe, SmartCollectionVariant, UID } from '@audius/common'
 import {
+  removeNullable,
+  collectionPageSelectors,
   collectionPageActions,
   playerSelectors,
   Status,
@@ -13,6 +15,7 @@ import {
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { createSelector } from 'reselect'
 
 import { Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
@@ -22,14 +25,53 @@ import type {
 } from 'app/components/details-tile/types'
 import { TrackList } from 'app/components/track-list'
 import { make, track } from 'app/services/analytics'
+import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 import { formatCount } from 'app/utils/format'
 
 import { CollectionHeader } from './CollectionHeader'
-import { useCollectionLineup } from './useCollectionLineup'
+import { useFetchCollectionLineup } from './useFetchCollectionLineup'
 const { resetAndFetchCollectionTracks } = collectionPageActions
 const { getPlaying, getUid, getCurrentTrack } = playerSelectors
 const { getIsReachable } = reachabilitySelectors
+const { getCollectionTracksLineup } = collectionPageSelectors
+
+const selectTrackUids = createSelector(
+  (state: AppState) => getCollectionTracksLineup(state).entries,
+  (entries) => entries.map(({ uid }) => uid)
+)
+
+const selectFirstTrack = (state: AppState) =>
+  getCollectionTracksLineup(state).entries[0]
+
+const selectTrackCount = (state: AppState) => {
+  return getCollectionTracksLineup(state).total
+}
+
+const selectIsLineupLoading = (state: AppState) => {
+  return getCollectionTracksLineup(state).status === Status.LOADING
+}
+
+const selectCollectionDuration = createSelector(
+  (state: AppState) => getCollectionTracksLineup(state).entries,
+  (state: AppState) => state.tracks.entries,
+  (entries, tracks) => {
+    return entries
+      .map((entry) => tracks[entry.id]?.metadata.duration)
+      .filter(removeNullable)
+      .reduce((totalDuration, trackDuration) => {
+        return totalDuration + trackDuration
+      }, 0)
+  }
+)
+
+const selectIsQueued = createSelector(
+  selectTrackUids,
+  getUid,
+  (trackUids, playingUid) => {
+    return trackUids.some((trackUid) => playingUid === trackUid)
+  }
+)
 
 const messages = {
   empty: 'This playlist is empty.',
@@ -79,7 +121,7 @@ export const CollectionScreenDetailsTile = ({
   isPrivate,
   isPublishing,
   renderImage,
-  trackCount,
+  trackCount: trackCountProp,
   ...detailsTileProps
 }: CollectionScreenDetailsTileProps) => {
   const styles = useStyles()
@@ -91,55 +133,51 @@ export const CollectionScreenDetailsTile = ({
     dispatch(resetAndFetchCollectionTracks(collectionId))
   }, [dispatch, collectionId])
 
-  const { entries, status } = useCollectionLineup(collectionId, fetchLineup)
-  const trackUids = useMemo(() => entries.map(({ uid }) => uid), [entries])
+  useFetchCollectionLineup(collectionId, fetchLineup)
 
-  const tracksLoading = status === Status.LOADING
-  const numTracks = entries.length
-
-  const duration = entries?.reduce(
-    (duration, entry) => duration + entry.duration,
-    0
-  )
+  const trackUids = useSelector(selectTrackUids)
+  const collectionTrackCount = useSelector(selectTrackCount)
+  const trackCount = trackCountProp ?? collectionTrackCount
+  const isLineupLoading = useSelector(selectIsLineupLoading)
+  const collectionDuration = useSelector(selectCollectionDuration)
+  const playingUid = useSelector(getUid)
+  const isQueued = useSelector(selectIsQueued)
+  const isPlaying = useSelector(getPlaying)
+  const playingTrack = useSelector(getCurrentTrack)
+  const playingTrackId = playingTrack?.track_id
+  const firstTrack = useSelector(selectFirstTrack)
 
   const details = useMemo(() => {
-    if (!tracksLoading && numTracks === 0) return []
+    if (!isLineupLoading && trackCount === 0) return []
     return [
       {
         label: 'Tracks',
-        value: tracksLoading
+        value: isLineupLoading
           ? messages.detailsPlaceholder
-          : formatCount(numTracks)
+          : formatCount(trackCount)
       },
       {
         label: 'Duration',
-        value: tracksLoading
+        value: isLineupLoading
           ? messages.detailsPlaceholder
-          : formatSecondsAsText(duration)
+          : formatSecondsAsText(collectionDuration)
       },
       ...extraDetails
     ].filter(({ isHidden, value }) => !isHidden && !!value)
-  }, [tracksLoading, numTracks, duration, extraDetails])
-
-  const isPlaying = useSelector(getPlaying)
-  const playingUid = useSelector(getUid)
-  const playingTrack = useSelector(getCurrentTrack)
-  const trackId = playingTrack?.track_id
-
-  const isQueued = entries.some((entry) => playingUid === entry.uid)
+  }, [isLineupLoading, trackCount, collectionDuration, extraDetails])
 
   const handlePressPlay = useCallback(() => {
     if (isPlaying && isQueued) {
       dispatch(tracksActions.pause())
-      recordPlay(trackId, false)
+      recordPlay(playingTrackId, false)
     } else if (!isPlaying && isQueued) {
       dispatch(tracksActions.play())
-      recordPlay(trackId)
-    } else if (entries.length > 0) {
-      dispatch(tracksActions.play(entries[0].uid))
-      recordPlay(entries[0].track_id)
+      recordPlay(playingTrackId)
+    } else if (trackCount > 0) {
+      dispatch(tracksActions.play(firstTrack.uid))
+      recordPlay(firstTrack.id)
     }
-  }, [dispatch, isPlaying, trackId, entries, isQueued])
+  }, [dispatch, isPlaying, playingTrackId, isQueued, trackCount, firstTrack])
 
   const handlePressTrackListItemPlay = useCallback(
     (uid: UID, id: ID) => {
@@ -162,34 +200,27 @@ export const CollectionScreenDetailsTile = ({
     [collectionId]
   )
 
-  const renderTrackList = () => {
-    if (tracksLoading)
-      return (
-        <>
-          <View style={styles.trackListDivider} />
-          <TrackList
-            hideArt
-            showDivider
-            showSkeleton
-            uids={Array(Math.min(10, trackCount ?? 0))}
-          />
-        </>
-      )
-
-    return entries.length === 0 ? (
-      <Text style={styles.empty}>{messages.empty}</Text>
-    ) : (
-      <>
-        <View style={styles.trackListDivider} />
-        <TrackList
-          hideArt
-          showDivider
-          togglePlay={handlePressTrackListItemPlay}
-          uids={trackUids}
-        />
-      </>
+  const renderTrackList = useCallback(() => {
+    return (
+      <TrackList
+        hideArt
+        showDivider
+        showSkeleton={isLineupLoading}
+        togglePlay={handlePressTrackListItemPlay}
+        uids={isLineupLoading ? Array(Math.min(5, trackCount ?? 0)) : trackUids}
+        ListHeaderComponent={
+          trackCount > 0 ? <View style={styles.trackListDivider} /> : undefined
+        }
+        ListEmptyComponent={<Text style={styles.empty}>{messages.empty}</Text>}
+      />
     )
-  }
+  }, [
+    handlePressTrackListItemPlay,
+    isLineupLoading,
+    styles,
+    trackUids,
+    trackCount
+  ])
 
   return (
     <DetailsTile
