@@ -22,6 +22,7 @@ import {
   AddTrackToPlaylistNotification,
   SupporterDethronedNotification
 } from './Notifications'
+import { RepostOfRepostNotification } from './Notifications/RepostOfRepostNotification'
 
 type NotificationListItemProps = {
   notification: Notification
@@ -48,6 +49,8 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <RemixCreateNotification notification={notification} />
       case NotificationType.Repost:
         return <RepostNotification notification={notification} />
+      case NotificationType.RepostOfRepost:
+        return <RepostOfRepostNotification notification={notification} />
       case NotificationType.TierChange:
         return <TierChangeNotification notification={notification} />
       case NotificationType.Reaction:
