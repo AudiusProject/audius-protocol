@@ -39,9 +39,11 @@ npm install
 
 This will do the following:
 
+- Check you have the correct versions of node, ruby, and python
 - Install root dependencies
 - Install all package dependencies using `lerna bootstrap`
 - Initialize git hooks (`npx @escape.tech/mookme init --only-hook --skip-types-selection`)
+- Install ios pods
 
 ### Running A Client
 
