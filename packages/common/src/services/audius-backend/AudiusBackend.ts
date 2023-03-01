@@ -1808,9 +1808,15 @@ export const audiusBackend = ({
   }
 
   // Favoriting a track
-  async function saveTrack(trackId: ID) {
+  async function saveTrack(
+    trackId: ID,
+    metadata?: { is_save_of_repost: boolean }
+  ) {
     try {
-      return await audiusLibs.EntityManager.saveTrack(trackId)
+      return await audiusLibs.EntityManager.saveTrack(
+        trackId,
+        JSON.stringify(metadata)
+      )
     } catch (err) {
       console.log(getErrorMessage(err))
       throw err
@@ -1831,9 +1837,15 @@ export const audiusBackend = ({
   }
 
   // Favorite a playlist
-  async function saveCollection(playlistId: ID) {
+  async function saveCollection(
+    playlistId: ID,
+    metadata?: { is_save_of_repost: boolean }
+  ) {
     try {
-      return await audiusLibs.EntityManager.savePlaylist(playlistId)
+      return await audiusLibs.EntityManager.savePlaylist(
+        playlistId,
+        JSON.stringify(metadata)
+      )
     } catch (err) {
       console.log(getErrorMessage(err))
       throw err

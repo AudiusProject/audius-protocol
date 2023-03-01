@@ -50,7 +50,11 @@ export const repostCollectionFailed = createCustomAction(
 
 export const saveCollection = createCustomAction(
   SAVE_COLLECTION,
-  (collectionId: ID, source: FavoriteSource) => ({ collectionId, source })
+  (collectionId: ID, source: FavoriteSource, isFeed = false) => ({
+    collectionId,
+    source,
+    isFeed
+  })
 )
 
 export const saveCollectionSucceeded = createCustomAction(

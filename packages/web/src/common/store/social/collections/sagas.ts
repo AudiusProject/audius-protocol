@@ -341,10 +341,16 @@ export function* saveCollectionAsync(
   })
   yield* put(event)
 
+  const saveMetadata = action.isFeed
+    ? // If we're on the feed, and the content
+      // being saved is a repost
+      { is_save_of_repost: collection.followee_reposts.length !== 0 }
+    : { is_save_of_repost: false }
   yield* call(
     confirmSaveCollection,
     collection.playlist_owner_id,
-    action.collectionId
+    action.collectionId,
+    saveMetadata
   )
 
   if (!collection.is_album) {
@@ -386,7 +392,11 @@ export function* saveCollectionAsync(
   yield* put(socialActions.saveCollectionSucceeded(action.collectionId))
 }
 
-export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
+export function* confirmSaveCollection(
+  ownerId: ID,
+  collectionId: ID,
+  metadata?: { is_save_of_repost: boolean }
+) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* put(
     confirmerActions.requestConfirmation(
@@ -394,7 +404,8 @@ export function* confirmSaveCollection(ownerId: ID, collectionId: ID) {
       function* () {
         const { blockHash, blockNumber } = yield* call(
           audiusBackendInstance.saveCollection,
-          collectionId
+          collectionId,
+          metadata
         )
         const confirmed = yield* call(
           confirmTransaction,

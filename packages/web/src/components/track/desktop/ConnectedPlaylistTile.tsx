@@ -383,9 +383,9 @@ const ConnectedPlaylistTile = memo(
       if (isFavorited) {
         unsaveCollection(id)
       } else {
-        saveCollection(id)
+        saveCollection(id, isFeed)
       }
-    }, [saveCollection, unsaveCollection, id, isFavorited])
+    }, [saveCollection, unsaveCollection, id, isFavorited, isFeed])
 
     const onClickRepost = useCallback(() => {
       if (isReposted) {
@@ -574,8 +574,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(repostCollection(id, RepostSource.TILE, isFeed)),
     undoRepostCollection: (id: ID) =>
       dispatch(undoRepostCollection(id, RepostSource.TILE)),
-    saveCollection: (id: ID) =>
-      dispatch(saveCollection(id, FavoriteSource.TILE)),
+    saveCollection: (id: ID, isFeed: boolean) =>
+      dispatch(saveCollection(id, FavoriteSource.TILE, isFeed)),
     unsaveCollection: (id: ID) =>
       dispatch(unsaveCollection(id, FavoriteSource.TILE)),
 
