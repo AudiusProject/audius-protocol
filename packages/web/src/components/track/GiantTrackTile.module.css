@@ -306,14 +306,6 @@
   margin-right: 10px;
 }
 
-.cornerTag {
-  position: absolute;
-  top: 0;
-  /* may need design to reproduce a more pixel perfect icon to avoid the -1px below */
-  left: -1px;
-  z-index: 3;
-}
-
 .bottomSection {
   padding: 20px 24px 20px;
   border-top: 1px solid var(--neutral-light-8);
@@ -461,4 +453,14 @@
   height: var(--unit-5);
   border: 1px solid var(--neutral-light-7);
   border-radius: 50%;
+}
+
+@media screen and (max-width: 1148px) {
+  .premiumContentSectionLocked {
+    flex-direction: column;
+  }
+
+  .premiumContentSectionButton {
+    width: 100%;
+  }
 }

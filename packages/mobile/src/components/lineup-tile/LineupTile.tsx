@@ -10,7 +10,6 @@ import { useSelector, useDispatch } from 'react-redux'
 
 import type { LineupTileProps } from 'app/components/lineup-tile/types'
 import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
-import { PremiumTrackCornerTag } from 'app/screens/track-screen/PremiumTrackCornerTag'
 import { setVisibility } from 'app/store/drawers/slice'
 
 import { LineupTileActionButtons } from './LineupTileActionButtons'
@@ -74,6 +73,18 @@ export const LineupTile = ({
   const { doesUserHaveAccess } = usePremiumContentAccess(isTrack ? item : null)
   const dispatch = useDispatch()
 
+  const showPremiumCornerTag =
+    isPremiumContentEnabled &&
+    premiumConditions &&
+    (isOwner || !doesUserHaveAccess)
+  const cornerTagIconType = showPremiumCornerTag
+    ? isOwner
+      ? premiumConditions.nft_collection
+        ? LineupTileBannerIconType.COLLECTIBLE_GATED
+        : LineupTileBannerIconType.SPECIAL_ACCESS
+      : LineupTileBannerIconType.LOCKED
+    : null
+
   const handlePress = useCallback(() => {
     if (isPremiumContentEnabled && trackId && !doesUserHaveAccess) {
       dispatch(setLockedContentId({ id: trackId }))
@@ -85,16 +96,10 @@ export const LineupTile = ({
 
   return (
     <LineupTileRoot onPress={handlePress} {...TileProps}>
-      {isPremiumContentEnabled && premiumConditions && (
-        <PremiumTrackCornerTag
-          doesUserHaveAccess={doesUserHaveAccess}
-          isOwner={isOwner}
-          premiumConditions={premiumConditions}
-        />
-      )}
-      {(!isPremiumContentEnabled || !premiumConditions) &&
-      showArtistPick &&
-      isArtistPick ? (
+      {showPremiumCornerTag && cornerTagIconType ? (
+        <LineupTileBannerIcon type={cornerTagIconType} />
+      ) : null}
+      {!showPremiumCornerTag && showArtistPick && isArtistPick ? (
         <LineupTileBannerIcon type={LineupTileBannerIconType.STAR} />
       ) : null}
       {isUnlisted ? (

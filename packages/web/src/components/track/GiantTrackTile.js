@@ -34,11 +34,12 @@ import Badge from './Badge'
 import { CardTitle } from './CardTitle'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
+import { GiantTrackTileCornerTag } from './GiantTrackTileCornerTag'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
-import { PremiumTrackCornerTag } from './PremiumTrackCornerTag'
 import { PremiumTrackSection } from './PremiumTrackSection'
 import Tag from './Tag'
+import { TrackBannerIconType } from './TrackBannerIcon'
 
 const BUTTON_COLLAPSE_WIDTHS = {
   first: 1095,
@@ -372,6 +373,14 @@ class GiantTrackTile extends PureComponent {
     const isLoading = loading || artworkLoading
     const showPremiumCornerTag =
       !isLoading && premiumConditions && (isOwner || !doesUserHaveAccess)
+    // isPremiumContentEnabled && !isLoading && premiumConditions && (isOwner || !doesUserHaveAccess)
+    const cornerTagIconType = showPremiumCornerTag
+      ? isOwner
+        ? premiumConditions.nft_collection
+          ? TrackBannerIconType.COLLECTIBLE_GATED
+          : TrackBannerIconType.SPECIAL_ACCESS
+        : TrackBannerIconType.LOCKED
+      : null
 
     const overflowMenuExtraItems = []
     if (!isOwner) {
@@ -409,13 +418,9 @@ class GiantTrackTile extends PureComponent {
     return (
       <div className={styles.giantTrackTile}>
         <div className={styles.topSection}>
-          {showPremiumCornerTag && (
-            <PremiumTrackCornerTag
-              doesUserHaveAccess={doesUserHaveAccess}
-              isOwner={isOwner}
-              premiumConditions={premiumConditions}
-            />
-          )}
+          {showPremiumCornerTag && cornerTagIconType ? (
+            <GiantTrackTileCornerTag type={cornerTagIconType} />
+          ) : null}
           <GiantArtwork
             trackId={trackId}
             coverArtSizes={coverArtSizes}

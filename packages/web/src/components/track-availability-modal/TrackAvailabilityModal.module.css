@@ -42,6 +42,10 @@
   font-size: var(--font-s);
 }
 
+.learnMore:hover {
+  color: var(--secondary-dark-2);
+}
+
 .learnMoreArrow {
   width: var(--unit-4);
   height: var(--unit-4);
