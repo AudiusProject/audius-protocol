@@ -72,8 +72,6 @@ func VerifySignature(
 		return errors.New("wallet recovery failed")
 	}
 
-
-
 	if !utils.IsValidDiscoveryNode(dnodes, string(signer)) {
 		return errors.New("signature is not from valid discovery node")
 	}

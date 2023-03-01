@@ -104,7 +104,7 @@ func TestContentAccessMiddleware(t *testing.T) {
 		}
 
 		signatureParam := url.QueryEscape(string(marshalledAccessData))
-		req := fmt.Sprintf("http://localhost:7000/stream/%s?signature=%s",tt.requestedCid ,signatureParam)
+		req := fmt.Sprintf("http://localhost:7000/stream/%s?signature=%s", tt.requestedCid, signatureParam)
 
 		t.Log(testName, req)
 		resp, err := http.Get(req)
