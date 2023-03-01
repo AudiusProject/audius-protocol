@@ -13,7 +13,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type IPeering interface {
+type Peering interface {
 	AllNodes() ([]sharedConfig.ServiceNode, error)
 	DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error)
 	DialNats(peerMap map[string]*Info) (*nats.Conn, error)

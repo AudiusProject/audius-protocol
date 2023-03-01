@@ -38,10 +38,10 @@ type StorageServer struct {
 	Persistence    *persistence.Persistence
 	WebServer      *echo.Echo
 	Monitor        *monitor.Monitor
-	Peering        peering.IPeering
+	Peering        peering.Peering
 }
 
-func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering peering.IPeering) *StorageServer {
+func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering peering.Peering) *StorageServer {
 	allContentNodes, err := peering.GetContentNodes()
 	if err != nil {
 		log.Fatal("Error getting content nodes: ", err)
