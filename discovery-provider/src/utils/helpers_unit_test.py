@@ -1,3 +1,5 @@
+from urllib.parse import unquote
+
 from src.utils.helpers import is_fqdn, sanitize_slug
 
 
@@ -54,6 +56,24 @@ def test_create_track_slug_trailing_spaces():
     assert sanitize_slug(" some track title ", 0, 0) == "some-track-title"
     assert sanitize_slug("some ( original mix )", 0, 0) == "some-original-mix"
     assert sanitize_slug("( some track title )", 0, 0) == "some-track-title"
+
+
+def test_create_track_slug_unicode_normalization():
+    # We always want NFC.
+
+    # dağılır-benliklerim in unicode NFD format: https://minaret.info/test/normalize.msp
+    nfd = unquote("dag%CC%86%C4%B1l%C4%B1r-benliklerim")
+    # dağılır-benliklerim in unicode NFC format: https://minaret.info/test/normalize.msp
+    nfc = unquote("da%C4%9F%C4%B1l%C4%B1r-benliklerim")
+
+    nfd_as_string = "dağılır-benliklerim"
+    nfc_as_string = "dağılır-benliklerim"
+
+    # Both NFD and NFC should go to NFC
+    assert sanitize_slug(nfc, 0, 0) == nfc
+    assert sanitize_slug(nfd, 0, 0) == nfc
+    assert sanitize_slug(nfd_as_string, 0, 0) == nfc
+    assert sanitize_slug(nfc_as_string, 0, 0) == nfc
 
 
 def test_is_fqdn_url():
