@@ -8,7 +8,7 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-func (p *Peering) DialNats(peerMap map[string]*Info) (*nats.Conn, error) {
+func (p *NatsPeering) DialNats(peerMap map[string]*Info) (*nats.Conn, error) {
 	natsUrl := os.Getenv("NATS_SERVER_URL")
 	if len(natsUrl) == 0 {
 		natsUrl = nats.DefaultURL
@@ -36,7 +36,7 @@ func (p *Peering) DialNats(peerMap map[string]*Info) (*nats.Conn, error) {
 	return nc, nil
 }
 
-func (p *Peering) DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error) {
+func (p *NatsPeering) DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error) {
 	nc, err := p.DialNats(peerMap)
 	if err != nil {
 		return nil, err
@@ -48,7 +48,7 @@ func (p *Peering) DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext
 	return j, nil
 }
 
-func (p *Peering) NatsConnectionTest(natsUrl string) bool {
+func (p *NatsPeering) NatsConnectionTest(natsUrl string) bool {
 	// nats connection test
 	nc, err := p.DialNatsUrl(natsUrl)
 	ok := false
@@ -63,7 +63,7 @@ func (p *Peering) NatsConnectionTest(natsUrl string) bool {
 	return ok
 }
 
-func (p *Peering) DialNatsUrl(natsUrl string) (*nats.Conn, error) {
+func (p *NatsPeering) DialNatsUrl(natsUrl string) (*nats.Conn, error) {
 	nkeySign := func(nonce []byte) ([]byte, error) {
 		return p.Config.Keys.NkeyPair.Sign(nonce)
 	}

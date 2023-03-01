@@ -20,7 +20,7 @@ type NatsManager struct {
 	mu         sync.Mutex
 }
 
-func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorageNode bool, peering *peering.Peering) {
+func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorageNode bool, peering *peering.NatsPeering) {
 
 	manager.mu.Lock()
 	defer manager.mu.Unlock()

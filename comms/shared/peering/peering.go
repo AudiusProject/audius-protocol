@@ -3,14 +3,33 @@ package peering
 import (
 	"encoding/hex"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 
 	sharedConfig "comms.audius.co/shared/config"
 	"github.com/inconshreveable/log15"
+	"github.com/labstack/echo/v4"
+	"github.com/nats-io/nats.go"
 )
 
-type Peering struct {
+type Peering interface {
+	AllNodes() ([]sharedConfig.ServiceNode, error)
+	DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error)
+	DialNats(peerMap map[string]*Info) (*nats.Conn, error)
+	DialNatsUrl(natsUrl string) (*nats.Conn, error)
+	ExchangeEndpoint(c echo.Context) error
+	GetContentNodes() ([]sharedConfig.ServiceNode, error)
+	GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error)
+	ListPeers() []Info
+	MyInfo() (*Info, error)
+	NatsConnectionTest(natsUrl string) bool
+	PollRegisteredNodes() error
+	PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error)
+	Solicit() map[string]*Info
+}
+
+type NatsPeering struct {
 	Config              *sharedConfig.PeeringConfig
 	Logger              log15.Logger
 	IP                  string
@@ -20,8 +39,8 @@ type Peering struct {
 	NatsIsReachable     bool
 }
 
-func New(config *sharedConfig.PeeringConfig) *Peering {
-	p := &Peering{
+func New(config *sharedConfig.PeeringConfig) *NatsPeering {
+	p := &NatsPeering{
 		Config:           config,
 		Logger:           log15.New(),
 		NatsReplicaCount: 3,
@@ -74,7 +93,7 @@ func New(config *sharedConfig.PeeringConfig) *Peering {
 	return p
 }
 
-func (p *Peering) configureNatsCliNkey() error {
+func (p *NatsPeering) configureNatsCliNkey() error {
 	var err error
 
 	bytes, err := p.Config.Keys.NkeyPair.Seed()
