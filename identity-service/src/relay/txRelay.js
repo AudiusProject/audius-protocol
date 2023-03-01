@@ -108,7 +108,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   // force staging to use nethermind since it hasn't surpassed finalPOABlock
   // prod will surpass
-  if (!config.get('nethermindEnabled')){
+  if (!config.get('nethermindEnabled')) {
     // nulling this will disable nethermind relays
     nethermindContractAddress = null
   }
@@ -173,7 +173,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       nethermind: {
         isRecipient: false,
         txSubmissionTime: null
-      },
+      }
     }
 
     if (
@@ -221,11 +221,11 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       txReceipt = relayTxs[0].value.receipt
       // infer tx type and populate time
       if (relayStats.nethermind.isRecipient) {
-        relayStats.nethermind.txSubmissionTime = relayTxs[0].value.timeToComplete
+        relayStats.nethermind.txSubmissionTime =
+          relayTxs[0].value.timeToComplete
       } else {
         relayStats.poa.txSubmissionTime = relayTxs[0].value.timeToComplete
       }
-
     } else if (relayTxs.length === 2) {
       const [poaTx, nethermindTx] = relayTxs.map((result) => result?.value)
       console.log(
@@ -254,15 +254,11 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       senderAddress,
       nonce: txParams.nonce,
       relayStats,
-      totalTransactionLatency,
+      totalTransactionLatency
     }
-    await redis.zadd(
-      'relayTxAttempts',
-      Math.floor(Date.now() / 1000),
-      JSON.stringify(redisLogParams)
-    )
     req.logger.info(
-      `L2 - txRelay - sending a transaction for wallet ${wallet.publicKey
+      `L2 - txRelay - sending a transaction for wallet ${
+        wallet.publicKey
       } to ${senderAddress}, req ${reqBodySHA}, gasPrice ${parseInt(
         txParams.gasPrice,
         16
@@ -474,7 +470,8 @@ const createAndSendTransaction = async (
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
   console.log(
-    `txRelay - sending a transaction for sender ${sender.publicKey
+    `txRelay - sending a transaction for sender ${
+      sender.publicKey
     } to ${receiverAddress}, gasPrice ${parseInt(
       gasPrice,
       16
@@ -492,19 +489,31 @@ const createAndSendTransaction = async (
 //
 // Relay txn to nethermind
 //
-async function relayToNethermindWithTimeout(encodedABI, contractAddress, gasLimit) {
+async function relayToNethermindWithTimeout(
+  encodedABI,
+  contractAddress,
+  gasLimit
+) {
+  // relayToNethermind with a 10 second timeout
   return Promise.race([
     relayToNethermind(encodedABI, contractAddress, gasLimit),
     new Promise((resolve, reject) =>
-      setTimeout(() => reject(new Error("Relay to nethermind timed out")), 10000)
-    ),
-  ]);
+      setTimeout(
+        () => reject(new Error('Relay to nethermind timed out')),
+        10000 
+      )
+    )
+  ])
 }
 
 let inFlight = 0
 
 async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
-  console.log(`txRelay - relayToNethermind input params: ${encodedABI} ${contractAddress} ${gasLimit}`)
+  await new Promise(resolve => setTimeout(resolve, 10000)); // temp wait for 10 seconds
+
+  console.log(
+    `txRelay - relayToNethermind input params: ${encodedABI} ${contractAddress} ${gasLimit}`
+  )
 
   // generate a new private key per transaction (gas is free)
   const accounts = new Accounts(config.get('nethermindWeb3Provider'))
@@ -560,7 +569,7 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
     return {
       txParams: transaction,
       receipt,
-      timeToComplete: took,
+      timeToComplete: took
     }
   } catch (err) {
     console.log('relayToNethermind error:', err.toString())

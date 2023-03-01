@@ -68,7 +68,8 @@ module.exports = function (app) {
       const minTransactions =
         parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
       const isVerbose = req.query.verbose || false
-      const maxRelayLatency = req.query.maxRelayLatency || RELAY_HEALTH_MAX_LATENCY
+      const maxRelayLatency =
+        req.query.maxRelayLatency || RELAY_HEALTH_MAX_LATENCY
 
       // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
       const startBlockNumber = Math.max(endBlockNumber - blockDiff, 0)
@@ -104,7 +105,9 @@ module.exports = function (app) {
       }
 
       if (maxRelayLatency < 2) {
-        return errorResponseServerError(`Invalid maxRelayLatency, must be greater than 2. Given ${maxRelayLatency}`)
+        return errorResponseServerError(
+          `Invalid maxRelayLatency, must be greater than 2. Given ${maxRelayLatency}`
+        )
       }
 
       const failureTxs = {} // senderAddress: [<txHash>]
@@ -184,7 +187,7 @@ module.exports = function (app) {
       if (txCounter < minTransactions) isError = true
 
       for (const tx in successfulTxsInRedis) {
-        if ((tx.totalTransactionLatency / 1000) > maxRelayLatency) {
+        if (tx.totalTransactionLatency / 1000 > maxRelayLatency) {
           isError = true
           break
         }
