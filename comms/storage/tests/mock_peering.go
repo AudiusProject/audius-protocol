@@ -9,13 +9,11 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-var (
-	mockNodes  []sharedConfig.ServiceNode
-	mockPeers  []peering.Info
-	mockMyInfo *peering.Info
-)
-
-type MockPeering struct{}
+type MockPeering struct{
+	MockNodes  []sharedConfig.ServiceNode
+	MockPeers  []peering.Info
+	MockMyInfo *peering.Info
+}
 
 func NewMockPeering(myInfo *peering.Info, nodes []sharedConfig.ServiceNode) {
 	mockMyInfo = myInfo
@@ -23,13 +21,13 @@ func NewMockPeering(myInfo *peering.Info, nodes []sharedConfig.ServiceNode) {
 }
 
 func (mp *MockPeering) AddNode(node sharedConfig.ServiceNode) {
-	mockNodes = append(mockNodes, node)
+	mp.MockNodes = append(mp.MockNodes, node)
 }
 
 func (mp *MockPeering) GetContentNodes() ([]sharedConfig.ServiceNode, error) {
 	var cnodes []sharedConfig.ServiceNode
 
-	for _, node := range mockNodes {
+	for _, node := range mp.MockNodes {
 		if node.Type.ID == "content-node" {
 			cnodes = append(cnodes, node)
 		}
@@ -41,7 +39,7 @@ func (mp *MockPeering) GetContentNodes() ([]sharedConfig.ServiceNode, error) {
 func (mp *MockPeering) GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error) {
 	var dnodes []sharedConfig.ServiceNode
 
-	for _, node := range mockNodes {
+	for _, node := range mp.MockNodes {
 		if node.Type.ID == "discovery-node" {
 			dnodes = append(dnodes, node)
 		}
@@ -51,7 +49,7 @@ func (mp *MockPeering) GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error) {
 }
 
 func (mp *MockPeering) AllNodes() ([]sharedConfig.ServiceNode, error) {
-	return mockNodes, nil
+	return mp.MockNodes, nil
 }
 
 func (mp *MockPeering) DialJetstream(peerMap map[string]*peering.Info) (nats.JetStreamContext, error) {
@@ -71,11 +69,11 @@ func (mp *MockPeering) ExchangeEndpoint(c echo.Context) error {
 }
 
 func (mp *MockPeering) ListPeers() []peering.Info {
-	return mockPeers
+	return mp.MockPeers
 }
 
 func (mp *MockPeering) MyInfo() (*peering.Info, error) {
-	return mockMyInfo, nil
+	return mp.MockMyInfo, nil
 }
 
 func (mp *MockPeering) NatsConnectionTest(natsUrl string) bool {
