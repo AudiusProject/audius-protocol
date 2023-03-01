@@ -11,7 +11,7 @@ from src.utils.alembic_helpers import build_sql
 
 # revision identifiers, used by Alembic.
 revision = "4b3b96d8149b"
-down_revision = "198d03c95cac"
+down_revision = "e68928955812"
 branch_labels = None
 depends_on = None
 
