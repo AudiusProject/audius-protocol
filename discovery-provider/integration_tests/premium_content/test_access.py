@@ -82,40 +82,45 @@ def test_access(app):
         premium_content_access_checker = PremiumContentAccessChecker()
 
         # test non-premium content
-        result = premium_content_access_checker.check_access(
-            user_id=1,
-            premium_content_id=non_premium_track_entity["track_id"],
-            premium_content_type="track",
-            premium_content_entity=tracks[0],
-        )
-        assert not result["is_premium"] and result["does_user_have_access"]
+        with db.scoped_session() as session:
+            result = premium_content_access_checker.check_access(
+                session=session,
+                user_id=1,
+                premium_content_id=non_premium_track_entity["track_id"],
+                premium_content_type="track",
+                premium_content_entity=tracks[0],
+            )
+            assert not result["is_premium"] and result["does_user_have_access"]
 
-        # test premium content with user who has no access
-        result = premium_content_access_checker.check_access(
-            user_id=2,
-            premium_content_id=premium_track_entity_1["track_id"],
-            premium_content_type="track",
-            premium_content_entity=tracks[1],
-        )
-        assert result["is_premium"] and not result["does_user_have_access"]
+            # test premium content with user who has no access
+            result = premium_content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                premium_content_id=premium_track_entity_1["track_id"],
+                premium_content_type="track",
+                premium_content_entity=tracks[1],
+            )
+            assert result["is_premium"] and not result["does_user_have_access"]
 
-        # test premium content with user who owns the track
-        result = premium_content_access_checker.check_access(
-            user_id=2,
-            premium_content_id=premium_track_entity_2["track_id"],
-            premium_content_type="track",
-            premium_content_entity=tracks[2],
-        )
-        assert result["is_premium"] and result["does_user_have_access"]
+            # test premium content with user who owns the track
+            result = premium_content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                premium_content_id=premium_track_entity_2["track_id"],
+                premium_content_type="track",
+                premium_content_entity=tracks[2],
+            )
+            assert result["is_premium"] and result["does_user_have_access"]
 
-        # test premium content with user who has access
-        result = premium_content_access_checker.check_access(
-            user_id=2,
-            premium_content_id=premium_track_entity_3["track_id"],
-            premium_content_type="track",
-            premium_content_entity=tracks[3],
-        )
-        assert result["is_premium"] and result["does_user_have_access"]
+            # test premium content with user who has access
+            result = premium_content_access_checker.check_access(
+                session=session,
+                user_id=2,
+                premium_content_id=premium_track_entity_3["track_id"],
+                premium_content_type="track",
+                premium_content_entity=tracks[3],
+            )
+            assert result["is_premium"] and result["does_user_have_access"]
 
 
 def test_batch_access(app):

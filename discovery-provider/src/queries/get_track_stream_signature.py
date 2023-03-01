@@ -8,6 +8,7 @@ from src.premium_content.premium_content_access_checker import (
 )
 from src.premium_content.signature import get_premium_content_signature
 from src.queries.get_authed_user import get_authed_user
+from src.utils import db_session
 
 CID_STREAM_ENABLED = True
 
@@ -64,14 +65,17 @@ def get_track_stream_signature(args: Dict):
             premium_conditions=track["premium_conditions"],
             owner_id=track["owner_id"],
         )
-        access = premium_content_access_checker.check_access(
-            user_id=authed_user["user_id"],
-            premium_content_id=track_entity.track_id,
-            premium_content_type="track",
-            premium_content_entity=track_entity,
-        )
-        if not access["does_user_have_access"]:
-            return None
+        db = db_session.get_db_read_replica()
+        with db.scoped_session() as session:
+            access = premium_content_access_checker.check_access(
+                session=session,
+                user_id=authed_user["user_id"],
+                premium_content_id=track_entity.track_id,
+                premium_content_type="track",
+                premium_content_entity=track_entity,
+            )
+            if not access["does_user_have_access"]:
+                return None
 
     return get_premium_content_signature(
         {
