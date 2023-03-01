@@ -1,7 +1,7 @@
 import { useParams, useSearchParams } from 'react-router-dom'
 import seedrandom from 'seedrandom'
 
-import { HostAndShards, useNodesToShards } from '../api'
+import { NodeStatus, useNodeStatuses } from '../api'
 import type { ErrorRow } from '../components/filesTable/ErrorRow'
 import FilesTable from '../components/filesTable/FilesTable'
 import FilesTableWrapper from '../components/filesTable/FilesTableWrapper'
@@ -18,7 +18,7 @@ function makeRandJobId(arng: seedrandom.PRNG) {
 }
 
 export default function Shard() {
-  const { isLoading, error, data: hostsAndShards } = useNodesToShards()
+  const { isLoading, error, data: nodeStatuses } = useNodeStatuses()
   const { shard } = useParams()
   const [searchParams] = useSearchParams()
 
@@ -31,11 +31,11 @@ export default function Shard() {
 
   if (isLoading) return <>Loading...</>
   if (error) return <>An error has occurred: ${JSON.stringify(error)}</>
-  if (!hostsAndShards) return <>Unable to query any nodes in network</>
+  if (!nodeStatuses) return <>Unable to query any nodes in network</>
   if (!shard) return <>No shard specified in path param</>
 
   const hostsAndShardsFilteredToThisShard = Object.fromEntries(
-    Object.entries(hostsAndShards).filter(([, { shards }]) => shards.includes(shard)),
+    Object.entries(nodeStatuses).filter(([, { shards }]) => shards.includes(shard)),
   )
 
   if (shard === 'DEMO') {
@@ -98,24 +98,27 @@ export default function Shard() {
         })
       }
     }
-    const demoHostsAndShards: {
-      [pubKey: string]: HostAndShards
+    const demoNodeStatuses: {
+      [pubKey: string]: NodeStatus
     } = {}
-    demoHostsAndShards['0x1234567890'] = {
+    demoNodeStatuses['0x1234567890'] = {
       host: `http://node1.com`,
+      lastOk: new Date().toISOString(),
       shards: ['aa', 'DEMO', '8f'],
     }
-    demoHostsAndShards['0x1234567891'] = {
+    demoNodeStatuses['0x1234567891'] = {
       host: `http://node2.com`,
+      lastOk: new Date().toISOString(),
       shards: ['DEMO', 'wi', 'z2'],
     }
-    demoHostsAndShards['0x1234567892'] = {
+    demoNodeStatuses['0x1234567892'] = {
       host: `http://node3.com`,
+      lastOk: new Date().toISOString(),
       shards: ['le', '3n', 'DEMO'],
     }
     return (
       <>
-        <Nodes hostsAndShards={demoHostsAndShards} />
+        <Nodes nodeStatuses={demoNodeStatuses} />
         <FilesTable errorRows={errorRows} healthyRows={healthyRows} />
       </>
     )
@@ -123,7 +126,7 @@ export default function Shard() {
 
   return (
     <>
-      <Nodes hostsAndShards={hostsAndShardsFilteredToThisShard} />
+      <Nodes nodeStatuses={hostsAndShardsFilteredToThisShard} />
       <FilesTableWrapper
         shard={shard}
         hostsWithShard={Object.keys(hostsAndShardsFilteredToThisShard).map((pubKey) => {

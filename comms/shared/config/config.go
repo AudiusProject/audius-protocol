@@ -29,18 +29,18 @@ type KeysConfig struct {
 	DelegatePrivateKey *ecdsa.PrivateKey `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" required:"true" json:"-"`
 
 	// Fields derived from DelegatePrivateKey
-	DelegatePublicKey string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"DelegatePublicKey"`
+	DelegatePublicKey string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"delegatePublicKey"`
 	NkeyPair          nkeys.KeyPair `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"-"`
-	NkeyPublic        string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"NkeyPublic"`
+	NkeyPublic        string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"nKeyPublic"`
 }
 type KeysConfigDecoder KeysConfig
 
 type PeeringConfig struct {
-	Keys                   KeysConfigDecoder   `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" required:"true" json:"Keys"`
-	DevOnlyRegisteredNodes ServiceNodesDecoder `envconfig:"AUDIUS_DEV_ONLY_REGISTERED_NODES" json:"DevOnlyRegisteredNodes"`
-	NatsClusterName        string              `envconfig:"AUDIUS_NATS_CLUSTER_NAME" default:"comms" json:"NatsClusterName"`
-	TestHost               string              `envconfig:"AUDIUS_TEST_HOST" json:"TestHost"`
-	IsStaging              bool                `envconfig:"AUDIUS_IS_STAGING" json:"IsStaging"`
+	Keys                   KeysConfigDecoder   `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" required:"true" json:"keys"`
+	DevOnlyRegisteredNodes ServiceNodesDecoder `envconfig:"AUDIUS_DEV_ONLY_REGISTERED_NODES" json:"devOnlyRegisteredNodes"`
+	NatsClusterName        string              `envconfig:"AUDIUS_NATS_CLUSTER_NAME" default:"comms" json:"natsClusterName"`
+	TestHost               string              `envconfig:"AUDIUS_TEST_HOST" json:"testHost"`
+	IsStaging              bool                `envconfig:"AUDIUS_IS_STAGING" json:"isStaging"`
 }
 
 // EnsurePrivKeyAndLoadConf ensures the private key env var is set and loads a config struct from env vars.

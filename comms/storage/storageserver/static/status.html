@@ -236,8 +236,16 @@
 
     function showDate(ts) {
       if (!ts) return ''
-      const d = new Date(ts)
-      return `${d.toLocaleTimeString()}`
+      const date = new Date(ts)
+      const today = new Date()
+      if (
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear()
+      ) {
+        return date.toLocaleTimeString()
+      }
+      return date.toLocaleString()
     }
 
     function showDuration(sec) {
