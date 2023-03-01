@@ -38,7 +38,7 @@ class PremiumContentAccessBatchResponse(TypedDict):
 
 
 PREMIUM_CONDITION_TO_HANDLER_MAP: Dict[
-    PremiumContentConditions, Callable[[int, Any], bool]
+    PremiumContentConditions, Callable[[Session, int, Any], bool]
 ] = {
     "nft_collection": does_user_have_nft_collection,
     "follow_user_id": does_user_follow_artist,
@@ -57,6 +57,7 @@ class PremiumContentAccessChecker:
     # }
     def check_access(
         self,
+        session: Session,
         user_id: int,
         premium_content_id: int,
         premium_content_type: PremiumContentType,
@@ -103,6 +104,7 @@ class PremiumContentAccessChecker:
         return {
             "is_premium": True,
             "does_user_have_access": self._evaluate_conditions(
+                session=session,
                 user_id=user_id,
                 premium_content_owner_id=cast(int, content_owner_id),
                 premium_conditions=cast(dict, premium_conditions),
@@ -188,6 +190,7 @@ class PremiumContentAccessChecker:
                 track_access_result[user_id][track_id] = {
                     "is_premium": True,
                     "does_user_have_access": self._evaluate_conditions(
+                        session=session,
                         user_id=user_id,
                         premium_content_owner_id=cast(int, content_owner_id),
                         premium_conditions=premium_conditions,
@@ -221,7 +224,11 @@ class PremiumContentAccessChecker:
     # we aggregate multiple conditions and evaluate them altogether.
     # For now, we do not support aggregate conditions.
     def _evaluate_conditions(
-        self, user_id: int, premium_content_owner_id: int, premium_conditions: Dict
+        self,
+        session: Session,
+        user_id: int,
+        premium_content_owner_id: int,
+        premium_conditions: Dict,
     ):
         if len(premium_conditions) != 1:
             logging.info(
@@ -238,7 +245,7 @@ class PremiumContentAccessChecker:
             )
             return False
 
-        return PREMIUM_CONDITION_TO_HANDLER_MAP[condition](user_id, value)
+        return PREMIUM_CONDITION_TO_HANDLER_MAP[condition](session, user_id, value)
 
 
 premium_content_access_checker = PremiumContentAccessChecker()
