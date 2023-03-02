@@ -24,6 +24,10 @@ describe('Push Notifications', () => {
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
+  // Mock current date for test result consistency
+  Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
+
+
   beforeEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
     await Promise.all([

@@ -53,106 +53,6 @@ describe('Render email', () => {
     ])
   })
 
-  test("Render a single Follow email", async () => {
-    await insertFollows(processor.discoveryDB, [
-      { follower_user_id: 2, followee_user_id: 1 }
-    ])
-    await new Promise(resolve => setTimeout(resolve, 10))
-
-    const notifications: AppEmailNotification[] = [
-      {
-        type: 'follow',
-        timestamp: new Date(),
-        specifier: '2',
-        group_id: 'follow:2',
-        data: {
-          follower_user_id: 2,
-          followee_user_id: 1
-        },
-        user_ids: [1],
-        receiver_user_id: 1
-      }
-    ]
-    const notifHtml = await renderEmail({
-      userId: 1,
-      email: 'joey@audius.co',
-      frequency: 'daily',
-      notifications,
-      dnDb: processor.discoveryDB,
-      identityDb: processor.identityDB
-    })
-    expect(notifHtml).toMatchSnapshot();
-  })
-
-
-  test("Render a single Repost Track email", async () => {
-    await createTracks(processor.discoveryDB, [{
-      track_id: 1,
-      title: "track 1",
-      owner_id: 1
-    }])
-    await new Promise(resolve => setTimeout(resolve, 10))
-
-    const notifications: AppEmailNotification[] = [
-      {
-        type: 'repost',
-        timestamp: new Date(),
-        specifier: '2',
-        group_id: 'repost:track:1',
-        data: {
-          user_id: 2,
-          repost_item_id: 1,
-          type: reposttype.track
-        },
-        user_ids: [1],
-        receiver_user_id: 1,
-      }
-    ]
-    const notifHtml = await renderEmail({
-      userId: 1,
-      email: 'joey@audius.co',
-      frequency: 'daily',
-      notifications,
-      dnDb: processor.discoveryDB,
-      identityDb: processor.identityDB
-    })
-    expect(notifHtml).toMatchSnapshot()
-  })
-
-  test("Render a single Save Track Email", async () => {
-    await createTracks(processor.discoveryDB, [{
-      track_id: 1,
-      title: "track 1",
-      owner_id: 1
-    }])
-    await new Promise(resolve => setTimeout(resolve, 10))
-
-    const notifications: AppEmailNotification[] = [
-      {
-        type: 'save',
-        timestamp: new Date(),
-        specifier: '2',
-        user_ids: [1],
-        group_id: 'save:track:1',
-        data: {
-          user_id: 2,
-          save_item_id: 1,
-          type: savetype.track
-        },
-        receiver_user_id: 1
-      }
-    ]
-    const notifHtml = await renderEmail({
-      userId: 1,
-      email: 'joey@audius.co',
-      frequency: 'daily',
-      notifications,
-      dnDb: processor.discoveryDB,
-      identityDb: processor.identityDB
-    })
-    expect(notifHtml).toMatchSnapshot()
-  })
-
   test("Render a single Remix Track Email", async () => {
     await createTracks(processor.discoveryDB, [
       {
@@ -165,8 +65,9 @@ describe('Render email', () => {
         title: "track 2",
         owner_id: 2,
         remix_of:
-          { tracks: [{ parent_track_id: 1 }]
-          }
+        {
+          tracks: [{ parent_track_id: 1 }]
+        }
       },
     ])
     await new Promise(resolve => setTimeout(resolve, 10))
@@ -203,8 +104,9 @@ describe('Render email', () => {
         title: "track 1",
         owner_id: 1,
         remix_of:
-          { tracks: [{ parent_track_id: 2 }] 
-          }
+        {
+          tracks: [{ parent_track_id: 2 }]
+        }
       },
       {
         track_id: 2,

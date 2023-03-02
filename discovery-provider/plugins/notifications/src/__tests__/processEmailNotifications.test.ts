@@ -13,6 +13,10 @@ import { createTestDB, dropTestDB, replaceDBName, randId, createUsers, createCha
 describe('Email Notifications', () => {
   let discoveryDB: Knex
   let identityDB: Knex
+
+  // Mock current date for test result consistency
+  Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
+
   const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
     .mockImplementation(() => Promise.resolve(true))
 
