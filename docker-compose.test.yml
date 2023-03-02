@@ -282,7 +282,7 @@ services:
 
   test-discovery-provider-notifications:
     build: discovery-provider/plugins/notifications
-    command: sh -c "npm run test:watch"
+    command: sh -c "npm run test"
     environment:
       AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
       DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
