@@ -281,7 +281,9 @@ services:
       - discovery
 
   test-discovery-provider-notifications:
-    build: discovery-provider/plugins/notifications
+    build:
+      context: discovery-provider/plugins/notifications
+      dockerfile: Dockerfile
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run "$$@")' -
     command: sh -c "npm run test"
     environment:
