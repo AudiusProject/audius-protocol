@@ -1,16 +1,20 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { playbackRateValueMap, playerSelectors } from '@audius/common'
 import { useAppState } from '@react-native-community/hooks'
 import type { GestureResponderEvent } from 'react-native'
 import { Easing, View, Animated, PanResponder } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import TrackPlayer from 'react-native-track-player'
+import { useSelector } from 'react-redux'
 import { useAsync, usePrevious } from 'react-use'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
 import { makeStyles } from 'app/styles'
 import { attachToDx } from 'app/utils/animation'
 import { useThemeColors } from 'app/utils/theme'
+
+const { getPlaybackRate } = playerSelectors
 
 // How much the handle "grows" when pressing
 const HANDLE_GROW_SCALE = 1.1
@@ -144,11 +148,12 @@ export const Slider = memo((props: SliderProps) => {
   useEffect(getRailPageX, [railRef])
 
   const currentAnimation = useRef<Animated.CompositeAnimation>()
+  const playbackRate = useSelector(getPlaybackRate)
   const play = useCallback(
     (timeRemaining: number) => {
       currentAnimation.current = Animated.timing(translationAnim, {
         toValue: railWidth,
-        duration: timeRemaining,
+        duration: timeRemaining / playbackRateValueMap[playbackRate],
         easing: Easing.linear,
         // Can't use native driver because this animation is potentially hours long,
         // and would have to be serialized into an array to be passed to the native layer.
@@ -157,7 +162,7 @@ export const Slider = memo((props: SliderProps) => {
       })
       currentAnimation.current.start()
     },
-    [translationAnim, railWidth]
+    [translationAnim, railWidth, playbackRate]
   )
 
   const pause = useCallback(() => {
@@ -296,7 +301,7 @@ export const Slider = memo((props: SliderProps) => {
     } else {
       pause()
     }
-  }, [isPlaying, play, pause, mediaKey, durationRef])
+  }, [isPlaying, play, pause, mediaKey, durationRef, playbackRate])
 
   const appState = useAppState()
   const previousAppState = usePrevious(appState)

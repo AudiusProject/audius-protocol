@@ -16,9 +16,9 @@ import { accountSelectors } from 'store/account'
 import { cacheActions, cacheTracksSelectors } from 'store/cache'
 import { collectiblesActions } from 'store/collectibles'
 import { getContext } from 'store/effects'
+import { musicConfettiActions } from 'store/music-confetti'
 import { usersSocialActions } from 'store/social'
 import { tippingActions } from 'store/tipping'
-import { musicConfettiActions } from 'store/music-confetti'
 import { parseTrackRouteFromPermalink } from 'utils'
 import { Nullable } from 'utils/typeUtils'
 
@@ -337,7 +337,7 @@ function* pollPremiumTrack({
   trackParams,
   frequency
 }: {
-  trackId: ID,
+  trackId: ID
   currentUserId: number
   trackParams: TrackRouteParams
   frequency: number
@@ -357,7 +357,9 @@ function* pollPremiumTrack({
         cacheActions.update(Kind.TRACKS, [
           {
             id: trackId,
-            metadata: { premium_content_signature: track.premium_content_signature }
+            metadata: {
+              premium_content_signature: track.premium_content_signature
+            }
           }
         ])
       )

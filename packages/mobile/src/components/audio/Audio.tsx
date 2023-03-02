@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback, useState } from 'react'
 
 import type { ID, QueryParams, Track } from '@audius/common'
 import {
+  playbackRateValueMap,
   cacheUsersSelectors,
   cacheTracksSelectors,
   hlsUtils,
@@ -57,7 +58,8 @@ import {
 
 const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
-const { getPlaying, getSeek, getCurrentTrack, getCounter } = playerSelectors
+const { getPlaying, getSeek, getCurrentTrack, getCounter, getPlaybackRate } =
+  playerSelectors
 const { recordListen } = tracksSocialActions
 const {
   getIndex,
@@ -123,13 +125,13 @@ export const Audio = () => {
   const { isEnabled: isStreamMp3Enabled } = useFeatureFlag(
     FeatureFlags.STREAM_MP3
   )
-  // const progress = useProgress(100) // 100ms update interval
   const playbackState = usePlaybackState()
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
   const seek = useSelector(getSeek)
   const counter = useSelector(getCounter)
   const repeatMode = useSelector(getRepeat)
+  const playbackRate = useSelector(getPlaybackRate)
 
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
@@ -366,6 +368,10 @@ export const Audio = () => {
       const isPodcast = queueTracks[playerIndex]?.genre === Genre.PODCASTS
       if (isPodcast !== isPodcastRef.current) {
         isPodcastRef.current = isPodcast
+        // Update playback rate based on if the track is a podcast or not
+        const newRate = isPodcast ? playbackRateValueMap[playbackRate] : 1.0
+        await TrackPlayer.setRate(newRate)
+        // Update lock screen and notification controls
         await updatePlayerOptions(isPodcast)
       }
     }
@@ -599,6 +605,11 @@ export const Audio = () => {
     }
   }, [repeatMode])
 
+  const handlePlaybackRateChange = useCallback(async () => {
+    if (!isPodcastRef.current) return
+    await TrackPlayer.setRate(playbackRateValueMap[playbackRate])
+  }, [playbackRate])
+
   useEffect(() => {
     if (isAudioSetup) {
       handleRepeatModeChange()
@@ -622,6 +633,10 @@ export const Audio = () => {
       handleTogglePlay()
     }
   }, [handleTogglePlay, playing, isAudioSetup])
+
+  useEffect(() => {
+    handlePlaybackRateChange()
+  }, [handlePlaybackRateChange, playbackRate])
 
   return null
 }

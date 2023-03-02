@@ -1,7 +1,13 @@
 import { useCallback } from 'react'
 
-import { queueActions, queueSelectors, RepeatMode } from '@audius/common'
-import { Animated, View, StyleSheet } from 'react-native'
+import {
+  FeatureFlags,
+  modalsActions,
+  queueActions,
+  queueSelectors,
+  RepeatMode
+} from '@audius/common'
+import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconNext from 'app/assets/images/iconNext.svg'
@@ -10,41 +16,56 @@ import IconPodcastForward from 'app/assets/images/iconPodcastForward.svg'
 import IconPrev from 'app/assets/images/iconPrev.svg'
 import { IconButton } from 'app/components/core'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { makeStyles } from 'app/styles'
 
 import { PlayButton } from './PlayButton'
+import { PlaybackRateButton } from './PlaybackRateButton'
 import { RepeatButton } from './RepeatButton'
 import { ShuffleButton } from './ShuffleButton'
+
+const { setVisibility } = modalsActions
 const { getRepeat, getShuffle } = queueSelectors
 const { shuffle, repeat } = queueActions
 
-const createStyles = () =>
-  StyleSheet.create({
-    container: {
-      marginTop: 40,
-      height: 48,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-evenly'
-    },
-    button: {
-      flexGrow: 1,
-      display: 'flex',
-      alignItems: 'center'
-    },
-    playIcon: {
-      width: 80,
-      height: 80
-    },
-    nextPrevIcons: {
-      width: 30,
-      height: 30
-    },
-    shuffleRepeatIcons: {
-      width: 24,
-      height: 24
-    }
-  })
+const useStyles = makeStyles(({ spacing }) => ({
+  container: {
+    marginTop: spacing(10),
+    height: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly'
+  },
+  button: {
+    flexGrow: 1,
+    display: 'flex',
+    alignItems: 'center'
+  },
+  emptyPlaceholder: {
+    minHeight: 24,
+    minWidth: 24,
+    flexGrow: 1
+  },
+  playbackIconContainer: {
+    height: 24,
+    width: 24,
+    flexGrow: 1,
+    marginTop: spacing(1),
+    alignItems: 'center'
+  },
+  playIcon: {
+    width: 80,
+    height: 80
+  },
+  nextPrevIcons: {
+    width: 30,
+    height: 30
+  },
+  shuffleRepeatIcons: {
+    width: 24,
+    height: 24
+  }
+}))
 
 type AudioControlsProps = {
   onNext: () => void
@@ -59,7 +80,10 @@ export const AudioControls = ({
 }: AudioControlsProps) => {
   const dispatch = useDispatch()
 
-  const styles = useThemedStyles(createStyles)
+  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+  )
+  const styles = useStyles()
 
   const shuffleEnabled = useSelector(getShuffle)
   const repeatMode = useSelector(getRepeat)
@@ -99,8 +123,14 @@ export const AudioControls = ({
     dispatch(repeat({ mode }))
   }, [dispatch, repeatMode])
 
+  const handlePressPlaybackRate = useCallback(() => {
+    dispatch(setVisibility({ modal: 'PlaybackRate', visible: true }))
+  }, [dispatch])
+
   const renderRepeatButton = () => {
-    return (
+    return isPodcast && isNewPodcastControlsEnabled ? (
+      <View style={styles.emptyPlaceholder} />
+    ) : (
       <RepeatButton
         onPress={onPressRepeat}
         style={styles.button}
@@ -138,8 +168,15 @@ export const AudioControls = ({
       />
     )
   }
-  const renderShuffleButton = () => {
-    return (
+  const renderRightButton = () => {
+    return isPodcast && isNewPodcastControlsEnabled ? (
+      <View style={styles.playbackIconContainer}>
+        <PlaybackRateButton
+          onPress={handlePressPlaybackRate}
+          style={styles.button}
+        />
+      </View>
+    ) : (
       <ShuffleButton
         onPress={onPressShuffle}
         style={styles.button}
@@ -153,7 +190,7 @@ export const AudioControls = ({
       {renderPreviousButton()}
       {renderPlayButton()}
       {renderNextButton()}
-      {renderShuffleButton()}
+      {renderRightButton()}
     </View>
   )
 }
