@@ -1,15 +1,9 @@
-import { useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Navigate, useParams } from 'react-router-dom'
 
 const SHARD_LENGTH = 2
 
 export default function Search() {
-  const navigate = useNavigate()
   const { query } = useParams()
-
-  useEffect(() => {
-    navigate(query ? parseSearch(query) : '/')
-  }, query)
 
   function parseSearch(query: string) {
     let shard = ''
@@ -38,5 +32,5 @@ export default function Search() {
     return `/shard/${shard}${queryParam}`
   }
 
-  return <></>
+  return <Navigate replace to={query ? parseSearch(query) : '/'} />
 }
