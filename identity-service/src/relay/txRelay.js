@@ -509,7 +509,7 @@ async function relayToNethermindWithTimeout(
 let inFlight = 0
 
 async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
-  await new Promise(resolve => setTimeout(resolve, 10000)); // temp wait for 10 seconds
+  await new Promise(resolve => setTimeout(resolve, 30000)); // temp wait for 10 seconds
 
   console.log(
     `txRelay - relayToNethermind input params: ${encodedABI} ${contractAddress} ${gasLimit}`
