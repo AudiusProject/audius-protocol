@@ -15,7 +15,7 @@ const (
 )
 
 type SignedAccessData struct {
-	Signature []byte          `json:"signature"`
+	Signature string          `json:"signature"`
 	Data      json.RawMessage `json:"data"`
 }
 

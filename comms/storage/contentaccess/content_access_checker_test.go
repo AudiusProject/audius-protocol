@@ -2,9 +2,7 @@ package contentaccess
 
 import (
 	"bytes"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/url"
@@ -183,13 +181,13 @@ func TestParseQueryParams(t *testing.T) {
 		},
 	}
 
-	privKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privKey, err := crypto.GenerateKey()
 	if err != nil {
 		t.Fatal("Key generation failed")
 	}
 
 	for _, tt := range tests {
-		signature, err := utils.GenerateSignature(tt.testData, privKey)
+		rawSignature, err := utils.GenerateSignature(tt.testData, privKey)
 		if err != nil {
 			t.Fatalf("Failed to generate signature for %+v", tt.testData)
 		}
@@ -199,6 +197,7 @@ func TestParseQueryParams(t *testing.T) {
 			t.Fatal("marshalling signature data failed")
 		}
 
+		signature := hex.EncodeToString(rawSignature)
 		marshalledPayload, err := json.Marshal(SignedAccessData{
 			Signature: signature,
 			Data:      marshalledData,
@@ -220,7 +219,7 @@ func TestParseQueryParams(t *testing.T) {
 			t.Fatalf("incorrect signature data, want=%+v, got=%+v", tt.testData, actualData)
 		}
 
-		if !bytes.Equal(actualSignature, signature) {
+		if !bytes.Equal(actualSignature, rawSignature) {
 			t.Fatalf("incorrect signature, got (length=%d), want (length=%d)", len(signature), len(actualSignature))
 		}
 
