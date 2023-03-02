@@ -31,7 +31,6 @@ import {
 
 import { getToQueue } from 'common/store/queue/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
-import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 const { getSource, getUid, getPositions } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
@@ -46,7 +45,7 @@ const flatten = (list) =>
 function* filterDeletes(tracksMetadata, removeDeleted) {
   const tracks = yield select(getTracks)
   const users = yield select(getUsers)
-
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   yield waitForRead()
   const isPremiumContentEnabled = yield getFeatureEnabled(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
