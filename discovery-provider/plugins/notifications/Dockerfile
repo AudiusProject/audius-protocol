@@ -3,7 +3,7 @@ FROM node:14.16-alpine
 WORKDIR /notifications
 
 COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN --mount=type=cache,target=/root/.npm npm ci --verbose
 
 COPY . .
 

@@ -293,6 +293,8 @@ services:
     depends_on:
       test-discovery-provider-migrations:
         condition: service_completed_successfully
+      test-comms-migrations:
+        condition: service_completed_successfully
       test-identity-service-migrations:
         condition: service_completed_successfully
       discovery-provider-redis:
