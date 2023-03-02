@@ -320,7 +320,10 @@ services:
   # discovery-provider
 
   discovery-provider-notifications:
-    build: discovery-provider/plugins/notifications
+    build:
+      context: discovery-provider/plugins/notifications
+      args:
+        git_sha: "${GIT_COMMIT}"
     environment:
       AUDIUS_REDIS_URL: "redis://identity-service-redis:6379/00"
       DN_DB_URL: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
