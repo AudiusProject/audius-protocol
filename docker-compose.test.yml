@@ -292,6 +292,7 @@ services:
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/identity_service"
     volumes:
       - ./discovery-provider/plugins/notifications:/notifications
+      - /notifications/node_modules
     depends_on:
       test-discovery-provider-migrations:
         condition: service_completed_successfully
