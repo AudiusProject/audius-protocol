@@ -252,6 +252,31 @@ export const ChatScreen = () => {
     [chatId, setInputMessage, dispatch]
   )
 
+  useEffect(() => {
+    if (
+      earliestUnreadIndex &&
+      chatMessages &&
+      earliestUnreadIndex > 0 &&
+      earliestUnreadIndex < chatMessages.length
+    ) {
+      flatListRef.current?.scrollToIndex({
+        index: earliestUnreadIndex,
+        viewPosition: 0.5,
+        animated: false
+      })
+    }
+  }, [earliestUnreadIndex, chatMessages])
+
+  const handleScrollToIndexFailed = (e) => {
+    setTimeout(() => {
+      flatListRef.current?.scrollToIndex({
+        index: e.index,
+        viewPosition: 0.5,
+        animated: false
+      })
+    }, 10)
+  }
+
   const handleScrollToTop = () => {
     if (
       chatId &&
@@ -321,15 +346,14 @@ export const ChatScreen = () => {
                   data={chatMessages}
                   keyExtractor={(message) => message.chat_id}
                   renderItem={({ item, index }) => (
-                    <Fragment>
+                    <Fragment key={item.key}>
                       <ChatMessageListItem
-                        key={item.key}
                         message={item}
                         hasTail={hasTail(item, chatMessages[index - 1])}
                         unreadCount={unreadCount}
                       />
                       {index === earliestUnreadIndex ? (
-                        <View style={styles.unreadTagContainer} key='unreadTag'>
+                        <View style={styles.unreadTagContainer}>
                           <View style={styles.unreadSeparator} />
                           <Text style={styles.unreadTag}>
                             {unreadCount}{' '}
@@ -342,7 +366,9 @@ export const ChatScreen = () => {
                   )}
                   onEndReached={handleScrollToTop}
                   inverted
+                  initialNumToRender={chatMessages?.length}
                   ref={flatListRef}
+                  onScrollToIndexFailed={handleScrollToIndexFailed}
                 />
               </View>
             ) : (
