@@ -13,7 +13,7 @@ export class NativeMobileAudio {
   stop = () => {}
   seek = () => {}
   setVolume = () => null
-  setPlaybackRate = () => null
+  setPlaybackRate = () => {}
   isBuffering = () => false
   getPosition = async () => 0
   getDuration = () => 0

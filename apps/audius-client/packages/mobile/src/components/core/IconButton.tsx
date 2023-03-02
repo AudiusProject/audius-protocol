@@ -17,13 +17,16 @@ export type IconButtonProps = {
   >
   isDisabled?: boolean
   onPress?: GestureResponderHandler
+  fullWidth?: boolean
   hitSlop?: Insets
 } & StylesProps<{ root?: StyleProp<ViewStyle>; icon?: StyleProp<ViewStyle> }>
 
 const useStyles = makeStyles(() => ({
   icon: {
     height: 18,
-    width: 18
+    width: 18,
+    justifyContent: 'center',
+    alignItems: 'center'
   }
 }))
 
@@ -38,6 +41,7 @@ const defaultHitSlop = { top: 12, right: 12, bottom: 12, left: 12 }
  */
 export const IconButton = ({
   fill: inputFill,
+  fullWidth = true,
   icon: Icon,
   isDisabled,
   onPress,
@@ -70,7 +74,11 @@ export const IconButton = ({
             stylesProp?.icon
           ]}
         >
-          <Icon fill={fill} height='100%' width='100%' />
+          <Icon
+            fill={fill}
+            height='100%'
+            {...(fullWidth ? { width: '100%' } : {})}
+          />
         </View>
       </TouchableOpacity>
     </Animated.View>

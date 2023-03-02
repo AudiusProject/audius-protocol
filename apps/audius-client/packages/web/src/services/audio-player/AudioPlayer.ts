@@ -2,7 +2,8 @@ import {
   TrackSegment,
   decodeHashId,
   hlsUtils,
-  PlaybackRate
+  PlaybackRate,
+  playbackRateValueMap
 } from '@audius/common'
 import Hls from 'hls.js'
 
@@ -454,7 +455,7 @@ export class AudioPlayer {
   }
 
   _updateAudioPlaybackRate = () => {
-    this.audio.playbackRate = parseFloat(this.playbackRate)
+    this.audio.playbackRate = playbackRateValueMap[this.playbackRate]
   }
 
   _fadeIn = () => {

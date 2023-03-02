@@ -1,5 +1,6 @@
 import { call, put, takeEvery } from 'typed-redux-saga'
 
+import { FeatureFlags } from 'services/remote-config'
 import { getContext } from 'store/effects'
 
 import { setPlaybackRate } from './slice'
@@ -9,9 +10,17 @@ import { PlaybackRate, PLAYBACK_RATE_LS_KEY } from './types'
  * Sets the playback rate from local storage when the app loads
  */
 function* setInitialPlaybackRate() {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const getLocalStorageItem = yield* getContext('getLocalStorageItem')
+  const isPodcastFeaturesEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+  )
+
   const playbackRate = yield* call(getLocalStorageItem, PLAYBACK_RATE_LS_KEY)
-  const rate: PlaybackRate = (playbackRate as PlaybackRate | null) ?? '1x'
+  const rate: PlaybackRate = isPodcastFeaturesEnabled
+    ? (playbackRate as PlaybackRate | null) ?? '1x'
+    : '1x'
   yield* put(setPlaybackRate({ rate }))
 }
 

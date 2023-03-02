@@ -23,6 +23,7 @@ export type Drawer =
   | 'ChatActions'
   | 'ProfileActions'
   | 'BlockMessages'
+  | 'PlaybackRate'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -32,6 +33,7 @@ export type DrawerData = {
   NowPlaying: undefined
   CancelEditTrack: undefined
   RateCallToAction: undefined
+  PlaybackRate: undefined
   DeleteConfirmation: {
     trackId: number
   }
@@ -72,6 +74,7 @@ const initialState: DrawersState = {
   ChatActions: false,
   ProfileActions: false,
   BlockMessages: false,
+  PlaybackRate: false,
   data: null
 }
 

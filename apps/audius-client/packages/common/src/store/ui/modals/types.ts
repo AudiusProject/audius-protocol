@@ -33,5 +33,6 @@ export type Modals =
   | 'CreateChat'
   | 'InboxSettings'
   | 'LockedContent'
+  | 'PlaybackRate'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }

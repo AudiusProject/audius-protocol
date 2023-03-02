@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useRef } from 'react'
 
-import { formatSeconds } from '@audius/common'
+import {
+  formatSeconds,
+  playerSelectors,
+  playbackRateValueMap
+} from '@audius/common'
 import { useAppState } from '@react-native-community/hooks'
 import type { TextInput } from 'react-native'
 import TrackPlayer from 'react-native-track-player'
+import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
+
+const { getPlaybackRate } = playerSelectors
 
 export const usePosition = (
   mediaKey: string,
@@ -14,6 +21,7 @@ export const usePosition = (
 ) => {
   const positionRef = useRef(0)
   const positionElementRef = useRef<TextInput>(null)
+  const playbackRate = useSelector(getPlaybackRate)
 
   const setPosition = useCallback((position: number) => {
     positionRef.current = position
@@ -26,7 +34,7 @@ export const usePosition = (
     let currentTimeout: number
 
     const updatePosition = () => {
-      const timeout = setTimeout(() => {
+      const timeout = setTimeout(async () => {
         positionRef.current += 1
 
         positionElementRef.current?.setNativeProps({
@@ -36,7 +44,7 @@ export const usePosition = (
         if (positionRef.current <= duration) {
           currentTimeout = updatePosition()
         }
-      }, 1000)
+      }, 1000 / playbackRateValueMap[playbackRate])
 
       return timeout
     }
@@ -48,7 +56,7 @@ export const usePosition = (
     return () => {
       clearTimeout(currentTimeout)
     }
-  }, [isPlaying, isInteracting, duration])
+  }, [isPlaying, isInteracting, duration, playbackRate])
 
   // Android pauses timeouts when in background, so we use app state
   // to trigger a position coercion
