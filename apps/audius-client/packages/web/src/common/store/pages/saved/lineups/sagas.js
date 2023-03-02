@@ -6,15 +6,19 @@ import {
   savedPageActions as saveActions,
   savedPageSelectors,
   queueActions,
+  queueSelectors,
   tracksSocialActions,
-  playerSelectors
+  playerSelectors,
+  QueueSource
 } from '@audius/common'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'redux-saga/effects'
 
 import { retrieveTracks } from 'common/store/cache/tracks/utils'
 import { LineupSagas } from 'common/store/lineup/sagas'
+
 const { getUid: getPlayerUid } = playerSelectors
+const { getSource } = queueSelectors
 const { SAVE_TRACK, UNSAVE_TRACK } = tracksSocialActions
 const { getLocalSaves, getLocalSave, getSavedTracksLineupUid, getSaves } =
   savedPageSelectors
@@ -115,17 +119,21 @@ function* watchSave() {
     }
     yield put(saveActions.addLocalSave(trackId, localSaveUid))
     yield put(savedTracksActions.add(newEntry, trackId, undefined, true))
-    yield put(
-      queueActions.add({
-        entries: [
-          {
-            id: trackId,
-            uid: localSaveUid,
-            souce: savedTracksActions.prefix
-          }
-        ]
-      })
-    )
+
+    const queueSource = yield select(getSource)
+    if (queueSource === QueueSource.SAVED_TRACKS) {
+      yield put(
+        queueActions.add({
+          entries: [
+            {
+              id: trackId,
+              uid: localSaveUid,
+              souce: savedTracksActions.prefix
+            }
+          ]
+        })
+      )
+    }
   })
 }
 
@@ -134,10 +142,15 @@ function* watchUnsave() {
     const { trackId } = action
     const localSaveUid = yield select(getLocalSave, { id: trackId })
     const playerUid = yield select(getPlayerUid)
+    const queueSource = yield select(getSource)
+
     yield put(saveActions.removeLocalSave(action.trackId))
     if (localSaveUid) {
       yield put(savedTracksActions.remove(Kind.TRACKS, localSaveUid))
-      if (localSaveUid !== playerUid) {
+      if (
+        localSaveUid !== playerUid &&
+        queueSource === QueueSource.SAVED_TRACKS
+      ) {
         yield put(queueActions.remove({ uid: localSaveUid }))
       }
     }
