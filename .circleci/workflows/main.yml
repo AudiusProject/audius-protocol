@@ -1,5 +1,5 @@
 when:
-  equal: ['main', << pipeline.parameters.workflow >>]
+  equal: ["main", << pipeline.parameters.workflow >>]
 jobs:
   - build-gcp-image:
       context: GCP
@@ -122,7 +122,7 @@ jobs:
       requires:
         - deploy-prod-creator-node-trigger
       hosts: >-
-        prod-creator-4
+        # prod-creator-4
         prod-creator-1
         prod-creator-2
         prod-creator-3
