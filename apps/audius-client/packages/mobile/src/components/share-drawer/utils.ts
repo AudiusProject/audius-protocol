@@ -1,11 +1,11 @@
 import type { ShareModalContent } from '@audius/common'
+import { makeTwitterShareUrl } from '@audius/common'
 
 import {
   getCollectionRoute,
   getTrackRoute,
   getUserRoute
 } from 'app/utils/routes'
-import { getTwitterLink } from 'app/utils/twitter'
 
 import { messages } from './messages'
 
@@ -72,5 +72,5 @@ export const getTwitterShareText = (content: ShareModalContent) => {
 export const getTwitterShareUrl = (content: ShareModalContent) => {
   const url = getContentUrl(content)
   const shareText = getTwitterShareText(content)
-  return getTwitterLink(url ?? null, shareText)
+  return makeTwitterShareUrl(url ?? null, shareText)
 }

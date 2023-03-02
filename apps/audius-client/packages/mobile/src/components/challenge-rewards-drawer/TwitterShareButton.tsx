@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react'
 
+import { makeTwitterShareUrl } from '@audius/common'
 import { Linking, StyleSheet } from 'react-native'
 import type { Color } from 'react-native-svg'
 
@@ -7,7 +8,6 @@ import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import Button from 'app/components/button'
 import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import type { ThemeColors } from 'app/utils/theme'
-import { getTwitterLink } from 'app/utils/twitter'
 
 const makeStyles = (themeColors: ThemeColors) =>
   StyleSheet.create({
@@ -43,7 +43,7 @@ export const TwitterShareButton = ({
 }) => {
   const styles = useThemedStyles(makeStyles)
   const onClick = useCallback(async () => {
-    const twitterShareUrl = getTwitterLink(inviteUrl, messages.twitterCopy)
+    const twitterShareUrl = makeTwitterShareUrl(inviteUrl, messages.twitterCopy)
     const isSupported = await Linking.canOpenURL(twitterShareUrl)
     if (isSupported) {
       Linking.openURL(twitterShareUrl)
