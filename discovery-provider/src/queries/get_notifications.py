@@ -72,6 +72,38 @@ notification_groups_sql = notification_groups_sql.bindparams(
     bindparam("valid_types", expanding=True)
 )
 
+unread_notification_count_sql = text(
+    """
+--- Create Intervals of user seen
+SELECT
+    count(*)
+FROM (
+   select n.type, n.group_id
+   from
+       notification n
+  WHERE
+    ARRAY[:user_id] && n.user_ids AND
+    (:valid_types is NOT NULL AND n.type in :valid_types) AND
+    n.timestamp > COALESCE((
+        SELECT
+            seen_at
+        FROM
+            notification_seen
+        WHERE
+            user_id = :user_id
+        ORDER BY seen_at desc
+        LIMIT 1
+    ), '2016-01-01'::timestamp) AND 
+    (:timestamp_offset is NULL OR n.timestamp > :timestamp_offset)
+  GROUP BY
+    n.type, n.group_id
+) user_notifications;
+"""
+)
+unread_notification_count_sql = unread_notification_count_sql.bindparams(
+    bindparam("valid_types", expanding=True)
+)
+
 
 MAX_LIMIT = 50
 DEFAULT_LIMIT = 20
@@ -402,3 +434,25 @@ def get_notifications(session: Session, args: GetNotificationArgs):
         for notification in notifications
     ]
     return notifications_and_actions
+
+
+class GetUnreadNotificationCount(TypedDict):
+    user_id: int
+    timestamp: Optional[datetime]
+    valid_types: Optional[List[NotificationType]]
+
+
+def get_unread_notification_count(session: Session, args: GetUnreadNotificationCount):
+    args["valid_types"] = args.get("valid_types", []) + default_valid_types  # type: ignore
+    resultproxy = session.execute(
+        unread_notification_count_sql,
+        {
+            "user_id": args["user_id"],
+            "valid_types": args.get("valid_types", None),
+            "timestamp_offset": args.get("timestamp", None),
+        },
+    )
+    unread_count = 0
+    for rowproxy in resultproxy:
+        unread_count = rowproxy[0]
+    return unread_count
