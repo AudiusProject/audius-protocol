@@ -7,28 +7,30 @@ import { AnimatedButton } from 'app/components/core'
 import { colorize } from 'app/utils/colorizeLottie'
 import { useThemeColors } from 'app/utils/theme'
 
-type FavoriteButtonProps = Omit<AnimatedButtonProps, 'iconJSON'>
+type FavoriteButtonProps = Omit<AnimatedButtonProps, 'iconJSON'> & {
+  isOwner?: boolean
+}
 
 export const FavoriteButton = (props: FavoriteButtonProps) => {
-  const { iconIndex } = props
-  const { neutral, primary } = useThemeColors()
+  const { iconIndex, isOwner = false } = props
+  const { neutralLight6, neutral, primary } = useThemeColors()
 
   const iconJSON = useMemo(() => {
     const ColorizedFavoriteOnIcon = colorize(IconFavoriteOnLight, {
       // icon_Favorites Outlines 2.Group 1.Fill 1
-      'layers.0.shapes.0.it.1.c.k.0.s': neutral,
+      'layers.0.shapes.0.it.1.c.k.0.s': isOwner ? neutralLight6 : neutral,
       // icon_Favorites Outlines 2.Group 1.Fill 1
-      'layers.0.shapes.0.it.1.c.k.1.s': primary
+      'layers.0.shapes.0.it.1.c.k.1.s': isOwner ? neutralLight6 : primary
     })
 
     const ColorizedFavoriteOffIcon = colorize(IconFavoriteOffLight, {
       // icon_Favorites Outlines 2.Group 1.Fill 1
-      'layers.0.shapes.0.it.1.c.k.0.s': primary,
+      'layers.0.shapes.0.it.1.c.k.0.s': isOwner ? neutralLight6 : primary,
       // icon_Favorites Outlines 2.Group 1.Fill 1
-      'layers.0.shapes.0.it.1.c.k.1.s': neutral
+      'layers.0.shapes.0.it.1.c.k.1.s': isOwner ? neutralLight6 : neutral
     })
     return [ColorizedFavoriteOnIcon, ColorizedFavoriteOffIcon]
-  }, [neutral, primary])
+  }, [isOwner, neutral, neutralLight6, primary])
 
   return (
     <AnimatedButton {...props} haptics={iconIndex === 0} iconJSON={iconJSON} />
