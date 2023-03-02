@@ -517,9 +517,13 @@ export const PremiumTrackSection = ({
       const url = `https://opensea.io/collection/${premiumConditions.nft_collection.slug}`
       window.open(url, '_blank')
     } else if (chain === Chain.Sol) {
-      const explorerUrl = `https://explorer.solana.com/address/${address}`
-      const url = externalLink ? new URL(externalLink).hostname : explorerUrl
-      window.open(url, '_blank')
+      if (externalLink) {
+        const url = new URL(externalLink)
+        window.open(`${url.protocol}//${url.hostname}`)
+      } else {
+        const explorerUrl = `https://explorer.solana.com/address/${address}`
+        window.open(explorerUrl, '_blank')
+      }
     }
   }, [premiumConditions])
 
