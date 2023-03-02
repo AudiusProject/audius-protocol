@@ -7,9 +7,6 @@ from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.models.social.subscription import Subscription
-from src.premium_content.premium_content_access_checker import (
-    premium_content_access_checker,
-)
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
