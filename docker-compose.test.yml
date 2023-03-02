@@ -282,7 +282,7 @@ services:
 
   test-discovery-provider-notifications:
     build: discovery-provider/plugins/notifications
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && export PATH="$PATH:./node_modules/.bin" && sleep inf || (shift; npm run test "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run test "$$@")' -
     command: sh -c "npm run test"
     environment:
       AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
