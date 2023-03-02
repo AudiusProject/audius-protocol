@@ -20,7 +20,7 @@ type NatsManager struct {
 	mu         sync.Mutex
 }
 
-func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorageNode bool, peering *peering.NatsPeering) {
+func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, peering *peering.NatsPeering) {
 
 	manager.mu.Lock()
 	defer manager.mu.Unlock()
@@ -28,12 +28,12 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 	routes := []*url.URL{}
 	nkeys := []*server.NkeyUser{}
 	tags := []string{}
+	serverName := ""
 
 	for _, info := range peerMap {
 		if info == nil || info.Nkey == "" {
 			continue
 		}
-
 		user := &server.NkeyUser{
 			Nkey: info.Nkey,
 		}
@@ -51,11 +51,16 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 		}
 	}
 
-	serverName := peering.Config.Keys.DelegatePublicKey
 	allNodes, _ := peering.AllNodes()
 	for _, node := range allNodes {
 		if node.DelegateOwnerWallet == peering.Config.Keys.DelegatePublicKey {
-			tags = append(tags, "sp:"+node.Owner.ID, "type:"+node.Type.ID)
+			thisNodePubKey := node.DelegateOwnerWallet
+			thisNodeType := strings.Split(node.Type.ID, "-")[0][:4]
+			// i.e. cont:0x1c18...DA0F or disc:0x123d...279e
+			serverName = thisNodeType + ":" + thisNodePubKey[:6] + "..." + thisNodePubKey[38:]
+			serviceProviderWalletAddr := node.Owner.ID
+			tags = append(tags, "type:"+node.Type.ID, "delegate:"+thisNodePubKey, "owner:"+serviceProviderWalletAddr)
+			break
 		}
 	}
 
