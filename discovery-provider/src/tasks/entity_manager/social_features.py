@@ -288,18 +288,18 @@ def validate_social_feature(params: ManageEntityParameters):
                     f"User {params.user_id} has already sent a {params.action} for {params.entity_type} {params.entity_id}"
                 )
 
-    if should_check_entity_access(params.action, params.entity_type):
-        premium_content_access = premium_content_access_checker.check_access(
-            session=params.session,
-            user_id=params.user_id,
-            premium_content_id=params.entity_id,
-            premium_content_type="track",
-            premium_content_entity=params.existing_records[params.entity_type][
-                params.entity_id
-            ],
-        )
-        if not premium_content_access["does_user_have_access"]:
-            raise Exception(f"User {params.user_id} has no access to entity")
+    # if should_check_entity_access(params.action, params.entity_type):
+    #     premium_content_access = premium_content_access_checker.check_access(
+    #         session=params.session,
+    #         user_id=params.user_id,
+    #         premium_content_id=params.entity_id,
+    #         premium_content_type="track",
+    #         premium_content_entity=params.existing_records[params.entity_type][
+    #             params.entity_id
+    #         ],
+    #     )
+    #     if not premium_content_access["does_user_have_access"]:
+    #         raise Exception(f"User {params.user_id} has no access to entity")
 
 
 def should_check_entity_access(action: Action, entity_type: EntityType):
