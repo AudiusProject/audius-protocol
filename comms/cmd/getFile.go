@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"comms.audius.co/storage/telemetry"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +21,7 @@ var getFileCmd = &cobra.Command{
 
 		filename := args[0]
 
+		telemetry.DiscardLogs()
 		clientCount, err := initClients()
 		if err != nil || clientCount < 1 {
 			fmt.Println("Couldn't find any clients")
