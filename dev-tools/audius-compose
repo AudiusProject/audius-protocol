@@ -172,9 +172,10 @@ def cli(ctx, protocol_dir):
 
 
 @cli.command()
-@click.option("-c", "--creator-node-replicas", default=4, type=int)
-@click.option("-d", "--discovery-provider-replicas", default=3, type=int)
+@click.option("-c", "--creator-node-replicas", default=3, type=int)
+@click.option("-d", "--discovery-provider-replicas", default=1, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
+@click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def build(
@@ -182,6 +183,7 @@ def build(
     creator_node_replicas,
     discovery_provider_replicas,
     elasticsearch_replicas,
+    args,
     services,
 ):
     generate_env(
@@ -199,6 +201,7 @@ def build(
             f"--file={protocol_dir / 'docker-compose.yml'}",
             "--profile=*",
             "build",
+            *args,
             *services,
         ],
     )
@@ -279,11 +282,12 @@ def load_env(protocol_dir, service, environment):
 
 @cli.command()
 @click.option("-c", "--creator-node-replicas", default=3, type=int)
-@click.option("-d", "--discovery-provider-replicas", default=3, type=int)
+@click.option("-d", "--discovery-provider-replicas", default=1, type=int)
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
 @click.option("-w", "--wait", is_flag=True, help="Wait for services to be healthy")
+@click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
 @click.pass_obj
 def up(
@@ -294,6 +298,7 @@ def up(
     block_explorer,
     anti_abuse_oracle,
     wait,
+    args,
     services,
 ):
     generate_env(
@@ -321,6 +326,7 @@ def up(
                 *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
                 "up",
                 "--build",
+                *args,
                 ("--wait" if wait else "--detach"),
                 *services,
             ],
@@ -354,12 +360,12 @@ def connect(protocol_dir, remote):
     subprocess.run(
         [
             "sshuttle",
-            "-N",
             "--no-latency-control",
-            "-H",
-            "-r",
+            "--auto-nets",
+            "--auto-hosts",
+            "--remote",
             f"sshuttle@{host}:2222",
-            "-e",
+            "--ssh-cmd",
             f"ssh -i {protocol_dir}/dev-tools/keys/dev -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
         ]
     )

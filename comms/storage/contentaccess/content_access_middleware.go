@@ -1,8 +1,11 @@
 package contentaccess
 
 import (
+	"encoding/hex"
 	"encoding/json"
+	"net/http"
 	"net/url"
+	"strings"
 
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
@@ -13,32 +16,28 @@ type CustomRequest struct {
 	ShouldCache bool
 }
 
-func ContentAccessMiddleware(peering *peering.Peering) func(next echo.HandlerFunc) echo.HandlerFunc {
+func ContentAccessMiddleware(p peering.Peering) func(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 
 			requestedCid := c.Param("CID")
 			if requestedCid == "" {
-				return echo.ErrBadRequest
+				return echo.NewHTTPError(http.StatusBadRequest, "missing CID parameter")
 			}
 
 			signatureData, signature, err := parseQueryParams(c.QueryParams())
 			if err != nil {
-				return echo.ErrBadRequest
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 
-			nodes, err := peering.GetDiscoveryNodes()
+			nodes, err := p.GetDiscoveryNodes()
 			if err != nil {
 				return echo.ErrInternalServerError
 			}
 
-			isValidSignature, err := VerifySignature(nodes, *signatureData, []byte(signature), requestedCid)
+			err = VerifySignature(nodes, *signatureData, signature, requestedCid)
 			if err != nil {
-				return echo.ErrBadRequest
-			}
-
-			if !isValidSignature {
-				return echo.ErrBadRequest
+				return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 			}
 
 			return next(c)
@@ -63,7 +62,15 @@ func parseQueryParams(values url.Values) (*SignatureData, []byte, error) {
 		return nil, nil, err
 	}
 
-	return signatureData, signedAccessData.Signature, nil
+	// Remove the "0x" signatures since it'll break hex decoding
+	signedAccessData.Signature = strings.TrimPrefix(signedAccessData.Signature, "0x")
+
+	rawSignature, err := hex.DecodeString(signedAccessData.Signature)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return signatureData, rawSignature, nil
 }
 
 func parseSignature(rawSignature string) (*SignedAccessData, error) {

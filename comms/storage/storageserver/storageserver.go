@@ -3,8 +3,8 @@ package storageserver
 
 import (
 	"embed"
+	"errors"
 	"io/fs"
-	"log"
 	"net/http"
 	"strings"
 
@@ -16,87 +16,119 @@ import (
 	"comms.audius.co/storage/persistence"
 	"comms.audius.co/storage/telemetry"
 	"comms.audius.co/storage/transcode"
+	"github.com/avast/retry-go"
 	"github.com/gobwas/ws"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/nats-io/nats.go"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	"golang.org/x/exp/slog"
 )
 
 const (
-	GlobalNamespace   string = "0"
-	ReplicationFactor int    = 3
-	NumJobWorkers     int    = 3
+	GlobalNamespace    string = "0"
+	ReplicationFactor  int    = 3
+	NumJobWorkers      int    = 3
+	HealthyNodesKVName string = "healthyNodes"
 )
 
 // StorageServer lives for the lifetime of the program and holds connections and managers.
 type StorageServer struct {
 	Namespace      string
+	Config         *config.StorageConfig
+	Host           string
 	StorageDecider decider.StorageDecider
 	Jsc            nats.JetStreamContext
 	JobsManager    *transcode.JobsManager
 	Persistence    *persistence.Persistence
 	WebServer      *echo.Echo
 	Monitor        *monitor.Monitor
-	Peering        *peering.Peering
+	Peering        peering.Peering
 }
 
-func NewProd(config *config.StorageConfig, jsc nats.JetStreamContext, peering *peering.Peering) *StorageServer {
+func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peering.Peering) (*StorageServer, error) {
 	allContentNodes, err := peering.GetContentNodes()
 	if err != nil {
-		log.Fatal("Error getting content nodes: ", err)
+		slog.Error("Error getting content nodes", err)
+		return nil, err
 	}
+
 	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
 	var host string
-	var allStorageNodePubKeys []string
 	for _, node := range allContentNodes {
-		allStorageNodePubKeys = append(allStorageNodePubKeys, strings.ToLower(node.DelegateOwnerWallet))
 		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
 			host = node.Endpoint
+			break
 		}
 	}
 	if host == "" {
-		log.Fatal("Could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
+		return nil, errors.New("could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
 	}
 
-	d := decider.NewRendezvousDecider(GlobalNamespace, ReplicationFactor, thisNodePubKey, allStorageNodePubKeys, jsc)
+	var healthyNodesKV nats.KeyValue
+	err = retry.Do(
+		func() error {
+			var err error
+			healthyNodesKV, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
+				Bucket:      HealthyNodesKVName,
+				Description: "Source of truth where every node reads the list of healthy nodes from",
+				History:     20,
+			})
+			if err != nil {
+				return err
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		slog.Error("failed to create healthyNodes KV", err)
+		return nil, err
+	}
 
+	m := monitor.New(GlobalNamespace, healthyNodesKV, config.HealthTTLHours, jsc)
+	err = m.UpdateHealthyNodeSetOnInterval(config.RebalanceIntervalHours)
+	if err != nil {
+		slog.Error("error starting interval to update set of healthy nodes", err)
+		return nil, err
+	}
+
+	d := decider.NewRendezvousDecider(
+		GlobalNamespace,
+		ReplicationFactor,
+		thisNodePubKey,
+		healthyNodesKV,
+		jsc,
+	)
 	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
 	if err != nil {
-		log.Fatal("failed to start jobs manager: ", err)
+		slog.Error("error creating jobs manager", err)
+		return nil, err
 	}
 	jobsManager.StartWorkers(NumJobWorkers)
 
-	m := monitor.New(jsc)
-	err = m.SetHostAndShardsForNode(thisNodePubKey, host, d.ShardsStored)
-	if err != nil {
-		log.Fatalf("Error setting host and shards for node: %v", err)
-	}
-
 	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)
 	if err != nil {
-		log.Fatal("[!!!] Error connecting to persistent storage: ", err)
+		slog.Error("eror connecting to persistent storage", err)
+		return nil, err
 	}
 
-	return NewCustom(
-		GlobalNamespace,
-		d,
-		jsc,
-		jobsManager,
-		persistence,
-		m,
-	)
-}
-
-func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamContext, jobsManager *transcode.JobsManager, persistence *persistence.Persistence, m *monitor.Monitor) *StorageServer {
 	ss := &StorageServer{
-		Namespace:      namespace,
+		Namespace:      GlobalNamespace,
+		Config:         config,
 		StorageDecider: d,
 		Jsc:            jsc,
 		JobsManager:    jobsManager,
 		Persistence:    persistence,
 		Monitor:        m,
 	}
+	ss.createWebServer()
+
+	m.SetNodeStatusOKOnInterval(thisNodePubKey, host, d, config.ReportOKIntervalSeconds)
+
+	return ss, nil
+}
+
+func (ss *StorageServer) createWebServer() {
 	ss.WebServer = echo.New()
 	ss.WebServer.HideBanner = true
 	ss.WebServer.Debug = true
@@ -111,27 +143,29 @@ func NewCustom(namespace string, d decider.StorageDecider, jsc nats.JetStreamCon
 	storage.Use(middleware.Logger())
 	storage.Use(middleware.Recover())
 
-	storage.GET("", ss.serveStatusUI)
-	storage.GET("/", ss.serveStatusUI)
-	storage.GET("/static/*", ss.serveStatusStaticAssets)
-	storage.POST("/file", ss.serveFileUpload)
-	storage.GET("/jobs", ss.serveJobs)
-	storage.GET("/jobs/:id", ss.serveJobById)
-	storage.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
-	storage.GET("/persistent/shard/:shard", ss.servePersistenceKeysByShard) // QueryParam: includeMD5s=[true|false]
-	storage.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName)
-	storage.GET("/stream/:fileName", ss.streamPersistenceObjectByFileName, contentaccess.ContentAccessMiddleware(ss.Peering))
-	storage.GET("/ws", ss.upgradeConnToWebsocket)
-	storage.GET("/nodes-to-shards", ss.serveNodesToShards)
-	storage.GET("/job-results/:id", ss.serveJobResultsById)
+	// Register endpoints for uploads status table at /storage/uploads
+	storage.GET("/uploads", ss.serveStatusUI)
+	storage.GET("/uploads/", ss.serveStatusUI)
+	storage.GET("/uploads/static/*", ss.serveStatusStaticAssets)
+	storage.GET("/uploads/ws", ss.upgradeConnToWebsocket)
 
-	// Register endpoints at /storage/weather for React weather map
-	weatherMap := storage.Group("/weather")
-	weatherMap.GET("", ss.serveWeatherMapUI)
-	weatherMap.GET("/**", ss.serveWeatherMapUI)
-	weatherMap.GET("/assets/*", echo.WrapHandler(http.StripPrefix("/storage/weather/", http.FileServer(getWeatherMapStaticFiles()))))
+	// Register endpoint for React weather map at /storage root
+	storage.GET("", ss.serveWeatherMapUI)
+	storage.GET("/", ss.serveWeatherMapUI)
+	storage.GET("/**", ss.serveWeatherMapUI)
+	storage.GET("/assets/*", echo.WrapHandler(http.StripPrefix("/storage/", http.FileServer(getWeatherMapStaticFiles()))))
 
-	return ss
+	// Register API endpoints at /storage/api/v1
+	api := storage.Group("/api/v1")
+	api.POST("/file", ss.serveFileUpload)
+	api.GET("/jobs", ss.serveJobs)
+	api.GET("/jobs/:id", ss.serveJobById)
+	api.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
+	api.GET("/persistent/shard/:shard", ss.servePersistenceKeysByShard) // QueryParam: includeMD5s=[true|false]
+	api.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName)
+	api.GET("/stream/:fileName", ss.streamPersistenceObjectByFileName, contentaccess.ContentAccessMiddleware(ss.Peering))
+	api.GET("/node-statuses", ss.serveNodeStatuses)
+	api.GET("/job-results/:id", ss.serveJobResultsById)
 }
 
 /**
@@ -255,12 +289,12 @@ func (ss *StorageServer) upgradeConnToWebsocket(c echo.Context) error {
 	return nil
 }
 
-func (ss *StorageServer) serveNodesToShards(c echo.Context) error {
-	nodesToShards, err := ss.Monitor.GetNodesToShards()
+func (ss *StorageServer) serveNodeStatuses(c echo.Context) error {
+	nodeStatuses, err := ss.Monitor.GetNodeStatuses()
 	if err != nil {
 		return err
 	}
-	return c.JSON(200, nodesToShards)
+	return c.JSON(200, nodeStatuses)
 }
 
 func (ss *StorageServer) servePersistenceKeysByShard(c echo.Context) error {

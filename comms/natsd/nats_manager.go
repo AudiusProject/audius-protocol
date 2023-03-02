@@ -13,6 +13,7 @@ import (
 	"comms.audius.co/natsd/config"
 	"comms.audius.co/shared/peering"
 	"github.com/nats-io/nats-server/v2/server"
+	"golang.org/x/exp/slog"
 )
 
 type NatsManager struct {
@@ -20,7 +21,7 @@ type NatsManager struct {
 	mu         sync.Mutex
 }
 
-func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorageNode bool, peering *peering.Peering) {
+func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorageNode bool, peering *peering.NatsPeering) {
 
 	manager.mu.Lock()
 	defer manager.mu.Unlock()
@@ -44,7 +45,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 		if info.NatsIsReachable && info.NatsRoute != "" && strings.Contains(info.NatsRoute, config.GetNatsConfig().PeeringConfig.NatsClusterName) {
 			route, err := url.Parse(info.NatsRoute)
 			if err != nil {
-				peering.Logger.Warn("invalid nats route url: " + info.NatsRoute)
+				slog.Warn("invalid nats route url: " + info.NatsRoute)
 			} else {
 				routes = append(routes, route)
 			}
@@ -77,7 +78,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 		AuthTimeout:   60,
 		WriteDeadline: writeDeadline,
 	}
-	peering.Logger.Info("starting NATS in cluster mode... ")
+	slog.Info("starting NATS in cluster mode... ")
 	if peering.NatsClusterUsername == "" {
 		log.Fatal("config.NatsClusterUsername not set")
 	}
@@ -103,7 +104,7 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 	// but will do for now
 	if manager.natsServer != nil {
 		if err := manager.natsServer.ReloadOptions(opts); err != nil {
-			peering.Logger.Warn("error in nats ReloadOptions", "err", err)
+			slog.Warn("error in nats ReloadOptions", "err", err)
 		}
 		return
 	}

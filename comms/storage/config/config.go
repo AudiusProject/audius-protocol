@@ -6,8 +6,11 @@ import (
 )
 
 type StorageConfig struct {
-	PeeringConfig    shared.PeeringConfig `json:"PeeringConfig"`
-	StorageDriverUrl string               `envconfig:"AUDIUS_STORAGE_DRIVER_URL" default:"file:///tmp/audius_storage" json:"StorageDriverUrl"`
+	PeeringConfig           shared.PeeringConfig `json:"peeringConfig"`
+	StorageDriverUrl        string               `envconfig:"AUDIUS_STORAGE_DRIVER_URL" default:"file:///tmp/audius_storage" json:"storageDriverUrl"`
+	ReportOKIntervalSeconds int                  `envconfig:"AUDIUS_REPORT_OK_INTERVAL_SECONDS" default:"120" json:"reportOkIntervalSeconds"`
+	RebalanceIntervalHours  float64              `envconfig:"AUDIUS_REBALANCE_INTERVAL_HOURS" default:"24" json:"rebalanceIntervalHours"`
+	HealthTTLHours          float64              `envconfig:"AUDIUS_HEALTH_TTL_HOURS" default:"24" json:"healthTtlHours"`
 }
 
 var storageConfig *StorageConfig

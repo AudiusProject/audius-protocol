@@ -2,10 +2,9 @@ package contentaccess
 
 import (
 	"bytes"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"net/url"
 	"testing"
 	"time"
@@ -121,7 +120,7 @@ func TestVerifySignature(t *testing.T) {
 		signatureData  SignatureData
 		signature      []byte
 		requestedCid   string
-		expectedResult bool
+		expectedResult error
 	}{
 		"incorrect CID": {
 			[]config.ServiceNode{},
@@ -130,7 +129,7 @@ func TestVerifySignature(t *testing.T) {
 			},
 			[]byte{},
 			"Qmblahblah",
-			false,
+			errors.New("signed cid does not match requested cid"),
 		},
 		"incorrect wallet": {
 			[]config.ServiceNode{
@@ -139,7 +138,7 @@ func TestVerifySignature(t *testing.T) {
 			correctSignatureData,
 			[]byte("0xincorrectsignature"),
 			correctCID,
-			false,
+			errors.New("wallet recovery failed"),
 		},
 		"happy path": {
 			[]config.ServiceNode{
@@ -148,15 +147,15 @@ func TestVerifySignature(t *testing.T) {
 			correctSignatureData,
 			correctSignature,
 			correctCID,
-			true,
+			nil,
 		},
 	}
 
 	for testName, tt := range tests {
-		actualResult, err := VerifySignature(tt.dnodes, tt.signatureData, tt.signature, tt.requestedCid)
+		actualResult := VerifySignature(tt.dnodes, tt.signatureData, tt.signature, tt.requestedCid)
 
-		if actualResult != tt.expectedResult {
-			t.Fatalf("incorrect result for `%s`, want=%t, got=%t, err=%+v", testName, tt.expectedResult, actualResult, err)
+		if actualResult != tt.expectedResult && actualResult.Error() != tt.expectedResult.Error() {
+			t.Fatalf("incorrect result for `%s`, want=%+v, got=%+v", testName, tt.expectedResult, actualResult)
 		}
 	}
 }
@@ -182,13 +181,13 @@ func TestParseQueryParams(t *testing.T) {
 		},
 	}
 
-	privKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	privKey, err := crypto.GenerateKey()
 	if err != nil {
 		t.Fatal("Key generation failed")
 	}
 
 	for _, tt := range tests {
-		signature, err := utils.GenerateSignature(tt.testData, privKey)
+		rawSignature, err := utils.GenerateSignature(tt.testData, privKey)
 		if err != nil {
 			t.Fatalf("Failed to generate signature for %+v", tt.testData)
 		}
@@ -198,6 +197,7 @@ func TestParseQueryParams(t *testing.T) {
 			t.Fatal("marshalling signature data failed")
 		}
 
+		signature := hex.EncodeToString(rawSignature)
 		marshalledPayload, err := json.Marshal(SignedAccessData{
 			Signature: signature,
 			Data:      marshalledData,
@@ -219,7 +219,7 @@ func TestParseQueryParams(t *testing.T) {
 			t.Fatalf("incorrect signature data, want=%+v, got=%+v", tt.testData, actualData)
 		}
 
-		if !bytes.Equal(actualSignature, signature) {
+		if !bytes.Equal(actualSignature, rawSignature) {
 			t.Fatalf("incorrect signature, got (length=%d), want (length=%d)", len(signature), len(actualSignature))
 		}
 

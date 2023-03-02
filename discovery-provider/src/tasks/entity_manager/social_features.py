@@ -79,17 +79,7 @@ def create_social_record(params: ManageEntityParameters):
                 is_delete=False,
             )
         elif record_type == EntityType.SAVE:
-            create_record = Save(
-                blockhash=params.event_blockhash,
-                blocknumber=params.block_number,
-                created_at=params.block_datetime,
-                txhash=params.txhash,
-                user_id=params.user_id,
-                save_item_id=params.entity_id,
-                save_type=params.entity_type.lower(),
-                is_current=True,
-                is_delete=False,
-            )
+            create_record = create_save(params)
         elif record_type == EntityType.REPOST:
             create_record = create_repost(params)
         elif record_type == EntityType.SUBSCRIPTION:
@@ -121,19 +111,44 @@ def create_social_record(params: ManageEntityParameters):
         )
 
 
-def create_repost(params):
-    if params.metadata_cid:
+def get_attribute_from_record_metadata(attribute, metadata):
+    if metadata:
         try:
-            metadata = json.loads(params.metadata_cid)
-            is_repost_of_repost = metadata.get("is_repost_of_repost", False)
+            json_metadata = json.loads(metadata)
+            attribute = json_metadata.get(attribute, None)
+            return attribute
         except Exception as e:
             logger.error(
                 f"entity_manager | social_features.py | Unable to parse repost metadata while indexing: {e}",
                 exc_info=True,
             )
-            is_repost_of_repost = False
-    else:
-        is_repost_of_repost = False
+            return None
+    return None
+
+
+def create_save(params):
+    is_save_of_repost = get_attribute_from_record_metadata(
+        "is_save_of_repost", params.metadata_cid
+    )
+    record = Save(
+        blockhash=params.event_blockhash,
+        blocknumber=params.block_number,
+        created_at=params.block_datetime,
+        txhash=params.txhash,
+        user_id=params.user_id,
+        save_item_id=params.entity_id,
+        save_type=params.entity_type.lower(),
+        is_current=True,
+        is_delete=False,
+        is_save_of_repost=bool(is_save_of_repost),
+    )
+    return record
+
+
+def create_repost(params):
+    is_repost_of_repost = get_attribute_from_record_metadata(
+        "is_repost_of_repost", params.metadata_cid
+    )
     create_record = Repost(
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,
@@ -142,7 +157,7 @@ def create_repost(params):
         user_id=params.user_id,
         repost_item_id=params.entity_id,
         repost_type=params.entity_type.lower(),
-        is_repost_of_repost=is_repost_of_repost,
+        is_repost_of_repost=bool(is_repost_of_repost),
         is_current=True,
         is_delete=False,
     )
@@ -275,6 +290,7 @@ def validate_social_feature(params: ManageEntityParameters):
 
     if should_check_entity_access(params.action, params.entity_type):
         premium_content_access = premium_content_access_checker.check_access(
+            session=params.session,
             user_id=params.user_id,
             premium_content_id=params.entity_id,
             premium_content_type="track",

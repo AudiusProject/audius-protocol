@@ -33,7 +33,7 @@ make
 open http://node1-storage/storage
 
 # you can also curl uploads
-curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/file
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/api/v1/file
 
 # after some uploads, you can see which nodes stored what files 
 docker logs storage1 2>&1 | grep -i storing
@@ -69,7 +69,7 @@ docker logs -f storage1
 
 ### Visibility
 
-For visibility and troubleshooting, a storage weathermap at `/storage/weather` provides visualization and introspection into the location of files within the network. As well as each node's view of the hash ring.
+For visibility and troubleshooting, a storage weathermap at `/storage/weather` provides visualization and introspection into the location of files within the network. As well as each node's view of the set of healthy nodes used in rendezvous hashing.
 
 <sub>The storage weathermap</sub>
 ![storage-weathermap](../docs/weather.png)
@@ -165,7 +165,7 @@ GET  /job-results/:id
 <i>Example: Upload a track</i>
 
 ```shell
-curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/file
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/api/v1/file
 
 [
   {

@@ -11,7 +11,10 @@ import (
 func TestJobManager(t *testing.T) {
 
 	namespace := "testing_storage"
-	nc, err := peering.New(&config.GetStorageConfig().PeeringConfig).DialNats(nil)
+	p, err := peering.New(&config.GetStorageConfig().PeeringConfig)
+	assert.NoError(t, err)
+
+	nc, err := p.DialNats(nil)
 	assert.NoError(t, err)
 
 	jsc, err := nc.JetStream()

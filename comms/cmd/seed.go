@@ -40,8 +40,12 @@ func init() {
 func initClients() (int, error) {
 	storageConfig := config.GetStorageConfig()
 
-	peering := peering.New(&storageConfig.PeeringConfig)
-	_, err := func() (nats.JetStreamContext, error) {
+	peering, err := peering.New(&storageConfig.PeeringConfig)
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = func() (nats.JetStreamContext, error) {
 		err := peering.PollRegisteredNodes()
 		if err != nil {
 			return nil, err

@@ -9,9 +9,9 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"log"
 
 	"github.com/disintegration/imaging"
+	"golang.org/x/exp/slog"
 )
 
 const AUTO = -1
@@ -58,7 +58,7 @@ func Resized(ext string, read io.ReadSeeker, width, height int, mode string) (re
 		}
 		return bytes.NewReader(buf.Bytes()), dstImage.Bounds().Dx(), dstImage.Bounds().Dy()
 	} else {
-		log.Println(err)
+		slog.Error("", err)
 	}
 	return read, 0, 0
 }

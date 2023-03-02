@@ -53,7 +53,7 @@
 
         const loc = window.location;
         const proto = loc.protocol == 'https:' ? 'wss:' : 'ws:'
-        const uri = `${proto}${loc.host}/storage/ws`
+        const uri = `${proto}${loc.host}/storage/uploads/ws`
         const ws = new WebSocket(uri)
 
         ws.onopen = function () {
@@ -93,7 +93,7 @@
       }
 
       pollFallback() {
-        fetch('/storage/jobs')
+        fetch('/storage/api/v1/jobs')
           .then(r => r.json())
           .then(data => {
             this.jobs = data
@@ -118,7 +118,7 @@
         <h2>${this.jobs.length} jobs</h2>
         <form 
             style="flex-grow: 1; background: #efefef; padding: 10px; border-radius: 10px;" 
-            action="/storage/file?redirect=true" 
+            action="/storage/api/v1/file?redirect=true" 
             method="post" 
             enctype="multipart/form-data">
           <input 
@@ -154,7 +154,7 @@
         </tr>
         ${this.jobs.map(job => html`
           <tr style="font-size: 80%">
-            <td><a href="/storage/jobs/${job.id}" target="_blank">${job.jetstream_sequence}</a></td>
+            <td><a href="/storage/api/v1/jobs/${job.id}" target="_blank">${job.jetstream_sequence}</a></td>
             <td>${job.template}</td>
             <td>${job.status}</td>
             <td>
@@ -195,17 +195,17 @@
       if (fallbackDescription === 'input') {
         return html`
     ${result_info.description || fallbackDescription || 'output'}
-    <a href="/storage/tmp-obj/${result_info.bucket}/${result_info.name}" target="_blank">
+    <a href="/storage/api/v1/tmp-obj/${result_info.bucket}/${result_info.name}" target="_blank">
        [temp]
     </a>
     `
       } else {
         return html`
     ${result_info.description || 'output'}
-    <a href="/storage/tmp-obj/${result_info.bucket}/${result_info.name}" target="_blank">
+    <a href="/storage/api/v1/tmp-obj/${result_info.bucket}/${result_info.name}" target="_blank">
        [temp]
     </a>
-    <a href="/storage/persistent/file/${result_info.name}" target="_blank">
+    <a href="/storage/search/${result_info.name}" target="_blank">
       [persistent]
     </a>
   `
@@ -236,8 +236,16 @@
 
     function showDate(ts) {
       if (!ts) return ''
-      const d = new Date(ts)
-      return `${d.toLocaleTimeString()}`
+      const date = new Date(ts)
+      const today = new Date()
+      if (
+        date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear()
+      ) {
+        return date.toLocaleTimeString()
+      }
+      return date.toLocaleString()
     }
 
     function showDuration(sec) {
