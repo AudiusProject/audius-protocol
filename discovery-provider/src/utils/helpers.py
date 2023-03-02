@@ -326,7 +326,7 @@ def create_track_route_id(title, handle):
     Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
     """
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
-    sanitized_title = unicodedata.normalize('NFC', sanitized_title)
+    sanitized_title = unicodedata.normalize("NFC", sanitized_title)
     # Strip out invalid characters
     sanitized_title = re.sub(
         r"!|%|\`|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00",
@@ -363,7 +363,7 @@ def sanitize_slug(title, record_id, collision_id=0):
     (PlaylistName="My Awesome Playlist'~~", collision_id=2) => "my-awesome-playlist-2"
     """
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
-    sanitized_title = unicodedata.normalize('NFC', sanitized_title)
+    sanitized_title = unicodedata.normalize("NFC", sanitized_title)
     # Strip out invalid characters
     sanitized_title = re.sub(
         r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|\’|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"|~",
@@ -562,7 +562,7 @@ def get_final_poa_block(shared_config) -> Optional[int]:
         final_poa_block = int(response_json.get("finalPOABlock"))
 
         redis.set(final_poa_block_redis_key, final_poa_block)
-    except requests.exceptions.ConnectionError:
-        # while identity is not running e.g. test env
+    except:
+        # in case identity is down, default to None
         pass
     return final_poa_block
