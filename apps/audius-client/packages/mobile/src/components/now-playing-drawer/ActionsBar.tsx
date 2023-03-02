@@ -7,6 +7,7 @@ import {
   reachabilitySelectors,
   RepostSource,
   ShareSource,
+  accountSelectors,
   castSelectors,
   castActions,
   tracksSocialActions,
@@ -26,11 +27,14 @@ import IconShare from 'app/assets/images/iconShare.svg'
 import { useAirplay } from 'app/components/audio/Airplay'
 import { IconButton } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
+import { useToast } from 'app/hooks/useToast'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { FavoriteButton } from './FavoriteButton'
 import { RepostButton } from './RepostButton'
+
+const { getAccountUser } = accountSelectors
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
@@ -39,6 +43,11 @@ const { updateMethod } = castActions
 const { getMethod: getCastMethod, getIsCasting } = castSelectors
 
 const { getIsReachable } = reachabilitySelectors
+
+const messages = {
+  repostProhibited: "You can't Repost your own Track!",
+  favoriteProhibited: "You can't Favorite your own Track!"
+}
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   container: {
@@ -70,8 +79,10 @@ type ActionsBarProps = {
 
 export const ActionsBar = ({ track }: ActionsBarProps) => {
   const styles = useStyles()
+  const { toast } = useToast()
   const castMethod = useSelector(getCastMethod)
   const isCasting = useSelector(getIsCasting)
+  const accountUser = useSelector(getAccountUser)
   const { neutral, neutralLight6, primary } = useThemeColors()
   const dispatch = useDispatch()
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
@@ -87,21 +98,25 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     if (track) {
       if (track.has_current_user_saved) {
         dispatch(unsaveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
+      } else if (track.owner_id === accountUser?.user_id) {
+        toast({ content: messages.favoriteProhibited })
       } else {
         dispatch(saveTrack(track.track_id, FavoriteSource.NOW_PLAYING))
       }
     }
-  }, [dispatch, track])
+  }, [accountUser?.user_id, dispatch, toast, track])
 
   const handleRepost = useCallback(() => {
     if (track) {
       if (track.has_current_user_reposted) {
         dispatch(undoRepostTrack(track.track_id, RepostSource.NOW_PLAYING))
+      } else if (track.owner_id === accountUser?.user_id) {
+        toast({ content: messages.repostProhibited })
       } else {
         dispatch(repostTrack(track.track_id, RepostSource.NOW_PLAYING))
       }
     }
-  }, [dispatch, track])
+  }, [accountUser?.user_id, dispatch, toast, track])
 
   const handleShare = useCallback(() => {
     if (track) {
@@ -174,6 +189,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
         isDisabled={!isReachable}
+        isOwner={track?.owner_id === accountUser?.user_id}
       />
     )
   }
@@ -185,6 +201,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
         onPress={handleFavorite}
         style={styles.button}
         wrapperStyle={styles.animatedIcon}
+        isOwner={track?.owner_id === accountUser?.user_id}
       />
     )
   }
