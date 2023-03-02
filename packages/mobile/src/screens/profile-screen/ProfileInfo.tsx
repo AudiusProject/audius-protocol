@@ -12,6 +12,7 @@ import { useRoute } from 'app/hooks/useRoute'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { EditProfileButton } from './EditProfileButton'
+import { MessageButton } from './MessageButton'
 import { SubscribeButton } from './SubscribeButton'
 import { useSelectProfile } from './selectors'
 
@@ -112,6 +113,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
       <EditProfileButton style={styles.followButton} />
     ) : (
       <>
+        <MessageButton profile={profile} />
         {does_current_user_follow ? (
           <SubscribeButton profile={profile} />
         ) : null}

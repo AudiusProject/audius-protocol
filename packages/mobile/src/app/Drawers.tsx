@@ -6,7 +6,9 @@ import { AddToPlaylistDrawer } from 'app/components/add-to-playlist-drawer'
 import { ApiRewardsDrawer } from 'app/components/api-rewards-drawer/ApiRewardsDrawer'
 import { AudioBreakdownDrawer } from 'app/components/audio-breakdown-drawer'
 import { TiersExplainerDrawer } from 'app/components/audio-rewards'
+import { BlockMessagesDrawer } from 'app/components/block-messages'
 import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
+import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
 import { CognitoDrawer } from 'app/components/cognito-drawer/CognitoDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
 import { ConnectWalletsDrawer } from 'app/components/connect-wallets-drawer'
@@ -19,6 +21,7 @@ import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
 import { ForgotPasswordDrawer } from 'app/components/forgot-password-drawer'
 import { LockedContentDrawer } from 'app/components/locked-content-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
+import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
@@ -106,7 +109,10 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   RemoveDownloadedCollection: RemoveDownloadedCollectionDrawer,
   RemoveDownloadedFavorites: RemoveDownloadedFavoritesDrawer,
   UnfavoriteDownloadedCollection: UnfavoriteDownloadedCollectionDrawer,
-  LockedContent: LockedContentDrawer
+  LockedContent: LockedContentDrawer,
+  ChatActions: ChatActionsDrawer,
+  ProfileActions: ProfileActionsDrawer,
+  BlockMessages: BlockMessagesDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

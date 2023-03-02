@@ -17,17 +17,20 @@ import {
   hasTail,
   isEarliestUnread
 } from '@audius/common'
+import { useFocusEffect } from '@react-navigation/native'
 import { View, Text, Image } from 'react-native'
 import type { FlatList as RNFlatList } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import WavingHand from 'app/assets/images/emojis/waving-hand-sign.png'
+import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconSend from 'app/assets/images/iconSend.svg'
 import { TextInput, Screen, FlatList, ScreenContent } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
 import { useRoute } from 'app/hooks/useRoute'
+import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 import { useThemePalette } from 'app/utils/theme'
 
@@ -41,7 +44,7 @@ const {
   getChat
 } = chatSelectors
 
-const { fetchMoreMessages, sendMessage } = chatActions
+const { fetchMoreMessages, sendMessage, markChatAsRead } = chatActions
 const { getUserId } = accountSelectors
 
 const messages = {
@@ -203,6 +206,7 @@ export const ChatScreen = () => {
   )
   const flatListRef = useRef<RNFlatList>(null)
   const unreadCount = chat?.unread_message_count ?? 0
+  const isLoading = status === Status.LOADING && chatMessages?.length === 0
 
   // A ref so that the unread separator doesn't disappear immediately when the chat is marked as read
   // Using a ref instead of state here to prevent unwanted flickers.
@@ -260,6 +264,32 @@ export const ChatScreen = () => {
     }
   }
 
+  // Mark chat as read when user navigates away from screen
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        dispatch(markChatAsRead({ chatId }))
+      }
+    }, [dispatch, chatId])
+  )
+
+  const handleKebabPress = () => {
+    dispatch(
+      setVisibility({
+        drawer: 'ChatActions',
+        visible: true,
+        data: { userId: otherUser.user_id }
+      })
+    )
+  }
+
+  const topBarRight = (
+    <IconKebabHorizontal
+      onPress={handleKebabPress}
+      fill={palette.neutralLight4}
+    />
+  )
+
   return (
     <Screen
       url={url}
@@ -279,11 +309,11 @@ export const ChatScreen = () => {
             )
           : messages.title
       }
-      topbarRight={null}
+      topbarRight={topBarRight}
     >
       <ScreenContent>
         <View style={styles.rootContainer}>
-          {status === Status.SUCCESS ? (
+          {!isLoading ? (
             chatMessages?.length > 0 ? (
               <View style={styles.listContainer}>
                 <FlatList

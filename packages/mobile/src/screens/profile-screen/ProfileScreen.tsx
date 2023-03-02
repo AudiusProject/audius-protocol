@@ -2,22 +2,21 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   Status,
-  ShareSource,
   profilePageSelectors,
   profilePageActions,
   reachabilitySelectors,
-  shareModalUIActions,
   encodeUrlName
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconShare from 'app/assets/images/iconShare.svg'
+import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import { IconButton, Screen, ScreenContent } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useRoute } from 'app/hooks/useRoute'
+import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -25,7 +24,6 @@ import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { useSelectProfileRoot } from './selectors'
-const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { fetchProfile: fetchProfileAction } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
@@ -78,13 +76,13 @@ export const ProfileScreen = () => {
     }
   }, [status])
 
-  const handlePressShare = useCallback(() => {
+  const handlePressTopRight = useCallback(() => {
     if (profile) {
       dispatch(
-        requestOpenShareModal({
-          type: 'profile',
-          profileId: profile.user_id,
-          source: ShareSource.PAGE
+        setVisibility({
+          drawer: 'ProfileActions',
+          visible: true,
+          data: { userId: profile.user_id }
         })
       )
     }
@@ -93,8 +91,8 @@ export const ProfileScreen = () => {
   const topbarRight = (
     <IconButton
       fill={neutralLight4}
-      icon={IconShare}
-      onPress={handlePressShare}
+      icon={IconKebabHorizontal}
+      onPress={handlePressTopRight}
     />
   )
 
