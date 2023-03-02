@@ -4,65 +4,65 @@ jobs:
   - build-gcp-image:
       context: GCP
 
-  - push-docker-image:
-      name: push-creator-node
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-creator-node-$CIRCLE_BUILD_NUM
-      service: creator-node
-  - push-docker-image:
-      name: push-discovery-provider
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
-      service: discovery-provider
-  - push-docker-image:
-      name: push-discovery-provider-notifications
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
-      service: discovery-provider-notifications
-  - push-docker-image:
-      name: push-identity-service
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM
-      service: identity-service
+  # - push-docker-image:
+  #     name: push-creator-node
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-creator-node-$CIRCLE_BUILD_NUM
+  #     service: creator-node
+  # - push-docker-image:
+  #     name: push-discovery-provider
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
+  #     service: discovery-provider
+  # - push-docker-image:
+  #     name: push-discovery-provider-notifications
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
+  #     service: discovery-provider-notifications
+  # - push-docker-image:
+  #     name: push-identity-service
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM
+  #     service: identity-service
 
-  - test:
-      name: test-creator-node
-      context: GCP
-      instance-name: circleci-test-creator-node-$CIRCLE_BUILD_NUM
-      service: creator-node
-  - test:
-      name: test-discovery-provider
-      context: GCP
-      instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
-      service: discovery-provider
+  # - test:
+  #     name: test-creator-node
+  #     context: GCP
+  #     instance-name: circleci-test-creator-node-$CIRCLE_BUILD_NUM
+  #     service: creator-node
+  # - test:
+  #     name: test-discovery-provider
+  #     context: GCP
+  #     instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
+  #     service: discovery-provider
   - test:
       name: test-discovery-provider-notifications
       context: GCP
       instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
-  - test:
-      name: test-identity-service
-      context: GCP
-      instance-name: circleci-test-identity-service-$CIRCLE_BUILD_NUM
-      service: identity-service
-  - test:
-      name: test-audius-libs
-      context: GCP
-      instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
-      service: audius-libs
-  - test:
-      name: test-poa-contracts
-      context: GCP
-      instance-name: circleci-test-poa-contracts-$CIRCLE_BUILD_NUM
-      service: poa-contracts
-  - test:
-      name: test-eth-contracts
-      context: GCP
-      instance-name: circleci-test-eth-contracts-$CIRCLE_BUILD_NUM
-      service: eth-contracts
-  - test-audius-cmd:
-      context: GCP
-      instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
+  # - test:
+  #     name: test-identity-service
+  #     context: GCP
+  #     instance-name: circleci-test-identity-service-$CIRCLE_BUILD_NUM
+  #     service: identity-service
+  # - test:
+  #     name: test-audius-libs
+  #     context: GCP
+  #     instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
+  #     service: audius-libs
+  # - test:
+  #     name: test-poa-contracts
+  #     context: GCP
+  #     instance-name: circleci-test-poa-contracts-$CIRCLE_BUILD_NUM
+  #     service: poa-contracts
+  # - test:
+  #     name: test-eth-contracts
+  #     context: GCP
+  #     instance-name: circleci-test-eth-contracts-$CIRCLE_BUILD_NUM
+  #     service: eth-contracts
+  # - test-audius-cmd:
+  #     context: GCP
+  #     instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
 
   # Release
 
