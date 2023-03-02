@@ -54,12 +54,9 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, peering 
 	allNodes, _ := peering.AllNodes()
 	for _, node := range allNodes {
 		if node.DelegateOwnerWallet == peering.Config.Keys.DelegatePublicKey {
-			thisNodePubKey := node.DelegateOwnerWallet
-			thisNodeType := strings.Split(node.Type.ID, "-")[0][:4]
-			// i.e. cont:0x1c18...DA0F or disc:0x123d...279e
-			serverName = thisNodeType + ":" + thisNodePubKey[:6] + "..." + thisNodePubKey[38:]
-			serviceProviderWalletAddr := node.Owner.ID
-			tags = append(tags, "type:"+node.Type.ID, "delegate:"+thisNodePubKey, "owner:"+serviceProviderWalletAddr)
+			// this node
+			serverName = node.Endpoint
+			tags = append(tags, "type:"+node.Type.ID, "delegate:"+node.DelegateOwnerWallet, "owner:"+node.Owner.ID)
 			break
 		}
 	}
