@@ -18,7 +18,10 @@ type ServiceNode struct {
 	SPID                string `json:"spID"`
 	Endpoint            string `json:"endpoint"`
 	DelegateOwnerWallet string `json:"delegateOwnerWallet"`
-	Type                struct {
+	Owner               struct {
+		ID string `json:"id"`
+	} `json:"owner"`
+	Type struct {
 		ID string `json:"id"`
 	} `json:"type"`
 }
