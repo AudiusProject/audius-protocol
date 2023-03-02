@@ -44,7 +44,7 @@ def extend_notification(notification: Notification):
     formatted["actions"] = list(
         map(extend_notification_action, notification["actions"])
     )
-    if formatted["is_seen"] and formatted["seen_at"]:
+    if formatted["is_seen"] and notification["seen_at"]:
         formatted["seen_at"] = datetime.timestamp(notification["seen_at"])
     else:
         formatted["seen_at"] = None
