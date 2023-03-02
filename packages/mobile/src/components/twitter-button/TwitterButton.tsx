@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { Nullable } from '@audius/common'
 import {
+  makeTwitterShareUrl,
   useTwitterButtonStatus,
   cacheUsersActions,
   cacheUsersSelectors
@@ -15,7 +16,6 @@ import type { make } from 'app/services/analytics'
 import { track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
-import { getTwitterLink } from 'app/utils/twitter'
 const { getUser } = cacheUsersSelectors
 const { fetchUserSocials } = cacheUsersActions
 
@@ -103,7 +103,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
 
     if (twitterData) {
       const { shareText, analytics } = twitterData
-      openLink(getTwitterLink(url, shareText))
+      openLink(makeTwitterShareUrl(url, shareText))
       track(analytics)
       setIdle()
     }
@@ -117,7 +117,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
       iconPosition='left'
       url={
         other.type === 'static'
-          ? getTwitterLink(url, other.shareText)
+          ? makeTwitterShareUrl(url, other.shareText)
           : undefined
       }
       onPress={handlePress}
