@@ -11,7 +11,9 @@ import {
   lineupActions as baseLineupActions,
   queueActions,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  waitForRead,
+  FeatureFlags
 } from '@audius/common'
 import {
   all,
@@ -29,6 +31,7 @@ import {
 
 import { getToQueue } from 'common/store/queue/sagas'
 import { isMobileWeb } from 'common/utils/isMobileWeb'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 
 const { getSource, getUid, getPositions } = queueSelectors
 const { getUid: getCurrentPlayerTrackUid, getPlaying } = playerSelectors
@@ -43,6 +46,18 @@ const flatten = (list) =>
 function* filterDeletes(tracksMetadata, removeDeleted) {
   const tracks = yield select(getTracks)
   const users = yield select(getUsers)
+
+  yield waitForRead()
+  const isPremiumContentEnabled = yield getFeatureEnabled(
+    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  )
+  const isNFTGateEnabled = yield getFeatureEnabled(
+    FeatureFlags.NFT_GATE_ENABLED
+  )
+  const isSpecialAccessGateEnabled = yield getFeatureEnabled(
+    FeatureFlags.SPECIAL_ACCESS_GATE_ENABLED
+  )
+
   return tracksMetadata
     .map((metadata) => {
       // If the incoming metadata is null, return null
@@ -50,6 +65,24 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
       if (metadata === null) {
         return null
       }
+
+      // Treat premium content as deleted when its not enabled
+      // TODO: Remove this when removing the feature flags
+      if (!isPremiumContentEnabled && metadata.is_premium) {
+        return null
+      } else if (
+        !isNFTGateEnabled &&
+        metadata.premium_conditions?.nft_collection
+      ) {
+        return null
+      } else if (
+        !isSpecialAccessGateEnabled &&
+        (metadata.premium_conditions?.follow_user_id ||
+          metadata.premium_conditions?.tip_user_id)
+      ) {
+        return null
+      }
+
       // If we said to remove deleted tracks and it is deleted, remove it
       if (removeDeleted && metadata.is_delete) return null
       // If we said to remove deleted and the track/playlist owner is deactivated, remove it
@@ -169,7 +202,7 @@ function* fetchLineupMetadatasAsync(
           return mapping
         }, {})
 
-      // Filter out deletes
+      // Filter out deletes (and premium content if disabled)
       const responseFilteredDeletes = yield call(
         filterDeletes,
         lineupMetadatasResponse,
