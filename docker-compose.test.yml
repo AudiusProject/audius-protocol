@@ -284,7 +284,7 @@ services:
     build:
       context: discovery-provider/plugins/notifications
       dockerfile: Dockerfile
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run test "$$@")' -
     command: sh -c "npm run test"
     environment:
       AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
