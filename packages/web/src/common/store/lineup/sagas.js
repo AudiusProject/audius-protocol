@@ -13,6 +13,7 @@ import {
   playerSelectors,
   queueSelectors,
   waitForRead,
+  getContext,
   FeatureFlags
 } from '@audius/common'
 import {
@@ -25,7 +26,6 @@ import {
   take,
   takeEvery,
   takeLatest,
-  getContext,
   race
 } from 'redux-saga/effects'
 
