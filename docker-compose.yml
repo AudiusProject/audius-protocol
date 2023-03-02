@@ -330,6 +330,7 @@ services:
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
     volumes:
       - ./discovery-provider/plugins/notifications:/notifications
+      - /notifications/node_modules
     depends_on:
       comms-migrations:
         condition: service_completed_successfully
