@@ -497,9 +497,13 @@ async function relayToNethermindWithTimeout(
   // relayToNethermind with a 10 second timeout
   return Promise.race([
     relayToNethermind(encodedABI, contractAddress, gasLimit),
-    new Promise((resolve, reject) =>
+    new Promise((resolve, reject) => 
       setTimeout(
-        () => reject(new Error('Relay to nethermind timed out')),
+        () => {
+          const timeoutMessage = `Relay to nethermind timed out`
+          logger.info(timeoutMessage)
+          reject(new Error(timeoutMessage))
+        },
         10000 
       )
     )
