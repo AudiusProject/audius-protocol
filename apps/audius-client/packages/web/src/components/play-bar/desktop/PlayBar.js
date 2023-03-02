@@ -447,7 +447,7 @@ class PlayBar extends Component {
               <Tooltip
                 text={repostText}
                 disabled={isFavoriteAndRepostDisabled}
-                mount='parent'
+                mount='body'
                 placement='top'
               >
                 <span>
@@ -468,7 +468,7 @@ class PlayBar extends Component {
                 text={favoriteText}
                 disabled={isFavoriteAndRepostDisabled}
                 placement='top'
-                mount='parent'
+                mount='body'
               >
                 <span>
                   <FavoriteButton
