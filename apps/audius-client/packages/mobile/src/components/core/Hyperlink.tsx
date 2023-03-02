@@ -55,7 +55,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
   const styles = useStyles()
 
   const linkContainerRef = useRef<View>(null)
-  const linkRefs = useRef<Record<number, Text>>({})
+  const [linkRefs, setLinkRefs] = useState<Record<number, Text>>({})
   const [links, setLinks] = useState<Record<number, PositionedLink>>({})
   const [linkLayouts, setLinkLayouts] = useState<
     Record<number, LayoutRectangle>
@@ -63,18 +63,25 @@ export const Hyperlink = (props: HyperlinkProps) => {
   const [linkContainerLayout, setLinkContainerLayout] =
     useState<LayoutRectangle>()
 
-  /**
-   * Need to use `measureInWindow` instead of `onLayout` or `measure` because
-   * android doesn't return the correct layout for nested text elements
-   * */
   useEffect(() => {
-    Object.entries(linkRefs.current).forEach(([index, ref]) => {
-      ref.measureInWindow((x, y, width, height) => {
-        setLinkLayouts((linkLayouts) => ({
-          ...linkLayouts,
-          [index]: { x, y, width, height }
-        }))
-      })
+    let layouts = {}
+    const linkKeys = Object.keys(links)
+
+    // Measure the layout of each link
+    linkKeys.forEach((key) => {
+      const linkRef = linkRefs[key]
+      if (linkRef) {
+        // Need to use `measureInWindow` instead of `onLayout` or `measure` because
+        // android doesn't return the correct layout for nested text elements
+        linkRef.measureInWindow((x, y, width, height) => {
+          layouts = { ...layouts, [key]: { x, y, width, height } }
+
+          // If all the links have been measured, update state
+          if (linkKeys.length === Object.keys(layouts).length) {
+            setLinkLayouts(layouts)
+          }
+        })
+      }
     })
 
     if (linkContainerRef.current) {
@@ -82,7 +89,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
         setLinkContainerLayout({ x, y, width, height })
       )
     }
-  }, [linkRefs, linkContainerRef])
+  }, [links, linkRefs, linkContainerRef])
 
   const handlePress = useOnOpenLink(source)
 
@@ -90,17 +97,22 @@ export const Hyperlink = (props: HyperlinkProps) => {
     (text, match, index) => (
       <View
         onLayout={(e) => {
-          setLinks({
+          setLinks((links) => ({
             ...links,
             [index]: {
               text,
               match
             }
-          })
+          }))
         }}
         ref={(el) => {
-          if (linkRefs.current && el) {
-            linkRefs.current[index] = el
+          if (el) {
+            setLinkRefs((linkRefs) => {
+              if (linkRefs[index]) {
+                return linkRefs
+              }
+              return { ...linkRefs, [index]: el }
+            })
           }
         }}
         style={styles.hiddenLink}
@@ -108,7 +120,7 @@ export const Hyperlink = (props: HyperlinkProps) => {
         <Text style={[styles.linkText, styles.hiddenLinkText]}>{text}</Text>
       </View>
     ),
-    [links, styles]
+    [styles]
   )
 
   return (
