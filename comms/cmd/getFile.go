@@ -11,9 +11,10 @@ import (
 var outputFile string
 
 var getFileCmd = &cobra.Command{
-	Use:   "getFile",
+	Use:   "getFile [filename]",
 	Short: "",
 	Long: ``,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			return

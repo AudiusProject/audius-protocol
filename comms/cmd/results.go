@@ -9,9 +9,10 @@ import (
 )
 
 var resultsCmd = &cobra.Command{
-	Use:   "results",
+	Use:   "results [jobId]",
 	Short: "",
 	Long: ``,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			return
