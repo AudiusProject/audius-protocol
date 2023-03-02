@@ -497,15 +497,12 @@ async function relayToNethermindWithTimeout(
   // relayToNethermind with a 10 second timeout
   return Promise.race([
     relayToNethermind(encodedABI, contractAddress, gasLimit),
-    new Promise((resolve, reject) => 
-      setTimeout(
-        () => {
-          const timeoutMessage = `Relay to nethermind timed out`
-          logger.info(timeoutMessage)
-          reject(new Error(timeoutMessage))
-        },
-        10000 
-      )
+    new Promise((resolve, reject) =>
+      setTimeout(() => {
+        const timeoutMessage = `Relay to nethermind timed out`
+        logger.info(timeoutMessage)
+        reject(new Error(timeoutMessage))
+      }, 10000)
     )
   ])
 }
@@ -513,7 +510,7 @@ async function relayToNethermindWithTimeout(
 let inFlight = 0
 
 async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
-  await new Promise(resolve => setTimeout(resolve, 30000)); // temp wait for 10 seconds
+  await new Promise((resolve) => setTimeout(resolve, 30000)) // temp wait for 10 seconds
 
   console.log(
     `txRelay - relayToNethermind input params: ${encodedABI} ${contractAddress} ${gasLimit}`
