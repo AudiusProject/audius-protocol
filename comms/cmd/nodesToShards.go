@@ -10,7 +10,7 @@ import (
 var nodesToShardsCmd = &cobra.Command{
 	Use:   "nodesToShards",
 	Short: "",
-	Long: ``,
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		clientCount, err := initClients()
 		if err != nil || clientCount < 1 {
@@ -19,7 +19,7 @@ var nodesToShardsCmd = &cobra.Command{
 		}
 
 		client := ClientList[0]
-		nodesToShards, err := client.GetNodesToShards()
+		nodesToShards, err := client.GetNodeStatuses()
 		if err != nil {
 			fmt.Printf("getting nodes to shards error, %+v\n", nodesToShards)
 			return

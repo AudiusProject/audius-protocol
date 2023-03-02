@@ -155,18 +155,23 @@ func (m Monitor) UpdateHealthyNodeSetOnInterval(intervalHours float64) error {
 				}
 				msg.NakWithDelay(15 * time.Second) // Delay 15s to give other nodes time to come online and update their statuses
 			} else if err == nil {
-				// No error - update if it's been more than intervalHours since last update, else retry after delay
+				// No error - update if it's been more than intervalHours since last update
 				currHealthyNodes, err := m.healthyNodesKV.Get(m.namespace)
+				if err != nil {
+					fmt.Printf("error getting healthyNodes KV: %v\n", err)
+					msg.Nak()
+					continue
+				}
 				nextUpdateTime := currHealthyNodes.Created().UTC().Add(time.Duration(float64(time.Hour) * intervalHours))
 				if time.Now().UTC().After(nextUpdateTime) {
 					err = m.updateHealthyNodeSet()
 					if err != nil {
 						fmt.Printf("error updating set of healthy nodes: %v\n", err)
 					}
-					msg.Nak()
-				} else {
-					msg.NakWithDelay(nextUpdateTime.Sub(time.Now().UTC()) + time.Second)
 				}
+
+				// Delay until next update time
+				msg.NakWithDelay(nextUpdateTime.Sub(time.Now().UTC()) + time.Second)
 			} else {
 				// Error reading KV - retry immediately
 				if err != nil {

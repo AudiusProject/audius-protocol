@@ -41,7 +41,7 @@ export default function FilesTableWrapper({
     const jobId = fileName.substring(0, fileName.indexOf('_'))
     const nodeLinks = hostsWithShard.map((host) => {
       return {
-        href: `${host}/storage/persistent/file/${fileKey}`,
+        href: `${host}/storage/api/v1/persistent/file/${fileKey}`,
         display: `${files[fileKey][host] ? '' : '(MISSING) '}${shortenUrl(host)}/...`,
       }
     })
@@ -59,7 +59,7 @@ export default function FilesTableWrapper({
         nodeLinks,
         md5s: nodeToMd5,
         job: {
-          href: `${hostsWithShard[0]}/storage/job-results/${jobId}`,
+          href: `${hostsWithShard[0]}/storage/api/v1/job-results/${jobId}`,
           display: jobId,
         },
         error: 'NOT_REPLICATED',
@@ -77,7 +77,7 @@ export default function FilesTableWrapper({
           nodeLinks,
           md5: nodeToMd5[hostsWithShard[0]],
           job: {
-            href: `${hostsWithShard[0]}/storage/job-results/${jobId}`,
+            href: `${hostsWithShard[0]}/storage/api/v1/job-results/${jobId}`,
             display: jobId,
           },
           highlight,
@@ -88,7 +88,7 @@ export default function FilesTableWrapper({
           nodeLinks,
           md5s: nodeToMd5,
           job: {
-            href: `${hostsWithShard[0]}/storage/job-results/${jobId}`,
+            href: `${hostsWithShard[0]}/storage/api/v1/job-results/${jobId}`,
             display: jobId,
           },
           error: 'MD5_MISMATCH',

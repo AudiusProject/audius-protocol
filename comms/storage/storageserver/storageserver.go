@@ -143,25 +143,29 @@ func (ss *StorageServer) createWebServer() {
 	storage.Use(middleware.Logger())
 	storage.Use(middleware.Recover())
 
-	storage.GET("", ss.serveStatusUI)
-	storage.GET("/", ss.serveStatusUI)
-	storage.GET("/static/*", ss.serveStatusStaticAssets)
-	storage.POST("/file", ss.serveFileUpload)
-	storage.GET("/jobs", ss.serveJobs)
-	storage.GET("/jobs/:id", ss.serveJobById)
-	storage.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
-	storage.GET("/persistent/shard/:shard", ss.servePersistenceKeysByShard) // QueryParam: includeMD5s=[true|false]
-	storage.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName)
-	storage.GET("/stream/:fileName", ss.streamPersistenceObjectByFileName, contentaccess.ContentAccessMiddleware(ss.Peering))
-	storage.GET("/ws", ss.upgradeConnToWebsocket)
-	storage.GET("/nodes-statuses", ss.serveNodeStatuses)
-	storage.GET("/job-results/:id", ss.serveJobResultsById)
+	// Register endpoints for uploads status table at /storage/uploads
+	storage.GET("/uploads", ss.serveStatusUI)
+	storage.GET("/uploads/", ss.serveStatusUI)
+	storage.GET("/uploads/static/*", ss.serveStatusStaticAssets)
+	storage.GET("/uploads/ws", ss.upgradeConnToWebsocket)
 
-	// Register endpoints at /storage/weather for React weather map
-	weatherMap := storage.Group("/weather")
-	weatherMap.GET("", ss.serveWeatherMapUI)
-	weatherMap.GET("/**", ss.serveWeatherMapUI)
-	weatherMap.GET("/assets/*", echo.WrapHandler(http.StripPrefix("/storage/weather/", http.FileServer(getWeatherMapStaticFiles()))))
+	// Register endpoint for React weather map at /storage root
+	storage.GET("", ss.serveWeatherMapUI)
+	storage.GET("/", ss.serveWeatherMapUI)
+	storage.GET("/**", ss.serveWeatherMapUI)
+	storage.GET("/assets/*", echo.WrapHandler(http.StripPrefix("/storage/", http.FileServer(getWeatherMapStaticFiles()))))
+
+	// Register API endpoints at /storage/api/v1
+	api := storage.Group("/api/v1")
+	api.POST("/file", ss.serveFileUpload)
+	api.GET("/jobs", ss.serveJobs)
+	api.GET("/jobs/:id", ss.serveJobById)
+	api.GET("/tmp-obj/:bucket/:key", ss.streamTempObjectByBucketAndKey)
+	api.GET("/persistent/shard/:shard", ss.servePersistenceKeysByShard) // QueryParam: includeMD5s=[true|false]
+	api.GET("/persistent/file/:fileName", ss.streamPersistenceObjectByFileName)
+	api.GET("/stream/:fileName", ss.streamPersistenceObjectByFileName, contentaccess.ContentAccessMiddleware(ss.Peering))
+	api.GET("/node-statuses", ss.serveNodeStatuses)
+	api.GET("/job-results/:id", ss.serveJobResultsById)
 }
 
 /**

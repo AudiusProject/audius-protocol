@@ -9,7 +9,7 @@ export type NodeStatus = {
 export const useNodeStatuses = () =>
   useQuery<{ [pubKey: string]: NodeStatus }, any>('nodeStatuses', () => {
     return axios
-      .get(`${window.location.origin}/storage/nodes-statuses`)
+      .get(`${window.location.origin}/storage/api/v1/node-statuses`)
       .then((res) => res.data)
   })
 
@@ -20,7 +20,7 @@ export type KeyAndMd5 = {
 export type EndpointToMd5 = { [endpoint: string]: string }
 export const fetchFilesByShardAndHost = async (shard: string, host: string) => {
   return axios
-    .get(`${host}/storage/persistent/shard/${shard}?includeMD5s=true`)
+    .get(`${host}/storage/api/v1/persistent/shard/${shard}?includeMD5s=true`)
     .then((res) => {
       return { storageHost: host, files: res.data as KeyAndMd5[] }
     })

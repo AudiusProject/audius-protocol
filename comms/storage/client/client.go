@@ -34,7 +34,7 @@ func NewStorageClient(endpoint string) StorageClient {
 }
 
 func (sc *StorageClient) Upload(data []byte, jobType transcode.JobTemplate, contentType string, filename string) error {
-	route := "/storage/file"
+	route := "/storage/api/v1/file"
 
 	values := map[string]io.Reader{
 		"files":    bytes.NewReader(data),
@@ -134,14 +134,8 @@ func (sc *StorageClient) SeedAudio(audioCount int) {
 	wg.Wait()
 }
 
-func (sc *StorageClient) HealthCheck() (*http.Response, error) {
-	route := "/storage/health"
-
-	return sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
-}
-
 func (sc *StorageClient) GetJobs() ([]*transcode.Job, error) {
-	route := "/storage/jobs"
+	route := "/storage/api/v1/jobs"
 
 	resp, err := sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
 	if err != nil {
@@ -164,7 +158,7 @@ func (sc *StorageClient) GetJobs() ([]*transcode.Job, error) {
 }
 
 func (sc *StorageClient) GetJob(jobId string) (*transcode.Job, error) {
-	route := "/storage/jobs"
+	route := "/storage/api/v1/jobs"
 
 	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, jobId))
 	if err != nil {
@@ -186,8 +180,8 @@ func (sc *StorageClient) GetJob(jobId string) (*transcode.Job, error) {
 	return &job, nil
 }
 
-func (sc *StorageClient) GetNodesToShards() (*map[string]monitor.HostAndShards, error) {
-	route := "/storage/nodes-to-shards"
+func (sc *StorageClient) GetNodeStatuses() (*map[string]monitor.NodeStatus, error) {
+	route := "/storage/api/v1/node-statuses"
 
 	resp, err := sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
 	if err != nil {
@@ -200,17 +194,17 @@ func (sc *StorageClient) GetNodesToShards() (*map[string]monitor.HostAndShards, 
 		return nil, err
 	}
 
-	var nodesToShards map[string]monitor.HostAndShards
-	err = json.Unmarshal(body, &nodesToShards)
+	var nodeStatuses map[string]monitor.NodeStatus
+	err = json.Unmarshal(body, &nodeStatuses)
 	if err != nil {
 		return nil, err
 	}
 
-	return &nodesToShards, nil
+	return &nodeStatuses, nil
 }
 
 func (sc *StorageClient) GetStorageNodesFor(jobId string) ([]string, error) {
-	nodesToShards, err := sc.GetNodesToShards()
+	nodesToShards, err := sc.GetNodeStatuses()
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +222,7 @@ func (sc *StorageClient) GetStorageNodesFor(jobId string) ([]string, error) {
 }
 
 func (sc *StorageClient) GetKeysByShard(shard string) (*[]string, error) {
-	route := "/storage/persistence/shard"
+	route := "/storage/api/v1/persistence/shard"
 
 	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, shard))
 	if err != nil {
@@ -251,7 +245,7 @@ func (sc *StorageClient) GetKeysByShard(shard string) (*[]string, error) {
 }
 
 func (sc *StorageClient) GetObjFromTmpStore(bucket string, key string) (*nats.ObjectResult, error) {
-	route := "/storage/tmp-obj"
+	route := "/storage/api/v1/tmp-obj"
 
 	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s/%s", sc.Endpoint, route, bucket, key))
 	if err != nil {
@@ -274,7 +268,7 @@ func (sc *StorageClient) GetObjFromTmpStore(bucket string, key string) (*nats.Ob
 }
 
 func (sc *StorageClient) GetFile(filename string) ([]byte, error) {
-	route := "/storage/persistent/file"
+	route := "/storage/api/v1/persistent/file"
 
 	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, filename))
 	if err != nil {
@@ -291,7 +285,7 @@ func (sc *StorageClient) GetFile(filename string) ([]byte, error) {
 }
 
 func (sc *StorageClient) GetJobResultsFor(jobId string) ([]*persistence.ShardAndFile, error) {
-	route := "/storage/job-results"
+	route := "/storage/api/v1/job-results"
 
 	resp, err := sc.Client.Get(fmt.Sprintf("%s%s/%s", sc.Endpoint, route, jobId))
 	if err != nil {

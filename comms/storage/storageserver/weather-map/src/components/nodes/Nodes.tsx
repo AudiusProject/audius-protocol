@@ -36,7 +36,7 @@ export default function Nodes({
                     </a>
                     ,{' '}
                     <a
-                      href={`${nodeStatuses[pubKey].host}/storage`}
+                      href={`${nodeStatuses[pubKey].host}/storage/uploads`}
                       target="_blank"
                       className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
                       rel="noreferrer"
