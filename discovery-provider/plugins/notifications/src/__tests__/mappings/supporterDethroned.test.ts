@@ -1,6 +1,9 @@
 import { expect, jest, test } from '@jest/globals'
+import { renderEmail } from '../../email/notifications/renderEmail'
 import { Processor } from '../../main'
+import { SupporterDethroned } from '../../processNotifications/mappers/supporterDethroned'
 import * as sns from '../../sns'
+import { AppEmailNotification, SupporterDethronedNotification } from '../../types/notifications'
 
 import {
   createUsers,

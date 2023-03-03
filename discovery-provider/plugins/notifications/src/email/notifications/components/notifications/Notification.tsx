@@ -175,7 +175,7 @@ const notificationMap = {
       )
     } else {
       return (
-        <BodyText className={'notificationText'} text={`You have reached over ${notification.value} Followers `} />
+        <BodyText className={'notificationText'} text={`You have reached over ${notification.value} followers `} />
       )
     }
   },
@@ -191,13 +191,13 @@ const notificationMap = {
       </span>
     )
   },
-  ['userSubscription'](notification) {
+  ['create'](notification) {
     const [user] = notification.users
-    if (notification.entity.type === 'Track' && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+    if (notification.entity.type === EntityType.Track && !isNaN(notification.entity.count) && notification.entity.count > 1) {
       return (
         <span className={'notificationText'}>
           <HighlightText text={user.name} />
-          <BodyText text={` released ${notification.entity.count} new ${notification.entity.type}`} />
+          <BodyText text={` released ${notification.entity.count} new ${notification.entity.type}s`} />
         </span>
       )
     }
@@ -254,7 +254,7 @@ const notificationMap = {
       </span>
     )
   },
-  ['addTrackToPlaylist'](notification) {
+  ['track_added_to_playlist'](notification) {
     return (
       <span className={'notificationText'}>
         <HighlightText text={notification.playlistOwner.name} />
