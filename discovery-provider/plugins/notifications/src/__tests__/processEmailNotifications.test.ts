@@ -48,7 +48,7 @@ describe('Email Notifications', () => {
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
     const { email: user2Email } = await setUserEmailAndSettings(identityDB, userFrequency, user2)
 
-    // User 1 sent message config.dmNotificationDelay mins ago
+    // User 1 sent message config.dmNotificationDelay ms ago
     const message = "hi from user 1"
     const messageId = randId().toString()
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
@@ -221,7 +221,7 @@ describe('Email Notifications', () => {
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
     await setUserEmailAndSettings(identityDB, frequency, user2)
 
-    // User 1 sent message config.dmNotificationDelay mins ago
+    // User 1 sent message config.dmNotificationDelay ms ago
     const message = "hi from user 1"
     const messageId = randId().toString()
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
@@ -241,7 +241,7 @@ describe('Email Notifications', () => {
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
     const { email: user2Email } = await setUserEmailAndSettings(identityDB, frequency, user2)
 
-    // User 1 sent message to user 2 config.dmNotificationDelay mins ago
+    // User 1 sent message to user 2 config.dmNotificationDelay ms ago
     const message = "hi from user 1"
     const messageId = randId().toString()
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
@@ -350,7 +350,7 @@ describe('Email Notifications', () => {
       },
     ])
 
-    // User 1 sent message config.dmNotificationDelay mins ago
+    // User 1 sent message config.dmNotificationDelay ms ago
     const message = "hi from user 1"
     const messageId = randId().toString()
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
