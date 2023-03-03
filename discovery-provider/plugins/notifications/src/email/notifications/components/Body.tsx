@@ -60,7 +60,7 @@ const snippetMap = {
     return `${user.name} saved your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
   ['announcement'](notification) {
-    return notification.text
+    return notification.title
   },
   ['milestone'](notification) {
     if (notification.entity) {
@@ -75,7 +75,7 @@ const snippetMap = {
     const suffix = getNumberSuffix(rank)
     return `Your Track ${notification.entity.title} is ${notification.rank}${suffix} on Trending Right Now!`
   },
-  ['createTrack'](notification) {
+  ['create'](notification) {
     const [user] = notification.users
     if (notification.entity.type === 'track' && !isNaN(notification.entity.count) && notification.entity.count > 1) {
       return `${user.name} released ${notification.entity.count} new ${notification.entity.type}`
@@ -108,6 +108,9 @@ const snippetMap = {
   },
   ['supporting_rank_up'](notification) {
     return `You're now ${notification.receivingUser.name}'s #${notification.rank} top supporter`
+  },
+  ['track_added_to_playlist'](notification) {
+    return `${notification.playlistOwner.name} added your track ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
   },
   [DMEntityType.Message](notification) {
     return `${notification.sendingUser.name} sent you ${notification.multiple ? 'new messages' : 'a new message'}`

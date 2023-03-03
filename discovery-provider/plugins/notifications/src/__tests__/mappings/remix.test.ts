@@ -13,13 +13,20 @@ import {
   replaceDBName,
   createTracks,
   createBlocks,
+  setUserEmailAndSettings,
 } from '../../utils/populateDB'
+import { processEmailNotifications } from '../../email/notifications/index'
+import * as sendEmail from '../../email/notifications/sendEmail'
+import { AppEmailNotification, RemixNotification } from '../../types/notifications'
+import { renderEmail } from '../../email/notifications/renderEmail'
 
 describe('Remix Notification', () => {
   let processor: Processor
 
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
+  const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
+    .mockImplementation(() => Promise.resolve(true))
 
   beforeEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
@@ -79,6 +86,46 @@ describe('Remix Notification', () => {
       body: "New remix of your track track_title_10: user_2 uploaded track_title_20",
       data: {}
     })
+  })
+
+
+  test("Render a single Remix email", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+
+    await createBlocks(processor.discoveryDB, [{ number: 1 }])
+
+    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await createTracks(processor.discoveryDB, [{
+      track_id: 20,
+      owner_id: 2,
+      blocknumber: 1,
+      remix_of: { 'tracks': [{ 'parent_track_id': 10 }] }
+    }])
+
+    const data: RemixNotification = {
+      track_id: 20,
+      parent_track_id: 10
+    }
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'remix',
+        timestamp: new Date(),
+        specifier: '2',
+        group_id: 'remix:track:20:parent_track:10:blocknumber:1',
+        data,
+        user_ids: [1],
+        receiver_user_id: 1
+      }
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+    expect(notifHtml).toMatchSnapshot()
   })
 
 })

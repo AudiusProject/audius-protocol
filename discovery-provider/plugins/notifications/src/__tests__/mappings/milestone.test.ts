@@ -17,6 +17,8 @@ import {
 } from '../../utils/populateDB'
 
 import { reposttype, savetype } from '../../types/dn'
+import { AppEmailNotification, FollowerMilestoneNotification, MilestoneType, PlaylistMilestoneNotification, TrackMilestoneNotification } from '../../types/notifications'
+import { renderEmail } from '../../email/notifications/renderEmail'
 
 describe('Milestone Notification', () => {
   let processor: Processor
@@ -73,6 +75,40 @@ describe('Milestone Notification', () => {
     })
   })
 
+  test("Process email notification for follow count milestone", async () => {
+    await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
+    await insertFollows(processor.discoveryDB, new Array(10).fill(null).map((_, ind) => ({ followee_user_id: 1, follower_user_id: ind + 2 })))
+
+    const data: FollowerMilestoneNotification = {
+      type: MilestoneType.FOLLOWER_COUNT,
+      user_id: 1,
+      threshold: 10
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'milestone_follower_count',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'milestone:FOLLOWER_COUNT:id:1:threshold:10',
+        data,
+        user_ids: [1],
+        receiver_user_id: 1
+      },
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+
+    expect(notifHtml).toMatchSnapshot()
+  })
+
+
   test("Process push notification for track repost milestone", async () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
@@ -100,6 +136,42 @@ describe('Milestone Notification', () => {
       data: {}
     })
   })
+
+  test("Process email notification for track repost milestone", async () => {
+    await createUsers(processor.discoveryDB, new Array(63).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
+    await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
+    await createReposts(processor.discoveryDB,
+      new Array(60).fill(null).map((_, ind) => ({ repost_type: reposttype.track, repost_item_id: 2, user_id: ind + 2 })))
+
+    const data: TrackMilestoneNotification = {
+      type: MilestoneType.TRACK_REPOST_COUNT,
+      track_id: 2,
+      threshold: 50
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'milestone',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'milestone:TRACK_REPOST_COUNT:id:2:threshold:10',
+        data,
+        user_ids: [1],
+        receiver_user_id: 1
+      },
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+
+    expect(notifHtml).toMatchSnapshot()
+  })
+
 
   test("Process push notification for playlist repost milestone", async () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
@@ -129,6 +201,43 @@ describe('Milestone Notification', () => {
     })
   })
 
+
+  test("Process email notification for playlist repost milestone", async () => {
+    await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
+    await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
+    await createReposts(processor.discoveryDB,
+      new Array(10).fill(null).map((_, ind) => ({ repost_type: reposttype.playlist, repost_item_id: 32, user_id: ind + 2 })))
+
+    const data: PlaylistMilestoneNotification = {
+      type: MilestoneType.PLAYLIST_REPOST_COUNT,
+      playlist_id: 32,
+      threshold: 10
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'milestone',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'milestone:PLAYLIST_REPOST_COUNT:id:32:threshold:10',
+        data,
+        user_ids: [1],
+        receiver_user_id: 1
+      },
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+
+    expect(notifHtml).toMatchSnapshot()
+  })
+
+
   test("Process push notification for track save milestone", async () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
@@ -157,6 +266,41 @@ describe('Milestone Notification', () => {
     })
   })
 
+  test("Process email notification for track save milestone", async () => {
+    await createUsers(processor.discoveryDB, new Array(53).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
+    await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
+    await createSaves(processor.discoveryDB,
+      new Array(50).fill(null).map((_, ind) => ({ save_type: savetype.track, save_item_id: 2, user_id: ind + 2 })))
+
+    const data: TrackMilestoneNotification = {
+      type: MilestoneType.TRACK_SAVE_COUNT,
+      track_id: 2,
+      threshold: 50
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'milestone',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'milestone:TRACK_SAVE_COUNT:id:2:threshold:10',
+        data,
+        user_ids: [1],
+        receiver_user_id: 1
+      },
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+
+    expect(notifHtml).toMatchSnapshot()
+  })
+
   test("Process push notification for playlist save milestone", async () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
@@ -183,6 +327,41 @@ describe('Milestone Notification', () => {
       body: "Your playlist playlist_name_32 has reached over 10 favorites",
       data: {}
     })
+  })
+
+  test("Process email notification for playlist save milestone", async () => {
+    await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
+    await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
+    await createSaves(processor.discoveryDB,
+      new Array(10).fill(null).map((_, ind) => ({ save_type: savetype.playlist, save_item_id: 32, user_id: ind + 2 })))
+
+    const data: PlaylistMilestoneNotification = {
+      type: MilestoneType.PLAYLIST_SAVE_COUNT,
+      playlist_id: 32,
+      threshold: 10
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'milestone',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'milestone:PLAYLIST_SAVE_COUNT:id:32:threshold:10',
+        data,
+        user_ids: [1],
+        receiver_user_id: 1
+      },
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+
+    expect(notifHtml).toMatchSnapshot()
   })
 
 })

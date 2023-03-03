@@ -286,7 +286,7 @@ export abstract class BaseNotification<Type> {
     return {}
   }
 
-  formatEmailProps(resources: Resources) {
+  formatEmailProps(resources: Resources, additionalNotifications?: BaseNotification<Type>[]) {
     return {}
   }
 

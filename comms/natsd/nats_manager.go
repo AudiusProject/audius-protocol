@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -21,7 +20,7 @@ type NatsManager struct {
 	mu         sync.Mutex
 }
 
-func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorageNode bool, peering *peering.NatsPeering) {
+func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, peering *peering.NatsPeering) {
 
 	manager.mu.Lock()
 	defer manager.mu.Unlock()
@@ -29,12 +28,12 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 	routes := []*url.URL{}
 	nkeys := []*server.NkeyUser{}
 	tags := []string{}
+	serverName := ""
 
 	for _, info := range peerMap {
 		if info == nil || info.Nkey == "" {
 			continue
 		}
-
 		user := &server.NkeyUser{
 			Nkey: info.Nkey,
 		}
@@ -52,16 +51,17 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 		}
 	}
 
-	serverName := peering.Config.Keys.DelegatePublicKey
-	if isStorageNode {
-		tags = append(tags, "storage")
-		serverName = "storage_" + peering.Config.Keys.DelegatePublicKey
-	} else {
-		tags = append(tags, "discovery")
+	allNodes, _ := peering.AllNodes()
+	for _, node := range allNodes {
+		if strings.EqualFold(node.DelegateOwnerWallet, peering.Config.Keys.DelegatePublicKey) {
+			// this node
+			serverName = node.Endpoint
+			tags = append(tags, "type:"+node.Type.ID, "delegate:"+node.DelegateOwnerWallet, "owner:"+node.Owner.ID)
+			break
+		}
 	}
 
 	writeDeadline, _ := time.ParseDuration("60s")
-	enableJetstream := os.Getenv("NATS_ENABLE_JETSTREAM") == "true"
 
 	opts := &server.Options{
 		ServerName: serverName,
@@ -69,8 +69,8 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, isStorag
 		Logtime:    true,
 		// Debug:      true,
 
-		JetStream: enableJetstream,
-		StoreDir:  filepath.Join(config.GetNatsConfig().NatsStoreDir, config.GetNatsConfig().PeeringConfig.NatsClusterName),
+		JetStream: config.GetNatsConfig().EnableJetstream,
+		StoreDir:  filepath.Join(config.GetNatsConfig().StoreDir, config.GetNatsConfig().PeeringConfig.NatsClusterName),
 
 		Tags: tags,
 

@@ -1,7 +1,7 @@
 up:: down etchosts migrate
 	docker compose up -d --build
 
-localhosts="127.0.0.1       node1-storage node2-storage node3-storage node4-storage node1-discovery ingress"
+localhosts="127.0.0.1       node1-storage node2-storage node3-storage node4-storage node1-discovery node2-discovery node3-discovery ingress"
 etchosts::
 	@	if ! grep -q $(localhosts) /etc/hosts; \
 		then echo Adding development hosts to /etc/hosts; \

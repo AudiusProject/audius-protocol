@@ -4,13 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"comms.audius.co/storage/telemetry"
 	"github.com/spf13/cobra"
 )
 
 var jobCmd = &cobra.Command{
-	Use:   "job",
+	Use:   "job [jobId]",
 	Short: "",
 	Long:  ``,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) < 1 {
 			return
@@ -18,6 +20,7 @@ var jobCmd = &cobra.Command{
 
 		jobId := args[0]
 
+		telemetry.DiscardLogs()
 		clientCount, err := initClients()
 		if err != nil || clientCount < 1 {
 			fmt.Println("Couldn't find any clients")

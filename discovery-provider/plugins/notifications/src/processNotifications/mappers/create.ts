@@ -104,6 +104,12 @@ export class Create extends BaseNotification<CreateNotificationRow> {
   getResourcesForEmail(): ResourceIds {
     let tracks = new Set<number>()
     let playlists = new Set<number>()
+    if (this.trackId) {
+      tracks.add(this.trackId)
+    }
+    if (this.playlistId) {
+      playlists.add(this.playlistId)
+    }
     return {
       users: new Set(this.receiverUserIds),
       tracks,
@@ -111,8 +117,30 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     }
   }
 
-  formatEmailProps(resources: Resources) {
-    return {}
+  formatEmailProps(resources: Resources, additionalGroupNotifications?: Create[]) {
+    const count = (additionalGroupNotifications ?? []).length + 1
+    let entity = {}
+    let user
+    if (this.trackId) {
+      const track = resources.tracks[this.trackId]
+      entity = {
+        type: EntityType.Track,
+        name: track.title,
+        count
+      }
+      user = { name: track.ownerName }
+    } else {
+      const playlist = resources.playlists[this.playlistId]
+      entity = {
+        type: this.isAlbum ? EntityType.Album : EntityType.Playlist,
+        name: playlist.playlist_name
+      }
+      user = { name: playlist.ownerName }
+    }
+    return {
+      type: this.notification.type,
+      entity: entity,
+      users: [user]
+    }
   }
-
 }

@@ -92,9 +92,14 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
 
   formatEmailProps(resources: Resources) {
     const receiverUserId = resources.users[this.receiverUserId]
+    const playlist = resources.playlists[this.playlistId]
+    const track = resources.tracks[this.trackId]
     return {
       type: this.notification.type,
       receiverUserId: { name: receiverUserId.name },
+      playlistOwner: { name: playlist.ownerName },
+      playlist: { playlist_name: playlist.playlist_name },
+      track: { title: track.title }
     }
   }
 

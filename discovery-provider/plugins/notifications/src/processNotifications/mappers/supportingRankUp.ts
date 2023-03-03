@@ -81,10 +81,10 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
   }
 
   formatEmailProps(resources: Resources) {
-    const sendingUser = resources.users[this.senderUserId]
+    const receivingUser = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      sendingUser: { name: sendingUser.name },
+      receivingUser: { name: receivingUser.name },
       rank: this.rank
     }
   }

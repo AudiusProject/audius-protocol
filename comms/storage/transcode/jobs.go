@@ -163,6 +163,7 @@ func (jobman *JobsManager) createTemporaryObjectStores() {
 					Replicas: jobman.replicaCount,
 					Placement: &nats.Placement{
 						Cluster: config.GetStorageConfig().PeeringConfig.NatsClusterName,
+						Tags:    config.GetStorageConfig().ObjStorePlacementTags,
 					},
 				}, jobman.jsc)
 			},
@@ -534,7 +535,7 @@ func (jobman *JobsManager) startWorker(workerNumber int) {
 		var job *Job
 		err = json.Unmarshal(msg.Data, &job)
 		if err != nil {
-			slog.Error("invalid job json: " + string(msg.Data), err)
+			slog.Error("invalid job json: "+string(msg.Data), err)
 			msg.Ack()
 			continue
 		}
