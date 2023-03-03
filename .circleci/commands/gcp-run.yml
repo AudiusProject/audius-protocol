@@ -46,26 +46,25 @@ steps:
         # Replace bash with executable that forwards commands to the instance
         mv /bin/bash /tmp/bash.real
         echo >/bin/bash '#!/tmp/bash.real
-        gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="source /tmp/gcp-pass-env.sh; bash $(printf "%q " "$@")"
-        if [[ "$?" != "0" ]]; then
-          /tmp/cleanup failure
-          exit 1
-        fi'
+        gcloud compute ssh --quiet "$INSTANCE_USER@<< parameters.instance-name >>" --command="source /tmp/gcp-pass-env.sh; bash $(printf "%q " "$@")"'
         chmod +x /bin/bash
-
-        echo >/tmp/cleanup '#!/tmp/bash.real
-        if [[ "$1" == "success" ]]; then
+  - steps: << parameters.steps >>
+  - run:
+      name: Record Success
+      shell: /tmp/bash.real
+      command: touch /tmp/success
+  - run:
+      name: Delete GCP resoruces
+      when: always
+      shell: /tmp/bash.real
+      command: |
+        if [[ -f /tmp/success ]]; then
           gcloud compute instances delete --quiet "<< parameters.instance-name >>"
         else
           gcloud compute instances delete --quiet --delete-disks=all "<< parameters.instance-name >>"
         fi
 
         gcloud compute firewall-rules delete --quiet "<< parameters.instance-name >>"
+
         mv /bin/bash /tmp/bash.deleted
-        mv /tmp/bash.real /bin/bash'
-        chmod +x /tmp/cleanup
-  - steps: << parameters.steps >>
-  - run:
-      name: Delete GCP instance
-      shell: /tmp/bash.real
-      command: /tmp/cleanup success
+        mv /tmp/bash.real /bin/bash
