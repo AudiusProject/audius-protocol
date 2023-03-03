@@ -80,7 +80,7 @@ describe('Push Notifications', () => {
 
     // Start processor
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // User 1 sent message config.dmNotificationDelay ms ago
@@ -129,7 +129,7 @@ describe('Push Notifications', () => {
 
     // Start processor
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // User 1 sent message config.dmNotificationDelay ms ago
@@ -169,7 +169,7 @@ describe('Push Notifications', () => {
 
     // Start processor
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // User 1 sends message now
@@ -197,7 +197,7 @@ describe('Push Notifications', () => {
 
     // Start processor
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // User 2 reacts to user 1's message now
@@ -213,7 +213,7 @@ describe('Push Notifications', () => {
 
     // Start processor
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // User 1 sent message config.dmNotificationDelay ms ago
