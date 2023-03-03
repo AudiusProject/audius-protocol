@@ -3,9 +3,10 @@ import {
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as actions,
   savedPageSelectors,
-  waitForValue
+  waitForValue,
+  getContext
 } from '@audius/common'
-import { takeLatest, call, put, select, getContext } from 'redux-saga/effects'
+import { takeLatest, call, put, select, fork } from 'redux-saga/effects'
 
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -13,6 +14,18 @@ import { waitForRead } from 'utils/sagaHelpers'
 import tracksSagas from './lineups/sagas'
 const { getSaves } = savedPageSelectors
 const { getAccountUser } = accountSelectors
+
+function* fetchLineupMetadatas(offset, limit) {
+  const isNativeMobile = yield getContext('isNativeMobile')
+
+  // Mobile currently uses infinite scroll instead of a virtualized list
+  // so we need to apply the offset & limit
+  if (isNativeMobile) {
+    yield put(tracksActions.fetchLineupMetadatas(offset, limit))
+  } else {
+    yield put(tracksActions.fetchLineupMetadatas())
+  }
+}
 
 function* watchFetchSaves() {
   let currentQuery = ''
@@ -38,7 +51,7 @@ function* watchFetchSaves() {
 
     // Don't refetch saves in the same session
     if (saves && saves.length && isSameParams) {
-      yield put(tracksActions.fetchLineupMetadatas(offset, limit))
+      yield fork(fetchLineupMetadatas, offset, limit)
     } else {
       try {
         currentQuery = query
@@ -74,7 +87,7 @@ function* watchFetchSaves() {
         if (limit > 0 && saves.length < limit) {
           yield put(actions.endFetching(offset + saves.length))
         }
-        yield put(tracksActions.fetchLineupMetadatas(offset, limit))
+        yield fork(fetchLineupMetadatas, offset, limit)
       } catch (e) {
         yield put(actions.fetchSavesFailed())
       }
@@ -117,7 +130,7 @@ function* watchFetchMoreSaves() {
       if (limit > 0 && saves.length < limit) {
         yield put(actions.endFetching(offset + saves.length))
       }
-      yield put(tracksActions.fetchLineupMetadatas(offset, limit))
+      yield fork(fetchLineupMetadatas, offset, limit)
     } catch (e) {
       yield put(actions.fetchMoreSavesFailed())
     }

@@ -9,7 +9,8 @@ import {
   queueSelectors,
   tracksSocialActions,
   playerSelectors,
-  QueueSource
+  QueueSource,
+  getContext
 } from '@audius/common'
 import moment from 'moment'
 import { call, select, put, takeEvery } from 'redux-saga/effects'
@@ -29,8 +30,13 @@ const getSavedTracks = (state) => state.pages.savedPage.tracks
 const PREFIX = savedTracksActions.prefix
 
 function* getTracks({ offset, limit }) {
+  const isNativeMobile = yield getContext('isNativeMobile')
   const allSavedTracks = yield select(getSaves)
-  const savedTracks = allSavedTracks.slice(offset, offset + limit)
+  // Mobile currently uses infinite scroll instead of a virtualized list
+  // so we need to apply the offset & limit
+  const savedTracks = isNativeMobile
+    ? allSavedTracks.slice(offset, offset + limit)
+    : allSavedTracks
 
   const savedTrackIds = savedTracks.map((save) => save.save_item_id ?? null)
   const savedTrackTimestamps = savedTracks.reduce((map, save) => {
