@@ -14,10 +14,19 @@ export const formatSeconds = (seconds: number): string => {
 
 export const formatSecondsAsText = (seconds: number): string => {
   const d = moment.duration(seconds, 'seconds')
-  if (seconds > 60 * 60) {
+  if (seconds > SECONDS_PER_HOUR) {
     return `${d.hours()}h ${d.minutes()}m`
   }
   return `${d.minutes()}m ${d.seconds()}s`
+}
+
+export const formatLineupTileDuration = (
+  seconds: number,
+  isPodcast = false
+) => {
+  if (!isPodcast && seconds < SECONDS_PER_HOUR) return formatSeconds(seconds)
+  const d = moment.duration(seconds, 'seconds')
+  return `${d.hours()}hr ${d.minutes()}m`
 }
 
 export const formatDate = (date: MomentInput, format?: string): string => {

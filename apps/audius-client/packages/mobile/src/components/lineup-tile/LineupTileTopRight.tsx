@@ -1,5 +1,5 @@
 import type { PremiumConditions, Nullable } from '@audius/common'
-import { formatSeconds } from '@audius/common'
+import { formatLineupTileDuration } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
@@ -79,6 +79,10 @@ type Props = {
    */
   isArtistPick?: boolean
   /**
+   * Whether or not the track is a podcast
+   */
+  isPodcast?: boolean
+  /**
    * Whether or not the track is unlisted (hidden)
    */
   isUnlisted?: boolean
@@ -95,6 +99,7 @@ type Props = {
 export const LineupTileTopRight = ({
   duration,
   isArtistPick,
+  isPodcast,
   isUnlisted,
   showArtistPick,
   premiumConditions
@@ -138,7 +143,7 @@ export const LineupTileTopRight = ({
         />
       )}
       <Text style={trackTileStyles.statText}>
-        {duration && formatSeconds(duration)}
+        {duration ? formatLineupTileDuration(duration, isPodcast) : null}
       </Text>
     </View>
   )
