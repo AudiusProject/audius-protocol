@@ -1,4 +1,4 @@
-rimport logging
+import logging
 from glob import glob
 from os import getenv, getpid, remove
 
