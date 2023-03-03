@@ -98,7 +98,7 @@ describe('Create Notification', () => {
       {
         type: 'create',
         timestamp: new Date(),
-        specifier: '1',
+        specifier: '2',
         group_id: 'create:track:user_id:1',
         data,
         user_ids: [2],

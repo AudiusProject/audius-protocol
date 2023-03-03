@@ -89,8 +89,8 @@ describe('Supporting Rank Up Notification', () => {
         specifier: '1',
         group_id: 'supporting_rank_up:2:slot:145422128',
         data,
-        user_ids: [2],
-        receiver_user_id: 2
+        user_ids: [1],
+        receiver_user_id: 1
       },
     ]
     const notifHtml = await renderEmail({

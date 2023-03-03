@@ -91,7 +91,7 @@ describe('Tip Notification', () => {
       },
     ]
     const notifHtml = await renderEmail({
-      userId: 1,
+      userId: 2,
       email: 'joey@audius.co',
       frequency: 'daily',
       notifications,
