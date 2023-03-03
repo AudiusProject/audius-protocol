@@ -6,7 +6,7 @@ const processRepostNotifications = require('./repostNotification')
 const processFavoriteNotifications = require('./favoriteNotification')
 const processRemixCreateNotifications = require('./remixCreateNotification')
 const processRemixCosignNotifications = require('./remixCosignNotification')
-// const processCreateNotifications = require('./createNotification')
+const processCreateNotifications = require('./createNotification')
 const processPlaylistUpdateNotifications = require('./playlistUpdateNotification')
 const processChallengeRewardNotifications = require('./challengeRewardNotification')
 const processMilestoneListenNotifications = require('./milestoneListenNotification')
@@ -23,7 +23,7 @@ const notificationMapping = {
   [notificationTypes.Favorite.base]: processFavoriteNotifications,
   [notificationTypes.RemixCreate]: processRemixCreateNotifications,
   [notificationTypes.RemixCosign]: processRemixCosignNotifications,
-  // [notificationTypes.Create.base]: processCreateNotifications,
+  [notificationTypes.Create.base]: processCreateNotifications,
   [notificationTypes.PlaylistUpdate]: processPlaylistUpdateNotifications,
   [notificationTypes.ChallengeReward]: processChallengeRewardNotifications,
   [notificationTypes.MilestoneListen]: processMilestoneListenNotifications,
