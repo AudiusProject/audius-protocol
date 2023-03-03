@@ -30,7 +30,10 @@ notification = ns.model(
 
 notifications = ns.model(
     "notifications",
-    {"notifications": fields.List(fields.Nested(notification))},
+    {
+        "notifications": fields.List(fields.Nested(notification)),
+        "unread_count": fields.Integer(required=True),
+    },
 )
 
 playlist_update = ns.model(

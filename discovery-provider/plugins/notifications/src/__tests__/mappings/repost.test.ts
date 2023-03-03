@@ -6,7 +6,6 @@ import { config } from './../../config'
 
 import {
   createUsers,
-  insertFollows,
   insertMobileDevices,
   insertMobileSettings,
   createTestDB,

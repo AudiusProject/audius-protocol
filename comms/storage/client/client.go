@@ -204,7 +204,7 @@ func (sc *StorageClient) GetNodeStatuses() (*map[string]logstream.NodeStatus, er
 }
 
 func (sc *StorageClient) GetStorageNodesFor(jobId string) ([]string, error) {
-	nodesToShards, err := sc.GetNodeStatuses()
+	nodeStatuses, err := sc.GetNodeStatuses()
 	if err != nil {
 		return nil, err
 	}
@@ -212,9 +212,9 @@ func (sc *StorageClient) GetStorageNodesFor(jobId string) ([]string, error) {
 	shard := jobId[len(jobId)-2:]
 
 	nodes := []string{}
-	for _, hostAndShards := range *nodesToShards {
-		if slices.Contains(hostAndShards.Shards, shard) {
-			nodes = append(nodes, hostAndShards.Host)
+	for _, nodeStatus := range *nodeStatuses {
+		if slices.Contains(nodeStatus.Shards, shard) {
+			nodes = append(nodes, nodeStatus.Host)
 		}
 	}
 

@@ -4,7 +4,7 @@ import { FollowerMilestoneNotification, MilestoneType, PlaylistMilestoneNotifica
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import { ChallengeId } from '../../email/notifications/types'
+import { ChallengeId, EntityType } from '../../email/notifications/types'
 
 // export type FollowerMilestoneNotification = {
 //   type: string
@@ -139,16 +139,68 @@ export class Milestone extends BaseNotification<MilestoneRow> {
   }
 
   getResourcesForEmail(): ResourceIds {
+    let tracks = new Set<number>()
+    let playlists = new Set<number>()
+    if (this.type === MilestoneType.TRACK_REPOST_COUNT || this.type === MilestoneType.TRACK_SAVE_COUNT) {
+      const data = this.notification.data as TrackMilestoneNotification
+      tracks.add(data.track_id)
+    }
+    else if (this.type === MilestoneType.PLAYLIST_REPOST_COUNT || this.type === MilestoneType.PLAYLIST_SAVE_COUNT) {
+      const data = this.notification.data as PlaylistMilestoneNotification
+      playlists.add(data.playlist_id)
+    }
     return {
       users: new Set([this.receiverUserId]),
+      tracks,
+      playlists
     }
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUserId = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.receiverUserId]
+    let achievement
+    let entity
+    if (this.type === MilestoneType.FOLLOWER_COUNT) {
+      achievement = 'follow'
+    } else if (this.type === MilestoneType.TRACK_REPOST_COUNT) {
+      const data = this.notification.data as TrackMilestoneNotification
+      const track = resources.tracks[data.track_id]
+      achievement = 'repost'
+      entity = {
+        type: EntityType.Track,
+        name: track.title
+      }
+    } else if (this.type === MilestoneType.TRACK_SAVE_COUNT) {
+      const data = this.notification.data as TrackMilestoneNotification
+      const track = resources.tracks[data.track_id]
+      achievement = 'favorite'
+      entity = {
+        type: EntityType.Track,
+        name: track.title
+      }
+    } else if (this.type === MilestoneType.PLAYLIST_REPOST_COUNT) {
+      const data = this.notification.data as PlaylistMilestoneNotification
+      const playlist = resources.playlists[data.playlist_id]
+      entity = {
+        type: playlist.is_album ? EntityType.Album : EntityType.Playlist,
+        name: playlist.playlist_name
+      }
+      achievement = 'repost'
+    } else if (this.type === MilestoneType.PLAYLIST_SAVE_COUNT) {
+      const data = this.notification.data as PlaylistMilestoneNotification
+      const playlist = resources.playlists[data.playlist_id]
+      achievement = 'favorite'
+      entity = {
+        type: playlist.is_album ? EntityType.Album : EntityType.Playlist,
+        name: playlist.playlist_name
+      }
+    }
+
     return {
-      type: this.notification.type,
-      threshold: this.threshold
+      type: 'milestone',
+      achievement,
+      entity,
+      value: this.threshold
     }
   }
 
