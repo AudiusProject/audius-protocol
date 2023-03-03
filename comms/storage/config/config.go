@@ -11,6 +11,7 @@ type StorageConfig struct {
 	ReportOKIntervalSeconds int                  `envconfig:"AUDIUS_REPORT_OK_INTERVAL_SECONDS" default:"120" json:"reportOkIntervalSeconds"`
 	RebalanceIntervalHours  float64              `envconfig:"AUDIUS_REBALANCE_INTERVAL_HOURS" default:"24" json:"rebalanceIntervalHours"`
 	HealthTTLHours          float64              `envconfig:"AUDIUS_HEALTH_TTL_HOURS" default:"24" json:"healthTtlHours"`
+	ShardLength             int                  `envconfig:"AUDIUS_SHARD_LENGTH" default:"2" json:"shardLength"`
 }
 
 var storageConfig *StorageConfig

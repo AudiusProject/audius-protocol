@@ -36,3 +36,12 @@ export const useFilesInShard = (shard: string, storageHostsWithShard: string[]) 
       }
     }),
   )
+
+export const useStatusUpdateLogs = (entries: number, numHoursAgo: number) =>
+  useQuery<NodeStatus[], any>(['statusUpdateLogs', entries, numHoursAgo], () => {
+    return axios
+      .get(
+        `${window.location.origin}/storage/api/v1/logs/statusUpdates?numEntries=${entries}&numHoursAgo=${numHoursAgo}`,
+      )
+      .then((res) => res.data)
+  })

@@ -8,7 +8,7 @@ import (
 )
 
 func createObjStoreIfNotExists(cfg *nats.ObjectStoreConfig, jsc nats.JetStreamContext) error {
-	slog.Info("creating", cfg)
+	slog.Info("creating", "cfg", cfg)
 	_, err := jsc.ObjectStore(cfg.Bucket)
 	if err == nats.ErrBucketNotFound || err == nats.ErrStreamNotFound {
 		obj, err := jsc.CreateObjectStore(cfg)
