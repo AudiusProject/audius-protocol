@@ -3,8 +3,9 @@ import { memo, MouseEvent, useCallback } from 'react'
 import {
   formatCount,
   pluralize,
-  formatSeconds,
-  FeatureFlags
+  FeatureFlags,
+  formatLineupTileDuration,
+  Genre
 } from '@audius/common'
 import { IconCrown, IconHidden } from '@audius/stems'
 import cn from 'classnames'
@@ -82,6 +83,7 @@ const TrackTile = memo(
     rightActions,
     header,
     title,
+    genre,
     userName,
     duration,
     stats,
@@ -248,7 +250,9 @@ const TrackTile = memo(
                 </div>
               )}
               {!isLoading && duration && (
-                <div className={styles.duration}>{formatSeconds(duration)}</div>
+                <div className={styles.duration}>
+                  {formatLineupTileDuration(duration, genre === Genre.PODCASTS)}
+                </div>
               )}
             </div>
             <div className={styles.bottomRight}>

@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import {
   accountSelectors,
+  Genre,
   premiumContentActions,
   usePremiumContentAccess
 } from '@audius/common'
@@ -111,6 +112,7 @@ export const LineupTile = ({
           isUnlisted={isUnlisted}
           premiumConditions={premiumConditions}
           isArtistPick={isArtistPick}
+          isPodcast={isTrack ? item.genre === Genre.PODCASTS : false}
           showArtistPick={showArtistPick}
         />
         <LineupTileMetadata

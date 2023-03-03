@@ -11,7 +11,8 @@ import {
   LineupTrack,
   Remix,
   PremiumConditions,
-  Nullable
+  Nullable,
+  Genre
 } from '@audius/common'
 
 export enum TrackTileSize {
@@ -47,6 +48,7 @@ export type TileProps = {
 
 export type TrackTileProps = TileProps & {
   title: string
+  genre: Genre
   showArtistPick?: boolean
   showListens?: boolean
   disableActions?: boolean
@@ -155,6 +157,9 @@ export type DesktopTrackTileProps = {
 
   /** The beneath the header is the title, for the track's name */
   title: ReactNode
+
+  /** For updating the duration format based on if the track is a podcast */
+  genre?: Genre
 
   /** The beneath the title is the username, for the track's creator */
   userName: ReactNode

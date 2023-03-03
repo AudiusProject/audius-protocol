@@ -3,12 +3,13 @@ import { useCallback, useState, useEffect, MouseEvent } from 'react'
 import {
   ID,
   formatCount,
-  formatSeconds,
   PremiumConditions,
   Nullable,
   premiumContentSelectors,
   premiumContentActions,
-  FeatureFlags
+  FeatureFlags,
+  formatLineupTileDuration,
+  Genre
 } from '@audius/common'
 import { IconCrown, IconHidden, IconTrending } from '@audius/stems'
 import cn from 'classnames'
@@ -126,7 +127,9 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     isTrending,
     showRankIcon,
     permalink,
-    artistHandle
+    artistHandle,
+    duration,
+    genre
   } = props
   const { isEnabled: isPremiumContentEnabled } = useFlag(
     FeatureFlags.PREMIUM_CONTENT_ENABLED
@@ -245,7 +248,9 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
             </div>
           )}
           <div className={cn(styles.duration, fadeIn)}>
-            {props.duration && formatSeconds(props.duration)}
+            {duration
+              ? formatLineupTileDuration(duration, genre === Genre.PODCASTS)
+              : null}
           </div>
         </div>
         <div className={styles.metadata}>

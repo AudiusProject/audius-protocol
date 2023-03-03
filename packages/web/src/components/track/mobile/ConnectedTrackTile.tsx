@@ -20,7 +20,8 @@ import {
   favoritesUserListActions,
   playerSelectors,
   usePremiumContentAccess,
-  FeatureFlags
+  FeatureFlags,
+  Genre
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -94,6 +95,7 @@ const ConnectedTrackTile = memo(
       premium_conditions: premiumConditions,
       track_id,
       title,
+      genre,
       permalink,
       repost_count,
       save_count,
@@ -208,6 +210,7 @@ const ConnectedTrackTile = memo(
         hasLoaded={hasLoaded}
         ordered={ordered}
         title={title}
+        genre={genre as Genre}
         repostCount={repost_count}
         saveCount={save_count}
         followeeReposts={followee_reposts}

@@ -22,7 +22,8 @@ import {
   playerSelectors,
   usePremiumContentAccess,
   premiumContentActions,
-  FeatureFlags
+  FeatureFlags,
+  Genre
 } from '@audius/common'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
@@ -128,6 +129,7 @@ const ConnectedTrackTile = memo(
       premium_conditions: premiumConditions,
       track_id: trackId,
       title,
+      genre,
       permalink,
       repost_count,
       save_count,
@@ -404,6 +406,7 @@ const ConnectedTrackTile = memo(
           artwork={artwork}
           rightActions={rightActions}
           title={title}
+          genre={genre as Genre}
           userName={userName}
           duration={duration}
           stats={stats}

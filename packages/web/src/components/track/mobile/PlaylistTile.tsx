@@ -5,7 +5,7 @@ import {
   ID,
   LineupTrack,
   formatCount,
-  formatSeconds
+  formatLineupTileDuration
 } from '@audius/common'
 import cn from 'classnames'
 import { range } from 'lodash'
@@ -153,7 +153,7 @@ const PlaylistTile = (props: PlaylistTileProps & ExtraProps) => {
     <div className={styles.container}>
       <div className={styles.mainContent} onClick={props.togglePlay}>
         <div className={cn(styles.duration, styles.statText, fadeIn)}>
-          {formatSeconds(props.duration)}
+          {formatLineupTileDuration(props.duration)}
         </div>
         <div className={styles.metadata}>
           <TrackTileArt
