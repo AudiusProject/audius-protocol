@@ -11,7 +11,7 @@ import {
   TrackMetadata
 } from 'models'
 import { User } from 'models/User'
-import { FeatureFlags } from 'services/remote-config'
+import { FeatureFlags, IntKeys } from 'services/remote-config'
 import { accountSelectors } from 'store/account'
 import { cacheActions, cacheTracksSelectors } from 'store/cache'
 import { collectiblesActions } from 'store/collectibles'
@@ -329,8 +329,6 @@ function* updateCollectibleGatedTrackAccess(
   }
 }
 
-const PREMIUM_TRACK_POLL_FREQUENCY = 1000
-
 function* pollPremiumTrack({
   trackId,
   currentUserId,
@@ -371,6 +369,8 @@ function* pollPremiumTrack({
   }
 }
 
+const DEFAULT_GATED_TRACK_POLL_INTERVAL_MS = 1000
+
 /**
  * 1. Get follow or tip gated tracks of user
  * 2. Set those track statuses to 'UNLOCKING'
@@ -380,6 +380,10 @@ function* pollPremiumTrack({
 function* updateGatedTracks(trackOwnerId: ID, gate: 'follow' | 'tip') {
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
+
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  yield* call(remoteConfigInstance.waitForRemoteConfig)
+  const gatedTrackPollIntervalMs = remoteConfigInstance.getRemoteVar(IntKeys.GATED_TRACK_POLL_INTERVAL_MS)
 
   const statusMap: { [id: ID]: PremiumTrackStatus } = {}
   const trackParamsMap: { [id: ID]: TrackRouteParams } = {}
@@ -411,7 +415,7 @@ function* updateGatedTracks(trackOwnerId: ID, gate: 'follow' | 'tip') {
         trackId: id,
         currentUserId,
         trackParams: trackParamsMap[id],
-        frequency: PREMIUM_TRACK_POLL_FREQUENCY
+        frequency: gatedTrackPollIntervalMs || DEFAULT_GATED_TRACK_POLL_INTERVAL_MS
       })
     })
   )
