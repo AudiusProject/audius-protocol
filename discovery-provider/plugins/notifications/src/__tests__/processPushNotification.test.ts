@@ -56,29 +56,6 @@ describe('Push Notifications', () => {
     ])
   })
 
-  test.skip("Process follow for ios", async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await insertFollows(processor.discoveryDB, [{ follower_user_id: 1, followee_user_id: 2 }])
-    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
-    await new Promise(resolve => setTimeout(resolve, 10))
-
-    const pending = processor.listener.takePending()
-    expect(pending?.appNotifications).toHaveLength(1)
-    // Assert single pending
-    await processor.appNotificationsProcessor.process(pending.appNotifications)
-
-    expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:2',
-      badgeCount: 0
-    }, {
-      title: 'Follow',
-      body: 'user_1 followed you',
-      data: {}
-    })
-  })
-
   test("Process DM for ios", async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
