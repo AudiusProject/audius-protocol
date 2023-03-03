@@ -552,9 +552,6 @@ def get_final_poa_block(shared_config) -> Optional[int]:
             f"{shared_config['discprov']['identity_service_url']}/health_check/poa"
         )
         response = requests.get(identity_endpoint, timeout=1)
-        trigger_http_error = redis.get("trigger_http_error")
-        if trigger_http_error:
-            response.status_code = 502
         response.raise_for_status()
         response_json = response.json()
 

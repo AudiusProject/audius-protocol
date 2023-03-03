@@ -64,12 +64,6 @@ def health_check():
     return success_response(health_results, 500 if error else 200, sign_response=False)
 
 
-@bp.route("/restart", methods=["GET"])
-def restart():
-    print("asdf restarting")
-    raise Exception("asdf restarting")
-
-
 # Health check for block diff between DB and chain.
 @bp.route("/block_check", methods=["GET"])
 def block_check():

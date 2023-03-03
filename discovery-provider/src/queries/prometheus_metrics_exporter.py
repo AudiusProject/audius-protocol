@@ -22,14 +22,9 @@ bp = Blueprint("prometheus_metrics_exporter", __name__)
 audius_prometheus_container = getenv("audius_prometheus_container", "worker")
 
 # remove all *container*.db files since we're restarting the process
-glob_path = f"/{getenv('PROMETHEUS_MULTIPROC_DIR')}/*{audius_prometheus_container}*"
-files = glob(glob_path)
-logger.info(f"asdf glob_path {glob_path}")
+files = glob(f"/{getenv('PROMETHEUS_MULTIPROC_DIR')}/*{audius_prometheus_container}*")
 for f in files:
     logger.info(f"Removing prometheus file: {f}")
-    if getenv("use_prometheus"):
-        logger.info(f"asdf cannot find file")
-        raise Exception("cannot find file")
     remove(f)
 
 
