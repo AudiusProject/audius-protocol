@@ -1,10 +1,11 @@
-import { useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useNodeStatuses } from '../api'
 import Nodes from '../components/nodes/Nodes'
 
 export default function Home() {
   const { isLoading, error, data: nodeStatuses } = useNodeStatuses()
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
 
   let demo = false
@@ -27,10 +28,23 @@ export default function Home() {
       nodeStatuses[`0x123456789_${i}`] = {
         host: `http://fake:${8000 + i}`,
         lastOk: new Date().toISOString(),
-        shards: ['aa', 'bb', 'cc', 'dd'],
+        shards: ['a', 'b', 'c', 'd'],
       }
     }
   }
 
-  return <Nodes nodeStatuses={nodeStatuses} />
+  return (
+    <>
+      <Nodes nodeStatuses={nodeStatuses} />
+      <div className="mt-10 flex items-center justify-center">
+        <button
+          type="button"
+          className="rounded-full bg-purple-600 py-2.5 px-4 text-sm font-semibold text-white shadow-sm hover:bg-purple-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
+          onClick={() => navigate('/history')}
+        >
+          View history
+        </button>
+      </div>
+    </>
+  )
 }

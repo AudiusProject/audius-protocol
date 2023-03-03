@@ -4,7 +4,7 @@ import Search from '../components/search/SearchBar'
 
 export default function Wrapper() {
   return (
-    <div className="min-h-full px-1">
+    <div className="min-h-full bg-white px-1 dark:bg-gray-900">
       <div className="py-10">
         <header>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
