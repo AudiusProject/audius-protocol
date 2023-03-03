@@ -498,7 +498,7 @@ module.exports = function (app) {
           isWithinBounds(notificationEmailsJobLastSuccess) &&
           isWithinBounds(notificationAnnouncementsJobLastSuccess)
         req.logger.info(
-          `notifications_check | isWithinBounds is ${isWithinBounds} and notifBlockDiff is ${notifBlockDiff}`
+          `notifications_check | isWithinBounds is ${withinBounds} and notifBlockDiff is ${notifBlockDiff}`
         )
       }
       if (!withinBounds || notifBlockDiff > maxBlockDifference) {
