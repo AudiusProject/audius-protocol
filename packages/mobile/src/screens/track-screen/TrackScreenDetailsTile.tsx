@@ -24,7 +24,8 @@ import {
   RepostType,
   repostsUserListActions,
   favoritesUserListActions,
-  reachabilitySelectors
+  reachabilitySelectors,
+  usePremiumContentAccess
 } from '@audius/common'
 import { Image, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -162,7 +163,7 @@ export const TrackScreenDetailsTile = ({
   isLineupLoading
 }: TrackScreenDetailsTileProps) => {
   const isPremiumContentEnabled = useIsPremiumContentEnabled()
-
+  const { doesUserHaveAccess } = usePremiumContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const styles = useStyles()
   const navigation = useNavigation()
   const { accentOrange, accentBlue } = useThemeColors()
@@ -200,9 +201,12 @@ export const TrackScreenDetailsTile = ({
   } = track
 
   const isOwner = owner_id === currentUserId
-  const hideFavorite = is_unlisted || (isPremiumContentEnabled && isPremium)
+  const hideFavorite =
+    is_unlisted || (isPremiumContentEnabled && !doesUserHaveAccess)
   const hideRepost =
-    is_unlisted || !isReachable || (isPremiumContentEnabled && isPremium)
+    is_unlisted ||
+    !isReachable ||
+    (isPremiumContentEnabled && !doesUserHaveAccess)
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
@@ -309,8 +313,12 @@ export const TrackScreenDetailsTile = ({
   }
 
   const handlePressOverflow = () => {
+    const addToPlaylistAction =
+      !isPremiumContentEnabled || !isPremium
+        ? OverflowAction.ADD_TO_PLAYLIST
+        : null
     const overflowActions = [
-      OverflowAction.ADD_TO_PLAYLIST,
+      addToPlaylistAction,
       user.does_current_user_follow
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,

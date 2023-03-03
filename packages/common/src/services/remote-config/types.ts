@@ -142,7 +142,12 @@ export enum IntKeys {
   /**
    * The allowed slippage percentage/padding percentage for the BuyAudio Modal
    */
-  BUY_AUDIO_SLIPPAGE = 'BUY_AUDIO_SLIPPAGE'
+  BUY_AUDIO_SLIPPAGE = 'BUY_AUDIO_SLIPPAGE',
+
+  /**
+   * The interval in milliseconds between polls for gated tracks to check for access
+   */
+  GATED_TRACK_POLL_INTERVAL_MS = 'GATED_TRACK_POLL_INTERVAL_MS'
 }
 
 export enum BooleanKeys {
