@@ -47,11 +47,18 @@ const authenticate = async (): Promise<Credentials> => {
   tikTokInit(Config.TIKTOK_APP_ID)
 
   return new Promise((resolve, reject) => {
+    let authDone = false
+
     const handleTikTokAuth = async (
       code: string,
       error: boolean | null,
       errorMessage: string
     ) => {
+      if (authDone) {
+        console.warn('TikTok auth already completed')
+        return
+      }
+
       if (error) {
         return reject(new Error(errorMessage))
       }
@@ -88,6 +95,13 @@ const authenticate = async (): Promise<Credentials> => {
           data: { access_token, open_id, expires_in }
         } = await response.json()
 
+        track(
+          make({
+            eventName: EventNames.TIKTOK_COMPLETE_OAUTH
+          })
+        )
+
+        authDone = true
         return resolve({
           accessToken: access_token,
           openId: open_id,
@@ -99,7 +113,8 @@ const authenticate = async (): Promise<Credentials> => {
     }
 
     // Needed for Android
-    tikTokEvents.addListener('onAuthCompleted', (resp) => {
+    const listener = tikTokEvents.addListener('onAuthCompleted', (resp) => {
+      listener?.remove()
       handleTikTokAuth(resp.code, !!resp.status, resp.status)
     })
 
