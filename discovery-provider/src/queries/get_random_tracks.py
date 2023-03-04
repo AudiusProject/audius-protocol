@@ -1,5 +1,6 @@
 from sqlalchemy import func
 from src.models.tracks.track import Track
+from src.models.users.aggregate_user import AggregateUser
 from src.queries.query_helpers import (
     get_users_by_id,
     get_users_ids,
@@ -21,11 +22,13 @@ def get_random_tracks(args):
             session.query(
                 Track,
             )
+            .join(AggregateUser, Track.owner_id == AggregateUser.user_id)
             .filter(
-                Track.is_current == True,
-                Track.is_delete == False,
-                Track.is_unlisted == False,
-                Track.stem_of == None,
+                Track.is_current is True,
+                Track.is_delete is False,
+                Track.is_unlisted is False,
+                Track.stem_of is None,
+                AggregateUser.follower_count > 10,
             )
             .order_by(func.random())
             .limit(limit)
