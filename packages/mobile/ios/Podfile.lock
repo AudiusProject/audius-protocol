@@ -1076,7 +1076,7 @@ SPEC CHECKSUMS:
   Amplitude: ef9ed339ddd33c9183edf63fa4bbaa86cf873321
   amplitude-react-native: c7d779d1e2ec4062c833207df7588cc2a9146325
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
-  boost: 57d2868c099736d80fcd648bf211b4431e51a558
+  boost: a7c83b31436843459a1961bfd74b96033dc77234
   BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CodePush: 7e699d8c8039f67afb2193fad0b1e52219d82693
@@ -1118,7 +1118,7 @@ SPEC CHECKSUMS:
   Permission-Notifications: 2662b6885535a98892b8e48da04b74fc898d70f8
   Permission-PhotoLibraryAddOnly: 90b427e4a2acd37d1128618704b53364d73826c2
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
-  RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
+  RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
   RCTRequired: bec48f07daf7bcdc2655a0cde84e07d24d2a9e2a
   RCTTypeSafety: 171394eebacf71e1cfad79dbfae7ee8fc16ca80a
   React: d7433ccb6a8c36e4cbed59a73c0700fc83c3e98a

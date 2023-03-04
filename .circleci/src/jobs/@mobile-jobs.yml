@@ -56,7 +56,20 @@ mobile-init:
           - packages/mobile/.env.stage
           - packages/mobile/.env.prod
 
-mobile-build-upload-staging-ios:
+mobile-comment-native-code-change:
+  working_directory: ~/audius-client
+  docker:
+    - image: circleci/node:14.18
+  steps:
+    - checkout
+    - run:
+        name: don't do anything if no native changes
+        command: |
+          ! git diff --quiet HEAD origin/main -- 'packages/mobile' ':!packages/mobile/src' || circleci-agent step halt
+    - web-pr-comment:
+        comment: 'It looks like there may be some changes to native mobile code, which requires triggering a full app release. Please follow the instructions here: https://www.notion.so/audiusproject/When-to-bump-app-version-2644a8f772364a4d91f44abcba44ce0b?pvs=4. cc @nicoback2 @sliptype'
+
+mobile-build-staging-ios:
   working_directory: ~/audius-client
   macos: # Run on osx so app can be created and signed.
     xcode: '14.0.0'
@@ -68,14 +81,21 @@ mobile-build-upload-staging-ios:
         build-directory: 'build-mobile-staging'
         bundle-id: 'co.audius.audiusmusic.staging'
         env: '.env.stage'
-    - when:
-        condition:
-          matches: { pattern: '^main$', value: << pipeline.git.branch >> }
-        steps:
-          - mobile-upload-ios:
-              bundle-id: 'co.audius.audiusmusic.staging'
 
-mobile-build-upload-production-ios:
+mobile-build-upload-staging-ios:
+  working_directory: ~/audius-client
+  macos: # Run on osx so app can be created and signed.
+    xcode: '14.0.0'
+  environment:
+    FL_OUTPUT_DIR: output
+  shell: /bin/bash --login -o pipefail
+  steps:
+    - mobile-release-ios:
+        build-directory: 'build-mobile-staging'
+        bundle-id: 'co.audius.audiusmusic.staging'
+        env: '.env.prod'
+
+mobile-build-production-ios:
   working_directory: ~/audius-client
   macos: # Run on osx so app can be created and signed.
     xcode: '14.0.0'
@@ -87,12 +107,19 @@ mobile-build-upload-production-ios:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
         env: '.env.prod'
-    - when:
-        condition:
-          matches: { pattern: '^release.*$', value: << pipeline.git.branch >> }
-        steps:
-          - mobile-upload-ios:
-              bundle-id: 'co.audius.audiusmusic'
+
+mobile-build-upload-production-ios:
+  working_directory: ~/audius-client
+  macos: # Run on osx so app can be created and signed.
+    xcode: '14.0.0'
+  environment:
+    FL_OUTPUT_DIR: output
+  shell: /bin/bash --login -o pipefail
+  steps:
+    - mobile-release-ios:
+        build-directory: 'build-mobile-production'
+        bundle-id: 'co.audius.audiusmusic'
+        env: '.env.prod'
 
 mobile-build-upload-releasecandidate-ios:
   working_directory: ~/audius-client
@@ -102,12 +129,10 @@ mobile-build-upload-releasecandidate-ios:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
-    - mobile-build-ios:
+    - mobile-release-ios:
         build-directory: 'build-mobile-releasecandidate'
         bundle-id: 'co.audius.audiusmusic.releasecandidate'
         env: '.env.prod'
-    - mobile-upload-ios:
-        bundle-id: 'co.audius.audiusmusic.releasecandidate'
 
 mobile-build-upload-staging-releasecandidate-ios:
   working_directory: ~/audius-client
@@ -117,14 +142,12 @@ mobile-build-upload-staging-releasecandidate-ios:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
-    - mobile-build-ios:
+    - mobile-release-ios:
         build-directory: 'build-mobile-staging-releasecandidate'
         bundle-id: 'co.audius.audiusmusic.staging.releasecandidate'
         env: '.env.prod'
-    - mobile-upload-ios:
-        bundle-id: 'co.audius.audiusmusic.staging.releasecandidate'
 
-mobile-build-upload-staging-android:
+mobile-build-staging-android:
   working_directory: ~/audius-client
   resource_class: xlarge
   docker:
@@ -136,13 +159,17 @@ mobile-build-upload-staging-android:
         bundle-id: 'co.audius.app.staging'
         track: 'internal'
         remote-directory: 'audius-mobile-staging'
-    - when:
-        condition:
-          matches: { pattern: '^main$', value: << pipeline.git.branch >> }
-        steps:
-          - mobile-upload-android:
-              upload-type: 'staging'
-              track: 'internal'
+
+mobile-build-upload-staging-android:
+  working_directory: ~/audius-client
+  resource_class: xlarge
+  docker:
+    - image: circleci/android:api-30-node
+  steps:
+    - mobile-release-android:
+        build-directory: 'build-mobile-staging'
+        upload-type: 'staging'
+        track: 'internal'
 
 mobile-build-upload-staging-releasecandidate-android:
   working_directory: ~/audius-client
@@ -150,19 +177,10 @@ mobile-build-upload-staging-releasecandidate-android:
   docker:
     - image: circleci/android:api-30-node
   steps:
-    - mobile-build-android:
+    - mobile-release-android:
         build-directory: 'build-mobile-staging-releasecandidate'
-        build-type: 'bundleStagingReleaseCandidateRelease'
-        bundle-id: 'co.audius.app.staging.releasecandidate'
+        upload-type: 'stagingReleaseCandidate'
         track: 'internal'
-        remote-directory: 'audius-mobile-staging-releasecandidate'
-    - when:
-        condition:
-          matches: { pattern: '^release.*$', value: << pipeline.git.branch >> }
-        steps:
-          - mobile-upload-android:
-              upload-type: 'stagingReleaseCandidate'
-              track: 'internal'
 
 mobile-build-upload-releasecandidate-android:
   working_directory: ~/audius-client
@@ -170,21 +188,12 @@ mobile-build-upload-releasecandidate-android:
   docker:
     - image: circleci/android:api-30-node
   steps:
-    - mobile-build-android:
+    - mobile-release-android:
         build-directory: 'build-mobile-releasecandidate'
-        build-type: 'bundleReleaseCandidateRelease'
-        bundle-id: 'co.audius.app.releasecandidate'
+        upload-type: 'releaseCandidate'
         track: 'internal'
-        remote-directory: 'audius-mobile-releasecandidate'
-    - when:
-        condition:
-          matches: { pattern: '^release.*$', value: << pipeline.git.branch >> }
-        steps:
-          - mobile-upload-android:
-              upload-type: 'releaseCandidate'
-              track: 'internal'
 
-mobile-build-upload-production-android:
+mobile-build-production-android:
   working_directory: ~/audius-client
   resource_class: xlarge
   docker:
@@ -196,10 +205,14 @@ mobile-build-upload-production-android:
         bundle-id: 'co.audius.app'
         track: 'alpha'
         remote-directory: 'audius-mobile'
-    - when:
-        condition:
-          matches: { pattern: '^release.*$', value: << pipeline.git.branch >> }
-        steps:
-          - mobile-upload-android:
-              upload-type: 'prod'
-              track: 'alpha'
+
+mobile-build-upload-production-android:
+  working_directory: ~/audius-client
+  resource_class: xlarge
+  docker:
+    - image: circleci/android:api-30-node
+  steps:
+    - mobile-release-android:
+        build-directory: 'build-mobile-production'
+        upload-type: 'prod'
+        track: 'alpha'

@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { COPYRIGHT_TEXT } from 'audius-client/src/utils/copyright'
 import { View, Image, TouchableWithoutFeedback } from 'react-native'
+import codePush from 'react-native-code-push'
 
 import appIcon from 'app/assets/images/appIcon.png'
 import IconCareers from 'app/assets/images/iconCareers.svg'
@@ -52,6 +53,9 @@ const useStyles = makeStyles(({ spacing }) => ({
 export const AboutScreen = () => {
   const styles = useStyles()
   const [clickCount, setClickCount] = useState(0)
+  const [codepushUpdateNumber, setCodepushUpdateNumber] = useState<
+    string | null
+  >(null)
   const handleTitleClick = useCallback(() => {
     if (clickCount >= 19) {
       toggleLocalOfflineModeOverride()
@@ -60,6 +64,13 @@ export const AboutScreen = () => {
       setClickCount(clickCount + 1)
     }
   }, [clickCount])
+  useEffect(() => {
+    codePush.getUpdateMetadata().then((res) => {
+      if (res) {
+        setCodepushUpdateNumber(res?.label)
+      }
+    })
+  }, [])
 
   return (
     <Screen variant='secondary' title={messages.title} topbarRight={null}>
@@ -72,6 +83,9 @@ export const AboutScreen = () => {
             </TouchableWithoutFeedback>
             <Text variant='body2'>
               {messages.version} {appVersion}
+              {codepushUpdateNumber == null
+                ? null
+                : ` c${codepushUpdateNumber}`}
             </Text>
             <Text variant='body2'>{messages.copyright}</Text>
           </View>

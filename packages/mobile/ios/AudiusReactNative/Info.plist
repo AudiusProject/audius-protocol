@@ -17,7 +17,10 @@
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
-		<string>1.1.60</string>
+    <!-- 
+      Make sure this is above the currently released iOS version in the app store if your changes touch native code.
+    -->
+		<string>1.1.61</string>
 		<key>CFBundleSignature</key>
 		<string>????</string>
 		<key>CFBundleURLTypes</key>
