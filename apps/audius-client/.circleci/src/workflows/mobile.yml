@@ -3,10 +3,27 @@ jobs:
   - mobile-init:
       context: Audius Mobile Client
 
+  - mobile-comment-native-code-change:
+      context: Audius Mobile Client
+      filters:
+        branches:
+          ignore: /(^main|^release.*)$/
+
+  - mobile-build-staging-ios:
+      context: Audius Mobile Client
+      requires:
+        - mobile-init
+      filters:
+        branches:
+          ignore: /(^main|^release.*)$/
+
   - mobile-build-upload-staging-ios:
       context: Audius Mobile Client
       requires:
         - mobile-init
+      filters:
+        branches:
+          only: /^main$/
 
   - mobile-build-upload-releasecandidate-ios:
       context: Audius Mobile Client
@@ -24,18 +41,44 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  - mobile-build-upload-production-ios:
+  - mobile-build-production-ios:
       context: Audius Mobile Client
       requires:
         - mobile-init
       filters:
         branches:
-          only: /(^main|^release.*)$/
+          only: /^main$/
+
+  - mobile-hold-production-ios:
+      type: approval
+      requires:
+        - mobile-init
+      filters:
+        branches:
+          only: /(^release.*)$/
+  - mobile-build-upload-production-ios:
+      context: Audius Mobile Client
+      requires:
+        - mobile-hold-production-ios
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  - mobile-build-staging-android:
+      context: Audius Mobile Client
+      requires:
+        - mobile-init
+      filters:
+        branches:
+          ignore: /(^main|^release.*)$/
 
   - mobile-build-upload-staging-android:
       context: Audius Mobile Client
       requires:
         - mobile-init
+      filters:
+        branches:
+          only: /^main$/
 
   - mobile-build-upload-releasecandidate-android:
       context: Audius Mobile Client
@@ -53,10 +96,26 @@ jobs:
         branches:
           only: /(^release.*)$/
 
-  - mobile-build-upload-production-android:
+  - mobile-build-production-android:
       context: Audius Mobile Client
       requires:
         - mobile-init
       filters:
         branches:
-          only: /(^main|^release.*)$/
+          only: /^main$/
+
+  - mobile-hold-production-android:
+      type: approval
+      requires:
+        - mobile-init
+      filters:
+        branches:
+          only: /(^release.*)$/
+
+  - mobile-build-upload-production-android:
+      context: Audius Mobile Client
+      requires:
+        - mobile-hold-production-android
+      filters:
+        branches:
+          only: /(^release.*)$/

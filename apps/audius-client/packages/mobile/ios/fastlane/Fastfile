@@ -24,11 +24,32 @@ AUDIUSMUSIC_RELEASECANDIDATE_PROFILE = "match AppStore co.audius.audiusmusic.rel
 AUDIUSMUSIC_STAGING_PROFILE = "match AppStore co.audius.audiusmusic.staging"
 AUDIUSMUSIC_STAGING_RELEASECANDIDATE_PROFILE = "match AppStore co.audius.audiusmusic.staging.releasecandidate"
 TEAM = "LRFCG93S85"
+CODEPUSH_APP_NAME = 'Audius-Music/Audius'
+CODEPUSH_STAGING_DEPLOYMENT = 'Staging'
+CODEPUSH_RC_DEPLOYMENT = 'ReleaseCandidate'
+CODEPUSH_PROD_DEPLOYMENT = 'Production'
 
 platform :ios do
   before_all do
     setup_circle_ci
   end
+
+  desc "Get current release version and version in plist file"
+  private_lane :get_version do |options|
+
+    currentReleasedVersionString = get_app_store_version_number(
+      bundle_id: 'co.audius.audiusmusic',
+      country: 'us'
+    )
+
+    currentReleasedVersionNumber = Gem::Version.new currentReleasedVersionString
+    plistVersionNumber = Gem::Version.new get_version_number_from_plist(
+      scheme: options[:scheme]
+    )
+    puts currentReleasedVersionNumber
+    [currentReleasedVersionNumber, plistVersionNumber]
+  end
+
   desc "Build the app"
   lane :build do |options|
 
@@ -76,38 +97,37 @@ platform :ios do
       puts "ENVFILE: #{ENV['ENVFILE']}"
     end
 
-    # Increment version
-
     # Version number (e.g. 1.0.100) will be incremented by a patch version
     # from the currently live version in the app store. If a higher version number
     # is specified in Info.plist, that one will be used
 
-    previousVersionNumberString = get_app_store_version_number(
+    currentReleasedVersionNumberString = options[:current_released_version] ? (options[:current_released_version].to_s) : (get_app_store_version_number(
       bundle_id: 'co.audius.audiusmusic'
-    )
+    ))
 
-    previousVersionNumber = Gem::Version.new previousVersionNumberString
-    versionNumber = Gem::Version.new get_version_number_from_plist(
+    currentReleasedVersionNumber = options[:current_released_version] ? (options[:current_released_version]) : (Gem::Version.new currentReleasedVersionNumberString)
+
+    plistVersionNumber = options[:plist_version] ? (options[:plist_version]) : (Gem::Version.new get_version_number_from_plist(
       scheme: scheme
-    )
+    ))
 
     # If the version specified in project is greater than
     # the previous version number, there is no need to modify version number in the project
-    if versionNumber <= previousVersionNumber
+    if plistVersionNumber <= currentReleasedVersionNumber
       # Increment the patch version
       # This is necessary because the same version number cannot be used twice on the app store
       patchRegex = /\d+.\d+.(\d+)/
-      previousPatch = previousVersionNumberString[patchRegex, 1]
-      previousVersionNumberString[patchRegex, 1] = (previousPatch.to_i + 1).to_s
-      versionNumber = previousVersionNumberString
+      previousPatch = currentReleasedVersionNumberString[patchRegex, 1]
+      currentReleasedVersionNumberString[patchRegex, 1] = (previousPatch.to_i + 1).to_s
+      plistVersionNumber = currentReleasedVersionNumberString
 
       increment_version_number_in_plist(
-        version_number: versionNumber,
+        version_number: plistVersionNumber,
         scheme: scheme
       )
 
       increment_version_number_in_xcodeproj(
-        version_number: versionNumber,
+        version_number: plistVersionNumber,
         scheme: scheme
       )
     end
@@ -123,7 +143,7 @@ platform :ios do
       build_number: app_store_build_number(
         app_identifier: options[:bundle_id],
         initial_build_number: 0,
-        version: versionNumber.to_s,
+        version: plistVersionNumber.to_s,
         live: false
       ) + 1,
     )
@@ -170,6 +190,39 @@ platform :ios do
       # Don't actually distribute, just upload
       skip_submission: true
     )
+  end
+
+  desc "Build + upload via CodePush or TestFlight"
+  lane:build_and_upload do |options|
+    if options[:bundle_id] === AUDIUSMUSIC_ID
+      scheme = 'AudiusReactNative'
+      codepushDeployment = CODEPUSH_PROD_DEPLOYMENT
+    elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_ID
+      scheme = 'Staging'
+      codepushDeployment = CODEPUSH_STAGING_DEPLOYMENT
+    elsif options[:bundle_id] === AUDIUSMUSIC_RELEASECANDIDATE_ID
+      scheme = 'AudiusReactNative'
+      codepushDeployment = CODEPUSH_RC_DEPLOYMENT
+    elsif options[:bundle_id] === AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
+      scheme = 'Staging'
+      codepushDeployment = CODEPUSH_RC_DEPLOYMENT
+    end
+    currentReleasedVersionNumber, plistVersionNumber = get_version(scheme: scheme)
+    isVersionIncremented = plistVersionNumber > currentReleasedVersionNumber
+    if !isVersionIncremented
+      # Hacky - don't codepush to RC deployment if this lane is running for Staging RC because we assume we will codepush to RC deployment in the Prod RC job. I.e. avoid codepushing to RC deployment twice.
+      if options[:bundle_id] != AUDIUSMUSIC_STAGING_RELEASECANDIDATE_ID
+        sh("npm install -g appcenter-cli")
+        # Codepush to the right environment
+        sh("appcenter login --token #{ENV['APPCENTER_CODEPUSH_API_KEY']}")
+        sh("cd ../../ && appcenter codepush release-react -a #{CODEPUSH_APP_NAME} -t #{currentReleasedVersionNumber.to_s} -d #{codepushDeployment} --disable-duplicate-release-error")
+        sh("appcenter logout")
+      end
+    else
+        # Build and upload to TestFlight
+        build(bundle_id: options[:bundle_id], current_released_version: currentReleasedVersionNumber, plist_version: plistVersionNumber)
+        upload(bundle_id: options[:bundle_id])
+    end
   end
 
 end

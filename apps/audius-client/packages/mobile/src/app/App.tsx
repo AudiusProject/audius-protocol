@@ -101,7 +101,10 @@ const App = () => {
   )
 }
 
-const AppWithCodePush = codePush(App)
-const AppWithSentry = Sentry.wrap(AppWithCodePush)
+const AppWithSentry = Sentry.wrap(App)
+const AppWithCodePush = codePush({
+  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
+  installMode: codePush.InstallMode.ON_NEXT_RESTART
+})(AppWithSentry)
 
-export { AppWithSentry as App }
+export { AppWithCodePush as App }
