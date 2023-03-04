@@ -316,7 +316,7 @@ export async function getReplicaSetEndpointsByWallet({
   parentLogger
 }: GetReplicaSetEndpointsByWalletParams): Promise<ReplicaSetEndpoints> {
   const userAsc: { user_id: number }[] = await libs.User.getUsers(
-    1,
+    1000,
     0,
     null,
     wallet
