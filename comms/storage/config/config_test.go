@@ -1,4 +1,5 @@
-package persistence
+// Package config provides the configuration for the storage node by reading env vars.
+package config
 
 import (
 	"os"
@@ -8,7 +9,7 @@ import (
 func TestParsePrefix(t *testing.T) {
 	tests := []struct {
 		input          string
-		expectedPrefix Prefix
+		expectedPrefix StorageDriverPrefix
 		expectedOk     bool
 	}{
 		{
@@ -49,7 +50,7 @@ func TestParsePrefix(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		actual, ok := parsePrefix(tt.input)
+		actual, ok := parseStorageDriverPrefix(tt.input)
 
 		if ok != tt.expectedOk {
 			t.Fatalf("`%s` failed unexpectedly and isn't a valid Prefix", tt.input)
@@ -158,7 +159,7 @@ func TestCheckStorageCredentials(t *testing.T) {
 			os.Setenv(key, value)
 		}
 
-		actual := checkStorageCredentials(tt.url)
+		actual := verifyStorageCredentials(tt.url)
 		if (actual == nil) == tt.expectedError {
 			t.Fatalf("`%s` didn't check creds correctly with these env vars %+v, got error=%+v", tt.url, tt.envVars, actual)
 		}

@@ -1,7 +1,7 @@
 **Storage Location**
 
 The default storage driver url is `file:///tmp/audius_storage`.
-This is the directory on your node where files will stored post transcoding.
+This is the directory on your node where files will be stored post transcoding.
 
 To update the local storage location set the `AUDIUS_STORAGE_DRIVER_URL` environment variable
 ```
@@ -16,7 +16,7 @@ The driver is determined based on the `storage_url` (eg `s3://your-bucket` uses 
 
 To use cloud object storage instead of local storage, you will need to:
 
-- create either an s3 bucket, gcs bucket or azure storage container
+- create either an s3 bucket, gcs bucket, or azure storage container
 - your bucket access policy should <u>NOT BE PUBLIC</u>
 - provision credentials that allow object storage access
 
@@ -26,6 +26,13 @@ AWS_ACCESS_KEY_ID="<my-access-key-id>"
 AWS_SECRET_ACCESS_KEY="<my-secret-access-key>"
 AWS_REGION="<my-aws-region>"
 AUDIUS_STORAGE_DRIVER_URL="s3://my-bucket?region=us-west-1"
+```
+
+
+S3-compatible storage [MinIO](https://www.minio.io/), [Ceph](https://ceph.com/), [SeaweedFS](https://github.com/chrislusf/seaweedfs)
+For these S3-compatible storage servers that recognize the same HTTP endpoints as S3, change the endpoint to the storage server you're using. Example for MinIO:
+```
+AUDIUS_STORAGE_DRIVER_URL="s3://my-bucket?endpoint=my.minio.local:8080&disableSSL=true&s3ForcePathStyle=true"
 ```
 
 [GCS storage](https://cloud.google.com/storage/docs/creating-buckets)

@@ -4,14 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"comms.audius.co/storage/telemetry"
 	"github.com/spf13/cobra"
 )
 
-var nodesToShardsCmd = &cobra.Command{
-	Use:   "nodesToShards",
+var nodeStatusesCmd = &cobra.Command{
+	Use:   "nodeStatuses",
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
+		telemetry.DiscardLogs()
 		clientCount, err := initClients()
 		if err != nil || clientCount < 1 {
 			fmt.Println("Couldn't find any clients")
@@ -19,13 +21,13 @@ var nodesToShardsCmd = &cobra.Command{
 		}
 
 		client := ClientList[0]
-		nodesToShards, err := client.GetNodeStatuses()
+		nodeStatuses, err := client.GetNodeStatuses()
 		if err != nil {
-			fmt.Printf("getting nodes to shards error, %+v\n", nodesToShards)
+			fmt.Printf("getting nodes to shards error, %+v\n", nodeStatuses)
 			return
 		}
 
-		prettyPrint, err := json.MarshalIndent(nodesToShards, "", "  ")
+		prettyPrint, err := json.MarshalIndent(nodeStatuses, "", "  ")
 		if err != nil {
 			return
 		}
@@ -35,5 +37,5 @@ var nodesToShardsCmd = &cobra.Command{
 }
 
 func init() {
-	storageCmd.AddCommand(nodesToShardsCmd)
+	storageCmd.AddCommand(nodeStatusesCmd)
 }

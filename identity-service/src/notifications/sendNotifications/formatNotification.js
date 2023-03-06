@@ -394,6 +394,9 @@ async function _processCreateNotifications(
   if (notif.initiator === 51) {
     return []
   }
+  if (actionEntityType === actionEntityTypes.Track) {
+    return []
+  }
 
   // Notifications go to all users subscribing to this track uploader
   let subscribers = subscribersFromDiscovery

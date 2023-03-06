@@ -7,6 +7,6 @@ import (
 func DiscoveryPlacement() *nats.Placement {
 	return &nats.Placement{
 		Cluster: GetDiscoveryConfig().PeeringConfig.NatsClusterName,
-		Tags:    []string{"discovery"},
+		Tags:    []string{"type:discovery-node"},
 	}
 }

@@ -4,7 +4,7 @@ import { logger } from '../../logger'
 
 // @ts-ignore
 import { DMEntityType } from './types'
-import { DMEmailNotification, EmailNotification } from '../../types/notifications'
+import { AppEmailNotification, DMEmailNotification, EmailNotification } from '../../types/notifications'
 import { renderNotificationsEmail } from './components/index'
 import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { Knex } from 'knex'
@@ -43,14 +43,19 @@ type TrackResource = {
   cover_art_sizes: string
   creator_node_endpoint: string
   slug: string
+  ownerName: string
+  ownerCreatorNodeEndpoint: string
 }
 type PlaylistResource = {
   playlist_id: number
   playlist_name: string
+  is_album: boolean
   playlist_image_multihash: string
   playlist_image_sizes_multihash: string
   creator_node_endpoint: string
   slug: string
+  ownerName: string
+  ownerCreatorNodeEndpoint: string
 }
 
 type UserResourcesDict = { [userId: number]: UserResource & { imageUrl: string } }
@@ -125,8 +130,8 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
     'tracks.title',
     'tracks.owner_id',
     'tracks.cover_art_sizes',
+    { ownerName: 'users.name' },
     'users.creator_node_endpoint',
-    'users.name',
     'track_routes.slug'
   ).from('tracks')
     .join('users', 'users.user_id', 'tracks.owner_id')
@@ -146,10 +151,11 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
   const playlistRows: PlaylistResource[] = await dnDb.select(
     'playlists.playlist_id',
     'playlists.playlist_name',
+    'playlists.is_album',
     'playlists.playlist_image_sizes_multihash',
     'playlists.playlist_image_multihash',
+    { ownerName: 'users.name' },
     'users.creator_node_endpoint',
-    'users.name',
     'playlist_routes.slug'
   ).from('playlists')
     .join('users', 'users.user_id', 'playlists.playlist_owner_id')
@@ -167,11 +173,20 @@ const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> 
     return acc
   }, {} as { [playlistId: number]: PlaylistResource & { imageUrl: string } })
 
-
   return { users, tracks, playlists }
 }
 
-const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications: EmailNotification[]) => {
+/**
+ * 
+ * @param dnDB Discovery DB
+ * @param identityDB Identity DB
+ * @param notifications List of notifications to get email props for
+ * @param additionalNotifications Mao of 'additional' notifications that get grouped with a notification from the 'notification' params
+ * ie. if there are 5 follows for a user, they get grouped together and have the same group_id - so they should be put together to fetch
+ * the correct props passed to the email render engine
+ * @returns Props ready to pass into the render email method
+ */
+const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications: EmailNotification[], additionalNotifications: { [id: string]: AppEmailNotification[] }) => {
   const idsToFetch: ResourceIds = {
     users: new Set(),
     tracks: new Set(),
@@ -185,8 +200,21 @@ const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications:
       (value as Set<number>).forEach(idsToFetch[key as keyof ResourceIds].add, idsToFetch[key as keyof ResourceIds])
     })
   }
+  const mappedAdditionalNotifications: { [id: string]: BaseNotification<any>[] } = Object.keys(additionalNotifications).reduce((acc, n) => {
+    if (additionalNotifications[n].length > 0) {
+      acc[n] = mapNotifications(additionalNotifications[n], dnDB, identityDB)
+      for (const notification of acc[n]) {
+        const resourcesToFetch = notification.getResourcesForEmail()
+        Object.entries(resourcesToFetch).forEach(([key, value]) => {
+          (value as Set<number>).forEach(idsToFetch[key as keyof ResourceIds].add, idsToFetch[key as keyof ResourceIds])
+        })
+      }
+    }
+    return acc
+  }, {})
+
   const resources = await fetchResources(dnDB, idsToFetch)
-  return mappedNotifications.map(notification => notification.formatEmailProps(resources))
+  return mappedNotifications.map(n => n.formatEmailProps(resources, mappedAdditionalNotifications[n?.notification?.group_id]))
 }
 
 const getEmailTitle = (frequency: EmailFrequency, userEmail: string) => {
@@ -223,6 +251,10 @@ const getEmailSubject = (frequency: EmailFrequency, notificationCount: number) =
   return subject
 }
 
+// Set of notifications that we do NOT send out emails for
+// NOTE: This is to match parity with what identity does  
+const notificationsWithoutEmail = new Set(['supporter_dethroned', 'tier_change', 'tip_send'])
+
 // Master function to render and send email for a given userId
 export const renderEmail = async ({
   userId,
@@ -236,8 +268,23 @@ export const renderEmail = async ({
     `renderAndSendNotificationEmail | ${userId}, ${email}, ${frequency}`
   )
 
-  const notificationCount = notifications.length
-  const notificationProps = await getNotificationProps(dnDb, identityDb, notifications.slice(0, 5))
+  const validNotifications = notifications.filter(n => !notificationsWithoutEmail.has(n.type))
+  const notificationCount = validNotifications.length
+  // Get first 5 distinct notifications
+  const notificationsToSend: EmailNotification[] = []
+  const groupedNotifications: { [id: string]: AppEmailNotification[] } = {}
+  for (let notification of validNotifications) {
+    const isAleadyIncluded = notificationsToSend.some(n => 'group_id' in notification && 'group_id' in n && n?.group_id === notification?.group_id)
+    if (notificationsToSend.length <= 5 && !isAleadyIncluded) {
+      notificationsToSend.push(notification)
+    } else if ('group_id' in notification) {
+      if (isAleadyIncluded) {
+        groupedNotifications[notification?.group_id] = (groupedNotifications[notification?.group_id] || [])
+        groupedNotifications[notification?.group_id].push(notification)
+      }
+    }
+  }
+  const notificationProps = await getNotificationProps(dnDb, identityDb, notificationsToSend, groupedNotifications)
   const renderProps = {
     copyrightYear: new Date().getFullYear().toString(),
     notifications: notificationProps,

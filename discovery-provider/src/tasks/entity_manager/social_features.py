@@ -7,9 +7,6 @@ from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
 from src.models.social.subscription import Subscription
-from src.premium_content.premium_content_access_checker import (
-    premium_content_access_checker,
-)
 from src.tasks.entity_manager.utils import (
     Action,
     EntityType,
@@ -287,23 +284,3 @@ def validate_social_feature(params: ManageEntityParameters):
                 raise Exception(
                     f"User {params.user_id} has already sent a {params.action} for {params.entity_type} {params.entity_id}"
                 )
-
-    if should_check_entity_access(params.action, params.entity_type):
-        premium_content_access = premium_content_access_checker.check_access(
-            session=params.session,
-            user_id=params.user_id,
-            premium_content_id=params.entity_id,
-            premium_content_type="track",
-            premium_content_entity=params.existing_records[params.entity_type][
-                params.entity_id
-            ],
-        )
-        if not premium_content_access["does_user_have_access"]:
-            raise Exception(f"User {params.user_id} has no access to entity")
-
-
-def should_check_entity_access(action: Action, entity_type: EntityType):
-    return (
-        action in premium_content_validation_actions
-        and entity_type in premium_content_validation_entities
-    )
