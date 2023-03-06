@@ -260,12 +260,12 @@ const CollectionPage = ({
             'playButton',
             'trackName',
             'artistName',
-            'date',
+            isAlbum ? 'date' : 'addedDate',
             'length',
             'plays',
             'overflowActions'
           ],
-    [isNftPlaylist]
+    [isAlbum, isNftPlaylist]
   )
 
   return (
