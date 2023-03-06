@@ -24,7 +24,8 @@ const messages = {
 
 export const CollectibleGatedAvailability = ({
   state,
-  onStateUpdate
+  onStateUpdate,
+  disabled
 }: TrackAvailabilitySelectionProps) => {
   const { ethCollectionMap, solCollectionMap } = useSelector(
     getSupportedUserCollections
@@ -142,6 +143,7 @@ export const CollectibleGatedAvailability = ({
         dropdownStyle={styles.dropdown}
         dropdownInputStyle={styles.dropdownInput}
         footer={renderFooter()}
+        disabled={disabled}
       />
     </div>
   )
