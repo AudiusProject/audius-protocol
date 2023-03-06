@@ -415,7 +415,7 @@ export const TrackScreenDetailsTile = ({
     return (
       <TrackScreenDownloadButtons
         following={user.does_current_user_follow}
-        isPremium={isPremium}
+        doesUserHaveAccess={doesUserHaveAccess}
         isOwner={isOwner}
         trackId={track_id}
         user={user}

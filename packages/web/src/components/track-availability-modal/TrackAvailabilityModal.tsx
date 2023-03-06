@@ -100,7 +100,6 @@ type TrackAvailabilityModalProps = {
   isUpload: boolean
   metadataState: TrackMetadataState
   didUpdateState: (newState: TrackMetadataState) => void
-  onChangeField: (field: string, value: any) => void
   onClose: () => void
 }
 
@@ -112,7 +111,6 @@ const TrackAvailabilityModal = ({
   isUpload,
   metadataState,
   didUpdateState,
-  onChangeField,
   onClose
 }: TrackAvailabilityModalProps) => {
   const { isEnabled: isNFTGateEnabled } = useFlag(FeatureFlags.NFT_GATE_ENABLED)
@@ -176,11 +174,8 @@ const TrackAvailabilityModal = ({
           premium_conditions: { nft_collection: undefined }
         })
       }
-
-      // Reset download metadata for gated track
-      onChangeField('download', null)
     },
-    [didUpdateState, availability, defaultSpecialAccess, onChangeField]
+    [didUpdateState, availability, defaultSpecialAccess]
   )
 
   const updateUnlistedField = useCallback(() => {
