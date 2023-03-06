@@ -137,7 +137,7 @@ type DownloadButtonsProps = {
   ) => void
   isOwner: boolean
   following: boolean
-  isPremium: boolean
+  doesUserHaveAccess: boolean
   isHidden?: boolean
   className?: string
 }
@@ -146,7 +146,7 @@ const DownloadButtons = ({
   trackId,
   isOwner,
   following,
-  isPremium,
+  doesUserHaveAccess,
   onDownload,
   className
 }: DownloadButtonsProps) => {
@@ -177,7 +177,7 @@ const DownloadButtons = ({
     return null
   }
 
-  if (isPremiumContentEnabled && isPremium) {
+  if (isPremiumContentEnabled && !isOwner && !doesUserHaveAccess) {
     return null
   }
 

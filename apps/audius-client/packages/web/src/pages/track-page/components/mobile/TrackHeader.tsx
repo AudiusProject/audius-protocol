@@ -274,7 +274,7 @@ const TrackHeader = ({
         trackId={trackId}
         isOwner={isOwner}
         following={isFollowing}
-        isPremium={isPremium}
+        doesUserHaveAccess={doesUserHaveAccess}
         onDownload={onDownload}
       />
     )

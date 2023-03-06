@@ -366,7 +366,6 @@ const BasicForm = (props) => {
   }
 
   const renderBottomMenu = () => {
-    const isPremium = props.defaultFields.is_premium ?? false
     return (
       <div className={styles.menu}>
         {props.type === 'track' && props.showPreview ? (
@@ -380,7 +379,7 @@ const BasicForm = (props) => {
           })}
         >
           {renderRemixSwitch()}
-          {(!isPremiumContentEnabled || !isPremium) && renderDownloadButton()}
+          {renderDownloadButton()}
           {renderAdvancedButton()}
         </div>
       </div>

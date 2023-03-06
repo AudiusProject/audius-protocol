@@ -88,7 +88,7 @@ const DownloadButton = ({
 
 type TrackScreenDownloadButtonsProps = {
   following: boolean
-  isPremium: boolean
+  doesUserHaveAccess: boolean
   isHidden?: boolean
   isOwner: boolean
   trackId: ID
@@ -97,7 +97,7 @@ type TrackScreenDownloadButtonsProps = {
 
 export const TrackScreenDownloadButtons = ({
   following,
-  isPremium,
+  doesUserHaveAccess,
   isOwner,
   trackId,
   user
@@ -137,7 +137,7 @@ export const TrackScreenDownloadButtons = ({
     return null
   }
 
-  if (isPremiumContentEnabled && isPremium) {
+  if (isPremiumContentEnabled && !isOwner && !doesUserHaveAccess) {
     return null
   }
 
