@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux'
 
 import IconImage from 'app/assets/images/iconImage.svg'
 import { Button, Text } from 'app/components/core'
+import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles, typography } from 'app/styles'
 
@@ -16,12 +17,15 @@ import { ListSelectionScreen } from './ListSelectionScreen'
 const messages = {
   collections: 'COLLECTIONS',
   searchCollections: 'Search Collections',
+  compatibilityTitle: "Not seeing what you're looking for?",
+  compatibilitySubtitle: 'Only verified Solana NFT Collections are compatible.',
   done: 'Done'
 }
 
-const { getVerifiedUserCollections } = collectiblesSelectors
+const { getSupportedUserCollections, getHasUnsupportedCollection } =
+  collectiblesSelectors
 
-const useStyles = makeStyles(({ spacing, palette, type }) => ({
+const useStyles = makeStyles(({ spacing, palette }) => ({
   item: {
     flexDirection: 'row',
     alignItems: 'center'
@@ -41,6 +45,9 @@ const useStyles = makeStyles(({ spacing, palette, type }) => ({
   },
   row: {
     alignItems: 'center'
+  },
+  unsupported: {
+    marginTop: spacing(8)
   }
 }))
 
@@ -50,7 +57,8 @@ export const NFTCollectionsScreen = () => {
   const [{ value: premiumConditions }, , { setValue: setPremiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const { ethCollectionMap, solCollectionMap, collectionImageMap } =
-    useSelector(getVerifiedUserCollections)
+    useSelector(getSupportedUserCollections)
+  const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
 
   const ethCollectibleItems = useMemo(() => {
     return Object.keys(ethCollectionMap)
@@ -140,6 +148,20 @@ export const NFTCollectionsScreen = () => {
     }
   }, [premiumConditions, navigation])
 
+  const renderFooter = useCallback(() => {
+    return hasUnsupportedCollection ? (
+      <HelpCallout
+        style={styles.unsupported}
+        content={
+          <View>
+            <Text>{messages.compatibilityTitle}</Text>
+            <Text>{messages.compatibilitySubtitle}</Text>
+          </View>
+        }
+      />
+    ) : null
+  }, [hasUnsupportedCollection, styles])
+
   return (
     <ListSelectionScreen
       data={data}
@@ -162,6 +184,7 @@ export const NFTCollectionsScreen = () => {
           disabled={!premiumConditions?.nft_collection}
         />
       }
+      footer={renderFooter()}
     />
   )
 }

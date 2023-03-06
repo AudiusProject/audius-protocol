@@ -46,7 +46,8 @@ class DropdownInput extends Component {
       error,
       id,
       focused = this.state.focused,
-      popupContainer: popupContainerProp
+      popupContainer: popupContainerProp,
+      footer
     } = this.props
     let { placeholder } = this.props
 
@@ -90,6 +91,15 @@ class DropdownInput extends Component {
         )
       }
     })
+
+    // Add dropdown footer if given
+    if (footer) {
+      options.push(
+        <div className={styles.footer} disabled>
+          {footer}
+        </div>
+      )
+    }
 
     let goodDefault = false
     menu.items.forEach((item) => {

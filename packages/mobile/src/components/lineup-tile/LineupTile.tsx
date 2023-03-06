@@ -110,6 +110,8 @@ export const LineupTile = ({
         <LineupTileTopRight
           duration={duration}
           isUnlisted={isUnlisted}
+          isOwner={isOwner}
+          doesUserHaveAccess={doesUserHaveAccess}
           premiumConditions={premiumConditions}
           isArtistPick={isArtistPick}
           isPodcast={isTrack ? item.genre === Genre.PODCASTS : false}

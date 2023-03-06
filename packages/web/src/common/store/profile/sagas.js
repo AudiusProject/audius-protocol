@@ -60,7 +60,8 @@ const { getUserId, getAccountUser } = accountSelectors
 const {
   updateUserEthCollectibles,
   updateUserSolCollectibles,
-  updateSolCollections
+  updateSolCollections,
+  setHasUnsupportedCollection
 } = collectiblesActions
 
 function* watchFetchProfile() {
@@ -193,13 +194,22 @@ export function* fetchSolanaCollectibles(user) {
 
   // Get verified sol collections from the sol collectibles
   // and save their metadata in the redux store.
+  // Also keep track of whether the user has unsupported
+  // sol collections, which is the case if one of the following is true:
+  // - there is a sol nft which has no verified collection metadata
+  // - there a verified sol nft collection for which we could not fetch the metadata (this is an edge case e.g. we cannot fetch the metadata this collection mint address B3LDTPm6qoQmSEgar2FHUHLt6KEHEGu9eSGejoMMv5eb)
+  let hasUnsupportedCollection = false
   const validSolCollectionMints = [
     ...new Set(
       solanaCollectibleList
-        .filter(
-          (collectible) =>
+        .filter((collectible) => {
+          const isFromVeririfedCollection =
             !!collectible.solanaChainMetadata?.collection?.verified
-        )
+          if (!hasUnsupportedCollection && !isFromVeririfedCollection) {
+            hasUnsupportedCollection = true
+          }
+          return isFromVeririfedCollection
+        })
         .map((collectible) => {
           const key = collectible.solanaChainMetadata.collection.key
           return typeof key === 'string' ? key : key.toBase58()
@@ -213,7 +223,12 @@ export function* fetchSolanaCollectibles(user) {
   )
   const collectionMetadatasMap = {}
   collectionMetadatas.forEach((cm, i) => {
-    if (!cm) return
+    if (!cm) {
+      if (!hasUnsupportedCollection) {
+        hasUnsupportedCollection = true
+      }
+      return
+    }
     const { metadata, imageUrl } = cm
     collectionMetadatasMap[validSolCollectionMints[i]] = {
       ...metadata.pretty(),
@@ -221,6 +236,9 @@ export function* fetchSolanaCollectibles(user) {
     }
   })
   yield put(updateSolCollections({ metadatas: collectionMetadatasMap }))
+  if (hasUnsupportedCollection) {
+    yield put(setHasUnsupportedCollection(true))
+  }
 }
 
 function* fetchSupportersAndSupporting(userId) {

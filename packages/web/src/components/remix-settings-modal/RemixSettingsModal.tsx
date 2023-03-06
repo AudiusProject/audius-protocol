@@ -194,7 +194,7 @@ const RemixSettingsModal = ({
           {isPremium ? (
             <HelpCallout
               className={styles.disableInfo}
-              text={`${messages.changeAvailabilityPrefix} ${
+              content={`${messages.changeAvailabilityPrefix} ${
                 'nft_collection' in (premiumConditions ?? {})
                   ? messages.collectibleGated
                   : messages.specialAccess

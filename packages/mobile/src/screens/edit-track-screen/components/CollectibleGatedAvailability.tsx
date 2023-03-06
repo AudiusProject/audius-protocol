@@ -10,8 +10,8 @@ import { useSelector } from 'react-redux'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
 import { Link, Text } from 'app/components/core'
+import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
 import { makeStyles } from 'app/styles'
@@ -25,13 +25,16 @@ const messages = {
   pickACollection: 'Pick A Collection',
   ownersOf: 'Owners Of',
   noCollectibles:
-    'No Collectibles found. To enable this option, link a wallet containing a collectible.'
+    'No Collectibles found. To enable this option, link a wallet containing a collectible.',
+  compatibilityTitle: "Not seeing what you're looking for?",
+  compatibilitySubtitle: 'Only verified Solana NFT Collections are compatible.'
 }
 
 const LEARN_MORE_URL =
   'https://blog.audius.co/article/introducing-nft-collectible-gated-content'
 
-const { getVerifiedUserCollections } = collectiblesSelectors
+const { getSupportedUserCollections, getHasUnsupportedCollection } =
+  collectiblesSelectors
 
 const screenWidth = Dimensions.get('screen').width
 
@@ -115,15 +118,7 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     height: spacing(5)
   },
   noCollectibles: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: spacing(4),
-    paddingVertical: spacing(2),
-    paddingHorizontal: spacing(4),
-    borderWidth: 1,
-    borderColor: palette.neutralLight7,
-    borderRadius: spacing(2),
-    backgroundColor: palette.neutralLight9
+    marginTop: spacing(4)
   },
   noCollectiblesText: {
     flex: 1,
@@ -165,8 +160,9 @@ export const CollectibleGatedAvailability = ({
     : neutral
 
   const { ethCollectionMap, solCollectionMap } = useSelector(
-    getVerifiedUserCollections
+    getSupportedUserCollections
   )
+  const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
   const numEthCollectibles = Object.keys(ethCollectionMap).length
   const numSolCollectibles = Object.keys(solCollectionMap).length
   const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
@@ -197,6 +193,17 @@ export const CollectibleGatedAvailability = ({
     }
   }, [disabled, navigation])
 
+  const renderHelpCalloutContent = useCallback(() => {
+    return hasUnsupportedCollection ? (
+      <View>
+        <Text>{messages.compatibilityTitle}</Text>
+        <Text>{messages.compatibilitySubtitle}</Text>
+      </View>
+    ) : (
+      messages.noCollectibles
+    )
+  }, [hasUnsupportedCollection])
+
   return (
     <View style={styles.root}>
       <View style={styles.titleContainer}>
@@ -210,14 +217,12 @@ export const CollectibleGatedAvailability = ({
           {messages.collectibleGatedSubtitle}
         </Text>
       </View>
-      {hasNoCollectibles && (
-        <View style={styles.noCollectibles}>
-          <IconQuestionCircle style={styles.questionIcon} fill={neutral} />
-          <Text style={styles.noCollectiblesText}>
-            {messages.noCollectibles}
-          </Text>
-        </View>
-      )}
+      {hasNoCollectibles ? (
+        <HelpCallout
+          style={styles.noCollectibles}
+          content={renderHelpCalloutContent()}
+        />
+      ) : null}
       <Link url={LEARN_MORE_URL} style={styles.learnMore}>
         <Text style={styles.learnMoreText}>{messages.learnMore}</Text>
         <IconArrow fill={secondary} width={16} height={16} />

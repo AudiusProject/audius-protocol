@@ -17,7 +17,7 @@
   fill: var(--neutral);
 }
 
-.text {
+.content {
   font-weight: var(--font-medium);
   font-size: var(--font-m);
   line-height: 140%;

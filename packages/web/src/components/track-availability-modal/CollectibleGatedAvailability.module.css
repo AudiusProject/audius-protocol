@@ -43,3 +43,10 @@
   height: 48px;
   border-radius: 8px;
 }
+
+.helpCallout {
+  border-right: none;
+  border-left: none;
+  border-bottom: none;
+  border-radius: initial;
+}

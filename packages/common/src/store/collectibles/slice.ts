@@ -13,12 +13,14 @@ type CollectiblesState = {
   }
   solCollections: {
     [mint: string]: Metadata & { imageUrl: Nullable<string> }
-  }
+  },
+  hasUnsupportedCollection: boolean
 }
 
 const initialState: CollectiblesState = {
   userCollectibles: {},
-  solCollections: {}
+  solCollections: {},
+  hasUnsupportedCollection: false
 }
 
 type UpdateUserCollectiblesPayload = {
@@ -60,14 +62,18 @@ const slice = createSlice({
         ...state.solCollections,
         ...action.payload.metadatas
       }
-    }
+    },
+    setHasUnsupportedCollection: (state, _action) => {
+      state.hasUnsupportedCollection = true
+    },
   }
 })
 
 export const {
   updateUserEthCollectibles,
   updateUserSolCollectibles,
-  updateSolCollections
+  updateSolCollections,
+  setHasUnsupportedCollection
 } = slice.actions
 
 export const reducer = slice.reducer
