@@ -113,10 +113,10 @@ def _get_chain_health():
         latest_block = web3.eth.get_block("latest")
 
         snap_rpc = {'method': 'clique_getSnapshot', 'params': [], 'id': 1, 'jsonrpc': '2.0'}
-        clique_snapshot_res = requests.post(LOCAL_RPC, snap_rpc).json().result
+        clique_snapshot_res = requests.post(LOCAL_RPC, data=snap_rpc).json().result
 
         self_rpc = {"method": "net_localAddress", "params": [], "id": 1, "jsonrpc": "2.0"}
-        local_address_res = requests.post(LOCAL_RPC, self_rpc).json().result
+        local_address_res = requests.post(LOCAL_RPC, data=self_rpc).json().result
 
         # requires node is voted in
         is_signer = False
