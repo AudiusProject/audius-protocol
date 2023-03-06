@@ -8,7 +8,7 @@
     "sql-ts": "ts-node scripts/sql-ts.ts",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000",
     "test:watch": "jest --watchAll",
-    "test": "jest --runInBand --detectOpenHandles -- src/__tests__mappings/*.test.ts",
+    "test": "jest --runInBand --detectOpenHandles -- src/__tests__/mappings/*.test.ts",
     "test-push": "ts-node scripts/test-push-notification.ts"
   },
   "keywords": [],
