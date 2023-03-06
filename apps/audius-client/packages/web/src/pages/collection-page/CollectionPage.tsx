@@ -1,20 +1,23 @@
 import { SmartCollection, CollectionsPageType } from '@audius/common'
+import { connect } from 'react-redux'
 
+import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 
 import CollectionPageProvider from './CollectionPageProvider'
 import DesktopCollectionPage from './components/desktop/CollectionPage'
 import MobileCollectionPage from './components/mobile/CollectionPage'
 
-type CollectionPageProps = {
+type OwnProps = {
   type: CollectionsPageType
   smartCollection?: SmartCollection
 }
 
 const isMobileClient = isMobile()
 
-const CollectionPage = (props: CollectionPageProps) => {
-  const { type, smartCollection } = props
+type CollectionPageProps = ReturnType<typeof mapStateToProps> & OwnProps
+
+const CollectionPage = ({ type, smartCollection }: CollectionPageProps) => {
   const content = isMobileClient ? MobileCollectionPage : DesktopCollectionPage
 
   return (
@@ -28,4 +31,8 @@ const CollectionPage = (props: CollectionPageProps) => {
   )
 }
 
-export default CollectionPage
+function mapStateToProps(state: AppState) {
+  return {}
+}
+
+export default connect(mapStateToProps)(CollectionPage)
