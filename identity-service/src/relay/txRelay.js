@@ -502,7 +502,7 @@ async function relayToNethermindWithTimeout(
         const timeoutMessage = `Relay to nethermind timed out`
         logger.info(timeoutMessage)
         reject(new Error(timeoutMessage))
-      }, 10000)
+      }, 5000)
     )
   ])
 }
