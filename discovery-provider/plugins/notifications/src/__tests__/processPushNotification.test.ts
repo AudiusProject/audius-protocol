@@ -7,13 +7,9 @@ import {
   randId,
   createChat,
   readChat,
-  createUsers,
-  insertFollows,
   insertMessage,
   insertReaction,
   setupTwoUsersWithDevices,
-  insertMobileDevices,
-  insertMobileSettings,
   createTestDB,
   dropTestDB,
   replaceDBName
@@ -23,10 +19,6 @@ describe('Push Notifications', () => {
   let processor: Processor
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
-
-  // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
-
 
   beforeEach(async () => {
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
@@ -62,7 +54,7 @@ describe('Push Notifications', () => {
     // Start processor
     processor.start()
     // Let notifications job run for a few cycles to initialize the min cursors in redis
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    await new Promise((r) => setTimeout(r, config.pollInterval))
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = "hi from user 1"
@@ -74,6 +66,7 @@ describe('Push Notifications', () => {
     await insertMessage(processor.discoveryDB, user1.userId, chatId, messageId, message, messageTimestamp)
 
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: user2.deviceType,

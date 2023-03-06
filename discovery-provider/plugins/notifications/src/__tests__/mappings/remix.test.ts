@@ -13,7 +13,6 @@ import {
   replaceDBName,
   createTracks,
   createBlocks,
-  setUserEmailAndSettings,
 } from '../../utils/populateDB'
 import { processEmailNotifications } from '../../email/notifications/index'
 import * as sendEmail from '../../email/notifications/sendEmail'
