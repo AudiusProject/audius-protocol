@@ -285,7 +285,6 @@ services:
       context: discovery-provider/plugins/notifications
       dockerfile: Dockerfile
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run test "$$@")' -
-    command: sh -c "npm run test"
     environment:
       AUDIUS_REDIS_URL: "redis://discovery-provider-redis:6379/00"
       DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
