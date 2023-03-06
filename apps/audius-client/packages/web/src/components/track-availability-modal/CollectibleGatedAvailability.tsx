@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import {
   Chain,
@@ -8,14 +8,18 @@ import {
 import { useSelector } from 'react-redux'
 
 import DropdownInput from 'components/data-entry/DropdownInput'
+import { HelpCallout } from 'components/help-callout/HelpCallout'
 
 import styles from './CollectibleGatedAvailability.module.css'
 import { TrackAvailabilitySelectionProps } from './types'
 
-const { getVerifiedUserCollections } = collectiblesSelectors
+const { getSupportedUserCollections, getHasUnsupportedCollection } =
+  collectiblesSelectors
 
 const messages = {
-  pickACollection: 'Pick a Collection'
+  pickACollection: 'Pick a Collection',
+  compatibilityTitle: "Not seeing what you're looking for?",
+  compatibilitySubtitle: 'Only verified Solana NFT Collections are compatible.'
 }
 
 export const CollectibleGatedAvailability = ({
@@ -23,8 +27,9 @@ export const CollectibleGatedAvailability = ({
   onStateUpdate
 }: TrackAvailabilitySelectionProps) => {
   const { ethCollectionMap, solCollectionMap } = useSelector(
-    getVerifiedUserCollections
+    getSupportedUserCollections
   )
+  const hasUnsupportedCollection = useSelector(getHasUnsupportedCollection)
 
   const ethCollectibleItems = useMemo(() => {
     return Object.keys(ethCollectionMap)
@@ -75,6 +80,20 @@ export const CollectibleGatedAvailability = ({
     [ethCollectibleItems, solCollectibleItems]
   )
 
+  const renderFooter = useCallback(() => {
+    return hasUnsupportedCollection ? (
+      <HelpCallout
+        className={styles.helpCallout}
+        content={
+          <div>
+            <div>{messages.compatibilityTitle}</div>
+            <div>{messages.compatibilitySubtitle}</div>
+          </div>
+        }
+      />
+    ) : null
+  }, [hasUnsupportedCollection])
+
   return (
     <div className={styles.root}>
       <DropdownInput
@@ -122,6 +141,7 @@ export const CollectibleGatedAvailability = ({
         size='large'
         dropdownStyle={styles.dropdown}
         dropdownInputStyle={styles.dropdownInput}
+        footer={renderFooter()}
       />
     </div>
   )

@@ -13,9 +13,12 @@ export const getUserCollectibles = (state: CommonState, props: { id: ID }) =>
 export const getSolCollections = (state: CommonState) =>
   state.collectibles.solCollections
 
+export const getHasUnsupportedCollection = (state: CommonState) =>
+  state.collectibles.hasUnsupportedCollection
+
 const defaultCollectibles = { [Chain.Eth]: [], [Chain.Sol]: [] }
 
-export const getVerifiedUserCollections = createSelector(
+export const getSupportedUserCollections = createSelector(
   getUserId,
   getAllUserCollectibles,
   getSolCollections,

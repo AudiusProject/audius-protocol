@@ -3,17 +3,15 @@ import { useCallback, useMemo, useState } from 'react'
 import type { Nullable, PremiumConditions } from '@audius/common'
 import { TrackAvailabilityType, collectiblesSelectors } from '@audius/common'
 import { useField } from 'formik'
-import { View, Text } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconHidden from 'app/assets/images/iconHidden.svg'
-import IconQuestionCircle from 'app/assets/images/iconQuestionCircle.svg'
 import { Button } from 'app/components/core'
+import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useIsNFTGateEnabled } from 'app/hooks/useIsNFTGateEnabled'
 import { useIsSpecialAccessGateEnabled } from 'app/hooks/useIsSpecialAccessGateEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
-import { useColor } from 'app/utils/theme'
 
 import { CollectibleGatedAvailability } from '../components/CollectibleGatedAvailability'
 import { HiddenAvailability } from '../components/HiddenAvailability'
@@ -39,7 +37,7 @@ const messages = {
   done: 'Done'
 }
 
-const { getVerifiedUserCollections } = collectiblesSelectors
+const { getSupportedUserCollections } = collectiblesSelectors
 
 const publicAvailability = TrackAvailabilityType.PUBLIC
 const specialAccessAvailability = TrackAvailabilityType.SPECIAL_ACCESS
@@ -53,34 +51,16 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginTop: spacing(4),
     marginHorizontal: spacing(4),
     paddingVertical: spacing(2),
-    paddingHorizontal: spacing(4),
-    backgroundColor: palette.neutralLight9,
-    borderWidth: 1,
-    borderColor: palette.neutralLight7,
-    borderRadius: spacing(2)
-  },
-  isRemixText: {
-    fontFamily: typography.fontByWeight.medium,
-    fontSize: typography.fontSize.medium,
-    color: palette.neutral
-  },
-  questionIcon: {
-    marginRight: spacing(4),
-    width: spacing(5),
-    height: spacing(5)
+    paddingHorizontal: spacing(4)
   }
 }))
 
 const MarkedAsRemix = () => {
   const styles = useStyles()
-  const neutral = useColor('neutral')
   const [{ value: remixOf }] = useField<RemixOfField>('remix_of')
 
   return remixOf ? (
-    <View style={styles.isRemix}>
-      <IconQuestionCircle style={styles.questionIcon} fill={neutral} />
-      <Text style={styles.isRemixText}>{messages.markedAsRemix}</Text>
-    </View>
+    <HelpCallout style={styles.isRemix} content={messages.markedAsRemix} />
   ) : null
 }
 
@@ -99,7 +79,7 @@ export const TrackAvailabilityScreen = () => {
   const isUpload = !trackId
 
   const { ethCollectionMap, solCollectionMap } = useSelector(
-    getVerifiedUserCollections
+    getSupportedUserCollections
   )
   const numEthCollectibles = Object.keys(ethCollectionMap).length
   const numSolCollectibles = Object.keys(solCollectionMap).length

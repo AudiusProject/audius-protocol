@@ -32,6 +32,7 @@ export type ListSelectionProps = {
   itemContentStyles?: ViewStyle
   header?: ReactNode
   bottomSection?: ReactNode
+  footer?: ReactNode
 }
 
 const messages = {
@@ -44,6 +45,7 @@ const useStyles = makeStyles(({ spacing, typography }) => ({
     justifyContent: 'space-between'
   },
   content: { flex: 1 },
+  noFlex: { flex: undefined },
   search: {
     marginHorizontal: spacing(2),
     marginTop: spacing(6)
@@ -84,7 +86,8 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
     itemStyles,
     itemContentStyles,
     header,
-    bottomSection
+    bottomSection,
+    footer
   } = props
 
   const styles = useStyles()
@@ -161,7 +164,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
       style={styles.root}
       bottomSection={bottomSection}
     >
-      <View style={styles.content}>
+      <View style={[styles.content, footer ? styles.noFlex : undefined]}>
         {header}
         {!disableSearch && (
           <TextInput
@@ -177,6 +180,7 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
           ItemSeparatorComponent={Divider}
           data={filteredData}
         />
+        {footer}
       </View>
     </FormScreen>
   )

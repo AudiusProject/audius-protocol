@@ -1,3 +1,5 @@
+import { ReactNode } from 'react'
+
 import cn from 'classnames'
 
 import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCircle.svg'
@@ -5,16 +7,16 @@ import { ReactComponent as IconQuestionCircle } from 'assets/img/iconQuestionCir
 import styles from './HelpCallout.module.css'
 
 export const HelpCallout = ({
-  text,
+  content,
   className
 }: {
-  text: string
+  content: ReactNode
   className?: string
 }) => {
   return (
     <div className={cn(styles.root, className)}>
       <IconQuestionCircle className={styles.icon} />
-      <div className={styles.text}>{text}</div>
+      <div className={styles.content}>{content}</div>
     </div>
   )
 }

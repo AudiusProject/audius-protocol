@@ -183,6 +183,9 @@
   padding: 8px 0;
   border-radius: 6px;
 }
+.select:has(.footer) {
+  padding-bottom: 0;
+}
 .select :global(.rc-virtual-list-holder-inner) {
   padding: 0 8px;
 }
@@ -229,4 +232,12 @@
   font-size: var(--font-m);
   line-height: 28px;
   height: 32px;
+}
+
+.select .footer:global(.ant-select-item-option) {
+  cursor: default;
+  margin: 0 -8px;
+  padding: 0px !important;
+  background-color: unset;
+  color: var(--neutral);
 }
