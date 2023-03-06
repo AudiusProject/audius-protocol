@@ -12,7 +12,6 @@ import {
   queueActions,
   playerSelectors,
   queueSelectors,
-  waitForRead,
   getContext,
   FeatureFlags
 } from '@audius/common'
