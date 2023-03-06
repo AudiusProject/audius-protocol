@@ -41,7 +41,7 @@ export async function checkCIDAccess({
     shouldCache
   } = data
 
-  if (copy320CID !== cid) {
+  if (copy320CID.replace('\n', '') !== cid) {
     return {
       isValidRequest: false,
       error: 'IncorrectCID',

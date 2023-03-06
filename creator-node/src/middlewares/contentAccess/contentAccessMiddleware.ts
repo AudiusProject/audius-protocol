@@ -123,7 +123,7 @@ const parseQueryParams = (params: any) => {
 
     return {
       signature,
-      data: { ...data, cid: data.cid.replace('\n', '') },
+      data,
       error: false
     }
   } catch (e: any) {
