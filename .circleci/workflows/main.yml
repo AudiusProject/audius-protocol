@@ -122,12 +122,11 @@ jobs:
       requires:
         - deploy-prod-creator-node-trigger
       hosts: >-
-        prod-creator-4
+        prod-user-metadata
         prod-creator-1
         prod-creator-2
         prod-creator-3
         prod-creator-5
-        prod-user-metadata
       service: creator-node
 
   - deploy-prod-discovery-provider-trigger:
