@@ -286,6 +286,7 @@ const TrackAvailabilityModal = ({
                 <CollectibleGatedAvailability
                   state={metadataState}
                   onStateUpdate={updatePremiumContentFields}
+                  disabled={noCollectibleGate}
                 />
               }
             />

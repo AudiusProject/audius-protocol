@@ -35,4 +35,5 @@ export type TrackAvailabilitySelectionProps = {
     premiumConditions: Nullable<PremiumConditions>,
     availabilityType: TrackAvailabilityType
   ) => void
+  disabled?: boolean
 }
