@@ -111,9 +111,30 @@ def _get_chain_health():
 
         web3 = get_nethermind_web3(LOCAL_RPC)
         latest_block = web3.eth.get_block("latest")
+
+        snap_rpc = {'method': 'clique_getSnapshot', 'params': [], 'id': 1, 'jsonrpc': '2.0'}
+        clique_snapshot_res = requests.post(LOCAL_RPC, snap_rpc).json().result
+
+        self_rpc = {"method": "net_localAddress", "params": [], "id": 1, "jsonrpc": "2.0"}
+        local_address_res = requests.post(LOCAL_RPC, self_rpc).json().result
+
+        # requires node is voted in
+        is_signer = False
+        if local_address_res in clique_snapshot_res:
+            is_signer = True
+
+        voted_in = True
+        node_health = chain_res.entries["node-health"]
+        if "The node stopped producing blocks" in node_health.description:
+            voted_in = False
+
         chain_res["block_number"] = latest_block.number
         chain_res["hash"] = latest_block.hash.hex()
         chain_res["chain_id"] = web3.eth.chain_id
+        chain_res["snapshot"] = clique_snapshot_res
+        chain_res["local_address"] = local_address_res
+        chain_res["is_signer"] = is_signer
+        chain_res["voted_in"] = voted_in
         return chain_res
     except:
         pass
