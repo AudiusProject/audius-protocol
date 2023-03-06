@@ -127,7 +127,10 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   // force staging to use nethermind since it hasn't surpassed finalPOABlock
   // prod will surpass
-
+  if (!config.get('nethermindEnabled')) {
+    // nulling this will disable nethermind relays
+    nethermindContractAddress = null
+  }
   if (config.get('environment') === 'staging') {
     sendToNethermindOnly = true
   }
@@ -159,6 +162,25 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     await delay(200)
     wallet = await selectWallet()
   }
+
+  await redis.zadd(
+    'relayTxAttempts',
+    Math.floor(Date.now() / 1000),
+    JSON.stringify({
+      date: Math.floor(Date.now() / 1000),
+      reqBodySHA,
+      senderAddress
+    })
+  )
+
+  req.logger.info(
+    `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
+  )
+
+  // send to POA
+  // PROD doesn't have sendToNethermindOnly and should default to POA
+  // STAGE defaults to nethermind but can send to POA when it has both addresses
+  const relayPromises = []
 
   // relay stats object that gets filled out as relay occurs
   const relayStats = {
@@ -213,7 +235,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       }
       relayStats.nethermind.isRecipient = true
       relayPromises.push(
-        relayToNethermind(
+        relayToNethermindWithTimeout(
           nethermindEncodedABI,
           nethermindContractAddress,
           gasLimit
@@ -299,11 +321,6 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       relayStats,
       totalTransactionLatency
     }
-    await redis.zadd(
-      'relayTxAttempts',
-      Math.floor(Date.now() / 1000),
-      JSON.stringify(redisLogParams)
-    )
     req.logger.info(
       `L2 - txRelay - sending a transaction for wallet ${
         wallet.publicKey
@@ -559,6 +576,23 @@ const createAndSendTransaction = async (
 //
 // Relay txn to nethermind
 //
+async function relayToNethermindWithTimeout(
+  encodedABI,
+  contractAddress,
+  gasLimit
+) {
+  // relayToNethermind with a 10 second timeout
+  return Promise.race([
+    relayToNethermind(encodedABI, contractAddress, gasLimit),
+    new Promise((resolve, reject) =>
+      setTimeout(() => {
+        const timeoutMessage = `Relay to nethermind timed out`
+        logger.info(timeoutMessage)
+        reject(new Error(timeoutMessage))
+      }, 5000)
+    )
+  ])
+}
 
 let inFlight = 0
 
