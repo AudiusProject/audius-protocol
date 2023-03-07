@@ -1211,8 +1211,16 @@ feeling_lucky_parser.add_argument(
 feeling_lucky_parser.add_argument(
     "with_users",
     required=False,
+    default=False,
     type=bool,
     description="Boolean to include user info with tracks",
+)
+feeling_lucky_parser.add_argument(
+    "min_followers",
+    required=False,
+    default=100,
+    type=int,
+    description="Fetch tracks from users with at least this number of followers",
 )
 
 
@@ -1232,6 +1240,7 @@ class FeelingLucky(Resource):
             "with_users": request_args.get("with_users"),
             "limit": format_limit(request_args, max_limit=100, default_limit=25),
             "user_id": get_current_user_id(request_args),
+            "min_followers": request_args.get("min_followers")
         }
         tracks = get_random_tracks(args)
         tracks = list(map(extend_track, tracks))
