@@ -4,10 +4,10 @@ import {
   getContext
 } from '@audius/common'
 import commonNotificationsSagas, {
-  getNotifications,
   getPollingIntervalMs
 } from 'audius-client/src/common/store/notifications/sagas'
 import { waitForRead, waitForWrite } from 'audius-client/src/utils/sagaHelpers'
+import { checkForNewNotificationsSaga } from 'common/store/notifications/checkForNewNotificationsSaga'
 import { AppState } from 'react-native'
 import { call, delay, select, takeEvery } from 'typed-redux-saga'
 
@@ -39,15 +39,14 @@ function* notificationPollingDaemon() {
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(waitForRead)
 
-  yield* takeEvery(ENTER_FOREGROUND, getNotifications, false)
+  yield* takeEvery(ENTER_FOREGROUND, checkForNewNotificationsSaga)
 
   // Set up daemon that will poll for notifications every 10s if the app is
   // in the foreground
-  const isFirstFetch = true
 
   while (true) {
     if (AppState.currentState === 'active') {
-      yield* call(getNotifications, isFirstFetch)
+      yield* call(checkForNewNotificationsSaga)
     }
     yield* delay(getPollingIntervalMs(remoteConfigInstance))
   }

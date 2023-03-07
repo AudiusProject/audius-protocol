@@ -30,7 +30,8 @@ export const remoteConfigIntDefaults: { [key in IntKeys]: number | null } = {
   [IntKeys.BUY_AUDIO_WALLET_POLL_DELAY_MS]: 1000,
   [IntKeys.BUY_AUDIO_WALLET_POLL_MAX_RETRIES]: 120,
   [IntKeys.BUY_AUDIO_SLIPPAGE]: 3,
-  [IntKeys.GATED_TRACK_POLL_INTERVAL_MS]: 1000
+  [IntKeys.GATED_TRACK_POLL_INTERVAL_MS]: 1000,
+  [IntKeys.DISCOVERY_NOTIFICATIONS_GENESIS_TIMESTAMP]: 0
 }
 
 export const remoteConfigStringDefaults: {
