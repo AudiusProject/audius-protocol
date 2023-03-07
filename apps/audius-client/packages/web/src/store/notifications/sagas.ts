@@ -2,10 +2,8 @@ import { accountSelectors, getContext, waitForValue } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import { call, delay, fork, take } from 'typed-redux-saga'
 
-import {
-  getNotifications,
-  getPollingIntervalMs
-} from 'common/store/notifications/sagas'
+import { checkForNewNotificationsSaga } from 'common/store/notifications/checkForNewNotificationsSaga'
+import { getPollingIntervalMs } from 'common/store/notifications/sagas'
 import { isElectron } from 'utils/clientUtil'
 import { waitForRead } from 'utils/sagaHelpers'
 const { getHasAccount } = accountSelectors
@@ -25,16 +23,16 @@ function* notificationPollingDaemon() {
     })
     return () => {}
   })
+
   yield* fork(function* () {
     while (true) {
       yield* take(visibilityChannel)
-      yield* call(getNotifications, false)
+      yield* call(checkForNewNotificationsSaga)
     }
   })
 
   // Set up daemon that will poll for notifications every 10s if the browser is
   // in the foreground
-  const isFirstFetch = true
   let isBrowserInBackground = false
   document.addEventListener(
     'visibilitychange',
@@ -50,7 +48,7 @@ function* notificationPollingDaemon() {
 
   while (true) {
     if (!isBrowserInBackground || isElectron()) {
-      yield* call(getNotifications, isFirstFetch)
+      yield* call(checkForNewNotificationsSaga)
     }
     yield* delay(getPollingIntervalMs(remoteConfigInstance))
   }

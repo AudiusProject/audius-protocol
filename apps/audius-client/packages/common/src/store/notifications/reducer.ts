@@ -1,3 +1,5 @@
+import { uniq } from 'lodash'
+
 import { Status } from '../../models/Status'
 
 import * as actions from './actions'
@@ -59,11 +61,19 @@ const actionsMap: any = {
       hasLoaded: true
     }
   },
+  [actions.REFRESH_NOTIFICATIONS](state: NotificationState) {
+    return {
+      ...state,
+      status: Status.LOADING
+    }
+  },
+  // TODO rename to something more clear, essentially prepending notifs
   [actions.SET_NOTIFICATIONS](
     state: NotificationState,
     action: types.SetNotifications
   ) {
-    const notificationIds = action.notifications.map(({ id }) => id)
+    const newNotificationIds = action.notifications.map(({ id }) => id)
+    const newIds = uniq([...newNotificationIds, ...state.allIds])
     return {
       ...state,
       notifications: action.notifications.reduce(
@@ -73,7 +83,7 @@ const actionsMap: any = {
         },
         {}
       ),
-      allIds: notificationIds,
+      allIds: newIds,
       totalUnviewed: action.totalUnviewed,
       status: Status.SUCCESS,
       hasMore: action.hasMore,

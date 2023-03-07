@@ -57,7 +57,8 @@ import {
   PushNotificationSetting,
   NotificationType,
   Entity,
-  Achievement
+  Achievement,
+  Notification
 } from '../../store'
 import { CIDCache } from '../../store/cache/CIDCache'
 import {
@@ -2384,15 +2385,23 @@ export const audiusBackend = ({
     if (!account) return
     const encodedUserId = encodeHashId(account.user_id)
 
-    const response = await audiusLibs.Notifications.getNotifications({
-      encodedUserId,
-      timestamp,
-      groupId: groupIdOffset,
-      limit
-    })
+    type DiscoveryNotificationsResponse = {
+      notifications: DiscoveryNotification[]
+    }
 
+    const response: DiscoveryNotificationsResponse =
+      await audiusLibs.Notifications.getNotifications({
+        encodedUserId,
+        timestamp,
+        groupId: groupIdOffset,
+        limit
+      })
+
+    // TODO: update mapDiscoveryNotification to return Notification
     return {
-      notifications: response.notifications.map(mapDiscoveryNotification)
+      notifications: response.notifications.map(
+        mapDiscoveryNotification
+      ) as Notification[]
     }
   }
 
@@ -2407,7 +2416,12 @@ export const audiusBackend = ({
   }) {
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
-    if (!account) return
+    if (!account)
+      return {
+        message: 'error',
+        error: new Error('User not signed in'),
+        isRequestError: false
+      }
     try {
       const { data, signature } = await signData()
       const timeOffsetQuery = timeOffset
@@ -2419,7 +2433,7 @@ export const audiusBackend = ({
         ? '&withSupporterDethroned=true'
         : ''
       // TODO: withRemix, withTrending, withRewards are always true and should be removed in a future release
-      const notifications = await fetch(
+      const notificationsResponse = await fetch(
         `${identityServiceUrl}/notifications?${limitQuery}${timeOffsetQuery}${handleQuery}${withDethronedQuery}}&withTips=true&withRewards=true&withRemix=true&withTrendingTrack=true`,
         {
           headers: {
@@ -2428,20 +2442,29 @@ export const audiusBackend = ({
             [AuthHeaders.Signature]: signature
           }
         }
-      ).then((res) => {
-        if (res.status !== 200) {
-          return {
-            success: false,
-            error: new Error('Invalid Server Response'),
-            isRequestError: true
-          }
+      )
+
+      if (notificationsResponse.status !== 200) {
+        return {
+          message: 'error',
+          error: new Error('Invalid Server Response'),
+          isRequestError: true
         }
-        return res.json()
-      })
+      }
+      type Notifications = {
+        message: 'success'
+        notifications: Notification[]
+        totalUnread: number
+        playlistUpdates: number[]
+      }
+      const notifications: Notifications = await notificationsResponse.json()
       return notifications
     } catch (e) {
-      console.error(e)
-      return { success: false, error: e, isRequestError: true }
+      return {
+        message: 'error',
+        error: new Error(getErrorMessage(e)),
+        isRequestError: true
+      }
     }
   }
 

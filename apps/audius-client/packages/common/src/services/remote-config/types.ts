@@ -147,7 +147,13 @@ export enum IntKeys {
   /**
    * The interval in milliseconds between polls for gated tracks to check for access
    */
-  GATED_TRACK_POLL_INTERVAL_MS = 'GATED_TRACK_POLL_INTERVAL_MS'
+  GATED_TRACK_POLL_INTERVAL_MS = 'GATED_TRACK_POLL_INTERVAL_MS',
+
+  /**
+   * The start time for discovery notifications indexing, used to determine
+   * when we should rollback to identity notifications
+   */
+  DISCOVERY_NOTIFICATIONS_GENESIS_TIMESTAMP = 'DISCOVERY_NOTIFICATIONS_GENESIS_TIMESTAMP'
 }
 
 export enum BooleanKeys {
