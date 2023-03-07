@@ -33,7 +33,6 @@ def get_random_tracks(args):
             .order_by(func.random())
             .limit(limit)
         )
-        print(f"get_random_tracks.py query: {str(tracks_query)}")
 
         tracks_query_results = tracks_query.all()
         tracks = helpers.query_result_to_list(tracks_query_results)

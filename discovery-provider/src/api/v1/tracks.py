@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
+from flask_restplus import inputs
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_path_param,
@@ -1212,7 +1213,7 @@ feeling_lucky_parser.add_argument(
     "with_users",
     required=False,
     default=False,
-    type=bool,
+    type=inputs.boolean,
     description="Boolean to include user info with tracks",
 )
 feeling_lucky_parser.add_argument(
