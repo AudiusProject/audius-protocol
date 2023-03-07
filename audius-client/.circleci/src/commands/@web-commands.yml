@@ -95,6 +95,8 @@ web-distribute:
     - run:
         name: distribute
         command: |
+          nvm install 14.20.1
+          nvm use 14.20.1
           cd packages/web
           npm run dist:<< parameters.build-type >>
 
