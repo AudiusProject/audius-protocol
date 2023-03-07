@@ -69,58 +69,65 @@ class EditPage extends Component {
       return Object.values(newInvalidTracksFields[i]).every((f) => !f)
     })
 
-    this.setState({
-      invalidTracksFields: newInvalidTracksFields
-    })
+    this.setState(
+      {
+        invalidTracksFields: newInvalidTracksFields
+      },
+      () => {
+        const unlistedVisibilityFields = [
+          'genre',
+          'mood',
+          'tags',
+          'share',
+          'play_count'
+        ]
+        for (let i = 0; i < tracks.length; i += 1) {
+          const track = tracks[i]
 
-    const unlistedVisibilityFields = [
-      'genre',
-      'mood',
-      'tags',
-      'share',
-      'play_count'
-    ]
-    for (let i = 0; i < tracks.length; i += 1) {
-      const track = tracks[i]
+          // If track is premium, set remixes to false
+          const isPremium = track.metadata.is_premium
+          const remixes = isPremium
+            ? false
+            : track.metadata.field_visibility.remixes
 
-      // If track is premium, set remixes to false
-      const isPremium = track.metadata.is_premium
-      const remixes = isPremium
-        ? false
-        : track.metadata.field_visibility.remixes
+          // If track is not unlisted and one of the unlisted visibility fields is false, set to true
+          const isUnlisted = track.metadata.is_unlisted
+          const genre = !isUnlisted
+            ? true
+            : track.metadata.field_visibility.genre
+          const mood = !isUnlisted ? true : track.metadata.field_visibility.mood
+          const tags = !isUnlisted ? true : track.metadata.field_visibility.tags
+          const share = !isUnlisted
+            ? true
+            : track.metadata.field_visibility.share
+          const play_count = !isUnlisted
+            ? true
+            : track.metadata.field_visibility.play_count
 
-      // If track is not unlisted and one of the unlisted visibility fields is false, set to true
-      const isUnlisted = track.metadata.is_unlisted
-      const genre = !isUnlisted ? true : track.metadata.field_visibility.genre
-      const mood = !isUnlisted ? true : track.metadata.field_visibility.mood
-      const tags = !isUnlisted ? true : track.metadata.field_visibility.tags
-      const share = !isUnlisted ? true : track.metadata.field_visibility.share
-      const play_count = !isUnlisted
-        ? true
-        : track.metadata.field_visibility.play_count
-
-      if (
-        isPremium ||
-        (!isUnlisted &&
-          !unlistedVisibilityFields.every(
-            (field) => track.metadata.field_visibility[field]
-          ))
-      ) {
-        this.updateTrack(
-          'field_visibility',
-          {
-            genre,
-            mood,
-            tags,
-            share,
-            play_count,
-            remixes
-          },
-          false,
-          i
-        )
+          if (
+            isPremium ||
+            (!isUnlisted &&
+              !unlistedVisibilityFields.every(
+                (field) => track.metadata.field_visibility[field]
+              ))
+          ) {
+            this.updateTrack(
+              'field_visibility',
+              {
+                genre,
+                mood,
+                tags,
+                share,
+                play_count,
+                remixes
+              },
+              false,
+              i
+            )
+          }
+        }
       }
-    }
+    )
     return validTracks.every((f) => f)
   }
 
