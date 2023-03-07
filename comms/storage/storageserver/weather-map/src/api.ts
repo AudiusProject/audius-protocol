@@ -37,11 +37,74 @@ export const useFilesInShard = (shard: string, storageHostsWithShard: string[]) 
     }),
   )
 
-export const useStatusUpdateLogs = (entries: number, numHoursAgo: number) =>
-  useQuery<NodeStatus[], any>(['statusUpdateLogs', entries, numHoursAgo], () => {
-    return axios
-      .get(
-        `${window.location.origin}/storage/api/v1/logs/statusUpdates?numEntries=${entries}&numHoursAgo=${numHoursAgo}`,
-      )
-      .then((res) => res.data)
-  })
+export const useLogs = (entries: number, numHoursAgo: number) =>
+  useQueries([
+    {
+      queryKey: ['statusUpdateLogs', entries, numHoursAgo],
+      queryFn: () => fetchStatusUpdateLogs(entries, numHoursAgo),
+      staleTime: Infinity,
+    },
+    {
+      queryKey: ['updateHealthyNodeSetLogs', entries, numHoursAgo],
+      queryFn: () => fetchUpdateHealthyNodeSetLogs(entries, numHoursAgo),
+      staleTime: Infinity,
+    },
+    {
+      queryKey: ['rebalanceLogs', entries, numHoursAgo],
+      queryFn: () => fetchRebalanceLogs(entries, numHoursAgo),
+      staleTime: Infinity,
+    },
+  ])
+
+const fetchStatusUpdateLogs = (entries: number, numHoursAgo: number) => {
+  return axios
+    .get(
+      `${window.location.origin}/storage/api/v1/logs/statusUpdate?numEntries=${entries}&numHoursAgo=${numHoursAgo}`,
+    )
+    .then((res) => res.data as NodeStatus[])
+}
+
+type RebalanceStartLog = {
+  timestamp: string
+  prevShards: string[]
+  newShards: string[]
+}
+type RebalanceEndLog = {
+  timestamp: string
+  prevShards: string[]
+  newShards: string[]
+  // TODO: Time spent, numFiles per shard, etc...
+}
+type StartEventsForHost = {
+  host: string
+  events: RebalanceStartLog[]
+}
+type EndEventsForHost = {
+  host: string
+  events: RebalanceEndLog[]
+}
+export type RebalanceLogs = {
+  starts: StartEventsForHost[]
+  ends: EndEventsForHost[]
+}
+
+const fetchRebalanceLogs = (entries: number, numHoursAgo: number) => {
+  return axios
+    .get(
+      `${window.location.origin}/storage/api/v1/logs/rebalance?numEntries=${entries}&numHoursAgo=${numHoursAgo}`,
+    )
+    .then((res) => res.data as RebalanceLogs)
+}
+
+export type UpdateHealthyNodeSetLog = {
+  timestamp: string
+  healthyNodes: string[]
+  updatedBy: string
+}
+const fetchUpdateHealthyNodeSetLogs = (entries: number, numHoursAgo: number) => {
+  return axios
+    .get(
+      `${window.location.origin}/storage/api/v1/logs/updateHealthyNodeSet?numEntries=${entries}&numHoursAgo=${numHoursAgo}`,
+    )
+    .then((res) => res.data as UpdateHealthyNodeSetLog[])
+}
