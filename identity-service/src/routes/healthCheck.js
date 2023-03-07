@@ -90,7 +90,7 @@ module.exports = function (app) {
       }
 
       if (failureTxsInRedis.length > maxErrors) {
-        isError
+        isError = true
       }
 
       for (const tx in successfulTxsInRedis) {
