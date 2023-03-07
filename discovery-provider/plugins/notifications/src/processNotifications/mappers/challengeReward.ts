@@ -137,7 +137,6 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     return {
       type: this.notification.type,
       challengeId: this.challengeId,
-      receiverUserId: { name: receiverUser.name },
       rewardAmount: formatWei(this.amount.toString(), 'sol')
     }
   }

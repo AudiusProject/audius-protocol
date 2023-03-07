@@ -81,14 +81,12 @@ describe('Follow Notification', () => {
       { follower_user_id: 2, followee_user_id: 1 }
     ])
 
-    await new Promise(resolve => setTimeout(resolve, 10))
-
     const notifications: AppEmailNotification[] = [
       {
         type: 'follow',
         timestamp: new Date(),
         specifier: '2',
-        group_id: 'follow:2',
+        group_id: 'follow:1',
         data: {
           follower_user_id: 2,
           followee_user_id: 1
@@ -108,5 +106,38 @@ describe('Follow Notification', () => {
     expect(notifHtml).toMatchSnapshot()
   })
 
+  test("Render a multi Follow email", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }, { user_id: 3 }, { user_id: 4 }, { user_id: 5 }])
+
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: 2, followee_user_id: 1 },
+      { follower_user_id: 3, followee_user_id: 1 },
+      { follower_user_id: 4, followee_user_id: 1 },
+      { follower_user_id: 5, followee_user_id: 1 },
+    ])
+
+    const notifications: AppEmailNotification[] = Array.from(new Array(4), (_, num) => ({
+      type: 'follow',
+      timestamp: new Date(),
+      specifier: (num + 2).toString(),
+      group_id: 'follow:1',
+      data: {
+        follower_user_id: (num + 2),
+        followee_user_id: 1
+      },
+      user_ids: [1],
+      receiver_user_id: 1
+    }))
+
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+    expect(notifHtml).toMatchSnapshot()
+  })
 
 })
