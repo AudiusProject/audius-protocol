@@ -51,6 +51,10 @@ const snippetMap = {
     const [user] = notification.users
     return `${user.name} reposted your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
   },
+  ['repost_of_repost'](notification) {
+    const [user] = notification.users
+    return `${user.name} reposted your repost of ${notification.entity.name}`
+  },
   ['follow'](notification) {
     const [user] = notification.users
     return `${user.name} followed you`
@@ -58,6 +62,10 @@ const snippetMap = {
   ['save'](notification) {
     const [user] = notification.users
     return `${user.name} saved your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+  },
+  ['save_of_repost'](notification) {
+    const [user] = notification.users
+    return `${user.name} saved your repost of ${notification.entity.name}`
   },
   ['announcement'](notification) {
     return notification.title

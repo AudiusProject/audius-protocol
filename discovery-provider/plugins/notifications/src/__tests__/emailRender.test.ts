@@ -1,7 +1,7 @@
 import { expect, jest, test } from '@jest/globals'
 import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
-import { reposttype, savetype } from '../types/dn'
+import { RepostType, SaveType } from '../types/dn'
 import { DMEntityType } from '../email/notifications/types'
 import { DMEmailNotification, AppEmailNotification } from '../types/notifications'
 import { createTestDB, createTracks, createUsers, dropTestDB, insertFollows, replaceDBName } from '../utils/populateDB'
@@ -102,7 +102,7 @@ describe('Render email', () => {
         data: {
           user_id: 2,
           repost_item_id: 1,
-          type: reposttype.track
+          type: RepostType.track
         },
         user_ids: [1],
         receiver_user_id: 1,
@@ -137,7 +137,7 @@ describe('Render email', () => {
         data: {
           user_id: 2,
           save_item_id: 1,
-          type: savetype.track
+          type: SaveType.track
         },
         receiver_user_id: 1
       }
@@ -165,8 +165,9 @@ describe('Render email', () => {
         title: "track 2",
         owner_id: 2,
         remix_of:
-          { tracks: [{ parent_track_id: 1 }]
-          }
+        {
+          tracks: [{ parent_track_id: 1 }]
+        }
       },
     ])
     await new Promise(resolve => setTimeout(resolve, 10))
@@ -203,8 +204,9 @@ describe('Render email', () => {
         title: "track 1",
         owner_id: 1,
         remix_of:
-          { tracks: [{ parent_track_id: 2 }] 
-          }
+        {
+          tracks: [{ parent_track_id: 2 }]
+        }
       },
       {
         track_id: 2,

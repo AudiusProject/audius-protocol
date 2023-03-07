@@ -190,7 +190,9 @@ export type NotificationData =
   | DMReactionNotification
   | FollowNotification
   | RepostNotification
+  | RepostOfRepostNotification
   | SaveNotification
+  | SaveOfRepostNotification
   | MilestoneNotification
   | RemixNotification
   | CosignRemixNotification

@@ -9,6 +9,8 @@ import {
   FollowNotification,
   RepostNotification,
   SaveNotification,
+  SaveOfRepostNotification,
+  RepostOfRepostNotification,
   RemixNotification,
   CosignRemixNotification,
   SupporterRankUpNotification,
@@ -26,6 +28,7 @@ import {
 } from '../../types/notifications'
 import { Follow } from './follow'
 import { Repost } from './repost'
+import { RepostOfRepost } from './repostOfRepost'
 import { Save } from './save'
 import { Remix } from './remix'
 import { CosignRemix } from './cosign'
@@ -41,6 +44,7 @@ import { ChallengeReward } from './challengeReward'
 import { AddTrackToPlaylist } from './addTrackToPlaylist'
 import { Create } from './create'
 import { Announcement } from './announcement'
+import { SaveOfRepost } from './saveOfRepost'
 
 export const mapNotifications = (notifications: (NotificationRow | EmailNotification)[], dnDb: Knex, identityDb: Knex) => {
   return notifications.map((notification) => mapNotification(notification, dnDb, identityDb)).filter(Boolean)
@@ -54,6 +58,14 @@ const mapNotification = (notification: NotificationRow | EmailNotification, dnDb
   else if (notification.type == 'repost') {
     const repostNotification = notification as NotificationRow & { data: RepostNotification }
     return new Repost(dnDb, identityDb, repostNotification)
+  }
+  else if (notification.type == 'repost_of_repost') {
+    const repostOfRepostNotification = notification as NotificationRow & { data: RepostOfRepostNotification }
+    return new RepostOfRepost(dnDb, identityDb, repostOfRepostNotification)
+  }
+  else if (notification.type == 'save_of_repost') {
+    const saveOfRepostNotification = notification as NotificationRow & { data: SaveOfRepostNotification }
+    return new SaveOfRepost(dnDb, identityDb, saveOfRepostNotification)
   }
   else if (notification.type == 'save') {
     const saveNotification = notification as NotificationRow & { data: SaveNotification }

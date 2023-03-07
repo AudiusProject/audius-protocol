@@ -18,7 +18,7 @@ import {
 
 import { AppEmailNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
-import { reposttype } from '../../types/dn'
+import { RepostType } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
 describe('Repost Notification', () => {
@@ -57,7 +57,7 @@ describe('Repost Notification', () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
     await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 10, repost_type: reposttype.track
+      user_id: 2, repost_item_id: 10, repost_type: RepostType.track
     }])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -82,7 +82,7 @@ describe('Repost Notification', () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 20, playlist_owner_id: 1, is_album: false }])
     await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 20, repost_type: reposttype.playlist
+      user_id: 2, repost_item_id: 20, repost_type: RepostType.playlist
     }])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -107,7 +107,7 @@ describe('Repost Notification', () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 30, playlist_owner_id: 1, is_album: true }])
     await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 30, repost_type: reposttype.playlist
+      user_id: 2, repost_item_id: 30, repost_type: RepostType.playlist
     }])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -132,7 +132,7 @@ describe('Repost Notification', () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
     await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 10, repost_type: reposttype.track
+      user_id: 2, repost_item_id: 10, repost_type: RepostType.track
     }])
 
     await new Promise(resolve => setTimeout(resolve, 10))

@@ -16,7 +16,7 @@ import {
   createReposts,
 } from '../../utils/populateDB'
 
-import { reposttype, savetype } from '../../types/dn'
+import { RepostType, SaveType } from '../../types/dn'
 import { AppEmailNotification, FollowerMilestoneNotification, MilestoneType, PlaylistMilestoneNotification, TrackMilestoneNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
 
@@ -113,7 +113,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createReposts(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ repost_type: reposttype.track, repost_item_id: 2, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ repost_type: RepostType.track, repost_item_id: 2, user_id: ind + 2 })))
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -177,7 +177,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createReposts(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ repost_type: reposttype.playlist, repost_item_id: 32, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ repost_type: RepostType.playlist, repost_item_id: 32, user_id: ind + 2 })))
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -206,7 +206,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createReposts(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ repost_type: reposttype.playlist, repost_item_id: 32, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ repost_type: RepostType.playlist, repost_item_id: 32, user_id: ind + 2 })))
 
     const data: PlaylistMilestoneNotification = {
       type: MilestoneType.PLAYLIST_REPOST_COUNT,
@@ -242,7 +242,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createSaves(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ save_type: savetype.track, save_item_id: 2, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ save_type: SaveType.track, save_item_id: 2, user_id: ind + 2 })))
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -305,7 +305,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createSaves(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ save_type: savetype.playlist, save_item_id: 32, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ save_type: SaveType.playlist, save_item_id: 32, user_id: ind + 2 })))
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
