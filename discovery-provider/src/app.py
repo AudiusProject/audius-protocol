@@ -29,7 +29,6 @@ from src.queries import (
     health_check,
     index_block_stats,
     notifications,
-    prometheus_metrics_exporter,
     queries,
     search,
     search_queries,
