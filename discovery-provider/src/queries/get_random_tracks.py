@@ -24,15 +24,16 @@ def get_random_tracks(args):
             )
             .join(AggregateUser, Track.owner_id == AggregateUser.user_id)
             .filter(
-                Track.is_current is True,
-                Track.is_delete is False,
-                Track.is_unlisted is False,
-                Track.stem_of is None,
-                AggregateUser.follower_count > args.get("min_followers", 100),
+                Track.is_current == True,
+                Track.is_delete == False,
+                Track.is_unlisted == False,
+                Track.stem_of == None,
+                AggregateUser.follower_count >= args.get("min_followers", 100),
             )
             .order_by(func.random())
             .limit(limit)
         )
+        print(f"get_random_tracks.py query: {str(tracks_query)}")
 
         tracks_query_results = tracks_query.all()
         tracks = helpers.query_result_to_list(tracks_query_results)
@@ -41,9 +42,9 @@ def get_random_tracks(args):
         # bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-        print("get_randome_tracks.py")
+        print("get_random_tracks.py")
         if args.get("with_users", False):
-            print("get_randome_tracks.py: retrieving users info")
+            print("get_random_tracks.py: retrieving users info")
             user_id_list = get_users_ids(tracks)
             users = get_users_by_id(session, user_id_list)
             for track in tracks:
