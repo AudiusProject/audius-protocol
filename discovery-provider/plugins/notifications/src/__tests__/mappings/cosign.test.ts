@@ -13,13 +13,10 @@ import {
   createBlocks,
   createReposts,
 } from '../../utils/populateDB'
-<<<<<<< Updated upstream
-import { reposttype } from '../../types/dn'
+
 import { AppEmailNotification, CosignRemixNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
-=======
 import { RepostType } from '../../types/dn'
->>>>>>> Stashed changes
 
 describe('Cosign Notification', () => {
   let processor: Processor
