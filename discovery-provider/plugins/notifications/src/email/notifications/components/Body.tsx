@@ -70,7 +70,7 @@ const snippetMap = {
       return `You have reached over ${notification.value} Followers`
     }
   },
-  ['trending_track'](notification) {
+  ['trending'](notification) {
     const rank = notification.rank
     const suffix = getNumberSuffix(rank)
     return `Your Track ${notification.entity.title} is ${notification.rank}${suffix} on Trending Right Now!`
