@@ -32,6 +32,10 @@
   font-size: var(--font-l);
 }
 
+.dropdownInput :global(.ant-select-selection-item) {
+  pointer-events: none;
+}
+
 :global(.ant-select-selection-item) .dropdownRow > img {
   width: 32px;
   height: 32px;
