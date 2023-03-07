@@ -26,13 +26,22 @@ type NodeStatus struct {
 }
 
 type UpdateHealthyNodeSetLog struct {
-	HealthyNodes []string `json:"healthyNodes"`
-	UpdatedBy    string   `json:"updatedBy"`
+	Timestamp    time.Time `json:"timestamp"`
+	HealthyNodes []string  `json:"healthyNodes"`
+	UpdatedBy    string    `json:"updatedBy"`
 }
 
-type RebalanceLog struct {
-	PrevShards []string `json:"prevShards"`
-	NewShards  []string `json:"newShards"`
+type RebalanceStartLog struct {
+	Timestamp  time.Time `json:"timestamp"`
+	PrevShards []string  `json:"prevShards"`
+	NewShards  []string  `json:"newShards"`
+}
+
+type RebalanceEndLog struct {
+	Timestamp  time.Time `json:"timestamp"`
+	PrevShards []string  `json:"prevShards"`
+	NewShards  []string  `json:"newShards"`
+	// TODO: Time spent, numFiles per shard, etc...
 }
 
 func New(namespace string, pubKey string, jsc nats.JetStreamContext) (*LogStream, error) {
@@ -68,6 +77,7 @@ func (ls LogStream) LogStatusUpdate(status []byte) {
 
 func (ls LogStream) LogUpdateHealthyNodeSet(healthyNodes []string) {
 	msg, err := json.Marshal(UpdateHealthyNodeSetLog{
+		Timestamp:    time.Now().UTC(),
 		HealthyNodes: healthyNodes,
 		UpdatedBy:    ls.pubKey,
 	})
@@ -81,7 +91,8 @@ func (ls LogStream) LogUpdateHealthyNodeSet(healthyNodes []string) {
 }
 
 func (ls LogStream) LogRebalanceStart(prevShards []string, newShards []string) {
-	msg, err := json.Marshal(RebalanceLog{
+	msg, err := json.Marshal(RebalanceStartLog{
+		Timestamp:  time.Now().UTC(),
 		PrevShards: prevShards,
 		NewShards:  newShards,
 	})
@@ -95,7 +106,8 @@ func (ls LogStream) LogRebalanceStart(prevShards []string, newShards []string) {
 }
 
 func (ls LogStream) LogRebalanceEnd(prevShards []string, newShards []string) {
-	msg, err := json.Marshal(RebalanceLog{
+	msg, err := json.Marshal(RebalanceEndLog{
+		Timestamp:  time.Now().UTC(),
 		PrevShards: prevShards,
 		NewShards:  newShards,
 	})
@@ -108,54 +120,88 @@ func (ls LogStream) LogRebalanceEnd(prevShards []string, newShards []string) {
 	}
 }
 
-// GetNStatusUpdatesSince returns the first N status updates for a node that occurred on or after numHoursAgo hours ago.
-func (ls LogStream) GetNStatusUpdatesSince(n int, numHoursAgo float64, pubKey string) ([]NodeStatus, error) {
+// GetStatusUpdatesInRange returns status updates for a pubKey in the start to end range.
+func (ls LogStream) GetStatusUpdatesInRange(start time.Time, end time.Time, pubKey string, logs *[]NodeStatus) error {
 	subject := fmt.Sprintf("storage.log.%s.statusUpdate", pubKey)
-	subscription, err := ls.jsc.SubscribeSync(
+	return GetLogsForSubjInRange(start, end, subject, ls.jsc, logs)
+}
+
+// GetRebalanceStartsInRange returns rebalanceStart logs for pubKey in the start to end range.
+func (ls LogStream) GetRebalanceStartsInRange(start time.Time, end time.Time, pubKey string, logs *[]RebalanceStartLog) error {
+	subject := fmt.Sprintf("storage.log.%s.rebalanceStart", pubKey)
+	return GetLogsForSubjInRange(start, end, subject, ls.jsc, logs)
+}
+
+// GetRebalanceEndsInRange returns rebalanceEnd logs for pubKey in the start to end range.
+func (ls LogStream) GetRebalanceEndsInRange(start time.Time, end time.Time, pubKey string, logs *[]RebalanceEndLog) error {
+	subject := fmt.Sprintf("storage.log.%s.rebalanceEnd", pubKey)
+	return GetLogsForSubjInRange(start, end, subject, ls.jsc, logs)
+}
+
+// GetUpdateHealthyNodeSetsInRange returns updateHealthyNodeSet logs in the start to end range.
+func (ls LogStream) GetUpdateHealthyNodeSetsInRange(start time.Time, end time.Time, logs *[]UpdateHealthyNodeSetLog) error {
+	return GetLogsForSubjInRange(start, end, "storage.log.updateHealthyNodeSet", ls.jsc, logs)
+}
+
+// GetLogsForSubjInRange sets *logs to the logs for the given subject in the start to end range.
+func GetLogsForSubjInRange[T any](start time.Time, end time.Time, subject string, jsc nats.JetStreamContext, logs *[]T) error {
+	subscription, err := jsc.SubscribeSync(
 		subject,
 		nats.OrderedConsumer(),
-		nats.StartTime(time.Now().UTC().Add(time.Duration(float64(-time.Hour)*numHoursAgo))),
+		nats.StartTime(start),
 		nats.BindStream(StreamName),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create subscription: %v", err)
+		return fmt.Errorf("failed to create subscription for %T logs: %v", *logs, err)
 	}
 	defer subscription.Unsubscribe()
 
-	statusUpdates := make(chan []NodeStatus)
+	logsChan := make(chan []T)
 	go func() {
-		var updates []NodeStatus
+		var logs []T
 		for {
 			msg, err := subscription.NextMsg(3 * time.Second)
 			if err != nil {
-				statusUpdates <- updates
+				logsChan <- logs
 				return
 			}
 
-			var update NodeStatus
-			err = json.Unmarshal(msg.Data, &update)
+			var log T
+			err = json.Unmarshal(msg.Data, &log)
 			if err != nil {
-				statusUpdates <- updates
+				logsChan <- logs
 				return
 			}
-			updates = append(updates, update)
+			logs = append(logs, log)
 			msg.AckSync()
 
-			// Return after N updates
-			if len(updates) == n {
-				fmt.Println("found all updates: ")
-				statusUpdates <- updates
+			// Return once we've read logs until 'end' time
+			var t time.Time
+			switch logType := any(log).(type) {
+			case NodeStatus:
+				t = logType.LastOK
+			case RebalanceStartLog:
+				t = logType.Timestamp
+			case RebalanceEndLog:
+				t = logType.Timestamp
+			case UpdateHealthyNodeSetLog:
+				t = logType.Timestamp
+			default:
+				slog.Warn("unknown log type: %T", logType)
+				logsChan <- logs
+				return
+			}
+			if t.After(end) {
+				logsChan <- logs
 				return
 			}
 		}
 	}()
 
 	select {
-	case updates := <-statusUpdates:
-		fmt.Println("select case returning success")
-		return updates, nil
-	case <-time.After(20 * time.Second):
-		fmt.Println("select case returning timeout")
-		return nil, fmt.Errorf("timed out waiting for updates")
+	case *logs = <-logsChan:
+		return nil
+	case <-time.After(10 * time.Second):
+		return fmt.Errorf("timed out waiting for %T logs", logs)
 	}
 }

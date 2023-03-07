@@ -7,9 +7,10 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"strconv"
 	"strings"
+	"time"
 
+	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/contentaccess"
@@ -51,20 +52,13 @@ type StorageServer struct {
 }
 
 func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peering.Peering) (*StorageServer, error) {
-	allContentNodes, err := peering.GetContentNodes()
+	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
+	host, err := getStorageHostFromPubKey(thisNodePubKey, peering)
 	if err != nil {
-		slog.Error("Error getting content nodes", err)
+		slog.Error("Could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES", err)
 		return nil, err
 	}
 
-	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
-	var host string
-	for _, node := range allContentNodes {
-		if strings.EqualFold(node.DelegateOwnerWallet, thisNodePubKey) {
-			host = node.Endpoint
-			break
-		}
-	}
 	if host == "" {
 		return nil, errors.New("could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES")
 	}
@@ -125,11 +119,13 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 	ss := &StorageServer{
 		Namespace:      GlobalNamespace,
 		Config:         config,
+		Host:           host,
 		StorageDecider: d,
 		Jsc:            jsc,
 		JobsManager:    jobsManager,
 		Persistence:    persistence,
 		Monitor:        m,
+		Peering:        peering,
 		Logstream:      logstream,
 	}
 	ss.createWebServer()
@@ -179,7 +175,9 @@ func (ss *StorageServer) createWebServer() {
 	api.GET("/job-results/:id", ss.serveJobResultsById)
 
 	// TODO: Auth these routes to prevent abuse - they're resource intensive
-	api.GET("/logs/statusUpdates", ss.serveStatusUpdateLogs) // QueryParams: numEntries=int, numHoursAgo=float64, pubKey=string (node's wallet, default="*" for all nodes)
+	api.GET("/logs/statusUpdate", ss.serveStatusUpdateLogs)                 // QueryParams: start (default 1m ago), end, pubKey=string (node's wallet, default="*" for all nodes)
+	api.GET("/logs/updateHealthyNodeSet", ss.serveUpdateHealthyNodeSetLogs) // QueryParams: start (default 1m ago), end
+	api.GET("/logs/rebalance", ss.serveRebalanceLogs)                       // QueryParams: start (default 1m ago), end, pubKey=string (node's wallet, default="*" for all nodes)
 }
 
 /**
@@ -344,23 +342,150 @@ func (ss StorageServer) serveJobResultsById(c echo.Context) error {
 }
 
 func (ss StorageServer) serveStatusUpdateLogs(c echo.Context) error {
-	numEntries, err := strconv.Atoi(c.QueryParam("numEntries"))
+	start, end, pubKeys, err := ss.parseGetLogsParams(c, false)
 	if err != nil {
-		return c.String(http.StatusBadRequest, "numEntries must be an integer")
+		return err
 	}
-	numHoursAgo, err := strconv.ParseFloat(c.QueryParam("numHoursAgo"), 64)
+
+	getLogsForPubKey := func(pubKey string) (logs []logstream.NodeStatus) {
+		err := ss.Logstream.GetStatusUpdatesInRange(start, end, pubKey, &logs)
+		if err != nil {
+			slog.Error("Error getting status update logs", err, "pubKey", pubKey)
+		}
+		return
+	}
+
+	return c.JSON(200, getLogsForPubKeys(pubKeys, getLogsForPubKey))
+}
+
+func (ss StorageServer) serveRebalanceLogs(c echo.Context) error {
+	type StartEventsForHost struct {
+		Host   string                        `json:"host"`
+		Events []logstream.RebalanceStartLog `json:"events"`
+	}
+	type EndEventsForHost struct {
+		Host   string                      `json:"host"`
+		Events []logstream.RebalanceEndLog `json:"events"`
+	}
+	type RebalanceLogs struct {
+		Starts []StartEventsForHost `json:"starts"`
+		Ends   []EndEventsForHost   `json:"ends"`
+	}
+
+	start, end, pubKeys, err := ss.parseGetLogsParams(c, true)
 	if err != nil {
-		return c.String(http.StatusBadRequest, "numHoursAgo must be a float64")
+		return err
 	}
-	pubKey := c.QueryParam("pubKey")
-	if pubKey == "" {
-		pubKey = "*"
+
+	getStartLogsForPubKey := func(pubKey string) []StartEventsForHost {
+		host, err := getStorageHostFromPubKey(pubKey, ss.Peering)
+		if err != nil {
+			slog.Error("Error getting rebalanceStart logs", err, "pubKey", pubKey)
+			return []StartEventsForHost{}
+		}
+		var logs []logstream.RebalanceStartLog
+		err = ss.Logstream.GetRebalanceStartsInRange(start, end, pubKey, &logs)
+		if err != nil {
+			return []StartEventsForHost{}
+		}
+		return []StartEventsForHost{{Host: host, Events: logs}}
 	}
-	logs, err := ss.Logstream.GetNStatusUpdatesSince(numEntries, numHoursAgo, pubKey)
+
+	getEndLogsForPubKey := func(pubKey string) []EndEventsForHost {
+		host, err := getStorageHostFromPubKey(pubKey, ss.Peering)
+		if err != nil {
+			slog.Error("Error getting rebalanceEnd logs", err, "pubKey", pubKey)
+			return []EndEventsForHost{}
+		}
+		var logs []logstream.RebalanceEndLog
+		err = ss.Logstream.GetRebalanceEndsInRange(start, end, pubKey, &logs)
+		if err != nil {
+			return []EndEventsForHost{}
+		}
+		return []EndEventsForHost{{Host: host, Events: logs}}
+	}
+
+	startLogs := getLogsForPubKeys(pubKeys, getStartLogsForPubKey)
+	endLogs := getLogsForPubKeys(pubKeys, getEndLogsForPubKey)
+	return c.JSON(200, RebalanceLogs{Starts: startLogs, Ends: endLogs})
+}
+
+func (ss StorageServer) serveUpdateHealthyNodeSetLogs(c echo.Context) error {
+	start, end, _, err := ss.parseGetLogsParams(c, false)
+	if err != nil {
+		return err
+	}
+	var logs []logstream.UpdateHealthyNodeSetLog
+	err = ss.Logstream.GetUpdateHealthyNodeSetsInRange(start, end, &logs)
 	if err != nil {
 		return err
 	}
 	return c.JSON(200, logs)
+}
+
+// parseGetLogsParams parses the start, end, and pubKey params for the getLogs endpoints and turns "*" or empty pubKey param into a list of all storage nodes if parseWildcardPubKey is true.
+func (ss StorageServer) parseGetLogsParams(c echo.Context, parseWildcardPubKey bool) (start time.Time, end time.Time, pubKeys []string, err error) {
+	// Parse start and end time range, defaulting to the previous 1 minute
+	start = time.Now().UTC().Add(-1 * time.Minute)
+	end = time.Now().UTC()
+	startStr := c.QueryParam("start")
+	endStr := c.QueryParam("end")
+	if startStr != "" {
+		start, err = time.Parse(time.RFC3339, startStr)
+		if err != nil {
+			err = c.String(http.StatusBadRequest, "start must be a valid RFC3339 timestamp")
+			return
+		}
+	}
+	if endStr != "" {
+		end, err = time.Parse(time.RFC3339, endStr)
+		if err != nil {
+			err = c.String(http.StatusBadRequest, "end must be a valid RFC3339 timestamp")
+			return
+		}
+	}
+
+	// Parse pubKey param for wallet address to query logs for
+	pubKeyParam := strings.ToLower(c.QueryParam("pubKey"))
+	if pubKeyParam == "" {
+		if parseWildcardPubKey {
+			var storageNodes []sharedConfig.ServiceNode
+			storageNodes, err = ss.Peering.GetContentNodes()
+			if err != nil {
+				return
+			}
+			for _, node := range storageNodes {
+				pubKeys = append(pubKeys, strings.ToLower(node.DelegateOwnerWallet))
+			}
+		} else {
+			pubKeys = []string{"*"}
+		}
+	} else if strings.Contains(pubKeyParam, ",") {
+		pubKeys = strings.Split(pubKeyParam, ",")
+	} else {
+		pubKeys = []string{pubKeyParam}
+	}
+	return
+}
+
+// getLogsForPubKeys gets logs for each pubKey in pubKeys in a separate goroutine and returns the logs from all goroutines.
+func getLogsForPubKeys[T any](pubKeys []string, getLogsForPubKey func(pubKey string) []T) []T {
+	logsChan := make(chan []T)
+
+	for _, pubKey := range pubKeys {
+		go func(key string) {
+			logsChan <- getLogsForPubKey(key)
+		}(pubKey)
+	}
+
+	// Collect results from all goroutines
+	logs := make([]T, 0, len(pubKeys))
+	for i := 0; i < len(pubKeys); i++ {
+		logsForPubKey := <-logsChan
+		logs = append(logs, logsForPubKey...)
+	}
+	close(logsChan)
+	return logs
 }
 
 //go:embed static
@@ -385,4 +510,17 @@ func getWeatherMapStaticFiles() http.FileSystem {
 	}
 
 	return http.FS(fsys)
+}
+
+func getStorageHostFromPubKey(pubKey string, peering peering.Peering) (string, error) {
+	nodes, err := peering.GetContentNodes()
+	if err != nil {
+		return "", err
+	}
+	for _, node := range nodes {
+		if strings.EqualFold(node.DelegateOwnerWallet, pubKey) {
+			return strings.ToLower(node.Endpoint), err
+		}
+	}
+	return "", errors.New("no node found with pubKey " + pubKey)
 }
