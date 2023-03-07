@@ -137,7 +137,9 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     textTransform: 'uppercase'
   },
   headerView: {
-    ...flexRowCentered()
+    ...flexRowCentered(),
+    marginTop: spacing(2),
+    marginBottom: spacing(4)
   },
   premiumHeaderText: {
     letterSpacing: 2,
