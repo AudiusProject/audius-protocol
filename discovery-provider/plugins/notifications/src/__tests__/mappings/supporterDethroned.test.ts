@@ -1,6 +1,9 @@
 import { expect, jest, test } from '@jest/globals'
+import { renderEmail } from '../../email/notifications/renderEmail'
 import { Processor } from '../../main'
+import { SupporterDethroned } from '../../processNotifications/mappers/supporterDethroned'
 import * as sns from '../../sns'
+import { AppEmailNotification, SupporterDethronedNotification } from '../../types/notifications'
 
 import {
   createUsers,
@@ -15,6 +18,9 @@ import {
 
 describe('Supporter Dethroned Notification', () => {
   let processor: Processor
+  // Mock current date for test result consistency
+  Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
+
 
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())

@@ -72,6 +72,7 @@ export type RemixNotification = {
 export type CosignRemixNotification = {
   parent_track_id: number
   track_id: number
+  track_owner_id: number
 }
 
 export type CreateTrackNotification = {

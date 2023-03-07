@@ -16,8 +16,8 @@ import (
 	"time"
 
 	"comms.audius.co/shared/utils"
-	"comms.audius.co/storage/client/load"
-	"comms.audius.co/storage/monitor"
+	loadtest "comms.audius.co/storage/client/load"
+	"comms.audius.co/storage/logstream"
 	"comms.audius.co/storage/persistence"
 	"comms.audius.co/storage/transcode"
 	"github.com/nats-io/nats.go"
@@ -187,7 +187,7 @@ func (sc *StorageClient) GetJob(jobId string) (*transcode.Job, error) {
 	return &job, nil
 }
 
-func (sc *StorageClient) GetNodeStatuses() (*map[string]monitor.NodeStatus, error) {
+func (sc *StorageClient) GetNodeStatuses() (*map[string]logstream.NodeStatus, error) {
 	route := "/storage/api/v1/node-statuses"
 
 	resp, err := sc.Client.Get(fmt.Sprintf("%s%s", sc.Endpoint, route))
@@ -201,7 +201,7 @@ func (sc *StorageClient) GetNodeStatuses() (*map[string]monitor.NodeStatus, erro
 		return nil, err
 	}
 
-	var nodeStatuses map[string]monitor.NodeStatus
+	var nodeStatuses map[string]logstream.NodeStatus
 	err = json.Unmarshal(body, &nodeStatuses)
 	if err != nil {
 		return nil, err
@@ -385,13 +385,13 @@ func (sc *StorageClient) AudioUploadLoadTest(numRequest int, concurrency int, qu
 	req.Header = header
 
 	work := &loadtest.Work{
-		Request:            req,
-		RequestBody:        b.Bytes(),
-		N:                  numRequests,
-		C:                  conc,
-		QPS:                q,
-		Timeout:            t,
-		Output:             output,
+		Request:     req,
+		RequestBody: b.Bytes(),
+		N:           numRequests,
+		C:           conc,
+		QPS:         q,
+		Timeout:     t,
+		Output:      output,
 	}
 	work.Init()
 

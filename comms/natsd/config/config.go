@@ -7,9 +7,9 @@ import (
 )
 
 type NatsConfig struct {
-	PeeringConfig shared.PeeringConfig `json:"PeeringConfig"`
-	IsStorageNode bool                 `envconfig:"AUDIUS_IS_STORAGE_NODE" json:"IsStorageNode"`
-	NatsStoreDir  string               `envconfig:"AUDIUS_NATS_STORE_DIR" default:"/nats" json:"NatsStoreDir"`
+	PeeringConfig   shared.PeeringConfig `json:"PeeringConfig"`
+	EnableJetstream bool                 `envconfig:"AUDIUS_NATS_ENABLE_JETSTREAM" default:"false" json:"EnableJetstream"`
+	StoreDir        string               `envconfig:"AUDIUS_NATS_STORE_DIR" default:"/nats" json:"StoreDir"`
 }
 
 var natsConfig *NatsConfig

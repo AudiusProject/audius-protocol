@@ -104,17 +104,17 @@ export default function Shard() {
     demoNodeStatuses['0x1234567890'] = {
       host: `http://node1.com`,
       lastOk: new Date().toISOString(),
-      shards: ['aa', 'DEMO', '8f'],
+      shards: ['a', 'DEMO', '8'],
     }
     demoNodeStatuses['0x1234567891'] = {
       host: `http://node2.com`,
       lastOk: new Date().toISOString(),
-      shards: ['DEMO', 'wi', 'z2'],
+      shards: ['DEMO', 'i', 'z'],
     }
     demoNodeStatuses['0x1234567892'] = {
       host: `http://node3.com`,
       lastOk: new Date().toISOString(),
-      shards: ['le', '3n', 'DEMO'],
+      shards: ['l', '3', 'DEMO'],
     }
     return (
       <>

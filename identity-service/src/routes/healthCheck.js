@@ -68,7 +68,8 @@ module.exports = function (app) {
       const minTransactions =
         parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
       const isVerbose = req.query.verbose || false
-      const maxRelayLatency = req.query.maxRelayLatency || RELAY_HEALTH_MAX_LATENCY
+      const maxRelayLatency =
+        req.query.maxRelayLatency || RELAY_HEALTH_MAX_LATENCY
 
       // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
       const startBlockNumber = Math.max(endBlockNumber - blockDiff, 0)
@@ -104,7 +105,9 @@ module.exports = function (app) {
       }
 
       if (maxRelayLatency < 2) {
-        return errorResponseServerError(`Invalid maxRelayLatency, must be greater than 2. Given ${maxRelayLatency}`)
+        return errorResponseServerError(
+          `Invalid maxRelayLatency, must be greater than 2. Given ${maxRelayLatency}`
+        )
       }
 
       const failureTxs = {} // senderAddress: [<txHash>]
@@ -184,7 +187,7 @@ module.exports = function (app) {
       if (txCounter < minTransactions) isError = true
 
       for (const tx in successfulTxsInRedis) {
-        if ((tx.totalTransactionLatency / 1000) > maxRelayLatency) {
+        if (tx.totalTransactionLatency / 1000 > maxRelayLatency) {
           isError = true
           break
         }
@@ -442,6 +445,9 @@ module.exports = function (app) {
       if (!highestBlockNumber) {
         highestBlockNumber = config.get('notificationStartBlock')
       }
+      req.logger.info(
+        `notifications_check | Running notifications_check, comparing blockNumber ${highestBlockNumber}`
+      )
       const redis = req.app.get('redis')
       const maxFromRedis = await redis.get('maxBlockNumber')
       if (maxFromRedis) {
@@ -460,6 +466,9 @@ module.exports = function (app) {
       )
 
       const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+      req.logger.info(
+        `notifications_check | Making notification_check request on ${discoveryProvider} at ${discoveryProvider.discoveryProviderEndpoint}`
+      )
 
       const body = (
         await axios({
@@ -467,6 +476,9 @@ module.exports = function (app) {
           url: `${discoveryProvider.discoveryProviderEndpoint}/health_check`
         })
       ).data
+      req.logger.info(
+        `notifications_check | Received notification_check response ${body} on ${discoveryProvider.discoveryProviderEndpoint}`
+      )
       const discProvDbHighestBlock = body.data.db.number
       const notifBlockDiff = discProvDbHighestBlock - highestBlockNumber
       const resp = {
@@ -488,8 +500,14 @@ module.exports = function (app) {
           isWithinBounds(notificationJobLastSuccess) &&
           isWithinBounds(notificationEmailsJobLastSuccess) &&
           isWithinBounds(notificationAnnouncementsJobLastSuccess)
+        req.logger.info(
+          `notifications_check | isWithinBounds is ${withinBounds} and notifBlockDiff is ${notifBlockDiff}`
+        )
       }
       if (!withinBounds || notifBlockDiff > maxBlockDifference) {
+        req.logger.info(
+          `notifications_check | Returning a 500 because we are out of bounds or notifBlockDiff is too large`
+        )
         return errorResponseServerError(resp)
       }
 

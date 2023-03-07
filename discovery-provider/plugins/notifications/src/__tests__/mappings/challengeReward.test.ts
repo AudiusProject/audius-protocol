@@ -1,6 +1,8 @@
 import { expect, jest, test } from '@jest/globals'
+import { renderEmail } from '../../email/notifications/renderEmail'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
+import { AnnouncementNotification, AppEmailNotification, ChallengeRewardNotification } from '../../types/notifications'
 
 import {
   createUsers,
@@ -15,6 +17,9 @@ import {
 
 describe('Challenge Reward Notification', () => {
   let processor: Processor
+  // Mock current date for test result consistency
+  Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
+
 
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
@@ -72,4 +77,34 @@ describe('Challenge Reward Notification', () => {
     })
   })
 
+  test("Render a single challenge reward email", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+
+    const data: ChallengeRewardNotification = {
+      amount: 100000000,
+      specifier: "1=>2",
+      challenge_id: "referrals"
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'challenge_reward',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'challenge_reward:2:challenge:referrals:specifier:1=>2',
+        data,
+        user_ids: [1],
+        receiver_user_id: 1
+      }
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+    expect(notifHtml).toMatchSnapshot()
+  })
 })

@@ -14,9 +14,14 @@ import {
   createReposts,
 } from '../../utils/populateDB'
 import { reposttype } from '../../types/dn'
+import { AppEmailNotification, CosignRemixNotification } from '../../types/notifications'
+import { renderEmail } from '../../email/notifications/renderEmail'
 
 describe('Cosign Notification', () => {
   let processor: Processor
+  // Mock current date for test result consistency
+  Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
+
 
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
@@ -82,4 +87,42 @@ describe('Cosign Notification', () => {
     })
   })
 
+  test("Render a single cosign email", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createBlocks(processor.discoveryDB, [{ number: 1 }])
+    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await createTracks(processor.discoveryDB, [{
+      track_id: 20,
+      owner_id: 2,
+      blocknumber: 1,
+      remix_of: { 'tracks': [{ 'parent_track_id': 10 }] }
+    }])
+
+    const data: CosignRemixNotification = {
+      track_id: 20,
+      track_owner_id: 2,
+      parent_track_id: 10
+    }
+
+    const notifications: AppEmailNotification[] = [
+      {
+        type: 'cosign',
+        timestamp: new Date(),
+        specifier: '1',
+        group_id: 'cosign:parent_track:1:original_track:1',
+        data,
+        user_ids: [2],
+        receiver_user_id: 2
+      }
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+    expect(notifHtml).toMatchSnapshot()
+  })
 })

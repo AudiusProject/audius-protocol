@@ -90,6 +90,9 @@ var (
 				id
 				spId
 				endpoint
+				owner {
+					id
+				}
 				delegateOwnerWallet
 				type {
 					id

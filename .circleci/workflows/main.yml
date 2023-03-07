@@ -15,6 +15,11 @@ jobs:
       instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
       service: discovery-provider
   - push-docker-image:
+      name: push-discovery-provider-notifications
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
+      service: discovery-provider-notifications
+  - push-docker-image:
       name: push-identity-service
       context: [GCP, dockerhub]
       instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM
@@ -30,6 +35,11 @@ jobs:
       context: GCP
       instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
       service: discovery-provider
+  - test:
+      name: test-discovery-provider-notifications
+      context: GCP
+      instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
+      service: discovery-provider-notifications
   - test:
       name: test-identity-service
       context: GCP
@@ -122,12 +132,11 @@ jobs:
       requires:
         - deploy-prod-creator-node-trigger
       hosts: >-
-        prod-creator-4
+        prod-user-metadata
         prod-creator-1
         prod-creator-2
         prod-creator-3
         prod-creator-5
-        prod-user-metadata
       service: creator-node
 
   - deploy-prod-discovery-provider-trigger:
