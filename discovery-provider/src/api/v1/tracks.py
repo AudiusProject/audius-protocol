@@ -7,7 +7,6 @@ from urllib.parse import urljoin
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
-from flask_restplus import inputs
 from src.api.v1.helpers import (
     DescriptiveArgument,
     abort_bad_path_param,
