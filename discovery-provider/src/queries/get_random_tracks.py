@@ -41,15 +41,12 @@ def get_random_tracks(args):
         # bundle peripheral info into track results
         tracks = populate_track_metadata(session, track_ids, tracks, current_user_id)
 
-        print("get_random_tracks.py")
         if args.get("with_users", False):
-            print("get_random_tracks.py: retrieving users info")
             user_id_list = get_users_ids(tracks)
             users = get_users_by_id(session, user_id_list)
             for track in tracks:
                 user = users[track["owner_id"]]
                 if user:
-                    print(f"user: {user}")
                     track["user"] = user
 
     return tracks

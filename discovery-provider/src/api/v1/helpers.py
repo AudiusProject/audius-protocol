@@ -123,8 +123,6 @@ def extend_search(resp):
 
 
 def extend_user(user, current_user_id=None):
-    if (type(user) is list):
-        print(f"get_random_tracks.py: helpers.py: extend_user: user: {user}")
     if not user.get("user_id"):
         return user
     user_id = encode_int_id(user["user_id"])
@@ -199,7 +197,11 @@ def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
     if "user" in track:
-        track["user"] = extend_user(track["user"])
+        if isinstance(track["user"], list):
+            user = track["user"][0]
+        else:
+            user = track["user"]
+        track["user"] = extend_user(user)
     track["id"] = track_id
     track["user_id"] = owner_id
     if "followee_saves" in track:
