@@ -402,9 +402,9 @@ class GiantTrackTile extends PureComponent {
         includeFavorite: false,
         includeTrackPage: false,
         isArtistPick,
-        includeEmbed: !isUnlisted,
+        includeEmbed: !(isUnlisted || isPremium),
         includeArtistPick: !isUnlisted,
-        includeAddToPlaylist: !isUnlisted && !isPremium,
+        includeAddToPlaylist: !(isUnlisted || isPremium),
         extraMenuItems: overflowMenuExtraItems
       }
     }
