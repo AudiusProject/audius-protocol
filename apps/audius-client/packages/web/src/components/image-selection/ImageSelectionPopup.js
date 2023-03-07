@@ -129,6 +129,7 @@ const RandomPage = ({ onSelect }) => {
 }
 
 const CollectionPage = ({ onSelect, source }) => {
+  const refs = useRef({})
   const [loadedImgs, setLoadedImgs] = useState([])
   const [page, setPage] = useState(1)
   const { collectibles, collectibleList, solanaCollectibleList } =
@@ -171,15 +172,22 @@ const CollectionPage = ({ onSelect, source }) => {
             COLLECTIBLES_PER_PAGE * (page - 1),
             COLLECTIBLES_PER_PAGE * page
           )
-          .map((collectible) => (
+          .map((collectible, i) => (
             <img
-              key={collectible.id}
+              ref={(ref) => {
+                refs.current[collectible.id + '_' + i] = ref
+              }}
+              key={collectible.id + '_' + i}
               className={cn(styles.collectibleImg, {
                 [styles.profileImg]: source === 'ProfilePicture',
-                [styles.fadeIn]: loadedImgs.includes(collectible.id)
+                [styles.fadeIn]:
+                  refs.current[collectible.id + '_' + i]?.complete ||
+                  loadedImgs.includes(collectible.imageUrl)
               })}
               src={collectible.imageUrl}
-              onLoad={() => setLoadedImgs([...loadedImgs, collectible.id])}
+              onLoad={() =>
+                setLoadedImgs([...loadedImgs, collectible.imageUrl])
+              }
               onClick={() => selectImg(collectible.imageUrl)}
             />
           ))}
