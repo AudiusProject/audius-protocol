@@ -123,6 +123,7 @@ def extend_search(resp):
 
 
 def extend_user(user, current_user_id=None):
+    print(f"helpers.py: extend_user: user: {user}")
     if not user.get("user_id"):
         return user
     user_id = encode_int_id(user["user_id"])
