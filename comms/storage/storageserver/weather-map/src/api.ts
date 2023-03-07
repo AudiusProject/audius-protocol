@@ -36,3 +36,75 @@ export const useFilesInShard = (shard: string, storageHostsWithShard: string[]) 
       }
     }),
   )
+
+export const useLogs = (startDateTime: string, endDateTime: string) =>
+  useQueries([
+    {
+      queryKey: ['statusUpdateLogs', startDateTime, endDateTime],
+      queryFn: () => fetchStatusUpdateLogs(startDateTime, endDateTime),
+      staleTime: Infinity,
+    },
+    {
+      queryKey: ['updateHealthyNodeSetLogs', startDateTime, endDateTime],
+      queryFn: () => fetchUpdateHealthyNodeSetLogs(startDateTime, endDateTime),
+      staleTime: Infinity,
+    },
+    {
+      queryKey: ['rebalanceLogs', startDateTime, endDateTime],
+      queryFn: () => fetchRebalanceLogs(startDateTime, endDateTime),
+      staleTime: Infinity,
+    },
+  ])
+
+const fetchStatusUpdateLogs = (startDateTime: string, endDateTime: string) => {
+  return axios
+    .get(
+      `${window.location.origin}/storage/api/v1/logs/statusUpdate?start=${startDateTime}&end=${endDateTime}`,
+    )
+    .then((res) => res.data as NodeStatus[])
+}
+
+type RebalanceStartLog = {
+  timestamp: string
+  prevShards: string[]
+  newShards: string[]
+}
+type RebalanceEndLog = {
+  timestamp: string
+  prevShards: string[]
+  newShards: string[]
+  // TODO: Time spent, numFiles per shard, etc...
+}
+type StartEventsForHost = {
+  host: string
+  events: RebalanceStartLog[]
+}
+type EndEventsForHost = {
+  host: string
+  events: RebalanceEndLog[]
+}
+export type RebalanceLogs = {
+  starts: StartEventsForHost[]
+  ends: EndEventsForHost[]
+}
+
+const fetchRebalanceLogs = (startDateTime: string, endDateTime: string) => {
+  return axios
+    .get(
+      `${window.location.origin}/storage/api/v1/logs/rebalance?start=${startDateTime}&end=${endDateTime}`,
+    )
+    .then((res) => res.data as RebalanceLogs)
+}
+
+export type UpdateHealthyNodeSetLog = {
+  timestamp: string
+  healthyNodes: string[]
+  updatedBy: string
+}
+const fetchUpdateHealthyNodeSetLogs = (startDateTime: string, endDateTime: string) => {
+  return axios
+    .get(
+      `${window.location.origin}/storage/api/v1/logs/updateHealthyNodeSet?start=${startDateTime}&end=${endDateTime}`,
+    )
+    .then((res) => res.data as UpdateHealthyNodeSetLog[])
+}

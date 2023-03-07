@@ -3,16 +3,11 @@ import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
 import { RepostType, SaveType } from '../types/dn'
 import { DMEntityType } from '../email/notifications/types'
-import { DMEmailNotification, AppEmailNotification } from '../types/notifications'
-import { createTestDB, createTracks, createUsers, dropTestDB, insertFollows, replaceDBName } from '../utils/populateDB'
+import { DMEmailNotification } from '../types/notifications'
+import { createTestDB, createUsers, dropTestDB, replaceDBName } from '../utils/populateDB'
 
 
-const initDB = async (dbName: string) => {
-  const processor = new Processor()
-  await processor.init({
-    identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, dbName),
-    discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, dbName),
-  })
+const initDB = async (processor: Processor) => {
   await Promise.all([
     createUsers(processor.discoveryDB, [{
       user_id: 1,
@@ -24,7 +19,6 @@ const initDB = async (dbName: string) => {
       creator_node_endpoint: 'http://dn.co,http://dn2.co,http://dn3.co'
     }])
   ])
-  return processor
 }
 
 
@@ -40,7 +34,12 @@ describe('Render email', () => {
       createTestDB(process.env.DN_DB_URL, testName),
       createTestDB(process.env.IDENTITY_DB_URL, testName)
     ])
-    processor = await initDB(testName)
+    processor = new Processor()
+    await processor.init({
+      identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
+      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName),
+    })
+    await initDB(processor)
   })
 
   afterEach(async () => {

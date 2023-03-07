@@ -26,7 +26,7 @@ migrate::
 	(docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery" || true)
 
 test.load::
-	hey -n 10000 -c 50 http://localhost:8926/storage/api/v1/jobs
+	docker exec -it storage1 sh -c "./comms storage loadTest"
 
 storage.seed.audio::
 	docker exec -it storage1 sh -c "./comms storage seed audio"

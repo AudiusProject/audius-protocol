@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from 'react-query'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
+import History from './routes/History'
 import Home from './routes/Home'
 import Search from './routes/Search'
 import Shard from './routes/Shard'
@@ -28,13 +29,17 @@ export default function App() {
             path: `/shard/:shard`,
             element: <Shard />,
           },
+          {
+            path: `/history`,
+            element: <History />,
+          },
         ],
       },
     ],
     { basename: baseURL },
   )
   return (
-    <div className="App">
+    <div className="h-full w-full bg-white dark:bg-gray-900">
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
       </QueryClientProvider>

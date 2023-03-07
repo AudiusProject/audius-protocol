@@ -24,7 +24,8 @@ import {
   AddTrackToPlaylistNotification,
   CreateTrackNotification,
   CreatePlaylistNotification,
-  AnnouncementNotification
+  AnnouncementNotification,
+  TrendingTrackNotification
 } from '../../types/notifications'
 import { Follow } from './follow'
 import { Repost } from './repost'
@@ -44,6 +45,7 @@ import { ChallengeReward } from './challengeReward'
 import { AddTrackToPlaylist } from './addTrackToPlaylist'
 import { Create } from './create'
 import { Announcement } from './announcement'
+import { TrendingTrack } from './trendingTrack'
 import { SaveOfRepost } from './saveOfRepost'
 
 export const mapNotifications = (notifications: (NotificationRow | EmailNotification)[], dnDb: Knex, identityDb: Knex) => {
@@ -114,6 +116,10 @@ const mapNotification = (notification: NotificationRow | EmailNotification, dnDb
   else if (notification.type == 'create') {
     const createNotification = notification as NotificationRow & { data: CreateTrackNotification | CreatePlaylistNotification }
     return new Create(dnDb, identityDb, createNotification)
+  }
+  else if (notification.type == 'trending') {
+    const trendingNotification = notification as NotificationRow & { data: TrendingTrackNotification }
+    return new TrendingTrack(dnDb, identityDb, trendingNotification)
   }
   else if (notification.type == 'announcement') {
     const announcementNotification = notification as NotificationRow & { data: AnnouncementNotification }

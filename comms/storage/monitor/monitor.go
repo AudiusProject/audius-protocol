@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"comms.audius.co/storage/decider"
+	"comms.audius.co/storage/logstream"
 	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
 )
@@ -16,14 +17,9 @@ type Monitor struct {
 	namespace      string
 	nodeStatusesKV nats.KeyValue
 	healthyNodesKV nats.KeyValue
+	logstream      *logstream.LogStream
 	jsc            nats.JetStreamContext
 	healthTTLHours float64
-}
-
-type NodeStatus struct {
-	Host   string    `json:"host"`
-	LastOK time.Time `json:"lastOk"`
-	Shards []string  `json:"shards"`
 }
 
 const (
@@ -33,7 +29,7 @@ const (
 	UpdateHealthyNodeSetStreamReplicas int    = 3
 )
 
-func New(namespace string, healthyNodesKV nats.KeyValue, healthTTLHours float64, jsc nats.JetStreamContext) *Monitor {
+func New(namespace string, healthyNodesKV nats.KeyValue, logstream *logstream.LogStream, healthTTLHours float64, jsc nats.JetStreamContext) *Monitor {
 	// Create KV store for each node to set its endpoint, health, and the list of shards it stores
 	nodeStatusesKV, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:      NodeStatusesKVName,
@@ -47,21 +43,22 @@ func New(namespace string, healthyNodesKV nats.KeyValue, healthTTLHours float64,
 		namespace:      namespace,
 		nodeStatusesKV: nodeStatusesKV,
 		healthyNodesKV: healthyNodesKV,
+		logstream:      logstream,
 		jsc:            jsc,
 		healthTTLHours: healthTTLHours,
 	}
 }
 
 // GetNodeStatuses returns a map of pubKey to NodeStatus for all nodes in the network.
-func (m Monitor) GetNodeStatuses() (map[string]NodeStatus, error) {
-	nodeStatuses := make(map[string]NodeStatus)
+func (m Monitor) GetNodeStatuses() (map[string]logstream.NodeStatus, error) {
+	nodeStatuses := make(map[string]logstream.NodeStatus)
 
 	pubKeys, err := m.nodeStatusesKV.Keys()
 	if err != nil {
 		return nil, err
 	}
 	for _, pubKey := range pubKeys {
-		nodeStatus := NodeStatus{}
+		nodeStatus := logstream.NodeStatus{}
 		entry, err := m.nodeStatusesKV.Get(pubKey)
 		if err != nil {
 			return nil, err
@@ -185,7 +182,7 @@ func (m Monitor) UpdateHealthyNodeSetOnInterval(intervalHours float64) error {
 }
 
 func (m Monitor) setOKStatus(nodePubKey, host string, shards []string) error {
-	data, err := json.Marshal(NodeStatus{
+	status, err := json.Marshal(logstream.NodeStatus{
 		Host:   host,
 		LastOK: time.Now().UTC(),
 		Shards: shards,
@@ -193,8 +190,12 @@ func (m Monitor) setOKStatus(nodePubKey, host string, shards []string) error {
 	if err != nil {
 		return err
 	}
-	_, err = m.nodeStatusesKV.Put(nodePubKey, data)
-	return err
+	m.logstream.LogStatusUpdate(status)
+	_, err = m.nodeStatusesKV.Put(nodePubKey, status)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // updateHealthyNodeSet updates the healthyNodes KV with all nodes that reported an OK status within the last m.healthTTLHours hours.
@@ -214,6 +215,10 @@ func (m Monitor) updateHealthyNodeSet() error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal healthy nodes: %v", err)
 	}
+	m.logstream.LogUpdateHealthyNodeSet(healthyNodes)
 	_, err = m.healthyNodesKV.Put(m.namespace, healthyNodesBytes)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }

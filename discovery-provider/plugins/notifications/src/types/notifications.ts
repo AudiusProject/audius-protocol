@@ -179,6 +179,13 @@ export type TierChangeNotification = {
   current_value: string
 }
 
+export type TrendingTrackNotification = {
+  track_id: number
+  rank: number
+  genre: string
+  time_range: string
+}
+
 export type AnnouncementNotification = {
   title: string
   short_description: string
@@ -211,3 +218,4 @@ export type NotificationData =
   | SupporterDethronedNotification
   | AddTrackToPlaylistNotification
   | AnnouncementNotification
+  | TrendingTrackNotification

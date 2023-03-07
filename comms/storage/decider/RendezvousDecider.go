@@ -7,6 +7,8 @@ import (
 	"log"
 	"strings"
 
+	"comms.audius.co/storage/config"
+	"comms.audius.co/storage/logstream"
 	"comms.audius.co/storage/sharder"
 	"github.com/nats-io/nats.go"
 	"github.com/tysonmote/rendezvous"
@@ -20,11 +22,19 @@ type RendezvousDecider struct {
 	thisNodePubKey     string
 	sharder            *sharder.Sharder
 	ShardsStored       []string
+	logstream          *logstream.LogStream
 	jsc                nats.JetStreamContext
 }
 
 // NewRendezvousDecider creates a storage decider that makes this node store content based on a rendezvous hash.
-func NewRendezvousDecider(namespace string, replicationFactor int, thisNodePubKey string, healthyNodesKV nats.KeyValue, jsc nats.JetStreamContext) *RendezvousDecider {
+func NewRendezvousDecider(
+	namespace string,
+	replicationFactor int,
+	thisNodePubKey string,
+	healthyNodesKV nats.KeyValue,
+	logstream *logstream.LogStream,
+	jsc nats.JetStreamContext,
+) *RendezvousDecider {
 	var healthyNodePubKeys []string
 	// Ignore errors - this KV isn't set until the first node is added to the network.
 	healthyNodePubKeysEntry, err := healthyNodesKV.Get(namespace)
@@ -39,7 +49,8 @@ func NewRendezvousDecider(namespace string, replicationFactor int, thisNodePubKe
 		replicationFactor:  replicationFactor,
 		healthyNodePubKeys: healthyNodePubKeys,
 		thisNodePubKey:     thisNodePubKey,
-		sharder:            sharder.New(2),
+		sharder:            sharder.New(config.GetStorageConfig().ShardLength),
+		logstream:          logstream,
 		jsc:                jsc,
 	}
 	d.ShardsStored = d.computeShardsNodeStores()
@@ -48,7 +59,7 @@ func NewRendezvousDecider(namespace string, replicationFactor int, thisNodePubKe
 }
 
 // ShouldStore returns true if this node is responsible for storing the shard that the content with ID id falls into.
-func (d *RendezvousDecider) ShouldStore(id string) (bool, error) {
+func (d RendezvousDecider) ShouldStore(id string) (bool, error) {
 	for _, shardNodeStores := range d.ShardsStored {
 		shardForId, err := d.sharder.GetShardForId(id)
 		if err != nil {
@@ -61,7 +72,7 @@ func (d *RendezvousDecider) ShouldStore(id string) (bool, error) {
 	return false, nil
 }
 
-func (d *RendezvousDecider) GetNamespacedShardForID(id string) (string, error) {
+func (d RendezvousDecider) GetNamespacedShardForID(id string) (string, error) {
 	if len(id) != 25 {
 		return "", fmt.Errorf("id %q is not a valid base36 cuid2 with 25 characters", id)
 	}
@@ -73,7 +84,7 @@ func (d *RendezvousDecider) GetNamespacedShardForID(id string) (string, error) {
 }
 
 // computeShardsNodeStores determines the shards that this node is responsible for storing based on all nodes in the storage network.
-func (d *RendezvousDecider) computeShardsNodeStores() []string {
+func (d RendezvousDecider) computeShardsNodeStores() []string {
 	shards := []string{}
 	hash := d.getRendezvousHash()
 	for _, shard := range d.sharder.Shards {
@@ -89,7 +100,7 @@ func (d *RendezvousDecider) computeShardsNodeStores() []string {
 
 // getRendezvousHash returns a data structure that spreads storage across all allStorageNodePubKeys in the network.
 // Uses rendezvous/highest random weight hashing.
-func (d *RendezvousDecider) getRendezvousHash() *rendezvous.Hash {
+func (d RendezvousDecider) getRendezvousHash() *rendezvous.Hash {
 	hash := rendezvous.New()
 	for _, publicKey := range d.healthyNodePubKeys {
 		hash.Add(publicKey)
@@ -122,16 +133,18 @@ func (d *RendezvousDecider) watchForNewHealthyNodeSet(kv nats.KeyValue) {
 			d.healthyNodePubKeys = healthyNodePubKeys
 			d.ShardsStored = d.computeShardsNodeStores()
 			curShards := d.ShardsStored
-			rebalanceShardsStored(prevShards, curShards)
+			d.rebalanceShardsStored(prevShards, curShards)
 		}
 	}()
 }
 
 // rebalanaceShardsStored finds content that needs to be stored or deleted and fetches or deletes it.
-func rebalanceShardsStored(prevShards []string, curShards []string) error {
+func (d RendezvousDecider) rebalanceShardsStored(prevShards []string, curShards []string) error {
+	d.logstream.LogRebalanceStart(prevShards, curShards)
 	// TODO: find diff
 	// TODO: soft delete
 	// TODO: soft delete improvement: only delete if it hasn't been responsible for the shard in the past N days, so if an unhealthy node comes back up then it'll still have what it would revert to and not have to reshuffle
 	// TODO: fetch
+	d.logstream.LogRebalanceEnd(prevShards, curShards)
 	return nil
 }

@@ -4,6 +4,7 @@ x-dev-env: &dev-env
   AUDIUS_REBALANCE_INTERVAL_HOURS: "0.005" # check for unhealthy nodes and update healthy node set every 18 seconds
   AUDIUS_HEALTH_TTL_HOURS: "0.005" # consider a node unhealthy if it hasn't self-reported "OK" status in the last 18 seconds
   AUDIUS_REPORT_OK_INTERVAL_SECONDS: 4
+  AUDIUS_SHARD_LENGTH: 1
   AUDIUS_NATS_ENABLE_JETSTREAM: true
   AUDIUS_DEV_ONLY_REGISTERED_NODES: '
         [
