@@ -59,7 +59,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       await Promise.all(devices.map(device => {
         return sendPushNotification({
           type: device.type,
-          badgeCount: userNotifications.mobile[track.owner_id].badgeCount,
+          badgeCount: userNotifications.mobile[track.owner_id].badgeCount + 1,
           targetARN: device.awsARN
         }, {
           title: 'Your track got on a playlist! 💿',
@@ -67,14 +67,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
           data: {}
         })
       }))
-      // TODO: increment badge count
-
-    }
-    // 
-
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
+      await this.incrementBadgeCount(track.owner_id)
     }
     if (userNotifications.email) {
       // TODO: Send out email

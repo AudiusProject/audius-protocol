@@ -1,19 +1,18 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
-import { getRedisConnection } from './../../utils/redisConnection'
-import { config } from './../../config'
+import * as sendEmail from '../../email/notifications/sendEmail'
 
 import {
   createUsers,
+  insertFollows,
   insertMobileDevices,
   insertMobileSettings,
   createTestDB,
   dropTestDB,
   replaceDBName,
   createReposts,
-  createTracks,
-  createPlaylists
+  createTracks
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'
@@ -21,24 +20,24 @@ import { renderEmail } from '../../email/notifications/renderEmail'
 import { reposttype } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
-describe('Repost Notification', () => {
+describe('Multiple Mappings Notification', () => {
   let processor: Processor
   // Mock current date for test result consistency
   Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
 
 
+  const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
+    .mockImplementation(() => Promise.resolve(true))
   const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
+    jest.setTimeout(30 * 1000)
     const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
     await Promise.all([
       createTestDB(process.env.DN_DB_URL, testName),
       createTestDB(process.env.IDENTITY_DB_URL, testName)
     ])
-    const redis = await getRedisConnection()
-    redis.del(config.lastIndexedMessageRedisKey)
-    redis.del(config.lastIndexedReactionRedisKey)
     processor = new Processor()
     await processor.init({
       identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
@@ -56,91 +55,70 @@ describe('Repost Notification', () => {
     ])
   })
 
-  test("Process push notification for repost track", async () => {
+  test("Process follow and repost push notification", async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await insertFollows(processor.discoveryDB, [{ follower_user_id: 2, followee_user_id: 1 }])
     await createReposts(processor.discoveryDB, [{
       user_id: 2, repost_item_id: 10, repost_type: reposttype.track
     }])
+
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
     await new Promise(resolve => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
-    expect(pending?.appNotifications).toHaveLength(1)
-    // Assert single pending
-    await processor.appNotificationsProcessor.process(pending.appNotifications)
+
+    expect(pending?.appNotifications).toHaveLength(2)
+    const follows = pending?.appNotifications.filter(n => n.type == 'follow')
+    await processor.appNotificationsProcessor.process(follows)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
       badgeCount: 1
+    }, {
+      title: 'Follow',
+      body: 'user_2 followed you',
+      data: {}
+    })
+
+    const reposts = pending?.appNotifications.filter(n => n.type == 'repost')
+    await processor.appNotificationsProcessor.process(reposts)
+    expect(sendPushNotificationSpy).toHaveBeenCalledWith({
+      type: 'ios',
+      targetARN: 'arn:1',
+      badgeCount: 2
     }, {
       title: 'New Repost',
       body: 'user_2 reposted your track track_title_10',
       data: {}
     })
+
+    const badgeCountRes = await processor.identityDB.select('iosBadgeCount').from('PushNotificationBadgeCounts').where('userId', 1)
+    expect(badgeCountRes[0].iosBadgeCount).toBe(2)
   })
 
-  test("Process push notification for repost playlist", async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createPlaylists(processor.discoveryDB, [{ playlist_id: 20, playlist_owner_id: 1, is_album: false }])
-    await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 20, repost_type: reposttype.playlist
-    }])
-    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
-    await new Promise(resolve => setTimeout(resolve, 10))
-    const pending = processor.listener.takePending()
-    expect(pending?.appNotifications).toHaveLength(1)
-    // Assert single pending
-    await processor.appNotificationsProcessor.process(pending.appNotifications)
-
-    expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:1',
-      badgeCount: 1
-    }, {
-      title: 'New Repost',
-      body: 'user_2 reposted your playlist playlist_name_20',
-      data: {}
-    })
-  })
-
-  test("Process push notification for repost album", async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await createPlaylists(processor.discoveryDB, [{ playlist_id: 30, playlist_owner_id: 1, is_album: true }])
-    await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 30, repost_type: reposttype.playlist
-    }])
-    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
-    await new Promise(resolve => setTimeout(resolve, 10))
-    const pending = processor.listener.takePending()
-    expect(pending?.appNotifications).toHaveLength(1)
-    // Assert single pending
-    await processor.appNotificationsProcessor.process(pending.appNotifications)
-
-    expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:1',
-      badgeCount: 1
-    }, {
-      title: 'New Repost',
-      body: 'user_2 reposted your album playlist_name_30',
-      data: {}
-    })
-  })
-
-  test("Render a single email", async () => {
+  test("Render multiple notifications in email", async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await insertFollows(processor.discoveryDB, [{ follower_user_id: 2, followee_user_id: 1 }])
     await createReposts(processor.discoveryDB, [{
       user_id: 2, repost_item_id: 10, repost_type: reposttype.track
     }])
 
-    await new Promise(resolve => setTimeout(resolve, 10))
-
     const notifications: AppEmailNotification[] = [
+      {
+        type: 'follow',
+        timestamp: new Date(),
+        specifier: '2',
+        group_id: 'follow:1',
+        data: {
+          follower_user_id: 2,
+          followee_user_id: 1
+        },
+        user_ids: [1],
+        receiver_user_id: 1
+      },
       {
         type: 'repost',
         timestamp: new Date(),
@@ -165,5 +143,6 @@ describe('Repost Notification', () => {
     })
     expect(notifHtml).toMatchSnapshot()
   })
+
 
 })

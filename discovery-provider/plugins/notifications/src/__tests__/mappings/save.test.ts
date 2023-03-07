@@ -73,7 +73,7 @@ describe('Save Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'New Favorite',
       body: 'user_2 favorited your track track_title_10',
@@ -98,7 +98,7 @@ describe('Save Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'New Favorite',
       body: 'user_2 favorited your playlist playlist_name_20',
@@ -123,7 +123,7 @@ describe('Save Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'New Favorite',
       body: 'user_2 favorited your album playlist_name_30',

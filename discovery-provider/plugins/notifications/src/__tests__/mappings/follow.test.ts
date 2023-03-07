@@ -66,7 +66,7 @@ describe('Follow Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:2',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Follow',
       body: 'user_1 followed you',

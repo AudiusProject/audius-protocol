@@ -70,7 +70,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "You have reached over 10 Followers",
@@ -132,7 +132,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "Your track track_title_2 has reached over 10 reposts",
@@ -196,7 +196,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "Your playlist playlist_name_32 has reached over 10 reposts",
@@ -261,7 +261,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "Your track track_title_2 has reached over 10 favorites",
@@ -324,7 +324,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "Your playlist playlist_name_32 has reached over 10 favorites",

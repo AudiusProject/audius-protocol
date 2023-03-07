@@ -79,7 +79,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         await Promise.all(devices.map(device => {
           return sendPushNotification({
             type: device.type,
-            badgeCount: userNotifications.mobile[userId].badgeCount,
+            badgeCount: userNotifications.mobile[userId].badgeCount + 1,
             targetARN: device.awsARN
           }, {
             title: 'New Artist Update',
@@ -87,11 +87,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
             data: {}
           })
         }))
-        // TODO: increment badge count
-      }
-      if (userNotifications.browser) {
-        // TODO: Send out browser
-
+        await this.incrementBadgeCount(userId)
       }
       if (userNotifications.email) {
         // TODO: Send out email
