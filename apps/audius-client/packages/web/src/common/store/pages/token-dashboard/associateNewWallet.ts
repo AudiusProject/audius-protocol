@@ -2,6 +2,7 @@ import {
   accountSelectors,
   Chain,
   getContext,
+  Name,
   newUserMetadata,
   tokenDashboardPageActions,
   tokenDashboardPageSelectors
@@ -18,6 +19,7 @@ export function* associateNewWallet(signature: string) {
   const { wallet, chain } = yield* select(getConfirmingWallet)
   if (!wallet || !chain) return null
 
+  const analytics = yield* getContext('analytics')
   const audiusBackend = yield* getContext('audiusBackendInstance')
   const userMetadata = yield* select(getAccountUser)
 
@@ -36,6 +38,13 @@ export function* associateNewWallet(signature: string) {
             'An error occured while connecting a wallet with your account'
         })
       )
+      analytics.track({
+        eventName: Name.CONNECT_WALLET_ASSOCIATION_ERROR,
+        properties: {
+          chain,
+          walletAddress: wallet
+        }
+      })
       return null
     }
     const updatedUserMetadata = yield* select(getAccountUser)

@@ -3,6 +3,7 @@ import { ID, PlayableType } from 'models/Identifiers'
 import { MonitorPayload, ServiceMonitorType } from 'models/Services'
 import { TimeRange } from 'models/TimeRange'
 import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
+import { Chain } from './Chain'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -141,6 +142,19 @@ export enum Name {
   TRACK_UPLOAD_SUCCESS = 'Track Upload: Success',
   TRACK_UPLOAD_FAILURE = 'Track Upload: Failure',
   TRACK_UPLOAD_REJECTED = 'Track Upload: Rejected',
+
+  // Gated Track Uploads
+  TRACK_UPLOAD_COLLECTIBLE_GATED = 'Track Upload: Collectible Gated',
+  TRACK_UPLOAD_FOLLOW_GATED = 'Track Upload: Follow Gated',
+  TRACK_UPLOAD_TIP_GATED = 'Track Upload: Tip Gated',
+
+  // Gated Track Listen
+  LISTEN_GATED = 'Listen: Gated',
+
+  // Unlocked Gated Tracks
+  COLLECTIBLE_GATED_TRACK_UNLOCKED = 'Collectible Gated: Track Unlocked',
+  FOLLOW_GATED_TRACK_UNLOCKED = 'Follow Gated: Track Unlocked',
+  TIP_GATED_TRACK_UNLOCKED = 'Tip Gated: Track Unlocked',
 
   // Trending
   TRENDING_CHANGE_VIEW = 'Trending: Change view',
@@ -294,7 +308,15 @@ export enum Name {
   // Rate & Review CTA
   RATE_CTA_DISPLAYED = 'Rate CTA: Displayed',
   RATE_CTA_RESPONSE_YES = 'Rate CTA: User Responded Yes',
-  RATE_CTA_RESPONSE_NO = 'Rate CTA: User Responded No'
+  RATE_CTA_RESPONSE_NO = 'Rate CTA: User Responded No',
+
+  // Connect Wallet
+  CONNECT_WALLET_NEW_WALLET_START = 'Connect Wallet: New Wallet Start',
+  CONNECT_WALLET_NEW_WALLET_CONNECTING = 'Connect Wallet: New Wallet Connecting',
+  CONNECT_WALLET_NEW_WALLET_CONNECTED = 'Connect Wallet: New Wallet Connected',
+  CONNECT_WALLET_ALREADY_ASSOCIATED = 'Connect Wallet: Already Associated',
+  CONNECT_WALLET_ASSOCIATION_ERROR = 'Connect Wallet: Association Error',
+  CONNECT_WALLET_ERROR = 'Connect Wallet: Error',
 }
 
 type PageView = {
@@ -548,7 +570,8 @@ export enum FollowSource {
   USER_LIST = 'user list',
   ARTIST_RECOMMENDATIONS_POPUP = 'artist recommendations popup',
   EMPTY_FEED = 'empty feed',
-  LOCKED_CONTENT_MODAL = 'locked content modal'
+  HOW_TO_UNLOCK_TRACK_PAGE = 'how to unlock track page',
+  HOW_TO_UNLOCK_MODAL = 'how to unlock modal'
 }
 
 type Share = {
@@ -759,6 +782,41 @@ type TrackUploadViewTrackPage = {
   uploadType: string
 }
 
+// Gated Track Uploads
+type TrackUploadCollectibleGated = {
+  eventName: Name.TRACK_UPLOAD_COLLECTIBLE_GATED
+  count: number
+  kind: 'tracks'
+}
+
+type TrackUploadFollowGated = {
+  eventName: Name.TRACK_UPLOAD_FOLLOW_GATED
+  count: number
+  kind: 'tracks'
+}
+
+type TrackUploadTipGated = {
+  eventName: Name.TRACK_UPLOAD_TIP_GATED
+  count: number
+  kind: 'tracks'
+}
+
+// Unlocked Gated Tracks
+type CollectibleGatedTrackUnlocked = {
+  eventName: Name.COLLECTIBLE_GATED_TRACK_UNLOCKED
+  count: number
+}
+
+type FollowGatedTrackUnlocked = {
+  eventName: Name.FOLLOW_GATED_TRACK_UNLOCKED
+  trackId: number
+}
+
+type TipGatedTrackUnlocked = {
+  eventName: Name.TIP_GATED_TRACK_UNLOCKED
+  trackId: number
+}
+
 // Trending
 type TrendingChangeView = {
   eventName: Name.TRENDING_CHANGE_VIEW
@@ -961,6 +1019,11 @@ type SearchTabClick = {
 }
 type Listen = {
   eventName: Name.LISTEN
+  trackId: string
+}
+
+type ListenGated = {
+  eventName: Name.LISTEN_GATED
   trackId: string
 }
 
@@ -1231,7 +1294,8 @@ export type TipSource =
   | 'dethroned'
   | 'buyAudio'
   | 'trackPage'
-  | 'lockedContentModal'
+  | 'howToUnlockTrackPage'
+  | 'howToUnlockModal'
 
 type TipAudioRequest = {
   eventName: Name.TIP_AUDIO_REQUEST
@@ -1403,6 +1467,39 @@ type RewardsClaimFinishCognitoFlow = {
   source: string
 }
 
+type ConnectWalletNewWalletStart = {
+  eventName: Name.CONNECT_WALLET_NEW_WALLET_START
+}
+
+type ConnectWalletNewWalletConnecting = {
+  eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTING
+  chain: Chain
+  walletAddress: WalletAddress
+}
+
+type ConnectWalletNewWalletConnected = {
+  eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTED
+  chain: Chain
+  walletAddress: WalletAddress
+}
+
+type ConnectWalletAlreadyAssociated = {
+  eventName: Name.CONNECT_WALLET_ALREADY_ASSOCIATED
+  chain: Chain
+  walletAddress: WalletAddress
+}
+
+type ConnectWalletAssociationError = {
+  eventName: Name.CONNECT_WALLET_ASSOCIATION_ERROR
+  chain: Chain
+  walletAddress: WalletAddress
+}
+
+type ConnectWalletError = {
+  eventName: Name.CONNECT_WALLET_ERROR
+  error: string
+}
+
 export type BaseAnalyticsEvent = { type: typeof ANALYTICS_TRACK_EVENT }
 
 export type AllTrackingEvents =
@@ -1466,6 +1563,9 @@ export type AllTrackingEvents =
   | TrackUploadStartUploading
   | TrackUploadTrackUploading
   | TrackUploadCompleteUpload
+  | TrackUploadCollectibleGated
+  | TrackUploadFollowGated
+  | TrackUploadTipGated
   | TrackUploadSuccess
   | TrackUploadFailure
   | TrackUploadRejected
@@ -1473,6 +1573,9 @@ export type AllTrackingEvents =
   | TrackUploadShareWithFans
   | TrackUploadShareSoundToTikTok
   | TrackUploadViewTrackPage
+  | CollectibleGatedTrackUnlocked
+  | FollowGatedTrackUnlocked
+  | TipGatedTrackUnlocked
   | TrendingChangeView
   | TrendingPaginate
   | FeedChangeView
@@ -1512,6 +1615,7 @@ export type AllTrackingEvents =
   | SearchResultSelect
   | SearchTabClick
   | Listen
+  | ListenGated
   | ErrorPage
   | NotFoundPage
   | PageView
@@ -1590,3 +1694,9 @@ export type AllTrackingEvents =
   | RateCtaResponseYes
   | RewardsClaimStartCognitoFlow
   | RewardsClaimFinishCognitoFlow
+  | ConnectWalletNewWalletStart
+  | ConnectWalletNewWalletConnecting
+  | ConnectWalletNewWalletConnected
+  | ConnectWalletAlreadyAssociated
+  | ConnectWalletAssociationError
+  | ConnectWalletError

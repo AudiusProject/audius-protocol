@@ -181,10 +181,10 @@ export const DetailsTileNoAccess = ({
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const { isOpen: isModalOpen } = useDrawer('LockedContent')
-  const source = isModalOpen ? 'lockedContentModal' : 'trackPage'
+  const source = isModalOpen ? 'howToUnlockModal' : 'howToUnlockTrackPage'
   const followSource = isModalOpen
-    ? FollowSource.LOCKED_CONTENT_MODAL
-    : FollowSource.TRACK_PAGE
+    ? FollowSource.HOW_TO_UNLOCK_MODAL
+    : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = premiumTrackStatusMap[trackId] ?? null
   const { nftCollection, collectionLink, followee, tippedUser } =
