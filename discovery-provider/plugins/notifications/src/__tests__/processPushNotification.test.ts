@@ -7,13 +7,9 @@ import {
   randId,
   createChat,
   readChat,
-  createUsers,
-  insertFollows,
   insertMessage,
   insertReaction,
   setupTwoUsersWithDevices,
-  insertMobileDevices,
-  insertMobileSettings,
   createTestDB,
   dropTestDB,
   replaceDBName
@@ -52,36 +48,13 @@ describe('Push Notifications', () => {
     ])
   })
 
-  test.skip("Process follow for ios", async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await insertFollows(processor.discoveryDB, [{ follower_user_id: 1, followee_user_id: 2 }])
-    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
-    await new Promise(resolve => setTimeout(resolve, 10))
-
-    const pending = processor.listener.takePending()
-    expect(pending?.appNotifications).toHaveLength(1)
-    // Assert single pending
-    await processor.appNotificationsProcessor.process(pending.appNotifications)
-
-    expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:2',
-      badgeCount: 0
-    }, {
-      title: 'Follow',
-      body: 'user_1 followed you',
-      data: {}
-    })
-  })
-
   test("Process DM for ios", async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
     processor.start()
     // Let notifications job run for a few cycles to initialize the min cursors in redis
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    await new Promise((r) => setTimeout(r, config.pollInterval))
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = "hi from user 1"
@@ -93,6 +66,7 @@ describe('Push Notifications', () => {
     await insertMessage(processor.discoveryDB, user1.userId, chatId, messageId, message, messageTimestamp)
 
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: user2.deviceType,

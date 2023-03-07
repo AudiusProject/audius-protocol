@@ -35,6 +35,10 @@ describe('Add track to playlist notification', () => {
       identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
       discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName),
     })
+
+    // Mock current date for test result consistency
+    Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
+
   })
 
   afterEach(async () => {
