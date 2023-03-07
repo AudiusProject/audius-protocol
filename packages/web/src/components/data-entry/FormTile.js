@@ -70,11 +70,11 @@ const Divider = (props) => {
 // This is temporary. Will be removed along with feature flag after launch.
 // https://linear.app/audius/issue/PAY-813/remove-premium-content-feature-flags-after-launch
 const TrackAvailabilityButton = (props) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
 
-  if (isPremiumContentEnabled) {
+  if (isGatedContentEnabled) {
     return (
       <LabeledButton
         type={ButtonType.COMMON_ALT}
@@ -110,11 +110,11 @@ const TrackAvailabilityButton = (props) => {
 // This is temporary. Will be removed along with feature flag after launch.
 // https://linear.app/audius/issue/PAY-813/remove-premium-content-feature-flags-after-launch
 const TrackAvailabilityModalContainer = (props) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
 
-  if (isPremiumContentEnabled) {
+  if (isGatedContentEnabled) {
     return (
       <TrackAvailabilityModal
         isOpen={props.isAvailabilityModalOpen}
@@ -140,8 +140,8 @@ const TrackAvailabilityModalContainer = (props) => {
 }
 
 const BasicForm = (props) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
   const {
     remixSettingsModalVisible,
@@ -294,7 +294,7 @@ const BasicForm = (props) => {
   }, [isRemix, setIsRemix, setRemixSettingsModalVisible, onChangeField])
 
   const renderRemixSwitch = () => {
-    const shouldRender = props.type === 'track' && !isPremiumContentEnabled
+    const shouldRender = props.type === 'track' && !isGatedContentEnabled
     return (
       shouldRender && (
         <div className={styles.remixSwitch}>
@@ -391,14 +391,14 @@ const BasicForm = (props) => {
       {renderBasicForm()}
       {renderBottomMenu()}
       {renderSourceFilesModal()}
-      {!isPremiumContentEnabled && renderRemixSettingsModal()}
+      {!isGatedContentEnabled && renderRemixSettingsModal()}
     </div>
   )
 }
 
 const AdvancedForm = (props) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
 
   const {
@@ -658,7 +658,7 @@ const AdvancedForm = (props) => {
           <br />
           {props.licenseDescription}
         </div>
-        {isPremiumContentEnabled && renderRemixSettingsModal()}
+        {isGatedContentEnabled && renderRemixSettingsModal()}
       </div>
     </>
   )

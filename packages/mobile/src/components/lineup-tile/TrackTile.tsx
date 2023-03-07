@@ -25,7 +25,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { TrackImage } from 'app/components/image/TrackImage'
 import type { LineupItemProps } from 'app/components/lineup-tile/types'
-import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
+import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 import type { TileProps } from '../core'
@@ -73,7 +73,7 @@ export const TrackTileComponent = ({
   user,
   ...lineupTileProps
 }: TrackTileProps) => {
-  const isPremiumContentEnabled = useIsPremiumContentEnabled()
+  const isGatedContentEnabled = useIsGatedContentEnabled()
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const isOnArtistsTracksTab = useNavigationState((state) => {
@@ -124,7 +124,7 @@ export const TrackTileComponent = ({
       return
     }
     const overflowActions = [
-      !isPremiumContentEnabled || !isPremium
+      !isGatedContentEnabled || !isPremium
         ? OverflowAction.ADD_TO_PLAYLIST
         : null,
       OverflowAction.VIEW_TRACK_PAGE,
@@ -141,7 +141,7 @@ export const TrackTileComponent = ({
       })
     )
   }, [
-    isPremiumContentEnabled,
+    isGatedContentEnabled,
     isPremium,
     track_id,
     dispatch,

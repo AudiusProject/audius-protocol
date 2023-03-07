@@ -100,9 +100,9 @@ export function* watchPlay() {
         getFeatureEnabled,
         FeatureFlags.STREAM_MP3
       )
-      const isPremiumContentEnabled = yield* call(
+      const isGatedContentEnabled = yield* call(
         getFeatureEnabled,
-        FeatureFlags.PREMIUM_CONTENT_ENABLED
+        FeatureFlags.GATED_CONTENT_ENABLED
       )
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
@@ -130,7 +130,7 @@ export function* watchPlay() {
         streamMp3IsEnabled ||
         (encodedTrackId && FORCE_MP3_STREAM_TRACK_IDS.has(encodedTrackId))
       let queryParams: QueryParams = {}
-      if (isPremiumContentEnabled && track.is_premium) {
+      if (isGatedContentEnabled && track.is_premium) {
         const data = `Premium content user signature at ${Date.now()}`
         const signature = yield* call(audiusBackendInstance.getSignature, data)
         const premiumTrackSignatureMap = yield* select(

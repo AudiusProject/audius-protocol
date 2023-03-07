@@ -173,11 +173,11 @@ const TrackHeader = ({
   goToFavoritesPage,
   goToRepostsPage
 }: TrackHeaderProps) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
   const showSocials =
-    !isUnlisted && (!isPremiumContentEnabled || doesUserHaveAccess)
+    !isUnlisted && (!isGatedContentEnabled || doesUserHaveAccess)
 
   const image = useTrackCoverArt(
     trackId,
@@ -234,7 +234,7 @@ const TrackHeader = ({
         : isSaved
         ? OverflowAction.UNFAVORITE
         : OverflowAction.FAVORITE,
-      !isPremiumContentEnabled || !isPremium
+      !isGatedContentEnabled || !isPremium
         ? OverflowAction.ADD_TO_PLAYLIST
         : null,
       isFollowing
@@ -319,7 +319,7 @@ const TrackHeader = ({
 
   const renderCornerTag = () => {
     const showPremiumCornerTag =
-      isPremiumContentEnabled &&
+      isGatedContentEnabled &&
       !isLoading &&
       premiumConditions &&
       (isOwner || !doesUserHaveAccess)
@@ -343,7 +343,7 @@ const TrackHeader = ({
   }
 
   const renderHeaderText = () => {
-    if (isPremiumContentEnabled && isPremium) {
+    if (isGatedContentEnabled && isPremium) {
       return (
         <div className={cn(styles.typeLabel, styles.premiumContentLabel)}>
           {premiumConditions?.nft_collection ? (
@@ -388,7 +388,7 @@ const TrackHeader = ({
         />
       </div>
       <div className={styles.buttonSection}>
-        {isPremiumContentEnabled &&
+        {isGatedContentEnabled &&
         !doesUserHaveAccess &&
         premiumConditions &&
         trackId ? (
@@ -403,7 +403,7 @@ const TrackHeader = ({
             buttonClassName={styles.premiumTrackSectionButton}
           />
         ) : null}
-        {!isPremiumContentEnabled || doesUserHaveAccess ? (
+        {!isGatedContentEnabled || doesUserHaveAccess ? (
           <PlayButton playing={isPlaying} onPlay={onPlay} />
         ) : null}
         <ActionButtonRow
@@ -422,7 +422,7 @@ const TrackHeader = ({
           darkMode={isDarkMode()}
         />
       </div>
-      {isPremiumContentEnabled &&
+      {isGatedContentEnabled &&
         doesUserHaveAccess &&
         premiumConditions &&
         trackId && (

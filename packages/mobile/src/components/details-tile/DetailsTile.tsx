@@ -17,7 +17,7 @@ import { Button, Hyperlink, Tile } from 'app/components/core'
 import Text from 'app/components/text'
 import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
-import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
+import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
@@ -195,7 +195,7 @@ export const DetailsTile = ({
   user,
   track
 }: DetailsTileProps) => {
-  const isPremiumContentEnabled = useIsPremiumContentEnabled()
+  const isGatedContentEnabled = useIsGatedContentEnabled()
   const { doesUserHaveAccess } = usePremiumContentAccess(
     track ? (track as unknown as Track) : null
   )
@@ -227,7 +227,7 @@ export const DetailsTile = ({
 
   const renderCornerTag = () => {
     const showPremiumCornerTag =
-      isPremiumContentEnabled &&
+      isGatedContentEnabled &&
       premiumConditions &&
       (isOwner || !doesUserHaveAccess)
     const cornerTagIconType = showPremiumCornerTag
@@ -303,7 +303,7 @@ export const DetailsTile = ({
             </TouchableOpacity>
           ) : null}
           <View style={styles.buttonSection}>
-            {isPremiumContentEnabled &&
+            {isGatedContentEnabled &&
               !doesUserHaveAccess &&
               premiumConditions &&
               trackId && (
@@ -312,7 +312,7 @@ export const DetailsTile = ({
                   premiumConditions={premiumConditions}
                 />
               )}
-            {!isPremiumContentEnabled || doesUserHaveAccess ? (
+            {!isGatedContentEnabled || doesUserHaveAccess ? (
               <Button
                 styles={{ text: styles.playButtonText }}
                 title={isPlaying ? messages.pause : messages.play}
@@ -337,14 +337,12 @@ export const DetailsTile = ({
               onPressShare={onPressShare}
             />
           </View>
-          {isPremiumContentEnabled &&
-            doesUserHaveAccess &&
-            premiumConditions && (
-              <DetailsTileHasAccess
-                premiumConditions={premiumConditions}
-                isOwner={isOwner}
-              />
-            )}
+          {isGatedContentEnabled && doesUserHaveAccess && premiumConditions && (
+            <DetailsTileHasAccess
+              premiumConditions={premiumConditions}
+              isOwner={isOwner}
+            />
+          )}
           <DetailsTileStats
             favoriteCount={saveCount}
             hideFavoriteCount={hideFavoriteCount}

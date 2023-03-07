@@ -31,11 +31,11 @@ export const CardTitle = ({
   isPremium,
   premiumConditions
 }: CardTitleProps) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
 
-  if (isPremiumContentEnabled && isPremium) {
+  if (isGatedContentEnabled && isPremium) {
     return (
       <div
         className={cn(styles.headerContainer, className, styles.premiumContent)}

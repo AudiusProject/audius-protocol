@@ -48,14 +48,14 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
   const remoteConfig = yield* getContext('remoteConfigInstance')
   yield remoteConfig.waitForUserRemoteConfig()
 
-  const isPremiumContentEnabled = yield getFeatureEnabled(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const isGatedContentEnabled = yield getFeatureEnabled(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
-  const isNFTGateEnabled = yield getFeatureEnabled(
-    FeatureFlags.NFT_GATE_ENABLED
+  const isCollectibleGatedEnabled = yield getFeatureEnabled(
+    FeatureFlags.COLLECTIBLE_GATED_ENABLED
   )
-  const isSpecialAccessGateEnabled = yield getFeatureEnabled(
-    FeatureFlags.SPECIAL_ACCESS_GATE_ENABLED
+  const isSpecialAccessEnabled = yield getFeatureEnabled(
+    FeatureFlags.SPECIAL_ACCESS_ENABLED
   )
 
   return tracksMetadata
@@ -68,15 +68,15 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
 
       // Treat premium content as deleted when its not enabled
       // TODO: Remove this when removing the feature flags
-      if (!isPremiumContentEnabled && metadata.is_premium) {
+      if (!isGatedContentEnabled && metadata.is_premium) {
         return null
       } else if (
-        !isNFTGateEnabled &&
+        !isCollectibleGatedEnabled &&
         metadata.premium_conditions?.nft_collection
       ) {
         return null
       } else if (
-        !isSpecialAccessGateEnabled &&
+        !isSpecialAccessEnabled &&
         (metadata.premium_conditions?.follow_user_id ||
           metadata.premium_conditions?.tip_user_id)
       ) {

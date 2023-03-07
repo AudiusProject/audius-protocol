@@ -21,11 +21,11 @@ export const PremiumContentLabel = ({
   doesUserHaveAccess: boolean
   isOwner: boolean
 }) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
 
-  if (!isPremiumContentEnabled) {
+  if (!isGatedContentEnabled) {
     return null
   }
 
