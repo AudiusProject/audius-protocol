@@ -99,7 +99,7 @@ export default function History() {
     // Sort timeline by datetime and truncate to numEntries
     setTimelineItems(
       [...newTimeline]
-        .sort((a, b) => (a.datetime.isBefore(b.datetime) ? -1 : 1))
+        .sort((a, b) => (a.datetime.isBefore(b.datetime) ? 1 : -1))
         .filter((_, i) => i < (numEntries?.length ? parseInt(numEntries) : 1)),
     )
   }, [logQueries[0].data, logQueries[1].data, logQueries[2].data])
@@ -141,9 +141,6 @@ export default function History() {
         />
       </div>
       <br />
-      {logQueries.filter((query) => query.isLoading).length > 0 && (
-        <div className="dark:text-white">Loading...</div>
-      )}
       {logErrors.length > 0 && (
         <div className="dark:text-white">Encountered error(s) while fetching:</div>
       )}
@@ -153,6 +150,10 @@ export default function History() {
             {JSON.stringify(error)}
           </div>
         ))}
+      {logQueries.filter((query) => query.isLoading).length > 0 && (
+        <div className="dark:text-white">Loading...</div>
+      )}
+      <br />
       <Timeline items={timelineItems} />
     </>
   )
