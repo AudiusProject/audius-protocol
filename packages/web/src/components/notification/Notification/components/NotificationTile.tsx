@@ -5,12 +5,12 @@ import {
   useCallback
 } from 'react'
 
-import { notificationsActions, Notification } from '@audius/common'
+import { notificationsActionsLegacy, Notification } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import styles from './NotificationTile.module.css'
-const { toggleNotificationPanel } = notificationsActions
+const { toggleNotificationPanel } = notificationsActionsLegacy
 
 type NotificationTileProps = {
   notification: Notification

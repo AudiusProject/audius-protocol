@@ -1,14 +1,14 @@
 import {
   ID,
   Name,
-  notificationsActions,
+  notificationsActionsLegacy,
   notificationsSelectors
 } from '@audius/common'
 import { put, select } from 'typed-redux-saga'
 
 import { make } from '../analytics/actions'
 const { getPlaylistUpdates } = notificationsSelectors
-const { setPlaylistUpdates } = notificationsActions
+const { setPlaylistUpdates } = notificationsActionsLegacy
 
 export function* recordPlaylistUpdatesAnalytics(playlistUpdates: ID[]) {
   const existingUpdates: ID[] = yield* select(getPlaylistUpdates)

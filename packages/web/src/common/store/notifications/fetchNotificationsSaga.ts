@@ -1,5 +1,5 @@
 import {
-  FetchNotifications,
+  FetchNotificationsAction,
   getErrorMessage,
   notificationsActions,
   notificationsSelectors
@@ -13,39 +13,37 @@ import { parseAndProcessNotifications } from './parseAndProcessNotifications'
 
 const { getLastNotification } = notificationsSelectors
 const {
-  fetchNotificationsRequested,
+  fetchNotifications: fetchNotificationsAction,
   fetchNotificationsFailed,
-  fetchNotificationSucceeded
+  addNotifications
 } = notificationsActions
 
 export function* watchFetchNotifications() {
-  yield* takeEvery(
-    notificationsActions.FETCH_NOTIFICATIONS,
-    fetchNotificationsSaga
-  )
+  yield* takeEvery(fetchNotificationsAction.type, fetchNotificationsSaga)
 }
 
 /**
  * Fetch notifications, used by notification pagination
  * This is the function used to fetch more notifcations after the initial load in getNotifications
  */
-function* fetchNotificationsSaga(action: FetchNotifications) {
-  yield* put(fetchNotificationsRequested())
-  const limit = action.limit || NOTIFICATION_LIMIT_DEFAULT
+function* fetchNotificationsSaga(action: FetchNotificationsAction) {
+  const pageSize = action.payload?.pageSize ?? NOTIFICATION_LIMIT_DEFAULT
   const lastNotification = yield* select(getLastNotification)
   const timeOffset = lastNotification
     ? lastNotification.timestamp
     : moment().toISOString()
 
   const notificationsResponse = yield* call(fetchNotifications, {
-    limit,
+    limit: pageSize,
     timeOffset,
     groupIdOffset: lastNotification?.groupId
   })
 
   if ('error' in notificationsResponse) {
     yield* put(
-      fetchNotificationsFailed(getErrorMessage(notificationsResponse.error))
+      fetchNotificationsFailed({
+        message: getErrorMessage(notificationsResponse.error)
+      })
     )
     return
   }
@@ -57,6 +55,6 @@ function* fetchNotificationsSaga(action: FetchNotifications) {
     parseAndProcessNotifications,
     notificationItems
   )
-  const hasMore = notifications.length >= limit
-  yield* put(fetchNotificationSucceeded(notifications, totalUnviewed, hasMore))
+  const hasMore = notifications.length >= pageSize
+  yield* put(addNotifications({ notifications, totalUnviewed, hasMore }))
 }

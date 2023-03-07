@@ -10,74 +10,71 @@ import { getUser, getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 import { Nullable } from 'utils'
 
-import { Collection, Track } from '../../models'
+import { Collection, Status, Track } from '../../models'
 
+import { notificationsAdapter } from './notificationsSlice'
 import {
   Entity,
   Notification,
   NotificationType,
   Achievement,
-  AnnouncementNotification,
   EntityType,
   AddTrackToPlaylistNotification,
   CollectionEntity,
-  TrackEntity
+  TrackEntity,
+  AnnouncementNotification
 } from './types'
 
-const getBaseState = (state: CommonState) => state.pages.notifications
+const getBaseState = (state: CommonState) => state.notifications
 
-// Notification selectors
+export const {
+  selectById: selectNotificationById,
+  selectIds: selectNotificationIds,
+  selectEntities: selectNotificationEntities,
+  selectAll: selectAllNotifications,
+  selectTotal: selectTotalNotification
+} = notificationsAdapter.getSelectors<CommonState>(
+  (state) => state.notifications
+)
+
 export const getNotificationPanelIsOpen = (state: CommonState) =>
-  getBaseState(state).panelIsOpen
+  state.notificationsLegacy.panelIsOpen
 export const getNotificationModalIsOpen = (state: CommonState) =>
-  getBaseState(state).modalIsOpen
-export const getAllNotifications = (state: CommonState) =>
-  getBaseState(state).notifications
-export const getModalNotificationId = (state: CommonState) =>
-  getBaseState(state).modalNotificationId
-export const getModalNotificationIds = (state: CommonState) =>
-  getBaseState(state).allIds
+  state.notificationsLegacy.modalIsOpen
+export const getAllNotifications = selectAllNotifications
+export const getModalNotificationId = (_state: CommonState) => 'test'
 export const getNotificationUnviewedCount = (state: CommonState) =>
   getBaseState(state).totalUnviewed
 export const getNotificationStatus = (state: CommonState) =>
   getBaseState(state).status
 export const getNotificationHasMore = (state: CommonState) =>
   getBaseState(state).hasMore
-export const getNotificationUserList = (state: CommonState) =>
-  getBaseState(state).userList
 export const getNotificationHasLoaded = (state: CommonState) =>
-  getBaseState(state).hasLoaded
+  getBaseState(state).status !== Status.IDLE
 
 export const getLastNotification = (state: CommonState) => {
-  const allIds = getBaseState(state).allIds
-  if (allIds.length === 0) return null
-  const lastNotificationId = allIds[allIds.length - 1]
-  return getBaseState(state).notifications[lastNotificationId]
+  const notificationIds = selectNotificationIds(state)
+  const lastNotificationId = notificationIds[notificationIds.length - 1]
+  return selectNotificationById(state, lastNotificationId)
 }
 
-export const getNotificationById = (
-  state: CommonState,
-  notificationId: string
-) => getBaseState(state).notifications[notificationId]
+export const getNotificationById = selectNotificationById
 
 export const getModalNotification = (state: CommonState) =>
-  getBaseState(state).modalNotificationId
-    ? (getBaseState(state).notifications[
-        getBaseState(state).modalNotificationId!
-      ] as AnnouncementNotification) || null
+  state.notificationsLegacy.modalNotificationId
+    ? (selectNotificationById(
+        state,
+        state.notificationsLegacy.modalNotificationId!
+      ) as AnnouncementNotification) || null
     : null
 
 export const getPlaylistUpdates = (state: CommonState) =>
-  getBaseState(state).playlistUpdates
+  state.notificationsLegacy.playlistUpdates
 
 export const makeGetAllNotifications = () => {
   return createSelector(
-    [getModalNotificationIds, getAllNotifications],
-    (notificationIds, notifications) => {
-      return notificationIds.map(
-        (notificationId) => notifications[notificationId]
-      )
-    }
+    [selectAllNotifications],
+    (notifications) => notifications
   )
 }
 

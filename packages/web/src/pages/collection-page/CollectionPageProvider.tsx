@@ -22,7 +22,7 @@ import {
   cacheCollectionsActions,
   lineupSelectors,
   notificationsSelectors,
-  notificationsActions,
+  notificationsActionsLegacy,
   collectionPageActions as collectionActions,
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
@@ -90,7 +90,7 @@ const {
   getUserUid,
   getCollectionPermalink
 } = collectionPageSelectors
-const { updatePlaylistLastViewedAt } = notificationsActions
+const { updatePlaylistLastViewedAt } = notificationsActionsLegacy
 const { getPlaylistUpdates } = notificationsSelectors
 const { makeGetTableMetadatas, makeGetLineupOrder } = lineupSelectors
 const {

@@ -4,7 +4,7 @@ import {
   Name,
   User,
   notificationsSelectors,
-  notificationsActions,
+  notificationsActionsLegacy,
   Notification
 } from '@audius/common'
 import cn from 'classnames'
@@ -18,7 +18,7 @@ import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './UserNameLink.module.css'
-const { toggleNotificationPanel } = notificationsActions
+const { toggleNotificationPanel } = notificationsActionsLegacy
 const { getNotificationPanelIsOpen } = notificationsSelectors
 
 const messages = {

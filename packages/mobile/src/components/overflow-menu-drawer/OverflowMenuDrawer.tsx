@@ -31,7 +31,6 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.VIEW_ARTIST_PAGE]: { text: 'View Artist Page' },
   [OverflowAction.VIEW_PLAYLIST_PAGE]: { text: 'View Playlist Page' },
   [OverflowAction.VIEW_ALBUM_PAGE]: { text: 'View Album Page' },
-  [OverflowAction.UNSUBSCRIBER_USER]: { text: 'Unsubscribe' },
   [OverflowAction.FOLLOW_ARTIST]: { text: 'Follow Artist' },
   [OverflowAction.UNFOLLOW_ARTIST]: { text: 'Unfollow Artist' },
   [OverflowAction.FOLLOW]: { text: 'Follow' },

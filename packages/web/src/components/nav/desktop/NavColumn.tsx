@@ -17,7 +17,7 @@ import {
   averageColorSelectors,
   cacheCollectionsActions,
   notificationsSelectors,
-  notificationsActions,
+  notificationsActionsLegacy,
   collectionsSocialActions,
   tracksSocialActions,
   createPlaylistModalUISelectors,
@@ -91,7 +91,7 @@ const { getHideFolderTab, getIsOpen } = createPlaylistModalUISelectors
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
 const { toggleNotificationPanel, updatePlaylistLastViewedAt } =
-  notificationsActions
+  notificationsActionsLegacy
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const { getNotificationPanelIsOpen, getNotificationUnviewedCount } =
   notificationsSelectors

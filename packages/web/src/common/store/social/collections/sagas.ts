@@ -13,7 +13,7 @@ import {
   cacheCollectionsSelectors,
   cacheUsersSelectors,
   cacheActions,
-  notificationsActions as notificationActions,
+  notificationsActionsLegacy as notificationActions,
   getContext,
   collectionsSocialActions as socialActions,
   playlistLibraryActions,

@@ -37,7 +37,7 @@ const { getCollection } = cacheCollectionsSelectors
 const { publishPlaylist } = cacheCollectionsActions
 
 type Props = {
-  render: (callbacks: OverflowActionCallbacks) => React.ReactNode
+  render: (callbacks: OverflowActionCallbacks) => JSX.Element
 }
 
 const CollectionOverflowMenuDrawer = ({ render }: Props) => {

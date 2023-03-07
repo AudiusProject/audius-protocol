@@ -6,16 +6,10 @@ import { NOTIFICATION_LIMIT_DEFAULT } from './constants'
 import { fetchNotifications } from './fetchNotifications'
 import { parseAndProcessNotifications } from './parseAndProcessNotifications'
 
-const { REFRESH_NOTIFICATIONS } = notificationsActions
+const { updateNotifications, fetchNotificationsFailed, refreshNotifications } =
+  notificationsActions
 
-const {
-  fetchNotificationsRequested,
-  setNotifications,
-  fetchNotificationsFailed
-} = notificationsActions
-
-function* refreshNotifications() {
-  yield* put(fetchNotificationsRequested())
+function* refreshNotificationsWorker() {
   const limit = NOTIFICATION_LIMIT_DEFAULT
   const timeOffset = moment().toISOString()
   const notificationsResponse = yield* call(fetchNotifications, {
@@ -25,7 +19,9 @@ function* refreshNotifications() {
 
   if ('error' in notificationsResponse) {
     yield* put(
-      fetchNotificationsFailed(getErrorMessage(notificationsResponse.error))
+      fetchNotificationsFailed({
+        message: getErrorMessage(notificationsResponse.error)
+      })
     )
     return
   }
@@ -39,9 +35,9 @@ function* refreshNotifications() {
   )
 
   const hasMore = notifications.length >= limit
-  yield* put(setNotifications(notifications, totalUnviewed, hasMore))
+  yield* put(updateNotifications({ notifications, totalUnviewed, hasMore }))
 }
 
 export function* watchRefreshNotifications() {
-  yield* takeLatest(REFRESH_NOTIFICATIONS, refreshNotifications)
+  yield* takeLatest(refreshNotifications.type, refreshNotificationsWorker)
 }

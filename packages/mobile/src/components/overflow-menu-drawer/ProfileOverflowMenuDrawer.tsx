@@ -14,7 +14,7 @@ const { followUser, unfollowUser, shareUser } = usersSocialActions
 const { getUser } = cacheUsersSelectors
 
 type Props = {
-  render: (callbacks: OverflowActionCallbacks) => React.ReactNode
+  render: (callbacks: OverflowActionCallbacks) => JSX.Element
 }
 
 const ProfileOverflowMenuDrawer = ({ render }: Props) => {

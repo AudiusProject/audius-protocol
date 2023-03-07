@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import {
   Name,
-  notificationsActions,
+  notificationsActionsLegacy,
   AnnouncementNotification as AnnouncementNotificationType
 } from '@audius/common'
 import ReactMarkdown from 'react-markdown'
@@ -17,7 +17,7 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { IconAnnouncement } from './components/icons'
-const { setNotificationModal } = notificationsActions
+const { setNotificationModal } = notificationsActionsLegacy
 
 const messages = {
   readMore: 'Read More'

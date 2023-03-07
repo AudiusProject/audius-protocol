@@ -7,7 +7,7 @@ import {
   User,
   Nullable,
   Entity,
-  notificationsActions,
+  notificationsActionsLegacy,
   notificationsSelectors
 } from '@audius/common'
 import { push } from 'connected-react-router'
@@ -19,7 +19,7 @@ import { getEntityLink } from '../utils'
 
 import styles from './EntityLink.module.css'
 
-const { toggleNotificationPanel } = notificationsActions
+const { toggleNotificationPanel } = notificationsActionsLegacy
 const { getNotificationPanelIsOpen } = notificationsSelectors
 
 type EntityType = (Collection | Track) & { user: Nullable<User> }
