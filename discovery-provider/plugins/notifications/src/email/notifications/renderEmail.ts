@@ -31,6 +31,7 @@ export type ResourceIds = {
 type UserResource = {
   user_id: number
   name: string
+  handle: string
   profile_picture_sizes: string
   profile_picture: string
   creator_node_endpoint: string
@@ -58,7 +59,7 @@ type PlaylistResource = {
   ownerCreatorNodeEndpoint: string
 }
 
-type UserResourcesDict = { [userId: number]: UserResource & { imageUrl: string } }
+type UserResourcesDict = { [userId: number]: UserResource & { imageUrl: string, twitterHandle?: string, instagramHandle?: string, tikTokHandle?: string } }
 type TrackResourcesDict = { [userId: number]: TrackResource & { imageUrl: string } }
 type PlaylistResourcesDict = { [userId: number]: PlaylistResource & { imageUrl: string } }
 export type Resources = {
@@ -109,21 +110,38 @@ const getPlaylistImage = (playlist: PlaylistResource) => {
   return playlistImageUrl
 }
 
-const fetchResources = async (dnDb: Knex, ids: ResourceIds): Promise<Resources> => {
+const fetchResources = async (dnDb: Knex, identityDb: Knex, ids: ResourceIds): Promise<Resources> => {
   const userRows: UserResource[] = await dnDb.select(
     'users.user_id',
+    'users.handle',
     'users.name',
     'users.profile_picture_sizes',
     'users.profile_picture',
     'users.creator_node_endpoint',
   ).from('users').whereIn('user_id', Array.from(ids.users)).andWhere('is_current', true)
+
+  const userHandles = userRows.map(row => row.handle)
+  const identityUserRows = await identityDb.select(
+    'handle',
+    'twitterHandle',
+    'instagramHandle',
+    'tikTokHandle',
+  ).from("SocialHandles").whereIn('handle', userHandles)
+  const userSocialHandles = identityUserRows.reduce((acc, user) => {
+    acc[user.handle] = user
+    return acc
+  }, {} as { [handle: string]: { twitterHandle: string, instagramHandle: string, tikTokHandle: string } })
+
   const users = userRows.reduce((acc, user) => {
+    const userSocial = userSocialHandles[user.handle] || {}
     acc[user.user_id] = {
+      ...userSocial,
       ...user,
       imageUrl: getUserProfileUrl(user)
     }
     return acc
   }, {} as { [userId: number]: UserResource & { imageUrl: string } })
+
 
   const trackRows: TrackResource[] = await dnDb.select(
     'tracks.track_id',
@@ -213,7 +231,7 @@ const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications:
     return acc
   }, {})
 
-  const resources = await fetchResources(dnDB, idsToFetch)
+  const resources = await fetchResources(dnDB, identityDB, idsToFetch)
   return mappedNotifications.map(n => n.formatEmailProps(resources, mappedAdditionalNotifications[n?.notification?.group_id]))
 }
 

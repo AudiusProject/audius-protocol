@@ -38,3 +38,10 @@ export const formatWei = (num: string, chain: 'eth' | 'sol', shouldTruncate = fa
   }
   return formatNumberCommas(trimmed)
 }
+
+export const getNumberSuffix = (num) => {
+  if (num === 1) return 'st'
+  else if (num === 2) return 'nd'
+  else if (num === 3) return 'rd'
+  return 'th'
+}
