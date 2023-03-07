@@ -69,7 +69,7 @@ module.exports = function (app) {
         parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
       const isVerbose = req.query.verbose || false
       const maxRelayLatency =
-        req.query.maxRelayLatency || RELAY_HEALTH_MAX_LATENCY
+        parseInt(req.query.maxRelayLatency) || RELAY_HEALTH_MAX_LATENCY
 
       // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
       const startBlockNumber = Math.max(endBlockNumber - blockDiff, 0)
