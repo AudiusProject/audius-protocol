@@ -46,7 +46,7 @@ function* filterDeletes(tracksMetadata, removeDeleted) {
   const users = yield select(getUsers)
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const remoteConfig = yield* getContext('remoteConfigInstance')
-  yield remoteConfig.waitForUserRemoteConfig()
+  yield call(remoteConfig.waitForRemoteConfig)
 
   const isGatedContentEnabled = yield getFeatureEnabled(
     FeatureFlags.GATED_CONTENT_ENABLED
