@@ -3,8 +3,8 @@ import { useEffect, useCallback, useContext } from 'react'
 import {
   Status,
   notificationsSelectors,
-  notificationsActions,
-  Notification as Notifications
+  Notification as Notifications,
+  notificationsActions
 } from '@audius/common'
 import InfiniteScroll from 'react-infinite-scroller'
 import Lottie from 'react-lottie'

@@ -1,3 +1,5 @@
+import { EntityState, PayloadAction } from '@reduxjs/toolkit'
+
 import { Nullable } from 'utils'
 
 import {
@@ -12,23 +14,8 @@ import {
 } from '../../models'
 
 import {
-  fetchNotifications,
-  fetchNotificationsRequested,
-  fetchNotificationsFailed,
-  fetchNotificationSucceeded,
-  refreshNotifications,
-  setNotifications,
-  setNotificationUsers,
-  fetchNotificationUsers,
-  fetchNotificationUsersRequested,
-  fetchNotificationUsersFailed,
-  fetchNotificationUsersSucceeded,
-  setTotalUnviewedToZero,
-  markAllAsViewed,
   setNotificationModal,
   toggleNotificationPanel,
-  subscribeUser,
-  unsubscribeUser,
   setPlaylistUpdates,
   updatePlaylistLastViewedAt
 } from './actions'
@@ -827,77 +814,51 @@ export type Notification =
   | AddTrackToPlaylistNotification
 
 export interface NotificationState {
-  notifications: {
-    [id: string]: Notification
-  }
-  userList: {
-    userIds: ID[]
-    status?: Status
-    limit: number
-  }
-  lastTimeStamp?: string
-  allIds: string[]
   modalNotificationId: string | undefined
   panelIsOpen: boolean
   modalIsOpen: boolean
-  totalUnviewed: number
-  status?: Status
-  hasMore: boolean
-  hasLoaded: boolean
   playlistUpdates: number[]
 }
 
-export type FetchNotifications = ReturnType<typeof fetchNotifications>
-export type FetchNotificationsRequested = ReturnType<
-  typeof fetchNotificationsRequested
->
-export type FetchNotificationsFailed = ReturnType<
-  typeof fetchNotificationsFailed
->
-export type FetchNotificationsSucceeded = ReturnType<
-  typeof fetchNotificationSucceeded
->
-export type RefreshNotifications = ReturnType<typeof refreshNotifications>
-export type SetNotifications = ReturnType<typeof setNotifications>
-export type SetNotificationUsers = ReturnType<typeof setNotificationUsers>
-export type FetchNotificationUsers = ReturnType<typeof fetchNotificationUsers>
-export type FetchNotificationUsersRequested = ReturnType<
-  typeof fetchNotificationUsersRequested
->
-export type FetchNotificationUsersFailed = ReturnType<
-  typeof fetchNotificationUsersFailed
->
-export type FetchNotificationUsersSucceeded = ReturnType<
-  typeof fetchNotificationUsersSucceeded
->
-export type SetTotalUnviewedToZero = ReturnType<typeof setTotalUnviewedToZero>
-export type MarkAllAsViewed = ReturnType<typeof markAllAsViewed>
+export type NotificationsState = EntityState<Notification> & {
+  status: Status
+  hasMore: boolean
+  totalUnviewed: number
+}
+
 export type SetNotificationModal = ReturnType<typeof setNotificationModal>
 export type ToggleNotificationPanel = ReturnType<typeof toggleNotificationPanel>
-export type SubscribeUser = ReturnType<typeof subscribeUser>
-export type UnsubscribeUser = ReturnType<typeof unsubscribeUser>
 export type SetPlaylistUpdates = ReturnType<typeof setPlaylistUpdates>
 export type UpdatePlaylistLastViewedAt = ReturnType<
   typeof updatePlaylistLastViewedAt
 >
 
 export type NotificationAction =
-  | FetchNotifications
-  | FetchNotificationsRequested
-  | FetchNotificationsFailed
-  | FetchNotificationsSucceeded
-  | RefreshNotifications
-  | SetNotifications
-  | SetNotificationUsers
-  | FetchNotificationUsers
-  | FetchNotificationUsersRequested
-  | FetchNotificationUsersFailed
-  | FetchNotificationUsersSucceeded
-  | SetTotalUnviewedToZero
-  | MarkAllAsViewed
   | SetNotificationModal
   | ToggleNotificationPanel
-  | SubscribeUser
-  | UnsubscribeUser
   | SetPlaylistUpdates
   | UpdatePlaylistLastViewedAt
+
+export type AddNotificationsAction = PayloadAction<{
+  notifications: Notification[]
+  totalUnviewed: number
+  hasMore: boolean
+}>
+
+export type UpdateNotificationsAction = PayloadAction<{
+  notifications: Notification[]
+  totalUnviewed: number
+  hasMore: boolean
+}>
+
+export type FetchNotificationsAction = PayloadAction<
+  | undefined
+  | {
+      pageSize?: number
+    }
+>
+
+export type FetchNotificationsFailedAction = PayloadAction<{
+  message: string
+  shouldReport?: boolean
+}>

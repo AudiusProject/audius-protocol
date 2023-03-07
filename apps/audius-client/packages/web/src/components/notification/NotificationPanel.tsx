@@ -4,8 +4,9 @@ import {
   Status,
   Nullable,
   notificationsSelectors,
-  notificationsActions,
-  Notification as Notifications
+  notificationsActionsLegacy,
+  Notification as Notifications,
+  notificationsActions
 } from '@audius/common'
 import { Popup, PopupPosition, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
@@ -23,8 +24,9 @@ import { EmptyNotifications } from './EmptyNotifications'
 import { Notification } from './Notification'
 import { NotificationModal } from './NotificationModal'
 import styles from './NotificationPanel.module.css'
-const { fetchNotifications, setNotificationModal, toggleNotificationPanel } =
-  notificationsActions
+const { setNotificationModal, toggleNotificationPanel } =
+  notificationsActionsLegacy
+const { fetchNotifications, markAllAsViewed } = notificationsActions
 const {
   getModalNotification,
   getNotificationHasLoaded,
@@ -32,7 +34,8 @@ const {
   getNotificationModalIsOpen,
   getNotificationPanelIsOpen,
   getNotificationStatus,
-  makeGetAllNotifications
+  makeGetAllNotifications,
+  getNotificationUnviewedCount
 } = notificationsSelectors
 
 const getNotifications = makeGetAllNotifications()
@@ -67,6 +70,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const hasLoaded = useSelector(getNotificationHasLoaded)
   const hasMore = useSelector(getNotificationHasMore)
   const status = useSelector(getNotificationStatus)
+  const totalUnviewed = useSelector(getNotificationUnviewedCount)
   const isNotificationModalOpen = useSelector(getNotificationModalIsOpen)
   const modalNotification = useSelector(getModalNotification)
   const isUserListOpen = useSelector(getIsUserListOpen)
@@ -87,7 +91,10 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
 
   const handleToggleNotificationPanel = useCallback(() => {
     dispatch(toggleNotificationPanel())
-  }, [dispatch])
+    if (totalUnviewed > 0) {
+      dispatch(markAllAsViewed())
+    }
+  }, [dispatch, totalUnviewed])
 
   const handleCheckClickInside = useCallback(
     (target: EventTarget) => {

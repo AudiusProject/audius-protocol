@@ -1,6 +1,6 @@
 import { useCallback, useContext } from 'react'
 
-import { FeatureFlags, notificationsActions } from '@audius/common'
+import { FeatureFlags } from '@audius/common'
 import type { ParamListBase, RouteProp } from '@react-navigation/core'
 import type {
   NativeStackNavigationOptions,
@@ -8,7 +8,6 @@ import type {
 } from '@react-navigation/native-stack'
 import { CardStyleInterpolators } from '@react-navigation/stack'
 import { Text, View } from 'react-native'
-import { useDispatch } from 'react-redux'
 
 import AudiusLogo from 'app/assets/images/audiusLogoHorizontalDeprecated.svg'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
@@ -25,7 +24,6 @@ import { AppDrawerContext } from '../app-drawer-screen'
 import { AccountPictureHeader } from './AccountPictureHeader'
 import type { AppTabScreenParamList } from './AppTabScreen'
 import type { AppScreenParamList } from './AppTabsScreen'
-const { markAllAsViewed } = notificationsActions
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   headerLeft: { marginLeft: spacing(-2) + 1, width: 40 },
@@ -78,14 +76,12 @@ export const useAppScreenOptions = (
 ) => {
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
-  const dispatch = useDispatch()
   const navigation = useNavigation()
   const { drawerHelpers } = useContext(AppDrawerContext)
 
-  const handlePressNotification = useCallback(() => {
+  const handleOpenLeftNavDrawer = useCallback(() => {
     drawerHelpers?.openDrawer()
-    dispatch(markAllAsViewed())
-  }, [dispatch, drawerHelpers])
+  }, [drawerHelpers])
 
   const handlePressHome = useCallback(() => {
     navigation.navigate('trending')
@@ -131,7 +127,7 @@ export const useAppScreenOptions = (
             }
             return (
               <View style={[styles.headerLeft, { marginLeft: 0 }]}>
-                <AccountPictureHeader onPress={handlePressNotification} />
+                <AccountPictureHeader onPress={handleOpenLeftNavDrawer} />
               </View>
             )
           },
@@ -176,7 +172,7 @@ export const useAppScreenOptions = (
         }
       },
       [
-        handlePressNotification,
+        handleOpenLeftNavDrawer,
         handlePressHome,
         handlePressSearch,
         styles,

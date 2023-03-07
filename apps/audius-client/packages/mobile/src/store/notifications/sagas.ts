@@ -1,7 +1,7 @@
 import {
   accountSelectors,
-  notificationsActions as notificationActions,
-  getContext
+  getContext,
+  notificationsActions
 } from '@audius/common'
 import commonNotificationsSagas, {
   getPollingIntervalMs
@@ -61,7 +61,7 @@ function* watchResetNotificationBadgeCount() {
 
 function* watchMarkedAllNotificationsViewed() {
   yield* takeEvery(
-    notificationActions.MARKED_ALL_AS_VIEWED,
+    notificationsActions.markAllAsViewed.type,
     markedAllNotificationsViewed
   )
 }

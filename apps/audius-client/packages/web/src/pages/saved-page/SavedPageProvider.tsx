@@ -12,7 +12,7 @@ import {
   accountActions,
   lineupSelectors,
   notificationsSelectors,
-  notificationsActions,
+  notificationsActionsLegacy,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as saveActions,
   savedPageSelectors,
@@ -42,7 +42,7 @@ import { SavedPageProps as MobileSavedPageProps } from './components/mobile/Save
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { getSavedTracksLineup, hasReachedEnd } = savedPageSelectors
-const { updatePlaylistLastViewedAt } = notificationsActions
+const { updatePlaylistLastViewedAt } = notificationsActionsLegacy
 const { getPlaylistUpdates } = notificationsSelectors
 const { makeGetTableMetadatas } = lineupSelectors
 

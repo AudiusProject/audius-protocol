@@ -4,7 +4,7 @@ import {
   SquareSizes,
   User,
   notificationsSelectors,
-  notificationsActions
+  notificationsActionsLegacy
 } from '@audius/common'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
@@ -15,7 +15,7 @@ import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 
 import styles from './ProfilePicture.module.css'
-const { toggleNotificationPanel } = notificationsActions
+const { toggleNotificationPanel } = notificationsActionsLegacy
 const { getNotificationPanelIsOpen } = notificationsSelectors
 
 const imageLoadDelay = 250

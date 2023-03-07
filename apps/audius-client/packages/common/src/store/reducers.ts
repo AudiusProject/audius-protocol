@@ -18,7 +18,12 @@ import collectiblesSlice from './collectibles/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
-import notifications from './notifications/reducer'
+import {
+  NotificationsState,
+  notificationsReducer,
+  notificationsReducerLegacy,
+  NotificationState
+} from './notifications'
 import { HistoryPageState, SavedPageState } from './pages'
 import audioRewardsSlice from './pages/audio-rewards/slice'
 import audioTransactionsSlice from './pages/audio-transactions/slice'
@@ -153,6 +158,9 @@ export const reducers = () => ({
   // Playlist Library
   playlistLibrary: playlistLibraryReducer,
 
+  notificationsLegacy: notificationsReducerLegacy,
+  notifications: notificationsReducer,
+
   // UI
   ui: combineReducers({
     averageColor: averageColorReducer,
@@ -211,7 +219,6 @@ export const reducers = () => ({
     trendingPlaylists,
     trendingUnderground,
     settings,
-    notifications,
     remixes
   }),
 
@@ -263,6 +270,9 @@ export type CommonState = {
 
   // Playlist library
   playlistLibrary: PlaylistLibraryState
+
+  notificationsLegacy: NotificationState
+  notifications: NotificationsState
 
   ui: {
     averageColor: ReturnType<typeof averageColorReducer>
@@ -319,7 +329,6 @@ export type CommonState = {
     trending: TrendingPageState
     trendingPlaylists: ReturnType<typeof trendingPlaylists>
     trendingUnderground: ReturnType<typeof trendingUnderground>
-    notifications: ReturnType<typeof notifications>
     remixes: ReturnType<typeof remixes>
   }
   solana: ReturnType<typeof solanaReducer>
