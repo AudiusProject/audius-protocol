@@ -54,6 +54,7 @@ export interface GetFeelingLuckyTracksRequest {
     userId?: string;
     limit?: number;
     withUsers?: boolean;
+    minFollowers?: number;
 }
 
 export interface GetMostLovedTracksRequest {
@@ -264,6 +265,10 @@ export class TracksApi extends runtime.BaseAPI {
 
         if (requestParameters.withUsers !== undefined) {
             queryParameters['with_users'] = requestParameters.withUsers;
+        }
+
+        if (requestParameters.minFollowers !== undefined) {
+            queryParameters['min_followers'] = requestParameters.minFollowers;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
