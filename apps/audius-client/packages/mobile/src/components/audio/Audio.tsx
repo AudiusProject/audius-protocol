@@ -21,7 +21,7 @@ import {
   shallowCompare,
   savedPageTracksLineupActions
 } from '@audius/common'
-import { isEqual, range } from 'lodash'
+import { isEqual } from 'lodash'
 import TrackPlayer, {
   AppKilledPlaybackBehavior,
   Capability,
@@ -455,22 +455,25 @@ export const Audio = () => {
     const isQueueAppend =
       refUids.length > 0 &&
       isEqual(queueTrackUids.slice(0, refUids.length), refUids)
-    // Check if we are removing from the end of the queue
-    const isQueueRemoval =
-      refUids.length > 0 &&
-      isEqual(refUids.slice(0, queueTrackUids.length), queueTrackUids)
 
-    if (isQueueRemoval) {
-      // NOTE: There might be a case where we are trying to remove the currently playing track.
-      // Shouldn't be possible, but need to keep an eye out for that
-      const startingRemovalIndex = queueTrackUids.length
-      const removalLength = refUids.length - queueTrackUids.length
-      const removalIndexArray = range(removalLength).map(
-        (i) => i + startingRemovalIndex
-      )
-      await TrackPlayer.remove(removalIndexArray)
-      return
-    }
+    // TODO: Queue removal logic was firing too often previously and causing playback issues when at the end of queues. Need to fix
+    // Check if we are removing from the end of the queue
+    // const isQueueRemoval =
+    //   refUids.length > 0 &&
+    //   isEqual(refUids.slice(0, queueTrackUids.length), queueTrackUids)
+
+    // if (isQueueRemoval) {
+    //   // NOTE: There might be a case where we are trying to remove the currently playing track.
+    //   // Shouldn't be possible, but need to keep an eye out for that
+    //   const startingRemovalIndex = queueTrackUids.length
+    //   const removalLength = refUids.length - queueTrackUids.length
+    //   const removalIndexArray = range(removalLength).map(
+    //     (i) => i + startingRemovalIndex
+    //   )
+    //   await TrackPlayer.remove(removalIndexArray)
+    //   await TrackPlayer.skip(queueIndex)
+    //   return
+    // }
 
     const newQueueTracks = isQueueAppend
       ? queueTracks.slice(refUids.length)
