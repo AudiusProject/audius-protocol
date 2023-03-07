@@ -347,14 +347,12 @@ func (ss StorageServer) serveStatusUpdateLogs(c echo.Context) error {
 		return err
 	}
 
-	getLogsForPubKey := func(pubKey string) []logstream.NodeStatus {
-		var logsForPubKey []logstream.NodeStatus
-		err := ss.Logstream.GetStatusUpdatesInRange(start, end, pubKey, &logsForPubKey)
+	getLogsForPubKey := func(pubKey string) (logs []logstream.NodeStatus) {
+		err := ss.Logstream.GetStatusUpdatesInRange(start, end, pubKey, &logs)
 		if err != nil {
 			slog.Error("Error getting status update logs", err, "pubKey", pubKey)
-			return []logstream.NodeStatus{}
 		}
-		return logsForPubKey
+		return
 	}
 
 	return c.JSON(200, getLogsForPubKeys(pubKeys, getLogsForPubKey))
@@ -425,7 +423,7 @@ func (ss StorageServer) serveUpdateHealthyNodeSetLogs(c echo.Context) error {
 	return c.JSON(200, logs)
 }
 
-// parseGetLogsParams parses the start, end, and pubKey params for the getLogs endpoints and turns "*" or empty pubKey param into a list of all storage nodes.
+// parseGetLogsParams parses the start, end, and pubKey params for the getLogs endpoints and turns "*" or empty pubKey param into a list of all storage nodes if parseWildcardPubKey is true.
 func (ss StorageServer) parseGetLogsParams(c echo.Context, parseWildcardPubKey bool) (start time.Time, end time.Time, pubKeys []string, err error) {
 	// Parse start and end time range, defaulting to the previous 1 minute
 	start = time.Now().UTC().Add(-1 * time.Minute)

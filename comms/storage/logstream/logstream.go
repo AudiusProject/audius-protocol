@@ -120,30 +120,30 @@ func (ls LogStream) LogRebalanceEnd(prevShards []string, newShards []string) {
 	}
 }
 
-// GetNStatusUpdatesSince returns status updates for a pubKey in the start to end range.
+// GetStatusUpdatesInRange returns status updates for a pubKey in the start to end range.
 func (ls LogStream) GetStatusUpdatesInRange(start time.Time, end time.Time, pubKey string, logs *[]NodeStatus) error {
 	subject := fmt.Sprintf("storage.log.%s.statusUpdate", pubKey)
 	return GetLogsForSubjInRange(start, end, subject, ls.jsc, logs)
 }
 
-// GetNRebalanceStartSince returns rebalanceStart logs for pubKey in the start to end range.
+// GetRebalanceStartsInRange returns rebalanceStart logs for pubKey in the start to end range.
 func (ls LogStream) GetRebalanceStartsInRange(start time.Time, end time.Time, pubKey string, logs *[]RebalanceStartLog) error {
 	subject := fmt.Sprintf("storage.log.%s.rebalanceStart", pubKey)
 	return GetLogsForSubjInRange(start, end, subject, ls.jsc, logs)
 }
 
-// GetNRebalanceEndsSince returns rebalanceEnd logs for pubKey in the start to end range.
+// GetRebalanceEndsInRange returns rebalanceEnd logs for pubKey in the start to end range.
 func (ls LogStream) GetRebalanceEndsInRange(start time.Time, end time.Time, pubKey string, logs *[]RebalanceEndLog) error {
 	subject := fmt.Sprintf("storage.log.%s.rebalanceEnd", pubKey)
 	return GetLogsForSubjInRange(start, end, subject, ls.jsc, logs)
 }
 
-// GetNUpdateHealthyNodeSetsSince returns updateHealthyNodeSet logs in the start to end range.
+// GetUpdateHealthyNodeSetsInRange returns updateHealthyNodeSet logs in the start to end range.
 func (ls LogStream) GetUpdateHealthyNodeSetsInRange(start time.Time, end time.Time, logs *[]UpdateHealthyNodeSetLog) error {
 	return GetLogsForSubjInRange(start, end, "storage.log.updateHealthyNodeSet", ls.jsc, logs)
 }
 
-// GetNLogsForSubjSince sets *logs to the logs for the given subject in the start to end range.
+// GetLogsForSubjInRange sets *logs to the logs for the given subject in the start to end range.
 func GetLogsForSubjInRange[T any](start time.Time, end time.Time, subject string, jsc nats.JetStreamContext, logs *[]T) error {
 	subscription, err := jsc.SubscribeSync(
 		subject,
@@ -175,7 +175,7 @@ func GetLogsForSubjInRange[T any](start time.Time, end time.Time, subject string
 			logs = append(logs, log)
 			msg.AckSync()
 
-			// Return after we've read logs until 'until' time
+			// Return once we've read logs until 'end' time
 			var t time.Time
 			switch logType := any(log).(type) {
 			case NodeStatus:
