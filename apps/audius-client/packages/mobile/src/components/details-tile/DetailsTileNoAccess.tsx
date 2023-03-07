@@ -53,7 +53,6 @@ const messages = {
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   root: {
-    marginBottom: spacing(4),
     padding: spacing(4),
     backgroundColor: palette.neutralLight10,
     borderWidth: 1,
