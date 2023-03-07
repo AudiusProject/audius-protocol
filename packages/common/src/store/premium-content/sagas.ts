@@ -5,6 +5,7 @@ import {
   Collectible,
   ID,
   Kind,
+  Name,
   PremiumContentSignature,
   PremiumTrackStatus,
   Track,
@@ -309,6 +310,10 @@ function* updateCollectibleGatedTrackAccess(
   )
 
   if (premiumContentSignatureResponse) {
+    // Keep record of number of tracks that have a signature
+    // so that we can later track their metrics.
+    let numTrackIdsWithSignature = 0
+
     const premiumContentSignatureMap: {
       [id: ID]: Nullable<PremiumContentSignature>
     } = { ...premiumContentSignatureResponse }
@@ -318,11 +323,21 @@ function* updateCollectibleGatedTrackAccess(
       const id = parseInt(trackId)
       if (!premiumContentSignatureResponse[id]) {
         premiumContentSignatureMap[id] = null
+      } else {
+        numTrackIdsWithSignature++
+      }
+    })
+
+    // Record when collectible gated tracks are in an unlocked state.
+    const analytics = yield* getContext('analytics')
+    analytics.track({
+      eventName: Name.COLLECTIBLE_GATED_TRACK_UNLOCKED,
+      properties: {
+        count: numTrackIdsWithSignature
       }
     })
 
     // update premium content signatures
-
     if (Object.keys(premiumContentSignatureMap).length > 0) {
       yield* put(updatePremiumContentSignatures(premiumContentSignatureMap))
     }
@@ -343,6 +358,7 @@ function* pollPremiumTrack({
   const { slug, handle } = trackParams ?? {}
   if (!slug || !handle) return
 
+  const analytics = yield* getContext('analytics')
   const apiClient = yield* getContext('apiClient')
 
   while (true) {
@@ -363,6 +379,21 @@ function* pollPremiumTrack({
       )
       yield* put(updatePremiumTrackStatus({ trackId, status: 'UNLOCKED' }))
       yield* put(showConfetti())
+
+      const eventName = track.premium_conditions?.follow_user_id
+        ? Name.FOLLOW_GATED_TRACK_UNLOCKED
+        : track.premium_conditions?.tip_user_id
+          ? Name.TIP_GATED_TRACK_UNLOCKED
+          : null
+      if (eventName) {
+        analytics.track({
+          eventName,
+          properties: {
+            trackId
+          }
+        })
+      }
+
       break
     }
     yield* delay(frequency)

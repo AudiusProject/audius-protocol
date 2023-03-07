@@ -99,10 +99,10 @@ const LockedPremiumTrackSection = ({
 }: PremiumTrackAccessSectionProps) => {
   const dispatch = useDispatch()
   const [modalVisibility, setModalVisibility] = useModalState('LockedContent')
-  const source = modalVisibility ? 'lockedContentModal' : 'trackPage'
+  const source = modalVisibility ? 'howToUnlockModal' : 'howToUnlockTrackPage'
   const followSource = modalVisibility
-    ? FollowSource.LOCKED_CONTENT_MODAL
-    : FollowSource.TRACK_PAGE
+    ? FollowSource.HOW_TO_UNLOCK_MODAL
+    : FollowSource.HOW_TO_UNLOCK_TRACK_PAGE
   const account = useSelector(getAccountUser)
 
   const handleSendTip = useCallback(() => {

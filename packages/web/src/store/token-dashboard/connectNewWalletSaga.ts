@@ -1,4 +1,4 @@
-import { tokenDashboardPageActions } from '@audius/common'
+import { getContext, Name, tokenDashboardPageActions } from '@audius/common'
 import * as Sentry from '@sentry/browser'
 import { put, takeEvery } from 'typed-redux-saga'
 
@@ -18,7 +18,11 @@ const { setIsConnectingWallet, setModalState, resetStatus } =
   tokenDashboardPageActions
 
 function* handleConnectNewWallet() {
+  const analytics = yield* getContext('analytics')
+
   try {
+    analytics.track({ eventName: Name.CONNECT_WALLET_NEW_WALLET_START })
+
     const connection = yield* establishWalletConnection()
     if (!connection) return
 
@@ -44,8 +48,24 @@ function* handleConnectNewWallet() {
       })
     )
 
+    analytics.track({
+      eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTING,
+      properties: {
+        chain,
+        walletAddress
+      }
+    })
+
     const signature = yield* signMessage(connection)
     const updatedUserMetadata = yield* associateNewWallet(signature)
+
+    analytics.track({
+      eventName: Name.CONNECT_WALLET_NEW_WALLET_CONNECTED,
+      properties: {
+        chain,
+        walletAddress
+      }
+    })
 
     const disconnect = () => disconnectWallet(connection)
 
@@ -64,6 +84,13 @@ function* handleConnectNewWallet() {
       })
     )
     yield* put(resetStatus())
+
+    analytics.track({
+      eventName: Name.CONNECT_WALLET_ERROR,
+      properties: {
+        error: err
+      }
+    })
   }
 }
 
