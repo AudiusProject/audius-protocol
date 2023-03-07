@@ -16,8 +16,8 @@ export const PlayPauseButton = ({
   playing,
   onPlay
 }: PlayPauseButtonProps) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
 
   return (
@@ -29,7 +29,7 @@ export const PlayPauseButton = ({
       text={playing ? 'PAUSE' : 'PLAY'}
       leftIcon={playing ? <IconPause /> : <IconPlay />}
       onClick={onPlay}
-      disabled={isPremiumContentEnabled ? !doesUserHaveAccess : false}
+      disabled={isGatedContentEnabled ? !doesUserHaveAccess : false}
     />
   )
 }

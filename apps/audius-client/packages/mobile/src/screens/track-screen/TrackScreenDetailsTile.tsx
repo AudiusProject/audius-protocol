@@ -39,8 +39,8 @@ import type { DetailsTileDetail } from 'app/components/details-tile/types'
 import type { ImageProps } from 'app/components/image/FastImage'
 import { TrackImage } from 'app/components/image/TrackImage'
 import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/TrackDownloadStatusIndicator'
+import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
-import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as record } from 'app/services/analytics'
 import { getTrackOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
@@ -162,7 +162,7 @@ export const TrackScreenDetailsTile = ({
   uid,
   isLineupLoading
 }: TrackScreenDetailsTileProps) => {
-  const isPremiumContentEnabled = useIsPremiumContentEnabled()
+  const isGatedContentEnabled = useIsGatedContentEnabled()
   const { doesUserHaveAccess } = usePremiumContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const styles = useStyles()
   const navigation = useNavigation()
@@ -202,11 +202,11 @@ export const TrackScreenDetailsTile = ({
 
   const isOwner = owner_id === currentUserId
   const hideFavorite =
-    is_unlisted || (isPremiumContentEnabled && !doesUserHaveAccess)
+    is_unlisted || (isGatedContentEnabled && !doesUserHaveAccess)
   const hideRepost =
     is_unlisted ||
     !isReachable ||
-    (isPremiumContentEnabled && !doesUserHaveAccess)
+    (isGatedContentEnabled && !doesUserHaveAccess)
 
   const remixParentTrackId = remix_of?.tracks?.[0]?.parent_track_id
   const isRemix = !!remixParentTrackId
@@ -314,7 +314,7 @@ export const TrackScreenDetailsTile = ({
 
   const handlePressOverflow = () => {
     const addToPlaylistAction =
-      !isPremiumContentEnabled || !isPremium
+      !isGatedContentEnabled || !isPremium
         ? OverflowAction.ADD_TO_PLAYLIST
         : null
     const overflowActions = [
@@ -348,7 +348,7 @@ export const TrackScreenDetailsTile = ({
   }
 
   const renderHeaderText = () => {
-    if (isPremiumContentEnabled && isPremium) {
+    if (isGatedContentEnabled && isPremium) {
       return (
         <View style={styles.headerView}>
           {track.premium_conditions?.nft_collection ? (

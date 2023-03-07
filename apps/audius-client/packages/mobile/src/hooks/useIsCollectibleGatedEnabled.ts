@@ -6,16 +6,16 @@ import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 // This will be removed after the launch of collectible gated premium content.
 // For now, it helps us handle feature flagging the
 // release of collectible gated premium content on different mobile os.
-export const useIsNFTGateEnabled = () => {
+export const useIsCollectibleGatedEnabled = () => {
   const isIos = getIsIOS()
-  const { isEnabled: isAndroidPremiumContentEnabled } = useFeatureFlag(
-    FeatureFlags.ANDROID_PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isAndroidGatedContentEnabled } = useFeatureFlag(
+    FeatureFlags.ANDROID_GATED_CONTENT_ENABLED
   )
-  const { isEnabled: isIosPremiumContentEnabled } = useFeatureFlag(
-    FeatureFlags.IOS_PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
+    FeatureFlags.IOS_GATED_CONTENT_ENABLED
   )
   return (
-    useFeatureFlag(FeatureFlags.NFT_GATE_ENABLED) &&
-    (isIos ? isIosPremiumContentEnabled : isAndroidPremiumContentEnabled)
+    useFeatureFlag(FeatureFlags.COLLECTIBLE_GATED_ENABLED) &&
+    (isIos ? isIosGatedContentEnabled : isAndroidGatedContentEnabled)
   )
 }

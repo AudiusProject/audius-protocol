@@ -18,7 +18,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconDownload from 'app/assets/images/iconDownload.svg'
 import { Button } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
+import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
 import type { SearchUser } from 'app/store/search/types'
@@ -102,7 +102,7 @@ export const TrackScreenDownloadButtons = ({
   trackId,
   user
 }: TrackScreenDownloadButtonsProps) => {
-  const isPremiumContentEnabled = useIsPremiumContentEnabled()
+  const isGatedContentEnabled = useIsGatedContentEnabled()
   const dispatch = useDispatch()
 
   const handleDownload = useCallback(
@@ -137,7 +137,7 @@ export const TrackScreenDownloadButtons = ({
     return null
   }
 
-  if (isPremiumContentEnabled && !isOwner && !doesUserHaveAccess) {
+  if (isGatedContentEnabled && !isOwner && !doesUserHaveAccess) {
     return null
   }
 

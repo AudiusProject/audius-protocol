@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
-import { useIsPremiumContentEnabled } from 'app/hooks/useIsPremiumContentEnabled'
+import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
 import { EditTrackForm } from './EditTrackForm'
@@ -24,7 +24,7 @@ const screenOptionOverrides = { headerRight: () => null }
 type EditTrackNavigatorProps = EditTrackFormProps
 
 export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
-  const isPremiumContentEnabled = useIsPremiumContentEnabled()
+  const isGatedContentEnabled = useIsGatedContentEnabled()
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (
@@ -36,7 +36,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
       <Stack.Screen name='SelectMood' component={SelectMoodScreen} />
       <Stack.Screen name='RemixSettings' component={RemixSettingsScreen} />
       <Stack.Screen name='AdvancedOptions' component={AdvancedOptionsScreen} />
-      {isPremiumContentEnabled ? (
+      {isGatedContentEnabled ? (
         <Stack.Screen name='Availability' component={TrackAvailabilityScreen} />
       ) : (
         <Stack.Screen
@@ -44,7 +44,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
           component={TrackVisibilityScreen}
         />
       )}
-      {isPremiumContentEnabled && (
+      {isGatedContentEnabled && (
         <Stack.Screen name='NFTCollections' component={NFTCollectionsScreen} />
       )}
       <Stack.Screen name='IsrcIswc' component={IsrcIswcScreen} />

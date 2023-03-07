@@ -103,8 +103,8 @@ const TrackTile = memo(
     isTrack,
     trackId
   }: TrackTileProps) => {
-    const { isEnabled: isPremiumContentEnabled } = useFlag(
-      FeatureFlags.PREMIUM_CONTENT_ENABLED
+    const { isEnabled: isGatedContentEnabled } = useFlag(
+      FeatureFlags.GATED_CONTENT_ENABLED
     )
 
     const hasOrdering = order !== undefined
@@ -114,7 +114,7 @@ const TrackTile = memo(
       : false
 
     const showPremiumCornerTag =
-      isPremiumContentEnabled &&
+      isGatedContentEnabled &&
       !isLoading &&
       premiumConditions &&
       (isOwner || !doesUserHaveAccess)

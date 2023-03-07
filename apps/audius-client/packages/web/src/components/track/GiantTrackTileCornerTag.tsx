@@ -10,11 +10,11 @@ export const GiantTrackTileCornerTag = ({
 }: {
   type: TrackBannerIconType
 }) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
 
-  if (!isPremiumContentEnabled) {
+  if (!isGatedContentEnabled) {
     return null
   }
 

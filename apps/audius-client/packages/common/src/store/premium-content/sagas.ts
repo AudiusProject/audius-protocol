@@ -208,7 +208,7 @@ function* updateCollectibleGatedTrackAccess(
 ) {
   // Halt if premium content not enabled
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  if (!getFeatureEnabled(FeatureFlags.PREMIUM_CONTENT_ENABLED)) {
+  if (!getFeatureEnabled(FeatureFlags.GATED_CONTENT_ENABLED)) {
     return
   }
 

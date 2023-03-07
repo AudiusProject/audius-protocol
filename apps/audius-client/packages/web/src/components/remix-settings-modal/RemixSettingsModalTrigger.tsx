@@ -20,11 +20,11 @@ type RemixSettingsModalTriggerProps = {
 export const RemixSettingsModalTrigger = (
   props: RemixSettingsModalTriggerProps
 ) => {
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
 
-  if (isPremiumContentEnabled) {
+  if (isGatedContentEnabled) {
     return (
       <Button
         type={ButtonType.COMMON_ALT}

@@ -131,8 +131,8 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     duration,
     genre
   } = props
-  const { isEnabled: isPremiumContentEnabled } = useFlag(
-    FeatureFlags.PREMIUM_CONTENT_ENABLED
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
   )
 
   const hideShare: boolean = props.fieldVisibility
@@ -151,7 +151,7 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
     : undefined
 
   const showPremiumCornerTag =
-    isPremiumContentEnabled &&
+    isGatedContentEnabled &&
     !isLoading &&
     premiumConditions &&
     (isOwner || !doesUserHaveAccess)

@@ -118,8 +118,8 @@ const ConnectedTrackTile = memo(
     isFeed = false,
     showRankIcon
   }: ConnectedTrackTileProps) => {
-    const { isEnabled: isPremiumContentEnabled } = useFlag(
-      FeatureFlags.PREMIUM_CONTENT_ENABLED
+    const { isEnabled: isGatedContentEnabled } = useFlag(
+      FeatureFlags.GATED_CONTENT_ENABLED
     )
     const trackWithFallback = getTrackWithFallback(track)
     const {
@@ -204,7 +204,7 @@ const ConnectedTrackTile = memo(
       const menu: Omit<TrackMenuProps, 'children'> = {
         extraMenuItems: [],
         handle,
-        includeAddToPlaylist: !isPremiumContentEnabled || !isPremium,
+        includeAddToPlaylist: !isGatedContentEnabled || !isPremium,
         includeArtistPick: handle === userHandle && !isUnlisted,
         includeEdit: handle === userHandle,
         includeEmbed: true,
