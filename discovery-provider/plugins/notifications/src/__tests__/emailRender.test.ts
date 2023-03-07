@@ -3,8 +3,8 @@ import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
 import { RepostType, SaveType } from '../types/dn'
 import { DMEntityType } from '../email/notifications/types'
-import { DMEmailNotification } from '../types/notifications'
-import { createTestDB, createUsers, dropTestDB, replaceDBName } from '../utils/populateDB'
+import { AppEmailNotification, DMEmailNotification } from '../types/notifications'
+import { createTestDB, createTracks, createUsers, dropTestDB, insertFollows, replaceDBName } from '../utils/populateDB'
 
 
 const initDB = async (processor: Processor) => {

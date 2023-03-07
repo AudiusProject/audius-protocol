@@ -144,7 +144,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(63).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createReposts(processor.discoveryDB,
-      new Array(60).fill(null).map((_, ind) => ({ repost_type: reposttype.track, repost_item_id: 2, user_id: ind + 2 })))
+      new Array(60).fill(null).map((_, ind) => ({ repost_type: RepostType.track, repost_item_id: 2, user_id: ind + 2 })))
 
     const data: TrackMilestoneNotification = {
       type: MilestoneType.TRACK_REPOST_COUNT,
@@ -273,7 +273,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(53).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createSaves(processor.discoveryDB,
-      new Array(50).fill(null).map((_, ind) => ({ save_type: savetype.track, save_item_id: 2, user_id: ind + 2 })))
+      new Array(50).fill(null).map((_, ind) => ({ save_type: SaveType.track, save_item_id: 2, user_id: ind + 2 })))
 
     const data: TrackMilestoneNotification = {
       type: MilestoneType.TRACK_SAVE_COUNT,
@@ -336,7 +336,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createSaves(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ save_type: savetype.playlist, save_item_id: 32, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ save_type: SaveType.playlist, save_item_id: 32, user_id: ind + 2 })))
 
     const data: PlaylistMilestoneNotification = {
       type: MilestoneType.PLAYLIST_SAVE_COUNT,
