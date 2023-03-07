@@ -1,6 +1,7 @@
 import dayjs from 'dayjs'
 
 const FORMAT = 'YYYY-MM-DD hh:mm:ss A'
+const FORMAT_LONG_UTC = 'YYYY-MM-DDThh:mm:ss:SSS[Z]'
 export type TimelineItem = {
   datetime: dayjs.Dayjs
   content: string // TODO: Add content-collapsible to show details like diff of shards stored or num files rebalanced
@@ -10,16 +11,6 @@ export type TimelineItem = {
 
 export default function Timeline({ items }: { items: TimelineItem[] }) {
   if (!items.length) return <></>
-  items = [
-    {
-      datetime: dayjs(),
-      content:
-        'There are likely more logs after this - choose a more recent time or increase the number of events above to view them',
-      icon: <InfoIcon />,
-      iconBg: 'bg-yellow-400',
-    },
-    ...items,
-  ]
   return (
     <div className="flow-root">
       <ul className="-mb-8">
@@ -46,10 +37,16 @@ export default function Timeline({ items }: { items: TimelineItem[] }) {
                       {event.content}{' '}
                     </p>
                   </div>
-                  <div className="whitespace-nowrap text-right text-sm text-gray-500 dark:text-white">
+                  <div className="group relative flex flex-col items-center whitespace-nowrap text-right text-sm text-gray-500 dark:text-white">
                     <time dateTime={event.datetime.toISOString()}>
                       {event.datetime.format(FORMAT)}
                     </time>
+                    <div className="absolute bottom-0 mb-6 hidden flex-col items-center group-hover:flex">
+                      <span className="whitespace-no-wrap relative z-10 bg-black p-2 text-xs leading-none text-white shadow-lg">
+                        {event.datetime.utc().format(FORMAT_LONG_UTC)}
+                      </span>
+                      <div className="-mt-2 h-3 w-3 rotate-45 bg-black"></div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -58,24 +55,5 @@ export default function Timeline({ items }: { items: TimelineItem[] }) {
         ))}
       </ul>
     </div>
-  )
-}
-
-function InfoIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke="currentColor"
-      className="h-5 w-5 text-white"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
-      />
-    </svg>
   )
 }

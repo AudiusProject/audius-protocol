@@ -190,11 +190,11 @@ func (m Monitor) setOKStatus(nodePubKey, host string, shards []string) error {
 	if err != nil {
 		return err
 	}
+	m.logstream.LogStatusUpdate(status)
 	_, err = m.nodeStatusesKV.Put(nodePubKey, status)
 	if err != nil {
 		return err
 	}
-	m.logstream.LogStatusUpdate(status)
 	return nil
 }
 
@@ -215,10 +215,10 @@ func (m Monitor) updateHealthyNodeSet() error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal healthy nodes: %v", err)
 	}
+	m.logstream.LogUpdateHealthyNodeSet(healthyNodes)
 	_, err = m.healthyNodesKV.Put(m.namespace, healthyNodesBytes)
 	if err != nil {
 		return err
 	}
-	m.logstream.LogUpdateHealthyNodeSet(healthyNodes)
 	return nil
 }

@@ -120,35 +120,35 @@ func (ls LogStream) LogRebalanceEnd(prevShards []string, newShards []string) {
 	}
 }
 
-// GetNStatusUpdatesSince returns the first N status updates for a node that occurred on or after numHoursAgo hours ago.
-func (ls LogStream) GetNStatusUpdatesSince(n int, numHoursAgo float64, pubKey string, logs *[]NodeStatus) error {
+// GetNStatusUpdatesSince returns status updates for a pubKey in the start to end range.
+func (ls LogStream) GetStatusUpdatesInRange(start time.Time, end time.Time, pubKey string, logs *[]NodeStatus) error {
 	subject := fmt.Sprintf("storage.log.%s.statusUpdate", pubKey)
-	return GetNLogsForSubjSince(n, numHoursAgo, subject, ls.jsc, logs)
+	return GetLogsForSubjInRange(start, end, subject, ls.jsc, logs)
 }
 
-// GetNRebalanceStartSince returns the first N rebalanceStart logs for a node that occurred on or after numHoursAgo hours ago.
-func (ls LogStream) GetNRebalanceStartsSince(n int, numHoursAgo float64, pubKey string, logs *[]RebalanceStartLog) error {
+// GetNRebalanceStartSince returns rebalanceStart logs for pubKey in the start to end range.
+func (ls LogStream) GetRebalanceStartsInRange(start time.Time, end time.Time, pubKey string, logs *[]RebalanceStartLog) error {
 	subject := fmt.Sprintf("storage.log.%s.rebalanceStart", pubKey)
-	return GetNLogsForSubjSince(n, numHoursAgo, subject, ls.jsc, logs)
+	return GetLogsForSubjInRange(start, end, subject, ls.jsc, logs)
 }
 
-// GetNRebalanceEndsSince returns the first N rebalanceEnd logs for a node that occurred on or after numHoursAgo hours ago.
-func (ls LogStream) GetNRebalanceEndsSince(n int, numHoursAgo float64, pubKey string, logs *[]RebalanceEndLog) error {
+// GetNRebalanceEndsSince returns rebalanceEnd logs for pubKey in the start to end range.
+func (ls LogStream) GetRebalanceEndsInRange(start time.Time, end time.Time, pubKey string, logs *[]RebalanceEndLog) error {
 	subject := fmt.Sprintf("storage.log.%s.rebalanceEnd", pubKey)
-	return GetNLogsForSubjSince(n, numHoursAgo, subject, ls.jsc, logs)
+	return GetLogsForSubjInRange(start, end, subject, ls.jsc, logs)
 }
 
-// GetNUpdateHealthyNodeSetsSince returns the first N updateHealthyNodeSet logs for a node that occurred on or after numHoursAgo hours ago.
-func (ls LogStream) GetNUpdateHealthyNodeSetsSince(n int, numHoursAgo float64, logs *[]UpdateHealthyNodeSetLog) error {
-	return GetNLogsForSubjSince(n, numHoursAgo, "storage.log.updateHealthyNodeSet", ls.jsc, logs)
+// GetNUpdateHealthyNodeSetsSince returns updateHealthyNodeSet logs in the start to end range.
+func (ls LogStream) GetUpdateHealthyNodeSetsInRange(start time.Time, end time.Time, logs *[]UpdateHealthyNodeSetLog) error {
+	return GetLogsForSubjInRange(start, end, "storage.log.updateHealthyNodeSet", ls.jsc, logs)
 }
 
-// GetNLogsForSubjSince sets *logs to the first N logs to subject starting from numHoursAgo hours ago.
-func GetNLogsForSubjSince[T any](n int, numHoursAgo float64, subject string, jsc nats.JetStreamContext, logs *[]T) error {
+// GetNLogsForSubjSince sets *logs to the logs for the given subject in the start to end range.
+func GetLogsForSubjInRange[T any](start time.Time, end time.Time, subject string, jsc nats.JetStreamContext, logs *[]T) error {
 	subscription, err := jsc.SubscribeSync(
 		subject,
 		nats.OrderedConsumer(),
-		nats.StartTime(time.Now().UTC().Add(time.Duration(float64(-time.Hour)*numHoursAgo))),
+		nats.StartTime(start),
 		nats.BindStream(StreamName),
 	)
 	if err != nil {
@@ -156,35 +156,50 @@ func GetNLogsForSubjSince[T any](n int, numHoursAgo float64, subject string, jsc
 	}
 	defer subscription.Unsubscribe()
 
-	nLogsChan := make(chan []T)
+	logsChan := make(chan []T)
 	go func() {
-		var nLogs []T
+		var logs []T
 		for {
 			msg, err := subscription.NextMsg(3 * time.Second)
 			if err != nil {
-				nLogsChan <- nLogs
+				logsChan <- logs
 				return
 			}
 
 			var log T
 			err = json.Unmarshal(msg.Data, &log)
 			if err != nil {
-				nLogsChan <- nLogs
+				logsChan <- logs
 				return
 			}
-			nLogs = append(nLogs, log)
+			logs = append(logs, log)
 			msg.AckSync()
 
-			// Return after finding N logs
-			if len(nLogs) == n {
-				nLogsChan <- nLogs
+			// Return after we've read logs until 'until' time
+			var t time.Time
+			switch logType := any(log).(type) {
+			case NodeStatus:
+				t = logType.LastOK
+			case RebalanceStartLog:
+				t = logType.Timestamp
+			case RebalanceEndLog:
+				t = logType.Timestamp
+			case UpdateHealthyNodeSetLog:
+				t = logType.Timestamp
+			default:
+				slog.Warn("unknown log type: %T", logType)
+				logsChan <- logs
+				return
+			}
+			if t.After(end) {
+				logsChan <- logs
 				return
 			}
 		}
 	}()
 
 	select {
-	case *logs = <-nLogsChan:
+	case *logs = <-logsChan:
 		return nil
 	case <-time.After(10 * time.Second):
 		return fmt.Errorf("timed out waiting for %T logs", logs)

@@ -1,4 +1,5 @@
 import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -11,27 +12,29 @@ import Timeline from '../components/timeline'
 // TODO: Add select dropdowns to filter by node
 // TODO: Make time hoverable to show UTC
 
+dayjs.extend(utc)
+
 export default function History() {
   const [searchParams] = useSearchParams()
-  const [numEntries, setNumEntries] = useState('100')
-  const [numHoursAgo, setNumHoursAgo] = useState(0.1)
-  const [selectedDate, setSelectedDate] = useState(dayjs().subtract(numHoursAgo, 'hour'))
-  const [showDateTimePicker, setShowDateTimePicker] = useState(false)
+  const [startDateTime, setStartDateTime] = useState(
+    dayjs().second(0).millisecond(0).subtract(1, 'minute'),
+  )
+  const [endDateTime, setEndDateTime] = useState(dayjs().second(0).millisecond(0))
+  const [showStartDateTimePicker, setShowStartDateTimePicker] = useState(false)
+  const [showEndDateTimePicker, setShowEndDateTimePicker] = useState(false)
   const [timelineItems, setTimelineItems] = useState([] as TimelineItem[])
-  const logQueries = useLogs(numEntries?.length ? parseInt(numEntries) : 1, numHoursAgo)
+  const logQueries = useLogs(startDateTime.format(), endDateTime.format())
   const logErrors = logQueries.filter((query) => query.error)
 
-  // Update numEntries and numHoursAgo whenever searchParams change (only once on page load)
+  // Update start and end times whenever searchParams change (only once on page load)
   useEffect(() => {
     for (const [key, val] of searchParams.entries()) {
-      if (key === 'numEntries') {
-        const newNumEntries = val
-        if (newNumEntries !== numEntries) setNumEntries(newNumEntries)
-      } else if (key === 'since') {
-        const sinceDate = dayjs(val)
-        if (sinceDate.isValid()) {
-          setNumHoursAgo(dayjs().diff(sinceDate, 'hour'))
-        }
+      if (key === 'start') {
+        const newStartDateTime = dayjs(val)
+        if (newStartDateTime.isValid()) setStartDateTime(newStartDateTime)
+      } else if (key === 'end') {
+        const newStartDateTime = dayjs(val)
+        if (newStartDateTime.isValid()) setStartDateTime(newStartDateTime)
       }
     }
   }, [searchParams])
@@ -41,33 +44,39 @@ export default function History() {
     // Don't show any timeline items if any log query is loading or else the timeline will be incomplete
     if (logQueries.filter((query) => query.isLoading).length) return
 
-    const newTimeline: TimelineItem[] = []
+    let newTimeline: TimelineItem[] = []
 
     // Add all statusUpdate logs
     if (logQueries[0].data) {
       for (const statusUpdateLog of logQueries[0].data) {
-        newTimeline.push({
-          datetime: dayjs(statusUpdateLog.lastOk),
-          content: `${statusUpdateLog.host} OK (shards: ${statusUpdateLog.shards.join(
-            ', ',
-          )})`,
-          icon: <SignalIcon />,
-          iconBg: 'bg-purple-400',
-        })
+        newTimeline = [
+          ...newTimeline,
+          {
+            datetime: dayjs(statusUpdateLog.lastOk),
+            content: `${statusUpdateLog.host} OK (shards: ${statusUpdateLog.shards.join(
+              ', ',
+            )})`,
+            icon: <SignalIcon />,
+            iconBg: 'bg-purple-400',
+          },
+        ]
       }
     }
 
     // Add all updateHealthyNodeSet logs
     if (logQueries[1].data) {
       for (const updateHealthyNodeSetLog of logQueries[1].data) {
-        newTimeline.push({
-          datetime: dayjs(updateHealthyNodeSetLog.timestamp),
-          content: `New set of healthy nodes: ${updateHealthyNodeSetLog.healthyNodes.join(
-            ', ',
-          )} broadcasted by ${updateHealthyNodeSetLog.updatedBy}`,
-          icon: <MegaphoneIcon />,
-          iconBg: 'bg-yellow-500',
-        })
+        newTimeline = [
+          ...newTimeline,
+          {
+            datetime: dayjs(updateHealthyNodeSetLog.timestamp),
+            content: `New set of healthy nodes: ${updateHealthyNodeSetLog.healthyNodes.join(
+              ', ',
+            )} broadcasted by ${updateHealthyNodeSetLog.updatedBy}`,
+            icon: <MegaphoneIcon />,
+            iconBg: 'bg-yellow-500',
+          },
+        ]
       }
     }
 
@@ -75,69 +84,57 @@ export default function History() {
     if (logQueries[2].data) {
       for (const { host, events } of logQueries[2].data.starts) {
         for (const startEvent of events) {
-          newTimeline.push({
-            datetime: dayjs(startEvent.timestamp),
-            content: `${host} started rebalancing`,
-            icon: <ScaleOutlineIcon />,
-            iconBg: 'bg-green-400',
-          })
+          newTimeline = [
+            ...newTimeline,
+            {
+              datetime: dayjs(startEvent.timestamp),
+              content: `${host} started rebalancing`,
+              icon: <ScaleOutlineIcon />,
+              iconBg: 'bg-green-400',
+            },
+          ]
         }
       }
 
       for (const { host, events } of logQueries[2].data.starts) {
         for (const endEvent of events) {
-          newTimeline.push({
-            datetime: dayjs(endEvent.timestamp),
-            content: `${host} finished rebalancing`,
-            icon: <ScaleIcon />,
-            iconBg: 'bg-green-600',
-          })
+          newTimeline = [
+            ...newTimeline,
+            {
+              datetime: dayjs(endEvent.timestamp),
+              content: `${host} finished rebalancing`,
+              icon: <ScaleIcon />,
+              iconBg: 'bg-green-600',
+            },
+          ]
         }
       }
     }
 
-    // Sort timeline by datetime and truncate to numEntries
+    // Set new timeline items, sorted in ascending order by datetime (most recent event at the top)
     setTimelineItems(
-      [...newTimeline]
-        .sort((a, b) => (a.datetime.isBefore(b.datetime) ? 1 : -1))
-        .filter((_, i) => i < (numEntries?.length ? parseInt(numEntries) : 1)),
+      newTimeline.sort((a, b) =>
+        a.datetime.isBefore(b.datetime, 'millisecond') ? 1 : -1,
+      ),
     )
   }, [logQueries[0].data, logQueries[1].data, logQueries[2].data])
-
-  // Recalculate numHoursAgo when date changes
-  useEffect(() => {
-    setNumHoursAgo(dayjs().diff(selectedDate.second(0).millisecond(0), 'hour', true))
-  }, [selectedDate])
 
   return (
     <>
       <div className="flex w-full justify-center text-center dark:text-white">
-        <span className="mx-2 flex items-center">Show</span>
-        <label htmlFor="numEntries" className="sr-only">
-          Number of events
-        </label>
-        <div>
-          <input
-            type="number"
-            name="numEntries"
-            id="numEntries"
-            className="block w-20 rounded-lg border border-gray-300 bg-gray-50 py-2.5 text-sm text-gray-900 focus:border-purple-500 focus:ring-purple-500  dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-purple-500 dark:focus:ring-purple-500"
-            value={numEntries}
-            onChange={(e) => {
-              if (e.target.value?.length) {
-                const parsed = parseInt(e.target.value)
-                setNumEntries(parsed > 0 ? parsed + '' : '')
-              } else setNumEntries('')
-              setSelectedDate(dayjs().subtract(numHoursAgo, 'hour'))
-            }}
-          />
-        </div>
-        <span className="mx-2 flex items-center">events starting at</span>
+        <span className="mx-2 flex items-center">Show logs from</span>
         <DateTimePicker
-          onChange={(selectedDate: dayjs.Dayjs) => setSelectedDate(selectedDate)}
-          show={showDateTimePicker}
-          setShow={(show) => setShowDateTimePicker(show)}
-          defaultDate={selectedDate}
+          onChange={(selectedDate: dayjs.Dayjs) => setStartDateTime(selectedDate)}
+          show={showStartDateTimePicker}
+          setShow={(show) => setShowStartDateTimePicker(show)}
+          defaultDate={startDateTime}
+        />
+        <span className="mx-2 flex items-center">to</span>
+        <DateTimePicker
+          onChange={(selectedDate: dayjs.Dayjs) => setEndDateTime(selectedDate)}
+          show={showEndDateTimePicker}
+          setShow={(show) => setShowEndDateTimePicker(show)}
+          defaultDate={endDateTime}
         />
       </div>
       <br />

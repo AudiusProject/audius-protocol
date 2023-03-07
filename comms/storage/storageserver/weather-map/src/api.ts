@@ -37,29 +37,29 @@ export const useFilesInShard = (shard: string, storageHostsWithShard: string[]) 
     }),
   )
 
-export const useLogs = (entries: number, numHoursAgo: number) =>
+export const useLogs = (startDateTime: string, endDateTime: string) =>
   useQueries([
     {
-      queryKey: ['statusUpdateLogs', entries, numHoursAgo],
-      queryFn: () => fetchStatusUpdateLogs(entries, numHoursAgo),
+      queryKey: ['statusUpdateLogs', startDateTime, endDateTime],
+      queryFn: () => fetchStatusUpdateLogs(startDateTime, endDateTime),
       staleTime: Infinity,
     },
     {
-      queryKey: ['updateHealthyNodeSetLogs', entries, numHoursAgo],
-      queryFn: () => fetchUpdateHealthyNodeSetLogs(entries, numHoursAgo),
+      queryKey: ['updateHealthyNodeSetLogs', startDateTime, endDateTime],
+      queryFn: () => fetchUpdateHealthyNodeSetLogs(startDateTime, endDateTime),
       staleTime: Infinity,
     },
     {
-      queryKey: ['rebalanceLogs', entries, numHoursAgo],
-      queryFn: () => fetchRebalanceLogs(entries, numHoursAgo),
+      queryKey: ['rebalanceLogs', startDateTime, endDateTime],
+      queryFn: () => fetchRebalanceLogs(startDateTime, endDateTime),
       staleTime: Infinity,
     },
   ])
 
-const fetchStatusUpdateLogs = (entries: number, numHoursAgo: number) => {
+const fetchStatusUpdateLogs = (startDateTime: string, endDateTime: string) => {
   return axios
     .get(
-      `${window.location.origin}/storage/api/v1/logs/statusUpdate?numEntries=${entries}&numHoursAgo=${numHoursAgo}`,
+      `${window.location.origin}/storage/api/v1/logs/statusUpdate?start=${startDateTime}&end=${endDateTime}`,
     )
     .then((res) => res.data as NodeStatus[])
 }
@@ -88,10 +88,10 @@ export type RebalanceLogs = {
   ends: EndEventsForHost[]
 }
 
-const fetchRebalanceLogs = (entries: number, numHoursAgo: number) => {
+const fetchRebalanceLogs = (startDateTime: string, endDateTime: string) => {
   return axios
     .get(
-      `${window.location.origin}/storage/api/v1/logs/rebalance?numEntries=${entries}&numHoursAgo=${numHoursAgo}`,
+      `${window.location.origin}/storage/api/v1/logs/rebalance?start=${startDateTime}&end=${endDateTime}`,
     )
     .then((res) => res.data as RebalanceLogs)
 }
@@ -101,10 +101,10 @@ export type UpdateHealthyNodeSetLog = {
   healthyNodes: string[]
   updatedBy: string
 }
-const fetchUpdateHealthyNodeSetLogs = (entries: number, numHoursAgo: number) => {
+const fetchUpdateHealthyNodeSetLogs = (startDateTime: string, endDateTime: string) => {
   return axios
     .get(
-      `${window.location.origin}/storage/api/v1/logs/updateHealthyNodeSet?numEntries=${entries}&numHoursAgo=${numHoursAgo}`,
+      `${window.location.origin}/storage/api/v1/logs/updateHealthyNodeSet?start=${startDateTime}&end=${endDateTime}`,
     )
     .then((res) => res.data as UpdateHealthyNodeSetLog[])
 }

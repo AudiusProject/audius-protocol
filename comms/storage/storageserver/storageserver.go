@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
-	"strconv"
 	"strings"
+	"time"
 
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
@@ -175,9 +175,9 @@ func (ss *StorageServer) createWebServer() {
 	api.GET("/job-results/:id", ss.serveJobResultsById)
 
 	// TODO: Auth these routes to prevent abuse - they're resource intensive
-	api.GET("/logs/statusUpdate", ss.serveStatusUpdateLogs)                 // QueryParams: numEntries=int, numHoursAgo=float64, pubKey=string (node's wallet, default="*" for all nodes)
-	api.GET("/logs/updateHealthyNodeSet", ss.serveUpdateHealthyNodeSetLogs) // QueryParams: numEntries=int, numHoursAgo=float64
-	api.GET("/logs/rebalance", ss.serveRebalanceLogs)                       // QueryParams: numEntries=int, numHoursAgo=float64, pubKey=string (node's wallet, default="*" for all nodes)
+	api.GET("/logs/statusUpdate", ss.serveStatusUpdateLogs)                 // QueryParams: start (default 1m ago), end, pubKey=string (node's wallet, default="*" for all nodes)
+	api.GET("/logs/updateHealthyNodeSet", ss.serveUpdateHealthyNodeSetLogs) // QueryParams: start (default 1m ago), end
+	api.GET("/logs/rebalance", ss.serveRebalanceLogs)                       // QueryParams: start (default 1m ago), end, pubKey=string (node's wallet, default="*" for all nodes)
 }
 
 /**
@@ -342,14 +342,14 @@ func (ss StorageServer) serveJobResultsById(c echo.Context) error {
 }
 
 func (ss StorageServer) serveStatusUpdateLogs(c echo.Context) error {
-	numEntries, numHoursAgo, pubKeys, err := ss.parseGetLogsParams(c, false)
+	start, end, pubKeys, err := ss.parseGetLogsParams(c, false)
 	if err != nil {
 		return err
 	}
 
 	getLogsForPubKey := func(pubKey string) []logstream.NodeStatus {
 		var logsForPubKey []logstream.NodeStatus
-		err := ss.Logstream.GetNStatusUpdatesSince(numEntries, numHoursAgo, pubKey, &logsForPubKey)
+		err := ss.Logstream.GetStatusUpdatesInRange(start, end, pubKey, &logsForPubKey)
 		if err != nil {
 			slog.Error("Error getting status update logs", err, "pubKey", pubKey)
 			return []logstream.NodeStatus{}
@@ -357,7 +357,7 @@ func (ss StorageServer) serveStatusUpdateLogs(c echo.Context) error {
 		return logsForPubKey
 	}
 
-	return c.JSON(200, getLogsForPubKeys(numEntries, numHoursAgo, pubKeys, getLogsForPubKey))
+	return c.JSON(200, getLogsForPubKeys(pubKeys, getLogsForPubKey))
 }
 
 func (ss StorageServer) serveRebalanceLogs(c echo.Context) error {
@@ -374,7 +374,7 @@ func (ss StorageServer) serveRebalanceLogs(c echo.Context) error {
 		Ends   []EndEventsForHost   `json:"ends"`
 	}
 
-	numEntries, numHoursAgo, pubKeys, err := ss.parseGetLogsParams(c, true)
+	start, end, pubKeys, err := ss.parseGetLogsParams(c, true)
 	if err != nil {
 		return err
 	}
@@ -386,7 +386,7 @@ func (ss StorageServer) serveRebalanceLogs(c echo.Context) error {
 			return []StartEventsForHost{}
 		}
 		var logs []logstream.RebalanceStartLog
-		err = ss.Logstream.GetNRebalanceStartsSince(numEntries/2, numHoursAgo, pubKey, &logs)
+		err = ss.Logstream.GetRebalanceStartsInRange(start, end, pubKey, &logs)
 		if err != nil {
 			return []StartEventsForHost{}
 		}
@@ -400,43 +400,51 @@ func (ss StorageServer) serveRebalanceLogs(c echo.Context) error {
 			return []EndEventsForHost{}
 		}
 		var logs []logstream.RebalanceEndLog
-		err = ss.Logstream.GetNRebalanceEndsSince(numEntries/2, numHoursAgo, pubKey, &logs)
+		err = ss.Logstream.GetRebalanceEndsInRange(start, end, pubKey, &logs)
 		if err != nil {
 			return []EndEventsForHost{}
 		}
 		return []EndEventsForHost{{Host: host, Events: logs}}
 	}
 
-	startLogs := getLogsForPubKeys(numEntries, numHoursAgo, pubKeys, getStartLogsForPubKey)
-	endLogs := getLogsForPubKeys(numEntries, numHoursAgo, pubKeys, getEndLogsForPubKey)
+	startLogs := getLogsForPubKeys(pubKeys, getStartLogsForPubKey)
+	endLogs := getLogsForPubKeys(pubKeys, getEndLogsForPubKey)
 	return c.JSON(200, RebalanceLogs{Starts: startLogs, Ends: endLogs})
 }
 
 func (ss StorageServer) serveUpdateHealthyNodeSetLogs(c echo.Context) error {
-	numEntries, numHoursAgo, _, err := ss.parseGetLogsParams(c, false)
+	start, end, _, err := ss.parseGetLogsParams(c, false)
 	if err != nil {
 		return err
 	}
 	var logs []logstream.UpdateHealthyNodeSetLog
-	err = ss.Logstream.GetNUpdateHealthyNodeSetsSince(numEntries, numHoursAgo, &logs)
+	err = ss.Logstream.GetUpdateHealthyNodeSetsInRange(start, end, &logs)
 	if err != nil {
 		return err
 	}
 	return c.JSON(200, logs)
 }
 
-// parseGetLogsParams parses the numEntries, numHoursAgo, and pubKey params for the getLogs endpoints and turns "*" or empty pubKey param into a list of all storage nodes.
-func (ss StorageServer) parseGetLogsParams(c echo.Context, parseWildcardPubKey bool) (numEntries int, numHoursAgo float64, pubKeys []string, err error) {
-	// Parse numEntries and numHoursAgo params
-	numEntries, err = strconv.Atoi(c.QueryParam("numEntries"))
-	if err != nil {
-		err = c.String(http.StatusBadRequest, "numEntries must be an integer")
-		return
+// parseGetLogsParams parses the start, end, and pubKey params for the getLogs endpoints and turns "*" or empty pubKey param into a list of all storage nodes.
+func (ss StorageServer) parseGetLogsParams(c echo.Context, parseWildcardPubKey bool) (start time.Time, end time.Time, pubKeys []string, err error) {
+	// Parse start and end time range, defaulting to the previous 1 minute
+	start = time.Now().UTC().Add(-1 * time.Minute)
+	end = time.Now().UTC()
+	startStr := c.QueryParam("start")
+	endStr := c.QueryParam("end")
+	if startStr != "" {
+		start, err = time.Parse(time.RFC3339, startStr)
+		if err != nil {
+			err = c.String(http.StatusBadRequest, "start must be a valid RFC3339 timestamp")
+			return
+		}
 	}
-	numHoursAgo, err = strconv.ParseFloat(c.QueryParam("numHoursAgo"), 64)
-	if err != nil {
-		err = c.String(http.StatusBadRequest, "numHoursAgo must be a float64")
-		return
+	if endStr != "" {
+		end, err = time.Parse(time.RFC3339, endStr)
+		if err != nil {
+			err = c.String(http.StatusBadRequest, "end must be a valid RFC3339 timestamp")
+			return
+		}
 	}
 
 	// Parse pubKey param for wallet address to query logs for
@@ -463,7 +471,7 @@ func (ss StorageServer) parseGetLogsParams(c echo.Context, parseWildcardPubKey b
 }
 
 // getLogsForPubKeys gets logs for each pubKey in pubKeys in a separate goroutine and returns the logs from all goroutines.
-func getLogsForPubKeys[T any](numEntries int, numHoursAgo float64, pubKeys []string, getLogsForPubKey func(pubKey string) []T) []T {
+func getLogsForPubKeys[T any](pubKeys []string, getLogsForPubKey func(pubKey string) []T) []T {
 	logsChan := make(chan []T)
 
 	for _, pubKey := range pubKeys {
