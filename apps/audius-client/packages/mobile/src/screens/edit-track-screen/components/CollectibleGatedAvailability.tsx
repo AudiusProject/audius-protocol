@@ -175,7 +175,8 @@ export const CollectibleGatedAvailability = ({
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const nftCollection = premiumConditions?.nft_collection
 
-  const [selectedNFTCollection, setSelectedNFTCollection] = useState(nftCollection)
+  const [selectedNFTCollection, setSelectedNFTCollection] =
+    useState(nftCollection)
   useEffect(() => {
     if (nftCollection) {
       setSelectedNFTCollection(nftCollection)
@@ -195,7 +196,12 @@ export const CollectibleGatedAvailability = ({
         true
       )
     }
-  }, [premiumConditions, selected, setTrackAvailabilityFields, selectedNFTCollection])
+  }, [
+    premiumConditions,
+    selected,
+    setTrackAvailabilityFields,
+    selectedNFTCollection
+  ])
 
   const handlePickACollection = useCallback(() => {
     navigation.navigate('NFTCollections')
