@@ -59,7 +59,8 @@ export const usePremiumConditionsEntity = (premiumConditions: Nullable<PremiumCo
       return `https://opensea.io/collection/${nftCollection.slug}`
     } else if (chain === Chain.Sol) {
       const explorerUrl = `https://explorer.solana.com/address/${address}`
-      return externalLink ? new URL(externalLink).hostname : explorerUrl
+      const externalUrl = externalLink ? new URL(externalLink) : null
+      return externalUrl ? `${externalUrl.protocol}//${externalUrl.hostname}` : explorerUrl
     }
 
     return ''

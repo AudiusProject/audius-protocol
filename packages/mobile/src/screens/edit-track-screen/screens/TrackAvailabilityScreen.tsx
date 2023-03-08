@@ -84,7 +84,8 @@ export const TrackAvailabilityScreen = () => {
   const numEthCollectibles = Object.keys(ethCollectionMap).length
   const numSolCollectibles = Object.keys(solCollectionMap).length
   const hasNoCollectibles = numEthCollectibles + numSolCollectibles === 0
-  const noCollectibleGate = hasNoCollectibles || isRemix || !isUpload
+  const noCollectibleGate = hasNoCollectibles || isRemix
+  const noCollectibleDropdown = hasNoCollectibles || isRemix || !isUpload
   const noSpecialAccess = isRemix || !isUpload
 
   const initialAvailability = useMemo(() => {
@@ -136,6 +137,7 @@ export const TrackAvailabilityScreen = () => {
       <CollectibleGatedAvailability
         selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
         disabled={noCollectibleGate}
+        disabledContent={noCollectibleDropdown}
       />
     ) : null,
     [hiddenAvailability]: (
