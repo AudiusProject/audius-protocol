@@ -59,7 +59,6 @@ module.exports = function (app) {
       const isVerbose = req.query.verbose || false
       const maxRelayLatency =
         parseInt(req.query.maxRelayLatency) || RELAY_HEALTH_MAX_LATENCY
-      req.logger.info(`asdf maxRelayLatency ${maxRelayLatency}`)
       let isError = false
 
       // delete old entries from set in redis
@@ -95,10 +94,6 @@ module.exports = function (app) {
 
       for (const tx of successfulTxsInRedis) {
         const parsedTx = JSON.parse(tx)
-        req.logger.info(
-          `asdf totalTransactionLatency ${parsedTx.totalTransactionLatency}`
-        )
-
         if (parsedTx.totalTransactionLatency / 1000 > maxRelayLatency) {
           isError = true
           break
