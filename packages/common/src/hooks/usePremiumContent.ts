@@ -1,7 +1,9 @@
-import { Chain, PremiumConditions, Track } from 'models'
 import { useMemo } from 'react'
 
 import { useSelector } from 'react-redux'
+
+import { Chain, PremiumConditions, Track } from 'models'
+import { getAccountUser } from 'store/account/selectors'
 import { cacheTracksSelectors, cacheUsersSelectors } from 'store/cache'
 import { premiumContentSelectors } from 'store/premium-content'
 import { CommonState } from 'store/reducers'
@@ -9,10 +11,12 @@ import { Nullable, removeNullable } from 'utils'
 
 const { getTrack } = cacheTracksSelectors
 const { getUser, getUsers } = cacheUsersSelectors
-const { getLockedContentId, getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getLockedContentId, getPremiumTrackSignatureMap } =
+  premiumContentSelectors
 
 export const usePremiumContentAccess = (track: Nullable<Partial<Track>>) => {
   const premiumTrackSignatureMap = useSelector(getPremiumTrackSignatureMap)
+  const user = useSelector(getAccountUser)
 
   const { isUserAccessTBD, doesUserHaveAccess } = useMemo(() => {
     if (!track) {
@@ -28,20 +32,26 @@ export const usePremiumContentAccess = (track: Nullable<Partial<Track>>) => {
     const isSignatureToBeFetched =
       isCollectibleGated &&
       !!trackId &&
-      premiumTrackSignatureMap[trackId] === undefined
+      premiumTrackSignatureMap[trackId] === undefined &&
+      !!user // We're only fetching a sig if the user is logged in
 
     return {
       isUserAccessTBD: !hasPremiumContentSignature && isSignatureToBeFetched,
       doesUserHaveAccess: !isPremium || hasPremiumContentSignature
     }
-  }, [track, premiumTrackSignatureMap])
+  }, [track, premiumTrackSignatureMap, user])
 
   return { isUserAccessTBD, doesUserHaveAccess }
 }
 
-export const usePremiumConditionsEntity = (premiumConditions: Nullable<PremiumConditions>) => {
-  const { follow_user_id: followUserId, tip_user_id: tipUserId, nft_collection: nftCollection } =
-    premiumConditions ?? {}
+export const usePremiumConditionsEntity = (
+  premiumConditions: Nullable<PremiumConditions>
+) => {
+  const {
+    follow_user_id: followUserId,
+    tip_user_id: tipUserId,
+    nft_collection: nftCollection
+  } = premiumConditions ?? {}
 
   const users = useSelector((state: CommonState) =>
     getUsers(state, {
@@ -60,20 +70,25 @@ export const usePremiumConditionsEntity = (premiumConditions: Nullable<PremiumCo
     } else if (chain === Chain.Sol) {
       const explorerUrl = `https://explorer.solana.com/address/${address}`
       const externalUrl = externalLink ? new URL(externalLink) : null
-      return externalUrl ? `${externalUrl.protocol}//${externalUrl.hostname}` : explorerUrl
+      return externalUrl
+        ? `${externalUrl.protocol}//${externalUrl.hostname}`
+        : explorerUrl
     }
 
     return ''
   }, [nftCollection])
 
-  return { nftCollection: nftCollection ?? null, collectionLink, followee, tippedUser }
+  return {
+    nftCollection: nftCollection ?? null,
+    collectionLink,
+    followee,
+    tippedUser
+  }
 }
 
 export const useLockedContent = () => {
   const id = useSelector(getLockedContentId)
-  const track = useSelector((state: CommonState) =>
-    getTrack(state, { id: id })
-  )
+  const track = useSelector((state: CommonState) => getTrack(state, { id }))
   const owner = useSelector((state: CommonState) => {
     return track?.owner_id ? getUser(state, { id: track.owner_id }) : null
   })
