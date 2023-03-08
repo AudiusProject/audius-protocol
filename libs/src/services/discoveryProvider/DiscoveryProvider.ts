@@ -865,23 +865,8 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
-  async getUserNotifications({
-    encodedUserId,
-    timestamp,
-    groupId,
-    limit
-  }: {
-    encodedUserId: string
-    timestamp: number
-    groupId?: string
-    limit?: number
-  }) {
-    const req = Requests.getUserNotifications({
-      encodedUserId,
-      timestamp,
-      groupId,
-      limit
-    })
+  async getUserNotifications(params: Requests.GetUserNotificationsParams) {
+    const req = Requests.getUserNotifications(params)
     return await this._makeRequest(req)
   }
 
