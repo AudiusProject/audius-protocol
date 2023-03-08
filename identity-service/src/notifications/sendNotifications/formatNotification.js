@@ -1,8 +1,5 @@
 const models = require('../../models')
-const {
-  bulkGetSubscribersFromDiscovery,
-  shouldReadSubscribersFromDiscovery
-} = require('../utils')
+const { bulkGetSubscribersFromDiscovery } = require('../utils')
 const { logger } = require('../../logging')
 const { notificationTypes, actionEntityTypes } = require('../constants')
 const notificationUtils = require('./utils')
@@ -47,29 +44,19 @@ const getFavoriteType = (type) => {
 
 let subscriberPushNotifications = []
 
-async function formatNotifications(
-  notifications,
-  notificationSettings,
-  tx,
-  optimizelyClient
-) {
-  // If READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED is enabled, bulk fetch all subscriber IDs
-  // from discovery for the initiators of create notifications.
-  const readSubscribersFromDiscovery =
-    shouldReadSubscribersFromDiscovery(optimizelyClient)
+async function formatNotifications (notifications, notificationSettings, tx) {
+  // Bulk fetch all subscriber IDs from discovery for the initiators of create notifications
   let userSubscribersMap = {}
-  if (readSubscribersFromDiscovery) {
-    const userIds = new Set(
-      notifications.reduce((filtered, notif) => {
-        if (notif.type === notificationTypes.Create.base) {
-          filtered.push(notif.initiator)
-        }
-        return filtered
-      }, [])
-    )
-    if (userIds.size > 0) {
-      userSubscribersMap = await bulkGetSubscribersFromDiscovery(userIds)
-    }
+  const userIds = new Set(
+    notifications.reduce((filtered, notif) => {
+      if (notif.type === notificationTypes.Create.base) {
+        filtered.push(notif.initiator)
+      }
+      return filtered
+    }, [])
+  )
+  if (userIds.size > 0) {
+    userSubscribersMap = await bulkGetSubscribersFromDiscovery(userIds)
   }
 
   // Loop through notifications to get the formatted notification
@@ -272,12 +259,7 @@ async function formatNotifications(
     // Handle the 'create' notification type, track/album/playlist
     if (notif.type === notificationTypes.Create.base) {
       const subscribers = userSubscribersMap[notif.initiator] || []
-      await _processCreateNotifications(
-        notif,
-        tx,
-        readSubscribersFromDiscovery,
-        subscribers
-      )
+      _processCreateNotifications(notif, subscribers)
     }
 
     // Handle the 'track added to playlist' notification type
@@ -363,12 +345,7 @@ async function _processSubscriberPushNotifications() {
   return [filteredFormattedCreateNotifications, users]
 }
 
-async function _processCreateNotifications(
-  notif,
-  tx,
-  readSubscribersFromDiscovery,
-  subscribersFromDiscovery
-) {
+function _processCreateNotifications (notif, subscribers) {
   const blocknumber = notif.blocknumber
   let createType = null
   let actionEntityType = null
@@ -396,16 +373,6 @@ async function _processCreateNotifications(
   }
 
   // Notifications go to all users subscribing to this track uploader
-  let subscribers = subscribersFromDiscovery
-  if (!readSubscribersFromDiscovery) {
-    // Query user IDs from subscriptions table
-    subscribers = await models.Subscription.findAll({
-      where: {
-        userId: notif.initiator
-      },
-      transaction: tx
-    })
-  }
 
   // No operation if no users subscribe to this creator
   if (subscribers.length === 0) {
@@ -429,7 +396,7 @@ async function _processCreateNotifications(
       : notif.metadata.entity_owner_id
 
   // Create notification for each subscriber
-  const formattedNotifications = subscribers.map((s) => {
+  const formattedNotifications = subscribers.map((id) => {
     // send push notification to each subscriber
     return {
       ...notif,
@@ -444,7 +411,7 @@ async function _processCreateNotifications(
       time: Date.now(),
       pending: true,
       // Add notification for this user indicating the uploader has added a track
-      subscriberId: readSubscribersFromDiscovery ? s : s.subscriberId,
+      subscriberId: id,
       // we're going to overwrite this property so fetchNotificationMetadata can use it
       type: createType
     }

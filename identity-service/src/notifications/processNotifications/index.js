@@ -38,10 +38,9 @@ const notificationMapping = {
  * Write notifications into the DB. Group the notifications by type to be batch processed together
  * @param {Array<Object>} notifications Array of notifications from DP
  * @param {*} tx The transaction to add to each of the DB lookups/inserts/deletes
- * @param {*} optimizelyClient Optimizely client for feature flags
  */
 
-async function processNotifications(notifications, tx, optimizelyClient) {
+async function processNotifications (notifications, tx) {
   // Group the notifications by type
   const notificationCategories = notifications.reduce(
     (categories, notification) => {
@@ -62,11 +61,7 @@ async function processNotifications(notifications, tx, optimizelyClient) {
         logger.debug(
           `Processing: ${notifications.length} notifications of type ${notifType}`
         )
-        if (notifType === notificationTypes.Create.base) {
-          return processType(notifications, tx, optimizelyClient)
-        } else {
-          return processType(notifications, tx)
-        }
+        return processType(notifications, tx)
       } else {
         logger.error(
           'processNotifications - no handler defined for notification type',

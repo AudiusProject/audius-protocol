@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 const assert = require('assert')
 const models = require('../../src/models')
 const processCreateNotifications = require('../../src/notifications/processNotifications/createNotification')
@@ -142,12 +143,10 @@ describe('Test Create Notification', function () {
 
   it('should insert rows into notifications and notifications actions tables', async function () {
     // ======================================= Set subscribers for create notifications =======================================
-    await models.Subscription.bulkCreate([
-      { subscriberId: 10, userId: 1 }, // User 10 subscribes to user 1
-      { subscriberId: 11, userId: 1 },
-      { subscriberId: 12, userId: 1 },
-      { subscriberId: 10, userId: 2 }
-    ])
+    jest.mock('../../src/notifications/utils', () => () => ({
+      1: [10, 11, 12], // user 1's subscribers
+      2: [10] // user 2's subscribers
+    }))
 
     // ======================================= Process initial Notifications =======================================
     const tx1 = await models.sequelize.transaction()
@@ -246,13 +245,10 @@ describe('Test Create Notification', function () {
     this.timeout(30 * 1000)
     // ======================================= Set subscribers for create notifications =======================================
     const NUM_SUBSCRIBERS = 50000
-    await models.Subscription.bulkCreate(
-      [...Array(NUM_SUBSCRIBERS).keys()]
-        .map((num) => ({
-          subscriberId: num+1,
-          userId: 1
-        }))
-    )
+    jest.mock('../../src/notifications/utils', () => () => ({
+      // user 1's subscribers
+      1: [...Array(NUM_SUBSCRIBERS).keys()].map((num) => num++)
+    }))
 
     // ======================================= Process initial Notifications =======================================
     const tx1 = await models.sequelize.transaction()

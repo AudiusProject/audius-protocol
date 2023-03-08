@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals'
 const assert = require('assert')
 const sinon = require('sinon')
 
@@ -225,11 +226,10 @@ describe('Test Send Notifications', function () {
     // User 1 creates album 2 w/ tracks 2
 
     // ======================================= Set subscribers for create notifications =======================================
-    await models.Subscription.bulkCreate([
-      { subscriberId: 3, userId: 1 }, // User 3 subscribes to user 1
-      { subscriberId: 4, userId: 1 }, // User 4 subscribes to user 1
-      { subscriberId: 4, userId: 2 } // User 4 subscribes to user 1
-    ])
+    jest.mock('../../src/notifications/utils', () => () => ({
+      1: [3, 4], // user 1's subscribers
+      2: [4] // user 2's subscribers
+    }))
 
     const tx1 = await models.sequelize.transaction()
     await processNotifications(create, tx1)
@@ -313,9 +313,9 @@ describe('Test Send Notifications', function () {
     // User 1 creates 500 tracks
 
     // ======================================= Set subscribers for create notifications =======================================
-    await models.Subscription.bulkCreate([
-      { subscriberId: 3, userId: 1 } // User 3 subscribes to user 1
-    ])
+    jest.mock('../../src/notifications/utils', () => () => ({
+      1: [3] // user 1's subscribers
+    }))
 
     const tx1 = await models.sequelize.transaction()
 

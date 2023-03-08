@@ -456,7 +456,7 @@ class NotificationProcessor {
       const listenCountWithOwners = []
 
       // Insert the notifications into the DB to make it easy for users to query for their grouped notifications
-      await processNotifications(notifications, tx, optimizelyClient)
+      await processNotifications(notifications, tx)
       logger.info(
         `notifications main indexAll job - processNotifications complete in ${
           Date.now() - time
@@ -582,8 +582,7 @@ class NotificationProcessor {
       // Insert the solana notifications into the DB
       const processedNotifications = await processNotifications(
         notifications,
-        tx,
-        optimizelyClient
+        tx
       )
       logger.info(
         `${logLabel} - processNotifications complete in ${Date.now() - time}ms`

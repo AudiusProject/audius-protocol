@@ -7,7 +7,6 @@ const models = require('../models')
 const config = require('../config')
 const { logger } = require('../logging')
 const audiusLibsWrapper = require('../audiusLibsInstance')
-const { getFeatureFlag, FEATURE_FLAGS } = require('../featureFlag')
 
 // default configs
 const startBlock = config.get('notificationStartBlock')
@@ -136,22 +135,6 @@ async function bulkGetSubscribersFromDiscovery(userIds) {
     logger.error('Error when fetching subscribers from discovery', e)
     return {}
   }
-}
-
-/**
- * Checks whether to retrieve subscribers from discovery DB using
- * the READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED feature flag.
- *
- * @returns Boolean
- */
-const shouldReadSubscribersFromDiscovery = (optimizelyClient) => {
-  if (!optimizelyClient) {
-    return false
-  }
-  return getFeatureFlag(
-    optimizelyClient,
-    FEATURE_FLAGS.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED
-  )
 }
 
 /**
@@ -358,7 +341,6 @@ module.exports = {
   calculateTrackListenMilestonesFromDiscovery,
   bulkGetSubscribersFromDiscovery,
   getSupporters,
-  shouldReadSubscribersFromDiscovery,
   getHighestBlockNumber,
   getHighestSlot,
   shouldNotifyUser,
