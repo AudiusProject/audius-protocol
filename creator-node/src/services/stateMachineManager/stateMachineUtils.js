@@ -1,7 +1,5 @@
 const { Queue, Worker } = require('bullmq')
 
-const { libs } = require('@audius/sdk')
-const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
 
@@ -128,6 +126,8 @@ const _retrieveClockValueForUserFromReplica = async (replica, wallet) => {
     DELEGATE_PRIVATE_KEY
   )
 
+  const { libs } = require('@audius/sdk')
+  const CreatorNode = libs.CreatorNode
   const clockValue = await CreatorNode.getClockValue(
     replica,
     wallet,

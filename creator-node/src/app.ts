@@ -1,5 +1,6 @@
+/* eslint-disable import/first */
 import type { Response, NextFunction, IRoute } from 'express'
-import type { CustomRequest } from './utils'
+import type { CustomRequest } from './utils/types'
 
 import express from 'express'
 import bodyParser from 'body-parser'
@@ -7,6 +8,7 @@ import cors from 'cors'
 import prometheusMiddleware from 'express-prom-bundle'
 import _ from 'lodash'
 
+console.log('Starting app.js')
 import { getConfigStoragePath } from './diskManager'
 import { sendResponse, errorResponseServerError } from './apiHelpers'
 import { logger, loggingMiddleware } from './logging'

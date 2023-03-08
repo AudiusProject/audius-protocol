@@ -1,6 +1,5 @@
 import type { LogContext } from '../../utils'
 
-import { libs } from '@audius/sdk'
 import path from 'path'
 import {
   getStartTime,
@@ -13,9 +12,9 @@ import DBManager from '../../dbManager'
 import TranscodingQueue from '../../TranscodingQueue'
 import FileManager from '../../fileManager'
 import { tracing } from '../../tracer'
+import { fileHasher } from '../../utils/fileHasher'
 
 const models = require('../../models')
-const Utils = libs.Utils
 
 const SEGMENT_FILE_BATCH_SIZE = 10
 
@@ -315,7 +314,7 @@ async function batchSaveFilesToDisk({
   segmentFileNames: string[]
 }) {
   // @ts-ignore
-  const cid = await Utils.fileHasher.generateNonImageCid(
+  const cid = await fileHasher.generateNonImageCid(
     transcodeFilePath,
     genericLogger.child({ logContext })
   )
@@ -342,7 +341,7 @@ async function batchSaveFilesToDisk({
         )
 
         // @ts-ignore
-        const multihash = await Utils.fileHasher.generateNonImageCid(
+        const multihash = await fileHasher.generateNonImageCid(
           segmentAbsolutePath,
           genericLogger.child({ logContext })
         )
