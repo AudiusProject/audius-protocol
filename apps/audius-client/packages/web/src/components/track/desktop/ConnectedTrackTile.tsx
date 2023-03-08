@@ -372,6 +372,54 @@ const ConnectedTrackTile = memo(
     const disableActions = false
     const showSkeleton = loading
 
+    const renderTrackTile = () => (
+      <TrackTile
+        size={size}
+        order={order}
+        standalone
+        isFavorited={isFavorited}
+        isReposted={isReposted}
+        isOwner={isOwner}
+        isUnlisted={isUnlisted}
+        isPremium={isPremium}
+        premiumConditions={premiumConditions}
+        doesUserHaveAccess={doesUserHaveAccess}
+        isLoading={loading}
+        isDarkMode={isDarkMode()}
+        isMatrixMode={isMatrix()}
+        listenCount={play_count}
+        isActive={isActive}
+        isArtistPick={isArtistPick}
+        artwork={artwork}
+        rightActions={rightActions}
+        title={title}
+        genre={genre as Genre}
+        userName={userName}
+        duration={duration}
+        stats={stats}
+        fieldVisibility={fieldVisibility}
+        containerClassName={cn(styles.container, {
+          [containerClassName!]: !!containerClassName,
+          [styles.loading]: loading,
+          [styles.active]: isActive
+        })}
+        onClickTitle={onClickTitle}
+        onClickRepost={onClickRepost}
+        onClickFavorite={onClickFavorite}
+        onClickShare={onClickShare}
+        onTogglePlay={onTogglePlay}
+        isTrending={isTrending}
+        showRankIcon={showRankIcon}
+        permalink={permalink}
+        trackId={trackId}
+        isTrack
+      />
+    )
+
+    if (isPremium) {
+      return renderTrackTile()
+    }
+
     return (
       <Draggable
         text={title}
@@ -381,47 +429,7 @@ const ConnectedTrackTile = memo(
         isDisabled={disableActions || showSkeleton}
         link={fullTrackPage(permalink)}
       >
-        <TrackTile
-          size={size}
-          order={order}
-          standalone
-          isFavorited={isFavorited}
-          isReposted={isReposted}
-          isOwner={isOwner}
-          isUnlisted={isUnlisted}
-          isPremium={isPremium}
-          premiumConditions={premiumConditions}
-          doesUserHaveAccess={doesUserHaveAccess}
-          isLoading={loading}
-          isDarkMode={isDarkMode()}
-          isMatrixMode={isMatrix()}
-          listenCount={play_count}
-          isActive={isActive}
-          isArtistPick={isArtistPick}
-          artwork={artwork}
-          rightActions={rightActions}
-          title={title}
-          genre={genre as Genre}
-          userName={userName}
-          duration={duration}
-          stats={stats}
-          fieldVisibility={fieldVisibility}
-          containerClassName={cn(styles.container, {
-            [containerClassName!]: !!containerClassName,
-            [styles.loading]: loading,
-            [styles.active]: isActive
-          })}
-          onClickTitle={onClickTitle}
-          onClickRepost={onClickRepost}
-          onClickFavorite={onClickFavorite}
-          onClickShare={onClickShare}
-          onTogglePlay={onTogglePlay}
-          isTrending={isTrending}
-          showRankIcon={showRankIcon}
-          permalink={permalink}
-          trackId={trackId}
-          isTrack
-        />
+        {renderTrackTile()}
       </Draggable>
     )
   }

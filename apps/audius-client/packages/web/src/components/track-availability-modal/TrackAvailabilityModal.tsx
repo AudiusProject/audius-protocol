@@ -242,11 +242,20 @@ const TrackAvailabilityModal = ({
     [updatePremiumContentFields, updateUnlistedField, updatePublicField]
   )
 
+  const handleClose = useCallback(() => {
+    setSelectedNFTCollection(undefined)
+    onClose()
+  }, [onClose])
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} bodyClassName={styles.modalBody}>
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      bodyClassName={styles.modalBody}
+    >
       <ModalHeader
         className={styles.modalHeader}
-        onClose={onClose}
+        onClose={handleClose}
         dismissButtonClassName={styles.modalHeaderDismissButton}
       >
         <ModalTitle
@@ -322,7 +331,7 @@ const TrackAvailabilityModal = ({
             type={ButtonType.PRIMARY_ALT}
             textClassName={cn(styles.doneButton)}
             text={messages.done}
-            onClick={onClose}
+            onClick={handleClose}
           />
         </div>
       </ModalContent>
