@@ -1,10 +1,9 @@
 import type Logger from 'bunyan'
 
 import fs from 'fs-extra'
-import { libs } from '@audius/sdk'
+import { fileHasher } from './fileHasher'
 
 const DecisionTree = require('./decisionTree')
-const LibsUtils = libs.Utils
 
 export const EMPTY_FILE_CID = 'QmbFMke1KXqnYyBBWxB74N4c5SBnJMVAiMNRcGu6x1AwQH' // deterministic CID for a 0 byte, completely empty file
 
@@ -37,7 +36,7 @@ export async function verifyCIDMatchesExpected({
   }
 
   // @ts-ignore
-  const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(path)
+  const expectedCID = await fileHasher.generateNonImageCid(path)
 
   const isCIDProper = cid === expectedCID
   if (!isCIDProper) {

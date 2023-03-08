@@ -1,17 +1,22 @@
 /* eslint-disable import/first */
 'use strict'
 
+console.log('Starting up...')
+
+// Start initting libs ASAP because it takes forever to just import @audius/sdk.
+// This is only for the primary/master. If running in cluster mode, each child also must init libs.
+import config from './config'
+import initAudiusLibs from './services/initAudiusLibs'
+const audiusLibsPromise = initAudiusLibs({})
+
 import { setupTracing } from './tracer'
 setupTracing()
 
 import type { Worker } from 'cluster'
 import { AggregatorRegistry } from 'prom-client'
-import {
-  clusterUtilsForPrimary,
-  clusterUtilsForWorker,
-  getNumWorkers,
-  isClusterEnabled
-} from './utils'
+import { clusterUtilsForPrimary } from './utils/cluster/clusterUtilsForPrimary'
+import { clusterUtilsForWorker } from './utils/cluster/clusterUtilsForWorker'
+import { getNumWorkers, isClusterEnabled } from './utils/cluster/clusterUtils'
 import cluster from 'cluster'
 
 import ON_DEATH from 'death'
@@ -19,7 +24,6 @@ import { Keypair } from '@solana/web3.js'
 
 import { recordMetrics } from './services/prometheusMonitoring/prometheusUsageUtils'
 import { initializeApp } from './app'
-import config from './config'
 import { serviceRegistry } from './serviceRegistry'
 import { runMigrations, clearRunningQueries } from './migrationManager'
 import DBManager from './dbManager'
@@ -246,7 +250,7 @@ const startAppForWorker = async () => {
   debugLogTimer('startAppForWorker.verifyConfigAndDb')
   await verifyConfigAndDb()
   debugLogTimer('startAppForWorker.startApp')
-  await startApp()
+  await startApp(initAudiusLibs({}))
 
   cluster.worker!.on('message', (msg) => {
     if (msg?.cmd === 'receiveAggregatePrometheusMetrics') {
@@ -293,7 +297,7 @@ const startAppWithoutCluster = async () => {
   debugLogTimer('startAppWithoutCluster.setupDbAndRedis')
   await setupDbAndRedis()
   debugLogTimer('startAppWithoutCluster.startApp')
-  await startApp()
+  await startApp(audiusLibsPromise)
 
   // Don't await this - these are recurring tasks that run in the background after
   // a one minute delay to avoid causing init to degrade
@@ -322,7 +326,7 @@ const setupDbAndRedis = async () => {
   }
 }
 
-const startApp = async () => {
+const startApp = async (audiusLibsPromise: Promise<any>) => {
   // When app terminates, close down any open DB connections gracefully
   ON_DEATH({ uncaughtException: true })((signal, error) => {
     // NOTE: log messages emitted here may be swallowed up if using the bunyan CLI (used by
@@ -335,7 +339,7 @@ const startApp = async () => {
     }
   })
   debugLogTimer('startApp.serviceRegistry.initServices')
-  await serviceRegistry.initServices()
+  await serviceRegistry.initServices(audiusLibsPromise)
   const nodeMode = config.get('devMode') ? 'Dev Mode' : 'Production Mode'
   logger.info(`Initialized services (Node running in ${nodeMode})`)
 

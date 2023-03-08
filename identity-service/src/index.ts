@@ -1,5 +1,12 @@
 'use strict'
 
+// Import libs before anything else becaues it takes a very long time to load.
+// Once it's imported once, it'll be in the cache and subsequent imports will be fast.
+const importLibs = async () => {
+  const { libs } = require('@audius/sdk')
+}
+importLibs()
+
 const { setupTracing } = require('./tracer')
 setupTracing()
 
