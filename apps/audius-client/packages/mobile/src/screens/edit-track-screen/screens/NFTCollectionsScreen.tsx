@@ -18,7 +18,8 @@ const messages = {
   collections: 'COLLECTIONS',
   searchCollections: 'Search Collections',
   compatibilityTitle: "Not seeing what you're looking for?",
-  compatibilitySubtitle: 'Only verified Solana NFT Collections are compatible.',
+  compatibilitySubtitle:
+    'Unverified Solana NFT Collections are not compatible at this time.',
   done: 'Done'
 }
 

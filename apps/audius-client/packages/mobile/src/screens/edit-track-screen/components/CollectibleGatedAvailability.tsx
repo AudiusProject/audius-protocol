@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import type { Nullable, PremiumConditions } from '@audius/common'
 import { collectiblesSelectors } from '@audius/common'
@@ -27,7 +27,8 @@ const messages = {
   noCollectibles:
     'No Collectibles found. To enable this option, link a wallet containing a collectible.',
   compatibilityTitle: "Not seeing what you're looking for?",
-  compatibilitySubtitle: 'Only verified Solana NFT Collections are compatible.'
+  compatibilitySubtitle:
+    'Unverified Solana NFT Collections are not compatible at this time.'
 }
 
 const LEARN_MORE_URL =
@@ -134,11 +135,13 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
 type TrackAvailabilitySelectionProps = {
   selected: boolean
   disabled?: boolean
+  disabledContent?: boolean
 }
 
 export const CollectibleGatedAvailability = ({
   selected,
-  disabled = false
+  disabled = false,
+  disabledContent = false
 }: TrackAvailabilitySelectionProps) => {
   const navigation = useNavigation()
   const styles = useStyles()
@@ -170,7 +173,14 @@ export const CollectibleGatedAvailability = ({
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
-  const nftCollection = premiumConditions?.nft_collection ?? null
+  const nftCollection = premiumConditions?.nft_collection
+
+  const [selectedNFTCollection, setSelectedNFTCollection] = useState(nftCollection)
+  useEffect(() => {
+    if (nftCollection) {
+      setSelectedNFTCollection(nftCollection)
+    }
+  }, [nftCollection])
 
   // If collectible gated was not previously selected,
   // set as collectible gated and reset other fields.
@@ -179,19 +189,17 @@ export const CollectibleGatedAvailability = ({
       setTrackAvailabilityFields(
         {
           is_premium: true,
-          premium_conditions: { nft_collection: undefined },
+          premium_conditions: { nft_collection: selectedNFTCollection },
           'field_visibility.remixes': false
         },
         true
       )
     }
-  }, [premiumConditions, selected, setTrackAvailabilityFields])
+  }, [premiumConditions, selected, setTrackAvailabilityFields, selectedNFTCollection])
 
   const handlePickACollection = useCallback(() => {
-    if (!disabled) {
-      navigation.navigate('NFTCollections')
-    }
-  }, [disabled, navigation])
+    navigation.navigate('NFTCollections')
+  }, [navigation])
 
   const renderHelpCalloutContent = useCallback(() => {
     return hasUnsupportedCollection ? (
@@ -231,6 +239,7 @@ export const CollectibleGatedAvailability = ({
         <TouchableOpacity
           onPress={handlePickACollection}
           style={styles.collectionContainer}
+          disabled={disabled || disabledContent}
         >
           <View style={styles.pickACollection}>
             <Text weight='demiBold' fontSize='large'>

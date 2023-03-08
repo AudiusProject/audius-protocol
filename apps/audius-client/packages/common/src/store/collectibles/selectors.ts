@@ -31,11 +31,11 @@ export const getSupportedUserCollections = createSelector(
 
     const findExternalLink = (mint: string) => {
       const solCollectibles = collectibles[Chain.Sol] ?? []
-      const collectible = solCollectibles.find(collectible => {
-        const collectionMintAddress = getCollectionMintAddress(collectible)
-        return collectionMintAddress === mint
-      })
-      return collectible?.externalLink ?? null
+      const matchingCollectibles = solCollectibles.filter(
+        collectible => getCollectionMintAddress(collectible) === mint
+      )
+      const collectibleWithLink = matchingCollectibles.find(collectible => !!collectible.externalLink)
+      return collectibleWithLink?.externalLink ?? null
     }
 
     const collectibles = accountUserId ? allUserCollectibles[accountUserId] ?? defaultCollectibles : defaultCollectibles
