@@ -3,6 +3,7 @@ const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
 
+const initAudiusLibs = require('./services/initAudiusLibs')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
@@ -75,10 +76,10 @@ class ServiceRegistry {
   /**
    * Configure services that do not require the server and will be initialized synchronously
    */
-  async initServices(audiusLibsPromise) {
+  async initServices() {
     const start = getStartTime()
 
-    this.libs = await audiusLibsPromise
+    this.libs = await initAudiusLibs({})
 
     // Transcode handoff requires libs. Set libs in AsyncProcessingQueue after libs init is complete
     this.asyncProcessingQueue = new AsyncProcessingQueue(
