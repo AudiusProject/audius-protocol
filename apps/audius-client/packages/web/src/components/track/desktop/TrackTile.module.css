@@ -147,6 +147,10 @@
   height: 20px;
 }
 
+.withPremium {
+  margin-right: 188px;
+}
+
 .title {
   font-style: normal;
   font-weight: var(--font-bold);

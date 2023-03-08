@@ -194,7 +194,13 @@ const TrackTile = memo(
             <div className={cn(styles.headerRow)}>
               {!isLoading && header && <div>{header}</div>}
             </div>
-            <div className={styles.titleRow}>
+            <div
+              className={cn(
+                styles.titleRow,
+                styles.title,
+                isPremium ? styles.withPremium : null
+              )}
+            >
               {isLoading ? (
                 <Skeleton width='80%' className={styles.skeleton} />
               ) : (
