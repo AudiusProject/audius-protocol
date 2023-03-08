@@ -21,8 +21,7 @@ const start = async () => {
     // use the bunyan CLI.
     logger.info('Shutting down db and express app...')
     sequelize.close()
-    server?.close()
-    process.exit(0)
+    server.close()
   })
 }
 
