@@ -68,17 +68,17 @@ module.exports = function (app) {
       await redis.zremrangebyscore('relayTxSuccesses', '-inf', epochOneHourAgo)
 
       // check if there have been any attempts in the time window that we processed the block health check
-      const attemptedTxsInRedis = await redis.zrangebyscore(
+      const attemptedTxsInRedis = await redis.zrange(
         'relayTxAttempts',
         '-inf',
         'inf'
       )
-      const successfulTxsInRedis = await redis.zrangebyscore(
+      const successfulTxsInRedis = await redis.zrange(
         'relayTxSuccesses',
         '-inf',
         'inf'
       )
-      const failureTxsInRedis = await redis.zrangebyscore(
+      const failureTxsInRedis = await redis.zrange(
         'relayTxFailures',
         '-inf',
         'inf'
