@@ -98,6 +98,7 @@ platform :android do
         sh("cd ../../../../ && aws s3 sync packages/mobile/android/app/build/outputs s3://#{remoteDirectory}/android --delete")
         upload_to_play_store(
           track: options[:track],
+          package_name: packageName,
           aab: aab,
           skip_upload_metadata: true,
           skip_upload_changelogs: true,
