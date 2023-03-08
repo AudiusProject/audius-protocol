@@ -93,12 +93,13 @@ module.exports = function (app) {
         isError = true
       }
 
-      for (const tx in successfulTxsInRedis) {
+      for (const tx of successfulTxsInRedis) {
+        const parsedTx = JSON.parse(tx)
         req.logger.info(
-          `asdf totalTransactionLatency ${tx.totalTransactionLatency}`
+          `asdf totalTransactionLatency ${parsedTx.totalTransactionLatency}`
         )
 
-        if (tx.totalTransactionLatency / 1000 > maxRelayLatency) {
+        if (parsedTx.totalTransactionLatency / 1000 > maxRelayLatency) {
           isError = true
           break
         }
