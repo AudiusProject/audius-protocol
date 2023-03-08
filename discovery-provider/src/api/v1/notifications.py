@@ -53,6 +53,7 @@ class GetNotifications(Resource):
             else datetime.now(),
             "group_id": parsed_args.get("group_id"),
             "limit": parsed_args.get("limit"),
+            "valid_types": parsed_args.get("valid_types") or [],
         }
         unread_args = {
             "user_id": decoded_id,
