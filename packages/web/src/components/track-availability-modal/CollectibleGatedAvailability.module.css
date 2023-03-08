@@ -18,14 +18,13 @@
 
 .root .dropdown :global(.ant-select-item) {
   padding: 16px;
-  height: unset;
+  height: 80px;
 }
 .dropdownRow {
   display: flex;
   align-items: center;
   z-index: 3000;
 }
-
 .dropdownRow > span {
   margin-left: 8px;
   font-weight: var(--font-demi-bold);
@@ -53,4 +52,5 @@
   border-left: none;
   border-bottom: none;
   border-radius: initial;
+  height: 100%;
 }
