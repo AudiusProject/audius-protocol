@@ -179,7 +179,7 @@ const notificationMap = {
       )
     }
   },
-  ['trendingTrack'](notification) {
+  ['trending'](notification) {
     const highlight = notification.entity.title
     const rank = notification.rank
     const rankSuffix = getRankSuffix(rank)

@@ -227,8 +227,8 @@ export const createSubscription = async (db: Knex, subscriptions: CreateSubscrip
     .into('subscriptions')
 }
 
-type CreateNotification = Pick<NotificationRow, 'id' | 'specifier' | 'group_id' | 'type' | 'timestamp' | 'user_ids'> & Partial<NotificationRow>
-export const insertNotifications = async (db: Knex, notifications: CreateNotification[]) => {
+type CreateNotificationRow = Pick<NotificationRow, 'id' | 'specifier' | 'group_id' | 'type' | 'timestamp' | 'user_ids'> & Partial<NotificationRow>
+export const insertNotifications = async (db: Knex, notifications: CreateNotificationRow[]) => {
   await db.insert(notifications)
     .into('notification')
 }
