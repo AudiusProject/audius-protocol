@@ -82,6 +82,17 @@ export const CollectibleGatedAvailability = ({
     [ethCollectibleItems, solCollectibleItems]
   )
 
+  // If no nft collection was previously selected, then the default value is an empty string,
+  // which makes the dropdown show the placeholder.
+  // Otherwise, the default value is the nft collection which was previously selected,
+  // which also includes the collection image.
+  const defaultCollectionName =
+    state.premium_conditions?.nft_collection?.name ?? ''
+  const defaultCollection = menuItems.find(
+    (item) => item.text === defaultCollectionName
+  )
+  const defaultValue = defaultCollection || defaultCollectionName
+
   const renderFooter = useCallback(() => {
     return hasUnsupportedCollection ? (
       <HelpCallout
@@ -108,7 +119,7 @@ export const CollectibleGatedAvailability = ({
           triggerNode.parentNode?.parentNode?.parentNode
         }
         menu={{ items: menuItems }}
-        defaultValue={state.premium_conditions?.nft_collection?.name ?? ''}
+        defaultValue={defaultValue}
         onSelect={(value: string) => {
           if (ethCollectionMap[value]) {
             onStateUpdate(
