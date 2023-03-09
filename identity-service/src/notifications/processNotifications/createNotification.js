@@ -62,10 +62,6 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
       notification.metadata.entity_type
     )
 
-    if (actionEntityType === actionEntityTypes.Track) {
-      continue
-    }
-
     // Notifications go to all users subscribing to this content uploader
     let subscribers = userSubscribersMap[notification.initiator] || []
     if (!readSubscribersFromDiscovery) {
