@@ -162,7 +162,6 @@ describe('Test Create Notification', function () {
     // ======================================= Run checks against the Notifications =======================================
     // User 11 subscribes to user 1 and gets the notification when user 1 creates tracks 1, 2, 3, and playlist 1 which contains track 2
     const user11Notifs = await models.Notification.findAll({ where: { userId: 11 } })
-    console.log(`user11 notifs: ${user11Notifs.map((n) => JSON.stringify(n))}`)
     assert.deepStrictEqual(user11Notifs.length, 2)
     const user11TrackNotifs = user11Notifs.find(notif => notif.type === notificationTypes.Create.track)
     const user11PlaylistNotif = user11Notifs.find(notif => notif.type === notificationTypes.Create.playlist)
