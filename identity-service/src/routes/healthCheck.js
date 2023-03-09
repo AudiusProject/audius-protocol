@@ -22,17 +22,12 @@ const moment = require('moment')
 const { REDIS_ATTESTER_STATE } = require('../utils/configureAttester.js')
 
 // Defaults used in relay health check endpoint
-const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
-const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
-const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query params
-const RELAY_HEALTH_MIN_TRANSACTIONS = 5 // min number of tx's that must have happened within block diff
 const RELAY_HEALTH_ACCOUNTS = new Set(
   config.get('relayerWallets').map((wallet) => wallet.publicKey)
 )
 const ETH_RELAY_HEALTH_ACCOUNTS = new Set(
   config.get('ethRelayerWallets').map((wallet) => wallet.publicKey)
 )
-const RELAY_HEALTH_MAX_LATENCY = 15 // seconds
 
 module.exports = function (app) {
   /**
@@ -52,17 +47,14 @@ module.exports = function (app) {
       const start = Date.now()
       const redis = req.app.get('redis')
 
-      const maxErrors =
-        parseInt(req.query.maxErrors, 10) || RELAY_HEALTH_MAX_ERRORS
-      const minTransactions =
-        parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
+      const maxErrors = parseInt(req.query.maxErrors)
+      const minTransactions = parseInt(req.query.minTransactions)
       const isVerbose = req.query.verbose || false
-      const maxRelayLatency =
-        parseInt(req.query.maxRelayLatency) || RELAY_HEALTH_MAX_LATENCY
+      const maxRelayLatency = parseInt(req.query.maxRelayLatency)
       let isError = false
 
       // delete old entries from set in redis
-      const epochOneHourAgo = Math.floor(Date.now() / 1000) - 3600
+      const epochOneHourAgo = Math.floor(Date.now() / 1000) - 600
       await redis.zremrangebyscore('relayTxAttempts', '-inf', epochOneHourAgo)
       await redis.zremrangebyscore('relayTxFailures', '-inf', epochOneHourAgo)
       await redis.zremrangebyscore('relayTxSuccesses', '-inf', epochOneHourAgo)
@@ -80,17 +72,20 @@ module.exports = function (app) {
       )
       const failureTxsInRedis = await redis.zrange('relayTxFailures', '0', '-1')
 
-      if (successfulTxsInRedis.length < minTransactions) {
+      if (minTransactions && successfulTxsInRedis.length < minTransactions) {
         isError = true
       }
 
-      if (failureTxsInRedis.length > maxErrors) {
+      if (maxErrors && failureTxsInRedis.length > maxErrors) {
         isError = true
       }
 
       for (const tx of successfulTxsInRedis) {
         const parsedTx = JSON.parse(tx)
-        if (parsedTx.totalTransactionLatency / 1000 > maxRelayLatency) {
+        if (
+          maxRelayLatency &&
+          parsedTx.totalTransactionLatency / 1000 > maxRelayLatency
+        ) {
           isError = true
           break
         }
