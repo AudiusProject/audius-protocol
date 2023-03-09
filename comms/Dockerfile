@@ -9,7 +9,7 @@ ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 
 RUN apk add build-base curl ffmpeg make
-RUN go install github.com/nats-io/nats-server/v2@latest && \
+RUN go install github.com/nats-io/nats-server/v2@v2.9.15 && \
   go install github.com/nats-io/natscli/nats@latest && \
   go install github.com/nats-io/nkeys/nk@latest && \
   go install github.com/nats-io/nsc/v2@latest && \
