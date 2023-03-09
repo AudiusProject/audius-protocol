@@ -332,7 +332,7 @@ services:
       - ./discovery-provider/plugins/notifications:/notifications
       - /notifications/node_modules
     depends_on:
-      comms-migrations:
+      comms:
         condition: service_completed_successfully
       discovery-provider:
         condition: service_healthy
@@ -343,10 +343,10 @@ services:
     deploy:
       mode: global
 
-  comms-migrations:
+  comms:
     build:
       context: comms
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.v2
     command: /comms-linux discovery-migrations
     environment:
       audius_db_url: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"

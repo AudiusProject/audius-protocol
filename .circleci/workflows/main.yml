@@ -24,6 +24,11 @@ jobs:
       context: [GCP, dockerhub]
       instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM
       service: identity-service
+  - push-docker-image:
+      name: push-comms
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
+      service: comms
 
   - test:
       name: test-creator-node
