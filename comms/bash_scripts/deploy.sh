@@ -5,7 +5,7 @@ make build.fast
 
 for val in 1 2 3 5; do
   echo "DN $val"
-  ssh stage-discovery-$val 'bash -s' < bash_scripts/deploy_discovery.sh
+  ssh stage-discovery-$val 'bash -s' < bash_scripts/deploy_discovery.sh "$(git rev-parse HEAD)"
 done
 
 for val in 5 6 7; do
