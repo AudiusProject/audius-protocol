@@ -24,7 +24,6 @@ from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
-from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
     LAST_SEEN_NEW_REACTION_TIME_KEY,
@@ -726,12 +725,12 @@ def get_acdc_status() -> Tuple[Dict, bool]:
     current_block = web3.eth.get_block('latest')
     res["current_block"] = current_block
     res["current_block_number"] = current_block.number
- 
+
     # clique get signers
     signers = rpc("clique_getSigners")
     res["signers"] = signers
     res["signers_count"] = len(signers)
- 
+
     # clique get snapshot
     res["snapshot"] = rpc("clique_getSnapshot")
 
