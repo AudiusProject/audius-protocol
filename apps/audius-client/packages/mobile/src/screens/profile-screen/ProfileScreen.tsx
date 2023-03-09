@@ -2,21 +2,22 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import {
   Status,
+  ShareSource,
   profilePageSelectors,
   profilePageActions,
   reachabilitySelectors,
+  shareModalUIActions,
   encodeUrlName
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
+import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton, Screen, ScreenContent } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useRoute } from 'app/hooks/useRoute'
-import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -24,6 +25,7 @@ import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { useSelectProfileRoot } from './selectors'
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { fetchProfile: fetchProfileAction } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
@@ -79,10 +81,10 @@ export const ProfileScreen = () => {
   const handlePressTopRight = useCallback(() => {
     if (profile) {
       dispatch(
-        setVisibility({
-          drawer: 'ProfileActions',
-          visible: true,
-          data: { userId: profile.user_id }
+        requestOpenShareModal({
+          type: 'profile',
+          profileId: profile.user_id,
+          source: ShareSource.PAGE
         })
       )
     }
@@ -91,7 +93,7 @@ export const ProfileScreen = () => {
   const topbarRight = (
     <IconButton
       fill={neutralLight4}
-      icon={IconKebabHorizontal}
+      icon={IconShare}
       onPress={handlePressTopRight}
     />
   )
