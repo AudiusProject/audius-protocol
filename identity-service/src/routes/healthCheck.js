@@ -54,10 +54,22 @@ module.exports = function (app) {
       let isError = false
 
       // delete old entries from set in redis
-      const epochOneHourAgo = Math.floor(Date.now() / 1000) - 600
-      await redis.zremrangebyscore('relayTxAttempts', '-inf', epochOneHourAgo)
-      await redis.zremrangebyscore('relayTxFailures', '-inf', epochOneHourAgo)
-      await redis.zremrangebyscore('relayTxSuccesses', '-inf', epochOneHourAgo)
+      const epochTenMinutesAgo = Math.floor(Date.now() / 1000) - 600
+      await redis.zremrangebyscore(
+        'relayTxAttempts',
+        '-inf',
+        epochTenMinutesAgo
+      )
+      await redis.zremrangebyscore(
+        'relayTxFailures',
+        '-inf',
+        epochTenMinutesAgo
+      )
+      await redis.zremrangebyscore(
+        'relayTxSuccesses',
+        '-inf',
+        epochTenMinutesAgo
+      )
 
       // check if there have been any attempts in the time window that we processed the block health check
       const attemptedTxsInRedis = await redis.zrange(
