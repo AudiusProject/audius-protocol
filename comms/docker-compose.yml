@@ -1,22 +1,9 @@
 version: '3'
 
-x-nats-nodes-healthy: &nats-nodes-healthy
-  nats1-storage:
-    condition: service_healthy
-  nats2-storage:
-    condition: service_healthy
-  nats3-storage:
-    condition: service_healthy
-  nats4-storage:
-    condition: service_healthy
-  nats1-discovery:
-    condition: service_healthy
-  
 services:
   autoheal:
     image: willfarrell/autoheal:latest
     tty: true
-    container_name: autoheal
     restart: always
     environment:
       - AUTOHEAL_CONTAINER_LABEL=all
@@ -24,7 +11,6 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   ingress:
-    container_name: ingress
     extends:
       file: docker-compose.v2.base.yml
       service: nginx
@@ -33,161 +19,145 @@ services:
     ports:
       - 80:80
 
-  comdb:
-    container_name: comdb
-    extends:
-      file: docker-compose.v2.base.yml
-      service: comdb
-
-  nats1-storage:
-    container_name: nats1-storage
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nats-dev
+  comms-db:
+    image: postgres:13.6
+    ports:
+      - 5454:5432
     environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./discovery/db/docker-initdb:/docker-etnrypoint-initdb.d
+
+  nats-storage:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    entrypoint: air
+    command: nats
+    environment:
+      # plus more
+
       AUDIUS_TEST_HOST: "nats1-storage"
 
-  nats2-storage:
-    container_name: nats2-storage
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nats-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
       AUDIUS_TEST_HOST: "nats2-storage"
 
-  nats3-storage:
-    container_name: nats3-storage
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nats-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
       AUDIUS_TEST_HOST: "nats3-storage"
 
-  nats4-storage:
-    container_name: nats4-storage
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nats-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
       AUDIUS_TEST_HOST: "nats4-storage"
+    volumes:
+      - ./natsd:/app/natsd
+      - ./shared:/app/shared
+    healthcheck:
+      # TODO: make this a single node healthcheck
+      # does the cluster have at least 7 nodes peered (4 storage, 3 discovery)?
+      test: wget -qO- http://localhost:8924/nats/jsz | grep -o '"cluster_size":[[:space:]]*[0-9]*' | awk '{if ($$2 < 7) {exit 1}}'
+      interval: 5s
+      retries: 15
+      start_period: 10s
+      timeout: 1s
+    depends_on:
+      comms-db:
+        condition: service_started
+    deploy:
+      mode: replicated
+      replicas: 4
 
-  nats1-discovery:
-    container_name: nats1-discovery
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nats-dev
+  nats-discovery:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    entrypoint: air
+    command: nats
     environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" # Public key: "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e"
+      # plus more
+
       AUDIUS_TEST_HOST: "nats1-discovery"
 
-  nats2-discovery:
-    container_name: nats2-discovery
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nats-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "d2b12371a062b73ce665288f894844ab75760d0ed0c580ff19d21b54d260ceb2" # Public key: "0x9262c9A1b172fF2A9C027B55862389d00b68A26a"
       AUDIUS_TEST_HOST: "nats2-discovery"
 
-  nats3-discovery:
-    container_name: nats3-discovery
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nats-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "6569932dff9fbe7c04382f87ac7098f90e7aa5cb0fe636b4e5c3cb4e30668812" # Public key: "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4"
       AUDIUS_TEST_HOST: "nats3-discovery"
-  
-  storage1:
-    container_name: storage1
-    extends:
-      file: docker-compose.v2.base.yml
-      service: storage-dev
+    volumes:
+      - ./natsd:/app/natsd
+      - ./shared:/app/shared
+    healthcheck:
+      # TODO: make this a single node healthcheck
+      # does the cluster have at least 7 nodes peered (4 storage, 3 discovery)?
+      test: wget -qO- http://localhost:8924/nats/jsz | grep -o '"cluster_size":[[:space:]]*[0-9]*' | awk '{if ($$2 < 7) {exit 1}}'
+      interval: 5s
+      retries: 15
+      start_period: 10s
+      timeout: 1s
+    depends_on:
+      comms-db:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 3
+
+  storage:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    entrypoint: air
+    command: storage
     environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
+      # plus more
+
       AUDIUS_TEST_HOST: "nats1-storage"
       NAME: "storage1"
-    depends_on:
-      <<: *nats-nodes-healthy
 
-  storage2:
-    container_name: storage2
-    extends:
-      file: docker-compose.v2.base.yml
-      service: storage-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
       AUDIUS_TEST_HOST: "nats2-storage"
       NAME: "storage2"
-    depends_on:
-      <<: *nats-nodes-healthy
 
-  storage3:
-    container_name: storage3
-    extends:
-      file: docker-compose.v2.base.yml
-      service: storage-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
       AUDIUS_TEST_HOST: "nats3-storage"
       NAME: "storage3"
-    depends_on:
-      <<: *nats-nodes-healthy
 
-  storage4:
-    container_name: storage4
-    extends:
-      file: docker-compose.v2.base.yml
-      service: storage-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
       AUDIUS_TEST_HOST: "nats4-storage"
       NAME: "storage4"
+    volumes:
+      - ./storage:/app/storage
+      - ./shared:/app/shared
+      - /app/storage/storageserver/weather-map # exclude weather-map and its heavy node_modules
+      - ./storage/storageserver/weather-map/dist:/app/storage/storageserver/weather-map/dist
     depends_on:
-      <<: *nats-nodes-healthy
+      nats-storage:
+        condition: service_healthy
+      nats-discovery:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 4
 
-  discovery1:
-    container_name: discovery1
-    extends:
-      file: docker-compose.v2.base.yml
-      service: discovery-dev
+  discovery:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    entrypoint: air
+    command: discovery
     environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" # Public key: "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e"
+      # plus more
+
       NATS_SERVER_URL: "nats://nats1-discovery:4222"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
-    depends_on:
-      <<: *nats-nodes-healthy
-    
-  discovery2:
-    container_name: discovery2
-    extends:
-      file: docker-compose.v2.base.yml
-      service: discovery-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "d2b12371a062b73ce665288f894844ab75760d0ed0c580ff19d21b54d260ceb2" # Public key: "0x9262c9A1b172fF2A9C027B55862389d00b68A26a"
+
       NATS_SERVER_URL: "nats://nats2-discovery:4222"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
-    depends_on:
-      <<: *nats-nodes-healthy
 
-  discovery3:
-    container_name: discovery3
-    extends:
-      file: docker-compose.v2.base.yml
-      service: discovery-dev
-    environment:
-      AUDIUS_DELEGATE_PRIVATE_KEY: "6569932dff9fbe7c04382f87ac7098f90e7aa5cb0fe636b4e5c3cb4e30668812" # Public key: "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4"
       NATS_SERVER_URL: "nats://nats3-discovery:4222"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
     depends_on:
-      <<: *nats-nodes-healthy
+      nats-storage:
+        condition: service_healthy
+      nats-discovery:
+        condition: service_healthy
+    volumes:
+      - ./discovery:/app/discovery
+      - ./shared:/app/shared
+    deploy:
+      mode: replicated
+      replicas: 3
 
   test:
-    container_name: test
     extends:
       file: docker-compose.v2.base.yml
       service: test
@@ -196,12 +166,9 @@ services:
         condition: service_started
       comdb:
         condition: service_started
-      storage1:
+      storage:
         condition: service_healthy
-      storage2:
+      nats-storage:
         condition: service_healthy
-      storage3:
+      nats-discovery:
         condition: service_healthy
-      storage4:
-        condition: service_healthy
-      <<: *nats-nodes-healthy
