@@ -580,15 +580,13 @@ async function relayToNethermindWithTimeout(
   contractAddress,
   gasLimit
 ) {
-  // relayToNethermind with a 10 second timeout
   return Promise.race([
     relayToNethermind(encodedABI, contractAddress, gasLimit),
     new Promise((resolve, reject) =>
       setTimeout(() => {
-        const timeoutMessage = `Relay to nethermind timed out`
-        logger.info(timeoutMessage)
+        const timeoutMessage = `txRelay - relayToNethermind timed out`
         reject(new Error(timeoutMessage))
-      }, 5000)
+      }, 10000)
     )
   ])
 }
@@ -642,7 +640,9 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
       signedTx.rawTransaction
     )
 
-    console.log(`txRelay - relayToNethermind receipt: ${receipt}`)
+    console.log(
+      `txRelay - relayToNethermind receipt: ${JSON.stringify(receipt)}`
+    )
     receipt.blockNumber += config.get('finalPOABlock')
 
     const end = new Date().getTime()
