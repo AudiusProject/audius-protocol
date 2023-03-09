@@ -11,12 +11,11 @@ import {
   createUsers,
   insertMobileDevices,
   insertMobileSettings,
-  createTestDB,
   dropTestDB,
-  replaceDBName,
   createTracks,
   createPlaylists,
-  createBlocks
+  createBlocks,
+  setupTest
 } from '../../utils/populateDB'
 
 describe('Add track to playlist notification', () => {
@@ -27,22 +26,8 @@ describe('Add track to playlist notification', () => {
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      createTestDB(process.env.DN_DB_URL, testName),
-      createTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
-    processor = new Processor()
-    await processor.init({
-      identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
-      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
-    })
-
-    // Mock current date for test result consistency
-    Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
+    const setup = await setupTest()
+    processor = setup.processor
   })
 
   afterEach(async () => {

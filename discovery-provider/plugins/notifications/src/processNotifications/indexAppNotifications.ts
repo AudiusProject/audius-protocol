@@ -36,6 +36,7 @@ const notificationTypeMapping = {
   'repost': MappingVariable.PushRepost,
   'save': MappingVariable.PushSave,
   'milestone': MappingVariable.PushMilestone,
+  'milestone_follower_count': MappingVariable.PushMilestone,
   'remix': MappingVariable.PushRemix,
   'cosign': MappingVariable.PushCosign,
   'supporter_rank_up': MappingVariable.PushSupporterRankUp,

@@ -19,17 +19,31 @@ import {
   SupporterRankUpRow
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
-import {
-  enum_NotificationDeviceTokens_deviceType,
-  NotificationDeviceTokenRow,
-  UserNotificationMobileSettingRow,
-  NotificationEmailRow
-} from '../types/identity'
-import { getDB } from '../conn'
+import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow, NotificationEmailRow } from '../types/identity'
 import { config } from '../config'
 import { expect, jest } from '@jest/globals'
 import { Processor } from '../main'
 import { getRedisConnection } from './redisConnection'
+import { getDB } from '../conn'
+
+export const setupTest = async () => {
+  const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+  console.log({ testName })
+  await Promise.all([
+    createTestDB(process.env.DN_DB_URL, testName),
+    createTestDB(process.env.IDENTITY_DB_URL, testName)
+  ])
+  const processor = new Processor()
+  await processor.init({
+    identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
+    discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName),
+  })
+  jest.spyOn(processor.remoteConfig, 'getFeatureVariableEnabled').mockImplementation((name: string, field: string) => true);
+
+  // Mock current date for test result consistency
+  Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
+  return { processor }
+}
 
 export const replaceDBName = (connectionString: string, testName: string) => {
   const connection = connectionString.substring(
