@@ -6,7 +6,7 @@ from src.api_helpers import success_response
 from src.queries.get_alembic_version import get_alembic_version
 from src.queries.get_celery_tasks import convert_epoch_to_datetime, get_celery_tasks
 from src.queries.get_db_seed_restore_status import get_db_seed_restore_status
-from src.queries.get_health import get_health, get_location
+from src.queries.get_health import get_acdc_status, get_health, get_location
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.queries.queries import parse_bool_param
@@ -62,6 +62,13 @@ def health_check():
 
     (health_results, error) = get_health(args)
     return success_response(health_results, 500 if error else 200, sign_response=False)
+
+
+# Health check specifically for acdc and helpful info for debugging. Checks chain directly.
+@bp.route("/health_check/acdc", methods=["GET"])
+def health_check_acdc():
+    (results, error) = get_acdc_status()
+    return success_response(results, 500 if error else 200, sign_response=False)
 
 
 # Health check for block diff between DB and chain.

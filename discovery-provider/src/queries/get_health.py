@@ -24,6 +24,7 @@ from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
+from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
     LAST_SEEN_NEW_REACTION_TIME_KEY,
@@ -702,3 +703,74 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
             )
 
     return latest_block_num, latest_block_hash
+
+
+def get_acdc_status() -> Tuple[Dict, bool]:
+    # setup return objects
+    status = True
+    res = {
+        "current_block": None,
+        "current_block_number": None,
+        "signers": None,
+        "signers_count": None,
+        "snapshot": None,
+        "me": None,
+        "is_signer": None,
+        "health": None,
+        "stalled": None,
+    }
+
+    # gather connections
+    redis = redis_connection.get_redis()
+    web3 = get_nethermind_web3(LOCAL_RPC)
+
+    # web3 get current block
+    current_block = web3.eth.get_block('latest')
+    res["current_block"] = current_block
+    res["current_block_number"] = current_block.number
+
+    # clique get signers
+    signers = rpc("clique_getSigners")
+    res["signers"] = signers
+    res["signers_count"] = len(signers)
+
+    # clique get snapshot
+    res["snapshot"] = rpc("clique_getSnapshot")
+
+    # net_getLocal
+    me = rpc("net_getLocal")
+    res["me"] = me
+
+    # evaluate is signer
+    res["is_signer"] = me in signers
+
+    # localhost:8545/health
+    res["health"] = requests.get(LOCAL_RPC + "/health").json()
+
+    # check last request in redis and compare against current block num
+    cache_key = "acdc-status"
+    past_status = get_json_cached_key(redis, cache_key)
+    if past_status is None:
+        # set in cache for 30 minutes
+        set_json_cached_key(redis, cache_key, res, ttl=1800)
+        # leave stalled as null because we cant determine if blocks have passed
+        return res, status
+
+    if past_status["current_block_number"] == res["current_block_number"]:
+        # blocks have not progressed since last call
+        res["stalled"] = True
+        set_json_cached_key(redis, cache_key, res, ttl=1800)
+        return res, status
+
+    # block production is not stalled
+    res["stalled"] = False
+    # set in cache for 30 minutes
+    set_json_cached_key(redis, cache_key, res, ttl=1800)
+
+    return res, status
+
+
+# helper fn to make rpcs easier
+def rpc(method: str, params=[]):
+    data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
+    return requests.post(LOCAL_RPC, data=data).json().result
