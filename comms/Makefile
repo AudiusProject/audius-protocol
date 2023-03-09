@@ -34,6 +34,7 @@ storage.seed.audio::
 storage.seed.image::
 	docker exec -it storage1 sh -c "./comms storage seed image"
 
+# formerly build.fast but uses qemu - slow
 build.push::
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/comms:latest .
 	docker push audius/comms:latest
