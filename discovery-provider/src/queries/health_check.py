@@ -65,8 +65,8 @@ def health_check():
 
 
 # Health check specifically for acdc and helpful info for debugging. Checks chain directly.
-@bp.route("/health_check/acdc", methods=["GET"])
-def health_check_acdc():
+@bp.route("/acdc", methods=["GET"])
+def acdc_status():
     (results, error) = get_acdc_status()
     return success_response(results, 500 if error else 200, sign_response=False)
 

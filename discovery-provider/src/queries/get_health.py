@@ -707,7 +707,6 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 
 def get_acdc_status() -> Tuple[Dict, bool]:
     # setup return objects
-    status = True
     res = {
         "current_block": None,
         "current_block_number": None,
@@ -717,23 +716,22 @@ def get_acdc_status() -> Tuple[Dict, bool]:
         "me": None,
         "is_signer": None,
         "health": None,
-        "stalled": None,
     }
 
     # gather connections
-    redis = redis_connection.get_redis()
-    web3 = get_nethermind_web3(LOCAL_RPC)
+    web3endpoint = os.getenv("audius_web3_nethermind_rpc")
+    web3 = get_nethermind_web3(web3endpoint)
 
     # web3 get current block
     current_block = web3.eth.get_block('latest')
     res["current_block"] = current_block
     res["current_block_number"] = current_block.number
-
+ 
     # clique get signers
     signers = rpc("clique_getSigners")
     res["signers"] = signers
     res["signers_count"] = len(signers)
-
+ 
     # clique get snapshot
     res["snapshot"] = rpc("clique_getSnapshot")
 
@@ -745,29 +743,9 @@ def get_acdc_status() -> Tuple[Dict, bool]:
     res["is_signer"] = me in signers
 
     # localhost:8545/health
-    res["health"] = requests.get(LOCAL_RPC + "/health").json()
+    res["health"] = requests.get(web3endpoint + "/health").json()
 
-    # check last request in redis and compare against current block num
-    cache_key = "acdc-status"
-    past_status = get_json_cached_key(redis, cache_key)
-    if past_status is None:
-        # set in cache for 30 minutes
-        set_json_cached_key(redis, cache_key, res, ttl=1800)
-        # leave stalled as null because we cant determine if blocks have passed
-        return res, status
-
-    if past_status["current_block_number"] == res["current_block_number"]:
-        # blocks have not progressed since last call
-        res["stalled"] = True
-        set_json_cached_key(redis, cache_key, res, ttl=1800)
-        return res, status
-
-    # block production is not stalled
-    res["stalled"] = False
-    # set in cache for 30 minutes
-    set_json_cached_key(redis, cache_key, res, ttl=1800)
-
-    return res, status
+    return res, False
 
 
 # helper fn to make rpcs easier
