@@ -14,8 +14,11 @@ export const useIsSpecialAccessEnabled = () => {
   const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
     FeatureFlags.IOS_GATED_CONTENT_ENABLED
   )
+  const { isEnabled: isSpecialAccessEnabled } = useFeatureFlag(
+    FeatureFlags.SPECIAL_ACCESS_ENABLED
+  )
   return (
-    useFeatureFlag(FeatureFlags.SPECIAL_ACCESS_ENABLED) &&
+    isSpecialAccessEnabled &&
     (isIos ? isIosGatedContentEnabled : isAndroidGatedContentEnabled)
   )
 }
