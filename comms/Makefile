@@ -35,9 +35,10 @@ storage.seed.image::
 	docker exec -it storage1 sh -c "./comms storage seed image"
 
 # formerly build.fast but uses qemu - slow
+# note we use the "a1" tag to delineate a push from local for testing
 build.push::
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/comms:latest .
-	docker push audius/comms:latest
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/comms:a1 .
+	docker push audius/comms:a1
 
 build.weathermap::
 	cd storage/storageserver/weather-map; yarn && yarn build
