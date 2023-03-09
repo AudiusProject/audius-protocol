@@ -6,11 +6,9 @@ import { AppState } from 'react-native'
 
 import { env } from 'app/services/env'
 import { dispatch } from 'app/store'
+import { setCurrentNetworkType } from 'app/store/offline-downloads/slice'
 
 const REACHABILITY_URL = env.REACHABILITY_URL
-
-// Latest connectivity value
-export const Connectivity: { netInfo: NetInfoState | null } = { netInfo: null }
 
 export const checkNetInfoReachability = (netInfo: NetInfoState | null) => {
   if (!netInfo) return true
@@ -46,8 +44,6 @@ export const pingTest = async () => {
 }
 
 const updateReachability = async (netInfoState: NetInfoState) => {
-  Connectivity.netInfo = netInfoState
-
   const newValue = checkNetInfoReachability(netInfoState)
   if (!newValue) {
     // Don't trust offline signal while app is not in focus
@@ -60,10 +56,12 @@ const updateReachability = async (netInfoState: NetInfoState) => {
     if (!reachable) {
       setUnreachable(true)
     }
+    dispatch(setCurrentNetworkType({ currentNetworkType: netInfoState.type }))
   } else {
     // Supercede the setUnreachable debounce if necessary
     setUnreachable(false)
     dispatch(reachabilityActions.setReachable())
+    dispatch(setCurrentNetworkType({ currentNetworkType: netInfoState.type }))
   }
 }
 

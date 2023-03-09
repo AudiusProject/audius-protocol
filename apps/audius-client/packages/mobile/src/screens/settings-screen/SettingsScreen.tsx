@@ -3,12 +3,12 @@ import { useCallback } from 'react'
 import { Image, Platform } from 'react-native'
 
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
-import Bell from 'app/assets/images/emojis/bell.png'
-import Headphone from 'app/assets/images/emojis/headphone.png'
-import SpeechBalloon from 'app/assets/images/emojis/speech-balloon.png'
-import Trophy from 'app/assets/images/emojis/trophy.png'
+import IconDownload from 'app/assets/images/iconCloudDownload.svg'
+import IconInfo from 'app/assets/images/iconInfo.svg'
+import IconNotificationOn from 'app/assets/images/iconNotificationOn.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
+import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
@@ -26,9 +26,8 @@ const IS_IOS = Platform.OS === 'ios'
 
 const messages = {
   title: 'Settings',
-  audioRewards: '$AUDIO & Rewards',
-  listeningHistory: 'Listening History',
-  notifications: 'Notifications',
+  downloads: 'Download Settings',
+  notifications: 'Configure Notifications',
   about: 'About'
 }
 
@@ -38,6 +37,7 @@ const useStyles = makeStyles(({ spacing, palette, type }) => ({
     height: 85,
     marginVertical: spacing(6),
     alignSelf: 'center',
+    resizeMode: 'contain',
     tintColor: type === Theme.DEFAULT ? undefined : palette.staticWhite
   }
 }))
@@ -46,15 +46,12 @@ const IconProps = { height: 28, width: 28, style: { marginRight: 4 } }
 
 export const SettingsScreen = () => {
   const styles = useStyles()
+  const isOfflineDownloadEnabled = useIsOfflineModeEnabled()
 
   const navigation = useNavigation<ProfileTabScreenParamList>()
 
-  const handlePressRewards = useCallback(() => {
-    navigation.push('AudioScreen')
-  }, [navigation])
-
-  const handlePressHistory = useCallback(() => {
-    navigation.push('ListeningHistoryScreen')
+  const handlePressDownloads = useCallback(() => {
+    navigation.push('DownloadSettingsScreen')
   }, [navigation])
 
   const handlePressNotifications = useCallback(() => {
@@ -78,34 +75,28 @@ export const SettingsScreen = () => {
         <ScrollView>
           <Image source={audiusLogoHorizontal} style={styles.logo} />
           <AccountSettingsRow />
-          <SettingsRow onPress={handlePressRewards}>
-            <SettingsRowLabel
-              label={messages.audioRewards}
-              iconSource={Trophy}
-            />
-          </SettingsRow>
-          <SettingsRow onPress={handlePressHistory}>
-            <SettingsRowLabel
-              label={messages.listeningHistory}
-              iconSource={Headphone}
-            />
-          </SettingsRow>
           <Divider />
+          {isOfflineDownloadEnabled ? (
+            <SettingsRow onPress={handlePressDownloads}>
+              <SettingsRowLabel
+                label={messages.downloads}
+                icon={IconDownload}
+              />
+            </SettingsRow>
+          ) : null}
           <SettingsRow onPress={handlePressNotifications}>
             <SettingsRowLabel
               label={messages.notifications}
-              iconSource={Bell}
+              icon={IconNotificationOn}
             />
           </SettingsRow>
           <AppearanceSettingsRow />
           {IS_IOS ? <CastSettingsRow /> : null}
           <Divider />
           <SettingsRow onPress={handlePressAbout}>
-            <SettingsRowLabel
-              label={messages.about}
-              iconSource={SpeechBalloon}
-            />
+            <SettingsRowLabel label={messages.about} icon={IconInfo} />
           </SettingsRow>
+          <Divider />
         </ScrollView>
       </ScreenContent>
     </Screen>

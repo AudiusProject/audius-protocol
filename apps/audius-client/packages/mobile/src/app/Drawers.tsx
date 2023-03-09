@@ -33,6 +33,7 @@ import { TrendingFilterDrawer } from 'app/screens/trending-screen'
 
 import { useDrawerState } from '../components/drawer'
 import {
+  RemoveAllDownloadsDrawer,
   RemoveDownloadedCollectionDrawer,
   RemoveDownloadedFavoritesDrawer,
   UnfavoriteDownloadedCollectionDrawer,
@@ -108,6 +109,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   ShareToStoryProgress: ShareToStoryProgressDrawer,
   RateCallToAction: RateCtaDrawer,
   PlaybackRate: PlaybackRateDrawer,
+  RemoveAllDownloads: RemoveAllDownloadsDrawer,
   RemoveDownloadedCollection: RemoveDownloadedCollectionDrawer,
   RemoveDownloadedFavorites: RemoveDownloadedFavoritesDrawer,
   UnfavoriteDownloadedCollection: UnfavoriteDownloadedCollectionDrawer,

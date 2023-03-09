@@ -41,6 +41,7 @@ export const NotificationSettingsScreen = () => {
   return (
     <Screen title={messages.title} variant='secondary' topbarRight={null}>
       <ScreenContent>
+        <Divider />
         <NotificationRow
           label={messages.enablePn}
           type={PushNotificationSetting.MobilePush}

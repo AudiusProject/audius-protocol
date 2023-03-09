@@ -1,7 +1,7 @@
 import { requestProcessNextJobSaga } from './requestProccessNextJobSaga'
 import { watchAddOfflineEntries } from './watchAddOfflineEntries'
-import { watchReachability } from './watchReachability'
+import { watchNetworkType } from './watchNetworkType'
 
 export function offlineQueueSagas() {
-  return [requestProcessNextJobSaga, watchReachability, watchAddOfflineEntries]
+  return [requestProcessNextJobSaga, watchNetworkType, watchAddOfflineEntries]
 }

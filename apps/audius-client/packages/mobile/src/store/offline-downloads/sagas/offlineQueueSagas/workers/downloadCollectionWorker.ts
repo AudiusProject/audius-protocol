@@ -3,8 +3,7 @@ import {
   removeNullable,
   SquareSizes,
   accountSelectors,
-  getContext,
-  reachabilityActions
+  getContext
 } from '@audius/common'
 import RNFetchBlob from 'rn-fetch-blob'
 import { select, call, put, take, race, all } from 'typed-redux-saga'
@@ -34,9 +33,9 @@ import {
 } from '../../../slice'
 import { isCollectionDownloadable } from '../../utils/isCollectionDownloadable'
 import { retryOfflineJob } from '../../utils/retryOfflineJob'
+import { shouldCancelJob } from '../../utils/shouldCancelJob'
 
 import { downloadFile } from './downloadFile'
-const { SET_UNREACHABLE } = reachabilityActions
 
 const { getUserId } = accountSelectors
 
@@ -67,7 +66,7 @@ export function* downloadCollectionWorker(collectionId: CollectionId) {
       collectionId
     ),
     abort: call(shouldAbortDownload, collectionId),
-    cancel: take(SET_UNREACHABLE)
+    cancel: call(shouldCancelJob)
   })
 
   if (abort) {
