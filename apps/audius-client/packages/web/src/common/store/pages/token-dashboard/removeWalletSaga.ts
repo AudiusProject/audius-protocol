@@ -9,10 +9,14 @@ import {
   tokenDashboardPageActions,
   walletActions
 } from '@audius/common'
-import { call, put, select, takeLatest } from 'typed-redux-saga'
+import { call, fork, put, select, takeLatest } from 'typed-redux-saga'
 
 import { requestConfirmation } from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
+import {
+  fetchOpenSeaAssets,
+  fetchSolanaCollectibles
+} from 'common/store/profile/sagas'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { getAccountMetadataCID } from './getAccountMetadataCID'
@@ -112,6 +116,9 @@ function* removeWallet(action: ConfirmRemoveWalletAction) {
         }
       ])
     )
+
+    yield* fork(fetchSolanaCollectibles, updatedMetadata)
+    yield* fork(fetchOpenSeaAssets, updatedMetadata)
   }
 
   function* onError() {
