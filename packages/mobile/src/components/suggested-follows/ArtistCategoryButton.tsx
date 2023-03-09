@@ -1,3 +1,5 @@
+import { useCallback } from 'react'
+
 import { setFollowAristsCategory } from 'common/store/pages/signon/actions'
 import type { FollowArtistsCategory } from 'common/store/pages/signon/types'
 import { useDispatch } from 'react-redux'
@@ -22,15 +24,18 @@ export const ArtistCategoryButton = (props: ArtistCategoryButtonProps) => {
   const { isSelected, category, ...other } = props
   const styles = useStyles()
   const dispatch = useDispatch()
+
+  const handlePress = useCallback(() => {
+    dispatch(setFollowAristsCategory(category))
+  }, [dispatch, category])
+
   return (
     <Button
       style={styles.root}
       variant={isSelected ? 'secondary' : 'commonAlt'}
       size='xs'
       title={category}
-      onPress={() => {
-        dispatch(setFollowAristsCategory(category))
-      }}
+      onPress={handlePress}
       {...other}
     />
   )
