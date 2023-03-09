@@ -14,8 +14,11 @@ export const useIsGatedContentEnabled = () => {
   const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
     FeatureFlags.IOS_GATED_CONTENT_ENABLED
   )
+  const { isEnabled: isGatedContentEnabled } = useFeatureFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
+  )
   return (
-    useFeatureFlag(FeatureFlags.GATED_CONTENT_ENABLED) &&
+    isGatedContentEnabled &&
     (isIos ? isIosGatedContentEnabled : isAndroidGatedContentEnabled)
   )
 }
