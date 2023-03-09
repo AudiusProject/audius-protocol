@@ -1,5 +1,5 @@
 import type { BadgeTier } from '@audius/common'
-import type { ImageProps } from 'react-native'
+import type { ImageStyle } from 'react-native'
 import { Image } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
@@ -23,14 +23,16 @@ type IconBadgeProps = SvgProps & {
 }
 
 export const IconAudioBadge = (props: IconBadgeProps) => {
-  const { tier, showNoTier, ...other } = props
+  const { tier, showNoTier, height, width, style: styleProp, ...other } = props
+
+  const style = [styleProp as ImageStyle, { height, width }]
 
   if (tier === 'none' && !showNoTier) return null
   if (tier === 'none') {
-    return <Image {...(other as ImageProps)} source={IconNoTierBadge} />
+    return <Image {...other} style={style} source={IconNoTierBadge} />
   }
 
   const AudioBadge = audioTierMap[tier]
 
-  return <AudioBadge {...other} />
+  return <AudioBadge height={height} width={width} style={style} {...other} />
 }
