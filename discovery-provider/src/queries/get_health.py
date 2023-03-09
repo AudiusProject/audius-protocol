@@ -114,6 +114,10 @@ def _get_chain_health():
         chain_res["block_number"] = latest_block.number
         chain_res["hash"] = latest_block.hash.hex()
         chain_res["chain_id"] = web3.eth.chain_id
+        signers = rpc(LOCAL_RPC, "clique_getSigners")
+        chain_res["signers"] = signers
+        chain_res["signers_count"] = len(signers)
+        chain_res["snapshot"] = rpc(LOCAL_RPC, "clique_getSnapshot")
         return chain_res
     except:
         pass
@@ -704,50 +708,7 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
     return latest_block_num, latest_block_hash
 
 
-def get_acdc_status() -> Tuple[Dict, bool]:
-    # setup return objects
-    res = {
-        "current_block": None,
-        "current_block_number": None,
-        "signers": None,
-        "signers_count": None,
-        "snapshot": None,
-        "me": None,
-        "is_signer": None,
-        "health": None,
-    }
-
-    # gather connections
-    web3endpoint = os.getenv("audius_web3_nethermind_rpc")
-    web3 = get_nethermind_web3(web3endpoint)
-
-    # web3 get current block
-    current_block = web3.eth.get_block('latest')
-    res["current_block"] = current_block
-    res["current_block_number"] = current_block.number
-
-    # clique get signers
-    signers = rpc("clique_getSigners")
-    res["signers"] = signers
-    res["signers_count"] = len(signers)
-
-    # clique get snapshot
-    res["snapshot"] = rpc("clique_getSnapshot")
-
-    # net_getLocal
-    me = rpc("net_getLocal")
-    res["me"] = me
-
-    # evaluate is signer
-    res["is_signer"] = me in signers
-
-    # localhost:8545/health
-    res["health"] = requests.get(web3endpoint + "/health").json()
-
-    return res, False
-
-
 # helper fn to make rpcs easier
-def rpc(method: str, params=[]):
+def rpc(url: str, method: str, params=[]):
     data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
-    return requests.post(LOCAL_RPC, data=data).json().result
+    return requests.post(url, data=data).json().result

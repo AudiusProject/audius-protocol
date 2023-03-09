@@ -64,13 +64,6 @@ def health_check():
     return success_response(health_results, 500 if error else 200, sign_response=False)
 
 
-# Health check specifically for acdc and helpful info for debugging. Checks chain directly.
-@bp.route("/acdc", methods=["GET"])
-def acdc_status():
-    (results, error) = get_acdc_status()
-    return success_response(results, 500 if error else 200, sign_response=False)
-
-
 # Health check for block diff between DB and chain.
 @bp.route("/block_check", methods=["GET"])
 def block_check():
