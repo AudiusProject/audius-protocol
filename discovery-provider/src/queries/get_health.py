@@ -114,10 +114,10 @@ def _get_chain_health():
         chain_res["block_number"] = latest_block.number
         chain_res["hash"] = latest_block.hash.hex()
         chain_res["chain_id"] = web3.eth.chain_id
-        signers = rpc(LOCAL_RPC, "clique_getSigners")
+        signers = rpc("clique_getSigners")
         chain_res["signers"] = signers
         chain_res["signers_count"] = len(signers)
-        chain_res["snapshot"] = rpc(LOCAL_RPC, "clique_getSnapshot")
+        chain_res["snapshot"] = rpc("clique_getSnapshot")
         return chain_res
     except Exception as e:
         logging.error("issue with chain health %s", exc_info=e)
@@ -710,8 +710,8 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 
 
 # helper fn to make rpcs easier
-def rpc(url: str, method: str, params=[]):
+def rpc(method: str, params=[]):
     data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
-    res = requests.post(url, data=data)
+    res = requests.post("localhost:8545", data=data)
     logger.info(res)
     return res.json()["result"]
