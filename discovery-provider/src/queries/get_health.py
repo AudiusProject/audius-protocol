@@ -119,7 +119,8 @@ def _get_chain_health():
         chain_res["signers_count"] = len(signers)
         chain_res["snapshot"] = rpc(LOCAL_RPC, "clique_getSnapshot")
         return chain_res
-    except:
+    except Exception as e:
+        logging.error("issue with chain health %s", exc_info=e)
         pass
 
 
