@@ -712,4 +712,6 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 # helper fn to make rpcs easier
 def rpc(url: str, method: str, params=[]):
     data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
-    return requests.post(url, data=data).json().result
+    res = requests.post(url, data=data)
+    logger.info(res)
+    return res.json()["result"]
