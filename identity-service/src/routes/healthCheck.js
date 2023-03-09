@@ -70,19 +70,15 @@ module.exports = function (app) {
       // check if there have been any attempts in the time window that we processed the block health check
       const attemptedTxsInRedis = await redis.zrange(
         'relayTxAttempts',
-        '-inf',
-        'inf'
+        '0',
+        '-1'
       )
       const successfulTxsInRedis = await redis.zrange(
         'relayTxSuccesses',
-        '-inf',
-        'inf'
+        '0',
+        '-1'
       )
-      const failureTxsInRedis = await redis.zrange(
-        'relayTxFailures',
-        '-inf',
-        'inf'
-      )
+      const failureTxsInRedis = await redis.zrange('relayTxFailures', '0', '-1')
 
       if (successfulTxsInRedis.length < minTransactions) {
         isError = true
