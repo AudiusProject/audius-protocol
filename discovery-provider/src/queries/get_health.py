@@ -106,19 +106,22 @@ def _get_query_insights():
 
 def _get_chain_health():
     try:
-        url = "http://localhost:8545"
-        health_res = requests.get(url + "/health")
+        health_res = requests.get(LOCAL_RPC + "/health")
         chain_res = health_res.json()
 
-        web3 = get_nethermind_web3(url)
+        web3 = get_nethermind_web3(LOCAL_RPC)
         latest_block = web3.eth.get_block("latest")
         chain_res["block_number"] = latest_block.number
         chain_res["hash"] = latest_block.hash.hex()
         chain_res["chain_id"] = web3.eth.chain_id
-        signers = rpc("clique_getSigners")
-        chain_res["signers"] = signers
-        chain_res["signers_count"] = len(signers)
-        chain_res["snapshot"] = rpc("clique_getSnapshot")
+        get_signers_data = '{"method":"clique_getSigners","params":[]}'
+        signers_response = requests.post(LOCAL_RPC, data=get_signers_data)
+        signers_response_dict = signers_response.json()["result"]
+        chain_res["signers"] = signers_response_dict
+        get_snapshot_data = '{"method":"clique_getSnapshot","params":[]}'
+        snapshot_response = requests.post(LOCAL_RPC, data=get_snapshot_data)
+        snapshot_response_dict = snapshot_response.json()["result"]
+        chain_res["snapshot"] = snapshot_response_dict
         return chain_res
     except Exception as e:
         logging.error("issue with chain health %s", exc_info=e)
@@ -708,10 +711,3 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
             )
 
     return latest_block_num, latest_block_hash
-
-
-# helper fn to make rpcs easier
-def rpc(method: str, params=[]):
-    data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
-    res = requests.post("localhost:8545", data=data)
-    return res.json()["result"]
