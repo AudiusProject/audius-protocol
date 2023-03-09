@@ -26,7 +26,8 @@ export const formatLineupTileDuration = (
 ) => {
   if (!isPodcast && seconds < SECONDS_PER_HOUR) return formatSeconds(seconds)
   const d = moment.duration(seconds, 'seconds')
-  return `${d.hours()}hr ${d.minutes()}m`
+  const hourText = d.hours() > 0 ? `${d.hours()}hr ` : ''
+  return `${hourText}${d.minutes()}m`
 }
 
 export const formatDate = (date: MomentInput, format?: string): string => {
