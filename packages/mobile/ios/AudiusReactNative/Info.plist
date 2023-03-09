@@ -20,7 +20,7 @@
     <!-- 
       Make sure this is above the currently released iOS version in the app store if your changes touch native code.
     -->
-		<string>1.1.61</string>
+		<string>1.1.62</string>
 		<key>CFBundleSignature</key>
 		<string>????</string>
 		<key>CFBundleURLTypes</key>
