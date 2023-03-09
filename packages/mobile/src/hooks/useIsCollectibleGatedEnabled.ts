@@ -14,8 +14,11 @@ export const useIsCollectibleGatedEnabled = () => {
   const { isEnabled: isIosGatedContentEnabled } = useFeatureFlag(
     FeatureFlags.IOS_GATED_CONTENT_ENABLED
   )
+  const { isEnabled: isCollectibleGatedEnabled } = useFeatureFlag(
+    FeatureFlags.COLLECTIBLE_GATED_ENABLED
+  )
   return (
-    useFeatureFlag(FeatureFlags.COLLECTIBLE_GATED_ENABLED) &&
+    isCollectibleGatedEnabled &&
     (isIos ? isIosGatedContentEnabled : isAndroidGatedContentEnabled)
   )
 }

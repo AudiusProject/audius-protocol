@@ -1,7 +1,11 @@
 import { useCallback, useMemo, useState } from 'react'
 
 import type { Nullable, PremiumConditions } from '@audius/common'
-import { TrackAvailabilityType, collectiblesSelectors } from '@audius/common'
+import {
+  removeNullable,
+  TrackAvailabilityType,
+  collectiblesSelectors
+} from '@audius/common'
 import { useField } from 'formik'
 import { useSelector } from 'react-redux'
 
@@ -108,44 +112,52 @@ export const TrackAvailabilityScreen = () => {
 
   const data: ListSelectionData[] = [
     { label: publicAvailability, value: publicAvailability },
-    {
-      label: specialAccessAvailability,
-      value: specialAccessAvailability,
-      disabled: noSpecialAccess
-    },
-    {
-      label: collectibleGatedAvailability,
-      value: collectibleGatedAvailability,
-      disabled: noCollectibleGate
-    },
+    isSpecialAccessEnabled
+      ? {
+          label: specialAccessAvailability,
+          value: specialAccessAvailability,
+          disabled: noSpecialAccess
+        }
+      : null,
+    isCollectibleGatedEnabled
+      ? {
+          label: collectibleGatedAvailability,
+          value: collectibleGatedAvailability,
+          disabled: noCollectibleGate
+        }
+      : null,
     { label: hiddenAvailability, value: hiddenAvailability }
-  ]
+  ].filter(removeNullable)
 
   const items = {
     [publicAvailability]: (
       <PublicAvailability
         selected={availability === TrackAvailabilityType.PUBLIC}
       />
-    ),
-    [specialAccessAvailability]: isSpecialAccessEnabled ? (
+    )
+  }
+  if (isSpecialAccessEnabled) {
+    items[specialAccessAvailability] = (
       <SpecialAccessAvailability
         selected={availability === TrackAvailabilityType.SPECIAL_ACCESS}
         disabled={noSpecialAccess}
       />
-    ) : null,
-    [collectibleGatedAvailability]: isCollectibleGatedEnabled ? (
+    )
+  }
+  if (isCollectibleGatedEnabled) {
+    items[collectibleGatedAvailability] = (
       <CollectibleGatedAvailability
         selected={availability === TrackAvailabilityType.COLLECTIBLE_GATED}
         disabled={noCollectibleGate}
         disabledContent={noCollectibleDropdown}
       />
-    ) : null,
-    [hiddenAvailability]: (
-      <HiddenAvailability
-        selected={availability === TrackAvailabilityType.HIDDEN}
-      />
     )
   }
+  items[hiddenAvailability] = (
+    <HiddenAvailability
+      selected={availability === TrackAvailabilityType.HIDDEN}
+    />
+  )
 
   /**
    * Only navigate back if:
