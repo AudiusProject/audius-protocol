@@ -497,7 +497,10 @@ class NotificationProcessor {
       time = Date.now()
 
       // actually send out push notifications
-      const numProcessedNotifs = await drainPublishedMessages(logger)
+      const numProcessedNotifs = await drainPublishedMessages(
+        logger,
+        optimizelyClient
+      )
       logger.info(
         `notifications main indexAll job - drainPublishedMessages complete - processed ${numProcessedNotifs} notifs in ${
           Date.now() - time
