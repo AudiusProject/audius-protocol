@@ -35,9 +35,7 @@ describe('Test Send Notifications', function () {
     pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
   })
 
-  afterEach(() => {
-    sinon.restore()
-  })
+  afterEach(sinon.restore)
 
   it('should have the correct remix create notifications', async function () {
     // Create a mobile notification setting, defaults to true for remixes

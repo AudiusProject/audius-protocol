@@ -414,7 +414,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for save in saves
         }
 
-    # REPOST
+    # REPOSTS
     if entities_to_fetch[EntityType.REPOST]:
         reposts_to_fetch: Set[Tuple] = entities_to_fetch[EntityType.REPOST]
         and_queries = []
