@@ -6,7 +6,7 @@ from src.api_helpers import success_response
 from src.queries.get_alembic_version import get_alembic_version
 from src.queries.get_celery_tasks import convert_epoch_to_datetime, get_celery_tasks
 from src.queries.get_db_seed_restore_status import get_db_seed_restore_status
-from src.queries.get_health import get_acdc_status, get_health, get_location
+from src.queries.get_health import get_health, get_location
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.queries.queries import parse_bool_param
