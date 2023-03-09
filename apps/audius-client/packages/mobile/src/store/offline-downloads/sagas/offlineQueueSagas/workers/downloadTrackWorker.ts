@@ -33,6 +33,7 @@ import {
 } from '../../../slice'
 import { isTrackDownloadable } from '../../utils/isTrackDownloadable'
 import { retryOfflineJob } from '../../utils/retryOfflineJob'
+import { shouldAbortJob } from '../../utils/shouldAbortJob'
 import { shouldCancelJob } from '../../utils/shouldCancelJob'
 
 import { downloadFile } from './downloadFile'
@@ -57,18 +58,19 @@ export function* downloadTrackWorker(trackId: ID, requeueCount?: number) {
   )
   yield* put(startJob(queueItem))
 
-  const { jobResult, cancel, abort } = yield* race({
+  const { jobResult, cancel, abortDownload, abortJob } = yield* race({
     jobResult: retryOfflineJob(
       MAX_RETRY_COUNT,
       1000,
       downloadTrackAsync,
       trackId
     ),
-    abort: call(shouldAbortDownload, trackId),
+    abortDownload: call(shouldAbortDownload, trackId),
+    abortJob: call(shouldAbortJob),
     cancel: call(shouldCancelJob)
   })
 
-  if (abort) {
+  if (abortDownload || abortJob) {
     yield* call(removeDownloadedTrack, trackId)
     yield* put(requestProcessNextJob())
   } else if (cancel) {

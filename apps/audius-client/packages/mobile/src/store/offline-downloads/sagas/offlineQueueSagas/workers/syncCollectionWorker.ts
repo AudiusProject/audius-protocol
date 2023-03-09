@@ -30,6 +30,7 @@ import {
   removeOfflineItems,
   startCollectionSync
 } from '../../../slice'
+import { shouldAbortJob } from '../../utils/shouldAbortJob'
 import { shouldCancelJob } from '../../utils/shouldCancelJob'
 
 const { getUserId } = accountSelectors
@@ -50,13 +51,14 @@ function* shouldAbortSync(collectionId: CollectionId) {
 export function* syncCollectionWorker(collectionId: CollectionId) {
   yield* put(startCollectionSync({ id: collectionId }))
 
-  const { jobResult, abort, cancel } = yield* race({
+  const { jobResult, abortSync, abortJob, cancel } = yield* race({
     jobResult: call(syncCollectionAsync, collectionId),
-    abort: call(shouldAbortSync, collectionId),
+    abortSync: call(shouldAbortSync, collectionId),
+    abortJob: call(shouldAbortJob),
     cancel: call(shouldCancelJob)
   })
 
-  if (abort) {
+  if (abortSync || abortJob) {
     yield* put(requestProcessNextJob())
   } else if (cancel) {
     yield* put(cancelCollectionSync({ id: collectionId }))
