@@ -1,4 +1,3 @@
-import { jest } from '@jest/globals'
 const assert = require('assert')
 const sinon = require('sinon')
 
@@ -9,7 +8,8 @@ const sendNotifications = require('../../src/notifications/sendNotifications/ind
 const { processTrendingTracks } = require('../../src/notifications/trendingTrackProcessing')
 const { pushNotificationQueue } = require('../../src/notifications/notificationQueue')
 const { clearDatabase, runMigrations } = require('../lib/app')
-const notificationUtils = require('../../src/notifications/sendNotifications/utils')
+const notificationUtils = require('../../src/notifications/utils')
+const sendNotificationUtils = require('../../src/notifications/sendNotifications/utils')
 
 // Mock Notifications
 const remixCreate = require('./mockNotifications/remixCreate.json')
@@ -25,16 +25,18 @@ const mockAudiusLibs = require('./mockLibs')
 const { deviceType } = require('../../src/notifications/constants')
 
 describe('Test Send Notifications', function () {
-  before(() => {
-    sinon.stub(notificationUtils, 'getPendingCreateDedupeMs')
-      .returns(5 * 1000) // 5 second dedupe
-  })
-
   beforeEach(async () => {
+    sinon.stub(sendNotificationUtils, 'getPendingCreateDedupeMs')
+      .returns(5 * 1000) // 5 second dedupe
+
     await clearDatabase()
     await runMigrations()
     // Clear the notifications buffer
     pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
+  })
+
+  afterEach(() => {
+    sinon.restore()
   })
 
   it('should have the correct remix create notifications', async function () {
@@ -226,10 +228,13 @@ describe('Test Send Notifications', function () {
     // User 1 creates album 2 w/ tracks 2
 
     // ======================================= Set subscribers for create notifications =======================================
-    jest.mock('../../src/notifications/utils', () => () => ({
-      1: [3, 4], // user 1's subscribers
-      2: [4] // user 2's subscribers
-    }))
+    sinon
+      .stub(notificationUtils, 'bulkGetSubscribersFromDiscovery')
+      .withArgs(new Set([1, 2]))
+      .resolves({
+        1: [3, 4], // user 1's subscribers
+        2: [4] // user 2's subscribers
+      })
 
     const tx1 = await models.sequelize.transaction()
     await processNotifications(create, tx1)
@@ -313,9 +318,12 @@ describe('Test Send Notifications', function () {
     // User 1 creates 500 tracks
 
     // ======================================= Set subscribers for create notifications =======================================
-    jest.mock('../../src/notifications/utils', () => () => ({
-      1: [3] // user 1's subscribers
-    }))
+    sinon
+      .stub(notificationUtils, 'bulkGetSubscribersFromDiscovery')
+      .withArgs(new Set([1]))
+      .resolves({
+        1: [3] // user 1's subscribers
+      })
 
     const tx1 = await models.sequelize.transaction()
 

@@ -1,7 +1,8 @@
-import { jest } from '@jest/globals'
 const assert = require('assert')
+const sinon = require('sinon')
 const models = require('../../src/models')
 const processCreateNotifications = require('../../src/notifications/processNotifications/createNotification')
+const notificationUtils = require('../../src/notifications/utils')
 const { notificationTypes } = require('../../src/notifications/constants')
 
 const { clearDatabase, runMigrations } = require('../lib/app')
@@ -141,12 +142,17 @@ describe('Test Create Notification', function () {
     await runMigrations()
   })
 
+  afterEach(sinon.restore)
+
   it('should insert rows into notifications and notifications actions tables', async function () {
     // ======================================= Set subscribers for create notifications =======================================
-    jest.mock('../../src/notifications/utils', () => () => ({
-      1: [10, 11, 12], // user 1's subscribers
-      2: [10] // user 2's subscribers
-    }))
+    sinon
+      .stub(notificationUtils, 'bulkGetSubscribersFromDiscovery')
+      .withArgs(new Set([1, 2]))
+      .resolves({
+        1: [10, 11, 12], // user 1's subscribers
+        2: [10] // user 2's subscribers
+      })
 
     // ======================================= Process initial Notifications =======================================
     const tx1 = await models.sequelize.transaction()
@@ -156,6 +162,7 @@ describe('Test Create Notification', function () {
     // ======================================= Run checks against the Notifications =======================================
     // User 11 subscribes to user 1 and gets the notification when user 1 creates tracks 1, 2, 3, and playlist 1 which contains track 2
     const user11Notifs = await models.Notification.findAll({ where: { userId: 11 } })
+    console.log(`user11 notifs: ${user11Notifs.map((n) => JSON.stringify(n))}`)
     assert.deepStrictEqual(user11Notifs.length, 2)
     const user11TrackNotifs = user11Notifs.find(notif => notif.type === notificationTypes.Create.track)
     const user11PlaylistNotif = user11Notifs.find(notif => notif.type === notificationTypes.Create.playlist)
@@ -245,10 +252,13 @@ describe('Test Create Notification', function () {
     this.timeout(30 * 1000)
     // ======================================= Set subscribers for create notifications =======================================
     const NUM_SUBSCRIBERS = 50000
-    jest.mock('../../src/notifications/utils', () => () => ({
-      // user 1's subscribers
-      1: [...Array(NUM_SUBSCRIBERS).keys()].map((num) => num++)
-    }))
+    sinon
+      .stub(notificationUtils, 'bulkGetSubscribersFromDiscovery')
+      .withArgs(new Set([1]))
+      .resolves({
+        // user 1's subscribers
+        1: [...Array(NUM_SUBSCRIBERS).keys()].map((num) => num++)
+      })
 
     // ======================================= Process initial Notifications =======================================
     const tx1 = await models.sequelize.transaction()
@@ -269,6 +279,5 @@ describe('Test Create Notification', function () {
     // User 11 subscribes to user 1 and gets the notification when user 1 creates tracks 1, 2, 3, and playlist 1 which contains track 2
     const notifications = await models.Notification.findAll()
     assert.deepStrictEqual(notifications.length, NUM_SUBSCRIBERS)
-
   })
 })
