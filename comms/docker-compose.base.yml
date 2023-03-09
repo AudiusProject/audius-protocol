@@ -83,7 +83,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
-    image: "comms:test"
+    image: "comms:dev"
     environment:
       <<: *dev-env
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
@@ -111,7 +111,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
-    image: "nats:dev"
+    image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
@@ -139,7 +139,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
-    image: "discovery:dev"
+    image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
@@ -155,7 +155,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
-    image: "storage:dev"
+    image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
