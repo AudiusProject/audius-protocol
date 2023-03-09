@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import type { AppState } from 'app/store'
 import { makeStyles } from 'app/styles'
 
-import { ArtistCategoryButton } from './ArtistCategory'
+import { ArtistCategoryButton } from './ArtistCategoryButton'
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
