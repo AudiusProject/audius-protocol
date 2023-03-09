@@ -1,11 +1,15 @@
 import { getContext, Name, tokenDashboardPageActions } from '@audius/common'
 import * as Sentry from '@sentry/browser'
-import { put, takeEvery } from 'typed-redux-saga'
+import { fork, put, takeEvery } from 'typed-redux-saga'
 
 import { addWalletToUser } from 'common/store/pages/token-dashboard/addWalletToUser'
 import { associateNewWallet } from 'common/store/pages/token-dashboard/associateNewWallet'
 import { checkIsNewWallet } from 'common/store/pages/token-dashboard/checkIsNewWallet'
 import { getWalletInfo } from 'common/store/pages/token-dashboard/getWalletInfo'
+import {
+  fetchOpenSeaAssets,
+  fetchSolanaCollectibles
+} from 'common/store/profile/sagas'
 
 import { disconnectWallet } from './disconnectWallet'
 import { establishWalletConnection } from './establishWalletConnection'
@@ -70,6 +74,9 @@ function* handleConnectNewWallet() {
     const disconnect = () => disconnectWallet(connection)
 
     yield* addWalletToUser(updatedUserMetadata, disconnect)
+
+    yield* fork(fetchSolanaCollectibles, updatedUserMetadata)
+    yield* fork(fetchOpenSeaAssets, updatedUserMetadata)
   } catch (e) {
     // Very likely we hit error path here i.e. user closes the web3 popup. Log it and restart
     const err = `Caught error during handleConnectNewWallet:  ${e}, resetting to initial state`
