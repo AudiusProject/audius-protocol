@@ -346,8 +346,8 @@ services:
   comms:
     build:
       context: comms
-      dockerfile: Dockerfile.v2
-    command: /comms-linux discovery-migrations
+      dockerfile: Dockerfile
+    command: discovery-migrations
     environment:
       audius_db_url: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
     depends_on:

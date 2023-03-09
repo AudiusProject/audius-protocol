@@ -81,9 +81,11 @@ services:
     container_name: test
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
       target: builder
-    image: "comms:v2-test"
+      args:
+        GOARCH: arm64
+    image: "comms:dev"
     environment:
       <<: *dev-env
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
@@ -109,9 +111,11 @@ services:
   nats-dev:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
       target: builder
-    image: "nats:v2-dev"
+      args:
+        GOARCH: arm64
+    image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
@@ -137,9 +141,11 @@ services:
   discovery-dev:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
       target: builder
-    image: "discovery:v2-dev"
+      args:
+        GOARCH: arm64
+    image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
@@ -153,9 +159,11 @@ services:
   storage-dev:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
       target: builder
-    image: "storage:v2-dev"
+      args:
+        GOARCH: arm64
+    image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
