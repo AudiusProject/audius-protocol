@@ -106,10 +106,11 @@ def _get_query_insights():
 
 def _get_chain_health():
     try:
-        health_res = requests.get(LOCAL_RPC + "/health")
+        url = "http://localhost:8545"
+        health_res = requests.get(url + "/health")
         chain_res = health_res.json()
 
-        web3 = get_nethermind_web3(LOCAL_RPC)
+        web3 = get_nethermind_web3(url)
         latest_block = web3.eth.get_block("latest")
         chain_res["block_number"] = latest_block.number
         chain_res["hash"] = latest_block.hash.hex()
@@ -713,5 +714,4 @@ def get_latest_chain_block_set_if_nx(redis=None, web3=None):
 def rpc(method: str, params=[]):
     data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
     res = requests.post("localhost:8545", data=data)
-    logger.info(res)
     return res.json()["result"]
