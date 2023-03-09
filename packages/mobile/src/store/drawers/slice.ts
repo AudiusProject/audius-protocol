@@ -15,6 +15,7 @@ export type Drawer =
   | 'ConnectWallets'
   | 'ConfirmRemoveWallet'
   | 'ShareToStoryProgress'
+  | 'RemoveAllDownloads'
   | 'RemoveDownloadedCollection'
   | 'RemoveDownloadedFavorites'
   | 'UnfavoriteDownloadedCollection'
@@ -41,6 +42,7 @@ export type DrawerData = {
   ConfirmRemoveWallet: undefined
   ShareToStoryProgress: undefined
   UnfavoriteDownloadedCollection: { collectionId: number }
+  RemoveAllDownloads: undefined
   RemoveDownloadedFavorites: undefined
   RemoveDownloadedCollection: {
     collectionId: ID
@@ -66,6 +68,7 @@ const initialState: DrawersState = {
   ConnectWallets: false,
   ConfirmRemoveWallet: false,
   ShareToStoryProgress: false,
+  RemoveAllDownloads: false,
   RemoveDownloadedCollection: false,
   RemoveDownloadedFavorites: false,
   UnfavoriteDownloadedCollection: false,

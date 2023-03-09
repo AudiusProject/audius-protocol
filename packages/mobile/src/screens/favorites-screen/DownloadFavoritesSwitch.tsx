@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 
 import { reachabilitySelectors } from '@audius/common'
 import type { SwitchProps } from 'react-native'
@@ -31,6 +31,10 @@ export const DownloadFavoritesSwitch = (
   )
 
   const [value, setValue] = useState(isMarkedForDownload)
+
+  useEffect(() => {
+    setValue(isMarkedForDownload)
+  }, [isMarkedForDownload])
 
   const handleValueChange = useThrottledCallback(
     (newValue: boolean) => {

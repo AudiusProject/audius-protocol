@@ -4,7 +4,7 @@ import type { CastMethod } from '@audius/common'
 import { accountSelectors, castSelectors, castActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Cast from 'app/assets/images/emojis/speaker-with-three-sound-waves.png'
+import IconVolume2 from 'app/assets/images/iconVolume2.svg'
 import { SegmentedControl } from 'app/components/core'
 
 import { SettingsRowLabel } from './SettingRowLabel'
@@ -17,7 +17,8 @@ const { getAccountUser } = accountSelectors
 
 const messages = {
   cast: 'Cast to Devices',
-  castDescription: 'Select your preferred casting method',
+  castDescription:
+    'Enable casting to devices that support Chromecast. Airplay will still be available, but will require a few extra taps.',
   airplay: 'Airplay',
   chromecast: 'Chromecast'
 }
@@ -45,7 +46,7 @@ export const CastSettingsRow = () => {
 
   return (
     <SettingsRow>
-      <SettingsRowLabel label={messages.cast} iconSource={Cast} />
+      <SettingsRowLabel label={messages.cast} icon={IconVolume2} />
       <SettingsRowDescription>
         {messages.castDescription}
       </SettingsRowDescription>

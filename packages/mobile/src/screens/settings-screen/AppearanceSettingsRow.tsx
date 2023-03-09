@@ -10,7 +10,7 @@ import {
 import Config from 'react-native-config'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Appearance from 'app/assets/images/emojis/waning-crescent-moon.png'
+import IconMood from 'app/assets/images/iconMood.svg'
 import { SegmentedControl } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
 import { Theme } from 'app/utils/theme'
@@ -31,7 +31,7 @@ const messages = {
     "Enable dark mode or choose 'Auto' to change with your system settings",
   auto: 'Auto',
   dark: 'Dark',
-  light: 'Light',
+  default: 'Default',
   matrix: 'Matrix'
 }
 
@@ -43,9 +43,9 @@ export const AppearanceSettingsRow = () => {
   const { tier } = useSelectTierInfo(accountId ?? 0)
 
   const appearanceOptions = [
+    { key: Theme.DEFAULT, text: messages.default },
     { key: Theme.AUTO, text: messages.auto },
-    { key: Theme.DARK, text: messages.dark },
-    { key: Theme.DEFAULT, text: messages.light }
+    { key: Theme.DARK, text: messages.dark }
   ]
 
   if (tier === 'gold' || tier === 'platinum' || isStaging) {
@@ -71,7 +71,7 @@ export const AppearanceSettingsRow = () => {
 
   return (
     <SettingsRow>
-      <SettingsRowLabel label={messages.appearance} iconSource={Appearance} />
+      <SettingsRowLabel label={messages.appearance} icon={IconMood} />
       <SettingsRowDescription>
         {messages.appearanceDescription}
       </SettingsRowDescription>

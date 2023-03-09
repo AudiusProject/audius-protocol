@@ -4,6 +4,7 @@ import type {
   OfflineTrackMetadata
 } from '@audius/common'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { NetInfoStateType } from '@react-native-community/netinfo'
 import type { PayloadAction } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 import { persistReducer } from 'redux-persist'
@@ -22,6 +23,7 @@ export type TrackOfflineMetadataPayload = {
   trackId: ID
   offlineMetadata: OfflineTrackMetadata
 }
+export type DownloadNetworkPreference = NetInfoStateType
 
 export type OfflineJob =
   | { type: 'collection'; id: CollectionId }
@@ -51,6 +53,8 @@ export type OfflineDownloadsState = {
   offlineCollectionMetadata: {
     [Key in CollectionId]?: OfflineCollectionMetadata
   }
+  downloadNetworkTypePreference: DownloadNetworkPreference
+  currentNetworkType: NetInfoStateType
 }
 
 export type RequestRemoveDownloadedCollectionAction = PayloadAction<{
@@ -117,6 +121,14 @@ export type UpdateQueueStatusAction = PayloadAction<{
   queueStatus: QueueStatus
 }>
 
+export type SetCurrentNetworkTypeAction = PayloadAction<{
+  currentNetworkType: NetInfoStateType
+}>
+
+export type SetDownloadNetworkPreferenceAction = PayloadAction<{
+  downloadNetworkPreference: NetInfoStateType
+}>
+
 export enum OfflineDownloadStatus {
   // download is not initiated
   INACTIVE = 'INACTIVE',
@@ -148,7 +160,9 @@ const initialState: OfflineDownloadsState = {
   offlineQueue: [],
   queueStatus: QueueStatus.IDLE,
   offlineCollectionMetadata: {},
-  offlineTrackMetadata: {}
+  offlineTrackMetadata: {},
+  downloadNetworkTypePreference: NetInfoStateType.wifi,
+  currentNetworkType: NetInfoStateType.unknown
 }
 
 const slice = createSlice({
@@ -383,6 +397,18 @@ const slice = createSlice({
       state.offlineTrackMetadata = initialState.offlineTrackMetadata
       state.offlineCollectionMetadata = initialState.offlineCollectionMetadata
     },
+    // Network settings + changes
+    setCurrentNetworkType: (state, action: SetCurrentNetworkTypeAction) => {
+      const { currentNetworkType } = action.payload
+      state.currentNetworkType = currentNetworkType
+    },
+    setDownloadNetworkPreference: (
+      state,
+      action: SetDownloadNetworkPreferenceAction
+    ) => {
+      const { downloadNetworkPreference } = action.payload
+      state.downloadNetworkTypePreference = downloadNetworkPreference
+    },
     // Lifecycle actions that trigger complex saga flows
     requestDownloadAllFavorites: () => {},
     requestRemoveAllDownloadedFavorites: () => {},
@@ -416,6 +442,8 @@ export const {
   errorCollectionSync,
   completePlayCount,
   updateQueueStatus,
+  setCurrentNetworkType,
+  setDownloadNetworkPreference,
   requestDownloadAllFavorites,
   requestDownloadCollection,
   requestDownloadFavoritedCollection,
@@ -428,7 +456,7 @@ export const actions = slice.actions
 const offlineDownloadsPersistConfig = {
   key: 'offline-downloads',
   storage: AsyncStorage,
-  blacklist: ['isDoneLoadingFromDisk', 'queueStatus']
+  blacklist: ['isDoneLoadingFromDisk', 'queueStatus', 'currentNetworkStateType']
 }
 
 const persistedOfflineDownloadsReducer = persistReducer(

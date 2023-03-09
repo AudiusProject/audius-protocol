@@ -10,7 +10,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: { flexDirection: 'row', alignItems: 'center' },
-  label: { ...typography.body, color: palette.neutral },
+  label: { ...typography.h4, color: palette.neutral, marginBottom: 0 },
   icon: {
     height: spacing(4),
     width: spacing(4),
@@ -33,7 +33,7 @@ type SettingsRowLabelProps =
 
 export const SettingsRowLabel = (props: SettingsRowLabelProps) => {
   const { label, styles: stylesProp, style } = props
-  const { neutral } = useThemeColors()
+  const { neutralLight4 } = useThemeColors()
   const styles = useStyles()
 
   const renderIcon = () => {
@@ -47,7 +47,7 @@ export const SettingsRowLabel = (props: SettingsRowLabelProps) => {
         <Icon
           height={styles.icon.height}
           width={styles.icon.width}
-          fill={neutral}
+          fill={neutralLight4}
           style={styles.icon}
         />
       )
