@@ -34,14 +34,9 @@ storage.seed.audio::
 storage.seed.image::
 	docker exec -it storage1 sh -c "./comms storage seed image"
 
-build::
-	docker build -t audius/comms:latest .
-
-build.push:: build
+build.push::
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/comms:latest .
 	docker push audius/comms:latest
-
-build.dev::
-	docker build -t comms:dev --target=builder .
 
 build.weathermap::
 	cd storage/storageserver/weather-map; yarn && yarn build

@@ -83,6 +83,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
+      args:
+        GOARCH: arm64
     image: "comms:dev"
     environment:
       <<: *dev-env
@@ -111,6 +113,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
+      args:
+        GOARCH: arm64
     image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
@@ -139,6 +143,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
+      args:
+        GOARCH: arm64
     image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
@@ -155,6 +161,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: builder
+      args:
+        GOARCH: arm64
     image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
