@@ -34,6 +34,7 @@ RUN apk add curl ffmpeg
 
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/comms /bin/comms
+COPY --from=builder /app/discovery/db/migrations /discovery/db/migrations
 
 VOLUME ["/tmp"]
 ENTRYPOINT ["comms"]
