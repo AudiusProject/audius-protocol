@@ -6,6 +6,7 @@ import type {
   AnnouncementNotification,
   ChallengeRewardNotification,
   FavoriteNotification,
+  FavoriteOfRepostNotification,
   FavoritePushNotification,
   FollowNotification,
   FollowPushNotification,
@@ -98,6 +99,23 @@ export const useNotificationNavigation = () => {
     [dispatch, navigation]
   )
 
+  const entityHandler = useCallback(
+    (
+      notification: RepostOfRepostNotification | FavoriteOfRepostNotification
+    ) => {
+      const { entityType, entityId } = notification
+      if (entityType === Entity.Track) {
+        navigation.navigate('Track', { id: entityId })
+      } else if (
+        entityType === Entity.Album ||
+        entityType === Entity.Playlist
+      ) {
+        navigation.navigate('Collection', { id: entityId })
+      }
+    },
+    [navigation]
+  )
+
   const milestoneHandler = useCallback(
     (
       notification:
@@ -182,6 +200,7 @@ export const useNotificationNavigation = () => {
       [PushNotificationType.FavoritePlaylist]: socialActionHandler,
       [PushNotificationType.FavoriteTrack]: socialActionHandler,
       [NotificationType.Favorite]: socialActionHandler,
+      [NotificationType.FavoriteOfRepost]: entityHandler,
       [NotificationType.Follow]: socialActionHandler,
       [PushNotificationType.MilestoneFavorite]: milestoneHandler,
       [PushNotificationType.MilestoneFollow]: milestoneHandler,
@@ -216,7 +235,7 @@ export const useNotificationNavigation = () => {
       [PushNotificationType.RepostOfRepostPlaylist]: socialActionHandler,
       [PushNotificationType.RepostOfRepostTrack]: socialActionHandler,
       [NotificationType.Repost]: socialActionHandler,
-      [NotificationType.RepostOfRepost]: socialActionHandler,
+      [NotificationType.RepostOfRepost]: entityHandler,
       [NotificationType.SupporterDethroned]: (
         notification: SupporterDethronedNotification
       ) => {
@@ -263,6 +282,7 @@ export const useNotificationNavigation = () => {
       navigation,
       profileHandler,
       socialActionHandler,
+      entityHandler,
       store
     ]
   )

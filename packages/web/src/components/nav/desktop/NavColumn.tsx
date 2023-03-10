@@ -28,7 +28,8 @@ import {
   playlistLibraryActions,
   playlistLibraryHelpers,
   uploadActions,
-  CreateAccountOpen
+  CreateAccountOpen,
+  notificationsActions
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -95,6 +96,7 @@ const { toggleNotificationPanel, updatePlaylistLastViewedAt } =
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const { getNotificationPanelIsOpen, getNotificationUnviewedCount } =
   notificationsSelectors
+const { markAllAsViewed } = notificationsActions
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const { getAccountStatus, getAccountUser, getPlaylistLibrary } =
   accountSelectors
@@ -140,7 +142,8 @@ const NavColumn = ({
   goToSignIn,
   goToUpload,
   showVisualizer,
-  dominantColors
+  dominantColors,
+  markAllNotificationsAsViewed
 }: NavColumnProps) => {
   const record = useRecord()
   const { location } = useHistory()
@@ -181,9 +184,19 @@ const NavColumn = ({
 
   const onClickToggleNotificationPanel = useCallback(() => {
     toggleNotificationPanel()
-    if (!notificationPanelIsOpen)
+    if (!notificationPanelIsOpen) {
       record(make(Name.NOTIFICATIONS_OPEN, { source: 'button' }))
-  }, [notificationPanelIsOpen, toggleNotificationPanel, record])
+    }
+    if (notificationCount > 0) {
+      markAllNotificationsAsViewed()
+    }
+  }, [
+    notificationPanelIsOpen,
+    toggleNotificationPanel,
+    record,
+    notificationCount,
+    markAllNotificationsAsViewed
+  ])
 
   const onCreatePlaylist = useCallback(
     (metadata: PlaylistFormFields) => {
@@ -580,7 +593,8 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
   goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true)),
-  showVisualizer: () => dispatch(openVisualizer())
+  showVisualizer: () => dispatch(openVisualizer()),
+  markAllNotificationsAsViewed: () => dispatch(markAllAsViewed())
 })
 
 const ConnectedNavColumn = withRouter(

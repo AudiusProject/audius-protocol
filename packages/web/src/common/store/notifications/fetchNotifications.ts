@@ -1,4 +1,11 @@
-import { FeatureFlags, getContext, IntKeys } from '@audius/common'
+import {
+  FeatureFlags,
+  getContext,
+  IntKeys,
+  removeNullable
+} from '@audius/common'
+import { partition } from 'lodash'
+import moment from 'moment'
 import { call, fork } from 'typed-redux-saga'
 
 import { recordPlaylistUpdatesAnalytics } from './playlistUpdates'
@@ -46,28 +53,69 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
   const shouldFetchNotificationFromDiscovery =
     useDiscoveryNotifications &&
     discoveryNotificationsGenesisTimestamp &&
-    discoveryNotificationsGenesisTimestamp > Date.parse(timeOffset)
+    Date.parse(timeOffset) > discoveryNotificationsGenesisTimestamp
 
   if (shouldFetchNotificationFromDiscovery) {
     const timestampParam = Math.trunc(Date.parse(timeOffset) / 1000)
+
+    const isRepostOfRepostEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.REPOST_OF_REPOST_NOTIFICATIONS
+    )
+    const isSaveOfRepostEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.SAVE_OF_REPOST_NOTIFICATIONS
+    )
+
+    const validTypes = [
+      isRepostOfRepostEnabled ? 'repost_of_repost' : null,
+      isSaveOfRepostEnabled ? 'save_of_repost' : null
+    ].filter(removeNullable)
+
     const discoveryNotifications = yield* call(
       audiusBackendInstance.getDiscoveryNotifications,
       {
         timestamp: timestampParam,
-        groupIdOffset
+        groupIdOffset,
+        limit,
+        validTypes
       }
     )
 
     if (discoveryNotifications) {
       const { notifications } = discoveryNotifications
-      const hasCrossedGenesisTimestamp = notifications.some(
+      const [invalidNotifications, validNotifications] = partition(
+        notifications,
         (notification) =>
           Date.parse(notification.timestamp) <
           discoveryNotificationsGenesisTimestamp
       )
 
-      if (!hasCrossedGenesisTimestamp) {
-        notificationsResponse.notifications = notifications
+      notificationsResponse.notifications = validNotifications
+
+      if (invalidNotifications.length !== 0) {
+        const newLimit = limit - validNotifications.length
+        const newTimestamp = moment(
+          validNotifications[validNotifications.length - 1].timestamp
+        ).toISOString()
+
+        const legacyNotificationsResponse = yield* call(
+          audiusBackendInstance.getNotifications,
+          {
+            limit: newLimit,
+            timeOffset: newTimestamp,
+            withDethroned
+          }
+        )
+
+        if ('error' in legacyNotificationsResponse) {
+          notificationsResponse.notifications = validNotifications
+        } else {
+          notificationsResponse.notifications =
+            notificationsResponse.notifications.concat(
+              legacyNotificationsResponse.notifications
+            )
+        }
       }
     }
   }

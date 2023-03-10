@@ -18,11 +18,12 @@ import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkC
 import { EmptyNotifications } from './EmptyNotifications'
 import { Notification } from './Notification'
 import styles from './NotificationPage.module.css'
-const { fetchNotifications } = notificationsActions
+const { fetchNotifications, markAllAsViewed } = notificationsActions
 const {
   getNotificationHasMore,
   getNotificationStatus,
-  makeGetAllNotifications
+  makeGetAllNotifications,
+  getNotificationUnviewedCount
 } = notificationsSelectors
 
 const getNotifications = makeGetAllNotifications()
@@ -46,6 +47,7 @@ export const NotificationPage = () => {
   const notifications = useSelector(getNotifications)
   const hasMore = useSelector(getNotificationHasMore)
   const status = useSelector(getNotificationStatus)
+  const notificationUnviewedCount = useSelector(getNotificationUnviewedCount)
   const dispatch = useDispatch()
 
   const loadMore = useCallback(() => {
@@ -54,11 +56,18 @@ export const NotificationPage = () => {
   }, [hasMore, status, dispatch])
 
   const { setLeft, setCenter, setRight } = useContext(NavContext)!
+
   useEffect(() => {
     setLeft(LeftPreset.CLOSE)
     setRight(null)
     setCenter(messages.title)
   }, [setLeft, setCenter, setRight])
+
+  useEffect(() => {
+    if (notificationUnviewedCount > 0) {
+      dispatch(markAllAsViewed())
+    }
+  }, [dispatch, notificationUnviewedCount])
 
   return (
     <NetworkConnectivityMonitor pageDidLoad={status !== Status.LOADING}>
