@@ -15,7 +15,7 @@ services:
   nats-storage:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
     entrypoint: /bin/sh -c
     command: . /tmp/dev-tools/startup/comms.sh && air nats
     volumes:
@@ -37,7 +37,7 @@ services:
   storage:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
     entrypoint: /bin/sh -c
     command: . /tmp/dev-tools/startup/comms.sh && air storage
     volumes:
@@ -73,7 +73,7 @@ services:
   nats-discovery:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
     entrypoint: /bin/sh -c
     command: . /tmp/dev-tools/startup/comms.sh && air nats
     volumes:
@@ -98,7 +98,7 @@ services:
   discovery:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
     entrypoint: /bin/sh -c
     command: . /tmp/dev-tools/startup/comms.sh && air discovery
     environment:
@@ -125,7 +125,7 @@ services:
   # storage-test:
   #   build:
   #     context: .
-  #     dockerfile: Dockerfile.v2
+  #     dockerfile: Dockerfile
   #   entrypoint: /bin/sh -c
   #   command: air -c .air.test.toml
   #   environment:
