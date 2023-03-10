@@ -21,12 +21,12 @@ BATCH_SIZE = 100000  # index 100k plays at most at a time
 
 
 def sort_listening_history_desc_by_timestamp(
-    deduped_history_dict, deduped_play_counts={}, limit=1000
+    track_id_to_timestamp, track_id_to_play_count={}, limit=1000
 ):
     # sorts listening history and places a limit
     deduped_history = []
-    for track_id, timestamp in deduped_history_dict.items():
-        play_count = deduped_play_counts.get(track_id, 1)
+    for track_id, timestamp in track_id_to_timestamp.items():
+        play_count = track_id_to_play_count.get(track_id, 1)
         deduped_history.append(
             ListenHistory(
                 track_id=track_id, timestamp=timestamp, play_count=play_count
@@ -34,11 +34,6 @@ def sort_listening_history_desc_by_timestamp(
         )
     deduped_history.sort(key=lambda listen: listen["timestamp"], reverse=True)
     return deduped_history[:limit]
-
-
-def sort_listening_history_array(listening_history_array, limit=1000):
-    listening_history_array.sort(key=lambda listen: listen["timestamp"], reverse=True)
-    return listening_history_array[:limit]
 
 
 def _index_user_listening_history(session):
