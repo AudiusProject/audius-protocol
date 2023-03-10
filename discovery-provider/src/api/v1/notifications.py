@@ -47,7 +47,7 @@ class GetNotifications(Resource):
             "user_id": decoded_id,
             "timestamp": datetime.fromtimestamp(parsed_args.get("timestamp"))
             if parsed_args.get("timestamp")
-            else datetime.now(),
+            else None,
             "group_id": parsed_args.get("group_id"),
             "limit": parsed_args.get("limit"),
         }
