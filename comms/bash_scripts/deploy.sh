@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-make build.fast
+make build.push
 
 for val in 1 2 3 5; do
   echo "DN $val"
