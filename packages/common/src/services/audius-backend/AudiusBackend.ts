@@ -70,7 +70,6 @@ import {
   decodeHashId,
   Timer
 } from '../../utils'
-import { APIUser } from '../audius-api-client/types'
 
 import { MonitoringCallbacks } from './types'
 
@@ -2867,12 +2866,11 @@ export const audiusBackend = ({
     if (isreadSubscribersFromDiscoveryEnabled) {
       // Read subscribers from discovery
       try {
-        const subscribers: APIUser[] = await audiusLibs.User.getUserSubscribers(
-          encodeHashId(userId)
-        )
-        const subscriberIds = subscribers.map((subscriber) =>
-          decodeHashId(subscriber.id)
-        )
+        const encodedUserId = encodeHashId(userId)
+        const bulkResp: { user_id: string; subscriber_ids: string[] }[] =
+          await audiusLibs.User.bulkGetUserSubscribers([encodedUserId])
+        const encodedSubscriberIds = bulkResp[0].subscriber_ids
+        const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
         return subscriberIds.includes(account.user_id)
       } catch (e) {
         console.error(getErrorMessage(e))
