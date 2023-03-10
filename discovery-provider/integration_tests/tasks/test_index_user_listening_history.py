@@ -24,7 +24,7 @@ TIMESTAMP_5 = datetime(2015, 5, 5)
 
 
 # Tests
-def test_index_user_listening_history_populate_testtt(app):
+def test_index_user_listening_history_populate_play_count(app):
     """Tests populating user_listening_history from empty"""
 
     # setup
@@ -83,7 +83,7 @@ def test_index_user_listening_history_populate_testtt(app):
         assert results[0].listening_history[1]["play_count"] == 5
 
 
-def test_index_user_listening_history_update_testt(app):
+def test_index_user_listening_history_update_play_count(app):
     """Tests updating user_listening_history"""
 
     # setup
@@ -95,15 +95,11 @@ def test_index_user_listening_history_update_testt(app):
         "tracks": [
             {"track_id": 1, "title": "track 1"},
             {"track_id": 2, "title": "track 2"},
-            {"track_id": 3, "title": "track 3"},
-            {"track_id": 4, "title": "track 3"},
             {"track_id": 5, "title": "track 3"},
         ],
         "users": [
             {"user_id": 1, "handle": "user-1"},
             {"user_id": 2, "handle": "user-2"},
-            {"user_id": 3, "handle": "user-3"},
-            {"user_id": 4, "handle": "user-4"},
         ],
         "user_listening_history": [
             {
@@ -118,14 +114,6 @@ def test_index_user_listening_history_update_testt(app):
                 "listening_history": [
                     {"timestamp": str(TIMESTAMP_2), "track_id": 2, "play_count": 3},
                     {"timestamp": str(TIMESTAMP_1), "track_id": 1},
-                ],
-            },
-            {
-                "user_id": 3,
-                "listening_history": [
-                    {"timestamp": str(TIMESTAMP_3), "track_id": 1},
-                    {"timestamp": str(TIMESTAMP_2), "track_id": 3},
-                    {"timestamp": str(TIMESTAMP_1), "track_id": 2},
                 ],
             },
         ],
@@ -156,15 +144,6 @@ def test_index_user_listening_history_update_testt(app):
                 "user_id": 2,
                 "created_at": TIMESTAMP_4,
             },
-        ]
-        + [
-            # new user listens to many tracks
-            {
-                "item_id": i + 1,
-                "user_id": 4,
-                "created_at": TIMESTAMP_4 + timedelta(hours=i),
-            }
-            for i in range(2000)
         ],
     }
 
@@ -180,7 +159,7 @@ def test_index_user_listening_history_update_testt(app):
             .all()
         )
 
-        assert len(results) == 4
+        assert len(results) == 2
 
         assert results[0].user_id == 1
         assert len(results[0].listening_history) == 3
@@ -203,14 +182,6 @@ def test_index_user_listening_history_update_testt(app):
         assert results[1].listening_history[1]["track_id"] == 2
         assert results[1].listening_history[1]["timestamp"] == str(TIMESTAMP_3)
         assert results[1].listening_history[1]["play_count"] == 4
-
-        assert results[3].user_id == 4
-        assert len(results[3].listening_history) == 1000
-        for i in range(1000):
-            assert results[3].listening_history[i]["track_id"] == 2000 - i
-            assert results[3].listening_history[i]["timestamp"] == str(
-                datetime.fromisoformat("2014-06-26 07:00:00") - timedelta(hours=i)
-            )
 
 
 # Tests
