@@ -1,0 +1,14 @@
+diff --git a/node_modules/ts-node-dev/lib/index.js b/node_modules/ts-node-dev/lib/index.js
+index c90b187..364ee7e 100644
+--- a/node_modules/ts-node-dev/lib/index.js
++++ b/node_modules/ts-node-dev/lib/index.js
+@@ -194,7 +194,8 @@ exports.runDev = function (script, scriptArgs, nodeArgs, opts) {
+             kill(child.pid);
+         }
+         else {
+-            child.kill('SIGTERM');
++            // Using SIGKILL because in certain cases identity won't stop on SIGTERM
++            child.kill('SIGKILL');
+         }
+     };
+     function stop(willTerminate) {

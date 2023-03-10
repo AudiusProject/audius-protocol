@@ -22,7 +22,8 @@
     "copyfiles": "cp ./src/notifications/browserPush/*.zip ./build/src/notifications/browserPush && cp -r ./src/notifications/browserPush/audius.pushpackage ./build/src/notifications/browserPush && cp -r ./src/notifications/emails ./build/src/notifications",
     "build": "tsc --project tsconfig.build.json && npm run copyfiles",
     "typecheck": "tsc",
-    "typecheck:watch": "tsc --watch"
+    "typecheck:watch": "tsc --watch",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@amplitude/node": "^1.9.2",
@@ -75,6 +76,7 @@
     "moment-timezone": "^0.5.27",
     "multer": "^1.4.0",
     "numeral": "^2.0.6",
+    "patch-package": "6.5.1",
     "pg": "^8.0.3",
     "rate-limit-redis": "^1.6.0",
     "react": "^16.11.0",
