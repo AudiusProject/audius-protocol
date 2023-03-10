@@ -107,7 +107,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     where: { walletAddress: req.body.senderAddress },
     attributes: ['blockchainUserId']
   })
-  const userId = user.blockchainUserId
+  const userId = user == null ? "unknown" : user.blockchainUserId
 
   reporter.reportStart({
     userId,
