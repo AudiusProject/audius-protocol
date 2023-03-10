@@ -315,7 +315,7 @@ services:
     build:
       context: comms
       dockerfile: Dockerfile
-    command: /comms-linux discovery-migrations
+    command: discovery-migrations
     environment:
       audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable"
     depends_on:
