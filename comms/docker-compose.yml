@@ -10,14 +10,56 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  ingress:
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nginx
+  # Storage Nodes
+
+  nats-storage:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    entrypoint: /bin/sh -c
+    command: . /tmp/dev-tools/startup/comms.sh && air nats
     volumes:
-      - ./v2_nginx/ingress.conf:/etc/nginx/conf.d/default.conf
-    ports:
-      - 80:80
+      - ./natsd:/app/natsd
+      - ./shared:/app/shared
+      - ../dev-tools:/tmp/dev-tools
+    healthcheck:
+      # TODO: make this a single node healthcheck
+      # does the cluster have at least 7 nodes peered (4 storage, 3 discovery)?
+      test: wget -qO- http://localhost:8924/nats/jsz | grep -o '"cluster_size":[[:space:]]*[0-9]*' | awk '{if ($$2 < 7) {exit 1}}'
+      interval: 5s
+      retries: 15
+      start_period: 10s
+      timeout: 1s
+    deploy:
+      mode: replicated
+      replicas: 4
+
+  storage:
+    build:
+      context: .
+      dockerfile: Dockerfile.v2
+    entrypoint: /bin/sh -c
+    command: . /tmp/dev-tools/startup/comms.sh && air storage
+    volumes:
+      - ./storage:/app/storage
+      - ./shared:/app/shared
+      - /app/storage/storageserver/weather-map # exclude weather-map and its heavy node_modules
+      - ./storage/storageserver/weather-map/dist:/app/storage/storageserver/weather-map/dist
+      - ../dev-tools:/tmp/dev-tools
+    depends_on:
+      nats-storage:
+        condition: service_healthy
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8926/storage || exit 1
+      interval: 3s
+      retries: 10
+      start_period: 20s
+      timeout: 1s
+    deploy:
+      mode: replicated
+      replicas: 4
+
+  # Discovery Nodes
 
   comms-db:
     image: postgres:13.6
@@ -26,59 +68,18 @@ services:
     environment:
       POSTGRES_PASSWORD: postgres
     volumes:
-      - ./discovery/db/docker-initdb:/docker-etnrypoint-initdb.d
-
-  nats-storage:
-    build:
-      context: .
-      dockerfile: Dockerfile.v2
-    entrypoint: air
-    command: nats
-    environment:
-      # plus more
-
-      AUDIUS_TEST_HOST: "nats1-storage"
-
-      AUDIUS_TEST_HOST: "nats2-storage"
-
-      AUDIUS_TEST_HOST: "nats3-storage"
-
-      AUDIUS_TEST_HOST: "nats4-storage"
-    volumes:
-      - ./natsd:/app/natsd
-      - ./shared:/app/shared
-    healthcheck:
-      # TODO: make this a single node healthcheck
-      # does the cluster have at least 7 nodes peered (4 storage, 3 discovery)?
-      test: wget -qO- http://localhost:8924/nats/jsz | grep -o '"cluster_size":[[:space:]]*[0-9]*' | awk '{if ($$2 < 7) {exit 1}}'
-      interval: 5s
-      retries: 15
-      start_period: 10s
-      timeout: 1s
-    depends_on:
-      comms-db:
-        condition: service_started
-    deploy:
-      mode: replicated
-      replicas: 4
+      - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
 
   nats-discovery:
     build:
       context: .
       dockerfile: Dockerfile.v2
-    entrypoint: air
-    command: nats
-    environment:
-      # plus more
-
-      AUDIUS_TEST_HOST: "nats1-discovery"
-
-      AUDIUS_TEST_HOST: "nats2-discovery"
-
-      AUDIUS_TEST_HOST: "nats3-discovery"
+    entrypoint: /bin/sh -c
+    command: . /tmp/dev-tools/startup/comms.sh && air nats
     volumes:
       - ./natsd:/app/natsd
       - ./shared:/app/shared
+      - ../dev-tools:/tmp/dev-tools
     healthcheck:
       # TODO: make this a single node healthcheck
       # does the cluster have at least 7 nodes peered (4 storage, 3 discovery)?
@@ -89,86 +90,57 @@ services:
       timeout: 1s
     depends_on:
       comms-db:
-        condition: service_healthy
+        condition: service_started
     deploy:
       mode: replicated
       replicas: 3
-
-  storage:
-    build:
-      context: .
-      dockerfile: Dockerfile.v2
-    entrypoint: air
-    command: storage
-    environment:
-      # plus more
-
-      AUDIUS_TEST_HOST: "nats1-storage"
-      NAME: "storage1"
-
-      AUDIUS_TEST_HOST: "nats2-storage"
-      NAME: "storage2"
-
-      AUDIUS_TEST_HOST: "nats3-storage"
-      NAME: "storage3"
-
-      AUDIUS_TEST_HOST: "nats4-storage"
-      NAME: "storage4"
-    volumes:
-      - ./storage:/app/storage
-      - ./shared:/app/shared
-      - /app/storage/storageserver/weather-map # exclude weather-map and its heavy node_modules
-      - ./storage/storageserver/weather-map/dist:/app/storage/storageserver/weather-map/dist
-    depends_on:
-      nats-storage:
-        condition: service_healthy
-      nats-discovery:
-        condition: service_healthy
-    deploy:
-      mode: replicated
-      replicas: 4
 
   discovery:
     build:
       context: .
       dockerfile: Dockerfile.v2
-    entrypoint: air
-    command: discovery
+    entrypoint: /bin/sh -c
+    command: . /tmp/dev-tools/startup/comms.sh && air discovery
     environment:
-      # plus more
-
-      NATS_SERVER_URL: "nats://nats1-discovery:4222"
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
-
-      NATS_SERVER_URL: "nats://nats2-discovery:4222"
-      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
-
-      NATS_SERVER_URL: "nats://nats3-discovery:4222"
-      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
-    depends_on:
-      nats-storage:
-        condition: service_healthy
-      nats-discovery:
-        condition: service_healthy
     volumes:
       - ./discovery:/app/discovery
       - ./shared:/app/shared
+      - ../dev-tools:/tmp/dev-tools
+    depends_on:
+      nats-discovery:
+        condition: service_healthy
     deploy:
       mode: replicated
       replicas: 3
 
-  test:
+  ingress:
     extends:
       file: docker-compose.v2.base.yml
-      service: test
-    depends_on:
-      ingress:
-        condition: service_started
-      comdb:
-        condition: service_started
-      storage:
-        condition: service_healthy
-      nats-storage:
-        condition: service_healthy
-      nats-discovery:
-        condition: service_healthy
+      service: nginx
+    volumes:
+      - ./v2_nginx/ingress.conf:/etc/nginx/conf.d/default.conf
+    ports:
+      - 80:80
+  # storage-test:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.v2
+  #   entrypoint: /bin/sh -c
+  #   command: air -c .air.test.toml
+  #   environment:
+  #     AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
+  #     AUDIUS_TEST_HOST: "nats1-storage"
+  #     NATS_SERVER_URL: "nats://nats1-storage:4222"
+  #     audius_db_url: "postgresql://postgres:postgres@comdb:5432/audius_discovery?sslmode=disable"
+  #   depends_on:
+  #     ingress:
+  #       condition: service_started
+  #     comms-db:
+  #       condition: service_started
+  #     storage:
+  #       condition: service_healthy
+  #     nats-storage:
+  #       condition: service_healthy
+  #     nats-discovery:
+  #       condition: service_healthy
