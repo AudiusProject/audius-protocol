@@ -96,7 +96,7 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
       if (invalidNotifications.length !== 0) {
         const newLimit = limit - validNotifications.length
         const newTimestamp = moment(
-          validNotifications[validNotifications.length - 1].timestamp
+          validNotifications[validNotifications.length - 1]?.timestamp
         ).toISOString()
 
         const legacyNotificationsResponse = yield* call(
