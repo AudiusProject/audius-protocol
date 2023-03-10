@@ -26,3 +26,15 @@ export const OthersLink = (props: OthersLinkProps) => {
     </span>
   )
 }
+
+type OthersTextProps = {
+  othersCount: number
+}
+export const OthersText = (props: OthersTextProps) => {
+  const { othersCount } = props
+  return (
+    <span className={styles.root}>
+      {messages.and} {messages.others(othersCount)}
+    </span>
+  )
+}

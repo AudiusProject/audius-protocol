@@ -26,7 +26,7 @@ import { NotificationModal } from './NotificationModal'
 import styles from './NotificationPanel.module.css'
 const { setNotificationModal, toggleNotificationPanel } =
   notificationsActionsLegacy
-const { fetchNotifications, markAllAsViewed } = notificationsActions
+const { fetchNotifications } = notificationsActions
 const {
   getModalNotification,
   getNotificationHasLoaded,
@@ -34,8 +34,7 @@ const {
   getNotificationModalIsOpen,
   getNotificationPanelIsOpen,
   getNotificationStatus,
-  makeGetAllNotifications,
-  getNotificationUnviewedCount
+  makeGetAllNotifications
 } = notificationsSelectors
 
 const getNotifications = makeGetAllNotifications()
@@ -70,7 +69,6 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const hasLoaded = useSelector(getNotificationHasLoaded)
   const hasMore = useSelector(getNotificationHasMore)
   const status = useSelector(getNotificationStatus)
-  const totalUnviewed = useSelector(getNotificationUnviewedCount)
   const isNotificationModalOpen = useSelector(getNotificationModalIsOpen)
   const modalNotification = useSelector(getModalNotification)
   const isUserListOpen = useSelector(getIsUserListOpen)
@@ -91,10 +89,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
 
   const handleToggleNotificationPanel = useCallback(() => {
     dispatch(toggleNotificationPanel())
-    if (totalUnviewed > 0) {
-      dispatch(markAllAsViewed())
-    }
-  }, [dispatch, totalUnviewed])
+  }, [dispatch])
 
   const handleCheckClickInside = useCallback(
     (target: EventTarget) => {
