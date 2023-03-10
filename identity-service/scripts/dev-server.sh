@@ -11,4 +11,4 @@ if [ "$link_libs" = true ]; then
     npm link @audius/sdk
 fi
  
-npx ts-node-dev --respawn --ignore-watch "./emailCache" --inspect=0.0.0.0:9229 src/index.ts
+npx ts-node-dev --respawn --inspect=0.0.0.0:9229 src/index.ts
