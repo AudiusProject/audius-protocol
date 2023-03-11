@@ -3,7 +3,7 @@
   "productName": "Audius",
   "description": "The Audius decentralized application",
   "author": "Audius",
-  "version": "1.5.14",
+  "version": "1.5.15",
   "private": true,
   "scripts": {
     "publish-scripts": "./scripts/publishScripts.sh",
@@ -51,7 +51,7 @@
     "install-dmg-license": "npx lerna add dmg-license --scope=audius-client --no-bootstrap && npx lerna bootstrap --no-ci"
   },
   "dependencies": {
-    "@audius/common": "1.5.14",
+    "@audius/common": "1.5.15",
     "@audius/sdk": "2.0.2-alpha.4",
     "@audius/stems": "1.5.14",
     "@coinbase/cbpay-js": "1.2.0",
