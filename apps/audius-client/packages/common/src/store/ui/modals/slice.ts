@@ -37,7 +37,8 @@ const initialState: ModalsState = {
   CreateChat: false,
   InboxSettings: false,
   LockedContent: false,
-  PlaybackRate: false
+  PlaybackRate: false,
+  ProfileActions: false
 }
 
 const slice = createSlice({
