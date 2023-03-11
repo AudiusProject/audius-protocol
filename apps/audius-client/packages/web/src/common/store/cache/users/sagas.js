@@ -13,82 +13,17 @@ import {
   reformatUser
 } from '@audius/common'
 import { mergeWith } from 'lodash'
-import {
-  call,
-  put,
-  race,
-  select,
-  take,
-  takeEvery,
-  getContext
-} from 'redux-saga/effects'
+import { call, put, select, takeEvery, getContext } from 'redux-saga/effects'
 
 import { retrieveCollections } from 'common/store/cache/collections/utils'
 import { retrieve } from 'common/store/cache/sagas'
-import {
-  getSelectedServices,
-  getStatus
-} from 'common/store/service-selection/selectors'
-import { fetchServicesFailed } from 'common/store/service-selection/slice'
-import { waitForWrite, waitForRead } from 'utils/sagaHelpers'
+import { waitForRead } from 'utils/sagaHelpers'
 
 import { pruneBlobValues } from './utils'
 const { removePlaylistLibraryTempPlaylists } = playlistLibraryHelpers
 const { mergeCustomizer } = cacheReducer
 const { getUser, getUsers, getUserTimestamps } = cacheUsersSelectors
 const { getAccountUser, getUserId } = accountSelectors
-
-/**
- * If the user is not a creator, upgrade the user to a creator node.
- */
-export function* upgradeToCreator() {
-  yield waitForWrite()
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const user = yield select(getAccountUser)
-
-  // If user already has creator_node_endpoint, do not reselect replica set
-  let newEndpoint = user.creator_node_endpoint || ''
-  if (!newEndpoint) {
-    const serviceSelectionStatus = yield select(getStatus)
-    if (serviceSelectionStatus === Status.ERROR) {
-      return false
-    }
-    // Wait for service selection to finish
-    const { selectedServices } = yield race({
-      selectedServices: call(
-        waitForValue,
-        getSelectedServices,
-        {},
-        (val) => val.length > 0
-      ),
-      failure: take(fetchServicesFailed.type)
-    })
-    if (!selectedServices) {
-      return false
-    }
-    newEndpoint = selectedServices.join(',')
-
-    // Try to upgrade to creator, early return if failure
-    try {
-      console.debug(`Attempting to upgrade user ${user.user_id} to creator`)
-      yield call(audiusBackendInstance.upgradeToCreator, newEndpoint)
-    } catch (err) {
-      console.error(`Upgrade to creator failed with error: ${err}`)
-      return false
-    }
-  }
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: {
-          creator_node_endpoint: newEndpoint
-        }
-      }
-    ])
-  )
-  return true
-}
 
 /**
  * @param {Nullable<Array<number>>} userIds array of user ids to fetch

@@ -11,8 +11,6 @@ export declare function* fetchUsers(
   forceRetrieveFromSource?: boolean
 ): { entries: Record<string, User> }
 
-export declare function* upgradeToCreator(): boolean
-
 export default function sagas(): (() => Generator<
   ForkEffect<never>,
   void,

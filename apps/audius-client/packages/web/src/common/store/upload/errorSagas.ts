@@ -69,7 +69,6 @@ function* handleUploadError(action: UploadErrorActions) {
 export function* watchUploadErrors() {
   yield takeEvery(
     [
-      uploadActions.UPGRADE_TO_CREATOR_ERROR,
       uploadActions.SINGLE_TRACK_UPLOAD_ERROR,
       uploadActions.SINGLE_TRACK_UPLOAD_TIMEOUT_ERROR,
       uploadActions.MULTI_TRACK_UPLOAD_ERROR,

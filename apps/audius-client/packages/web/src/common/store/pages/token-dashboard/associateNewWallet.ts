@@ -9,8 +9,6 @@ import {
 } from '@audius/common'
 import { call, put, select } from 'typed-redux-saga'
 
-import { upgradeToCreator } from 'common/store/cache/users/sagas'
-import { fetchServices } from 'common/store/service-selection/slice'
 const { getAccountUser } = accountSelectors
 const { updateWalletError } = tokenDashboardPageActions
 const { getConfirmingWallet } = tokenDashboardPageSelectors
@@ -23,32 +21,24 @@ export function* associateNewWallet(signature: string) {
   const audiusBackend = yield* getContext('audiusBackendInstance')
   const userMetadata = yield* select(getAccountUser)
 
-  let updatedMetadata = newUserMetadata({ ...userMetadata })
+  const updatedMetadata = newUserMetadata({ ...userMetadata })
 
-  if (
-    !updatedMetadata.creator_node_endpoint ||
-    !updatedMetadata.metadata_multihash
-  ) {
-    yield* put(fetchServices())
-    const upgradedToCreator = yield* call(upgradeToCreator)
-    if (!upgradedToCreator) {
-      yield* put(
-        updateWalletError({
-          errorMessage:
-            'An error occured while connecting a wallet with your account'
-        })
-      )
-      analytics.track({
-        eventName: Name.CONNECT_WALLET_ASSOCIATION_ERROR,
-        properties: {
-          chain,
-          walletAddress: wallet
-        }
+  if (!updatedMetadata.metadata_multihash) {
+    yield* put(
+      updateWalletError({
+        errorMessage:
+          'An error occured while connecting a wallet with your account'
       })
-      return null
-    }
-    const updatedUserMetadata = yield* select(getAccountUser)
-    updatedMetadata = newUserMetadata({ ...updatedUserMetadata })
+    )
+    analytics.track({
+      eventName: Name.CONNECT_WALLET_ASSOCIATION_ERROR,
+      properties: {
+        chain,
+        walletAddress: wallet,
+        details: 'Missing metadata_multihash'
+      }
+    })
+    return null
   }
 
   const currentWalletSignatures = yield* call(
