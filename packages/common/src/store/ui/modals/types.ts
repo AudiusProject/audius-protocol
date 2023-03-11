@@ -34,5 +34,6 @@ export type Modals =
   | 'InboxSettings'
   | 'LockedContent'
   | 'PlaybackRate'
+  | 'ProfileActions'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }

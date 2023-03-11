@@ -7,16 +7,20 @@ import {
   profilePageActions,
   reachabilitySelectors,
   shareModalUIActions,
-  encodeUrlName
+  encodeUrlName,
+  modalsActions,
+  FeatureFlags
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
+import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton, Screen, ScreenContent } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
 import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -24,11 +28,12 @@ import { useThemeColors } from 'app/utils/theme'
 import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
-import { useSelectProfileRoot } from './selectors'
+import { getIsOwner, useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { fetchProfile: fetchProfileAction } = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
+const { setVisibility } = modalsActions
 
 const useStyles = makeStyles(() => ({
   navigator: {
@@ -49,11 +54,13 @@ export const ProfileScreen = () => {
   const handle =
     userHandle && userHandle !== 'accountUser' ? userHandle : profile?.handle
   const handleLower = handle?.toLowerCase() ?? ''
+  const isOwner = useSelector((state) => getIsOwner(state, handle ?? ''))
   const dispatch = useDispatch()
   const status = useSelector((state) => getProfileStatus(state, handleLower))
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { neutralLight4 } = useThemeColors()
   const isNotReachable = useSelector(getIsReachable) === false
+  const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
 
   const fetchProfile = useCallback(() => {
     dispatch(
@@ -80,20 +87,29 @@ export const ProfileScreen = () => {
 
   const handlePressTopRight = useCallback(() => {
     if (profile) {
-      dispatch(
-        requestOpenShareModal({
-          type: 'profile',
-          profileId: profile.user_id,
-          source: ShareSource.PAGE
-        })
-      )
+      if (isChatEnabled && !isOwner) {
+        dispatch(
+          setVisibility({
+            modal: 'ProfileActions',
+            visible: true
+          })
+        )
+      } else {
+        dispatch(
+          requestOpenShareModal({
+            type: 'profile',
+            profileId: profile.user_id,
+            source: ShareSource.PAGE
+          })
+        )
+      }
     }
-  }, [profile, dispatch])
+  }, [profile, dispatch, isChatEnabled, isOwner])
 
   const topbarRight = (
     <IconButton
       fill={neutralLight4}
-      icon={IconShare}
+      icon={isChatEnabled && !isOwner ? IconKebabHorizontal : IconShare}
       onPress={handlePressTopRight}
     />
   )

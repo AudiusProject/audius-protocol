@@ -98,7 +98,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   AddToPlaylist: AddToPlaylistDrawer,
   AudioBreakdown: AudioBreakdownDrawer,
   DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer,
-  VipDiscord: VipDiscordDrawer
+  VipDiscord: VipDiscordDrawer,
+  ProfileActions: ProfileActionsDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
@@ -115,7 +116,6 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   UnfavoriteDownloadedCollection: UnfavoriteDownloadedCollectionDrawer,
   LockedContent: LockedContentDrawer,
   ChatActions: ChatActionsDrawer,
-  ProfileActions: ProfileActionsDrawer,
   BlockMessages: BlockMessagesDrawer
 }
 

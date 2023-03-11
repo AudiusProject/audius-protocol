@@ -49,7 +49,7 @@ export type DrawerData = {
   }
   LockedContent: undefined
   ChatActions: { userId: number }
-  ProfileActions: { userId: number }
+  ProfileActions: undefined
   BlockMessages: { userId: number }
 }
 
