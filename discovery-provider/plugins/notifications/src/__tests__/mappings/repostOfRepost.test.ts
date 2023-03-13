@@ -16,7 +16,6 @@ import { AppEmailNotification } from "../../types/notifications";
 import { renderEmail } from "../../email/notifications/renderEmail";
 import { EntityType } from "../../email/notifications/types";
 import { resetTests, setUpTestDbProcessor } from "../utils";
-import { RepostType } from "../../types/dn";
 
 describe("Repost Of Repost Notification", () => {
   let processor: Processor;
