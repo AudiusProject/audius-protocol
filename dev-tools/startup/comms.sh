@@ -9,8 +9,14 @@ export AUDIUS_NATS_ENABLE_JETSTREAM=true
 export NAME="$(nslookup "$(hostname -i)" | sed -n 's/.*name = \(.*\)/\1/p')"
 export AUDIUS_TEST_HOST="$NAME"
 
+# Treat test container same as storage-1
+if [[ "$NAME" =~ ".*-test-.*" ]]; then
+  export NAME="$(echo "$NAME" | sed 's/-test-/-storage-/')"
+  export AUDIUS_TEST_HOST="$NAME"
+fi
+
 # Set nats server url for non nats containers
-if [[ "$NATS_SERVER_URL" == "" && ! "$NAME" =~ ".*-nats-.*" ]]; then
+if [[ ! "$NAME" =~ ".*-nats-.*" ]]; then
   export NATS_SERVER_URL="nats://$(echo "$NAME" | sed 's/\(discovery\|storage\)/nats-\1/'):4222"
 fi
 

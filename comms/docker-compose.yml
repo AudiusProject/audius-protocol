@@ -111,7 +111,7 @@ services:
       target: builder
     command: sh -c ". /tmp/dev-tools/startup/comms.sh && air discovery"
     environment:
-      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
+      audius_db_url: "postgresql://postgres:postgres@comms-db:5432/com1?sslmode=disable"
     env_file: ../.env # used by the startup script
     volumes:
       - ./discovery:/app/discovery
@@ -133,24 +133,26 @@ services:
     deploy:
       mode: replicated
       replicas: 3
-  # test:
-  #   build:
-  #     context: .
-  #   entrypoint: /bin/sh -c
-  #   command: air -c .air.test.toml
-  #   environment:
-  #     AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-  #     AUDIUS_TEST_HOST: "nats1-storage"
-  #     NATS_SERVER_URL: "nats://nats1-storage:4222"
-  #     audius_db_url: "postgresql://postgres:postgres@comdb:5432/audius_discovery?sslmode=disable"
-  #   depends_on:
-  #     ingress:
-  #       condition: service_started
-  #     comms-db:
-  #       condition: service_started
-  #     storage:
-  #       condition: service_healthy
-  #     nats-storage:
-  #       condition: service_healthy
-  #     nats-discovery:
-  #       condition: service_healthy
+
+  # tests
+
+  test:
+    build:
+      context: .
+      target: builder
+    command: sh -c ". /tmp/dev-tools/startup/comms.sh && air -c .air.test.toml"
+    env_file: ../.env # used by the startup script
+    environment:
+      audius_db_url: "postgresql://postgres:postgres@comms-db:5432/audius_discovery?sslmode=disable"
+    volumes:
+      - ./:/app
+      - ../dev-tools:/tmp/dev-tools
+    depends_on:
+      comms-db:
+        condition: service_started
+      storage:
+        condition: service_healthy
+      nats-storage:
+        condition: service_healthy
+      nats-discovery:
+        condition: service_healthy
