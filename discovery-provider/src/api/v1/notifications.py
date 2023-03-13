@@ -50,7 +50,7 @@ class GetNotifications(Resource):
             "user_id": decoded_id,
             "timestamp": datetime.fromtimestamp(parsed_args.get("timestamp"))
             if parsed_args.get("timestamp")
-            else datetime.now(),
+            else None,
             "group_id": parsed_args.get("group_id"),
             "limit": parsed_args.get("limit"),
             "valid_types": parsed_args.get("valid_types") or [],
@@ -59,7 +59,7 @@ class GetNotifications(Resource):
             "user_id": decoded_id,
             "timestamp": datetime.fromtimestamp(parsed_args.get("timestamp"))
             if parsed_args.get("timestamp")
-            else datetime.now(),
+            else None,
         }
         db = get_db_read_replica()
         with db.scoped_session() as session:
