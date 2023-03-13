@@ -1,27 +1,40 @@
-# syntax=docker/dockerfile:1
+FROM golang:alpine AS builder
 
-FROM golang:latest
+ARG GOOS=linux
+ARG GOARCH=amd64
 
-RUN apt update && apt install -y ffmpeg 
+ENV GOOS=${GOOS}
+ENV GOARCH=${GOARCH}
+ENV GO111MODULE=on
+ENV CGO_ENABLED=0
 
-# install in-container tools: dbmate, nats cli
-RUN export GO111MODULE=on && \
+RUN apk add build-base curl ffmpeg make
+RUN go install github.com/nats-io/nats-server/v2@v2.9.15 && \
   go install github.com/nats-io/natscli/nats@latest && \
-  go install github.com/amacneil/dbmate@latest
+  go install github.com/nats-io/nkeys/nk@latest && \
+  go install github.com/nats-io/nsc/v2@latest && \
+  go install github.com/amacneil/dbmate@latest && \
+  go install github.com/cosmtrek/air@latest
 
 WORKDIR /app
 
-COPY go.mod ./
-COPY go.sum ./
-RUN go mod download
-COPY . ./
-RUN CGO_ENABLED=0 GOOS=linux go build -o /comms-linux
+COPY go.mod go.sum ./
+RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
 
-# COPY build/comms-linux-amd64 /comms-linux
-# COPY db/migrations ./db/migrations
+COPY . .
+RUN go build -ldflags="-w -s" -o comms main.go
 
-EXPOSE 8925
+EXPOSE 4222
+VOLUME ["/tmp"]
+ENTRYPOINT ["air"]
 
-VOLUME ["/tmp/nats"]
+FROM alpine AS final
 
-CMD [ "/comms-linux" ]
+RUN apk add curl ffmpeg
+
+COPY --from=builder /go/bin/* /bin
+COPY --from=builder /app/comms /bin/comms
+COPY --from=builder /app/discovery/db/migrations /discovery/db/migrations
+
+VOLUME ["/tmp"]
+ENTRYPOINT ["comms"]

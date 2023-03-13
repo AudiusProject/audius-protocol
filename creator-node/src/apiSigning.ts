@@ -1,7 +1,5 @@
 import { getContentNodeInfoFromSpId } from './services/ContentNodeInfoManager'
 
-const { libs } = require('@audius/sdk')
-const LibsUtils = libs.Utils
 const Web3 = require('web3')
 const web3 = new Web3()
 const { logger: genericLogger } = require('./logging')
@@ -11,6 +9,8 @@ const { logger: genericLogger } = require('./logging')
  * Set to 5 minutes
  */
 const MAX_SIGNATURE_AGE_MS = 300000
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 export const generateSignature = (data: any, privateKey: string) => {
   // JSON stringify automatically removes white space given 1 param
@@ -163,8 +163,8 @@ export const verifyRequesterIsValidSP = async ({
    * Reject if node is not registered as valid SP on L1 ServiceProviderFactory
    */
   if (
-    LibsUtils.isZeroAddress(ownerWalletFromSPFactory) ||
-    LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory) ||
+    ownerWalletFromSPFactory === ZERO_ADDRESS ||
+    delegateOwnerWalletFromSPFactory === ZERO_ADDRESS ||
     !nodeEndpointFromSPFactory
   ) {
     throw new Error(

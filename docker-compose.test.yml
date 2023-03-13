@@ -315,7 +315,7 @@ services:
     build:
       context: comms
       dockerfile: Dockerfile
-    command: /comms-linux discovery-migrations
+    command: discovery-migrations
     environment:
       audius_db_url: "postgres://postgres:postgres@discovery-provider-db:5432/discovery_provider?sslmode=disable"
     depends_on:
@@ -381,7 +381,7 @@ services:
     extends:
       file: docker-compose.yml
       service: identity-service
-    entrypoint: sh -c '[ ! "$$1" = "test" ] && echo $(ls) && sleep inf || (shift; ./node_modules/.bin/mocha "$$@")' -
+    entrypoint: sh -c '[ ! "$$1" = "test" ] && echo $$(ls) && sleep inf || (shift; ./node_modules/.bin/mocha "$$@")' -
     command: ""
     environment:
       isTestRun: "true"

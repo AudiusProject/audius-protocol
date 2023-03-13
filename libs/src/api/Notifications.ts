@@ -4,6 +4,7 @@ import {
   Action,
   EntityType
 } from '../services/dataContracts/EntityManagerClient'
+import type { GetUserNotificationsParams } from '../services/discoveryProvider/requests'
 
 type AnnouncementData = {}
 
@@ -113,23 +114,8 @@ export class Notifications extends Base {
     }
   }
 
-  async getNotifications({
-    encodedUserId,
-    timestamp,
-    groupId,
-    limit
-  }: {
-    encodedUserId: string
-    timestamp: number
-    groupId?: string
-    limit?: number
-  }): Promise<any> {
+  async getNotifications(params: GetUserNotificationsParams): Promise<any> {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    return await this.discoveryProvider.getUserNotifications({
-      encodedUserId,
-      timestamp,
-      groupId,
-      limit
-    })
+    return await this.discoveryProvider.getUserNotifications(params)
   }
 }

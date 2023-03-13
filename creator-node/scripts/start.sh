@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-link_libs=true
+link_libs=false
 
 if [[ "$WAIT_HOSTS" != "" ]]; then
     /usr/bin/wait
@@ -67,14 +67,15 @@ fi
 
 # index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
 if [[ "$devMode" == "true" ]]; then
+    export clusterModeEnabled="false"
     if [ "$link_libs" = true ]; then
         cd ../audius-libs
         npm link
         cd ../app
         npm link @audius/sdk
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/dist/index.cjs.js | tee >(logger)
+        npx nodemon --verbose --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/dist/index.cjs.js | tee >(logger)
     else
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
+        npx nodemon --verbose --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
     fi
 else
     node --max-old-space-size=4096 build/src/index.js | tee >(logger)

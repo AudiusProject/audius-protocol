@@ -3,9 +3,9 @@ const { createBullBoard } = require('@bull-board/api')
 const { BullAdapter } = require('@bull-board/api/bullAdapter')
 const { ExpressAdapter } = require('@bull-board/express')
 
+const initAudiusLibs = require('./services/initAudiusLibs')
 const redisClient = require('./redis')
 const BlacklistManager = require('./blacklistManager')
-const initAudiusLibs = require('./services/initAudiusLibs')
 const URSMRegistrationManager = require('./services/URSMRegistrationManager')
 const {
   logger: genericLogger,
