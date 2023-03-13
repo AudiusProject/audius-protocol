@@ -5,10 +5,11 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 
 from redis import Redis
-from sqlalchemy import bindparam, text
+from sqlalchemy import asc, bindparam, text
 from sqlalchemy.orm.session import Session
 from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
+from src.models.social.repost import Repost
 from src.models.tracks.track import Track
 from src.queries.get_trending_tracks import (
     _get_trending_tracks_with_session,
@@ -217,6 +218,23 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     index_trending_notifications(db, timestamp)
 
 
+def index_tastemaker_notifications(
+    db: SessionManager,
+    top_5_trending_tracks: List[Track],
+    minimum_repost_favorite_amount=10,
+):
+    # For each top trending track
+    with db.scoped_session() as session:
+        for track in top_5_trending_tracks:
+            first_10_reposts_of_track = []
+            session.query(Repost).order_by(asc(Repost.created_at)).limit(10)
+
+    # get all the reposts and favorites ever done
+    # get the first ten favs/reposts users
+    # for each person whos favorited, check if theyre in top 10 users
+    pass
+
+
 def index_trending_notifications(db: SessionManager, timestamp: int):
     # Get the top 5 trending tracks from the new trending calculations
     # Get the most recent trending tracks notifications
@@ -277,7 +295,9 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
         # Do not send notifications for the same track trending within 24 hours
         NOTIFICATION_INTERVAL_SEC = 60 * 60 * 24
 
+        print("printing tracksss ")
         for index, track in enumerate(top_trending):
+            print(track)
             track_id = track["track_id"]
             rank = index + 1
             previous_track_notification = previous_trending.get(str(track["track_id"]))
