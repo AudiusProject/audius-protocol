@@ -2,17 +2,34 @@ package peering
 
 import (
 	"encoding/hex"
-	"log"
+	"net/http"
 	"os"
 	"os/exec"
 
 	sharedConfig "comms.audius.co/shared/config"
-	"github.com/inconshreveable/log15"
+	"golang.org/x/exp/slog"
+	"github.com/labstack/echo/v4"
+	"github.com/nats-io/nats.go"
 )
 
-type Peering struct {
+type Peering interface {
+	AllNodes() ([]sharedConfig.ServiceNode, error)
+	DialJetstream(peerMap map[string]*Info) (nats.JetStreamContext, error)
+	DialNats(peerMap map[string]*Info) (*nats.Conn, error)
+	DialNatsUrl(natsUrl string) (*nats.Conn, error)
+	ExchangeEndpoint(c echo.Context) error
+	GetContentNodes() ([]sharedConfig.ServiceNode, error)
+	GetDiscoveryNodes() ([]sharedConfig.ServiceNode, error)
+	ListPeers() []Info
+	MyInfo() (*Info, error)
+	NatsConnectionTest(natsUrl string) bool
+	PollRegisteredNodes() error
+	PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error)
+	Solicit() map[string]*Info
+}
+
+type NatsPeering struct {
 	Config              *sharedConfig.PeeringConfig
-	Logger              log15.Logger
 	IP                  string
 	NatsClusterUsername string
 	NatsClusterPassword string
@@ -20,16 +37,14 @@ type Peering struct {
 	NatsIsReachable     bool
 }
 
-func New(config *sharedConfig.PeeringConfig) *Peering {
-	p := &Peering{
+func New(config *sharedConfig.PeeringConfig) (*NatsPeering, error) {
+	p := &NatsPeering{
 		Config:           config,
-		Logger:           log15.New(),
 		NatsReplicaCount: 3,
 		NatsIsReachable:  false,
 	}
-	p.Logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
 	if err := p.configureNatsCliNkey(); err != nil {
-		p.Logger.Warn("failed to write cli nkey config: " + err.Error())
+		slog.Error("failed to write cli nkey config", err)
 	}
 
 	// ip addr
@@ -41,7 +56,7 @@ func New(config *sharedConfig.PeeringConfig) *Peering {
 		for i := 0; i < 5; i++ {
 			IP, err = getIp()
 			if err != nil {
-				p.Logger.Warn("getIp failed", "attempt", i, "err", err)
+				slog.With("attempt", i).Error("getIp failed", err)
 			} else {
 				break
 			}
@@ -56,13 +71,14 @@ func New(config *sharedConfig.PeeringConfig) *Peering {
 	// so that NATS clients can only cluster with us after doing the "exchange"
 	signed, err := config.Keys.NkeyPair.Sign([]byte(config.Keys.DelegatePublicKey))
 	if err != nil {
-		log.Fatalf("failed to sign wallet address: %v", err)
+		slog.Error("failed to sign wallet address", err)
+		return nil, err
 	}
 	signedHex := hex.EncodeToString(signed)
 	p.NatsClusterUsername = config.NatsClusterName
 	p.NatsClusterPassword = signedHex[0:15]
 
-	p.Logger.Info("config",
+	slog.Info("config",
 		"isStaging", config.IsStaging,
 		"wallet", config.Keys.DelegatePublicKey,
 		"nkey", config.Keys.NkeyPublic,
@@ -71,10 +87,10 @@ func New(config *sharedConfig.PeeringConfig) *Peering {
 		"nu", p.NatsClusterUsername,
 		"np", p.NatsClusterPassword)
 
-	return p
+	return p, nil
 }
 
-func (p *Peering) configureNatsCliNkey() error {
+func (p *NatsPeering) configureNatsCliNkey() error {
 	var err error
 
 	bytes, err := p.Config.Keys.NkeyPair.Seed()

@@ -2,6 +2,7 @@ package natsd
 
 import (
 	"io"
+	"log"
 	"math"
 	"net/http"
 	"time"
@@ -10,17 +11,21 @@ import (
 	"comms.audius.co/shared/peering"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/exp/slog"
 )
 
 func NatsMain() {
 	natsConfig := config.GetNatsConfig()
-	peering := peering.New(&natsConfig.PeeringConfig)
+	peering, err := peering.New(&natsConfig.PeeringConfig)
+	if err != nil {
+		log.Fatalf("failed to create peering instance, %+v", err)
+	}
 
 	{
 		var err error
 		peering.NatsIsReachable, err = selfConnectionProbe(peering.IP)
 		if err != nil {
-			peering.Logger.Warn("self connection test error " + err.Error())
+			slog.Warn("self connection test error " + err.Error())
 		}
 	}
 
@@ -32,7 +37,7 @@ func NatsMain() {
 	for n := 0; ; n++ {
 		peerMap := peering.Solicit()
 		if peering.NatsIsReachable {
-			natsman.StartNats(peerMap, natsConfig.IsStorageNode, peering)
+			natsman.StartNats(peerMap, peering)
 		}
 
 		// poll with exponential backoff:
@@ -45,7 +50,7 @@ func NatsMain() {
 	}
 }
 
-func startServer(peering *peering.Peering) {
+func startServer(peering *peering.NatsPeering) {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
@@ -102,7 +107,6 @@ func startServer(peering *peering.Peering) {
 	e.GET("/nats/self", func(c echo.Context) error {
 		return redactedJson(c, map[string]interface{}{
 			"is_staging":        peering.Config.IsStaging,
-			"is_storage_node":   config.GetNatsConfig().IsStorageNode,
 			"nats_is_reachable": peering.NatsIsReachable,
 			"nkey":              peering.Config.Keys.NkeyPublic,
 		})

@@ -5,12 +5,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/nats-io/nkeys"
+	"golang.org/x/exp/slog"
 )
 
 type ServiceNode struct {
@@ -18,7 +18,10 @@ type ServiceNode struct {
 	SPID                string `json:"spID"`
 	Endpoint            string `json:"endpoint"`
 	DelegateOwnerWallet string `json:"delegateOwnerWallet"`
-	Type                struct {
+	Owner               struct {
+		ID string `json:"id"`
+	} `json:"owner"`
+	Type struct {
 		ID string `json:"id"`
 	} `json:"type"`
 }
@@ -29,32 +32,35 @@ type KeysConfig struct {
 	DelegatePrivateKey *ecdsa.PrivateKey `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" required:"true" json:"-"`
 
 	// Fields derived from DelegatePrivateKey
-	DelegatePublicKey string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"DelegatePublicKey"`
+	DelegatePublicKey string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"delegatePublicKey"`
 	NkeyPair          nkeys.KeyPair `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"-"`
-	NkeyPublic        string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"NkeyPublic"`
+	NkeyPublic        string        `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" json:"nKeyPublic"`
 }
 type KeysConfigDecoder KeysConfig
 
 type PeeringConfig struct {
-	Keys                   KeysConfigDecoder   `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" required:"true" json:"Keys"`
-	DevOnlyRegisteredNodes ServiceNodesDecoder `envconfig:"AUDIUS_DEV_ONLY_REGISTERED_NODES" json:"DevOnlyRegisteredNodes"`
-	NatsClusterName        string              `envconfig:"AUDIUS_NATS_CLUSTER_NAME" default:"comms" json:"NatsClusterName"`
-	TestHost               string              `envconfig:"AUDIUS_TEST_HOST" json:"TestHost"`
-	IsStaging              bool                `envconfig:"AUDIUS_IS_STAGING" json:"IsStaging"`
+	Keys                   KeysConfigDecoder   `envconfig:"AUDIUS_DELEGATE_PRIVATE_KEY" required:"true" json:"keys"`
+	DevOnlyRegisteredNodes ServiceNodesDecoder `envconfig:"AUDIUS_DEV_ONLY_REGISTERED_NODES" json:"devOnlyRegisteredNodes"`
+	NatsClusterName        string              `envconfig:"AUDIUS_NATS_CLUSTER_NAME" default:"comms" json:"natsClusterName"`
+	TestHost               string              `envconfig:"AUDIUS_TEST_HOST" json:"testHost"`
+	IsStaging              bool                `envconfig:"AUDIUS_IS_STAGING" json:"isStaging"`
 }
 
 // EnsurePrivKeyAndLoadConf ensures the private key env var is set and loads a config struct from env vars.
-func EnsurePrivKeyAndLoadConf[T any](config *T) {
+func EnsurePrivKeyAndLoadConf[T any](config *T) error {
 	EnsurePrivateKeyIsSet()
 	if err := envconfig.Process("", config); err != nil {
-		log.Fatalf("failed to load %T: %v", *config, err.Error())
+		slog.Error(fmt.Sprintf("failed to load %T", *config), err)
+		return err
 	}
 	configBytes, _ := json.MarshalIndent(config, "", "\t")
-	log.Printf("Parsed %T: %s", *config, string(configBytes))
+	fmt.Printf("Parsed %T: %s\n", *config, string(configBytes))
+
+	return nil
 }
 
 // EnsurePrivateKeyIsSet ensures there's a value for the env var `AUDIUS_DELEGATE_PRIVATE_KEY` by first falling back to `delegatePrivateKey` and then generating a random private key if neither is set.
-func EnsurePrivateKeyIsSet() {
+func EnsurePrivateKeyIsSet() error {
 	if os.Getenv("AUDIUS_DELEGATE_PRIVATE_KEY") == "" && os.Getenv("audius_delegate_private_key") != "" {
 		os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", os.Getenv("audius_delegate_private_key"))
 	}
@@ -62,24 +68,31 @@ func EnsurePrivateKeyIsSet() {
 	// Ensure private key env var is set by checking deprecated env var or generating random private key
 	if os.Getenv("AUDIUS_DELEGATE_PRIVATE_KEY") == "" {
 		if os.Getenv("delegatePrivateKey") == "" {
-			log.Print("WARN: Missing 'AUDIUS_DELEGATE_PRIVATE_KEY' and deprecated fallback delegatePrivateKey env vars. Generating random private key.")
-			privKey := generatePrivateKeyHex()
-			fmt.Println("Generated private key: ", privKey)
+			slog.Warn("WARN: Missing 'AUDIUS_DELEGATE_PRIVATE_KEY' and deprecated fallback delegatePrivateKey env vars. Generating random private key.")
+			privKey, err := generatePrivateKeyHex()
+			if err != nil {
+				return err
+			}
+
+			slog.Info("Generated private key: ", privKey)
 			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", privKey)
 		} else {
-			log.Print("WARN: Using DEPRECATED 'delegatePrivateKey' env var. Please set 'AUDIUS_DELEGATE_PRIVATE_KEY' env var to the same value.")
+			slog.Warn("WARN: Using DEPRECATED 'delegatePrivateKey' env var. Please set 'AUDIUS_DELEGATE_PRIVATE_KEY' env var to the same value.")
 			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", os.Getenv("delegatePrivateKey"))
 		}
 	}
+
+	return nil
 }
 
-func generatePrivateKeyHex() string {
+func generatePrivateKeyHex() (string, error) {
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
-		log.Fatal(err)
+		slog.Error("", err)
+		return "", nil
 	}
 	privateKeyBytes := crypto.FromECDSA(privateKey)
-	return hex.EncodeToString(privateKeyBytes)
+	return hex.EncodeToString(privateKeyBytes), nil
 }
 
 func (snd *ServiceNodesDecoder) Decode(value string) error {

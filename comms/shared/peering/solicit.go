@@ -13,6 +13,7 @@ import (
 
 	"comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/crypto"
+	"golang.org/x/exp/slog"
 )
 
 // todo: this should probably live in a struct
@@ -21,13 +22,13 @@ var (
 	peerMap = map[string]*Info{}
 )
 
-func (p *Peering) Solicit() map[string]*Info {
+func (p *NatsPeering) Solicit() map[string]*Info {
 
-	p.Logger.Info("solicit begin")
+	slog.Info("solicit begin")
 
 	sps, err := p.AllNodes()
 	if err != nil {
-		p.Logger.Error("solicit failed: " + err.Error())
+		slog.Error("solicit failed", err)
 		return peerMap
 	}
 
@@ -55,23 +56,23 @@ func (p *Peering) Solicit() map[string]*Info {
 
 	wg.Wait()
 
-	p.Logger.Info("solicit done", "sps", len(sps), "peers", len(peerMap))
+	slog.Info("solicit done", "sps", len(sps), "peers", len(peerMap))
 
 	return peerMap
 
 }
 
-func (p *Peering) addPeer(info *Info) {
+func (p *NatsPeering) addPeer(info *Info) {
 	mu.Lock()
 	defer mu.Unlock()
 
 	if _, known := peerMap[info.IP]; !known {
-		p.Logger.Info("adding peer", "info", info)
+		slog.Info("adding peer", "info", info)
 		peerMap[info.IP] = info
 	}
 }
 
-func (p *Peering) ListPeers() []Info {
+func (p *NatsPeering) ListPeers() []Info {
 	mu.Lock()
 	defer mu.Unlock()
 	peers := make([]Info, 0, len(peerMap))
@@ -84,7 +85,7 @@ func (p *Peering) ListPeers() []Info {
 	return peers
 }
 
-func (p *Peering) solicitServer(endpoint string) (*Info, error) {
+func (p *NatsPeering) solicitServer(endpoint string) (*Info, error) {
 
 	// sign request
 	myInfo, err := p.MyInfo()
@@ -116,7 +117,7 @@ func (p *Peering) solicitServer(endpoint string) (*Info, error) {
 	return info, nil
 }
 
-func (p *Peering) PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error) {
+func (p *NatsPeering) PostSignedJSON(endpoint string, obj interface{}) (*http.Response, error) {
 	payload, err := json.Marshal(obj)
 	if err != nil {
 		return nil, err

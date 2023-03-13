@@ -1,5 +1,5 @@
 import { Knex } from 'knex'
-import { NotificationRow, UserRow } from '../../types/dn'
+import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import { SaveNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
@@ -39,7 +39,35 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       return
     }
 
-    // TODO: Fetch the tracks or playlist
+    const saverUserName = users[this.saverUserId]?.name
+    let entityType
+    let entityName
+
+    if (this.saveType === EntityType.Track) {
+      const res: Array<{ track_id: number, title: string }> = await this.dnDB.select('track_id', 'title')
+        .from<TrackRow>('tracks')
+        .where('is_current', true)
+        .whereIn('track_id', [this.saveItemId])
+      const tracks = res.reduce((acc, track) => {
+        acc[track.track_id] = { title: track.title }
+        return acc
+      }, {} as Record<number, { title: string }>)
+
+      entityType = 'track'
+      entityName = tracks[this.saveItemId]?.title
+    } else {
+      const res: Array<{ playlist_id: number, playlist_name: string, is_album: boolean }> = await this.dnDB.select('playlist_id', 'playlist_name', 'is_album')
+        .from<PlaylistRow>('playlists')
+        .where('is_current', true)
+        .whereIn('playlist_id', [this.saveItemId])
+      const playlists = res.reduce((acc, playlist) => {
+        acc[playlist.playlist_id] = { playlist_name: playlist.playlist_name, is_album: playlist.is_album }
+        return acc
+      }, {} as Record<number, { playlist_name: string, is_album: boolean }>)
+      const playlist = playlists[this.saveItemId]
+      entityType = playlist?.is_album ? 'album' : 'playlist'
+      entityName = playlist?.playlist_name
+    }
 
     // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
@@ -56,8 +84,9 @@ export class Save extends BaseNotification<SaveNotificationRow> {
             badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
             targetARN: device.awsARN
           }, {
-            title: 'Favorite',
-            body: ``,
+            title: 'New Favorite',
+            body: `${saverUserName
+              } favorited your ${entityType.toLowerCase()} ${entityName}`,
             data: {}
           })
         }))

@@ -24,8 +24,12 @@ func DiscoveryMain() {
 
 	g.Go(func() error {
 		discoveryConfig := config.GetDiscoveryConfig()
-		peering := peering.New(&discoveryConfig.PeeringConfig)
-		err := peering.PollRegisteredNodes()
+		peering, err := peering.New(&discoveryConfig.PeeringConfig)
+		if err != nil {
+			return err
+		}
+
+		err = peering.PollRegisteredNodes()
 		if err != nil {
 			return err
 		}
@@ -64,6 +68,7 @@ func DiscoveryMain() {
 
 	expvar.NewString("booted_at").Set(time.Now().UTC().String())
 
+	// Start comms server on :8925
 	e := server.NewServer(jsc, proc)
 	e.Logger.Fatal(e.Start(":8925"))
 }

@@ -22,6 +22,13 @@ func Keys[K comparable, V any](m map[K]V) []K {
 	return keys
 }
 
+func Min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 func GenerateWhiteNoise(meanDuration uint) ([]byte, error) {
 
 	id := rand.Int()
@@ -39,9 +46,9 @@ func GenerateWhiteNoise(meanDuration uint) ([]byte, error) {
 
 	whitenoiseFunction := fmt.Sprintf("anoisesrc=d=%d", duration)
 	cmd := exec.Command("ffmpeg", "-y", // Yes to all
-		"-f",                                    // audio/video filtering framework
-		"lavfi",                                 // provides generic audio filtering for audio/video signals
-		"-i",                                    // input flag
+		"-f",               // audio/video filtering framework
+		"lavfi",            // provides generic audio filtering for audio/video signals
+		"-i",               // input flag
 		whitenoiseFunction, // generate a noise audio signal for the duration
 		tmpFile,
 	)

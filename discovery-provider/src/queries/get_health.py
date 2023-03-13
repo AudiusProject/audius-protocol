@@ -120,8 +120,17 @@ def _get_chain_health():
         chain_res["block_number"] = latest_block.number
         chain_res["hash"] = latest_block.hash.hex()
         chain_res["chain_id"] = web3.eth.chain_id
+        get_signers_data = '{"method":"clique_getSigners","params":[]}'
+        signers_response = requests.post(LOCAL_RPC, data=get_signers_data)
+        signers_response_dict = signers_response.json()["result"]
+        chain_res["signers"] = signers_response_dict
+        get_snapshot_data = '{"method":"clique_getSnapshot","params":[]}'
+        snapshot_response = requests.post(LOCAL_RPC, data=get_snapshot_data)
+        snapshot_response_dict = snapshot_response.json()["result"]
+        chain_res["snapshot"] = snapshot_response_dict
         return chain_res
-    except:
+    except Exception as e:
+        logging.error("issue with chain health %s", exc_info=e)
         pass
 
 
@@ -347,7 +356,11 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         )
 
     if latest_block_num is not None and latest_indexed_block_num is not None:
-        if final_poa_block and latest_block_num < final_poa_block:
+        # adjust latest block if web3 is pointed to ACDC
+        # indicating POA has finished indexing
+        if final_poa_block and web3.provider.endpoint_uri == os.getenv(
+            "audius_web3_nethermind_rpc"
+        ):
             latest_block_num += final_poa_block
         block_difference = abs(
             latest_block_num - latest_indexed_block_num

@@ -43,12 +43,10 @@ func TestE2EUpload(t *testing.T) {
 
 	// TODO: Upload file with a hash that will fall in the 'aa' shard
 	jobman, err := transcode.NewJobsManager(nodes[0].ss.Jsc, nodes[0].ss.Namespace, 1)
-	if err != nil {
-		panic(err)
-	}
+	assert.NoError(err)
 	jobman.StartWorkers(3)
 
-	url := "/storage/file"
+	url := "/storage/api/v1/file"
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	part, err := writer.CreateFormFile("object", "test.mp3") // TODO: This could be a randomly generated file
@@ -140,7 +138,8 @@ func startNatsCluster(t *testing.T) [5]*testServer {
 		case 3:
 			os.Setenv("AUDIUS_DELEGATE_PRIVATE_KEY", "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb")
 		}
-		ss := NewProd(config.GetStorageConfig(), jsc, nil) // TODO: Pass all nodes
+
+		ss, _ := New(config.GetStorageConfig(), jsc, nil) // TODO: Pass all nodes
 		go ss.WebServer.Start(fmt.Sprintf("127.0.0.1:%d", 1222+i+5))
 		nodes[i].ss = ss
 	}
@@ -174,7 +173,8 @@ func runBasicJetStreamServer(clientPort int, clusterPort int, seedPort int) *ser
 
 func client(t *testing.T, s *server.Server) *nats.Conn {
 	t.Helper()
-	nc, err := peering.New(&config.GetStorageConfig().PeeringConfig).DialNatsUrl(s.ClientURL())
+	p, err := peering.New(&config.GetStorageConfig().PeeringConfig)
+	nc, err := p.DialNatsUrl(s.ClientURL())
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
 	}

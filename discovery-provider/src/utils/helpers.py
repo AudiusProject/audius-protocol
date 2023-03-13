@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import time
+import unicodedata
 from functools import reduce
 from json.encoder import JSONEncoder
 from typing import Optional, cast
@@ -325,7 +326,8 @@ def create_track_route_id(title, handle):
     Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
     """
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
-    # Strip out invalid character
+    sanitized_title = unicodedata.normalize("NFC", sanitized_title)
+    # Strip out invalid characters
     sanitized_title = re.sub(
         r"!|%|\`|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00",
         "",
@@ -361,7 +363,8 @@ def sanitize_slug(title, record_id, collision_id=0):
     (PlaylistName="My Awesome Playlist'~~", collision_id=2) => "my-awesome-playlist-2"
     """
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
-    # Strip out invalid character
+    sanitized_title = unicodedata.normalize("NFC", sanitized_title)
+    # Strip out invalid characters
     sanitized_title = re.sub(
         r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|\’|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"|~",
         "",
@@ -535,9 +538,7 @@ def get_account_index(instruction: TransactionMessageInstruction, index: int):
 def get_final_poa_block(shared_config) -> Optional[int]:
     # get final poa block from identity and cache result
     # marks the transition to nethermind
-    # returns None if still on POA
-    if os.getenv("audius_discprov_env") != "stage":
-        return None
+    # depend on identity responding with final_poa_block or the redis cached value
 
     redis = redis_connection.get_redis()
     cached_final_poa_block = redis.get(final_poa_block_redis_key)
@@ -546,7 +547,6 @@ def get_final_poa_block(shared_config) -> Optional[int]:
 
     final_poa_block = None
     try:
-
         identity_endpoint = (
             f"{shared_config['discprov']['identity_service_url']}/health_check/poa"
         )
@@ -554,11 +554,13 @@ def get_final_poa_block(shared_config) -> Optional[int]:
         response = requests.get(identity_endpoint, timeout=1)
         response.raise_for_status()
         response_json = response.json()
+        if not response_json.get("finalPOABlock"):
+            return None
 
-        final_poa_block = int(response_json.get("finalPOABlock", None))
+        final_poa_block = int(response_json.get("finalPOABlock"))
 
         redis.set(final_poa_block_redis_key, final_poa_block)
-    except requests.exceptions.ConnectionError:
-        # while identity is not running e.g. test env
+    except:
+        # in case identity is down, default to None
         pass
     return final_poa_block

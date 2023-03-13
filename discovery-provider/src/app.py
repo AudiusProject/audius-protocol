@@ -29,7 +29,6 @@ from src.queries import (
     health_check,
     index_block_stats,
     notifications,
-    prometheus_metrics_exporter,
     queries,
     search,
     search_queries,
@@ -264,8 +263,6 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
     app.register_blueprint(user_signals.bp)
-    app.register_blueprint(prometheus_metrics_exporter.bp)
-
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
     app.register_blueprint(playlist_stream_bp)
@@ -464,6 +461,8 @@ def configure_celery(celery, test_config=None):
     # Clear existing locks used in tasks if present
     redis_inst.delete(eth_indexing_last_scanned_block_key)
     redis_inst.delete("disc_prov_lock")
+    redis_inst.delete("disc_prov_lock_nethermind")
+
     redis_inst.delete("network_peers_lock")
     redis_inst.delete("update_metrics_lock")
     redis_inst.delete("update_play_count_lock")

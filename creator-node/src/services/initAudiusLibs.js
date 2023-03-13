@@ -1,5 +1,3 @@
-const { libs: AudiusLibs } = require('@audius/sdk')
-
 const config = require('../config')
 const { logger: genericLogger } = require('../logging')
 
@@ -15,6 +13,7 @@ module.exports = async ({
   enableIdentity = true,
   logger = genericLogger
 }) => {
+  const { libs: AudiusLibs } = require('@audius/sdk')
   /**
    * Define all config variables
    */

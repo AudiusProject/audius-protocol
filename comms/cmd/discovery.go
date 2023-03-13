@@ -6,7 +6,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// discoveryCmd represents the discovery command
 var discoveryCmd = &cobra.Command{
 	Use:   "discovery",
 	Short: "",

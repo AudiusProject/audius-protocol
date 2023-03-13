@@ -4,12 +4,11 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const { logger: genericLogger } = require('./logging')
-const { libs } = require('@audius/sdk')
-const Utils = libs.Utils
 const {
   computeFilePathAndEnsureItExists,
   computeFilePathInDirAndEnsureItExists
-} = require('./utils')
+} = require('./utils/fsUtils')
+const { fileHasher } = require('./utils/fileHasher')
 
 const MAX_HEIGHT = 6000 // No image should be taller than this.
 const COLOR_WHITE = 0xffffffff
@@ -140,7 +139,7 @@ module.exports = async (job) => {
   })
   resizes.push(original)
 
-  const multihashes = await Utils.fileHasher.generateImageCids(toAdd)
+  const multihashes = await fileHasher.generateImageCids(toAdd)
 
   // Write all the images to file storage and
   // return the CIDs and storage paths to write to db

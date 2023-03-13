@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"comms.audius.co/shared/utils"
+	"comms.audius.co/storage/telemetry"
 )
 
 var audioCount uint
@@ -23,9 +24,10 @@ var audioCmd = &cobra.Command{
 	./comms storage seed audio --mean 3600 # average audio duration is 1hr
 	`,
 	Run: func(cmd *cobra.Command, args []string) {
+		telemetry.DiscardLogs()
 		clientCount, err := initClients()
 		if err != nil || clientCount < 1 {
-			fmt.Println("Couldn't find any clients")
+			fmt.Printf("Couldn't find any clients, %+v\n", err)
 			return
 		}
 

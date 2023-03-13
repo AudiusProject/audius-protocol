@@ -10,7 +10,10 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.notifications import notifications, playlist_updates
 from src.api.v1.utils.extend_notification import extend_notification
-from src.queries.get_notifications import get_notifications
+from src.queries.get_notifications import (
+    get_notifications,
+    get_unread_notification_count,
+)
 from src.queries.get_user_playlist_update import (
     PlaylistUpdate,
     get_user_playlist_update,
@@ -47,15 +50,25 @@ class GetNotifications(Resource):
             "user_id": decoded_id,
             "timestamp": datetime.fromtimestamp(parsed_args.get("timestamp"))
             if parsed_args.get("timestamp")
-            else datetime.now(),
+            else None,
             "group_id": parsed_args.get("group_id"),
             "limit": parsed_args.get("limit"),
+            "valid_types": parsed_args.get("valid_types") or [],
+        }
+        unread_args = {
+            "user_id": decoded_id,
+            "timestamp": datetime.fromtimestamp(parsed_args.get("timestamp"))
+            if parsed_args.get("timestamp")
+            else None,
         }
         db = get_db_read_replica()
         with db.scoped_session() as session:
             notifications = get_notifications(session, args)
             formatted_notifications = list(map(extend_notification, notifications))
-            return success_response({"notifications": formatted_notifications})
+            unread_count = get_unread_notification_count(session, unread_args)
+            return success_response(
+                {"notifications": formatted_notifications, "unread_count": unread_count}
+            )
 
 
 def extend_playlist_update(playlist_seen: PlaylistUpdate):

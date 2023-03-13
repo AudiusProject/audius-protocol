@@ -1,11 +1,11 @@
 const axios = require('axios')
 const _ = require('lodash')
-const { libs } = require('@audius/sdk')
-const LibsUtils = libs.Utils
 
 const { logger } = require('../logging')
 const { generateTimestampAndSignature } = require('../apiSigning')
 const { parseCNodeResponse } = require('../apiHelpers')
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 const NumSignaturesRequired = 3
 
@@ -114,8 +114,8 @@ class URSMRegistrationManager {
      * 1-a. Short-circuit if no L1 record found
      */
     if (
-      LibsUtils.isZeroAddress(ownerWalletFromSPFactory) ||
-      LibsUtils.isZeroAddress(delegateOwnerWalletFromSPFactory) ||
+      ownerWalletFromSPFactory === ZERO_ADDRESS ||
+      delegateOwnerWalletFromSPFactory === ZERO_ADDRESS ||
       !endpointFromSPFactory
     ) {
       throw new Error('Failed to find valid L1 record for node')

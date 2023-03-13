@@ -19,3 +19,11 @@ steps:
           echo "Deleting images:" $old_images
           gcloud compute images delete --quiet $old_images
         fi
+  - run:
+      name: Cleanup Firewall Rules
+      command: |
+        old_firewalls=$(gcloud compute firewall-rules list --format="csv(name)[no-heading]" --filter="creationTimestamp < -P2H AND name~'circleci-.*'" --sort-by=creationTimestamp)
+        if [[ "$old_images" != "" ]]; then
+          echo "Deleting firewalls:" $old_firewalls
+          gcloud compute firewall-rules delete --quiet $old_firewalls
+        fi

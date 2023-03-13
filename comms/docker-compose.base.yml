@@ -1,7 +1,11 @@
 version: '3'
 
 x-dev-env: &dev-env
-  NATS_ENABLE_JETSTREAM: true
+  AUDIUS_REBALANCE_INTERVAL_HOURS: "0.005" # check for unhealthy nodes and update healthy node set every 18 seconds
+  AUDIUS_HEALTH_TTL_HOURS: "0.005" # consider a node unhealthy if it hasn't self-reported "OK" status in the last 18 seconds
+  AUDIUS_REPORT_OK_INTERVAL_SECONDS: 4
+  AUDIUS_SHARD_LENGTH: 1
+  AUDIUS_NATS_ENABLE_JETSTREAM: true
   AUDIUS_DEV_ONLY_REGISTERED_NODES: '
         [
           {
@@ -9,6 +13,7 @@ x-dev-env: &dev-env
             "spId": "1",
             "endpoint": "http://node1-storage",
             "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
+            "owner": { "id": "0x339511506f7BfB5f5d7042b450B9D450626dbB91" },
             "type": { "id": "content-node" }
           },
           {
@@ -16,6 +21,7 @@ x-dev-env: &dev-env
             "spId": "2",
             "endpoint": "http://node2-storage",
             "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
+            "owner": { "id": "0x11327A21bc4dE71a1274D7C1e2c94D50AdeeBB88" },
             "type": { "id": "content-node" }
           },
           {
@@ -23,6 +29,7 @@ x-dev-env: &dev-env
             "spId": "3",
             "endpoint": "http://node3-storage",
             "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
+            "owner": { "id": "0x339511506f7BfB5f5d7042b450B9D450626dbB91" },
             "type": { "id": "content-node" }
           },
           {
@@ -30,6 +37,7 @@ x-dev-env: &dev-env
             "spId": "4",
             "endpoint": "http://node4-storage",
             "delegateOwnerWallet": "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
+            "owner": { "id": "0x11327A21bc4dE71a1274D7C1e2c94D50AdeeBB88" },
             "type": { "id": "content-node" }
           },
           {
@@ -37,6 +45,7 @@ x-dev-env: &dev-env
             "spId": "5",
             "endpoint": "http://node1-discovery",
             "delegateOwnerWallet": "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e",
+            "owner": { "id": "0x339511506f7BfB5f5d7042b450B9D450626dbB91" },
             "type": { "id": "discovery-node" }
           },
           {
@@ -44,6 +53,7 @@ x-dev-env: &dev-env
             "spId": "6",
             "endpoint": "http://node2-discovery",
             "delegateOwnerWallet": "0x9262c9A1b172fF2A9C027B55862389d00b68A26a",
+            "owner": { "id": "0x11327A21bc4dE71a1274D7C1e2c94D50AdeeBB88" },
             "type": { "id": "discovery-node" }
           },
           {
@@ -51,6 +61,7 @@ x-dev-env: &dev-env
             "spId": "7",
             "endpoint": "http://node3-discovery",
             "delegateOwnerWallet": "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4",
+            "owner": { "id": "0x339511506f7BfB5f5d7042b450B9D450626dbB91" },
             "type": { "id": "discovery-node" }
           }
         ]'
@@ -70,9 +81,11 @@ services:
     container_name: test
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
       target: builder
-    image: "comms:v2-test"
+      args:
+        GOARCH: arm64
+    image: "comms:dev"
     environment:
       <<: *dev-env
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
@@ -98,9 +111,11 @@ services:
   nats-dev:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
       target: builder
-    image: "nats:v2-dev"
+      args:
+        GOARCH: arm64
+    image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
@@ -126,9 +141,11 @@ services:
   discovery-dev:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
       target: builder
-    image: "discovery:v2-dev"
+      args:
+        GOARCH: arm64
+    image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:
@@ -142,9 +159,11 @@ services:
   storage-dev:
     build:
       context: .
-      dockerfile: Dockerfile.v2
+      dockerfile: Dockerfile
       target: builder
-    image: "storage:v2-dev"
+      args:
+        GOARCH: arm64
+    image: "comms:dev"
     restart: unless-stopped
     stop_signal: SIGKILL
     command:

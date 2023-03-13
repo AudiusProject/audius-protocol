@@ -11,13 +11,20 @@ import (
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/storageserver"
+	"comms.audius.co/storage/telemetry"
 	"github.com/nats-io/nats.go"
 	"github.com/nats-io/prometheus-nats-exporter/exporter"
 )
 
 func StorageMain() {
+	telemetry.InitDefault()
+
 	storageConfig := config.GetStorageConfig()
-	peering := peering.New(&storageConfig.PeeringConfig)
+	peering, err := peering.New(&storageConfig.PeeringConfig)
+	if err != nil {
+		log.Fatalf("failed to create peering instance: %+v", err)
+	}
+
 	jsc, err := func() (nats.JetStreamContext, error) {
 		err := peering.PollRegisteredNodes()
 		if err != nil {
@@ -31,7 +38,10 @@ func StorageMain() {
 		log.Fatal(err)
 	}
 
-	ss := storageserver.NewProd(storageConfig, jsc, peering)
+	ss, err := storageserver.New(storageConfig, jsc, peering)
+  if err != nil {
+		log.Fatalf("failed to create prod server: %+v", err)
+	}
 
 	// Start server
 	go func() {

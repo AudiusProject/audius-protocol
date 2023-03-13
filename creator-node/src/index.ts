@@ -1,17 +1,24 @@
 /* eslint-disable import/first */
 'use strict'
 
+console.log('Starting up...')
+const globalStartTimeMS = Date.now()
+
+// Libs takes a long time to import, so import it first.
+// Otherwise some other part of the init process appears slow and is hard to debug, but it's really just because it's importing libs.
+const { libs: _ } = require('@audius/sdk')
+console.log(`Importing libs took ${(Date.now() - globalStartTimeMS) / 1000}s`)
+
+import config from './config'
+
 import { setupTracing } from './tracer'
 setupTracing()
 
 import type { Worker } from 'cluster'
 import { AggregatorRegistry } from 'prom-client'
-import {
-  clusterUtilsForPrimary,
-  clusterUtilsForWorker,
-  getNumWorkers,
-  isClusterEnabled
-} from './utils'
+import { clusterUtilsForPrimary } from './utils/cluster/clusterUtilsForPrimary'
+import { clusterUtilsForWorker } from './utils/cluster/clusterUtilsForWorker'
+import { getNumWorkers, isClusterEnabled } from './utils/cluster/clusterUtils'
 import cluster from 'cluster'
 
 import ON_DEATH from 'death'
@@ -19,7 +26,6 @@ import { Keypair } from '@solana/web3.js'
 
 import { recordMetrics } from './services/prometheusMonitoring/prometheusUsageUtils'
 import { initializeApp } from './app'
-import config from './config'
 import { serviceRegistry } from './serviceRegistry'
 import { runMigrations, clearRunningQueries } from './migrationManager'
 import DBManager from './dbManager'
@@ -40,7 +46,6 @@ const redisClient = require('./redis')
 // https://github.com/siimon/prom-client/issues/501
 const aggregatorRegistry = new AggregatorRegistry()
 
-const globalStartTimeMS = Date.now()
 function debugLogTimer(message: string) {
   // Make times lineup in grepped logs i.e.
   // 'LogTimer: startApp.serviceRegistry.initServices - 0.625s'

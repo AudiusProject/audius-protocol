@@ -1,5 +1,5 @@
 import { Knex } from 'knex'
-import { NotificationRow, UserRow } from '../../types/dn'
+import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import { RepostNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
@@ -34,30 +34,55 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       return acc
     }, {} as Record<number, { name: string, isDeactivated: boolean }>)
 
-
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
     }
 
-    // TODO: Fetch the tracks or playlist
-
-    // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
+    const reposterUserName = users[this.repostUserId]?.name
+    let entityType
+    let entityName
+
+    if (this.repostType === EntityType.Track) {
+      const res: Array<{ track_id: number, title: string }> = await this.dnDB.select('track_id', 'title')
+        .from<TrackRow>('tracks')
+        .where('is_current', true)
+        .whereIn('track_id', [this.repostItemId])
+      const tracks = res.reduce((acc, track) => {
+        acc[track.track_id] = { title: track.title }
+        return acc
+      }, {} as Record<number, { title: string }>)
+
+      entityType = 'track'
+      entityName = tracks[this.repostItemId]?.title
+    } else {
+      const res: Array<{ playlist_id: number, playlist_name: string, is_album: boolean }> = await this.dnDB.select('playlist_id', 'playlist_name', 'is_album')
+        .from<PlaylistRow>('playlists')
+        .where('is_current', true)
+        .whereIn('playlist_id', [this.repostItemId])
+      const playlists = res.reduce((acc, playlist) => {
+        acc[playlist.playlist_id] = { playlist_name: playlist.playlist_name, is_album: playlist.is_album }
+        return acc
+      }, {} as Record<number, { playlist_name: string, is_album: boolean }>)
+      const playlist = playlists[this.repostItemId]
+      entityType = playlist?.is_album ? 'album' : 'playlist'
+      entityName = playlist?.playlist_name
+    }
 
     // If the user has devices to the notification to, proceed
     if ((userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length > 0) {
       const userMobileSettings: NotificationSettings = userNotifications.mobile?.[this.receiverUserId].settings
       const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['favorites']) {
+      if (userMobileSettings['reposts']) {
         await Promise.all(devices.map(device => {
           return sendPushNotification({
             type: device.type,
             badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
             targetARN: device.awsARN
           }, {
-            title: 'Favorite',
-            body: ``,
+            title: 'New Repost',
+            body: `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`,
             data: {}
           })
         }))

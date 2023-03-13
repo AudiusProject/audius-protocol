@@ -22,21 +22,12 @@ const moment = require('moment')
 const { REDIS_ATTESTER_STATE } = require('../utils/configureAttester.js')
 
 // Defaults used in relay health check endpoint
-const RELAY_HEALTH_TEN_MINS_AGO_BLOCKS = 120 // 1 block/5sec = 120 blocks/10 minutes
-const RELAY_HEALTH_MAX_TRANSACTIONS = 100 // max transactions to look into
-const RELAY_HEALTH_MAX_ERRORS = 5 // max acceptable errors for a 200 response
-const RELAY_HEALTH_MAX_BLOCK_RANGE = 360 // max block range allowed from query params
-const RELAY_HEALTH_MIN_TRANSACTIONS = 5 // min number of tx's that must have happened within block diff
 const RELAY_HEALTH_ACCOUNTS = new Set(
   config.get('relayerWallets').map((wallet) => wallet.publicKey)
 )
 const ETH_RELAY_HEALTH_ACCOUNTS = new Set(
   config.get('ethRelayerWallets').map((wallet) => wallet.publicKey)
 )
-const RELAY_HEALTH_MAX_LATENCY = 15 // seconds
-
-// flatten one level of nexted arrays
-const flatten = (arr) => arr.reduce((acc, val) => acc.concat(val), [])
 
 module.exports = function (app) {
   /**
@@ -54,151 +45,65 @@ module.exports = function (app) {
     '/health_check/relay',
     handleResponse(async (req, res) => {
       const start = Date.now()
-      const audiusLibsInstance = req.app.get('audiusLibs')
       const redis = req.app.get('redis')
-      const web3 = audiusLibsInstance.web3Manager.getWeb3()
 
-      const endBlockNumber = parseInt(await web3.eth.getBlockNumber(), 10)
-      const blockDiff =
-        parseInt(req.query.blockDiff, 10) || RELAY_HEALTH_TEN_MINS_AGO_BLOCKS
-      const maxTransactions =
-        parseInt(req.query.maxTransactions, 10) || RELAY_HEALTH_MAX_TRANSACTIONS
-      const maxErrors =
-        parseInt(req.query.maxErrors, 10) || RELAY_HEALTH_MAX_ERRORS
-      const minTransactions =
-        parseInt(req.query.minTransactions) || RELAY_HEALTH_MIN_TRANSACTIONS
+      const maxErrors = parseInt(req.query.maxErrors)
+      const minTransactions = parseInt(req.query.minTransactions)
       const isVerbose = req.query.verbose || false
-      const maxRelayLatency = req.query.maxRelayLatency || RELAY_HEALTH_MAX_LATENCY
-
-      // In the case that endBlockNumber - blockDiff goes negative, default startBlockNumber to 0
-      const startBlockNumber = Math.max(endBlockNumber - blockDiff, 0)
-
-      // If query params are invalid, throw server error
-      if (
-        isNaN(startBlockNumber) ||
-        isNaN(endBlockNumber) ||
-        startBlockNumber < 0 ||
-        endBlockNumber < 0 ||
-        endBlockNumber < startBlockNumber
-      ) {
-        return errorResponseServerError(
-          `Invalid start and/or end block. startBlock: ${startBlockNumber}, endBlock: ${endBlockNumber}`
-        )
-      }
-
-      if (endBlockNumber - startBlockNumber > RELAY_HEALTH_MAX_BLOCK_RANGE) {
-        return errorResponseServerError(
-          `Block difference is over ${RELAY_HEALTH_MAX_BLOCK_RANGE}. startBlock: ${startBlockNumber}, endBlock: ${endBlockNumber}`
-        )
-      }
-
-      if (
-        isNaN(maxTransactions) ||
-        isNaN(maxErrors) ||
-        maxTransactions < 0 ||
-        maxErrors < 0
-      ) {
-        return errorResponseServerError(
-          `Invalid number of transactions and/or errors. maxTransactions: ${maxTransactions}, maxErrors: ${maxErrors}`
-        )
-      }
-
-      if (maxRelayLatency < 2) {
-        return errorResponseServerError(`Invalid maxRelayLatency, must be greater than 2. Given ${maxRelayLatency}`)
-      }
-
-      const failureTxs = {} // senderAddress: [<txHash>]
-      let txCounter = 0
-      let minBlockTime = null
-      let maxBlockTime = null
-
-      req.logger.info(
-        `Searching for transactions to/from relay accounts within blocks ${startBlockNumber} and ${endBlockNumber}`
-      )
-
-      // Iterate through the range of blocks, looking into the max number of transactions that are from audius
-      for (let i = endBlockNumber; i > startBlockNumber; i--) {
-        // If the max number of transactions have been evaluated, break out
-        if (txCounter > maxTransactions) break
-        const block = await web3.eth.getBlock(i, true)
-        if (!block) {
-          req.logger.error(`Could not find block for health_check/relay ${i}`)
-          continue
-        }
-        if (!minBlockTime || block.timestamp < minBlockTime)
-          minBlockTime = block.timestamp
-        if (!maxBlockTime || block.timestamp > maxBlockTime)
-          maxBlockTime = block.timestamp
-        if (block.transactions.length) {
-          for (const tx of block.transactions) {
-            // If transaction is from audius account, determine success or fail status
-            if (RELAY_HEALTH_ACCOUNTS.has(tx.from)) {
-              const txHash = tx.hash
-              const resp = await web3.eth.getTransactionReceipt(txHash)
-              txCounter++
-
-              // note: pending txs will have null resp
-              if (resp && !resp.status) {
-                // tx failed
-                const senderAddress = await redis.hget(
-                  'txHashToSenderAddress',
-                  txHash
-                )
-                if (senderAddress) {
-                  if (!failureTxs[senderAddress])
-                    failureTxs[senderAddress] = [txHash]
-                  else failureTxs[senderAddress].push(txHash)
-                } else {
-                  failureTxs.unknown = (failureTxs.unknown || []).concat(txHash)
-                }
-              }
-            }
-          }
-        }
-      }
-
+      const maxRelayLatency = parseInt(req.query.maxRelayLatency)
       let isError = false
 
       // delete old entries from set in redis
-      const epochOneHourAgo = Math.floor(Date.now() / 1000) - 3600
-      await redis.zremrangebyscore('relayTxAttempts', '-inf', epochOneHourAgo)
-      await redis.zremrangebyscore('relayTxFailures', '-inf', epochOneHourAgo)
-      await redis.zremrangebyscore('relayTxSuccesses', '-inf', epochOneHourAgo)
+      const epochTenMinutesAgo = Math.floor(Date.now() / 1000) - 600
+      await redis.zremrangebyscore(
+        'relayTxAttempts',
+        '-inf',
+        epochTenMinutesAgo
+      )
+      await redis.zremrangebyscore(
+        'relayTxFailures',
+        '-inf',
+        epochTenMinutesAgo
+      )
+      await redis.zremrangebyscore(
+        'relayTxSuccesses',
+        '-inf',
+        epochTenMinutesAgo
+      )
 
       // check if there have been any attempts in the time window that we processed the block health check
-      const attemptedTxsInRedis = await redis.zrangebyscore(
+      const attemptedTxsInRedis = await redis.zrange(
         'relayTxAttempts',
-        minBlockTime,
-        maxBlockTime
+        '0',
+        '-1'
       )
-      const successfulTxsInRedis = await redis.zrangebyscore(
+      const successfulTxsInRedis = await redis.zrange(
         'relayTxSuccesses',
-        minBlockTime,
-        maxBlockTime
+        '0',
+        '-1'
       )
-      const failureTxsInRedis = await redis.zrangebyscore(
-        'relayTxFailures',
-        minBlockTime,
-        maxBlockTime
-      )
-      if (txCounter < minTransactions) isError = true
+      const failureTxsInRedis = await redis.zrange('relayTxFailures', '0', '-1')
 
-      for (const tx in successfulTxsInRedis) {
-        if ((tx.totalTransactionLatency / 1000) > maxRelayLatency) {
+      if (minTransactions && successfulTxsInRedis.length < minTransactions) {
+        isError = true
+      }
+
+      if (maxErrors && failureTxsInRedis.length > maxErrors) {
+        isError = true
+      }
+
+      for (const tx of successfulTxsInRedis) {
+        const parsedTx = JSON.parse(tx)
+        if (
+          maxRelayLatency &&
+          parsedTx.totalTransactionLatency / 1000 > maxRelayLatency
+        ) {
           isError = true
           break
         }
       }
 
       const serverResponse = {
-        blockchain: {
-          numberOfTransactions: txCounter,
-          minTransactions,
-          numberOfFailedTransactions: flatten(Object.values(failureTxs)).length,
-          failedTransactionHashes: failureTxs,
-          startBlock: startBlockNumber,
-          endBlock: endBlockNumber
-        },
         redis: {
           attemptedTxsCount: attemptedTxsInRedis.length,
           successfulTxsCount: successfulTxsInRedis.length,
@@ -442,6 +347,9 @@ module.exports = function (app) {
       if (!highestBlockNumber) {
         highestBlockNumber = config.get('notificationStartBlock')
       }
+      req.logger.info(
+        `notifications_check | Running notifications_check, comparing blockNumber ${highestBlockNumber}`
+      )
       const redis = req.app.get('redis')
       const maxFromRedis = await redis.get('maxBlockNumber')
       if (maxFromRedis) {
@@ -460,6 +368,9 @@ module.exports = function (app) {
       )
 
       const { discoveryProvider } = audiusLibsWrapper.getAudiusLibs()
+      req.logger.info(
+        `notifications_check | Making notification_check request on ${discoveryProvider} at ${discoveryProvider.discoveryProviderEndpoint}`
+      )
 
       const body = (
         await axios({
@@ -467,6 +378,9 @@ module.exports = function (app) {
           url: `${discoveryProvider.discoveryProviderEndpoint}/health_check`
         })
       ).data
+      req.logger.info(
+        `notifications_check | Received notification_check response ${body} on ${discoveryProvider.discoveryProviderEndpoint}`
+      )
       const discProvDbHighestBlock = body.data.db.number
       const notifBlockDiff = discProvDbHighestBlock - highestBlockNumber
       const resp = {
@@ -488,8 +402,14 @@ module.exports = function (app) {
           isWithinBounds(notificationJobLastSuccess) &&
           isWithinBounds(notificationEmailsJobLastSuccess) &&
           isWithinBounds(notificationAnnouncementsJobLastSuccess)
+        req.logger.info(
+          `notifications_check | isWithinBounds is ${withinBounds} and notifBlockDiff is ${notifBlockDiff}`
+        )
       }
       if (!withinBounds || notifBlockDiff > maxBlockDifference) {
+        req.logger.info(
+          `notifications_check | Returning a 500 because we are out of bounds or notifBlockDiff is too large`
+        )
         return errorResponseServerError(resp)
       }
 

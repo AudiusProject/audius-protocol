@@ -6,7 +6,7 @@ const axios = require('axios')
 
 const config = require('./config')
 const Utils = require('./utils')
-const { libs: audiusLibs } = require('@audius/sdk')
+const { fileHasher } = require('./utils/fileHasher')
 const DiskManager = require('./diskManager')
 const { logger: genericLogger } = require('./logging')
 const { sendResponse, errorResponseBadRequest } = require('./apiHelpers')
@@ -14,8 +14,6 @@ const DecisionTree = require('./utils/decisionTree')
 const { asyncRetry } = require('./utils/asyncRetry')
 const { getAllRegisteredCNodes } = require('./services/ContentNodeInfoManager')
 const { getIfAttemptedStateFix } = require('./utils')
-
-const LibsUtils = audiusLibs.Utils
 
 const MAX_AUDIO_FILE_SIZE = parseInt(config.get('maxAudioFileSizeBytes'))
 const MAX_MEMORY_FILE_SIZE = parseInt(config.get('maxMemoryFileSizeBytes'))
@@ -31,7 +29,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
     throw new Error('User must be authenticated to save a file')
   }
 
-  const cid = await LibsUtils.fileHasher.generateNonImageCid(
+  const cid = await fileHasher.generateNonImageCid(
     buffer,
     genericLogger.child(req.logContext)
   )
@@ -49,7 +47,7 @@ async function saveFileFromBufferToDisk(req, buffer, numRetries = 5) {
       throw new Error(`File has no content, content length is 0: ${cid}`)
     }
 
-    const expectedCID = await LibsUtils.fileHasher.generateNonImageCid(
+    const expectedCID = await fileHasher.generateNonImageCid(
       dstPath,
       genericLogger.child(req.logContext)
     )

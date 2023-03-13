@@ -7,13 +7,9 @@ import {
   randId,
   createChat,
   readChat,
-  createUsers,
-  insertFollows,
   insertMessage,
   insertReaction,
   setupTwoUsersWithDevices,
-  insertMobileDevices,
-  insertMobileSettings,
   createTestDB,
   dropTestDB,
   replaceDBName
@@ -34,7 +30,6 @@ describe('Push Notifications', () => {
     const redis = await getRedisConnection()
     redis.del(config.lastIndexedMessageRedisKey)
     redis.del(config.lastIndexedReactionRedisKey)
-    console.log('init processor')
     processor = new Processor()
     await processor.init({
       identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
@@ -53,39 +48,15 @@ describe('Push Notifications', () => {
     ])
   })
 
-  test.skip("Process follow for ios", async () => {
-    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
-    await insertFollows(processor.discoveryDB, [{ follower_user_id: 1, followee_user_id: 2 }])
-    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
-    await new Promise(resolve => setTimeout(resolve, 10))
-
-    const pending = processor.listener.takePending()
-    expect(pending?.appNotifications).toHaveLength(1)
-    // Assert single pending
-    await processor.appNotificationsProcessor.process(pending.appNotifications)
-
-    expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:2',
-      badgeCount: 0
-    }, {
-      title: 'Follow',
-      body: 'user_1 followed you',
-      data: {}
-    })
-  })
-
   test("Process DM for ios", async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
-    console.log('start processor')
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
     await new Promise((r) => setTimeout(r, config.pollInterval))
 
-    // User 1 sent message config.dmNotificationDelay mins ago
+    // User 1 sent message config.dmNotificationDelay ms ago
     const message = "hi from user 1"
     const messageId = randId().toString()
     const messageTimestampMs = Date.now() - config.dmNotificationDelay
@@ -95,6 +66,7 @@ describe('Push Notifications', () => {
     await insertMessage(processor.discoveryDB, user1.userId, chatId, messageId, message, messageTimestamp)
 
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: user2.deviceType,
@@ -108,7 +80,7 @@ describe('Push Notifications', () => {
 
     jest.clearAllMocks()
 
-    // User 2 reacted to user 1's message config.dmNotificationDelay mins ago
+    // User 2 reacted to user 1's message config.dmNotificationDelay ms ago
     const reaction = "fire"
     const reactionTimestampMs = Date.now() - config.dmNotificationDelay
     await insertReaction(processor.discoveryDB, user2.userId, messageId, reaction, new Date(reactionTimestampMs))
@@ -130,12 +102,11 @@ describe('Push Notifications', () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
-    console.log('start processor')
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
-    await new Promise((r) => setTimeout(r, config.pollInterval))
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
-    // User 1 sent message config.dmNotificationDelay mins ago
+    // User 1 sent message config.dmNotificationDelay ms ago
     const message = "hi from user 1"
     const messageId = randId().toString()
     const messageTimestampMs = Date.now() - config.dmNotificationDelay
@@ -158,7 +129,7 @@ describe('Push Notifications', () => {
 
     jest.clearAllMocks()
 
-    // User 1 reacted to user 1's message config.dmNotificationDelay mins ago
+    // User 1 reacted to user 1's message config.dmNotificationDelay ms ago
     const reaction = "fire"
     const reactionTimestampMs = Date.now() - config.dmNotificationDelay
     await insertReaction(processor.discoveryDB, user1.userId, messageId, reaction, new Date(reactionTimestampMs))
@@ -171,10 +142,9 @@ describe('Push Notifications', () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
-    console.log('start processor')
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
-    await new Promise((r) => setTimeout(r, config.pollInterval))
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // User 1 sends message now
     const message = "hi from user 1"
@@ -200,10 +170,9 @@ describe('Push Notifications', () => {
     await insertMessage(processor.discoveryDB, user1.userId, chatId, messageId, message, messageTimestamp)
 
     // Start processor
-    console.log('start processor')
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
-    await new Promise((r) => setTimeout(r, config.pollInterval))
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
     // User 2 reacts to user 1's message now
     const reaction = "fire"
@@ -217,12 +186,11 @@ describe('Push Notifications', () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(processor.discoveryDB, processor.identityDB)
 
     // Start processor
-    console.log('start processor')
     processor.start()
-    // Let notifications job run for 1 cycle to initialize the min cursors in redis
-    await new Promise((r) => setTimeout(r, config.pollInterval))
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
-    // User 1 sent message config.dmNotificationDelay mins ago
+    // User 1 sent message config.dmNotificationDelay ms ago
     const message = "hi from user 1"
     const messageId = randId().toString()
     const messageTimestampMs = Date.now() - config.dmNotificationDelay
@@ -238,7 +206,7 @@ describe('Push Notifications', () => {
 
     jest.clearAllMocks()
 
-    // User 2 reacted to user 1's message config.dmNotificationDelay mins ago
+    // User 2 reacted to user 1's message config.dmNotificationDelay ms ago
     const reaction = "fire"
     const reactionTimestampMs = Date.now() - config.dmNotificationDelay
     await insertReaction(processor.discoveryDB, user2.userId, messageId, reaction, new Date(reactionTimestampMs))

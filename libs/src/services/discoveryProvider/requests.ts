@@ -651,23 +651,28 @@ export const getNotifications = (
   }
 }
 
-export const getUserNotifications = ({
-  encodedUserId,
-  timestamp,
-  groupId,
-  limit
-}: {
+export type GetUserNotificationsParams = {
   encodedUserId: string
   timestamp: number
   groupId?: string
   limit?: number
-}) => {
+  validTypes?: string[]
+}
+
+export const getUserNotifications = ({
+  encodedUserId,
+  timestamp,
+  groupId,
+  limit,
+  validTypes
+}: GetUserNotificationsParams) => {
   return {
     endpoint: `v1/full/notifications/${encodedUserId}`,
     queryParams: {
       timestamp,
       group_id: groupId,
-      limit
+      limit,
+      valid_types: validTypes
     }
   }
 }

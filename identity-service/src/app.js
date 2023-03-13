@@ -92,13 +92,6 @@ class App {
       // 1. start notifications processing
       // 2. fork web server worker processes
       if (!config.get('isTestRun')) {
-        const audiusInstance = await this.configureAudiusInstance()
-        cluster.fork({ WORKER_TYPE: 'notifications' })
-
-        await this.configureRewardsAttester(audiusInstance)
-        await this.configureDiscoveryNodeRegistration(audiusInstance)
-        await this.configureReporter()
-
         // Fork extra web server workers
         // note - we can't have more than 1 worker at the moment because POA and ETH relays
         // use in memory wallet locks
@@ -112,6 +105,13 @@ class App {
           )
           cluster.fork(worker.process.env)
         })
+
+        const audiusInstance = await this.configureAudiusInstance()
+        cluster.fork({ WORKER_TYPE: 'notifications' })
+
+        await this.configureRewardsAttester(audiusInstance)
+        await this.configureDiscoveryNodeRegistration(audiusInstance)
+        await this.configureReporter()
       } else {
         // if it's a test run only start the server
         await new Promise((resolve) => {

@@ -13,18 +13,16 @@ import {
   logErrorWithDuration
 } from './logging'
 import { tracing } from './tracer'
+import { execShellCommand, runShellCommand } from './utils/runShellCommand'
+import { verifyCIDMatchesExpected } from './utils/cidUtils'
+import { timeout, getCharsInRanges } from './utils/utils'
 import {
-  execShellCommand,
-  runShellCommand,
-  verifyCIDMatchesExpected,
-  timeout,
   ensureDirPathExists,
   computeFilePath,
   computeFilePathAndEnsureItExists,
-  computeFilePathInDirAndEnsureItExists,
-  getCharsInRanges,
-  clusterUtilsForPrimary
-} from './utils'
+  computeFilePathInDirAndEnsureItExists
+} from './utils/fsUtils'
+import { clusterUtilsForPrimary } from './utils/cluster/clusterUtilsForPrimary'
 import { fetchFileFromNetworkAndSaveToFS } from './fileManager'
 import BlacklistManager from './blacklistManager'
 

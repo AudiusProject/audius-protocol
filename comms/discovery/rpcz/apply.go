@@ -326,7 +326,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		logger.Debug("commited", "took", takeSplit())
 
 		// send out websocket events fire + forget style
-		websocketNotify(rawRpc, userId, meta.Timestamp)
+		websocketNotify(rawRpc, userId, meta.Timestamp.Round(time.Microsecond))
 		logger.Debug("websocket push done", "took", takeSplit())
 
 		return nil

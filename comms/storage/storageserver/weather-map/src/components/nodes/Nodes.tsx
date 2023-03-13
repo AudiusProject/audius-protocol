@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom'
 
-import { HostAndShards } from '../../api'
+import { NodeStatus } from '../../api'
+import { formatDateTime } from '../../util'
 
 export default function Nodes({
-  hostsAndShards,
+  nodeStatuses,
 }: {
-  hostsAndShards: { [pubKey: string]: HostAndShards }
+  nodeStatuses: { [pubKey: string]: NodeStatus }
 }) {
   function truncatePubKey(pubKey: string) {
     if (pubKey.length <= 12) return pubKey
@@ -15,18 +16,18 @@ export default function Nodes({
   return (
     <div>
       <ul className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {Object.keys(hostsAndShards).map((pubKey) => (
+        {Object.keys(nodeStatuses).map((pubKey) => (
           <li
             key={pubKey}
-            className="col-span-1 max-h-32 divide-y divide-gray-200 overflow-y-scroll rounded-lg bg-white shadow-md"
+            className="col-span-1 max-h-32 divide-y divide-gray-200 overflow-y-scroll rounded-lg rounded-lg border border-neutral-50 bg-white shadow-md dark:border-gray-800 dark:bg-gray-900"
           >
             <div className="w-full items-center justify-between space-x-6 p-6">
               <div className="flex-1 truncate">
                 <div className="flex items-center space-x-3">
-                  <h3 className="truncate text-sm font-medium text-gray-900">
-                    {hostsAndShards[pubKey].host} (
+                  <h3 className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                    {nodeStatuses[pubKey].host} (
                     <a
-                      href={`${hostsAndShards[pubKey].host}/nats`}
+                      href={`${nodeStatuses[pubKey].host}/nats`}
                       target="_blank"
                       className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
                       rel="noreferrer"
@@ -35,7 +36,7 @@ export default function Nodes({
                     </a>
                     ,{' '}
                     <a
-                      href={`${hostsAndShards[pubKey].host}/storage`}
+                      href={`${nodeStatuses[pubKey].host}/storage/uploads`}
                       target="_blank"
                       className="font-medium text-blue-600 underline hover:no-underline dark:text-blue-500"
                       rel="noreferrer"
@@ -48,14 +49,17 @@ export default function Nodes({
                 <p className="mt-1 truncate text-sm text-gray-500">
                   {truncatePubKey(pubKey)}
                 </p>
+                <p className="mt-1 truncate text-sm text-gray-500">
+                  Last healthy: {formatDateTime(new Date(nodeStatuses[pubKey].lastOk))}
+                </p>
               </div>
 
               <div className="center text-center">
-                {hostsAndShards[pubKey].shards.map((shard) => (
+                {nodeStatuses[pubKey].shards.map((shard) => (
                   <span key={`${pubKey}_${shard}`}>
                     <Link
                       to={`/shard/${shard}`}
-                      className="mx-1 my-1 inline-block max-w-sm flex-shrink-0 rounded-full border border-gray-100 bg-gray-300 p-6 px-2 py-0.5 text-xs font-medium text-gray-800 hover:bg-gray-100"
+                      className="mx-1 my-1 inline-block max-w-sm flex-shrink-0 rounded-full border border-gray-100 bg-gray-300 p-6 px-2 py-0.5 text-xs font-medium text-gray-800 hover:bg-gray-100 dark:border-gray-600 dark:bg-gray-500 dark:text-gray-300 hover:dark:bg-gray-400"
                     >
                       {shard}
                     </Link>

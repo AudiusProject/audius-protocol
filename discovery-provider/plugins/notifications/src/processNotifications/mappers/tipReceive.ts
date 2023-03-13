@@ -4,9 +4,11 @@ import { TipReceiveNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { capitalize } from 'lodash'
+import { formatWei } from '../../utils/format'
 
 type TipReceiveNotificationRow = Omit<NotificationRow, 'data'> & { data: TipReceiveNotification }
-export class TipReceiveSend extends BaseNotification<TipReceiveNotificationRow> {
+export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
 
   senderUserId: number
   receiverUserId: number
@@ -17,7 +19,7 @@ export class TipReceiveSend extends BaseNotification<TipReceiveNotificationRow> 
     const userIds: number[] = this.notification.user_ids!
     this.amount = this.notification.data.amount
     this.receiverUserId = this.notification.data.receiver_user_id
-    this.senderUserId = this.notification.data.receiver_user_id
+    this.senderUserId = this.notification.data.sender_user_id
   }
 
   async pushNotification() {
@@ -39,6 +41,9 @@ export class TipReceiveSend extends BaseNotification<TipReceiveNotificationRow> 
     // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
 
+    const sendingUserName = users[this.senderUserId]?.name
+    const tipAmount = formatWei(this.amount.toString(), 'sol')
+
     // If the user has devices to the notification to, proceed
     if ((userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length > 0) {
       const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
@@ -48,8 +53,8 @@ export class TipReceiveSend extends BaseNotification<TipReceiveNotificationRow> 
           badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
           targetARN: device.awsARN
         }, {
-          title: 'Favorite',
-          body: ``,
+          title: 'You Received a Tip!',
+          body: `${capitalize(sendingUserName)} sent you a tip of ${tipAmount} $AUDIO`,
           data: {}
         })
       }))
@@ -76,10 +81,11 @@ export class TipReceiveSend extends BaseNotification<TipReceiveNotificationRow> 
 
   formatEmailProps(resources: Resources) {
     const sendingUser = resources.users[this.senderUserId]
+    const amount = formatWei(this.amount.toString(), 'sol')
     return {
       type: this.notification.type,
       sendingUser: { name: sendingUser.name },
-      amount: this.amount
+      amount
     }
   }
 
