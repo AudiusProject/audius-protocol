@@ -17,6 +17,7 @@ import (
 )
 
 func StorageMain() {
+
 	telemetry.InitDefault()
 
 	storageConfig := config.GetStorageConfig()
@@ -39,7 +40,7 @@ func StorageMain() {
 	}
 
 	ss, err := storageserver.New(storageConfig, jsc, peering)
-  if err != nil {
+	if err != nil {
 		log.Fatalf("failed to create prod server: %+v", err)
 	}
 

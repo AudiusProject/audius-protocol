@@ -90,8 +90,9 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		func() error {
 			var err error
 			kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-				Bucket:   kvBucketName,
-				Replicas: replicaCount,
+				Bucket:    kvBucketName,
+				Replicas:  replicaCount,
+				Placement: config.StoragePlacement(),
 			})
 			if err != nil {
 				return err

@@ -8,4 +8,4 @@ git pull
 audius-cli set-tag -y --comms "$1"
 
 docker compose pull nats comms
-docker compose up -d nats comms
+docker compose up -d --force-recreate nats comms

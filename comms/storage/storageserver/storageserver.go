@@ -13,6 +13,7 @@ import (
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
+	stConfig "comms.audius.co/storage/config"
 	"comms.audius.co/storage/contentaccess"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/logstream"
@@ -71,6 +72,8 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 				Bucket:      HealthyNodesKVName,
 				Description: "Source of truth where every node reads the list of healthy nodes from",
 				History:     20,
+				Replicas:    3,
+				Placement:   stConfig.StoragePlacement(),
 			})
 			if err != nil {
 				return err
@@ -103,7 +106,7 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 		logstream,
 		jsc,
 	)
-	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 1)
+	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 3)
 	if err != nil {
 		slog.Error("error creating jobs manager", err)
 		return nil, err

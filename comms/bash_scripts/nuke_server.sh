@@ -7,4 +7,3 @@ for val in storage nats comms; do
   docker rm $val
   # sudo rm -rf /var/k8s/nats
 done
-
