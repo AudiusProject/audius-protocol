@@ -211,7 +211,7 @@ export const AccountVerificationScreen = () => {
   ])
 
   useEffect(() => {
-    if (twitterError | instagramError | tikTokError) {
+    if (twitterError || instagramError || tikTokError) {
       onVerifyFailure()
     }
   }, [onVerifyFailure, twitterError, instagramError, tikTokError])
