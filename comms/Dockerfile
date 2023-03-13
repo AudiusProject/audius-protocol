@@ -26,7 +26,6 @@ RUN go build -ldflags="-w -s" -o comms main.go
 
 EXPOSE 4222
 VOLUME ["/tmp"]
-ENTRYPOINT ["air"]
 
 FROM alpine AS final
 

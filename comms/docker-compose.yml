@@ -15,9 +15,9 @@ services:
   nats-storage:
     build:
       context: .
-      dockerfile: Dockerfile
-    entrypoint: /bin/sh -c
-    command: . /tmp/dev-tools/startup/comms.sh && air nats
+      target: builder
+    command: sh -c ". /tmp/dev-tools/startup/comms.sh && air nats"
+    env_file: ../.env # used by the startup script
     volumes:
       - ./natsd:/app/natsd
       - ./shared:/app/shared
@@ -37,9 +37,9 @@ services:
   storage:
     build:
       context: .
-      dockerfile: Dockerfile
-    entrypoint: /bin/sh -c
-    command: . /tmp/dev-tools/startup/comms.sh && air storage
+      target: builder
+    command: sh -c ". /tmp/dev-tools/startup/comms.sh && air storage"
+    env_file: ../.env # used by the startup script
     volumes:
       - ./storage:/app/storage
       - ./shared:/app/shared
@@ -59,6 +59,16 @@ services:
       mode: replicated
       replicas: 4
 
+  storage-ingress:
+    image: nginx:1.23.3-alpine
+    command: sh /tmp/dev-tools/startup/comms-ingress.sh
+    env_file: ../.env # used by the startup script
+    volumes:
+      - ../dev-tools:/tmp/dev-tools
+    deploy:
+      mode: replicated
+      replicas: 4
+
   # Discovery Nodes
 
   comms-db:
@@ -73,9 +83,9 @@ services:
   nats-discovery:
     build:
       context: .
-      dockerfile: Dockerfile
-    entrypoint: /bin/sh -c
-    command: . /tmp/dev-tools/startup/comms.sh && air nats
+      target: builder
+    command: sh -c ". /tmp/dev-tools/startup/comms.sh && air nats"
+    env_file: ../.env # used by the startup script
     volumes:
       - ./natsd:/app/natsd
       - ./shared:/app/shared
@@ -98,11 +108,11 @@ services:
   discovery:
     build:
       context: .
-      dockerfile: Dockerfile
-    entrypoint: /bin/sh -c
-    command: . /tmp/dev-tools/startup/comms.sh && air discovery
+      target: builder
+    command: sh -c ". /tmp/dev-tools/startup/comms.sh && air discovery"
     environment:
       audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
+    env_file: ../.env # used by the startup script
     volumes:
       - ./discovery:/app/discovery
       - ./shared:/app/shared
@@ -114,18 +124,18 @@ services:
       mode: replicated
       replicas: 3
 
-  ingress:
-    extends:
-      file: docker-compose.v2.base.yml
-      service: nginx
+  discovery-ingress:
+    image: nginx:1.23.3-alpine
+    command: sh /tmp/dev-tools/startup/comms-ingress.sh
+    env_file: ../.env # used by the startup script
     volumes:
-      - ./v2_nginx/ingress.conf:/etc/nginx/conf.d/default.conf
-    ports:
-      - 80:80
-  # storage-test:
+      - ../dev-tools:/tmp/dev-tools
+    deploy:
+      mode: replicated
+      replicas: 3
+  # test:
   #   build:
   #     context: .
-  #     dockerfile: Dockerfile
   #   entrypoint: /bin/sh -c
   #   command: air -c .air.test.toml
   #   environment:
