@@ -100,7 +100,7 @@ def get_all_other_nodes() -> Tuple[List[str], List[str]]:
     return all_other_nodes, all_other_wallets
 
 
-def get_all_other_nodes_cached(redis) -> Tuple[List[str], List[str]]:
+def get_all_other_nodes_cached(redis) -> List[str]:
     """
     Attempts to get the number of discovery nodes from redis
     if that doesn't exist it will fetch using `get_all_other_nodes()`
@@ -110,6 +110,10 @@ def get_all_other_nodes_cached(redis) -> Tuple[List[str], List[str]]:
     cached_nodes = get_json_cached_key(redis, ALL_OTHER_NODES_CACHE_KEY)
     if cached_nodes:
         return cached_nodes
-    nodes = get_all_other_nodes()
+    nodes = get_all_other_nodes()[0]
+    current_node = get_node_endpoint()
+    # add current node to list
+    if current_node is not None:
+        nodes.append(current_node)
     set_json_cached_key(redis, ALL_OTHER_NODES_CACHE_KEY, nodes, 3600)
     return nodes
