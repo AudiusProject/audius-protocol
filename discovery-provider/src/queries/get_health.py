@@ -114,8 +114,17 @@ def _get_chain_health():
         chain_res["block_number"] = latest_block.number
         chain_res["hash"] = latest_block.hash.hex()
         chain_res["chain_id"] = web3.eth.chain_id
+        get_signers_data = '{"method":"clique_getSigners","params":[]}'
+        signers_response = requests.post(LOCAL_RPC, data=get_signers_data)
+        signers_response_dict = signers_response.json()["result"]
+        chain_res["signers"] = signers_response_dict
+        get_snapshot_data = '{"method":"clique_getSnapshot","params":[]}'
+        snapshot_response = requests.post(LOCAL_RPC, data=get_snapshot_data)
+        snapshot_response_dict = snapshot_response.json()["result"]
+        chain_res["snapshot"] = snapshot_response_dict
         return chain_res
-    except:
+    except Exception as e:
+        logging.error("issue with chain health %s", exc_info=e)
         pass
 
 
