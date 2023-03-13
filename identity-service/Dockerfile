@@ -19,6 +19,8 @@ COPY scripts/wait /usr/bin/wait
 
 COPY . .
 
+RUN npm run postinstall
+
 # Compile js code to typescript based on tsconfig.build.json
 RUN npm run build
 
