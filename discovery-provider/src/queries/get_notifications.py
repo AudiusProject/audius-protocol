@@ -42,7 +42,8 @@ SELECT
       )
     END as seen_at,
     user_seen.prev_seen_at,
-    count(n.group_id)
+    count(n.group_id),
+    max(n.timestamp) as latest_timestamp
 FROM
     notification n
 LEFT JOIN user_seen on
@@ -53,17 +54,17 @@ WHERE
   (
     (:timestamp_offset is NULL AND :group_id_offset is NULL) OR
     (:timestamp_offset is NULL AND :group_id_offset is NOT NULL AND n.group_id < :group_id_offset) OR
-    (:timestamp_offset is NOT NULL AND user_seen.seen_at is NULL AND n.timestamp < :timestamp_offset) OR
-    (:timestamp_offset is NOT NULL AND user_seen.seen_at is NOT NULL AND user_seen.seen_at < :timestamp_offset) OR
+    (:timestamp_offset is NOT NULL AND n.timestamp < :timestamp_offset) OR
     (
         :group_id_offset is NOT NULL AND :timestamp_offset is NOT NULL AND 
-        (user_seen.seen_at = :timestamp_offset AND n.group_id < :group_id_offset)
+        (n.timestamp = :timestamp_offset AND n.group_id < :group_id_offset)
     )
   )
 GROUP BY
   n.type, n.group_id, user_seen.seen_at, user_seen.prev_seen_at
 ORDER BY
   user_seen.seen_at desc NULLS LAST,
+  max(n.timestamp) desc,
   n.group_id desc
 limit :limit;
 """

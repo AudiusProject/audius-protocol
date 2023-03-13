@@ -80,17 +80,17 @@ def test_get_repost_of_repost_notifications(app):
             assert len(user4_notifications) == 3
             assert_notification(
                 notification=user4_notifications[0],
-                group_id="repost_of_repost:1:type:track",
-                is_seen=False,
-                actions_length=2,
-                reposter_user_ids=[2, 3],
-            )
-            assert_notification(
-                notification=user4_notifications[1],
                 group_id="repost_of_repost:1:type:playlist",
                 is_seen=False,
                 actions_length=1,
                 reposter_user_ids=[3],
+            )
+            assert_notification(
+                notification=user4_notifications[1],
+                group_id="repost_of_repost:1:type:track",
+                is_seen=False,
+                actions_length=2,
+                reposter_user_ids=[2, 3],
             )
             assert "repost_of_repost" not in user4_notifications[2]["group_id"]
 

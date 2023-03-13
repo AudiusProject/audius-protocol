@@ -35,38 +35,39 @@ def test_get_save_notifications(app):
 
         with db_mock.scoped_session() as session:
             args = {"limit": 10, "user_id": 1}
-            u1_notifiations = get_notifications(session, args)
-            assert len(u1_notifiations) == 3
-            assert u1_notifiations[0]["group_id"] == "save:1:type:track"
-            assert u1_notifiations[0]["is_seen"] == False
-            assert len(u1_notifiations[0]["actions"]) == 4
-            for saver_user_id in range(2, 6):
-                assert any(
-                    act["data"]["user_id"] == saver_user_id
-                    for act in u1_notifiations[0]["actions"]
-                )
+            u1_notifications = get_notifications(session, args)
+            assert len(u1_notifications) == 3
 
-            assert u1_notifiations[1]["group_id"] == "save:1:type:playlist"
-            assert u1_notifiations[1]["is_seen"] == False
-            assert len(u1_notifiations[1]["actions"]) == 12
+            assert u1_notifications[0]["group_id"] == "save:1:type:playlist"
+            assert u1_notifications[0]["is_seen"] == False
+            assert len(u1_notifications[0]["actions"]) == 12
             for saver_user_id in range(2, 14):
                 assert any(
                     act["data"]["user_id"] == saver_user_id
-                    for act in u1_notifiations[1]["actions"]
+                    for act in u1_notifications[0]["actions"]
                 )
 
             assert (
-                u1_notifiations[2]["group_id"]
+                u1_notifications[1]["group_id"]
                 == "milestone:PLAYLIST_SAVE_COUNT:id:1:threshold:10"
             )
-            assert u1_notifiations[2]["is_seen"] == False
-            assert u1_notifiations[2]["actions"][0]["type"] == "milestone"
+            assert u1_notifications[1]["is_seen"] == False
+            assert u1_notifications[1]["actions"][0]["type"] == "milestone"
             assert (
-                u1_notifiations[2]["actions"][0]["data"]["type"]
+                u1_notifications[1]["actions"][0]["data"]["type"]
                 == "PLAYLIST_SAVE_COUNT"
             )
             assert (
-                u1_notifiations[2]["actions"][0]["data"]["type"]
+                u1_notifications[1]["actions"][0]["data"]["type"]
                 == "PLAYLIST_SAVE_COUNT"
             )
-            assert u1_notifiations[2]["actions"][0]["data"]["threshold"] == 10
+            assert u1_notifications[1]["actions"][0]["data"]["threshold"] == 10
+
+            assert u1_notifications[2]["group_id"] == "save:1:type:track"
+            assert u1_notifications[2]["is_seen"] == False
+            assert len(u1_notifications[2]["actions"]) == 4
+            for saver_user_id in range(2, 6):
+                assert any(
+                    act["data"]["user_id"] == saver_user_id
+                    for act in u1_notifications[2]["actions"]
+                )
