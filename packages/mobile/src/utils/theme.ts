@@ -1,6 +1,4 @@
-import type { SystemAppearance, Nullable } from '@audius/common'
 import { themeSelectors } from '@audius/common'
-import { Platform, StatusBar } from 'react-native'
 import { useSelector } from 'react-redux'
 
 const { getTheme, getSystemAppearance } = themeSelectors
@@ -10,47 +8,6 @@ export enum Theme {
   DARK = 'dark',
   AUTO = 'auto',
   MATRIX = 'matrix'
-}
-
-/**
- * Set status bar theme in a cross-platform way
- */
-export const setStatusBarTheme = (theme: 'light' | 'dark') => {
-  if (theme === 'light') {
-    StatusBar.setBarStyle('dark-content')
-
-    if (Platform.OS === 'android') {
-      StatusBar.setBackgroundColor(defaultTheme.white)
-    }
-  } else {
-    StatusBar.setBarStyle('light-content')
-
-    if (Platform.OS === 'android') {
-      StatusBar.setBackgroundColor(darkTheme.white)
-    }
-  }
-}
-
-export const updateStatusBarTheme = (
-  theme: Nullable<Theme>,
-  systemAppearance: Nullable<SystemAppearance>
-) => {
-  switch (theme) {
-    case Theme.DEFAULT: {
-      setStatusBarTheme('light')
-      break
-    }
-    case Theme.DARK: {
-      setStatusBarTheme('dark')
-      break
-    }
-    case Theme.AUTO: {
-      if (systemAppearance) {
-        setStatusBarTheme(systemAppearance)
-      }
-      break
-    }
-  }
 }
 
 export const defaultTheme = {
@@ -98,6 +55,7 @@ export const defaultTheme = {
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
   staticAccentGreenLight1: '#23AD1A',
+  staticSecondary: '#7E1BCC',
   pageHeaderGradientColor1: '#5B23E1',
   pageHeaderGradientColor2: '#A22FEB',
   actionSheetText: '#7E1BCC',
@@ -153,6 +111,7 @@ export const darkTheme = {
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
   staticAccentGreenLight1: '#23AD1A',
+  staticSecondary: '#7E1BCC',
   pageHeaderGradientColor1: '#7652CC',
   pageHeaderGradientColor2: '#B05CE6',
   actionSheetText: '#9147CC',
@@ -198,13 +157,14 @@ export const matrixTheme = {
   staticNeutral: '#858199',
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
-  accentGreen: '#23AD1A',
   staticAccentGreenLight1: '#23AD1A',
+  staticSecondary: '#7E1BCC',
   pageHeaderGradientColor1: '#4FF069',
   pageHeaderGradientColor2: '#09BD51',
   actionSheetText: '#21B404',
   accentRed: '#D0021B',
   accentOrange: '#EFA947',
+  accentGreen: '#23AD1A',
   skeleton: '#1B3714',
   skeletonHighlight: '#1C5610',
   statTileText: '#184F17',
@@ -257,6 +217,7 @@ export type ThemeColors = {
   staticNeutralLight2: string
   staticNeutralLight8: string
   staticAccentGreenLight1: string
+  staticSecondary: string
   pageHeaderGradientColor1: string
   pageHeaderGradientColor2: string
   actionSheetText: string

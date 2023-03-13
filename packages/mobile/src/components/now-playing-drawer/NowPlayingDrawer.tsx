@@ -184,6 +184,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
           }
         } else if (gestureState.vy < 0) {
           // Dragging upwards
+
           if (drawerPercentOpen.current > STATUS_BAR_FADE_CUTOFF) {
             StatusBar.setHidden(true, 'fade')
           }
