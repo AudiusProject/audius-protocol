@@ -346,7 +346,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
         "network": {
-            "discoveryNodes": discovery_nodes
+            "discovery_nodes": discovery_nodes
         },
     }
 
