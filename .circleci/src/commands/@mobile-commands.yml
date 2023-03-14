@@ -3,7 +3,7 @@ mobile-halt-if-no-native-changes:
     - run:
         name: don't do anything if no native changes
         command: |
-          ! git diff --quiet HEAD origin/main -- 'packages/mobile' ':!packages/mobile/src' || circleci-agent step halt
+          ! git diff --quiet origin/main... -- 'packages/mobile' ':!packages/mobile/src' || circleci-agent step halt
 
 mobile-halt-if-codepush-release-ios:
   steps:
