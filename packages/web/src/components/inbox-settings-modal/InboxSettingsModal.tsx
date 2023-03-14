@@ -1,5 +1,6 @@
-import { useCallback } from 'react'
+import { ChangeEvent, useCallback, useState } from 'react'
 
+import { Status } from '@audius/common'
 import { ChatPermission } from '@audius/sdk'
 import {
   Button,
@@ -12,6 +13,8 @@ import {
 } from '@audius/stems'
 
 import { useModalState } from 'common/hooks/useModalState'
+import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
+import { audiusSdk } from 'services/audius-sdk'
 
 import { ModalRadioItem } from '../modal-radio/ModalRadioItem'
 
@@ -19,7 +22,8 @@ import styles from './InboxSettingsModal.module.css'
 
 const messages = {
   title: 'Inbox Settings',
-  done: 'Done',
+  save: 'Save Changes',
+  error: 'Something went wrong. Please try again.',
   allTitle: 'Allow Messages from Everyone',
   allDescription:
     'Anyone can send you a direct message, regardless of whether you follow them or not.',
@@ -60,6 +64,40 @@ const options = [
 export const InboxSettingsModal = () => {
   const [isVisible, setIsVisible] = useModalState('InboxSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
+  const [permission, setPermission] = useState<ChatPermission>(
+    ChatPermission.ALL
+  )
+  const [saveState, setSaveState] = useState<Status>(Status.IDLE)
+  const [showSpinner, setShowSpinner] = useState(false)
+
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setPermission(e.target.value as ChatPermission)
+    },
+    [setPermission]
+  )
+
+  const handleSave = useCallback(() => {
+    if (saveState !== Status.LOADING) {
+      setSaveState(Status.LOADING)
+      setShowSpinner(false)
+      // Only show the spinner if saving takes a while
+      setTimeout(() => setShowSpinner(true), 1000)
+      const fn = async () => {
+        try {
+          const sdk = await audiusSdk()
+          await sdk.chats.permit({ permit: permission })
+          setSaveState(Status.SUCCESS)
+          handleClose()
+        } catch (e) {
+          console.error('Error saving chat permissions:', e)
+          setSaveState(Status.ERROR)
+        }
+      }
+      fn()
+    }
+  }, [saveState, permission, setSaveState, handleClose, setShowSpinner])
+
   return (
     <Modal
       bodyClassName={styles.modalBody}
@@ -73,7 +111,11 @@ export const InboxSettingsModal = () => {
         />
       </ModalHeader>
       <ModalContent className={styles.modalContent}>
-        <RadioButtonGroup name={'inbox-settings'}>
+        <RadioButtonGroup
+          name={'inbox-settings'}
+          value={permission}
+          onChange={handleChange}
+        >
           {options.map((opt) => (
             <ModalRadioItem
               key={opt.title}
@@ -84,10 +126,18 @@ export const InboxSettingsModal = () => {
           ))}
         </RadioButtonGroup>
         <Button
-          className={styles.doneButton}
-          text={messages.done}
-          onClick={handleClose}
+          rightIcon={
+            saveState === Status.LOADING && showSpinner ? (
+              <LoadingSpinner className={styles.spinner} />
+            ) : undefined
+          }
+          className={styles.saveButton}
+          text={messages.save}
+          onClick={handleSave}
         />
+        {saveState === Status.ERROR ? (
+          <span className={styles.error}>{messages.error}</span>
+        ) : null}
       </ModalContent>
     </Modal>
   )
