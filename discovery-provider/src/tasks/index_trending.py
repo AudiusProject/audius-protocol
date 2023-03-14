@@ -221,18 +221,52 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
 def index_tastemaker_notifications(
     db: SessionManager,
     top_5_trending_tracks: List[Track],
-    minimum_repost_favorite_amount=10,
+    tastemaker_threshold=10,
 ):
-    # For each top trending track
     with db.scoped_session() as session:
+        tastemaker_notifications = []
         for track in top_5_trending_tracks:
-            first_10_reposts_of_track = []
-            session.query(Repost).order_by(asc(Repost.created_at)).limit(10)
+            earliest_reposts = (
+                session.query(Repost)
+                .filter(
+                    Repost.is_current == True,
+                    Repost.is_delete == False,
+                    Repost.repost_item_id == track["track_id"],
+                )
+                .order_by(asc(Repost.created_at))
+                .limit(tastemaker_threshold)
+            )
+            print("first n track reposts")
+            for repost in earliest_reposts.all():
+                print(repost)
+                tastemaker_notifications.append(
+                    {
+                        "tastemaker_user_id": repost.user_id,
+                        "group_id": f"tastemaker:{repost.user_id}:tastemaker_item:{repost.repost_item_id}",
+                        "track_id": repost.repost_item_id,
+                        "track_owner_id": track["owner_id"],
+                        "action": "repost",
+                    }
+                )
 
-    # get all the reposts and favorites ever done
-    # get the first ten favs/reposts users
-    # for each person whos favorited, check if theyre in top 10 users
-    pass
+        session.bulk_save_objects(
+            [
+                Notification(
+                    timestamp=datetime.now(),
+                    user_ids=[n["tastemaker_user_id"]],
+                    type="tastemaker",
+                    group_id=n["group_id"],
+                    specifier=n["tastemaker_user_id"],
+                    data={
+                        "track_id": n["track_id"],
+                        "track_owner_id": n["track_owner_id"],
+                        "action": n["action"],
+                        "tastemaker_user_id": n["tastemaker_user_id"],
+                    },
+                )
+                for n in tastemaker_notifications
+            ]
+        )
 
 
 def index_trending_notifications(db: SessionManager, timestamp: int):

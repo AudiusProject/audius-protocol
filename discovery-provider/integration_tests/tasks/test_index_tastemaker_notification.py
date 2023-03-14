@@ -29,6 +29,10 @@ def test_index_tastemaker_notification_deleted_reposts(app):
     pass
 
 
+def test_index_tastemaker_notification_sends_one_notif_for_both_fav_and_repost(app):
+    pass
+
+
 def test_index_tastemaker_notification(app):
     """
     Test that given when new trending values are calculated
@@ -41,15 +45,24 @@ def test_index_tastemaker_notification(app):
         # Add some users to the db so we have blocks
         entities = {
             "tracks": [{"track_id": i} for i in range(5)],
+            "reposts": [
+                {"user_id": i, "repost_item_id": 1, "repost_type": "track"}
+                for i in range(5)
+            ],
             "users": [{"user_id": i} for i in range(10)],
         }
         populate_mock_db(db, entities)
 
-        index_tastemaker_notifications(db, [])
+        index_tastemaker_notifications(
+            db, [{"track_id": i + 1, "owner_id": 3} for i in range(1)], 3
+        )
         with db.scoped_session() as session:
             tracks = session.query(Track).all()
             notifications = (
-                session.query(Notification).order_by(asc(Notification.specifier)).all()
+                session.query(Notification)
+                .filter(Notification.type == "tastemaker")
+                .order_by(asc(Notification.specifier))
+                .all()
             )
             users = session.query(User).all()
             reposts = session.query(Repost).all()
@@ -59,3 +72,7 @@ def test_index_tastemaker_notification(app):
             print("repostssss", reposts)
             print("favoritessss", favorites)
             print("notificationssss", notifications)
+            assert len(notifications) == 3
+            assert notifications[0].user_ids == [0]
+            assert notifications[0].type == "tastemaker"
+            assert notifications[0].group_id == "tastemaker:0:tastemaker_item:1"
