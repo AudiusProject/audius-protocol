@@ -211,6 +211,7 @@ const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications:
     playlists: new Set(),
   }
 
+
   const mappedNotifications: BaseNotification<any>[] = mapNotifications(notifications, dnDB, identityDB)
   for (const notification of mappedNotifications) {
     const resourcesToFetch = notification.getResourcesForEmail()
@@ -309,6 +310,7 @@ export const renderEmail = async ({
     title: getEmailTitle(frequency, email),
     subject: getEmailSubject(frequency, notificationCount)
   }
+
   const notifHtml = renderNotificationsEmail(renderProps)
   return notifHtml
 
