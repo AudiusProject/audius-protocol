@@ -30,15 +30,15 @@ def test_get_save_notifications(app):
 
         with db_mock.scoped_session() as session:
             args = {"limit": 10, "user_id": 1}
-            u1_notifiations = get_notifications(session, args)
-            assert len(u1_notifiations) == 1
+            u1_notifications = get_notifications(session, args)
+            assert len(u1_notifications) == 1
             assert (
-                u1_notifiations[0]["group_id"]
+                u1_notifications[0]["group_id"]
                 == "tier_change:user_id:1:tier:bronze:blocknumber:10"
             )
-            assert u1_notifiations[0]["is_seen"] == False
-            assert len(u1_notifiations[0]["actions"]) == 1
-            u1_notifiations[0]["actions"][0]["data"] = {
+            assert u1_notifications[0]["is_seen"] == False
+            assert len(u1_notifications[0]["actions"]) == 1
+            u1_notifications[0]["actions"][0]["data"] = {
                 "new_tier": "bronze",
                 "new_tier_value": 10,
                 "current_value": "20000000000000000000",
