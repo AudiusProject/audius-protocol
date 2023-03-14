@@ -10,10 +10,15 @@
 .icon {
   width: 1.5em;
   height: 1.5em;
+  display: block; /* Prevent descender space */
 }
 
 .icon path {
   fill: var(--primary);
+}
+
+button.sendButton {
+  display: block; /* Prevent descender space */
 }
 
 .sendButton:not(:disabled) .icon:hover path {
