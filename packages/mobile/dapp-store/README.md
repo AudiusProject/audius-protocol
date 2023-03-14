@@ -2,27 +2,58 @@
 
 This folder contains relevant info for releasing Audius to the Solana Mobile Stack / Saga.
 
-It is important that node 16.13.x is used along with pnpm for the dapp-store cli tooling.
-
-```
-nvm install 16.13.2
-nvm use 16.13.2
-```
-
 ## Instructions
+### Install prerequesites
 
-Follow cli setup and make sure to get pnpm
-https://github.com/solana-mobile/app-publishing-spec/blob/main/packages/cli/README.md
-
-`pnpm install` in this directory
-
+#### Node
+Ensure we are using the correct node version
 ```
-cd android
-./gradlew assembleRelease
-
-npx dapp-store create release -k <path_to_your_keypair> -b <path_to_your_android_sdk_build_tools> -u https://audius-fe.rpcpool.com
-
-npx dapp-store publish update -k <path_to_your_keypair> -u https://audius-fe.rpcpool.com --requestor-is-authorized --complies-with-solana-dapp-store-policies
+nvm install
+nvm use
+```
+#### PNPM
+Then, to install pnpm, run
+```
+corepack enable
+corepack prepare pnpm@`npm info pnpm --json | jq -r .version` --activate
 ```
 
+#### Project Dependencies
+Finally, install project dependencies
+```
+pnpm install
+```
+
+#### Solana cli
+We need solana cli to recover a private key
+```
+brew install solana
+```
+
+### Recovering solana keypair
+You will need our app's private key to mint new releases and submit updates. To recover, look up Solana Mobile on Lastpass. Open it and copy the seed phase. Then run
+```
+solana-keygen recover -o app-keypair.json
+```
+and paste the seed phase in. There is no associated password, so press enter again. This should output the private key to the app-keypair.json file. Note this file is .gitignored, but do make sure to not check it in.
+
+
+### Preparing the apk
+cd ../android
+./gradlew app:assembleRelease
+cd ../dapp-store
+
+### Publishing the apk
+```
+npx dapp-store create release -k app-keypair.json -b $ANDROID_HOME/build-tools/33.0.0 -u https://audius-fe.rpcpool.com
+```
+> You may not have specified ANDROID_HOME, or have a different build tools version, modify accordingly.
+
+### Submit dApp update request
+```
+npx dapp-store publish update -k app-keypair.json -u https://audius-fe.rpcpool.com --requestor-is-authorized --complies-with-solana-dapp-store-policies
+```
+
+### Resoures
+Reach out to https://github.com/dylanjeffers or https://github.com/raymondjacobson
 
