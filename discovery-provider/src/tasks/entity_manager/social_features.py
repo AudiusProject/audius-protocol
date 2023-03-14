@@ -269,21 +269,21 @@ def validate_social_feature(params: ManageEntityParameters):
     for record_type in record_types:
         existing_record = params.existing_records.get(record_type, {}).get(key)
         logger.info(
-            f"entity_manager | social_features.py | record_type: {record_type}, key: {key}, params.action: {params.action}, is_delete: {existing_record.is_delete}, type of is_delete: {type(existing_record.is_delete)}, not is_delete: {not existing_record.is_delete}, existing record: {existing_record}"
+            f"entity_manager | social_features.py | record_type: {record_type}, key: {key}, params.action: {params.action}, existing record: {existing_record}"
         )
         if existing_record:
             duplicate_create = (
-                params.action
-                in (Action.REPOST, Action.SAVE, Action.FOLLOW, Action.SUBSCRIBE)
+                record_type
+                in (EntityType.REPOST, EntityType.SAVE, EntityType.FOLLOW, EntityType.SUBSCRIBE)
                 and not existing_record.is_delete
             )
             duplicate_delete = (
-                params.action
-                in (Action.UNREPOST, Action.UNSAVE, Action.UNFOLLOW, Action.UNSUBSCRIBE)
+                record_type
+                in (EntityType.UNREPOST, EntityType.UNSAVE, EntityType.UNFOLLOW, EntityType.UNSUBSCRIBE)
                 and existing_record.is_delete
             )
 
             if duplicate_create or duplicate_delete:
                 raise Exception(
-                    f"User {params.user_id} has already sent a {params.action} for {params.entity_type} {params.entity_id}"
+                    f"User {params.user_id} has already sent a {record_type} for {params.entity_type} {params.entity_id}"
                 )
