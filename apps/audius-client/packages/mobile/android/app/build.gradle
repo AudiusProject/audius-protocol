@@ -135,6 +135,7 @@ android {
         versionName "1.1.385"
         resValue "string", "build_config_package", "co.audius.app"
         resValue 'string', "CODE_PUSH_APK_BUILD_TIME", String.format("\"%d\"", System.currentTimeMillis())
+        resConfigs "en"
     }
 
     productFlavors { 
