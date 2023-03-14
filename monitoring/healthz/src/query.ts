@@ -90,7 +90,7 @@ export async function fetchHealth({ queryKey }: { queryKey: string[] }) {
   return sps
 }
 
-async function fetchUrl({ queryKey }: { queryKey: string[] }) {
+export async function fetchUrl({ queryKey }: { queryKey: string[] }) {
   const url = queryKey[0]
   const resp = await fetch(url)
   if (resp.status != 200) {
