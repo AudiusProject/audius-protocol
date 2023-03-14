@@ -504,6 +504,8 @@ PODS:
     - React-Core
   - react-native-netinfo (9.3.0):
     - React-Core
+  - react-native-notifications (4.3.3):
+    - React-Core
   - react-native-pager-view (5.4.6):
     - React-Core
   - react-native-performance (4.0.0):
@@ -632,8 +634,6 @@ PODS:
   - RNCClipboard (1.9.0):
     - React-Core
   - RNCMaskedView (0.2.8):
-    - React-Core
-  - RNCPushNotificationIOS (1.10.1):
     - React-Core
   - RNDateTimePicker (6.7.1):
     - React-Core
@@ -795,6 +795,7 @@ DEPENDENCIES:
   - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
   - "react-native-keep-awake (from `../node_modules/@sayem314/react-native-keep-awake`)"
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - react-native-notifications (from `../node_modules/react-native-notifications`)
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-randombytes (from `../node_modules/react-native-randombytes`)
@@ -825,7 +826,6 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
-  - "RNCPushNotificationIOS (from `../node_modules/@react-native-community/push-notification-ios`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNFastImage (from `../node_modules/react-native-fast-image`)
   - "RNFBAnalytics (from `../node_modules/@react-native-firebase/analytics`)"
@@ -973,6 +973,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@sayem314/react-native-keep-awake"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
+  react-native-notifications:
+    :path: "../node_modules/react-native-notifications"
   react-native-pager-view:
     :path: "../node_modules/react-native-pager-view"
   react-native-performance:
@@ -1033,8 +1035,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNCMaskedView:
     :path: "../node_modules/@react-native-masked-view/masked-view"
-  RNCPushNotificationIOS:
-    :path: "../node_modules/@react-native-community/push-notification-ios"
   RNDateTimePicker:
     :path: "../node_modules/@react-native-community/datetimepicker"
   RNFastImage:
@@ -1146,6 +1146,7 @@ SPEC CHECKSUMS:
   react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
   react-native-keep-awake: 16f22b2dc09f7ede9f46e3b187a824a1841f1ddf
   react-native-netinfo: f473620bc118d6f44ce65669dd4810a7cfb36a7d
+  react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44
   react-native-pager-view: a9ba7d4218dcff32c0cdb41237c62fb487f013dd
   react-native-performance: f08613f428978a9e39a118ac0a776f5e0599c42e
   react-native-randombytes: 5fc412efe7b5c55b9002c0004d75fe5fabcaa507
@@ -1177,7 +1178,6 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 73b194e58ded504eee17b9a3c125651e2507ddde
   RNCClipboard: f49f3de56b40d0f4104680dabadc7a1f063f4fd4
   RNCMaskedView: 1f6cd0cb5e38ec01960e12fd8f95ecad809f8fbb
-  RNCPushNotificationIOS: 089da3b657e1e3d464f38195fd2e3069608ef5af
   RNDateTimePicker: 1bfe1bd77201b1d69ed0fe0c01b9f40c8bffb264
   RNFastImage: 5c9c9fed9c076e521b3f509fe79e790418a544e8
   RNFBAnalytics: ea1421b49a0bf5e5bb7274df4a330713d0e85d2e

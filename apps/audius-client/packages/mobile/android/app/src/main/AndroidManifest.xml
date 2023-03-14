@@ -40,39 +40,12 @@
             android:exported="true">
         </activity>
 
-        <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_name" android:value="Activity"/>
-        <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_description" android:value="Your activity on Audius"/>
         <meta-data android:name="com.snapchat.kit.sdk.clientId" android:value="e4716145-55b7-4a90-9d90-e977733713ed" />
-        <!-- Change the resource name to your App's accent color - or any other color you want -->
-        <meta-data android:name="com.dieam.reactnativepushnotification.notification_color" android:resource="@android:color/white"/>
 
         <!-- Google Cast -->
         <meta-data android:name="com.google.android.gms.cast.framework.OPTIONS_PROVIDER_CLASS_NAME" android:value="com.reactnative.googlecast.GoogleCastOptionsProvider" />
         <meta-data android:name="com.reactnative.googlecast.RECEIVER_APPLICATION_ID" android:value="222B31C8" />
-        <!-- < Only if you're using GCM or localNotificationSchedule() > -->
 
-        <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationPublisher" />
-        <receiver android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationBootEventReceiver" android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-        <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationRegistrationService"/>
-
-        <!-- < Only if you're using GCM or localNotificationSchedule() > -->
-        <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerServiceGcm" android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
-            </intent-filter>
-        </service>
-        <!-- </ Only if you're using GCM or localNotificationSchedule() > -->
-
-        <!-- < Else > -->
-        <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService" android:exported="true">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
         <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_notification" />
 
         <provider
