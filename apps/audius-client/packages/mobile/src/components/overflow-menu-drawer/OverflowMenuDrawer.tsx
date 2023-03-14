@@ -37,7 +37,8 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
   [OverflowAction.UNFOLLOW]: { text: 'Unfollow' },
   [OverflowAction.EDIT_TRACK]: { text: 'Edit Track' },
   [OverflowAction.DELETE_TRACK]: { text: 'Delete Track', isDestructive: true },
-  [OverflowAction.VIEW_COLLECTIBLE_PAGE]: { text: 'View Collectible Page' }
+  [OverflowAction.VIEW_COLLECTIBLE_PAGE]: { text: 'View Collectible Page' },
+  [OverflowAction.VIEW_EPISODE_PAGE]: { text: 'View Episode Page' }
 }
 
 export const OverflowMenuDrawer = () => {

@@ -42,7 +42,7 @@ const useCollapsibleSectionListScene = (sceneName: string) => {
 const CollapsibleSectionList = <ItemT, SectionT = DefaultSectionT>(
   props: CollapsibleSectionListProps<ItemT, SectionT>
 ) => {
-  const { sceneName, ...other } = props
+  const { sceneName, onScroll, ...other } = props
   const {
     refreshing,
     onRefresh,
@@ -70,7 +70,7 @@ const CollapsibleSectionList = <ItemT, SectionT = DefaultSectionT>(
         {...scrollProps}
         ref={ref as unknown as Ref<Animated.SectionList<ItemT, SectionT>>}
         // @ts-ignore `forkEvent` is not defined on the type but it exists
-        onScroll={Animated.forkEvent(scrolProps.onScroll, props.onScroll)}
+        onScroll={Animated.forkEvent(scrollProps.onScroll, onScroll)}
         refreshControl={
           Platform.OS === 'ios' ? undefined : (
             <RefreshControl

@@ -20,7 +20,7 @@ type CollapsibleFlatListProps<ItemT> = {
 } & Animated.AnimatedProps<FlatListProps<ItemT>>
 
 function CollapsibleFlatList<ItemT>(props: CollapsibleFlatListProps<ItemT>) {
-  const { sceneName, ...other } = props
+  const { sceneName, onScroll, ...other } = props
   const { refreshing, onRefresh } = other
   const scrollPropsAndRef = useCollapsibleScene(sceneName)
   const { neutral } = useThemeColors()
@@ -31,10 +31,7 @@ function CollapsibleFlatList<ItemT>(props: CollapsibleFlatListProps<ItemT>) {
         {...other}
         {...scrollPropsAndRef}
         // @ts-ignore `forkEvent` is not defined on the type but it exists
-        onScroll={Animated.forkEvent(
-          scrollPropsAndRef.onScroll,
-          props.onScroll
-        )}
+        onScroll={Animated.forkEvent(scrollPropsAndRef.onScroll, onScroll)}
         refreshControl={
           Platform.OS === 'ios' ? undefined : (
             <RefreshControl
