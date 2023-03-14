@@ -163,15 +163,11 @@ describe('test src/utils.js', () => {
           return { size: 1 }
         }
       },
-      '@audius/sdk': {
-        libs: {
-          Utils: {
-            fileHasher: {
-              // Mock libs fn to return a different cid
-              generateNonImageCid: async () => {
-                return DUMMY_NON_EMPTY_CID_2
-              }
-            }
+      './fileHasher': {
+        fileHasher: {
+          // Mock libs fn to return a different cid
+          generateNonImageCid: async () => {
+            return DUMMY_NON_EMPTY_CID_2
           }
         }
       }
@@ -195,15 +191,11 @@ describe('test src/utils.js', () => {
           return { size: 1 }
         }
       },
-      '@audius/sdk': {
-        libs: {
-          Utils: {
-            fileHasher: {
-              // Mock libs fn to return the same cid
-              generateNonImageCid: async () => {
-                return DUMMY_NON_EMPTY_CID_1
-              }
-            }
+      './fileHasher': {
+        fileHasher: {
+          // Mock libs fn to return the same cid
+          generateNonImageCid: async () => {
+            return DUMMY_NON_EMPTY_CID_1
           }
         }
       }
