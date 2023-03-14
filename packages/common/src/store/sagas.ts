@@ -8,6 +8,7 @@
 
 import { sagas as castSagas } from 'store/cast/sagas'
 import { chatSagas } from 'store/pages/chat'
+import { playbackPositionSagas } from 'store/playback-position'
 import { playerSagas } from 'store/player'
 import { premiumContentSagas } from 'store/premium-content'
 import remoteConfigSagas from 'store/remote-config/sagas'
@@ -43,7 +44,8 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   shareModalUI: shareModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
-  player: playerSagas
+  player: playerSagas,
+  playbackPosition: playbackPositionSagas
 
   // signOut: signOutSagas
   // recoveryEmail: recoveryEmailSagas

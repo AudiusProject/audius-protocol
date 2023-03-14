@@ -55,6 +55,8 @@ import trendingPlaylists from './pages/trending-playlists/slice'
 import trendingUnderground from './pages/trending-underground/slice'
 import trending from './pages/trending/reducer'
 import { TrendingPageState } from './pages/trending/types'
+import { PlaybackPositionState } from './playback-position'
+import playbackPosition from './playback-position/slice'
 import player, { PlayerState } from './player/slice'
 import {
   playlistLibraryReducer,
@@ -148,6 +150,7 @@ export const reducers = () => ({
   // Playback
   queue,
   player,
+  playbackPosition,
 
   // Wallet
   wallet,
@@ -261,6 +264,7 @@ export type CommonState = {
   // Playback
   queue: ReturnType<typeof queue>
   player: PlayerState
+  playbackPosition: PlaybackPositionState
 
   // Wallet
   wallet: ReturnType<typeof wallet>

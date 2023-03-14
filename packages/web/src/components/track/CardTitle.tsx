@@ -10,6 +10,7 @@ import styles from './GiantTrackTile.module.css'
 
 const messages = {
   trackTitle: 'TRACK',
+  podcastTitle: 'PODCAST',
   remixTitle: 'REMIX',
   hiddenTrackTooltip: 'Anyone with a link to this page will be able to see it',
   collectibleGated: 'COLLECTIBLE GATED',
@@ -21,6 +22,7 @@ type CardTitleProps = {
   isUnlisted: boolean
   isRemix: boolean
   isPremium: boolean
+  isPodcast: boolean
   premiumConditions: PremiumConditions
 }
 
@@ -29,10 +31,14 @@ export const CardTitle = ({
   isUnlisted,
   isRemix,
   isPremium,
+  isPodcast,
   premiumConditions
 }: CardTitleProps) => {
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
+  )
+  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
   )
 
   if (isGatedContentEnabled && isPremium) {
@@ -59,7 +65,11 @@ export const CardTitle = ({
     return (
       <div className={cn(styles.headerContainer, className)}>
         <div className={styles.typeLabel}>
-          {isRemix ? messages.remixTitle : messages.trackTitle}
+          {isRemix
+            ? messages.remixTitle
+            : isPodcast && isNewPodcastControlsEnabled
+            ? messages.podcastTitle
+            : messages.trackTitle}
         </div>
       </div>
     )

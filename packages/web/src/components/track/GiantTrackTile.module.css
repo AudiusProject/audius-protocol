@@ -128,12 +128,12 @@
 }
 
 .playButton {
-  width: 144px !important;
+  width: 180px !important;
   height: 60px !important;
   padding: 0;
   display: flex;
   justify-content: center;
-  margin-right: 40px;
+  margin-right: 24px;
 }
 
 .playButton .playButtonText {
@@ -142,26 +142,55 @@
   letter-spacing: 0.71px;
 }
 
-.playSection .listens {
-}
-
-.playSection .numberOfListens {
+.infoSection .numberOfListens {
   color: var(--neutral);
   font-size: var(--font-l);
   font-weight: bold;
 }
 
-.playSection .listenText {
+.infoSection .listenText {
   color: var(--neutral-light-5);
   font-size: var(--font-l);
   font-weight: bold;
   padding-left: 8px;
 }
 
-.playSection .firstListen {
+.infoSection .firstListen {
   color: var(--neutral-light-4);
   font-size: var(--font-m);
   font-weight: var(--font-medium);
+}
+
+.statsSection .numberOfListens,
+.statsSection .listenText,
+.statsSection .firstListen {
+  font-size: var(--font-m);
+}
+
+.progressText,
+.completeText {
+  color: var(--neutral-light-4);
+  font-size: var(--font-m);
+  font-weight: bold;
+}
+
+.progressTextSlider {
+  height: 4px;
+  width: 140px;
+}
+
+.completeText {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.completeTextIcon {
+  height: 18px;
+  width: 18px;
+}
+.completeTextIcon path {
+  fill: var(--neutral-light-4);
 }
 
 .commonButtonSection {

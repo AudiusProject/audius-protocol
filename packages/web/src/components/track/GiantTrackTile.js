@@ -4,7 +4,9 @@ import {
   squashNewLines,
   getCanonicalName,
   formatDate,
-  formatSeconds
+  formatSeconds,
+  Genre,
+  FeatureFlags
 } from '@audius/common'
 import {
   Button,
@@ -28,6 +30,7 @@ import Skeleton from 'components/skeleton/Skeleton'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
+import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { moodMap } from 'utils/moods'
 
 import Badge from './Badge'
@@ -35,6 +38,7 @@ import { CardTitle } from './CardTitle'
 import GiantArtwork from './GiantArtwork'
 import styles from './GiantTrackTile.module.css'
 import { GiantTrackTileCornerTag } from './GiantTrackTileCornerTag'
+import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 import { PremiumTrackSection } from './PremiumTrackSection'
@@ -55,7 +59,10 @@ const messages = {
   makePublic: 'MAKE PUBLIC',
   isPublishing: 'PUBLISHING',
   repostButtonText: 'repost',
-  repostedButtonText: 'reposted'
+  repostedButtonText: 'reposted',
+  unplayed: 'Unplayed',
+  timeLeft: 'left',
+  played: 'Played'
 }
 
 class GiantTrackTile extends PureComponent {
@@ -64,13 +71,15 @@ class GiantTrackTile extends PureComponent {
   }
 
   renderCardTitle(className) {
-    const { isUnlisted, isRemix, isPremium, premiumConditions } = this.props
+    const { isUnlisted, isRemix, genre, isPremium, premiumConditions } =
+      this.props
     return (
       <CardTitle
         className={className}
         isUnlisted={isUnlisted}
         isRemix={isRemix}
         isPremium={isPremium}
+        isPodcast={genre === Genre.PODCASTS}
         premiumConditions={premiumConditions}
       />
     )
@@ -306,19 +315,30 @@ class GiantTrackTile extends PureComponent {
   renderStatsRow() {
     const {
       isUnlisted,
+      genre,
       repostCount,
       saveCount,
       onClickReposts,
       onClickFavorites
     } = this.props
+    const isPodcast = genre === Genre.PODCASTS
+    const isNewPodcastControlsEnabled = getFeatureEnabled(
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    )
+
     return (
-      <RepostFavoritesStats
-        isUnlisted={isUnlisted}
-        repostCount={repostCount}
-        saveCount={saveCount}
-        onClickReposts={onClickReposts}
-        onClickFavorites={onClickFavorites}
-      />
+      <>
+        <RepostFavoritesStats
+          isUnlisted={isUnlisted}
+          repostCount={repostCount}
+          saveCount={saveCount}
+          onClickReposts={onClickReposts}
+          onClickFavorites={onClickFavorites}
+        />
+        {isPodcast && isNewPodcastControlsEnabled
+          ? this.renderListenCount()
+          : null}
+      </>
     )
   }
 
@@ -349,6 +369,7 @@ class GiantTrackTile extends PureComponent {
       artistHandle,
       description,
       duration,
+      genre,
       credits,
       isOwner,
       isSaved,
@@ -369,6 +390,10 @@ class GiantTrackTile extends PureComponent {
       userId
     } = this.props
     const { artworkLoading } = this.state
+    const isPodcast = genre === Genre.PODCASTS
+    const isNewPodcastControlsEnabled = getFeatureEnabled(
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    )
 
     const isLoading = loading || artworkLoading
     const showPremiumCornerTag =
@@ -395,6 +420,7 @@ class GiantTrackTile extends PureComponent {
         type: 'track',
         trackId,
         trackTitle,
+        genre,
         handle: artistHandle,
         isFavorited: isSaved,
         mount: 'page',
@@ -457,9 +483,17 @@ class GiantTrackTile extends PureComponent {
               <PlayPauseButton
                 doesUserHaveAccess={doesUserHaveAccess}
                 playing={playing}
+                playbackStatus={this.props.playbackPositionInfo?.status ?? null}
                 onPlay={onPlay}
               />
-              {this.renderListenCount()}
+              {isPodcast && isNewPodcastControlsEnabled ? (
+                <GiantTrackTileProgressInfo
+                  duration={duration}
+                  trackId={trackId}
+                />
+              ) : (
+                this.renderListenCount()
+              )}
             </div>
 
             <div className={cn(styles.statsSection, fadeIn)}>

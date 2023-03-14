@@ -119,6 +119,9 @@ const ConnectedTrackTile = memo(
     const { isEnabled: isGatedContentEnabled } = useFlag(
       FeatureFlags.GATED_CONTENT_ENABLED
     )
+    const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    )
     const { isUserAccessTBD, doesUserHaveAccess } =
       usePremiumContentAccess(trackWithFallback)
     const loading = isBuffering || isUserAccessTBD
@@ -190,7 +193,9 @@ const ConnectedTrackTile = memo(
         repostAction,
         favoriteAction,
         addToPlaylistAction,
-        OverflowAction.VIEW_TRACK_PAGE,
+        isNewPodcastControlsEnabled && genre === Genre.PODCASTS
+          ? OverflowAction.VIEW_EPISODE_PAGE
+          : OverflowAction.VIEW_TRACK_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE
       ].filter(Boolean) as OverflowAction[]
 
