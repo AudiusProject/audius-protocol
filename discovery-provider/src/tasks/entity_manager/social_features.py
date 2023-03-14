@@ -268,6 +268,9 @@ def validate_social_feature(params: ManageEntityParameters):
 
     for record_type in record_types:
         existing_record = params.existing_records.get(record_type, {}).get(key)
+        logger.info(
+            f"entity_manager | social_features.py | record_type: {record_type}, key: {key}, existing record: {existing_record}"
+        )
         if existing_record:
             duplicate_create = (
                 params.action
