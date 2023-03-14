@@ -68,7 +68,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
             data: {}
           })
         }))
-        await this.incrementBadgeCount(this.parentTrackId)
+        await this.incrementBadgeCount(this.parentTrackUserId)
       }
     }
     if (userNotifications.email) {
