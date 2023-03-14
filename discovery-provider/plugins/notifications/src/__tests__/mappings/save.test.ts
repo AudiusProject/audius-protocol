@@ -18,7 +18,7 @@ import {
 
 import { AppEmailNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
-import { savetype } from '../../types/dn'
+import { SaveType } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
 describe('Save Notification', () => {
@@ -60,7 +60,7 @@ describe('Save Notification', () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
     await createSaves(processor.discoveryDB, [{
-      user_id: 2, save_item_id: 10, save_type: savetype.track
+      user_id: 2, save_item_id: 10, save_type: SaveType.track
     }])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -85,7 +85,7 @@ describe('Save Notification', () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 20, playlist_owner_id: 1, is_album: false }])
     await createSaves(processor.discoveryDB, [{
-      user_id: 2, save_item_id: 20, save_type: savetype.playlist
+      user_id: 2, save_item_id: 20, save_type: SaveType.playlist
     }])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -110,7 +110,7 @@ describe('Save Notification', () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 30, playlist_owner_id: 1, is_album: true }])
     await createSaves(processor.discoveryDB, [{
-      user_id: 2, save_item_id: 30, save_type: savetype.playlist
+      user_id: 2, save_item_id: 30, save_type: SaveType.playlist
     }])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -135,7 +135,7 @@ describe('Save Notification', () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
     await createSaves(processor.discoveryDB, [{
-      user_id: 2, save_item_id: 10, save_type: savetype.track
+      user_id: 2, save_item_id: 10, save_type: SaveType.track
     }])
 
     await new Promise(resolve => setTimeout(resolve, 10))

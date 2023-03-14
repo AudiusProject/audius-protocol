@@ -184,7 +184,7 @@ export interface ChallengeRow {
   'id': string;
   'starting_block'?: number | null;
   'step_count'?: number | null;
-  'type': challengetype;
+  'type': ChallengeType;
 }
 export interface ChatRow {
   'chat_id': string;
@@ -408,8 +408,9 @@ export interface RepostRow {
   'created_at': Date;
   'is_current': boolean;
   'is_delete': boolean;
+  'is_repost_of_repost': boolean | false;
   'repost_item_id': number;
-  'repost_type': reposttype;
+  'repost_type': RepostType;
   'slot'?: number | null;
   'txhash'?: string;
   'user_id': number;
@@ -470,8 +471,9 @@ export interface SaveRow {
   'created_at': Date;
   'is_current': boolean;
   'is_delete': boolean;
+  'is_save_of_repost': boolean | false;
   'save_item_id': number;
-  'save_type': savetype;
+  'save_type': SaveType;
   'slot'?: number | null;
   'txhash'?: string;
   'user_id': number;
@@ -484,7 +486,7 @@ export interface SkippedTransactionRow {
   'blocknumber': number;
   'created_at'?: Date;
   'id'?: number;
-  'level'?: skippedtransactionlevel;
+  'level'?: SkippedTransactionLevel;
   'txhash': string;
   'updated_at'?: Date;
 }
@@ -723,21 +725,21 @@ export enum wallet_chain {
   'eth' = 'eth',
   'sol' = 'sol',
 }
-export enum skippedtransactionlevel {
+export enum SkippedTransactionLevel {
   'node' = 'node',
   'network' = 'network',
 }
-export enum savetype {
+export enum SaveType {
   'track' = 'track',
   'playlist' = 'playlist',
   'album' = 'album',
 }
-export enum reposttype {
+export enum RepostType {
   'track' = 'track',
   'playlist' = 'playlist',
   'album' = 'album',
 }
-export enum challengetype {
+export enum ChallengeType {
   'boolean' = 'boolean',
   'numeric' = 'numeric',
   'aggregate' = 'aggregate',

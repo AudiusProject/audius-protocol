@@ -53,10 +53,22 @@ export type RepostNotification = {
   repost_item_id: number
 }
 
+export type RepostOfRepostNotification = {
+  type: EntityType
+  user_id: number
+  repost_of_repost_item_id: number
+}
+
 export type SaveNotification = {
   type: EntityType
   user_id: number
   save_item_id: number
+}
+
+export type SaveOfRepostNotification = {
+  type: EntityType
+  user_id: number
+  save_of_repost_item_id: number
 }
 
 export type MilestoneNotification = {
@@ -185,7 +197,9 @@ export type NotificationData =
   | DMReactionNotification
   | FollowNotification
   | RepostNotification
+  | RepostOfRepostNotification
   | SaveNotification
+  | SaveOfRepostNotification
   | MilestoneNotification
   | RemixNotification
   | CosignRemixNotification

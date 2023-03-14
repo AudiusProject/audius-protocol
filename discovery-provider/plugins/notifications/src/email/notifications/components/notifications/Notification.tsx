@@ -141,6 +141,15 @@ const notificationMap = {
       </span>
     )
   },
+  ['repost_of_repost'](notification) {
+    const user = getUsers(notification.users)
+    const entity = getEntity(notification.entity)
+    return (
+      <span className={'notificationText'}>
+        {user}<BodyText text={` reposted your repost of `} />{entity}
+      </span>
+    )
+  },
   ['follow'](notification) {
     const user = getUsers(notification.users)
     return (
@@ -155,6 +164,15 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         {user}<BodyText text={` favorited your `} />{entity}
+      </span>
+    )
+  },
+  ['save_of_repost'](notification) {
+    const user = getUsers(notification.users)
+    const entity = getEntity(notification.entity)
+    return (
+      <span className={'notificationText'}>
+        {user}<BodyText text={` favorited your repost of `} />{entity}
       </span>
     )
   },

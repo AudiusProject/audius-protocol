@@ -13,9 +13,10 @@ import {
   createBlocks,
   createReposts,
 } from '../../utils/populateDB'
-import { reposttype } from '../../types/dn'
+
 import { AppEmailNotification, CosignRemixNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
+import { RepostType } from '../../types/dn'
 
 describe('Cosign Notification', () => {
   let processor: Processor
@@ -64,7 +65,7 @@ describe('Cosign Notification', () => {
       remix_of: { 'tracks': [{ 'parent_track_id': 10 }] }
     }])
     await createReposts(processor.discoveryDB, [{
-      user_id: 1, repost_item_id: 20, repost_type: reposttype.track
+      user_id: 1, repost_item_id: 20, repost_type: RepostType.track
     }])
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
