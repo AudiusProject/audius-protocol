@@ -1,7 +1,6 @@
 import { PortalProvider } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
-import codePush from 'react-native-code-push'
 import Config from 'react-native-config'
 import {
   SafeAreaProvider,
@@ -33,6 +32,7 @@ import {
 import { Drawers } from './Drawers'
 import ErrorBoundary from './ErrorBoundary'
 import { ThemeProvider } from './ThemeProvider'
+import { useSyncCodepush } from './useSyncCodepush'
 
 Sentry.init({
   dsn: Config.SENTRY_DSN
@@ -58,6 +58,8 @@ const Modals = () => {
 }
 
 const App = () => {
+  const { isPendingMandatoryCodePushUpdate } = useSyncCodepush()
+
   // Reset libs so that we get a clean app start
   useEffectOnce(() => {
     setLibs(null)
@@ -83,7 +85,11 @@ const App = () => {
                   <NavigationContainer>
                     <Toasts />
                     <Airplay />
-                    <RootScreen />
+                    <RootScreen
+                      isPendingMandatoryCodePushUpdate={
+                        isPendingMandatoryCodePushUpdate
+                      }
+                    />
                     <Drawers />
                     <Modals />
                     <Audio />
@@ -102,9 +108,5 @@ const App = () => {
 }
 
 const AppWithSentry = Sentry.wrap(App)
-const AppWithCodePush = codePush({
-  checkFrequency: codePush.CheckFrequency.ON_APP_RESUME,
-  installMode: codePush.InstallMode.ON_NEXT_RESTART
-})(AppWithSentry)
 
-export { AppWithCodePush as App }
+export { AppWithSentry as App }
