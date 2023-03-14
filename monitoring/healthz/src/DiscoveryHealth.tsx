@@ -23,16 +23,19 @@ export function DiscoveryHealth() {
       <table className="table">
         <thead>
           <tr>
-            <th>host</th>
-            <th>ver</th>
-            <th>git sha</th>
-            <th>compose?</th>
-            <th>auto upgrade</th>
+            <th>Host</th>
+            <th>Ver</th>
+            <th>Git SHA</th>
+            <th>Compose</th>
+            <th>Auto Upgrade</th>
             {isContent && <th>selectedDiscoveryProvider</th>}
-            <th>storage</th>
-            <th>dbsize</th>
-            <th>blockdiff</th>
-            <th>chain</th>
+            <th>Storage</th>
+            <th>DB Size</th>
+            <th>Block Diff</th>
+            <th>ACDC Signer</th>
+            <th>Net ID</th>
+            <th>ACDC Block</th>
+            <th>Final POA Block</th>
           </tr>
         </thead>
         <tbody>
@@ -107,6 +110,9 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       <td>{`${dbSize} GB`}</td>
       <td>{health.block_difference}</td>
       <td>{health.chain_health?.status}</td>
+      <td>{health.chain_health?.chain_id}</td>
+      <td>{health.chain_health?.block_number}</td>
+      <td>{health.final_poa_block}</td>
     </tr>
   )
 }
