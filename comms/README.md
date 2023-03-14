@@ -48,7 +48,7 @@ Use [dbmate](https://github.com/amacneil/dbmate):
 Currently docker build + push is done locally and some bash scripts are used to launch on staging machines.
 
 * Authenticate on Dockerhub
-* `bash bash_scripts/deploy.sh`
+* `bash bash_scripts/deploy_stage.sh`
 
 ## Storage
 

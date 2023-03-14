@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/url"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -55,15 +54,11 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, peering 
 	allNodes, _ := peering.AllNodes()
 	for _, node := range allNodes {
 		if strings.EqualFold(node.DelegateOwnerWallet, peering.Config.Keys.DelegatePublicKey) {
-			// TODO: this serverName switching is awful
-			serverName = os.Getenv("creatorNodeEndpoint")
-			if serverName == "" {
-				serverName = os.Getenv("audius_discprov_url")
-			}
-			if serverName == "" {
-				serverName = node.Endpoint
-			}
 			tags = append(tags, "type:"+node.Type.ID, "delegate:"+node.DelegateOwnerWallet, "owner:"+node.Owner.ID)
+			if node.Endpoint == "" {
+				log.Fatal("node.Endpoint cannot be empty", node, tags)
+			}
+			serverName = node.Endpoint
 			break
 		}
 	}
