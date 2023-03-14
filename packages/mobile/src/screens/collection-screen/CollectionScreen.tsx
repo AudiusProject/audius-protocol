@@ -1,6 +1,5 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Collection, Nullable, User } from '@audius/common'
 import {
   SquareSizes,
   encodeUrlName,
@@ -22,6 +21,13 @@ import {
   repostsUserListActions,
   favoritesUserListActions
 } from '@audius/common'
+import type {
+  Collection,
+  Nullable,
+  User,
+  SearchPlaylist,
+  SearchUser
+} from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -37,7 +43,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
-import type { SearchPlaylist, SearchUser } from 'app/store/search/types'
 import { makeStyles } from 'app/styles'
 
 import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'

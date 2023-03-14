@@ -1,11 +1,18 @@
-import { Collection, Status, Track, User } from '@audius/common'
+import { SearchPlaylist, SearchTrack, SearchUser, Status } from '@audius/common'
 
-export default interface SearchBarState {
+type NewType = SearchPlaylist
+
+export type SearchResults = {
+  users: SearchUser[]
+  tracks: SearchTrack[]
+  playlists: SearchPlaylist[]
+  albums: NewType[]
+}
+
+type SearchBarState = SearchResults & {
   searchText: string
-  tracks: Track[]
-  users: User[]
-  playlists: Collection[]
-  albums: Collection[]
   status: Status
   disregardResponses: boolean
 }
+
+export default SearchBarState

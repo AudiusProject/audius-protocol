@@ -218,3 +218,5 @@ export type StemUserTrack = UserTrack & Required<Pick<Track, 'stem_of'>>
 // Track with known non-optional remix parent
 export type RemixTrack = Track & Required<Pick<Track, 'remix_of'>>
 export type RemixUserTrack = UserTrack & Required<Pick<Track, 'remix_of'>>
+
+export type TrackImage = Pick<Track, 'cover_art' | 'cover_art_sizes'>

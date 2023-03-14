@@ -1,4 +1,4 @@
-import type { Collection, Track, User } from '@audius/common'
+import type { SearchPlaylist, SearchTrack, SearchUser } from '@audius/common'
 import { getSearch } from 'audius-client/src/common/store/search-bar/selectors'
 import { StyleSheet, View, Keyboard } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -49,7 +49,7 @@ const SearchResults = () => {
 
   const sectionWithMore: {
     title: SectionHeader | 'more'
-    data: (User | Track | Collection)[]
+    data: (SearchUser | SearchTrack | SearchPlaylist)[]
   }[] = [...sections, { title: 'more', data: [] }]
 
   return (

@@ -1,4 +1,4 @@
-import type { MutableRefObject } from 'react'
+import type { Ref, RefObject } from 'react'
 import { forwardRef, useContext } from 'react'
 
 import { Portal } from '@gorhom/portal'
@@ -17,11 +17,9 @@ import { CollapsibleTabNavigatorContext } from '../top-tab-bar'
 import { PlayBarChin } from './PlayBarChin'
 import { PullToRefresh, useOverflowHandlers } from './PullToRefresh'
 
-type SectionListProps = RNSectionListProps<any>
-
-type CollapsibleSectionListProps = {
+type CollapsibleSectionListProps<ItemT, SectionT = DefaultSectionT> = {
   sceneName: string
-} & RNSectionListProps<any>
+} & Animated.AnimatedProps<RNSectionListProps<ItemT, SectionT>>
 
 /**
  * Create a custom hook for the collapsible scene.
@@ -41,7 +39,9 @@ const useCollapsibleSectionListScene = (sceneName: string) => {
   }
 }
 
-const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
+const CollapsibleSectionList = <ItemT, SectionT = DefaultSectionT>(
+  props: CollapsibleSectionListProps<ItemT, SectionT>
+) => {
   const { sceneName, ...other } = props
   const {
     refreshing,
@@ -49,7 +49,7 @@ const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
     scrollY: collapsibleScrollAnim
   } = useContext(CollapsibleTabNavigatorContext)
 
-  const scrollPropsAndRef = useCollapsibleSectionListScene(sceneName)
+  const { ref, ...scrollProps } = useCollapsibleSectionListScene(sceneName)
   const { neutral, staticWhite } = useThemeColors()
 
   return (
@@ -67,16 +67,14 @@ const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
       ) : null}
       <Animated.SectionList
         {...other}
-        {...scrollPropsAndRef}
+        {...scrollProps}
+        ref={ref as unknown as Ref<Animated.SectionList<ItemT, SectionT>>}
         // @ts-ignore `forkEvent` is not defined on the type but it exists
-        onScroll={Animated.forkEvent(
-          scrollPropsAndRef.onScroll,
-          props.onScroll
-        )}
+        onScroll={Animated.forkEvent(scrolProps.onScroll, props.onScroll)}
         refreshControl={
           Platform.OS === 'ios' ? undefined : (
             <RefreshControl
-              progressViewOffset={scrollPropsAndRef.progressViewOffset}
+              progressViewOffset={scrollProps.progressViewOffset}
               refreshing={!!refreshing}
               onRefresh={onRefresh ?? undefined}
               colors={[neutral]}
@@ -88,96 +86,100 @@ const CollapsibleSectionList = (props: CollapsibleSectionListProps) => {
   )
 }
 
-const AnimatedSectionList = forwardRef<RNSectionList, SectionListProps>(
-  function AnimatedSectionList(
-    props,
-    ref: MutableRefObject<RNSectionList<any, DefaultSectionT> | null>
-  ) {
-    const { refreshing, onRefresh, onScroll, ...other } = props
-    const { neutral } = useThemeColors()
-    const scrollResponder = ref?.current?.getScrollResponder()
-    const {
-      isRefreshing,
-      isRefreshDisabled,
-      handleRefresh,
-      scrollAnim,
-      handleScroll,
-      onScrollBeginDrag,
-      onScrollEndDrag
-    } = useOverflowHandlers({
-      isRefreshing: refreshing,
-      scrollResponder,
-      onRefresh,
-      onScroll
-    })
+const AnimatedSectionList = forwardRef(function AnimatedSectionList<
+  ItemT,
+  SectionT = DefaultSectionT
+>(
+  props: Animated.AnimatedProps<RNSectionListProps<ItemT, SectionT>>,
+  ref: RefObject<RNSectionList<ItemT, SectionT>>
+) {
+  const { refreshing, onRefresh, onScroll, ...other } = props
+  const { neutral } = useThemeColors()
+  const scrollResponder = ref?.current?.getScrollResponder()
+  const {
+    isRefreshing,
+    isRefreshDisabled,
+    handleRefresh,
+    scrollAnim,
+    handleScroll,
+    onScrollBeginDrag,
+    onScrollEndDrag
+  } = useOverflowHandlers({
+    isRefreshing: Boolean(refreshing),
+    scrollResponder,
+    onRefresh,
+    onScroll
+  })
 
-    return (
-      <View>
-        {Platform.OS === 'ios' && handleRefresh ? (
-          <PullToRefresh
-            isRefreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            scrollAnim={scrollAnim}
-            isRefreshDisabled={isRefreshDisabled}
-            yOffsetDisappearance={-16}
-          />
-        ) : null}
-
-        <Animated.SectionList
-          {...other}
-          scrollToOverflowEnabled
-          refreshControl={
-            Platform.OS === 'ios' ? undefined : (
-              <RefreshControl
-                refreshing={!!isRefreshing}
-                onRefresh={onRefresh ?? undefined}
-                colors={[neutral]}
-              />
-            )
-          }
-          ref={ref}
-          onScroll={handleScroll}
-          onScrollBeginDrag={onScrollBeginDrag}
-          onScrollEndDrag={onScrollEndDrag}
+  return (
+    <View>
+      {Platform.OS === 'ios' && handleRefresh ? (
+        <PullToRefresh
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          scrollAnim={scrollAnim}
+          isRefreshDisabled={isRefreshDisabled}
+          yOffsetDisappearance={-16}
         />
-      </View>
+      ) : null}
+
+      <Animated.SectionList
+        {...other}
+        scrollToOverflowEnabled
+        refreshControl={
+          Platform.OS === 'ios' ? undefined : (
+            <RefreshControl
+              refreshing={!!isRefreshing}
+              onRefresh={onRefresh ?? undefined}
+              colors={[neutral]}
+            />
+          )
+        }
+        // Have to cast here because Animated version doesn't type getScrollResponder
+        ref={ref as Ref<Animated.SectionList<ItemT, SectionT>>}
+        onScroll={handleScroll}
+        onScrollBeginDrag={onScrollBeginDrag}
+        onScrollEndDrag={onScrollEndDrag}
+      />
+    </View>
+  )
+})
+
+export const SectionList = forwardRef(function SectionList<
+  ItemT,
+  SectionT = DefaultSectionT
+>(
+  props: Animated.AnimatedProps<RNSectionListProps<ItemT, SectionT>>,
+  ref: Ref<RNSectionList<ItemT, SectionT>>
+) {
+  const { ListFooterComponent, sections, ...other } = props
+  const { sceneName } = useContext(CollapsibleTabNavigatorContext)
+
+  const FooterComponent = ListFooterComponent ? (
+    <>
+      {ListFooterComponent}
+      <PlayBarChin />
+    </>
+  ) : (
+    PlayBarChin
+  )
+
+  const areSectionsEmpty = sections.every(
+    (section) => section.data.length === 0
+  )
+
+  const sectionListProps = {
+    ...other,
+    // Need to disable refresh so scrolling the "ListEmptyComponent" doesn't trigger refresh
+    onRefresh: areSectionsEmpty ? undefined : other.onRefresh,
+    sections: areSectionsEmpty ? [] : sections,
+    ListFooterComponent: FooterComponent
+  }
+
+  if (sceneName) {
+    return (
+      <CollapsibleSectionList sceneName={sceneName} {...sectionListProps} />
     )
   }
-)
-
-/**
- * Provides either a SectionList or a CollapsibleSectionList
- * depending on whether or not the list is found in a "collapsible" header tab
- */
-export const SectionList = forwardRef<RNSectionList, SectionListProps>(
-  function SectionList(props: SectionListProps, ref) {
-    const { ListFooterComponent, sections, ...other } = props
-    const { sceneName } = useContext(CollapsibleTabNavigatorContext)
-
-    const FooterComponent = ListFooterComponent ? (
-      <>
-        {ListFooterComponent}
-        <PlayBarChin />
-      </>
-    ) : (
-      PlayBarChin
-    )
-
-    const areSectionsEmpty = sections.every(
-      (section) => section.data.length === 0
-    )
-
-    const flatListProps = {
-      ...other,
-      // Need to disable refresh so scrolling the "ListEmptyComponent" doesn't trigger refresh
-      onRefresh: areSectionsEmpty ? undefined : other.onRefresh,
-      sections: areSectionsEmpty ? [] : sections,
-      ListFooterComponent: FooterComponent
-    }
-
-    if (sceneName) {
-      return <CollapsibleSectionList sceneName={sceneName} {...flatListProps} />
-    }
-    return <AnimatedSectionList ref={ref} {...flatListProps} />
-  }
-)
+  return <AnimatedSectionList ref={ref} {...sectionListProps} />
+})

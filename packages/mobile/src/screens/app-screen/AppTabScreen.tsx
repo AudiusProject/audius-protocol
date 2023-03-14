@@ -5,7 +5,9 @@ import type {
   FavoriteType,
   TipSource,
   NotificationType,
-  RepostType
+  RepostType,
+  SearchPlaylist,
+  SearchTrack
 } from '@audius/common'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
@@ -32,7 +34,6 @@ import {
   TopSupportersScreen,
   SupportingUsersScreen
 } from 'app/screens/user-list-screen'
-import type { SearchPlaylist, SearchTrack } from 'app/store/search/types'
 
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'

@@ -1,16 +1,17 @@
 import { useCallback } from 'react'
 
-import type {
-  CID,
-  ID,
-  User,
-  ButtonType as DownloadButtonType
-} from '@audius/common'
 import {
   Name,
   ButtonState,
   useDownloadTrackButtons,
   tracksSocialActions
+} from '@audius/common'
+import type {
+  CID,
+  ID,
+  User,
+  ButtonType as DownloadButtonType,
+  SearchUser
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -21,7 +22,6 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useToast } from 'app/hooks/useToast'
 import { make, track } from 'app/services/analytics'
-import type { SearchUser } from 'app/store/search/types'
 import { makeStyles } from 'app/styles'
 const { downloadTrack } = tracksSocialActions
 
