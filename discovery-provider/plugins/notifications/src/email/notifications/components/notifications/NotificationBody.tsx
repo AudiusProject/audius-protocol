@@ -4,7 +4,7 @@ import MultiUserHeader from './MultiUserHeader'
 
 const UserImage = ({ user }) => (
   <img
-    src={user.image || user.thumbnail}
+    src={user.imageUrl || user.thumbnail}
     style={{
       height: '32px',
       width: '32px',
@@ -15,7 +15,7 @@ const UserImage = ({ user }) => (
 
 const TrackImage = ({ track }) => (
   <img
-    src={track.image || track.thumbnail}
+    src={track.imageUrl || track.thumbnail}
     style={{
       height: '42px',
       width: '42px',

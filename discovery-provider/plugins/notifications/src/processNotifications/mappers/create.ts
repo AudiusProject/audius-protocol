@@ -124,6 +124,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     if (this.trackId) {
       const track = resources.tracks[this.trackId]
       entity = {
+        ...track,
         type: EntityType.Track,
         name: track.title,
         count
@@ -132,6 +133,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     } else {
       const playlist = resources.playlists[this.playlistId]
       entity = {
+        ...playlist,
         type: this.isAlbum ? EntityType.Album : EntityType.Playlist,
         name: playlist.playlist_name
       }

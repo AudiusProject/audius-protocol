@@ -85,11 +85,11 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUserId = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.receiverUserId]
     const amount = formatWei(this.tipAmount, 'sol')
     return {
       type: this.notification.type,
-      reactingUser: { name: receiverUserId.name },
+      reactingUser: { name: receiverUser.name },
       amount
     }
   }

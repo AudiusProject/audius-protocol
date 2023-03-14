@@ -75,11 +75,12 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     }
   }
 
-  formatEmailProps(resources: Resources) {
+  formatEmailProps(resources: Resources, additionalGroupNotifications: Follow[] = []) {
     const user = resources.users[this.followerUserId]
+    const additionalUsers = additionalGroupNotifications.map(follow => resources.users[follow.followerUserId])
     return {
       type: this.notification.type,
-      users: [{ name: user.name, image: user.imageUrl }]
+      users: [user, ...additionalUsers]
     }
   }
 

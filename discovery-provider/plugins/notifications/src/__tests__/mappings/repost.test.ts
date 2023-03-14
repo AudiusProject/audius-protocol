@@ -166,4 +166,39 @@ describe('Repost Notification', () => {
     expect(notifHtml).toMatchSnapshot()
   })
 
+  test("Render a multi repost email", async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }, { user_id: 3 }, { user_id: 4 }, { user_id: 5 }])
+    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+
+    await createReposts(processor.discoveryDB, [
+      { user_id: 2, repost_item_id: 10, repost_type: reposttype.track },
+      { user_id: 3, repost_item_id: 10, repost_type: reposttype.track },
+      { user_id: 4, repost_item_id: 10, repost_type: reposttype.track },
+      { user_id: 5, repost_item_id: 10, repost_type: reposttype.track },
+    ])
+
+    const notifications: AppEmailNotification[] = Array.from(new Array(4), (_, num) => ({
+      type: 'repost',
+      timestamp: new Date(),
+      specifier: (num + 2).toString(),
+      group_id: 'repost:10:type:track',
+      data: {
+        type: EntityType.Track,
+        user_id: (num + 2),
+        repost_item_id: 10
+      },
+      user_ids: [1],
+      receiver_user_id: 1
+    }))
+
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+    expect(notifHtml).toMatchSnapshot()
+  })
 })

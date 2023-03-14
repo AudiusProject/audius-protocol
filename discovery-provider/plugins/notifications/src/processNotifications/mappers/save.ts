@@ -122,19 +122,20 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     }
   }
 
-  formatEmailProps(resources: Resources) {
+  formatEmailProps(resources: Resources, additionalGroupNotifications: Save[] = []) {
     const user = resources.users[this.saverUserId]
+    const additionalUsers = additionalGroupNotifications.map(save => resources.users[save.saverUserId])
     let entity
     if (this.saveType === EntityType.Track) {
       const track = resources.tracks[this.saveItemId]
-      entity = { type: EntityType.Track, name: track.title, image: track.imageUrl }
+      entity = { type: EntityType.Track, name: track.title, imageUrl: track.imageUrl }
     } else {
       const playlist = resources.playlists[this.saveItemId]
-      entity = { type: EntityType.Playlist, name: playlist.playlist_name, image: playlist.imageUrl }
+      entity = { type: EntityType.Playlist, name: playlist.playlist_name, imageUrl: playlist.imageUrl }
     }
     return {
       type: this.notification.type,
-      users: [{ name: user.name, image: user.imageUrl }],
+      users: [user, ...additionalUsers],
       entity
     }
   }

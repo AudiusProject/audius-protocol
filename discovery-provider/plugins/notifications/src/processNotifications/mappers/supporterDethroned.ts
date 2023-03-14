@@ -79,10 +79,10 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUserId = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      receiverUserId: { name: receiverUserId.name },
+      receiverUser: receiverUser,
     }
   }
 

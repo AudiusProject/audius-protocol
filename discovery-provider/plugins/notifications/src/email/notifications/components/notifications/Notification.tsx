@@ -154,7 +154,7 @@ const notificationMap = {
     const entity = getEntity(notification.entity)
     return (
       <span className={'notificationText'}>
-        {user}<BodyText text={` saved your `} />{entity}
+        {user}<BodyText text={` favorited your `} />{entity}
       </span>
     )
   },
