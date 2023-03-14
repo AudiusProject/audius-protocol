@@ -269,7 +269,7 @@ def validate_social_feature(params: ManageEntityParameters):
     for record_type in record_types:
         existing_record = params.existing_records.get(record_type, {}).get(key)
         logger.info(
-            f"entity_manager | social_features.py | record_type: {record_type}, key: {key}, existing record: {existing_record}"
+            f"entity_manager | social_features.py | record_type: {record_type}, key: {key}, params.action: {params.action}, is_delete: {existing_record.is_delete}, type of is_delete: {type(existing_record.is_delete)}, not is_delete: {not existing_record.is_delete}, existing record: {existing_record}"
         )
         if existing_record:
             duplicate_create = (
