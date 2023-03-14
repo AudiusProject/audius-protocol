@@ -47,8 +47,6 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       AUDIUS_TEST_HOST: "nats1-storage"
-    # volumes:
-    #   - ./tmp/storage1/nats:/nats
 
   nats2-storage:
     container_name: nats2-storage
@@ -58,8 +56,6 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
       AUDIUS_TEST_HOST: "nats2-storage"
-    # volumes:
-    #   - ./tmp/storage2/nats:/nats
 
   nats3-storage:
     container_name: nats3-storage
@@ -69,8 +65,6 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
       AUDIUS_TEST_HOST: "nats3-storage"
-    # volumes:
-    #   - ./tmp/storage3/nats:/nats
 
   nats4-storage:
     container_name: nats4-storage
@@ -80,8 +74,6 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
       AUDIUS_TEST_HOST: "nats4-storage"
-    # volumes:
-    #   - ./tmp/storage4/nats:/nats
 
   nats1-discovery:
     container_name: nats1-discovery
@@ -91,8 +83,6 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" # Public key: "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e"
       AUDIUS_TEST_HOST: "nats1-discovery"
-    # volumes:
-    #   - ./tmp/discovery1/nats:/nats
 
   nats2-discovery:
     container_name: nats2-discovery
@@ -102,8 +92,6 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "d2b12371a062b73ce665288f894844ab75760d0ed0c580ff19d21b54d260ceb2" # Public key: "0x9262c9A1b172fF2A9C027B55862389d00b68A26a"
       AUDIUS_TEST_HOST: "nats2-discovery"
-    # volumes:
-    #   - ./tmp/discovery2/nats:/nats
 
   nats3-discovery:
     container_name: nats3-discovery
@@ -113,8 +101,6 @@ services:
     environment:
       AUDIUS_DELEGATE_PRIVATE_KEY: "6569932dff9fbe7c04382f87ac7098f90e7aa5cb0fe636b4e5c3cb4e30668812" # Public key: "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4"
       AUDIUS_TEST_HOST: "nats3-discovery"
-    # volumes:
-    #   - ./tmp/discovery3/nats:/nats
   
   storage1:
     container_name: storage1
@@ -127,8 +113,6 @@ services:
       NAME: "storage1"
     depends_on:
       <<: *nats-nodes-healthy
-    # volumes:
-    #   - ./tmp/storage1/storage:/tmp/audius_storage
 
   storage2:
     container_name: storage2
@@ -141,8 +125,6 @@ services:
       NAME: "storage2"
     depends_on:
       <<: *nats-nodes-healthy
-    # volumes:
-    #   - ./tmp/storage2/storage:/tmp/audius_storage
 
   storage3:
     container_name: storage3
@@ -155,8 +137,6 @@ services:
       NAME: "storage3"
     depends_on:
       <<: *nats-nodes-healthy
-    # volumes:
-    #   - ./tmp/storage3/storage:/tmp/audius_storage
 
   storage4:
     container_name: storage4
@@ -169,8 +149,6 @@ services:
       NAME: "storage4"
     depends_on:
       <<: *nats-nodes-healthy
-    # volumes:
-    #   - ./tmp/storage4/storage:/tmp/audius_storage
 
   discovery1:
     container_name: discovery1
