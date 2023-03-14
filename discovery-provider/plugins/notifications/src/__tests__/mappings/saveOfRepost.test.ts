@@ -11,12 +11,13 @@ import {
   insertFollows,
   createPlaylists,
   createSaves,
+  resetTests,
+  setUpTestDbProcessor
 } from "../../utils/populateDB";
 
 import { AppEmailNotification } from "../../types/notifications";
 import { renderEmail } from "../../email/notifications/renderEmail";
 import { EntityType } from "../../email/notifications/types";
-import { resetTests, setUpTestDbProcessor } from "../utils";
 
 describe("Save Of Repost Notification", () => {
   let processor: Processor;
