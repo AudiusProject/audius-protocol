@@ -13,7 +13,6 @@ import (
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
-	stConfig "comms.audius.co/storage/config"
 	"comms.audius.co/storage/contentaccess"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/logstream"
@@ -52,8 +51,8 @@ type StorageServer struct {
 	Logstream      *logstream.LogStream
 }
 
-func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peering.Peering) (*StorageServer, error) {
-	thisNodePubKey := strings.ToLower(config.PeeringConfig.Keys.DelegatePublicKey)
+func New(cfg *config.StorageConfig, jsc nats.JetStreamContext, peering peering.Peering) (*StorageServer, error) {
+	thisNodePubKey := strings.ToLower(cfg.PeeringConfig.Keys.DelegatePublicKey)
 	host, err := getStorageHostFromPubKey(thisNodePubKey, peering)
 	if err != nil {
 		slog.Error("Could not find host for this node. If running locally, check AUDIUS_DEV_ONLY_REGISTERED_NODES", err)
@@ -73,7 +72,7 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 				Description: "Source of truth where every node reads the list of healthy nodes from",
 				History:     20,
 				Replicas:    3,
-				Placement:   stConfig.StoragePlacement(),
+				Placement:   config.StoragePlacement(),
 			})
 			if err != nil {
 				return err
@@ -91,8 +90,8 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 		return nil, fmt.Errorf("error creating logstream: %v", err)
 	}
 
-	m := monitor.New(GlobalNamespace, healthyNodesKV, logstream, config.HealthTTLHours, jsc)
-	err = m.UpdateHealthyNodeSetOnInterval(config.RebalanceIntervalHours)
+	m := monitor.New(GlobalNamespace, healthyNodesKV, logstream, cfg.HealthTTLHours, jsc)
+	err = m.UpdateHealthyNodeSetOnInterval(cfg.RebalanceIntervalHours)
 	if err != nil {
 		slog.Error("error starting interval to update set of healthy nodes", err)
 		return nil, err
@@ -113,7 +112,7 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 	}
 	jobsManager.StartWorkers(NumJobWorkers)
 
-	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, config.StorageDriverUrl, d, jsc)
+	persistence, err := persistence.New(thisNodePubKey, "KV_"+GlobalNamespace+transcode.KvSuffix, cfg.StorageDriverUrl, d, jsc)
 	if err != nil {
 		slog.Error("eror connecting to persistent storage", err)
 		return nil, err
@@ -121,7 +120,7 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 
 	ss := &StorageServer{
 		Namespace:      GlobalNamespace,
-		Config:         config,
+		Config:         cfg,
 		Host:           host,
 		StorageDecider: d,
 		Jsc:            jsc,
@@ -133,7 +132,7 @@ func New(config *config.StorageConfig, jsc nats.JetStreamContext, peering peerin
 	}
 	ss.createWebServer()
 
-	m.SetNodeStatusOKOnInterval(thisNodePubKey, host, d, config.ReportOKIntervalSeconds)
+	m.SetNodeStatusOKOnInterval(thisNodePubKey, host, d, cfg.ReportOKIntervalSeconds)
 
 	return ss, nil
 }
