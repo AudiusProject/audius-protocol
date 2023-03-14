@@ -50,7 +50,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
       await Promise.all(devices.map(device => {
         return sendPushNotification({
           type: device.type,
-          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount + 1,
           targetARN: device.awsARN
         }, {
           title: 'You Received a Tip!',
@@ -58,15 +58,10 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
           data: {}
         })
       }))
-      // TODO: increment badge count
-
+      await this.incrementBadgeCount(this.receiverUserId)
     }
     // 
 
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
-    }
     if (userNotifications.email) {
       // TODO: Send out email
     }

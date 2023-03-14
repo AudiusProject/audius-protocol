@@ -77,7 +77,7 @@ describe('Trending Track Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congrats - You’re Trending! 📈',
       body: `Your Track track_title_10 is 3rd on Trending Right Now! 🍾`,

@@ -66,7 +66,7 @@ describe('Reaction Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:2',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: `User_1 reacted`,
       body: `User_1 reacted to your tip of 5 $AUDIO`,

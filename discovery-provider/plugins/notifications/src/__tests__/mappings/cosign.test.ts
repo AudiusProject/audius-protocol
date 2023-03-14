@@ -80,7 +80,7 @@ describe('Cosign Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'New Track Co-Sign! 🔥',
       body: "user_1 Co-Signed your Remix of track_title_20",

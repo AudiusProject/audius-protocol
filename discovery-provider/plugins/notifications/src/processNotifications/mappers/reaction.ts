@@ -56,7 +56,7 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
       await Promise.all(devices.map(device => {
         return sendPushNotification({
           type: device.type,
-          badgeCount: userNotifications.mobile[this.senderUserId].badgeCount,
+          badgeCount: userNotifications.mobile[this.senderUserId].badgeCount + 1,
           targetARN: device.awsARN
         }, {
           title: `${capitalize(reactingUserName)} reacted`,
@@ -64,13 +64,7 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
           data: {}
         })
       }))
-      // TODO: increment badge count
-
-    }
-
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
+      await this.incrementBadgeCount(this.senderUserId)
     }
     if (userNotifications.email) {
       // TODO: Send out email

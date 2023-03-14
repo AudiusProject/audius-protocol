@@ -69,7 +69,7 @@ describe('Challenge Reward Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: `✅️ Complete your Profile`,
       body: `You’ve earned 1 $AUDIO for completing this challenge!`,

@@ -73,7 +73,7 @@ describe('Add track to playlist notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Your track got on a playlist! 💿',
       body: `user_2 added title_track to their playlist title_of_playlist`,

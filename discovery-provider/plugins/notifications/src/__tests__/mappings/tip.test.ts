@@ -63,7 +63,7 @@ describe('Tip Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'You Received a Tip!',
       body: `User_2 sent you a tip of 5 $AUDIO`,

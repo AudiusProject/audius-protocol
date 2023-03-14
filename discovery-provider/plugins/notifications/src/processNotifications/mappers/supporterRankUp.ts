@@ -49,7 +49,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
       await Promise.all(devices.map(device => {
         return sendPushNotification({
           type: device.type,
-          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount + 1,
           targetARN: device.awsARN
         }, {
           title: `#${this.rank} Top Supporter`,
@@ -57,13 +57,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
           data: {}
         })
       }))
-      // TODO: increment badge count
-    }
-    // 
-
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
+      await this.incrementBadgeCount(this.receiverUserId)
     }
     if (userNotifications.email) {
       // TODO: Send out email

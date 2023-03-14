@@ -66,6 +66,21 @@ export abstract class BaseNotification<Type> {
     this.identityDB = identityDB
   }
 
+  async incrementBadgeCount(userId: number) {
+    await this.identityDB('PushNotificationBadgeCounts')
+      .insert({
+        userId,
+        iosBadgeCount: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .onConflict('userId')
+      .merge({
+        iosBadgeCount: this.identityDB.raw("?? + ?", ["PushNotificationBadgeCounts.iosBadgeCount", 1]),
+        updatedAt: new Date()
+      });
+  }
+
   /**
    * Fetches the user's notification settings
    * 

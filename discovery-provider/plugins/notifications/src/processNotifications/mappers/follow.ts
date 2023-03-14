@@ -46,7 +46,7 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
         await Promise.all(devices.map(device => {
           return sendPushNotification({
             type: device.type,
-            badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+            badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount + 1,
             targetARN: device.awsARN
           }, {
             title: 'Follow',
@@ -54,15 +54,10 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
             data: {}
           })
         }))
-        // TODO: increment badge count
+        await this.incrementBadgeCount(this.receiverUserId)
       }
-
     }
 
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
-    }
     if (userNotifications.email) {
       // TODO: Send out email
     }

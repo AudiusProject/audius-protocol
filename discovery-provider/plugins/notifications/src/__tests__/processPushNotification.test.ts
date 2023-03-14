@@ -71,7 +71,7 @@ describe('Push Notifications', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: user2.deviceType,
       targetARN: user2.awsARN,
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Message',
       body: `New message from ${user1.name}`,
@@ -90,7 +90,7 @@ describe('Push Notifications', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: user1.deviceType,
       targetARN: user1.awsARN,
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Reaction',
       body: `${user2.name} reacted ${reaction} to your message`,
@@ -120,7 +120,7 @@ describe('Push Notifications', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: user2.deviceType,
       targetARN: user2.awsARN,
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Message',
       body: `New message from ${user1.name}`,

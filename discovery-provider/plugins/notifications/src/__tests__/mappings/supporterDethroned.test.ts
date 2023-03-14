@@ -69,7 +69,7 @@ describe('Supporter Dethroned Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:2',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: "👑 You've Been Dethroned!",
       body: `Handle_3 dethroned you as user_1's #1 Top Supporter! Tip to reclaim your spot?`,

@@ -65,7 +65,7 @@ describe('Supporter Rank Up Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: `#2 Top Supporter`,
       body: `User_2 became your #2 Top Supporter!`,
