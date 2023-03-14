@@ -159,13 +159,10 @@ func (jobman *JobsManager) createTemporaryObjectStores() {
 		retry.Do(
 			func() error {
 				return createObjStoreIfNotExists(&nats.ObjectStoreConfig{
-					Bucket:   jobman.temporaryObjectStoreName(i),
-					TTL:      temporaryObjectStoreTTL,
-					Replicas: jobman.replicaCount,
-					Placement: &nats.Placement{
-						Cluster: config.GetStorageConfig().PeeringConfig.NatsClusterName,
-						Tags:    config.GetStorageConfig().ObjStorePlacementTags,
-					},
+					Bucket:    jobman.temporaryObjectStoreName(i),
+					TTL:       temporaryObjectStoreTTL,
+					Replicas:  jobman.replicaCount,
+					Placement: config.StoragePlacement(),
 				}, jobman.jsc)
 			},
 		)
