@@ -2,6 +2,8 @@ import { Amplitude } from '@amplitude/react-native'
 import Config from 'react-native-config'
 import VersionNumber from 'react-native-version-number'
 
+import { versionInfo } from 'app/utils/appVersionWithCodepush'
+
 import type { Track, Screen, AllEvents } from '../types/analytics'
 import { EventNames } from '../types/analytics'
 
@@ -74,7 +76,8 @@ export const track = async ({ eventName, properties }: Track) => {
   const version = VersionNumber.appVersion
   const propertiesWithContext = {
     ...properties,
-    mobileClientVersion: version
+    mobileClientVersion: version,
+    mobileClientVersionInclOTA: versionInfo ?? 'unknown'
   }
   amplitudeInstance.logEvent(eventName, propertiesWithContext)
 }

@@ -1,8 +1,21 @@
-mobile-install-appcenter:
+mobile-halt-if-no-native-changes:
   steps:
     - run:
-        name: install appcenter
-        command: npm install --prefix=$HOME/.local --global appcenter-cli
+        name: don't do anything if no native changes
+        command: |
+          ! git diff --quiet HEAD origin/main -- 'packages/mobile' ':!packages/mobile/src' || circleci-agent step halt
+
+mobile-halt-if-codepush-release-ios:
+  steps:
+    - run:
+        name: fastlane build
+        command: cd packages/mobile/ios && bundle exec fastlane haltIfCodePushEligible
+
+mobile-halt-if-codepush-release-android:
+  steps:
+    - run:
+        name: fastlane build
+        command: cd packages/mobile/android && bundle exec fastlane haltIfCodePushEligible
 
 # Bundle ios app and prepare to build/upload/release
 mobile-prepare-ios:
@@ -61,10 +74,6 @@ mobile-build-ios:
       default: '.env.prod'
       type: string
   steps:
-    - mobile-prepare-ios:
-        build-directory: <<parameters.build-directory>>
-        bundle-id: <<parameters.bundle-id>>
-        env: <<parameters.env>>
     - run:
         name: fastlane build
         command: cp packages/mobile/<<parameters.env>> packages/mobile/ios/ && cd packages/mobile/ios && bundle exec fastlane build bundle_id:<<parameters.bundle-id>>
@@ -87,10 +96,6 @@ mobile-release-ios:
       default: '.env.prod'
       type: string
   steps:
-    - mobile-prepare-ios:
-        build-directory: <<parameters.build-directory>>
-        bundle-id: <<parameters.bundle-id>>
-        env: <<parameters.env>>
     - run:
         name: fastlane build and upload
         command: cd packages/mobile/ios && bundle exec fastlane build_and_upload bundle_id:<<parameters.bundle-id>>
@@ -109,7 +114,6 @@ mobile-prepare-android:
         name: migrate support libraries for androidX packages
         command: |
           cd packages/mobile && npm run jetifier
-    - mobile-install-appcenter
     - run:
         name: update bundler
         command: gem install bundler:1.17.3
@@ -145,8 +149,6 @@ mobile-build-android:
       default: 'audius-mobile'
       type: string
   steps:
-    - mobile-prepare-android:
-        build-directory: <<parameters.build-directory>>
     # TODO: Create Fastlane lane for building Android and call that instead
     # (since we already have these same commands in the Fastlane file).
     - run:
@@ -173,8 +175,6 @@ mobile-release-android:
       default: 'alpha'
       type: string
   steps:
-    - mobile-prepare-android:
-        build-directory: <<parameters.build-directory>>
     - run:
         name: release android
         command: |

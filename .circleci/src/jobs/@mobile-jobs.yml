@@ -62,10 +62,7 @@ mobile-comment-native-code-change:
     - image: circleci/node:14.18
   steps:
     - checkout
-    - run:
-        name: don't do anything if no native changes
-        command: |
-          ! git diff --quiet HEAD origin/main -- 'packages/mobile' ':!packages/mobile/src' || circleci-agent step halt
+    - mobile-halt-if-no-native-changes
     - web-pr-comment:
         comment: 'It looks like there may be some changes to native mobile code, which requires triggering a full app release. Please follow the instructions here: https://www.notion.so/audiusproject/When-to-bump-app-version-2644a8f772364a4d91f44abcba44ce0b?pvs=4. cc @nicoback2 @sliptype'
 
@@ -77,6 +74,11 @@ mobile-build-staging-ios:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
+    - mobile-halt-if-no-native-changes # Don't need to test building if there's no native changes
+    - mobile-prepare-ios:
+        build-directory: 'build-mobile-staging'
+        bundle-id: 'co.audius.audiusmusic.staging'
+        env: '.env.stage'
     - mobile-build-ios:
         build-directory: 'build-mobile-staging'
         bundle-id: 'co.audius.audiusmusic.staging'
@@ -90,10 +92,14 @@ mobile-build-upload-staging-ios:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
+    - mobile-prepare-ios:
+        build-directory: 'build-mobile-staging'
+        bundle-id: 'co.audius.audiusmusic.staging'
+        env: '.env.stage'
     - mobile-release-ios:
         build-directory: 'build-mobile-staging'
         bundle-id: 'co.audius.audiusmusic.staging'
-        env: '.env.prod'
+        env: '.env.stage'
 
 mobile-build-production-ios:
   working_directory: ~/audius-client
@@ -103,12 +109,16 @@ mobile-build-production-ios:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
+    - mobile-prepare-ios:
+        build-directory: 'build-mobile-production'
+        bundle-id: 'co.audius.audiusmusic'
+        env: '.env.prod'
     - mobile-build-ios:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
         env: '.env.prod'
 
-mobile-build-upload-production-ios:
+mobile-build-upload-production-ios-if-full-release:
   working_directory: ~/audius-client
   macos: # Run on osx so app can be created and signed.
     xcode: '14.0.0'
@@ -116,6 +126,28 @@ mobile-build-upload-production-ios:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
+    - mobile-prepare-ios:
+        build-directory: 'build-mobile-production'
+        bundle-id: 'co.audius.audiusmusic'
+        env: '.env.prod'
+    - mobile-halt-if-codepush-release-ios
+    - mobile-release-ios:
+        build-directory: 'build-mobile-production'
+        bundle-id: 'co.audius.audiusmusic'
+        env: '.env.prod'
+
+mobile-deploy-codepush-production-ios-if-ota-release:
+  working_directory: ~/audius-client
+  macos:
+    xcode: '14.0.0'
+  environment:
+    FL_OUTPUT_DIR: output
+  shell: /bin/bash --login -o pipefail
+  steps:
+    - mobile-prepare-ios:
+        build-directory: 'build-mobile-production'
+        bundle-id: 'co.audius.audiusmusic'
+        env: '.env.prod'
     - mobile-release-ios:
         build-directory: 'build-mobile-production'
         bundle-id: 'co.audius.audiusmusic'
@@ -129,6 +161,10 @@ mobile-build-upload-releasecandidate-ios:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
+    - mobile-prepare-ios:
+        build-directory: 'build-mobile-releasecandidate'
+        bundle-id: 'co.audius.audiusmusic.releasecandidate'
+        env: '.env.prod'
     - mobile-release-ios:
         build-directory: 'build-mobile-releasecandidate'
         bundle-id: 'co.audius.audiusmusic.releasecandidate'
@@ -142,6 +178,10 @@ mobile-build-upload-staging-releasecandidate-ios:
     FL_OUTPUT_DIR: output
   shell: /bin/bash --login -o pipefail
   steps:
+    - mobile-prepare-ios:
+        build-directory: 'build-mobile-staging-releasecandidate'
+        bundle-id: 'co.audius.audiusmusic.staging.releasecandidate'
+        env: '.env.prod'
     - mobile-release-ios:
         build-directory: 'build-mobile-staging-releasecandidate'
         bundle-id: 'co.audius.audiusmusic.staging.releasecandidate'
@@ -153,6 +193,8 @@ mobile-build-staging-android:
   docker:
     - image: circleci/android:api-30-node
   steps:
+    - mobile-prepare-android:
+        build-directory: 'build-mobile-staging'
     - mobile-build-android:
         build-directory: 'build-mobile-staging'
         build-type: 'bundleStagingRelease'
@@ -166,6 +208,8 @@ mobile-build-upload-staging-android:
   docker:
     - image: circleci/android:api-30-node
   steps:
+    - mobile-prepare-android:
+        build-directory: 'build-mobile-staging'
     - mobile-release-android:
         build-directory: 'build-mobile-staging'
         upload-type: 'staging'
@@ -177,6 +221,8 @@ mobile-build-upload-staging-releasecandidate-android:
   docker:
     - image: circleci/android:api-30-node
   steps:
+    - mobile-prepare-android:
+        build-directory: 'build-mobile-staging-releasecandidate'
     - mobile-release-android:
         build-directory: 'build-mobile-staging-releasecandidate'
         upload-type: 'stagingReleaseCandidate'
@@ -188,6 +234,8 @@ mobile-build-upload-releasecandidate-android:
   docker:
     - image: circleci/android:api-30-node
   steps:
+    - mobile-prepare-android:
+        build-directory: 'build-mobile-releasecandidate'
     - mobile-release-android:
         build-directory: 'build-mobile-releasecandidate'
         upload-type: 'releaseCandidate'
@@ -199,6 +247,8 @@ mobile-build-production-android:
   docker:
     - image: circleci/android:api-30-node
   steps:
+    - mobile-prepare-android:
+        build-directory: 'build-mobile-production'
     - mobile-build-android:
         build-directory: 'build-mobile-production'
         build-type: 'bundleRelease'
@@ -206,12 +256,28 @@ mobile-build-production-android:
         track: 'alpha'
         remote-directory: 'audius-mobile'
 
-mobile-build-upload-production-android:
+mobile-build-upload-production-android-if-full-release:
   working_directory: ~/audius-client
   resource_class: xlarge
   docker:
     - image: circleci/android:api-30-node
   steps:
+    - mobile-prepare-android:
+        build-directory: 'build-mobile-production'
+    - mobile-halt-if-codepush-release-android
+    - mobile-release-android:
+        build-directory: 'build-mobile-production'
+        upload-type: 'prod'
+        track: 'alpha'
+
+mobile-deploy-codepush-production-android-if-ota-release:
+  working_directory: ~/audius-client
+  resource_class: large
+  docker:
+    - image: circleci/android:api-30-node
+  steps:
+    - mobile-prepare-android:
+        build-directory: 'build-mobile-production'
     - mobile-release-android:
         build-directory: 'build-mobile-production'
         upload-type: 'prod'

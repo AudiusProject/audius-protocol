@@ -44,6 +44,7 @@ export type RemoteConfigOptions<Client> = {
   setLogLevel: () => void
   environment: Environment
   appVersion: string
+  getMobileClientVersion?: () => Promise<string> | string
 }
 
 export const remoteConfig = <
@@ -62,7 +63,8 @@ export const remoteConfig = <
   setFeatureFlagSessionId,
   setLogLevel,
   environment,
-  appVersion
+  appVersion,
+  getMobileClientVersion
 }: RemoteConfigOptions<Client>) => {
   const state: State = {
     didInitialize: false,
@@ -74,6 +76,8 @@ export const remoteConfig = <
 
   // Optimizely client
   let client: Client | undefined
+  /** Mobile app version that is being run */
+  let mobileClientVersion: string | undefined
 
   const emitter = new EventEmitter()
   emitter.setMaxListeners(1000)
@@ -88,7 +92,9 @@ export const remoteConfig = <
     } else {
       state.id = savedSessionId
     }
-
+    mobileClientVersion = getMobileClientVersion
+      ? await getMobileClientVersion()
+      : undefined
     client = await createOptimizelyClient()
 
     client.onReady().then(() => {
@@ -223,7 +229,8 @@ export const remoteConfig = <
       const enabled = state.didInitialize
         ? client.isFeatureEnabled(flag, id.toString(), {
             userId: id,
-            appVersion
+            appVersion,
+            mobileClientVersion: mobileClientVersion ?? 'N/A'
           }) ?? defaultVal
         : defaultVal
       return enabled
