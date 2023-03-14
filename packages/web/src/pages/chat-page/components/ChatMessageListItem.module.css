@@ -59,13 +59,15 @@
 }
 
 .reactionsButton {
-  display: none;
+  display: flex;
+  opacity: 0;
   flex-direction: row-reverse;
   align-items: center;
   justify-content: center;
   position: absolute;
   cursor: pointer;
   bottom: -24px;
+  transition: opacity var(--quick);
 }
 
 .reactionsButton:not(.hasReaction) {
@@ -96,13 +98,14 @@
 .bubble:hover .reactionsButton,
 .reactionsButton.isOpened,
 .reactionsButton.hasReaction {
-  display: flex;
+  opacity: 1;
 }
 
 .reactionsButton:not(.hasReaction) path {
   width: var(--unit-6);
   height: var(--unit-6);
   fill: var(--secondary);
+  transition: fill var(--quick);
 }
 
 .reactionsButton:not(.hasReaction):hover path {
