@@ -1,3 +1,7 @@
+# used to deploy from local to stage/prod
+# via `make build.push.fast`
+# and `./comms/scripts/deploy_stage|prod.sh`
+
 FROM golang:alpine AS builder
 
 ARG GOOS=linux

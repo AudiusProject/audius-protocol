@@ -1,5 +1,4 @@
 #!/bin/bash
-# set -e
 
 for val in storage nats comms; do
   echo "NUKE $val"

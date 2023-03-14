@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 
 cd audius-docker-compose/creator-node
