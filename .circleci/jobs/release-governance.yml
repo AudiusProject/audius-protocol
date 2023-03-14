@@ -41,3 +41,26 @@ steps:
 
         cd eth-contracts
         node scripts/release-governance.js
+
+  - slack/notify:
+      custom: |
+        {
+          "blocks": [
+            {
+              "type": "section",
+              "text": {
+                "text": "New Governance Proposals are out @ https://dashboard.audius.org/#/governance"
+                "type": "mrkdwn"
+              },
+              "accessory": {
+                "type": "button",
+                "text": {
+                  "type": "plain_text",
+                  "text": "View Job"
+                },
+                "url": "$CIRCLE_BUILD_URL"
+              }
+            }
+          ]
+        }
+      mentions: $SLACK_RELEASE_MENTIONS

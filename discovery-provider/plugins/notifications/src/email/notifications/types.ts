@@ -19,7 +19,7 @@ export type User = {
   // User's name to display in email
   name: string
   // URL to the user's profile pic
-  image: string
+  imageUrl: string
 }
 
 export type Entity = {

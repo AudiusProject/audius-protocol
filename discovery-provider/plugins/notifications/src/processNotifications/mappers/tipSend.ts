@@ -31,10 +31,10 @@ export class TipSend extends BaseNotification<TipSendNotificationRow> {
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUserId = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      receiverUserId: { name: receiverUserId.name },
+      receiverUser,
       amount: this.amount
     }
   }

@@ -168,7 +168,8 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       achievement = 'repost'
       entity = {
         type: EntityType.Track,
-        name: track.title
+        name: track.title,
+        imageUrl: track.imageUrl
       }
     } else if (this.type === MilestoneType.TRACK_SAVE_COUNT) {
       const data = this.notification.data as TrackMilestoneNotification
@@ -176,14 +177,16 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       achievement = 'favorite'
       entity = {
         type: EntityType.Track,
-        name: track.title
+        name: track.title,
+        imageUrl: track.imageUrl
       }
     } else if (this.type === MilestoneType.PLAYLIST_REPOST_COUNT) {
       const data = this.notification.data as PlaylistMilestoneNotification
       const playlist = resources.playlists[data.playlist_id]
       entity = {
         type: playlist.is_album ? EntityType.Album : EntityType.Playlist,
-        name: playlist.playlist_name
+        name: playlist.playlist_name,
+        imageUrl: playlist.imageUrl
       }
       achievement = 'repost'
     } else if (this.type === MilestoneType.PLAYLIST_SAVE_COUNT) {
@@ -192,7 +195,8 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       achievement = 'favorite'
       entity = {
         type: playlist.is_album ? EntityType.Album : EntityType.Playlist,
-        name: playlist.playlist_name
+        name: playlist.playlist_name,
+        imageUrl: playlist.imageUrl
       }
     }
 

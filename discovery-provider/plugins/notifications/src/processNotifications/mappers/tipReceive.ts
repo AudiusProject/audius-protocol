@@ -84,7 +84,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     const amount = formatWei(this.amount.toString(), 'sol')
     return {
       type: this.notification.type,
-      sendingUser: { name: sendingUser.name },
+      sendingUser: sendingUser,
       amount
     }
   }

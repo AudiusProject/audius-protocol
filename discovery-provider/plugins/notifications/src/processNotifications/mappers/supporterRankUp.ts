@@ -81,7 +81,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
     const sendingUser = resources.users[this.senderUserId]
     return {
       type: this.notification.type,
-      sendingUser: { name: sendingUser.name },
+      sendingUser: sendingUser,
       rank: this.rank
     }
   }

@@ -41,9 +41,9 @@ const MultiUserHeader = ({ users }: { users: User[] }) => {
             <tr>
 
               {users.slice(0, MAX_USERS).map(user => (
-                <td colSpan='1'>
+                <td colSpan='1' key={user.imageUrl}>
                   <img
-                    src={user.image}
+                    src={user.imageUrl}
                     style={{
                       height: '32px',
                       width: '32px',
