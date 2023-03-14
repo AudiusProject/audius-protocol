@@ -10,17 +10,22 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
+  playbackPositionActions,
+  playbackPositionSelectors,
   tracksSocialActions,
   addToPlaylistUIActions,
-  newCollectionMetadata
+  newCollectionMetadata,
+  Genre,
+  FeatureFlags
 } from '@audius/common'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
-import { connect } from 'react-redux'
+import { connect, useDispatch, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import * as embedModalActions from 'components/embed-modal/store/actions'
 import { ToastContext } from 'components/toast/ToastContext'
+import { useFlag } from 'hooks/useRemoteConfig'
 import * as editTrackModalActions from 'store/application/ui/editTrackModal/actions'
 import { showSetAsArtistPickConfirmation } from 'store/application/ui/setAsArtistPickConfirmation/actions'
 import { AppState } from 'store/types'
@@ -31,6 +36,8 @@ const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
 const { getCollectionId } = collectionPageSelectors
 const { createPlaylist, addTrackToPlaylist } = cacheCollectionsActions
 const { getAccountOwnedPlaylists } = accountSelectors
+const { clearTrackPosition, setTrackPosition } = playbackPositionActions
+const { getTrackPositions } = playbackPositionSelectors
 
 const messages = {
   addToNewPlaylist: 'Add to New Playlist',
@@ -47,7 +54,10 @@ const messages = {
   unreposted: 'Un-Reposted!',
   unsetArtistPick: 'Unset as Artist Pick',
   visitArtistPage: 'Visit Artist Page',
-  visitTrackPage: 'Visit Track Page'
+  visitTrackPage: 'Visit Track Page',
+  visitEpisodePage: 'Visit Episode Page',
+  markAsUnplayed: 'Mark as Unplayed',
+  markAsPlayed: 'Mark as Played'
 }
 
 export type OwnProps = {
@@ -70,6 +80,7 @@ export type OwnProps = {
   isReposted: boolean
   trackId: ID
   trackTitle: string
+  genre: Genre
   trackPermalink: string
   type: 'track'
 }
@@ -80,6 +91,11 @@ export type TrackMenuProps = OwnProps &
 
 const TrackMenu = (props: TrackMenuProps) => {
   const { toast } = useContext(ToastContext)
+  const dispatch = useDispatch()
+  const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+  )
+  const trackPlaybackPositions = useSelector(getTrackPositions)
 
   const getMenu = () => {
     const {
@@ -110,6 +126,7 @@ const TrackMenu = (props: TrackMenuProps) => {
       trackId,
       trackTitle,
       trackPermalink,
+      genre,
       undoRepostTrack,
       unsaveTrack,
       unsetArtistPick
@@ -152,8 +169,27 @@ const TrackMenu = (props: TrackMenuProps) => {
     }
 
     const trackPageMenuItem = {
-      text: messages.visitTrackPage,
+      text:
+        genre === Genre.PODCASTS && isNewPodcastControlsEnabled
+          ? messages.visitEpisodePage
+          : messages.visitTrackPage,
       onClick: () => goToRoute(trackPermalink)
+    }
+
+    const markAsUnplayedItem = {
+      text: messages.markAsUnplayed,
+      onClick: () => dispatch(clearTrackPosition({ trackId }))
+    }
+
+    const markAsPlayedItem = {
+      text: messages.markAsPlayed,
+      onClick: () =>
+        dispatch(
+          setTrackPosition({
+            trackId,
+            positionInfo: { status: 'COMPLETED', playbackPosition: 0 }
+          })
+        )
     }
 
     // TODO: Add back go to album when we have better album linking.
@@ -198,8 +234,16 @@ const TrackMenu = (props: TrackMenuProps) => {
     if (includeAddToPlaylist && !isDeleted) {
       menu.items.push(addToPlaylistMenuItem)
     }
-    if (trackId && trackTitle && includeTrackPage && !isDeleted) {
-      menu.items.push(trackPageMenuItem)
+    if (trackId && trackTitle && !isDeleted) {
+      if (includeTrackPage) menu.items.push(trackPageMenuItem)
+      if (genre === Genre.PODCASTS && isNewPodcastControlsEnabled) {
+        const playbackPosition = trackPlaybackPositions[trackId]
+        menu.items.push(
+          playbackPosition?.status === 'COMPLETED'
+            ? markAsUnplayedItem
+            : markAsPlayedItem
+        )
+      }
     }
     if (trackId && isOwner && includeArtistPick && !isDeleted) {
       menu.items.push(artistPickMenuItem)

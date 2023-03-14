@@ -2,13 +2,16 @@ import { memo, MouseEvent, useCallback } from 'react'
 
 import {
   formatCount,
+  playbackPositionSelectors,
   pluralize,
   FeatureFlags,
   formatLineupTileDuration,
-  Genre
+  Genre,
+  CommonState
 } from '@audius/common'
-import { IconCrown, IconHidden } from '@audius/stems'
+import { IconCheck, IconCrown, IconHidden, ProgressBar } from '@audius/stems'
 import cn from 'classnames'
+import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconStar } from 'assets/img/iconStar.svg'
 import { ReactComponent as IconVolume } from 'assets/img/iconVolume.svg'
@@ -25,6 +28,8 @@ import {
 import { BottomRow } from './BottomRow'
 import styles from './TrackTile.module.css'
 
+const { getTrackPosition } = playbackPositionSelectors
+
 const messages = {
   getPlays: (listenCount: number) => ` ${pluralize('Play', listenCount)}`,
   artistPick: 'Artist Pick',
@@ -32,7 +37,9 @@ const messages = {
   collectibleGated: 'Collectible Gated',
   specialAccess: 'Special Access',
   unlocked: 'Unlocked',
-  locked: 'LOCKED'
+  locked: 'LOCKED',
+  timeLeft: 'left',
+  played: 'Played'
 }
 
 const RankAndIndexIndicator = ({
@@ -106,8 +113,51 @@ const TrackTile = memo(
     const { isEnabled: isGatedContentEnabled } = useFlag(
       FeatureFlags.GATED_CONTENT_ENABLED
     )
+    const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    )
+    const trackPositionInfo = useSelector((state: CommonState) =>
+      getTrackPosition(state, { trackId })
+    )
 
     const hasOrdering = order !== undefined
+    const isPodcast = genre === Genre.PODCASTS
+
+    const getDurationText = () => {
+      if (!duration) {
+        return ''
+      } else if (
+        isPodcast &&
+        isNewPodcastControlsEnabled &&
+        trackPositionInfo
+      ) {
+        if (trackPositionInfo.status === 'IN_PROGRESS') {
+          const remainingTime = duration - trackPositionInfo.playbackPosition
+          return (
+            <div className={styles.progressTextContainer}>
+              <ProgressBar
+                value={(trackPositionInfo.playbackPosition / duration) * 100}
+                sliderClassName={styles.progressTextSlider}
+              />
+              <p className={styles.progressText}>
+                {`${formatLineupTileDuration(remainingTime, true)} ${
+                  messages.timeLeft
+                }`}
+              </p>
+            </div>
+          )
+        } else if (trackPositionInfo.status === 'COMPLETED') {
+          return (
+            <div className={styles.completeText}>
+              {messages.played}
+              <IconCheck className={styles.completeIcon} />
+            </div>
+          )
+        }
+      } else {
+        return formatLineupTileDuration(duration, isPodcast)
+      }
+    }
 
     const hidePlays = fieldVisibility
       ? fieldVisibility.play_count === false
@@ -256,9 +306,7 @@ const TrackTile = memo(
                 </div>
               )}
               {!isLoading && duration && (
-                <div className={styles.duration}>
-                  {formatLineupTileDuration(duration, genre === Genre.PODCASTS)}
-                </div>
+                <div className={styles.duration}>{getDurationText()}</div>
               )}
             </div>
             <div className={styles.bottomRight}>

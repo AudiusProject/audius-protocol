@@ -311,6 +311,36 @@
   fill: var(--accent-blue);
 }
 
+.progressTextContainer {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.progressText {
+  white-space: nowrap;
+}
+
+.progressTextSlider {
+  height: 4px;
+  width: 128px;
+}
+
+.completeText {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  color: var(--secondary);
+}
+
+.completeIcon {
+  height: 12px;
+  width: 12px;
+}
+.completeIcon path {
+  fill: var(--secondary);
+}
+
 .bottomRight {
   position: absolute;
   right: 0;

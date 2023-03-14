@@ -1,6 +1,12 @@
 import { memo, MouseEvent, useRef } from 'react'
 
-import { UID, ID, formatSeconds, EnhancedCollectionTrack } from '@audius/common'
+import {
+  UID,
+  ID,
+  formatSeconds,
+  EnhancedCollectionTrack,
+  Genre
+} from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontal.svg'
@@ -120,6 +126,7 @@ const TrackListItem = ({
     isReposted: track.has_current_user_reposted,
     trackId: track.track_id,
     trackTitle: track.title,
+    genre: track.genre as Genre,
     trackPermalink: track.permalink,
     type: 'track'
   }

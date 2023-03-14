@@ -214,6 +214,7 @@ const ConnectedTrackTile = memo(
         isReposted,
         trackId,
         trackTitle: title,
+        genre: genre as Genre,
         trackPermalink: permalink,
         type: 'track'
       }
