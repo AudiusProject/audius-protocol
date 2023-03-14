@@ -1,10 +1,7 @@
-import type { MutableRefObject } from 'react'
+import type { MutableRefObject, Ref } from 'react'
 import { forwardRef, useContext, useRef } from 'react'
 
-import type {
-  FlatList as RNFlatList,
-  FlatListProps as RNFlatListProps
-} from 'react-native'
+import type { FlatListProps, FlatList as RNFlatList } from 'react-native'
 import { Animated, Platform, RefreshControl, View } from 'react-native'
 import { useCollapsibleScene } from 'react-native-collapsible-tab-view'
 
@@ -15,13 +12,14 @@ import { CollapsibleTabNavigatorContext } from '../top-tab-bar'
 import { PlayBarChin } from './PlayBarChin'
 import { PullToRefresh, useOverflowHandlers } from './PullToRefresh'
 
-type FlatListProps = RNFlatListProps<any>
+export type FlatListT<ItemT> = RNFlatList<ItemT>
+export type AnimatedFlatListT<ItemT> = Animated.FlatList<ItemT>
 
-type CollapsibleFlatListProps = {
+type CollapsibleFlatListProps<ItemT> = {
   sceneName: string
-} & RNFlatListProps<any>
+} & Animated.AnimatedProps<FlatListProps<ItemT>>
 
-const CollapsibleFlatList = (props: CollapsibleFlatListProps) => {
+function CollapsibleFlatList<ItemT>(props: CollapsibleFlatListProps<ItemT>) {
   const { sceneName, ...other } = props
   const { refreshing, onRefresh } = other
   const scrollPropsAndRef = useCollapsibleScene(sceneName)
@@ -52,69 +50,68 @@ const CollapsibleFlatList = (props: CollapsibleFlatListProps) => {
   )
 }
 
-const AnimatedFlatList = forwardRef<RNFlatList, FlatListProps>(
-  function AnimatedFlatList(
-    { refreshing, onRefresh, onScroll, ...other },
-    ref: MutableRefObject<RNFlatList<any> | null>
-  ) {
-    const scrollRef = useRef<Animated.FlatList>(null)
-    const { neutral } = useThemeColors()
+const AnimatedFlatList = forwardRef(function AnimatedFlatList<ItemT>(
+  props: Animated.AnimatedProps<FlatListProps<ItemT>>,
+  ref: MutableRefObject<Animated.FlatList<ItemT> | null>
+) {
+  const { refreshing, onRefresh, onScroll, ...other } = props
+  const scrollRef = useRef<Animated.FlatList>(null)
+  const { neutral } = useThemeColors()
 
-    const {
-      isRefreshing,
-      isRefreshDisabled,
-      handleRefresh,
-      scrollAnim,
-      handleScroll,
-      onScrollBeginDrag,
-      onScrollEndDrag
-    } = useOverflowHandlers({
-      isRefreshing: refreshing,
-      scrollResponder: ref?.current || scrollRef.current,
-      onRefresh,
-      onScroll
-    })
+  const {
+    isRefreshing,
+    isRefreshDisabled,
+    handleRefresh,
+    scrollAnim,
+    handleScroll,
+    onScrollBeginDrag,
+    onScrollEndDrag
+  } = useOverflowHandlers({
+    isRefreshing: Boolean(refreshing),
+    scrollResponder: ref?.current || scrollRef.current,
+    onRefresh,
+    onScroll
+  })
 
-    return (
-      <View>
-        {Platform.OS === 'ios' && handleRefresh ? (
-          <PullToRefresh
-            isRefreshing={isRefreshing}
-            onRefresh={handleRefresh}
-            scrollAnim={scrollAnim}
-            isRefreshDisabled={isRefreshDisabled}
-            yOffsetDisappearance={-16}
-          />
-        ) : null}
-        <Animated.FlatList
-          {...other}
-          scrollToOverflowEnabled
-          refreshControl={
-            Platform.OS === 'ios' ? undefined : (
-              <RefreshControl
-                refreshing={!!isRefreshing}
-                onRefresh={onRefresh ?? undefined}
-                colors={[neutral]}
-              />
-            )
-          }
-          ref={ref || scrollRef}
-          onScroll={handleScroll}
-          onScrollBeginDrag={onScrollBeginDrag}
-          onScrollEndDrag={onScrollEndDrag}
+  return (
+    <View>
+      {Platform.OS === 'ios' && handleRefresh ? (
+        <PullToRefresh
+          isRefreshing={isRefreshing}
+          onRefresh={handleRefresh}
+          scrollAnim={scrollAnim}
+          isRefreshDisabled={isRefreshDisabled}
+          yOffsetDisappearance={-16}
         />
-      </View>
-    )
-  }
-)
+      ) : null}
+      <Animated.FlatList
+        {...other}
+        scrollToOverflowEnabled
+        refreshControl={
+          Platform.OS === 'ios' ? undefined : (
+            <RefreshControl
+              refreshing={!!isRefreshing}
+              onRefresh={onRefresh ?? undefined}
+              colors={[neutral]}
+            />
+          )
+        }
+        ref={ref || scrollRef}
+        onScroll={handleScroll}
+        onScrollBeginDrag={onScrollBeginDrag}
+        onScrollEndDrag={onScrollEndDrag}
+      />
+    </View>
+  )
+})
 
 /**
  * Provides either a FlatList or an animated FlatList
  * depending on whether or not the list is found in a "collapsible" header tab
  */
-export const FlatList = forwardRef<RNFlatList, FlatListProps>(function FlatList(
-  props: FlatListProps,
-  ref
+export const FlatList = forwardRef(function FlatList<ItemT>(
+  props: FlatListProps<ItemT>,
+  ref: Ref<FlatListT<ItemT>>
 ) {
   const { ListFooterComponent, ...other } = props
   const { sceneName } = useContext(CollapsibleTabNavigatorContext)
@@ -133,7 +130,17 @@ export const FlatList = forwardRef<RNFlatList, FlatListProps>(function FlatList(
   }
 
   if (sceneName) {
-    return <CollapsibleFlatList sceneName={sceneName} {...flatListProps} />
+    return (
+      <CollapsibleFlatList
+        sceneName={sceneName}
+        {...(flatListProps as Animated.AnimatedProps<FlatListProps<ItemT>>)}
+      />
+    )
   }
-  return <AnimatedFlatList ref={ref} {...flatListProps} />
+  return (
+    <AnimatedFlatList
+      ref={ref as Ref<AnimatedFlatListT<ItemT>>}
+      {...(flatListProps as Animated.AnimatedProps<FlatListProps<ItemT>>)}
+    />
+  )
 })

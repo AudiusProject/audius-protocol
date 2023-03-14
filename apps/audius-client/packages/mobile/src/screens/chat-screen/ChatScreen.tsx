@@ -1,11 +1,4 @@
-import {
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-  useMemo,
-  Fragment
-} from 'react'
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 
 import {
   chatActions,
@@ -17,15 +10,16 @@ import {
   hasTail,
   isEarliestUnread
 } from '@audius/common'
+import type { ChatMessage } from '@audius/sdk'
 import { useFocusEffect } from '@react-navigation/native'
 import { View, Text, Image } from 'react-native'
-import type { FlatList as RNFlatList } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import WavingHand from 'app/assets/images/emojis/waving-hand-sign.png'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconSend from 'app/assets/images/iconSend.svg'
-import { TextInput, Screen, FlatList, ScreenContent } from 'app/components/core'
+import type { FlatListT } from 'app/components/core'
+import { TextInput, Screen, ScreenContent, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
@@ -204,7 +198,7 @@ export const ChatScreen = () => {
   const summary = useSelector((state) =>
     getChatMessagesSummary(state, chatId ?? '')
   )
-  const flatListRef = useRef<RNFlatList>(null)
+  const flatListRef = useRef<FlatListT<ChatMessage>>(null)
   const unreadCount = chat?.unread_message_count ?? 0
   const isLoading = status === Status.LOADING && chatMessages?.length === 0
 
@@ -344,9 +338,9 @@ export const ChatScreen = () => {
                 <FlatList
                   contentContainerStyle={styles.flatListContainer}
                   data={chatMessages}
-                  keyExtractor={(message) => message.chat_id}
+                  keyExtractor={(message) => message.message_id}
                   renderItem={({ item, index }) => (
-                    <Fragment key={item.key}>
+                    <>
                       <ChatMessageListItem
                         message={item}
                         hasTail={hasTail(item, chatMessages[index - 1])}
@@ -362,7 +356,7 @@ export const ChatScreen = () => {
                           <View style={styles.unreadSeparator} />
                         </View>
                       ) : null}
-                    </Fragment>
+                    </>
                   )}
                   onEndReached={handleScrollToTop}
                   inverted

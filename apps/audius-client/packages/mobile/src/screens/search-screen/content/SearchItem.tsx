@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
 import { SquareSizes } from '@audius/common'
+import type { SearchPlaylist, SearchTrack, SearchUser } from '@audius/common'
 import { StyleSheet, View, Text, TouchableHighlight } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -12,12 +13,7 @@ import { UserImage } from 'app/components/image/UserImage'
 import UserBadges from 'app/components/user-badges/UserBadges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { addItem } from 'app/store/search/searchSlice'
-import type {
-  SearchPlaylist,
-  SearchTrack,
-  SearchUser,
-  SectionHeader
-} from 'app/store/search/types'
+import type { SectionHeader } from 'app/store/search/types'
 import { useColor, useTheme } from 'app/utils/theme'
 
 const styles = StyleSheet.create({

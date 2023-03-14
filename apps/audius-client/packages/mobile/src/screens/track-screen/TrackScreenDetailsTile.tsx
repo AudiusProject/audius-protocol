@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 
-import type { UID, Track, User } from '@audius/common'
 import {
   SquareSizes,
   removeNullable,
@@ -27,6 +26,7 @@ import {
   reachabilitySelectors,
   usePremiumContentAccess
 } from '@audius/common'
+import type { UID, Track, User, SearchTrack, SearchUser } from '@audius/common'
 import { Image, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -45,7 +45,6 @@ import { useNavigation } from 'app/hooks/useNavigation'
 import { make, track as record } from 'app/services/analytics'
 import { getTrackOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
-import type { SearchTrack, SearchUser } from 'app/store/search/types'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { moodMap } from 'app/utils/moods'
 import { useThemeColors } from 'app/utils/theme'

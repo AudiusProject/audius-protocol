@@ -1,9 +1,8 @@
 import type { ReactNode } from 'react'
 
-import type { Track, User } from '@audius/common'
+import type { Track, User, SearchTrack, SearchUser } from '@audius/common'
 import type { TextStyle } from 'react-native'
 
-import type { SearchTrack, SearchUser } from 'app/store/search/types'
 import type { GestureResponderHandler } from 'app/types/gesture'
 
 import type { ImageProps } from '../image/FastImage'

@@ -2,15 +2,16 @@ import type { ComponentType } from 'react'
 import { useMemo, useCallback, useRef } from 'react'
 
 import type {
-  FlatList as RNFlatList,
   FlatListProps,
-  ListRenderItem
+  ListRenderItem,
+  ListRenderItemInfo
 } from 'react-native'
 import { View } from 'react-native'
 
 import { useScrollToTop } from 'app/hooks/useScrollToTop'
 import { makeStyles } from 'app/styles'
 
+import type { FlatListT } from './FlatList'
 import { FlatList } from './FlatList'
 
 export type CardListProps<ItemT> = FlatListProps<ItemT> & {
@@ -48,7 +49,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
+export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
   const {
     renderItem,
     disableTopTabScroll,
@@ -61,7 +62,7 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
   } = props
 
   const styles = useStyles()
-  const ref = useRef<RNFlatList>(null)
+  const ref = useRef<FlatListT<ItemT>>(null)
   const isLoading = isLoadingProp ?? !dataProp
 
   useScrollToTop(() => {
@@ -78,9 +79,9 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
 
   const dataLength = data.length
 
-  const handleRenderItem: ListRenderItem<ItemT> = useCallback(
+  const handleRenderItem: ListRenderItem<ItemT | LoadingCard> = useCallback(
     (info) => {
-      const { item, index } = info
+      const { index } = info
       const isInLeftColumn = !(index % 2)
       const isLastRow = index + 2 > dataLength
 
@@ -91,10 +92,10 @@ export const CardList = <ItemT,>(props: CardListProps<ItemT>) => {
       ]
 
       const itemElement =
-        '_loading' in (item as LoadingCard) ? (
+        '_loading' in info.item ? (
           <LoadingCardComponent />
         ) : (
-          renderItem?.(info) ?? null
+          renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null
         )
 
       return <View style={style}>{itemElement}</View>
