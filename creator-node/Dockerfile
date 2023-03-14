@@ -57,6 +57,8 @@ COPY --from=builder /app/node_modules node_modules
 
 COPY . .
 
+RUN npm run postinstall
+
 # Compile js code to typescript based on tsconfig.build.json
 RUN ./node_modules/.bin/tsc --project tsconfig.build.json
 

@@ -26,11 +26,21 @@ def test_get_repost_notifications(app):
 
         test_actions = {
             "reposts": [
-                {"user_id": i + 2, "repost_item_id": 1, "repost_type": "track"}
+                {
+                    "user_id": i + 2,
+                    "repost_item_id": 1,
+                    "repost_type": "track",
+                    "created_at": t3,
+                }
                 for i in range(4)
             ]
             + [
-                {"user_id": i + 2, "repost_item_id": 1, "repost_type": "playlist"}
+                {
+                    "user_id": i + 2,
+                    "repost_item_id": 1,
+                    "repost_type": "playlist",
+                    "created_at": t4,
+                }
                 for i in range(11)
             ]
         }

@@ -17,6 +17,7 @@ import (
 	"comms.audius.co/discovery/schema"
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
+	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
 	"github.com/inconshreveable/log15"
 	"github.com/labstack/echo/v4"
@@ -49,6 +50,19 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 		return c.String(http.StatusOK, "comms are UP: v1")
 	})
 
+	config := unfurlist.WithBlocklistPrefixes(
+		[]string{
+			"http://localhost",
+			"http://127",
+			"http://10",
+			"http://169.254",
+			"http://172.16",
+			"http://192.168",
+			"http://::1",
+			"http://fe80::",
+		},
+	)
+	g.GET("/unfurl", echo.WrapHandler(unfurlist.New(config)))
 	g.GET("/pubkey/:id", s.getPubkey)
 	g.GET("/chats", s.getChats)
 	g.GET("/chats/ws", s.chatWebsocket)

@@ -40,11 +40,11 @@ def test_get_notifications(app):
             assert u1_notification_groups[0]["count"] == 1
 
             # Test fetching a notification when a view is before and after
-            u1_notifiations = get_notifications(session, args)
-            assert u1_notifiations[0]["group_id"] == "follow:1"
-            assert u1_notifiations[0]["is_seen"] == True
-            assert u1_notifiations[0]["seen_at"] == t1
-            assert u1_notifiations[0]["actions"] == [
+            u1_notifications = get_notifications(session, args)
+            assert u1_notifications[0]["group_id"] == "follow:1"
+            assert u1_notifications[0]["is_seen"] == True
+            assert u1_notifications[0]["seen_at"] == t1
+            assert u1_notifications[0]["actions"] == [
                 {
                     "specifier": "2",
                     "type": "follow",
@@ -101,23 +101,23 @@ def test_get_many_notifications(app):
 
         with db_mock.scoped_session() as session:
             args = {"limit": 10, "user_id": 1}
-            u1_notifiations = get_notifications(session, args)
-            assert len(u1_notifiations) == 2
-            assert u1_notifiations[0]["group_id"] == "follow:1"
-            assert u1_notifiations[0]["is_seen"] == False
-            assert len(u1_notifiations[0]["actions"]) == 4
+            u1_notifications = get_notifications(session, args)
+            assert len(u1_notifications) == 2
+            assert u1_notifications[0]["group_id"] == "follow:1"
+            assert u1_notifications[0]["is_seen"] == False
+            assert len(u1_notifications[0]["actions"]) == 4
             for user_id_follower in range(2, 6):
                 assert any(
                     act["data"]["follower_user_id"] == user_id_follower
-                    for act in u1_notifiations[0]["actions"]
+                    for act in u1_notifications[0]["actions"]
                 )
 
-            assert u1_notifiations[1]["group_id"] == "follow:1"
-            assert u1_notifiations[1]["is_seen"] == True
-            assert u1_notifiations[1]["seen_at"] == t2
-            assert len(u1_notifiations[1]["actions"]) == 4
+            assert u1_notifications[1]["group_id"] == "follow:1"
+            assert u1_notifications[1]["is_seen"] == True
+            assert u1_notifications[1]["seen_at"] == t2
+            assert len(u1_notifications[1]["actions"]) == 4
             for user_id_follower in range(6, 10):
                 assert any(
                     act["data"]["follower_user_id"] == user_id_follower
-                    for act in u1_notifiations[1]["actions"]
+                    for act in u1_notifications[1]["actions"]
                 )
