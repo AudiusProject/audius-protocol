@@ -19,20 +19,13 @@ def upgrade():
     connection = op.get_bind()
     connection.execute(
         """
-        ALTER TABLE users DROP CONSTRAINT users_blockhash_fkey;
-        ALTER TABLE users DROP CONSTRAINT users_blocknumber_fkey;
-        ALTER TABLE ursm_content_nodes DROP CONSTRAINT ursm_content_nodes_blockhash_fkey;
-        ALTER TABLE ursm_content_nodes DROP CONSTRAINT ursm_content_nodes_blocknumber_fkey;
-        ALTER TABLE tracks DROP CONSTRAINT tracks_blockhash_fkey;
-        ALTER TABLE tracks DROP CONSTRAINT tracks_blocknumber_fkey;
-        ALTER TABLE saves DROP CONSTRAINT saves_blockhash_fkey;
-        ALTER TABLE saves DROP CONSTRAINT saves_blocknumber_fkey;
-        ALTER TABLE follows DROP CONSTRAINT follows_blockhash_fkey;
-        ALTER TABLE follows DROP CONSTRAINT follows_blocknumber_fkey;
-        ALTER TABLE reposts DROP CONSTRAINT reposts_blockhash_fkey;
-        ALTER TABLE reposts DROP CONSTRAINT reposts_blocknumber_fkey;
-        ALTER TABLE playlists DROP CONSTRAINT playlists_blockhash_fkey;
-        ALTER TABLE playlists DROP CONSTRAINT playlists_blocknumber_fkey;
+        ALTER TABLE users DROP CONSTRAINT IF EXISTS users_blockhash_fkey;
+        ALTER TABLE ursm_content_nodes DROP CONSTRAINT IF EXISTS ursm_content_nodes_blockhash_fkey;
+        ALTER TABLE tracks DROP CONSTRAINT IF EXISTS tracks_blockhash_fkey;
+        ALTER TABLE saves DROP CONSTRAINT IF EXISTS saves_blockhash_fkey;
+        ALTER TABLE follows DROP CONSTRAINT IF EXISTS follows_blockhash_fkey;
+        ALTER TABLE reposts DROP CONSTRAINT IF EXISTS reposts_blockhash_fkey;
+        ALTER TABLE playlists DROP CONSTRAINT IF EXISTS playlists_blockhash_fkey;
         """
     )
 
