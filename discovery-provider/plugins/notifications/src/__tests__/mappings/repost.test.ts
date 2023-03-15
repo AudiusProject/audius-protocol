@@ -171,10 +171,10 @@ describe('Repost Notification', () => {
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
 
     await createReposts(processor.discoveryDB, [
-      { user_id: 2, repost_item_id: 10, repost_type: reposttype.track },
-      { user_id: 3, repost_item_id: 10, repost_type: reposttype.track },
-      { user_id: 4, repost_item_id: 10, repost_type: reposttype.track },
-      { user_id: 5, repost_item_id: 10, repost_type: reposttype.track },
+      { user_id: 2, repost_item_id: 10, repost_type: RepostType.track },
+      { user_id: 3, repost_item_id: 10, repost_type: RepostType.track },
+      { user_id: 4, repost_item_id: 10, repost_type: RepostType.track },
+      { user_id: 5, repost_item_id: 10, repost_type: RepostType.track },
     ])
 
     const notifications: AppEmailNotification[] = Array.from(new Array(4), (_, num) => ({

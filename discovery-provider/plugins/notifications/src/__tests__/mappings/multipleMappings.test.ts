@@ -17,7 +17,7 @@ import {
 
 import { AppEmailNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
-import { reposttype } from '../../types/dn'
+import { RepostType } from '../../types/dn'
 import { EntityType } from '../../email/notifications/types'
 
 describe('Multiple Mappings Notification', () => {
@@ -60,7 +60,7 @@ describe('Multiple Mappings Notification', () => {
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
     await insertFollows(processor.discoveryDB, [{ follower_user_id: 2, followee_user_id: 1 }])
     await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 10, repost_type: reposttype.track
+      user_id: 2, repost_item_id: 10, repost_type: RepostType.track
     }])
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -103,7 +103,7 @@ describe('Multiple Mappings Notification', () => {
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
     await insertFollows(processor.discoveryDB, [{ follower_user_id: 2, followee_user_id: 1 }])
     await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 10, repost_type: reposttype.track
+      user_id: 2, repost_item_id: 10, repost_type: RepostType.track
     }])
 
     const notifications: AppEmailNotification[] = [
