@@ -89,7 +89,7 @@ describe("Save Of Repost Notification", () => {
       {
         type: "ios",
         targetARN: "arn:2",
-        badgeCount: 0,
+        badgeCount: 1,
       },
       {
         title: "New Favorite",
@@ -112,7 +112,7 @@ describe("Save Of Repost Notification", () => {
       {
         type: "ios",
         targetARN: "arn:2",
-        badgeCount: 0,
+        badgeCount: 1,
       },
       {
         title: "New Favorite",
@@ -135,7 +135,7 @@ describe("Save Of Repost Notification", () => {
       {
         type: "ios",
         targetARN: "arn:2",
-        badgeCount: 0,
+        badgeCount: 1,
       },
       {
         title: "New Favorite",
