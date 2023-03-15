@@ -11,6 +11,9 @@ query ServiceProviders($type: String) {
   serviceNodes(where: {isRegistered: true, type: $type}) {
     endpoint
     isRegistered
+    type {
+      id
+    }
   }
 }
 `
@@ -18,6 +21,9 @@ query ServiceProviders($type: String) {
 export type SP = {
   endpoint: string
   isRegistered: boolean
+  type: {
+    id: string
+  }
 
   health?: any
   apiJson?: any
