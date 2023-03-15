@@ -11,7 +11,7 @@ import (
 func chatCreate(tx *sqlx.Tx, userId int32, ts time.Time, params schema.ChatCreateRPCParams) error {
 	var err error
 
-	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, now(), now())", params.ChatID)
+	_, err = tx.Exec("insert into chat (chat_id, created_at, last_message_at) values ($1, $2, $2)", params.ChatID, ts)
 	if err != nil {
 		return err
 	}
