@@ -28,9 +28,10 @@ ENV_TO_FILEPATH = {
 
 # Note: CSV contents were pulled using the following commands on
 # identity db:
-# select  "userId" as user_id, max("updatedAt") as latest_user_notification_seen
+# \copy (select  "userId" as user_id, max("updatedAt") as latest_user_notification_seen
 # from "Notifications" where "isRead" group by "userId"
-# order by max("updatedAt") desc;
+# order by max("updatedAt") desc) to 'user_last_notif_seen_results.csv'
+# with (format csv, header)
 def insert_csv_contents_into_temp_table(path, connection, temp_table_name):
     csv_filepath = Path(__file__).parent.joinpath(path)
     with open(csv_filepath) as csv_file:
