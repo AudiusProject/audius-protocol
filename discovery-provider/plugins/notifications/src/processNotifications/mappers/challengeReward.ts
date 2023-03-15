@@ -103,7 +103,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       await Promise.all(devices.map(device => {
         return sendPushNotification({
           type: device.type,
-          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount + 1,
           targetARN: device.awsARN
         }, {
           title: this.challengeInfoMap[this.challengeId].title,
@@ -111,15 +111,9 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
           data: {}
         })
       }))
-      // TODO: increment badge count
-
+      await this.incrementBadgeCount(this.receiverUserId)
     }
-    // 
 
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
-    }
     if (userNotifications.email) {
       // TODO: Send out email
     }
@@ -137,7 +131,6 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     return {
       type: this.notification.type,
       challengeId: this.challengeId,
-      receiverUserId: { name: receiverUser.name },
       rewardAmount: formatWei(this.amount.toString(), 'sol')
     }
   }

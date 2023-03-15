@@ -716,17 +716,13 @@ describe('Test deleteAllCNodeUserDataFromDB()', async function () {
       const { handleTrackContentRoute } = proxyquire(
         '../src/components/tracks/tracksComponentService',
         {
-          '@audius/sdk': {
-            libs: {
-              Utils: {
-                fileHasher: {
-                  generateNonImageCid: sinon.stub().returns(
-                    new Promise((resolve) => {
-                      return resolve(mockCid)
-                    })
-                  )
-                }
-              }
+          '../../utils/fileHasher': {
+            fileHasher: {
+              generateNonImageCid: sinon.stub().returns(
+                new Promise((resolve) => {
+                  return resolve(mockCid)
+                })
+              )
             },
             '@global': true
           },

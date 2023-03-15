@@ -60,7 +60,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
         await Promise.all(devices.map(device => {
           return sendPushNotification({
             type: device.type,
-            badgeCount: userNotifications.mobile[this.parentTrackUserId].badgeCount,
+            badgeCount: userNotifications.mobile[this.parentTrackUserId].badgeCount + 1,
             targetARN: device.awsARN
           }, {
             title: 'New Track Co-Sign! 🔥',
@@ -68,15 +68,8 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
             data: {}
           })
         }))
-        // TODO: increment badge count
+        await this.incrementBadgeCount(this.parentTrackUserId)
       }
-
-    }
-    // 
-
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
     }
     if (userNotifications.email) {
       // TODO: Send out email

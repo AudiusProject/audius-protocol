@@ -46,7 +46,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       await Promise.all(devices.map(device => {
         return sendPushNotification({
           type: device.type,
-          badgeCount: userNotifications.mobile[this.dethronedUserId].badgeCount,
+          badgeCount: userNotifications.mobile[this.dethronedUserId].badgeCount + 1,
           targetARN: device.awsARN
         }, {
           title: "👑 You've Been Dethroned!",
@@ -57,14 +57,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
           data: {}
         })
       }))
-      // TODO: increment badge count
-
-    }
-    // 
-
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
+      await this.incrementBadgeCount(this.dethronedUserId)
     }
     if (userNotifications.email) {
       // TODO: Send out email
@@ -79,10 +72,10 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUserId = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      receiverUserId: { name: receiverUserId.name },
+      receiverUser: receiverUser,
     }
   }
 

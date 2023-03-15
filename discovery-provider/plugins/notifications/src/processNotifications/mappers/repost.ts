@@ -78,7 +78,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
         await Promise.all(devices.map(device => {
           return sendPushNotification({
             type: device.type,
-            badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+            badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount + 1,
             targetARN: device.awsARN
           }, {
             title: 'New Repost',
@@ -86,15 +86,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
             data: {}
           })
         }))
-        // TODO: increment badge count
+        await this.incrementBadgeCount(this.receiverUserId)
       }
-
-    }
-    // 
-
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
     }
     if (userNotifications.email) {
       // TODO: Send out email
@@ -118,19 +111,20 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     }
   }
 
-  formatEmailProps(resources: Resources) {
+  formatEmailProps(resources: Resources, additionalGroupNotifications: Repost[] = []) {
     const user = resources.users[this.repostUserId]
+    const additionalUsers = additionalGroupNotifications.map(repost => resources.users[repost.repostUserId])
     let entity
     if (this.repostType === EntityType.Track) {
       const track = resources.tracks[this.repostItemId]
-      entity = { type: EntityType.Track, name: track.title, image: track.imageUrl }
+      entity = { type: EntityType.Track, name: track.title, imageUrl: track.imageUrl }
     } else {
       const playlist = resources.playlists[this.repostItemId]
-      entity = { type: EntityType.Playlist, name: playlist.playlist_name, image: playlist.imageUrl }
+      entity = { type: EntityType.Playlist, name: playlist.playlist_name, imageUrl: playlist.imageUrl }
     }
     return {
       type: this.notification.type,
-      users: [{ name: user.name, image: user.imageUrl }],
+      users: [user, ...additionalUsers],
       entity
     }
   }

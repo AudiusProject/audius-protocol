@@ -13,9 +13,10 @@ import {
   createBlocks,
   createReposts,
 } from '../../utils/populateDB'
-import { reposttype } from '../../types/dn'
+
 import { AppEmailNotification, CosignRemixNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
+import { RepostType } from '../../types/dn'
 
 describe('Cosign Notification', () => {
   let processor: Processor
@@ -64,7 +65,7 @@ describe('Cosign Notification', () => {
       remix_of: { 'tracks': [{ 'parent_track_id': 10 }] }
     }])
     await createReposts(processor.discoveryDB, [{
-      user_id: 1, repost_item_id: 20, repost_type: reposttype.track
+      user_id: 1, repost_item_id: 20, repost_type: RepostType.track
     }])
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
@@ -79,7 +80,7 @@ describe('Cosign Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'New Track Co-Sign! 🔥',
       body: "user_1 Co-Signed your Remix of track_title_20",

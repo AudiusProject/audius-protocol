@@ -77,7 +77,7 @@ describe('Announcement Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:2',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: "This is an announcement",
       body: 'This is some information about the announcement we need to display',

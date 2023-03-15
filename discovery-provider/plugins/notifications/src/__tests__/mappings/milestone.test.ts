@@ -16,7 +16,7 @@ import {
   createReposts,
 } from '../../utils/populateDB'
 
-import { reposttype, savetype } from '../../types/dn'
+import { RepostType, SaveType } from '../../types/dn'
 import { AppEmailNotification, FollowerMilestoneNotification, MilestoneType, PlaylistMilestoneNotification, TrackMilestoneNotification } from '../../types/notifications'
 import { renderEmail } from '../../email/notifications/renderEmail'
 
@@ -70,7 +70,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "You have reached over 10 Followers",
@@ -116,7 +116,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createReposts(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ repost_type: reposttype.track, repost_item_id: 2, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ repost_type: RepostType.track, repost_item_id: 2, user_id: ind + 2 })))
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -132,7 +132,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "Your track track_title_2 has reached over 10 reposts",
@@ -144,7 +144,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(63).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createReposts(processor.discoveryDB,
-      new Array(60).fill(null).map((_, ind) => ({ repost_type: reposttype.track, repost_item_id: 2, user_id: ind + 2 })))
+      new Array(60).fill(null).map((_, ind) => ({ repost_type: RepostType.track, repost_item_id: 2, user_id: ind + 2 })))
 
     const data: TrackMilestoneNotification = {
       type: MilestoneType.TRACK_REPOST_COUNT,
@@ -180,7 +180,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createReposts(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ repost_type: reposttype.playlist, repost_item_id: 32, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ repost_type: RepostType.playlist, repost_item_id: 32, user_id: ind + 2 })))
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -196,7 +196,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "Your playlist playlist_name_32 has reached over 10 reposts",
@@ -209,7 +209,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createReposts(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ repost_type: reposttype.playlist, repost_item_id: 32, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ repost_type: RepostType.playlist, repost_item_id: 32, user_id: ind + 2 })))
 
     const data: PlaylistMilestoneNotification = {
       type: MilestoneType.PLAYLIST_REPOST_COUNT,
@@ -245,7 +245,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createSaves(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ save_type: savetype.track, save_item_id: 2, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ save_type: SaveType.track, save_item_id: 2, user_id: ind + 2 })))
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -261,7 +261,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "Your track track_title_2 has reached over 10 favorites",
@@ -273,7 +273,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(53).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createTracks(processor.discoveryDB, [{ track_id: 2, owner_id: 1 }])
     await createSaves(processor.discoveryDB,
-      new Array(50).fill(null).map((_, ind) => ({ save_type: savetype.track, save_item_id: 2, user_id: ind + 2 })))
+      new Array(50).fill(null).map((_, ind) => ({ save_type: SaveType.track, save_item_id: 2, user_id: ind + 2 })))
 
     const data: TrackMilestoneNotification = {
       type: MilestoneType.TRACK_SAVE_COUNT,
@@ -308,7 +308,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createSaves(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ save_type: savetype.playlist, save_item_id: 32, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ save_type: SaveType.playlist, save_item_id: 32, user_id: ind + 2 })))
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
@@ -324,7 +324,7 @@ describe('Milestone Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'Congratulations! 🎉',
       body: "Your playlist playlist_name_32 has reached over 10 favorites",
@@ -336,7 +336,7 @@ describe('Milestone Notification', () => {
     await createUsers(processor.discoveryDB, new Array(13).fill(null).map((_, ind) => ({ user_id: ind + 1 })))
     await createPlaylists(processor.discoveryDB, [{ playlist_id: 32, playlist_owner_id: 1 }])
     await createSaves(processor.discoveryDB,
-      new Array(10).fill(null).map((_, ind) => ({ save_type: savetype.playlist, save_item_id: 32, user_id: ind + 2 })))
+      new Array(10).fill(null).map((_, ind) => ({ save_type: SaveType.playlist, save_item_id: 32, user_id: ind + 2 })))
 
     const data: PlaylistMilestoneNotification = {
       type: MilestoneType.PLAYLIST_SAVE_COUNT,

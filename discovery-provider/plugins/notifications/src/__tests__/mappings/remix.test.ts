@@ -82,7 +82,7 @@ describe('Remix Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:1',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'New Remix Of Your Track ♻️',
       body: "New remix of your track track_title_10: user_2 uploaded track_title_20",

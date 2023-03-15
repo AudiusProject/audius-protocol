@@ -4,8 +4,10 @@ import { RepostRow, FollowRow, UserRow as DNUserRow, TrackRow, SaveRow, Notifica
 import { UserRow as IdentityUserRow } from '../types/identity'
 import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow, NotificationEmailRow } from '../types/identity'
 import { getDB } from '../conn'
-import { SupporterRankUpNotification } from '../types/notifications'
-import { ChallengeReward } from '../processNotifications/mappers/challengeReward'
+import { config } from '../config'
+import { expect, jest } from '@jest/globals'
+import { Processor } from '../main'
+import { getRedisConnection } from './redisConnection'
 
 export const replaceDBName = (connectionString: string, testName: string) => {
   const connection = connectionString.substring(0, connectionString.lastIndexOf('/'))
@@ -28,6 +30,33 @@ export const dropTestDB = async (connectionString: string, testName: string) => 
   const db = await getDB(postgresConnection)
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
   await db.destroy()
+}
+
+export const setUpTestDbProcessor = async () => {
+  const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+  await Promise.all([
+    createTestDB(process.env.DN_DB_URL, testName),
+    createTestDB(process.env.IDENTITY_DB_URL, testName)
+  ])
+  const redis = await getRedisConnection()
+  redis.del(config.lastIndexedMessageRedisKey)
+  redis.del(config.lastIndexedReactionRedisKey)
+  let processor = new Processor()
+  await processor.init({
+    identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
+    discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName),
+  })
+  return processor
+}
+
+export const resetTests = async (processor) => {
+  jest.clearAllMocks()
+  await processor?.close()
+  const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+  await Promise.all([
+    dropTestDB(process.env.DN_DB_URL, testName),
+    dropTestDB(process.env.IDENTITY_DB_URL, testName),
+  ])
 }
 
 type CreateTrack = Pick<TrackRow, 'owner_id' | 'track_id'> & Partial<TrackRow>

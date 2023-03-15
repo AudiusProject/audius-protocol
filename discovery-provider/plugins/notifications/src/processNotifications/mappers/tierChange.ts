@@ -32,7 +32,7 @@ export class TierChange extends BaseNotification<TierChangeNotificationRow> {
     const sendingUser = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      sendingUser: { name: sendingUser.name },
+      sendingUser: sendingUser,
       rank: this.rank
     }
   }

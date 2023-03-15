@@ -115,7 +115,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       await Promise.all(devices.map(device => {
         return sendPushNotification({
           type: device.type,
-          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
+          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount + 1,
           targetARN: device.awsARN
         }, {
           title: 'Congratulations! 🎉',
@@ -123,14 +123,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
           data: {}
         })
       }))
-      // TODO: increment badge count
-
-    }
-    // 
-
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
+      await this.incrementBadgeCount(this.receiverUserId)
     }
     if (userNotifications.email) {
       // TODO: Send out email
@@ -168,7 +161,8 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       achievement = 'repost'
       entity = {
         type: EntityType.Track,
-        name: track.title
+        name: track.title,
+        imageUrl: track.imageUrl
       }
     } else if (this.type === MilestoneType.TRACK_SAVE_COUNT) {
       const data = this.notification.data as TrackMilestoneNotification
@@ -176,14 +170,16 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       achievement = 'favorite'
       entity = {
         type: EntityType.Track,
-        name: track.title
+        name: track.title,
+        imageUrl: track.imageUrl
       }
     } else if (this.type === MilestoneType.PLAYLIST_REPOST_COUNT) {
       const data = this.notification.data as PlaylistMilestoneNotification
       const playlist = resources.playlists[data.playlist_id]
       entity = {
         type: playlist.is_album ? EntityType.Album : EntityType.Playlist,
-        name: playlist.playlist_name
+        name: playlist.playlist_name,
+        imageUrl: playlist.imageUrl
       }
       achievement = 'repost'
     } else if (this.type === MilestoneType.PLAYLIST_SAVE_COUNT) {
@@ -192,7 +188,8 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       achievement = 'favorite'
       entity = {
         type: playlist.is_album ? EntityType.Album : EntityType.Playlist,
-        name: playlist.playlist_name
+        name: playlist.playlist_name,
+        imageUrl: playlist.imageUrl
       }
     }
 

@@ -5,6 +5,7 @@ import { mapNotifications } from '../processNotifications/mappers/mapNotificatio
 import { NotificationRow } from '../types/dn'
 import { Follow } from './mappers/follow'
 import { Repost } from './mappers/repost'
+import { RepostOfRepost } from './mappers/repostOfRepost'
 import { Save } from './mappers/save'
 import { Remix } from './mappers/remix'
 import { CosignRemix } from './mappers/cosign'
@@ -22,6 +23,7 @@ export type NotificationProcessor =
   | Remix
   | CosignRemix
   | Milestone
+  | RepostOfRepost
   | SupporterRankUp
   | SupportingRankUp
   | TierChange

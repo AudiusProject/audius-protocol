@@ -69,7 +69,7 @@ describe('Create Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:2',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'New Artist Update',
       body: `user_1 released a new track`,
@@ -137,7 +137,7 @@ describe('Create Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:2',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'New Artist Update',
       body: 'user_1 released a new playlist I am a playlist',
@@ -194,7 +194,7 @@ describe('Create Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith({
       type: 'ios',
       targetARN: 'arn:2',
-      badgeCount: 0
+      badgeCount: 1
     }, {
       title: 'New Artist Update',
       body: 'user_1 released a new album I am an album',
