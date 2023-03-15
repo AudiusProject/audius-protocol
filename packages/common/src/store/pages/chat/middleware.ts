@@ -19,8 +19,8 @@ export const chatMiddleware =
     let openListener: ChatEvents['open'] | null = null
     let closeListener: ChatEvents['close'] | null = null
 
+    let hasConnected = false
     return (next) => (action) => {
-      let hasConnected = false
       if (connect.match(action) && !hasConnected) {
         console.debug('[chats] Listening...')
         hasConnected = true
