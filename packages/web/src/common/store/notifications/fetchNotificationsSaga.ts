@@ -4,7 +4,6 @@ import {
   notificationsActions,
   notificationsSelectors
 } from '@audius/common'
-import moment from 'moment'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
 import { NOTIFICATION_LIMIT_DEFAULT } from './constants'
@@ -29,9 +28,7 @@ export function* watchFetchNotifications() {
 function* fetchNotificationsSaga(action: FetchNotificationsAction) {
   const pageSize = action.payload?.pageSize ?? NOTIFICATION_LIMIT_DEFAULT
   const lastNotification = yield* select(getLastNotification)
-  const timeOffset = lastNotification
-    ? lastNotification.timestamp
-    : moment().toISOString()
+  const timeOffset = lastNotification?.timestamp
 
   const notificationsResponse = yield* call(fetchNotifications, {
     limit: pageSize,

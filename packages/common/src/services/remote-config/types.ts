@@ -153,7 +153,7 @@ export enum IntKeys {
    * The start time for discovery notifications indexing, used to determine
    * when we should rollback to identity notifications
    */
-  DISCOVERY_NOTIFICATIONS_GENESIS_TIMESTAMP = 'DISCOVERY_NOTIFICATIONS_GENESIS_TIMESTAMP'
+  DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP = 'DISCOVERY_NOTIFICATIONS_GENESIS_UNIX_TIMESTAMP'
 }
 
 export enum BooleanKeys {

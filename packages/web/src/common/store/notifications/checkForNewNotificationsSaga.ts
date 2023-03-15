@@ -5,7 +5,6 @@ import {
   NotificationType,
   walletActions
 } from '@audius/common'
-import moment from 'moment'
 import { call, put, select } from 'typed-redux-saga'
 
 import { NOTIFICATION_LIMIT_DEFAULT } from './constants'
@@ -64,11 +63,9 @@ export function* handleNewNotifications(notifications: Notification[]) {
 
 export function* checkForNewNotificationsSaga() {
   const limit = NOTIFICATION_LIMIT_DEFAULT
-  const timeOffset = moment().toISOString()
 
   const notificationsResponse = yield* call(fetchNotifications, {
-    limit,
-    timeOffset
+    limit
   })
 
   if ('error' in notificationsResponse) {

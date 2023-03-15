@@ -25,8 +25,8 @@ const { getUserId } = accountSelectors
 // NOTE: the rest are loading in in the user list modal
 export const USER_INITIAL_LOAD_COUNT = 9
 
-const getTimeAgo = (now: moment.Moment, date: string) => {
-  const notifDate = moment(date)
+const getTimeAgo = (now: moment.Moment, date: number) => {
+  const notifDate = moment.unix(date)
   const weeksAgo = now.diff(notifDate, 'weeks')
   if (weeksAgo) return `${weeksAgo} Week${weeksAgo > 1 ? 's' : ''} ago`
   const daysAgo = now.diff(notifDate, 'days')

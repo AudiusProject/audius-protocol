@@ -48,7 +48,7 @@ export const RepostOfRepostNotification = (
     <NotificationTile
       notification={notification}
       onClick={handleGoToEntity}
-      disableClosePanel={otherUsersCount > 0}
+      disableClosePanel
     >
       <NotificationHeader icon={<IconRepost />}>
         <UserProfilePictureList
