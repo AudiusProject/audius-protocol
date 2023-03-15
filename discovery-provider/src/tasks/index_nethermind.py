@@ -13,6 +13,7 @@ from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
 from src.models.indexing.ursm_content_node import UrsmContentNode
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -380,7 +381,6 @@ def process_state_changes(
     )(block)
 
     for tx_type, bulk_processor in TX_TYPE_TO_HANDLER_MAP.items():
-
         txs_to_process = tx_type_to_grouped_lists_map[tx_type]
         tx_processing_args = [
             main_indexing_task,
@@ -751,6 +751,11 @@ def revert_blocks(self, db, revert_blocks_list):
                 .filter(TrackRoute.blockhash == revert_hash)
                 .all()
             )
+            revert_playlist_routes = (
+                session.query(PlaylistRoute)
+                .filter(PlaylistRoute.blockhash == revert_hash)
+                .all()
+            )
 
             # Revert all of above transactions
             for save_to_revert in revert_save_entries:
@@ -767,6 +772,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 )
                 if previous_save_entry:
                     previous_save_entry.is_current = True
+                logger.info(f"index_nethermind.py | Reverting save: {save_to_revert}")
                 # Remove outdated save item entry
                 session.delete(save_to_revert)
 
@@ -786,7 +792,9 @@ def revert_blocks(self, db, revert_blocks_list):
                 if previous_repost_entry:
                     previous_repost_entry.is_current = True
                 # Remove outdated repost entry
-                logger.info(f"Reverting repost: {repost_to_revert}")
+                logger.info(
+                    f"index_nethermind.py | Reverting repost: {repost_to_revert}"
+                )
                 session.delete(repost_to_revert)
 
             for follow_to_revert in revert_follow_entries:
@@ -805,7 +813,9 @@ def revert_blocks(self, db, revert_blocks_list):
                 if previous_follow_entry:
                     previous_follow_entry.is_current = True
                 # remove outdated follow entry
-                logger.info(f"Reverting follow: {follow_to_revert}")
+                logger.info(
+                    f"index_nethermind.py | Reverting follow: {follow_to_revert}"
+                )
                 session.delete(follow_to_revert)
 
             for subscription_to_revert in revert_subscription_entries:
@@ -822,6 +832,9 @@ def revert_blocks(self, db, revert_blocks_list):
                 )
                 if previous_subscription_entry:
                     previous_subscription_entry.is_current = True
+                logger.info(
+                    f"index_nethermind.py | Reverting subscription: {follow_to_revert}"
+                )
                 session.delete(subscription_to_revert)
 
             for playlist_to_revert in revert_playlist_entries:
@@ -835,6 +848,9 @@ def revert_blocks(self, db, revert_blocks_list):
                 )
                 if previous_playlist_entry:
                     previous_playlist_entry.is_current = True
+                logger.info(
+                    f"index_nethermind.py | Reverting playlist: {follow_to_revert}"
+                )
                 # Remove outdated playlist entry
                 session.delete(playlist_to_revert)
 
@@ -851,7 +867,7 @@ def revert_blocks(self, db, revert_blocks_list):
                     # First element in descending order is new current track item
                     previous_track_entry.is_current = True
                 # Remove track entries
-                logger.info(f"Reverting track: {track_to_revert}")
+                logger.info(f"index_nethermind.py | Reverting track: {track_to_revert}")
                 session.delete(track_to_revert)
 
             for ursm_content_node_to_revert in revert_ursm_content_node_entries:
@@ -867,7 +883,7 @@ def revert_blocks(self, db, revert_blocks_list):
                     previous_ursm_content_node_entry.is_current = True
                 # Remove previous ursm Content Node entires
                 logger.info(
-                    f"Reverting ursm Content Node: {ursm_content_node_to_revert}"
+                    f"index_nethermind.py | Reverting ursm Content Node: {ursm_content_node_to_revert}"
                 )
                 session.delete(ursm_content_node_to_revert)
 
@@ -890,7 +906,7 @@ def revert_blocks(self, db, revert_blocks_list):
                     # Update previous user row, setting is_current to true
                     previous_user_entry.is_current = True
                 # Remove outdated user entries
-                logger.info(f"Reverting user: {user_to_revert}")
+                logger.info(f"index_nethermind.py | Reverting user: {user_to_revert}")
                 session.delete(user_to_revert)
 
             for associated_wallets_to_revert in revert_associated_wallets:
@@ -912,7 +928,9 @@ def revert_blocks(self, db, revert_blocks_list):
                         {"is_current": True}
                     )
                 # Remove outdated associated wallets
-                logger.info(f"Reverting associated Wallet: {user_id}")
+                logger.info(
+                    f"index_nethermind.py | Reverting associated Wallet: {user_id}"
+                )
                 session.delete(associated_wallets_to_revert)
 
             revert_user_events(session, revert_user_events_entries, revert_block_number)
@@ -930,8 +948,30 @@ def revert_blocks(self, db, revert_blocks_list):
                 )
                 if previous_track_route_entry:
                     previous_track_route_entry.is_current = True
-                logger.info(f"Reverting track route {track_route_to_revert}")
+                logger.info(
+                    f"index_nethermind.py | Reverting track route {track_route_to_revert}"
+                )
                 session.delete(track_route_to_revert)
+
+            for playlist_route_to_revert in revert_playlist_routes:
+                playlist_id = playlist_route_to_revert.playlist_id
+                previous_track_route_entry = (
+                    session.query(PlaylistRoute)
+                    .filter(
+                        PlaylistRoute.track_id == track_id,
+                        PlaylistRoute.blocknumber < revert_block_number,
+                    )
+                    .order_by(
+                        PlaylistRoute.blocknumber.desc(), PlaylistRoute.slug.asc()
+                    )
+                    .first()
+                )
+                if previous_track_route_entry:
+                    previous_track_route_entry.is_current = True
+                logger.info(
+                    f"index_nethermind.py | Reverting playlist route {playlist_route_to_revert}"
+                )
+                session.delete(playlist_route_to_revert)
 
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()
