@@ -20,6 +20,7 @@ import {
 } from '../types/dn'
 import { UserRow as IdentityUserRow } from '../types/identity'
 import { enum_NotificationDeviceTokens_deviceType, NotificationDeviceTokenRow, UserNotificationMobileSettingRow, NotificationEmailRow } from '../types/identity'
+import { getDB } from '../conn'
 import { config } from '../config'
 import { expect, jest } from '@jest/globals'
 import { Processor } from '../main'

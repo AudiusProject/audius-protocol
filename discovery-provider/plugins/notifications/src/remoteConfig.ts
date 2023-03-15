@@ -7,6 +7,8 @@ export const MappingFeatureName = 'discovery_notification_mapping'
 export enum MappingVariable {
   PushRepost = 'push_repost',
   PushSave = 'push_save',
+  PushSaveOfRepost = 'push_save_of_repost',
+  PushRepostOfRepost = 'push_repost_of_repost',
   PushRemix = 'push_remix',
   PushCosign = 'push_cosign',
   PushAddTrackToPlaylist = 'push_add_track_to_playlist',
@@ -29,6 +31,8 @@ export enum MappingVariable {
 const defaultMappingVariable = {
   [MappingVariable.PushRepost]: false,
   [MappingVariable.PushSave]: false,
+  [MappingVariable.PushSaveOfRepost]: false,
+  [MappingVariable.PushRepostOfRepost]: false,
   [MappingVariable.PushRemix]: false,
   [MappingVariable.PushCosign]: false,
   [MappingVariable.PushAddTrackToPlaylist]: false,
