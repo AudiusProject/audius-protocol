@@ -204,10 +204,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     // STAGE defaults to nethermind but can send to POA when it has both addresses
     const relayPromises = []
 
-    if (
-      !sendToNethermindOnly ||
-      (sendToNethermindOnly && nethermindContractAddress)
-    ) {
+    if (!sendToNethermindOnly) {
       relayStats.poa.isRecipient = true
       relayPromises.push(
         createAndSendTransaction(
@@ -225,10 +222,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     // send to nethermind
     // PROD doesn't have sendToNethermindOnly and only sends to nethermind when it has both addresses
     // STAGE defaults to nethermind
-    if (
-      sendToNethermindOnly ||
-      (!sendToNethermindOnly && nethermindContractAddress)
-    ) {
+    if (sendToNethermindOnly) {
       if (!nethermindContractAddress) {
         nethermindContractAddress = contractAddress
         nethermindEncodedABI = encodedABI
