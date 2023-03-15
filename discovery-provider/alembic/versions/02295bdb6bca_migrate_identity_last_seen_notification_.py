@@ -36,7 +36,6 @@ def insert_csv_contents_into_temp_table(path, connection, temp_table_name):
     csv_filepath = Path(__file__).parent.joinpath(path)
     with open(csv_filepath) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=",")
-        next(csv_reader)
         for row in csv_reader:
             connection.execute(
                 "INSERT INTO {} (user_id, seen_at) VALUES ({}, '{}')".format(
@@ -46,7 +45,7 @@ def insert_csv_contents_into_temp_table(path, connection, temp_table_name):
 
 
 def upgrade():
-    if not ENV == "stage" or not ENV == "prod":
+    if ENV == "stage" or ENV == "prod":
         connection = op.get_bind()
         op.create_table(
             "temp_notification_seen",
@@ -54,7 +53,7 @@ def upgrade():
             sa.Column("seen_at", sa.DateTime(), nullable=False),
         )
         insert_csv_contents_into_temp_table(
-            path=ENV_TO_FILEPATH["stage"],
+            path=ENV_TO_FILEPATH[ENV],
             connection=connection,
             temp_table_name="temp_notification_seen",
         )
