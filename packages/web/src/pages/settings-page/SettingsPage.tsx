@@ -6,7 +6,7 @@ import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
 
 import SettingsPageProvider from './SettingsPageProvider'
-import DesktopSettingsPage from './components/desktop/SettingsPage'
+import { SettingsPage as DesktopSettingsPage } from './components/desktop/SettingsPage'
 import MobileSettingsPage, { SubPage } from './components/mobile/SettingsPage'
 
 type OwnProps = {

@@ -1,21 +1,27 @@
+import cn from 'classnames'
+
 import styles from './SettingsCard.module.css'
 
-const SettingsCard = (props: SettingsCardProps) => {
+type SettingsCardProps = {
+  className?: string
+  icon: React.ReactNode
+  title: string
+  description: string
+  children: React.ReactNode
+}
+
+export const SettingsCard = (props: SettingsCardProps) => {
   return (
-    <div className={styles.settingsCard}>
-      <div className={styles.content}>
-        <div className={styles.title}>{props.title}</div>
+    <div className={cn(styles.settingsCard, props.className)}>
+      <div>
+        <div className={styles.title}>
+          {props.icon} {props.title}
+        </div>
         <div className={styles.description}>{props.description}</div>
       </div>
       {props.children}
     </div>
   )
-}
-
-type SettingsCardProps = {
-  title: string
-  description: string
-  children: JSX.Element
 }
 
 export default SettingsCard
