@@ -64,6 +64,7 @@ def create_social_record(params: ManageEntityParameters):
     record_types = action_to_record_types[params.action]
     create_record: Union[Save, Follow, Repost, Subscription, None] = None
     for record_type in record_types:
+        logger.info(f"entity_manager.py | social_features.py | before validating duplicate for record type: {record_type}, params: {params}")
         if not validate_duplicate_social_feature(record_type, params):
             continue
         if record_type == EntityType.FOLLOW:
@@ -289,5 +290,5 @@ def validate_duplicate_social_feature(record_type: EntityType, params: ManageEnt
                 f"entity_manager.py | User {params.user_id} has already sent a {record_type} for {params.entity_type} {params.entity_id}. Skipping"
             )
             return False
-        return True
+    return True
 
