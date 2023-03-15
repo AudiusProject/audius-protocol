@@ -8,6 +8,7 @@ import { removeNullable, createDeepEqualSelector } from 'utils'
 import { ID, Status, User, UserCollection } from '../../../models'
 
 import { initialState as initialFeedState } from './lineups/feed/reducer'
+import { PREFIX as TRACKS_PREFIX } from './lineups/tracks/actions'
 import { initialState as initialTracksState } from './lineups/tracks/reducer'
 import { CollectionSortMode } from './types'
 
@@ -216,3 +217,6 @@ export const makeGetProfile = () => {
     }
   )
 }
+
+export const getTrackSource = (state: CommonState, handle: string) =>
+  `${TRACKS_PREFIX}:${getProfileUserId(state, handle)}`

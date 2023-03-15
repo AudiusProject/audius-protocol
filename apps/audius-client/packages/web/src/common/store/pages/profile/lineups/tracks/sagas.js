@@ -15,8 +15,10 @@ import { LineupSagas } from 'common/store/lineup/sagas'
 import { waitForRead } from 'utils/sagaHelpers'
 
 import { retrieveUserTracks } from './retrieveUserTracks'
+import { watchUploadTracksSaga } from './watchUploadTracksSaga'
+
 const { SET_ARTIST_PICK } = tracksSocialActions
-const { getProfileUserId, getProfileTracksLineup } = profilePageSelectors
+const { getProfileTracksLineup, getTrackSource } = profilePageSelectors
 const { getTrack } = cacheTracksSelectors
 const { DELETE_TRACK } = cacheTracksActions
 const { getUserId, getUserHandle } = accountSelectors
@@ -41,9 +43,6 @@ function* getTracks({ offset, limit, payload, handle }) {
   return processed
 }
 
-const sourceSelector = (state, handle) =>
-  `${PREFIX}:${getProfileUserId(state, handle)}`
-
 class TracksSagas extends LineupSagas {
   constructor() {
     super(
@@ -53,7 +52,7 @@ class TracksSagas extends LineupSagas {
       getTracks,
       undefined,
       undefined,
-      sourceSelector
+      getTrackSource
     )
   }
 }
@@ -101,5 +100,9 @@ function* watchDeleteTrack() {
 
 export default function sagas() {
   const trackSagas = new TracksSagas().getSagas()
-  return trackSagas.concat([watchSetArtistPick, watchDeleteTrack])
+  return trackSagas.concat([
+    watchSetArtistPick,
+    watchDeleteTrack,
+    watchUploadTracksSaga
+  ])
 }
