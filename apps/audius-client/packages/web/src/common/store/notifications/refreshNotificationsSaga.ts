@@ -1,5 +1,4 @@
 import { getErrorMessage, notificationsActions } from '@audius/common'
-import moment from 'moment'
 import { call, put, takeLatest } from 'typed-redux-saga'
 
 import { NOTIFICATION_LIMIT_DEFAULT } from './constants'
@@ -11,10 +10,8 @@ const { updateNotifications, fetchNotificationsFailed, refreshNotifications } =
 
 function* refreshNotificationsWorker() {
   const limit = NOTIFICATION_LIMIT_DEFAULT
-  const timeOffset = moment().toISOString()
   const notificationsResponse = yield* call(fetchNotifications, {
-    limit,
-    timeOffset
+    limit
   })
 
   if ('error' in notificationsResponse) {

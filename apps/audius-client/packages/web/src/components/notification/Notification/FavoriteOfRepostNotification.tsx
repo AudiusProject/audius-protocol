@@ -44,7 +44,11 @@ export const FavoriteOfRepostNotification = (
   if (!users || !firstUser || !entity) return null
 
   return (
-    <NotificationTile notification={notification} onClick={handleGoToEntity}>
+    <NotificationTile
+      notification={notification}
+      onClick={handleGoToEntity}
+      disableClosePanel
+    >
       <NotificationHeader icon={<IconFavorite />}>
         <UserProfilePictureList
           users={users}
