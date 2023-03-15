@@ -119,6 +119,7 @@ class SortMethod(str, enum.Enum):
     plays = "plays"
     reposts = "reposts"
     saves = "saves"
+    most_listens_by_user = "most_listens_by_user"
 
 
 class TransactionSortMethod(str, enum.Enum):
