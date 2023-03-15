@@ -55,7 +55,14 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, peering 
 	allNodes, _ := peering.AllNodes()
 	for _, node := range allNodes {
 		if strings.EqualFold(node.DelegateOwnerWallet, peering.Config.Keys.DelegatePublicKey) {
-			// TODO: this serverName switching is awful
+			tags = append(tags, "type:"+node.Type.ID, "delegate:"+node.DelegateOwnerWallet, "owner:"+node.Owner.ID)
+			// TODO: this should be simply:
+			// 		if node.Endpoint == "" {
+			// 			log.Fatal("node.Endpoint cannot be empty", node, tags)
+			// 		}
+			// 		serverName = node.Endpoint
+			// yet there are conflicting delegate wallets in stage
+			// will follow up and fix post this merge
 			serverName = os.Getenv("creatorNodeEndpoint")
 			if serverName == "" {
 				serverName = os.Getenv("audius_discprov_url")
@@ -63,7 +70,6 @@ func (manager *NatsManager) StartNats(peerMap map[string]*peering.Info, peering 
 			if serverName == "" {
 				serverName = node.Endpoint
 			}
-			tags = append(tags, "type:"+node.Type.ID, "delegate:"+node.DelegateOwnerWallet, "owner:"+node.Owner.ID)
 			break
 		}
 	}
