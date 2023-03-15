@@ -40,6 +40,13 @@ build.push::
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/comms:a1 .
 	docker push audius/comms:a1
 
+# does not use qemu - fast
+# used for quick stage/prod deployments from localhost
+build.push.fast::
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/comms-amd64
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/comms:a1
+	docker push audius/comms:a1
+
 build.weathermap::
 	cd storage/storageserver/weather-map; yarn && yarn build
 
