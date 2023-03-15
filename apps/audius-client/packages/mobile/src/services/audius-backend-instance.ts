@@ -20,6 +20,8 @@ import { monitoringCallbacks } from './monitoringCallbacks'
 import { getFeatureEnabled } from './remote-config'
 import { remoteConfigInstance } from './remote-config/remote-config-instance'
 
+const ENTITY_MANAGER_ADDRESS_PROD = '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
+
 /**
  * audiusBackend initialized for a mobile environment
  */
@@ -67,7 +69,10 @@ export const audiusBackendInstance = audiusBackend({
   recordAnalytics: track,
   reportError: reportToSentry,
   registryAddress: Config.REGISTRY_ADDRESS,
-  entityManagerAddress: Config.ENTITY_MANAGER_ADDRESS,
+  entityManagerAddress:
+    Config.ENVIRONMENT === 'production'
+      ? ENTITY_MANAGER_ADDRESS_PROD
+      : Config.ENTITY_MANAGER_ADDRESS,
   remoteConfigInstance,
   setLocalStorageItem: async (key, value) => AsyncStorage.setItem(key, value),
   solanaConfig: {
