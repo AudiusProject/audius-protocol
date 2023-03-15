@@ -131,7 +131,10 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     // nulling this will disable nethermind relays
     nethermindContractAddress = null
   }
-  if (config.get('environment') === 'staging') {
+  if (
+    config.get('environment') === 'staging' ||
+    config.get('environment') === 'production'
+  ) {
     sendToNethermindOnly = true
   }
   const existingTx = await models.Transaction.findOne({
