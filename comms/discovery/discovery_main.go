@@ -23,6 +23,7 @@ func DiscoveryMain() {
 	var proc *rpcz.RPCProcessor
 
 	g.Go(func() error {
+
 		discoveryConfig := config.GetDiscoveryConfig()
 		peering, err := peering.New(&discoveryConfig.PeeringConfig)
 		if err != nil {
@@ -47,6 +48,9 @@ func DiscoveryMain() {
 		if err != nil {
 			return err
 		}
+
+		// start SSE clients
+		proc.StartSSEClients(peerMap)
 
 		err = pubkeystore.Dial()
 		if err != nil {

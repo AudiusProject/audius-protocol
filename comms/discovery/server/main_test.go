@@ -66,6 +66,10 @@ func TestMain(m *testing.M) {
 	}
 	testServer = NewServer(jsc, proc)
 
+	// start SSE clients
+	peerMap := p.Solicit()
+	proc.StartSSEClients(peerMap)
+
 	// run tests
 	code := m.Run()
 

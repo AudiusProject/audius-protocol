@@ -22,6 +22,8 @@ var (
 	peerMap = map[string]*Info{}
 )
 
+type PeerMap map[string]*Info
+
 func (p *NatsPeering) Solicit() map[string]*Info {
 
 	slog.Info("solicit begin")

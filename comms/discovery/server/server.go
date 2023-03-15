@@ -82,6 +82,8 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
 
+	g.POST("/rpc/stream", s.getRpcStream)
+
 	g.GET("/debug/stream", func(c echo.Context) error {
 		info, err := jsc.StreamInfo(discoveryConfig.GlobalStreamName)
 		if err != nil {
@@ -648,3 +650,26 @@ func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRo
 
 	return canChat, nil
 }
+func (ss *ChatServer) getRpcStream(c echo.Context) error {
+	w := c.Response()
+	r := c.Request()
+
+	go func() {
+		// Received Browser Disconnection
+		<-r.Context().Done()
+		// ss.logger.Info("sse client connection closed", "ip", r.RemoteAddr)
+		log.Println("sse client connection closed", "ip", r.RemoteAddr)
+	}()
+
+	ss.proc.SSEServer.ServeHTTP(w, r)
+	return nil
+}
+
+// func (ss *ChatServer) getCrudBulk(c echo.Context) error {
+// 	after := c.QueryParam("after")
+// 	var ops []*crudr.Op
+// 	ss.crud.DB.Unscoped().
+// 		Where("host = ? AND ulid > ?", ss.Config.Self.Host, after).
+// 		Find(&ops)
+// 	return c.JSON(200, ops)
+// }

@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"expvar"
+	"log"
 	"strings"
 	"sync"
 	"time"
@@ -20,6 +21,7 @@ import (
 	sharedConfig "comms.audius.co/shared/config"
 	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
+	"github.com/r3labs/sse/v2"
 	"github.com/tidwall/gjson"
 )
 
@@ -30,7 +32,12 @@ type RPCProcessor struct {
 	validator         *Validator
 	JetstreamSequence *expvar.Int
 	ConsumerSequence  *expvar.Int
+	SSEServer         *sse.Server
 }
+
+const (
+	sseStreamName = "rpc"
+)
 
 func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 
@@ -43,12 +50,18 @@ func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 		db:      db.Conn,
 		limiter: limiter,
 	}
+
+	sseServer := sse.New()
+	sseServer.AutoReplay = false
+	sseServer.CreateStream(sseStreamName)
+
 	proc := &RPCProcessor{
 		jsc:               jsc,
 		waiters:           make(map[uint64]chan error),
 		validator:         validator,
 		JetstreamSequence: expvar.NewInt("jetstream_sequence"),
 		ConsumerSequence:  expvar.NewInt("consumer_sequence"),
+		SSEServer:         sseServer,
 	}
 
 	// create backing stream
@@ -88,6 +101,13 @@ func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {
 }
 
 func (proc *RPCProcessor) SubmitAndWait(msg *nats.Msg) (*nats.PubAck, error) {
+
+	// sse time
+	proc.SSEServer.Publish(sseStreamName, &sse.Event{
+		Data: msg.Data,
+	})
+	log.Println("____ SSE PUBLISHED", string(msg.Data))
+
 	ok, err := proc.jsc.PublishMsg(msg)
 	if err != nil {
 		return nil, err
