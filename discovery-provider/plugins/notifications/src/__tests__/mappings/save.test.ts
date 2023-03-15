@@ -171,10 +171,10 @@ describe('Save Notification', () => {
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
 
     await createSaves(processor.discoveryDB, [
-      { user_id: 2, save_item_id: 10, save_type: savetype.track },
-      { user_id: 3, save_item_id: 10, save_type: savetype.track },
-      { user_id: 4, save_item_id: 10, save_type: savetype.track },
-      { user_id: 5, save_item_id: 10, save_type: savetype.track },
+      { user_id: 2, save_item_id: 10, save_type: SaveType.track },
+      { user_id: 3, save_item_id: 10, save_type: SaveType.track },
+      { user_id: 4, save_item_id: 10, save_type: SaveType.track },
+      { user_id: 5, save_item_id: 10, save_type: SaveType.track },
     ])
 
     const notifications: AppEmailNotification[] = Array.from(new Array(4), (_, num) => ({
