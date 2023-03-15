@@ -64,6 +64,8 @@ def create_social_record(params: ManageEntityParameters):
     record_types = action_to_record_types[params.action]
     create_record: Union[Save, Follow, Repost, Subscription, None] = None
     for record_type in record_types:
+        if validate_duplicate_social_feature(record_type, params):
+            continue
         if record_type == EntityType.FOLLOW:
             create_record = Follow(
                 blockhash=params.event_blockhash,
@@ -261,26 +263,27 @@ def validate_social_feature(params: ManageEntityParameters):
         if params.user_id == owner_id:
             raise Exception(f"User {params.user_id} cannot {params.action} themself")
 
+def validate_duplicate_social_feature(record_type: EntityType, params: ManageEntityParameters):
     # Cannot duplicate a social feature
     key = get_record_key(params.user_id, params.entity_type, params.entity_id)
 
-    record_types = action_to_record_types[params.action]
+    existing_record = params.existing_records.get(record_type, {}).get(key)
+    if existing_record:
+        duplicate_create = (
+            record_type
+            in (EntityType.REPOST, EntityType.SAVE, EntityType.FOLLOW, EntityType.SUBSCRIBE)
+            and not existing_record.is_delete
+        )
+        duplicate_delete = (
+            record_type
+            in (EntityType.UNREPOST, EntityType.UNSAVE, EntityType.UNFOLLOW, EntityType.UNSUBSCRIBE)
+            and existing_record.is_delete
+        )
 
-    for record_type in record_types:
-        existing_record = params.existing_records.get(record_type, {}).get(key)
-        if existing_record:
-            duplicate_create = (
-                record_type
-                in (EntityType.REPOST, EntityType.SAVE, EntityType.FOLLOW, EntityType.SUBSCRIBE)
-                and not existing_record.is_delete
+        if duplicate_create or duplicate_delete:
+            logger.info(
+                f"User {params.user_id} has already sent a {record_type} for {params.entity_type} {params.entity_id}. Skipping"
             )
-            duplicate_delete = (
-                record_type
-                in (EntityType.UNREPOST, EntityType.UNSAVE, EntityType.UNFOLLOW, EntityType.UNSUBSCRIBE)
-                and existing_record.is_delete
-            )
+            return False
+        return True
 
-            if duplicate_create or duplicate_delete:
-                raise Exception(
-                    f"User {params.user_id} has already sent a {record_type} for {params.entity_type} {params.entity_id}"
-                )
