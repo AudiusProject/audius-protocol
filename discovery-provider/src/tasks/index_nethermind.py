@@ -833,7 +833,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 if previous_subscription_entry:
                     previous_subscription_entry.is_current = True
                 logger.info(
-                    f"index_nethermind.py | Reverting subscription: {follow_to_revert}"
+                    f"index_nethermind.py | Reverting subscription: {subscription_to_revert}"
                 )
                 session.delete(subscription_to_revert)
 
@@ -849,7 +849,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 if previous_playlist_entry:
                     previous_playlist_entry.is_current = True
                 logger.info(
-                    f"index_nethermind.py | Reverting playlist: {follow_to_revert}"
+                    f"index_nethermind.py | Reverting playlist: {playlist_to_revert}"
                 )
                 # Remove outdated playlist entry
                 session.delete(playlist_to_revert)
@@ -955,10 +955,10 @@ def revert_blocks(self, db, revert_blocks_list):
 
             for playlist_route_to_revert in revert_playlist_routes:
                 playlist_id = playlist_route_to_revert.playlist_id
-                previous_track_route_entry = (
+                previous_playlist_route_entry = (
                     session.query(PlaylistRoute)
                     .filter(
-                        PlaylistRoute.track_id == track_id,
+                        PlaylistRoute.playlist_id == playlist_id,
                         PlaylistRoute.blocknumber < revert_block_number,
                     )
                     .order_by(
@@ -966,8 +966,8 @@ def revert_blocks(self, db, revert_blocks_list):
                     )
                     .first()
                 )
-                if previous_track_route_entry:
-                    previous_track_route_entry.is_current = True
+                if previous_playlist_route_entry:
+                    previous_playlist_route_entry.is_current = True
                 logger.info(
                     f"index_nethermind.py | Reverting playlist route {playlist_route_to_revert}"
                 )
