@@ -49,8 +49,7 @@
 
 .btn {
   height: 52px !important;
-  width: 176px;
-  margin: 4px auto;
+  width: 100%;
 }
 /** Breakpoint for settings card **/
 @media (max-width: 780px) {
@@ -151,7 +150,6 @@
   background-color: var(--white);
   border: 1px solid var(--neutral-light-6);
   opacity: 0.5;
-  height: 64px !important;
 }
 
 .disabledBtn:hover,

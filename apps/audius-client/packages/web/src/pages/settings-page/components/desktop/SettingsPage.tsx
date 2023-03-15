@@ -1,4 +1,4 @@
-import { Component } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import {
   ID,
@@ -10,20 +10,25 @@ import {
   Notifications,
   BrowserNotificationSetting,
   EmailFrequency,
-  TikTokProfile
+  TikTokProfile,
+  FeatureFlags
 } from '@audius/common'
 import {
   Modal,
   Button,
   ButtonType,
   IconMail,
-  IconLock,
   IconNotification,
-  IconSignOut
+  IconSignOut,
+  IconVerified,
+  IconDownload,
+  IconMood,
+  IconSettings,
+  IconMessage
 } from '@audius/stems'
 import cn from 'classnames'
 
-import audiusIcon from 'assets/img/audiusIcon.png'
+import { useModalState } from 'common/hooks/useModalState'
 import { ChangePasswordModal } from 'components/change-password/ChangePasswordModal'
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import TabSlider from 'components/data-entry/TabSlider'
@@ -32,6 +37,7 @@ import Page from 'components/page/Page'
 import { SelectedServices } from 'components/service-selection'
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import DownloadApp from 'services/download-app/DownloadApp'
 import { isMobile, isElectron, getOS } from 'utils/clientUtil'
@@ -54,21 +60,48 @@ const SIGN_OUT_MODAL_TEXT = `
 const EMAIL_TOAST_TIMEOUT = 2000
 
 const messages = {
+  pageTitle: 'Settings',
   version: 'Audius Version',
   copyright: COPYRIGHT_TEXT,
   emailSent: 'Email Sent!',
   emailNotSent: 'Something broke! Please try again!',
-  darkModeOn: 'On',
-  darkModeOff: 'Off',
+  darkModeOn: 'Dark',
+  darkModeOff: 'Light',
   darkModeAuto: 'Auto',
-  verifiedTitle: 'Verify your account',
-  getVerified: 'Get verified by linking a verified social account to Audius',
   matrixMode: '🕳 🐇 Matrix',
   changePassword: 'Change Password',
-  changePasswordDescription: 'Change the password to your Audius account'
+  changePasswordDescription: 'Change the password to your Audius account',
+  signOut: 'Sign Out',
+
+  appearanceCardTitle: 'Appearance',
+  inboxSettingsCardTitle: 'Inbox Settings',
+  notificationsCardTitle: 'Configure Notifications',
+  accountRecoveryCardTitle: 'Resend Recovery Email',
+  changePasswordCardTitle: 'Change Password',
+  verificationCardTitle: 'Verification',
+  desktopAppCardTitle: 'Download the Desktop App',
+
+  appearanceCardDescription:
+    'Enable dark mode or choose ‘Auto’ to change with your system settings.',
+  inboxSettingsCardDescription:
+    'Configure who is able to send messages to your inbox.',
+  notificationsCardDescription: 'Review your notification preferences.',
+  accountRecoveryCardDescription:
+    'Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.',
+  changePasswordCardDescription: 'Change the password to your Audius account.',
+  verificationCardDescription:
+    'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
+  desktopAppCardDescription:
+    'For the best experience, we reccomend downloading the Audius Desktop App.',
+
+  inboxSettingsButtonText: 'Inbox Settings',
+  notificationsButtonText: 'Configure Notifications',
+  accountRecoveryButtonText: 'Resend Email',
+  changePasswordButtonText: 'Change Password',
+  desktopAppButtonText: 'Get The App'
 }
 
-type OwnProps = {
+export type SettingsPageProps = {
   title: string
   description: string
   isVerified: boolean
@@ -101,79 +134,111 @@ type OwnProps = {
   signOut: () => void
 }
 
-export type SettingsPageProps = OwnProps
+export const SettingsPage = (props: SettingsPageProps) => {
+  const {
+    getNotificationSettings,
+    recordSignOut,
+    signOut,
+    recordAccountRecovery,
+    recordDownloadDesktopApp,
+    showMatrix,
+    theme,
+    title,
+    description,
+    toggleTheme,
+    userId,
+    handle,
+    name,
+    goToRoute,
+    profilePictureSizes,
+    isVerified,
+    onInstagramLogin,
+    onTikTokLogin,
+    onTwitterLogin,
+    toggleBrowserPushNotificationPermissions,
+    toggleNotificationSetting,
+    notificationSettings,
+    updateEmailFrequency,
+    emailFrequency
+  } = props
 
-type SettingsPageState = {
-  showNotificationSettings: boolean
-  showModalSignOut: boolean
-  emailToastText: string
-  showChangePasswordModal: boolean
-}
+  const [isSignOutModalVisible, setIsSignOutModalVisible] = useState(false)
+  const [
+    isNotificationSettingsModalVisible,
+    setIsNotificationSettingsModalVisible
+  ] = useState(false)
+  const [isEmailToastVisible, setIsEmailToastVisible] = useState(false)
+  const [isChangePasswordModalVisible, setIsChangePasswordModalVisible] =
+    useState(false)
+  const [emailToastText, setEmailToastText] = useState(messages.emailSent)
+  const [, setIsInboxSettingsModalVisible] = useModalState('InboxSettings')
 
-class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
-  state = {
-    showNotificationSettings: false,
-    showModalSignOut: false,
-    showChangePasswordModal: false,
-    emailToastText: ''
-  }
+  useEffect(() => {
+    getNotificationSettings()
+  }, [getNotificationSettings])
 
-  componentDidMount() {
-    this.props.getNotificationSettings()
-  }
+  const openSignOutModal = useCallback(() => {
+    setIsSignOutModalVisible(true)
+  }, [setIsSignOutModalVisible])
 
-  showModalSignOut = () => {
-    this.setState({ showModalSignOut: true })
-  }
+  const closeSignOutModal = useCallback(() => {
+    setIsSignOutModalVisible(true)
+  }, [setIsSignOutModalVisible])
 
-  closeModalSignOut = () => {
-    this.setState({ showModalSignOut: false })
-  }
+  const openNotificationSettings = useCallback(() => {
+    setIsNotificationSettingsModalVisible(true)
+  }, [setIsNotificationSettingsModalVisible])
 
-  showNotificationSettings = () => {
-    this.setState({ showNotificationSettings: true })
-  }
+  const closeNotificationSettings = useCallback(() => {
+    setIsNotificationSettingsModalVisible(false)
+  }, [setIsNotificationSettingsModalVisible])
 
-  closeNotificationSettings = () => {
-    this.setState({ showNotificationSettings: false })
-  }
-
-  onSignOut = () => {
-    const { recordSignOut, signOut } = this.props
-
+  const handleSignOut = useCallback(() => {
     recordSignOut(signOut)
-  }
+  }, [recordSignOut, signOut])
 
-  showEmailToast = async () => {
-    try {
-      await audiusBackendInstance.sendRecoveryEmail()
-      this.setState({ emailToastText: messages.emailSent })
-      this.props.recordAccountRecovery()
-    } catch (e) {
-      this.setState({ emailToastText: messages.emailNotSent })
+  const showEmailToast = useCallback(() => {
+    const fn = async () => {
+      try {
+        await audiusBackendInstance.sendRecoveryEmail()
+        setEmailToastText(messages.emailSent)
+        setIsEmailToastVisible(true)
+        recordAccountRecovery()
+      } catch (e) {
+        console.error(e)
+        setEmailToastText(messages.emailNotSent)
+        setIsEmailToastVisible(true)
+      }
+      setTimeout(() => {
+        setIsEmailToastVisible(false)
+      }, EMAIL_TOAST_TIMEOUT)
     }
-    setTimeout(() => {
-      this.setState({ emailToastText: '' })
-    }, EMAIL_TOAST_TIMEOUT)
-  }
+    fn()
+  }, [setIsEmailToastVisible, recordAccountRecovery, setEmailToastText])
 
-  downloadDesktopApp = () => {
+  const handleDownloadDesktopAppClicked = useCallback(() => {
     DownloadApp.start(getOS() || OS.WIN)
-    this.props.recordDownloadDesktopApp()
-  }
+    recordDownloadDesktopApp()
+  }, [recordDownloadDesktopApp])
 
-  showChangePasswordModal = () => {
-    this.setState({ showChangePasswordModal: true })
-  }
+  const openChangePasswordModal = useCallback(() => {
+    setIsChangePasswordModalVisible(true)
+  }, [setIsChangePasswordModalVisible])
 
-  closeChangePasswordModal = () => {
-    this.setState({ showChangePasswordModal: false })
-  }
+  const closeChangePasswordModal = useCallback(() => {
+    setIsChangePasswordModalVisible(false)
+  }, [setIsChangePasswordModalVisible])
 
-  renderThemeCard() {
-    const { showMatrix, theme, toggleTheme } = this.props
+  const openInboxSettingsModal = useCallback(() => {
+    setIsInboxSettingsModalVisible(true)
+  }, [setIsInboxSettingsModalVisible])
 
+  const appearanceOptions = useMemo(() => {
     const options = [
+      {
+        key: Theme.AUTO,
+        text: messages.darkModeAuto
+      },
       {
         key: Theme.DEFAULT,
         text: messages.darkModeOff
@@ -181,208 +246,191 @@ class SettingsPage extends Component<SettingsPageProps, SettingsPageState> {
       {
         key: Theme.DARK,
         text: messages.darkModeOn
-      },
-      {
-        key: Theme.AUTO,
-        text: messages.darkModeAuto
       }
     ]
     if (showMatrix) {
       options.push({ key: Theme.MATRIX, text: messages.matrixMode })
     }
+    return options
+  }, [showMatrix])
 
-    return (
-      <SettingsCard
-        title='Appearance'
-        description="Enable dark mode or choose 'Auto' to change with your system settings"
-      >
-        <TabSlider
-          className={styles.cardSlider}
-          options={options}
-          selected={theme || Theme.DEFAULT}
-          onSelectOption={(option) => toggleTheme(option)}
-          key={`tab-slider-${options.length}`}
-        />
-      </SettingsCard>
-    )
-  }
+  const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
 
-  render() {
-    const {
-      title,
-      description,
-      isVerified,
-      userId,
-      handle,
-      name,
-      profilePictureSizes,
-      onInstagramLogin,
-      goToRoute,
-      onTwitterLogin,
-      onTikTokLogin,
-      notificationSettings,
-      emailFrequency,
-      toggleBrowserPushNotificationPermissions,
-      toggleNotificationSetting,
-      updateEmailFrequency
-    } = this.props
+  const header = <Header primary={messages.pageTitle} />
 
-    const header = <Header primary={'Settings'} />
-
-    return (
-      <Page
-        title={title}
-        description={description}
-        containerClassName={styles.settingsPageContainer}
-        contentClassName={styles.settingsPageContent}
-        header={header}
-      >
-        <div className={styles.settings}>
-          {this.renderThemeCard()}
-          <SettingsCard
-            title={messages.verifiedTitle}
-            description={messages.getVerified}
-          >
-            <VerificationModal
-              userId={userId}
-              handle={handle}
-              name={name}
-              profilePictureSizes={profilePictureSizes}
-              goToRoute={goToRoute}
-              isVerified={isVerified}
-              onInstagramLogin={onInstagramLogin}
-              onTwitterLogin={onTwitterLogin}
-              onTikTokLogin={onTikTokLogin}
-            />
-          </SettingsCard>
-          <SettingsCard
-            title='NOTIFICATIONS'
-            description='Review your notifications preferences'
-          >
-            <Button
-              onClick={this.showNotificationSettings}
-              className={cn(styles.cardButton, styles.resetButton)}
-              textClassName={styles.settingButtonText}
-              type={ButtonType.COMMON_ALT}
-              text='Review'
-              leftIcon={<IconNotification className={styles.reviewIcon} />}
-            />
-          </SettingsCard>
-          <SettingsCard
-            title='Account Recovery Email'
-            description='Resend your password reset email and store it safely. This email is the only way to recover your account if you forget your password.'
-          >
-            <Toast
-              tooltipClassName={styles.cardToast}
-              text={this.state.emailToastText}
-              open={!!this.state.emailToastText}
-              placement={ComponentPlacement.RIGHT}
-              fillParent={false}
-            >
-              <Button
-                onClick={this.showEmailToast}
-                className={cn(styles.cardButton, styles.resetButton)}
-                textClassName={styles.settingButtonText}
-                iconClassName={styles.resetButtonIcon}
-                type={ButtonType.COMMON_ALT}
-                text='Resend'
-                leftIcon={<IconMail />}
-              />
-            </Toast>
-          </SettingsCard>
-          {!isMobile() && !isElectron() && (
-            <SettingsCard
-              title='Get Our Desktop App'
-              description='For the best experience, we recommend downloading the Audius Desktop App'
-            >
-              <Button
-                onClick={this.downloadDesktopApp}
-                className={cn(styles.cardButton, styles.downloadButton)}
-                textClassName={styles.settingButtonText}
-                type={ButtonType.COMMON_ALT}
-                text='Get App'
-                leftIcon={
-                  <img
-                    alt='Audius Icon'
-                    src={audiusIcon}
-                    style={{ width: '24px', height: '24px' }}
-                  />
-                }
-              />
-            </SettingsCard>
-          )}
-          <SettingsCard
-            title={messages.changePassword}
-            description={messages.changePasswordDescription}
-          >
-            <Button
-              onClick={this.showChangePasswordModal}
-              className={cn(styles.cardButton, styles.changePasswordButton)}
-              textClassName={styles.settingButtonText}
-              type={ButtonType.COMMON_ALT}
-              text='Change'
-              leftIcon={<IconLock className={styles.changePasswordIcon} />}
-            />
-          </SettingsCard>
-        </div>
-        <div className={styles.version}>
-          <Button
-            className={styles.signOutButton}
-            textClassName={styles.signOutButtonText}
-            iconClassName={styles.signOutButtonIcon}
-            type={ButtonType.COMMON_ALT}
-            text='Sign Out'
-            name='sign-out'
-            leftIcon={<IconSignOut />}
-            onClick={this.showModalSignOut}
-          />
-          <span>{`${messages.version} ${version}`}</span>
-          <span>{messages.copyright}</span>
-        </div>
-        <div className={styles.selectedServices}>
-          <SelectedServices variant='lighter' />
-        </div>
-        <Modal
-          title={
-            <>
-              Hold Up! <i className='emoji waving-hand-sign' />
-            </>
-          }
-          isOpen={this.state.showModalSignOut}
-          onClose={this.closeModalSignOut}
-          showTitleHeader
-          showDismissButton
-          bodyClassName={styles.modalBody}
-          headerContainerClassName={styles.modalHeader}
-          titleClassName={styles.modalTitle}
+  return (
+    <Page
+      title={title}
+      description={description}
+      containerClassName={styles.settingsPageContainer}
+      contentClassName={styles.settingsPageContent}
+      header={header}
+    >
+      <div className={styles.settings}>
+        <SettingsCard
+          className={cn({ [styles.cardFull]: isChatEnabled })}
+          icon={<IconMood />}
+          title={messages.appearanceCardTitle}
+          description={messages.appearanceCardDescription}
         >
-          <ConfirmationBox
-            text={SIGN_OUT_MODAL_TEXT}
-            rightText='NEVERMIND'
-            leftText='SIGN OUT'
-            leftName='confirm-sign-out'
-            rightClick={this.closeModalSignOut}
-            leftClick={this.onSignOut}
+          <TabSlider
+            className={styles.cardSlider}
+            options={appearanceOptions}
+            selected={theme || Theme.DEFAULT}
+            onSelectOption={(option) => toggleTheme(option)}
+            key={`tab-slider-${appearanceOptions.length}`}
           />
-        </Modal>
-        <ChangePasswordModal
-          showModal={this.state.showChangePasswordModal}
-          onClose={this.closeChangePasswordModal}
+        </SettingsCard>
+        {isChatEnabled ? (
+          <SettingsCard
+            icon={<IconMessage />}
+            title={messages.inboxSettingsCardTitle}
+            description={messages.inboxSettingsCardDescription}
+          >
+            <Button
+              onClick={openInboxSettingsModal}
+              className={styles.cardButton}
+              textClassName={styles.settingButtonText}
+              type={ButtonType.COMMON_ALT}
+              text={messages.inboxSettingsButtonText}
+            />
+          </SettingsCard>
+        ) : null}
+        <SettingsCard
+          icon={<IconNotification />}
+          title={messages.notificationsCardTitle}
+          description={messages.notificationsCardDescription}
+        >
+          <Button
+            onClick={openNotificationSettings}
+            className={styles.cardButton}
+            textClassName={styles.settingButtonText}
+            type={ButtonType.COMMON_ALT}
+            text={messages.notificationsButtonText}
+          />
+        </SettingsCard>
+        <SettingsCard
+          icon={<IconMail />}
+          title={messages.accountRecoveryCardTitle}
+          description={messages.accountRecoveryCardDescription}
+        >
+          <Toast
+            tooltipClassName={styles.cardToast}
+            text={emailToastText}
+            open={isEmailToastVisible}
+            placement={ComponentPlacement.BOTTOM}
+            fillParent={false}
+          >
+            <Button
+              onClick={showEmailToast}
+              className={styles.cardButton}
+              textClassName={styles.settingButtonText}
+              type={ButtonType.COMMON_ALT}
+              text={messages.accountRecoveryButtonText}
+            />
+          </Toast>
+        </SettingsCard>
+        <SettingsCard
+          icon={<IconSettings />}
+          title={messages.changePassword}
+          description={messages.changePasswordDescription}
+        >
+          <Button
+            onClick={openChangePasswordModal}
+            className={cn(styles.cardButton, styles.changePasswordButton)}
+            textClassName={styles.settingButtonText}
+            type={ButtonType.COMMON_ALT}
+            text={messages.changePasswordButtonText}
+          />
+        </SettingsCard>
+        <SettingsCard
+          icon={<IconVerified className={styles.iconVerified} />}
+          title={messages.verificationCardTitle}
+          description={messages.verificationCardDescription}
+        >
+          <VerificationModal
+            userId={userId}
+            handle={handle}
+            name={name}
+            profilePictureSizes={profilePictureSizes}
+            goToRoute={goToRoute}
+            isVerified={isVerified}
+            onInstagramLogin={onInstagramLogin}
+            onTwitterLogin={onTwitterLogin}
+            onTikTokLogin={onTikTokLogin}
+          />
+        </SettingsCard>
+        {!isMobile() && !isElectron() && (
+          <SettingsCard
+            icon={<IconDownload />}
+            title={messages.desktopAppCardTitle}
+            description={messages.desktopAppCardDescription}
+          >
+            <Button
+              onClick={handleDownloadDesktopAppClicked}
+              className={styles.cardButton}
+              textClassName={styles.settingButtonText}
+              type={ButtonType.COMMON_ALT}
+              text={messages.desktopAppButtonText}
+            />
+          </SettingsCard>
+        )}
+      </div>
+      <div className={styles.version}>
+        <Button
+          className={styles.signOutButton}
+          textClassName={styles.signOutButtonText}
+          iconClassName={styles.signOutButtonIcon}
+          type={ButtonType.COMMON_ALT}
+          text={messages.signOut}
+          name='sign-out'
+          leftIcon={<IconSignOut />}
+          onClick={openSignOutModal}
         />
-        <NotificationSettings
-          isOpen={this.state.showNotificationSettings}
-          toggleBrowserPushNotificationPermissions={
-            toggleBrowserPushNotificationPermissions
-          }
-          toggleNotificationSetting={toggleNotificationSetting}
-          updateEmailFrequency={updateEmailFrequency}
-          settings={notificationSettings}
-          emailFrequency={emailFrequency}
-          onClose={this.closeNotificationSettings}
+        <span>{`${messages.version} ${version}`}</span>
+        <span>{messages.copyright}</span>
+      </div>
+      <div className={styles.selectedServices}>
+        <SelectedServices variant='lighter' />
+      </div>
+      <Modal
+        title={
+          <>
+            Hold Up! <i className='emoji waving-hand-sign' />
+          </>
+        }
+        isOpen={isSignOutModalVisible}
+        onClose={closeSignOutModal}
+        showTitleHeader
+        showDismissButton
+        bodyClassName={styles.modalBody}
+        headerContainerClassName={styles.modalHeader}
+        titleClassName={styles.modalTitle}
+      >
+        <ConfirmationBox
+          text={SIGN_OUT_MODAL_TEXT}
+          rightText='NEVERMIND'
+          leftText='SIGN OUT'
+          leftName='confirm-sign-out'
+          rightClick={closeSignOutModal}
+          leftClick={handleSignOut}
         />
-      </Page>
-    )
-  }
+      </Modal>
+      <ChangePasswordModal
+        showModal={isChangePasswordModalVisible}
+        onClose={closeChangePasswordModal}
+      />
+      <NotificationSettings
+        isOpen={isNotificationSettingsModalVisible}
+        toggleBrowserPushNotificationPermissions={
+          toggleBrowserPushNotificationPermissions
+        }
+        toggleNotificationSetting={toggleNotificationSetting}
+        updateEmailFrequency={updateEmailFrequency}
+        settings={notificationSettings}
+        emailFrequency={emailFrequency}
+        onClose={closeNotificationSettings}
+      />
+    </Page>
+  )
 }
-
-export default SettingsPage
