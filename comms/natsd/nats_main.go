@@ -38,7 +38,11 @@ func NatsMain() {
 	for n := 0; ; n++ {
 		peerMap := peering.Solicit()
 		if natsConfig.EnableJetstream && peering.NatsIsReachable {
-			natsman.StartNats(peerMap, peering)
+			if len(peerMap) > 6 {
+				// for stability, require minimum peers before starting nats
+				// 3 content, 3 discovery as per required replica counts
+				natsman.StartNats(peerMap, peering)
+			}
 		}
 
 		// poll with exponential backoff:
