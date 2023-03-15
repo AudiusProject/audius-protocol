@@ -69,19 +69,20 @@ const actionsMap = {
     state: UploadState,
     action: ReturnType<typeof uploadTracksSucceeded>
   ) {
+    const { id, trackMetadatas } = action
     const newState = { ...state }
     newState.uploading = false
     newState.success = true
-    newState.completionId = action.id
+    newState.completionId = id
     newState.uploadType = null
     newState.stems = []
 
     // Update the upload tracks with resulting metadata. This is used for TikTok sharing
-    if (action.trackMetadatas) {
+    if (trackMetadatas) {
       newState.tracks =
         state.tracks?.map((t, i) => ({
           ...t,
-          metadata: action.trackMetadatas[i]
+          metadata: trackMetadatas[i]
         })) ?? null
     }
     return newState
