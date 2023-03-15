@@ -6,36 +6,28 @@ import { Dimensions, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { Screen, ScreenContent, ScreenHeader } from 'app/components/core'
-import { getSearchQuery } from 'app/store/search/selectors'
+import { getSearchHistory } from 'app/store/search/selectors'
 import { makeStyles } from 'app/styles'
 
+import { EmptySearch } from './EmptySearch'
 import { SearchBar } from './SearchBar'
 import { SearchHistory } from './SearchHistory'
-import SearchResults from './SearchResults'
-import { EmptySearch } from './content/EmptySearch'
+import { SearchResults } from './SearchResults'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 
 const useStyles = makeStyles(({ spacing }) => ({
-  topbarLeft: {
-    paddingTop: spacing(2) + 1
-  },
   topbarRight: {
     alignItems: 'flex-end',
-    width: SCREEN_WIDTH - 80
+    width: SCREEN_WIDTH - spacing(20)
   },
   searchBar: {
-    width: '100%',
-    flexGrow: 1
-  },
-  buffer: {
-    flexGrow: 1
+    width: '100%'
   }
 }))
 
 export const SearchScreen = () => {
   const styles = useStyles()
-  const searchQuery = useSelector(getSearchQuery)
   const searchBarText = useSelector(getSearchBarText)
   const hasResults = useSelector((state) => {
     const { tracks, users, playlists, albums } = getSearch(state)
@@ -43,27 +35,26 @@ export const SearchScreen = () => {
       (result) => result && result.length > 0
     )
   })
+  const hasSearchHistory = useSelector(
+    (state) => getSearchHistory(state).length > 0
+  )
 
   const renderSearchContent = () => {
-    if (searchQuery && hasResults) {
+    if (hasResults) {
       return <SearchResults />
     }
-    if (
-      searchQuery &&
-      searchBarText &&
-      searchQuery === searchBarText &&
-      !hasResults
-    ) {
+    if (searchBarText && !hasResults) {
       return <EmptySearch query={searchBarText} />
     }
-    return <SearchHistory />
+    if (hasSearchHistory) {
+      return <SearchHistory />
+    }
+    return <EmptySearch />
   }
 
   const searchBar = (
     <View style={styles.topbarRight}>
-      <View style={styles.searchBar}>
-        <SearchBar />
-      </View>
+      <SearchBar style={styles.searchBar} />
     </View>
   )
 

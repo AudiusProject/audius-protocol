@@ -6,14 +6,9 @@ import { getSearchHistory } from 'app/store/search/selectors'
 
 import { ClearSearchHistoryListItem } from './ClearSearchHistoryListItem'
 import { SearchHistoryListItem } from './SearchHistoryListItem'
-import { EmptySearch } from './content/EmptySearch'
 
 export const SearchHistory = () => {
   const history = useSelector(getSearchHistory)
-
-  if (history.length === 0) {
-    return <EmptySearch />
-  }
 
   return (
     <FlatList
