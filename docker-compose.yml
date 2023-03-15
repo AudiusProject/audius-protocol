@@ -462,6 +462,58 @@ services:
       mode: replicated
       replicas: "${CREATOR_NODE_REPLICAS}"
 
+  mediorum1:
+    build: ../mediorum
+    # image: audius/mediorum:theo
+    container_name: mediorum1
+    restart: unless-stopped
+    volumes:
+      - /tmp/mediorum1:/tmp/mediorum
+    environment:
+      - MEDIORUM_ENV=single
+      - PORT=1991
+    ports:
+      - 1991:1991
+
+  mediorum2:
+    build: ../mediorum
+    # image: audius/mediorum:theo
+    container_name: mediorum2
+    restart: unless-stopped
+    volumes:
+      - /tmp/mediorum2:/tmp/mediorum
+    environment:
+      - MEDIORUM_ENV=single
+      - PORT=1992
+    ports:
+      - 1992:1992
+
+  mediorum3:
+    build: ../mediorum
+    # image: audius/mediorum:theo
+    container_name: mediorum3
+    restart: unless-stopped
+    volumes:
+      - /tmp/mediorum3:/tmp/mediorum
+    environment:
+      - MEDIORUM_ENV=single
+      - PORT=1993
+    ports:
+      - 1993:1993
+
+  mediorum4:
+    build: ../mediorum
+    # image: audius/mediorum:theo
+    container_name: mediorum4
+    restart: unless-stopped
+    volumes:
+      - /tmp/mediorum4:/tmp/mediorum
+    environment:
+      - MEDIORUM_ENV=single
+      - PORT=1994
+    ports:
+      - 1994:1994
+
   # port forwarder
   # required for getting consistent port mappings
 

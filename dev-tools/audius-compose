@@ -80,8 +80,10 @@ def generate_env(
         (protocol_dir / "discovery-provider/.version.json").read_text(),
     )["version"]
 
-    env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
-    if elasticsearch_replicas:
+    # env["ELASTICSEARCH_REPLICAS"] = str(elasticsearch_replicas)
+    env["ELASTICSEARCH_REPLICAS"] = "1"
+    # if elasticsearch_replicas:
+    if True:
         env["ELASTICSEARCH_CONDITION"] = "service_healthy"
     else:  # exists to prevent discovery provider from waiting for non-existent elasticsearch instances
         env["ELASTICSEARCH_CONDITION"] = "service_started"
@@ -323,7 +325,8 @@ def up(
                     else []
                 ),
                 *(["--profile=block-explorer"] if block_explorer else []),
-                *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
+                # *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
+                *(["--profile=elasticsearch"] if True else []),
                 "up",
                 "--build",
                 *args,
