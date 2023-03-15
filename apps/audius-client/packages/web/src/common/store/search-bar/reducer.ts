@@ -9,7 +9,7 @@ import {
   CLEAR_SEARCH,
   SearchBarActions
 } from './actions'
-import SearchBarState from './types'
+import { SearchBarState } from './types'
 
 const initialState = {
   searchText: '',

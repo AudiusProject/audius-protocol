@@ -9,10 +9,8 @@ export type SearchResults = {
   albums: NewType[]
 }
 
-type SearchBarState = SearchResults & {
+export type SearchBarState = SearchResults & {
   searchText: string
   status: Status
   disregardResponses: boolean
 }
-
-export default SearchBarState

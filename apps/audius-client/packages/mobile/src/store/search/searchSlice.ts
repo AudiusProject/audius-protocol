@@ -5,18 +5,12 @@ import { createSlice } from '@reduxjs/toolkit'
 import { persistReducer } from 'redux-persist'
 
 export type SearchState = {
-  query: string
   history: string[]
 }
 
 const initialState: SearchState = {
-  query: '',
   history: []
 }
-
-export type UpdateQueryAction = PayloadAction<{
-  query: string
-}>
 
 export type SetSearchHistoryAction = PayloadAction<{
   searchHistory: string[]
@@ -30,9 +24,6 @@ const slice = createSlice({
   name: 'search',
   initialState,
   reducers: {
-    updateQuery: (state, action: UpdateQueryAction) => {
-      state.query = action.payload.query
-    },
     setHistory: (state, action: SetSearchHistoryAction) => {
       state.history = action.payload.searchHistory
     },
@@ -52,7 +43,7 @@ const slice = createSlice({
   }
 })
 
-export const { updateQuery, setHistory, clearHistory, addItem } = slice.actions
+export const { setHistory, clearHistory, addItem } = slice.actions
 
 const searchPersistConfig = {
   key: 'search',

@@ -8,7 +8,6 @@ import { useDispatch } from 'react-redux'
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { updateQuery } from 'app/store/search/searchSlice'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -41,8 +40,7 @@ export const SearchHistoryListItem = (props: SearchHistoryListItemProps) => {
   const { neutralLight4, neutralLight8 } = useThemeColors()
   const dispatch = useDispatch()
 
-  const onPress = useCallback(() => {
-    dispatch(updateQuery({ query: text }))
+  const handlePress = useCallback(() => {
     if (text.startsWith('#')) {
       navigation.push('TagSearch', { query: text })
     } else {
@@ -54,7 +52,7 @@ export const SearchHistoryListItem = (props: SearchHistoryListItemProps) => {
     <TouchableHighlight
       underlayColor={neutralLight8}
       activeOpacity={0.8}
-      onPress={onPress}
+      onPress={handlePress}
     >
       <View style={styles.itemContainer}>
         <View style={styles.itemTextContainer}>

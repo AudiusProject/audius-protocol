@@ -16,7 +16,7 @@ import type {
   SignOnPageReducer
 } from 'audius-client/src/common/store/pages/signon/types'
 import searchBar from 'audius-client/src/common/store/search-bar/reducer'
-import type SearchBarState from 'audius-client/src/common/store/search-bar/types'
+import type { SearchBarState } from 'audius-client/src/common/store/search-bar/types'
 import RNRestart from 'react-native-restart'
 import type { Store } from 'redux'
 import { createStore, combineReducers, applyMiddleware } from 'redux'

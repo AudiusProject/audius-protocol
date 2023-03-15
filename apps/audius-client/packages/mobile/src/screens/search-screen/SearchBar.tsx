@@ -1,91 +1,111 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { fetchSearch } from 'audius-client/src/common/store/search-bar/actions'
-import { getSearchBarText } from 'audius-client/src/common/store/search-bar/selectors'
-import debounce from 'lodash/debounce'
+import { Status } from '@audius/common'
+import {
+  fetchSearch,
+  clearSearch
+} from 'audius-client/src/common/store/search-bar/actions'
+import {
+  getSearchBarStatus,
+  getSearchBarText
+} from 'audius-client/src/common/store/search-bar/selectors'
 import { useDispatch, useSelector } from 'react-redux'
 import { useTimeoutFn } from 'react-use'
 
-import type { TextInputRef } from 'app/components/core'
-import { TextInput } from 'app/components/core'
+import IconClose from 'app/assets/images/iconRemove.svg'
+import type { TextInputProps, TextInputRef } from 'app/components/core'
+import { IconButton, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
+import { useDebouncedCallback } from 'app/hooks/useDebouncedCallback'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { updateQuery } from 'app/store/search/searchSlice'
-import { getSearchQuery } from 'app/store/search/selectors'
+import { makeStyles } from 'app/styles'
+import { useThemeColors } from 'app/utils/theme'
+
+const useStyles = makeStyles(({ spacing }) => ({
+  loadingSpinner: {
+    height: spacing(4) + 2,
+    width: spacing(4) + 2
+  }
+}))
 
 // Amount of time to wait before focusing TextInput
 // after the SearchBar renders
 const TEXT_INPUT_FOCUS_DELAY = 350
 
-export const SearchBar = () => {
-  const query = useSelector(getSearchQuery)
-  const searchResultQuery = useSelector(getSearchBarText)
+type SearchBarProps = TextInputProps
+
+export const SearchBar = (props: SearchBarProps) => {
+  const searchQuery = useSelector(getSearchBarText)
+  const searchStatus = useSelector(getSearchBarStatus)
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const [clearable, setClearable] = useState(query !== '')
   const inputRef = useRef<TextInputRef>(null)
+  const [searchInput, setSearchInput] = useState(searchQuery)
+  const styles = useStyles()
 
   // Wait to focus TextInput to prevent keyboard animation
   // from causing UI stutter as the screen transitions in
   useTimeoutFn(() => inputRef.current?.focus(), TEXT_INPUT_FOCUS_DELAY)
 
-  // Ignore rule because eslint complains that it can't determine the dependencies of the callback since it's not inline.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const fetchSearchDebounced = useCallback(
-    debounce((text: string) => {
+  const handleFetchSearch = useDebouncedCallback(
+    (text: string) => {
       // Do nothing for tag search (no autocomplete)
       if (!text.startsWith('#')) {
         dispatch(fetchSearch(text))
       }
-    }, 250),
+    },
+    250,
     [dispatch]
   )
   const handleChangeText = useCallback(
     (text: string) => {
-      dispatch(updateQuery({ query: text }))
-      fetchSearchDebounced(text)
-      if (text !== '') {
-        setClearable(true)
-      } else {
-        setClearable(false)
+      setSearchInput(text)
+      handleFetchSearch(text)
+      if (text === '') {
+        dispatch(clearSearch())
       }
     },
-    [dispatch, fetchSearchDebounced, setClearable]
+    [handleFetchSearch, dispatch]
   )
 
+  // Handle case where search query is set by pressing search history item
   useEffect(() => {
-    if (query !== searchResultQuery && searchResultQuery !== '') {
-      handleChangeText(query)
+    if (searchInput === '' && searchQuery) {
+      handleChangeText(searchQuery)
     }
-  }, [searchResultQuery, query, handleChangeText])
+  }, [searchInput, searchQuery, handleChangeText])
 
   const handleSubmit = useCallback(() => {
-    if (query.startsWith('#')) {
-      navigation.push('TagSearch', { query })
+    if (searchQuery.startsWith('#')) {
+      navigation.push('TagSearch', { query: searchQuery })
     }
-  }, [query, navigation])
+  }, [searchQuery, navigation])
 
-  const onClear = useCallback(() => {
-    dispatch(updateQuery({ query: '' }))
-    setClearable(false)
+  const handleClear = useCallback(() => {
+    dispatch(clearSearch())
+    setSearchInput('')
     inputRef.current?.focus()
-  }, [dispatch, setClearable])
+  }, [dispatch])
 
-  const isTagSearch = query.startsWith('#')
-  const hasText = query !== ''
-  const isLoading = !isTagSearch && hasText && searchResultQuery !== query
-  const icon = isLoading ? LoadingSpinner : undefined
+  const isLoading = searchStatus === Status.LOADING
+
+  const { neutralLight5 } = useThemeColors()
+
+  const endAdornmentElement = isLoading ? (
+    <LoadingSpinner style={styles.loadingSpinner} />
+  ) : searchInput ? (
+    <IconButton icon={IconClose} fill={neutralLight5} onPress={handleClear} />
+  ) : undefined
 
   return (
     <TextInput
+      {...props}
       ref={inputRef}
-      value={query}
+      value={searchInput}
       onChangeText={handleChangeText}
-      Icon={icon}
-      clearable={!isLoading && clearable}
-      onClear={onClear}
       onSubmitEditing={handleSubmit}
       returnKeyType='search'
+      endAdornment={endAdornmentElement}
     />
   )
 }
