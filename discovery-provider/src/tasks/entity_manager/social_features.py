@@ -169,6 +169,8 @@ def delete_social_record(params):
     record_types = action_to_record_types[params.action]
     deleted_record = None
     for record_type in record_types:
+        if not validate_duplicate_social_feature(record_type, params):
+            continue
         if record_type == EntityType.FOLLOW:
             deleted_record = Follow(
                 blockhash=params.event_blockhash,
@@ -252,7 +254,7 @@ def validate_social_feature(params: ManageEntityParameters):
         Action.UNSUBSCRIBE,
     ):
         if params.user_id == params.entity_id:
-            raise Exception(f"User {params.user_id} cannot follow themself")
+            raise Exception(f"User {params.user_id} cannot {params.action} themself")
     else:
         target_entity = params.existing_records[params.entity_type][params.entity_id]
         owner_id = (
