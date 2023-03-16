@@ -38,7 +38,6 @@ steps:
       pass-env: DOCKERHUB_PASS DOCKERHUB_USERNAME
       steps:
         - gcp-checkout
-        - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
         - run:
             name: Docker login
             command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin

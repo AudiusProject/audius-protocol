@@ -477,45 +477,6 @@ def test_down(protocol_dir):
     )
 
 
-@cli.group()
-def comms():
-    pass
-
-
-@comms.command(name="up")
-@click.pass_obj
-def comms_up(protocol_dir):
-    generate_env(protocol_dir, 0, 0, 0)
-
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            f"--file={protocol_dir / 'comms' / 'docker-compose.yml'}",
-            f"--project-directory={protocol_dir / 'comms'}",
-            "up",
-            "--build",
-            "-d",
-        ],
-    )
-
-
-@comms.command(name="down")
-@click.pass_obj
-def comms_down(protocol_dir):
-    generate_env(protocol_dir, 0, 0, 0)
-
-    subprocess.run(
-        [
-            "docker",
-            "compose",
-            f"--file={protocol_dir / 'comms' / 'docker-compose.yml'}",
-            f"--project-directory={protocol_dir / 'comms'}",
-            "down",
-        ],
-    )
-
-
 @cli.command()
 @click.argument("service")
 @click.argument("command")
