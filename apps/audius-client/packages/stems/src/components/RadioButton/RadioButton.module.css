@@ -30,5 +30,4 @@
 
 .root:has(:disabled)::before {
   background: var(--neutral-light-7);
-  border: unset;
 }

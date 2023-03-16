@@ -220,6 +220,7 @@ const TrackTile = memo(
           <TrackBannerIcon
             type={cornerTagIconType}
             isMatrixMode={isMatrixMode}
+            containerClassName={styles.premiumCornerTagContainer}
           />
         ) : null}
         {isArtistPick && !showPremiumCornerTag ? (

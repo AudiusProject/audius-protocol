@@ -1,3 +1,4 @@
+import type { ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
@@ -43,9 +44,11 @@ export enum LineupTileBannerIconType {
 }
 
 export const LineupTileBannerIcon = ({
-  type
+  type,
+  style
 }: {
   type: LineupTileBannerIconType
+  style?: ViewStyle
 }) => {
   const {
     neutral,
@@ -80,7 +83,7 @@ export const LineupTileBannerIcon = ({
   }[type]
 
   return (
-    <View style={styles.bannerIcon}>
+    <View style={[styles.bannerIcon, style]}>
       <LinearGradient
         colors={colors}
         style={[styles.container]}

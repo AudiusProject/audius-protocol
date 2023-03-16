@@ -14,7 +14,7 @@ const { getUserId } = accountSelectors
 const messages = {
   followersOnly: 'Available to Followers Only',
   supportersOnly: 'Available to Supporters Only',
-  supportersInfo: 'Supporters are users who have sent you a tip'
+  supportersInfo: 'Supporters are users who have sent you a tip.'
 }
 
 enum SpecialAccessType {
@@ -24,7 +24,8 @@ enum SpecialAccessType {
 
 export const SpecialAccessAvailability = ({
   state,
-  onStateUpdate
+  onStateUpdate,
+  disabled
 }: TrackAvailabilitySelectionProps) => {
   const accountUserId = useSelector(getUserId)
   const specialAccessType = state.premium_conditions?.tip_user_id
@@ -62,13 +63,19 @@ export const SpecialAccessAvailability = ({
         <RadioButton
           className={styles.radio}
           value={SpecialAccessType.FOLLOW}
+          disabled={disabled}
         />
         {messages.followersOnly}
       </label>
       <label className={styles.row}>
-        <RadioButton className={styles.radio} value={SpecialAccessType.TIP} />
+        <RadioButton
+          className={styles.radio}
+          value={SpecialAccessType.TIP}
+          disabled={disabled}
+        />
         {messages.supportersOnly}
         <Tooltip
+          className={styles.tooltip}
           text={messages.supportersInfo}
           mouseEnterDelay={0.1}
           mount={'parent'}
