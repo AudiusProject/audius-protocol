@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	natsdConfig "comms.audius.co/natsd/config"
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
 	"comms.audius.co/storage/config"
@@ -31,7 +32,6 @@ import (
 
 const (
 	GlobalNamespace    string = "0"
-	ReplicationFactor  int    = 3
 	NumJobWorkers      int    = 3
 	HealthyNodesKVName string = "healthyNodes"
 )
@@ -71,7 +71,7 @@ func New(cfg *config.StorageConfig, jsc nats.JetStreamContext, peering peering.P
 				Bucket:      HealthyNodesKVName,
 				Description: "Source of truth where every node reads the list of healthy nodes from",
 				History:     20,
-				Replicas:    3,
+				Replicas:    natsdConfig.NatsReplicaCount,
 				Placement:   config.StoragePlacement(),
 			})
 			if err != nil {
@@ -99,13 +99,13 @@ func New(cfg *config.StorageConfig, jsc nats.JetStreamContext, peering peering.P
 
 	d := decider.NewRendezvousDecider(
 		GlobalNamespace,
-		ReplicationFactor,
+		natsdConfig.NatsReplicaCount,
 		thisNodePubKey,
 		healthyNodesKV,
 		logstream,
 		jsc,
 	)
-	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace, 3)
+	jobsManager, err := transcode.NewJobsManager(jsc, GlobalNamespace)
 	if err != nil {
 		slog.Error("error creating jobs manager", err)
 		return nil, err

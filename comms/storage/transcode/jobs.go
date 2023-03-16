@@ -23,6 +23,8 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/spf13/cast"
 	"golang.org/x/exp/slog"
+
+	natsdConfig "comms.audius.co/natsd/config"
 )
 
 type JobStatus string
@@ -82,7 +84,7 @@ const (
 	temporaryObjectStoreTTL          = time.Hour * 24
 )
 
-func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) (*JobsManager, error) {
+func NewJobsManager(jsc nats.JetStreamContext, prefix string) (*JobsManager, error) {
 	// kv
 	kvBucketName := prefix + KvSuffix
 	var kv nats.KeyValue
@@ -91,7 +93,7 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 			var err error
 			kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
 				Bucket:    kvBucketName,
-				Replicas:  replicaCount,
+				Replicas:  natsdConfig.NatsReplicaCount,
 				Placement: config.StoragePlacement(),
 			})
 			if err != nil {
@@ -143,7 +145,7 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		watcher:          watcher,
 		table:            map[string]*Job{},
 		tempBucketCount:  8,
-		replicaCount:     replicaCount,
+		replicaCount:     natsdConfig.NatsReplicaCount,
 		websockets:       map[net.Conn]bool{},
 	}
 
@@ -161,7 +163,7 @@ func (jobman *JobsManager) createTemporaryObjectStores() {
 				return createObjStoreIfNotExists(&nats.ObjectStoreConfig{
 					Bucket:    jobman.temporaryObjectStoreName(i),
 					TTL:       temporaryObjectStoreTTL,
-					Replicas:  jobman.replicaCount,
+					Replicas:  natsdConfig.NatsReplicaCount,
 					Placement: config.StoragePlacement(),
 				}, jobman.jsc)
 			},

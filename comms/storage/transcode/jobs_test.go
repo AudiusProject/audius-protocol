@@ -20,7 +20,7 @@ func TestJobManager(t *testing.T) {
 	jsc, err := nc.JetStream()
 	assert.NoError(t, err)
 
-	jobm, err := NewJobsManager(jsc, namespace, 1)
+	jobm, err := NewJobsManager(jsc, namespace)
 	assert.NoError(t, err)
 
 	jobm.Update(&Job{

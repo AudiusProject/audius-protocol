@@ -12,6 +12,8 @@ import (
 	"comms.audius.co/storage/logstream"
 	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
+
+	natsdConfig "comms.audius.co/natsd/config"
 )
 
 type Monitor struct {
@@ -24,10 +26,9 @@ type Monitor struct {
 }
 
 const (
-	NodeStatusesKVName                 string = "nodeStatuses"
-	UpdateHealthyNodeSetStreamName     string = "updateHealthyNodeSet"
-	UpdateHealthyNodeSetSubj           string = "storage.updateHealthyNodeSet"
-	UpdateHealthyNodeSetStreamReplicas int    = 3
+	NodeStatusesKVName             string = "nodeStatuses"
+	UpdateHealthyNodeSetStreamName string = "updateHealthyNodeSet"
+	UpdateHealthyNodeSetSubj       string = "storage.updateHealthyNodeSet"
 )
 
 func New(namespace string, healthyNodesKV nats.KeyValue, logstream *logstream.LogStream, healthTTLHours float64, jsc nats.JetStreamContext) *Monitor {
@@ -35,7 +36,7 @@ func New(namespace string, healthyNodesKV nats.KeyValue, logstream *logstream.Lo
 	nodeStatusesKV, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:      NodeStatusesKVName,
 		Description: "Each node's endpoint, health, and the list of shards it stores",
-		Replicas:    3,
+		Replicas:    natsdConfig.NatsReplicaCount,
 		Placement:   config.StoragePlacement(),
 	})
 	if err != nil {
@@ -102,7 +103,7 @@ func (m Monitor) UpdateHealthyNodeSetOnInterval(intervalHours float64) error {
 	_, err := m.jsc.AddStream(&nats.StreamConfig{
 		Name:        UpdateHealthyNodeSetStreamName,
 		Description: "Stream for message to trigger an update of the set of healthy nodes",
-		Replicas:    UpdateHealthyNodeSetStreamReplicas,
+		Replicas:    natsdConfig.NatsReplicaCount,
 		Subjects:    []string{UpdateHealthyNodeSetSubj},
 		Retention:   nats.WorkQueuePolicy,
 		MaxMsgs:     1, // We only need 1 message in the stream - we just Nak it until it's time to update the set of healthy nodes, and then Nak again for the next interval

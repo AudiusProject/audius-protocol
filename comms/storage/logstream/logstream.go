@@ -9,6 +9,8 @@ import (
 	"github.com/avast/retry-go"
 	"github.com/nats-io/nats.go"
 	"golang.org/x/exp/slog"
+
+	natsdConfig "comms.audius.co/natsd/config"
 )
 
 const StreamName string = "storageLog"
@@ -50,7 +52,7 @@ func New(namespace string, pubKey string, jsc nats.JetStreamContext) (*LogStream
 			Name:        StreamName,
 			Description: "Core actions logged by each node",
 			Subjects:    []string{"storage.log.*.statusUpdate", "storage.log.updateHealthyNodeSet", "storage.log.*.rebalanceStart", "storage.log.*.rebalanceEnd"},
-			Replicas:    3,
+			Replicas:    natsdConfig.NatsReplicaCount,
 		})
 		return err
 	}, retry.Attempts(5))

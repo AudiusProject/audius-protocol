@@ -42,7 +42,7 @@ func TestE2EUpload(t *testing.T) {
 	}()
 
 	// TODO: Upload file with a hash that will fall in the 'aa' shard
-	jobman, err := transcode.NewJobsManager(nodes[0].ss.Jsc, nodes[0].ss.Namespace, 1)
+	jobman, err := transcode.NewJobsManager(nodes[0].ss.Jsc, nodes[0].ss.Namespace)
 	assert.NoError(err)
 	jobman.StartWorkers(3)
 
