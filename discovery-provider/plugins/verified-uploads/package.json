@@ -1,0 +1,16 @@
+{
+  "name": "verified-uploads",
+  "version": "0.1.0",
+  "description": "plugin for broadcasting verified upload notifications",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "alec@audius.co",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "knex": "^2.4.2",
+    "pg": "^8.10.0"
+  }
+}
