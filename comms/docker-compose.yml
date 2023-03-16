@@ -156,3 +156,19 @@ services:
         condition: service_healthy
       nats-discovery:
         condition: service_healthy
+
+  # SSH server for sshuttle
+  # we use separate container instead of host machine for dns/auto-hosts functionality
+
+  sshuttle-server:
+    image: linuxserver/openssh-server:latest # don't pin
+    command: bash /tmp/dev-tools/startup/sshuttle-server.sh
+    environment:
+      PUBLIC_KEY_FILE: "/tmp/dev-tools/keys/dev.pub"
+      USER_NAME: "sshuttle"
+    ports:
+      - "2223:2222"
+    volumes:
+      - ../dev-tools/:/tmp/dev-tools
+    deploy:
+      mode: global

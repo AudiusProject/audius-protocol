@@ -355,8 +355,7 @@ def down(protocol_dir):
 @click.pass_obj
 @click.option("-r", "--remote", is_flag=True)
 def connect(protocol_dir, remote):
-    remote_host = os.environ["AUDIUS_REMOTE_DEV_HOST"]
-    host = remote_host if remote else "localhost"
+    host = os.environ.get("AUDIUS_REMOTE_DEV_HOST") if remote else "localhost"
     subprocess.run(
         [
             "sshuttle",
@@ -513,6 +512,25 @@ def comms_down(protocol_dir):
             f"--project-directory={protocol_dir / 'comms'}",
             "down",
         ],
+    )
+
+
+@comms.command(name="connect")
+@click.pass_obj
+@click.option("-r", "--remote", is_flag=True)
+def comms_connect(protocol_dir, remote):
+    host = os.environ.get("AUDIUS_REMOTE_DEV_HOST") if remote else "localhost"
+    subprocess.run(
+        [
+            "sshuttle",
+            "--no-latency-control",
+            "--auto-nets",
+            "--auto-hosts",
+            "--remote",
+            f"sshuttle@{host}:2223",
+            "--ssh-cmd",
+            f"ssh -i {protocol_dir}/dev-tools/keys/dev -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null",
+        ]
     )
 
 
