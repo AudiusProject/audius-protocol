@@ -31,15 +31,14 @@ export function* confirmTransaction(blockHash: string, blockNumber: number) {
   if (!blockHash || !blockNumber) return true
 
   function* confirmBlock(): Generator<any, BlockConfirmation, any> {
-    const { block_found, block_passed } = yield apiClient.getBlockConfirmation(
+    
+    const { block_passed } = yield apiClient.getBlockConfirmation(
       blockHash,
       blockNumber
     )
-
-    return block_found
+    // TODO stronger checks when moving to txhash
+    return block_passed
       ? BlockConfirmation.CONFIRMED
-      : block_passed
-      ? BlockConfirmation.DENIED
       : BlockConfirmation.UNKNOWN
   }
 
