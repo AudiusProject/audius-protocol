@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"expvar"
+	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -33,6 +34,8 @@ type RPCProcessor struct {
 	JetstreamSequence *expvar.Int
 	ConsumerSequence  *expvar.Int
 	SSEServer         *sse.Server
+
+	work chan *nats.Msg
 }
 
 const (
@@ -54,6 +57,16 @@ func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 	sseServer := sse.New()
 	sseServer.AutoReplay = false
 	sseServer.CreateStream(sseStreamName)
+	sseServer.CreateStream("ping")
+	go func() {
+		for {
+			time.Sleep(time.Second * 5)
+			msg := fmt.Sprintf(" time: %s ", time.Now().String())
+			sseServer.Publish("ping", &sse.Event{
+				Data: []byte(msg),
+			})
+		}
+	}()
 
 	proc := &RPCProcessor{
 		jsc:               jsc,
@@ -62,6 +75,7 @@ func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 		JetstreamSequence: expvar.NewInt("jetstream_sequence"),
 		ConsumerSequence:  expvar.NewInt("consumer_sequence"),
 		SSEServer:         sseServer,
+		work:              make(chan *nats.Msg),
 	}
 
 	// create backing stream
@@ -79,19 +93,19 @@ func NewProcessor(jsc nats.JetStreamContext) (*RPCProcessor, error) {
 
 	// create consumer
 	// messages processed in parallel via work chan
-	work := make(chan *nats.Msg)
+	// work := make(chan *nats.Msg)
 	workerCount := 5
 	for i := 0; i < workerCount; i++ {
-		go proc.startWorker(work)
+		go proc.startWorker(proc.work)
 	}
 
-	durableId := discoveryConfig.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey
-	sub, err := jsc.ChanSubscribe(discoveryConfig.GlobalStreamSubject, work, nats.Durable(durableId), nats.AckExplicit())
-	if err != nil {
-		logger.Error(err.Error())
-		return nil, err
-	}
-	sub.SetPendingLimits(-1, -1)
+	// durableId := discoveryConfig.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey
+	// sub, err := jsc.ChanSubscribe(discoveryConfig.GlobalStreamSubject, work, nats.Durable(durableId), nats.AckExplicit())
+	// if err != nil {
+	// 	logger.Error(err.Error())
+	// 	return nil, err
+	// }
+	// sub.SetPendingLimits(-1, -1)
 
 	return proc, nil
 }
@@ -100,13 +114,43 @@ func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {
 	return proc.validator.Validate(userId, rawRpc)
 }
 
-func (proc *RPCProcessor) SubmitAndWait(msg *nats.Msg) (*nats.PubAck, error) {
+// ApplyAndPublish is the "no nats" version of submit and wait.
+// it:
+//   - timestamps message
+//   - applies locally
+//   - publishes to SSE server for any connected peers.
+//
+// there are several todos here to match the "manyfeeds" document:
+//   - should consider partition ID and forward to rendezvous "write leader"
+//   - should return error if apply fails
+//   - `sync_client.go` needs to perform backfill on boot
+//   - SSE publish is "fire and forget" style... if we want a quorum write thing we'll need some form of ACKs
+func (proc *RPCProcessor) ApplyAndPublish(msg *nats.Msg) (*nats.PubAck, error) {
 
-	// sse time
-	proc.SSEServer.Publish(sseStreamName, &sse.Event{
-		Data: msg.Data,
-	})
-	log.Println("____ SSE PUBLISHED", string(msg.Data))
+	// add headers
+	// msg.Header.Add("relayed_by", "todo: relayer host name")
+	msg.Header.Add("relayed_at", time.Now().Format(time.RFC3339))
+
+	// apply
+	// todo: apply should return error
+	proc.Apply(msg)
+
+	// publish event
+	j, err := json.Marshal(msg)
+	if err != nil {
+		log.Println("err: invalid json", err)
+	} else {
+		proc.SSEServer.Publish(sseStreamName, &sse.Event{
+			Data: j,
+		})
+		log.Println("sse published", string(msg.Data))
+	}
+
+	// just to mimic existing SubmitAndWait signature
+	return &nats.PubAck{}, nil
+}
+
+func (proc *RPCProcessor) SubmitAndWait(msg *nats.Msg) (*nats.PubAck, error) {
 
 	ok, err := proc.jsc.PublishMsg(msg)
 	if err != nil {
@@ -155,20 +199,28 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		return split
 	}
 
-	// get seq
-	meta, err := msg.Metadata()
-	if err != nil {
-		logger.Info("invalid nats message", err)
-		return
+	// get ts
+	var messageTs time.Time
+	var jetstreamSequence uint64
+	if meta, err := msg.Metadata(); err == nil {
+		logger = logger.New("js_seq", meta.Sequence.Stream, "consumer_seq", meta.Sequence.Consumer)
+		messageTs = meta.Timestamp
+		jetstreamSequence = meta.Sequence.Stream
+	} else {
+		if ts, err := time.Parse(time.RFC3339, msg.Header.Get("relayed_at")); err != nil {
+			log.Println("failed to get TS", msg)
+		} else {
+			messageTs = ts
+		}
 	}
-	logger = logger.New("js_seq", meta.Sequence.Stream, "consumer_seq", meta.Sequence.Consumer)
-	proc.JetstreamSequence.Set(int64(meta.Sequence.Stream))
-	proc.ConsumerSequence.Set(int64(meta.Sequence.Consumer))
+
+	// proc.JetstreamSequence.Set(int64(meta.Sequence.Stream))
+	// proc.ConsumerSequence.Set(int64(meta.Sequence.Consumer))
 
 	// notify any waiters of apply result
 	defer func() {
 		proc.Lock()
-		if waiter, ok := proc.waiters[meta.Sequence.Stream]; ok {
+		if waiter, ok := proc.waiters[jetstreamSequence]; ok {
 			waiter <- err
 		}
 		proc.Unlock()
@@ -215,20 +267,21 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			return err
 		}
 		defer tx.Rollback()
-		logger.Debug("begin tx", "took", takeSplit())
 
 		// build rpc_log id
 		hash := md5.Sum(msg.Data)
 		hashHex := hex.EncodeToString(hash[:])
-		tsString := strings.Replace(meta.Timestamp.Format("2006.01.02.15.04.05.000"), ".", "", -1)
+		tsString := strings.Replace(messageTs.Format("2006.01.02.15.04.05.000"), ".", "", -1)
 		idString := tsString + "_" + hashHex
+
+		logger.Debug("begin tx", "took", takeSplit(), "id", idString)
 
 		query := `
 		INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig, id)
 		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT DO NOTHING
 		`
-		result, err := tx.Exec(query, meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader, idString)
+		result, err := tx.Exec(query, jetstreamSequence, messageTs, wallet, msg.Data, signatureHeader, idString)
 		if err != nil {
 			return err
 		}
@@ -239,7 +292,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		if count == 0 {
 			// No rows were inserted because the jetstream seq number is already in rpc_log.
 			// Do not process redelivered messages that have already been processed.
-			logger.Info("rpc already in log, skipping duplicate seq number", "seq", meta.Sequence.Stream)
+			logger.Info("rpc already in log, skipping duplicate seq number", "seq", jetstreamSequence)
 			return nil
 		}
 		logger.Debug("inserted RPC", "took", takeSplit())
@@ -251,7 +304,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			if err != nil {
 				return err
 			}
-			err = chatCreate(tx, userId, meta.Timestamp, params)
+			err = chatCreate(tx, userId, messageTs, params)
 			if err != nil {
 				return err
 			}
@@ -261,7 +314,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			if err != nil {
 				return err
 			}
-			err = chatDelete(tx, userId, params.ChatID, meta.Timestamp)
+			err = chatDelete(tx, userId, params.ChatID, messageTs)
 			if err != nil {
 				return err
 			}
@@ -271,7 +324,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			if err != nil {
 				return err
 			}
-			err = chatSendMessage(tx, userId, params.ChatID, params.MessageID, meta.Timestamp, params.Message)
+			err = chatSendMessage(tx, userId, params.ChatID, params.MessageID, messageTs, params.Message)
 			if err != nil {
 				return err
 			}
@@ -281,7 +334,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			if err != nil {
 				return err
 			}
-			err = chatReactMessage(tx, userId, params.MessageID, params.Reaction, meta.Timestamp)
+			err = chatReactMessage(tx, userId, params.MessageID, params.Reaction, messageTs)
 			if err != nil {
 				return err
 			}
@@ -300,8 +353,8 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			if err != nil {
 				return err
 			}
-			if !lastActive.Valid || meta.Timestamp.After(lastActive.Time) {
-				err = chatReadMessages(tx, userId, params.ChatID, meta.Timestamp)
+			if !lastActive.Valid || messageTs.After(lastActive.Time) {
+				err = chatReadMessages(tx, userId, params.ChatID, messageTs)
 				if err != nil {
 					return err
 				}
@@ -326,7 +379,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 			if err != nil {
 				return err
 			}
-			err = chatBlock(tx, userId, int32(blockeeUserId), meta.Timestamp)
+			err = chatBlock(tx, userId, int32(blockeeUserId), messageTs)
 			if err != nil {
 				return err
 			}
@@ -357,7 +410,7 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		logger.Debug("commited", "took", takeSplit())
 
 		// send out websocket events fire + forget style
-		websocketNotify(rawRpc, userId, meta.Timestamp.Round(time.Microsecond))
+		websocketNotify(rawRpc, userId, messageTs.Round(time.Microsecond))
 		logger.Debug("websocket push done", "took", takeSplit())
 
 		return nil

@@ -10,7 +10,7 @@ for val in $stage_nodes_discovery; do
   ssh $val 'bash -s' < bash_scripts/deploy_discovery.sh a1
 done
 
-for val in $stage_nodes_content; do
-  echo "$val"
-  ssh $val 'bash -s' < bash_scripts/deploy_content.sh a1
-done
+# for val in $stage_nodes_content; do
+#   echo "$val"
+#   ssh $val 'bash -s' < bash_scripts/deploy_content.sh a1
+# done

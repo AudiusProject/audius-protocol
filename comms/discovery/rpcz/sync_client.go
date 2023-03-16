@@ -1,17 +1,34 @@
 package rpcz
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"comms.audius.co/shared/peering"
+	"github.com/nats-io/nats.go"
 	"github.com/r3labs/sse/v2"
 )
 
+type RpcSseMessage struct {
+	Header map[string][]string
+	Data   json.RawMessage
+}
+
 func (c *RPCProcessor) StartSSEClients(peerMap peering.PeerMap) {
 	for _, peer := range peerMap {
+		// todo: better way to get discovery peers
+		if !strings.Contains(peer.Host, "discovery") {
+			log.Println("skipping non discovery node", peer.Host)
+			continue
+		}
+		if peer.IsSelf {
+			log.Println("skipping self", peer)
+			continue
+		}
 		go c.sseStart(peer.Host, "/comms/rpc/stream", "comms/rpc/bulk")
 	}
 }
@@ -20,7 +37,7 @@ func (c *RPCProcessor) sseStart(host, streamEndpoint, bulkEndpoint string) {
 	for {
 		err := c.sseDial(host, streamEndpoint, bulkEndpoint)
 		if err != nil {
-			log.Println("_______ ____ sse client died", "host", host, "err", err)
+			log.Println("SSE client died !!", "host", host, "err", err)
 		}
 		time.Sleep(time.Second * 2)
 	}
@@ -34,7 +51,7 @@ func (c *RPCProcessor) sseDial(host, streamEndpoint, bulkEndpoint string) error 
 	client := sse.NewClient(endpoint)
 
 	events := make(chan *sse.Event, 64)
-	err := client.SubscribeChan("rpcs", events)
+	err := client.SubscribeChan(sseStreamName, events)
 	if err != nil {
 		return fmt.Errorf("subscribe chan failed: %v", err)
 	}
@@ -47,35 +64,30 @@ func (c *RPCProcessor) sseDial(host, streamEndpoint, bulkEndpoint string) error 
 		logger.Warn("sse disconnected !!!!")
 	})
 
-	// resume from
-	// var lastUlid string
-	// row := c.DB.Table("ops").Where("host = ?", host).Select("max(ulid)").Row()
-	// row.Scan(&lastUlid)
-	// logger.Debug("starting backfill", "last_ulid", lastUlid)
-
-	// err = c.clientBackfill(host, bulkEndpoint, lastUlid)
-	// if err != nil {
-	// 	return fmt.Errorf("backfill failed: %v", err)
-	// }
+	// todo: backfill on boot
+	// using bulkEndpoint
+	// see mediorum crudr client code
 
 	logger.Debug("processing events")
 	for {
 
 		select {
 		case e := <-events:
-			// var op *Op
-			// err := json.Unmarshal(e.Data, &op)
-			// if err != nil {
-			// 	logger.Warn("bad event json: " + string(e.Data))
-			// 	continue
-			// }
+			var msg *nats.Msg
+			err := json.Unmarshal(e.Data, &msg)
+			if err != nil {
+				logger.Warn("bad event json: " + string(e.Data))
+				continue
+			}
 
-			// err = c.apply(op)
+			log.Println("GOT SSE", string(e.Data))
+
+			c.Apply(msg)
+
+			// todo: apply should return error
 			// if err != nil {
 			// 	logger.Warn("apply failed", "err", err)
 			// }
-
-			fmt.Println("__________ GOT SSE", e)
 
 		case <-time.After(600 * time.Second):
 			return errors.New("health timeout")

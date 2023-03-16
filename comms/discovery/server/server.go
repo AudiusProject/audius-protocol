@@ -82,7 +82,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
 
-	g.POST("/rpc/stream", s.getRpcStream)
+	g.GET("/rpc/stream", s.getRpcStream)
 
 	g.GET("/debug/stream", func(c echo.Context) error {
 		info, err := jsc.StreamInfo(discoveryConfig.GlobalStreamName)
@@ -150,7 +150,8 @@ func (s *ChatServer) mutate(c echo.Context) error {
 	msg.Header.Add(sharedConfig.SigHeader, c.Request().Header.Get(sharedConfig.SigHeader))
 	msg.Data = payload
 
-	ok, err := s.proc.SubmitAndWait(msg)
+	// ok, err := s.proc.SubmitAndWait(msg)
+	ok, err := s.proc.ApplyAndPublish(msg)
 	if err != nil {
 		logger.Warn(string(payload), "wallet", wallet, "err", err)
 		return err
@@ -269,7 +270,9 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 		return err
 	}
 
-	rpcz.RegisterWebsocket(userId, conn)
+	// rpcz.RegisterWebsocket(userId, conn)
+	time.Sleep(time.Hour)
+	fmt.Println("doing nothing with ws conn", userId, conn)
 	return nil
 }
 
@@ -653,12 +656,13 @@ func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRo
 func (ss *ChatServer) getRpcStream(c echo.Context) error {
 	w := c.Response()
 	r := c.Request()
+	startedAt := time.Now()
 
 	go func() {
 		// Received Browser Disconnection
 		<-r.Context().Done()
 		// ss.logger.Info("sse client connection closed", "ip", r.RemoteAddr)
-		log.Println("sse client connection closed", "ip", r.RemoteAddr)
+		log.Println("sse client connection closed", "ip", r.RemoteAddr, r.URL.String(), "took", time.Since(startedAt))
 	}()
 
 	ss.proc.SSEServer.ServeHTTP(w, r)
