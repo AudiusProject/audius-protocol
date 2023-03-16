@@ -273,19 +273,19 @@ def validate_duplicate_social_feature(record_type: EntityType, params: ManageEnt
 
     if existing_record:
         duplicate_create = (
-            record_type
-            in (EntityType.REPOST, EntityType.SAVE, EntityType.FOLLOW, EntityType.SUBSCRIBE)
+            params.action
+            in (Action.REPOST, Action.SAVE, Action.FOLLOW, Action.SUBSCRIBE)
             and not existing_record.is_delete
         )
         duplicate_delete = (
-            record_type
-            in (EntityType.UNREPOST, EntityType.UNSAVE, EntityType.UNFOLLOW, EntityType.UNSUBSCRIBE)
+            params.action
+            in (Action.UNREPOST, Action.UNSAVE, Action.UNFOLLOW, Action.UNSUBSCRIBE)
             and existing_record.is_delete
         )
 
         if duplicate_create or duplicate_delete:
             logger.info(
-                f"entity_manager.py | User {params.user_id} has already sent a {record_type} for {params.entity_type} {params.entity_id}. Skipping"
+                f"entity_manager.py | User {params.user_id} has already sent a {params.action} for record type {record_type} for {params.entity_type} {params.entity_id}. Skipping"
             )
             return False
     return True
