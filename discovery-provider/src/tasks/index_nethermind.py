@@ -656,6 +656,7 @@ def index_blocks(self, db, blocks_list):
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
+    start_time = datetime.now()
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
     num_revert_blocks = len(revert_blocks_list)
     if num_revert_blocks == 0:
@@ -709,51 +710,63 @@ def revert_blocks(self, db, revert_blocks_list):
 
             # aggregate all transactions in current block
             revert_save_entries = (
-                session.query(Save).filter(Save.blockhash == revert_hash).all()
+                session.query(Save)
+                .filter(Save.blocknumber == revert_block_number)
+                .all()
             )
             revert_repost_entries = (
-                session.query(Repost).filter(Repost.blockhash == revert_hash).all()
+                session.query(Repost)
+                .filter(Repost.blocknumber == revert_block_number)
+                .all()
             )
             revert_follow_entries = (
-                session.query(Follow).filter(Follow.blockhash == revert_hash).all()
+                session.query(Follow)
+                .filter(Follow.blocknumber == revert_block_number)
+                .all()
             )
             revert_subscription_entries = (
                 session.query(Subscription)
-                .filter(Subscription.blockhash == revert_hash)
+                .filter(Subscription.blocknumber == revert_block_number)
                 .all()
             )
             revert_playlist_entries = (
-                session.query(Playlist).filter(Playlist.blockhash == revert_hash).all()
+                session.query(Playlist)
+                .filter(Playlist.blocknumber == revert_block_number)
+                .all()
             )
             revert_track_entries = (
-                session.query(Track).filter(Track.blockhash == revert_hash).all()
+                session.query(Track)
+                .filter(Track.blocknumber == revert_block_number)
+                .all()
             )
             revert_user_entries = (
-                session.query(User).filter(User.blockhash == revert_hash).all()
+                session.query(User)
+                .filter(User.blocknumber == revert_block_number)
+                .all()
             )
             revert_ursm_content_node_entries = (
                 session.query(UrsmContentNode)
-                .filter(UrsmContentNode.blockhash == revert_hash)
+                .filter(UrsmContentNode.blocknumber == revert_block_number)
                 .all()
             )
             revert_associated_wallets = (
                 session.query(AssociatedWallet)
-                .filter(AssociatedWallet.blockhash == revert_hash)
+                .filter(AssociatedWallet.blocknumber == revert_block_number)
                 .all()
             )
             revert_user_events_entries = (
                 session.query(UserEvent)
-                .filter(UserEvent.blockhash == revert_hash)
+                .filter(UserEvent.blocknumber == revert_block_number)
                 .all()
             )
             revert_track_routes = (
                 session.query(TrackRoute)
-                .filter(TrackRoute.blockhash == revert_hash)
+                .filter(TrackRoute.blocknumber == revert_block_number)
                 .all()
             )
             revert_playlist_routes = (
                 session.query(PlaylistRoute)
-                .filter(PlaylistRoute.blockhash == revert_hash)
+                .filter(PlaylistRoute.blocknumber == revert_block_number)
                 .all()
             )
 
@@ -982,6 +995,9 @@ def revert_blocks(self, db, revert_blocks_list):
             rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
             rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
     # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
+    logger.info(
+        f"index_nethermind.py | Reverted {revert_block_number} in {datetime.now() - start_time} seconds"
+    )
 
 
 def revert_user_events(session, revert_user_events_entries, revert_block_number):
