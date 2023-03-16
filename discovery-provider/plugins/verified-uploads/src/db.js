@@ -33,6 +33,4 @@ export default async (url, passthrough, callback) => {
     handlerConn.releaseConnection(handlerConn);
   });
   await notifConn.query(sql).catch(console.error);
-  // TODO for testing, remove this later
-  callback(passthrough, db, 402375);
 };
