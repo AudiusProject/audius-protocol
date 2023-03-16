@@ -265,7 +265,10 @@ def validate_social_feature(params: ManageEntityParameters):
         if params.user_id == owner_id:
             raise Exception(f"User {params.user_id} cannot {params.action} themself")
 
-def validate_duplicate_social_feature(record_type: EntityType, params: ManageEntityParameters):
+
+def validate_duplicate_social_feature(
+    record_type: EntityType, params: ManageEntityParameters
+):
     # Cannot duplicate a social feature
     key = get_record_key(params.user_id, params.entity_type, params.entity_id)
 
@@ -289,4 +292,3 @@ def validate_duplicate_social_feature(record_type: EntityType, params: ManageEnt
             )
             return False
     return True
-
