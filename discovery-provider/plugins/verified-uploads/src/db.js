@@ -34,5 +34,5 @@ export default async (url, callback) => {
   });
   await notifConn.query(sql).catch(console.error);
   // TODO for testing, remove this later
-  callback(db, null);
+  callback(db, 333822);
 };
