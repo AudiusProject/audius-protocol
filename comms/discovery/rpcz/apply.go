@@ -373,10 +373,7 @@ func websocketNotify(rawRpc schema.RawRPC, userId int32, timestamp time.Time) {
 			encodedUserId, _ := misc.EncodeHashId(int(userId))
 			data := schema.ChatWebsocketEventData{RPC: payload, Metadata: schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
 			for _, subscribedUserId := range userIds {
-				// Don't send events sent by a user to that same user
-				if subscribedUserId != userId {
-					websocketPush(subscribedUserId, data)
-				}
+				websocketPush(subscribedUserId, data)
 			}
 		}
 
