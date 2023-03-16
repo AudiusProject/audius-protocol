@@ -236,12 +236,17 @@ function* sendTipAsync() {
   }
 
   const weiBNAmount = parseAudioInputToWei(amount) ?? (new BN('0') as BNWei)
-  const recipientERCWallet = recipient.erc_wallet
+  const recipientERCWallet = recipient.wallet
 
   // Create Userbanks if needed
   const feePayerOverride = yield* select(getFeePayer)
   if (!feePayerOverride) {
     console.error("tippingSagas: unexpectedly couldn't get feePayerOverride")
+    return
+  }
+
+  if (!recipientERCWallet) {
+    console.error('tippingSagas: Unexpectedly missing recipient ERC wallet')
     return
   }
 
