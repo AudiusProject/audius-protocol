@@ -740,32 +740,32 @@ def revert_blocks(self, db, revert_blocks_list):
             )
             revert_user_entries = (
                 session.query(User)
-                .filter(User.revert_block_number == revert_block_number)
+                .filter(User.blocknumber == revert_block_number)
                 .all()
             )
             revert_ursm_content_node_entries = (
                 session.query(UrsmContentNode)
-                .filter(UrsmContentNode.revert_block_number == revert_block_number)
+                .filter(UrsmContentNode.blocknumber == revert_block_number)
                 .all()
             )
             revert_associated_wallets = (
                 session.query(AssociatedWallet)
-                .filter(AssociatedWallet.revert_block_number == revert_block_number)
+                .filter(AssociatedWallet.blocknumber == revert_block_number)
                 .all()
             )
             revert_user_events_entries = (
                 session.query(UserEvent)
-                .filter(UserEvent.revert_block_number == revert_block_number)
+                .filter(UserEvent.blocknumber == revert_block_number)
                 .all()
             )
             revert_track_routes = (
                 session.query(TrackRoute)
-                .filter(TrackRoute.revert_block_number == revert_block_number)
+                .filter(TrackRoute.blocknumber == revert_block_number)
                 .all()
             )
             revert_playlist_routes = (
                 session.query(PlaylistRoute)
-                .filter(PlaylistRoute.revert_block_number == revert_block_number)
+                .filter(PlaylistRoute.blocknumber == revert_block_number)
                 .all()
             )
 
