@@ -5,11 +5,10 @@ from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 
 from redis import Redis
-from sqlalchemy import asc, bindparam, text
+from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
 from src.models.indexing.block import Block
 from src.models.notifications.notification import Notification
-from src.models.social.repost import Repost
 from src.models.tracks.track import Track
 from src.queries.get_trending_tracks import (
     _get_trending_tracks_with_session,
@@ -21,6 +20,7 @@ from src.queries.get_underground_trending import (
     make_get_unpopulated_tracks,
     make_underground_trending_cache_key,
 )
+from src.tasks import index_tastemaker_notifications
 from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
@@ -215,58 +215,8 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     redis.set(trending_tracks_last_completion_redis_key, int(update_end))
     set_last_trending_datetime(redis, timestamp)
 
-    index_trending_notifications(db, timestamp)
-
-
-def index_tastemaker_notifications(
-    db: SessionManager,
-    top_5_trending_tracks: List[Track],
-    tastemaker_threshold=10,
-):
-    with db.scoped_session() as session:
-        tastemaker_notifications = []
-        for track in top_5_trending_tracks:
-            earliest_reposts = (
-                session.query(Repost)
-                .filter(
-                    Repost.is_current == True,
-                    Repost.is_delete == False,
-                    Repost.repost_item_id == track["track_id"],
-                )
-                .order_by(asc(Repost.created_at))
-                .limit(tastemaker_threshold)
-            )
-            print("first n track reposts")
-            for repost in earliest_reposts.all():
-                print(repost)
-                tastemaker_notifications.append(
-                    {
-                        "tastemaker_user_id": repost.user_id,
-                        "group_id": f"tastemaker:{repost.user_id}:tastemaker_item:{repost.repost_item_id}",
-                        "track_id": repost.repost_item_id,
-                        "track_owner_id": track["owner_id"],
-                        "action": "repost",
-                    }
-                )
-
-        session.bulk_save_objects(
-            [
-                Notification(
-                    timestamp=datetime.now(),
-                    user_ids=[n["tastemaker_user_id"]],
-                    type="tastemaker",
-                    group_id=n["group_id"],
-                    specifier=n["tastemaker_user_id"],
-                    data={
-                        "track_id": n["track_id"],
-                        "track_owner_id": n["track_owner_id"],
-                        "action": n["action"],
-                        "tastemaker_user_id": n["tastemaker_user_id"],
-                    },
-                )
-                for n in tastemaker_notifications
-            ]
-        )
+    top_trending_tracks = index_trending_notifications(db, timestamp)
+    index_tastemaker_notifications(db, top_trending_tracks)
 
 
 def index_trending_notifications(db: SessionManager, timestamp: int):
@@ -329,9 +279,7 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
         # Do not send notifications for the same track trending within 24 hours
         NOTIFICATION_INTERVAL_SEC = 60 * 60 * 24
 
-        print("printing tracksss ")
         for index, track in enumerate(top_trending):
-            print(track)
             track_id = track["track_id"]
             rank = index + 1
             previous_track_notification = previous_trending.get(str(track["track_id"]))
@@ -378,6 +326,7 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
             "index_trending.py | Created trending notifications",
             extra={"job": "index_trending", "subtask": "trending notification"},
         )
+        return top_trending
 
 
 last_trending_timestamp = "last_trending_timestamp"
