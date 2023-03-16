@@ -4,5 +4,6 @@ services:
     container_name: "verified_uploads"
     volumes:
       - .env:/verified_uploads/.env
+    image: audius/verified_uploads
     build:
       context: '.'
