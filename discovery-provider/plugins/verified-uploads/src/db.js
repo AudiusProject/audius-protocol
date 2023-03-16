@@ -16,7 +16,7 @@ const DB = async (url) => {
   return pg;
 };
 
-export default async (url, callback) => {
+export default async (url, passthrough, callback) => {
   const db = await DB(url).catch(console.error);
 
   // https://github.com/AudiusProject/audius-protocol/blob/186f483a40dd05733442f447e916e005227baedf/discovery-provider/es-indexer/src/setup.ts#L4-L22
@@ -29,10 +29,10 @@ export default async (url, callback) => {
     // no matter the logic inside the handler
     const handlerConn = await db.client.acquireConnection();
     // fire and forget
-    callback(handlerConn, JSON.parse(msg.payload));
+    callback(passthrough, handlerConn, JSON.parse(msg.payload));
     handlerConn.releaseConnection(handlerConn);
   });
   await notifConn.query(sql).catch(console.error);
   // TODO for testing, remove this later
-  callback(db, 333822);
+  callback(passthrough, db, 402375);
 };
