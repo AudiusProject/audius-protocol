@@ -215,6 +215,7 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     set_last_trending_datetime(redis, timestamp)
 
     index_trending_notifications(db, timestamp)
+    index_trending_underground_notifications(db, timestamp)
 
 
 def index_trending_notifications(db: SessionManager, timestamp: int):
@@ -327,6 +328,11 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
 
 
 last_trending_timestamp = "last_trending_timestamp"
+
+
+def index_trending_underground_notifications(db: SessionManager, timestamp: int):
+    # TODO
+    return None
 
 
 def get_last_trending_datetime(redis: Redis):
