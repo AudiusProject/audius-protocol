@@ -547,7 +547,6 @@ def get_final_poa_block(shared_config) -> Optional[int]:
 
     final_poa_block = None
     try:
-        raise Exception("except")
         identity_endpoint = (
             f"{shared_config['discprov']['identity_service_url']}/health_check/poa"
         )

@@ -6,6 +6,7 @@ const models = require('../models')
 const config = require('../config')
 const { logger } = require('../logging')
 const { Lock } = require('../redis')
+const RelayReporter = require('../utils/relayReporter')
 
 const { libs } = require('@audius/sdk')
 const AudiusABIDecoder = libs.AudiusABIDecoder
@@ -97,8 +98,25 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   } = txProps
   const redis = req.app.get('redis')
   const startTransactionLatency = new Date().getTime()
+  const reporter = new RelayReporter({
+    // report analytics everywhere except local
+    shouldReportAnalytics: config.get('environment') !== 'development'
+  })
 
-  nethermindContractAddress = null
+  const user = await models.User.findOne({
+    where: { walletAddress: req.body.senderAddress },
+    attributes: ['blockchainUserId']
+  })
+  const userId =
+    user && user.blockchainUserId ? user.blockchainUserId : 'unknown'
+
+  reporter.reportStart({
+    userId,
+    contractAddress,
+    nethermindContractAddress,
+    senderAddress
+  })
+
   // SEND to both nethermind and POA
   // sendToNethermindOnly indicates relay should respond with that receipt
   const currentBlock = await web3.eth.getBlockNumber()
@@ -109,8 +127,14 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   // force staging to use nethermind since it hasn't surpassed finalPOABlock
   // prod will surpass
-
-  if (config.get('environment') === 'staging') {
+  if (!config.get('nethermindEnabled')) {
+    // nulling this will disable nethermind relays
+    nethermindContractAddress = null
+  }
+  if (
+    config.get('environment') === 'staging' ||
+    config.get('environment') === 'production'
+  ) {
     sendToNethermindOnly = true
   }
   const existingTx = await models.Transaction.findOne({
@@ -142,6 +166,37 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     wallet = await selectWallet()
   }
 
+  await redis.zadd(
+    'relayTxAttempts',
+    Math.floor(Date.now() / 1000),
+    JSON.stringify({
+      date: Math.floor(Date.now() / 1000),
+      reqBodySHA,
+      senderAddress
+    })
+  )
+
+  req.logger.info(
+    `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
+  )
+
+  // send to POA
+  // PROD doesn't have sendToNethermindOnly and should default to POA
+  // STAGE defaults to nethermind but can send to POA when it has both addresses
+  const relayPromises = []
+
+  // relay stats object that gets filled out as relay occurs
+  const relayStats = {
+    poa: {
+      isRecipient: false,
+      txSubmissionTime: null
+    },
+    nethermind: {
+      isRecipient: false,
+      txSubmissionTime: null
+    }
+  }
+
   try {
     req.logger.info(
       `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
@@ -152,22 +207,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     // STAGE defaults to nethermind but can send to POA when it has both addresses
     const relayPromises = []
 
-    // relay stats object that gets filled out as relay occurs
-    const relayStats = {
-      poa: {
-        isRecipient: false,
-        txSubmissionTime: null
-      },
-      nethermind: {
-        isRecipient: false,
-        txSubmissionTime: null
-      }
-    }
-
-    if (
-      !sendToNethermindOnly ||
-      (sendToNethermindOnly && nethermindContractAddress)
-    ) {
+    if (!sendToNethermindOnly) {
       relayStats.poa.isRecipient = true
       relayPromises.push(
         createAndSendTransaction(
@@ -185,17 +225,14 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     // send to nethermind
     // PROD doesn't have sendToNethermindOnly and only sends to nethermind when it has both addresses
     // STAGE defaults to nethermind
-    if (
-      sendToNethermindOnly ||
-      (!sendToNethermindOnly && nethermindContractAddress)
-    ) {
+    if (sendToNethermindOnly) {
       if (!nethermindContractAddress) {
         nethermindContractAddress = contractAddress
         nethermindEncodedABI = encodedABI
       }
       relayStats.nethermind.isRecipient = true
       relayPromises.push(
-        relayToNethermind(
+        relayToNethermindWithTimeout(
           nethermindEncodedABI,
           nethermindContractAddress,
           gasLimit
@@ -204,6 +241,9 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     }
     const relayTxs = await Promise.allSettled(relayPromises)
 
+    const end = new Date().getTime()
+    const totalTransactionLatency = end - startTransactionLatency
+
     if (relayTxs.length === 1) {
       txParams = relayTxs[0].value.txParams
       txReceipt = relayTxs[0].value.receipt
@@ -211,8 +251,26 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       if (relayStats.nethermind.isRecipient) {
         relayStats.nethermind.txSubmissionTime =
           relayTxs[0].value.timeToComplete
+        reporter.reportSuccess({
+          chain: 'acdc',
+          userId,
+          contractAddress,
+          nethermindContractAddress,
+          senderAddress,
+          totalTime: totalTransactionLatency,
+          txSubmissionTime: relayStats.nethermind.txSubmissionTime
+        })
       } else {
         relayStats.poa.txSubmissionTime = relayTxs[0].value.timeToComplete
+        reporter.reportSuccess({
+          chain: 'poa',
+          userId,
+          contractAddress,
+          nethermindContractAddress,
+          senderAddress,
+          totalTime: totalTransactionLatency,
+          txSubmissionTime: relayStats.poa.txSubmissionTime
+        })
       }
     } else if (relayTxs.length === 2) {
       const [poaTx, nethermindTx] = relayTxs.map((result) => result?.value)
@@ -231,10 +289,26 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       // populate both, we want stats if relay went to both chains
       relayStats.nethermind.txSubmissionTime = nethermindTx.timeToComplete
       relayStats.poa.txSubmissionTime = poaTx.timeToComplete
+      reporter.reportSuccess({
+        chain: 'poa',
+        userId,
+        contractAddress,
+        nethermindContractAddress,
+        senderAddress,
+        totalTime: totalTransactionLatency,
+        txSubmissionTime: relayStats.poa.txSubmissionTime
+      })
+      reporter.reportSuccess({
+        chain: 'acdc',
+        userId,
+        contractAddress,
+        nethermindContractAddress,
+        senderAddress,
+        totalTime: totalTransactionLatency,
+        txSubmissionTime: relayStats.nethermind.txSubmissionTime
+      })
     }
 
-    const end = new Date().getTime()
-    const totalTransactionLatency = end - startTransactionLatency
     redisLogParams = {
       date: Math.floor(Date.now() / 1000),
       reqBodySHA,
@@ -244,11 +318,6 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       relayStats,
       totalTransactionLatency
     }
-    await redis.zadd(
-      'relayTxAttempts',
-      Math.floor(Date.now() / 1000),
-      JSON.stringify(redisLogParams)
-    )
     req.logger.info(
       `L2 - txRelay - sending a transaction for wallet ${
         wallet.publicKey
@@ -275,6 +344,28 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       Math.floor(Date.now() / 1000),
       JSON.stringify(redisLogParams)
     )
+    const end = new Date().getTime()
+    const totalTransactionLatency = end - startTransactionLatency
+    reporter.reportError({
+      chain: 'poa',
+      userId,
+      contractAddress,
+      nethermindContractAddress,
+      senderAddress,
+      totalTime: totalTransactionLatency,
+      txSubmissionTime: relayStats.poa.txSubmissionTime,
+      errMsg: e.toString()
+    })
+    reporter.reportError({
+      chain: 'acdc',
+      userId,
+      contractAddress,
+      nethermindContractAddress,
+      senderAddress,
+      totalTime: totalTransactionLatency,
+      txSubmissionTime: relayStats.nethermind.txSubmissionTime,
+      errMsg: e.toString()
+    })
     throw e
   } finally {
     await Lock.clearLock(generateWalletLockKey(wallet.publicKey))
@@ -482,6 +573,21 @@ const createAndSendTransaction = async (
 //
 // Relay txn to nethermind
 //
+async function relayToNethermindWithTimeout(
+  encodedABI,
+  contractAddress,
+  gasLimit
+) {
+  return Promise.race([
+    relayToNethermind(encodedABI, contractAddress, gasLimit),
+    new Promise((resolve, reject) =>
+      setTimeout(() => {
+        const timeoutMessage = `txRelay - relayToNethermind timed out`
+        reject(new Error(timeoutMessage))
+      }, 10000)
+    )
+  ])
+}
 
 let inFlight = 0
 
@@ -500,18 +606,16 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
   try {
     const toChecksumAddress = nethermindWeb3.utils.toChecksumAddress
 
-    if (!gasLimit) {
-      gasLimit = await nethermindWeb3.eth.estimateGas({
-        from: toChecksumAddress(wallet.address),
-        to: toChecksumAddress(contractAddress),
-        data: encodedABI
-      })
-    }
+    let nethermindGasLimit = await nethermindWeb3.eth.estimateGas({
+      from: toChecksumAddress(wallet.address),
+      to: toChecksumAddress(contractAddress),
+      data: encodedABI
+    })
 
     const transaction = {
       to: contractAddress,
       value: 0,
-      gas: gasLimit,
+      gas: nethermindGasLimit,
       gasPrice: 0,
       data: encodedABI
     }
@@ -532,7 +636,9 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
       signedTx.rawTransaction
     )
 
-    console.log(`txRelay - relayToNethermind receipt: ${receipt}`)
+    console.log(
+      `txRelay - relayToNethermind receipt: ${JSON.stringify(receipt)}`
+    )
     receipt.blockNumber += config.get('finalPOABlock')
 
     const end = new Date().getTime()

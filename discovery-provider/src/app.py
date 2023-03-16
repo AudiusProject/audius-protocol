@@ -29,7 +29,6 @@ from src.queries import (
     health_check,
     index_block_stats,
     notifications,
-    prometheus_metrics_exporter,
     queries,
     search,
     search_queries,
@@ -264,8 +263,6 @@ def configure_flask(test_config, app, mode="app"):
     app.register_blueprint(block_confirmation.bp)
     app.register_blueprint(skipped_transactions.bp)
     app.register_blueprint(user_signals.bp)
-    app.register_blueprint(prometheus_metrics_exporter.bp)
-
     app.register_blueprint(api_v1.bp)
     app.register_blueprint(api_v1.bp_full)
     app.register_blueprint(playlist_stream_bp)
@@ -292,7 +289,6 @@ def configure_celery(celery, test_config=None):
     # Update celery configuration
     celery.conf.update(
         imports=[
-            "src.tasks.index",
             "src.tasks.index_nethermind",
             "src.tasks.index_metrics",
             "src.tasks.index_aggregate_monthly_plays",
@@ -320,10 +316,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_track_is_available",
         ],
         beat_schedule={
-            "update_discovery_provider": {
-                "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=indexing_interval_sec),
-            },
             "update_discovery_provider_nethermind": {
                 "task": "update_discovery_provider_nethermind",
                 "schedule": timedelta(seconds=indexing_interval_sec),
