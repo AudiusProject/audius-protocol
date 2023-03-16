@@ -2,7 +2,10 @@ import { expect, jest, test } from '@jest/globals'
 import { renderEmail } from '../../email/notifications/renderEmail'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
-import { AppEmailNotification, SupporterRankUpNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SupporterRankUpNotification
+} from '../../types/notifications'
 
 import {
   createUsers,
@@ -18,14 +21,17 @@ import {
 describe('Supporter Rank Up Notification', () => {
   let processor: Processor
   // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
+  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
 
-
-  const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
+  const sendPushNotificationSpy = jest
+    .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
-    const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+    const testName = expect
+      .getState()
+      .currentTestName.replace(/\s/g, '_')
+      .toLocaleLowerCase()
     await Promise.all([
       createTestDB(process.env.DN_DB_URL, testName),
       createTestDB(process.env.IDENTITY_DB_URL, testName)
@@ -33,51 +39,62 @@ describe('Supporter Rank Up Notification', () => {
     processor = new Processor()
     await processor.init({
       identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
-      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName),
+      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
     })
   })
 
   afterEach(async () => {
     jest.clearAllMocks()
     await processor?.close()
-    const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+    const testName = expect
+      .getState()
+      .currentTestName.replace(/\s/g, '_')
+      .toLocaleLowerCase()
     await Promise.all([
       dropTestDB(process.env.DN_DB_URL, testName),
-      dropTestDB(process.env.IDENTITY_DB_URL, testName),
+      dropTestDB(process.env.IDENTITY_DB_URL, testName)
     ])
   })
 
-  test("Process push notification for supporter rank up", async () => {
+  test('Process push notification for supporter rank up', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createUserBankTx(processor.discoveryDB, [{ signature: '1', slot: 1 }])
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 2 }])
+    await createSupporterRankUp(processor.discoveryDB, [
+      { sender_user_id: 2, receiver_user_id: 1, rank: 2 }
+    ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
-    await new Promise(resolve => setTimeout(resolve, 10))
+    await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
 
-    const reactionNotifications = pending?.appNotifications.filter(n => n.type === 'supporter_rank_up')
+    const reactionNotifications = pending?.appNotifications.filter(
+      (n) => n.type === 'supporter_rank_up'
+    )
 
     expect(reactionNotifications).toHaveLength(1)
     // Assert single pending
     await processor.appNotificationsProcessor.process(reactionNotifications)
 
-    expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:1',
-      badgeCount: 1
-    }, {
-      title: `#2 Top Supporter`,
-      body: `User_2 became your #2 Top Supporter!`,
-      data: {}
-    })
+    expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      {
+        type: 'ios',
+        targetARN: 'arn:1',
+        badgeCount: 1
+      },
+      {
+        title: `#2 Top Supporter`,
+        body: `User_2 became your #2 Top Supporter!`,
+        data: {}
+      }
+    )
   })
 
-
-  test("Process email notification for supporter rank up", async () => {
+  test('Process email notification for supporter rank up', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createUserBankTx(processor.discoveryDB, [{ signature: '1', slot: 1 }])
-    await createSupporterRankUp(processor.discoveryDB, [{ sender_user_id: 2, receiver_user_id: 1, rank: 2 }])
+    await createSupporterRankUp(processor.discoveryDB, [
+      { sender_user_id: 2, receiver_user_id: 1, rank: 2 }
+    ])
 
     const data: SupporterRankUpNotification = {
       rank: 2,
@@ -94,7 +111,7 @@ describe('Supporter Rank Up Notification', () => {
         data,
         user_ids: [2],
         receiver_user_id: 2
-      },
+      }
     ]
     const notifHtml = await renderEmail({
       userId: 2,
@@ -107,5 +124,4 @@ describe('Supporter Rank Up Notification', () => {
 
     expect(notifHtml).toMatchSnapshot()
   })
-
 })

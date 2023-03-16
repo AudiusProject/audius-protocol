@@ -1,7 +1,7 @@
 import { renderEmail } from './renderEmail'
 
 import { EmailNotification } from '../../types/notifications'
-import { EmailFrequency } from "../../processNotifications/mappers/base"
+import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { logger } from '../../logger'
 import { getSendgrid } from '../../sendgrid'
 import { MailDataRequired } from '@sendgrid/mail'
@@ -14,7 +14,7 @@ type SendNotificationEmailProps = {
   email: string
   frequency: EmailFrequency
   notifications: EmailNotification[]
-  dnDb: Knex,
+  dnDb: Knex
   identityDb: Knex
 }
 
@@ -28,13 +28,12 @@ export const sendNotificationEmail = async ({
   identityDb
 }: SendNotificationEmailProps) => {
   try {
-    logger.debug(
-      `SendNotificationEmail | ${userId}, ${email}, ${frequency}`
-    )
+    logger.debug(`SendNotificationEmail | ${userId}, ${email}, ${frequency}`)
 
     const notificationCount = notifications.length
-    const emailSubject = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
-      } on Audius`
+    const emailSubject = `${notificationCount} unread notification${
+      notificationCount > 1 ? 's' : ''
+    } on Audius`
     if (notificationCount === 0) {
       logger.debug(
         `renderAndSendNotificationEmail | 0 notifications detected for user ${userId}, bypassing email`
@@ -67,7 +66,7 @@ export const sendNotificationEmail = async ({
 
     logger.info(
       {
-        job: 'renderAndSendNotificationEmail',
+        job: 'renderAndSendNotificationEmail'
       },
       `renderAndSendNotificationEmail | sent email to ${userId} at ${email}`
     )

@@ -1,7 +1,6 @@
 import { Knex } from 'knex'
 import { logger } from './logger'
 
-
 const functionName = `on_new_notification_row`
 
 const trigger = `
@@ -14,12 +13,11 @@ $$ language plpgsql;
 `
 
 export async function setupTriggers(db: Knex) {
-
   const { count }: { count: string } = await db('information_schema.routines')
     .where('routine_name', '=', functionName)
     .count({ count: '*' })
 
-  let skip = parseInt(count) == 1
+  const skip = parseInt(count) == 1
 
   if (skip) {
     logger.info(`function ${functionName} already exists... skipping`)
