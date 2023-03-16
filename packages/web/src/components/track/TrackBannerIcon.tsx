@@ -18,12 +18,14 @@ const TrackBannerIcon = ({
   type,
   isMobile,
   isMatrixMode,
-  className
+  className,
+  containerClassName
 }: {
   type: TrackBannerIconType
   isMobile?: boolean
   isMatrixMode: boolean
   className?: string
+  containerClassName?: string
 }) => {
   const renderIcon = () => {
     switch (type) {
@@ -48,7 +50,7 @@ const TrackBannerIcon = ({
       })}
     >
       <div
-        className={cn(styles.container, {
+        className={cn(styles.container, containerClassName, {
           [styles.gated]: [
             TrackBannerIconType.COLLECTIBLE_GATED,
             TrackBannerIconType.SPECIAL_ACCESS,

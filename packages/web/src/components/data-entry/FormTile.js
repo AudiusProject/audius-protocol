@@ -123,6 +123,7 @@ const TrackAvailabilityModalContainer = (props) => {
         metadataState={props.availabilityState}
         isRemix={props.isRemix}
         isUpload={props.isUpload}
+        initialForm={props.initialForm}
         onChangeField={props.onChangeField}
       />
     )
@@ -538,6 +539,7 @@ const AdvancedForm = (props) => {
           availabilityState={availabilityState}
           isRemix={!!props.defaultFields.remix_of?.tracks?.length}
           isUpload={props.isUpload}
+          initialForm={props.initialForm}
         />
       )}
       <div
@@ -904,6 +906,9 @@ FormTile.propTypes = {
   /** Whether we are in the track upload flow */
   isUpload: PropTypes.bool,
 
+  /** Initial form for in case we are in the edit track modal */
+  initialForm: PropTypes.object,
+
   /** Whether to show the unlisted/public button the modal */
   showUnlistedToggle: PropTypes.bool,
   /** In the unlisted visibility modal, do we let the user toggle
@@ -947,6 +952,7 @@ FormTile.defaultProps = {
   onChangeOrder: () => {},
   onChangeField: () => {},
   isUpload: true,
+  initialForm: {},
   showUnlistedToggle: true,
   showHideTrackSectionInModal: true,
   children: [],

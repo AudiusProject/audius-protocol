@@ -24,3 +24,8 @@
 .icon path {
   fill: var(--neutral-light-4);
 }
+
+.tooltip :global(.ant-tooltip-inner) {
+  width: 272px;
+  text-align: center;
+}

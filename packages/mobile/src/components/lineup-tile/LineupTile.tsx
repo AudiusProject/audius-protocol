@@ -98,7 +98,10 @@ export const LineupTile = ({
   return (
     <LineupTileRoot onPress={handlePress} {...TileProps}>
       {showPremiumCornerTag && cornerTagIconType ? (
-        <LineupTileBannerIcon type={cornerTagIconType} />
+        <LineupTileBannerIcon
+          type={cornerTagIconType}
+          style={{ shadowRadius: 1 }}
+        />
       ) : null}
       {!showPremiumCornerTag && showArtistPick && isArtistPick ? (
         <LineupTileBannerIcon type={LineupTileBannerIconType.STAR} />

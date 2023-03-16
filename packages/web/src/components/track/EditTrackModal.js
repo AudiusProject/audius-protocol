@@ -123,6 +123,7 @@ const EditTrackModal = ({
           onAddStems={onAddStems}
           onSelectStemCategory={onSelectStemCategory}
           isUpload={false}
+          initialForm={initialForm}
           showUnlistedToggle={showUnlistedToggle}
           showHideTrackSectionInModal={false}
           onOpenArtworkPopup={onOpenArtworkPopup}

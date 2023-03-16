@@ -210,7 +210,11 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
   return (
     <div className={styles.container}>
       {showPremiumCornerTag && cornerTagIconType ? (
-        <TrackBannerIcon type={cornerTagIconType} isMatrixMode={isMatrix} />
+        <TrackBannerIcon
+          type={cornerTagIconType}
+          isMatrixMode={isMatrix}
+          containerClassName={styles.premiumCornerTagContainer}
+        />
       ) : null}
       {!showPremiumCornerTag && props.showArtistPick && props.isArtistPick ? (
         <TrackBannerIcon
