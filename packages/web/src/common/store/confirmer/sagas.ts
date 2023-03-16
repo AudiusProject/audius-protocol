@@ -31,7 +31,6 @@ export function* confirmTransaction(blockHash: string, blockNumber: number) {
   if (!blockHash || !blockNumber) return true
 
   function* confirmBlock(): Generator<any, BlockConfirmation, any> {
-    
     const { block_passed } = yield apiClient.getBlockConfirmation(
       blockHash,
       blockNumber
