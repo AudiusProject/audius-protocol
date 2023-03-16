@@ -31,7 +31,6 @@ export type NotificationProcessor =
   | TipSend
 
 export class AppNotificationsProcessor {
-
   dnDB: Knex
   identityDB: Knex
 
@@ -41,12 +40,15 @@ export class AppNotificationsProcessor {
   }
 
   async process(notifications: NotificationRow[]) {
-    const mappedNotifications = mapNotifications(notifications, this.dnDB, this.identityDB)
+    const mappedNotifications = mapNotifications(
+      notifications,
+      this.dnDB,
+      this.identityDB
+    )
     for (const notification of mappedNotifications) {
       await notification.pushNotification()
     }
 
     logger.info({ notifications })
   }
-
 }

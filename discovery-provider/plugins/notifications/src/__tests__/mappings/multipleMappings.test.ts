@@ -23,17 +23,21 @@ import { EntityType } from '../../email/notifications/types'
 describe('Multiple Mappings Notification', () => {
   let processor: Processor
   // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date("2020-05-13T12:33:37.000Z").getTime())
+  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
 
-
-  const sendNotificationEmailSpy = jest.spyOn(sendEmail, 'sendNotificationEmail')
+  const sendNotificationEmailSpy = jest
+    .spyOn(sendEmail, 'sendNotificationEmail')
     .mockImplementation(() => Promise.resolve(true))
-  const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
+  const sendPushNotificationSpy = jest
+    .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
     jest.setTimeout(30 * 1000)
-    const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+    const testName = expect
+      .getState()
+      .currentTestName.replace(/\s/g, '_')
+      .toLocaleLowerCase()
     await Promise.all([
       createTestDB(process.env.DN_DB_URL, testName),
       createTestDB(process.env.IDENTITY_DB_URL, testName)
@@ -41,70 +45,94 @@ describe('Multiple Mappings Notification', () => {
     processor = new Processor()
     await processor.init({
       identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
-      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName),
+      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
     })
   })
 
   afterEach(async () => {
     jest.clearAllMocks()
     await processor?.close()
-    const testName = expect.getState().currentTestName.replace(/\s/g, '_').toLocaleLowerCase()
+    const testName = expect
+      .getState()
+      .currentTestName.replace(/\s/g, '_')
+      .toLocaleLowerCase()
     await Promise.all([
       dropTestDB(process.env.DN_DB_URL, testName),
-      dropTestDB(process.env.IDENTITY_DB_URL, testName),
+      dropTestDB(process.env.IDENTITY_DB_URL, testName)
     ])
   })
 
-  test("Process follow and repost push notification", async () => {
+  test('Process follow and repost push notification', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
-    await insertFollows(processor.discoveryDB, [{ follower_user_id: 2, followee_user_id: 1 }])
-    await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 10, repost_type: RepostType.track
-    }])
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: 2, followee_user_id: 1 }
+    ])
+    await createReposts(processor.discoveryDB, [
+      {
+        user_id: 2,
+        repost_item_id: 10,
+        repost_type: RepostType.track
+      }
+    ])
 
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
-    await new Promise(resolve => setTimeout(resolve, 10))
+    await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
 
     expect(pending?.appNotifications).toHaveLength(2)
-    const follows = pending?.appNotifications.filter(n => n.type == 'follow')
+    const follows = pending?.appNotifications.filter((n) => n.type == 'follow')
     await processor.appNotificationsProcessor.process(follows)
 
-    expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:1',
-      badgeCount: 1
-    }, {
-      title: 'Follow',
-      body: 'user_2 followed you',
-      data: {}
-    })
+    expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      {
+        type: 'ios',
+        targetARN: 'arn:1',
+        badgeCount: 1
+      },
+      {
+        title: 'Follow',
+        body: 'user_2 followed you',
+        data: {}
+      }
+    )
 
-    const reposts = pending?.appNotifications.filter(n => n.type == 'repost')
+    const reposts = pending?.appNotifications.filter((n) => n.type == 'repost')
     await processor.appNotificationsProcessor.process(reposts)
-    expect(sendPushNotificationSpy).toHaveBeenCalledWith({
-      type: 'ios',
-      targetARN: 'arn:1',
-      badgeCount: 2
-    }, {
-      title: 'New Repost',
-      body: 'user_2 reposted your track track_title_10',
-      data: {}
-    })
+    expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      {
+        type: 'ios',
+        targetARN: 'arn:1',
+        badgeCount: 2
+      },
+      {
+        title: 'New Repost',
+        body: 'user_2 reposted your track track_title_10',
+        data: {}
+      }
+    )
 
-    const badgeCountRes = await processor.identityDB.select('iosBadgeCount').from('PushNotificationBadgeCounts').where('userId', 1)
+    const badgeCountRes = await processor.identityDB
+      .select('iosBadgeCount')
+      .from('PushNotificationBadgeCounts')
+      .where('userId', 1)
     expect(badgeCountRes[0].iosBadgeCount).toBe(2)
   })
 
-  test("Render multiple notifications in email", async () => {
+  test('Render multiple notifications in email', async () => {
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
     await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
-    await insertFollows(processor.discoveryDB, [{ follower_user_id: 2, followee_user_id: 1 }])
-    await createReposts(processor.discoveryDB, [{
-      user_id: 2, repost_item_id: 10, repost_type: RepostType.track
-    }])
+    await insertFollows(processor.discoveryDB, [
+      { follower_user_id: 2, followee_user_id: 1 }
+    ])
+    await createReposts(processor.discoveryDB, [
+      {
+        user_id: 2,
+        repost_item_id: 10,
+        repost_type: RepostType.track
+      }
+    ])
 
     const notifications: AppEmailNotification[] = [
       {
@@ -143,6 +171,4 @@ describe('Multiple Mappings Notification', () => {
     })
     expect(notifHtml).toMatchSnapshot()
   })
-
-
 })
