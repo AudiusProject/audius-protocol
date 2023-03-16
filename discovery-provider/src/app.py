@@ -289,7 +289,6 @@ def configure_celery(celery, test_config=None):
     # Update celery configuration
     celery.conf.update(
         imports=[
-            "src.tasks.index",
             "src.tasks.index_nethermind",
             "src.tasks.index_metrics",
             "src.tasks.index_aggregate_monthly_plays",
@@ -317,10 +316,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_track_is_available",
         ],
         beat_schedule={
-            "update_discovery_provider": {
-                "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=indexing_interval_sec),
-            },
             "update_discovery_provider_nethermind": {
                 "task": "update_discovery_provider_nethermind",
                 "schedule": timedelta(seconds=indexing_interval_sec),

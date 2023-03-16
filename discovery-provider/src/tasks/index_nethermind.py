@@ -709,51 +709,63 @@ def revert_blocks(self, db, revert_blocks_list):
 
             # aggregate all transactions in current block
             revert_save_entries = (
-                session.query(Save).filter(Save.blockhash == revert_hash).all()
+                session.query(Save)
+                .filter(Save.blocknumber == revert_block_number)
+                .all()
             )
             revert_repost_entries = (
-                session.query(Repost).filter(Repost.blockhash == revert_hash).all()
+                session.query(Repost)
+                .filter(Repost.blocknumber == revert_block_number)
+                .all()
             )
             revert_follow_entries = (
-                session.query(Follow).filter(Follow.blockhash == revert_hash).all()
+                session.query(Follow)
+                .filter(Follow.blocknumber == revert_block_number)
+                .all()
             )
             revert_subscription_entries = (
                 session.query(Subscription)
-                .filter(Subscription.blockhash == revert_hash)
+                .filter(Subscription.blocknumber == revert_block_number)
                 .all()
             )
             revert_playlist_entries = (
-                session.query(Playlist).filter(Playlist.blockhash == revert_hash).all()
+                session.query(Playlist)
+                .filter(Playlist.blocknumber == revert_block_number)
+                .all()
             )
             revert_track_entries = (
-                session.query(Track).filter(Track.blockhash == revert_hash).all()
+                session.query(Track)
+                .filter(Track.blocknumber == revert_block_number)
+                .all()
             )
             revert_user_entries = (
-                session.query(User).filter(User.blockhash == revert_hash).all()
+                session.query(User)
+                .filter(User.revert_block_number == revert_block_number)
+                .all()
             )
             revert_ursm_content_node_entries = (
                 session.query(UrsmContentNode)
-                .filter(UrsmContentNode.blockhash == revert_hash)
+                .filter(UrsmContentNode.revert_block_number == revert_block_number)
                 .all()
             )
             revert_associated_wallets = (
                 session.query(AssociatedWallet)
-                .filter(AssociatedWallet.blockhash == revert_hash)
+                .filter(AssociatedWallet.revert_block_number == revert_block_number)
                 .all()
             )
             revert_user_events_entries = (
                 session.query(UserEvent)
-                .filter(UserEvent.blockhash == revert_hash)
+                .filter(UserEvent.revert_block_number == revert_block_number)
                 .all()
             )
             revert_track_routes = (
                 session.query(TrackRoute)
-                .filter(TrackRoute.blockhash == revert_hash)
+                .filter(TrackRoute.revert_block_number == revert_block_number)
                 .all()
             )
             revert_playlist_routes = (
                 session.query(PlaylistRoute)
-                .filter(PlaylistRoute.blockhash == revert_hash)
+                .filter(PlaylistRoute.revert_block_number == revert_block_number)
                 .all()
             )
 
