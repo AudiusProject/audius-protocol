@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "description": "plugin for broadcasting verified upload notifications",
   "main": "index.js",
+  "type": "module",
   "scripts": {
+    "start": "nodemon ./src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "alec@audius.co",
@@ -12,5 +14,8 @@
     "dotenv": "^16.0.3",
     "knex": "^2.4.2",
     "pg": "^8.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.21"
   }
 }
