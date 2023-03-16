@@ -376,14 +376,8 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
 
 
 def get_block(web3, block_number: int):
-    final_poa_block = helpers.get_final_poa_block(shared_config)
-    if final_poa_block and web3.provider.endpoint_uri == os.getenv(
-        "audius_web3_nethermind_rpc"
-    ):
-        nethermind_block_number = block_number - final_poa_block
-        return web3.eth.get_block(nethermind_block_number, True)
-    else:
-        return web3.eth.get_block(block_number, True)
+    nethermind_block_number = block_number - int(os.getenv("audius_final_poa_block"))
+    return web3.eth.get_block(nethermind_block_number, True)
 
 
 def get_should_update_trending(

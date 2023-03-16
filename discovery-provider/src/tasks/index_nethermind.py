@@ -74,7 +74,7 @@ TX_TYPE_TO_HANDLER_MAP = {
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 logger = logging.getLogger(__name__)
-web3 = web3_provider.get_nethermind_web3()
+web3 = web3_provider.get_web3()
 
 # HELPER FUNCTIONS
 

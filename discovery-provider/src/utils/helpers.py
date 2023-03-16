@@ -22,10 +22,10 @@ from src.solana.solana_transaction_types import (
     TransactionMessage,
     TransactionMessageInstruction,
 )
-from src.utils import redis_connection
-from src.utils.redis_constants import final_poa_block_redis_key
 
 from . import multihash
+
+final_poa_block = int(os.getenv("final_poa_block"))
 
 
 def get_ip(request_obj):
@@ -535,32 +535,7 @@ def get_account_index(instruction: TransactionMessageInstruction, index: int):
     return instruction["accounts"][index]
 
 
-def get_final_poa_block(shared_config) -> Optional[int]:
-    # get final poa block from identity and cache result
-    # marks the transition to nethermind
-    # depend on identity responding with final_poa_block or the redis cached value
-
-    redis = redis_connection.get_redis()
-    cached_final_poa_block = redis.get(final_poa_block_redis_key)
-    if cached_final_poa_block:
-        return int(cached_final_poa_block)
-
-    final_poa_block = None
-    try:
-        identity_endpoint = (
-            f"{shared_config['discprov']['identity_service_url']}/health_check/poa"
-        )
-
-        response = requests.get(identity_endpoint, timeout=1)
-        response.raise_for_status()
-        response_json = response.json()
-        if not response_json.get("finalPOABlock"):
-            return None
-
-        final_poa_block = int(response_json.get("finalPOABlock"))
-
-        redis.set(final_poa_block_redis_key, final_poa_block)
-    except:
-        # in case identity is down, default to None
-        pass
-    return final_poa_block
+# get block number with a final POA block offset
+def get_block(web3: Web3, block_number: int):
+    nethermind_block_number = block_number - final_poa_block
+    return web3.eth.get_block(nethermind_block_number, True)
