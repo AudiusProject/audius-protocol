@@ -2,5 +2,7 @@ version: '3'
 services:
   verified_uploads:
     container_name: "verified_uploads"
+    volumes:
+      - .env:/verified_uploads/.env
     build:
       context: '.'
