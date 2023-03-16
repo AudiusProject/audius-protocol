@@ -853,24 +853,26 @@ def notifications():
         # within the notification block range
         track_added_to_playlist_notifications = []
         track_ids = []
+
+        final_poa_block = helpers.get_final_poa_block(shared_config)
+        min_adjusted_block = min_block_number
+        max_adjusted_block = max_block_number
+        if final_poa_block and web3.provider.endpoint_uri == os.getenv(
+            "audius_web3_nethermind_rpc"
+        ):
+            # if migrated to ACDC
+            min_adjusted_block -= final_poa_block
+            max_adjusted_block -= final_poa_block
+
+        min_block = web3.eth.get_block(min_adjusted_block)
+        max_block = web3.eth.get_block(max_adjusted_block)
+
         for entry in playlist_track_added_results:
             # Get the track_ids from entry["playlist_contents"]
             if not entry.playlist_contents["track_ids"]:
                 # skip empty playlists
                 continue
             playlist_contents = entry.playlist_contents
-
-            final_poa_block = helpers.get_final_poa_block(shared_config)
-
-            if final_poa_block and web3.provider.endpoint_uri == os.getenv(
-                "audius_web3_nethermind_rpc"
-            ):
-                # if migrated to ACDC
-                min_block_number -= final_poa_block
-                max_block_number -= final_poa_block
-
-            min_block = web3.eth.get_block(min_block_number)
-            max_block = web3.eth.get_block(max_block_number)
 
             for track in playlist_contents["track_ids"]:
                 track_id = track["track"]
