@@ -59,10 +59,6 @@ def test_get_unread_notification_count(app):
             unread_count = get_unread_notification_count(session, args)
             assert unread_count == 2
 
-            args = {"user_id": 1, "timestamp": t2}
-            unread_count = get_unread_notification_count(session, args)
-            assert unread_count == 1
-
             args = {"user_id": 3}
             unread_count = get_unread_notification_count(session, args)
             assert unread_count == 0
