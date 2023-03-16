@@ -27,6 +27,7 @@ export default async (url, passthrough, callback) => {
   notifConn.on("notification", async (msg) => {
     // aquire conn here so after handler we can close it
     // no matter the logic inside the handler
+    console.log("listening for uploaded tracks");
     const handlerConn = await db.client.acquireConnection();
     // fire and forget
     callback(passthrough, handlerConn, JSON.parse(msg.payload));

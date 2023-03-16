@@ -22,7 +22,7 @@ export default async ({ slack }, db, trackId) => {
     .catch(console.error);
 
   if (results) {
-    console.log(results);
+    console.log(`received new verified track from ${handle}`);
     const { title, mood, release_date, is_premium, handle, name, genre, slug } =
       results;
     const { sendMsg } = slack;
