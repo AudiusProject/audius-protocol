@@ -656,6 +656,7 @@ def index_blocks(self, db, blocks_list):
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
 def revert_blocks(self, db, revert_blocks_list):
+    start_time = datetime.now()
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
     num_revert_blocks = len(revert_blocks_list)
     if num_revert_blocks == 0:
@@ -994,6 +995,9 @@ def revert_blocks(self, db, revert_blocks_list):
             rebuild_track_index = rebuild_track_index or bool(revert_track_entries)
             rebuild_user_index = rebuild_user_index or bool(revert_user_entries)
     # TODO - if we enable revert, need to set the most_recent_indexed_block_redis_key key in redis
+    logger.info(
+        f"index_nethermind.py | Reverted {revert_block_number} in {datetime.now() - start_time} seconds"
+    )
 
 
 def revert_user_events(session, revert_user_events_entries, revert_block_number):
