@@ -57,9 +57,7 @@ class GetNotifications(Resource):
         }
         unread_args = {
             "user_id": decoded_id,
-            "timestamp": datetime.fromtimestamp(parsed_args.get("timestamp"))
-            if parsed_args.get("timestamp")
-            else None,
+            "valid_types": parsed_args.get("valid_types") or [],
         }
         db = get_db_read_replica()
         with db.scoped_session() as session:
