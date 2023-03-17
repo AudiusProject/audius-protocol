@@ -149,6 +149,7 @@ function* handleQueueAutoplay({
   const isNotRepeating =
     repeatMode === RepeatMode.OFF ||
     (repeatMode === RepeatMode.SINGLE && (skip || ignoreSkip))
+  console.log('IN THE AUTO PLAY SGAS')
   if (
     !shuffle &&
     isNotRepeating &&
@@ -210,20 +211,11 @@ export function* watchPlay() {
       }
 
       // Make sure that we should actually play
-      const repeatMode = yield* select(getRepeat)
       const noTrackPlaying = !playerTrackId
       const trackIsDifferent = playerTrackId !== playActionTrack.track_id
       const trackIsSameButDifferentUid =
         playerTrackId === playActionTrack.track_id && uid !== playerUid
-      const trackIsSameAndRepeatSingle =
-        playerTrackId === playActionTrack.track_id &&
-        repeatMode === RepeatMode.SINGLE
-      if (
-        noTrackPlaying ||
-        trackIsDifferent ||
-        trackIsSameButDifferentUid ||
-        trackIsSameAndRepeatSingle
-      ) {
+      if (noTrackPlaying || trackIsDifferent || trackIsSameButDifferentUid) {
         yield* put(
           playerActions.play({
             uid,
@@ -353,13 +345,25 @@ export function* watchNext() {
       })
 
       if (track) {
-        yield* put(play({ uid, trackId: id, source }))
+        const repeatMode = yield* select(getRepeat)
+        const trackIsSameAndRepeatSingle = repeatMode === RepeatMode.SINGLE
 
-        const event = make(Name.PLAYBACK_PLAY, {
-          id: `${id}`,
-          source: PlaybackSource.PASSIVE
-        })
-        yield* put(event)
+        if (trackIsSameAndRepeatSingle) {
+          yield* put(
+            playerActions.play({
+              uid,
+              trackId: track.track_id,
+              onEnd: next
+            })
+          )
+        } else {
+          yield* put(play({ uid, trackId: id, source }))
+          const event = make(Name.PLAYBACK_PLAY, {
+            id: `${id}`,
+            source: PlaybackSource.PASSIVE
+          })
+          yield* put(event)
+        }
       } else {
         yield* put(playerActions.stop({}))
       }
