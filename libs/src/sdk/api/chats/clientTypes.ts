@@ -37,6 +37,7 @@ export type ChatInviteRequest = {
 
 export type ChatMessageRequest = {
   chatId: string
+  messageId?: string
   message: string
 }
 

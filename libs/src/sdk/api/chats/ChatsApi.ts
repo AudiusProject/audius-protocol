@@ -175,7 +175,14 @@ export class ChatsApi
         message: await this.decryptString(
           sharedSecret,
           base64.decode(m.message)
-        )
+        ).catch((e) => {
+          console.error(
+            "[audius-sdk]: Error: Couldn't decrypt chat message",
+            m,
+            e
+          )
+          return "Error: Couldn't decrypt message"
+        })
       }))
     )
     return {
@@ -288,7 +295,7 @@ export class ChatsApi
       method: 'chat.message',
       params: {
         chat_id: requestParameters.chatId,
-        message_id: cuid(),
+        message_id: requestParameters.messageId ?? cuid(),
         message
       }
     })
@@ -476,15 +483,25 @@ export class ChatsApi
 
   private async decryptLastChatMessage(c: UserChat): Promise<UserChat> {
     const sharedSecret = await this.getChatSecret(c.chat_id)
+    let last_message = ''
+    if (c.last_message && c.last_message.length > 0) {
+      try {
+        last_message = await this.decryptString(
+          sharedSecret,
+          base64.decode(c.last_message)
+        )
+      } catch (e) {
+        console.error(
+          "[audius-sdk]: Error: Couldn't decrypt last chat message",
+          c,
+          e
+        )
+        last_message = "Error: Couldn't decrypt message"
+      }
+    }
     return {
       ...c,
-      last_message:
-        c.last_message && c.last_message.length > 0
-          ? await this.decryptString(
-              sharedSecret,
-              base64.decode(c.last_message)
-            )
-          : ''
+      last_message
     }
   }
 
@@ -585,7 +602,14 @@ export class ChatsApi
               message: await this.decryptString(
                 sharedSecret,
                 base64.decode(data.rpc.params.message)
-              ),
+              ).catch((e) => {
+                console.error(
+                  "[audius-sdk]: Error: Couldn't decrypt websocket chat message",
+                  data,
+                  e
+                )
+                return "Error: Couldn't decrypt message"
+              }),
               sender_user_id: data.metadata.userId,
               created_at: data.metadata.timestamp,
               reactions: []
