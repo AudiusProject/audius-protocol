@@ -141,6 +141,8 @@ class NotificationType(str, Enum):
     PLAYLIST_MILSTONE = "playlist_milestone"
     TIER_CHANGE = "tier_change"
     TRENDING = "trending"
+    TRENDING_PLAYLIST = "trending_playlist"
+    TRENDING_UNDERGROUND = "trending_underground"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -334,6 +336,20 @@ class TierChangeNotification(TypedDict):
 
 
 class TrendingNotification(TypedDict):
+    rank: int
+    genre: str
+    track_id: int
+    time_range: str
+
+
+class TrendingPlaylistNotification(TypedDict):
+    rank: int
+    genre: str
+    playlist_id: int
+    time_range: str
+
+
+class TrendingUndergroundNotification(TypedDict):
     rank: int
     genre: str
     track_id: int
