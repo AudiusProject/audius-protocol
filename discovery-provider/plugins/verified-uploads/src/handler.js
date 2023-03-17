@@ -1,4 +1,5 @@
-export default async ({ slack }, db, trackId) => {
+export default async ({ slack }, db, { track_id }) => {
+  const trackId = track_id;
   const results = await db("tracks")
     .innerJoin("users", "tracks.owner_id", "=", "users.user_id")
     .innerJoin("track_routes", "tracks.track_id", "=", "track_routes.track_id")
@@ -22,9 +23,9 @@ export default async ({ slack }, db, trackId) => {
     .catch(console.error);
 
   if (results) {
-    console.log(`received new verified track from ${handle}`);
     const { title, mood, release_date, is_premium, handle, name, genre, slug } =
       results;
+    console.log(`received new verified track from ${handle}`);
     const { sendMsg } = slack;
     const header = `:audius-spin: New upload from *${name}* 🔥`;
     const data = {
