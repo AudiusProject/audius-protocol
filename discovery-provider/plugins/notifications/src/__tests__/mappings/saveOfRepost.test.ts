@@ -115,7 +115,7 @@ describe('Save Of Repost Notification', () => {
   })
 
   test('Process push notification for save of repost playlist', async () => {
-    setUpSaveOfRepostMockData(EntityType.Playlist)
+    await setUpSaveOfRepostMockData(EntityType.Playlist)
     await insertMobileSettings(processor.identityDB, [
       { userId: 1 },
       { userId: 2 }
@@ -144,7 +144,7 @@ describe('Save Of Repost Notification', () => {
   })
 
   test('Process push notification for save of repost for album', async () => {
-    setUpSaveOfRepostMockData(EntityType.Album)
+    await setUpSaveOfRepostMockData(EntityType.Album)
     await insertMobileSettings(processor.identityDB, [
       { userId: 1 },
       { userId: 2 }
