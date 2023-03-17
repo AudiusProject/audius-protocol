@@ -20,7 +20,7 @@ REDIS_URL = shared_config["redis"]["url"]
 BASE_TIME = datetime(2023, 1, 1, 0, 0)
 
 
-def index_underground_trending_mock(db, track_ids: list[int]) -> None:
+def index_trending_underground_mock(db, track_ids: list[int]) -> None:
     redis = get_redis()
     trending_strategy_factory = TrendingStrategyFactory()
     trending_strategy = trending_strategy_factory.get_strategy(
@@ -74,7 +74,7 @@ def test_index_trending_underground_notification(app, caplog):
         populate_mock_db(db, entities)
 
         # Test that if there are no prev notifications, all trending in top are generated
-        index_underground_trending_mock(db, list(range(1, 21)))
+        index_trending_underground_mock(db, list(range(1, 21)))
         base_time_int = int(round(BASE_TIME.timestamp()))
         index_trending_underground_notifications(db, base_time_int)
 
@@ -120,7 +120,7 @@ def test_index_trending_underground_notification(app, caplog):
         # new notifications for track_id: 2, 4, 5, 7
         # no new notification for track_id: 1
 
-        index_underground_trending_mock(db, [2, 4, 5, 1, 7, 8, 9, 10])
+        index_trending_underground_mock(db, [2, 4, 5, 1, 7, 8, 9, 10])
         updated_time = BASE_TIME + timedelta(hours=1)
         updated_time_int = int(round(updated_time.timestamp()))
         index_trending_underground_notifications(db, updated_time_int)
