@@ -7,7 +7,7 @@ import {
 } from '../generated/default'
 import * as aes from 'micro-aes-gcm'
 import { base64 } from '@scure/base'
-import cuid from 'cuid'
+import { ulid } from 'ulid'
 
 import * as secp from '@noble/secp256k1'
 import type {
@@ -295,7 +295,7 @@ export class ChatsApi
       method: 'chat.message',
       params: {
         chat_id: requestParameters.chatId,
-        message_id: requestParameters.messageId ?? cuid(),
+        message_id: requestParameters.messageId ?? ulid(),
         message
       }
     })
