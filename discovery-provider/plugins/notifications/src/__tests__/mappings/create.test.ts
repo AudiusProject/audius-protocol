@@ -8,12 +8,11 @@ import {
   createUsers,
   insertMobileDevices,
   insertMobileSettings,
-  createTestDB,
   dropTestDB,
-  replaceDBName,
   createTracks,
   createPlaylists,
-  createSubscription
+  createSubscription,
+  setupTest
 } from '../../utils/populateDB'
 import { renderEmail } from '../../email/notifications/renderEmail'
 import {
@@ -32,22 +31,8 @@ describe('Create Notification', () => {
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      createTestDB(process.env.DN_DB_URL, testName),
-      createTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
-    const redis = await getRedisConnection()
-    redis.del(config.lastIndexedMessageRedisKey)
-    redis.del(config.lastIndexedReactionRedisKey)
-    processor = new Processor()
-    await processor.init({
-      identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
-      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
-    })
+    const setup = await setupTest()
+    processor = setup.processor
   })
 
   afterEach(async () => {

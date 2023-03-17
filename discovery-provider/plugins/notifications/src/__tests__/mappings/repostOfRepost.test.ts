@@ -11,7 +11,7 @@ import {
   insertFollows,
   createPlaylists,
   resetTests,
-  setUpTestDbProcessor
+  setupTest
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'
@@ -26,7 +26,8 @@ describe('Repost Of Repost Notification', () => {
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
-    processor = await setUpTestDbProcessor()
+    const setup = await setupTest()
+    processor = setup.processor
   })
 
   afterEach(async () => {
@@ -101,7 +102,7 @@ describe('Repost Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 0
+        badgeCount: 1
       },
       {
         title: 'New Repost',
@@ -130,7 +131,7 @@ describe('Repost Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 0
+        badgeCount: 1
       },
       {
         title: 'New Repost',
@@ -159,7 +160,7 @@ describe('Repost Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 0
+        badgeCount: 1
       },
       {
         title: 'New Repost',
