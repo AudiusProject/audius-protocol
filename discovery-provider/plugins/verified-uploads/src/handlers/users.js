@@ -11,6 +11,9 @@ export default async ({ slack, dp_db, id_db }, { user_id }) => {
     // check identity db in twitter or instagram tables to see
     // which one verified the user
 
+    // join on InstagramUsers / TwitterUsers "blockchainUserId" field
+    // that is discprov user id
+
     const header = `:pikawave: a new challenger has appeared! *@${handle}*`;
     const body = {
       userId: user_id,
