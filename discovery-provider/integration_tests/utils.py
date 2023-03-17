@@ -179,7 +179,15 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_delete=track_meta.get("is_delete", False),
                 owner_id=track_meta.get("owner_id", 1),
                 route_id=track_meta.get("route_id", ""),
-                track_segments=track_meta.get("track_segments", []),
+                track_segments=track_meta.get(
+                    "track_segments",
+                    [
+                        {
+                            "duration": 0,
+                            "multihash": "QmURbJr815cnDWwYLJmJtYW8ZiAqMre5QzxpW5kahrNTYE",
+                        }
+                    ],
+                ),
                 tags=track_meta.get("tags", None),
                 genre=track_meta.get("genre", ""),
                 remix_of=track_meta.get("remix_of", None),

@@ -380,7 +380,7 @@ def index_trending_underground_notifications(db: SessionManager, timestamp: int)
 
         previous_trending_notifications = session.execute(
             latest_notification_query,
-            {"track_ids": top_trending_track_ids, "type": "trending_undeground"},
+            {"track_ids": top_trending_track_ids, "type": "trending_underground"},
         )
         previous_trending = {
             n[0]: {"timestamp": n[1], **n[2]} for n in previous_trending_notifications
@@ -421,7 +421,7 @@ def index_trending_underground_notifications(db: SessionManager, timestamp: int)
                 Notification(
                     user_ids=[n["owner_id"]],
                     timestamp=datetime.fromtimestamp(timestamp),
-                    type="trending",
+                    type="trending_underground",
                     group_id=n["group_id"],
                     specifier=n["track_id"],
                     data={
@@ -435,7 +435,7 @@ def index_trending_underground_notifications(db: SessionManager, timestamp: int)
             ]
         )
         logger.info(
-            "index_trending.py | Created trending notifications",
+            "index_trending.py | Created underground trending notifications",
             extra={"job": "index_trending", "subtask": "trending notification"},
         )
 

@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timedelta
 
 from integration_tests.utils import populate_mock_db
@@ -19,11 +20,43 @@ REDIS_URL = shared_config["redis"]["url"]
 BASE_TIME = datetime(2023, 1, 1, 0, 0)
 
 
-def test_index_trending_underground_notification(app):
+def index_underground_trending_mock(db, track_ids: list[int]) -> None:
+    redis = get_redis()
+    trending_strategy_factory = TrendingStrategyFactory()
+    trending_strategy = trending_strategy_factory.get_strategy(
+        TrendingType.UNDERGROUND_TRACKS
+    )
+    trending_key = make_underground_trending_cache_key(trending_strategy.version)
+
+    with db.scoped_session() as session:
+        trending_underground_tracks = (
+            session.query(Track).filter(Track.track_id.in_(track_ids)).all()
+        )
+        trending_underground_tracks = helpers.query_result_to_list(
+            trending_underground_tracks
+        )
+
+        trending_underground_tracks_map = dict(
+            zip(
+                [track["track_id"] for track in trending_underground_tracks],
+                trending_underground_tracks,
+            )
+        )
+
+        trending_underground_tracks = [
+            trending_underground_tracks_map[track_id] for track_id in track_ids
+        ]
+
+        trending_underground_tracks = (trending_underground_tracks, track_ids)
+        set_json_cached_key(redis, trending_key, trending_underground_tracks)
+
+
+def test_index_trending_underground_notification(app, caplog):
     """
     Test that underground notifications are correctly calculated
     based on current trending standings
     """
+    caplog.set_level(logging.WARNING)
 
     with app.app_context():
         db = get_db()
@@ -40,31 +73,11 @@ def test_index_trending_underground_notification(app):
         }
         populate_mock_db(db, entities)
 
-        redis = get_redis()
-        trending_strategy_factory = TrendingStrategyFactory()
-        trending_strategy = trending_strategy_factory.get_strategy(
-            TrendingType.UNDERGROUND_TRACKS
-        )
         # Test that if there are no prev notifications, all trending in top are generated
-
-        trending_key = make_underground_trending_cache_key(trending_strategy.version)
-        with db.scoped_session() as session:
-            trending_underground_tracks = (
-                session.query(Track)
-                .filter(Track.track_id.in_(range(1, 21)))
-                .order_by(asc(Track.track_id))
-                .all()
-            )
-            trending_underground_tracks = helpers.query_result_to_list(
-                trending_underground_tracks
-            )
-            track_ids = [track["track_id"] for track in trending_underground_tracks]
-            trending_underground_tracks = (trending_underground_tracks, track_ids)
-            set_json_cached_key(redis, trending_key, trending_underground_tracks)
-
+        index_underground_trending_mock(db, list(range(1, 21)))
         base_time_int = int(round(BASE_TIME.timestamp()))
-
         index_trending_underground_notifications(db, base_time_int)
+
         with db.scoped_session() as session:
             notifications = (
                 session.query(Notification).order_by(asc(Notification.specifier)).all()
@@ -77,7 +90,7 @@ def test_index_trending_underground_notification(app):
                 notification_0.group_id
                 == "trending_underground:time_range:week:genre:all:rank:1:track_id:1:timestamp:1672531200"
             )
-            assert notification_0.type == "trending"
+            assert notification_0.type == "trending_underground"
             assert notification_0.data == {
                 "rank": 1,
                 "genre": "all",
@@ -92,7 +105,7 @@ def test_index_trending_underground_notification(app):
                 notification_1.group_id
                 == "trending_underground:time_range:week:genre:all:rank:2:track_id:2:timestamp:1672531200"
             )
-            assert notification_1.type == "trending"
+            assert notification_1.type == "trending_underground"
             assert notification_1.data == {
                 "rank": 2,
                 "genre": "all",
@@ -107,21 +120,11 @@ def test_index_trending_underground_notification(app):
         # new notifications for track_id: 2, 4, 5, 7
         # no new notification for track_id: 1
 
-        trending_underground_tracks = [
-            {
-                "track_id": i,
-                "owner_id": i % 2 + 1,
-                "user": [{"user_id": i % 2 + 1, "wallet": "0x0"}],
-            }
-            for i in [2, 4, 5, 1, 7, 8, 9, 10]
-        ]
-        track_ids = [track["track_id"] for track in trending_underground_tracks]
-        trending_underground_tracks = (trending_underground_tracks, track_ids)
-        set_json_cached_key(redis, trending_key, trending_underground_tracks)
+        index_underground_trending_mock(db, [2, 4, 5, 1, 7, 8, 9, 10])
         updated_time = BASE_TIME + timedelta(hours=1)
         updated_time_int = int(round(updated_time.timestamp()))
-
         index_trending_underground_notifications(db, updated_time_int)
+
         with db.scoped_session() as session:
             all_notifications = session.query(Notification).all()
             assert len(all_notifications) == 6
@@ -143,8 +146,8 @@ def test_index_trending_underground_notification(app):
 
         updated_time = BASE_TIME + timedelta(hours=24)
         updated_time_int = int(round(updated_time.timestamp()))
-
         index_trending_underground_notifications(db, updated_time_int)
+
         with db.scoped_session() as session:
             all_notifications = session.query(Notification).all()
             assert len(all_notifications) == 9
