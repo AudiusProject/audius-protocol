@@ -1,7 +1,11 @@
-FROM timberio/vector:0.26.0-alpine
+FROM timberio/vector:0.28.1-alpine
 
 ARG audius_axiom_token
 ENV audius_axiom_token ${audius_axiom_token}
+
+RUN apk add gettext
+
+COPY vector.toml /vector.toml
 
 COPY start.sh /start.sh
 

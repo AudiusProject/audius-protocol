@@ -17,40 +17,12 @@ if [[ "${node}" ]]; then
    node=$(echo ${node} | sed -e 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
 fi
 
-# Generate a vector.toml
-cat <<-EOF > $PWD/vector.toml
-[api]
-  enabled = true
-  address = "0.0.0.0:8686"
+export node=${node}
 
-[sources.logs]
-  type = "docker_logs"
-  docker_host = "/var/run/docker.sock"
-  include_containers = [ "audius/" ]
-  exclude_containers = [ "comms", "exporter" ]
-
-[transforms.modify]
-  type = "remap"
-  inputs = ["logs"]
-  source = '''
-    .node = "${node}"
-  '''
-
-[sinks.out]
-  inputs = [ "modify" ]
-  type = "console"
-  encoding.codec = "json"
-
-EOF
+# substitute env vars in vector.toml
+envsubst < vector.toml > vector_tmp.toml
+mv vector_tmp.toml vector.toml
 
 # Launch vector
-vector --config $PWD/vector.toml
-
-# [sinks.axiom]
-# type = "axiom"
-# inputs = [ "docker" ]
-# token = $audius_axiom_token
-# dataset = $audius_axiom_dataset
-# url = "https://cloud.axiom.co"
-# org_id = "audius-Lu52"
+vector --config vector.toml
 
