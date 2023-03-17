@@ -5,6 +5,7 @@ const DB = async (url) => {
   const pg = knex({
     client: "pg",
     connection: url,
+    // may need to adjust this based on num of listeners
     pool: { min: 0, max: 7 },
   });
   // get a user just to test connection is working
@@ -38,8 +39,9 @@ export default async (topic, passthrough, callback) => {
   const sql = `LISTEN ${topic}`;
   conn.on("notification", async (msg) => {
     console.log(`listening on topic ${topic}`);
-    // fire and forget, no await
+    // add db ref to passthrough params so handlers dont need to recreate
     passthrough.db = db;
+    // fire and forget, no await
     callback(passthrough, JSON.parse(msg.payload));
   });
   // TODO: close connection here
