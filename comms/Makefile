@@ -1,11 +1,6 @@
-up:: down etchosts migrate
+# TODO: Use audius-compose comms up
+up:: down migrate
 	docker compose up -d --build
-
-localhosts="127.0.0.1       node1-storage node2-storage node3-storage node4-storage node1-discovery node2-discovery node3-discovery ingress"
-etchosts::
-	@	if ! grep -q $(localhosts) /etc/hosts; \
-		then echo Adding development hosts to /etc/hosts; \
-		echo $(localhosts) | sudo tee -a /etc/hosts; fi
 
 down::
 	(docker compose down --volumes || true)
@@ -17,7 +12,7 @@ fmt::
 	go fmt ./...
 
 test::
-	docker logs -f test
+	docker logs -f comms-test
 
 migrate::
 	docker compose up comdb -d && \
