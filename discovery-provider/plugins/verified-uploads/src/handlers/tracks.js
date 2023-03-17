@@ -37,20 +37,6 @@ export default async ({ slack, db }, { track_id }) => {
       Link: `https://audius.co/${handle}/${slug}`,
       Release: release_date,
     };
-    const payload = formatter(data);
-    const msg = `${header} ${payload}`;
-    await sendMsg(msg).catch(console.error);
+    await sendMsg(header, data).catch(console.error);
   }
-};
-
-const formatter = (data) => {
-  const msg = [];
-  for (const [key, value] of Object.entries(data)) {
-    // omit any null entries of the track
-    if (value != null) {
-      msg.push(`${key}: ${value}`);
-    }
-  }
-  const inner = msg.join("\n");
-  return "```" + inner + "```";
 };

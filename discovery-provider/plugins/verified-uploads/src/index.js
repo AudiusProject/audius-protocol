@@ -1,6 +1,7 @@
 import listenOn from "./db.js";
 import dotenv from "dotenv";
-import handler from "./handler.js";
+import tracksHandler from "./handlers/tracks.js";
+import usersHandler from "./handlers/users.js";
 import Slack from "./slack.js";
 
 const main = async () => {
@@ -9,7 +10,8 @@ const main = async () => {
   console.log("verified uploads bot starting");
 
   const slack = Slack();
-  await listenOn("tracks", { slack }, handler).catch(console.error);
+  listenOn("tracks", { slack }, tracksHandler).catch(console.error);
+  listenOn("users", { slack }, usersHandler).catch(console.error);
 };
 
 main();

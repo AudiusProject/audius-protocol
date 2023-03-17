@@ -5,6 +5,7 @@ const DB = async (url) => {
   const pg = knex({
     client: "pg",
     connection: url,
+    pool: { min: 0, max: 7 },
   });
   // get a user just to test connection is working
   await pg
@@ -31,6 +32,7 @@ export default async (topic, passthrough, callback) => {
     return;
   }
   const { DB_URL } = process.env;
+  // TODO: create this object once per app
   const db = await DB(DB_URL).catch(console.error);
   const conn = await db.client.acquireConnection().catch(console.error);
   const sql = `LISTEN ${topic}`;
