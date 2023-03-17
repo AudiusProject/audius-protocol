@@ -193,12 +193,12 @@ export const DetailsTileNoAccess = ({
 
   const handleFollowArtist = useCallback(() => {
     if (followee) {
-      dispatch(followUser(followee.user_id, followSource))
+      dispatch(followUser(followee.user_id, followSource, trackId))
     }
   }, [followee, dispatch, followSource])
 
   const handleSendTip = useCallback(() => {
-    dispatch(beginTip({ user: tippedUser, source }))
+    dispatch(beginTip({ user: tippedUser, source, trackId }))
     navigation.navigate('TipArtist')
   }, [tippedUser, navigation, dispatch, source])
 

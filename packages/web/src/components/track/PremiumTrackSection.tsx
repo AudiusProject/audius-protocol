@@ -80,6 +80,7 @@ const messages = {
 }
 
 type PremiumTrackAccessSectionProps = {
+  trackId: ID
   premiumConditions: PremiumConditions
   followee: Nullable<User>
   tippedUser: Nullable<User>
@@ -90,6 +91,7 @@ type PremiumTrackAccessSectionProps = {
 }
 
 const LockedPremiumTrackSection = ({
+  trackId,
   premiumConditions,
   followee,
   tippedUser,
@@ -107,7 +109,7 @@ const LockedPremiumTrackSection = ({
 
   const handleSendTip = useCallback(() => {
     if (account) {
-      dispatch(beginTip({ user: tippedUser, source }))
+      dispatch(beginTip({ user: tippedUser, source, trackId }))
     } else {
       dispatch(pushRoute(SIGN_UP_PAGE))
       dispatch(showRequiresAccountModal())
@@ -121,6 +123,7 @@ const LockedPremiumTrackSection = ({
     account,
     tippedUser,
     source,
+    trackId,
     modalVisibility,
     setModalVisibility
   ])
@@ -131,7 +134,8 @@ const LockedPremiumTrackSection = ({
         dispatch(
           socialActions.followUser(
             premiumConditions.follow_user_id,
-            followSource
+            followSource,
+            trackId
           )
         )
       }
@@ -148,6 +152,7 @@ const LockedPremiumTrackSection = ({
     account,
     premiumConditions,
     followSource,
+    trackId,
     modalVisibility,
     setModalVisibility
   ])
@@ -537,6 +542,7 @@ export const PremiumTrackSection = ({
         className={cn(styles.premiumContentSection, fadeIn, wrapperClassName)}
       >
         <UnlockedPremiumTrackSection
+          trackId={trackId}
           premiumConditions={premiumConditions}
           followee={followee}
           tippedUser={tippedUser}
@@ -554,6 +560,7 @@ export const PremiumTrackSection = ({
         className={cn(styles.premiumContentSection, fadeIn, wrapperClassName)}
       >
         <UnlockingPremiumTrackSection
+          trackId={trackId}
           premiumConditions={premiumConditions}
           followee={followee}
           tippedUser={tippedUser}
@@ -568,6 +575,7 @@ export const PremiumTrackSection = ({
   return (
     <div className={cn(styles.premiumContentSection, fadeIn, wrapperClassName)}>
       <LockedPremiumTrackSection
+        trackId={trackId}
         premiumConditions={premiumConditions}
         followee={followee}
         tippedUser={tippedUser}
