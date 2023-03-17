@@ -94,7 +94,7 @@ describe('Save Of Repost Notification', () => {
       { userId: 1 },
       { userId: 2 }
     ])
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await new Promise((resolve) => setTimeout(resolve, 50))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
@@ -124,7 +124,7 @@ describe('Save Of Repost Notification', () => {
       { userId: 1 },
       { userId: 2 }
     ])
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await new Promise((resolve) => setTimeout(resolve, 50))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
