@@ -197,7 +197,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             endpoint,
             healthCheckThresholds: this.config.healthCheckThresholds
           })
-          await this.reselectIfNecessary({
+          const newEndpoint = await this.reselectIfNecessary({
             endpoint,
             health,
             reason,
@@ -206,6 +206,13 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
               version: data?.version ?? ''
             }
           })
+          if (newEndpoint && newEndpoint !== endpoint) {
+            // Retry once on new endpoint
+            return await context.fetch(
+              `${newEndpoint}${context.url}`,
+              context.init
+            )
+          }
         }
         return response
       }

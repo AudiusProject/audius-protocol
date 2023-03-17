@@ -72,7 +72,7 @@ func generateAndUpload(i int, wg *sync.WaitGroup) {
 
 	err = storageClient.UploadAudio(audioData, filename)
 	if err != nil {
-		fmt.Printf("error uploading audio %d\n", i)
+		fmt.Printf("error uploading audio %d\n %s\n", i, ClientList[nodeNumber].Endpoint)
 		return
 	}
 

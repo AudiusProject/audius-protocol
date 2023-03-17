@@ -84,9 +84,10 @@ var (
 
 	stagingEndpoint = `https://api.thegraph.com/subgraphs/name/audius-infra/audius-network-goerli`
 
+	// TODO: (remove) select foundation nodes only as peers for development and testing
 	gql = `
 		query ServiceProviders($skip: Int) {
-			serviceNodes(where: {isRegistered: true}, orderBy: spId, skip: $skip) {
+			serviceNodes(where: {isRegistered: true, endpoint_contains: "audius.co"}, orderBy: spId, skip: $skip) {
 				id
 				spId
 				endpoint

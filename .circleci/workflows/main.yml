@@ -227,3 +227,15 @@ jobs:
       context: open-vpn
       hosts: stage-identity
       service: identity-service
+
+  - deploy:
+      name: deploy-stage-discovery-provider-notifications
+      requires:
+        - push-discovery-provider-notifications
+      filters:
+        branches:
+          only: main
+      context: open-vpn
+      hosts: >-
+        stage-discovery-2
+      service: discovery-provider-notifications

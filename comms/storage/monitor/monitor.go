@@ -7,6 +7,7 @@ import (
 	"log"
 	"time"
 
+	"comms.audius.co/storage/config"
 	"comms.audius.co/storage/decider"
 	"comms.audius.co/storage/logstream"
 	"github.com/avast/retry-go"
@@ -34,6 +35,8 @@ func New(namespace string, healthyNodesKV nats.KeyValue, logstream *logstream.Lo
 	nodeStatusesKV, err := jsc.CreateKeyValue(&nats.KeyValueConfig{
 		Bucket:      NodeStatusesKVName,
 		Description: "Each node's endpoint, health, and the list of shards it stores",
+		Replicas:    3,
+		Placement:   config.StoragePlacement(),
 	})
 	if err != nil {
 		log.Fatalf("failed to create nodeStatuses KV store: %v", err)

@@ -13,7 +13,6 @@ import { sendAppNotifications } from './tasks/appNotifications'
 import { getRedisConnection } from './utils/redisConnection'
 
 export class Processor {
-
   discoveryDB: Knex
   identityDB: Knex
   appNotificationsProcessor: AppNotificationsProcessor
@@ -28,7 +27,7 @@ export class Processor {
 
   init = async ({
     discoveryDBUrl,
-    identityDBUrl,
+    identityDBUrl
   }: {
     discoveryDBUrl?: string
     identityDBUrl?: string
@@ -41,12 +40,15 @@ export class Processor {
     this.listener = new Listener()
     await this.listener.start(this.discoveryDB)
     await setupTriggers(this.discoveryDB)
-    this.appNotificationsProcessor = new AppNotificationsProcessor(this.discoveryDB, this.identityDB)
+    this.appNotificationsProcessor = new AppNotificationsProcessor(
+      this.discoveryDB,
+      this.identityDB
+    )
   }
 
   setupDB = async ({
     discoveryDBUrl,
-    identityDBUrl,
+    identityDBUrl
   }: {
     discoveryDBUrl?: string
     identityDBUrl?: string
@@ -62,8 +64,14 @@ export class Processor {
     logger.info('processing events')
     this.isRunning = true
     const redis = await getRedisConnection()
-    await redis.set(config.lastIndexedMessageRedisKey, new Date(Date.now()).toISOString())
-    await redis.set(config.lastIndexedReactionRedisKey, new Date(Date.now()).toISOString())
+    await redis.set(
+      config.lastIndexedMessageRedisKey,
+      new Date(Date.now()).toISOString()
+    )
+    await redis.set(
+      config.lastIndexedReactionRedisKey,
+      new Date(Date.now()).toISOString()
+    )
     while (this.isRunning) {
       // Comment out to prevent app notifications until complete
       await sendAppNotifications(this.listener, this.appNotificationsProcessor)
@@ -71,8 +79,15 @@ export class Processor {
 
       // NOTE: Temp to test DM email notifs in staging
       // TODO run job for all email frequencies
-      if (!this.lastDailyEmailSent || this.lastDailyEmailSent < moment.utc().subtract(1, 'days')) {
-        await processEmailNotifications(this.discoveryDB, this.identityDB, 'daily')
+      if (
+        !this.lastDailyEmailSent ||
+        this.lastDailyEmailSent < moment.utc().subtract(1, 'days')
+      ) {
+        await processEmailNotifications(
+          this.discoveryDB,
+          this.identityDB,
+          'daily'
+        )
         this.lastDailyEmailSent = moment.utc()
       }
 

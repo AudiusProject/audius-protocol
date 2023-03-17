@@ -5,6 +5,7 @@ import { mapNotifications } from '../processNotifications/mappers/mapNotificatio
 import { NotificationRow } from '../types/dn'
 import { Follow } from './mappers/follow'
 import { Repost } from './mappers/repost'
+import { RepostOfRepost } from './mappers/repostOfRepost'
 import { Save } from './mappers/save'
 import { Remix } from './mappers/remix'
 import { CosignRemix } from './mappers/cosign'
@@ -22,6 +23,7 @@ export type NotificationProcessor =
   | Remix
   | CosignRemix
   | Milestone
+  | RepostOfRepost
   | SupporterRankUp
   | SupportingRankUp
   | TierChange
@@ -29,7 +31,6 @@ export type NotificationProcessor =
   | TipSend
 
 export class AppNotificationsProcessor {
-
   dnDB: Knex
   identityDB: Knex
 
@@ -39,12 +40,15 @@ export class AppNotificationsProcessor {
   }
 
   async process(notifications: NotificationRow[]) {
-    const mappedNotifications = mapNotifications(notifications, this.dnDB, this.identityDB)
+    const mappedNotifications = mapNotifications(
+      notifications,
+      this.dnDB,
+      this.identityDB
+    )
     for (const notification of mappedNotifications) {
       await notification.pushNotification()
     }
 
     logger.info({ notifications })
   }
-
 }
