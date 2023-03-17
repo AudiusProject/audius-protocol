@@ -230,7 +230,7 @@ function* sendTipAsync() {
   }
 
   const sendTipData = yield* select(getSendTipData)
-  const { user: recipient, amount, source } = sendTipData
+  const { user: recipient, amount, source, trackId } = sendTipData
   if (!recipient) {
     return
   }
@@ -334,7 +334,7 @@ function* sendTipAsync() {
         source
       })
     )
-    yield put(refreshTipGatedTracks({ userId: recipient.user_id }))
+    yield put(refreshTipGatedTracks({ userId: recipient.user_id, trackId }))
 
     /**
      * Store optimistically updated supporting value for sender

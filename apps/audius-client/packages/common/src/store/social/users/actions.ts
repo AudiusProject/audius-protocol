@@ -19,7 +19,11 @@ export const SHARE_USER = 'SOCIAL/SHARE_USER'
 
 export const followUser = createCustomAction(
   FOLLOW_USER,
-  (userId: ID, source: FollowSource) => ({ userId, source })
+  (
+    userId: ID,
+    source: FollowSource,
+    trackId?: ID // in case the user is following the artist from a gated track page / modal
+  ) => ({ userId, source, trackId })
 )
 
 export const followUserSucceeded = createCustomAction(
