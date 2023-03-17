@@ -4,10 +4,11 @@ import type { Nullable, Track, User } from '@audius/common'
 import {
   SquareSizes,
   FavoriteSource,
+  accountSelectors,
   tracksSocialActions
 } from '@audius/common'
 import { TouchableOpacity, Animated, View, Dimensions } from 'react-native'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { FavoriteButton } from 'app/components/favorite-button'
 import { TrackImage } from 'app/components/image/TrackImage'
@@ -18,6 +19,7 @@ import { zIndex } from 'app/utils/zIndex'
 import { PlayButton } from './PlayButton'
 import { TrackingBar } from './TrackingBar'
 import { NOW_PLAYING_HEIGHT, PLAY_BAR_HEIGHT } from './constants'
+const { getAccountUser } = accountSelectors
 const { saveTrack, unsaveTrack } = tracksSocialActions
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
@@ -94,6 +96,7 @@ export const PlayBar = (props: PlayBarProps) => {
   const { track, user, onPress, translationAnim, mediaKey } = props
   const styles = useStyles()
   const dispatch = useDispatch()
+  const currentUser = useSelector(getAccountUser)
 
   const onPressFavoriteButton = useCallback(() => {
     if (track) {
@@ -108,6 +111,7 @@ export const PlayBar = (props: PlayBarProps) => {
   const renderFavoriteButton = () => {
     return (
       <FavoriteButton
+        isDisabled={currentUser?.user_id === track?.owner_id}
         onPress={onPressFavoriteButton}
         isActive={track?.has_current_user_saved ?? false}
         wrapperStyle={styles.icon}
