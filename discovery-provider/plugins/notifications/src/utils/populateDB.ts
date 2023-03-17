@@ -36,7 +36,6 @@ export const setupTest = async () => {
     .getState()
     .currentTestName.replace(/\s/g, '_')
     .toLocaleLowerCase()
-  console.log({ testName })
   await Promise.all([
     createTestDB(process.env.DN_DB_URL, testName),
     createTestDB(process.env.IDENTITY_DB_URL, testName)
@@ -94,26 +93,6 @@ export const dropTestDB = async (
   const db = await getDB(postgresConnection)
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
   await db.destroy()
-}
-
-export const setUpTestDbProcessor = async () => {
-  const testName = expect
-    .getState()
-    .currentTestName.replace(/\s/g, '_')
-    .toLocaleLowerCase()
-  await Promise.all([
-    createTestDB(process.env.DN_DB_URL, testName),
-    createTestDB(process.env.IDENTITY_DB_URL, testName)
-  ])
-  const redis = await getRedisConnection()
-  redis.del(config.lastIndexedMessageRedisKey)
-  redis.del(config.lastIndexedReactionRedisKey)
-  const processor = new Processor()
-  await processor.init({
-    identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
-    discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
-  })
-  return processor
 }
 
 export const resetTests = async (processor) => {

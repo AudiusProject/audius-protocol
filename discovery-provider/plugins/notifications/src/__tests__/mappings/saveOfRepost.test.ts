@@ -12,7 +12,7 @@ import {
   createPlaylists,
   createSaves,
   resetTests,
-  setUpTestDbProcessor
+  setupTest
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'
@@ -27,7 +27,8 @@ describe('Save Of Repost Notification', () => {
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
-    processor = await setUpTestDbProcessor()
+    const setup = await setupTest()
+    processor = setup.processor
   })
 
   afterEach(async () => {
@@ -48,7 +49,7 @@ describe('Save Of Repost Notification', () => {
         break
       case EntityType.Album:
         await createPlaylists(processor.discoveryDB, [
-          { playlist_id: 10, playlist_owner_id: 1 }
+          { playlist_id: 10, playlist_owner_id: 1, is_album: true }
         ])
         break
       default:
@@ -103,7 +104,7 @@ describe('Save Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 0
+        badgeCount: 1
       },
       {
         title: 'New Favorite',
@@ -132,7 +133,7 @@ describe('Save Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 0
+        badgeCount: 1
       },
       {
         title: 'New Favorite',
@@ -142,7 +143,7 @@ describe('Save Of Repost Notification', () => {
     )
   })
 
-  test('Process push notification for repost of album', async () => {
+  test('Process push notification for save of repost for album', async () => {
     setUpSaveOfRepostMockData(EntityType.Album)
     await insertMobileSettings(processor.identityDB, [
       { userId: 1 },
@@ -161,7 +162,7 @@ describe('Save Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 0
+        badgeCount: 1
       },
       {
         title: 'New Favorite',

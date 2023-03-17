@@ -10,7 +10,7 @@
     "sql-ts": "ts-node scripts/sql-ts.ts",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000",
     "test:watch": "jest --watchAll",
-    "test": "jest -u --runInBand --forceExit",
+    "test": "jest --runInBand --forceExit",
     "test-push": "ts-node scripts/test-push-notification.ts",
     "typecheck": "tsc --noEmit"
   },
