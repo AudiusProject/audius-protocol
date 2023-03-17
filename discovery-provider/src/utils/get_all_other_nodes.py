@@ -16,7 +16,7 @@ eth_abi_values = load_eth_abi_values()
 REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
 SP_FACTORY_REGISTRY_KEY = bytes("ServiceProviderFactory", "utf-8")
 DISCOVERY_NODE_SERVICE_TYPE = bytes("discovery-node", "utf-8")
-ALL_NODES_CACHE_KEY = "discprov-all-nodes"
+ALL_NODES_CACHE_KEY = "all-discovery-nodes"
 
 
 # Perform eth web3 call to fetch endpoint info
