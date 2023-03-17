@@ -20,10 +20,7 @@ const snsClient = new SNSClient({
 export const publish = async (params: PublishCommandInput) => {
   try {
     const data = await snsClient.send(new PublishCommand(params))
-    // TODO remove?
-    console.log('sns send success')
-    // console.log("Success.", data)
-    return data // For unit tests.
+    return data
   } catch (err) {
     console.log('Error', err.stack)
   }
@@ -32,11 +29,7 @@ export const publish = async (params: PublishCommandInput) => {
 export const publishBatch = async (params: PublishBatchCommandInput) => {
   try {
     const data = await snsClient.send(new PublishBatchCommand(params))
-    // TODO remove?
-    console.log('sns batch send success')
-    // console.log("Success.", data)
-    // console.log("Success.", data)
-    return data // For unit tests.
+    return data
   } catch (err) {
     console.log('Error', err.stack)
   }
