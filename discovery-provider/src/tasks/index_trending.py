@@ -435,7 +435,7 @@ def index_trending_underground_notifications(db: SessionManager, timestamp: int)
             ]
         )
         logger.info(
-            "index_trending.py | Created underground trending notifications",
+            "index_trending.py | Created underground-trending notifications",
             extra={"job": "index_trending", "subtask": "trending notification"},
         )
 
