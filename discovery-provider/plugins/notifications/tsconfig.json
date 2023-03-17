@@ -3,12 +3,7 @@
   "compilerOptions": {
     "outDir": "build",
     "jsx": "react",
-    "module": "CommonJS",
-    "moduleResolution": "node",
     "isolatedModules": true,
-    "strict": false,
-    "lib": [
-      "es2015"
-    ]
+    "strict": false
   }
 }
