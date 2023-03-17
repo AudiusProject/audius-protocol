@@ -1,7 +1,6 @@
 import { Knex } from 'knex'
 import {
   NotificationRow,
-  PlaylistRouteRow,
   PlaylistRow,
   TrackRow,
   UserRow

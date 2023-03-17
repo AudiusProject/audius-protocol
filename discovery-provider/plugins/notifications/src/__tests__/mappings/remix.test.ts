@@ -11,8 +11,6 @@ import {
   createBlocks,
   setupTest,
 } from '../../utils/populateDB'
-import { processEmailNotifications } from '../../email/notifications/index'
-import * as sendEmail from '../../email/notifications/sendEmail'
 import {
   AppEmailNotification,
   RemixNotification

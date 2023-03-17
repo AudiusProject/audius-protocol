@@ -6,9 +6,7 @@ import {
   createUsers,
   insertMobileDevices,
   insertMobileSettings,
-  createTestDB,
   dropTestDB,
-  replaceDBName,
   insertNotifications,
   setupTest,
 } from '../../utils/populateDB'
