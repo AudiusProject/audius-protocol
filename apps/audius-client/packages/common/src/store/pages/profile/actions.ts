@@ -8,6 +8,8 @@ export const FETCH_PROFILE = 'PROFILE/FETCH_PROFILE'
 export const FETCH_PROFILE_SUCCEEDED = 'PROFILE/FETCH_PROFILE_SUCCEEDED'
 export const FETCH_PROFILE_FAILED = 'PROFILE/FETCH_PROFILE_FAILED'
 
+export const SET_CURRENT_USER = 'PROFILE/SET_CURRENT_USER'
+
 export const UPDATE_PROFILE = 'PROFILE/UPDATE_PROFILE'
 export const UPDATE_PROFILE_SUCCEEDED = 'PROFILE/UPDATE_PROFILE_SUCCEEDED'
 export const UPDATE_PROFILE_FAILED = 'PROFILE/UPDATE_PROFILE_FAILED'
@@ -62,6 +64,10 @@ export function fetchProfileSucceeded(
 
 export function fetchProfileFailed(handle: string) {
   return { type: FETCH_PROFILE_FAILED, handle }
+}
+
+export function setCurrentUser(handle: string) {
+  return { type: SET_CURRENT_USER, handle }
 }
 
 export function updateProfile(metadata: UserMetadata) {

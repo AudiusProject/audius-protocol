@@ -12,6 +12,7 @@ import {
   FeatureFlags
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
+import { useFocusEffect } from '@react-navigation/native'
 import { Animated, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -30,7 +31,10 @@ import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { getIsOwner, useSelectProfileRoot } from './selectors'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
-const { fetchProfile: fetchProfileAction } = profilePageActions
+const {
+  fetchProfile: fetchProfileAction,
+  setCurrentUser: setCurrentUserAction
+} = profilePageActions
 const { getProfileStatus } = profilePageSelectors
 const { getIsReachable } = reachabilitySelectors
 const { setVisibility } = modalsActions
@@ -62,11 +66,15 @@ export const ProfileScreen = () => {
   const isNotReachable = useSelector(getIsReachable) === false
   const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
 
+  const setCurrentUser = useCallback(() => {
+    dispatch(setCurrentUserAction(handleLower))
+  }, [dispatch, handleLower])
+
   const fetchProfile = useCallback(() => {
-    dispatch(
-      fetchProfileAction(handleLower ?? null, id ?? null, true, true, false)
-    )
+    dispatch(fetchProfileAction(handleLower, id ?? null, true, true, false))
   }, [dispatch, handleLower, id])
+
+  useFocusEffect(setCurrentUser)
 
   useEffect(() => {
     fetchProfile()
