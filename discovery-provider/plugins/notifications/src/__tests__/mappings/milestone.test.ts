@@ -12,7 +12,7 @@ import {
   createSaves,
   insertFollows,
   createReposts,
-  setupTest,
+  setupTest
 } from '../../utils/populateDB'
 
 import { RepostType, SaveType } from '../../types/dn'
@@ -27,7 +27,8 @@ import { renderEmail } from '../../email/notifications/renderEmail'
 
 describe('Milestone Notification', () => {
   let processor: Processor
-  const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
+  const sendPushNotificationSpy = jest
+    .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {

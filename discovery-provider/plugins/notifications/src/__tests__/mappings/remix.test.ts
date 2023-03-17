@@ -9,7 +9,7 @@ import {
   dropTestDB,
   createTracks,
   createBlocks,
-  setupTest,
+  setupTest
 } from '../../utils/populateDB'
 import {
   AppEmailNotification,

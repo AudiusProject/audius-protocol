@@ -1,7 +1,7 @@
 import optimizelySDK, { Client } from '@optimizely/optimizely-sdk'
 
-const optimizelySDKKey = process.env.OPTIMIZELY_SDK_KEY || "MX4fYBgANQetvmBXGpuxzF"
-
+const optimizelySDKKey =
+  process.env.OPTIMIZELY_SDK_KEY || 'MX4fYBgANQetvmBXGpuxzF'
 
 export const MappingFeatureName = 'discovery_notification_mapping'
 export enum MappingVariable {
@@ -25,7 +25,7 @@ export enum MappingVariable {
   PushCreate = 'push_create',
   PushTrending = 'push_trending',
   PushAnnouncement = 'push_announcement',
-  PushReaction = 'push_reaction',
+  PushReaction = 'push_reaction'
 }
 
 const defaultMappingVariable = {
@@ -78,7 +78,11 @@ export class RemoteConfig {
   }
 
   getFeatureVariableEnabled(featureName: string, variable: string): boolean {
-    const optimizelyValue = this.optimizelyClient.getFeatureVariableBoolean(featureName, variable, '')
+    const optimizelyValue = this.optimizelyClient.getFeatureVariableBoolean(
+      featureName,
+      variable,
+      ''
+    )
     // In case not set in optimizely, set to default
     if (optimizelyValue === null) {
       if (featureName == MappingFeatureName) {

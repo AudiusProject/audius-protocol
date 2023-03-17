@@ -12,7 +12,7 @@ import {
   createTracks,
   createPlaylists,
   createSubscription,
-  setupTest,
+  setupTest
 } from '../../utils/populateDB'
 import { renderEmail } from '../../email/notifications/renderEmail'
 import {

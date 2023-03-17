@@ -13,7 +13,7 @@ import {
   insertMobileSettings,
   dropTestDB,
   createUserTip,
-  setupTest,
+  setupTest
 } from '../../utils/populateDB'
 
 describe('Tip Notification', () => {

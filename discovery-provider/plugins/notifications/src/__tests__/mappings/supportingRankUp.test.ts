@@ -20,7 +20,8 @@ import {
 describe('Supporting Rank Up Notification', () => {
   let processor: Processor
 
-  const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
+  const sendPushNotificationSpy = jest
+    .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {

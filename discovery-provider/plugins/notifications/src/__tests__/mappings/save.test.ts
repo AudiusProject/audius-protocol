@@ -10,7 +10,7 @@ import {
   createTracks,
   createPlaylists,
   createSaves,
-  setupTest,
+  setupTest
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'

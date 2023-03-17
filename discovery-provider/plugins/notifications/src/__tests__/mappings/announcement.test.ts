@@ -8,7 +8,7 @@ import {
   insertMobileSettings,
   dropTestDB,
   insertNotifications,
-  setupTest,
+  setupTest
 } from '../../utils/populateDB'
 import {
   AnnouncementNotification,
@@ -28,7 +28,6 @@ describe('Announcement Notification', () => {
   beforeEach(async () => {
     const setup = await setupTest()
     processor = setup.processor
-
   })
 
   afterEach(async () => {

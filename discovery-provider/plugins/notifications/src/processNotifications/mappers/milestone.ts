@@ -1,10 +1,5 @@
 import { Knex } from 'knex'
-import {
-  NotificationRow,
-  PlaylistRow,
-  TrackRow,
-  UserRow
-} from '../../types/dn'
+import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import {
   FollowerMilestoneNotification,
   MilestoneType,
@@ -18,9 +13,9 @@ import { EntityType } from '../../email/notifications/types'
 
 type MilestoneRow = Omit<NotificationRow, 'data'> & {
   data:
-  | FollowerMilestoneNotification
-  | TrackMilestoneNotification
-  | PlaylistMilestoneNotification
+    | FollowerMilestoneNotification
+    | TrackMilestoneNotification
+    | PlaylistMilestoneNotification
 }
 
 export class Milestone extends BaseNotification<MilestoneRow> {
@@ -51,11 +46,13 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     } else if (this.type === MilestoneType.TRACK_SAVE_COUNT) {
       return `Your track ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
     } else if (this.type === MilestoneType.PLAYLIST_REPOST_COUNT) {
-      return `Your ${isAlbum ? 'album' : 'playlist'
-        } ${entityName} has reached over ${this.threshold.toLocaleString()} reposts`
+      return `Your ${
+        isAlbum ? 'album' : 'playlist'
+      } ${entityName} has reached over ${this.threshold.toLocaleString()} reposts`
     } else if (this.type === MilestoneType.PLAYLIST_SAVE_COUNT) {
-      return `Your ${isAlbum ? 'album' : 'playlist'
-        } ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
+      return `Your ${
+        isAlbum ? 'album' : 'playlist'
+      } ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
     }
   }
 

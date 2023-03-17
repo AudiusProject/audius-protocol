@@ -10,7 +10,7 @@ import {
   createTracks,
   createBlocks,
   createReposts,
-  setupTest,
+  setupTest
 } from '../../utils/populateDB'
 
 import {

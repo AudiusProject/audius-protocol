@@ -11,7 +11,11 @@ import { sendDMNotifications } from './tasks/dmNotifications'
 import { processEmailNotifications } from './email/notifications/index'
 import { sendAppNotifications } from './tasks/appNotifications'
 import { getRedisConnection } from './utils/redisConnection'
-import { MappingFeatureName, MappingVariable, RemoteConfig } from './remoteConfig'
+import {
+  MappingFeatureName,
+  MappingVariable,
+  RemoteConfig
+} from './remoteConfig'
 
 export class Processor {
   discoveryDB: Knex
@@ -35,7 +39,6 @@ export class Processor {
     discoveryDBUrl?: string
     identityDBUrl?: string
   } = {}) => {
-
     await this.remoteConfig.init()
 
     logger.info('starting!')

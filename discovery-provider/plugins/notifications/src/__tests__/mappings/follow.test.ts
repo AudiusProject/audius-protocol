@@ -17,7 +17,8 @@ import { renderEmail } from '../../email/notifications/renderEmail'
 describe('Follow Notification', () => {
   let processor: Processor
 
-  const sendPushNotificationSpy = jest.spyOn(sns, 'sendPushNotification')
+  const sendPushNotificationSpy = jest
+    .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {

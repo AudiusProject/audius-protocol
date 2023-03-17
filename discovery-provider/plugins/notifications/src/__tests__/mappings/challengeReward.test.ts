@@ -29,7 +29,6 @@ describe('Challenge Reward Notification', () => {
   beforeEach(async () => {
     const setup = await setupTest()
     processor = setup.processor
-
   })
 
   afterEach(async () => {
