@@ -27,6 +27,7 @@ import {
   DISMISS_PROFILE_METER,
   UPDATE_MOST_USED_TAGS,
   SET_NOTIFICATION_SUBSCRIPTION,
+  SET_CURRENT_USER,
   FETCH_COLLECTIONS,
   FETCH_COLLECTIONS_SUCCEEDED,
   FETCH_COLLECTIONS_FAILED
@@ -111,6 +112,15 @@ const actionsMap = {
       userId,
       handle: profileHandle
     })
+  },
+  [SET_CURRENT_USER](state, action) {
+    const { handle } = action
+    const lowerHandle = handle.toLowerCase()
+
+    return {
+      ...state,
+      currentUser: lowerHandle
+    }
   },
   [FETCH_FOLLOW_USERS](state, action) {
     const { currentUser, entries } = state
