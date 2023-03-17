@@ -16,20 +16,30 @@ const DB = async (url) => {
   return pg;
 };
 
-export default async (url, passthrough, callback) => {
-  const db = await DB(url).catch(console.error);
+const shouldToggleOff = (topic) => {
+  const { TOGGLE_OFF } = process.env;
+  const toggledOffTopics = TOGGLE_OFF.split(",");
+  const shouldToggle = toggledOffTopics.includes(topic) ? true : false;
+  if (shouldToggle) {
+    console.warn(`toggling off listener for topic '${topic}'`);
+  }
+  return shouldToggle;
+};
 
-  // https://github.com/AudiusProject/audius-protocol/blob/186f483a40dd05733442f447e916e005227baedf/discovery-provider/es-indexer/src/setup.ts#L4-L22
-  // listens to same hook as es-indexer
-  const sql = "LISTEN tracks";
-
-  const notifConn = await db.client.acquireConnection().catch(console.error);
-  notifConn.on("notification", async (msg) => {
-    // aquire conn here so after handler we can close it
-    // no matter the logic inside the handler
-    console.log("listening for uploaded tracks");
-    // fire and forget
-    callback(passthrough, db, JSON.parse(msg.payload));
+export default async (topic, passthrough, callback) => {
+  if (shouldToggleOff(topic)) {
+    return;
+  }
+  const { DB_URL } = process.env;
+  const db = await DB(DB_URL).catch(console.error);
+  const conn = await db.client.acquireConnection().catch(console.error);
+  const sql = `LISTEN ${topic}`;
+  conn.on("notification", async (msg) => {
+    console.log(`listening on topic ${topic}`);
+    // fire and forget, no await
+    passthrough.db = db;
+    callback(passthrough, JSON.parse(msg.payload));
   });
-  await notifConn.query(sql).catch(console.error);
+  // TODO: close connection here
+  await conn.query(sql).catch(console.error);
 };
