@@ -6,13 +6,12 @@ import {
   badgeTiers,
   useSelectTierInfo
 } from '@audius/common'
-import { Button, ButtonType, Popup } from '@audius/stems'
+import { Button, ButtonType, Popup, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconSearch } from 'assets/img/iconSearch.svg'
-import TabSlider from 'components/data-entry/TabSlider'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 import { MainContentContext } from 'pages/MainContentContext'
@@ -295,7 +294,7 @@ const ImageSelectionPopup = ({
       zIndex={zIndex.IMAGE_SELECTION_POPUP}
       containerRef={mainContentRef}
     >
-      <TabSlider
+      <SegmentedControl
         className={styles.slider}
         options={tabSliderOptions}
         selected={page}

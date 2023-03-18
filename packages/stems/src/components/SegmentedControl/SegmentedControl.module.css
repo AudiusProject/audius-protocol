@@ -20,10 +20,21 @@
   font-family: var(--font-family);
   font-size: 15px;
   font-weight: var(--font-demi-bold);
+  position: relative;
 }
 
 .tab.isMobile {
   padding: var(--unit-1) var(--unit-3);
+}
+
+.tab > input {
+  opacity: 0;
+  position: absolute;
+  cursor: pointer;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
 }
 
 .separator {
@@ -50,6 +61,7 @@
 
 .containerFullWidth {
   width: 100%;
+  min-width: fit-content;
 }
 
 .tabFullWidth {

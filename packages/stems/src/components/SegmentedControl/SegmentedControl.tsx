@@ -1,20 +1,25 @@
 import { createRef, Fragment, useState, useEffect, useRef } from 'react'
 
 import cn from 'classnames'
+import { mergeRefs } from 'react-merge-refs'
 import { useSpring, animated } from 'react-spring'
+import useMeasure, { RectReadOnly } from 'react-use-measure'
 
 import styles from './SegmentedControl.module.css'
 import { SegmentedControlProps } from './types'
 
-export const SegmentedControl = (props: SegmentedControlProps) => {
-  const optionRefs = useRef<Array<React.RefObject<HTMLDivElement>>>(
-    props.options.map(() => createRef())
+export const SegmentedControl = <T extends string>(
+  props: SegmentedControlProps<T>
+) => {
+  const optionRefs = useRef(
+    props.options.map((_) => createRef<HTMLLabelElement>())
   )
   const [selected, setSelected] = useState(props.options[0].key)
 
+  const lastBounds = useRef<RectReadOnly>()
   const selectedOption = props.selected || selected
 
-  const onSetSelected = (option: string) => {
+  const onSetSelected = (option: T) => {
     // Call props function if controlled
     if (props.onSelectOption) props.onSelectOption(option)
     setSelected(option)
@@ -23,6 +28,12 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
   const [animatedProps, setAnimatedProps] = useSpring(() => ({
     to: { left: '0px', width: '0px' }
   }))
+
+  // Watch for resizes and repositions so that we move and resize the slider appropriately
+  const [selectedRef, bounds] = useMeasure({
+    offsetSize: true,
+    polyfill: ResizeObserver
+  })
 
   useEffect(() => {
     let selectedRefIdx = props.options.findIndex(
@@ -34,14 +45,19 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
       selectedRefIdx
     ]?.current ?? { clientWidth: 0, offsetLeft: 0 }
 
-    setAnimatedProps({ to: { left: `${left}px`, width: `${width}px` } })
+    setAnimatedProps({
+      to: { left: `${left}px`, width: `${width}px` },
+      immediate: bounds !== lastBounds.current // Don't animate on moves/resizes
+    })
+    lastBounds.current = bounds
   }, [
     props.options,
     selectedOption,
     props.selected,
     setAnimatedProps,
     selected,
-    optionRefs
+    optionRefs,
+    bounds
   ])
 
   return (
@@ -51,20 +67,35 @@ export const SegmentedControl = (props: SegmentedControlProps) => {
         [styles.isMobile]: props.isMobile
       })}
     >
-      <animated.div className={styles.tabBackground} style={animatedProps} />
+      <animated.div
+        className={styles.tabBackground}
+        style={animatedProps}
+        role='radiogroup'
+        aria-label={props.label}
+      />
       {props.options.map((option, idx) => {
         return (
           <Fragment key={option.key}>
-            <div
-              ref={optionRefs.current[idx]}
+            <label
+              ref={
+                option.key === selectedOption
+                  ? mergeRefs([optionRefs.current[idx], selectedRef])
+                  : optionRefs.current[idx]
+              }
               className={cn(styles.tab, {
                 [styles.tabFullWidth]: !!props.fullWidth,
                 [styles.isMobile]: props.isMobile
               })}
-              onClick={() => onSetSelected(option.key)}
             >
+              <input
+                type='radio'
+                checked={option.key === selectedOption}
+                onChange={() => {
+                  onSetSelected(option.key)
+                }}
+              />
               {option.text}
-            </div>
+            </label>
             <div
               className={cn(styles.separator, {
                 [styles.invisible]:

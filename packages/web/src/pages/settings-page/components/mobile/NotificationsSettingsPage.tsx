@@ -1,6 +1,6 @@
 import { EmailFrequency } from '@audius/common'
+import { SegmentedControl } from '@audius/stems'
 
-import TabSlider from 'components/data-entry/TabSlider'
 import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import Row from 'components/groupable-list/Row'
@@ -43,7 +43,7 @@ const NotificationsSettingsPage = ({
           <GroupableList>
             <Grouping>
               <Row title={messages.emailFrequency}>
-                <TabSlider
+                <SegmentedControl
                   isMobile
                   fullWidth
                   options={emailOptions}

@@ -6,11 +6,10 @@ import {
   BrowserNotificationSetting,
   EmailFrequency
 } from '@audius/common'
-import { Modal } from '@audius/stems'
+import { Modal, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
-import TabSlider from 'components/data-entry/TabSlider'
 import Switch from 'components/switch/Switch'
 import { useFlag } from 'hooks/useRemoteConfig'
 import { Permission } from 'utils/browserNotifications'
@@ -177,7 +176,7 @@ const NotificationSettings = (props: NotificationSettingsProps) => {
           <div className={cn(styles.bodyText, styles.email)}>
             {messages.emailFrequency}
           </div>
-          <TabSlider
+          <SegmentedControl
             selected={props.emailFrequency}
             onSelectOption={props.updateEmailFrequency}
             options={emailOptions}
