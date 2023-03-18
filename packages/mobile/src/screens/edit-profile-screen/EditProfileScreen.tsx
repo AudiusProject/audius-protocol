@@ -10,7 +10,6 @@ import {
 } from '@audius/common'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
-import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconDonate from 'app/assets/images/iconDonate.svg'
@@ -18,7 +17,7 @@ import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import { FormTextInput, FormImageInput } from 'app/components/core'
+import { FormTextInput, FormImageInput, ScrollView } from 'app/components/core'
 import { FormScreen } from 'app/components/form-screen'
 import { useUserCoverImage } from 'app/components/image/UserCoverImage'
 import { useUserImage } from 'app/components/image/UserImage'
@@ -33,7 +32,7 @@ const { getAccountUser, getUserHandle } = accountSelectors
 const { updateProfile } = profilePageActions
 const { getProfileEditStatus } = profilePageSelectors
 
-const useStyles = makeStyles(({ palette }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   coverPhoto: {
     height: 96,
     width: '100%',
@@ -59,6 +58,9 @@ const useStyles = makeStyles(({ palette }) => ({
   },
   profilePictureImage: {
     width: 'auto'
+  },
+  textFields: {
+    paddingTop: spacing(16)
   }
 }))
 
@@ -103,7 +105,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
           image: styles.profilePictureImage
         }}
       />
-      <View style={{ paddingTop: 64 }}>
+      <ScrollView style={styles.textFields}>
         <FormTextInput isFirstInput name='name' label='Name' />
         <FormTextInput name='bio' label='Bio' multiline maxLength={256} />
         <FormTextInput name='location' label='Location' />
@@ -130,7 +132,7 @@ const EditProfileForm = (props: EditProfileFormProps) => {
         />
         <FormTextInput name='website' label='Website' icon={IconLink} />
         <FormTextInput name='donation' label='Donation' icon={IconDonate} />
-      </View>
+      </ScrollView>
     </FormScreen>
   )
 }
