@@ -73,6 +73,9 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/chats/:id/messages", s.getMessages)
 	g.POST("/mutate", s.mutate)
 
+	// g.GET("/chat_permissions", s.getChatPermissions)
+	// g.POST("/validate_chat_permissions", g.validateChatPermissions)
+
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
 
