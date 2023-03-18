@@ -49,6 +49,8 @@ npx dapp-store create release -k app-keypair.json -b $ANDROID_HOME/build-tools/3
 ```
 > You may not have specified ANDROID_HOME, or have a different build tools version, modify accordingly.
 
+> If successful, this should update .asset-manifest.json with the sha and url of our uploaded .apk, and config.yaml with an updated release mint address. Please commit and push both of these changes.
+
 ### Submit dApp update request
 ```
 npx dapp-store publish update -k app-keypair.json -u https://audius-fe.rpcpool.com --requestor-is-authorized --complies-with-solana-dapp-store-policies
