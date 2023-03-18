@@ -1,8 +1,16 @@
 import { createSelector } from 'reselect'
-import { getUserId } from '../account/selectors'
-import { Chain, Collectible, EthCollectionMap, ID, SolCollectionMap } from '../../models'
-import { CommonState } from '../commonStore'
+
 import { removeNullable } from 'utils/typeUtils'
+
+import {
+  Chain,
+  Collectible,
+  EthCollectionMap,
+  ID,
+  SolCollectionMap
+} from '../../models'
+import { getUserId } from '../account/selectors'
+import { CommonState } from '../commonStore'
 
 export const getAllUserCollectibles = (state: CommonState) =>
   state.collectibles.userCollectibles
@@ -32,13 +40,17 @@ export const getSupportedUserCollections = createSelector(
     const findExternalLink = (mint: string) => {
       const solCollectibles = collectibles[Chain.Sol] ?? []
       const matchingCollectibles = solCollectibles.filter(
-        collectible => getCollectionMintAddress(collectible) === mint
+        (collectible) => getCollectionMintAddress(collectible) === mint
       )
-      const collectibleWithLink = matchingCollectibles.find(collectible => !!collectible.externalLink)
+      const collectibleWithLink = matchingCollectibles.find(
+        (collectible) => !!collectible.externalLink
+      )
       return collectibleWithLink?.externalLink ?? null
     }
 
-    const collectibles = accountUserId ? allUserCollectibles[accountUserId] ?? defaultCollectibles : defaultCollectibles
+    const collectibles = accountUserId
+      ? allUserCollectibles[accountUserId] ?? defaultCollectibles
+      : defaultCollectibles
 
     // Ethereum collections
     const ethCollectionMap: EthCollectionMap = {}

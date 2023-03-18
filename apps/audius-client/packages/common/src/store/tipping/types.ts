@@ -48,7 +48,7 @@ export type TippingState = {
     amount: StringAudio
     error: Nullable<string>
     source: TipSource
-    trackId: Nullable<ID> // in case the user is sending a tip from a gated track page / modal
+    trackId: Nullable<number> // in case the user is sending a tip from a gated track page / modal
   }
   tipToDisplay: Nullable<UserTip>
   showTip: boolean

@@ -229,6 +229,8 @@ function* sendTipAsync() {
     return
   }
 
+  getSendTipData(1 as unknown as any)
+
   const sendTipData = yield* select(getSendTipData)
   const { user: recipient, amount, source, trackId } = sendTipData
   if (!recipient) {

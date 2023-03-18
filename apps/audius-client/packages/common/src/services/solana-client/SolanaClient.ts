@@ -183,7 +183,11 @@ export class SolanaClient {
         imageUrl
       }
     } catch (e) {
-      console.warn(`Could not get nft metadata for mint address ${mintAddress}, Error: ${(e as Error).message}`)
+      console.warn(
+        `Could not get nft metadata for mint address ${mintAddress}, Error: ${
+          (e as Error).message
+        }`
+      )
       return null
     }
   }

@@ -48,7 +48,7 @@ class PushNotifications {
         body
       })
     )
-    this.navigation?.navigate(payload)
+    this.navigation?.navigate(payload?.data?.data ?? payload?.data ?? payload)
   }
 
   // Method used to open the push notification that the user pressed while the app was closed
