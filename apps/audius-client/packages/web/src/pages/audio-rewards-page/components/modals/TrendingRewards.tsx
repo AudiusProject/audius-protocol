@@ -7,7 +7,7 @@ import {
   TrendingRewardsModalType,
   audioRewardsPageSelectors
 } from '@audius/common'
-import { TabSlider, ButtonType, Button, IconArrow } from '@audius/stems'
+import { SegmentedControl, ButtonType, Button, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 import { TwitterTweetEmbed } from 'react-twitter-embed'
@@ -170,7 +170,7 @@ const TrendingRewardsBody = ({
     <div className={styles.scrollContainer}>
       <div className={wm(styles.container)}>
         <div className={styles.sliderContainer}>
-          <TabSlider
+          <SegmentedControl
             options={tabOptions}
             selected={modalType}
             onSelectOption={(option) =>

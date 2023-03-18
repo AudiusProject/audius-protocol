@@ -9,11 +9,11 @@ export default {
   argTypes: {}
 }
 
-const Template: Story<SegmentedControlProps> = (args) => (
+const Template: Story<SegmentedControlProps<string>> = (args) => (
   <SegmentedControl {...args} />
 )
 
-const options: Option[] = [
+const options: Option<string>[] = [
   {
     key: 'a',
     text: 'Long Option A'
@@ -36,7 +36,7 @@ let selectedOption = ''
 
 const handleOptionSelect = (key: string) => (selectedOption = key)
 
-const baseProps: SegmentedControlProps = {
+const baseProps: SegmentedControlProps<string> = {
   options,
   selected: selectedOption,
   onSelectOption: handleOptionSelect

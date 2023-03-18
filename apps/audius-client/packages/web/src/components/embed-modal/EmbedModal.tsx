@@ -1,13 +1,12 @@
 import { useState, useMemo, useEffect, useCallback } from 'react'
 
 import { PlayableType, ID, Name, Track, encodeHashId } from '@audius/common'
-import { Modal, Button, ButtonType } from '@audius/stems'
+import { Modal, Button, ButtonType, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { useRecord, make } from 'common/store/analytics/actions'
-import TabSlider from 'components/data-entry/TabSlider'
 import { AppState } from 'store/types'
 import { BASE_GA_URL } from 'utils/route'
 
@@ -186,7 +185,7 @@ const EmbedModal = ({ isOpen, kind, id, metadata, close }: EmbedModalProps) => {
           {metadata && (metadata as Track).track_id && (
             <div className={styles.panel}>
               <div className={styles.title}>{messages.playerSize}</div>
-              <TabSlider
+              <SegmentedControl
                 options={tabOptions}
                 selected={size}
                 onSelectOption={(size) => setSize(size)}
