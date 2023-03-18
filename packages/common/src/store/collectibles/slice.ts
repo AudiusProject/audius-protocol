@@ -13,7 +13,7 @@ type CollectiblesState = {
   }
   solCollections: {
     [mint: string]: Metadata & { imageUrl: Nullable<string> }
-  },
+  }
   hasUnsupportedCollection: boolean
 }
 
@@ -65,7 +65,7 @@ const slice = createSlice({
     },
     setHasUnsupportedCollection: (state, _action) => {
       state.hasUnsupportedCollection = true
-    },
+    }
   }
 })
 

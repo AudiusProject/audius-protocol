@@ -3,6 +3,7 @@ import { ID, PlayableType } from 'models/Identifiers'
 import { MonitorPayload, ServiceMonitorType } from 'models/Services'
 import { TimeRange } from 'models/TimeRange'
 import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
+
 import { Chain } from './Chain'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
@@ -316,7 +317,7 @@ export enum Name {
   CONNECT_WALLET_NEW_WALLET_CONNECTED = 'Connect Wallet: New Wallet Connected',
   CONNECT_WALLET_ALREADY_ASSOCIATED = 'Connect Wallet: Already Associated',
   CONNECT_WALLET_ASSOCIATION_ERROR = 'Connect Wallet: Association Error',
-  CONNECT_WALLET_ERROR = 'Connect Wallet: Error',
+  CONNECT_WALLET_ERROR = 'Connect Wallet: Error'
 }
 
 type PageView = {

@@ -388,8 +388,8 @@ function* pollPremiumTrack({
       const eventName = track.premium_conditions?.follow_user_id
         ? Name.FOLLOW_GATED_TRACK_UNLOCKED
         : track.premium_conditions?.tip_user_id
-          ? Name.TIP_GATED_TRACK_UNLOCKED
-          : null
+        ? Name.TIP_GATED_TRACK_UNLOCKED
+        : null
       if (eventName) {
         analytics.track({
           eventName,
@@ -413,13 +413,19 @@ const DEFAULT_GATED_TRACK_POLL_INTERVAL_MS = 1000
  * 3. Poll for premium content signatures for those tracks
  * 4. When the signatures are returned, set those track statuses as 'UNLOCKED'
  */
-function* updateGatedTracks(trackOwnerId: ID, gate: 'follow' | 'tip', sourceTrackId?: Nullable<ID>) {
+function* updateGatedTracks(
+  trackOwnerId: ID,
+  gate: 'follow' | 'tip',
+  sourceTrackId?: Nullable<ID>
+) {
   const currentUserId = yield* select(getUserId)
   if (!currentUserId) return
 
   const remoteConfigInstance = yield* getContext('remoteConfigInstance')
   yield* call(remoteConfigInstance.waitForRemoteConfig)
-  const gatedTrackPollIntervalMs = remoteConfigInstance.getRemoteVar(IntKeys.GATED_TRACK_POLL_INTERVAL_MS)
+  const gatedTrackPollIntervalMs = remoteConfigInstance.getRemoteVar(
+    IntKeys.GATED_TRACK_POLL_INTERVAL_MS
+  )
 
   const statusMap: { [id: ID]: PremiumTrackStatus } = {}
   const trackParamsMap: { [id: ID]: TrackRouteParams } = {}
@@ -451,7 +457,8 @@ function* updateGatedTracks(trackOwnerId: ID, gate: 'follow' | 'tip', sourceTrac
         trackId: id,
         currentUserId,
         trackParams: trackParamsMap[id],
-        frequency: gatedTrackPollIntervalMs || DEFAULT_GATED_TRACK_POLL_INTERVAL_MS,
+        frequency:
+          gatedTrackPollIntervalMs || DEFAULT_GATED_TRACK_POLL_INTERVAL_MS,
         isSourceTrack: sourceTrackId === id
       })
     })
@@ -494,7 +501,12 @@ function* handleFollowUser(
 function* handleTipGatedTracks(
   action: ReturnType<typeof refreshTipGatedTracks>
 ) {
-  yield* call(updateGatedTracks, action.payload.userId, 'tip', action.payload.trackId)
+  yield* call(
+    updateGatedTracks,
+    action.payload.userId,
+    'tip',
+    action.payload.trackId
+  )
 }
 
 /**

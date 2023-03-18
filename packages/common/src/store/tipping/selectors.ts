@@ -1,13 +1,17 @@
 import { createSelector } from '@reduxjs/toolkit'
 
-import { ID } from '../../models/Identifiers'
-import { Supporter, Supporting } from '../../models/Tipping'
-import { BNWei } from '../../models/Wallet'
-import { Nullable } from '../../utils/typeUtils'
+import type { ID } from '../../models/Identifiers'
+import type { Supporter, Supporting } from '../../models/Tipping'
+import type { BNWei } from '../../models/Wallet'
+import type { Nullable } from '../../utils/typeUtils'
 import { stringWeiToBN } from '../../utils/wallet'
-import { CommonState } from '../commonStore'
+import type { CommonState } from '../commonStore'
 
-import { SupportersMap, SupportersMapForUser, SupportingMap } from './types'
+import type {
+  SupportersMap,
+  SupportersMapForUser,
+  SupportingMap
+} from './types'
 
 export const getSupporters = (state: CommonState) => state.tipping.supporters
 export const getSupportersOverrides = (state: CommonState) =>

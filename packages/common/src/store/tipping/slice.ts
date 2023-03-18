@@ -1,10 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Nullable } from 'utils'
 
 import { TipSource } from '../../models/Analytics'
 import { ID } from '../../models/Identifiers'
 import { UserTip } from '../../models/Tipping'
 import { User } from '../../models/User'
+import type { Nullable } from '../../utils/typeUtils'
 
 import {
   RefreshSupportPayloadAction,
@@ -100,7 +100,11 @@ const slice = createSlice({
     ) => {},
     beginTip: (
       state,
-      action: PayloadAction<{ user: User | null; source: TipSource, trackId?: ID }>
+      action: PayloadAction<{
+        user: User | null
+        source: TipSource
+        trackId?: ID
+      }>
     ) => {
       if (!action.payload.user) {
         return
@@ -161,7 +165,10 @@ const slice = createSlice({
     setShowTip: (state, action: PayloadAction<{ show: boolean }>) => {
       state.showTip = action.payload.show
     },
-    refreshTipGatedTracks: (_state, _action: PayloadAction<{ userId: ID, trackId?: Nullable<ID> }>) => {
+    refreshTipGatedTracks: (
+      _state,
+      _action: PayloadAction<{ userId: ID; trackId?: Nullable<ID> }>
+    ) => {
       // triggers saga
     }
   }
