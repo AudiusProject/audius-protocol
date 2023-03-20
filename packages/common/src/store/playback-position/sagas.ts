@@ -19,7 +19,8 @@ function* setInitialPlaybackPositionState() {
   const getLocalStorageItem = yield* getContext('getLocalStorageItem')
   const isNewPodcastControlsEnabled = yield* call(
     getFeatureEnabled,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   if (!isNewPodcastControlsEnabled) return
 

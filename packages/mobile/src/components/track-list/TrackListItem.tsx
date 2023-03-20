@@ -222,7 +222,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   }
 
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
 
   const isPodcast = track.genre === Genre.PODCASTS

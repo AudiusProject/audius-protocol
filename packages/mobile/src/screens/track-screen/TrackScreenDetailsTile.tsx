@@ -172,7 +172,8 @@ export const TrackScreenDetailsTile = ({
   const isGatedContentEnabled = useIsGatedContentEnabled()
   const { doesUserHaveAccess } = usePremiumContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const styles = useStyles()
   const navigation = useNavigation()

@@ -323,8 +323,10 @@ class GiantTrackTile extends PureComponent {
     } = this.props
     const isPodcast = genre === Genre.PODCASTS
     const isNewPodcastControlsEnabled = getFeatureEnabled(
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
     )
+    console.log('isNewPodcastControlEnabled', isNewPodcastControlsEnabled)
 
     return (
       <>
@@ -392,7 +394,8 @@ class GiantTrackTile extends PureComponent {
     const { artworkLoading } = this.state
     const isPodcast = genre === Genre.PODCASTS
     const isNewPodcastControlsEnabled = getFeatureEnabled(
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
     )
 
     const isLoading = loading || artworkLoading

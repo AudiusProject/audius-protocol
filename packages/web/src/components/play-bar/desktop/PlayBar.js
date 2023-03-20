@@ -356,7 +356,8 @@ class PlayBar extends Component {
     const matrix = isMatrix()
     const isPodcast = track?.genre === Genre.PODCASTS
     const isNewPodcastControlsEnabled = getFeatureEnabled(
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
     )
 
     return (

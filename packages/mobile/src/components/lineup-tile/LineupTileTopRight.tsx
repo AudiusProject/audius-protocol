@@ -136,7 +136,8 @@ export const LineupTileTopRight = ({
 }: Props) => {
   const isGatedContentEnabled = useIsGatedContentEnabled()
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const { neutralLight4, secondary } = useThemeColors()
   const accentBlue = useColor('accentBlue')

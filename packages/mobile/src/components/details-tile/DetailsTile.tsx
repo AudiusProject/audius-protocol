@@ -210,7 +210,8 @@ export const DetailsTile = ({
     track ? (track as unknown as Track) : null
   )
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const { track_id: trackId, premium_conditions: premiumConditions } =
     track ?? {}

@@ -80,7 +80,8 @@ export const TrackTileComponent = ({
 }: TrackTileProps) => {
   const isGatedContentEnabled = useIsGatedContentEnabled()
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const dispatch = useDispatch()
   const navigation = useNavigation()

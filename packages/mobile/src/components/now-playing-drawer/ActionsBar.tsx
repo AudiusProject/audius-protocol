@@ -93,7 +93,8 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   const isOfflineModeEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
   const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
 
   useLayoutEffect(() => {

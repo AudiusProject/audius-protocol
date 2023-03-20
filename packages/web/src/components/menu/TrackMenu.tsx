@@ -95,7 +95,8 @@ const TrackMenu = (props: TrackMenuProps) => {
   const { toast } = useContext(ToastContext)
   const dispatch = useDispatch()
   const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
   const trackPlaybackPositions = useSelector(getTrackPositions)
 

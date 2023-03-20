@@ -61,7 +61,7 @@ export const createUseFeatureFlagHook =
     useHasAccount: () => boolean
     useHasConfigLoaded: () => boolean
   }) =>
-  (flag: FeatureFlags) => {
+  (flag: FeatureFlags, fallbackFlag?: FeatureFlags) => {
     const overrideKey = `${FEATURE_FLAG_OVERRIDE_KEY}:${flag}`
     const configLoaded = useHasConfigLoaded()
 
@@ -80,7 +80,7 @@ export const createUseFeatureFlagHook =
         if (override === 'enabled') return true
         if (override === 'disabled') return false
 
-        return remoteConfigInstance.getFeatureEnabled(flag)
+        return remoteConfigInstance.getFeatureEnabled(flag, fallbackFlag)
       },
       // We want configLoaded and shouldRecompute to trigger refreshes of the memo
       // eslint-disable-next-line
