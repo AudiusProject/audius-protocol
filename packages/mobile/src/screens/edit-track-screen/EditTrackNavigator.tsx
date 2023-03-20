@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
+import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer'
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
@@ -28,27 +29,39 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
   const screenOptions = useAppScreenOptions(screenOptionOverrides)
 
   return (
-    <Stack.Navigator screenOptions={screenOptions}>
-      <Stack.Screen name='CompleteTrackForm'>
-        {() => <EditTrackForm {...props} />}
-      </Stack.Screen>
-      <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />
-      <Stack.Screen name='SelectMood' component={SelectMoodScreen} />
-      <Stack.Screen name='RemixSettings' component={RemixSettingsScreen} />
-      <Stack.Screen name='AdvancedOptions' component={AdvancedOptionsScreen} />
-      {isGatedContentEnabled ? (
-        <Stack.Screen name='Availability' component={TrackAvailabilityScreen} />
-      ) : (
+    <>
+      <Stack.Navigator screenOptions={screenOptions}>
+        <Stack.Screen name='CompleteTrackForm'>
+          {() => <EditTrackForm {...props} />}
+        </Stack.Screen>
+        <Stack.Screen name='SelectGenre' component={SelectGenreScreen} />
+        <Stack.Screen name='SelectMood' component={SelectMoodScreen} />
+        <Stack.Screen name='RemixSettings' component={RemixSettingsScreen} />
         <Stack.Screen
-          name='TrackVisibility'
-          component={TrackVisibilityScreen}
+          name='AdvancedOptions'
+          component={AdvancedOptionsScreen}
         />
-      )}
-      {isGatedContentEnabled && (
-        <Stack.Screen name='NFTCollections' component={NFTCollectionsScreen} />
-      )}
-      <Stack.Screen name='IsrcIswc' component={IsrcIswcScreen} />
-      <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
-    </Stack.Navigator>
+        {isGatedContentEnabled ? (
+          <Stack.Screen
+            name='Availability'
+            component={TrackAvailabilityScreen}
+          />
+        ) : (
+          <Stack.Screen
+            name='TrackVisibility'
+            component={TrackVisibilityScreen}
+          />
+        )}
+        {isGatedContentEnabled && (
+          <Stack.Screen
+            name='NFTCollections'
+            component={NFTCollectionsScreen}
+          />
+        )}
+        <Stack.Screen name='IsrcIswc' component={IsrcIswcScreen} />
+        <Stack.Screen name='LicenseType' component={LicenseTypeScreen} />
+      </Stack.Navigator>
+      <GatedContentUploadPromptDrawer isUpload={props.isUpload} />
+    </>
   )
 }

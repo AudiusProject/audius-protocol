@@ -21,6 +21,7 @@ export type Drawer =
   | 'UnfavoriteDownloadedCollection'
   | 'RateCallToAction'
   | 'LockedContent'
+  | 'GatedContentUploadPrompt'
   | 'ChatActions'
   | 'ProfileActions'
   | 'BlockMessages'
@@ -48,6 +49,7 @@ export type DrawerData = {
     collectionId: ID
   }
   LockedContent: undefined
+  GatedContentUploadPrompt: undefined
   ChatActions: { userId: number }
   ProfileActions: undefined
   BlockMessages: { userId: number }
@@ -74,6 +76,7 @@ const initialState: DrawersState = {
   UnfavoriteDownloadedCollection: false,
   RateCallToAction: false,
   LockedContent: false,
+  GatedContentUploadPrompt: false,
   ChatActions: false,
   ProfileActions: false,
   BlockMessages: false,

@@ -16,7 +16,8 @@
   color: var(--neutral-light-2);
 }
 
-.modalTitleIcon path {
+.modalTitleIcon path,
+.modalBody .learnMoreArrow path {
   fill: var(--neutral-light-2);
 }
 
@@ -33,17 +34,10 @@
   font-size: var(--font-l);
 }
 
-.learnMore {
-  display: flex;
-  align-items: center;
-  width: fit-content;
-  color: var(--secondary);
-  font-weight: var(--font-bold);
-  font-size: var(--font-s);
-}
-
-.learnMore:hover {
-  color: var(--secondary-dark-2);
+.learnMoreButton {
+  align-self: flex-start;
+  padding: 0;
+  color: var(--neutral-light-2);
 }
 
 .learnMoreArrow {

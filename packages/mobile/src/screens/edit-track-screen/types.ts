@@ -16,11 +16,13 @@ export type EditTrackScreenProps = {
   onSubmit: (values: ExtendedTrackMetadata) => void
   initialValues: ExtendedTrackMetadata & { trackArtwork?: string }
   doneText?: string
+  isUpload?: boolean
 } & Partial<ScreenProps>
 
 export type EditTrackFormProps = FormikProps<FormValues> &
   Partial<ScreenProps> & {
     doneText?: string
+    isUpload?: boolean
   }
 
 export type RemixOfField = Nullable<{ tracks: { parent_track_id }[] }>

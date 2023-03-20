@@ -36,6 +36,7 @@ export const CompleteTrackScreen = () => {
       title={messages.title}
       url='/complete-track'
       doneText={messages.done}
+      isUpload
     />
   )
 }

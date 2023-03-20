@@ -10,7 +10,10 @@ import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Button, Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
+import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
+import { useIsSpecialAccessEnabled } from 'app/hooks/useIsSpecialAccessEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useOneTimeDrawer } from 'app/hooks/useOneTimeDrawer'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
@@ -35,6 +38,9 @@ const messages = {
   trackNameError: 'Track Name Required',
   fixErrors: 'Fix Errors To Continue'
 }
+
+const GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY =
+  'gated_content_upload_prompt_drawer_seen'
 
 const useStyles = makeStyles(({ spacing }) => ({
   backButton: {
@@ -69,6 +75,15 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
   const styles = useStyles()
   const navigation = useNavigation()
   const dispatch = useDispatch()
+
+  const isGatedContentEnabled = useIsGatedContentEnabled()
+  const isSpecialAccessEnabled = useIsSpecialAccessEnabled()
+
+  useOneTimeDrawer({
+    key: GATED_CONTENT_UPLOAD_PROMPT_DRAWER_SEEN_KEY,
+    name: 'GatedContentUploadPrompt',
+    disabled: !isGatedContentEnabled || !isSpecialAccessEnabled
+  })
 
   const handlePressBack = useCallback(() => {
     if (!dirty) {
