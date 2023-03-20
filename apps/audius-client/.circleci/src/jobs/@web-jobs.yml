@@ -43,6 +43,7 @@ web-init:
         paths:
           - node_modules
           - packages/web/node_modules
+          - packages/probers/node_modules
           - packages/stems/node_modules
           - packages/stems/dist
           - packages/common/node_modules
@@ -83,46 +84,23 @@ web-build-staging:
         build-name: build-staging
 
 web-test-staging:
-  working_directory: ~/
-  docker:
-    - image: circleci/node:14.18-browsers
+  working_directory: ~/audius-client
   resource_class: large
+  executor: cypress/default
   steps:
-    - run:
-        name: download probers
-        command: |
-          mkdir -p ~/.ssh
-          touch ~/.ssh/config
-          echo $'Host github.com\n\tStrictHostKeyChecking no' > ~/.ssh/config
-          git clone git@github.com:AudiusProject/probers.git
-          cd probers
-    # Download and cache dependencies
-    - restore_cache:
-        keys:
-          - probers-cache-{{ checksum "probers/package-lock.json" }}
-          # fallback to using the latest cache if no exact match is found
-          - probers-cache-
-    - run:
-        name: install probers dependencies
-        command: |
-          cd probers
-          npm ci
-    - save_cache:
-        key: probers-cache-{{ checksum "probers/package-lock.json" }}
-        paths:
-          - ./probers/node_modules
+    - checkout
     - attach_workspace:
         at: ./
-    - run:
-        name: serve and run prober tests
-        command: |
-          npx serve -l 3001 -s packages/web/build-staging &
-          cd probers
-          npm run test:ci
+    - cypress/install:
+        install-command: 'cd packages/probers && npm ci'
+        install-browsers: true
+    - cypress/run-tests:
+        cypress-command: 'cd packages/probers && npx cypress run --browser chrome'
+        start-command: 'npx serve -l 3001 -s packages/web/build-staging'
     - store_artifacts:
-        path: /home/circleci/probers/cypress/videos
+        path: /home/circleci/audius-client/packages/probers/cypress/videos
     - store_artifacts:
-        path: /home/circleci/probers/cypress/screenshots
+        path: /home/circleci/audius-client/packages/probers/cypress/screenshots
 
 web-build-production:
   working_directory: ~/audius-client

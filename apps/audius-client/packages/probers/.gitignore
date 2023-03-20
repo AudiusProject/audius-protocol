@@ -1,0 +1,4 @@
+node_modules
+.DS_Store
+**.account-credentials.json
+test_output/**.png
