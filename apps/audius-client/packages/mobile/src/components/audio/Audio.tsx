@@ -415,24 +415,41 @@ export const Audio = () => {
     return () => clearTimeout(playCounterTimeout)
   }, [counter, dispatch, isOfflineModeEnabled, isReachable, track?.track_id])
 
-  // A ref to invalidate the current progress counter and prevent
-  // stale values of audio progress from propagating back to the UI.
-  const progressInvalidator = useRef(false)
+  const seekToRef = useRef<number | null>(null)
 
-  const setSeekPosition = useCallback(
-    (seek = 0) => {
-      progressInvalidator.current = true
-      TrackPlayer.seekTo(seek)
-    },
-    [progressInvalidator]
-  )
+  const setSeekPosition = useCallback(async (seekPos = 0) => {
+    const currentState = await TrackPlayer.getState()
+    const isSeekableState =
+      currentState === State.Playing || currentState === State.Ready
+
+    // Delay calling seekTo if we are not currently in a seekable state
+    // Delayed seeking is handle in handlePlayerStateChange
+    if (isSeekableState) {
+      TrackPlayer.seekTo(seekPos)
+    } else {
+      seekToRef.current = seekPos
+    }
+  }, [])
+
+  const handlePlayerStateChange = useCallback(async ({ state }) => {
+    const inSeekableState = state === State.Playing || state === State.Ready
+    const seekRefValue = seekToRef.current
+
+    if (inSeekableState && seekRefValue !== null) {
+      TrackPlayer.seekTo(seekRefValue)
+      seekToRef.current = null
+    }
+  }, [])
+
+  TrackPlayer.addEventListener(Event.PlaybackState, handlePlayerStateChange)
 
   // Seek handler
   useEffect(() => {
     if (seek !== null) {
       setSeekPosition(seek)
     }
-  }, [seek, setSeekPosition])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seek])
 
   // Keep track of the track index the last time counter was updated
   const counterTrackIndex = useRef<number | null>(null)

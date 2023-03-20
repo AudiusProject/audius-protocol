@@ -14,7 +14,7 @@ import { makeStyles } from 'app/styles'
 import { attachToDx } from 'app/utils/animation'
 import { useThemeColors } from 'app/utils/theme'
 
-const { getPlaybackRate } = playerSelectors
+const { getPlaybackRate, getSeek } = playerSelectors
 
 // How much the handle "grows" when pressing
 const HANDLE_GROW_SCALE = 1.1
@@ -119,6 +119,7 @@ export const Slider = memo((props: SliderProps) => {
   } = props
   const styles = useStyles()
   const { primaryLight2, primaryDark2 } = useThemeColors()
+  const seek = useSelector(getSeek)
 
   // Animation to translate the handle and tracker
   const translationAnim = useRef(new Animated.Value(0)).current
@@ -202,6 +203,24 @@ export const Slider = memo((props: SliderProps) => {
     [isPlaying, duration, play]
   )
 
+  // When the media key changes, reset the scrubber
+  useEffect(() => {
+    if (duration) {
+      translationAnim.setValue(0)
+      setHandlePosition(0)
+    }
+  }, [mediaKey, duration, translationAnim])
+
+  useEffect(() => {
+    if (seek !== null) {
+      const percentComplete = seek / duration
+      translationAnim.setValue(percentComplete * railWidth)
+      setHandlePosition(percentComplete * railWidth)
+      animateFromNowToEnd(percentComplete)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seek, duration, translationAnim, railWidth])
+
   const handlePressOut = useCallback(() => {
     handlePressHandleOut()
     onPressOut()
@@ -271,12 +290,6 @@ export const Slider = memo((props: SliderProps) => {
       translationAnim
     ]
   )
-
-  // When the media key changes, reset the scrubber
-  useEffect(() => {
-    translationAnim.setValue(0)
-    setHandlePosition(0)
-  }, [mediaKey, translationAnim])
 
   // When playing starts, start the scrubber animation.
   // When playing stops, pause the scrubber animation.

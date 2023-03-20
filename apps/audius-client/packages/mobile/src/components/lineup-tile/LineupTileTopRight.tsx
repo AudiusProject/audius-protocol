@@ -1,9 +1,15 @@
 import type { PremiumConditions, Nullable } from '@audius/common'
-import { formatLineupTileDuration } from '@audius/common'
+import {
+  FeatureFlags,
+  playbackPositionSelectors,
+  formatLineupTileDuration
+} from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { StyleSheet, View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
+import { useSelector } from 'react-redux'
 
+import IconCheck from 'app/assets/images/iconCheck.svg'
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
@@ -11,17 +17,24 @@ import IconStar from 'app/assets/images/iconStar.svg'
 import IconUnlocked from 'app/assets/images/iconUnlocked.svg'
 import Text from 'app/components/text'
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered } from 'app/styles'
 import { useColor, useThemeColors } from 'app/utils/theme'
 
+import { ProgressBar } from '../progress-bar'
+
 import { useStyles as useTrackTileStyles } from './styles'
+
+const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
   artistPick: "Artist's Pick",
   hiddenTrack: 'Hidden Track',
   unlocked: 'Unlocked',
   collectibleGated: 'Collectible Gated',
-  specialAccess: 'Special Access'
+  specialAccess: 'Special Access',
+  timeLeft: 'left',
+  played: 'Played'
 }
 
 const flexRowEnd = (): ViewStyle => ({
@@ -77,6 +90,10 @@ type Props = {
    */
   duration?: number
   /**
+   * The id of the track
+   */
+  trackId?: number
+  /**
    * Whether or not the track is the artist pick
    */
   isArtistPick?: boolean
@@ -108,6 +125,7 @@ type Props = {
 
 export const LineupTileTopRight = ({
   duration,
+  trackId,
   isArtistPick,
   isPodcast,
   isUnlisted,
@@ -117,9 +135,30 @@ export const LineupTileTopRight = ({
   premiumConditions
 }: Props) => {
   const isGatedContentEnabled = useIsGatedContentEnabled()
-  const { neutralLight4 } = useThemeColors()
+  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+  )
+  const { neutralLight4, secondary } = useThemeColors()
   const accentBlue = useColor('accentBlue')
   const trackTileStyles = useTrackTileStyles()
+  const playbackPositionInfo = useSelector((state) =>
+    getTrackPosition(state, { trackId })
+  )
+
+  const isInProgress =
+    isNewPodcastControlsEnabled &&
+    playbackPositionInfo?.status === 'IN_PROGRESS'
+  const isCompleted =
+    isNewPodcastControlsEnabled && playbackPositionInfo?.status === 'COMPLETED'
+
+  const durationText = duration
+    ? isInProgress
+      ? `${formatLineupTileDuration(
+          duration - playbackPositionInfo.playbackPosition,
+          isPodcast
+        )} ${messages.timeLeft}`
+      : formatLineupTileDuration(duration, isPodcast)
+    : null
 
   return (
     <View style={styles.topRight}>
@@ -166,9 +205,26 @@ export const LineupTileTopRight = ({
           color={neutralLight4}
         />
       )}
-      <Text style={trackTileStyles.statText}>
-        {duration ? formatLineupTileDuration(duration, isPodcast) : null}
-      </Text>
+      <View style={trackTileStyles.statTextContainer}>
+        {duration && isInProgress ? (
+          <ProgressBar
+            progress={(playbackPositionInfo.playbackPosition / duration) * 100}
+            max={100}
+            style={{ root: trackTileStyles.statTextProgressBar }}
+          />
+        ) : null}
+        <Text
+          style={[
+            trackTileStyles.statText,
+            isCompleted ? trackTileStyles.completeStatText : null
+          ]}
+        >
+          {isCompleted ? messages.played : durationText}
+          {isCompleted ? (
+            <IconCheck height={12} width={14} fill={secondary} />
+          ) : null}
+        </Text>
+      </View>
     </View>
   )
 }

@@ -56,8 +56,10 @@ const messages = {
   visitArtistPage: 'Visit Artist Page',
   visitTrackPage: 'Visit Track Page',
   visitEpisodePage: 'Visit Episode Page',
+  markAsPlayed: 'Mark as Played',
+  markedAsPlayed: 'Marked as Played',
   markAsUnplayed: 'Mark as Unplayed',
-  markAsPlayed: 'Mark as Played'
+  markedAsUnplayed: 'Marked as Unplayed'
 }
 
 export type OwnProps = {
@@ -178,18 +180,23 @@ const TrackMenu = (props: TrackMenuProps) => {
 
     const markAsUnplayedItem = {
       text: messages.markAsUnplayed,
-      onClick: () => dispatch(clearTrackPosition({ trackId }))
+      onClick: () => {
+        dispatch(clearTrackPosition({ trackId }))
+        toast(messages.markedAsUnplayed)
+      }
     }
 
     const markAsPlayedItem = {
       text: messages.markAsPlayed,
-      onClick: () =>
+      onClick: () => {
         dispatch(
           setTrackPosition({
             trackId,
             positionInfo: { status: 'COMPLETED', playbackPosition: 0 }
           })
         )
+        toast(messages.markedAsPlayed)
+      }
     }
 
     // TODO: Add back go to album when we have better album linking.

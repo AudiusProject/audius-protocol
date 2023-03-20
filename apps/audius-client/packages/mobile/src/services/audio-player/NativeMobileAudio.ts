@@ -1,4 +1,5 @@
 import type { Nullable, PlaybackRate } from '@audius/common'
+import TrackPlayer from 'react-native-track-player'
 
 // Shim definition for audio-player needed for player sagas to not break.
 // Ideally we remove audio-player instance from sagas, and have web handle
@@ -15,8 +16,8 @@ export class NativeMobileAudio {
   setVolume = () => null
   setPlaybackRate = () => {}
   isBuffering = () => false
-  getPosition = async () => 0
-  getDuration = () => 0
+  getPosition = async () => await TrackPlayer.getPosition()
+  getDuration = async () => await TrackPlayer.getDuration()
   getPlaybackRate = () => '1x' as PlaybackRate
   getAudioPlaybackRate = () => 1.0
   onBufferingChange = () => {}
