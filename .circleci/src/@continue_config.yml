@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   ruby: circleci/ruby@1.2.0
+  cypress: cypress-io/cypress@3.0.0
 
 # the default pipeline parameters, which will be updated according to
 # the results of the path-filtering orb in config.yml
@@ -15,6 +16,16 @@ parameters:
   run-stems-workflow:
     type: boolean
     default: false
-
-workflows:
-  version: 2.1
+# Can enable recurring probers against stage at some point
+# workflows:
+#   version: 2.1
+#   hourly:
+#     triggers:
+#       - schedule:
+#           cron: '17 * * * *'
+#           filters:
+#             branches:
+#               only:
+#                 - main
+#     jobs:
+#       - probers-test-stage
