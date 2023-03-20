@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
@@ -24,8 +23,8 @@ from src.queries.get_underground_trending import (
 from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.utils import helpers
 from src.utils.config import shared_config
+from src.utils.helpers import get_adjusted_block
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
@@ -473,9 +472,9 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
     returns a tuple of the blocknumber and timestamp
     """
     curr_block_number = block_number
-    block = get_block(web3, block_number)
+    block = get_adjusted_block(web3, block_number)
     while datetime.fromtimestamp(block["timestamp"]) > min_timestamp:
-        prev_block = get_block(web3, curr_block_number - 1)
+        prev_block = get_adjusted_block(web3, curr_block_number - 1)
         prev_timestamp = datetime.fromtimestamp(prev_block["timestamp"])
         if prev_timestamp >= min_timestamp:
             block = prev_block
@@ -484,11 +483,6 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
             return block
 
     return block
-
-
-def get_block(web3, block_number: int):
-    nethermind_block_number = block_number - int(os.getenv("audius_final_poa_block"))
-    return web3.eth.get_block(nethermind_block_number, True)
 
 
 def get_should_update_trending(
@@ -506,7 +500,7 @@ def get_should_update_trending(
             session.query(Block.number).filter(Block.is_current == True).first()
         )
         current_db_block_number = current_db_block[0]
-        current_block = get_block(web3, current_db_block_number)
+        current_block = get_adjusted_block(web3, current_db_block_number)
         current_timestamp = current_block["timestamp"]
         current_datetime = datetime.fromtimestamp(current_timestamp)
         min_block_datetime = floor_time(current_datetime, interval_seconds)

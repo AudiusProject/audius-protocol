@@ -1,5 +1,4 @@
 import logging  # pylint: disable=C0302
-import os
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Tuple, TypedDict
@@ -26,7 +25,7 @@ from src.models.users.user_balance_change import UserBalanceChange
 from src.models.users.user_tip import UserTip
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
-from src.utils import helpers, web3_provider
+from src.utils import helpers
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
@@ -317,7 +316,6 @@ def notifications():
     """
 
     db = get_db_read_replica()
-    web3 = web3_provider.get_web3()
     min_block_number = request.args.get("min_block_number", type=int)
     max_block_number = request.args.get("max_block_number", type=int)
 
@@ -854,18 +852,8 @@ def notifications():
         track_added_to_playlist_notifications = []
         track_ids = []
 
-        final_poa_block = helpers.get_final_poa_block(shared_config)
-        min_adjusted_block = min_block_number
-        max_adjusted_block = max_block_number
-        if final_poa_block and web3.provider.endpoint_uri == os.getenv(
-            "audius_web3_nethermind_rpc"
-        ):
-            # if migrated to ACDC
-            min_adjusted_block -= final_poa_block
-            max_adjusted_block -= final_poa_block
-
-        min_block = web3.eth.get_block(min_adjusted_block)
-        max_block = web3.eth.get_block(max_adjusted_block)
+        min_block = helpers.get_adjusted_block(min_block_number)
+        max_block = helpers.get_adjusted_block(max_block_number)
 
         for entry in playlist_track_added_results:
             # Get the track_ids from entry["playlist_contents"]

@@ -22,10 +22,9 @@ from src.solana.solana_transaction_types import (
     TransactionMessage,
     TransactionMessageInstruction,
 )
+from web3 import Web3
 
 from . import multihash
-
-final_poa_block = int(os.getenv("final_poa_block"))
 
 
 def get_ip(request_obj):
@@ -536,6 +535,17 @@ def get_account_index(instruction: TransactionMessageInstruction, index: int):
 
 
 # get block number with a final POA block offset
-def get_block(web3: Web3, block_number: int):
-    nethermind_block_number = block_number - final_poa_block
+def get_adjusted_block(web3: Web3, block_number: int):
+    nethermind_block_number = block_number - get_final_poa_block()
     return web3.eth.get_block(nethermind_block_number, True)
+
+
+def get_final_poa_block() -> int:
+    # get final poa block from identity and cache result
+    # marks the transition to nethermind
+    # depend on identity responding with final_poa_block or the redis cached value
+    try:
+        final_poa_block = os.getenv("audius_final_poa_block")
+        return int(str(final_poa_block))
+    except:
+        raise Exception("audius_final_poa_block not set")

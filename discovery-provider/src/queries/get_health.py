@@ -23,6 +23,7 @@ from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
+from src.utils.helpers import get_final_poa_block
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
@@ -290,7 +291,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
 
     url = shared_config["discprov"]["url"]
-    final_poa_block = helpers.get_final_poa_block(shared_config)
 
     auto_upgrade_enabled = (
         True if os.getenv("audius_auto_upgrade_enabled") == "true" else False
@@ -300,7 +300,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     ) == "postgresql://postgres:postgres@db:5432/audius_discovery" or "localhost" in os.getenv(
         "audius_db_url", ""
     )
-
+    final_poa_block = get_final_poa_block()
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
