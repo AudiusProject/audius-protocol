@@ -22,7 +22,7 @@ depends_on = None
 ENV = os.getenv("audius_discprov_env")
 ENV_TO_FILEPATH = {
     "stage": "../csvs/staging_user_last_notif_seen_results.csv",
-    "prod": "../csvs/staging_user_last_notif_seen_results.csv",
+    "prod": "../csvs/prod_user_last_notif_seen_results.csv",
 }
 
 
