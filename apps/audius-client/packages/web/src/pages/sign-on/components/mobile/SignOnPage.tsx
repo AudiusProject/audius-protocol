@@ -6,8 +6,7 @@ import {
   AccountImage,
   InstagramProfile,
   TwitterProfile,
-  TikTokProfile,
-  BooleanKeys
+  TikTokProfile
 } from '@audius/common'
 import cn from 'classnames'
 import { animated } from 'react-spring'
@@ -211,9 +210,6 @@ const SignOnPage = ({
       >
         <Header />
         <ProfilePage
-          displayInstagramRemoteVarKey={
-            BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION
-          }
           handle={handle}
           isVerified={verified}
           name={name}

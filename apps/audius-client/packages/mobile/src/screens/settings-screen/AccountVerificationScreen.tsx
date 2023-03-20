@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Status, accountSelectors, FeatureFlags } from '@audius/common'
+import { Status, accountSelectors, BooleanKeys } from '@audius/common'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { getHandleField } from 'common/store/pages/signon/selectors'
 import type { EditableField } from 'common/store/pages/signon/types'
@@ -20,7 +20,7 @@ import { TikTokAuthButton } from 'app/components/tiktok-auth'
 import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { track, make } from 'app/services/analytics'
 import * as oauthActions from 'app/store/oauth/actions'
 import {
@@ -126,9 +126,13 @@ export const AccountVerificationScreen = () => {
   const tikTokError = useSelector(getTikTokError)
   const abandoned = useSelector(getAbandoned)
 
-  const { isEnabled: isTikTokEnabled } = useFeatureFlag(
-    FeatureFlags.COMPLETE_PROFILE_WITH_TIKTOK
+  const isTwitterEnabled = useRemoteVar(
+    BooleanKeys.DISPLAY_TWITTER_VERIFICATION
   )
+  const isInstagramEnabled = useRemoteVar(
+    BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION
+  )
+  const isTikTokEnabled = useRemoteVar(BooleanKeys.DISPLAY_TIKTOK_VERIFICATION)
 
   const handleField: EditableField = useSelector(getHandleField)
 
@@ -297,21 +301,27 @@ export const AccountVerificationScreen = () => {
     <View style={styles.contentContainer}>
       <Text style={styles.text}>{messages.gettingVerified}</Text>
       <Text style={styles.text}>{messages.handleMatch}</Text>
-      <SocialButton
-        color={'#1BA1F1'}
-        fullWidth
-        icon={IconTwitter}
-        onPress={handleTwitterPress}
-        styles={{ root: styles.socialButtonContainer }}
-        title={messages.verifyTwitter}
-      />
-      <SocialButton
-        fullWidth
-        icon={IconInstagram}
-        onPress={handleInstagramPress}
-        styles={{ root: styles.socialButtonContainer }}
-        title={messages.verifyInstagram}
-      />
+
+      {isTwitterEnabled ? (
+        <SocialButton
+          color={'#1BA1F1'}
+          fullWidth
+          icon={IconTwitter}
+          onPress={handleTwitterPress}
+          styles={{ root: styles.socialButtonContainer }}
+          title={messages.verifyTwitter}
+        />
+      ) : null}
+
+      {isInstagramEnabled ? (
+        <SocialButton
+          fullWidth
+          icon={IconInstagram}
+          onPress={handleInstagramPress}
+          styles={{ root: styles.socialButtonContainer }}
+          title={messages.verifyInstagram}
+        />
+      ) : null}
 
       {isTikTokEnabled ? (
         <TikTokAuthButton

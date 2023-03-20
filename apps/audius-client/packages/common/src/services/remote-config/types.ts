@@ -181,6 +181,22 @@ export enum BooleanKeys {
    * Boolean to show instagram verification on web + desktop.
    */
   DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP = 'DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP',
+  /**
+   * Boolean to show twitter verification on mobile.
+   */
+  DISPLAY_TWITTER_VERIFICATION = 'DISPLAY_TWITTER_VERIFICATION',
+  /**
+   * Boolean to show twitter verification on web + desktop.
+   */
+  DISPLAY_TWITTER_VERIFICATION_WEB_AND_DESKTOP = 'DISPLAY_TWITTER_VERIFICATION_WEB_AND_DESKTOP',
+  /**
+   * Boolean to show twitter verification on mobile.
+   */
+  DISPLAY_TIKTOK_VERIFICATION = 'DISPLAY_TIKTOK_VERIFICATION',
+  /**
+   * Boolean to show twitter verification on web + desktop.
+   */
+  DISPLAY_TIKTOK_VERIFICATION_WEB_AND_DESKTOP = 'DISPLAY_TIKTOK_VERIFICATION_WEB_AND_DESKTOP',
 
   /**
    * Boolean to skip the rollover nodes sanity check.
