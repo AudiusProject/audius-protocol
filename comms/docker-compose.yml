@@ -156,3 +156,18 @@ services:
         condition: service_healthy
       nats-discovery:
         condition: service_healthy
+
+  # nginx reverse proxy
+
+  ingress:
+    image: openresty/openresty:1.21.4.1-0-alpine-fat
+    command: bash /tmp/dev-tools/startup/ingress.sh
+    environment:
+      PORTS: "80"
+    ports:
+      - "80:80"
+    volumes:
+      - /etc/hosts:/tmp/hosts
+      - ../dev-tools/:/tmp/dev-tools
+    deploy:
+      mode: global
