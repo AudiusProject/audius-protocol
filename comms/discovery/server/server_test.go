@@ -618,16 +618,16 @@ func TestGetPermissions(t *testing.T) {
 		}
 	}
 
-	// Test POST /validate_chat_permissions
+	// Test POST /validate_can_chat
 	{
-		// Query /comms/validate_chat_permissions
-		reqUrl := fmt.Sprintf("/comms/validate_chat_permissions?timestamp=%d", time.Now().UnixMilli())
+		// Query /comms/validate_can_chat
+		reqUrl := fmt.Sprintf("/comms/validate_can_chat?timestamp=%d", time.Now().UnixMilli())
 		data := url.Values{}
 		encodedUser2, err := misc.EncodeHashId(int(user2Id))
 		assert.NoError(t, err)
 		encodedUser3, err := misc.EncodeHashId(int(user3Id))
 		assert.NoError(t, err)
-		data.Set("method", "user.validate_chat_permissions")
+		data.Set("method", "user.validate_can_chat")
 		data.Set("params", fmt.Sprintf(`{"receiver_user_ids": [%s, %s]}`, encodedUser2, encodedUser3))
 		req, err := http.NewRequest(http.MethodPost, reqUrl, strings.NewReader(data.Encode()))
 		assert.NoError(t, err)

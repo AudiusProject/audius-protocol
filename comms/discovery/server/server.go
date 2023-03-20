@@ -75,7 +75,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.POST("/mutate", s.mutate)
 
 	g.GET("/chat_permissions", s.getChatPermissions)
-	g.POST("/validate_chat_permissions", s.validateChatPermissions)
+	g.POST("/validate_can_chat", s.validateCanChat)
 
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
@@ -437,7 +437,6 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 		if err == sql.ErrNoRows {
 			permission = schema.All
 		} else {
-			logger.Warn("error querying user's chat permissions", "user", userId, "err", err)
 			return err
 		}
 	}
@@ -449,7 +448,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
-func (s *ChatServer) validateChatPermissions(c echo.Context) error {
+func (s *ChatServer) validateCanChat(c echo.Context) error {
 	payload, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
 		return c.JSON(400, "bad request: "+err.Error())
@@ -460,7 +459,7 @@ func (s *ChatServer) validateChatPermissions(c echo.Context) error {
 		return c.String(400, "wallet not found: "+err.Error())
 	}
 
-	// unmarshal RPC
+	// Unmarshal RPC
 	var rawRpc schema.RawRPC
 	err = json.Unmarshal(payload, &rawRpc)
 	if err != nil {
@@ -468,7 +467,7 @@ func (s *ChatServer) validateChatPermissions(c echo.Context) error {
 	}
 
 	// Validate and decode payload
-	var params schema.ValidateChatPermissionsRPCParams
+	var params schema.ValidateCanChatRPCParams
 	err = json.Unmarshal(rawRpc.Params, &params)
 	if err != nil {
 		return c.JSON(400, "bad request: "+err.Error())

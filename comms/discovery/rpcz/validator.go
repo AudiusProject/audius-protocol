@@ -49,7 +49,6 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 		return vtor.validateChatBlock(noTx, userId, rawRpc)
 	case schema.RPCMethodChatUnblock:
 		return vtor.validateChatUnblock(noTx, userId, rawRpc)
-	case schema.RPCMethodUserValidateChatPermissions:
 	default:
 		logger.Debug("no validator for " + rawRpc.Method)
 	}
