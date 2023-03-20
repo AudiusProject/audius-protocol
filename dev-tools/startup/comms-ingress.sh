@@ -13,7 +13,7 @@ else # storage
   main_port=8926
 fi
 
-cat > /etc/nginx/conf.d/default.conf <<EOF
+cat >/etc/nginx/conf.d/default.conf <<EOF
 server {
     listen 80;
 

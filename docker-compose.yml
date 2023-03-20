@@ -1,6 +1,7 @@
 version: "3.9"
 
-x-logging: &default-logging
+x-logging:
+  &default-logging
   options:
     max-size: "50m"
     max-file: "3"
@@ -33,7 +34,7 @@ services:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_USER: "postgres"
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -91,7 +92,7 @@ services:
       POSTGRES_PASSWORD: "postgres"
       POSTGRES_USER: "postgres"
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -221,7 +222,7 @@ services:
     image: postgres:11.4
     user: postgres
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -232,7 +233,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -361,14 +362,11 @@ services:
       discovery.type: single-node
       xpack.security.enabled: false
       ES_JAVA_OPTS: -Xms512m -Xmx512m
-    depends_on:
-      identity-service-redis:
-        condition: service_healthy
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "curl --fail http://localhost:9200/_cluster/health || exit 1",
+          "curl --fail http://localhost:9200/_cluster/health || exit 1"
         ]
       interval: 10s
       timeout: 5s
@@ -465,15 +463,32 @@ services:
   # port forwarder
   # required for getting consistent port mappings
 
-  port-forwarder:
-    image: alpine:3.16.0
-    command: sh /tmp/dev-tools/startup/port-forwarder.sh
-    ports:
-      - "4000-4010:4000-4010"
-      - "5000-5010:5000-5010"
-    volumes:
-      - ./dev-tools:/tmp/dev-tools
+  # port-forwarder:
+  #   image: alpine:3.16.0
+  #   command: sh /tmp/dev-tools/startup/port-forwarder.sh
+  #   ports:
+  #     - "4000-4010:4000-4010"
+  #     - "5000-5010:5000-5010"
+  #   volumes:
+  #     - ./dev-tools:/tmp/dev-tools
+  #   logging: *default-logging
+  #   deploy:
+  #     mode: global
+
+  # nginx reverse proxy
+
+  ingress:
+    image: openresty/openresty:1.21.4.1-0-alpine-fat
+    command: bash /tmp/dev-tools/startup/ingress.sh
     logging: *default-logging
+    environment:
+      PORTS: "4000 5000"
+    ports:
+      - "4000:4000"
+      - "5000:5000"
+    volumes:
+      - /etc/hosts:/tmp/hosts
+      - ./dev-tools/:/tmp/dev-tools
     deploy:
       mode: global
 
