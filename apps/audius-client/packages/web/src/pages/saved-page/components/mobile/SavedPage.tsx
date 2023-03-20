@@ -110,6 +110,7 @@ const TracksLineup = ({
   const [trackEntries] = getFilteredData(tracks.entries)
   const trackList = trackEntries.map((entry) => ({
     isLoading: false,
+    isPremium: entry.is_premium,
     isSaved: entry.has_current_user_saved,
     isReposted: entry.has_current_user_reposted,
     isActive: playingUid === entry.uid,

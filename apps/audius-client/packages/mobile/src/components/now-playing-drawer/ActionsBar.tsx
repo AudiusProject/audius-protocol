@@ -29,6 +29,7 @@ import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { useAirplay } from 'app/components/audio/Airplay'
 import { IconButton } from 'app/components/core'
+import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useToast } from 'app/hooks/useToast'
@@ -83,6 +84,7 @@ type ActionsBarProps = {
 }
 
 export const ActionsBar = ({ track }: ActionsBarProps) => {
+  const isGatedContentEnabled = useIsGatedContentEnabled()
   const styles = useStyles()
   const { toast } = useToast()
   const castMethod = useSelector(getCastMethod)
@@ -147,7 +149,9 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
-        OverflowAction.ADD_TO_PLAYLIST,
+        !isGatedContentEnabled || !track.is_premium
+          ? OverflowAction.ADD_TO_PLAYLIST
+          : null,
         isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
@@ -169,6 +173,7 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
     }
   }, [
     track,
+    isGatedContentEnabled,
     isNewPodcastControlsEnabled,
     playbackPositionInfo?.status,
     dispatch

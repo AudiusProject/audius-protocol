@@ -59,6 +59,7 @@ const HistoryPage = ({
     const isActive = track.uid === currentQueueItem.uid
     return {
       isLoading: loading,
+      isPremium: track.is_premium,
       isReposted: track.has_current_user_reposted,
       isSaved: track.has_current_user_saved,
       isActive,

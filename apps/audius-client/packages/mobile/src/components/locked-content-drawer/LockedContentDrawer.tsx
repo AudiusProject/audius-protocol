@@ -76,6 +76,7 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     letterSpacing: spacing(0.5)
   },
   trackName: {
+    width: screenWidth - spacing(36),
     marginBottom: spacing(2),
     fontFamily: typography.fontByWeight.bold,
     fontSize: typography.fontSize.medium,
@@ -125,7 +126,9 @@ const TrackDetails = ({ track, owner }: TrackDetailsProps) => {
               : messages.specialAccess}
           </Text>
         </View>
-        <Text style={styles.trackName}>{track.title}</Text>
+        <Text style={styles.trackName} numberOfLines={1}>
+          {track.title}
+        </Text>
         <View style={styles.trackOwnerContainer}>
           <Text style={styles.trackOwner}>{owner.name}</Text>
           <UserBadges badgeSize={16} user={owner} hideName />

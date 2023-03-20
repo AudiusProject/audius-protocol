@@ -125,6 +125,22 @@ export const ListSelectionScreen = (props: ListSelectionProps) => {
         )
       }
 
+      if (isSelected && !allowDeselect) {
+        return (
+          <View style={[styles.listItem, itemStyles]}>
+            <View style={[styles.listItemContent, itemContentStyles]}>
+              <RadioButton checked={isSelected} style={styles.radio} />
+              {renderItemProp(info)}
+            </View>
+            {!hideSelectionLabel ? (
+              <Text variant='body' color='secondary'>
+                {messages.selected}
+              </Text>
+            ) : null}
+          </View>
+        )
+      }
+
       return (
         <TouchableOpacity
           style={[styles.listItem, itemStyles]}

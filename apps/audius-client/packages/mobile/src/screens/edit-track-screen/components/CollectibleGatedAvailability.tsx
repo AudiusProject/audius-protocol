@@ -17,6 +17,8 @@ import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailability
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
+import type { TrackAvailabilitySelectionProps } from './types'
+
 const messages = {
   collectibleGated: 'Collectible Gated',
   collectibleGatedSubtitle:
@@ -135,16 +137,11 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
   }
 }))
 
-type TrackAvailabilitySelectionProps = {
-  selected: boolean
-  disabled?: boolean
-  disabledContent?: boolean
-}
-
 export const CollectibleGatedAvailability = ({
   selected,
   disabled = false,
-  disabledContent = false
+  disabledContent = false,
+  initialPremiumConditions
 }: TrackAvailabilitySelectionProps) => {
   const navigation = useNavigation()
   const styles = useStyles()
@@ -177,20 +174,13 @@ export const CollectibleGatedAvailability = ({
   const { set: setTrackAvailabilityFields } = useSetTrackAvailabilityFields()
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
-  const nftCollection = premiumConditions?.nft_collection
+  const [selectedNFTCollection, setSelectedNFTCollection] = useState(
+    initialPremiumConditions?.nft_collection
+  )
 
-  const [selectedNFTCollection, setSelectedNFTCollection] =
-    useState(nftCollection)
+  // Update nft collection gate when availability selection changes
   useEffect(() => {
-    if (nftCollection) {
-      setSelectedNFTCollection(nftCollection)
-    }
-  }, [nftCollection])
-
-  // If collectible gated was not previously selected,
-  // set as collectible gated and reset other fields.
-  useEffect(() => {
-    if (!('nft_collection' in (premiumConditions ?? {})) && selected) {
+    if (selected) {
       setTrackAvailabilityFields(
         {
           is_premium: true,
@@ -200,12 +190,14 @@ export const CollectibleGatedAvailability = ({
         true
       )
     }
-  }, [
-    premiumConditions,
-    selected,
-    setTrackAvailabilityFields,
-    selectedNFTCollection
-  ])
+  }, [selected, selectedNFTCollection, setTrackAvailabilityFields])
+
+  // Update nft collection gate when nft collection selection changes
+  useEffect(() => {
+    if (premiumConditions?.nft_collection) {
+      setSelectedNFTCollection(premiumConditions.nft_collection)
+    }
+  }, [premiumConditions])
 
   const handlePickACollection = useCallback(() => {
     navigation.navigate('NFTCollections')
@@ -264,17 +256,19 @@ export const CollectibleGatedAvailability = ({
             </Text>
             <IconCaretRight fill={neutralLight4} width={16} height={16} />
           </View>
-          {nftCollection && (
+          {premiumConditions?.nft_collection && (
             <View>
               <Text style={styles.ownersOf}>{messages.ownersOf}</Text>
               <View style={styles.collection}>
-                {nftCollection.imageUrl && (
+                {premiumConditions.nft_collection.imageUrl && (
                   <Image
-                    source={{ uri: nftCollection.imageUrl }}
+                    source={{ uri: premiumConditions.nft_collection.imageUrl }}
                     style={styles.logo}
                   />
                 )}
-                <Text style={styles.collectionName}>{nftCollection.name}</Text>
+                <Text style={styles.collectionName}>
+                  {premiumConditions.nft_collection.name}
+                </Text>
               </View>
             </View>
           )}
