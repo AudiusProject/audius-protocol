@@ -314,7 +314,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_aggregate_tips",
             "src.tasks.index_reactions",
             "src.tasks.update_track_is_available",
-            "src.tasks.cache_current_nodes",
         ],
         beat_schedule={
             "update_discovery_provider_nethermind": {
@@ -417,10 +416,6 @@ def configure_celery(celery, test_config=None):
                 "task": "index_profile_challenge_backfill",
                 "schedule": timedelta(minutes=1),
             },
-            "cache_current_nodes": {
-                "task": "cache_current_nodes",
-                "schedule": timedelta(minutes=5)
-            }
         },
         task_serializer="json",
         accept_content=["json"],

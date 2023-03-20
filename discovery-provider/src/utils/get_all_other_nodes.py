@@ -2,13 +2,9 @@ import asyncio
 import logging
 from typing import List, Optional, Tuple
 
-from src.tasks.celery_app import celery
 from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import is_fqdn, load_eth_abi_values
-from src.utils.prometheus_metric import save_duration_metric
-from src.utils.redis_cache import get_json_cached_key, set_json_cached_key
-from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +12,6 @@ eth_abi_values = load_eth_abi_values()
 REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
 SP_FACTORY_REGISTRY_KEY = bytes("ServiceProviderFactory", "utf-8")
 DISCOVERY_NODE_SERVICE_TYPE = bytes("discovery-node", "utf-8")
-ALL_NODES_CACHE_KEY = "all-discovery-nodes"
 
 
 # Perform eth web3 call to fetch endpoint info
@@ -101,31 +96,3 @@ def get_all_other_nodes() -> Tuple[List[str], List[str]]:
             )
 
     return all_other_nodes, all_other_wallets
-
-
-def get_all_other_nodes_cached(redis) -> List[str]:
-    """
-    Attempts to get the number of discovery nodes from redis
-    if that doesn't exist it will fetch using `get_all_other_nodes()`
-    and set the result in the cache with an expiration of 1 hour
-    """
-
-    return get_json_cached_key(redis, ALL_NODES_CACHE_KEY)
-
-
-# ####### CELERY TASKS ####### #
-@celery.task(name="cache_current_nodes")
-@save_duration_metric(metric_group="celery_task")
-def cache_current_nodes_task(self):
-    try:
-        nodes = get_all_other_nodes()[0]
-        current_node = get_node_endpoint()
-        # add current node to list
-        if current_node is not None:
-            nodes.append(current_node)
-
-        # only get redis connection after nodes are collected
-        redis = get_redis()
-        set_json_cached_key(redis, ALL_NODES_CACHE_KEY, nodes)
-    except Exception as e:
-        logger.error(f"get_all_other_nodes.py | ERROR caching node info {e}")
