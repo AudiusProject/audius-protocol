@@ -202,19 +202,22 @@ def entity_manager_update(
                         and params.entity_type == EntityType.NOTIFICATION
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        view_notification(params)
+                        # view_notification(params)
+                        pass
                     elif (
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.NOTIFICATION
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        create_notification(params)
+                        # create_notification(params)
+                        pass
                     elif (
                         params.action == Action.VIEW_PLAYLIST
                         and params.entity_type == EntityType.NOTIFICATION
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
-                        view_playlist(params)
+                        # view_playlist(params)
+                        pass
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
