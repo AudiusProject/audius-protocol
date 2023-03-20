@@ -30,6 +30,8 @@ def column_exists(table_name, column_name):
 
 
 def upgrade():
+    op.drop_table("notification_seen", info={"if_exists": True})
+
     op.create_table(
         "notification_seen",
         sa.Column("user_id", sa.Integer(), nullable=False),
