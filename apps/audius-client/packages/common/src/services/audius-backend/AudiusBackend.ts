@@ -221,7 +221,8 @@ type AudiusBackendParams = {
   ethRegistryAddress: Maybe<string>
   ethTokenAddress: Maybe<string>
   getFeatureEnabled: (
-    flag: FeatureFlags
+    flag: FeatureFlags,
+    fallbackFlag?: FeatureFlags
   ) => Promise<boolean | null> | null | boolean
   getHostUrl: () => Nullable<string>
   getLibs: () => Promise<any>

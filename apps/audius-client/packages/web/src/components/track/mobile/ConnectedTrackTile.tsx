@@ -120,7 +120,8 @@ const ConnectedTrackTile = memo(
       FeatureFlags.GATED_CONTENT_ENABLED
     )
     const { isEnabled: isNewPodcastControlsEnabled } = useFlag(
-      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
     )
     const { isUserAccessTBD, doesUserHaveAccess } =
       usePremiumContentAccess(trackWithFallback)

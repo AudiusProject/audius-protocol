@@ -190,7 +190,8 @@ export function* watchPlay() {
 
         const isNewPodcastControlsEnabled = yield* call(
           getFeatureEnabled,
-          FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+          FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+          FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
         )
         if (isNewPodcastControlsEnabled) {
           // Set playback position for track to in progress if not already tracked

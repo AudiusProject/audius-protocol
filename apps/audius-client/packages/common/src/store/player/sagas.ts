@@ -22,7 +22,8 @@ function* setInitialPlaybackRate() {
   const getLocalStorageItem = yield* getContext('getLocalStorageItem')
   const isPodcastFeaturesEnabled = yield* call(
     getFeatureEnabled,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
 
   const playbackRate = yield* call(getLocalStorageItem, PLAYBACK_RATE_LS_KEY)
@@ -63,7 +64,8 @@ function* savePlaybackPositionWorker() {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isNewPodcastControlsEnabled = yield* call(
     getFeatureEnabled,
-    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
 
   // eslint-disable-next-line no-unmodified-loop-condition

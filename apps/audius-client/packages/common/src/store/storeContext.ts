@@ -20,7 +20,10 @@ import { CommonState } from './reducers'
 export type CommonStoreContext = {
   getLocalStorageItem: (key: string) => Promise<string | null>
   setLocalStorageItem: (key: string, value: string) => Promise<void>
-  getFeatureEnabled: (flag: FeatureFlags) => Promise<boolean>
+  getFeatureEnabled: (
+    flag: FeatureFlags,
+    fallbackFlag?: FeatureFlags
+  ) => Promise<boolean>
   analytics: {
     init: () => Promise<void>
     track: (event: AnalyticsEvent, callback?: () => void) => Promise<void>
