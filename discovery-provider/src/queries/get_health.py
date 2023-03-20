@@ -20,13 +20,7 @@ from src.queries.get_sol_plays import get_sol_play_health_info
 from src.queries.get_sol_rewards_manager import get_sol_rewards_manager_health_info
 from src.queries.get_sol_user_bank import get_sol_user_bank_health_info
 from src.queries.get_spl_audio import get_spl_audio_health_info
-from src.utils import (
-    db_session,
-    get_all_other_nodes,
-    helpers,
-    redis_connection,
-    web3_provider,
-)
+from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
@@ -307,8 +301,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "audius_db_url", ""
     )
 
-    discovery_nodes = get_all_other_nodes.get_all_other_nodes_cached(redis)
-
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -345,9 +337,6 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_block_num": latest_block_num,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
-        "network": {
-            "discovery_nodes": discovery_nodes
-        },
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
