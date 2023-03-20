@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import {
   BooleanKeys,
-  FeatureFlags,
   InstagramProfile,
   TikTokProfile,
   TwitterProfile
@@ -15,7 +14,7 @@ import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButt
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
-import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 
 import styles from './CompleteProfileWithSocial.module.css'
 
@@ -34,7 +33,6 @@ const messages = {
 }
 
 export type CompleteProfileWithSocialProps = {
-  displayInstagramRemoteVarKey?: BooleanKeys
   initial: boolean
   isLoading: boolean
   isMobile: boolean
@@ -52,7 +50,6 @@ export type CompleteProfileWithSocialProps = {
 
 const CompleteProfileWithSocial = (props: CompleteProfileWithSocialProps) => {
   const {
-    displayInstagramRemoteVarKey = BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP,
     initial,
     isLoading,
     isMobile,
@@ -67,10 +64,15 @@ const CompleteProfileWithSocial = (props: CompleteProfileWithSocialProps) => {
     onTwitterStart,
     showCompleteProfileWithSocial
   } = props
-  const { isEnabled: isTikTokEnabled } = useFlag(
-    FeatureFlags.COMPLETE_PROFILE_WITH_TIKTOK
+  const isTwitterEnabled = useRemoteVar(
+    BooleanKeys.DISPLAY_TWITTER_VERIFICATION_WEB_AND_DESKTOP
   )
-  const displayInstagram = useRemoteVar(displayInstagramRemoteVarKey)
+  const isInstagramEnabled = useRemoteVar(
+    BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP
+  )
+  const isTikTokEnabled = useRemoteVar(
+    BooleanKeys.DISPLAY_TIKTOK_VERIFICATION_WEB_AND_DESKTOP
+  )
 
   const handleClickTwitter = useCallback(() => {
     onTwitterStart()
@@ -147,13 +149,15 @@ const CompleteProfileWithSocial = (props: CompleteProfileWithSocialProps) => {
                   </ul>
                 </div>
                 <div className={styles.buttonContainer}>
-                  <TwitterAuthButton
-                    onClick={handleClickTwitter}
-                    onFailure={onFailure}
-                    onSuccess={onTwitterLogin}
-                    text={messages.twitterButton}
-                  />
-                  {displayInstagram && (
+                  {isTwitterEnabled ? (
+                    <TwitterAuthButton
+                      onClick={handleClickTwitter}
+                      onFailure={onFailure}
+                      onSuccess={onTwitterLogin}
+                      text={messages.twitterButton}
+                    />
+                  ) : null}
+                  {isInstagramEnabled && (
                     <InstagramAuthButton
                       onClick={handleClickInstagram}
                       onFailure={onFailure}

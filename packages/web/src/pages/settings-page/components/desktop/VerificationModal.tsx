@@ -10,7 +10,6 @@ import {
   TwitterProfile,
   InstagramProfile,
   musicConfettiActions,
-  FeatureFlags,
   TikTokProfile
 } from '@audius/common'
 import { Modal, Button, ButtonType, IconNote, ButtonSize } from '@audius/stems'
@@ -25,7 +24,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
 import UserBadges from 'components/user-badges/UserBadges'
-import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { profilePage } from 'utils/route'
 
@@ -67,12 +66,14 @@ type VerifyBodyProps = {
 }
 
 const VerifyBody = (props: VerifyBodyProps) => {
-  const displayInstagram = useRemoteVar(
+  const isTwitterEnabled = useRemoteVar(
+    BooleanKeys.DISPLAY_TWITTER_VERIFICATION_WEB_AND_DESKTOP
+  )
+  const isInstagramEnabled = useRemoteVar(
     BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP
   )
-
-  const { isEnabled: isTikTokEnabled } = useFlag(
-    FeatureFlags.COMPLETE_PROFILE_WITH_TIKTOK
+  const isTikTokEnabled = useRemoteVar(
+    BooleanKeys.DISPLAY_TIKTOK_VERIFICATION_WEB_AND_DESKTOP
   )
   const record = useRecord()
   const { handle, onClick } = props
@@ -106,15 +107,18 @@ const VerifyBody = (props: VerifyBodyProps) => {
       <p className={styles.text}>{messages.description}</p>
       <div className={cn(styles.text, styles.warning)}>{messages.warning}</div>
       <div className={styles.btnContainer}>
-        <TwitterAuthButton
-          onClick={handleClickTwitter}
-          onFailure={props.onFailure}
-          onSuccess={props.onTwitterLogin}
-          text={messages.twitterVerify}
-          className={styles.socialButton}
-          containerClassName={styles.socialButton}
-        />
-        {displayInstagram ? (
+        {isTwitterEnabled ? (
+          <TwitterAuthButton
+            onClick={handleClickTwitter}
+            onFailure={props.onFailure}
+            onSuccess={props.onTwitterLogin}
+            text={messages.twitterVerify}
+            className={styles.socialButton}
+            containerClassName={styles.socialButton}
+          />
+        ) : null}
+
+        {isInstagramEnabled ? (
           <InstagramAuthButton
             onClick={handleClickInstagram}
             onFailure={props.onFailure}

@@ -8,8 +8,7 @@ import {
   TwitterProfile,
   InstagramProfile,
   accountActions,
-  TikTokProfile,
-  FeatureFlags
+  TikTokProfile
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -20,7 +19,7 @@ import { InstagramAuthButton } from 'components/instagram-auth/InstagramAuthButt
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { TikTokAuthButton } from 'components/tiktok-auth/TikTokAuthButton'
 import { TwitterAuthButton } from 'components/twitter-auth/TwitterAuthButton'
-import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
+import { useRemoteVar } from 'hooks/useRemoteConfig'
 import ModalDrawer from 'pages/audio-rewards-page/components/modals/ModalDrawer'
 
 import styles from './SocialProof.module.css'
@@ -63,12 +62,14 @@ const VerifyBody = ({
   onTikTokLogin,
   onFailure
 }: VerifyBodyProps) => {
-  const displayInstagram = useRemoteVar(
+  const isTwitterEnabled = useRemoteVar(
+    BooleanKeys.DISPLAY_TWITTER_VERIFICATION_WEB_AND_DESKTOP
+  )
+  const isInstagramEnabled = useRemoteVar(
     BooleanKeys.DISPLAY_INSTAGRAM_VERIFICATION_WEB_AND_DESKTOP
   )
-
-  const { isEnabled: isTikTokEnabled } = useFlag(
-    FeatureFlags.COMPLETE_PROFILE_WITH_TIKTOK
+  const isTikTokEnabled = useRemoteVar(
+    BooleanKeys.DISPLAY_TIKTOK_VERIFICATION_WEB_AND_DESKTOP
   )
 
   const record = useRecord()
@@ -103,13 +104,15 @@ const VerifyBody = ({
     <div className={styles.container}>
       <p>{messages.description}</p>
       <div className={styles.btnContainer}>
-        <TwitterAuthButton
-          onSuccess={onTwitterLogin}
-          onFailure={(error: Error) => onFailure('twitter', error)}
-          onClick={handleClickTwitter}
-          text={messages.twitterConfirm}
-        />
-        {displayInstagram && (
+        {isTwitterEnabled ? (
+          <TwitterAuthButton
+            onSuccess={onTwitterLogin}
+            onFailure={(error: Error) => onFailure('twitter', error)}
+            onClick={handleClickTwitter}
+            text={messages.twitterConfirm}
+          />
+        ) : null}
+        {isInstagramEnabled && (
           <InstagramAuthButton
             onClick={handleClickInstagram}
             onSuccess={onInstagramLogin}

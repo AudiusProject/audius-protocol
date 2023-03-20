@@ -13,9 +13,7 @@ import cn from 'classnames'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'
 import { ToastContext } from 'components/toast/ToastContext'
-import CompleteProfileWithSocial, {
-  CompleteProfileWithSocialProps
-} from 'pages/sign-on/components/CompleteProfileWithSocial'
+import CompleteProfileWithSocial from 'pages/sign-on/components/CompleteProfileWithSocial'
 import ProfileForm, {
   ProfileFormProps
 } from 'pages/sign-on/components/ProfileForm'
@@ -68,12 +66,10 @@ type ProfilePageProps = {
 } & Pick<
   ProfileFormProps,
   'name' | 'handle' | 'onHandleChange' | 'onNameChange' | 'setProfileImage'
-> &
-  Pick<CompleteProfileWithSocialProps, 'displayInstagramRemoteVarKey'>
+>
 
 const ProfilePage = (props: ProfilePageProps) => {
   const {
-    displayInstagramRemoteVarKey,
     handle,
     isVerified,
     name,
@@ -235,7 +231,6 @@ const ProfilePage = (props: ProfilePageProps) => {
     <div className={cn(styles.container, isMobile && styles.isMobile)}>
       {showCompleteProfileWithSocial ? (
         <CompleteProfileWithSocial
-          displayInstagramRemoteVarKey={displayInstagramRemoteVarKey}
           isLoading={isLoading}
           isMobile={isMobile}
           initial={isInitial}
