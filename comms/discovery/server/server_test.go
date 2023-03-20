@@ -9,7 +9,10 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"reflect"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -77,10 +80,6 @@ func TestGetChats(t *testing.T) {
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
 	_, err = db.Conn.Exec("truncate table users cascade")
-	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate table chat_member cascade")
-	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate table chat_message cascade")
 	assert.NoError(t, err)
 
 	tx := db.Conn.MustBegin()
@@ -206,17 +205,17 @@ func TestGetChats(t *testing.T) {
 			PrevCount:  float64(0),
 			PrevCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		}
-		expectedResponse, err := json.Marshal(
-			schema.CommsResponse{
-				Health:  expectedHealth,
-				Data:    expectedData,
-				Summary: &expectedSummary,
-			},
-		)
-		assert.NoError(t, err)
+		expectedResponse := schema.CommsResponse{
+			Health:  expectedHealth,
+			Data:    expectedData,
+			Summary: &expectedSummary,
+		}
 		if assert.NoError(t, testServer.getChats(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+			var response schema.CommsResponse
+			err := json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
+			reflect.DeepEqual(response, expectedResponse)
 		}
 	}
 
@@ -256,17 +255,17 @@ func TestGetChats(t *testing.T) {
 			PrevCount:  float64(0),
 			PrevCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		}
-		expectedResponse, err := json.Marshal(
-			schema.CommsResponse{
-				Health:  expectedHealth,
-				Data:    expectedData,
-				Summary: &expectedSummary,
-			},
-		)
-		assert.NoError(t, err)
+		expectedResponse := schema.CommsResponse{
+			Health:  expectedHealth,
+			Data:    expectedData,
+			Summary: &expectedSummary,
+		}
 		if assert.NoError(t, testServer.getChats(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+			var response schema.CommsResponse
+			err := json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
+			reflect.DeepEqual(response, expectedResponse)
 		}
 	}
 
@@ -293,16 +292,16 @@ func TestGetChats(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedResponse, err := json.Marshal(
-			schema.CommsResponse{
-				Health: expectedHealth,
-				Data:   expectedChat1Data,
-			},
-		)
-		assert.NoError(t, err)
+		expectedResponse := schema.CommsResponse{
+			Health: expectedHealth,
+			Data:   expectedChat1Data,
+		}
 		if assert.NoError(t, testServer.getChat(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+			var response schema.CommsResponse
+			err := json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
+			reflect.DeepEqual(response, expectedResponse)
 		}
 	}
 }
@@ -323,10 +322,6 @@ func TestGetMessages(t *testing.T) {
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
 	_, err = db.Conn.Exec("truncate table users cascade")
-	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate table chat_member cascade")
-	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate table chat_message cascade")
 	assert.NoError(t, err)
 
 	// seed db
@@ -502,6 +497,168 @@ func TestGetMessages(t *testing.T) {
 		if assert.NoError(t, testServer.getMessages(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
+	}
+}
+
+func TestGetPermissions(t *testing.T) {
+	var err error
+
+	// Generate user keys
+	privateKey1, err := crypto.GenerateKey()
+	assert.NoError(t, err)
+	wallet1 := crypto.PubkeyToAddress(privateKey1.PublicKey).Hex()
+
+	privateKey2, err := crypto.GenerateKey()
+	assert.NoError(t, err)
+	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
+
+	privateKey3, err := crypto.GenerateKey()
+	assert.NoError(t, err)
+	wallet3 := crypto.PubkeyToAddress(privateKey3.PublicKey).Hex()
+
+	// Set up db
+	_, err = db.Conn.Exec("truncate table chat cascade")
+	assert.NoError(t, err)
+	_, err = db.Conn.Exec("truncate table users cascade")
+	assert.NoError(t, err)
+
+	tx := db.Conn.MustBegin()
+
+	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
+	user1Id := seededRand.Int31()
+	user2Id := seededRand.Int31()
+	user3Id := seededRand.Int31()
+
+	// Create 3 users
+	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true), ($5, lower($6), true)", user1Id, wallet1, user2Id, wallet2, user3Id, wallet3)
+	assert.NoError(t, err)
+
+	// user 2 follows user 1
+	_, err = tx.Exec("insert into follows (follower_user_id, followee_user_id, is_current, is_delete, created_at) values ($1, $2, true, false, now())", user2Id, user1Id)
+	assert.NoError(t, err)
+
+	// Set permissions:
+	// - user 1: implicit all
+	// - user 2: followees
+	// - user3: tippers
+	_, err = tx.Exec("insert into chat_permissions (user_id, permits) values ($1, $2), ($3, $4)", user2Id, schema.Followees, user3Id, schema.Tippers)
+
+	err = tx.Commit()
+	assert.NoError(t, err)
+
+	// Common expected responses
+	expectedHealth := schema.Health{
+		IsHealthy: true,
+	}
+
+	// Test GET /chat_permissions (implicit ALL setting)
+	{
+		// Query /comms/chat_permissions
+		reqUrl := fmt.Sprintf("/comms/chat_permissions?timestamp=%d", time.Now().UnixMilli())
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+		assert.NoError(t, err)
+
+		// Set sig header from user 1
+		payload := []byte(reqUrl)
+		sigBase64 := signPayload(t, payload, privateKey1)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := schema.All
+		expectedResponse := schema.CommsResponse{
+			Health: expectedHealth,
+			Data:   expectedData,
+		}
+		if assert.NoError(t, testServer.getChatPermissions(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			var response schema.CommsResponse
+			err := json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
+			reflect.DeepEqual(response, expectedResponse)
+		}
+	}
+
+	// Test GET /chat_permissions (explicit setting)
+	{
+		// Query /comms/chat_permissions
+		reqUrl := fmt.Sprintf("/comms/chat_permissions?timestamp=%d", time.Now().UnixMilli())
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+		assert.NoError(t, err)
+
+		// Set sig header from user 2
+		payload := []byte(reqUrl)
+		sigBase64 := signPayload(t, payload, privateKey2)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := schema.Followees
+		expectedResponse := schema.CommsResponse{
+			Health: expectedHealth,
+			Data:   expectedData,
+		}
+		if assert.NoError(t, testServer.getChatPermissions(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			var response schema.CommsResponse
+			err := json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
+			reflect.DeepEqual(response, expectedResponse)
+		}
+	}
+
+	// Test POST /validate_chat_permissions
+	{
+		// Query /comms/validate_chat_permissions
+		reqUrl := fmt.Sprintf("/comms/validate_chat_permissions?timestamp=%d", time.Now().UnixMilli())
+		data := url.Values{}
+		encodedUser2, err := misc.EncodeHashId(int(user2Id))
+		assert.NoError(t, err)
+		encodedUser3, err := misc.EncodeHashId(int(user3Id))
+		assert.NoError(t, err)
+		data.Set("method", "user.validate_chat_permissions")
+		data.Set("params", fmt.Sprintf(`{"receiver_user_ids": [%s, %s]}`, encodedUser2, encodedUser3))
+		req, err := http.NewRequest(http.MethodPost, reqUrl, strings.NewReader(data.Encode()))
+		assert.NoError(t, err)
+
+		// Set sig header from user 1
+		payload := []byte(data.Encode())
+		sigBase64 := signPayload(t, payload, privateKey1)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := map[string]bool{
+			encodedUser2: true,
+			encodedUser3: false,
+		}
+		expectedResponse := schema.CommsResponse{
+			Health: expectedHealth,
+			Data:   expectedData,
+		}
+		if assert.NoError(t, testServer.getChatPermissions(c)) {
+			fmt.Println("response: ", rec.Body.String())
+			assert.Equal(t, http.StatusOK, rec.Code)
+			var response schema.CommsResponse
+			err := json.Unmarshal(rec.Body.Bytes(), &response)
+			assert.NoError(t, err)
+			reflect.DeepEqual(response, expectedResponse)
 		}
 	}
 }

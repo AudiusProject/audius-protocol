@@ -1,5 +1,14 @@
 package schema
 
+type ValidateChatPermissionsRPC struct {
+	Method ValidateChatPermissionsRPCMethod `json:"method"`
+	Params ValidateChatPermissionsRPCParams `json:"params"`
+}
+
+type ValidateChatPermissionsRPCParams struct {
+	ReceiverUserIDS []string `json:"receiver_user_ids"`
+}
+
 type ChatCreateRPC struct {
 	Method ChatCreateRPCMethod `json:"method"`
 	Params ChatCreateRPCParams `json:"params"`
@@ -104,6 +113,7 @@ type RPCPayloadRequest struct {
 }
 
 type RPCPayloadRequestParams struct {
+	ReceiverUserIDS []string          `json:"receiver_user_ids,omitempty"`
 	ChatID          *string           `json:"chat_id,omitempty"`
 	Invites         []TentacledInvite `json:"invites,omitempty"`
 	Message         *string           `json:"message,omitempty"`
@@ -200,6 +210,7 @@ type RPCPayload struct {
 }
 
 type RPCPayloadParams struct {
+	ReceiverUserIDS []string        `json:"receiver_user_ids,omitempty"`
 	ChatID          *string         `json:"chat_id,omitempty"`
 	Invites         []StickyInvite  `json:"invites,omitempty"`
 	Message         *string         `json:"message,omitempty"`
@@ -214,6 +225,12 @@ type StickyInvite struct {
 	InviteCode string `json:"invite_code"`
 	UserID     string `json:"user_id"`
 }
+
+type ValidateChatPermissionsRPCMethod string
+
+const (
+	MethodUserValidateChatPermissions ValidateChatPermissionsRPCMethod = "user.validate_chat_permissions"
+)
 
 type ChatCreateRPCMethod string
 
@@ -282,13 +299,14 @@ const (
 type RPCMethod string
 
 const (
-	RPCMethodChatBlock   RPCMethod = "chat.block"
-	RPCMethodChatCreate  RPCMethod = "chat.create"
-	RPCMethodChatDelete  RPCMethod = "chat.delete"
-	RPCMethodChatInvite  RPCMethod = "chat.invite"
-	RPCMethodChatMessage RPCMethod = "chat.message"
-	RPCMethodChatPermit  RPCMethod = "chat.permit"
-	RPCMethodChatReact   RPCMethod = "chat.react"
-	RPCMethodChatRead    RPCMethod = "chat.read"
-	RPCMethodChatUnblock RPCMethod = "chat.unblock"
+	RPCMethodChatBlock                   RPCMethod = "chat.block"
+	RPCMethodChatCreate                  RPCMethod = "chat.create"
+	RPCMethodChatDelete                  RPCMethod = "chat.delete"
+	RPCMethodChatInvite                  RPCMethod = "chat.invite"
+	RPCMethodChatMessage                 RPCMethod = "chat.message"
+	RPCMethodChatPermit                  RPCMethod = "chat.permit"
+	RPCMethodChatReact                   RPCMethod = "chat.react"
+	RPCMethodChatRead                    RPCMethod = "chat.read"
+	RPCMethodChatUnblock                 RPCMethod = "chat.unblock"
+	RPCMethodUserValidateChatPermissions RPCMethod = "user.validate_chat_permissions"
 )

@@ -1,5 +1,12 @@
 // NOTE: No imports allowed - quicktype is not yet able to track imports!
 
+export type ValidateChatPermissionsRPC = {
+  method: 'user.validate_chat_permissions'
+  params: {
+    receiver_user_ids: string[]
+  }
+}
+
 export type ChatCreateRPC = {
   method: 'chat.create'
   params: {
@@ -86,6 +93,7 @@ export type RPCPayloadRequest =
   | ChatBlockRPC
   | ChatUnblockRPC
   | ChatPermitRPC
+  | ValidateChatPermissionsRPC
 
 export type RPCPayload = RPCPayloadRequest & { timestamp: number }
 
