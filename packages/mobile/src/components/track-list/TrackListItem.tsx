@@ -2,6 +2,9 @@ import { memo, useCallback, useMemo, useState } from 'react'
 
 import type { ID, Track, UID, User } from '@audius/common'
 import {
+  FeatureFlags,
+  playbackPositionSelectors,
+  Genre,
   removeNullable,
   OverflowAction,
   OverflowSource,
@@ -20,6 +23,7 @@ import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
 import { IconButton } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { font, makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -32,6 +36,7 @@ const { open: openOverflowMenu } = mobileOverflowMenuUIActions
 const { getUserFromTrack } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getPlaying, getUid } = playerSelectors
+const { getTrackPosition } = playbackPositionSelectors
 
 export type TrackItemAction = 'save' | 'overflow' | 'remove'
 
@@ -216,10 +221,26 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     }
   }
 
+  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+  )
+
+  const isPodcast = track.genre === Genre.PODCASTS
+  const playbackPositionInfo = useSelector((state) =>
+    getTrackPosition(state, { trackId: track_id })
+  )
+
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
       OverflowAction.ADD_TO_PLAYLIST,
-      OverflowAction.VIEW_TRACK_PAGE,
+      isNewPodcastControlsEnabled && isPodcast
+        ? OverflowAction.VIEW_EPISODE_PAGE
+        : OverflowAction.VIEW_TRACK_PAGE,
+      isNewPodcastControlsEnabled && isPodcast
+        ? playbackPositionInfo?.status === 'COMPLETED'
+          ? OverflowAction.MARK_AS_UNPLAYED
+          : OverflowAction.MARK_AS_PLAYED
+        : null,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(removeNullable)
 
@@ -230,7 +251,13 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
         overflowActions
       })
     )
-  }, [dispatch, track_id])
+  }, [
+    dispatch,
+    isNewPodcastControlsEnabled,
+    isPodcast,
+    playbackPositionInfo?.status,
+    track_id
+  ])
 
   const handlePressSave = (e: NativeSyntheticEvent<NativeTouchEvent>) => {
     e.stopPropagation()

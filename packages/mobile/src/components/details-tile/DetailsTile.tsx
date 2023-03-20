@@ -2,15 +2,19 @@ import { useCallback } from 'react'
 
 import type { Track } from '@audius/common'
 import {
+  FeatureFlags,
+  Genre,
   usePremiumContentAccess,
   squashNewLines,
-  accountSelectors
+  accountSelectors,
+  playbackPositionSelectors
 } from '@audius/common'
 import { TouchableOpacity, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconPause from 'app/assets/images/iconPause.svg'
 import IconPlay from 'app/assets/images/iconPlay.svg'
+import IconRepeat from 'app/assets/images/iconRepeatOff.svg'
 import CoSign from 'app/components/co-sign/CoSign'
 import { Size } from 'app/components/co-sign/types'
 import { Button, Hyperlink, Tile } from 'app/components/core'
@@ -19,6 +23,7 @@ import UserBadges from 'app/components/user-badges'
 import { light } from 'app/haptics'
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, makeStyles } from 'app/styles'
 
 import {
@@ -26,15 +31,20 @@ import {
   LineupTileBannerIconType
 } from '../lineup-tile/LineupTileBannerIcon'
 
+import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
 import type { DetailsTileProps } from './types'
 
+const { getTrackPosition } = playbackPositionSelectors
+
 const messages = {
   play: 'play',
-  pause: 'pause'
+  pause: 'pause',
+  resume: 'resume',
+  replay: 'replay'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -199,6 +209,9 @@ export const DetailsTile = ({
   const { doesUserHaveAccess } = usePremiumContentAccess(
     track ? (track as unknown as Track) : null
   )
+  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+  )
   const { track_id: trackId, premium_conditions: premiumConditions } =
     track ?? {}
 
@@ -208,6 +221,7 @@ export const DetailsTile = ({
   const currentUserId = useSelector(accountSelectors.getUserId)
 
   const isOwner = user?.user_id === currentUserId
+  const isPodcast = track?.genre === Genre.PODCASTS
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -273,6 +287,22 @@ export const DetailsTile = ({
     innerImageElement
   )
 
+  const playbackPositionInfo = useSelector((state) =>
+    getTrackPosition(state, { trackId })
+  )
+
+  const playText =
+    isNewPodcastControlsEnabled && playbackPositionInfo?.status
+      ? playbackPositionInfo?.status === 'IN_PROGRESS'
+        ? messages.resume
+        : messages.replay
+      : messages.play
+
+  const PlayIcon =
+    isNewPodcastControlsEnabled && playbackPositionInfo?.status === 'COMPLETED'
+      ? IconRepeat
+      : IconPlay
+
   return (
     <Tile styles={{ root: styles.root, content: styles.tileContent }}>
       <View style={styles.topContent}>
@@ -302,6 +332,9 @@ export const DetailsTile = ({
               </View>
             </TouchableOpacity>
           ) : null}
+          {isPodcast && isNewPodcastControlsEnabled ? (
+            <DetailsProgressInfo track={track} />
+          ) : null}
           <View style={styles.buttonSection}>
             {isGatedContentEnabled &&
               !doesUserHaveAccess &&
@@ -315,10 +348,10 @@ export const DetailsTile = ({
             {!isGatedContentEnabled || doesUserHaveAccess ? (
               <Button
                 styles={{ text: styles.playButtonText }}
-                title={isPlaying ? messages.pause : messages.play}
+                title={isPlaying ? messages.pause : playText}
                 size='large'
                 iconPosition='left'
-                icon={isPlaying ? IconPause : IconPlay}
+                icon={isPlaying ? IconPause : PlayIcon}
                 onPress={handlePressPlay}
                 fullWidth
               />

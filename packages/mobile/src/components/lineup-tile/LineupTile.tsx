@@ -112,6 +112,7 @@ export const LineupTile = ({
       <View>
         <LineupTileTopRight
           duration={duration}
+          trackId={id}
           isUnlisted={isUnlisted}
           isOwner={isOwner}
           doesUserHaveAccess={doesUserHaveAccess}

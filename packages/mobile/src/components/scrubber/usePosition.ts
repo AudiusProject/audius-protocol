@@ -11,7 +11,7 @@ import TrackPlayer from 'react-native-track-player'
 import { useSelector } from 'react-redux'
 import { useAsync } from 'react-use'
 
-const { getPlaybackRate } = playerSelectors
+const { getPlaybackRate, getSeek } = playerSelectors
 
 export const usePosition = (
   mediaKey: string,
@@ -22,6 +22,7 @@ export const usePosition = (
   const positionRef = useRef(0)
   const positionElementRef = useRef<TextInput>(null)
   const playbackRate = useSelector(getPlaybackRate)
+  const seek = useSelector(getSeek)
 
   const setPosition = useCallback((position: number) => {
     positionRef.current = position
@@ -71,6 +72,10 @@ export const usePosition = (
   useEffect(() => {
     setPosition(0)
   }, [mediaKey, setPosition])
+
+  useEffect(() => {
+    if (seek !== null) setPosition(seek)
+  }, [seek, setPosition])
 
   return { ref: positionElementRef, setPosition }
 }

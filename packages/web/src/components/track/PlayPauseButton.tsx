@@ -14,10 +14,10 @@ type PlayPauseButtonProps = {
 }
 
 const messages = {
-  play: 'PLAY',
-  pause: 'PAUSE',
-  resume: 'RESUME',
-  replay: 'REPLAY'
+  play: 'play',
+  pause: 'pause',
+  resume: 'resume',
+  replay: 'replay'
 }
 
 export const PlayPauseButton = ({
@@ -41,9 +41,7 @@ export const PlayPauseButton = ({
       : messages.play
 
   const playIcon =
-    isNewPodcastControlsEnabled &&
-    playbackStatus &&
-    playbackStatus === 'COMPLETED' ? (
+    isNewPodcastControlsEnabled && playbackStatus === 'COMPLETED' ? (
       <IconRepeat />
     ) : (
       <IconPlay />
@@ -55,7 +53,7 @@ export const PlayPauseButton = ({
       className={styles.playButton}
       textClassName={styles.playButtonText}
       type={ButtonType.PRIMARY_ALT}
-      text={playing ? 'PAUSE' : playText}
+      text={playing ? messages.pause : playText}
       leftIcon={playing ? <IconPause /> : playIcon}
       onClick={onPlay}
       disabled={isGatedContentEnabled ? !doesUserHaveAccess : false}

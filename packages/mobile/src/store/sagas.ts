@@ -2,6 +2,7 @@ import {
   castSagas,
   chatSagas,
   playerSagas as commonPlayerSagas,
+  playbackPositionSagas,
   premiumContentSagas,
   remoteConfigSagas as remoteConfig,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
@@ -100,6 +101,7 @@ export default function* rootSaga() {
     ...commonPlayerSagas(),
     ...playerSagas(),
     ...queueSagas(),
+    ...playbackPositionSagas(),
 
     // Sign in / Sign out
     ...signOnSagas(),

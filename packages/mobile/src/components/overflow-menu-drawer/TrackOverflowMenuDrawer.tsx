@@ -2,6 +2,7 @@ import { useContext } from 'react'
 
 import type { ID, OverflowActionCallbacks, CommonState } from '@audius/common'
 import {
+  playbackPositionActions,
   FavoriteSource,
   FollowSource,
   RepostSource,
@@ -18,12 +19,14 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useToast } from 'app/hooks/useToast'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { setVisibility } from 'app/store/drawers/slice'
 
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToPlaylistModal } = addToPlaylistUIActions
 const { followUser, unfollowUser } = usersSocialActions
+const { setTrackPosition, clearTrackPosition } = playbackPositionActions
 const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack, shareTrack } =
   tracksSocialActions
 const { getUser } = cacheUsersSelectors
@@ -33,11 +36,17 @@ type Props = {
   render: (callbacks: OverflowActionCallbacks) => JSX.Element
 }
 
+const messages = {
+  markedAsPlayed: 'Marked as Played',
+  markedAsUnplayed: 'Marked as Unplayed'
+}
+
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onClose: closeNowPlayingDrawer } = useDrawer('NowPlaying')
   const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
   const navigation = useNavigation({ customNavigation: contextNavigation })
   const dispatch = useDispatch()
+  const { toast } = useToast()
   const { id: modalId } = useSelector(getMobileOverflowModal)
   const id = modalId as ID
 
@@ -74,6 +83,10 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       closeNowPlayingDrawer()
       navigation?.push('Track', { id })
     },
+    [OverflowAction.VIEW_EPISODE_PAGE]: () => {
+      closeNowPlayingDrawer()
+      navigation?.push('Track', { id })
+    },
     [OverflowAction.VIEW_ARTIST_PAGE]: () => {
       closeNowPlayingDrawer()
       navigation?.push('Profile', { handle })
@@ -93,6 +106,19 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
           data: { trackId: id }
         })
       )
+    },
+    [OverflowAction.MARK_AS_PLAYED]: () => {
+      dispatch(
+        setTrackPosition({
+          trackId: id,
+          positionInfo: { status: 'COMPLETED', playbackPosition: 0 }
+        })
+      )
+      toast({ content: messages.markedAsPlayed })
+    },
+    [OverflowAction.MARK_AS_UNPLAYED]: () => {
+      dispatch(clearTrackPosition({ trackId: id }))
+      toast({ content: messages.markedAsUnplayed })
     }
   }
 

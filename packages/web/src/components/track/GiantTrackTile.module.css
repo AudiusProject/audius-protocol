@@ -140,6 +140,7 @@
   font-size: var(--font-xl);
   font-weight: var(--font-bold);
   letter-spacing: 0.71px;
+  text-transform: uppercase;
 }
 
 .infoSection .numberOfListens {

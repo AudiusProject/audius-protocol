@@ -1,9 +1,21 @@
 import { makeStyles, flexRowCentered, font } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 
 export const useStyles = makeStyles(({ palette }) => ({
   statItem: {
     ...flexRowCentered(),
-    marginHorizontal: 10
+    marginHorizontal: spacing(2.5)
+  },
+  statTextContainer: {
+    flexDirection: 'row',
+    gap: spacing(3),
+    alignItems: 'center'
+  },
+  statTextProgressBar: {
+    height: 4,
+    width: 72,
+    marginVertical: 0,
+    paddingVertical: 0
   },
   statText: {
     ...font('medium'),
@@ -11,15 +23,18 @@ export const useStyles = makeStyles(({ palette }) => ({
     letterSpacing: 0.2,
     color: palette.neutralLight4
   },
+  completeStatText: {
+    color: palette.secondary
+  },
   image: {
     borderRadius: 4,
     height: 72,
     width: 72
   },
   imageContainer: {
-    marginTop: 10,
-    marginRight: 12,
-    marginLeft: 10
+    marginTop: spacing(2.5),
+    marginRight: spacing(3),
+    marginLeft: spacing(2.5)
   },
   titles: {
     justifyContent: 'center',
@@ -29,8 +44,8 @@ export const useStyles = makeStyles(({ palette }) => ({
     flexGrow: 0,
     flexShrink: 1,
     flexBasis: '65%',
-    marginRight: 12,
-    marginTop: 10
+    marginRight: spacing(3),
+    marginTop: spacing(2.5)
   },
   title: {
     ...flexRowCentered(),
@@ -38,12 +53,12 @@ export const useStyles = makeStyles(({ palette }) => ({
     minHeight: 20,
     marginTop: 'auto',
     marginBottom: 2,
-    paddingRight: 20
+    paddingRight: spacing(5)
   },
   artist: {
     ...flexRowCentered(),
     marginBottom: 'auto',
-    paddingRight: 40,
+    paddingRight: spacing(10),
     minHeight: 20
   }
 }))

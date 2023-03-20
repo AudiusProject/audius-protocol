@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import {
+  Genre,
   SquareSizes,
   removeNullable,
   playerSelectors,
@@ -24,7 +25,9 @@ import {
   repostsUserListActions,
   favoritesUserListActions,
   reachabilitySelectors,
-  usePremiumContentAccess
+  usePremiumContentAccess,
+  playbackPositionSelectors,
+  FeatureFlags
 } from '@audius/common'
 import type { UID, Track, User, SearchTrack, SearchUser } from '@audius/common'
 import { Image, View } from 'react-native'
@@ -42,6 +45,7 @@ import { TrackDownloadStatusIndicator } from 'app/components/offline-downloads/T
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { make, track as record } from 'app/services/analytics'
 import { getTrackOfflineDownloadStatus } from 'app/store/offline-downloads/selectors'
 import { OfflineDownloadStatus } from 'app/store/offline-downloads/slice'
@@ -60,9 +64,11 @@ const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
 const { tracksActions } = trackPageLineupActions
 const { getUserId } = accountSelectors
 const { getIsReachable } = reachabilitySelectors
+const { getTrackPosition } = playbackPositionSelectors
 
 const messages = {
   track: 'track',
+  podcast: 'podcast',
   remix: 'remix',
   hiddenTrack: 'hidden track',
   collectibleGated: 'collectible gated',
@@ -165,6 +171,9 @@ export const TrackScreenDetailsTile = ({
 }: TrackScreenDetailsTileProps) => {
   const isGatedContentEnabled = useIsGatedContentEnabled()
   const { doesUserHaveAccess } = usePremiumContentAccess(track as Track) // track is of type Track | SearchTrack but we only care about some of their common fields, maybe worth refactoring later
+  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED
+  )
   const styles = useStyles()
   const navigation = useNavigation()
   const { accentOrange, accentBlue } = useThemeColors()
@@ -313,6 +322,9 @@ export const TrackScreenDetailsTile = ({
     )
   }
 
+  const playbackPositionInfo = useSelector((state) =>
+    getTrackPosition(state, { trackId: track_id })
+  )
   const handlePressOverflow = () => {
     const addToPlaylistAction =
       !isGatedContentEnabled || !isPremium
@@ -323,6 +335,11 @@ export const TrackScreenDetailsTile = ({
       user.does_current_user_follow
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,
+      isNewPodcastControlsEnabled && genre === Genre.PODCASTS
+        ? playbackPositionInfo?.status === 'COMPLETED'
+          ? OverflowAction.MARK_AS_UNPLAYED
+          : OverflowAction.MARK_AS_PLAYED
+        : null,
       OverflowAction.VIEW_ARTIST_PAGE,
       isOwner ? OverflowAction.EDIT_TRACK : null,
       isOwner ? OverflowAction.DELETE_TRACK : null
@@ -373,7 +390,11 @@ export const TrackScreenDetailsTile = ({
         weight='demiBold'
         fontSize='small'
       >
-        {isRemix ? messages.remix : messages.track}
+        {isRemix
+          ? messages.remix
+          : isNewPodcastControlsEnabled && genre === Genre.PODCASTS
+          ? messages.podcast
+          : messages.track}
       </Text>
     )
   }
