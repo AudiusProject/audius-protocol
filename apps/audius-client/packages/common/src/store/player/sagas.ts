@@ -18,16 +18,19 @@ const RECORD_PLAYBACK_POSITION_INTERVAL = 5000
  * Sets the playback rate from local storage when the app loads
  */
 function* setInitialPlaybackRate() {
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  yield* call(remoteConfigInstance.waitForRemoteConfig)
+
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const getLocalStorageItem = yield* getContext('getLocalStorageItem')
-  const isPodcastFeaturesEnabled = yield* call(
+  const isNewPodcastControlsEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
 
   const playbackRate = yield* call(getLocalStorageItem, PLAYBACK_RATE_LS_KEY)
-  const rate: PlaybackRate = isPodcastFeaturesEnabled
+  const rate: PlaybackRate = isNewPodcastControlsEnabled
     ? (playbackRate as PlaybackRate | null) ?? '1x'
     : '1x'
   yield* put(setPlaybackRate({ rate }))
@@ -60,6 +63,9 @@ const getPlayerSeekInfo = async (audioPlayer: AudioPlayer) => {
  * Poll for saving the playback position of tracks
  */
 function* savePlaybackPositionWorker() {
+  const remoteConfigInstance = yield* getContext('remoteConfigInstance')
+  yield* call(remoteConfigInstance.waitForRemoteConfig)
+
   const audioPlayer = yield* getContext('audioPlayer')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const isNewPodcastControlsEnabled = yield* call(
@@ -73,8 +79,10 @@ function* savePlaybackPositionWorker() {
     const trackId = yield* select(getTrackId)
     const track = yield* select(getTrack, { id: trackId })
     const playing = yield* select(getPlaying)
+    const isLongFormContent =
+      track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
 
-    if (trackId && track?.genre === Genre.PODCASTS && playing) {
+    if (trackId && isLongFormContent && playing) {
       const { position, duration } = yield* call(getPlayerSeekInfo, audioPlayer)
       const isComplete =
         duration > 0 && PLAYBACK_COMPLETE_SECONDS > duration - position

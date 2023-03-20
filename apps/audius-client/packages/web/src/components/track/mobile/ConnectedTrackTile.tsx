@@ -174,6 +174,9 @@ const ConnectedTrackTile = memo(
       }
 
     const onClickOverflow = (trackId: ID) => {
+      const isLongFormContent =
+        genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
+
       const repostAction =
         !isOwner && (!isGatedContentEnabled || doesUserHaveAccess)
           ? has_current_user_reposted
@@ -194,7 +197,7 @@ const ConnectedTrackTile = memo(
         repostAction,
         favoriteAction,
         addToPlaylistAction,
-        isNewPodcastControlsEnabled && genre === Genre.PODCASTS
+        isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
         OverflowAction.VIEW_ARTIST_PAGE

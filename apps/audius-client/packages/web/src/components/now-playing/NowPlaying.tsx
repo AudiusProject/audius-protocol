@@ -315,7 +315,9 @@ const NowPlaying = g(
     ])
 
     const onPrevious = () => {
-      if (track?.genre === Genre.PODCASTS) {
+      const isLongFormContent =
+        track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+      if (isLongFormContent) {
         const position = timing.position
         const newPosition = position - SKIP_DURATION_SEC
         seek(Math.max(0, newPosition))
@@ -333,7 +335,9 @@ const NowPlaying = g(
     }
 
     const onNext = () => {
-      if (track?.genre === Genre.PODCASTS) {
+      const isLongFormContent =
+        track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+      if (isLongFormContent) {
         const newPosition = timing.position + SKIP_DURATION_SEC
         seek(Math.min(newPosition, timing.duration))
         // Update mediakey so scrubber updates

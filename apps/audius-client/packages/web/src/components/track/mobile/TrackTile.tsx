@@ -253,7 +253,10 @@ const TrackTile = (props: TrackTileProps & ExtraProps) => {
           )}
           <div className={cn(styles.duration, fadeIn)}>
             {duration
-              ? formatLineupTileDuration(duration, genre === Genre.PODCASTS)
+              ? formatLineupTileDuration(
+                  duration,
+                  genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
+                )
               : null}
           </div>
         </div>

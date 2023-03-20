@@ -327,6 +327,8 @@ export const TrackScreenDetailsTile = ({
     getTrackPosition(state, { trackId: track_id })
   )
   const handlePressOverflow = () => {
+    const isLongFormContent =
+      genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
     const addToPlaylistAction =
       !isGatedContentEnabled || !isPremium
         ? OverflowAction.ADD_TO_PLAYLIST
@@ -336,7 +338,7 @@ export const TrackScreenDetailsTile = ({
       user.does_current_user_follow
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,
-      isNewPodcastControlsEnabled && genre === Genre.PODCASTS
+      isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
@@ -384,6 +386,8 @@ export const TrackScreenDetailsTile = ({
       )
     }
 
+    const isPodcast = genre === Genre.PODCASTS
+
     return (
       <Text
         style={styles.headerText}
@@ -393,7 +397,7 @@ export const TrackScreenDetailsTile = ({
       >
         {isRemix
           ? messages.remix
-          : isNewPodcastControlsEnabled && genre === Genre.PODCASTS
+          : isNewPodcastControlsEnabled && isPodcast
           ? messages.podcast
           : messages.track}
       </Text>

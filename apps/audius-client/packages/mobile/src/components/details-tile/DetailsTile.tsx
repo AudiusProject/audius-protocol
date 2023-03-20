@@ -222,7 +222,8 @@ export const DetailsTile = ({
   const currentUserId = useSelector(accountSelectors.getUserId)
 
   const isOwner = user?.user_id === currentUserId
-  const isPodcast = track?.genre === Genre.PODCASTS
+  const isLongFormContent =
+    track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -333,7 +334,7 @@ export const DetailsTile = ({
               </View>
             </TouchableOpacity>
           ) : null}
-          {isPodcast && isNewPodcastControlsEnabled ? (
+          {isLongFormContent && isNewPodcastControlsEnabled ? (
             <DetailsProgressInfo track={track} />
           ) : null}
           <View style={styles.buttonSection}>

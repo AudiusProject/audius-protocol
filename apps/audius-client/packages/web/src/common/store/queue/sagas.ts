@@ -149,7 +149,7 @@ function* handleQueueAutoplay({
   const isNotRepeating =
     repeatMode === RepeatMode.OFF ||
     (repeatMode === RepeatMode.SINGLE && (skip || ignoreSkip))
-  console.log('IN THE AUTO PLAY SGAS')
+
   if (
     !shuffle &&
     isNotRepeating &&

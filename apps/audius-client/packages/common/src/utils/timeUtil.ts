@@ -22,9 +22,11 @@ export const formatSecondsAsText = (seconds: number): string => {
 
 export const formatLineupTileDuration = (
   seconds: number,
-  isPodcast = false
+  isLongFormContent = false
 ) => {
-  if (!isPodcast && seconds < SECONDS_PER_HOUR) return formatSeconds(seconds)
+  if (!isLongFormContent && seconds < SECONDS_PER_HOUR) {
+    return formatSeconds(seconds)
+  }
   const d = moment.duration(seconds, 'seconds')
   const hourText = d.hours() > 0 ? `${d.hours()}hr ` : ''
   return `${hourText}${d.minutes()}m`

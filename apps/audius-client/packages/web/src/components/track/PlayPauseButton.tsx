@@ -1,15 +1,23 @@
-import { FeatureFlags, PlaybackStatus } from '@audius/common'
+import {
+  FeatureFlags,
+  ID,
+  playbackPositionSelectors,
+  CommonState
+} from '@audius/common'
 import { Button, ButtonType, IconPause, IconPlay } from '@audius/stems'
+import { useSelector } from 'react-redux'
 
 import { ReactComponent as IconRepeat } from 'assets/img/iconRepeatOff.svg'
 import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './GiantTrackTile.module.css'
 
+const { getTrackPosition } = playbackPositionSelectors
+
 type PlayPauseButtonProps = {
   doesUserHaveAccess: boolean
   playing: boolean
-  playbackStatus?: PlaybackStatus | null
+  trackId?: ID
   onPlay: () => void
 }
 
@@ -23,7 +31,7 @@ const messages = {
 export const PlayPauseButton = ({
   doesUserHaveAccess,
   playing,
-  playbackStatus,
+  trackId,
   onPlay
 }: PlayPauseButtonProps) => {
   const { isEnabled: isGatedContentEnabled } = useFlag(
@@ -34,15 +42,19 @@ export const PlayPauseButton = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
 
+  const trackPlaybackInfo = useSelector((state: CommonState) =>
+    getTrackPosition(state, { trackId })
+  )
+
   const playText =
-    isNewPodcastControlsEnabled && playbackStatus
-      ? playbackStatus === 'IN_PROGRESS'
+    isNewPodcastControlsEnabled && trackPlaybackInfo
+      ? trackPlaybackInfo.status === 'IN_PROGRESS'
         ? messages.resume
         : messages.replay
       : messages.play
 
   const playIcon =
-    isNewPodcastControlsEnabled && playbackStatus === 'COMPLETED' ? (
+    isNewPodcastControlsEnabled && trackPlaybackInfo?.status === 'COMPLETED' ? (
       <IconRepeat />
     ) : (
       <IconPlay />

@@ -144,13 +144,14 @@ export const ActionsBar = ({ track }: ActionsBarProps) => {
   )
   const onPressOverflow = useCallback(() => {
     if (track) {
-      const isPodcast = track.genre === Genre.PODCASTS
+      const isLongFormContent =
+        track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
       const overflowActions = [
         OverflowAction.ADD_TO_PLAYLIST,
-        isNewPodcastControlsEnabled && isPodcast
+        isNewPodcastControlsEnabled && isLongFormContent
           ? OverflowAction.VIEW_EPISODE_PAGE
           : OverflowAction.VIEW_TRACK_PAGE,
-        isNewPodcastControlsEnabled && isPodcast
+        isNewPodcastControlsEnabled && isLongFormContent
           ? playbackPositionInfo?.status === 'COMPLETED'
             ? OverflowAction.MARK_AS_UNPLAYED
             : OverflowAction.MARK_AS_PLAYED

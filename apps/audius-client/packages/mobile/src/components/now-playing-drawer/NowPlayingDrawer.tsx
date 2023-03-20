@@ -220,7 +220,9 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   }, [playCounter, currentUid])
 
   const onNext = useCallback(async () => {
-    if (track?.genre === Genre.PODCASTS) {
+    const isLongFormContent =
+      track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+    if (isLongFormContent) {
       const currentPosition = await TrackPlayer.getPosition()
       const newPosition = currentPosition + SKIP_DURATION_SEC
       dispatch(seek({ seconds: Math.min(track.duration, newPosition) }))
@@ -232,7 +234,9 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
 
   const onPrevious = useCallback(async () => {
     const currentPosition = await TrackPlayer.getPosition()
-    if (track?.genre === Genre.PODCASTS) {
+    const isLongFormContent =
+      track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+    if (isLongFormContent) {
       const newPosition = currentPosition - SKIP_DURATION_SEC
       dispatch(seek({ seconds: Math.max(0, newPosition) }))
     } else {
@@ -336,7 +340,10 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
           <AudioControls
             onNext={onNext}
             onPrevious={onPrevious}
-            isPodcast={track?.genre === Genre.PODCASTS}
+            isLongFormContent={
+              track?.genre === Genre.PODCASTS ||
+              track?.genre === Genre.AUDIOBOOKS
+            }
           />
           <ActionsBar track={track} />
         </View>
