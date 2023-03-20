@@ -122,13 +122,14 @@ const TrackTile = memo(
     )
 
     const hasOrdering = order !== undefined
-    const isPodcast = genre === Genre.PODCASTS
+    const isLongFormContent =
+      genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const getDurationText = () => {
       if (!duration) {
         return ''
       } else if (
-        isPodcast &&
+        isLongFormContent &&
         isNewPodcastControlsEnabled &&
         trackPositionInfo
       ) {
@@ -156,7 +157,7 @@ const TrackTile = memo(
           )
         }
       } else {
-        return formatLineupTileDuration(duration, isPodcast)
+        return formatLineupTileDuration(duration, isLongFormContent)
       }
     }
 

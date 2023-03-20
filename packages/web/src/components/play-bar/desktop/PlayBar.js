@@ -244,7 +244,9 @@ class PlayBar extends Component {
       reset,
       currentQueueItem: { track }
     } = this.props
-    if (track?.genre === Genre.PODCASTS) {
+    const isLongFormContent =
+      track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+    if (isLongFormContent) {
       const position = audioPlayer.getPosition()
       const newPosition = position - SKIP_DURATION_SEC
       seek(Math.max(0, newPosition))
@@ -268,7 +270,9 @@ class PlayBar extends Component {
       next,
       currentQueueItem: { track }
     } = this.props
-    if (track?.genre === Genre.PODCASTS) {
+    const isLongFormContent =
+      track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+    if (isLongFormContent) {
       const duration = audioPlayer.getDuration()
       const position = audioPlayer.getPosition()
       const newPosition = position + SKIP_DURATION_SEC
@@ -354,7 +358,8 @@ class PlayBar extends Component {
     const favoriteText = favorited ? messages.unfavorite : messages.favorite
     const repostText = reposted ? messages.reposted : messages.repost
     const matrix = isMatrix()
-    const isPodcast = track?.genre === Genre.PODCASTS
+    const isLongFormContent =
+      track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
     const isNewPodcastControlsEnabled = getFeatureEnabled(
       FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
       FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
@@ -400,7 +405,7 @@ class PlayBar extends Component {
 
             <div className={styles.buttonControls}>
               <div className={styles.shuffleButton}>
-                {isPodcast && isNewPodcastControlsEnabled ? null : (
+                {isLongFormContent && isNewPodcastControlsEnabled ? null : (
                   <ShuffleButtonProvider
                     isMatrix={matrix}
                     darkMode={shouldShowDark(theme)}
@@ -423,7 +428,7 @@ class PlayBar extends Component {
                 <NextButtonProvider onClick={this.onNext} />
               </div>
               <div className={styles.repeatButton}>
-                {isPodcast && isNewPodcastControlsEnabled ? (
+                {isLongFormContent && isNewPodcastControlsEnabled ? (
                   <PlaybackRateButton />
                 ) : (
                   <RepeatButtonProvider

@@ -226,7 +226,8 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
 
-  const isPodcast = track.genre === Genre.PODCASTS
+  const isLongFormContent =
+    track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
   const playbackPositionInfo = useSelector((state) =>
     getTrackPosition(state, { trackId: track_id })
   )
@@ -234,10 +235,10 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const handleOpenOverflowMenu = useCallback(() => {
     const overflowActions = [
       OverflowAction.ADD_TO_PLAYLIST,
-      isNewPodcastControlsEnabled && isPodcast
+      isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      isNewPodcastControlsEnabled && isPodcast
+      isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED
@@ -255,7 +256,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   }, [
     dispatch,
     isNewPodcastControlsEnabled,
-    isPodcast,
+    isLongFormContent,
     playbackPositionInfo?.status,
     track_id
   ])

@@ -12,8 +12,9 @@ type PreviousButtonProviderProps = PreviousButtonProps | BackwardSkipButtonProps
 
 const PreviousButtonProvider = (props: PreviousButtonProviderProps) => {
   const { track } = useSelector(makeGetCurrent())
-  const isPodcast = track && track.genre === Genre.PODCASTS
-  return isPodcast ? (
+  const isLongFormContent =
+    track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+  return isLongFormContent ? (
     <BackwardSkipButton {...props} />
   ) : (
     <PreviousButton {...props} />

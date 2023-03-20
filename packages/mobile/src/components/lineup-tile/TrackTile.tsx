@@ -136,16 +136,17 @@ export const TrackTileComponent = ({
     if (track_id === undefined) {
       return
     }
-    const isPodcast = genre === Genre.PODCASTS
+    const isLongFormContent =
+      genre === Genre.PODCASTS || genre === Genre.AUDIOBOOKS
 
     const overflowActions = [
       !isGatedContentEnabled || !isPremium
         ? OverflowAction.ADD_TO_PLAYLIST
         : null,
-      isNewPodcastControlsEnabled && isPodcast
+      isNewPodcastControlsEnabled && isLongFormContent
         ? OverflowAction.VIEW_EPISODE_PAGE
         : OverflowAction.VIEW_TRACK_PAGE,
-      isNewPodcastControlsEnabled && isPodcast
+      isNewPodcastControlsEnabled && isLongFormContent
         ? playbackPositionInfo?.status === 'COMPLETED'
           ? OverflowAction.MARK_AS_UNPLAYED
           : OverflowAction.MARK_AS_PLAYED

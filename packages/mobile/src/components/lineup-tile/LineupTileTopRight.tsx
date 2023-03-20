@@ -98,9 +98,9 @@ type Props = {
    */
   isArtistPick?: boolean
   /**
-   * Whether or not the track is a podcast
+   * Whether or not the track is long-form content (podcast/audiobook/etc)
    */
-  isPodcast?: boolean
+  isLongFormContent?: boolean
   /**
    * Whether or not the track is unlisted (hidden)
    */
@@ -127,7 +127,7 @@ export const LineupTileTopRight = ({
   duration,
   trackId,
   isArtistPick,
-  isPodcast,
+  isLongFormContent,
   isUnlisted,
   showArtistPick,
   isOwner,
@@ -156,9 +156,9 @@ export const LineupTileTopRight = ({
     ? isInProgress
       ? `${formatLineupTileDuration(
           duration - playbackPositionInfo.playbackPosition,
-          isPodcast
+          isLongFormContent
         )} ${messages.timeLeft}`
-      : formatLineupTileDuration(duration, isPodcast)
+      : formatLineupTileDuration(duration, isLongFormContent)
     : null
 
   return (

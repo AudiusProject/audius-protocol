@@ -85,15 +85,17 @@ const defaultCapabilities = [
   Capability.SkipToNext,
   Capability.SkipToPrevious
 ]
-const podcastCapabilities = [
+const longFormContentCapabilities = [
   ...defaultCapabilities,
   Capability.JumpForward,
   Capability.JumpBackward
 ]
 
 // Set options for controlling music on the lock screen when the app is in the background
-const updatePlayerOptions = async (isPodcast = false) => {
-  const coreCapabilities = isPodcast ? podcastCapabilities : defaultCapabilities
+const updatePlayerOptions = async (isLongFormContent = false) => {
+  const coreCapabilities = isLongFormContent
+    ? longFormContentCapabilities
+    : defaultCapabilities
   return await TrackPlayer.updateOptions({
     // Media controls capabilities
     capabilities: [...coreCapabilities, Capability.Stop, Capability.SeekTo],
@@ -204,7 +206,7 @@ export const Audio = () => {
 
   const dispatch = useDispatch()
 
-  const isPodcastRef = useRef<boolean>(false)
+  const isLongFormContentRef = useRef<boolean>(false)
   const [isAudioSetup, setIsAudioSetup] = useState(false)
 
   const play = useCallback(() => dispatch(playerActions.play()), [dispatch])
@@ -385,14 +387,18 @@ export const Audio = () => {
         }
       }
 
-      const isPodcast = queueTracks[playerIndex]?.genre === Genre.PODCASTS
-      if (isPodcast !== isPodcastRef.current) {
-        isPodcastRef.current = isPodcast
+      const isLongFormContent =
+        queueTracks[playerIndex]?.genre === Genre.PODCASTS ||
+        queueTracks[playerIndex]?.genre === Genre.AUDIOBOOKS
+      if (isLongFormContent !== isLongFormContentRef.current) {
+        isLongFormContentRef.current = isLongFormContent
         // Update playback rate based on if the track is a podcast or not
-        const newRate = isPodcast ? playbackRateValueMap[playbackRate] : 1.0
+        const newRate = isLongFormContent
+          ? playbackRateValueMap[playbackRate]
+          : 1.0
         await TrackPlayer.setRate(newRate)
         // Update lock screen and notification controls
-        await updatePlayerOptions(isPodcast)
+        await updatePlayerOptions(isLongFormContent)
       }
     }
   })
@@ -649,7 +655,7 @@ export const Audio = () => {
   }, [repeatMode])
 
   const handlePlaybackRateChange = useCallback(async () => {
-    if (!isPodcastRef.current) return
+    if (!isLongFormContentRef.current) return
     await TrackPlayer.setRate(playbackRateValueMap[playbackRate])
   }, [playbackRate])
 

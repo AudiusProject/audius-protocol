@@ -95,6 +95,10 @@ export const LineupTile = ({
     }
   }, [isGatedContentEnabled, trackId, doesUserHaveAccess, dispatch, onPress])
 
+  const isLongFormContent =
+    isTrack &&
+    (item.genre === Genre.PODCASTS || item.genre === Genre.AUDIOBOOKS)
+
   return (
     <LineupTileRoot onPress={handlePress} {...TileProps}>
       {showPremiumCornerTag && cornerTagIconType ? (
@@ -118,7 +122,7 @@ export const LineupTile = ({
           doesUserHaveAccess={doesUserHaveAccess}
           premiumConditions={premiumConditions}
           isArtistPick={isArtistPick}
-          isPodcast={isTrack ? item.genre === Genre.PODCASTS : false}
+          isLongFormContent={isLongFormContent}
           showArtistPick={showArtistPick}
         />
         <LineupTileMetadata
