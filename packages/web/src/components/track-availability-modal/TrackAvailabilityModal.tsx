@@ -168,8 +168,7 @@ const TrackAvailabilityModal = ({
   const noSpecialAccess = isInitiallyCollectibleGated || isRemix
   const noSpecialAccessOptions = noSpecialAccess || !isUpload
 
-  const isInitiallyNonHidden = !isUpload && !initialForm.is_unlisted
-  const noHidden = isInitiallyNonHidden
+  const noHidden = !isUpload && !initialForm.is_unlisted
 
   const accountUserId = useSelector(getUserId)
   const defaultSpecialAccess = useMemo(

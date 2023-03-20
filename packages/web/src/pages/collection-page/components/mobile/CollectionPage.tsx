@@ -216,6 +216,7 @@ const CollectionPage = ({
     trackTitle: entry.title,
     trackId: entry.track_id,
     uid: entry.uid,
+    isPremium: entry.is_premium,
     isDeleted: entry.is_delete || !!entry?.user?.is_deactivated
   }))
 

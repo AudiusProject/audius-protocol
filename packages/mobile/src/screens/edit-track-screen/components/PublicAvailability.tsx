@@ -8,6 +8,8 @@ import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailability
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
+import type { TrackAvailabilitySelectionProps } from './types'
+
 const messages = {
   public: 'Public (Default)',
   publicSubtitle:
@@ -45,11 +47,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
     color: palette.neutral
   }
 }))
-
-type TrackAvailabilitySelectionProps = {
-  selected: boolean
-  disabled?: boolean
-}
 
 export const PublicAvailability = ({
   selected,

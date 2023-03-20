@@ -49,6 +49,12 @@ const useStyles = makeStyles(({ palette }) => ({
     width: spacing(3.5),
     borderRadius: spacing(3.5),
     backgroundColor: palette.white
+  },
+  innerActiveAndDisabled: {
+    height: spacing(3.5),
+    width: spacing(3.5),
+    borderRadius: spacing(3.5),
+    backgroundColor: palette.neutralLight7
   }
 }))
 
@@ -75,7 +81,9 @@ export const RadioButton = (props: RadioButtonProps) => {
     >
       <View
         style={
-          checked
+          checked && disabled
+            ? styles.innerActiveAndDisabled
+            : checked
             ? styles.innerActive
             : disabled
             ? styles.innerDisabled

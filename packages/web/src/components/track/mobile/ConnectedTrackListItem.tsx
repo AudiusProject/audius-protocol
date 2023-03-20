@@ -9,15 +9,18 @@ import {
   tracksSocialActions,
   OverflowAction,
   OverflowSource,
-  mobileOverflowMenuUIActions
+  mobileOverflowMenuUIActions,
+  FeatureFlags
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
+import { useFlag } from 'hooks/useRemoteConfig'
 import { AppState } from 'store/types'
 
 import TrackListItem, { TrackListItemProps } from './TrackListItem'
+
 const { open } = mobileOverflowMenuUIActions
 const { getUserFromTrack } = cacheUsersSelectors
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack } =
@@ -31,11 +34,17 @@ type DispatchProps = ReturnType<typeof mapDispatchToProps>
 type ConnectedTrackListItemProps = OwnProps & StateProps & DispatchProps
 
 const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
+  const { isEnabled: isGatedContentEnabled } = useFlag(
+    FeatureFlags.GATED_CONTENT_ENABLED
+  )
+
   const onClickOverflow = () => {
     const overflowActions = [
       props.isReposted ? OverflowAction.UNREPOST : OverflowAction.REPOST,
       props.isSaved ? OverflowAction.UNFAVORITE : OverflowAction.FAVORITE,
-      OverflowAction.ADD_TO_PLAYLIST,
+      !isGatedContentEnabled || !props.isPremium
+        ? OverflowAction.ADD_TO_PLAYLIST
+        : null,
       OverflowAction.VIEW_TRACK_PAGE,
       OverflowAction.VIEW_ARTIST_PAGE
     ].filter(Boolean) as OverflowAction[]

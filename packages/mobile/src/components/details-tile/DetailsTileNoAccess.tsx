@@ -195,12 +195,12 @@ export const DetailsTileNoAccess = ({
     if (followee) {
       dispatch(followUser(followee.user_id, followSource, trackId))
     }
-  }, [followee, dispatch, followSource])
+  }, [followee, dispatch, followSource, trackId])
 
   const handleSendTip = useCallback(() => {
     dispatch(beginTip({ user: tippedUser, source, trackId }))
     navigation.navigate('TipArtist')
-  }, [tippedUser, navigation, dispatch, source])
+  }, [tippedUser, navigation, dispatch, source, trackId])
 
   const renderLockedDescription = useCallback(() => {
     if (nftCollection) {

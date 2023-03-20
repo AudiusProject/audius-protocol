@@ -13,6 +13,7 @@ type TrackListProps = {
   itemClassName?: string
   tracks: Array<{
     isLoading: boolean
+    isPremium?: boolean
     isSaved?: boolean
     isReposted?: boolean
     isActive?: boolean
@@ -94,6 +95,7 @@ const TrackList = ({
           isReposted={track.isReposted}
           isActive={track.isActive}
           isPlaying={track.isPlaying}
+          isPremium={track.isPremium}
           artistHandle={track.artistHandle}
           artistName={track.artistName}
           trackTitle={track.trackTitle}
