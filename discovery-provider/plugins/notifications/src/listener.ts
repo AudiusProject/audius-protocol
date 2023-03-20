@@ -7,12 +7,9 @@ export class PendingUpdates {
   appNotifications: Array<NotificationRow> = []
 
   isEmpty(): boolean {
-    return (
-      this.appNotifications.length == 0
-    )
+    return this.appNotifications.length == 0
   }
 }
-
 
 export class Listener {
   pending: PendingUpdates = new PendingUpdates()
@@ -42,7 +39,6 @@ export class Listener {
     await this.connection.query(sql)
     logger.info('LISTENER Started')
   }
-
 
   close = async () => {
     if (this.db) {

@@ -21,7 +21,8 @@ func NatsMain() {
 		log.Fatalf("failed to create peering instance, %+v", err)
 	}
 
-	{
+	// do self connection test only if we intend to start NATS
+	if natsConfig.EnableJetstream {
 		var err error
 		peering.NatsIsReachable, err = selfConnectionProbe(peering.IP)
 		if err != nil {
@@ -36,7 +37,7 @@ func NatsMain() {
 	natsman := NatsManager{}
 	for n := 0; ; n++ {
 		peerMap := peering.Solicit()
-		if peering.NatsIsReachable {
+		if natsConfig.EnableJetstream && peering.NatsIsReachable {
 			natsman.StartNats(peerMap, peering)
 		}
 

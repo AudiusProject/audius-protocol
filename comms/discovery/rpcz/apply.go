@@ -2,9 +2,12 @@ package rpcz
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"expvar"
+	"strings"
 	"sync"
 	"time"
 
@@ -194,10 +197,18 @@ func (proc *RPCProcessor) Apply(msg *nats.Msg) {
 		defer tx.Rollback()
 		logger.Debug("begin tx", "took", takeSplit())
 
+		// build rpc_log id
+		hash := md5.Sum(msg.Data)
+		hashHex := hex.EncodeToString(hash[:])
+		tsString := strings.Replace(meta.Timestamp.Format("2006.01.02.15.04.05.000"), ".", "", -1)
+		idString := tsString + "_" + hashHex
+
 		query := `
-		INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING
+		INSERT INTO rpc_log (jetstream_sequence, jetstream_timestamp, from_wallet, rpc, sig, id)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		ON CONFLICT DO NOTHING
 		`
-		result, err := tx.Exec(query, meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader)
+		result, err := tx.Exec(query, meta.Sequence.Stream, meta.Timestamp, wallet, msg.Data, signatureHeader, idString)
 		if err != nil {
 			return err
 		}
@@ -362,10 +373,7 @@ func websocketNotify(rawRpc schema.RawRPC, userId int32, timestamp time.Time) {
 			encodedUserId, _ := misc.EncodeHashId(int(userId))
 			data := schema.ChatWebsocketEventData{RPC: payload, Metadata: schema.Metadata{Timestamp: timestamp.Format(time.RFC3339Nano), UserID: encodedUserId}}
 			for _, subscribedUserId := range userIds {
-				// Don't send events sent by a user to that same user
-				if subscribedUserId != userId {
-					websocketPush(subscribedUserId, data)
-				}
+				websocketPush(subscribedUserId, data)
 			}
 		}
 

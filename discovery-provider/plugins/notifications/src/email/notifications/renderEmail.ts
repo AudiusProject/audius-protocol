@@ -2,16 +2,34 @@ import moment from 'moment-timezone'
 
 import { logger } from '../../logger'
 
-// @ts-ignore
 import { DMEntityType } from './types'
-import { AppEmailNotification, DMEmailNotification, EmailNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  DMEmailNotification,
+  EmailNotification
+} from '../../types/notifications'
 import { renderNotificationsEmail } from './components/index'
 import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { Knex } from 'knex'
 import { EntityType } from './types'
 import { mapNotifications } from '../../processNotifications/mappers/mapNotifications'
 import { BaseNotification } from '../../processNotifications/mappers/base'
-import { CosignRemixNotification, CreatePlaylistNotification, CreateTrackNotification, FollowerMilestoneNotification, PlaylistMilestoneNotification, RemixNotification, RepostNotification, SaveNotification, SupporterRankUpNotification, SupportingRankUpNotification, TierChangeNotification, TipReceiveNotification, TipSendNotification, TrackMilestoneNotification } from '../../types/notifications'
+import {
+  CosignRemixNotification,
+  CreatePlaylistNotification,
+  CreateTrackNotification,
+  FollowerMilestoneNotification,
+  PlaylistMilestoneNotification,
+  RemixNotification,
+  RepostNotification,
+  SaveNotification,
+  SupporterRankUpNotification,
+  SupportingRankUpNotification,
+  TierChangeNotification,
+  TipReceiveNotification,
+  TipSendNotification,
+  TrackMilestoneNotification
+} from '../../types/notifications'
 
 type RenderEmailProps = {
   userId: number
@@ -59,9 +77,20 @@ type PlaylistResource = {
   ownerCreatorNodeEndpoint: string
 }
 
-type UserResourcesDict = { [userId: number]: UserResource & { imageUrl: string, twitterHandle?: string, instagramHandle?: string, tikTokHandle?: string } }
-type TrackResourcesDict = { [userId: number]: TrackResource & { imageUrl: string } }
-type PlaylistResourcesDict = { [userId: number]: PlaylistResource & { imageUrl: string } }
+type UserResourcesDict = {
+  [userId: number]: UserResource & {
+    imageUrl: string
+    twitterHandle?: string
+    instagramHandle?: string
+    tikTokHandle?: string
+  }
+}
+type TrackResourcesDict = {
+  [userId: number]: TrackResource & { imageUrl: string }
+}
+type PlaylistResourcesDict = {
+  [userId: number]: PlaylistResource & { imageUrl: string }
+}
 export type Resources = {
   users: UserResourcesDict
   tracks: TrackResourcesDict
@@ -72,7 +101,6 @@ export type Resources = {
 const DEFAULT_PROFILE_IMG = ''
 const DEFAULT_TRACK_COVER_ART_URL = ''
 const DEFAULT_PLAYLIST_IMAGE_IRL = ''
-
 
 const getUserProfileUrl = (user: UserResource) => {
   const contentNodes = user.creator_node_endpoint.split(',')
@@ -110,27 +138,33 @@ const getPlaylistImage = (playlist: PlaylistResource) => {
   return playlistImageUrl
 }
 
-const fetchResources = async (dnDb: Knex, identityDb: Knex, ids: ResourceIds): Promise<Resources> => {
-  const userRows: UserResource[] = await dnDb.select(
-    'users.user_id',
-    'users.handle',
-    'users.name',
-    'users.profile_picture_sizes',
-    'users.profile_picture',
-    'users.creator_node_endpoint',
-  ).from('users').whereIn('user_id', Array.from(ids.users)).andWhere('is_current', true)
+const fetchResources = async (
+  dnDb: Knex,
+  identityDb: Knex,
+  ids: ResourceIds
+): Promise<Resources> => {
+  const userRows: UserResource[] = await dnDb
+    .select(
+      'users.user_id',
+      'users.handle',
+      'users.name',
+      'users.profile_picture_sizes',
+      'users.profile_picture',
+      'users.creator_node_endpoint'
+    )
+    .from('users')
+    .whereIn('user_id', Array.from(ids.users))
+    .andWhere('is_current', true)
 
-  const userHandles = userRows.map(row => row.handle)
-  const identityUserRows = await identityDb.select(
-    'handle',
-    'twitterHandle',
-    'instagramHandle',
-    'tikTokHandle',
-  ).from("SocialHandles").whereIn('handle', userHandles)
+  const userHandles = userRows.map((row) => row.handle)
+  const identityUserRows = await identityDb
+    .select('handle', 'twitterHandle', 'instagramHandle', 'tikTokHandle')
+    .from('SocialHandles')
+    .whereIn('handle', userHandles)
   const userSocialHandles = identityUserRows.reduce((acc, user) => {
     acc[user.handle] = user
     return acc
-  }, {} as { [handle: string]: { twitterHandle: string, instagramHandle: string, tikTokHandle: string } })
+  }, {} as { [handle: string]: { twitterHandle: string; instagramHandle: string; tikTokHandle: string } })
 
   const users = userRows.reduce((acc, user) => {
     const userSocial = userSocialHandles[user.handle] || {}
@@ -142,16 +176,17 @@ const fetchResources = async (dnDb: Knex, identityDb: Knex, ids: ResourceIds): P
     return acc
   }, {} as { [userId: number]: UserResource & { imageUrl: string } })
 
-
-  const trackRows: TrackResource[] = await dnDb.select(
-    'tracks.track_id',
-    'tracks.title',
-    'tracks.owner_id',
-    'tracks.cover_art_sizes',
-    { ownerName: 'users.name' },
-    'users.creator_node_endpoint',
-    'track_routes.slug'
-  ).from('tracks')
+  const trackRows: TrackResource[] = await dnDb
+    .select(
+      'tracks.track_id',
+      'tracks.title',
+      'tracks.owner_id',
+      'tracks.cover_art_sizes',
+      { ownerName: 'users.name' },
+      'users.creator_node_endpoint',
+      'track_routes.slug'
+    )
+    .from('tracks')
     .join('users', 'users.user_id', 'tracks.owner_id')
     .join('track_routes', 'track_routes.track_id', 'tracks.track_id')
     .whereIn('tracks.track_id', Array.from(ids.tracks))
@@ -166,18 +201,24 @@ const fetchResources = async (dnDb: Knex, identityDb: Knex, ids: ResourceIds): P
     return acc
   }, {} as { [trackId: number]: TrackResource & { imageUrl: string } })
 
-  const playlistRows: PlaylistResource[] = await dnDb.select(
-    'playlists.playlist_id',
-    'playlists.playlist_name',
-    'playlists.is_album',
-    'playlists.playlist_image_sizes_multihash',
-    'playlists.playlist_image_multihash',
-    { ownerName: 'users.name' },
-    'users.creator_node_endpoint',
-    'playlist_routes.slug'
-  ).from('playlists')
+  const playlistRows: PlaylistResource[] = await dnDb
+    .select(
+      'playlists.playlist_id',
+      'playlists.playlist_name',
+      'playlists.is_album',
+      'playlists.playlist_image_sizes_multihash',
+      'playlists.playlist_image_multihash',
+      { ownerName: 'users.name' },
+      'users.creator_node_endpoint',
+      'playlist_routes.slug'
+    )
+    .from('playlists')
     .join('users', 'users.user_id', 'playlists.playlist_owner_id')
-    .join('playlist_routes', 'playlist_routes.playlist_id', 'playlists.playlist_id')
+    .join(
+      'playlist_routes',
+      'playlist_routes.playlist_id',
+      'playlists.playlist_id'
+    )
     .whereIn('playlists.playlist_id', Array.from(ids.playlists))
     .andWhere('playlists.is_current', true)
     .andWhere('users.is_current', true)
@@ -195,7 +236,7 @@ const fetchResources = async (dnDb: Knex, identityDb: Knex, ids: ResourceIds): P
 }
 
 /**
- * 
+ *
  * @param dnDB Discovery DB
  * @param identityDB Identity DB
  * @param notifications List of notifications to get email props for
@@ -204,28 +245,44 @@ const fetchResources = async (dnDb: Knex, identityDb: Knex, ids: ResourceIds): P
  * the correct props passed to the email render engine
  * @returns Props ready to pass into the render email method
  */
-const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications: EmailNotification[], additionalNotifications: { [id: string]: AppEmailNotification[] }) => {
+const getNotificationProps = async (
+  dnDB: Knex,
+  identityDB: Knex,
+  notifications: EmailNotification[],
+  additionalNotifications: { [id: string]: AppEmailNotification[] }
+) => {
   const idsToFetch: ResourceIds = {
     users: new Set(),
     tracks: new Set(),
-    playlists: new Set(),
+    playlists: new Set()
   }
 
-
-  const mappedNotifications: BaseNotification<any>[] = mapNotifications(notifications, dnDB, identityDB)
+  const mappedNotifications: BaseNotification<any>[] = mapNotifications(
+    notifications,
+    dnDB,
+    identityDB
+  )
   for (const notification of mappedNotifications) {
     const resourcesToFetch = notification.getResourcesForEmail()
     Object.entries(resourcesToFetch).forEach(([key, value]) => {
-      (value as Set<number>).forEach(idsToFetch[key as keyof ResourceIds].add, idsToFetch[key as keyof ResourceIds])
+      ;(value as Set<number>).forEach(
+        idsToFetch[key as keyof ResourceIds].add,
+        idsToFetch[key as keyof ResourceIds]
+      )
     })
   }
-  const mappedAdditionalNotifications: { [id: string]: BaseNotification<any>[] } = Object.keys(additionalNotifications).reduce((acc, n) => {
+  const mappedAdditionalNotifications: {
+    [id: string]: BaseNotification<any>[]
+  } = Object.keys(additionalNotifications).reduce((acc, n) => {
     if (additionalNotifications[n].length > 0) {
       acc[n] = mapNotifications(additionalNotifications[n], dnDB, identityDB)
       for (const notification of acc[n]) {
         const resourcesToFetch = notification.getResourcesForEmail()
         Object.entries(resourcesToFetch).forEach(([key, value]) => {
-          (value as Set<number>).forEach(idsToFetch[key as keyof ResourceIds].add, idsToFetch[key as keyof ResourceIds])
+          ;(value as Set<number>).forEach(
+            idsToFetch[key as keyof ResourceIds].add,
+            idsToFetch[key as keyof ResourceIds]
+          )
         })
       }
     }
@@ -233,7 +290,12 @@ const getNotificationProps = async (dnDB: Knex, identityDB: Knex, notifications:
   }, {})
 
   const resources = await fetchResources(dnDB, identityDB, idsToFetch)
-  return mappedNotifications.map(n => n.formatEmailProps(resources, mappedAdditionalNotifications[n?.notification?.group_id]))
+  return mappedNotifications.map((n) =>
+    n.formatEmailProps(
+      resources,
+      mappedAdditionalNotifications[n?.notification?.group_id]
+    )
+  )
 }
 
 const getEmailTitle = (frequency: EmailFrequency, userEmail: string) => {
@@ -246,23 +308,30 @@ const getEmailTitle = (frequency: EmailFrequency, userEmail: string) => {
   }
 }
 
-const getEmailSubject = (frequency: EmailFrequency, notificationCount: number) => {
+const getEmailSubject = (
+  frequency: EmailFrequency,
+  notificationCount: number
+) => {
   const now = moment()
   const dayAgo = now.clone().subtract(1, 'days')
   const weekAgo = now.clone().subtract(7, 'days')
   const formattedDayAgo = dayAgo.format('MMMM Do YYYY')
   const shortWeekAgoFormat = weekAgo.format('MMMM Do')
-  const liveSubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
-    }`
-  const weeklySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
-    } from ${shortWeekAgoFormat} - ${formattedDayAgo}`
-  const dailySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
-    } from ${formattedDayAgo}`
+  const liveSubjectFormat = `${notificationCount} unread notification${
+    notificationCount > 1 ? 's' : ''
+  }`
+  const weeklySubjectFormat = `${notificationCount} unread notification${
+    notificationCount > 1 ? 's' : ''
+  } from ${shortWeekAgoFormat} - ${formattedDayAgo}`
+  const dailySubjectFormat = `${notificationCount} unread notification${
+    notificationCount > 1 ? 's' : ''
+  } from ${formattedDayAgo}`
 
   let subject
   if (frequency === 'live') {
     subject = liveSubjectFormat
-  } if (frequency === 'daily') {
+  }
+  if (frequency === 'daily') {
     subject = dailySubjectFormat
   } else {
     subject = weeklySubjectFormat
@@ -271,8 +340,12 @@ const getEmailSubject = (frequency: EmailFrequency, notificationCount: number) =
 }
 
 // Set of notifications that we do NOT send out emails for
-// NOTE: This is to match parity with what identity does  
-const notificationsWithoutEmail = new Set(['supporter_dethroned', 'tier_change', 'tip_send'])
+// NOTE: This is to match parity with what identity does
+const notificationsWithoutEmail = new Set([
+  'supporter_dethroned',
+  'tier_change',
+  'tip_send'
+])
 
 // Master function to render and send email for a given userId
 export const renderEmail = async ({
@@ -281,29 +354,42 @@ export const renderEmail = async ({
   frequency,
   notifications,
   dnDb,
-  identityDb,
+  identityDb
 }: RenderEmailProps) => {
   logger.debug(
     `renderAndSendNotificationEmail | ${userId}, ${email}, ${frequency}`
   )
 
-  const validNotifications = notifications.filter(n => !notificationsWithoutEmail.has(n.type))
+  const validNotifications = notifications.filter(
+    (n) => !notificationsWithoutEmail.has(n.type)
+  )
   const notificationCount = validNotifications.length
   // Get first 5 distinct notifications
   const notificationsToSend: EmailNotification[] = []
   const groupedNotifications: { [id: string]: AppEmailNotification[] } = {}
-  for (let notification of validNotifications) {
-    const isAleadyIncluded = notificationsToSend.some(n => 'group_id' in notification && 'group_id' in n && n?.group_id === notification?.group_id)
+  for (const notification of validNotifications) {
+    const isAleadyIncluded = notificationsToSend.some(
+      (n) =>
+        'group_id' in notification &&
+        'group_id' in n &&
+        n?.group_id === notification?.group_id
+    )
     if (notificationsToSend.length <= 5 && !isAleadyIncluded) {
       notificationsToSend.push(notification)
     } else if ('group_id' in notification) {
       if (isAleadyIncluded) {
-        groupedNotifications[notification?.group_id] = (groupedNotifications[notification?.group_id] || [])
+        groupedNotifications[notification?.group_id] =
+          groupedNotifications[notification?.group_id] || []
         groupedNotifications[notification?.group_id].push(notification)
       }
     }
   }
-  const notificationProps = await getNotificationProps(dnDb, identityDb, notificationsToSend, groupedNotifications)
+  const notificationProps = await getNotificationProps(
+    dnDb,
+    identityDb,
+    notificationsToSend,
+    groupedNotifications
+  )
   const renderProps = {
     copyrightYear: new Date().getFullYear().toString(),
     notifications: notificationProps,
@@ -313,5 +399,4 @@ export const renderEmail = async ({
 
   const notifHtml = renderNotificationsEmail(renderProps)
   return notifHtml
-
 }

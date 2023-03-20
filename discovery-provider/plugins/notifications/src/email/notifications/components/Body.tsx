@@ -8,9 +8,9 @@ import { DMEntityType } from '../types'
 const AudiusImage = () => {
   return (
     <img
-      src='https://gallery.mailchimp.com/f351897a27ff0a641b8acd9ab/images/b1070e55-9487-4acb-abce-e755484cce46.png'
+      src="https://gallery.mailchimp.com/f351897a27ff0a641b8acd9ab/images/b1070e55-9487-4acb-abce-e755484cce46.png"
       style={{ maxWidth: '240px', margin: '27px auto' }}
-      alt='Audius Logo'
+      alt="Audius Logo"
     />
   )
 }
@@ -18,18 +18,19 @@ const AudiusImage = () => {
 const WhatYouMissed = () => {
   return (
     <img
-      src='https://download.audius.co/static-resources/email/whatYouMissed.png'
+      src="https://download.audius.co/static-resources/email/whatYouMissed.png"
       style={{
         maxWidth: '490px',
         margin: '0px auto 7px'
       }}
-      alt='What You Missed'
+      alt="What You Missed"
     />
   )
 }
 
 const UnreadNotifications = ({ message }) => (
-  <p className={'avenir'}
+  <p
+    className={'avenir'}
     style={{
       color: 'rgba(133,129,153,0.5)',
       fontSize: '16px',
@@ -45,11 +46,23 @@ const UnreadNotifications = ({ message }) => (
 const snippetMap = {
   ['favorite'](notification) {
     const [user] = notification.users
-    return `${user.name} favorited your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+    return `${
+      user.name
+    } favorited your ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
   },
   ['repost'](notification) {
     const [user] = notification.users
-    return `${user.name} reposted your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+    return `${
+      user.name
+    } reposted your ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
+  },
+  ['repost_of_repost'](notification) {
+    const [user] = notification.users
+    return `${user.name} reposted your repost of ${notification.entity.name}`
   },
   ['follow'](notification) {
     const [user] = notification.users
@@ -57,7 +70,13 @@ const snippetMap = {
   },
   ['save'](notification) {
     const [user] = notification.users
-    return `${user.name} saved your ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+    return `${user.name} saved your ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
+  },
+  ['save_of_repost'](notification) {
+    const [user] = notification.users
+    return `${user.name} saved your repost of ${notification.entity.name}`
   },
   ['announcement'](notification) {
     return notification.title
@@ -77,10 +96,18 @@ const snippetMap = {
   },
   ['create'](notification) {
     const [user] = notification.users
-    if (notification.entity.type === 'track' && !isNaN(notification.entity.count) && notification.entity.count > 1) {
+    if (
+      notification.entity.type === 'track' &&
+      !isNaN(notification.entity.count) &&
+      notification.entity.count > 1
+    ) {
       return `${user.name} released ${notification.entity.count} new ${notification.entity.type}`
     }
-    return `${user.name} released a new ${notification.entity.type.toLowerCase()} ${notification.entity.name}`
+    return `${
+      user.name
+    } released a new ${notification.entity.type.toLowerCase()} ${
+      notification.entity.name
+    }`
   },
   ['remix'](notification) {
     const { parentTrack } = notification
@@ -88,7 +115,9 @@ const snippetMap = {
   },
   ['cosign'](notification) {
     const { parentTrackUser, parentTracks } = notification
-    const parentTrack = parentTracks.find(t => t.ownerId === parentTrackUser.userId)
+    const parentTrack = parentTracks.find(
+      (t) => t.ownerId === parentTrackUser.userId
+    )
     return `${parentTrackUser.name} Co-signed your Remix of ${parentTrack.title}`
   },
   ['challenge_reward'](notification) {
@@ -113,10 +142,14 @@ const snippetMap = {
     return `${notification.playlistOwner.name} added your track ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
   },
   [DMEntityType.Message](notification) {
-    return `${notification.sendingUser.name} sent you ${notification.multiple ? 'new messages' : 'a new message'}`
+    return `${notification.sendingUser.name} sent you ${
+      notification.multiple ? 'new messages' : 'a new message'
+    }`
   },
   [DMEntityType.Reaction](notification) {
-    return `${notification.sendingUser.name} reacted to your message${notification.multiple ? 's' : ''}`
+    return `${notification.sendingUser.name} reacted to your message${
+      notification.multiple ? 's' : ''
+    }`
   }
 }
 
@@ -140,17 +173,22 @@ const mapNotification = (notification) => {
 // but limited to 90 characters w/ an ellipsis
 const SNIPPET_ELLIPSIS_LENGTH = 90
 const getSnippet = (notifications) => {
-  const snippet = notifications.slice(0, 3).map(notification => {
-    return snippetMap[notification.type](notification)
-  }).join(', ')
+  const snippet = notifications
+    .slice(0, 3)
+    .map((notification) => {
+      return snippetMap[notification.type](notification)
+    })
+    .join(', ')
   if (snippet.length <= SNIPPET_ELLIPSIS_LENGTH) return snippet
-  const indexOfEllipsis = snippet.substring(SNIPPET_ELLIPSIS_LENGTH).indexOf(' ') + SNIPPET_ELLIPSIS_LENGTH
+  const indexOfEllipsis =
+    snippet.substring(SNIPPET_ELLIPSIS_LENGTH).indexOf(' ') +
+    SNIPPET_ELLIPSIS_LENGTH
   return `${snippet.substring(0, indexOfEllipsis)} ...`
 }
 
 const Body = (props) => {
   return (
-    <body bgcolor='#FFFFFF' style={{ backgroundColor: '#FFFFFF' }}>
+    <body bgcolor="#FFFFFF" style={{ backgroundColor: '#FFFFFF' }}>
       <p
         style={{
           display: 'none',
@@ -175,53 +213,66 @@ const Body = (props) => {
         &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
         <wbr>
         &zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;
-        ` }}
+        `
+        }}
       />
       <center>
-        <table align='center' border='0' cellPadding='0' cellSpacing='0' width='100%' id='bodyTable' bgcolor='#FFFFFF' style={{ backgroundColor: '#FFFFFF' }}>
+        <table
+          align="center"
+          border="0"
+          cellPadding="0"
+          cellSpacing="0"
+          width="100%"
+          id="bodyTable"
+          bgcolor="#FFFFFF"
+          style={{ backgroundColor: '#FFFFFF' }}>
           <tr>
-            <td align='center' valign='top' id='bodyCell'>
+            <td align="center" valign="top" id="bodyCell">
               <AudiusImage />
             </td>
           </tr>
           <tr>
-            <td align='center' valign='top' id='bodyCell'>
+            <td align="center" valign="top" id="bodyCell">
               <WhatYouMissed />
             </td>
           </tr>
           <tr>
-            <td align='center' valign='top' id='bodyCell'>
+            <td align="center" valign="top" id="bodyCell">
               <UnreadNotifications message={props.subject} />
             </td>
           </tr>
           <tr>
             <td
-              align='center'
-              valign='top'
-              id='bodyCell'
+              align="center"
+              valign="top"
+              id="bodyCell"
               style={{
                 borderRadius: '4px',
                 maxWidth: '396px',
                 marginBottom: '32px'
-              }}
-            >
+              }}>
               {props.notifications.map((notification, ind) => (
                 <Notification key={ind} {...mapNotification(notification)} />
               ))}
             </td>
           </tr>
           <tr>
-            <td align='center' valign='top' id='bodyCell' style={{ padding: '24px 0px 32px', width: '100%' }}>
+            <td
+              align="center"
+              valign="top"
+              id="bodyCell"
+              style={{ padding: '24px 0px 32px', width: '100%' }}>
               <table
-                cellSpacing='0'
-                cellPadding='0'
-                style={{ margin: '0px auto' }}
-              >
+                cellSpacing="0"
+                cellPadding="0"
+                style={{ margin: '0px auto' }}>
                 <tr>
-                  <td style={{ borderRadius: '17px', margin: '0px auto' }} bgcolor='#7E1BCC'>
+                  <td
+                    style={{ borderRadius: '17px', margin: '0px auto' }}
+                    bgcolor="#7E1BCC">
                     <a
-                      href='https://audius.co/feed?openNotifications=true'
-                      target='_blank'
+                      href="https://audius.co/feed?openNotifications=true"
+                      target="_blank"
                       style={{
                         padding: '8px 24px',
                         fontSize: '14px',
@@ -229,8 +280,7 @@ const Body = (props) => {
                         textDecoration: 'none',
                         fontWeight: 'bold',
                         display: 'inline-block'
-                      }}
-                    >
+                      }}>
                       See more on Audius
                     </a>
                   </td>

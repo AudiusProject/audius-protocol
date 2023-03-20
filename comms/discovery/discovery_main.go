@@ -48,10 +48,12 @@ func DiscoveryMain() {
 			return err
 		}
 
-		err = pubkeystore.Dial(jsc)
+		err = pubkeystore.Dial()
 		if err != nil {
 			return err
 		}
+
+		go pubkeystore.StartPubkeyBackfill()
 
 		return nil
 

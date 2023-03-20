@@ -1,10 +1,5 @@
 FROM golang:alpine AS builder
 
-ARG GOOS=linux
-ARG GOARCH=amd64
-
-ENV GOOS=${GOOS}
-ENV GOARCH=${GOARCH}
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 
@@ -26,7 +21,6 @@ RUN go build -ldflags="-w -s" -o comms main.go
 
 EXPOSE 4222
 VOLUME ["/tmp"]
-ENTRYPOINT ["air"]
 
 FROM alpine AS final
 

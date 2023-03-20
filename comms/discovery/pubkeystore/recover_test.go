@@ -17,7 +17,7 @@ func TestRecovery(t *testing.T) {
 
 	// dagron
 	os.Setenv("AUDIUS_IS_STAGING", "true")
-	err = Dial(nil)
+	err = Dial()
 	assert.NoError(t, err)
 
 	// addUser on POA

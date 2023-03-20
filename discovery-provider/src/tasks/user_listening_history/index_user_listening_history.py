@@ -1,5 +1,6 @@
 import logging
 import time
+from datetime import datetime
 from typing import DefaultDict
 
 import sqlalchemy as sa
@@ -19,11 +20,18 @@ USER_LISTENING_HISTORY_TABLE_NAME = "user_listening_history"
 BATCH_SIZE = 100000  # index 100k plays at most at a time
 
 
-def sort_listening_history(deduped_history_dict, limit=1000):
+def sort_listening_history_desc_by_timestamp(
+    track_id_to_timestamp, track_id_to_play_count={}, limit=1000
+):
     # sorts listening history and places a limit
     deduped_history = []
-    for track_id, timestamp in deduped_history_dict.items():
-        deduped_history.append({"track_id": track_id, "timestamp": timestamp})
+    for track_id, timestamp in track_id_to_timestamp.items():
+        play_count = track_id_to_play_count.get(track_id, 1)
+        deduped_history.append(
+            ListenHistory(
+                track_id=track_id, timestamp=timestamp, play_count=play_count
+            ).to_dict()
+        )
     deduped_history.sort(key=lambda listen: listen["timestamp"], reverse=True)
     return deduped_history[:limit]
 
@@ -44,7 +52,6 @@ def _index_user_listening_history(session):
         .limit(BATCH_SIZE)
     ).all()
 
-    # no update exit early
     if not new_plays:
         return
     new_checkpoint = new_plays[-1].id  # get the highest play id
@@ -61,48 +68,96 @@ def _index_user_listening_history(session):
     }
 
     # reduce new plays
+    (
+        user_listening_history_dict_to_insert,
+        user_listening_history_dict_to_update,
+    ) = separate_new_plays(new_plays, existing_users)
+
+    # make updates to existing users
+    update_existing_user_listening_histories(
+        existing_user_listening_history, user_listening_history_dict_to_update
+    )
+
+    # insert for new users
+    insert_new_user_listening_histories_to_insert(
+        user_listening_history_dict_to_insert, session
+    )
+
+    # update indexing_checkpoints with the new id
+    save_indexed_checkpoint(session, USER_LISTENING_HISTORY_TABLE_NAME, new_checkpoint)
+
+
+def update_existing_user_listening_histories(
+    existing_user_listening_history, user_listening_history_dict_to_update
+):
+    for i, user_history in enumerate(existing_user_listening_history):
+        track_to_latest_timestamp = {}
+        track_to_play_count = DefaultDict(int)
+        for existing_play in user_history.listening_history:
+            track_to_latest_timestamp[existing_play["track_id"]] = existing_play[
+                "timestamp"
+            ]
+            track_to_play_count[existing_play["track_id"]] = existing_play.get(
+                "play_count", 1
+            )
+
+        for new_play in user_listening_history_dict_to_update[user_history.user_id]:
+            current_max_timestamp = track_to_latest_timestamp.get(
+                new_play["track_id"], str(datetime.min)
+            )
+            track_to_latest_timestamp[new_play["track_id"]] = max(
+                current_max_timestamp, new_play["timestamp"]
+            )
+            track_to_play_count[new_play["track_id"]] += 1
+
+        existing_user_listening_history[
+            i
+        ].listening_history = sort_listening_history_desc_by_timestamp(
+            track_to_latest_timestamp, track_to_play_count
+        )
+
+
+def separate_new_plays(new_plays, existing_users):
     insert_user_listening_history_dict = DefaultDict(list)
     update_user_listening_history_dict = DefaultDict(list)
-    for new_play in reversed(new_plays):
+    for new_play in new_plays:
         listen_history = ListenHistory(
-            new_play.play_item_id, new_play.created_at
+            new_play.play_item_id, new_play.created_at, play_count=1
         ).to_dict()
 
         if new_play.user_id in existing_users:
             update_user_listening_history_dict[new_play.user_id].append(listen_history)
         else:
             insert_user_listening_history_dict[new_play.user_id].append(listen_history)
+    return insert_user_listening_history_dict, update_user_listening_history_dict
 
-    # make updates to existing users
-    for i, user_history in enumerate(existing_user_listening_history):
-        deduped_history_dict = {}
-        for existing_play in reversed(user_history.listening_history):
-            deduped_history_dict[existing_play["track_id"]] = existing_play["timestamp"]
-        for new_play in reversed(
-            update_user_listening_history_dict[user_history.user_id]
-        ):
-            deduped_history_dict[new_play["track_id"]] = new_play["timestamp"]
-        existing_user_listening_history[i].listening_history = sort_listening_history(
-            deduped_history_dict
-        )
 
-    # insert for new users
+def insert_new_user_listening_histories_to_insert(
+    insert_user_listening_history_dict, session
+):
     new_user_listening_history = []
-    for user, listening_history in insert_user_listening_history_dict.items():
-        deduped_history_dict = {}
-        for new_play in reversed(listening_history):
-            deduped_history_dict[new_play["track_id"]] = new_play["timestamp"]
+    for user_id, listening_histories in insert_user_listening_history_dict.items():
+        track_to_play_count = DefaultDict(int)
+        track_to_latest_timestamp = {}
+        for new_play in listening_histories:
+            current_max_timestamp = track_to_latest_timestamp.get(
+                new_play["track_id"], str(datetime.min)
+            )
+            track_to_latest_timestamp[new_play["track_id"]] = max(
+                current_max_timestamp, new_play["timestamp"]
+            )
+            track_to_play_count[new_play["track_id"]] += 1
 
         new_user_listening_history.append(
             UserListeningHistory(
-                user_id=user,
-                listening_history=sort_listening_history(deduped_history_dict),
+                user_id=user_id,
+                listening_history=sort_listening_history_desc_by_timestamp(
+                    track_to_latest_timestamp, track_to_play_count
+                ),
             )
         )
-    session.add_all(new_user_listening_history)
 
-    # update indexing_checkpoints with the new id
-    save_indexed_checkpoint(session, USER_LISTENING_HISTORY_TABLE_NAME, new_checkpoint)
+    session.add_all(new_user_listening_history)
 
 
 # ####### CELERY TASKS ####### #
