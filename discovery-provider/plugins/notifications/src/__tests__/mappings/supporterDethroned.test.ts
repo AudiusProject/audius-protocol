@@ -1,47 +1,27 @@
 import { expect, jest, test } from '@jest/globals'
-import { renderEmail } from '../../email/notifications/renderEmail'
 import { Processor } from '../../main'
-import { SupporterDethroned } from '../../processNotifications/mappers/supporterDethroned'
 import * as sns from '../../sns'
-import {
-  AppEmailNotification,
-  SupporterDethronedNotification
-} from '../../types/notifications'
 
 import {
   createUsers,
   insertMobileDevices,
   insertMobileSettings,
-  createTestDB,
   dropTestDB,
-  replaceDBName,
   createSupporterRankUp,
-  createUserBankTx
+  createUserBankTx,
+  setupTest
 } from '../../utils/populateDB'
 
 describe('Supporter Dethroned Notification', () => {
   let processor: Processor
-  // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
 
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      createTestDB(process.env.DN_DB_URL, testName),
-      createTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
-    processor = new Processor()
-    await processor.init({
-      identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
-      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
-    })
+    const setup = await setupTest()
+    processor = setup.processor
   })
 
   afterEach(async () => {

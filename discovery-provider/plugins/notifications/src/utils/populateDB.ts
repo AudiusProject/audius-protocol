@@ -31,6 +31,29 @@ import { expect, jest } from '@jest/globals'
 import { Processor } from '../main'
 import { getRedisConnection } from './redisConnection'
 
+export const setupTest = async () => {
+  const testName = expect
+    .getState()
+    .currentTestName.replace(/\s/g, '_')
+    .toLocaleLowerCase()
+  await Promise.all([
+    createTestDB(process.env.DN_DB_URL, testName),
+    createTestDB(process.env.IDENTITY_DB_URL, testName)
+  ])
+  const processor = new Processor()
+  await processor.init({
+    identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
+    discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
+  })
+  jest
+    .spyOn(processor.remoteConfig, 'getFeatureVariableEnabled')
+    .mockImplementation((name: string, field: string) => true)
+
+  // Mock current date for test result consistency
+  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
+  return { processor }
+}
+
 export const replaceDBName = (connectionString: string, testName: string) => {
   const connection = connectionString.substring(
     0,
@@ -70,26 +93,6 @@ export const dropTestDB = async (
   const db = await getDB(postgresConnection)
   await db.raw('DROP DATABASE IF EXISTS :test_name:', { test_name: testName })
   await db.destroy()
-}
-
-export const setUpTestDbProcessor = async () => {
-  const testName = expect
-    .getState()
-    .currentTestName.replace(/\s/g, '_')
-    .toLocaleLowerCase()
-  await Promise.all([
-    createTestDB(process.env.DN_DB_URL, testName),
-    createTestDB(process.env.IDENTITY_DB_URL, testName)
-  ])
-  const redis = await getRedisConnection()
-  redis.del(config.lastIndexedMessageRedisKey)
-  redis.del(config.lastIndexedReactionRedisKey)
-  const processor = new Processor()
-  await processor.init({
-    identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
-    discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
-  })
-  return processor
 }
 
 export const resetTests = async (processor) => {

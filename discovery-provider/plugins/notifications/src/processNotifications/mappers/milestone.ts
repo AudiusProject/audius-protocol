@@ -1,11 +1,5 @@
 import { Knex } from 'knex'
-import {
-  NotificationRow,
-  PlaylistRouteRow,
-  PlaylistRow,
-  TrackRow,
-  UserRow
-} from '../../types/dn'
+import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import {
   FollowerMilestoneNotification,
   MilestoneType,
@@ -15,25 +9,7 @@ import {
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import { ChallengeId, EntityType } from '../../email/notifications/types'
-
-// export type FollowerMilestoneNotification = {
-//   type: string
-//   user_id: number
-//   threshold: number
-// }
-
-// export type TrackMilestoneNotification = {
-//   type: string
-//   track_id: number
-//   threshold: number
-// }
-
-// export type PlaylistMilestoneNotification = {
-//   type: string
-//   playlist_id: number
-//   threshold: number
-// }
+import { EntityType } from '../../email/notifications/types'
 
 type MilestoneRow = Omit<NotificationRow, 'data'> & {
   data:
