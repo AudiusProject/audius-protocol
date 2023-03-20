@@ -7,10 +7,10 @@ import { View, Image, Dimensions } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector } from 'react-redux'
 
-import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
-import { Link, Text } from 'app/components/core'
+import IconExternalLink from 'app/assets/images/iconExternalLink.svg'
+import { Text, useLink } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
@@ -73,10 +73,10 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     alignItems: 'center'
   },
   learnMoreText: {
-    marginRight: spacing(0.5),
+    marginRight: spacing(1),
     fontFamily: typography.fontByWeight.bold,
-    fontSize: typography.fontSize.small,
-    color: palette.secondary
+    fontSize: typography.fontSize.large,
+    color: palette.neutralLight4
   },
   collectionContainer: {
     marginTop: spacing(4),
@@ -129,6 +129,9 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     marginRight: spacing(4),
     width: spacing(5),
     height: spacing(5)
+  },
+  learnMoreIcon: {
+    marginLeft: spacing(1)
   }
 }))
 
@@ -148,6 +151,7 @@ export const CollectibleGatedAvailability = ({
   const secondary = useColor('secondary')
   const neutral = useColor('neutral')
   const neutralLight4 = useColor('neutralLight4')
+  const { onPress: onLearnMorePress } = useLink(LEARN_MORE_URL)
 
   const titleStyles: object[] = [styles.title]
   if (selected) {
@@ -237,10 +241,17 @@ export const CollectibleGatedAvailability = ({
           content={renderHelpCalloutContent()}
         />
       ) : null}
-      <Link url={LEARN_MORE_URL} style={styles.learnMore}>
-        <Text style={styles.learnMoreText}>{messages.learnMore}</Text>
-        <IconArrow fill={secondary} width={16} height={16} />
-      </Link>
+      <TouchableOpacity style={styles.learnMore} onPress={onLearnMorePress}>
+        <Text weight='bold' color='neutralLight4' fontSize='large'>
+          {messages.learnMore}
+        </Text>
+        <IconExternalLink
+          style={styles.learnMoreIcon}
+          width={20}
+          height={20}
+          fill={neutralLight4}
+        />
+      </TouchableOpacity>
       {selected && (
         <TouchableOpacity
           onPress={handlePickACollection}

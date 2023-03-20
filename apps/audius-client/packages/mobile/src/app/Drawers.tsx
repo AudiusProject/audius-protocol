@@ -19,6 +19,7 @@ import { EditCollectiblesDrawer } from 'app/components/edit-collectibles-drawer'
 import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifications-drawer'
 import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
 import { ForgotPasswordDrawer } from 'app/components/forgot-password-drawer'
+import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer/GatedContentUploadPromptDrawer'
 import { LockedContentDrawer } from 'app/components/locked-content-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
@@ -115,6 +116,7 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   RemoveDownloadedFavorites: RemoveDownloadedFavoritesDrawer,
   UnfavoriteDownloadedCollection: UnfavoriteDownloadedCollectionDrawer,
   LockedContent: LockedContentDrawer,
+  GatedContentUploadPrompt: GatedContentUploadPromptDrawer,
   ChatActions: ChatActionsDrawer,
   BlockMessages: BlockMessagesDrawer
 }

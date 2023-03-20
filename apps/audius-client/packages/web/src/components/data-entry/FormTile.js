@@ -19,6 +19,7 @@ import Input from 'components/data-entry/Input'
 import LabeledInput from 'components/data-entry/LabeledInput'
 import TagInput from 'components/data-entry/TagInput'
 import TextArea from 'components/data-entry/TextArea'
+import { GatedContentUploadPromptModal } from 'components/gated-content-upload-prompt-modal/GatedContentUploadPromptModal'
 import LabeledButton from 'components/labeled-button/LabeledButton'
 import Dropdown from 'components/navigation/Dropdown'
 import ConnectedRemixSettingsModal from 'components/remix-settings-modal/ConnectedRemixSettingsModal'
@@ -529,6 +530,15 @@ const AdvancedForm = (props) => {
 
   return (
     <>
+      {/*
+        Render the gated content upload prompt component which is responsible
+        for whether or its content will modal will be displayed.
+      */}
+      {props.type === 'track' && props.isUpload ? (
+        <GatedContentUploadPromptModal
+          onSubmit={() => setIsAvailabilityModalOpen(true)}
+        />
+      ) : null}
       {showAvailability && (
         <TrackAvailabilityModalContainer
           showHideTrackSectionInModal={props.showHideTrackSectionInModal}
