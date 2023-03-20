@@ -545,8 +545,6 @@ def get_final_poa_block() -> int:
     # marks the transition to nethermind
     # depend on identity responding with final_poa_block or the redis cached value
     final_poa_block = None
-    print("asdf")
-    print(os.environ)
 
     if os.getenv("audius_discprov_dev_mode"):
         # for ganache and test envs
