@@ -1,4 +1,4 @@
-export default async ({ slack, dp_db, id_db }, { user_id }) => {
+export default async ({ slack, dp_db, id_db }, { user_id, is_verified }) => {
   const result = await dp_db("users")
     .select("handle")
     .where("user_id", "=", user_id)
@@ -29,22 +29,25 @@ export default async ({ slack, dp_db, id_db }, { user_id }) => {
       .catch(console.error);
 
     let source = "unknown";
-    switch ((ig, twitter, tiktok)) {
-      case (undefined, undefined, tiktok):
-        source = "tiktok";
-        break;
-      case (undefined, twitter, undefined):
-        source = "twitter";
-        break;
-      case (ig, undefined, undefined):
-        source = "instagram";
-        break;
+
+    if (ig) {
+      source = "instagram";
     }
 
-    const header = `:pikawave: a new challenger has appeared! *@${handle}*`;
+    if (twitter) {
+      source = "twitter";
+    }
+
+    if (tiktok) {
+      source = "tiktok";
+    }
+
+    const header = `User ${handle} ${
+      is_verified ? "is now" : "is no longer"
+    } verified.`;
     const body = {
       userId: user_id,
-      handle: handle,
+      handle,
       link: `https://audius.co/${handle}`,
       source,
     };

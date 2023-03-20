@@ -11,7 +11,7 @@ const main = async () => {
 
   const slack = Slack();
   listenOn("tracks", { slack }, tracksHandler).catch(console.error);
-  listenOn("users", { slack }, usersHandler).catch(console.error);
+  listenOn("user_verification", { slack }, usersHandler).catch(console.error);
 };
 
 main();
