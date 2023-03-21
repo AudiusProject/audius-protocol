@@ -14,6 +14,7 @@ import { premiumContentSagas } from 'store/premium-content'
 import remoteConfigSagas from 'store/remote-config/sagas'
 import { searchUsersModalSagas } from 'store/ui'
 
+import { playlistUpdatesSagas } from './playlist-updates'
 import { CommonStoreContext } from './storeContext'
 import {
   toastSagas,
@@ -45,7 +46,8 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
   player: playerSagas,
-  playbackPosition: playbackPositionSagas
+  playbackPosition: playbackPositionSagas,
+  playlistUpdates: playlistUpdatesSagas
 
   // signOut: signOutSagas
   // recoveryEmail: recoveryEmailSagas
