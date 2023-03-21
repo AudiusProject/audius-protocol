@@ -10,7 +10,7 @@ export delegatePrivateKey=$(printenv "CN${replica}_SP_OWNER_PRIVATE_KEY")
 export spOwnerWallet=$(printenv "CN${replica}_SP_OWNER_ADDRESS")
 export spID=$replica
 
-export creatorNodeEndpoint="http://$(nslookup "$(hostname -i)" | sed -n 's/.*name = \(.*\)/\1/p'):4000"
+export creatorNodeEndpoint="http://audius-protocol-creator-node-${replica}"
 
 # Constants
 

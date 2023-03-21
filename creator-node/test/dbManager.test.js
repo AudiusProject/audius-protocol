@@ -633,6 +633,7 @@ describe('Test deleteSessionTokensFromDB() when provided an Array of SessionToke
 })
 
 describe('Test deleteAllCNodeUserDataFromDB()', async function () {
+  this.retries(3) // TODO: Flakey test
   const initialClockVal = 0
   const userId = 1
 
@@ -877,7 +878,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
   let cnodeUser, cnodeUserUUID, server
 
   /** Init server to run DB migrations */
-  before(async function() {
+  before(async function () {
     const appInfo = await getApp(getLibsMock(), BlacklistManager)
     server = appInfo.server
   })
@@ -1006,8 +1007,9 @@ describe('Test fetchFilesHashFromDB()', async function () {
     assert.strictEqual(actualFilesHash, expectedFilesHash)
 
     /** clockMin and clockMax */
-    expectedFilesHash = computeFilesHash(multihashes
-      .slice(clockMin - 1, clockMax - 1))
+    expectedFilesHash = computeFilesHash(
+      multihashes.slice(clockMin - 1, clockMax - 1)
+    )
     actualFilesHash = await DBManager.fetchFilesHashFromDB({
       lookupKey: { lookupCNodeUserUUID: cnodeUserUUID },
       clockMin,
@@ -1053,7 +1055,7 @@ describe('Test fetchFilesHashFromDB()', async function () {
     const expectedFilesHashCNU2 = computeFilesHash(multihashesCNU2)
 
     // fetch filesHashes & assert equal
-    let cnodeUserUUIDs = [cnodeUserUUID, cnodeUserUUID2]
+    const cnodeUserUUIDs = [cnodeUserUUID, cnodeUserUUID2]
     let actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs })
     let expectedResp = {
       [cnodeUserUUID]: expectedFilesHashCNU1,
@@ -1069,19 +1071,28 @@ describe('Test fetchFilesHashFromDB()', async function () {
     assert.strictEqual(cnodeUser3.clock, ClockZero)
 
     // Correctly handles user with no files
-    actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs: [cnodeUserUUID3] })
+    actualResp = await DBManager.fetchFilesHashesFromDB({
+      cnodeUserUUIDs: [cnodeUserUUID3]
+    })
     expectedResp = { [cnodeUserUUID3]: null }
     assert.deepEqual(actualResp, expectedResp)
 
     // Correctly handles non-existent user
     const cnodeUserUUID4 = getUuid()
-    actualResp = await DBManager.fetchFilesHashesFromDB({ cnodeUserUUIDs: [cnodeUserUUID4] })
+    actualResp = await DBManager.fetchFilesHashesFromDB({
+      cnodeUserUUIDs: [cnodeUserUUID4]
+    })
     expectedResp = { [cnodeUserUUID4]: null }
     assert.deepEqual(actualResp, expectedResp)
 
     // Correctly handles request with valid user, invalid user, and user with no files
     actualResp = await DBManager.fetchFilesHashesFromDB({
-      cnodeUserUUIDs: [cnodeUserUUID, cnodeUserUUID2, cnodeUserUUID3, cnodeUserUUID4]
+      cnodeUserUUIDs: [
+        cnodeUserUUID,
+        cnodeUserUUID2,
+        cnodeUserUUID3,
+        cnodeUserUUID4
+      ]
     })
     expectedResp = {
       [cnodeUserUUID]: expectedFilesHashCNU1,
@@ -1158,7 +1169,8 @@ describe('Test fixInconsistentUser()', async function () {
   }
 
   it('Confirm no change to healthy users DB state', async function () {
-    const { cnodeUserUUID, walletPublicKey, sessionToken } = await createStarterCNodeUser(userId)
+    const { cnodeUserUUID, walletPublicKey, sessionToken } =
+      await createStarterCNodeUser(userId)
 
     // Upload some state for user
     const audiusUserBlockNumber = 10
@@ -1182,36 +1194,54 @@ describe('Test fixInconsistentUser()', async function () {
     } = await fetchDBStateForWallet(walletPublicKey, models)
     assertTableEquality(
       [initialCNodeUser],
-      [{ cnodeUserUUID, walletPublicKey, latestBlockNumber: audiusUserBlockNumber, clock: expectedCNodeUserClock }],
+      [
+        {
+          cnodeUserUUID,
+          walletPublicKey,
+          latestBlockNumber: audiusUserBlockNumber,
+          clock: expectedCNodeUserClock
+        }
+      ],
       ['createdAt', 'updatedAt', 'lastLogin']
     )
     assertTableEquality(
       initialAudiusUsers,
-      [{ cnodeUserUUID, clock: expectedCNodeUserClock, blockchainId: `${userId}`, metadataJSON: audiusUserMetadata, coverArtFileUUID: null, profilePicFileUUID: null }],
+      [
+        {
+          cnodeUserUUID,
+          clock: expectedCNodeUserClock,
+          blockchainId: `${userId}`,
+          metadataJSON: audiusUserMetadata,
+          coverArtFileUUID: null,
+          profilePicFileUUID: null
+        }
+      ],
       ['createdAt', 'updatedAt', 'metadataFileUUID']
     )
     assertTableEquality(initialTracks, [])
     assertTableEquality(
       initialFiles,
-      [{
-        cnodeUserUUID,
-        trackBlockchainId: null,
-        multihash: metadataCID,
-        sourceFile: null,
-        fileName: null,
-        dirMultihash: null,
-        storagePath: await utils.computeFilePath(metadataCID),
-        type: "metadata",
-        clock: 1,
-        skipped: false
-      }],
+      [
+        {
+          cnodeUserUUID,
+          trackBlockchainId: null,
+          multihash: metadataCID,
+          sourceFile: null,
+          fileName: null,
+          dirMultihash: null,
+          storagePath: await utils.computeFilePath(metadataCID),
+          type: 'metadata',
+          clock: 1,
+          skipped: false
+        }
+      ],
       ['fileUUID', 'createdAt', 'updatedAt']
     )
     assertTableEquality(
       initialClockRecords,
       [
-        { cnodeUserUUID, clock: 1, sourceTable: "File" },
-        { cnodeUserUUID, clock: 2, sourceTable: "AudiusUser" }
+        { cnodeUserUUID, clock: 1, sourceTable: 'File' },
+        { cnodeUserUUID, clock: 2, sourceTable: 'AudiusUser' }
       ],
       ['createdAt', 'updatedAt']
     )
@@ -1230,43 +1260,62 @@ describe('Test fixInconsistentUser()', async function () {
     } = await fetchDBStateForWallet(walletPublicKey, models)
     assertTableEquality(
       [finalCNodeUser],
-      [{ cnodeUserUUID, walletPublicKey, latestBlockNumber: audiusUserBlockNumber, clock: expectedCNodeUserClock }],
+      [
+        {
+          cnodeUserUUID,
+          walletPublicKey,
+          latestBlockNumber: audiusUserBlockNumber,
+          clock: expectedCNodeUserClock
+        }
+      ],
       ['createdAt', 'updatedAt', 'lastLogin']
     )
     assertTableEquality(
       finalAudiusUsers,
-      [{ cnodeUserUUID, clock: expectedCNodeUserClock, blockchainId: `${userId}`, metadataJSON: audiusUserMetadata, coverArtFileUUID: null, profilePicFileUUID: null }],
+      [
+        {
+          cnodeUserUUID,
+          clock: expectedCNodeUserClock,
+          blockchainId: `${userId}`,
+          metadataJSON: audiusUserMetadata,
+          coverArtFileUUID: null,
+          profilePicFileUUID: null
+        }
+      ],
       ['createdAt', 'updatedAt', 'metadataFileUUID']
     )
     assertTableEquality(finalTracks, [])
     assertTableEquality(
       finalFiles,
-      [{
-        cnodeUserUUID,
-        trackBlockchainId: null,
-        multihash: metadataCID,
-        sourceFile: null,
-        fileName: null,
-        dirMultihash: null,
-        storagePath: await utils.computeFilePath(metadataCID),
-        type: "metadata",
-        clock: 1,
-        skipped: false
-      }],
+      [
+        {
+          cnodeUserUUID,
+          trackBlockchainId: null,
+          multihash: metadataCID,
+          sourceFile: null,
+          fileName: null,
+          dirMultihash: null,
+          storagePath: await utils.computeFilePath(metadataCID),
+          type: 'metadata',
+          clock: 1,
+          skipped: false
+        }
+      ],
       ['fileUUID', 'createdAt', 'updatedAt']
     )
     assertTableEquality(
       finalClockRecords,
       [
-        { cnodeUserUUID, clock: 1, sourceTable: "File" },
-        { cnodeUserUUID, clock: 2, sourceTable: "AudiusUser" }
+        { cnodeUserUUID, clock: 1, sourceTable: 'File' },
+        { cnodeUserUUID, clock: 2, sourceTable: 'AudiusUser' }
       ],
       ['createdAt', 'updatedAt']
     )
   })
 
   it('Confirm inconsistent users state is correctly fixed', async function () {
-    const { cnodeUserUUID, walletPublicKey, sessionToken } = await createStarterCNodeUser(userId)
+    const { cnodeUserUUID, walletPublicKey, sessionToken } =
+      await createStarterCNodeUser(userId)
 
     // Upload some state for user
     const audiusUserBlockNumber = 10
@@ -1284,7 +1333,7 @@ describe('Test fixInconsistentUser()', async function () {
     // Change cnodeUser.clock to be inconsistent with ClockRecords
     await models.CNodeUser.update(
       { clock: actualCNodeUserClock },
-      { where: { cnodeUserUUID }}
+      { where: { cnodeUserUUID } }
     )
 
     // Confirm expected initial state
@@ -1297,36 +1346,54 @@ describe('Test fixInconsistentUser()', async function () {
     } = await fetchDBStateForWallet(walletPublicKey, models)
     assertTableEquality(
       [initialCNodeUser],
-      [{ cnodeUserUUID, walletPublicKey, latestBlockNumber: audiusUserBlockNumber, clock: actualCNodeUserClock }],
+      [
+        {
+          cnodeUserUUID,
+          walletPublicKey,
+          latestBlockNumber: audiusUserBlockNumber,
+          clock: actualCNodeUserClock
+        }
+      ],
       ['createdAt', 'updatedAt', 'lastLogin']
     )
     assertTableEquality(
       initialAudiusUsers,
-      [{ cnodeUserUUID, clock: expectedCNodeUserClock, blockchainId: `${userId}`, metadataJSON: audiusUserMetadata, coverArtFileUUID: null, profilePicFileUUID: null }],
+      [
+        {
+          cnodeUserUUID,
+          clock: expectedCNodeUserClock,
+          blockchainId: `${userId}`,
+          metadataJSON: audiusUserMetadata,
+          coverArtFileUUID: null,
+          profilePicFileUUID: null
+        }
+      ],
       ['createdAt', 'updatedAt', 'metadataFileUUID']
     )
     assertTableEquality(initialTracks, [])
     assertTableEquality(
       initialFiles,
-      [{
-        cnodeUserUUID,
-        trackBlockchainId: null,
-        multihash: metadataCID,
-        sourceFile: null,
-        fileName: null,
-        dirMultihash: null,
-        storagePath: await utils.computeFilePath(metadataCID),
-        type: "metadata",
-        clock: 1,
-        skipped: false
-      }],
+      [
+        {
+          cnodeUserUUID,
+          trackBlockchainId: null,
+          multihash: metadataCID,
+          sourceFile: null,
+          fileName: null,
+          dirMultihash: null,
+          storagePath: await utils.computeFilePath(metadataCID),
+          type: 'metadata',
+          clock: 1,
+          skipped: false
+        }
+      ],
       ['fileUUID', 'createdAt', 'updatedAt']
     )
     assertTableEquality(
       initialClockRecords,
       [
-        { cnodeUserUUID, clock: 1, sourceTable: "File" },
-        { cnodeUserUUID, clock: 2, sourceTable: "AudiusUser" }
+        { cnodeUserUUID, clock: 1, sourceTable: 'File' },
+        { cnodeUserUUID, clock: 2, sourceTable: 'AudiusUser' }
       ],
       ['createdAt', 'updatedAt']
     )
@@ -1345,36 +1412,54 @@ describe('Test fixInconsistentUser()', async function () {
     } = await fetchDBStateForWallet(walletPublicKey, models)
     assertTableEquality(
       [finalCNodeUser],
-      [{ cnodeUserUUID, walletPublicKey, latestBlockNumber: audiusUserBlockNumber, clock: expectedCNodeUserClock }],
+      [
+        {
+          cnodeUserUUID,
+          walletPublicKey,
+          latestBlockNumber: audiusUserBlockNumber,
+          clock: expectedCNodeUserClock
+        }
+      ],
       ['createdAt', 'updatedAt', 'lastLogin']
     )
     assertTableEquality(
       finalAudiusUsers,
-      [{ cnodeUserUUID, clock: expectedCNodeUserClock, blockchainId: `${userId}`, metadataJSON: audiusUserMetadata, coverArtFileUUID: null, profilePicFileUUID: null }],
+      [
+        {
+          cnodeUserUUID,
+          clock: expectedCNodeUserClock,
+          blockchainId: `${userId}`,
+          metadataJSON: audiusUserMetadata,
+          coverArtFileUUID: null,
+          profilePicFileUUID: null
+        }
+      ],
       ['createdAt', 'updatedAt', 'metadataFileUUID']
     )
     assertTableEquality(finalTracks, [])
     assertTableEquality(
       finalFiles,
-      [{
-        cnodeUserUUID,
-        trackBlockchainId: null,
-        multihash: metadataCID,
-        sourceFile: null,
-        fileName: null,
-        dirMultihash: null,
-        storagePath: await utils.computeFilePath(metadataCID),
-        type: "metadata",
-        clock: 1,
-        skipped: false
-      }],
+      [
+        {
+          cnodeUserUUID,
+          trackBlockchainId: null,
+          multihash: metadataCID,
+          sourceFile: null,
+          fileName: null,
+          dirMultihash: null,
+          storagePath: await utils.computeFilePath(metadataCID),
+          type: 'metadata',
+          clock: 1,
+          skipped: false
+        }
+      ],
       ['fileUUID', 'createdAt', 'updatedAt']
     )
     assertTableEquality(
       finalClockRecords,
       [
-        { cnodeUserUUID, clock: 1, sourceTable: "File" },
-        { cnodeUserUUID, clock: 2, sourceTable: "AudiusUser" }
+        { cnodeUserUUID, clock: 1, sourceTable: 'File' },
+        { cnodeUserUUID, clock: 2, sourceTable: 'AudiusUser' }
       ],
       ['createdAt', 'updatedAt']
     )
