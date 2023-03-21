@@ -34,6 +34,7 @@ export const Scrubber = ({
   includeTimestamps,
   elapsedSeconds,
   totalSeconds,
+  playbackRate,
   onScrub,
   onScrubRelease,
   includeExpandedTargets,
@@ -88,6 +89,7 @@ export const Scrubber = ({
         isMobile={isMobile}
         elapsedSeconds={elapsedSeconds}
         totalSeconds={totalSeconds}
+        playbackRate={playbackRate}
         onScrub={onHandleScrub}
         onScrubRelease={onHandleScrubRelease}
         includeExpandedTargets={includeExpandedTargets}

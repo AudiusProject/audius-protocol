@@ -42,6 +42,11 @@ export type ScrubberProps = {
   totalSeconds: number
 
   /**
+   * The speed that the media is being played at
+   */
+  playbackRate: number
+
+  /**
    * Fired incrementally as the user drags the scrubber.
    */
   onScrub?: (seconds: number) => void

@@ -24,6 +24,7 @@ export const Slider = ({
   isDisabled,
   elapsedSeconds,
   totalSeconds,
+  playbackRate,
   onScrub,
   onScrubRelease,
   includeExpandedTargets = true,
@@ -54,7 +55,8 @@ export const Slider = ({
     trackRef,
     handleRef,
     elapsedSeconds,
-    totalSeconds
+    totalSeconds,
+    playbackRate
   )
 
   /**
@@ -218,6 +220,11 @@ export const Slider = ({
       else pause()
     }
   }, [isPlaying, dragPercent, play, pause])
+
+  useEffect(() => {
+    setPercent(elapsedSeconds / totalSeconds)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playbackRate])
 
   // When the key changes, reset the animation
   useEffect(() => {
