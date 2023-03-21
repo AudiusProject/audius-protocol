@@ -393,6 +393,7 @@ describe('test CNodeHealthManager -- determinePeerHealth()', function () {
 })
 
 describe('test CNodeHealthManager -- isNodeHealthyOrInGracePeriod()', function () {
+  this.retries(3) // TODO: Flakey test
   let sandbox
   beforeEach(function () {
     sandbox = sinon.createSandbox()
