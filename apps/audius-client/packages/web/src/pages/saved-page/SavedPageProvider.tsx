@@ -58,7 +58,7 @@ const sortMethodMap: Record<string, string> = {
   artist: 'artist_name',
   created_at: 'release_date',
   dateListened: 'last_listen_date',
-  dateSaved: 'added_date',
+  dateSaved: 'saved_date',
   time: 'length',
   plays: 'plays',
   repost_count: 'reposts'

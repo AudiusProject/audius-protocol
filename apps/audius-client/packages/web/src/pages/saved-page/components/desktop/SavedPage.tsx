@@ -44,7 +44,7 @@ const tableColumns: TracksTableColumn[] = [
   'trackName',
   'artistName',
   'releaseDate',
-  'addedDate',
+  'savedDate',
   'length',
   'plays',
   'reposts',
