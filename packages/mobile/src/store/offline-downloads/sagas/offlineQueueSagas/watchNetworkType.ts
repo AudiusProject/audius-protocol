@@ -4,7 +4,7 @@ import { put, select, takeEvery } from 'typed-redux-saga'
 
 import {
   getCurrentNetworkType,
-  getDownloadNetworkTypePreference,
+  getPreferredDownloadNetworkType,
   getOfflineQueue,
   getQueueStatus
 } from '../../selectors'
@@ -29,8 +29,8 @@ export function* watchNetworkType() {
     ],
     function* handleNetworkTypeChange() {
       const currentNetworkType = yield* select(getCurrentNetworkType)
-      const downloadNetworkTypePreference = yield* select(
-        getDownloadNetworkTypePreference
+      const preferredDownloadNetworkType = yield* select(
+        getPreferredDownloadNetworkType
       )
       const isReachable = yield* select(getIsReachable)
       const downloadQueue = yield* select(getOfflineQueue)
@@ -40,7 +40,7 @@ export function* watchNetworkType() {
         !isReachable ||
         currentNetworkType === NetInfoStateType.none ||
         (currentNetworkType !== NetInfoStateType.wifi &&
-          downloadNetworkTypePreference === NetInfoStateType.wifi)
+          preferredDownloadNetworkType === NetInfoStateType.wifi)
 
       if (isDownloadDisabled) {
         if (queueStatus !== QueueStatus.PAUSED) {

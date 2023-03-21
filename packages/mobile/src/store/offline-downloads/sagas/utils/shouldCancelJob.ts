@@ -4,7 +4,7 @@ import { select, take } from 'typed-redux-saga'
 
 import {
   getCurrentNetworkType,
-  getDownloadNetworkTypePreference
+  getPreferredDownloadNetworkType
 } from '../../selectors'
 import {
   setCurrentNetworkType,
@@ -21,8 +21,8 @@ export function* shouldCancelJob() {
       SET_UNREACHABLE
     ])
     const currentNetworkType = yield* select(getCurrentNetworkType)
-    const downloadNetworkTypePreference = yield* select(
-      getDownloadNetworkTypePreference
+    const preferredDownloadNetworkType = yield* select(
+      getPreferredDownloadNetworkType
     )
     const isReachable = yield* select(getIsReachable)
 
@@ -31,7 +31,7 @@ export function* shouldCancelJob() {
 
     if (
       currentNetworkType !== NetInfoStateType.wifi &&
-      downloadNetworkTypePreference === NetInfoStateType.wifi
+      preferredDownloadNetworkType === NetInfoStateType.wifi
     )
       return true
   }
