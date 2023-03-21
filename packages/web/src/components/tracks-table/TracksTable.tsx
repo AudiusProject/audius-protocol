@@ -29,6 +29,7 @@ type RowInfo = UserTrack & {
   time: number
   plays: number
   dateSaved: string
+  dateAdded: string
   handle: string
   uid: UID
 }
@@ -49,6 +50,7 @@ export type TracksTableColumn =
   | 'plays'
   | 'releaseDate'
   | 'reposts'
+  | 'savedDate'
   | 'spacer'
   | 'trackName'
 
@@ -243,6 +245,11 @@ export const TracksTable = ({
 
   const renderAddedDateCell = useCallback((cellInfo: TrackCell) => {
     const track = cellInfo.row.original
+    return moment(track.dateAdded).format('M/D/YY')
+  }, [])
+
+  const renderSavedDateCell = useCallback((cellInfo: TrackCell) => {
+    const track = cellInfo.row.original
     return moment(track.dateSaved).format('M/D/YY')
   }, [])
 
@@ -371,11 +378,11 @@ export const TracksTable = ({
       addedDate: {
         id: 'dateAdded',
         Header: 'Added',
-        accessor: 'dateSaved',
+        accessor: 'dateAdded',
         Cell: renderAddedDateCell,
         maxWidth: 160,
         sortTitle: 'Date Added',
-        sorter: dateSorter('dateSaved'),
+        sorter: dateSorter('dateAdded'),
         align: 'right'
       },
       artistName: {
@@ -489,6 +496,16 @@ export const TracksTable = ({
         sorter: alphaSorter('title'),
         align: 'left'
       },
+      savedDate: {
+        id: 'dateSaved',
+        Header: 'Saved',
+        accessor: 'dateSaved',
+        Cell: renderSavedDateCell,
+        maxWidth: 160,
+        sortTitle: 'Date Saved',
+        sorter: dateSorter('dateSaved'),
+        align: 'right'
+      },
       spacer: {
         id: 'spacer',
         maxWidth: 24,
@@ -507,6 +524,7 @@ export const TracksTable = ({
       renderOverflowMenuCell,
       renderPlayButtonCell,
       renderPlaysCell,
+      renderSavedDateCell,
       renderReleaseDateCell,
       renderRepostsCell,
       renderTrackActions,
