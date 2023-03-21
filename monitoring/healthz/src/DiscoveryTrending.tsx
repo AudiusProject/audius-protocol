@@ -1,7 +1,7 @@
 import useSWR from 'swr'
 import { SP, useDiscoveryProviders } from './useServiceProviders'
 
-export function DiscoveryTrending() {
+export function DiscoveryTrending(props: { trendingEndpoint: string }) {
   const { data: sps, error } = useDiscoveryProviders()
   if (error) return <div>error</div>
   if (!sps) return null
@@ -11,7 +11,7 @@ export function DiscoveryTrending() {
       <table className="table">
         <tbody>
           {sps.map((sp) => (
-            <TrendingRow key={sp.endpoint} sp={sp} />
+            <TrendingRow key={sp.endpoint} sp={sp} trendingEndpoint={props.trendingEndpoint} />
           ))}
         </tbody>
       </table>
@@ -21,9 +21,8 @@ export function DiscoveryTrending() {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-function TrendingRow({ sp }: { sp: SP }) {
-  const { data, error } = useSWR(sp.endpoint + '/v1/tracks/trending', fetcher)
-
+function TrendingRow({ sp, trendingEndpoint }: { sp: SP, trendingEndpoint: string }) {
+  const { data, error } = useSWR(sp.endpoint + trendingEndpoint, fetcher)
   if (!data)
     return (
       <tr>
