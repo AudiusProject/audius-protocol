@@ -18,6 +18,9 @@
   display: flex;
   align-items: center;
   gap: var(--unit-2);
+}
+
+.row:not(.disabled) {
   cursor: pointer;
 }
 
@@ -28,4 +31,12 @@
 .tooltip :global(.ant-tooltip-inner) {
   width: 272px;
   text-align: center;
+}
+
+.disabled .radio input {
+  cursor: default;
+}
+
+.disabled span {
+  color: var(--neutral-light-4);
 }

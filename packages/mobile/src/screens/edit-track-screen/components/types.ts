@@ -4,5 +4,5 @@ export type TrackAvailabilitySelectionProps = {
   selected: boolean
   disabled?: boolean
   disabledContent?: boolean
-  initialPremiumConditions?: Nullable<PremiumConditions>
+  previousPremiumConditions?: Nullable<PremiumConditions>
 }

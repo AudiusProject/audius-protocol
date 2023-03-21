@@ -16,7 +16,6 @@ export type EditTrackScreenProps = {
   onSubmit: (values: ExtendedTrackMetadata) => void
   initialValues: ExtendedTrackMetadata & { trackArtwork?: string }
   doneText?: string
-  isUpload?: boolean
 } & Partial<ScreenProps>
 
 export type EditTrackFormProps = FormikProps<FormValues> &

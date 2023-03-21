@@ -141,7 +141,7 @@ export const CollectibleGatedAvailability = ({
   selected,
   disabled = false,
   disabledContent = false,
-  initialPremiumConditions
+  previousPremiumConditions
 }: TrackAvailabilitySelectionProps) => {
   const navigation = useNavigation()
   const styles = useStyles()
@@ -175,7 +175,7 @@ export const CollectibleGatedAvailability = ({
   const [{ value: premiumConditions }] =
     useField<Nullable<PremiumConditions>>('premium_conditions')
   const [selectedNFTCollection, setSelectedNFTCollection] = useState(
-    initialPremiumConditions?.nft_collection
+    previousPremiumConditions?.nft_collection
   )
 
   // Update nft collection gate when availability selection changes
