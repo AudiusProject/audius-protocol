@@ -27,12 +27,10 @@ export default async ({ track_id }) => {
     .first()
     .catch(console.error);
 
-  console.log(results);
+  const firstEvent =
+    JSON.stringify(results.updated_at) === JSON.stringify(results.created_at);
 
-  console.log(results.updated_at);
-  console.log(results.created_at);
-
-  if (results && results.created_at === results.updated_at) {
+  if (firstEvent) {
     const { title, mood, release_date, is_premium, handle, name, genre, slug } =
       results;
     console.log(`received new verified track from ${handle}`);
