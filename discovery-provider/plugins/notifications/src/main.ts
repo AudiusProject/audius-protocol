@@ -28,6 +28,7 @@ export class Processor {
     this.isRunning = false
     this.lastDailyEmailSent = null
     this.remoteConfig = new RemoteConfig()
+    this.server = new Server()
   }
 
   init = async ({
@@ -52,7 +53,7 @@ export class Processor {
       this.identityDB,
       this.remoteConfig
     )
-    this.server = new Server()
+    await this.server.init()
   }
 
   setupDB = async ({
@@ -81,7 +82,6 @@ export class Processor {
       config.lastIndexedReactionRedisKey,
       new Date(Date.now()).toISOString()
     )
-    await this.server.init()
     while (this.isRunning) {
       // Comment out to prevent app notifications until complete
       await sendAppNotifications(this.listener, this.appNotificationsProcessor)
