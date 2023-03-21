@@ -62,6 +62,7 @@ import {
   playlistLibraryReducer,
   PlaylistLibraryState
 } from './playlist-library'
+import { playlistUpdatesReducer, PlaylistUpdateState } from './playlist-updates'
 import premiumContentSlice from './premium-content/slice'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
@@ -160,6 +161,7 @@ export const reducers = () => ({
 
   // Playlist Library
   playlistLibrary: playlistLibraryReducer,
+  playlistUpdates: playlistUpdatesReducer,
 
   notificationsLegacy: notificationsReducerLegacy,
   notifications: notificationsReducer,
@@ -274,6 +276,7 @@ export type CommonState = {
 
   // Playlist library
   playlistLibrary: PlaylistLibraryState
+  playlistUpdates: PlaylistUpdateState
 
   notificationsLegacy: NotificationState
   notifications: NotificationsState
