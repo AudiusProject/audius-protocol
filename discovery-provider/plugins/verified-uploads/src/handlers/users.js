@@ -1,5 +1,12 @@
-import { dp_db, id_db } from "../db.js";
+import { dp_db } from "../db.js";
 import { slack } from "../slack.js";
+import dotenv from "dotenv";
+import axios from "axios";
+
+dotenv.config();
+const { IDENTITY_URL } = process.env;
+const social_handle_url = (handle) =>
+  `${IDENTITY_URL}/social_handles?handle=${handle}`;
 
 export default async ({ user_id }) => {
   const result = await dp_db("users")
@@ -13,41 +20,26 @@ export default async ({ user_id }) => {
   const old = result[1];
 
   console.log(`user event ${JSON.stringify(result)}`);
+
   if (result.length == 2 && current.is_verified !== old.is_verified) {
     const is_verified = current.is_verified;
     const handle = current.handle;
 
+    // GET https://identityservice.staging.audius.co/social_handles?handle=totallynotalec
+    const { data } = await axios
+      .get(social_handle_url(handle))
+      .catch(console.error);
+
+    const { twitterVerified, instagramVerified, tikTokVerified } = data;
+
     let source = "unknown";
-
-    // check identity db in twitter or instagram tables to see
-    // which one verified the user
-    const ig = await id_db("InstagramUsers")
-      .select("blockchainUserId")
-      .where("blockchainUserId", "=", user_id)
-      .first()
-      .catch(console.error);
-
-    const twitter = await id_db("TwitterUsers")
-      .select("blockchainUserId")
-      .where("blockchainUserId", "=", user_id)
-      .first()
-      .catch(console.error);
-
-    const tiktok = await id_db("TikTokUsers")
-      .select("blockchainUserId")
-      .where("blockchainUserId", "=", user_id)
-      .first()
-      .catch(console.error);
-
-    if (ig) {
-      source = "instagram";
-    }
-
-    if (twitter) {
+    if (twitterVerified) {
       source = "twitter";
     }
-
-    if (tiktok) {
+    if (instagramVerified) {
+      source = "instagram";
+    }
+    if (tikTokVerified) {
       source = "tiktok";
     }
 

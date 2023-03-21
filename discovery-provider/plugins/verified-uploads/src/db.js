@@ -14,9 +14,8 @@ const DB = async (url) => {
 
 // GLOBAL db handles
 dotenv.config();
-const { DISCOVERY_DB_URL, IDENTITY_DB_URL } = process.env;
+const { DISCOVERY_DB_URL } = process.env;
 export const dp_db = await DB(DISCOVERY_DB_URL).catch(console.error);
-export const id_db = await DB(IDENTITY_DB_URL).catch(console.error);
 
 const shouldToggleOff = (topic) => {
   const { TOGGLE_OFF } = process.env;
