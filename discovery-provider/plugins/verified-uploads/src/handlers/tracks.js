@@ -32,6 +32,7 @@ export default async ({ track_id }) => {
     .catch(console.error);
 
   const firstEvent =
+    results &&
     JSON.stringify(results.updated_at) === JSON.stringify(results.created_at);
 
   if (firstEvent) {
