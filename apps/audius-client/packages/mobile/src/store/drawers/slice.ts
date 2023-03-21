@@ -25,7 +25,6 @@ export type Drawer =
   | 'ChatActions'
   | 'ProfileActions'
   | 'BlockMessages'
-  | 'PlaybackRate'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -80,7 +79,6 @@ const initialState: DrawersState = {
   ChatActions: false,
   ProfileActions: false,
   BlockMessages: false,
-  PlaybackRate: false,
   data: null
 }
 
