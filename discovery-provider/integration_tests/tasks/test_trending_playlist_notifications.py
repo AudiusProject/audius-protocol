@@ -5,7 +5,7 @@ from sqlalchemy import asc
 from src.models.notifications.notification import Notification
 from src.models.playlists.playlist import Playlist
 from src.queries.get_trending_playlists import make_trending_cache_key
-from src.tasks.cache_trending_playlists import make_trending_playlist_notifications
+from src.tasks.cache_trending_playlists import index_trending_playlist_notifications
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import helpers
@@ -71,7 +71,7 @@ def test_cache_trending_playlist_notifications(app):
 
     base_time_int = int(round(BASE_TIME.timestamp()))
 
-    make_trending_playlist_notifications(db, "week", base_time_int)
+    index_trending_playlist_notifications(db, "week", base_time_int)
 
     with db.scoped_session() as session:
         all_notifications = (
@@ -113,7 +113,7 @@ def test_cache_trending_playlist_notifications(app):
     cache_trending_playlists_mock(db, [2, 4, 5, 1, 7, 8, 9, 10])
     updated_time = BASE_TIME + timedelta(hours=1)
     updated_time_int = int(round(updated_time.timestamp()))
-    make_trending_playlist_notifications(db, "week", updated_time_int)
+    index_trending_playlist_notifications(db, "week", updated_time_int)
 
     with db.scoped_session() as session:
         all_notifications = (
@@ -152,7 +152,7 @@ def test_cache_trending_playlist_notifications(app):
 
     updated_time = BASE_TIME + timedelta(hours=24)
     updated_time_int = int(round(updated_time.timestamp()))
-    make_trending_playlist_notifications(db, "week", updated_time_int)
+    index_trending_playlist_notifications(db, "week", updated_time_int)
 
     with db.scoped_session() as session:
         all_notifications = (

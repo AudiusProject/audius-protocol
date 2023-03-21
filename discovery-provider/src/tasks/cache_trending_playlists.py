@@ -30,10 +30,10 @@ def cache_trending(db, redis, strategy):
             key = make_trending_cache_key(time_range, strategy.version)
             res = make_get_unpopulated_playlists(session, time_range, strategy)()
             set_json_cached_key(redis, key, res)
-            make_trending_playlist_notifications(db, time_range)
+            index_trending_playlist_notifications(db, time_range)
 
 
-def make_trending_playlist_notifications(
+def index_trending_playlist_notifications(
     db: SessionManager, time_range: str, timestamp: int
 ):
     # Get the top 5 trending tracks from the new trending calculations
@@ -152,7 +152,7 @@ def make_trending_playlist_notifications(
             "index_trending.py | Created trending playlist notifications",
             extra={
                 "job": "cache_trending_playlists",
-                "subtask": "trending playilst notification",
+                "subtask": "trending playlist notification",
             },
         )
 
