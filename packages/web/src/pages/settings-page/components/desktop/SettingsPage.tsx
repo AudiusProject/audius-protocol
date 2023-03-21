@@ -21,11 +21,11 @@ import {
   IconNotification,
   IconSignOut,
   IconVerified,
-  IconDownload,
   IconMood,
   IconSettings,
   IconMessage,
-  SegmentedControl
+  SegmentedControl,
+  IconDesktop
 } from '@audius/stems'
 import cn from 'classnames'
 
@@ -363,7 +363,7 @@ export const SettingsPage = (props: SettingsPageProps) => {
         </SettingsCard>
         {!isMobile() && !isElectron() && (
           <SettingsCard
-            icon={<IconDownload />}
+            icon={<IconDesktop />}
             title={messages.desktopAppCardTitle}
             description={messages.desktopAppCardDescription}
           >
