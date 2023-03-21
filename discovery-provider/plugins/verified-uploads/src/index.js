@@ -10,8 +10,12 @@ const main = async () => {
   console.log("verified uploads bot starting");
 
   const slack = Slack();
-  listenOn("tracks", { slack }, tracksHandler).catch(console.error);
-  listenOn("user_verification", { slack }, usersHandler).catch(console.error);
+  const tracks = listenOn("tracks", { slack }, tracksHandler).catch(
+    console.error
+  );
+  const users = listenOn("users", { slack }, usersHandler).catch(console.error);
+
+  await Promise.allSettled([tracks, users]);
 };
 
 main();

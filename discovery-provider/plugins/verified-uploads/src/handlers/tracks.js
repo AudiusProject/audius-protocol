@@ -19,12 +19,13 @@ export default async ({ slack, dp_db }, { track_id }) => {
     )
     .where("tracks.track_id", "=", trackId)
     .where("users.is_verified", "=", true)
-    .first()
+    .orderBy("tracks.blocknumber", "desc")
+    .limit(2)
     .catch(console.error);
 
-  if (results) {
+  if (results && results.length === 1) {
     const { title, mood, release_date, is_premium, handle, name, genre, slug } =
-      results;
+      results[0];
     console.log(`received new verified track from ${handle}`);
     const { sendMsg } = slack;
     const header = `:audius-spin: New upload from *${name}* 🔥`;

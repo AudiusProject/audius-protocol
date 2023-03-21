@@ -8,13 +8,6 @@ const DB = async (url) => {
     // may need to adjust this based on num of listeners
     pool: { min: 0, max: 7 },
   });
-  // get a user just to test connection is working
-  await pg
-    .select("user_id", "handle", "is_verified", "name")
-    .from("users")
-    .where("user_id", 1)
-    .first()
-    .catch(console.error);
   return pg;
 };
 
@@ -39,7 +32,6 @@ export default async (topic, passthrough, callback) => {
   const conn = await dp_db.client.acquireConnection().catch(console.error);
   const sql = `LISTEN ${topic}`;
   conn.on("notification", async (msg) => {
-    console.log(`listening on topic ${topic}`);
     // add db ref to passthrough params so handlers dont need to recreate
     passthrough.dp_db = dp_db;
     passthrough.id_db = id_db;
@@ -48,4 +40,5 @@ export default async (topic, passthrough, callback) => {
   });
   // TODO: close connection here
   await conn.query(sql).catch(console.error);
+  console.log(`listening on topic ${topic}`);
 };
