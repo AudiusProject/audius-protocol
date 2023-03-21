@@ -25,12 +25,13 @@ trending_strategy_factory = TrendingStrategyFactory()
 
 
 def cache_trending(db, redis, strategy):
+    now = int(datetime().timestamp())
     with db.scoped_session() as session:
         for time_range in TIME_RANGES:
             key = make_trending_cache_key(time_range, strategy.version)
             res = make_get_unpopulated_playlists(session, time_range, strategy)()
             set_json_cached_key(redis, key, res)
-            index_trending_playlist_notifications(db, time_range)
+            index_trending_playlist_notifications(db, time_range, now)
 
 
 def index_trending_playlist_notifications(
