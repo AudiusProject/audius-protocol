@@ -1,35 +1,41 @@
 import Knex from "knex";
+import dotenv from "dotenv";
 const { knex } = Knex;
 
 const DB = async (url) => {
   const pg = knex({
     client: "pg",
     connection: url,
+    pool: { min: 2, max: 10 },
   });
-  // get a user just to test connection is working
-  await pg
-    .select("user_id", "handle", "is_verified", "name")
-    .from("users")
-    .where("user_id", 1)
-    .first()
-    .catch(console.error);
+  console.log(`opening connection to ${url}`);
   return pg;
 };
 
-export default async (url, passthrough, callback) => {
-  const db = await DB(url).catch(console.error);
+// GLOBAL db handles
+dotenv.config();
+const { DISCOVERY_DB_URL } = process.env;
+export const dp_db = await DB(DISCOVERY_DB_URL).catch(console.error);
 
-  // https://github.com/AudiusProject/audius-protocol/blob/186f483a40dd05733442f447e916e005227baedf/discovery-provider/es-indexer/src/setup.ts#L4-L22
-  // listens to same hook as es-indexer
-  const sql = "LISTEN tracks";
+const shouldToggleOff = (topic) => {
+  const { TOGGLE_OFF } = process.env;
+  const toggledOffTopics = TOGGLE_OFF.split(",");
+  const shouldToggle = toggledOffTopics.includes(topic) ? true : false;
+  if (shouldToggle) {
+    console.warn(`toggling off listener for topic '${topic}'`);
+  }
+  return shouldToggle;
+};
 
-  const notifConn = await db.client.acquireConnection().catch(console.error);
-  notifConn.on("notification", async (msg) => {
-    // aquire conn here so after handler we can close it
-    // no matter the logic inside the handler
-    console.log("listening for uploaded tracks");
-    // fire and forget
-    callback(passthrough, db, JSON.parse(msg.payload));
+export default async (topic, callback) => {
+  if (shouldToggleOff(topic)) {
+    return;
+  }
+  const conn = await dp_db.client.acquireConnection().catch(console.error);
+  const sql = `LISTEN ${topic}`;
+  conn.on("notification", async (msg) => {
+    callback(JSON.parse(msg.payload));
   });
-  await notifConn.query(sql).catch(console.error);
+  await conn.query(sql).catch(console.error);
+  console.log(`listening on topic ${topic}`);
 };

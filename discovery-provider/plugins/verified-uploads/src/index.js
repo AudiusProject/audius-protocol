@@ -1,16 +1,13 @@
-import listen from "./db.js";
+import listenOn from "./db.js";
 import dotenv from "dotenv";
-import handler from "./handler.js";
-import Slack from "./slack.js";
+import tracksHandler from "./handlers/tracks.js";
+import usersHandler from "./handlers/users.js";
 
 const main = async () => {
-  dotenv.config();
-
   console.log("verified uploads bot starting");
-
-  const { SLACK_TOKEN, SLACK_CHANNEL, DB_URL } = process.env;
-  const slack = Slack(SLACK_TOKEN, SLACK_CHANNEL);
-  await listen(DB_URL, { slack }, handler).catch(console.error);
+  const tracks = listenOn("tracks", tracksHandler).catch(console.error);
+  const users = listenOn("users", usersHandler).catch(console.error);
+  await Promise.allSettled([tracks, users]);
 };
 
 main();

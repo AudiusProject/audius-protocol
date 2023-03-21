@@ -1,6 +1,9 @@
-export default async ({ slack }, db, { track_id }) => {
+import { dp_db } from "../db.js";
+import { slack } from "../slack.js";
+
+export default async ({ track_id }) => {
   const trackId = track_id;
-  const results = await db("tracks")
+  const results = await dp_db("tracks")
     .innerJoin("users", "tracks.owner_id", "=", "users.user_id")
     .innerJoin("track_routes", "tracks.track_id", "=", "track_routes.track_id")
     .select(
@@ -15,14 +18,19 @@ export default async ({ slack }, db, { track_id }) => {
       "users.name",
       "tracks.track_id",
       "users.is_verified",
-      "track_routes.slug"
+      "track_routes.slug",
+      "tracks.created_at",
+      "tracks.updated_at"
     )
     .where("tracks.track_id", "=", trackId)
     .where("users.is_verified", "=", true)
     .first()
     .catch(console.error);
 
-  if (results) {
+  const firstEvent =
+    JSON.stringify(results.updated_at) === JSON.stringify(results.created_at);
+
+  if (firstEvent) {
     const { title, mood, release_date, is_premium, handle, name, genre, slug } =
       results;
     console.log(`received new verified track from ${handle}`);
@@ -37,20 +45,6 @@ export default async ({ slack }, db, { track_id }) => {
       Link: `https://audius.co/${handle}/${slug}`,
       Release: release_date,
     };
-    const payload = formatter(data);
-    const msg = `${header} ${payload}`;
-    await sendMsg(msg).catch(console.error);
+    await sendMsg(header, data).catch(console.error);
   }
-};
-
-const formatter = (data) => {
-  const msg = [];
-  for (const [key, value] of Object.entries(data)) {
-    // omit any null entries of the track
-    if (value != null) {
-      msg.push(`${key}: ${value}`);
-    }
-  }
-  const inner = msg.join("\n");
-  return "```" + inner + "```";
 };
