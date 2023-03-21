@@ -12,6 +12,7 @@ export default async ({ slack, dp_db, id_db }, { user_id }) => {
   console.log(`user event ${JSON.stringify(result)}`);
   if (result.length == 2 && current.is_verified !== old.is_verified) {
     const is_verified = current.is_verified;
+    const handle = current.handle;
     const header = `User ${handle} ${
       is_verified ? "is now" : "is no longer"
     } verified.`;
