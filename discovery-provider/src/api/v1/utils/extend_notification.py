@@ -23,6 +23,7 @@ from src.queries.get_notifications import (
     SupporterDethronedNotification,
     SupporterRankUpNotification,
     SupportingRankUpNotification,
+    TastemakerNotification,
     TierChangeNotification,
     TipReceiveNotification,
     TipSendNotification,
@@ -143,6 +144,23 @@ def extend_save(action: NotificationAction):
             "type": data["type"],
             "user_id": encode_int_id(data["user_id"]),
             "save_item_id": encode_int_id(data["save_item_id"]),
+        },
+    }
+
+
+def extend_tastemaker(action: NotificationAction):
+    data: TastemakerNotification = action["data"]  # type: ignore
+    return {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "track_owner_id": encode_int_id(data["track_owner_id"]),
+            "track_id": encode_int_id(data["track_id"]),
+            "action": data["action"],
+            "tastemaker_user_id": encode_int_id(data["tastemaker_user_id"]),
         },
     }
 
@@ -456,6 +474,7 @@ notification_action_handler = {
     "supporter_dethroned": extend_supporter_dethroned,
     "challenge_reward": extend_challenge_reward,
     "reaction": extend_reaction,
+    "tastemaker": extend_tastemaker,
     "tier_change": extend_tier_change,
     "trending": extend_trending,
     "trending_playlist": extend_trending_playlist,
