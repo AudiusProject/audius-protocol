@@ -17,39 +17,39 @@ export default async ({ user_id }) => {
     const is_verified = current.is_verified;
     const handle = current.handle;
 
-    // check identity db in twitter or instagram tables to see
-    // which one verified the user
-    const ig = await id_db("InstagramUsers")
-      .select("blockchainUserId")
-      .where("blockchainUserId", "=", user_id)
-      .first()
-      .catch(console.error);
-
-    const twitter = await id_db("TwitterUsers")
-      .select("blockchainUserId")
-      .where("blockchainUserId", "=", user_id)
-      .first()
-      .catch(console.error);
-
-    const tiktok = await id_db("TikTokUsers")
-      .select("blockchainUserId")
-      .where("blockchainUserId", "=", user_id)
-      .first()
-      .catch(console.error);
-
     let source = "unknown";
 
-    if (ig) {
-      source = "instagram";
-    }
+    // check identity db in twitter or instagram tables to see
+    // which one verified the user
+    // const ig = await id_db("InstagramUsers")
+    //   .select("blockchainUserId")
+    //   .where("blockchainUserId", "=", user_id)
+    //   .first()
+    //   .catch(console.error);
 
-    if (twitter) {
-      source = "twitter";
-    }
+    // const twitter = await id_db("TwitterUsers")
+    //   .select("blockchainUserId")
+    //   .where("blockchainUserId", "=", user_id)
+    //   .first()
+    //   .catch(console.error);
 
-    if (tiktok) {
-      source = "tiktok";
-    }
+    // const tiktok = await id_db("TikTokUsers")
+    //   .select("blockchainUserId")
+    //   .where("blockchainUserId", "=", user_id)
+    //   .first()
+    //   .catch(console.error);
+
+    // if (ig) {
+    //   source = "instagram";
+    // }
+
+    // if (twitter) {
+    //   source = "twitter";
+    // }
+
+    // if (tiktok) {
+    //   source = "tiktok";
+    // }
 
     const header = `User ${handle} ${
       is_verified ? "is now" : "is no longer"
