@@ -506,8 +506,6 @@ def configure_celery(celery, test_config=None):
                 eth_manager=eth_manager,
             )
 
-    celery.autodiscover_tasks(["src.tasks"], "index", True)
-
     # Subclassing celery task with discovery provider context
     # Provided through properties defined in 'DatabaseTask'
     celery.Task = WrappedDatabaseTask

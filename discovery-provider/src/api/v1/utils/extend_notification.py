@@ -28,6 +28,8 @@ from src.queries.get_notifications import (
     TipSendNotification,
     TrackMilestoneNotification,
     TrendingNotification,
+    TrendingPlaylistNotification,
+    TrendingUndergroundNotification,
 )
 from src.utils.helpers import encode_int_id
 from src.utils.spl_audio import to_wei_string
@@ -388,6 +390,42 @@ def extend_trending(action: NotificationAction):
     return notification
 
 
+def extend_trending_playlist(action: NotificationAction):
+    data: TrendingPlaylistNotification = action["data"]  # type: ignore
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "rank": data["rank"],
+            "genre": data["genre"],
+            "playlist_id": encode_int_id(data["playlist_id"]),
+            "time_range": data["time_range"],
+        },
+    }
+    return notification
+
+
+def extend_trending_underground(action: NotificationAction):
+    data: TrendingUndergroundNotification = action["data"]  # type: ignore
+    notification = {
+        "specifier": encode_int_id(int(action["specifier"])),
+        "type": action["type"],
+        "timestamp": datetime.timestamp(action["timestamp"])
+        if action["timestamp"]
+        else action["timestamp"],
+        "data": {
+            "rank": data["rank"],
+            "genre": data["genre"],
+            "track_id": encode_int_id(data["track_id"]),
+            "time_range": data["time_range"],
+        },
+    }
+    return notification
+
+
 def extend_announcement(action: NotificationAction):
     data: AnnouncementNotification = action["data"]  # type: ignore
     notification = {
@@ -420,5 +458,7 @@ notification_action_handler = {
     "reaction": extend_reaction,
     "tier_change": extend_tier_change,
     "trending": extend_trending,
+    "trending_playlist": extend_trending_playlist,
+    "trending_undeground": extend_trending_underground,
     "announcement": extend_announcement,
 }

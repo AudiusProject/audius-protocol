@@ -2,6 +2,8 @@ package server
 
 import (
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -19,6 +21,7 @@ import (
 	"comms.audius.co/shared/peering"
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
+	"github.com/gobwas/ws/wsutil"
 	"github.com/inconshreveable/log15"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -70,8 +73,10 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/chats/:id/messages", s.getMessages)
 	g.POST("/mutate", s.mutate)
 
-	g.GET("/debug/stream", func(c echo.Context) error {
+	g.GET("/debug/ws", s.debugWs)
+	g.GET("/debug/sse", s.debugSse)
 
+	g.GET("/debug/stream", func(c echo.Context) error {
 		info, err := jsc.StreamInfo(discoveryConfig.GlobalStreamName)
 		if err != nil {
 			return err
@@ -166,6 +171,54 @@ func (s *ChatServer) getPubkey(c echo.Context) error {
 	return c.JSON(200, map[string]interface{}{
 		"data": pubkey,
 	})
+}
+
+func (s *ChatServer) debugWs(c echo.Context) error {
+	w := c.Response()
+	r := c.Request()
+
+	conn, _, _, err := ws.UpgradeHTTP(r, w)
+	if err != nil {
+		return err
+	}
+	go func() {
+		defer conn.Close()
+
+		for {
+			msg, op, err := wsutil.ReadClientData(conn)
+			if err != nil {
+				log.Println("ws read err", err)
+				return
+			}
+			err = wsutil.WriteServerMessage(conn, op, msg)
+			if err != nil {
+				log.Println("ws write err", err)
+				return
+			}
+		}
+	}()
+	return nil
+}
+
+func (s *ChatServer) debugSse(c echo.Context) error {
+	w := c.Response()
+	ticker := time.NewTicker(1 * time.Second)
+	start := time.Now()
+
+	c.Response().Header().Set("Content-Type", "text/event-stream; charset=UTF-8")
+	c.Response().Header().Set("Cache-Control", "no-store")
+	c.Response().Header().Set("Connection", "keep-alive")
+
+	for {
+		select {
+		case <-ticker.C:
+			fmt.Fprint(w, "data:"+time.Now().String()+"\n\n")
+			w.Flush()
+		case <-c.Request().Context().Done():
+			log.Println("closing connection after ", time.Since(start))
+			return nil
+		}
+	}
 }
 
 func (s *ChatServer) chatWebsocket(c echo.Context) error {

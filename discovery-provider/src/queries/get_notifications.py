@@ -94,8 +94,7 @@ FROM (
             user_id = :user_id
         ORDER BY seen_at desc
         LIMIT 1
-    ), '2016-01-01'::timestamp) AND 
-    (:timestamp_offset is NULL OR n.timestamp > :timestamp_offset)
+    ), '2016-01-01'::timestamp)
   GROUP BY
     n.type, n.group_id
 ) user_notifications;
@@ -142,6 +141,8 @@ class NotificationType(str, Enum):
     PLAYLIST_MILSTONE = "playlist_milestone"
     TIER_CHANGE = "tier_change"
     TRENDING = "trending"
+    TRENDING_PLAYLIST = "trending_playlist"
+    TRENDING_UNDERGROUND = "trending_underground"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -341,6 +342,20 @@ class TrendingNotification(TypedDict):
     time_range: str
 
 
+class TrendingPlaylistNotification(TypedDict):
+    rank: int
+    genre: str
+    playlist_id: int
+    time_range: str
+
+
+class TrendingUndergroundNotification(TypedDict):
+    rank: int
+    genre: str
+    track_id: int
+    time_range: str
+
+
 class AnnouncementNotification(TypedDict):
     title: str
     short_description: str
@@ -439,7 +454,6 @@ def get_notifications(session: Session, args: GetNotificationArgs):
 
 class GetUnreadNotificationCount(TypedDict):
     user_id: int
-    timestamp: Optional[datetime]
     valid_types: Optional[List[NotificationType]]
 
 
@@ -447,11 +461,7 @@ def get_unread_notification_count(session: Session, args: GetUnreadNotificationC
     args["valid_types"] = args.get("valid_types", []) + default_valid_types  # type: ignore
     resultproxy = session.execute(
         unread_notification_count_sql,
-        {
-            "user_id": args["user_id"],
-            "valid_types": args.get("valid_types", None),
-            "timestamp_offset": args.get("timestamp", None),
-        },
+        {"user_id": args["user_id"], "valid_types": args.get("valid_types", None)},
     )
     unread_count = 0
     for rowproxy in resultproxy:
