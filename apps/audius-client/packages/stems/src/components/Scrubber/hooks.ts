@@ -27,18 +27,19 @@ export const useAnimations = (
   trackRef: React.MutableRefObject<HTMLDivElement | null>,
   handleRef: React.MutableRefObject<HTMLDivElement | null>,
   elapsedSeconds: number,
-  totalSeconds: number
+  totalSeconds: number,
+  playbackRate = 1
 ) => {
   /** Animates from the current position to the end over the remaining seconds. */
   const play = useCallback(() => {
-    const timeRemaining = totalSeconds - elapsedSeconds
+    const timeRemaining = (totalSeconds - elapsedSeconds) / playbackRate
     animate(
       trackRef,
       handleRef,
       `transform ${timeRemaining}s linear`,
       'translate(100%)'
     )
-  }, [trackRef, handleRef, elapsedSeconds, totalSeconds])
+  }, [totalSeconds, elapsedSeconds, playbackRate, trackRef, handleRef])
 
   /**
    * Pauses the animation at the current position.

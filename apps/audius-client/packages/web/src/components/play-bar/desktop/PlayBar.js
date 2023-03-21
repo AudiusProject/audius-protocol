@@ -15,7 +15,8 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  FeatureFlags
+  FeatureFlags,
+  playbackRateValueMap
 } from '@audius/common'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
@@ -48,7 +49,8 @@ const {
   getPlaying,
   getCounter,
   getUid: getPlayingUid,
-  getBuffering
+  getBuffering,
+  getPlaybackRate
 } = playerSelectors
 
 const { seek, reset } = playerActions
@@ -296,6 +298,7 @@ class PlayBar extends Component {
       collectible,
       isPlaying,
       isBuffering,
+      playbackRate,
       userId,
       theme
     } = this.props
@@ -393,6 +396,9 @@ class PlayBar extends Component {
                 isPlaying={isPlaying && !isBuffering}
                 isDisabled={!uid && !collectible}
                 includeTimestamps
+                playbackRate={
+                  isLongFormContent ? playbackRateValueMap[playbackRate] : 1
+                }
                 elapsedSeconds={audioPlayer?.getPosition()}
                 totalSeconds={duration}
                 style={{
@@ -505,6 +511,7 @@ const makeMapStateToProps = () => {
     isPlaying: getPlaying(state),
     isBuffering: getBuffering(state),
     playingUid: getPlayingUid(state),
+    playbackRate: getPlaybackRate(state),
     lineupHasTracks: getLineupHasTracks(
       getLineupSelectorForRoute(state),
       state
