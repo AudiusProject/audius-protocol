@@ -19,8 +19,6 @@ export default async ({ user_id }) => {
   const current = result[0];
   const old = result[1];
 
-  console.log(`user event ${JSON.stringify(result)}`);
-
   if (result.length == 2 && current.is_verified !== old.is_verified) {
     const is_verified = current.is_verified;
     const handle = current.handle;
