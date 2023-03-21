@@ -23,7 +23,7 @@ Verify setup:
 
 ### Run + test
 
-* `make` - dev on discovery or storage (view logs with `docker logs -f discovery1` or `docker logs -f storage1`)
+* `make` - dev on discovery or storage (view logs with `docker logs -f audius-protocol-discovery-1` or `docker logs -f audius-protocol-storage-1`)
 * `make test` - view test output (tests run automatically when changing files)
 * the above both hot reload, so you don't need to do `make` again unless you break hot reloading (e.g., creating/deleting files)
 

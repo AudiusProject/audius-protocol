@@ -1,12 +1,11 @@
-# TODO: Use audius-compose comms up
 up:: down migrate
-	docker compose up -d --build
+	audius-compose up comms-test
 
 down::
 	(docker compose down --volumes || true)
 
 psql::
-	docker exec -it comdb psql -U postgres audius_discovery
+	docker exec -it audius-protocol-comms-discovery-db-1 psql -U postgres audius_discovery
 
 fmt::
 	go fmt ./...
@@ -15,19 +14,19 @@ test::
 	docker logs -f comms-test
 
 migrate::
-	docker compose up comdb -d && \
+	audius-compose up comms-discovery-db-1 -d && \
 	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
-	(docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery" || true)
+	(docker exec -it audius-protocol-comms-discovery-db-1 psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery" || true)
 
 test.load::
-	docker exec -it storage1 sh -c "./comms storage loadTest"
+	docker exec -it audius-protocol-storage-1 sh -c "./comms storage loadTest"
 
 storage.seed.audio::
-	docker exec -it storage1 sh -c "./comms storage seed audio"
+	docker exec -it audius-protocol-storage-1 sh -c "./comms storage seed audio"
 
 storage.seed.image::
-	docker exec -it storage1 sh -c "./comms storage seed image"
+	docker exec -it audius-protocol-storage-1 sh -c "./comms storage seed image"
 
 # formerly build.fast but uses qemu - slow
 # note we use the "a1" tag to delineate a push from local for testing

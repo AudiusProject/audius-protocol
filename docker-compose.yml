@@ -1,105 +1,19 @@
 version: "3.9"
 
-# VARIABLES
-
-x-logging: &default-logging
-  options:
-    max-size: "50m"
-    max-file: "3"
-  driver: json-file
-
-x-nats-nodes-healthy: &nats-nodes-healthy
-  nats1-storage:
-    condition: service_healthy
-  nats2-storage:
-    condition: service_healthy
-  nats3-storage:
-    condition: service_healthy
-  nats4-storage:
-    condition: service_healthy
-  nats1-discovery:
-    condition: service_healthy
-  nats2-discovery:
-    condition: service_healthy
-  nats3-discovery:
-    condition: service_healthy
-
-x-comms-environment: &comms-environment
-  AUDIUS_REBALANCE_INTERVAL_HOURS: "0.005" # check for unhealthy nodes and update healthy node set every 18 seconds
-  AUDIUS_HEALTH_TTL_HOURS: "0.005" # consider a node unhealthy if it hasn't self-reported "OK" status in the last 18 seconds
-  AUDIUS_REPORT_OK_INTERVAL_SECONDS: 4
-  AUDIUS_SHARD_LENGTH: 1
-  AUDIUS_NATS_ENABLE_JETSTREAM: true
-  AUDIUS_DEV_ONLY_REGISTERED_NODES: '
-        [
-          {
-            "id": "content-node::1",
-            "spId": "1",
-            "endpoint": "http://node1-storage",
-            "delegateOwnerWallet": "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F",
-            "owner": { "id": "0x339511506f7BfB5f5d7042b450B9D450626dbB91" },
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "content-node::2",
-            "spId": "2",
-            "endpoint": "http://node2-storage",
-            "delegateOwnerWallet": "0x90b8d2655A7C268d0fA31758A714e583AE54489D",
-            "owner": { "id": "0x11327A21bc4dE71a1274D7C1e2c94D50AdeeBB88" },
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "content-node::3",
-            "spId": "3",
-            "endpoint": "http://node3-storage",
-            "delegateOwnerWallet": "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B",
-            "owner": { "id": "0x339511506f7BfB5f5d7042b450B9D450626dbB91" },
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "content-node::4",
-            "spId": "4",
-            "endpoint": "http://node4-storage",
-            "delegateOwnerWallet": "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16",
-            "owner": { "id": "0x11327A21bc4dE71a1274D7C1e2c94D50AdeeBB88" },
-            "type": { "id": "content-node" }
-          },
-          {
-            "id": "discovery-node::1",
-            "spId": "5",
-            "endpoint": "http://node1-discovery",
-            "delegateOwnerWallet": "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e",
-            "owner": { "id": "0x339511506f7BfB5f5d7042b450B9D450626dbB91" },
-            "type": { "id": "discovery-node" }
-          },
-          {
-            "id": "discovery-node::2",
-            "spId": "6",
-            "endpoint": "http://node2-discovery",
-            "delegateOwnerWallet": "0x9262c9A1b172fF2A9C027B55862389d00b68A26a",
-            "owner": { "id": "0x11327A21bc4dE71a1274D7C1e2c94D50AdeeBB88" },
-            "type": { "id": "discovery-node" }
-          },
-          {
-            "id": "discovery-node::3",
-            "spId": "7",
-            "endpoint": "http://node3-discovery",
-            "delegateOwnerWallet": "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4",
-            "owner": { "id": "0x339511506f7BfB5f5d7042b450B9D450626dbB91" },
-            "type": { "id": "discovery-node" }
-          }
-        ]'
-
-# Allows the containers can talk to each other via their hostnames
-x-extra-hosts: &extra-hosts
-  extra_hosts:
-    - "node1-storage:host-gateway"
-    - "node2-storage:host-gateway"
-    - "node3-storage:host-gateway"
-    - "node4-storage:host-gateway"
-    - "node1-discovery:host-gateway"
-    - "node2-discovery:host-gateway"
-    - "node3-discovery:host-gateway"
+x-common: &common
+  logging:
+    options:
+      max-size: "50m"
+      max-file: "3"
+    driver: json-file
+  extra_hosts: # Allows the containers can talk to each other via their hostnames routed through nginx
+    - "audius-protocol-storage-1:host-gateway"
+    - "audius-protocol-storage-2:host-gateway"
+    - "audius-protocol-storage-3:host-gateway"
+    - "audius-protocol-storage-4:host-gateway"
+    - "audius-protocol-comms-discovery-1:host-gateway"
+    - "audius-protocol-comms-discovery-2:host-gateway"
+    - "audius-protocol-comms-discovery-3:host-gateway"
     - "audius-protocol-creator-node-1:host-gateway"
     - "audius-protocol-creator-node-2:host-gateway"
     - "audius-protocol-creator-node-3:host-gateway"
@@ -108,571 +22,177 @@ x-extra-hosts: &extra-hosts
     - "audius-protocol-solana-test-validator-1:host-gateway"
     - "audius-protocol-eth-ganache-1:host-gateway"
     - "audius-protocol-poa-ganache-1:host-gateway"
-
-x-nats: &nats
-    build:
-      context: comms
-      dockerfile: Dockerfile
-      target: builder
-      args:
-        GOARCH: arm64
-    restart: unless-stopped
-    stop_signal: SIGKILL
-    command: nats
-    depends_on:
-      comdb:
-        condition: service_started
-      ingress:
-        condition: service_started
-    <<: *extra-hosts
-    healthcheck:
-      # does the cluster have at least 7 nodes peered (4 storage, 3 discovery)?
-      test: wget -qO- http://localhost:8924/nats/jsz | grep -o '"cluster_size":[[:space:]]*[0-9]*' | awk '{if ($$2 < 7) {exit 1}}'
-      interval: 5s
-      retries: 15
-      start_period: 10s
-      timeout: 1s
-    volumes:
-      - ./comms/natsd:/app/natsd
-      - ./comms/shared:/app/shared
-
-x-storage: &storage
-    build:
-      context: comms
-      dockerfile: Dockerfile
-      target: builder
-      args:
-        GOARCH: arm64
-    restart: unless-stopped
-    stop_signal: SIGKILL
-    command: storage
-    <<: *extra-hosts
-    healthcheck:
-      test: wget --no-verbose --tries=1 --spider http://localhost:8926/storage || exit 1
-      interval: 3s
-      retries: 10
-      start_period: 20s
-      timeout: 1s
-    depends_on:
-      ingress:
-        condition: service_started
-      <<: *nats-nodes-healthy
-    volumes:
-      - ./comms/storage:/app/storage
-      - ./comms/shared:/app/shared
-      - /app/storage/storageserver/weather-map # exclude weather-map and its heavy node_modules
-      - ./comms/storage/storageserver/weather-map/dist:/app/storage/storageserver/weather-map/dist
-
-x-discovery: &discovery
-    build:
-      context: comms
-      dockerfile: Dockerfile
-      target: builder
-      args:
-        GOARCH: arm64
-    restart: unless-stopped
-    stop_signal: SIGKILL
-    command: discovery
-    <<: *extra-hosts
-    volumes:
-      - ./comms/discovery:/app/discovery
-      - ./comms/shared:/app/shared
-    depends_on:
-      <<: *nats-nodes-healthy
+  deploy:
+    resources:
+      limits:
+        memory: 3G
 
 services:
-  # contracts
+  ingress: # Nginx ingress for all hostnames. Change nginx_ingress.conf to add more hostnames / routes
+    extends:
+      file: docker-compose.misc.yml
+      service: ingress
+    <<: *common
 
-  poa-ganache:
-    build:
-      context: contracts
-      dockerfile: Dockerfile.dev
-      args:
-        bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
-        bootstrapSPDelegateWallets: ${BOOTSTRAP_SP_DELEGATE_WALLETS}
-        bootstrapSPOwnerWallets: ${BOOTSTRAP_SP_OWNER_WALLETS}
-    command: bash /tmp/dev-tools/startup/poa-ganache.sh
-    volumes:
-      - poa-contracts-abis:/usr/src/app/build/contracts
-      - ./dev-tools:/tmp/dev-tools
-    ports:
-      - "8545:8545"
-    logging: *default-logging
-    deploy:
-      mode: global
-    <<: *extra-hosts
-
-  poa-blockscout-db:
-    image: postgres:13.6
-    environment:
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_USER: "postgres"
-    healthcheck:
-      test: ["CMD", "pg_isready"]
-      interval: 10s
-      timeout: 5s
-    logging: *default-logging
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-    <<: *extra-hosts
-
-  poa-blockscout:
-    image: blockscout/blockscout:4.1.3
-    command: "mix do ecto.create, ecto.migrate, phx.server"
-    environment:
-      ETHEREUM_JSONRPC_VARIANT: "ganache"
-      ETHEREUM_JSONRPC_HTTP_URL: "http://poa-ganache:8545"
-      ETHEREUM_JSONRPC_WS_URL: "ws://poa-ganache:8545"
-      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: "true"
-      DATABASE_URL: "postgresql://postgres:postgres@poa-blockscout-db:5432/postgres?ssl=false"
-      ECTO_USE_SSL: false
-    ports:
-      - "9545:4000"
-    depends_on:
-      poa-blockscout-db:
-        condition: service_healthy
-      poa-ganache:
-        condition: service_healthy
-    logging: *default-logging
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-    <<: *extra-hosts
-
-  # eth-contracts
-
-  eth-ganache:
-    build:
-      context: eth-contracts
-      dockerfile: Dockerfile.dev
-      args:
-        CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
-        DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
-        antiAbuseOracleAddresses: "${AAO_WALLET_ADDRESSES}"
-    command: bash /tmp/dev-tools/startup/eth-ganache.sh
-    volumes:
-      - eth-contracts-abis:/usr/src/app/build/contracts
-      - ./dev-tools:/tmp/dev-tools
-    ports:
-      - "8546:8545"
-    logging: *default-logging
-    deploy:
-      mode: global
-    <<: *extra-hosts
-
-  eth-blockscout-db:
-    image: postgres:13.6
-    environment:
-      POSTGRES_PASSWORD: "postgres"
-      POSTGRES_USER: "postgres"
-    healthcheck:
-      test: ["CMD", "pg_isready"]
-      interval: 10s
-      timeout: 5s
-    logging: *default-logging
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-    <<: *extra-hosts
-
-  eth-blockscout:
-    image: blockscout/blockscout:4.1.3
-    command: "mix do ecto.create, ecto.migrate, phx.server"
-    environment:
-      ETHEREUM_JSONRPC_VARIANT: "ganache"
-      ETHEREUM_JSONRPC_HTTP_URL: "http://eth-ganache:8545"
-      ETHEREUM_JSONRPC_WS_URL: "ws://eth-ganache:8545"
-      INDEXER_DISABLE_PENDING_TRANSACTIONS_FETCHER: "true"
-      DATABASE_URL: "postgresql://postgres:postgres@eth-blockscout-db:5432/postgres?ssl=false"
-      ECTO_USE_SSL: false
-    ports:
-      - "9546:4000"
-    depends_on:
-      eth-blockscout-db:
-        condition: service_healthy
-      eth-ganache:
-        condition: service_healthy
-    logging: *default-logging
-    deploy:
-      mode: global
-    profiles:
-      - block-explorer
-    <<: *extra-hosts
-
-  # solana-programs
-
-  solana-test-validator:
-    image: audius/solana-programs:latest
-    # NOTE: Building solana program can take a lot of time especially on m1 (upto 30 mins) so we used pre-built images
-    # build:
-    #   context: solana-programs
-    #   dockerfile: Dockerfile.dev
-    #   args:
-    #     AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}"
-    #     TRACK_LISTEN_COUNT_PRIVATE_KEY: "${SOLANA_TRACK_LISTEN_COUNT_SECRET_KEY}"
-    #     CLAIMABLE_TOKENS_PRIVATE_KEY: "${SOLANA_CLAIMABLE_TOKENS_SECRET_KEY}"
-    #     REWARD_MANAGER_PRIVATE_KEY: "${SOLANA_REWARD_MANAGER_SECRET_KEY}"
-    #     AUDIUS_DATA_PRIVATE_KEY: "${SOLANA_AUDIUS_DATA_SECRET_KEY}"
-    #     owner_private_key: "${SOLANA_OWNER_SECRET_KEY}"
-    #     feepayer_private_key: "${SOLANA_FEEPAYER_SECRET_KEY}"
-    #     token_private_key: "${SOLANA_TOKEN_MINT_SECRET_KEY}"
-    #     admin_authority_private_key: "${SOLANA_ADMIN_AUTHORITY_SECRET_KEY}"
-    #     admin_account_private_key: "${SOLANA_ADMIN_ACCOUNT_SECRET_KEY}"
-    #     signer_group_private_key: "${SOLANA_SIGNER_GROUP_SECRET_KEY}"
-    #     valid_signer_private_key: "${SOLANA_VALID_SIGNER_SECRET_KEY}"
-    #     reward_manager_pda_private_key: "${SOLANA_REWARD_MANAGER_PDA_SECRET_KEY}"
-    #     reward_manager_token_pda_private_key: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_SECRET_KEY}"
-    #     valid_signer_eth_address: "${ETH_VALID_SIGNER_ADDRESS}"
-    volumes:
-      - solana-programs-idl:/usr/src/app/anchor/audius-data/idl
-    ports:
-      - "8899:8899"
-    logging: *default-logging
-    deploy:
-      mode: global
-      resources:
-        limits:
-          memory: 3G
-    <<: *extra-hosts
-
-  # build libs
+  autoheal: # Restarts containers when they become unhealthy
+    extends:
+      file: docker-compose.misc.yml
+      service: autoheal
+    <<: *common
 
   build-audius-libs:
-    build: libs
-    command: sh /tmp/dev-tools/startup/build-audius-libs.sh
-    volumes:
-      - audius-libs:/usr/src/app
-      - poa-contracts-abis:/usr/src/data-contracts/ABIs
-      - eth-contracts-abis:/usr/src/eth-contracts/ABIs
-      - ./libs/src:/usr/src/app/src
-      - ./dev-tools:/tmp/dev-tools
-    depends_on:
-      poa-ganache:
-        condition: service_started
-      eth-ganache:
-        condition: service_started
-    logging: *default-logging
-    deploy:
-      mode: global
-    <<: *extra-hosts
-
-  # audius-cmd
+    extends:
+      file: docker-compose.misc.yml
+      service: build-audius-libs
+    <<: *common
 
   audius-cmd:
-    build: dev-tools/commands
-    command: sleep infinity
-    environment:
-      ETH_TOKEN_ADDRESS: "${ETH_TOKEN_ADDRESS}"
-      ETH_REGISTRY_ADDRESS: "${ETH_REGISTRY_ADDRESS}"
-      ETH_PROVIDER_URL: "http://eth-ganache:8545"
-      ETH_OWNER_WALLET: "${ETH_OWNER_WALLET}"
+    extends:
+      file: docker-compose.misc.yml
+      service: audius-cmd
+    <<: *common
 
-      POA_REGISTRY_ADDRESS: "${POA_REGISTRY_ADDRESS}"
-      ENTITY_MANAGER_ADDRESS: "${ENTITY_MANAGER_ADDRESS}"
-      POA_PROVIDER_URL: "http://poa-ganache:8545"
-
-      SOLANA_ENDPOINT: "http://solana-test-validator:8899"
-      SOLANA_OWNER_SECRET_KEY: "${SOLANA_OWNER_SECRET_KEY}"
-      SOLANA_TOKEN_MINT_PUBLIC_KEY: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
-      SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
-      SOLANA_REWARD_MANAGER_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
-      SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
-      SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
-      SOLANA_FEEPAYER_SECRET_KEY: "${SOLANA_FEEPAYER_SECRET_KEY}"
-
-      IDENTITY_SERVICE_URL: "http://identity-service:7000"
-      FALLBACK_CREATOR_NODE_URL: "http://creator-node:4000" # this should choose a random cn everytime this is run
-    volumes:
-      - audius-libs:/usr/src/app/node_modules/@audius/sdk
-      - ./dev-tools/commands/src:/usr/src/app/src
-      - ./dev-tools/commands/test:/usr/src/app/test
-    depends_on:
-      build-audius-libs:
-        condition: service_started
-    logging: *default-logging
-    deploy:
-      mode: global
-    <<: *extra-hosts
-
-  # identity-service
+  # Identity
 
   identity-service-db:
-    image: postgres:11.4
-    user: postgres
-    healthcheck:
-      test: ["CMD", "pg_isready"]
-      interval: 10s
-      timeout: 5s
-    logging: *default-logging
-    deploy:
-      mode: global
+    extends:
+      file: docker-compose.identity.yml
+      service: identity-service-db
+    <<: *common
 
   identity-service-redis:
-    image: redis:7.0
-    command: redis-server
-    healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
-      interval: 10s
-      timeout: 5s
-    logging: *default-logging
-    deploy:
-      mode: global
+    extends:
+      file: docker-compose.identity.yml
+      service: identity-service-redis
+    <<: *common
 
   identity-service:
-    build:
-      context: identity-service
-      args:
-        git_sha: "${GIT_COMMIT}"
-    command: sh -c ". /tmp/dev-tools/startup/identity-service.sh && scripts/dev-server.sh"
-    ports:
-      - "7000:7000"
-      - "9229:9229"
-    environment:
-      logLevel: debug
-      minimumBalance: 1
-      minimumRelayerBalance: 1
-      minimumFunderBalance: 1
+    extends:
+      file: docker-compose.identity.yml
+      service: identity-service
+    <<: *common
 
-      relayerPrivateKey: "${POA_RELAYER_WALLET_1_PRIVATE_KEY}"
-      relayerPublicKey: "${POA_RELAYER_WALLET_1_ADDRESS}"
-      relayerWallets: "${POA_RELAYER_WALLETS}"
-
-      ethFunderAddress: "0xaaaa90Fc2bfa70028D6b444BB9754066d9E2703b"
-      ethRelayerWallets: "${ETH_RELAYER_WALLETS}"
-
-      userVerifierPrivateKey: "ebba299e6163ff3208de4e82ce7db09cf7e434847b5bdab723af96ae7c763a0e"
-      userVerifierPublicKey: "0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0'"
-
-      dbUrl: "postgres://postgres:postgres@identity-service-db:5432/postgres"
-
-      redisHost: "identity-service-redis"
-      redisPort: 6379
-
-      aaoEndpoint: "http://anti-abuse-oracle:8000"
-      aaoAddress: "${AAO_WALLET_ADDRESS}"
-
-      web3Provider: "http://poa-ganache:8545"
-      secondaryWeb3Provider: "http://poa-ganache:8545"
-      registryAddress: "${POA_REGISTRY_ADDRESS}"
-      entityManagerAddress: "${ENTITY_MANAGER_ADDRESS}"
-      ownerWallet: "${POA_OWNER_WALLET}"
-
-      ethProviderUrl: "http://eth-ganache:8545"
-      ethTokenAddress: "${ETH_TOKEN_ADDRESS}"
-      ethRegistryAddress: "${ETH_REGISTRY_ADDRESS}"
-      ethOwnerWallet: "${ETH_OWNER_WALLET}"
-
-      solanaEndpoint: "http://solana-test-validator:8899"
-      solanaTrackListenCountAddress: "${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}"
-      solanaAudiusEthRegistryAddress: "${SOLANA_AUDIUS_ETH_REGISTRY_PUBLIC_KEY}"
-      solanaValidSigner: "${SOLANA_VALID_SIGNER_PUBLIC_KEY}"
-      solanaFeePayerWallets: '[{"privateKey":${SOLANA_FEEPAYER_SECRET_KEY}}]'
-      solanaSignerPrivateKey: "${ETH_VALID_SIGNER_PRIVATE_KEY}"
-      solanaMintAddress: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
-      solanaClaimableTokenProgramAddress: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
-      solanaRewardsManagerProgramId: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
-      solanaRewardsManagerProgramPDA: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
-      solanaRewardsManagerTokenPDA: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
-      solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
-    volumes:
-      - ./identity-service:/usr/src/app
-      - /usr/src/app/node_modules
-      - ./dev-tools:/tmp/dev-tools
-      - audius-libs:/usr/src/audius-libs
-    depends_on:
-      identity-service-db:
-        condition: service_healthy
-      identity-service-redis:
-        condition: service_healthy
-      poa-ganache:
-        condition: service_healthy
-      eth-ganache:
-        condition: service_healthy
-      solana-test-validator:
-        condition: service_healthy
-      build-audius-libs:
-        condition: service_started
-    logging: *default-logging
-    deploy:
-      mode: global
-    <<: *extra-hosts
-
-  # discovery-provider
+  # Discovery
 
   discovery-provider-notifications:
-    build:
-      context: discovery-provider/plugins/notifications
-      args:
-        git_sha: "${GIT_COMMIT}"
-    environment:
-      AUDIUS_REDIS_URL: "redis://identity-service-redis:6379/00"
-      DN_DB_URL: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
-      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
-    volumes:
-      - ./discovery-provider/plugins/notifications:/notifications
-      - /notifications/node_modules
-    depends_on:
-      comms:
-        condition: service_completed_successfully
-      discovery-provider:
-        condition: service_healthy
-      identity-service:
-        condition: service_healthy
-      identity-service-redis:
-        condition: service_healthy
-    deploy:
-      mode: global
-    <<: *extra-hosts
-
-  # TODO: Do we need this anymore?
-  comms:
-    build:
-      context: comms
-      dockerfile: Dockerfile
-    command: discovery-migrations
-    environment:
-      audius_db_url: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
-    depends_on:
-      discovery-provider:
-        condition: service_healthy
-    logging: *default-logging
+    extends:
+      file: docker-compose.discovery.yml
+      service: discovery-provider-notifications
+    <<: *common
 
   discovery-provider-elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
-    environment:
-      discovery.type: single-node
-      xpack.security.enabled: false
-      ES_JAVA_OPTS: -Xms512m -Xmx512m
-    depends_on:
-      identity-service-redis:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl --fail http://localhost:9200/_cluster/health || exit 1",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 15
-    logging: *default-logging
-    deploy:
-      mode: replicated
-      replicas: "${ELASTICSEARCH_REPLICAS}"
-    profiles:
-      - elasticsearch
-    <<: *extra-hosts
+    extends:
+      file: docker-compose.discovery.yml
+      service: discovery-provider-elasticsearch
+    <<: *common
 
   discovery-provider:
-    build:
-      context: discovery-provider
-      args:
-        git_sha: "${GIT_COMMIT}"
-    command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
-    env_file: .env # used by the startup script
-    environment:
-      PYTHONPYCACHEPREFIX: /tmp/pycache
+    extends:
+      file: docker-compose.discovery.yml
+      service: discovery-provider
+    <<: *common
 
-      audius_web3_host: "poa-ganache"
-      audius_web3_port: "8545"
-      audius_web3_eth_provider_url: "http://eth-ganache:8545"
-      audius_contracts_registry: "${POA_REGISTRY_ADDRESS}"
-      audius_contracts_entity_manager_address: "${ENTITY_MANAGER_ADDRESS}"
-      audius_eth_contracts_registry: "${ETH_REGISTRY_ADDRESS}"
-      audius_eth_contracts_token: "${ETH_TOKEN_ADDRESS}"
+  comms: # Used for pushing to docker hub in CI
+    extends:
+      file: docker-compose.discovery.yml
+      service: comms
+    <<: *common
 
-      audius_solana_endpoint: "http://solana-test-validator:8899"
-      audius_solana_track_listen_count_address: "${SOLANA_TRACK_LISTEN_COUNT_PUBLIC_KEY}"
-      audius_solana_signer_group_address: "${SOLANA_SIGNER_GROUP_PUBLIC_KEY}"
-      audius_solana_user_bank_program_address: "${SOLANA_CLAIMABLE_TOKENS_PUBLIC_KEY}"
-      audius_solana_waudio_mint: "${SOLANA_TOKEN_MINT_PUBLIC_KEY}"
-      audius_solana_rewards_manager_program_address: "${SOLANA_REWARD_MANAGER_PUBLIC_KEY}"
-      audius_solana_rewards_manager_account: "${SOLANA_REWARD_MANAGER_PDA_PUBLIC_KEY}"
-      audius_solana_anchor_data_program_id: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
-      audius_solana_anchor_admin_storage_public_key: "${SOLANA_ADMIN_ACCOUNT_PUBLIC_KEY}"
-
-      audius_discprov_dev_mode: "true"
-    volumes:
-      - ./discovery-provider/alembic:/audius-discovery-provider/alembic
-      - ./discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser
-      - ./discovery-provider/src:/audius-discovery-provider/src
-      - poa-contracts-abis:/audius-discovery-provider/build/contracts
-      - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
-      - solana-programs-idl:/audius-discovery-provider/idl
-      - ./dev-tools:/tmp/dev-tools
-    expose:
-      - "5432"
-    depends_on:
-      poa-ganache:
-        condition: service_healthy
-      eth-ganache:
-        condition: service_healthy
-      solana-test-validator:
-        condition: service_healthy
-      discovery-provider-elasticsearch:
-        condition: "${ELASTICSEARCH_CONDITION}"
-    logging: *default-logging
-    deploy:
-      mode: replicated
-      replicas: "${DISCOVERY_PROVIDER_REPLICAS}"
-    <<: *extra-hosts
-
-  # creator-node
+  # Creator node (legacy)
 
   creator-node:
-    build:
-      context: creator-node
-      args:
-        git_sha: "${GIT_COMMIT}"
-    command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
-    env_file: .env # used by the startup script
-    volumes:
-      - ./creator-node:/usr/src/app
-      - ./dev-tools:/tmp/dev-tools
-      - audius-libs:/usr/src/audius-libs
-      - /usr/src/app/node_modules
-      - /usr/src/app/build
-    depends_on:
-      poa-ganache:
-        condition: service_healthy
-      eth-ganache:
-        condition: service_healthy
-      solana-test-validator:
-        condition: service_healthy
-      build-audius-libs:
-        condition: service_started
-    logging: *default-logging
-    deploy:
-      mode: replicated
-      replicas: "${CREATOR_NODE_REPLICAS}"
-    <<: *extra-hosts
+    extends:
+      file: docker-compose.creator.yml
+      service: creator-node
+    <<: *common
 
-  autoheal:
-    image: willfarrell/autoheal:latest
-    tty: true
-    container_name: autoheal
-    restart: always
-    environment:
-      - AUTOHEAL_CONTAINER_LABEL=all
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+  # Comms (nats, storage v2, and comms/dms)
 
-  ingress:
-    container_name: ingress
-    image: openresty/openresty:1.21.4.1-alpine-fat
-    volumes:
-      - ./nginx_ingress.conf:/etc/nginx/conf.d/default.conf
-      - ./comms/nginx/ingress.conf:/usr/local/openresty/nginx/conf/comms_ingress.conf
-    ports:
-      - 80:80
+  nats-storage-1:
+    extends:
+      file: docker-compose.comms.yml
+      service: nats-storage-1
+    <<: *common
 
-  # TODO: Don't need this anymore. 'comms' container uses discovery1 db, so we probably can, too
-  comdb:
-    container_name: comdb
+  nats-storage-2:
+    extends:
+      file: docker-compose.comms.yml
+      service: nats-storage-2
+    <<: *common
+
+  nats-storage-3:
+    extends:
+      file: docker-compose.comms.yml
+      service: nats-storage-3
+    <<: *common
+
+  nats-storage-4:
+    extends:
+      file: docker-compose.comms.yml
+      service: nats-storage-4
+    <<: *common
+
+  nats-discovery-1:
+    extends:
+      file: docker-compose.comms.yml
+      service: nats-discovery-1
+    <<: *common
+
+  nats-discovery-2:
+    extends:
+      file: docker-compose.comms.yml
+      service: nats-discovery-2
+    <<: *common
+
+  nats-discovery-3:
+    extends:
+      file: docker-compose.comms.yml
+      service: nats-discovery-3
+    <<: *common
+
+  storage-1:
+    extends:
+      file: docker-compose.comms.yml
+      service: storage-1
+    <<: *common
+
+  storage-2:
+    extends:
+      file: docker-compose.comms.yml
+      service: storage-2
+    <<: *common
+
+  storage-3:
+    extends:
+      file: docker-compose.comms.yml
+      service: storage-3
+    <<: *common
+
+  storage-4:
+    extends:
+      file: docker-compose.comms.yml
+      service: storage-4
+    <<: *common
+
+  comms-discovery-1:
+    extends:
+      file: docker-compose.comms.yml
+      service: comms-discovery-1
+    <<: *common
+
+  comms-discovery-2:
+    extends:
+      file: docker-compose.comms.yml
+      service: comms-discovery-2
+    <<: *common
+
+  comms-discovery-3:
+    extends:
+      file: docker-compose.comms.yml
+      service: comms-discovery-3
+    <<: *common
+
+  comms-discovery-db-1:
     image: postgres
     restart: unless-stopped
     ports:
@@ -681,166 +201,59 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
-
-  # NATS
-
-  nats1-storage:
-    <<: *nats
-    container_name: nats1-storage
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      AUDIUS_TEST_HOST: "nats1-storage"
-
-  nats2-storage:
-    <<: *nats
-    container_name: nats2-storage
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
-      AUDIUS_TEST_HOST: "nats2-storage"
-
-  nats3-storage:
-    <<: *nats
-    container_name: nats3-storage
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
-      AUDIUS_TEST_HOST: "nats3-storage"
-
-  nats4-storage:
-    <<: *nats
-    container_name: nats4-storage
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
-      AUDIUS_TEST_HOST: "nats4-storage"
-
-  nats1-discovery:
-    <<: *nats
-    container_name: nats1-discovery
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" # Public key: "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e"
-      AUDIUS_TEST_HOST: "nats1-discovery"
-
-  nats2-discovery:
-    <<: *nats
-    container_name: nats2-discovery
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "d2b12371a062b73ce665288f894844ab75760d0ed0c580ff19d21b54d260ceb2" # Public key: "0x9262c9A1b172fF2A9C027B55862389d00b68A26a"
-      AUDIUS_TEST_HOST: "nats2-discovery"
-
-  nats3-discovery:
-    <<: *nats
-    container_name: nats3-discovery
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "6569932dff9fbe7c04382f87ac7098f90e7aa5cb0fe636b4e5c3cb4e30668812" # Public key: "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4"
-      AUDIUS_TEST_HOST: "nats3-discovery"
-
-  # STORAGE
-
-  storage1:
-    <<: *storage
-    container_name: storage1
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      AUDIUS_TEST_HOST: "nats1-storage"
-      NAME: "storage1"
-
-  storage2:
-    <<: *storage
-    container_name: storage2
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "1ca1082d2304d96c2e6a3e551226e72e2cb54fddfe69b946b0efc2d9b43c19fc" # Public key: "0x90b8d2655A7C268d0fA31758A714e583AE54489D"
-      AUDIUS_TEST_HOST: "nats2-storage"
-      NAME: "storage2"
-
-  storage3:
-    <<: *storage
-    container_name: storage3
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "12712efcf90774399e272f8fc89ef264058b4cdd7f7f86956052050cbfb4350c" # Public key: "0xb7b9599EeB2FD9237C94cFf02d74368Bb2df959B"
-      AUDIUS_TEST_HOST: "nats3-storage"
-      NAME: "storage3"
-
-  storage4:
-    <<: *storage
-    container_name: storage4
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "2617e6258025c60b5aa270e02ff2247eefab37c7b463b2a870104862870ad3fb" # Public key: "0xfa4f42633Cb0c72Aa35D3D1A3566abb7142c7b16"
-      AUDIUS_TEST_HOST: "nats4-storage"
-      NAME: "storage4"
-
-  # DISCOVERY (comms, not a full discovery provider)
-
-  discovery1:
-    <<: *discovery
-    container_name: discovery1
-    environment:
-      <<: *comms-environment
-      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
-      AUDIUS_DELEGATE_PRIVATE_KEY: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" # Public key: "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e"
-      NATS_SERVER_URL: "nats://nats1-discovery:4222"
-    
-  discovery2:
-    <<: *discovery
-    container_name: discovery2
-    environment:
-      <<: *comms-environment
-      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
-      AUDIUS_DELEGATE_PRIVATE_KEY: "d2b12371a062b73ce665288f894844ab75760d0ed0c580ff19d21b54d260ceb2" # Public key: "0x9262c9A1b172fF2A9C027B55862389d00b68A26a"
-      NATS_SERVER_URL: "nats://nats2-discovery:4222"
-
-  discovery3:
-    <<: *discovery
-    container_name: discovery3
-    environment:
-      <<: *comms-environment
-      audius_db_url: "postgresql://postgres:postgres@comdb:5432/com1?sslmode=disable"
-      AUDIUS_DELEGATE_PRIVATE_KEY: "6569932dff9fbe7c04382f87ac7098f90e7aa5cb0fe636b4e5c3cb4e30668812" # Public key: "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4"
-      NATS_SERVER_URL: "nats://nats3-discovery:4222"
-
-  # TEST
+    <<: *common
+    deploy:
+      mode: global
 
   comms-test:
-    container_name: comms-test
-    build:
-      context: comms
-      dockerfile: Dockerfile
-      target: builder
-      args:
-        GOARCH: arm64
-    environment:
-      <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
-      AUDIUS_TEST_HOST: "nats1-storage"
-      NATS_SERVER_URL: "nats://nats1-storage:4222"
-      audius_db_url: "postgresql://postgres:postgres@comdb:5432/audius_discovery?sslmode=disable"
-    command: -c .air.test.toml
-    <<: *extra-hosts
-    volumes:
-      - ./comms/:/app
-    depends_on:
-      ingress:
-        condition: service_started
-      comdb:
-        condition: service_started
-      storage1:
-        condition: service_healthy
-      storage2:
-        condition: service_healthy
-      storage3:
-        condition: service_healthy
-      storage4:
-        condition: service_healthy
-      <<: *nats-nodes-healthy
+    extends:
+      file: docker-compose.comms.yml
+      service: comms-test
+    <<: *common
+
+  # Blockchain
+
+  poa-ganache:
+    extends:
+      file: docker-compose.blockchain.yml
+      service: poa-ganache
+    <<: *common
+
+  poa-blockscout-db:
+    extends:
+      file: docker-compose.blockchain.yml
+      service: poa-blockscout-db
+    <<: *common
+
+  poa-blockscout:
+    extends:
+      file: docker-compose.blockchain.yml
+      service: poa-blockscout
+    <<: *common
+
+  eth-ganache:
+    extends:
+      file: docker-compose.blockchain.yml
+      service: eth-ganache
+    <<: *common
+
+  eth-blockscout-db:
+    extends:
+      file: docker-compose.blockchain.yml
+      service: eth-blockscout-db
+    <<: *common
+
+  eth-blockscout:
+    extends:
+      file: docker-compose.blockchain.yml
+      service: eth-blockscout
+    <<: *common
+
+  solana-test-validator:
+    extends:
+      file: docker-compose.blockchain.yml
+      service: solana-test-validator
+    <<: *common
 
 volumes:
   poa-contracts-abis:
