@@ -3,7 +3,11 @@ from datetime import datetime
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
-from src.models.notifications.notification import NotificationSeen, PlaylistSeen
+from src.models.notifications.notification import (
+    Notification,
+    NotificationSeen,
+    PlaylistSeen,
+)
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.rewards.challenge import Challenge
@@ -133,6 +137,7 @@ def populate_mock_db(db, entities, block_offset=None):
         reward_manager_txs = entities.get("reward_manager_txs", [])
         challenge_disbursements = entities.get("challenge_disbursements", [])
         notification_seens = entities.get("notification_seens", [])
+        notifications = entities.get("notification", [])
         playlist_seens = entities.get("playlist_seens", [])
         user_balance_changes = entities.get("user_balance_changes", [])
 
@@ -572,6 +577,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 txhash=playlist_seen.get("txhash", str(i)),
             )
             session.add(ps)
+        for i, notification in enumerate(notifications):
+            ns = Notification(
+                user_ids=notification.get("user_ids", []),
+                blocknumber=notification.get("blocknumber", i),
+                timestamp=notification.get("timestamp", datetime.now()),
+                type=notification.get("type", "default"),
+                group_id=notification.get("group_id", "default_group_id"),
+                specifier=notification.get("specifier", str(i)),
+                data=notification.get("data", {}),
+            )
+            session.add(ns)
         for i, notification_seen in enumerate(notification_seens):
             ns = NotificationSeen(
                 user_id=notification_seen.get("user_id", i),
