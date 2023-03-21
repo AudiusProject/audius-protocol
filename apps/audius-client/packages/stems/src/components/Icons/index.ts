@@ -138,3 +138,4 @@ export { ReactComponent as IconBlockMessages } from '../../assets/icons/iconBloc
 export { ReactComponent as IconSettings } from '../../assets/icons/iconSettings.svg'
 export { ReactComponent as IconDashboard } from '../../assets/icons/iconDashboard.svg'
 export { ReactComponent as IconMood } from '../../assets/icons/iconMood.svg'
+export { ReactComponent as IconDesktop } from '../../assets/icons/iconDesktop.svg'
