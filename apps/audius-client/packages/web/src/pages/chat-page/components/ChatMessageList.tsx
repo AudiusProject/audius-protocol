@@ -28,6 +28,7 @@ import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 
 import styles from './ChatMessageList.module.css'
 import { ChatMessageListItem } from './ChatMessageListItem'
+import { SendMessagePrompt } from './SendMessagePrompt'
 import { StickyScrollList } from './StickyScrollList'
 
 const SPINNER_HEIGHT = 48
@@ -162,6 +163,9 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         {...other}
       >
         <div className={styles.listRoot}>
+          {status !== Status.LOADING && chatMessages?.length === 0 ? (
+            <SendMessagePrompt />
+          ) : null}
           {chatId &&
             chatMessages?.map((message, i) => (
               <Fragment key={message.message_id}>
