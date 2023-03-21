@@ -1,6 +1,6 @@
 export default async ({ slack, dp_db, id_db }, { user_id }) => {
   const result = await dp_db("users")
-    .select("handle")
+    .select("handle", "is_verified")
     .where("user_id", "=", user_id)
     .orderBy("blocknumber", "desc")
     .limit(2)
