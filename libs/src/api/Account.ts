@@ -5,6 +5,7 @@ import { AuthHeaders } from '../constants'
 import { getPermitDigest, sign } from '../utils/signatures'
 import { PublicKey } from '@solana/web3.js'
 import type { Users } from './Users'
+import type { BN } from 'ethereumjs-util'
 
 export class Account extends Base {
   User: Users
@@ -35,7 +36,6 @@ export class Account extends Base {
     this.searchTags = this.searchTags.bind(this)
     this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
     this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
-    this.getUserAccountOnSolana = this.getUserAccountOnSolana.bind(this)
     this.userHasClaimedSolAccount = this.userHasClaimedSolAccount.bind(this)
   }
 
@@ -698,11 +698,8 @@ export class Account extends Base {
         'Must supply EITHER an `account` OR `wallet` and `userId` to look up whether userHasClaimedSolAccount'
       )
     }
-    if (!account && wallet && userId) {
-      account = await this.getUserAccountOnSolana({ wallet, userId })
-    }
     const userHasClaimedAccount =
-      PublicKey.default.toString() !== account.authority.toString()
+      PublicKey.default.toString() !== account?.authority.toString()
 
     return userHasClaimedAccount
   }

@@ -13,7 +13,7 @@ import { UserStateManager } from './userStateManager'
 import type { Logger, Nullable } from './utils'
 import { Utils } from './utils'
 
-import { Keypair, PublicKey } from '@solana/web3.js'
+import { Keypair } from '@solana/web3.js'
 
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import { Web3Config, Web3Manager } from './services/web3Manager'
@@ -550,7 +550,6 @@ export class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.solanaWeb3Manager,
-      null as any,
       this.wormholeClient,
       this.creatorNode,
       this.comstock,
