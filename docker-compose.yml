@@ -208,6 +208,9 @@ services:
     <<: *common
     deploy:
       mode: global
+      resources:
+      limits:
+        memory: 3G
 
   comms-test:
     extends:
