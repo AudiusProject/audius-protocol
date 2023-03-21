@@ -288,8 +288,12 @@ def load_env(protocol_dir, service, environment):
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
-@click.option("-l", "--libs", is_flag=True, help="Bring up container to auto-rebuild libs")
-@click.option("--comms", is_flag=True, help="Bring up storage v2, comms, and nats containers")
+@click.option(
+    "-l", "--libs", is_flag=True, help="Bring up container to auto-rebuild libs"
+)
+@click.option(
+    "--comms", is_flag=True, help="Bring up storage v2, comms, and nats containers"
+)
 @click.option("-w", "--wait", is_flag=True, help="Wait for services to be healthy")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
