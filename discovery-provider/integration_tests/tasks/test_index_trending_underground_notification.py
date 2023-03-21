@@ -36,12 +36,9 @@ def index_trending_underground_mock(db, track_ids: list[int]) -> None:
             trending_underground_tracks
         )
 
-        trending_underground_tracks_map = dict(
-            zip(
-                [track["track_id"] for track in trending_underground_tracks],
-                trending_underground_tracks,
-            )
-        )
+        trending_underground_tracks_map = {
+            track["track_id"]: track for track in trending_underground_tracks
+        }
 
         trending_underground_tracks = [
             trending_underground_tracks_map[track_id] for track_id in track_ids
@@ -51,12 +48,11 @@ def index_trending_underground_mock(db, track_ids: list[int]) -> None:
         set_json_cached_key(redis, trending_key, trending_underground_tracks)
 
 
-def test_index_trending_underground_notification(app, caplog):
+def test_index_trending_underground_notification(app):
     """
     Test that underground notifications are correctly calculated
     based on current trending standings
     """
-    caplog.set_level(logging.WARNING)
 
     with app.app_context():
         db = get_db()
