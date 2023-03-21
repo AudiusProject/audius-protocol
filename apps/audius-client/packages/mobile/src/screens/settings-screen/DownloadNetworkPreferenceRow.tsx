@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import { Switch } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
-import { getDownloadNetworkTypePreference } from 'app/store/offline-downloads/selectors'
+import { getPreferredDownloadNetworkType } from 'app/store/offline-downloads/selectors'
 import { setDownloadNetworkPreference } from 'app/store/offline-downloads/slice'
 import { makeStyles } from 'app/styles'
 
@@ -33,11 +33,11 @@ export const DownloadNetworkPreferenceRow = () => {
   const isOfflineDownloadEnabled = useIsOfflineModeEnabled()
   const dispatch = useDispatch()
   const styles = useStyles()
-  const downloadNetworkTypePreference = useSelector(
-    getDownloadNetworkTypePreference
+  const preferredDownloadNetworkType = useSelector(
+    getPreferredDownloadNetworkType
   )
   const downloadOverWifiOnly =
-    downloadNetworkTypePreference === NetInfoStateType.wifi
+    preferredDownloadNetworkType === NetInfoStateType.wifi
 
   const handleSetNetworkPreference = useCallback(
     (value: boolean) => {

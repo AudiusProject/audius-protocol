@@ -111,8 +111,8 @@ export const getOfflineTracks = (state: AppState): TrackMetadata[] => {
     .filter(removeNullable)
 }
 
-export const getDownloadNetworkTypePreference = (state: AppState) =>
-  state.offlineDownloads.downloadNetworkTypePreference
+export const getPreferredDownloadNetworkType = (state: AppState) =>
+  state.offlineDownloads.preferredDownloadNetworkType
 
 export const getCurrentNetworkType = (state: AppState) =>
   state.offlineDownloads.currentNetworkType

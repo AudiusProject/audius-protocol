@@ -53,7 +53,7 @@ export type OfflineDownloadsState = {
   offlineCollectionMetadata: {
     [Key in CollectionId]?: OfflineCollectionMetadata
   }
-  downloadNetworkTypePreference: DownloadNetworkPreference
+  preferredDownloadNetworkType: DownloadNetworkPreference
   currentNetworkType: NetInfoStateType
 }
 
@@ -161,7 +161,7 @@ const initialState: OfflineDownloadsState = {
   queueStatus: QueueStatus.IDLE,
   offlineCollectionMetadata: {},
   offlineTrackMetadata: {},
-  downloadNetworkTypePreference: NetInfoStateType.wifi,
+  preferredDownloadNetworkType: NetInfoStateType.cellular,
   currentNetworkType: NetInfoStateType.unknown
 }
 
@@ -407,7 +407,7 @@ const slice = createSlice({
       action: SetDownloadNetworkPreferenceAction
     ) => {
       const { downloadNetworkPreference } = action.payload
-      state.downloadNetworkTypePreference = downloadNetworkPreference
+      state.preferredDownloadNetworkType = downloadNetworkPreference
     },
     // Lifecycle actions that trigger complex saga flows
     requestDownloadAllFavorites: () => {},
