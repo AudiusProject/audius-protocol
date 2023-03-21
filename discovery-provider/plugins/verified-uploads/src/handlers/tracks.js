@@ -1,5 +1,9 @@
 import { dp_db } from "../db.js";
 import { slack } from "../slack.js";
+import dotenv from "dotenv";
+
+dotenv.config();
+const { TRACKS_SLACK_CHANNEL } = process.env;
 
 export default async ({ track_id }) => {
   const trackId = track_id;
@@ -45,6 +49,6 @@ export default async ({ track_id }) => {
       Link: `https://audius.co/${handle}/${slug}`,
       Release: release_date,
     };
-    await sendMsg(header, data).catch(console.error);
+    await sendMsg(TRACKS_SLACK_CHANNEL, header, data).catch(console.error);
   }
 };

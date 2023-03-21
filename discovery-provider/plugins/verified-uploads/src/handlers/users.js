@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import axios from "axios";
 
 dotenv.config();
-const { IDENTITY_URL } = process.env;
+const { IDENTITY_URL, USERS_SLACK_CHANNEL } = process.env;
 const social_handle_url = (handle) =>
   `${IDENTITY_URL}/social_handles?handle=${handle}`;
 
@@ -51,6 +51,6 @@ export default async ({ user_id }) => {
       link: `https://audius.co/${handle}`,
       source,
     };
-    await slack.sendMsg(header, body).catch(console.error);
+    await slack.sendMsg(USERS_SLACK_CHANNEL, header, body).catch(console.error);
   }
 };

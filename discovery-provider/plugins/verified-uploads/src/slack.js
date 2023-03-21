@@ -1,14 +1,14 @@
 import { WebClient } from "@slack/web-api";
 
 const Slack = () => {
-  const { SLACK_TOKEN, SLACK_CHANNEL } = process.env;
+  const { SLACK_TOKEN } = process.env;
   const web = new WebClient(SLACK_TOKEN);
   return {
-    sendMsg: (header, body) => {
+    sendMsg: (channel, header, body) => {
       const msg = `${header} ${formatter(body)}`;
       return web.chat.postMessage({
         text: msg,
-        channel: SLACK_CHANNEL,
+        channel,
       });
     },
   };
