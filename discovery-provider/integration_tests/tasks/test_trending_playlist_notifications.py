@@ -78,19 +78,28 @@ def test_cache_trending_playlist_notifications(app):
             session.query(Notification).order_by(asc(Notification.specifier)).all()
         )
         assert len(all_notifications) == 5
-        for i in range(1, 6):
-            notification = all_notifications[i - 1]
 
-            assert notification.specifier == f"{i}"
+        new_notification_cases = [
+            {"id": 1, "rank": 1},
+            {"id": 2, "rank": 2},
+            {"id": 3, "rank": 3},
+            {"id": 4, "rank": 4},
+            {"id": 5, "rank": 5},
+        ]
+        for i, new_notification_case in enumerate(new_notification_cases):
+            notification = all_notifications[i]
+            id = new_notification_case["id"]
+            rank = new_notification_case["rank"]
+            assert notification.specifier == f"{id}"
             assert (
                 notification.group_id
-                == f"trending_playlist:time_range:week:genre:all:rank:{i}:playlist_id:{i}:timestamp:1672531200"
+                == f"trending_playlist:time_range:week:genre:all:rank:{rank}:playlist_id:{id}:timestamp:1672531200"
             )
             assert notification.type == "trending_playlist"
             assert notification.data == {
-                "rank": i,
+                "rank": rank,
                 "genre": "all",
-                "playlist_id": i,
+                "playlist_id": id,
                 "time_range": "week",
             }
 
@@ -124,8 +133,8 @@ def test_cache_trending_playlist_notifications(app):
         new_notification_cases = [
             {"id": 7, "rank": 5},
         ]
-        for new_notification_case in new_notification_cases:
-            new_notification = new_notifications[new_notification_case["id"]]
+        for i, new_notification_case in enumerate(new_notification_cases):
+            new_notification = new_notifications[i]
             assert new_notification.data == {
                 "rank": new_notification_case["rank"],
                 "genre": "all",
@@ -143,6 +152,7 @@ def test_cache_trending_playlist_notifications(app):
 
     updated_time = BASE_TIME + timedelta(hours=24)
     updated_time_int = int(round(updated_time.timestamp()))
+    make_trending_playlist_notifications(db, "week", updated_time_int)
 
     with db.scoped_session() as session:
         all_notifications = (
@@ -165,8 +175,8 @@ def test_cache_trending_playlist_notifications(app):
             {"id": 4, "rank": 2},
             {"id": 5, "rank": 3},
         ]
-        for new_notification_case in new_notification_cases:
-            new_notification = new_notifications[new_notification_case["id"]]
+        for i, new_notification_case in enumerate(new_notification_cases):
+            new_notification = new_notifications[i]
             assert new_notification.data == {
                 "rank": new_notification_case["rank"],
                 "genre": "all",
