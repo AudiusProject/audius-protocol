@@ -1,4 +1,4 @@
-FROM node:16-alpine
+FROM node:14.21.2-alpine
 
 WORKDIR /verified_uploads
 

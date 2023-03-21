@@ -37,7 +37,6 @@ export default async (topic, callback) => {
   conn.on("notification", async (msg) => {
     callback(JSON.parse(msg.payload));
   });
-  // TODO: close connection here
   await conn.query(sql).catch(console.error);
   console.log(`listening on topic ${topic}`);
 };
