@@ -161,9 +161,7 @@ services:
 
   ingress:
     image: openresty/openresty:1.21.4.1-0-alpine-fat
-    command: bash /tmp/dev-tools/startup/ingress.sh
-    environment:
-      PORTS: "80"
+    command: bash /tmp/dev-tools/startup/comms-host-ingress.sh
     ports:
       - "80:80"
     volumes:
