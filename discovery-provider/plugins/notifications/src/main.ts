@@ -11,11 +11,8 @@ import { sendDMNotifications } from './tasks/dmNotifications'
 import { processEmailNotifications } from './email/notifications/index'
 import { sendAppNotifications } from './tasks/appNotifications'
 import { getRedisConnection } from './utils/redisConnection'
-import {
-  MappingFeatureName,
-  MappingVariable,
-  RemoteConfig
-} from './remoteConfig'
+import { RemoteConfig } from './remoteConfig'
+import { Server } from './server'
 
 export class Processor {
   discoveryDB: Knex
@@ -25,6 +22,7 @@ export class Processor {
   listener: Listener
   lastDailyEmailSent: moment.Moment | null
   remoteConfig: RemoteConfig
+  server: Server
 
   constructor() {
     this.isRunning = false
@@ -54,6 +52,7 @@ export class Processor {
       this.identityDB,
       this.remoteConfig
     )
+    this.server = new Server()
   }
 
   setupDB = async ({
@@ -82,6 +81,7 @@ export class Processor {
       config.lastIndexedReactionRedisKey,
       new Date(Date.now()).toISOString()
     )
+    await this.server.init()
     while (this.isRunning) {
       // Comment out to prevent app notifications until complete
       await sendAppNotifications(this.listener, this.appNotificationsProcessor)
