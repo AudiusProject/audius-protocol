@@ -33,25 +33,25 @@ x-common: &common
 services:
   ingress: # Nginx ingress for all hostnames. Change nginx_ingress.conf to add more hostnames / routes
     extends:
-      file: docker-compose.misc.yml
+      file: docker-compose.dev.yml
       service: ingress
     <<: *common
 
   autoheal: # Restarts containers when they become unhealthy
     extends:
-      file: docker-compose.misc.yml
+      file: docker-compose.dev.yml
       service: autoheal
     <<: *common
 
   build-audius-libs:
     extends:
-      file: docker-compose.misc.yml
+      file: docker-compose.dev.yml
       service: build-audius-libs
     <<: *common
 
   audius-cmd:
     extends:
-      file: docker-compose.misc.yml
+      file: docker-compose.dev.yml
       service: audius-cmd
     <<: *common
 
