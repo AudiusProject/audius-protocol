@@ -1,6 +1,11 @@
+const path = require('path')
+const { isEmpty } = require('lodash')
+
 const { logger } = require('./logging')
 const models = require('./models')
+const config = require('./config')
 const sequelize = models.sequelize
+const { QueryTypes } = models.Sequelize
 
 class DBManager {
   /**
@@ -59,14 +64,12 @@ class DBManager {
    * Deletes all data for a cnodeUser from DB (every table, including CNodeUsers)
    *
    * @param {Object} CNodeUserLookupObj specifies either `lookupCNodeUserUUID` or `lookupWallet` properties
-   * @param {?Transaction} externalTransaction sequelize transaction object
    */
-  static async deleteAllCNodeUserDataFromDB(
-    { lookupCNodeUserUUID, lookupWallet },
-    externalTransaction = null
-  ) {
-    const transaction =
-      externalTransaction || (await models.sequelize.transaction())
+  static async deleteAllCNodeUserDataFromDB({
+    lookupCNodeUserUUID,
+    lookupWallet
+  }) {
+    const transaction = await models.sequelize.transaction()
     const log = (msg) =>
       logger.info(`DBManager.deleteAllCNodeUserDataFromDB log: ${msg}`)
 
@@ -80,7 +83,6 @@ class DBManager {
         where: cnodeUserWhereFilter,
         transaction
       })
-      log('cnodeUser', cnodeUser)
 
       // Throw if no cnodeUser found
       if (!cnodeUser) {
@@ -154,7 +156,7 @@ class DBManager {
       if (error) {
         await transaction.rollback()
         log(`rolling back transaction due to error ${error}`)
-      } else if (!externalTransaction) {
+      } else {
         // Commit transaction if no error and no external transaction provided
         await transaction.commit()
         log(`commited internal transaction`)
@@ -167,10 +169,87 @@ class DBManager {
   }
 
   /**
+   * Gets a user's files that only they have (Files table storagePath column), with pagination.
+   * Ignores any file that has 1 or more entries from another user.
+   * @param {string} cnodeUserUUID the UUID of the user to fetch file paths for
+   * @param {string} prevStoragePath pagination token (where storagePath > prevStoragePath)
+   * @param {number} batchSize the pagination size (number of file paths to return)
+   * @returns {string[]} user's storagePaths from db
+   */
+  static async getCNodeUserFilesFromDb(
+    cnodeUserUUID,
+    prevStoragePath,
+    batchSize
+  ) {
+    // TODO: Remove after v0.3.69 is on all nodes
+    // See https://linear.app/audius/issue/CON-477/use-proper-migration-for-storagepath-index-on-files-table
+    if (await DBManager.isStoragePathIndexBeingCreated())
+      throw new Error(
+        "Can't get files to delete while Files_storagePath_idx is being created"
+      )
+
+    // Get a batch of file that this user needs
+    const userFiles = []
+    const userFilesQueryResult = await models.File.findAll({
+      attributes: ['storagePath'],
+      where: {
+        cnodeUserUUID,
+        storagePath: {
+          [sequelize.Op.gte]: prevStoragePath
+        }
+      },
+      distinct: true,
+      order: [['storagePath', 'ASC']],
+      limit: batchSize
+    })
+    logger.debug(
+      `userFilesQueryResult for ${cnodeUserUUID}: ${JSON.stringify(
+        userFilesQueryResult || {}
+      )}`
+    )
+    if (isEmpty(userFilesQueryResult)) return []
+    for (const file of userFilesQueryResult) {
+      userFiles.push(path.normalize(file.storagePath))
+    }
+
+    // Get all files that: 1. could match a file in the above batch; and 2. are only needed by 1 user
+    const allUniqueFiles = []
+    const allUniqueFilesQueryResult = await models.File.findAll({
+      attributes: ['storagePath'],
+      where: {
+        storagePath: {
+          [sequelize.Op.between]: [
+            userFiles[0],
+            userFiles[userFiles.length - 1]
+          ]
+        }
+      },
+      group: 'storagePath',
+      having: sequelize.literal(`COUNT(DISTINCT("cnodeUserUUID")) = 1`)
+    })
+    logger.debug(
+      `allUniqueFilesQueryResult for ${cnodeUserUUID}: ${JSON.stringify(
+        allUniqueFilesQueryResult || {}
+      )}`
+    )
+    if (isEmpty(allUniqueFilesQueryResult)) return []
+    for (const file of allUniqueFilesQueryResult) {
+      allUniqueFiles.push(path.normalize(file.storagePath))
+    }
+
+    // Return files that only this user needs (files that aren't associated with anyone else)
+    const userUniqueFiles = allUniqueFiles.filter((file) =>
+      userFiles.includes(file)
+    )
+    logger.debug(`userUniqueFiles for ${cnodeUserUUID}: ${userUniqueFiles}`)
+    return userUniqueFiles
+  }
+
+  /**
    * Deletes all session tokens matching an Array of SessionTokens.
    *
    * @param {Array} sessionTokens from the SessionTokens table
-   * @param {Transaction} externalTransaction
+   * @param {Transaction=} externalTransaction
    */
   static async deleteSessionTokensFromDB(sessionTokens, externalTransaction) {
     const transaction =
@@ -337,6 +416,134 @@ class DBManager {
 
     const numRowsUpdated = metadata?.rowCount || 0
     return numRowsUpdated
+  }
+
+  static async createStoragePathIndexOnFilesTable() {
+    return sequelize.query(
+      `CREATE INDEX CONCURRENTLY IF NOT EXISTS "Files_storagePath_idx" ON "Files" USING btree ("storagePath")`
+    )
+  }
+
+  static async isStoragePathIndexBeingCreated() {
+    const runningIndexCreations = await sequelize.query(
+      `SELECT relname FROM pg_class, pg_index WHERE pg_index.indisvalid = false AND pg_index.indexrelid = pg_class.oid`,
+      { type: QueryTypes.SELECT }
+    )
+    return runningIndexCreations?.filter(
+      (indexCreation) => indexCreation.relname === 'Files_storagePath_idx'
+    )?.length
+  }
+
+  static async _getLegacyStoragePathRecords(minCid, maxCid, batchSize, dir) {
+    const dirQuery = `
+      SELECT "storagePath", "multihash", "dirMultihash", "fileName", "trackBlockchainId", "fileUUID", "skipped" FROM
+        (SELECT * FROM "Files" AS "Page"
+          WHERE "multihash" BETWEEN :minCid AND :maxCid AND "type" = 'dir'
+          ORDER BY "multihash" DESC)
+      AS "LegacyResults"
+      WHERE "storagePath" NOT LIKE '/file_storage/files/%' AND "storagePath" LIKE '/file_storage/%'
+      LIMIT :batchSize
+      `
+    const nonDirQuery = `
+      SELECT "storagePath", "multihash", "dirMultihash", "fileName", "trackBlockchainId", "fileUUID", "skipped" FROM
+        (SELECT * FROM "Files" AS "Page"
+          WHERE "multihash" BETWEEN :minCid AND :maxCid AND "type" != 'dir'
+          ORDER BY "multihash" DESC)
+      AS "LegacyResults"
+      WHERE "storagePath" NOT LIKE '/file_storage/files/%' AND "storagePath" LIKE '/file_storage/%'
+      LIMIT :batchSize
+      `
+    // Returns [[{ storagePath, multihash, skipped }]]
+    const queryResult = await sequelize.query(dir ? dirQuery : nonDirQuery, {
+      replacements: { minCid, maxCid, batchSize }
+    })
+    const fileRecords = queryResult[0]
+    logger.debug(
+      `fileRecords for legacy storagePaths (dir=${dir}) with CID in range [${minCid}, ${maxCid}]: ${JSON.stringify(
+        fileRecords
+      )}`
+    )
+    return fileRecords
+  }
+
+  static async getNonDirLegacyStoragePathRecords(minCid, maxCid, batchSize) {
+    return DBManager._getLegacyStoragePathRecords(
+      minCid,
+      maxCid,
+      batchSize,
+      false
+    )
+  }
+
+  static async getDirLegacyStoragePathRecords(minCid, maxCid, batchSize) {
+    return DBManager._getLegacyStoragePathRecords(
+      minCid,
+      maxCid,
+      batchSize,
+      true
+    )
+  }
+
+  static async getCustomStoragePathsRecords(minCid, maxCid, batchSize) {
+    const query = `
+      SELECT "storagePath", "multihash", "dirMultihash", "fileName", "trackBlockchainId", "fileUUID", "skipped" FROM
+        (SELECT * FROM "Files" AS "Page"
+          WHERE "multihash" BETWEEN :minCid AND :maxCid
+          ORDER BY "multihash" DESC)
+      AS "CustomResults"
+      WHERE "storagePath" NOT LIKE :standardStoragePath AND "storagePath" NOT LIKE '/file_storage/%'
+      LIMIT :batchSize
+      `
+    // Returns [[{ storagePath, multihash, dirMultihash, fileName, trackBlockchainId, fileUUID, skipped }]]
+    const queryResult = await sequelize.query(query, {
+      replacements: {
+        minCid,
+        maxCid,
+        batchSize,
+        standardStoragePath: `${config.get('storagePath')}/%`
+      }
+    })
+    const fileRecords = queryResult[0]
+    logger.debug(
+      `fileRecords for custom storagePaths with CID in range [${minCid}, ${maxCid}]: ${JSON.stringify(
+        fileRecords
+      )}`
+    )
+    return fileRecords
+  }
+
+  static async updateLegacyPathDbRows(copiedFilePaths, logger) {
+    if (!copiedFilePaths?.length) return true
+    const transaction = await models.sequelize.transaction()
+    try {
+      for (const { legacyPath, nonLegacyPath } of copiedFilePaths) {
+        await models.File.update(
+          { storagePath: nonLegacyPath },
+          { where: { storagePath: legacyPath } },
+          { transaction }
+        )
+      }
+      await transaction.commit()
+      return true
+    } catch (e) {
+      logger.error(`Error updating legacy path db rows: ${e}`)
+      await transaction.rollback()
+    }
+    return false
+  }
+
+  static async getNumLegacyStoragePathsRecords() {
+    const query = `SELECT COUNT(*) FROM "Files" WHERE "storagePath" NOT LIKE '/file_storage/files/%' AND "storagePath" LIKE '/file_storage/%';`
+    // Returns [[{ count }]]
+    const queryResult = await sequelize.query(query)
+    return parseInt(queryResult[0][0].count, 10)
+  }
+
+  static async getNumCustomStoragePathsRecords() {
+    const query = `SELECT COUNT(*) FROM "Files" WHERE "storagePath" NOT LIKE '/file_storage/%';`
+    // Returns [[{ count }]]
+    const queryResult = await sequelize.query(query)
+    return parseInt(queryResult[0][0].count, 10)
   }
 }
 

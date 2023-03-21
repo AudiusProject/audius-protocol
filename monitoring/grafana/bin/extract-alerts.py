@@ -9,7 +9,7 @@ import click
 
 def sanatize_text(string):
     result = string.replace('"', '\\"')
-    result = string.replace("\n", "\\n")
+    result = result.replace("\n", "\\n")
     return result
 
 
@@ -26,28 +26,8 @@ def generate_filename_from_title(title):
     return title
 
 
-@click.command()
-@click.help_option("-h", "--help")
-@click.argument("filename")
-def main(filename):
-    """
-    Convert all dashboard thresholds into alerts.
-
-    Iterate over the dashboard keys to extract threshold values.
-    Use these values in combination with alert.template.json to generate new alerts.
-    Output all alerts from a panel into individual alerts/*.json files.
-    """
-    click.echo(filename)
-    with open("grafana/alerts/alert.template.json") as f:
-        template = f.read()
-    with open(filename) as f:
-        dashboard = json.loads(f.read())
-
+def extract_alerts(template, dashboard, env):
     dashboard_id = dashboard["dashboard"]["id"]
-    if not dashboard_id:
-        print("Please run this instead: ./grafana/bin/extract-alerts.sh")
-        exit(1)
-
     dashboard_uid = dashboard["dashboard"]["uid"]
     dashboard_title = dashboard["dashboard"]["title"]
     for panel in dashboard["dashboard"]["panels"]:
@@ -57,15 +37,41 @@ def main(filename):
         description = ""
         summary = ""
         if "description" in panel:
-            description = sanatize_text(panel["description"])
+            description = panel["description"]
             if "---" in description:
                 summary, description = description.split("---")
-                summary = summary.strip()
-                description = description.strip()
+        description = description.strip()
+        summary = summary.strip()
 
         if "fieldConfig" in panel:
             if panel["type"] != "timeseries":
                 continue
+
+            mentions = ""
+            team = ""
+            alert_on = []
+            envs = []
+            if "mappings" in panel["fieldConfig"]["defaults"]:
+                for mapping in panel["fieldConfig"]["defaults"]["mappings"]:
+                    for key, mapping in mapping["options"].items():
+                        if key == "mentions":
+                            mentions = mapping["text"]
+                        elif key == "team":
+                            team = mapping["text"]
+                        elif key == "alert_on":
+                            for ref_id in mapping["text"].split(","):
+                                alert_on.append(ref_id.strip())
+                        elif key == "envs":
+                            for env_split in mapping["text"].split(","):
+                                envs.append(env_split.strip())
+
+            if "links" in panel["fieldConfig"]["defaults"]:
+                links = []
+                for link in panel["fieldConfig"]["defaults"]["links"]:
+                    links.append(f'<a href="{link["url"]}">{link["title"]}</a>')
+                # do not use HTML until AlertManager allows formatted Slack messages
+                # for link in links:
+                #     summary += f"\n* {link}"
 
             panel_alerts = []
             for step in panel["fieldConfig"]["defaults"]["thresholds"]["steps"]:
@@ -73,24 +79,33 @@ def main(filename):
                 if "value" not in step or not step["value"]:
                     continue
 
-                # ensure thresholds are visible
-                visible_threshold = False
+                # ensure thresholds are visible and using Absolute
+                visible_and_absolute = False
                 if "custom" in panel["fieldConfig"]["defaults"]:
-                    custom_key = panel["fieldConfig"]["defaults"]["custom"]
-                    visible_threshold = custom_key["thresholdsStyle"]["mode"] == "line"
-                if not visible_threshold:
+                    custom = panel["fieldConfig"]["defaults"]["custom"]
+                    visible = custom["thresholdsStyle"]["mode"] == "line"
+
+                    mode = panel["fieldConfig"]["defaults"]["thresholds"]["mode"]
+                    absolute = mode == "absolute"
+
+                    if visible and absolute:
+                        visible_and_absolute = True
+                if not visible_and_absolute:
                     continue
 
                 # map colors to alert level
                 if "red" in step["color"]:
-                    level = "high-alert"
+                    level = "p1"
                     level_id = 1
                 elif "orange" in step["color"]:
-                    level = "medium-alert"
+                    level = "p2"
                     level_id = 2
                 elif "yellow" in step["color"]:
-                    level = "low-alert"
+                    level = "p3"
                     level_id = 3
+                elif "blue" in step["color"]:
+                    level = "debug"
+                    level_id = 5
                 else:
                     continue
 
@@ -108,8 +123,29 @@ def main(filename):
                 for i, target in enumerate(panel["targets"]):
                     # ignore expr's that are hidden on the panel
                     # only what is readily visible is what will be alerted on
-                    if "hide" in panel["targets"] and panel["targets"]["hide"]:
-                        break
+                    if "hide" in target and target["hide"]:
+                        continue
+
+                    # when the alert_on key appears within Value Mappings,
+                    # only create alerts for the listed refIds
+                    if alert_on and target["refId"] not in alert_on:
+                        continue
+
+                    # when the envs key appears within Value Mappings,
+                    # only create alerts for the listed envs
+                    if envs and env not in envs:
+                        continue
+
+                    # assume all metrics missing $env are Prod-only metrics
+                    expression = target["expr"]
+                    if "$env" not in expression and env != "prod":
+                        continue
+
+                    # create different alerts for stage and prod
+                    expression = re.sub(r"\$env", env, expression)
+
+                    # make all other regex matches be .* for alerts
+                    expression = re.sub(r"\$[A-Za-z0-9_]+", ".*", expression)
 
                     ref_ids.append(next(ref_gen))
                     data.append(
@@ -123,7 +159,7 @@ def main(filename):
                                     "type": "prometheus",
                                     "uid": "r2_nnDL7z",
                                 },
-                                "expr": sanatize_text(target["expr"]),
+                                "expr": expression,
                                 "hide": False,
                                 "intervalMs": 1000,
                                 "maxDataPoints": 43200,
@@ -131,6 +167,10 @@ def main(filename):
                             },
                         }
                     )
+
+                # don't create alerts without alert conditions
+                if not data:
+                    continue
 
                 alert_conditions = []
                 for ref_id in ref_ids:
@@ -169,11 +209,32 @@ def main(filename):
                     }
                 )
 
-                title_level = level.split("-")[0].title()
-                alert_uid = f"{dashboard_uid}_{panel_id:03}_{title_level}"
+                title_level = level.title()
+                alert_uid = f"{dashboard_uid}_{panel_id:03}_{title_level}_{env}"
+
+                # arbitrary, deterministic id generation with an offset to allow for
+                # 100k manually created panels
+                alert_id = (
+                    (dashboard_id * 100000)
+                    + (panel_id * 100)
+                    + (level_id * 10)
+                    + int(env == "prod")
+                    + 100000
+                )
+
                 title = sanatize_text(panel["title"])
-                title = f"{title} ({title_level})"
-                alert_id = (dashboard_id * 10000) + (panel_id * 10) + level_id + 100000
+                title_env = env.upper()
+                title = f"{title_env} {title_level} | {title}"
+
+                labels = {
+                    "alert": level,
+                    "env": env,
+                }
+                if mentions:
+                    labels["mentions"] = mentions
+                if team:
+                    labels["team"] = team
+
                 formatted_text = template.format(
                     alert_id=alert_id,
                     alert_uid=alert_uid,
@@ -182,9 +243,9 @@ def main(filename):
                     datasource_uid="r2_nnDL7z",
                     title=title,
                     runbook_url=runbook_url,
-                    description=description,
-                    summary=summary,
-                    level=level,
+                    description=sanatize_text(description),
+                    summary=sanatize_text(summary),
+                    labels=json.dumps(labels),
                     condition_ref=ref_ids[-1],
                     data=json.dumps(data),
                 )
@@ -193,9 +254,33 @@ def main(filename):
             if panel_alerts:
                 dashboard = generate_filename_from_title(dashboard_title)
                 title = generate_filename_from_title(panel["title"])
-                with open(f"grafana/alerts/{dashboard}_{title}.json", "w") as f:
+                with open(f"grafana/alerts/{dashboard}_{title}-{env}.json", "w") as f:
                     f.write(json.dumps(panel_alerts, indent=2, sort_keys=True))
-    return
+
+
+@click.command()
+@click.help_option("-h", "--help")
+@click.argument("filename")
+def main(filename):
+    """
+    Convert all dashboard thresholds into alerts.
+
+    Iterate over the dashboard keys to extract threshold values.
+    Use these values in combination with alert.template.json to generate new alerts.
+    Output all alerts from a panel into individual alerts/*.json files.
+    """
+    click.echo(filename)
+    with open("grafana/metadata/alert.template.json") as f:
+        template = f.read()
+    with open(filename) as f:
+        dashboard = json.loads(f.read())
+
+    if not dashboard["dashboard"]["id"]:
+        print("Please run this instead: ./grafana/bin/extract-alerts.sh")
+        exit(1)
+
+    for env in ("prod", "stage"):
+        extract_alerts(template, dashboard, env)
 
 
 if __name__ == "__main__":

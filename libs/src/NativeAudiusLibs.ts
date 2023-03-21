@@ -10,8 +10,8 @@ import {
 } from './services/discoveryProvider'
 import { Schemas, SchemaValidator } from './services/schemaValidator'
 import { UserStateManager } from './userStateManager'
-import type { Logger, CaptchaConfig, Nullable } from './utils'
-import { Captcha, Utils } from './utils'
+import type { Logger, Nullable } from './utils'
+import { Utils } from './utils'
 
 import { Keypair, PublicKey } from '@solana/web3.js'
 
@@ -33,10 +33,16 @@ import { Track } from './api/Track'
 import { Playlists } from './api/Playlist'
 import { Rewards } from './api/Rewards'
 import { Reactions } from './api/Reactions'
+import { Notifications } from './api/Notifications'
 import { File } from './api/File'
 import { ServiceProvider } from './api/ServiceProvider'
 import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
+import { EntityManager } from './api/entityManager'
+import {
+  ProxyWormhole,
+  ProxyWormholeConfig
+} from './services/wormhole/ProxyWormhole'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -70,7 +76,7 @@ type AudiusLibsConfig = {
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   creatorNodeConfig: CreatorNodeConfig
   comstockConfig: LibsComstockConfig
-  captchaConfig: CaptchaConfig
+  wormholeConfig: ProxyWormholeConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
   logger: Logger
@@ -132,9 +138,10 @@ export class AudiusLibs {
     web3Provider: string,
     // network chain id
     networkId: string,
-
     // wallet address to force use instead of the first wallet on the provided web3
-    walletOverride: Nullable<string> = null
+    walletOverride: Nullable<string> = null,
+    // entity manager address
+    entityManagerAddress: Nullable<string> = null
   ) {
     const web3Instance = await Utils.configureWeb3(web3Provider, networkId)
     if (!web3Instance) {
@@ -143,6 +150,7 @@ export class AudiusLibs {
     const wallets = await web3Instance.eth.getAccounts()
     return {
       registryAddress,
+      entityManagerAddress,
       useExternalWeb3: true,
       externalWeb3Config: {
         web3: web3Instance,
@@ -221,8 +229,7 @@ export class AudiusLibs {
   }
 
   /**
-   * Configures wormhole
-   * This is a stubbed version for native
+   * Configures proxy-only wormhole
    */
   static configWormhole() {
     return {}
@@ -272,7 +279,7 @@ export class AudiusLibs {
   creatorNodeConfig: CreatorNodeConfig
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   comstockConfig: LibsComstockConfig
-  captchaConfig: CaptchaConfig
+  wormholeConfig: ProxyWormholeConfig
   hedgehogConfig: LibsHedgehogConfig
   isServer: boolean
   isDebug: boolean
@@ -288,8 +295,8 @@ export class AudiusLibs {
   web3Manager: Nullable<Web3Manager>
   solanaWeb3Manager: Nullable<SolanaWeb3Manager>
   contracts: Nullable<AudiusContracts>
+  wormholeClient: Nullable<ProxyWormhole>
   creatorNode: Nullable<CreatorNode>
-  captcha: Nullable<Captcha>
   schemas?: Schemas
   comstock: Nullable<Comstock>
 
@@ -302,6 +309,8 @@ export class AudiusLibs {
   File: Nullable<File>
   Rewards: Nullable<Rewards>
   Reactions: Nullable<Reactions>
+  Notifications: Nullable<Notifications>
+  EntityManager: Nullable<EntityManager>
 
   preferHigherPatchForPrimary: boolean
   preferHigherPatchForSecondaries: boolean
@@ -325,7 +334,7 @@ export class AudiusLibs {
     discoveryProviderConfig,
     creatorNodeConfig,
     comstockConfig,
-    captchaConfig,
+    wormholeConfig,
     hedgehogConfig,
     isServer,
     logger = console,
@@ -345,7 +354,7 @@ export class AudiusLibs {
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
     this.comstockConfig = comstockConfig
-    this.captchaConfig = captchaConfig
+    this.wormholeConfig = wormholeConfig
     this.hedgehogConfig = hedgehogConfig
     this.isServer = isServer
     this.isDebug = isDebug
@@ -360,12 +369,12 @@ export class AudiusLibs {
     this.ethContracts = null
     this.web3Manager = null
     this.solanaWeb3Manager = null
+    this.wormholeClient = null
     this.contracts = null
     this.creatorNode = null
-    this.captcha = null
     this.comstock = null
 
-    // // API
+    // API
     this.ServiceProvider = null
     this.Account = null
     this.User = null
@@ -374,6 +383,8 @@ export class AudiusLibs {
     this.File = null
     this.Rewards = null
     this.Reactions = null
+    this.Notifications = null
+    this.EntityManager = null
 
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
@@ -393,16 +404,10 @@ export class AudiusLibs {
     // Config external web3 is an async function, so await it here in case it needs to be
     this.web3Config = await this.web3Config
 
-    /** Captcha */
-    if (this.captchaConfig) {
-      this.captcha = new Captcha(this.captchaConfig)
-    }
-
     /** Identity Service */
     if (this.identityServiceConfig) {
       this.identityService = new IdentityService({
-        identityServiceEndpoint: this.identityServiceConfig.url,
-        captcha: this.captcha
+        identityServiceEndpoint: this.identityServiceConfig.url
       })
       const hedgehogService = new Hedgehog({
         identityService: this.identityService,
@@ -472,12 +477,27 @@ export class AudiusLibs {
       this.contracts = new AudiusContracts(
         this.web3Manager,
         this.web3Config.registryAddress,
+        this.web3Config.entityManagerAddress,
         this.isServer,
         this.logger
       )
       contractsToInit.push(this.contracts.init())
     }
     await Promise.all(contractsToInit)
+    if (
+      this.wormholeConfig &&
+      this.ethWeb3Manager &&
+      this.ethContracts &&
+      this.solanaWeb3Manager
+    ) {
+      this.wormholeClient = new ProxyWormhole(
+        this.hedgehog,
+        this.ethWeb3Manager,
+        this.ethContracts,
+        this.identityService,
+        this.solanaWeb3Manager
+      )
+    }
 
     /** Discovery Provider */
     if (this.discoveryProviderConfig) {
@@ -531,10 +551,9 @@ export class AudiusLibs {
       this.ethContracts,
       this.solanaWeb3Manager,
       null as any,
-      null as any,
+      this.wormholeClient,
       this.creatorNode,
       this.comstock,
-      this.captcha,
       this.isServer,
       this.logger
     ] as BaseConstructorArgs
@@ -549,9 +568,11 @@ export class AudiusLibs {
     this.Account = new Account(this.User, ...services)
     this.Track = new Track(...services)
     this.Playlist = new Playlists(...services)
-    this.File = new File(this.User, ...services)
+    this.File = new File(this.User, this.ServiceProvider, ...services)
     this.Rewards = new Rewards(this.ServiceProvider, ...services)
     this.Reactions = new Reactions(...services)
+    this.Notifications = new Notifications(...services)
+    this.EntityManager = new EntityManager(...services)
   }
 }
 
@@ -559,3 +580,4 @@ export { SolanaUtils }
 
 export { Utils } from './utils'
 export { SanityChecks } from './sanityChecks'
+export { RewardsAttester } from './services/solana'

@@ -1,4 +1,9 @@
-import solanaWeb3, { Connection, Keypair, PublicKey } from '@solana/web3.js'
+import solanaWeb3, {
+  Connection,
+  Keypair,
+  PublicKey,
+  LAMPORTS_PER_SOL
+} from '@solana/web3.js'
 import type BN from 'bn.js'
 import splToken from '@solana/spl-token'
 
@@ -6,7 +11,7 @@ import { transferWAudioBalance } from './transfer'
 import { getBankAccountAddress, createUserBankFrom } from './userBank'
 import {
   createAssociatedTokenAccount,
-  getAssociatedTokenAccountInfo,
+  getTokenAccountInfo,
   findAssociatedTokenAddress
 } from './tokenAccount'
 import { wAudioFromWeiAudio } from './wAudio'
@@ -72,7 +77,7 @@ export type SolanaWeb3Config = {
   // the generated program derived address we use so our bank program can take ownership of accounts
   claimableTokenPDA: string
   // address for the fee payer for transactions
-  feePayerAddress: string
+  feePayerAddress: PublicKey
   // address of the audius user bank program
   claimableTokenProgramAddress: string
   // address for the Rewards Manager program
@@ -112,7 +117,7 @@ export class SolanaWeb3Manager {
   mintKey!: PublicKey
   solanaTokenAddress!: string
   solanaTokenKey!: PublicKey
-  feePayerAddress!: Address
+  feePayerAddress!: PublicKey
   feePayerKey!: PublicKey
   claimableTokenProgramKey!: PublicKey
   claimableTokenPDA!: string
@@ -206,10 +211,16 @@ export class SolanaWeb3Manager {
     )
   }
 
+  async doesUserbankExist(sourceEthAddress?: string) {
+    const userbank = await this.deriveUserBank(sourceEthAddress)
+    const tokenAccount = await this.getTokenAccountInfo(userbank.toString())
+    return !!tokenAccount
+  }
+
   /**
-   * Creates a solana bank account from the web3 provider's eth address
+   * Creates a solana bank account, either for optional `recipientEthAddress` or from the web3 provider's eth address
    */
-  async createUserBank(feePayerOverride: string) {
+  async createUserBank(feePayerOverride: string, recipientEthAddress?: string) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
@@ -218,7 +229,7 @@ export class SolanaWeb3Manager {
 
     const ethAddress = this.web3Manager.getWalletAddress()
     return await createUserBankFrom({
-      ethAddress,
+      ethAddress: recipientEthAddress ?? ethAddress,
       claimableTokenPDAKey: this.claimableTokenPDAKey,
       feePayerKey:
         SolanaUtils.newPublicKeyNullable(feePayerOverride) || this.feePayerKey,
@@ -227,6 +238,38 @@ export class SolanaWeb3Manager {
       claimableTokenProgramKey: this.claimableTokenProgramKey,
       transactionHandler: this.transactionHandler
     })
+  }
+
+  /**
+   * Creates a userbank if needed.
+   * Returns the userbank address as `userbank` if it was created or already existed, or `error` if it failed to create.
+   */
+  async createUserBankIfNeeded(
+    feePayerOverride: string,
+    sourceEthAddress?: string
+  ): Promise<
+    | { error: string; errorCode: string | number | null }
+    | {
+        didExist: boolean
+        userbank: solanaWeb3.PublicKey
+      }
+  > {
+    const didExist = await this.doesUserbankExist(sourceEthAddress)
+    if (!didExist) {
+      const response = await this.createUserBank(
+        feePayerOverride,
+        sourceEthAddress
+      )
+      if (response.error) {
+        return {
+          error: response.error,
+          errorCode: response.errorCode
+        }
+      }
+    }
+
+    const derived = await this.deriveUserBank(sourceEthAddress)
+    return { userbank: derived, didExist }
   }
 
   /**
@@ -257,17 +300,20 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Gets a solana bank account from the current we3 provider's eth address
+   * Gets a solana bank account from `sourceEthAddress` or the current web3 provider's eth address.
    */
-  async getUserBank() {
+  async deriveUserBank(sourceEthAddress?: string) {
     if (!this.web3Manager) {
       throw new Error(
         'A web3Manager is required for this solanaWeb3Manager method'
       )
     }
-    const ethAddress = this.web3Manager.getWalletAddress()
+
+    const derivationSourceAddress =
+      sourceEthAddress ?? this.web3Manager.getWalletAddress()
+
     const bank = await getBankAccountAddress(
-      ethAddress,
+      derivationSourceAddress,
       this.claimableTokenPDAKey,
       this.solanaTokenKey
     )
@@ -275,12 +321,12 @@ export class SolanaWeb3Manager {
   }
 
   /**
-   * Gets the info for a user bank/wAudio token account given a solana address.
-   * If the solanaAddress is not a valid token account, returns `null`
+   * Gets the info for a user bank/wAudio token account given a spl-token address.
+   * If the address is not a valid token account, returns `null`
    */
-  async getAssociatedTokenAccountInfo(solanaAddress: string) {
+  async getTokenAccountInfo(solanaAddress: string) {
     try {
-      const res = await getAssociatedTokenAccountInfo({
+      const res = await getTokenAccountInfo({
         tokenAccountAddressKey: new PublicKey(solanaAddress),
         mintKey: this.mintKey,
         solanaTokenProgramKey: this.solanaTokenKey,
@@ -297,7 +343,7 @@ export class SolanaWeb3Manager {
    */
   async getWAudioBalance(solanaAddress: string) {
     try {
-      let tokenAccount = await this.getAssociatedTokenAccountInfo(solanaAddress)
+      let tokenAccount = await this.getTokenAccountInfo(solanaAddress)
 
       // If the token account doesn't exist, check if solanaAddress is a root account
       // if so, derive the associated token account & check that balance
@@ -305,7 +351,7 @@ export class SolanaWeb3Manager {
         const associatedTokenAccount = await this.findAssociatedTokenAddress(
           solanaAddress
         )
-        tokenAccount = await this.getAssociatedTokenAccountInfo(
+        tokenAccount = await this.getTokenAccountInfo(
           associatedTokenAccount.toString()
         )
         if (!tokenAccount) {
@@ -344,7 +390,7 @@ export class SolanaWeb3Manager {
     }
 
     // Check if the solana address is a token account
-    let tokenAccountInfo = await this.getAssociatedTokenAccountInfo(
+    let tokenAccountInfo = await this.getTokenAccountInfo(
       recipientSolanaAddress
     )
     if (!tokenAccountInfo) {
@@ -353,7 +399,7 @@ export class SolanaWeb3Manager {
       const associatedTokenAccount = await this.findAssociatedTokenAddress(
         recipientSolanaAddress
       )
-      tokenAccountInfo = await this.getAssociatedTokenAccountInfo(
+      tokenAccountInfo = await this.getTokenAccountInfo(
         associatedTokenAccount.toString()
       )
 
@@ -500,6 +546,13 @@ export class SolanaWeb3Manager {
   }) {
     const balance = await this.getBalance({ publicKey })
     return balance > epsilon
+  }
+
+  async getSolBalance(address: string) {
+    const publicKey = new PublicKey(address)
+    const balance = await this.getBalance({ publicKey })
+    const balanceBN = Utils.toBN(balance * LAMPORTS_PER_SOL)
+    return balanceBN
   }
 
   async getSlot() {

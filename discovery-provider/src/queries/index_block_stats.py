@@ -5,7 +5,7 @@ from src.api_helpers import success_response
 from src.utils import redis_connection
 from src.utils.index_blocks_performance import (
     get_add_indexed_block_to_db_ms_stats_since,
-    get_fetch_ipfs_metadata_ms_stats_since,
+    get_fetch_metadata_ms_stats_since,
     get_index_blocks_ms_stats_since,
 )
 
@@ -38,19 +38,17 @@ def index_block_stats():
             ),
             "day": get_index_blocks_ms_stats_since(redis, DAY_IN_SECONDS),
         },
-        "fetch_ipfs_metadata_ms": {
-            "minute": get_fetch_ipfs_metadata_ms_stats_since(redis, MINUTE_IN_SECONDS),
-            "ten_minutes": get_fetch_ipfs_metadata_ms_stats_since(
+        "fetch_metadata_ms": {
+            "minute": get_fetch_metadata_ms_stats_since(redis, MINUTE_IN_SECONDS),
+            "ten_minutes": get_fetch_metadata_ms_stats_since(
                 redis, TEN_MINUTES_IN_SECONDS
             ),
-            "hour": get_fetch_ipfs_metadata_ms_stats_since(redis, HOUR_IN_SECONDS),
-            "six_hour": get_fetch_ipfs_metadata_ms_stats_since(
-                redis, SIX_HOURS_IN_SECONDS
-            ),
-            "twelve_hour": get_fetch_ipfs_metadata_ms_stats_since(
+            "hour": get_fetch_metadata_ms_stats_since(redis, HOUR_IN_SECONDS),
+            "six_hour": get_fetch_metadata_ms_stats_since(redis, SIX_HOURS_IN_SECONDS),
+            "twelve_hour": get_fetch_metadata_ms_stats_since(
                 redis, TWELVE_HOURS_IN_SECONDS
             ),
-            "day": get_fetch_ipfs_metadata_ms_stats_since(redis, DAY_IN_SECONDS),
+            "day": get_fetch_metadata_ms_stats_since(redis, DAY_IN_SECONDS),
         },
         "add_indexed_block_to_db_ms": {
             "minute": get_add_indexed_block_to_db_ms_stats_since(

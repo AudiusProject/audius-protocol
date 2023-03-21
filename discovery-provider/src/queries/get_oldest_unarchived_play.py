@@ -1,9 +1,11 @@
+from datetime import datetime
+
 from sqlalchemy import func
 from src.models.social.play import Play
 from src.utils import db_session
 
 
-def get_oldest_unarchived_play():
+def get_oldest_unarchived_play() -> datetime:
     """
     Gets the oldest unarchived play in the database
     """

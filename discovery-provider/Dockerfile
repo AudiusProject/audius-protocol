@@ -2,7 +2,6 @@
 FROM audius/contracts:1.0.0 AS contracts
 
 FROM alpine:3.14
-LABEL maintainer="Hareesh Nagaraj <hareesh@audius.co>"
 
 ENV INSTALL_PATH /audius-discovery-provider
 WORKDIR $INSTALL_PATH
@@ -68,7 +67,7 @@ COPY requirements.txt requirements.txt
 RUN python3 -m pip install --upgrade pip && python3 -m pip install -r requirements.txt --no-cache-dir
 
 COPY . .
-RUN cd es-indexer && npm install && npm run build
+RUN --mount=type=cache,target=/root/.npm cd es-indexer && npm ci && npm run build
 
 COPY --from=contracts /usr/src/app/build/contracts/ build/contracts/
 
@@ -85,7 +84,7 @@ ENV audius_loggly_tags=$audius_loggly_tags
 
 EXPOSE 5000
 
-HEALTHCHECK --interval=5s --timeout=5s --retries=12 \
+HEALTHCHECK --interval=5s --timeout=10s --retries=12 \
     CMD pgrep alembic || curl -f http://localhost:5000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]

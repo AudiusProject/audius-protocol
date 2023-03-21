@@ -32,36 +32,50 @@ const notificationMapping = {
   [notificationTypes.Reaction]: processReactionNotification,
   [notificationTypes.SupporterRankUp]: processSupporterRankChangeNotification,
   [notificationTypes.AddTrackToPlaylist]: processAddTrackToPlaylistNotification
-
 }
 
 /**
  * Write notifications into the DB. Group the notifications by type to be batch processed together
  * @param {Array<Object>} notifications Array of notifications from DP
  * @param {*} tx The transaction to add to each of the DB lookups/inserts/deletes
+ * @param {*} optimizelyClient Optimizely client for feature flags
  */
 
-async function processNotifications (notifications, tx) {
+async function processNotifications(notifications, tx, optimizelyClient) {
   // Group the notifications by type
-  const notificationCategories = notifications.reduce((categories, notification) => {
-    if (!categories[notification.type]) {
-      categories[notification.type] = []
-    }
-    categories[notification.type].push(notification)
-    return categories
-  }, {})
+  const notificationCategories = notifications.reduce(
+    (categories, notification) => {
+      if (!categories[notification.type]) {
+        categories[notification.type] = []
+      }
+      categories[notification.type].push(notification)
+      return categories
+    },
+    {}
+  )
 
   // Process notification types in parallel
-  const processedNotifications = await Promise.all(Object.entries(notificationCategories).map(([notifType, notifications]) => {
-    const processType = notificationMapping[notifType]
-    if (processType) {
-      logger.debug(`Processing: ${notifications.length} notifications of type ${notifType}`)
-      return processType(notifications, tx)
-    } else {
-      logger.error('processNotifications - no handler defined for notification type', notifType)
-      return []
-    }
-  }))
+  const processedNotifications = await Promise.all(
+    Object.entries(notificationCategories).map(([notifType, notifications]) => {
+      const processType = notificationMapping[notifType]
+      if (processType) {
+        logger.debug(
+          `Processing: ${notifications.length} notifications of type ${notifType}`
+        )
+        if (notifType === notificationTypes.Create.base) {
+          return processType(notifications, tx, optimizelyClient)
+        } else {
+          return processType(notifications, tx)
+        }
+      } else {
+        logger.error(
+          'processNotifications - no handler defined for notification type',
+          notifType
+        )
+        return []
+      }
+    })
+  )
   return processedNotifications.flat()
 }
 

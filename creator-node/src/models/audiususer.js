@@ -49,21 +49,6 @@ module.exports = (sequelize, DataTypes) => {
       sourceKey: 'cnodeUserUUID',
       onDelete: 'RESTRICT'
     })
-    AudiusUser.belongsTo(models.File, {
-      foreignKey: 'metadataFileUUID',
-      sourceKey: 'fileUUID',
-      onDelete: 'RESTRICT'
-    })
-    AudiusUser.belongsTo(models.File, {
-      foreignKey: 'coverArtFileUUID',
-      sourceKey: 'fileUUID',
-      onDelete: 'RESTRICT'
-    })
-    AudiusUser.belongsTo(models.File, {
-      foreignKey: 'profilePicFileUUID',
-      sourceKey: 'fileUUID',
-      onDelete: 'RESTRICT'
-    })
     // AudiusUser also has a composite foreign key on ClockRecords (cnodeUserUUID, clock)
     // sequelize does not support composite foreign keys
   }

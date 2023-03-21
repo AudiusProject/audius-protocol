@@ -1,4 +1,4 @@
-"""migrate triggers for notifiations
+"""migrate triggers for notifications
 
 Revision ID: 58b26285cdcf
 Revises: b0623220e904

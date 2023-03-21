@@ -2,7 +2,7 @@ const axios = require('axios')
 const assert = require('assert')
 const _ = require('lodash')
 
-const ServiceCommands = require('@audius/service-commands')
+const { getUser } = require('@audius/service-commands')
 const { logger } = require('../logger.js')
 const {
   addAndUpgradeUsers
@@ -14,10 +14,6 @@ const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 let contentNodeEndpointToInfoMapping = {}
 let walletIndexToUserIdMap
-
-const {
-    getUser
-} = ServiceCommands
 
 const verifyUserReplicaSetStatus = async (
   userId,

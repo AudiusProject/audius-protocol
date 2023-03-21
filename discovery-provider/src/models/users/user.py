@@ -37,6 +37,7 @@ class User(Base, RepresentableMixin):
     creator_node_endpoint = Column(String)
     blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
     is_verified = Column(Boolean, nullable=False, server_default=text("false"))
+    artist_pick_track_id = Column(Integer)
     created_at = Column(
         DateTime, nullable=False, server_default=text("CURRENT_TIMESTAMP")
     )
@@ -78,3 +79,6 @@ class User(Base, RepresentableMixin):
     @validates(*fields)
     def validate_field(self, field, value):
         return validate_field_helper(field, value, "User", getattr(User, field).type)
+
+    def get_attributes_dict(self):
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}

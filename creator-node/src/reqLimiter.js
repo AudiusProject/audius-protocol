@@ -4,7 +4,7 @@ const config = require('./config.js')
 const { logger } = require('./logging')
 const RedisStore = require('rate-limit-redis')
 const client = require('./redis.js')
-const { verifyRequesterIsValidSP } = require('./apiSigning.js')
+const { verifyRequesterIsValidSP } = require('./apiSigning')
 
 let endpointRateLimits = {}
 try {
@@ -64,7 +64,6 @@ const userReqLimiter = rateLimit({
     ) {
       try {
         await verifyRequesterIsValidSP({
-          audiusLibs: libs,
           spID,
           reqTimestamp: timestamp,
           reqSignature: signature
@@ -159,7 +158,6 @@ const batchCidsExistReqLimiter = rateLimit({
     ) {
       try {
         await verifyRequesterIsValidSP({
-          audiusLibs: libs,
           spID,
           reqTimestamp: timestamp,
           reqSignature: signature
@@ -179,7 +177,7 @@ const batchCidsExistReqLimiter = rateLimit({
   }
 })
 
-const onLimitReached = (req, res, options) => {
+const onLimitReached = (req, _res, _options) => {
   req.logger.warn(req.rateLimit, `Rate Limit Hit`)
 }
 

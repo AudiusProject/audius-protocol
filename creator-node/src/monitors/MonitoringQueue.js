@@ -1,8 +1,14 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
+
 const redis = require('../redis')
 const config = require('../config')
-const { MONITORS, getMonitorRedisKey } = require('./monitors')
+const {
+  MONITORS,
+  PROMETHEUS_MONITORS,
+  getMonitorRedisKey
+} = require('./monitors')
 const { logger } = require('../logging')
+const { clusterUtilsForWorker, clearActiveJobs } = require('../utils')
 
 const QUEUE_INTERVAL_MS = 60 * 1000
 
@@ -22,47 +28,52 @@ const MONITORING_QUEUE_HISTORY = 500
  *  2. Refreshes the value and stores the update in redis
  */
 class MonitoringQueue {
-  constructor() {
-    this.queue = new Bull('monitoring-queue', {
-      redis: {
-        port: config.get('redisPort'),
-        host: config.get('redisHost')
-      },
+  async init(prometheusRegistry) {
+    const connection = {
+      host: config.get('redisHost'),
+      port: config.get('redisPort')
+    }
+    this.queue = new Queue('monitoring-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: MONITORING_QUEUE_HISTORY,
         removeOnFail: MONITORING_QUEUE_HISTORY
       }
     })
 
-    // Clean up anything that might be still stuck in the queue on restart
-    this.queue.empty()
+    this.prometheusRegistry = prometheusRegistry
 
-    this.seedInitialValues()
+    // Clean up anything that might be still stuck in the queue on restart and run once instantly
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await this.queue.obliterate({ force: true })
+      await clearActiveJobs(this.queue, logger)
+      await this.seedInitialValues()
+    }
+    if (clusterUtilsForWorker.isThisWorkerSpecial()) {
+      const _worker = new Worker(
+        'monitoring-queue',
+        async (_job) => {
+          try {
+            await this._logStatus('Starting')
 
-    this.queue.process(
-      PROCESS_NAMES.monitor,
-      /* concurrency */ 1,
-      async (job, done) => {
-        try {
-          this.logStatus('Starting')
-
-          // Iterate over each monitor and set a new value if the cached
-          // value is not fresh.
-          Object.values(MONITORS).forEach(async (monitor) => {
-            try {
-              await this.refresh(monitor)
-            } catch (e) {
-              this.logStatus(`Error on ${monitor.name} ${e}`)
-            }
-          })
-
-          done(null, {})
-        } catch (e) {
-          this.logStatus(`Error ${e}`)
-          done(e)
-        }
-      }
-    )
+            // Iterate over each monitor and set a new value if the cached
+            // value is not fresh.
+            Object.entries(MONITORS).forEach(
+              async ([monitorKey, monitorProps]) => {
+                try {
+                  await this.refresh(monitorProps, monitorKey)
+                } catch (e) {
+                  this._logError(`Error on ${monitorProps.name} ${e}`)
+                }
+              }
+            )
+          } catch (e) {
+            this._logError(`Error ${e}`)
+          }
+        },
+        { connection }
+      )
+    }
   }
 
   /**
@@ -71,29 +82,48 @@ class MonitoringQueue {
    * them on init
    */
   async seedInitialValues() {
-    await this.refresh(MONITORS.STORAGE_PATH_SIZE)
-    await this.refresh(MONITORS.STORAGE_PATH_USED)
+    await this.refresh(MONITORS.STORAGE_PATH_SIZE, 'STORAGE_PATH_SIZE')
+    await this.refresh(MONITORS.STORAGE_PATH_USED, 'STORAGE_PATH_USED')
   }
 
-  async refresh(monitor) {
-    const key = getMonitorRedisKey(monitor)
+  /**
+   * Refresh monitor in redis and prometheus (if integer)
+   * @notice throws Error on failure to refresh
+   * @param {Object} monitorProps Object containing the monitor props like { func, ttl, type, name }
+   * @param {*} monitorKey name of the monitor eg `THIRTY_DAY_ROLLING_SYNC_SUCCESS_COUNT`
+   */
+  async refresh(monitorProps, monitorKey) {
+    const key = getMonitorRedisKey(monitorProps)
     const ttlKey = `${key}:ttl`
 
     // If the value is fresh, exit early
     const isFresh = await redis.get(ttlKey)
     if (isFresh) return
 
-    const value = await monitor.func()
-    this.logStatus(`Computed value for ${monitor.name} ${value}`)
+    const value = await monitorProps.func()
+
+    // store integer monitors in prometheus
+    try {
+      if (PROMETHEUS_MONITORS.hasOwnProperty(monitorKey)) {
+        const metric = this.prometheusRegistry.getMetric(
+          this.prometheusRegistry.metricNames[`MONITOR_${monitorKey}`]
+        )
+        metric.set({}, value)
+      }
+    } catch (e) {
+      logger.warn(
+        `MonitoringQueue - Couldn't store value: ${value} in prometheus for metric: ${monitorKey} - ${e.message}`
+      )
+    }
 
     // Set the value
-    redis.set(key, value)
+    await redis.set(key, value)
 
-    if (monitor.ttl) {
+    if (monitorProps.ttl) {
       // Set a TTL (in seconds) key to track when this value needs refreshing.
       // We store a separate TTL key rather than expiring the value itself
       // so that in the case of an error, the current value can still be read
-      redis.set(ttlKey, 1, 'EX', monitor.ttl)
+      await redis.set(ttlKey, 1, 'EX', monitorProps.ttl)
     }
   }
 
@@ -101,32 +131,34 @@ class MonitoringQueue {
    * Logs a status message and includes current queue info
    * @param {string} message
    */
-  async logStatus(message) {
-    const { waiting, active, completed, failed, delayed } =
-      await this.queue.getJobCounts()
-    logger.info(
-      `Monitoring Queue: ${message} || active: ${active}, waiting: ${waiting}, failed ${failed}, delayed: ${delayed}, completed: ${completed} `
-    )
+  _logStatus(message) {
+    logger.info(`Monitoring Queue: ${message}`)
+  }
+
+  _logError(message) {
+    logger.error(`Monitoring Queue: ${message}`)
   }
 
   /**
    * Starts the monitoring queue on an every minute cron.
    */
   async start() {
-    try {
-      // Run the job immediately
-      await this.queue.add(PROCESS_NAMES.monitor)
+    if (clusterUtilsForWorker.isThisWorkerSpecial()) {
+      try {
+        // Run the job immediately
+        await this.queue.add(PROCESS_NAMES.monitor, {})
 
-      // Then enqueue the job to run on a regular interval
-      setInterval(async () => {
-        try {
-          await this.queue.add(PROCESS_NAMES.monitor)
-        } catch (e) {
-          this.logStatus('Failed to enqueue!')
-        }
-      }, QUEUE_INTERVAL_MS)
-    } catch (e) {
-      this.logStatus('Startup failed!')
+        // Then enqueue the job to run on a regular interval
+        setInterval(async () => {
+          try {
+            await this.queue.add(PROCESS_NAMES.monitor, {})
+          } catch (e) {
+            this._logError('Failed to enqueue!')
+          }
+        }, QUEUE_INTERVAL_MS)
+      } catch (e) {
+        this._logError('Startup failed!')
+      }
     }
   }
 }

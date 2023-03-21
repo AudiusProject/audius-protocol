@@ -30,6 +30,7 @@ type UID = string
 export type UserMetadata = {
   user_id: number
   album_count: number
+  artist_pick_track_id: Nullable<number>
   bio: string | null
   cover_photo: Nullable<CID>
   creator_node_endpoint: string
@@ -56,6 +57,8 @@ export type UserMetadata = {
   metadata_multihash: Nullable<CID>
   has_collectibles: boolean
   collectiblesOrderUnset?: boolean
+  primary_id: number
+  secondary_ids: number[]
 
   // Only present on the "current" account
   does_follow_current_user?: boolean
@@ -68,6 +71,7 @@ export type UserMetadata = {
   donation?: string
   twitterVerified?: boolean
   instagramVerified?: boolean
+  tikTokVerified?: boolean
 }
 
 export type User = UserMetadata
@@ -82,11 +86,45 @@ export interface Download {
   cid: Nullable<string>
 }
 
+export type TokenStandard = 'ERC721' | 'ERC1155'
+
+export type PremiumConditionsEthNFTCollection = {
+  chain: 'eth'
+  standard: TokenStandard
+  address: string
+  name: string
+  slug: string
+  imageUrl: Nullable<string>
+  externalLink: Nullable<string>
+}
+
+export type PremiumConditionsSolNFTCollection = {
+  chain: 'sol'
+  address: string
+  name: string
+  imageUrl: Nullable<string>
+  externalLink: Nullable<string>
+}
+
+export type PremiumConditions = {
+  nft_collection?:
+    | PremiumConditionsEthNFTCollection
+    | PremiumConditionsSolNFTCollection
+  follow_user_id?: number
+  tip_user_id?: number
+}
+
+export type PremiumContentSignature = {
+  data: string
+  signature: string
+}
+
 export type TrackMetadata = {
   blocknumber: number
   activity_timestamp?: string
   is_delete: boolean
   track_id: number
+  track_cid: string
   created_at: string
   isrc: Nullable<string>
   iswc: Nullable<string>
@@ -110,6 +148,9 @@ export type TrackMetadata = {
   cover_art_sizes: Nullable<CID>
   is_unlisted: boolean
   is_available: boolean
+  is_premium: boolean
+  premium_conditions: Nullable<PremiumConditions>
+  premium_content_signature: Nullable<PremiumContentSignature>
   listenCount?: number
   permalink: string
 
@@ -122,6 +163,8 @@ export type TrackMetadata = {
   // Added fields
   dateListened?: string
   duration: number
+
+  is_playlist_upload?: boolean
 }
 
 export type CollectionMetadata = {

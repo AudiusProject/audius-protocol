@@ -1,4 +1,5 @@
 import datetime
+import logging
 
 from flask import request
 from sqlalchemy import and_, desc, func, or_
@@ -24,6 +25,8 @@ from src.utils.elasticdsl import es_url
 
 trackDedupeMaxMinutes = 10
 
+logger = logging.getLogger(__name__)
+
 
 def get_feed(args):
     skip_es = request.args.get("es") == "0"
@@ -32,7 +35,8 @@ def get_feed(args):
         try:
             (limit, _) = get_pagination_vars()
             return get_feed_es(args, limit)
-        except:
+        except Exception as e:
+            logger.error(f"elasticsearch get_feed_es failed: {e}")
             return get_feed_sql(args)
     else:
         return get_feed_sql(args)
@@ -214,6 +218,14 @@ def get_feed_sql(args):
                 )
             reposted_tracks = reposted_tracks.order_by(desc(Track.created_at)).all()
 
+            # filter out premium track reposts from feed
+            reposted_tracks = list(
+                filter(
+                    lambda track: track["is_premium"] == False,  # not a premium track
+                    reposted_tracks,
+                )
+            )
+
             if not tracks_only:
                 # Query playlists reposted by followees, excluding playlists already fetched from above
                 reposted_playlists = session.query(Playlist).filter(
@@ -244,6 +256,19 @@ def get_feed_sql(args):
             playlists_to_process = created_playlists + reposted_playlists
 
         tracks = helpers.query_result_to_list(tracks_to_process)
+
+        # filter out collectible gated tracks from feed
+        tracks = list(
+            filter(
+                lambda item: ("premium_conditions" not in item)  # not a track
+                or (item["premium_conditions"] is None)  # not a premium track
+                or (
+                    "nft_collection" not in item["premium_conditions"]
+                ),  # not a collectible gated track
+                tracks,
+            )
+        )
+
         playlists = helpers.query_result_to_list(playlists_to_process)
 
         # define top level feed activity_timestamp to enable sorting

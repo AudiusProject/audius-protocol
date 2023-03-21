@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { Tip } from './Tip';
 import {
-    Tip,
     TipFromJSON,
     TipFromJSONTyped,
     TipToJSON,
@@ -32,5 +33,41 @@ export interface GetTipsResponse {
      * @memberof GetTipsResponse
      */
     data?: Array<Tip>;
+}
+
+/**
+ * Check if a given object implements the GetTipsResponse interface.
+ */
+export function instanceOfGetTipsResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function GetTipsResponseFromJSON(json: any): GetTipsResponse {
+    return GetTipsResponseFromJSONTyped(json, false);
+}
+
+export function GetTipsResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): GetTipsResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(TipFromJSON)),
+    };
+}
+
+export function GetTipsResponseToJSON(value?: GetTipsResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(TipToJSON)),
+    };
 }
 

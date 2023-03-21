@@ -14,6 +14,12 @@ class NotFoundError(Base):
     pass  # pylint: disable=W0107
 
 
+class SolanaTransactionFetchError(Base):
+    """Error while fetching solana transaction"""
+
+    pass  # pylint: disable=W0107
+
+
 class MissingEthRecipientError(Base):
     """Exception raised for missing eth recipient error while indexing
     Attributes:

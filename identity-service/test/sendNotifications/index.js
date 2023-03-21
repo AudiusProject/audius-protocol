@@ -42,6 +42,9 @@ describe('Test Send Notifications', function () {
     await models.UserNotificationMobileSettings.create({ userId: 101, remixes: false })
     await models.UserNotificationBrowserSettings.create({ userId: 101, remixes: true })
 
+    await models.NotificationDeviceToken.bulkCreate([100, 101].map(userId => ({ userId, deviceToken: `${userId}-ios`, deviceType: 'ios' })))
+    await models.NotificationDeviceToken.bulkCreate([101].map(userId => ({ userId, deviceToken: `${userId}-safari`, deviceType: 'safari' })))
+
     const tx1 = await models.sequelize.transaction()
     await processNotifications(remixCreate, tx1)
     await sendNotifications(mockAudiusLibs, remixCreate, tx1)
@@ -92,6 +95,8 @@ describe('Test Send Notifications', function () {
   it('should have the correct follow notifications', async function () {
     await models.UserNotificationMobileSettings.create({ userId: 2 })
     await models.UserNotificationBrowserSettings.create({ userId: 3 })
+    await models.NotificationDeviceToken.bulkCreate([2].map(userId => ({ userId, deviceToken: `${userId}-ios`, deviceType: 'ios' })))
+    await models.NotificationDeviceToken.bulkCreate([3].map(userId => ({ userId, deviceToken: `${userId}-safari`, deviceType: 'safari' })))
 
     const tx1 = await models.sequelize.transaction()
     await processNotifications(follow, tx1)
@@ -122,6 +127,7 @@ describe('Test Send Notifications', function () {
 
   it('should have the correct repost notifications', async function () {
     await models.UserNotificationMobileSettings.bulkCreate([1, 2, 7].map(userId => ({ userId })))
+    await models.NotificationDeviceToken.bulkCreate([1, 2, 7].map(userId => ({ userId, deviceToken: `${userId}-ios`, deviceType: 'ios' })))
 
     const tx1 = await models.sequelize.transaction()
     await processNotifications(repost, tx1)
@@ -152,6 +158,7 @@ describe('Test Send Notifications', function () {
 
   it('should have the correct favorite notifications', async function () {
     await models.UserNotificationMobileSettings.bulkCreate([1, 2, 7].map(userId => ({ userId })))
+    await models.NotificationDeviceToken.bulkCreate([1, 2, 7].map(userId => ({ userId, deviceToken: `${userId}-ios`, deviceType: 'ios' })))
 
     const tx1 = await models.sequelize.transaction()
     await processNotifications(favorite, tx1)
@@ -182,6 +189,7 @@ describe('Test Send Notifications', function () {
 
   it('should have the correct trending track notifications', async function () {
     await models.UserNotificationMobileSettings.bulkCreate([1, 2, 3].map(userId => ({ userId })))
+    await models.NotificationDeviceToken.bulkCreate([1, 2, 3].map(userId => ({ userId, deviceToken: `${userId}-ios`, deviceType: 'ios' })))
     await models.UserNotificationMobileSettings.update(
       { milestonesAndAchievements: false },
       { where: { userId: 3 } }
@@ -275,7 +283,7 @@ describe('Test Send Notifications', function () {
 
     let pushNotifications = pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER
     console.log(pushNotifications)
-    assert.deepStrictEqual(pushNotifications.length, 8)
+    assert.deepStrictEqual(pushNotifications.length, 10)
 
     const notifs = [
       {
@@ -283,7 +291,7 @@ describe('Test Send Notifications', function () {
         msg: `You’ve received ${challengeInfoMap['referred'].amount} $AUDIO for being referred! Invite your friends to join to earn more!`
       },
       ...([
-        'profile-completion', 'listen-streak', 'track-upload', 'referrals', 'ref-v', 'connect-verified', 'mobile-install'
+        'profile-completion', 'listen-streak', 'track-upload', 'referrals', 'ref-v', 'connect-verified', 'mobile-install', 'send-first-tip', 'first-playlist'
       ].map(id => ({
         title: challengeInfoMap[id].title,
         msg: `You’ve earned ${challengeInfoMap[id].amount} $AUDIO for completing this challenge!`

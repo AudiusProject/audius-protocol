@@ -8,7 +8,8 @@ describe('test contentNodeIPCheck', () => {
       '127.0.0.1',
       {
         body: {
-          signature: '0x16092e63f925bc0bd2829348deadf4a3404cdb1067669fcad5bea391e54059285c292a8bad5360aca82abb9b72d0f513ccba48c99b6f99f4c4559cff7b0032251c',
+          signature:
+            '0x16092e63f925bc0bd2829348deadf4a3404cdb1067669fcad5bea391e54059285c292a8bad5360aca82abb9b72d0f513ccba48c99b6f99f4c4559cff7b0032251c',
           timestamp: '2021-03-16T07:25:10.351Z'
         }
       },
@@ -37,7 +38,8 @@ describe('test contentNodeIPCheck', () => {
       '127.0.0.1',
       {
         body: {
-          signature: '0x16092e63f925bc0bd2829348deadf4a3404cdb1067669fcad5bea391e54059285c292a8bad5360aca82abb9b72d0f513ccba48c99b6f99f4c4559cff7b0032251c',
+          signature:
+            '0x16092e63f925bc0bd2829348deadf4a3404cdb1067669fcad5bea391e54059285c292a8bad5360aca82abb9b72d0f513ccba48c99b6f99f4c4559cff7b0032251c',
           timestamp: '2021-03-01T07:25:10.351Z'
         }
       },

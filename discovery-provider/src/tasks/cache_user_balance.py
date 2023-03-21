@@ -254,6 +254,14 @@ def refresh_user_ids(
                                 )
 
                                 bal_info = waudio_token.get_balance(derived_account)
+                                if (
+                                    "error" in bal_info
+                                    and "code" in bal_info["error"]
+                                    and bal_info["error"]["code"] == -32602
+                                ):
+                                    # Error is 'Invalid param: could not find account'
+                                    # meaning that the token account does not exist
+                                    continue
                                 associated_waudio_balance: str = bal_info["result"][
                                     "value"
                                 ]["amount"]

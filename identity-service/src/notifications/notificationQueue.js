@@ -1,8 +1,15 @@
-const { deviceType } = require('./constants')
+const { deviceType, notificationTypes } = require('./constants')
 const { drainMessageObject: sendAwsSns } = require('../awsSNS')
-const { sendBrowserNotification, sendSafariNotification } = require('../webPush')
+const {
+  sendBrowserNotification,
+  sendSafariNotification
+} = require('../webPush')
 const racePromiseWithTimeout = require('../utils/racePromiseWithTimeout.js')
-
+const {
+  getRemoteFeatureVar,
+  DISCOVERY_NOTIFICATION_MAPPING,
+  MappingVariable
+} = require('../remoteConfig')
 const SEND_NOTIF_TIMEOUT_MS = 20000 // 20 sec
 
 // TODO (DM) - move this into redis
@@ -12,28 +19,86 @@ const pushNotificationQueue = {
   PUSH_ANNOUNCEMENTS_BUFFER: []
 }
 
-async function publish (message, userId, tx, playSound = true, title = null, types) {
-  await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER, playSound, title, types)
+async function publish(
+  message,
+  userId,
+  tx,
+  playSound = true,
+  title = null,
+  types,
+  notification
+) {
+  await addNotificationToBuffer(
+    message,
+    userId,
+    tx,
+    pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER,
+    playSound,
+    title,
+    types,
+    notification
+  )
 }
 
-async function publishSolanaNotification (message, userId, tx, playSound = true, title = null, types) {
-  await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER, playSound, title, types)
+async function publishSolanaNotification(
+  message,
+  userId,
+  tx,
+  playSound = true,
+  title = null,
+  types,
+  notification
+) {
+  await addNotificationToBuffer(
+    message,
+    userId,
+    tx,
+    pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER,
+    playSound,
+    title,
+    types,
+    notification
+  )
 }
 
-async function publishAnnouncement (message, userId, tx, playSound = true, title = null) {
-  await addNotificationToBuffer(message, userId, tx, pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER, playSound, title)
+async function publishAnnouncement(
+  message,
+  userId,
+  tx,
+  playSound = true,
+  title = null
+) {
+  await addNotificationToBuffer(
+    message,
+    userId,
+    tx,
+    pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER,
+    playSound,
+    title
+  )
 }
 
-async function addNotificationToBuffer (message, userId, tx, buffer, playSound, title, types) {
+async function addNotificationToBuffer(
+  message,
+  userId,
+  tx,
+  buffer,
+  playSound,
+  title,
+  types,
+  notification
+) {
   const bufferObj = {
     userId,
     notificationParams: { message, title, playSound },
-    types
+    types,
+    notification
   }
-  let existingEntriesCheck = buffer.filter(
-    entry => (
-      (entry.userId === userId) && entry.notificationParams.message === message && entry.notificationParams.title === title
-    )
+  const existingEntriesCheck = buffer.filter(
+    (entry) =>
+      entry.userId === userId &&
+      entry.notificationParams.message === message &&
+      entry.notificationParams.title === title
   )
   // Ensure no dups are added
   if (existingEntriesCheck.length > 0) return
@@ -47,7 +112,7 @@ async function addNotificationToBuffer (message, userId, tx, buffer, playSound, 
  * @notice assumes `notifFn` always returns integer indicationg number of sent notifications
  * @returns numSentNotifs
  */
-async function _sendNotification (notifFn, bufferObj, logger) {
+async function _sendNotification(notifFn, bufferObj, logger) {
   const logPrefix = `[notificationQueue:sendNotification] [${notifFn.name}] [userId ${bufferObj.userId}]`
 
   let numSentNotifs = 0
@@ -69,36 +134,136 @@ async function _sendNotification (notifFn, bufferObj, logger) {
   return numSentNotifs || 0
 }
 
-async function drainPublishedMessages (logger) {
-  logger.info(`[notificationQueue:drainPublishedMessages] Beginning processing of ${pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER.length} notifications...`)
+/**
+ * Same as Promise.all(items.map(item => task(item))), but it waits for
+ * the first {batchSize} promises to finish before starting the next batch.
+ */
+async function promiseAllInBatches(
+  task,
+  optimizelyClient,
+  logger,
+  items,
+  batchSize
+) {
+  let position = 0
+  let results = []
+  while (position < items.length) {
+    const itemsForBatch = items.slice(position, position + batchSize)
+    results = [
+      ...results,
+      ...(await Promise.allSettled(
+        itemsForBatch.map((item) => task(optimizelyClient, logger, item))
+      ))
+    ]
+    position += batchSize
+  }
+  return results
+}
 
+const notificaitonTypeMapping = {
+  announcement: MappingVariable.PushAnnouncement,
+  [notificationTypes.Follow]: MappingVariable.PushFollow,
+  [notificationTypes.Repost.base]: MappingVariable.PushRepost,
+  [notificationTypes.Favorite.base]: MappingVariable.PushFavorite,
+  [notificationTypes.Create.base]: MappingVariable.PushCreate,
+  [notificationTypes.RemixCreate]: MappingVariable.PushRemix,
+  [notificationTypes.RemixCosign]: MappingVariable.PushCosign,
+  [notificationTypes.Milestone]: MappingVariable.PushMilestone,
+  [notificationTypes.MilestoneFollow]: MappingVariable.PushMilestone,
+  [notificationTypes.MilestoneRepost]: MappingVariable.PushMilestone,
+  [notificationTypes.MilestoneFavorite]: MappingVariable.PushMilestone,
+  [notificationTypes.MilestoneListen]: MappingVariable.PushMilestone,
+  [notificationTypes.Announcement]: MappingVariable.PushAnnouncement,
+  [notificationTypes.UserSubscription]: MappingVariable.PushUserSubscription,
+  [notificationTypes.TrendingTrack]: MappingVariable.PushTrending,
+  [notificationTypes.ChallengeReward]: MappingVariable.PushChallengeReward,
+  [notificationTypes.TierChange]: MappingVariable.PushTierChange,
+  [notificationTypes.PlaylistUpdate]: MappingVariable.PushPlaylistUpdate,
+  [notificationTypes.Tip]: MappingVariable.PushTip,
+  [notificationTypes.TipReceive]: MappingVariable.PushTipReceive,
+  [notificationTypes.TipSend]: MappingVariable.PushTipSend,
+  [notificationTypes.Reaction]: MappingVariable.PushReaction,
+  [notificationTypes.SupporterRankUp]: MappingVariable.PushSupporterRankUp,
+  [notificationTypes.SupportingRankUp]: MappingVariable.PushSupportingRankUp,
+  [notificationTypes.SupporterDethroned]:
+    MappingVariable.PushSupporterDethroned,
+  [notificationTypes.AddTrackToPlaylist]: MappingVariable.PushAddTrackToPlaylist
+}
+
+async function processNotification(optimizelyClient, logger, notification) {
   let numProcessedNotifs = 0
-  for (let bufferObj of pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER) {
-    if (bufferObj.types.includes(deviceType.Mobile)) {
-      const numSentNotifs = await _sendNotification(sendAwsSns, bufferObj, logger)
-      numProcessedNotifs += numSentNotifs
-    }
-    if (bufferObj.types.includes(deviceType.Browser)) {
-      const numSentNotifsArr = await Promise.all([
-        _sendNotification(sendBrowserNotification, bufferObj, logger),
-        _sendNotification(sendSafariNotification, bufferObj, logger)
-      ])
-      numSentNotifsArr.forEach(numSentNotifs => { numProcessedNotifs += numSentNotifs })
-    }
+  const notificationMappingVar =
+    notificaitonTypeMapping[notification.notification.type]
+  const isDisabled = getRemoteFeatureVar(
+    optimizelyClient,
+    DISCOVERY_NOTIFICATION_MAPPING,
+    notificationMappingVar
+  )
+  if (isDisabled === false) {
+    logger.info(
+      `Skipping send push notification for type: ${notification.notification.type}`
+    )
+    return
   }
 
+  if (notification.types.includes(deviceType.Mobile)) {
+    const numSentNotifs = await _sendNotification(
+      sendAwsSns,
+      notification,
+      logger
+    )
+    numProcessedNotifs += numSentNotifs
+  }
+  if (notification.types.includes(deviceType.Browser)) {
+    const numSentNotifsArr = await Promise.all([
+      _sendNotification(sendBrowserNotification, notification, logger),
+      _sendNotification(sendSafariNotification, notification, logger)
+    ])
+    numSentNotifsArr.forEach((numSentNotifs) => {
+      numProcessedNotifs += numSentNotifs
+    })
+  }
+  return numProcessedNotifs
+}
+
+// Number of notitications to process in parallel
+const BATCH_SIZE = 20
+
+async function drainPublishedMessages(logger, optimizelyClient) {
+  logger.info(
+    `[notificationQueue:drainPublishedMessages] Beginning processing of ${pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER.length} notifications...`
+  )
+
+  const numProcessedNotifications = await promiseAllInBatches(
+    processNotification,
+    optimizelyClient,
+    logger,
+    pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER,
+    BATCH_SIZE
+  )
+
+  const numProcessedNotifs = numProcessedNotifications.reduce(
+    (total, val) => total + val,
+    0
+  )
   pushNotificationQueue.PUSH_NOTIFICATIONS_BUFFER = []
 
   return numProcessedNotifs
 }
 
-async function drainPublishedSolanaMessages (logger) {
-  logger.info(`[notificationQueue:drainPublishedSolanaMessages] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`)
+async function drainPublishedSolanaMessages(logger) {
+  logger.info(
+    `[notificationQueue:drainPublishedSolanaMessages] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`
+  )
 
   let numProcessedNotifs = 0
-  for (let bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
+  for (const bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
     if (bufferObj.types.includes(deviceType.Mobile)) {
-      const numSentNotifs = await _sendNotification(sendAwsSns, bufferObj, logger)
+      const numSentNotifs = await _sendNotification(
+        sendAwsSns,
+        bufferObj,
+        logger
+      )
       numProcessedNotifs += numSentNotifs
     }
     if (bufferObj.types.includes(deviceType.Browser)) {
@@ -106,7 +271,9 @@ async function drainPublishedSolanaMessages (logger) {
         _sendNotification(sendBrowserNotification, bufferObj, logger),
         _sendNotification(sendSafariNotification, bufferObj, logger)
       ])
-      numSentNotifsArr.forEach(numSentNotifs => { numProcessedNotifs += numSentNotifs })
+      numSentNotifsArr.forEach((numSentNotifs) => {
+        numProcessedNotifs += numSentNotifs
+      })
     }
   }
 
@@ -115,17 +282,21 @@ async function drainPublishedSolanaMessages (logger) {
   return numProcessedNotifs
 }
 
-async function drainPublishedAnnouncements (logger) {
-  logger.info(`[notificationQueue:drainPublishedAnnouncements] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`)
+async function drainPublishedAnnouncements(logger) {
+  logger.info(
+    `[notificationQueue:drainPublishedAnnouncements] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`
+  )
 
   let numProcessedNotifs = 0
-  for (let bufferObj of pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER) {
+  for (const bufferObj of pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER) {
     const numSentNotifsArr = await Promise.all([
       _sendNotification(sendAwsSns, bufferObj, logger),
       _sendNotification(sendBrowserNotification, bufferObj, logger),
       _sendNotification(sendSafariNotification, bufferObj, logger)
     ])
-    numSentNotifsArr.forEach(numSentNotifs => { numProcessedNotifs += numSentNotifs })
+    numSentNotifsArr.forEach((numSentNotifs) => {
+      numProcessedNotifs += numSentNotifs
+    })
   }
 
   pushNotificationQueue.PUSH_ANNOUNCEMENTS_BUFFER = []
@@ -140,5 +311,8 @@ module.exports = {
   publishAnnouncement,
   drainPublishedMessages,
   drainPublishedSolanaMessages,
-  drainPublishedAnnouncements
+  drainPublishedAnnouncements,
+  processNotification,
+  promiseAllInBatches,
+  BATCH_SIZE
 }

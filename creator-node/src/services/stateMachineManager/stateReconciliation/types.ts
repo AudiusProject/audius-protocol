@@ -1,12 +1,17 @@
+// eslint-disable-next-line node/no-extraneous-import
+import type { SpanContext } from '@opentelemetry/api'
+import type { LogContext } from '../../../utils'
+
 export type SyncRequestAxiosData = {
   wallet: string[]
   creator_node_endpoint?: string
   sync_type?: string
   immediate?: boolean
   forceResync?: boolean
+  forceWipe?: boolean
   timestamp?: string
   signature?: string
-  from_manual_route?: boolean
+  sync_even_if_disabled?: boolean
 }
 
 export type SyncRequestAxiosParams = {
@@ -35,7 +40,7 @@ export type ForceResyncConfig = {
   wallet: string
   forceResync?: boolean
   libs: any
-  logContext?: any
+  logContext?: LogContext
   logger?: any
 } | null
 
@@ -44,6 +49,7 @@ export type IssueSyncRequestJobParams = {
   syncMode: string
   syncRequestParameters: SyncRequestAxiosParams
   attemptNumber?: number
+  parentSpanContext?: SpanContext
 }
 export type IssueSyncRequestJobReturnValue = {
   error: any
@@ -73,8 +79,9 @@ export type ReplicaToUserInfoMap = {
 }
 export type UpdateReplicaSetJobParamsWithoutEnabledReconfigModes =
   UpdateReplicaSetUser & {
-    unhealthyReplicas: string[]
+    nodesToReconfigOffOf: string[]
     replicaToUserInfoMap: ReplicaToUserInfoMap
+    parentSpanContext?: SpanContext
   }
 export type UpdateReplicaSetJobParams =
   UpdateReplicaSetJobParamsWithoutEnabledReconfigModes & {
@@ -88,7 +95,22 @@ export type UpdateReplicaSetJobReturnValue = {
 }
 
 // Recover orphaned data job
-export type RecoverOrphanedDataJobParams = {}
+export type RecoverOrphanedDataJobParams = {
+  parentSpanContext?: SpanContext
+  discoveryNodeEndpoint: string
+}
 export type RecoverOrphanedDataJobReturnValue = {
-  usersWithOrphanedData: any[] // TODO: Choose user type
+  numWalletsOnNode: number
+  numWalletsWithNodeInReplicaSet: number
+  numWalletsWithOrphanedData: number
+}
+
+export type SecondarySyncHealthTrackerState = {
+  walletToSecondaryAndMaxErrorReached: WalletToSecondaryAndMaxErrorReached
+}
+
+export type WalletToSecondaryAndMaxErrorReached = {
+  [wallet: string]: {
+    [secondary: string]: string /* the encountered error */
+  }
 }

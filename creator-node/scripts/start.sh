@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-link_libs=true
+link_libs=false
 
 if [[ "$WAIT_HOSTS" != "" ]]; then
     /usr/bin/wait
@@ -65,18 +65,18 @@ if [[ "$contentCacheLayerEnabled" == "true" ]]; then
     openresty -p /usr/local/openresty -c /usr/local/openresty/conf/nginx.conf
 fi
 
+# index.js runs multiple processes using cluster. Starts as primary since process.env.NODE_UNIQUE_ID=undefined
 if [[ "$devMode" == "true" ]]; then
+    export clusterModeEnabled="false"
     if [ "$link_libs" = true ]; then
         cd ../audius-libs
         npm link
         cd ../app
         npm link @audius/sdk
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ --watch ../audius-libs/ | tee >(logger)
-    else
-        npx nodemon --exec 'node --inspect=0.0.0.0:${debuggerPort} --require ts-node/register src/index.ts' --watch src/ | tee >(logger)
     fi
+    npx ts-node-dev --respawn --inspect=0.0.0.0:${debuggerPort} src/index.ts  | tee >(logger)
 else
-    node build/src/index.js | tee >(logger)
+    node --max-old-space-size=4096 build/src/index.js | tee >(logger)
 fi
 
 wait

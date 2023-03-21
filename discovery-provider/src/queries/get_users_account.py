@@ -94,6 +94,7 @@ def get_users_account(args):
                 "id": playlist["playlist_id"],
                 "name": playlist["playlist_name"],
                 "is_album": playlist["is_album"],
+                "permalink": playlist["permalink"],
                 "user": {
                     "id": playlist_owner["user_id"],
                     "handle": playlist_owner["handle"],

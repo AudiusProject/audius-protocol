@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { ProfilePicture } from './ProfilePicture';
 import {
-    ProfilePicture,
     ProfilePictureFromJSON,
     ProfilePictureFromJSONTyped,
     ProfilePictureToJSON,
@@ -74,5 +75,62 @@ export interface DecodedUserToken {
      * @memberof DecodedUserToken
      */
     iat: string;
+}
+
+/**
+ * Check if a given object implements the DecodedUserToken interface.
+ */
+export function instanceOfDecodedUserToken(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "userId" in value;
+    isInstance = isInstance && "email" in value;
+    isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "handle" in value;
+    isInstance = isInstance && "verified" in value;
+    isInstance = isInstance && "sub" in value;
+    isInstance = isInstance && "iat" in value;
+
+    return isInstance;
+}
+
+export function DecodedUserTokenFromJSON(json: any): DecodedUserToken {
+    return DecodedUserTokenFromJSONTyped(json, false);
+}
+
+export function DecodedUserTokenFromJSONTyped(json: any, ignoreDiscriminator: boolean): DecodedUserToken {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'userId': json['userId'],
+        'email': json['email'],
+        'name': json['name'],
+        'handle': json['handle'],
+        'verified': json['verified'],
+        'profilePicture': !exists(json, 'profilePicture') ? undefined : ProfilePictureFromJSON(json['profilePicture']),
+        'sub': json['sub'],
+        'iat': json['iat'],
+    };
+}
+
+export function DecodedUserTokenToJSON(value?: DecodedUserToken | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'userId': value.userId,
+        'email': value.email,
+        'name': value.name,
+        'handle': value.handle,
+        'verified': value.verified,
+        'profilePicture': ProfilePictureToJSON(value.profilePicture),
+        'sub': value.sub,
+        'iat': value.iat,
+    };
 }
 

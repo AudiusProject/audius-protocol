@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import time
+import unicodedata
 from functools import reduce
 from json.encoder import JSONEncoder
 from typing import Optional, cast
@@ -16,6 +17,13 @@ from hashids import Hashids
 from jsonformatter import JsonFormatter
 from sqlalchemy import inspect
 from src import exceptions
+from src.solana.solana_transaction_types import (
+    ResultMeta,
+    TransactionMessage,
+    TransactionMessageInstruction,
+)
+from src.utils import redis_connection
+from src.utils.redis_constants import final_poa_block_redis_key
 
 from . import multihash
 
@@ -38,72 +46,6 @@ def get_openresty_public_key():
         return None
 
 
-def redis_restore(redis, key):
-    logger = logging.getLogger(__name__)
-    filename = f"{key}_dump"
-    try:
-        with open(filename, "rb") as f:
-            dumped = f.read()
-            redis.restore(key, 0, dumped)
-            logger.debug(f"successfully restored redis value for key: {key}")
-            return redis.get(key)
-    except FileNotFoundError as not_found:
-        logger.error(f"could not read redis dump file: {filename}")
-        logger.error(not_found)
-        return None
-    except Exception as e:
-        logger.error(f"could not perform redis restore for key: {key}")
-        logger.error(e)
-        return None
-
-
-def redis_get_or_restore(redis, key):
-    value = redis.get(key)
-    return value if value else redis_restore(redis, key)
-
-
-def redis_get_json_cached_key_or_restore(redis, key):
-    logger = logging.getLogger(__name__)
-    cached_value = redis.get(key)
-    if not cached_value:
-        logger.debug(f"Redis Cache - miss {key}, restoring")
-        cached_value = redis_restore(redis, key)
-
-    if cached_value:
-        logger.debug(f"Redis Cache - hit {key}")
-        try:
-            deserialized = json.loads(cached_value)
-            return deserialized
-        except Exception as e:
-            logger.warning(f"Unable to deserialize json cached response: {e}")
-            return None
-    logger.debug(f"Redis Cache - miss {key}")
-    return None
-
-
-def redis_dump(redis, key):
-    logger = logging.getLogger(__name__)
-    try:
-        dumped = redis.dump(key)
-        filename = f"{key}_dump"
-        with open(filename, "wb") as f:
-            f.write(dumped)
-            logger.debug(f"successfully performed redis dump for key: {key}")
-    except Exception as e:
-        logger.error(f"could not perform redis dump for key: {key}")
-        logger.error(e)
-
-
-def redis_set_json_and_dump(redis, key, value):
-    serialized = json.dumps(value)
-    redis_set_and_dump(redis, key, serialized)
-
-
-def redis_set_and_dump(redis, key, value):
-    redis.set(key, value)
-    redis_dump(redis, key)
-
-
 @contextlib.contextmanager
 def cd(path):
     """Context manager that changes to directory `path` and return to CWD
@@ -124,7 +66,7 @@ def bytes32_to_str(bytes32input):
 
 # Regex used to verify valid FQDN
 fqdn_regex = re.compile(
-    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
+    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|(audius-protocol-creator-node-[0-9]:[0-9]+)|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
 )
 
 
@@ -187,9 +129,9 @@ def model_to_dictionary(model, exclude_keys=None):
 
     for key in relationships:
         if key not in exclude_keys and not key.startswith("_"):
-            attr = getattr(model, key)
             if key in unloaded:
                 continue
+            attr = getattr(model, key)
             if isinstance(attr, list):
                 model_dict[key] = query_result_to_list(attr)
             else:
@@ -357,24 +299,6 @@ def get_discovery_provider_version():
     return data
 
 
-def get_valid_multiaddr_from_id_json(id_json):
-    logger = logging.getLogger(__name__)
-    # js-ipfs api returns lower case keys
-    if "addresses" in id_json and isinstance(id_json["addresses"], list):
-        for multiaddr in id_json["addresses"]:
-            if ("127.0.0.1" not in multiaddr) and ("ip6" not in multiaddr):
-                logger.warning(f"returning {multiaddr}")
-                return multiaddr
-
-    # py-ipfs api returns uppercase keys
-    if "Addresses" in id_json and isinstance(id_json["Addresses"], list):
-        for multiaddr in id_json["Addresses"]:
-            if ("127.0.0.1" not in multiaddr) and ("ip6" not in multiaddr):
-                logger.warning(f"returning {multiaddr}")
-                return multiaddr
-    return None
-
-
 HASH_MIN_LENGTH = 5
 HASH_SALT = "azowernasdfoia"
 
@@ -382,6 +306,9 @@ hashids = Hashids(min_length=5, salt=HASH_SALT)
 
 
 def encode_int_id(id: int):
+    # if id is already a string, assume it has already been encoded
+    if isinstance(id, str):
+        return id
     return cast(str, hashids.encode(id))
 
 
@@ -399,9 +326,12 @@ def create_track_route_id(title, handle):
     Resulting route_ids are of the shape `<handle>/<sanitized_title>`.
     """
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
-    # Strip out invalid character
+    sanitized_title = unicodedata.normalize("NFC", sanitized_title)
+    # Strip out invalid characters
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00", "", sanitized_title
+        r"!|%|\`|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00",
+        "",
+        sanitized_title,
     )
 
     # Convert whitespaces to dashes
@@ -419,22 +349,24 @@ def create_track_route_id(title, handle):
     return f"{sanitized_handle}/{sanitized_title}"
 
 
-def create_track_slug(title, track_id, collision_id=0):
-    """Converts the title of a track into a URL-friendly 'slug'
+def sanitize_slug(title, record_id, collision_id=0):
+    """Converts the title of a record into a URL-friendly 'slug'
 
     Strips special characters, replaces spaces with dashes, converts to
     lowercase, and appends a collision_id if non-zero.
 
     If the sanitized title is entirely escaped (empty string), use the
-    hashed track_id.
+    hashed record_id.
 
     Example:
     (Title="My Awesome Track!", collision_id=2) => "my-awesome-track-2"
+    (PlaylistName="My Awesome Playlist'~~", collision_id=2) => "my-awesome-playlist-2"
     """
     sanitized_title = title.encode("utf-8", "ignore").decode("utf-8", "ignore")
-    # Strip out invalid character
+    sanitized_title = unicodedata.normalize("NFC", sanitized_title)
+    # Strip out invalid characters
     sanitized_title = re.sub(
-        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"",
+        r"!|%|#|\$|&|\'|\(|\)|&|\*|\+|\’|,|\/|:|;|=|\?|@|\[|\]|\x00|\^|\.|\{|\}|\"|~",
         "",
         sanitized_title,
     )
@@ -447,7 +379,7 @@ def create_track_slug(title, track_id, collision_id=0):
     # This means that the entire title was sanitized away, use the id
     # for the slug.
     if not sanitized_title:
-        sanitized_title = encode_int_id(track_id)
+        sanitized_title = encode_int_id(record_id)
 
     if collision_id > 0:
         sanitized_title = f"{sanitized_title}-{collision_id}"
@@ -496,3 +428,139 @@ def get_tx_arg(tx, arg_name):
 def split_list(list, n):
     for i in range(0, len(list), n):
         yield list[i : i + n]
+
+
+def get_solana_tx_token_balances(meta, idx):
+    """Extracts the pre and post balances for a given index from a solana transaction
+    metadata object
+    """
+    pre_balance_dict = next(
+        (
+            balance
+            for balance in meta["preTokenBalances"]
+            if balance["accountIndex"] == idx
+        ),
+        None,
+    )
+    post_balance_dict = next(
+        (
+            balance
+            for balance in meta["postTokenBalances"]
+            if balance["accountIndex"] == idx
+        ),
+        None,
+    )
+    if pre_balance_dict is None or post_balance_dict is None:
+        return (-1, -1)
+    pre_balance = int(pre_balance_dict["uiTokenAmount"]["amount"])
+    post_balance = int(post_balance_dict["uiTokenAmount"]["amount"])
+    return (pre_balance, post_balance)
+
+
+def get_solana_tx_owner(meta, idx) -> str:
+    return next(
+        (
+            balance["owner"]
+            for balance in meta["preTokenBalances"]
+            if balance["accountIndex"] == idx
+        ),
+        "",
+    )
+
+
+def get_valid_instruction(
+    tx_message: TransactionMessage, meta: ResultMeta, program_address: str
+) -> Optional[TransactionMessageInstruction]:
+    """Checks that the tx is valid
+    checks for the transaction message for correct instruction log
+    checks accounts keys for claimable token program
+    """
+    account_keys = tx_message["accountKeys"]
+    instructions = tx_message["instructions"]
+    program_index = account_keys.index(program_address)
+    for instruction in instructions:
+        if instruction["programIdIndex"] == program_index:
+            return instruction
+
+    return None
+
+
+def has_log(meta: ResultMeta, instruction: str):
+    return any(log == instruction for log in meta["logMessages"])
+
+
+# The transaction might list sender/receiver in a different order in the pubKeys.
+# The "accounts" field of the instruction has the mapping of accounts to pubKey index
+# Example of transaction JSON returned from solana getTransaction():
+# Eg: accounts[0] = 1, so to look up pre and post balances for
+# 3Y7gfpxeniGVyVC93CrK42tD4GFSt6gxTW2xfFzKqxVt, look for accountIndex: 1
+# "transaction": {
+#     "message": {
+#         "header": {
+#             "numReadonlySignedAccounts": 0,
+#             "numReadonlyUnsignedAccounts": 3,
+#             "numRequiredSignatures": 1
+#         },
+#         "accountKeys": [
+#             "FFQB4iQRXWqQHDRbpixXyGoufw8qdVt8SDLuFzZSZZka",
+#             "3Y7gfpxeniGVyVC93CrK42tD4GFSt6gxTW2xfFzKqxVt",
+#             "E2LCbKdo2L3ikt1gK6pwp1pDLuhAfHBNf6fEQXpAqrf9",
+#             "9LzCMqDgTKYz9Drzqnpgee3SGa89up3a247ypMj2xrqM",
+#             "Memo1UhkJRfHyvLMcVucJwxXeuD728EqVDDwQDxFMNo",
+#             "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+#         ],
+#         "recentBlockhash": "22F56uRSayJV1AKMN5jiim5xyGCxvShamW4VrZyfgM9U",
+#         "instructions": [
+#             {
+#             "accounts": [
+#                 0
+#             ],
+#             "data": "Bs2CZBUGWJZV5kqF3ecfJisidP9WQtCpeeWCzk6AUyYLQWgLdHPz",
+#             "programIdIndex": 4
+#             },
+#             {
+#             "accounts": [
+#                 1,
+#                 3,
+#                 2,
+#                 0
+#             ],
+#             "data": "ixUKHa1t4JYGF",
+#             "programIdIndex": 5
+#             }
+#       ],
+#       "indexToProgramIds": {}
+#     },
+def get_account_index(instruction: TransactionMessageInstruction, index: int):
+    return instruction["accounts"][index]
+
+
+def get_final_poa_block(shared_config) -> Optional[int]:
+    # get final poa block from identity and cache result
+    # marks the transition to nethermind
+    # depend on identity responding with final_poa_block or the redis cached value
+
+    redis = redis_connection.get_redis()
+    cached_final_poa_block = redis.get(final_poa_block_redis_key)
+    if cached_final_poa_block:
+        return int(cached_final_poa_block)
+
+    final_poa_block = None
+    try:
+        identity_endpoint = (
+            f"{shared_config['discprov']['identity_service_url']}/health_check/poa"
+        )
+
+        response = requests.get(identity_endpoint, timeout=1)
+        response.raise_for_status()
+        response_json = response.json()
+        if not response_json.get("finalPOABlock"):
+            return None
+
+        final_poa_block = int(response_json.get("finalPOABlock"))
+
+        redis.set(final_poa_block_redis_key, final_poa_block)
+    except:
+        # in case identity is down, default to None
+        pass
+    return final_poa_block

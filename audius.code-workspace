@@ -1,0 +1,55 @@
+{
+  "folders": [
+    {
+      "path": "discovery-provider"
+    },
+    {
+      "path": "creator-node"
+    },
+    {
+      "path": "identity-service"
+    },
+    {
+      "path": "libs"
+    },
+    {
+      "path": "solana-programs"
+    },
+    {
+      "path": "service-commands"
+    },
+    {
+      "path": "eth-contracts"
+    },
+    {
+      "path": "contracts"
+    },
+    {
+      "path": "mad-dog"
+    },
+    {
+      "path": "dev-tools"
+    },
+    {
+      "path": "monitoring"
+    },
+    {
+      "path": "comms"
+    }
+  ],
+  "settings": {
+    "jest.disabledWorkspaceFolders": [
+      "solana-programs",
+      "identity-service",
+      "monitoring",
+      "mad-dog",
+      "discovery-provider",
+      "eth-contracts",
+      "comms",
+      "dev-tools",
+      "service-commands",
+      "contracts",
+      "creator-node"
+    ]
+  }
+}

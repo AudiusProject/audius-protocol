@@ -1,11 +1,17 @@
 const config = require('./config')
 const models = require('./models')
 
-const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captcha }) => {
+const verifyAndRecordCaptcha = async ({
+  token,
+  walletAddress,
+  url,
+  logger,
+  captcha
+}) => {
   let score, ok, hostname
   if (token) {
     try {
-      ({ score, ok, hostname } = await captcha.verify(token))
+      ;({ score, ok, hostname } = await captcha.verify(token))
 
       if (score !== undefined && score !== null && hostname) {
         models.BotScores.create({
@@ -16,17 +22,23 @@ const verifyAndRecordCaptcha = async ({ token, walletAddress, url, logger, captc
         })
       }
     } catch (e) {
-      logger.error(`CAPTCHA - Error with calculating or recording recaptcha score for wallet=${walletAddress}`, e)
+      logger.error(
+        `CAPTCHA - Error with calculating or recording recaptcha score for wallet=${walletAddress}`,
+        e
+      )
     }
 
     // TODO: Make middleware return errorResponse later
-    if (!ok) logger.warn(`CAPTCHA - Failed captcha with score=${score} for wallet=${walletAddress}`)
+    if (!ok)
+      logger.warn(
+        `CAPTCHA - Failed captcha with score=${score} for wallet=${walletAddress}`
+      )
   } else {
     logger.warn('CAPTCHA - No captcha found on request')
   }
 }
 
-async function captchaMiddleware (req, res, next) {
+async function captchaMiddleware(req, res, next) {
   if (!config.get('recaptchaServiceKey')) {
     req.logger.warn(
       `CAPTCHA - No service key found. Not calculating score at ${req.url} for wallet=${req.body.walletAddress}`

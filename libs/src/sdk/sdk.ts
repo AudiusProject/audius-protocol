@@ -1,20 +1,12 @@
-import {
-  DiscoveryProvider,
-  DiscoveryProviderConfig
-} from '../services/discoveryProvider'
-import { EthContracts, EthContractsConfig } from '../services/ethContracts'
-import { EthWeb3Config, EthWeb3Manager } from '../services/ethWeb3Manager'
-import { IdentityService } from '../services/identity'
-import { UserStateManager } from '../userStateManager'
-import { Oauth } from './oauth'
+import { OAuth } from './oauth'
 import { TracksApi } from './api/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
+import { ChatsApi } from './api/chats/ChatsApi'
 import {
   Configuration,
   PlaylistsApi,
   UsersApi,
-  TipsApi,
-  querystring
+  TipsApi
 } from './api/generated/default'
 import {
   Configuration as ConfigurationFull,
@@ -23,23 +15,28 @@ import {
   SearchApi as SearchApiFull,
   TracksApi as TracksApiFull,
   UsersApi as UsersApiFull,
-  TipsApi as TipsApiFull
+  TipsApi as TipsApiFull,
+  TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
+import fetch from 'cross-fetch'
 
+import { addAppNameMiddleware } from './middleware'
 import {
-  CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
-  ETH_OWNER_WALLET,
-  ETH_PROVIDER_URLS,
-  ETH_REGISTRY_ADDRESS,
-  ETH_TOKEN_ADDRESS,
-  IDENTITY_SERVICE_ENDPOINT,
-  WORMHOLE_ADDRESS
-} from './constants'
-import { getPlatformLocalStorage, LocalStorage } from '../utils/localStorage'
-import type { SetOptional } from 'type-fest'
+  WalletApiService,
+  DiscoveryNodeSelectorService,
+  DiscoveryNodeSelector,
+  WalletApi
+} from './services'
 
-type Web3Config = {
-  providers: string[]
+type ServicesContainer = {
+  /**
+   * Service used to choose discovery node
+   */
+  discoveryNodeSelector: DiscoveryNodeSelectorService
+  /**
+   * Helpers to faciliate requests that require signatures or encryption
+   */
+  walletApi: WalletApiService
 }
 
 type SdkConfig = {
@@ -48,29 +45,9 @@ type SdkConfig = {
    */
   appName: string
   /**
-   * Configuration for the DiscoveryProvider client
+   * Services injection
    */
-  discoveryProviderConfig?: DiscoveryProviderConfig
-  /**
-   * Configuration for the Ethereum contracts client
-   */
-  ethContractsConfig?: EthContractsConfig
-  /**
-   * Configuration for the Ethereum Web3 client
-   */
-  ethWeb3Config: SetOptional<EthWeb3Config, 'ownerWallet'>
-  /**
-   * Configuration for the IdentityService client
-   */
-  identityServiceConfig?: IdentityService
-  /**
-   * Optional custom local storage
-   */
-  localStorage?: LocalStorage
-  /**
-   * Configuration for Web3
-   */
-  web3Config?: Web3Config
+  services?: Partial<ServicesContainer>
 }
 
 /**
@@ -80,15 +57,18 @@ export const sdk = (config: SdkConfig) => {
   const { appName } = config
 
   // Initialize services
-  const { discoveryProvider } = initializeServices(config)
+  const services = initializeServices(config)
 
   // Initialize APIs
-  const apis = initializeApis({ appName, discoveryProvider })
+  const apis = initializeApis({
+    appName,
+    services
+  })
 
   // Initialize OAuth
   const oauth =
     typeof window !== 'undefined'
-      ? new Oauth({ discoveryProvider, appName })
+      ? new OAuth({ appName, usersApi: apis.users })
       : undefined
 
   return {
@@ -98,89 +78,50 @@ export const sdk = (config: SdkConfig) => {
 }
 
 const initializeServices = (config: SdkConfig) => {
-  const {
-    discoveryProviderConfig,
-    ethContractsConfig,
-    ethWeb3Config,
-    identityServiceConfig,
-    localStorage = getPlatformLocalStorage()
-  } = config
-
-  const userStateManager = new UserStateManager({ localStorage })
-
-  const identityService = new IdentityService({
-    identityServiceEndpoint: IDENTITY_SERVICE_ENDPOINT,
-    ...identityServiceConfig
-  })
-
-  const ethWeb3Manager = new EthWeb3Manager({
-    identityService,
-    web3Config: {
-      ownerWallet: ETH_OWNER_WALLET,
-      ...ethWeb3Config,
-      providers: formatProviders(ethWeb3Config?.providers ?? ETH_PROVIDER_URLS)
-    }
-  })
-
-  const ethContracts = new EthContracts({
-    ethWeb3Manager,
-    tokenContractAddress: ETH_TOKEN_ADDRESS,
-    registryAddress: ETH_REGISTRY_ADDRESS,
-    claimDistributionContractAddress: CLAIM_DISTRIBUTION_CONTRACT_ADDRESS,
-    wormholeContractAddress: WORMHOLE_ADDRESS,
-    ...ethContractsConfig
-  })
-
-  const discoveryProvider = new DiscoveryProvider({
-    ethContracts,
-    userStateManager,
-    localStorage,
-    ...discoveryProviderConfig
-  })
-
-  return { discoveryProvider }
+  const defaultServices: ServicesContainer = {
+    discoveryNodeSelector: new DiscoveryNodeSelector(),
+    walletApi: new WalletApi()
+  }
+  return { ...defaultServices, ...config.services }
 }
 
 const initializeApis = ({
   appName,
-  discoveryProvider
+  services
 }: {
   appName: string
-  discoveryProvider: DiscoveryProvider
+  services: ServicesContainer
 }) => {
-  const initializationPromise = discoveryProvider.init()
-
-  const fetchApi = async (url: string) => {
-    // Ensure discovery node is initialized
-    await initializationPromise
-
-    // Append the appName to the query params
-    const urlWithAppName =
-      url + (url.includes('?') ? '&' : '?') + querystring({ app_name: appName })
-
-    return await discoveryProvider._makeRequest(
-      {
-        endpoint: urlWithAppName
-      },
-      undefined,
-      undefined,
-      // Throw errors instead of returning null
-      true
-    )
-  }
-
+  const middleware = [
+    addAppNameMiddleware({ appName }),
+    services.discoveryNodeSelector.createMiddleware()
+  ]
   const generatedApiClientConfig = new Configuration({
-    fetchApi
+    fetchApi: fetch,
+    middleware
   })
 
-  const tracks = new TracksApi(generatedApiClientConfig, discoveryProvider)
+  const tracks = new TracksApi(
+    generatedApiClientConfig,
+    services.discoveryNodeSelector
+  )
   const users = new UsersApi(generatedApiClientConfig)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
+  const chats = new ChatsApi(
+    new Configuration({
+      fetchApi: fetch,
+      basePath: '',
+      middleware
+    }),
+    services.walletApi,
+    services.discoveryNodeSelector
+  )
 
   const generatedApiClientConfigFull = new ConfigurationFull({
-    fetchApi
+    fetchApi: fetch,
+    middleware
   })
 
   const full = {
@@ -189,7 +130,8 @@ const initializeApis = ({
     search: new SearchApiFull(generatedApiClientConfigFull),
     playlists: new PlaylistsApiFull(generatedApiClientConfigFull),
     reactions: new ReactionsApiFull(generatedApiClientConfigFull),
-    tips: new TipsApiFull(generatedApiClientConfigFull)
+    tips: new TipsApiFull(generatedApiClientConfigFull),
+    transactions: new TransactionsApiFull(generatedApiClientConfigFull)
   }
 
   return {
@@ -198,16 +140,7 @@ const initializeApis = ({
     playlists,
     tips,
     resolve,
-    full
-  }
-}
-
-const formatProviders = (providers: string | string[]) => {
-  if (typeof providers === 'string') {
-    return providers.split(',')
-  } else if (Array.isArray(providers)) {
-    return providers
-  } else {
-    throw new Error('Providers must be of type string, Array, or Web3 instance')
+    full,
+    chats
   }
 }

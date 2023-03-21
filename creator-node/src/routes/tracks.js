@@ -1,8 +1,6 @@
 const express = require('express')
 const path = require('path')
-const fs = require('fs')
-const { Buffer } = require('buffer')
-const { promisify } = require('util')
+const fs = require('fs-extra')
 
 const config = require('../config')
 const models = require('../models')
@@ -24,6 +22,7 @@ const {
   validateStateForImageDirCIDAndReturnFileUUID,
   currentNodeShouldHandleTranscode
 } = require('../utils')
+const { asyncRetry } = require('../utils/asyncRetry')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
@@ -37,8 +36,10 @@ const DBManager = require('../dbManager')
 const { generateListenTimestampAndSignature } = require('../apiSigning')
 const BlacklistManager = require('../blacklistManager')
 const TranscodingQueue = require('../TranscodingQueue')
-
-const readFile = promisify(fs.readFile)
+const { tracing } = require('../tracer')
+const {
+  contentAccessMiddleware
+} = require('../middlewares/contentAccess/contentAccessMiddleware')
 
 const router = express.Router()
 
@@ -52,7 +53,8 @@ router.post(
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
   handleTrackContentUpload,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
+    tracing.setSpanAttribute('requestID', req.logContext.requestID)
     if (req.fileSizeError || req.fileFilterError) {
       removeTrackFolder({ logContext: req.logContext }, req.fileDir)
       return errorResponseBadRequest(req.fileSizeError || req.fileFilterError)
@@ -67,7 +69,9 @@ router.post(
     })
 
     if (selfTranscode) {
+      tracing.info('adding upload track task')
       await AsyncProcessingQueue.addTrackContentUploadTask({
+        parentSpanContext: tracing.currentSpanContext(),
         logContext: req.logContext,
         req: {
           fileName: req.fileName,
@@ -77,7 +81,9 @@ router.post(
         }
       })
     } else {
+      tracing.info('adding transcode handoff task')
       await AsyncProcessingQueue.addTranscodeHandOffTask({
+        parentSpanContext: tracing.currentSpanContext(),
         logContext: req.logContext,
         req: {
           fileName: req.fileName,
@@ -101,9 +107,9 @@ router.post(
 router.post(
   '/clear_transcode_and_segment_artifacts',
   ensureValidSPMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const fileDir = req.body.fileDir
-    req.logger.info('Clearing filesystem fileDir', fileDir)
+    req.logger.debug('Clearing filesystem fileDir', fileDir)
     if (!fileDir.includes('tmp_track_artifacts')) {
       return errorResponseBadRequest(
         'Cannot remove track folder outside temporary track artifacts'
@@ -127,7 +133,7 @@ router.post(
   ensureValidSPMiddleware,
   ensureStorageMiddleware,
   handleTrackContentUpload,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const AsyncProcessingQueue =
       req.app.get('serviceRegistry').asyncProcessingQueue
 
@@ -169,7 +175,7 @@ router.get(
       )
     }
 
-    const basePath = getTmpTrackUploadArtifactsPathWithInputUUID(uuid)
+    const basePath = await getTmpTrackUploadArtifactsPathWithInputUUID(uuid)
     let pathToFile
     if (fileType === 'transcode') {
       pathToFile = path.join(basePath, fileName)
@@ -202,17 +208,21 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const metadataJSON = req.body.metadata
 
     if (
       !metadataJSON ||
       !metadataJSON.owner_id ||
+      // todo: add the below check once all tracks have track cid
+      // !metadataJSON.track_cid ||
       !metadataJSON.track_segments ||
       !Array.isArray(metadataJSON.track_segments) ||
       !metadataJSON.track_segments.length
     ) {
       return errorResponseBadRequest(
+        // todo: update below message once all tracks have track cid
+        // 'Metadata object must include owner_id and track_cid and non-empty track_segments array'
         'Metadata object must include owner_id and non-empty track_segments array'
       )
     }
@@ -306,6 +316,87 @@ router.post(
   })
 )
 
+const validateTrackOwner = async ({
+  libs,
+  logger,
+  trackId,
+  userId,
+  blockNumber
+}) => {
+  const logPrefix = `[validateTrackOwner][trackId: ${trackId}][userId: ${userId}][blockNumber: ${blockNumber}]`
+
+  const asyncFn = async () => {
+    const discoveryTrackResponseVerbose = await libs.Track.getTracksVerbose(
+      1,
+      0,
+      [trackId]
+    )
+    const discoveryProviderEndpoint =
+      libs.discoveryProvider.discoveryProviderEndpoint
+    const {
+      latest_indexed_block: latestIndexedBlock,
+      latest_chain_block: latestChainBlock,
+      data: discoveryTrackResponse
+    } = discoveryTrackResponseVerbose
+
+    // Return if malformatted response
+    if (
+      !latestIndexedBlock ||
+      !latestChainBlock ||
+      !Array.isArray(discoveryTrackResponse)
+    ) {
+      logger.warn(
+        `${logPrefix}: Malformed track response from discovery ${discoveryProviderEndpoint} - Received ${JSON.stringify(
+          discoveryTrackResponseVerbose
+        )}`
+      )
+      return false
+    }
+
+    // Throw if target blockNumber not indexed
+    const blockDiff = latestChainBlock - latestIndexedBlock
+    if (latestIndexedBlock < blockNumber) {
+      throw new Error(
+        `${logPrefix}: targetBlocknumber not indexed. ${discoveryProviderEndpoint} currently at ${latestIndexedBlock} with blockDiff ${blockDiff}`
+      )
+    }
+
+    // Return if track not found at target block
+    if (discoveryTrackResponse.length === 0) {
+      logger.warn(
+        `${logPrefix} No track found from ${discoveryProviderEndpoint}`
+      )
+      return false
+    }
+
+    // Return boolean indicating if track owner matches expected
+    const recoveredOwnerId = discoveryTrackResponse[0].owner_id
+    const ownerMatches = parseInt(userId) === recoveredOwnerId
+    if (!ownerMatches) {
+      logger.warn(
+        `${logPrefix} Recovered owner ID does not match (${recoveredOwnerId}), from ${discoveryProviderEndpoint}`
+      )
+    }
+    return ownerMatches
+  }
+
+  const startMs = Date.now()
+  try {
+    return await asyncRetry({
+      asyncFn,
+      logger,
+      log: true,
+      options: {
+        minTimeout: 1000,
+        factor: 2,
+        retries: 10
+      }
+    })
+  } finally {
+    logger.info(`${logPrefix} Completed in ${Date.now() - startMs}ms`)
+  }
+}
+
 /**
  * Given track blockchainTrackId, blockNumber, and metadataFileUUID, creates/updates Track DB track entry
  * and associates segment & image file entries with track. Ends track creation/update process.
@@ -315,7 +406,7 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const {
       blockchainTrackId,
       blockNumber,
@@ -350,7 +441,7 @@ router.post(
     }
     let metadataJSON
     try {
-      const fileBuffer = await readFile(file.storagePath)
+      const fileBuffer = await fs.readFile(file.storagePath)
       metadataJSON = JSON.parse(fileBuffer)
       if (
         !metadataJSON ||
@@ -421,19 +512,18 @@ router.post(
           throw new Error('Cannot create track without transcodedTrackUUID.')
         }
 
-        // Verify that blockchain track id is owned by user attempting to upload it
-        const serviceRegistry = req.app.get('serviceRegistry')
-        const { libs } = serviceRegistry
-        const trackResp = await libs.contracts.TrackFactoryClient.getTrack(
-          blockchainTrackId
-        )
-        if (
-          !trackResp?.trackOwnerId ||
-          parseInt(trackResp.trackOwnerId, 10) !==
-            parseInt(req.session.userId, 10)
-        ) {
+        // Verify that track id is owned by user attempting to upload it
+        const libs = req.app.get('audiusLibs')
+        const isValidTrackOwner = await validateTrackOwner({
+          libs,
+          trackId: blockchainTrackId,
+          userId: req.session.userId,
+          logger: req.logger,
+          blockNumber
+        })
+        if (!isValidTrackOwner) {
           throw new Error(
-            `Owner ID ${trackResp.trackOwnerId} of blockchainTrackId ${blockchainTrackId} does not match the ID of the user attempting to write this track: ${req.session.userId}`
+            `Failed to confirm that user ${req.session.userId} is owner of ${blockchainTrackId} at blocknumber ${blockNumber}`
           )
         }
 
@@ -561,7 +651,7 @@ router.post(
       if (!updatedCNodeUser || !updatedCNodeUser.latestBlockNumber) {
         throw new Error('Issue in retrieving udpatedCnodeUser')
       }
-      req.logger.info(
+      req.logger.debug(
         `cnodeuser ${cnodeUserUUID} first latestBlockNumber ${cnodeUser.latestBlockNumber} || \
         current latestBlockNumber ${updatedCNodeUser.latestBlockNumber} || \
         given blockNumber ${blockNumber}`
@@ -591,7 +681,7 @@ router.post(
 /** Returns download status of track and 320kbps CID if ready + downloadable. */
 router.get(
   '/tracks/download_status/:blockchainId',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const blockchainId = req.params.blockchainId
     if (!blockchainId) {
       return errorResponseBadRequest('Please provide blockchainId.')
@@ -682,6 +772,47 @@ router.get(
       )
     }
 
+    // attempt to fetch cached stream data for blockchainId
+    // if found, bypass the db and discovery queries and proceed to getCID
+    try {
+      const cachedData = await redisClient.get(
+        `trackStreamCache:::${blockchainId}`
+      )
+
+      if (cachedData) {
+        if (libs.identityService) {
+          req.logger.info(
+            `Logging listen for track ${blockchainId} by ${delegateOwnerWallet}`
+          )
+          const signatureData = generateListenTimestampAndSignature(
+            config.get('delegatePrivateKey')
+          )
+          // Fire and forget listen recording
+          libs.identityService.logTrackListen(
+            blockchainId,
+            delegateOwnerWallet,
+            req.ip,
+            signatureData
+          )
+        }
+
+        req.params.CID = cachedData
+        req.params.streamable = true
+        res.set('Content-Type', 'audio/mpeg')
+        res.set('Copy320-CID', cachedData)
+        // early exit and call next() which continues to getCID
+        return next()
+      }
+    } catch (e) {
+      // do nothing if unable to fetch cached data from redis, continue with rest of the process
+      req.logger.debug(
+        `Could not fetch cached track stream data for track ${blockchainId}`
+      )
+    }
+
+    const debugTimings = {}
+
+    const findCopy320Start = Date.now()
     let fileRecord = await models.File.findOne({
       attributes: ['multihash'],
       where: {
@@ -690,31 +821,13 @@ router.get(
       },
       order: [['clock', 'DESC']]
     })
-
-    if (!fileRecord) {
-      try {
-        // see if there's a fileRecord in redis so we can short circuit all this logic
-        let redisFileRecord = await redisClient.get(
-          `streamFallback:::${blockchainId}`
-        )
-        if (redisFileRecord) {
-          redisFileRecord = JSON.parse(redisFileRecord)
-          if (redisFileRecord && redisFileRecord.multihash) {
-            fileRecord = redisFileRecord
-          }
-        }
-      } catch (e) {
-        req.logger.error(
-          { error: e },
-          'Error looking for stream fallback in redis'
-        )
-      }
-    }
+    debugTimings.findCopy320 = (Date.now() - findCopy320Start) / 1000
 
     // if track didn't finish the upload process and was never associated, there may not be a trackBlockchainId for the File records,
     // try to fall back to discovery to fetch the metadata multihash and see if you can deduce the copy320 file
     if (!fileRecord) {
       try {
+        const findTrackRecordInDiscoveryStart = Date.now()
         let trackRecord = await libs.Track.getTracks(1, 0, [blockchainId])
         if (
           !trackRecord ||
@@ -729,12 +842,15 @@ router.get(
             )
           )
         }
+        debugTimings.findTrackRecordInDiscovery =
+          (Date.now() - findTrackRecordInDiscoveryStart) / 1000
 
         trackRecord = trackRecord[0]
 
         // query the files table for a metadata multihash from discovery for a given track
         // no need to add CNodeUserUUID to the filter because the track is associated with a user and that contains the
         // user_id inside it which is unique to the user
+        const findMetadataMultihashForTrackStart = Date.now()
         const file = await models.File.findOne({
           where: {
             multihash: trackRecord.metadata_multihash,
@@ -750,58 +866,41 @@ router.get(
             )
           )
         }
+        debugTimings.findMetadataMultihashForTrack =
+          (Date.now() - findMetadataMultihashForTrackStart) / 1000
 
         // make sure all track segments have the same sourceFile
         const segments = trackRecord.track_segments.map(
           (segment) => segment.multihash
         )
 
-        const fileSegmentRecords = await models.File.findAll({
-          attributes: ['sourceFile'],
+        const findSourceFileForSegmentsStart = Date.now()
+        // return a sourceFile which contains segments
+        const sourceFileRecord = await models.File.findOne({
+          attributes: [
+            models.sequelize.fn('DISTINCT', models.sequelize.col('sourceFile'))
+          ],
           where: {
             multihash: segments,
             cnodeUserUUID: file.cnodeUserUUID
           },
           raw: true
         })
-
-        // check that the number of files in the Files table for these segments for this user matches the number of segments from the metadata object
-        if (fileSegmentRecords.length !== trackRecord.track_segments.length) {
-          req.logger.warn(
-            `Track stream content mismatch for blockchainId ${blockchainId} - number of segments don't match between local and discovery`
-          )
-        }
-
-        // check that there's a single sourceFile that all File records share by getting an array of uniques
-        const uniqSourceFiles = fileSegmentRecords
-          .map((record) => record.sourceFile)
-          .filter((v, i, a) => a.indexOf(v) === i)
-
-        if (uniqSourceFiles.length !== 1) {
-          req.logger.warn(
-            `Track stream content mismatch for blockchainId ${blockchainId} - there's not one sourceFile that matches all segments`
-          )
-        }
+        debugTimings.findSourceFileForSegments =
+          (Date.now() - findSourceFileForSegmentsStart) / 1000
 
         // search for the copy320 record based on the sourceFile
+        const findCopy320AfterFallbackStart = Date.now()
         fileRecord = await models.File.findOne({
           attributes: ['multihash'],
           where: {
             type: 'copy320',
-            sourceFile: uniqSourceFiles[0]
+            sourceFile: sourceFileRecord.sourceFile
           },
           raw: true
         })
-
-        // cache the fileRecord in redis for an hour so we don't have to keep making requests to discovery
-        if (fileRecord) {
-          redisClient.set(
-            `streamFallback:::${blockchainId}`,
-            JSON.stringify(fileRecord),
-            'EX',
-            60 * 60
-          )
-        }
+        debugTimings.findCopy320AfterFallback =
+          (Date.now() - findCopy320AfterFallbackStart) / 1000
       } catch (e) {
         req.logger.error(
           { error: e },
@@ -809,6 +908,10 @@ router.get(
         )
       }
     }
+
+    req.logger.info(
+      `Track stream debug timings - ${JSON.stringify(debugTimings)}`
+    )
 
     if (!fileRecord || !fileRecord.multihash) {
       return sendResponse(
@@ -840,6 +943,67 @@ router.get(
     req.params.CID = fileRecord.multihash
     req.params.streamable = true
     res.set('Content-Type', 'audio/mpeg')
+    res.set('Copy320-CID', fileRecord.multihash)
+    await redisClient.set(
+      `trackStreamCache:::${blockchainId}`,
+      fileRecord.multihash,
+      'EX',
+      60 * 60 /* one hour */
+    )
+    next()
+  },
+  getCID
+)
+
+/**
+ * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
+ * @dev - Wrapper around getCID, which retrieves track given its CID.
+ **/
+router.get(
+  '/tracks/cidstream/:CID',
+  contentAccessMiddleware,
+  async (req, res, next) => {
+    const libs = req.app.get('audiusLibs')
+    const redisClient = req.app.get('redisClient')
+    const delegateOwnerWallet = config.get('delegateOwnerWallet')
+
+    const trackId = req.trackId
+    const CID = req.params.CID
+
+    if (!trackId) {
+      return sendResponse(
+        req,
+        res,
+        errorResponseBadRequest('Please provide a track ID')
+      )
+    }
+
+    if (libs.identityService) {
+      req.logger.info(
+        `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
+      )
+      const signatureData = generateListenTimestampAndSignature(
+        config.get('delegatePrivateKey')
+      )
+      // Fire and forget listen recording
+      // TODO: Consider queueing these requests
+      libs.identityService.logTrackListen(
+        trackId,
+        delegateOwnerWallet,
+        req.ip,
+        signatureData
+      )
+    }
+
+    req.params.streamable = true
+    res.set('Content-Type', 'audio/mpeg')
+    res.set('Copy320-CID', CID)
+    await redisClient.set(
+      `trackStreamCache:::${trackId}`,
+      CID,
+      'EX',
+      60 * 60 /* one hour */
+    )
     next()
   },
   getCID

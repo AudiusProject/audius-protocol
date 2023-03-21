@@ -1,4 +1,3 @@
-import { sanitizeNodes } from './sanitizeNodes'
 import { addSecondaries } from './addSecondaries'
 import { syncNodes } from './syncNodes'
 import { rolloverNodes } from './rolloverNodes'
@@ -20,13 +19,15 @@ export class SanityChecks {
   /**
    * Runs sanity checks
    */
-  async run(creatorNodeWhitelist: Nullable<Set<string>> = null) {
-    await sanitizeNodes(this.libs)
+  async run(
+    creatorNodeWhitelist: Nullable<Set<string>> = null,
+    creatorNodeBlacklist: Nullable<Set<string>> = null
+  ) {
     await addSecondaries(this.libs)
     await assignReplicaSetIfNecessary(this.libs)
     await syncNodes(this.libs)
     if (!this.options.skipRollover) {
-      await rolloverNodes(this.libs, creatorNodeWhitelist)
+      await rolloverNodes(this.libs, creatorNodeWhitelist, creatorNodeBlacklist)
     }
     await needsRecoveryEmail(this.libs)
   }

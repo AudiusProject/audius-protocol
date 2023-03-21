@@ -27,6 +27,7 @@ export logLevel='debug' #should be error
 export solanaTrackListenCountAddress=''
 export solanaAudiusEthRegistryAddress=''
 export solanaValidSigner=''
+export environment='test'
 
 # Locally, the docker-compose files set up a database named audius_identity_service. For
 # tests, we use audius_identity_service_test. The below block checks if
@@ -53,7 +54,7 @@ REDIS_CONTAINER='identity_test_redis'
 REDIS_EXISTS=$(docker ps -a -q -f status=running -f name=^/${REDIS_CONTAINER}$)
 if [ ! "${REDIS_EXISTS}" ]; then
   echo "Redis Container doesn't exist"
-  docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:5.0.4
+  docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:7.0
   sleep 1
 fi
 
@@ -73,7 +74,7 @@ else
   TIMEOUT=12000
 fi
 
-./node_modules/mocha/bin/mocha test/index.js --timeout "${TIMEOUT}" --exit
+./node_modules/mocha/bin/mocha.js test/index.js --timeout "${TIMEOUT}" --exit
 
 # linter
 

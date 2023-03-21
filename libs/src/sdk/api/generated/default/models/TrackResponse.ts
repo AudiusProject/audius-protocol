@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { Track } from './Track';
 import {
-    Track,
     TrackFromJSON,
     TrackFromJSONTyped,
     TrackToJSON,
@@ -32,5 +33,41 @@ export interface TrackResponse {
      * @memberof TrackResponse
      */
     data?: Track;
+}
+
+/**
+ * Check if a given object implements the TrackResponse interface.
+ */
+export function instanceOfTrackResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function TrackResponseFromJSON(json: any): TrackResponse {
+    return TrackResponseFromJSONTyped(json, false);
+}
+
+export function TrackResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): TrackResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : TrackFromJSON(json['data']),
+    };
+}
+
+export function TrackResponseToJSON(value?: TrackResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': TrackToJSON(value.data),
+    };
 }
 

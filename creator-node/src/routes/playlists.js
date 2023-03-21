@@ -1,6 +1,5 @@
 const express = require('express')
-const fs = require('fs')
-const { promisify } = require('util')
+const fs = require('fs-extra')
 
 const models = require('../models')
 const { saveFileFromBufferToDisk } = require('../fileManager')
@@ -10,8 +9,10 @@ const {
   errorResponseBadRequest,
   errorResponseServerError
 } = require('../apiHelpers')
-const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
-const { validateMetadata } = require('../utils/index.js')
+const {
+  validateStateForImageDirCIDAndReturnFileUUID,
+  validateMetadata
+} = require('../utils')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
@@ -19,8 +20,6 @@ const {
   issueAndWaitForSecondarySyncRequests
 } = require('../middlewares')
 const DBManager = require('../dbManager')
-
-const readFile = promisify(fs.readFile)
 
 const router = express.Router()
 
@@ -32,7 +31,7 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const cnodeUserUUID = req.session.cnodeUserUUID
@@ -97,7 +96,7 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const { blockchainId, blockNumber, metadataFileUUID } = req.body
 
     if (!blockchainId || !blockNumber || !metadataFileUUID) {
@@ -126,7 +125,7 @@ router.post(
     }
     let metadataJSON
     try {
-      const fileBuffer = await readFile(file.storagePath)
+      const fileBuffer = await fs.readFile(file.storagePath)
       metadataJSON = JSON.parse(fileBuffer)
     } catch (e) {
       return errorResponseServerError(

@@ -1,10 +1,20 @@
-const Bull = require('bull')
+const { Queue, QueueEvents, Worker } = require('bullmq')
 
-const { logger } = require('../../logging')
-const secondarySyncFromPrimary = require('./secondarySyncFromPrimary')
+const {
+  clusterUtilsForWorker,
+  clearActiveJobs,
+  getConcurrencyPerWorker
+} = require('../../utils')
+const { instrumentTracing, tracing } = require('../../tracer')
+const {
+  logger,
+  logInfoWithDuration,
+  logErrorWithDuration,
+  getStartTime
+} = require('../../logging')
+const { secondarySyncFromPrimary } = require('./secondarySyncFromPrimary')
 
 const SYNC_QUEUE_HISTORY = 500
-const LOCK_DURATION = 1000 * 60 * 5 // 5 minutes
 
 /**
  * SyncImmediateQueue - handles enqueuing and processing of immediate manual Sync jobs on secondary
@@ -18,48 +28,115 @@ class SyncImmediateQueue {
    * @notice - accepts `serviceRegistry` instance, even though this class is initialized
    *    in that serviceRegistry instance. A sub-optimal workaround for now.
    */
-  constructor(nodeConfig, redis, serviceRegistry) {
+  async init(nodeConfig, redis, serviceRegistry) {
     this.nodeConfig = nodeConfig
     this.redis = redis
     this.serviceRegistry = serviceRegistry
 
-    this.queue = new Bull('sync-immediate-processing-queue', {
-      redis: {
-        host: this.nodeConfig.get('redisHost'),
-        port: this.nodeConfig.get('redisPort')
-      },
+    const connection = {
+      host: nodeConfig.get('redisHost'),
+      port: nodeConfig.get('redisPort')
+    }
+    this.queue = new Queue('sync-immediate-processing-queue', {
+      connection,
       defaultJobOptions: {
         removeOnComplete: SYNC_QUEUE_HISTORY,
         removeOnFail: SYNC_QUEUE_HISTORY
-      },
-      settings: {
-        lockDuration: LOCK_DURATION,
-        // We never want to re-process stalled jobs
-        maxStalledCount: 0
       }
     })
+    this.queueEvents = new QueueEvents('sync-immediate-processing-queue', {
+      connection
+    })
 
-    const jobProcessorConcurrency = this.nodeConfig.get(
-      'syncQueueMaxConcurrency'
-    )
-    this.queue.process(jobProcessorConcurrency, async (job) => {
-      const { wallet, creatorNodeEndpoint, forceResyncConfig, logContext } =
-        job.data
+    // any leftover active jobs need to be deleted when a new queue
+    // is created since they'll never get processed
+    if (clusterUtilsForWorker.isThisWorkerFirst()) {
+      await clearActiveJobs(this.queue, logger)
+    }
 
-      try {
-        await secondarySyncFromPrimary({
-          serviceRegistry: this.serviceRegistry,
-          wallet,
-          creatorNodeEndpoint,
-          forceResyncConfig,
-          logContext
+    const worker = new Worker(
+      'sync-immediate-processing-queue',
+      async (job) => {
+        // Get the `parentSpanContext` from the job data
+        // so the job can reference what span enqueued it
+        const { parentSpanContext } = job.data
+
+        const untracedProcessTask = this.processTask
+        const processTask = instrumentTracing({
+          name: 'syncImmediateQueue.process',
+          fn: untracedProcessTask,
+          options: {
+            // if a parentSpanContext is provided
+            // reference it so the async queue job can remember
+            // who enqueued it
+            links: parentSpanContext
+              ? [
+                  {
+                    context: parentSpanContext
+                  }
+                ]
+              : [],
+            attributes: {
+              [tracing.CODE_FILEPATH]: __filename
+            }
+          }
         })
-      } catch (e) {
-        const msg = `syncImmediateQueue error - secondarySyncFromPrimary failure for wallet ${wallet} against ${creatorNodeEndpoint}: ${e.message}`
-        logger.error(msg)
-        throw e
+
+        // `processTask()` on longer has access to `this` after going through the tracing wrapper
+        // so to mitigate that, we're manually adding `this.serviceRegistry` to the job data
+        job.data = { ...job.data, serviceRegistry: this.serviceRegistry }
+        return await processTask(job)
+      },
+      {
+        connection,
+        concurrency: getConcurrencyPerWorker(
+          this.nodeConfig.get('syncQueueMaxConcurrency')
+        )
       }
-    })
+    )
+
+    const prometheusRegistry = serviceRegistry?.prometheusRegistry
+    if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
+      prometheusRegistry.startQueueMetrics(this.queue, worker)
+    }
+  }
+
+  async processTask(job) {
+    const {
+      wallet,
+      creatorNodeEndpoint,
+      forceResyncConfig,
+      forceWipe,
+      syncOverride,
+      logContext,
+      serviceRegistry,
+      syncUuid
+    } = job.data
+
+    const startTime = getStartTime()
+    try {
+      const result = await secondarySyncFromPrimary({
+        serviceRegistry,
+        wallet,
+        creatorNodeEndpoint,
+        forceResyncConfig,
+        forceWipe,
+        syncOverride,
+        logContext,
+        syncUuid: syncUuid || null
+      })
+      logInfoWithDuration(
+        { logger, startTime },
+        `syncImmediateQueue - secondarySyncFromPrimary Success for wallet ${wallet} from primary ${creatorNodeEndpoint}`
+      )
+      return result
+    } catch (e) {
+      logErrorWithDuration(
+        { logger, startTime },
+        `syncImmediateQueue - secondarySyncFromPrimary Error - failure for wallet ${wallet} from primary ${creatorNodeEndpoint} - ${e.message}`
+      )
+      throw e
+    }
   }
 
   /**
@@ -70,15 +147,23 @@ class SyncImmediateQueue {
     wallet,
     creatorNodeEndpoint,
     forceResyncConfig,
-    logContext
+    forceWipe,
+    syncOverride,
+    logContext,
+    parentSpanContext,
+    syncUuid = null // Could be null for backwards compatibility
   }) {
-    const job = await this.queue.add({
+    const job = await this.queue.add('process-sync-immediate', {
       wallet,
       creatorNodeEndpoint,
       forceResyncConfig,
-      logContext
+      forceWipe,
+      syncOverride,
+      logContext,
+      parentSpanContext,
+      syncUuid: syncUuid || null
     })
-    const result = await job.finished()
+    const result = await job.waitUntilFinished(this.queueEvents)
     return result
   }
 }

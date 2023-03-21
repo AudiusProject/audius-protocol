@@ -8,6 +8,9 @@ from typing import Optional, Union
 from solana.keypair import Keypair
 from solana.publickey import PublicKey
 from solana.rpc.api import Client, Commitment
+from solana.rpc.types import TokenAccountOpts
+from src.exceptions import SolanaTransactionFetchError
+from src.solana.solana_helpers import SPL_TOKEN_ID_PK
 from src.solana.solana_transaction_types import (
     ConfirmedSignatureForAddressResponse,
     ConfirmedTransaction,
@@ -46,17 +49,16 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
-                    logger.info(
-                        f"solana_client_manager.py | get_sol_tx_info | Fetching tx {tx_sig} {endpoint}"
-                    )
                     tx_info: ConfirmedTransaction = client.get_transaction(
                         tx_sig, encoding
                     )
-                    logger.info(
-                        f"solana_client_manager.py | get_sol_tx_info | Finished fetching tx {tx_sig} {endpoint}"
-                    )
+                    _check_error(tx_info, tx_sig)
                     if tx_info["result"] is not None:
                         return tx_info
+                # We currently only support "legacy" solana transactions. If we encounter
+                # a newer version, raise this specific error so that it can be handled upstream.
+                except SolanaTransactionFetchError as e:
+                    raise e
                 except Exception as e:
                     logger.error(
                         f"solana_client_manager.py | get_sol_tx_info | \
@@ -93,16 +95,10 @@ class SolanaClientManager:
             num_retries = retries
             while num_retries > 0:
                 try:
-                    logger.info(
-                        f"solana_client_manager.py | handle_get_signatures_for_address | Fetching {before} {endpoint}"
-                    )
                     transactions: ConfirmedSignatureForAddressResponse = (
                         client.get_signatures_for_address(
                             account, before, until, limit, Commitment("finalized")
                         )
-                    )
-                    logger.info(
-                        f"solana_client_manager.py | handle_get_signatures_for_address | Finished fetching {before} {endpoint}"
                     )
                     return transactions
                 except Exception as e:
@@ -154,6 +150,69 @@ class SolanaClientManager:
             "solana_client_manager.py | get_slot | All requests failed to fetch",
         )
 
+    def get_token_accounts_by_owner(
+        self, owner: PublicKey, retries=DEFAULT_MAX_RETRIES
+    ):
+        def _get_token_accounts_by_owner(client: Client, index):
+            endpoint = self.endpoints[index]
+            num_retries = retries
+            while num_retries > 0:
+                try:
+                    response = client.get_token_accounts_by_owner(
+                        owner,
+                        TokenAccountOpts(
+                            program_id=SPL_TOKEN_ID_PK, encoding="jsonParsed"
+                        ),
+                    )
+                    return response["result"]
+                except Exception as e:
+                    logger.error(
+                        f"solana_client_manager.py | get_token_accounts_by_owner, {e}",
+                        exc_info=True,
+                    )
+                num_retries -= 1
+                time.sleep(DELAY_SECONDS)
+                logger.error(
+                    f"solana_client_manager.py | get_token_accounts_by_owner | Retrying with endpoint {endpoint}"
+                )
+            raise Exception(
+                f"solana_client_manager.py | get_token_accounts_by_owner | Failed with endpoint {endpoint}"
+            )
+
+        return _try_all(
+            self.clients,
+            _get_token_accounts_by_owner,
+            "solana_client_manager.py | get_token_accounts_by_owner | All requests failed to fetch",
+        )
+
+    def get_account_info(self, account: PublicKey, retries=DEFAULT_MAX_RETRIES):
+        def _get_account_info(client: Client, index):
+            endpoint = self.endpoints[index]
+            num_retries = retries
+            while num_retries > 0:
+                try:
+                    response = client.get_account_info(account)
+                    return response["result"]
+                except Exception as e:
+                    logger.error(
+                        f"solana_client_manager.py | get_account_info, {e}",
+                        exc_info=True,
+                    )
+                num_retries -= 1
+                time.sleep(DELAY_SECONDS)
+                logger.error(
+                    f"solana_client_manager.py | get_account_info | Retrying with endpoint {endpoint}"
+                )
+            raise Exception(
+                f"solana_client_manager.py | get_account_info | Failed with endpoint {endpoint}"
+            )
+
+        return _try_all(
+            self.clients,
+            _get_account_info,
+            "solana_client_manager.py | get_account_info | All requests failed to fetch",
+        )
+
 
 @contextmanager
 def timeout(time):
@@ -176,6 +235,14 @@ def raise_timeout(signum, frame):
     raise TimeoutError
 
 
+def _check_error(tx, tx_sig):
+    if "error" in tx:
+        logger.error(
+            f"solana_client_manager.py | Error while fetching transaction {tx_sig}: {tx['error']}"
+        )
+        raise SolanaTransactionFetchError()
+
+
 def _try_all(iterable, func, message, randomize=False):
     """Executes a function with retries across the iterable.
     If all executions fail, raise an exception."""
@@ -184,6 +251,8 @@ def _try_all(iterable, func, message, randomize=False):
     for index, value in items:
         try:
             return func(value, index)
+        except SolanaTransactionFetchError as e:
+            raise e
         except Exception:
             logger.error(
                 f"solana_client_manager.py | _try_all | Failed attempt at index {index} for function {func}"

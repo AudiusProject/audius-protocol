@@ -10,8 +10,13 @@ from src.queries.get_health import get_health, get_location
 from src.queries.get_latest_play import get_latest_play
 from src.queries.get_sol_plays import get_latest_sol_play_check_info
 from src.queries.queries import parse_bool_param
+from src.tasks.index_profile_challenge_backfill import (
+    index_profile_challenge_backfill_tablename,
+)
 from src.utils import helpers, redis_connection
+from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import esclient
+from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 
 logger = logging.getLogger(__name__)
 
@@ -153,3 +158,13 @@ def db_seed_restore_check():
 def location():
     location = get_location()
     return success_response(location, sign_response=False)
+
+
+@bp.route("/backfill_profile_challenge", methods=["GET"])
+def backfill_profile_challenge_check():
+    db = get_db_read_replica()
+    with db.scoped_session() as session:
+        checkpoint = get_last_indexed_checkpoint(
+            session, index_profile_challenge_backfill_tablename
+        )
+        return success_response(checkpoint, sign_response=False)

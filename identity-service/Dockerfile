@@ -1,9 +1,9 @@
+# Uses separate stage for nodejs deps despite caching to avoid installing build tools
 FROM node:14.16 as builder
 RUN apt-get install make
-
 WORKDIR /app
 COPY package*.json ./
-RUN npm install --loglevel verbose
+RUN --mount=type=cache,target=/root/.npm npm ci
 
 FROM node:14.16-alpine
 
@@ -19,19 +19,18 @@ COPY scripts/wait /usr/bin/wait
 
 COPY . .
 
+RUN npm run postinstall
+
+# Compile js code to typescript based on tsconfig.build.json
+RUN npm run build
+
 ARG git_sha
-ARG audius_loggly_disable
-ARG audius_loggly_token
-ARG audius_loggly_tags
 
 ENV GIT_SHA=$git_sha
-ENV logglyDisable=$audius_loggly_disable
-ENV logglyToken=$audius_loggly_token
-ENV logglyTags=$audius_loggly_tags
 
 EXPOSE 7000
 
-HEALTHCHECK --interval=5s --timeout=5s \
+HEALTHCHECK --interval=5s --timeout=5s --start-period=15m --retries=12 \
     CMD curl -f http://localhost:7000/health_check || exit 1
 
 CMD ["bash", "scripts/start.sh"]

@@ -17,7 +17,7 @@ set +o allexport
 
 BASE_URL=http://${GRAFANA_API_URL}:${GRAFANA_API_PORT}
 
-json_alerts=$(find "${GRAFANA_ALERTS_DIR}" -name '*.json' -not -name 'alert.template.json')
+json_alerts=$(find "${GRAFANA_ALERTS_DIR}" -name '*.json')
 
 # attempt to create alerts, in case they doesn't exist
 for json_alert in ${json_alerts}

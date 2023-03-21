@@ -55,15 +55,15 @@
             "folderName": "General",
             "folderUid": "",
             "updatedBy": {
-              "avatarUrl": "",
-              "id": 0,
-              "name": ""
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
             }
           },
           "name": "Celery Tasks (Active)",
           "type": "bargauge",
           "uid": "ilGck637k",
-          "version": 2
+          "version": 6
         },
         "id": 1,
         "gridPos": {
@@ -86,15 +86,15 @@
             "folderName": "General",
             "folderUid": "",
             "updatedBy": {
-              "avatarUrl": "",
-              "id": 0,
-              "name": ""
+              "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+              "id": 1,
+              "name": "admin"
             }
           },
           "name": "Celery Tasks (Last Successful Duration)",
           "type": "bargauge",
           "uid": "3en9tpenk",
-          "version": 2
+          "version": 5
         },
         "id": 2,
         "gridPos": {
@@ -421,7 +421,7 @@
           "name": "Blockdiff",
           "type": "timeseries",
           "uid": "hhRZ9K67k",
-          "version": 3
+          "version": 8
         },
         "id": 3,
         "gridPos": {
@@ -452,7 +452,7 @@
           "name": "POA Indexing",
           "type": "timeseries",
           "uid": "erW7rK6nk",
-          "version": 2
+          "version": 3
         },
         "id": 5,
         "gridPos": {
@@ -483,7 +483,7 @@
           "name": "Solana Plays Indexing",
           "type": "timeseries",
           "uid": "0aIn9F6nk",
-          "version": 2
+          "version": 3
         },
         "id": 7,
         "gridPos": {

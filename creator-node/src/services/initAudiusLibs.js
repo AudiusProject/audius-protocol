@@ -1,5 +1,3 @@
-const { libs: AudiusLibs } = require('@audius/sdk')
-
 const config = require('../config')
 const { logger: genericLogger } = require('../logging')
 
@@ -15,6 +13,7 @@ module.exports = async ({
   enableIdentity = true,
   logger = genericLogger
 }) => {
+  const { libs: AudiusLibs } = require('@audius/sdk')
   /**
    * Define all config variables
    */
@@ -31,8 +30,10 @@ module.exports = async ({
   const ethRegistryAddress = config.get('ethRegistryAddress')
   const ethOwnerWallet = config.get('ethOwnerWallet')
   const dataRegistryAddress = config.get('dataRegistryAddress')
+  const entityManagerAddress = config.get('entityManagerAddress')
   const dataProviderUrl = config.get('dataProviderUrl')
   const delegatePrivateKey = config.get('delegatePrivateKey')
+
   const creatorNodeIsDebug = config.get('creatorNodeIsDebug')
 
   const discoveryProviderWhitelist = discoveryProviderWhitelistConfig
@@ -72,7 +73,8 @@ module.exports = async ({
           // pass as array
           [dataProviderUrl],
           // TODO - formatting this private key here is not ideal
-          delegatePrivateKey.replace('0x', '')
+          delegatePrivateKey.replace('0x', ''),
+          entityManagerAddress
         )
       : null,
     discoveryProviderConfig: enableDiscovery

@@ -1,5 +1,27 @@
 const REMOTE_CONFIG_FEATURE = 'remote_config'
 
+const DISCOVERY_NOTIFICATION_MAPPING = 'discovery_notification_mapping'
+const MappingVariable = {
+  PushRepost: 'push_repost',
+  PushSave: 'push_save',
+  PushRemix: 'push_remix',
+  PushCosign: 'push_cosign',
+  PushAddTrackToPlaylist: 'push_add_track_to_playlist',
+  PushFollow: 'push_follow',
+  PushMilestone: 'push_milestone',
+  PushMilestoneFollowerCount: 'push_milestone_follower_count',
+  PushSupporterRankUp: 'push_supporter_rank_up',
+  PushSupportingRankUp: 'push_supporting_rank_up',
+  PushSupporterDethroned: 'push_supporter_dethroned',
+  PushTipReceive: 'push_tip_receive',
+  PushTipSend: 'push_tip_send',
+  PushChallengeReward: 'push_challenge_reward',
+  PushTrackAddedToPlaylist: 'push_track_added_to_playlist',
+  PushCreate: 'push_create',
+  PushTrending: 'push_trending',
+  PushAnnouncement: 'push_announcement',
+  PushReaction: 'push_reaction'
+}
 // Declaration of remote config variables set in optimizely
 const REMOTE_VARS = Object.freeze({
   TRENDING_EXPERIMENT: 'TRENDING_EXPERIMENT',
@@ -36,11 +58,30 @@ const getRemoteVar = (optimizelyClient, variable) => {
     return DEFAULTS[variable]
   }
   return optimizelyClient.getFeatureVariable(
-    REMOTE_CONFIG_FEATURE, variable, DUMMY_USER_ID
+    REMOTE_CONFIG_FEATURE,
+    variable,
+    DUMMY_USER_ID
   )
+}
+
+/**
+ * Fetches a remote feature variable
+ * @param {OptimizelyClient?} optimizelyClient
+ * @param {String} variable REMOTE_FEATURE value
+ * @param {String} variable REMOTE_VARS value
+ * @returns
+ */
+const getRemoteFeatureVar = (optimizelyClient, feature, variable) => {
+  if (!optimizelyClient) {
+    return DEFAULTS[variable]
+  }
+  return optimizelyClient.getFeatureVariable(feature, variable, DUMMY_USER_ID)
 }
 
 module.exports = {
   getRemoteVar,
-  REMOTE_VARS
+  REMOTE_VARS,
+  getRemoteFeatureVar,
+  DISCOVERY_NOTIFICATION_MAPPING,
+  MappingVariable
 }

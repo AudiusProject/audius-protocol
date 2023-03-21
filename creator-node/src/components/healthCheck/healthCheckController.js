@@ -4,16 +4,17 @@ const {
   handleResponse,
   successResponse,
   handleResponseWithHeartbeat,
-  errorResponseServerError
+  errorResponseServerError,
+  errorResponseBadRequest
 } = require('../../apiHelpers')
 const {
   healthCheck,
   healthCheckVerbose,
-  healthCheckDuration
+  healthCheckDuration,
+  configCheck
 } = require('./healthCheckComponentService')
 const { syncHealthCheck } = require('./syncHealthCheckComponentService')
 const { serviceRegistry } = require('../../serviceRegistry')
-const { sequelize } = require('../../models')
 const { getMonitors } = require('../../monitors/monitors')
 const TranscodingQueue = require('../../TranscodingQueue')
 
@@ -39,10 +40,6 @@ const FIND_REPLICA_SET_UPDATES_JOB_MAX_LAST_SUCCESSFUL_RUN_DELAY_MS =
  * `healthCheckComponentService`.
  */
 const healthCheckController = async (req) => {
-  if (config.get('isReadOnlyMode')) {
-    return errorResponseServerError()
-  }
-
   const { randomBytesToSign, enforceStateMachineQueueHealth } = req.query
 
   const AsyncProcessingQueue =
@@ -52,7 +49,6 @@ const healthCheckController = async (req) => {
   const response = await healthCheck(
     serviceRegistry,
     logger,
-    sequelize,
     getMonitors,
     TranscodingQueue.getTranscodeQueueJobs,
     TranscodingQueue.isAvailable,
@@ -60,6 +56,13 @@ const healthCheckController = async (req) => {
     numberOfCPUs,
     randomBytesToSign
   )
+
+  const prometheusRegistry = req.app.get('serviceRegistry').prometheusRegistry
+  const storagePathSizeMetric = prometheusRegistry.getMetric(
+    prometheusRegistry.metricNames.STORAGE_PATH_SIZE_BYTES
+  )
+  storagePathSizeMetric.set({ type: 'total' }, response.storagePathSize)
+  storagePathSizeMetric.set({ type: 'used' }, response.storagePathUsed)
 
   if (enforceStateMachineQueueHealth) {
     const { stateMachineJobs } = response
@@ -123,7 +126,11 @@ const healthCheckController = async (req) => {
     }
   }
 
-  return successResponse(response)
+  if (config.get('isReadOnlyMode')) {
+    return errorResponseServerError(response)
+  } else {
+    return successResponse(response)
+  }
 }
 
 /**
@@ -153,7 +160,7 @@ const syncHealthCheckController = async (req) => {
  * Controller for health_check/duration route
  * Calls healthCheckComponentService
  */
-const healthCheckDurationController = async (req) => {
+const healthCheckDurationController = async (_req) => {
   const response = await healthCheckDuration()
   return successResponse(response)
 }
@@ -166,10 +173,6 @@ const healthCheckDurationController = async (req) => {
  * Will be used for cnode selection.
  */
 const healthCheckVerboseController = async (req) => {
-  if (config.get('isReadOnlyMode')) {
-    return errorResponseServerError()
-  }
-
   const AsyncProcessingQueue =
     req.app.get('serviceRegistry').asyncProcessingQueue
 
@@ -177,7 +180,6 @@ const healthCheckVerboseController = async (req) => {
   const healthCheckResponse = await healthCheckVerbose(
     serviceRegistry,
     logger,
-    sequelize,
     getMonitors,
     numberOfCPUs,
     TranscodingQueue.getTranscodeQueueJobs,
@@ -185,9 +187,34 @@ const healthCheckVerboseController = async (req) => {
     AsyncProcessingQueue.getAsyncProcessingQueueJobs
   )
 
+  if (config.get('isReadOnlyMode')) {
+    return errorResponseServerError(healthCheckResponse)
+  } else {
+    return successResponse(healthCheckResponse)
+  }
+}
+
+/**
+ * Controller for `health_check/network` route
+ *
+ * Call a discovery node to make sure network egress and ingress is correct
+ */
+const healthCheckNetworkController = async (req) => {
+  const { libs } = serviceRegistry
+  const userId = parseInt(req.query.userId, 10)
+
+  if (!userId) return errorResponseBadRequest('Please pass in valid userId')
+
+  const user = (await libs.User.getUsers(1, 0, [userId]))[0]
+
   return successResponse({
-    ...healthCheckResponse
+    user
   })
+}
+
+const configCheckController = async (_req) => {
+  const configs = configCheck()
+  return successResponse({ ...configs })
 }
 
 // Routes
@@ -208,4 +235,10 @@ router.get(
   '/health_check/verbose',
   handleResponse(healthCheckVerboseController)
 )
+router.get(
+  '/health_check/network',
+  handleResponse(healthCheckNetworkController)
+)
+router.get('/config_check', handleResponse(configCheckController))
+
 module.exports = router

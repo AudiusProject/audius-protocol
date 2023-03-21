@@ -1,18 +1,25 @@
 const moment = require('moment')
 const axios = require('axios')
 const models = require('../models')
-const { notificationTypes: NotificationType } = require('../notifications/constants')
+const {
+  notificationTypes: NotificationType
+} = require('../notifications/constants')
 const Entity = require('../routes/notifications').Entity
-const mergeAudiusAnnoucements = require('../routes/notifications').mergeAudiusAnnoucements
+const mergeAudiusAnnoucements =
+  require('../routes/notifications').mergeAudiusAnnoucements
 const { formatEmailNotificationProps } = require('./formatNotificationMetadata')
 
 const config = require('../config.js')
 const { logger } = require('../logging')
 
-const USER_NODE_IPFS_GATEWAY = config.get('environment').includes('staging') ? 'https://usermetadata.staging.audius.co/ipfs/' : 'https://usermetadata.audius.co/ipfs/'
+const USER_NODE_IPFS_GATEWAY = config.get('environment').includes('staging')
+  ? 'https://usermetadata.staging.audius.co/ipfs/'
+  : 'https://usermetadata.audius.co/ipfs/'
 
-const DEFAULT_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
-const DEFAULT_TRACK_IMAGE_URL = 'https://download.audius.co/static-resources/email/imageTrackEmpty.jpg'
+const DEFAULT_IMAGE_URL =
+  'https://download.audius.co/static-resources/email/imageProfilePicEmpty.png'
+const DEFAULT_TRACK_IMAGE_URL =
+  'https://download.audius.co/static-resources/email/imageTrackEmpty.jpg'
 
 // The number of users to fetch / display per notification (The displayed number of users)
 const USER_FETCH_LIMIT = 10
@@ -31,7 +38,13 @@ const USER_FETCH_LIMIT = 10
 const EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES = [NotificationType.TipSend]
 
 const getLastWeek = () => moment().subtract(7, 'days')
-async function getEmailNotifications (audius, userId, announcements = [], fromTime = getLastWeek(), limit = 5) {
+async function getEmailNotifications(
+  audius,
+  userId,
+  announcements = [],
+  fromTime = getLastWeek(),
+  limit = 5
+) {
   try {
     const user = await models.User.findOne({
       where: { blockchainUserId: userId },
@@ -51,42 +64,55 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
       order: [
         ['timestamp', 'DESC'],
         ['entityId', 'ASC'],
-        [{ model: models.NotificationAction, as: 'actions' }, 'createdAt', 'DESC']
+        [
+          { model: models.NotificationAction, as: 'actions' },
+          'createdAt',
+          'DESC'
+        ]
       ],
-      include: [{
-        model: models.NotificationAction,
-        required: true,
-        as: 'actions'
-      }],
-      limit
-    })
-
-    const { rows: solanaNotifications } = await models.SolanaNotification.findAndCountAll({
-      where: {
-        userId,
-        isViewed: false,
-        isRead: false,
-        isHidden: false,
-        createdAt: {
-          [models.Sequelize.Op.gt]: fromTime.toDate()
-        },
-        type: {
-          [models.Sequelize.Op.notIn]: EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES
+      include: [
+        {
+          model: models.NotificationAction,
+          required: true,
+          as: 'actions'
         }
-      },
-      order: [
-        ['createdAt', 'DESC'],
-        ['entityId', 'ASC'],
-        [{ model: models.SolanaNotificationAction, as: 'actions' }, 'createdAt', 'DESC']
       ],
-      include: [{
-        model: models.SolanaNotificationAction,
-        as: 'actions'
-      }],
       limit
     })
 
-    let notifCountQuery = await models.Notification.findAll({
+    const { rows: solanaNotifications } =
+      await models.SolanaNotification.findAndCountAll({
+        where: {
+          userId,
+          isViewed: false,
+          isRead: false,
+          isHidden: false,
+          createdAt: {
+            [models.Sequelize.Op.gt]: fromTime.toDate()
+          },
+          type: {
+            [models.Sequelize.Op.notIn]: EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES
+          }
+        },
+        order: [
+          ['createdAt', 'DESC'],
+          ['entityId', 'ASC'],
+          [
+            { model: models.SolanaNotificationAction, as: 'actions' },
+            'createdAt',
+            'DESC'
+          ]
+        ],
+        include: [
+          {
+            model: models.SolanaNotificationAction,
+            as: 'actions'
+          }
+        ],
+        limit
+      })
+
+    const notifCountQuery = await models.Notification.findAll({
       where: {
         userId,
         isViewed: false,
@@ -96,8 +122,20 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
           [models.Sequelize.Op.gt]: fromTime.toDate()
         }
       },
-      include: [{ model: models.NotificationAction, as: 'actions', required: true, attributes: [] }],
-      attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')), 'total']],
+      include: [
+        {
+          model: models.NotificationAction,
+          as: 'actions',
+          required: true,
+          attributes: []
+        }
+      ],
+      attributes: [
+        [
+          models.Sequelize.fn('COUNT', models.Sequelize.col('Notification.id')),
+          'total'
+        ]
+      ],
       group: ['Notification.id']
     })
 
@@ -114,29 +152,51 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
           [models.Sequelize.Op.notIn]: EXCLUDED_EMAIL_SOLANA_NOTIF_TYPES
         }
       },
-      include: [{ model: models.SolanaNotificationAction, as: 'actions', attributes: [] }],
-      attributes: [[models.Sequelize.fn('COUNT', models.Sequelize.col('SolanaNotification.id')), 'total']],
+      include: [
+        {
+          model: models.SolanaNotificationAction,
+          as: 'actions',
+          attributes: []
+        }
+      ],
+      attributes: [
+        [
+          models.Sequelize.fn(
+            'COUNT',
+            models.Sequelize.col('SolanaNotification.id')
+          ),
+          'total'
+        ]
+      ],
       group: ['SolanaNotification.id']
     })
 
-    const notificationCount = notifCountQuery.length + solanaNotifCountQuery.length
-    const announcementIds = new Set(announcements.map(({ entityId }) => entityId))
-    const filteredNotifications = notifications.concat(solanaNotifications).filter(({ id }) => !announcementIds.has(id))
+    const notificationCount =
+      notifCountQuery.length + solanaNotifCountQuery.length
+    const announcementIds = new Set(
+      announcements.map(({ entityId }) => entityId)
+    )
+    const filteredNotifications = notifications
+      .concat(solanaNotifications)
+      .filter(({ id }) => !announcementIds.has(id))
 
-    let tenDaysAgo = moment().subtract(10, 'days')
+    const tenDaysAgo = moment().subtract(10, 'days')
 
     // An announcement is valid if it's
     // 1.) created after the user
     // 2.) created after "fromTime" which represent the time the last email was sent
     // 3.) created within the last 10 days
-    const validUserAnnouncements = announcements
-      .filter(a => (
+    const validUserAnnouncements = announcements.filter(
+      (a) =>
         moment(a.datePublished).isAfter(user.createdAt) &&
         moment(a.datePublished).isAfter(fromTime) &&
         moment(a.datePublished).isAfter(tenDaysAgo)
-      ))
+    )
 
-    const userNotifications = mergeAudiusAnnoucements(validUserAnnouncements, filteredNotifications)
+    const userNotifications = mergeAudiusAnnoucements(
+      validUserAnnouncements,
+      filteredNotifications
+    )
     let unreadAnnouncementCount = 0
     userNotifications.forEach((notif) => {
       if (notif.type === NotificationType.Announcement) {
@@ -151,17 +211,32 @@ async function getEmailNotifications (audius, userId, announcements = [], fromTi
     const finalUserNotifications = userNotifications.slice(0, limit)
 
     const fethNotificationsTime = Date.now()
-    const metadata = await fetchNotificationMetadata(audius, [userId], finalUserNotifications, true, true)
+    const metadata = await fetchNotificationMetadata(
+      audius,
+      [userId],
+      finalUserNotifications,
+      true,
+      true
+    )
     const fetchDataDuration = (Date.now() - fethNotificationsTime) / 1000
-    logger.info({ job: 'fetchNotificationMetadata', duration: fetchDataDuration }, `fetchNotificationMetadata | get metadata ${fetchDataDuration} sec`)
-    const notificationsEmailProps = formatEmailNotificationProps(finalUserNotifications, metadata)
-    return [notificationsEmailProps, notificationCount + unreadAnnouncementCount]
+    logger.info(
+      { job: 'fetchNotificationMetadata', duration: fetchDataDuration },
+      `fetchNotificationMetadata | get metadata ${fetchDataDuration} sec`
+    )
+    const notificationsEmailProps = formatEmailNotificationProps(
+      finalUserNotifications,
+      metadata
+    )
+    return [
+      notificationsEmailProps,
+      notificationCount + unreadAnnouncementCount
+    ]
   } catch (err) {
     logger.error(err)
   }
 }
 
-async function fetchNotificationMetadata (
+async function fetchNotificationMetadata(
   audius,
   userIds = [],
   notifications,
@@ -170,19 +245,20 @@ async function fetchNotificationMetadata (
   // in the email flow compared to that which is fetched from the discovery node
   isEmailNotif = false
 ) {
-  let userIdsToFetch = [...userIds]
-  let trackIdsToFetch = []
-  let collectionIdsToFetch = []
-  let fetchTrackRemixParents = []
+  const userIdsToFetch = [...userIds]
+  const trackIdsToFetch = []
+  const collectionIdsToFetch = []
+  const fetchTrackRemixParents = []
 
-  for (let notification of notifications) {
+  for (const notification of notifications) {
     switch (notification.type) {
       case NotificationType.Follow:
       case NotificationType.ChallengeReward:
       case NotificationType.TierChange: {
         userIdsToFetch.push(
           ...notification.actions
-            .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
+            .map(({ actionEntityId }) => actionEntityId)
+            .slice(0, USER_FETCH_LIMIT)
         )
         break
       }
@@ -190,7 +266,8 @@ async function fetchNotificationMetadata (
       case NotificationType.Repost.track: {
         userIdsToFetch.push(
           ...notification.actions
-            .map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT)
+            .map(({ actionEntityId }) => actionEntityId)
+            .slice(0, USER_FETCH_LIMIT)
         )
         trackIdsToFetch.push(notification.entityId)
         break
@@ -199,7 +276,11 @@ async function fetchNotificationMetadata (
       case NotificationType.Favorite.album:
       case NotificationType.Repost.playlist:
       case NotificationType.Repost.album: {
-        userIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId).slice(0, USER_FETCH_LIMIT))
+        userIdsToFetch.push(
+          ...notification.actions
+            .map(({ actionEntityId }) => actionEntityId)
+            .slice(0, USER_FETCH_LIMIT)
+        )
         collectionIdsToFetch.push(notification.entityId)
         break
       }
@@ -219,7 +300,9 @@ async function fetchNotificationMetadata (
         break
       }
       case NotificationType.Create.track: {
-        trackIdsToFetch.push(...notification.actions.map(({ actionEntityId }) => actionEntityId))
+        trackIdsToFetch.push(
+          ...notification.actions.map(({ actionEntityId }) => actionEntityId)
+        )
         break
       }
       case NotificationType.RemixCreate: {
@@ -303,8 +386,15 @@ async function fetchNotificationMetadata (
   const tracks = []
   // Batch track fetches to avoid large request lines
   const trackBatchSize = 100 // use default limit
-  for (let trackBatchOffset = 0; trackBatchOffset < uniqueTrackIds.length; trackBatchOffset += trackBatchSize) {
-    const trackBatch = uniqueTrackIds.slice(trackBatchOffset, trackBatchOffset + trackBatchSize)
+  for (
+    let trackBatchOffset = 0;
+    trackBatchOffset < uniqueTrackIds.length;
+    trackBatchOffset += trackBatchSize
+  ) {
+    const trackBatch = uniqueTrackIds.slice(
+      trackBatchOffset,
+      trackBatchOffset + trackBatchSize
+    )
     const tracksResponse = await audius.Track.getTracks(
       /** limit */ trackBatch.length,
       /** offset */ 0,
@@ -314,7 +404,11 @@ async function fetchNotificationMetadata (
   }
 
   if (!Array.isArray(tracks)) {
-    logger.error(`fetchNotificationMetadata | Unable to fetch track ids ${uniqueTrackIds.join(',')}`)
+    logger.error(
+      `fetchNotificationMetadata | Unable to fetch track ids ${uniqueTrackIds.join(
+        ','
+      )}`
+    )
   }
 
   const trackMap = tracks.reduce((tm, track) => {
@@ -324,25 +418,33 @@ async function fetchNotificationMetadata (
 
   // Fetch the parents of the remix tracks & add to the tracks map
   if (fetchTrackRemixParents.length > 0) {
-    const trackParentIds = fetchTrackRemixParents.reduce((parentTrackIds, remixTrackId) => {
-      const track = trackMap[remixTrackId]
-      const parentIds = (track.remix_of && Array.isArray(track.remix_of.tracks))
-        ? track.remix_of.tracks.map(t => t.parent_track_id)
-        : []
-      return parentTrackIds.concat(parentIds)
-    }, [])
+    const trackParentIds = fetchTrackRemixParents.reduce(
+      (parentTrackIds, remixTrackId) => {
+        const track = trackMap[remixTrackId]
+        const parentIds =
+          track.remix_of && Array.isArray(track.remix_of.tracks)
+            ? track.remix_of.tracks.map((t) => t.parent_track_id)
+            : []
+        return parentTrackIds.concat(parentIds)
+      },
+      []
+    )
 
     const uniqueParentTrackIds = [...new Set(trackParentIds)]
-    let parentTracks = await audius.Track.getTracks(
+    const parentTracks = await audius.Track.getTracks(
       /** limit */ uniqueParentTrackIds.length,
       /** offset */ 0,
       /** idsArray */ uniqueParentTrackIds
     )
     if (!Array.isArray(parentTracks)) {
-      logger.error(`fetchNotificationMetadata | Unable to fetch parent track ids ${uniqueParentTrackIds.join(',')}`)
+      logger.error(
+        `fetchNotificationMetadata | Unable to fetch parent track ids ${uniqueParentTrackIds.join(
+          ','
+        )}`
+      )
     }
 
-    parentTracks.forEach(track => {
+    parentTracks.forEach((track) => {
       trackMap[track.track_id] = track
     })
   }
@@ -355,7 +457,11 @@ async function fetchNotificationMetadata (
   )
 
   if (!Array.isArray(collections)) {
-    logger.error(`fetchNotificationMetadata | Unable to fetch collection ids ${uniqueCollectionIds.join(',')}`)
+    logger.error(
+      `fetchNotificationMetadata | Unable to fetch collection ids ${uniqueCollectionIds.join(
+        ','
+      )}`
+    )
   }
 
   userIdsToFetch.push(
@@ -371,7 +477,11 @@ async function fetchNotificationMetadata (
   )
 
   if (!Array.isArray(users)) {
-    logger.error(`fetchNotificationMetadata | Unable to fetch user ids ${uniqueUserIds.join(',')}`)
+    logger.error(
+      `fetchNotificationMetadata | Unable to fetch user ids ${uniqueUserIds.join(
+        ','
+      )}`
+    )
   }
 
   // Fetch all the social handles and attach to the users - For twitter sharing
@@ -380,20 +490,26 @@ async function fetchNotificationMetadata (
       handle: users.map(({ handle }) => handle)
     }
   })
-  const twitterHandleMap = socialHandles.reduce((handleMapping, socialHandle) => {
-    if (socialHandle.twitterHandle) handleMapping[socialHandle.handle] = socialHandle.twitterHandle
-    return handleMapping
-  }, {})
+  const twitterHandleMap = socialHandles.reduce(
+    (handleMapping, socialHandle) => {
+      if (socialHandle.twitterHandle)
+        handleMapping[socialHandle.handle] = socialHandle.twitterHandle
+      return handleMapping
+    },
+    {}
+  )
 
-  users = await Promise.all(users.map(async (user) => {
-    if (fetchThumbnails) {
-      user.thumbnail = await getUserImage(user)
-    }
-    if (twitterHandleMap[user.handle]) {
-      user.twitterHandle = twitterHandleMap[user.handle]
-    }
-    return user
-  }))
+  users = await Promise.all(
+    users.map(async (user) => {
+      if (fetchThumbnails) {
+        user.thumbnail = await getUserImage(user)
+      }
+      if (twitterHandleMap[user.handle]) {
+        user.twitterHandle = twitterHandleMap[user.handle]
+      }
+      return user
+    })
+  )
 
   const collectionMap = collections.reduce((cm, collection) => {
     cm[collection.playlist_id] = collection
@@ -406,7 +522,7 @@ async function fetchNotificationMetadata (
   }, {})
 
   if (fetchThumbnails) {
-    for (let trackId of Object.keys(trackMap)) {
+    for (const trackId of Object.keys(trackMap)) {
       const track = trackMap[trackId]
       track.thumbnail = await getTrackImage(track, userMap)
     }
@@ -425,18 +541,18 @@ const formatGateway = (creatorNodeEndpoint) =>
     : USER_NODE_IPFS_GATEWAY
 
 const getImageUrl = (cid, gateway, defaultImg) =>
-  cid
-    ? `${gateway}${cid}`
-    : defaultImg
+  cid ? `${gateway}${cid}` : defaultImg
 
-async function getUserImage (user) {
+async function getUserImage(user) {
   const gateway = formatGateway(user.creator_node_endpoint)
   const profilePicture = user.profile_picture_sizes
     ? `${user.profile_picture_sizes}/1000x1000.jpg`
     : user.profile_picture
 
-  let imageUrl = getImageUrl(profilePicture, gateway, DEFAULT_IMAGE_URL)
-  if (imageUrl === DEFAULT_IMAGE_URL) { return imageUrl }
+  const imageUrl = getImageUrl(profilePicture, gateway, DEFAULT_IMAGE_URL)
+  if (imageUrl === DEFAULT_IMAGE_URL) {
+    return imageUrl
+  }
 
   try {
     await axios({
@@ -450,7 +566,7 @@ async function getUserImage (user) {
   }
 }
 
-async function getTrackImage (track, usersMap) {
+async function getTrackImage(track, usersMap) {
   const trackOwnerId = track.owner_id
   const trackOwner = usersMap[trackOwnerId]
   const gateway = formatGateway(trackOwner.creator_node_endpoint)
@@ -458,8 +574,10 @@ async function getTrackImage (track, usersMap) {
     ? `${track.cover_art_sizes}/480x480.jpg`
     : track.cover_art
 
-  let imageUrl = getImageUrl(trackCoverArt, gateway, DEFAULT_TRACK_IMAGE_URL)
-  if (imageUrl === DEFAULT_TRACK_IMAGE_URL) { return imageUrl }
+  const imageUrl = getImageUrl(trackCoverArt, gateway, DEFAULT_TRACK_IMAGE_URL)
+  if (imageUrl === DEFAULT_TRACK_IMAGE_URL) {
+    return imageUrl
+  }
 
   try {
     await axios({

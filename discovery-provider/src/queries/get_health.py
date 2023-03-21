@@ -4,6 +4,7 @@ import time
 from datetime import datetime
 from typing import Dict, Optional, Tuple, TypedDict, cast
 
+import requests
 from elasticsearch import Elasticsearch
 from redis import Redis
 from src.eth_indexing.event_scanner import eth_indexing_last_scanned_block_key
@@ -22,7 +23,6 @@ from src.queries.get_spl_audio import get_spl_audio_health_info
 from src.utils import db_session, helpers, redis_connection, web3_provider
 from src.utils.config import shared_config
 from src.utils.elasticdsl import ES_INDEXES, esclient
-from src.utils.helpers import redis_get_or_restore, redis_set_and_dump
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
 from src.utils.redis_constants import (
     LAST_REACTIONS_INDEX_TIME_KEY,
@@ -41,6 +41,7 @@ from src.utils.redis_constants import (
     trending_tracks_last_completion_redis_key,
     user_balances_refresh_last_completion_redis_key,
 )
+from src.utils.web3_provider import LOCAL_RPC, get_nethermind_web3
 
 logger = logging.getLogger(__name__)
 MONITORS = monitors.MONITORS
@@ -101,6 +102,30 @@ def _get_query_insights():
     )
 
     return query_insights, False
+
+
+def _get_chain_health():
+    try:
+        health_res = requests.get(LOCAL_RPC + "/health")
+        chain_res = health_res.json()
+
+        web3 = get_nethermind_web3(LOCAL_RPC)
+        latest_block = web3.eth.get_block("latest")
+        chain_res["block_number"] = latest_block.number
+        chain_res["hash"] = latest_block.hash.hex()
+        chain_res["chain_id"] = web3.eth.chain_id
+        get_signers_data = '{"method":"clique_getSigners","params":[]}'
+        signers_response = requests.post(LOCAL_RPC, data=get_signers_data)
+        signers_response_dict = signers_response.json()["result"]
+        chain_res["signers"] = signers_response_dict
+        get_snapshot_data = '{"method":"clique_getSnapshot","params":[]}'
+        snapshot_response = requests.post(LOCAL_RPC, data=get_snapshot_data)
+        snapshot_response_dict = snapshot_response.json()["result"]
+        chain_res["snapshot"] = snapshot_response_dict
+        return chain_res
+    except Exception as e:
+        logging.error("issue with chain health %s", exc_info=e)
+        pass
 
 
 class GetHealthArgs(TypedDict):
@@ -217,8 +242,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     num_users_in_immediate_balance_refresh_queue = int(
         redis.scard(IMMEDIATE_REFRESH_REDIS_PREFIX)
     )
-    last_scanned_block_for_balance_refresh = redis_get_or_restore(
-        redis, eth_indexing_last_scanned_block_key
+    last_scanned_block_for_balance_refresh = redis.get(
+        eth_indexing_last_scanned_block_key
     )
     index_eth_age_sec = get_elapsed_time_redis(
         redis, index_eth_last_completion_redis_key
@@ -264,6 +289,18 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         ]
     )
 
+    url = shared_config["discprov"]["url"]
+    final_poa_block = helpers.get_final_poa_block(shared_config)
+
+    auto_upgrade_enabled = (
+        True if os.getenv("audius_auto_upgrade_enabled") == "true" else False
+    )
+    database_is_localhost = os.getenv(
+        "audius_db_url"
+    ) == "postgresql://postgres:postgres@db:5432/audius_discovery" or "localhost" in os.getenv(
+        "audius_db_url", ""
+    )
+
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -274,6 +311,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
             "blockhash": latest_indexed_block_hash,
         },
         "git": os.getenv("GIT_SHA"),
+        "auto_upgrade_enabled": auto_upgrade_enabled,
+        "database_is_localhost": database_is_localhost,
         "trending_tracks_age_sec": trending_tracks_age_sec,
         "trending_playlists_age_sec": trending_playlists_age_sec,
         "challenge_last_event_age_sec": challenge_events_age_sec,
@@ -293,10 +332,28 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "spl_audio_info": spl_audio_info,
         "reactions": reactions_health_info,
         "infra_setup": infra_setup,
+        "url": url,
+        # Temp
+        "latest_block_num": latest_block_num,
+        "latest_indexed_block_num": latest_indexed_block_num,
+        "final_poa_block": final_poa_block,
     }
 
+    if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
+        health_results["audius-docker-compose"] = os.getenv(
+            "AUDIUS_DOCKER_COMPOSE_GIT_SHA"
+        )
+
     if latest_block_num is not None and latest_indexed_block_num is not None:
-        block_difference = abs(latest_block_num - latest_indexed_block_num)
+        # adjust latest block if web3 is pointed to ACDC
+        # indicating POA has finished indexing
+        if final_poa_block and web3.provider.endpoint_uri == os.getenv(
+            "audius_web3_nethermind_rpc"
+        ):
+            latest_block_num += final_poa_block
+        block_difference = abs(
+            latest_block_num - latest_indexed_block_num
+        )  # nethermind offset
     else:
         # If we cannot get a reading from chain about what the latest block is,
         # we set the difference to be an unhealthy amount
@@ -318,6 +375,8 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         # TODO - this will become strictly enforced in upcoming service versions and return with error
     else:
         health_results["meets_min_requirements"] = True
+
+    health_results["chain_health"] = _get_chain_health()
 
     if verbose:
         # Elasticsearch health
@@ -406,12 +465,16 @@ def get_elasticsearch_health_info(
 def health_check_prometheus_exporter():
     health_results, is_unhealthy = get_health({})
 
-    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_BLOCK_DIFFERENCE_LATEST).save(
-        health_results["block_difference"]
-    )
+    # store all top-level keys with numerical values
+    for key, value in health_results.items():
+        if isinstance(value, (int, float)):
+            PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK).save(
+                value, {"key": key}
+            )
 
-    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK_INDEXED_BLOCK_NUM_LATEST).save(
-        health_results["web"]["blocknumber"]
+    # store a non-top-level key
+    PrometheusMetric(PrometheusMetricNames.HEALTH_CHECK).save(
+        health_results["web"]["blocknumber"], {"key": "blocknumber"}
     )
 
 
@@ -451,33 +514,31 @@ def get_play_health_info(
 
     if is_unhealthy_sol_plays or not plays_count_max_drift:
         # Calculate time diff from now to latest play
-        latest_db_play = redis_get_or_restore(redis, latest_legacy_play_db_key)
+        latest_db_play = redis.get(latest_legacy_play_db_key)
         if not latest_db_play:
             # Query and cache latest db play if found
             latest_db_play = get_latest_play()
             if latest_db_play:
-                redis_set_and_dump(
-                    redis, latest_legacy_play_db_key, latest_db_play.timestamp()
-                )
+                redis.set(latest_legacy_play_db_key, latest_db_play.timestamp())
         else:
             # Decode bytes into float for latest timestamp
             latest_db_play = float(latest_db_play.decode())
             latest_db_play = datetime.utcfromtimestamp(latest_db_play)
 
-        oldest_unarchived_play = redis_get_or_restore(redis, oldest_unarchived_play_key)
+        oldest_unarchived_play = redis.get(oldest_unarchived_play_key)
         if not oldest_unarchived_play:
             # Query and cache oldest unarchived play
             oldest_unarchived_play = get_oldest_unarchived_play()
             if oldest_unarchived_play:
-                redis_set_and_dump(
-                    redis,
+                redis.set(
                     oldest_unarchived_play_key,
                     oldest_unarchived_play.timestamp(),
                 )
         else:
             # Decode bytes into float for latest timestamp
-            oldest_unarchived_play = float(oldest_unarchived_play.decode())
-            oldest_unarchived_play = datetime.utcfromtimestamp(oldest_unarchived_play)
+            oldest_unarchived_play = datetime.utcfromtimestamp(
+                float(oldest_unarchived_play.decode())
+            )
 
         time_diff_general = (
             (current_time_utc - latest_db_play).total_seconds()
@@ -494,7 +555,7 @@ def get_play_health_info(
         "is_unhealthy": is_unhealthy_plays,
         "tx_info": sol_play_info,
         "time_diff_general": time_diff_general,
-        "oldest_unarchived_play_created_at": oldest_unarchived_play,
+        "oldest_unarchived_play_created_at": str(oldest_unarchived_play),
     }
 
 

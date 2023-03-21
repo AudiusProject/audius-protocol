@@ -6,7 +6,7 @@
   "description": "This repository contains the smart contracts being developed for the audius protocol.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AudiusProject/audius-protocol/tree/master/contracts"
+    "url": "https://github.com/AudiusProject/audius-protocol/tree/main/contracts"
   },
   "private": true,
   "scripts": {
@@ -21,7 +21,7 @@
     "solidity-lint": "./node_modules/.bin/solium -d contracts",
     "lint": "./node_modules/.bin/standard",
     "lint-fix": "./node_modules/.bin/standard --fix",
-    "test": "npm run truffle-test",
+    "test": "./scripts/test.sh",
     "test-only": "./node_modules/.bin/truffle test test/*.js --network=test_local",
     "test-circle-ci": "./scripts/circleci-test.sh",
     "discprov-script-t": "./node_modules/.bin/truffle exec scripts/_discoveryprovider-test-init.js -test --ipfs-test-host localhost --ipfs-test-port 6001"
@@ -37,7 +37,7 @@
     "ethlint": "^1.2.3",
     "fs-extra": "^7.0.0",
     "openzeppelin-solidity": "^2.1.0",
-    "truffle": "5.0.42"
+    "truffle": "5.7.3"
   },
   "devDependencies": {
     "@openzeppelin/test-helpers": "0.5.5",

@@ -2,7 +2,7 @@
 
 Audius has two sets of contracts - the one in this directory, which runs on Ethereum mainnet in
 production, and the one
-[here](https://github.com/AudiusProject/audius-protocol/tree/master/contracts) which runs on POA
+[here](https://github.com/AudiusProject/audius-protocol/tree/main/contracts) which runs on POA
 mainnet in production.
 
 The smart contracts in this directory implement the Audius ERC-20 token, staking functionality, service

@@ -1,6 +1,6 @@
 import type Logger from 'bunyan'
 import { Redis } from 'ioredis'
-const asyncRetry = require('./asyncRetry')
+import { asyncRetry } from './asyncRetry'
 
 const THIRTY_MINUTES_IN_SECONDS = 60 * 30
 
@@ -54,7 +54,10 @@ export const getRegisteredDiscoveryNodes = async ({
         )
       },
       logger,
-      logLabel: 'fetch all the registered discovery nodes'
+      logLabel: 'fetch all the registered discovery nodes',
+      options: {
+        maxTimeout: 5000
+      }
     })
   } catch (e) {
     logger.error(

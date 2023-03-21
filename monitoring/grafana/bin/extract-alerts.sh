@@ -9,21 +9,25 @@ read _
 
 function on-exit {
     # ensure we never commit dashboard IDs 
+    unset CLEAR_DASHBOARD_ID
     ./grafana/bin/save-dashboards.sh
     echo "Dashboard IDs removed."
+    exit ${EXTRACTION_CODE}
 }
 trap on-exit EXIT
 
 set -x
 
 # refresh all dashboards and do not strip the dashboard ID
-CLEAR_DASHBOARD_ID=. ./grafana/bin/save-dashboards.sh
+export CLEAR_DASHBOARD_ID=.
+./grafana/bin/save-dashboards.sh
 
-json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json' -not -name 'library.json' -not -name 'folders.json')
+json_dashboards=$(find "${GRAFANA_DASHBOARD_DIR}" -name '*.json')
 
 for json_dashboard in ${json_dashboards}
 do
     # extract alerts from these fresh dashboards
     # use the dashboard ID as part of the alert ID
     python3 ./grafana/bin/extract-alerts.py ${json_dashboard}
+    EXTRACTION_CODE=$?
 done

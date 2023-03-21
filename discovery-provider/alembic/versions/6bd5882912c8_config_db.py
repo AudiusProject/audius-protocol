@@ -9,10 +9,10 @@ Description:
   - configures DB for customized performant fuzzy full text search
   - modeled off: http://rachbelaid.com/postgres-full-text-search-is-good-enough/
 """
-from alembic import op
-import sqlalchemy as sa
 import logging
 
+import sqlalchemy as sa
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "6bd5882912c8"

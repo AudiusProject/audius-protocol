@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -32,5 +33,41 @@ export interface RelatedArtistResponse {
      * @memberof RelatedArtistResponse
      */
     data?: Array<User>;
+}
+
+/**
+ * Check if a given object implements the RelatedArtistResponse interface.
+ */
+export function instanceOfRelatedArtistResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function RelatedArtistResponseFromJSON(json: any): RelatedArtistResponse {
+    return RelatedArtistResponseFromJSONTyped(json, false);
+}
+
+export function RelatedArtistResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): RelatedArtistResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(UserFromJSON)),
+    };
+}
+
+export function RelatedArtistResponseToJSON(value?: RelatedArtistResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(UserToJSON)),
+    };
 }
 

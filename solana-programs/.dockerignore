@@ -1,4 +1,3 @@
-*target
 package-lock.json
 .vscode
 .DS_Store
@@ -10,4 +9,4 @@ dist
 .dockerignore
 .gitignore
 README.md
-Dockerfile
+Dockerfile*

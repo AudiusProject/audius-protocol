@@ -6,11 +6,6 @@ import { getPermitDigest, sign } from '../utils/signatures'
 import { PublicKey } from '@solana/web3.js'
 import type { Users } from './Users'
 
-type UserBankOutcomes = {
-  Request: string
-  Failure: string
-}
-
 export class Account extends Base {
   User: Users
 
@@ -31,6 +26,7 @@ export class Account extends Base {
     this.getUserEmail = this.getUserEmail.bind(this)
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
+    this.associateTikTokUser = this.associateTikTokUser.bind(this)
     this.handleIsValid = this.handleIsValid.bind(this)
     this.lookupTwitterHandle = this.lookupTwitterHandle.bind(this)
     this.updateCreatorNodeEndpoint = this.updateCreatorNodeEndpoint.bind(this)
@@ -113,9 +109,6 @@ export class Account extends Base {
    * @param coverPhotoFile an optional file to upload as the cover phtoo
    * @param hasWallet
    * @param host The host url used for the recovery email
-   * @param handleUserBankOutcomes an optional callback to record user bank outcomes
-   * @param userBankOutcomes an optional object with request, succes, and failure keys to record user bank outcomes
-   * @param feePayerOverride an optional string in case the client wants to switch between fee payers
    * @param generateRecoveryLink an optional flag to skip generating recovery link for testing purposes
    */
   async signUp(
@@ -126,22 +119,16 @@ export class Account extends Base {
     coverPhotoFile: Nullable<File> = null,
     hasWallet = false,
     host = (typeof window !== 'undefined' && window.location.origin) || null,
-    handleUserBankOutcomes = (_outcome?: string, _errorCodes?: {}) => {},
-    userBankOutcomes: Partial<UserBankOutcomes> = {},
-    feePayerOverride: Nullable<string> = null,
     generateRecoveryLink = true
   ) {
     const phases = {
       ADD_REPLICA_SET: 'ADD_REPLICA_SET',
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
-      SOLANA_USER_BANK_CREATION: 'SOLANA_USER_BANK_CREATION',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
       ADD_USER: 'ADD_USER'
     }
     let phase = ''
-    let userId, blockHash, blockNumber
-
     try {
       this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
 
@@ -164,57 +151,17 @@ export class Account extends Base {
         }
       }
 
-      // Create a wAudio user bank address.
-      // If userbank creation fails, we still proceed
-      // through signup
-      if (this.solanaWeb3Manager) {
-        phase = phases.SOLANA_USER_BANK_CREATION
-        // Fire and forget createUserBank. In the case of failure, we will
-        // retry to create user banks in a later session before usage
-        ;(async () => {
-          try {
-            handleUserBankOutcomes(userBankOutcomes.Request)
-            const { error, errorCode } =
-              await this.solanaWeb3Manager.createUserBank(feePayerOverride!)
-            if (error ?? errorCode) {
-              console.error(
-                `Failed to create userbank, with err: ${error}, ${errorCode}`
-              )
-              handleUserBankOutcomes(userBankOutcomes.Failure, {
-                error,
-                errorCode
-              })
-            } else {
-              console.log('Successfully created userbank!')
-              handleUserBankOutcomes('Create User Bank: Success')
-            }
-          } catch (err: any) {
-            console.error(`Got error creating userbank: ${err}, continuing...`)
-            handleUserBankOutcomes(userBankOutcomes.Failure, {
-              error: err.toString()
-            })
-          }
-        })()
-      }
-
       // Add user to chain
-      phase = phases.ADD_USER
-      const response = await this.User.addUser(metadata)
-      userId = response.userId
-      blockHash = response.blockHash
-      blockNumber = response.blockNumber
-
-      // Assign replica set to user, updates creator_node_endpoint on chain, and then update metadata object on content node + chain (in this order)
-      phase = phases.ADD_REPLICA_SET
-      metadata = (await this.User.assignReplicaSet({ userId }))!
-
-      // Upload profile pic and cover photo to primary Content Node and sync across secondaries
-      phase = phases.UPLOAD_PROFILE_IMAGES
+      const { newMetadata, blockHash, blockNumber } =
+        await this.User.createEntityManagerUser({
+          metadata
+        })
       await this.User.uploadProfileImages(
         profilePictureFile!,
         coverPhotoFile!,
-        metadata
+        newMetadata
       )
+      return { blockHash, blockNumber, userId: newMetadata.user_id }
     } catch (e: any) {
       return {
         error: e.message,
@@ -222,7 +169,6 @@ export class Account extends Base {
         errorStatus: e.response ? e.response.status : null
       }
     }
-    return { blockHash, blockNumber, userId }
   }
 
   /**
@@ -240,7 +186,7 @@ export class Account extends Base {
 
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
       const data = `Click sign to authenticate with identity service: ${unixTs}`
-      const signature = await this.web3Manager.sign(data)
+      const signature = await this.web3Manager.sign(Buffer.from(data, 'utf-8'))
 
       const recoveryData = {
         login: recoveryInfo.login,
@@ -250,9 +196,10 @@ export class Account extends Base {
         handle
       }
 
-      await this.identityService.sendRecoveryInfo(recoveryData)
+      return await this.identityService.sendRecoveryInfo(recoveryData)
     } catch (e) {
       console.error(e)
+      return { status: false }
     }
   }
 
@@ -308,6 +255,15 @@ export class Account extends Base {
       userId,
       handle
     )
+  }
+
+  /**
+   * Associates a user with an tiktok uuid
+   * @param uuid from the TikTok API
+   */
+  async associateTikTokUser(uuid: string, userId: number, handle: string) {
+    this.REQUIRES(Services.IDENTITY_SERVICE)
+    return await this.identityService.associateTikTokUser(uuid, userId, handle)
   }
 
   /**
@@ -708,7 +664,9 @@ export class Account extends Base {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
     const message = `Click sign to authenticate with identity service: ${unixTs}`
-    const signature = await this.ethWeb3Manager.sign(message)
+    const signature = await this.ethWeb3Manager.sign(
+      Buffer.from(message, 'utf-8') as unknown as string
+    )
     const wallet = this.ethWeb3Manager.getWalletAddress()
     return await this.identityService.updateMinimumDelegationAmount(
       wallet,

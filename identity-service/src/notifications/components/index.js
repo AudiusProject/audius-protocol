@@ -1,8 +1,10 @@
 import ReactDOMServer from 'react-dom/server'
 import React from 'react'
 
-import Head from './Head'
-import Body from './Body'
+// ESLint has trouble understanding these imports
+import Head from './Head' // eslint-disable-line
+import Body from './Body' // eslint-disable-line
+
 const NotificationEmail = (props) => {
   return (
     <html>

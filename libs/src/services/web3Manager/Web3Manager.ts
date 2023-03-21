@@ -32,6 +32,8 @@ export class Web3Manager {
   web3: Web3Type | undefined
   useExternalWeb3: boolean | undefined
   ownerWallet?: EthereumWallet
+  // Need to maintain the user's provided handle for anti-abuse measures on relay
+  userSuppliedHandle?: string
 
   constructor({
     web3Config,
@@ -127,6 +129,10 @@ export class Web3Manager {
     return this.useExternalWeb3
   }
 
+  setUserSuppliedHandle(handle: string) {
+    this.userSuppliedHandle = handle
+  }
+
   getOwnerWalletPrivateKey() {
     if (this.useExternalWeb3) {
       throw new Error("Can't get owner wallet private key for external web3")
@@ -139,17 +145,17 @@ export class Web3Manager {
    * Signs provided string data (should be timestamped).
    * @param data
    */
-  async sign(data: string) {
+  async sign(data: string | Buffer) {
     if (this.useExternalWeb3) {
       const account = this.getWalletAddress()
       if (this.isServer) {
         return await this.web3?.eth.sign(
-          this.web3.utils.fromUtf8(data),
+          this.web3.utils.fromUtf8(data as string),
           account
         )
       } else {
         return await this.web3?.eth.personal.sign(
-          this.web3.utils.fromUtf8(data),
+          this.web3.utils.fromUtf8(data as string),
           account,
           ''
         )
@@ -198,7 +204,9 @@ export class Web3Manager {
     contractRegistryKey?: string | null,
     contractAddress?: string | null,
     txRetries = 5,
-    txGasLimit?: number
+    txGasLimit?: number,
+    nethermindContractAddress?: string | null,
+    nethermindContractMethod?: ContractMethod
   ): Promise<TransactionReceipt> {
     const gasLimit =
       txGasLimit ??
@@ -213,16 +221,29 @@ export class Web3Manager {
       })
     } else {
       const encodedABI = contractMethod.encodeABI()
-
+      const nethermindEncodedAbi = nethermindContractMethod?.encodeABI()
       const response = await retry(
-        async () => {
-          return await this.identityService?.relay(
-            contractRegistryKey,
-            contractAddress,
-            this.ownerWallet!.getAddressString(),
-            encodedABI,
-            gasLimit
-          )
+        async (bail) => {
+          try {
+            return await this.identityService?.relay(
+              contractRegistryKey,
+              contractAddress,
+              this.ownerWallet!.getAddressString(),
+              encodedABI,
+              gasLimit,
+              this.userSuppliedHandle,
+              nethermindContractAddress,
+              nethermindEncodedAbi
+            )
+          } catch (e: any) {
+            // If forbidden, don't retry
+            if (e.response.status === 403) {
+              bail(e)
+              return
+            }
+            // Otherwise, throw to retry
+            throw e
+          }
         },
         {
           // Retry function 5x by default

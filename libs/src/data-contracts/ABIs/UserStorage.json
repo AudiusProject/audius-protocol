@@ -2,6 +2,73 @@
   "contractName": "UserStorage",
   "abi": [
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_registryAddress",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "bytes16",
+          "name": "",
+          "type": "bytes16"
+        }
+      ],
+      "name": "handlesTaken",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "constant": false,
       "inputs": [],
       "name": "kill",
@@ -12,17 +79,13 @@
     },
     {
       "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "userHandles",
+      "inputs": [],
+      "name": "owner",
       "outputs": [
         {
+          "internalType": "address",
           "name": "",
-          "type": "bytes16"
+          "type": "address"
         }
       ],
       "payable": false,
@@ -39,37 +102,10 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "isOwner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "constant": false,
       "inputs": [
         {
+          "internalType": "address payable",
           "name": "_registryAddress",
           "type": "address"
         }
@@ -84,6 +120,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "newOwner",
           "type": "address"
         }
@@ -98,15 +135,17 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "",
-          "type": "bytes16"
+          "type": "uint256"
         }
       ],
-      "name": "handlesTaken",
+      "name": "userHandles",
       "outputs": [
         {
+          "internalType": "bytes16",
           "name": "",
-          "type": "bool"
+          "type": "bytes16"
         }
       ],
       "payable": false,
@@ -114,45 +153,20 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "name": "_registryAddress",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
-    },
-    {
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_wallet",
           "type": "address"
         },
         {
+          "internalType": "bytes16",
           "name": "_handle",
           "type": "bytes16"
         },
         {
+          "internalType": "bytes16",
           "name": "_handleLower",
           "type": "bytes16"
         }
@@ -160,6 +174,7 @@
       "name": "addUser",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "newUserId",
           "type": "uint256"
         }
@@ -172,6 +187,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_userId",
           "type": "uint256"
         }
@@ -179,10 +195,12 @@
       "name": "getUser",
       "outputs": [
         {
+          "internalType": "address",
           "name": "wallet",
           "type": "address"
         },
         {
+          "internalType": "bytes16",
           "name": "handle",
           "type": "bytes16"
         }
@@ -195,6 +213,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_id",
           "type": "uint256"
         }
@@ -202,6 +221,7 @@
       "name": "userExists",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "exists",
           "type": "bool"
         }
@@ -214,6 +234,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "bytes16",
           "name": "_handleLower",
           "type": "bytes16"
         }
@@ -221,6 +242,7 @@
       "name": "handleIsTaken",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "isTaken",
           "type": "bool"
         }

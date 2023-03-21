@@ -7,8 +7,12 @@ const {
   SemanticResourceAttributes: ResourceAttributesSC
 } = require('@opentelemetry/semantic-conventions')
 const { HttpInstrumentation } = require('@opentelemetry/instrumentation-http')
-const { ExpressInstrumentation } = require('@opentelemetry/instrumentation-express')
-const { BunyanInstrumentation } = require('@opentelemetry/instrumentation-bunyan')
+const {
+  ExpressInstrumentation
+} = require('@opentelemetry/instrumentation-express')
+const {
+  BunyanInstrumentation
+} = require('@opentelemetry/instrumentation-bunyan')
 
 const SERVICE_NAME = 'identity-service'
 
@@ -45,7 +49,7 @@ const setupTracing = () => {
         logHook: (span, record) => {
           record['resource.span'] = span
           record['resource.service.name'] =
-              provider.resource.attributes['service.name']
+            provider.resource.attributes['service.name']
         }
       })
     ]

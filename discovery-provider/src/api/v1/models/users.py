@@ -28,6 +28,7 @@ user_model = ns.model(
     "user",
     {
         "album_count": fields.Integer(required=True),
+        "artist_pick_track_id": fields.String(allow_null=True),
         "bio": fields.String,
         "cover_photo": fields.Nested(cover_photo, allow_null=True),
         "followee_count": fields.Integer(required=True),
@@ -43,7 +44,7 @@ user_model = ns.model(
         "repost_count": fields.Integer(required=True),
         "track_count": fields.Integer(required=True),
         "is_deactivated": fields.Boolean(required=True),
-        "erc_wallet": fields.String(requred=True),
+        "erc_wallet": fields.String(required=True),
         "spl_wallet": fields.String(required=True),
         "supporter_count": fields.Integer(required=True),
         "supporting_count": fields.Integer(required=True),
@@ -138,5 +139,13 @@ decoded_user_token = ns.model(
         ),
         "sub": fields.String(required=True),
         "iat": fields.String(required=True),
+    },
+)
+
+user_subscribers = ns.model(
+    "user_subscribers",
+    {
+        "user_id": fields.String(required=True),
+        "subscriber_ids": fields.List(fields.String),
     },
 )

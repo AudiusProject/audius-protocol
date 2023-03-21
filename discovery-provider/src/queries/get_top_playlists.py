@@ -1,4 +1,5 @@
 import enum
+import logging
 from typing import Optional, TypedDict
 
 from sqlalchemy import desc
@@ -7,6 +8,7 @@ from src.models.playlists.aggregate_playlist import AggregatePlaylist
 from src.models.playlists.playlist import Playlist
 from src.models.social.repost import RepostType
 from src.models.social.save import SaveType
+from src.queries.get_top_playlists_es import get_top_playlists_es
 from src.queries.query_helpers import (
     create_followee_playlists_subquery,
     decayed_score,
@@ -18,9 +20,13 @@ from src.queries.query_helpers import (
 )
 from src.utils import helpers
 from src.utils.db_session import get_db_read_replica
+from src.utils.elasticdsl import esclient
+
+logger = logging.getLogger(__name__)
 
 
 class GetTopPlaylistsArgs(TypedDict):
+    current_user_id: Optional[int]
     limit: Optional[int]
     mood: Optional[str]
     filter: Optional[str]
@@ -33,7 +39,26 @@ class TopPlaylistKind(str, enum.Enum):
 
 
 def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
-    current_user_id = get_current_user_id(required=False)
+    # disable es while making mapping changes to fix scoring
+    # skip_es = request.args.get("es") == "0"
+    skip_es = True
+    use_es = esclient and not skip_es
+    if use_es:
+        try:
+            return get_top_playlists_es(kind, args)
+        except Exception as e:
+            logger.error(f"elasticsearch get_top_playlists_es failed: {e}")
+
+    return get_top_playlists_sql(kind, args)
+
+
+def get_top_playlists_sql(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
+    current_user_id = args.get("current_user_id")
+
+    # NOTE: This is a temporary fix while migrating clients to pass
+    # along an encoded user id via url param
+    if current_user_id is None:
+        current_user_id = get_current_user_id(required=False)
 
     # Argument parsing and checking
     if kind not in ("playlist", "album"):
@@ -44,7 +69,7 @@ def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
     limit = args.get("limit", 16)
     mood = args.get("mood", None)
 
-    if "filter" in args:
+    if args.get("filter") is not None:
         query_filter = args.get("filter")
         if query_filter != "followees":
             raise exceptions.ArgumentError(
@@ -60,7 +85,6 @@ def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-
         # If filtering by followees, set the playlist view to be only playlists from
         # users that the current user follows.
         if query_filter == "followees":
@@ -103,7 +127,7 @@ def get_top_playlists(kind: TopPlaylistKind, args: GetTopPlaylistsArgs):
 
         # Order and limit the playlist query by score
         playlist_query = playlist_query.order_by(
-            desc("score"), desc(playlists_to_query.c.playlist_id)
+            desc("score"), desc(playlists_to_query.c.created_at)
         ).limit(limit)
 
         playlist_results = playlist_query.all()

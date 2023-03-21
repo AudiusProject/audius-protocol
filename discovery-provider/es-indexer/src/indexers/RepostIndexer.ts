@@ -1,8 +1,10 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
+import { merge } from 'lodash'
 import { indexNames } from '../indexNames'
 import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { RepostDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
+import { sharedIndexSettings } from './sharedIndexSettings'
 
 export class RepostIndexer extends BaseIndexer<RepostDoc> {
   constructor() {
@@ -12,13 +14,7 @@ export class RepostIndexer extends BaseIndexer<RepostDoc> {
 
   mapping: IndicesCreateRequest = {
     index: indexNames.reposts,
-    settings: {
-      index: {
-        number_of_shards: 1,
-        number_of_replicas: 0,
-        refresh_interval: '5s',
-      },
-    },
+    settings: merge(sharedIndexSettings, {}),
     mappings: {
       dynamic: false,
       properties: {

@@ -19,8 +19,16 @@ class CIDMetadataClient:
 
 
 class UpdateTask:
-    def __init__(self, cid_metadata_client, web3, challenge_event_bus, redis=None):
+    def __init__(
+        self,
+        cid_metadata_client,
+        web3,
+        challenge_event_bus,
+        redis=None,
+        eth_manager=None,
+    ):
         self.cid_metadata_client = cid_metadata_client
         self.web3 = web3
         self.challenge_event_bus: ChallengeEventBus = challenge_event_bus
         self.redis = redis
+        self.eth_manager = eth_manager

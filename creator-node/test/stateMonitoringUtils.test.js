@@ -1,31 +1,32 @@
-/* eslint-disable no-unused-expressions */
+const _ = require('lodash')
+const { CancelToken } = require('axios').default
+const { asyncRetry } = require('../src/utils/asyncRetry')
+
 const nock = require('nock')
 const chai = require('chai')
 const sinon = require('sinon')
+const proxyquire = require('proxyquire')
+const assert = require('assert')
 const { expect } = chai
 chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
-const proxyquire = require('proxyquire')
-const _ = require('lodash')
-const { CancelToken } = require('axios').default
-const assert = require('assert')
 
 const DBManager = require('../src/dbManager')
-const config = require('../src/config')
-const { getApp } = require('./lib/app')
-const { getLibsMock } = require('./lib/libsMock')
 const Utils = require('../src/utils')
 const {
   getLatestUserIdFromDiscovery,
   buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap,
   computeSyncModeForUserAndReplica
 } = require('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils')
 const {
-  SyncType,
   SYNC_MODES
 } = require('../src/services/stateMachineManager/stateMachineConstants')
-const SecondarySyncHealthTracker = require('../src/services/stateMachineManager/stateReconciliation/SecondarySyncHealthTracker')
+const {
+  SecondarySyncHealthTracker
+} = require('../src/services/stateMachineManager/stateReconciliation/SecondarySyncHealthTracker')
+
+const { getApp } = require('./lib/app')
+const { getLibsMock } = require('./lib/libsMock')
 
 describe('test getLatestUserIdFromDiscovery()', function () {
   const DISCOVERY_NODE_ENDPOINT = 'https://discovery_endpoint.audius.co'
@@ -50,6 +51,21 @@ describe('test getLatestUserIdFromDiscovery()', function () {
   })
 
   it('throws when the axios request fails', async function () {
+    const { getLatestUserIdFromDiscovery } = proxyquire(
+      '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils.ts',
+      {
+        '../../../utils/asyncRetry': {
+          asyncRetry: async function (params) {
+            // Default the max timeout to a low number for tests
+            params.options = { ...params.options, maxTimeout: 2000, retries: 2 }
+
+            // Call the original asyncRetry fn with hardcoded maxTimeout
+            return asyncRetry(params)
+          }
+        }
+      }
+    )
+
     nock(DISCOVERY_NODE_ENDPOINT)
       .get('/latest/user')
       .times(5) // asyncRetry retries 5 times
@@ -98,6 +114,15 @@ describe('test getNodeUsers()', function () {
           GET_NODE_USERS_CANCEL_TOKEN_MS,
           GET_NODE_USERS_DEFAULT_PAGE_SIZE:
             DEFAULT_GET_NODE_USERS_DEFAULT_PAGE_SIZE
+        },
+        '../../../utils/asyncRetry': {
+          asyncRetry: async function (params) {
+            // Default the max timeout to a low number for tests
+            params.options = { ...params.options, maxTimeout: 2000, retries: 2 }
+
+            // Call the original asyncRetry fn with hardcoded maxTimeout
+            return asyncRetry(params)
+          }
         }
       }
     )
@@ -357,91 +382,6 @@ describe('test computeUserSecondarySyncSuccessRatesMap()', function () {
   afterEach(async function () {
     await server.close()
   })
-
-  it('returns expected counts and percentages after recording successes and failures', async function () {
-    const nodeUsers = [
-      {
-        user_id: 1,
-        wallet: '0x00fc5bff87afb1f15a02e82c3f671cf5c9ad9e6d',
-        primary: 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
-        secondary1: 'http://cnWithSpId2.co',
-        secondary2: 'http://cnWithSpId3.co',
-        primarySpID: 1,
-        secondary1SpID: 2,
-        secondary2SpID: 3
-      },
-      {
-        user_id: 2,
-        wallet: 'wallet2',
-        primary: 'http://cnOriginallySpId3ReregisteredAsSpId4.co',
-        secondary1: 'http://cnWithSpId2.co',
-        secondary2: 'http://cnWithSpId3.co',
-        primarySpID: 1,
-        secondary1SpID: 2,
-        secondary2SpID: 3
-      }
-    ]
-
-    await SecondarySyncHealthTracker.recordSuccess(
-      [nodeUsers[0].secondary1],
-      [nodeUsers[0].wallet],
-      SyncType.Recurring
-    )
-    await SecondarySyncHealthTracker.recordSuccess(
-      [nodeUsers[0].secondary1],
-      [nodeUsers[0].wallet],
-      SyncType.Recurring
-    )
-    await SecondarySyncHealthTracker.recordSuccess(
-      [nodeUsers[0].secondary1],
-      [nodeUsers[0].wallet],
-      SyncType.Recurring
-    )
-    await SecondarySyncHealthTracker.recordFailure(
-      [nodeUsers[0].secondary1],
-      [nodeUsers[0].wallet],
-      SyncType.Recurring
-    )
-    await SecondarySyncHealthTracker.recordFailure(
-      [nodeUsers[0].secondary2],
-      [nodeUsers[0].wallet],
-      SyncType.Recurring
-    )
-
-    const expectedUserSecondarySyncMetricsMap = {
-      [nodeUsers[0].wallet]: {
-        [nodeUsers[0].secondary1]: {
-          successRate: 0.75,
-          successCount: 3,
-          failureCount: 1
-        },
-        [nodeUsers[0].secondary2]: {
-          successRate: 0,
-          successCount: 0,
-          failureCount: 1
-        }
-      },
-      [nodeUsers[1].wallet]: {
-        [nodeUsers[1].secondary1]: {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        },
-        [nodeUsers[1].secondary2]: {
-          successRate: 1,
-          successCount: 0,
-          failureCount: 0
-        }
-      }
-    }
-
-    const userSecondarySyncMetricsMap =
-      await computeUserSecondarySyncSuccessRatesMap(nodeUsers)
-
-    expect(userSecondarySyncMetricsMap).to.deep.equal(
-      expectedUserSecondarySyncMetricsMap
-    )
-  })
 })
 
 describe('Test computeSyncModeForUserAndReplica()', function () {
@@ -556,9 +496,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         return secondaryFilesHash
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       const syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -583,9 +526,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         return primaryFilesHashMock
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       const syncMode = await computeSyncModeForUserAndReplica({
         wallet,
@@ -613,9 +559,12 @@ describe('Test computeSyncModeForUserAndReplica()', function () {
       DBManagerMock.fetchFilesHashFromDB = async () => {
         throw new Error(errorMsg)
       }
-      proxyquire('../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils', {
-        '../../../dbManager': DBManagerMock
-      })
+      proxyquire(
+        '../src/services/stateMachineManager/stateMonitoring/stateMonitoringUtils',
+        {
+          '../../../dbManager': DBManagerMock
+        }
+      )
 
       try {
         await computeSyncModeForUserAndReplica({

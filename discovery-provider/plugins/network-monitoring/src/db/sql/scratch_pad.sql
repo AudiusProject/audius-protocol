@@ -277,3 +277,206 @@ AND run_id = :run_id;
         secondary1spid = ANY ( '{1,2,3,4}'::int[] )
     AND 
         secondary2spid = ANY ( '{1,2,3,4}'::int[] );
+
+SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE
+        run_id = 71
+    AND 
+        primaryspid != ALL('{1, 2, 3, 4, 5, 6, 7, 8, 9}'::int[])
+    AND
+        secondary1spid != ALL('{1, 2, 3, 4, 5, 6, 7, 8, 9}'::int[])
+    AND 
+        secondary2spid != ALL ('{1, 2, 3, 4, 5, 6, 7, 8, 9}'::int[]);
+
+-- FULLY SYNCED
+
+SELECT 
+    fully_synced.spid, 
+    cnodes.endpoint, 
+    fully_synced.fully_synced_count + 
+    partially_synced.partially_synced_count + 
+    unsynced.unsynced_count
+
+SELECT 
+    SUM(fully_synced.fully_synced_count + 
+    partially_synced.partially_synced_count + 
+    unsynced.unsynced_count) AS WHOA
+FROM (
+    SELECT 
+        fully_synced_primary.spid AS spid, 
+        (SUM(fully_synced_primary.fully_synced_count) +
+        SUM(fully_synced_secondary1.fully_synced_count) +
+        SUM(fully_synced_secondary2.fully_synced_count)) AS fully_synced_count
+    FROM (
+        SELECT primaryspid AS spid, COUNT(*) as fully_synced_count
+        FROM network_monitoring_users
+        WHERE
+            run_id = 121
+        AND 
+            primary_clock_value IS NOT NULL
+        AND
+            primary_clock_value = secondary1_clock_value
+        AND
+            secondary1_clock_value = secondary2_clock_value
+        GROUP BY primaryspid
+    ) AS fully_synced_primary
+    JOIN (
+        SELECT secondary1spid AS spid, COUNT(*) as fully_synced_count
+        FROM network_monitoring_users
+        WHERE
+            run_id = 121
+        AND 
+            primary_clock_value IS NOT NULL
+        AND
+            primary_clock_value = secondary1_clock_value
+        AND
+            secondary1_clock_value = secondary2_clock_value
+        GROUP BY secondary1spid
+    ) AS fully_synced_secondary1
+    ON fully_synced_primary.spid = fully_synced_secondary1.spid
+    JOIN (
+        SELECT secondary2spid AS spid, COUNT(*) as fully_synced_count
+        FROM network_monitoring_users
+        WHERE
+            run_id = 121
+        AND 
+            primary_clock_value IS NOT NULL
+        AND
+            primary_clock_value = secondary1_clock_value
+        AND
+            secondary1_clock_value = secondary2_clock_value
+        GROUP BY secondary2spid
+    ) AS fully_synced_secondary2
+    ON fully_synced_primary.spid = fully_synced_secondary2.spid
+    GROUP BY fully_synced_primary.spid
+) AS fully_synced
+JOIN (
+    SELECT 
+        partially_synced_primary.spid AS spid, 
+        (SUM(partially_synced_primary.partially_synced_count) +
+        SUM(partially_synced_secondary1.partially_synced_count) +
+        SUM(partially_synced_secondary2.partially_synced_count)) AS partially_synced_count
+    FROM (
+        SELECT primaryspid AS SPID, COUNT(*) AS partially_synced_count
+        FROM network_monitoring_users
+        WHERE 
+            run_id = 121
+        AND 
+            primary_clock_value IS NOT NULL
+        AND ( 
+            primary_clock_value = secondary1_clock_value
+            OR
+            primary_clock_value = secondary2_clock_value
+        )
+        AND 
+            secondary1_clock_value != secondary2_clock_value
+        GROUP BY primaryspid
+    ) AS partially_synced_primary
+    JOIN (
+        SELECT secondary1spid AS SPID, COUNT(*) AS partially_synced_count
+        FROM network_monitoring_users
+        WHERE 
+            run_id = 121
+        AND 
+            primary_clock_value IS NOT NULL
+        AND ( 
+            primary_clock_value = secondary1_clock_value
+            OR
+            primary_clock_value = secondary2_clock_value
+        )
+        AND 
+            secondary1_clock_value != secondary2_clock_value
+        GROUP BY secondary1spid
+    ) AS partially_synced_secondary1
+    ON partially_synced_primary.spid = partially_synced_secondary1.spid
+    JOIN (
+        SELECT secondary2spid AS SPID, COUNT(*) AS partially_synced_count
+        FROM network_monitoring_users
+        WHERE 
+            run_id = 121
+        AND 
+            primary_clock_value IS NOT NULL
+        AND ( 
+            primary_clock_value = secondary1_clock_value
+            OR
+            primary_clock_value = secondary2_clock_value
+        )
+        AND 
+            secondary1_clock_value != secondary2_clock_value
+        GROUP BY secondary2spid
+    ) AS partially_synced_secondary2
+    ON partially_synced_primary.spid = partially_synced_secondary2.spid
+    GROUP BY partially_synced_primary.spid
+) AS partially_synced
+ON fully_synced.spid = partially_synced.spid
+JOIN (
+    SELECT 
+        unsynced_primary.spid AS spid, 
+        (SUM(unsynced_primary.unsynced_count) +
+        SUM(unsynced_secondary1.unsynced_count) +
+        SUM(unsynced_secondary2.unsynced_count)) AS unsynced_count
+    FROM (
+        SELECT primaryspid AS spid, COUNT(*) AS unsynced_count
+        FROM network_monitoring_users
+        WHERE 
+            run_id = 121
+        AND 
+            primary_clock_value IS NOT NULL
+        AND 
+            primary_clock_value != secondary1_clock_value
+        AND
+            primary_clock_value != secondary2_clock_value
+        GROUP BY primaryspid
+    ) AS unsynced_primary
+    JOIN (
+        SELECT secondary1spid AS spid, COUNT(*) AS unsynced_count
+        FROM network_monitoring_users
+        WHERE 
+            run_id = 121
+        AND 
+            primary_clock_value IS NOT NULL
+        AND 
+            primary_clock_value != secondary1_clock_value
+        AND
+            primary_clock_value != secondary2_clock_value
+        GROUP BY secondary1spid
+    ) AS unsynced_secondary1
+    ON unsynced_primary.spid = unsynced_secondary1.spid
+    JOIN (
+        SELECT secondary2spid AS spid, COUNT(*) AS unsynced_count
+        FROM network_monitoring_users
+        WHERE 
+            run_id = 121
+        AND 
+            primary_clock_value IS NOT NULL
+        AND 
+            primary_clock_value != secondary1_clock_value
+        AND
+            primary_clock_value != secondary2_clock_value
+        GROUP BY secondary2spid
+    ) AS unsynced_secondary2
+    ON unsynced_primary.spid = unsynced_secondary2.spid
+    GROUP BY unsynced_primary.spid
+) AS unsynced
+ON fully_synced.spid = unsynced.spid
+JOIN (
+    SELECT spid, endpoint
+    FROM network_monitoring_content_nodes
+    WHERE
+        run_id = 121
+) AS cnodes
+ON cnodes.spid = fully_synced.spid
+-- ORDER BY fully_synced.spid;
+
+SELECT COUNT(*) as user_count
+    FROM network_monitoring_users
+    WHERE 
+        run_id = 168
+    AND (
+        primary_clock_value = -1
+        OR
+        secondary1_clock_value = -1
+        OR 
+        secondary2_clock_value = -1
+    );

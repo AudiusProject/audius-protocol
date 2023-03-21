@@ -30,6 +30,9 @@ class Track(Base, RepresentableMixin):
     is_current = Column(Boolean, primary_key=True, nullable=False)
     is_delete = Column(Boolean, nullable=False)
     owner_id = Column(Integer, nullable=False, index=True)
+    track_cid = Column(
+        String, index=True
+    )  # todo: after backfill, add nullable=False, both here and in a db migration
     title = Column(Text)
     length = Column(Integer)
     cover_art = Column(String)
@@ -64,6 +67,9 @@ class Track(Base, RepresentableMixin):
     )
     slot = Column(Integer)
     is_available = Column(Boolean, nullable=False, server_default=text("true"))
+    is_premium = Column(Boolean, nullable=False, server_default=text("false"))
+    premium_conditions = Column(JSONB())
+    is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
 
     block = relationship(  # type: ignore
         "Block", primaryjoin="Track.blockhash == Block.blockhash"
@@ -109,3 +115,6 @@ class Track(Base, RepresentableMixin):
     @validates(*fields)
     def validate_field(self, field, value):
         return validate_field_helper(field, value, "Track", getattr(Track, field).type)
+
+    def get_attributes_dict(self):
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}

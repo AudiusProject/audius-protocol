@@ -7,7 +7,7 @@ import numeral from 'numeral'
  * 56,010 => 56K
  * 443,123 => 443K
  * 4,001,000 => 4M Followers
-*/
+ */
 export const formatCount = (count) => {
   if (count >= 1000) {
     const countStr = count.toString()

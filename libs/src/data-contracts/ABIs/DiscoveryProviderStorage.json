@@ -2,29 +2,70 @@
   "contractName": "DiscoveryProviderStorage",
   "abi": [
     {
-      "constant": false,
-      "inputs": [],
-      "name": "kill",
-      "outputs": [],
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_registryAddress",
+          "type": "address"
+        }
+      ],
       "payable": false,
       "stateMutability": "nonpayable",
-      "type": "function"
+      "type": "constructor"
     },
     {
-      "constant": false,
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "discProvEndpoints",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
       "payable": false,
-      "stateMutability": "nonpayable",
+      "stateMutability": "view",
       "type": "function"
     },
     {
       "constant": true,
-      "inputs": [],
-      "name": "owner",
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "discProvWallets",
       "outputs": [
         {
+          "internalType": "address",
           "name": "",
           "type": "address"
         }
@@ -39,6 +80,7 @@
       "name": "isOwner",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "",
           "type": "bool"
         }
@@ -49,8 +91,42 @@
     },
     {
       "constant": false,
+      "inputs": [],
+      "name": "kill",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
       "inputs": [
         {
+          "internalType": "address payable",
           "name": "_registryAddress",
           "type": "address"
         }
@@ -62,47 +138,10 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "discProvEndpoints",
-      "outputs": [
-        {
-          "name": "",
-          "type": "string"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "discProvWallets",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "newOwner",
           "type": "address"
         }
@@ -114,37 +153,10 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "name": "_registryAddress",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
-    },
-    {
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_id",
           "type": "uint256"
         }
@@ -152,10 +164,12 @@
       "name": "getDiscoveryProvider",
       "outputs": [
         {
+          "internalType": "address",
           "name": "wallet",
           "type": "address"
         },
         {
+          "internalType": "string",
           "name": "endpoint",
           "type": "string"
         }
@@ -170,6 +184,7 @@
       "name": "getTotalNumberOfProviders",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "total",
           "type": "uint256"
         }
@@ -182,10 +197,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "_wallet",
           "type": "address"
         },
         {
+          "internalType": "string",
           "name": "_endpoint",
           "type": "string"
         }
@@ -193,6 +210,7 @@
       "name": "register",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "id",
           "type": "uint256"
         }

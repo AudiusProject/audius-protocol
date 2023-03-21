@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,6 +13,7 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -31,5 +32,43 @@ export interface CoverPhoto {
      * @memberof CoverPhoto
      */
     _2000x?: string;
+}
+
+/**
+ * Check if a given object implements the CoverPhoto interface.
+ */
+export function instanceOfCoverPhoto(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function CoverPhotoFromJSON(json: any): CoverPhoto {
+    return CoverPhotoFromJSONTyped(json, false);
+}
+
+export function CoverPhotoFromJSONTyped(json: any, ignoreDiscriminator: boolean): CoverPhoto {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        '_640x': !exists(json, '640x') ? undefined : json['640x'],
+        '_2000x': !exists(json, '2000x') ? undefined : json['2000x'],
+    };
+}
+
+export function CoverPhotoToJSON(value?: CoverPhoto | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        '640x': value._640x,
+        '2000x': value._2000x,
+    };
 }
 

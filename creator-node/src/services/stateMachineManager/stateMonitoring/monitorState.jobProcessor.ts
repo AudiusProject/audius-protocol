@@ -6,21 +6,21 @@ import type {
   MonitorStateJobParams,
   MonitorStateJobReturnValue,
   ReplicaToAllUserInfoMaps,
-  StateMonitoringUser,
-  UserSecondarySyncMetricsMap
+  StateMonitoringUser
 } from './types'
 
 // eslint-disable-next-line import/no-unresolved
 import { QUEUE_NAMES } from '../stateMachineConstants'
+import { instrumentTracing, tracing } from '../../../tracer'
+import { CNodeHealthManager } from '../CNodeHealthManager'
+import config from '../../../config'
+import { retrieveUserInfoFromReplicaSet } from '../stateMachineUtils'
+import { SecondarySyncHealthTracker } from '../stateReconciliation/SecondarySyncHealthTracker'
 
-const config = require('../../../config')
-const NodeHealthManager = require('../CNodeHealthManager')
 const {
   getNodeUsers,
-  buildReplicaSetNodesToUserWalletsMap,
-  computeUserSecondarySyncSuccessRatesMap
+  buildReplicaSetNodesToUserWalletsMap
 } = require('./stateMonitoringUtils')
-const { retrieveUserInfoFromReplicaSet } = require('../stateMachineUtils')
 
 // Number of users to process each time monitor-state job processor is called
 const USERS_PER_JOB = config.get('snapbackUsersPerJob')
@@ -44,7 +44,7 @@ type Decision = {
  * @param {string} param.discoveryNodeEndpoint the IP address / URL of a Discovery Node to make requests to
  * @return {Object} object containing an array of jobs to add to the state monitoring queue
  */
-module.exports = async function ({
+async function monitorState({
   logger,
   lastProcessedUserId,
   discoveryNodeEndpoint
@@ -68,7 +68,9 @@ module.exports = async function ({
   let users: StateMonitoringUser[] = []
   let unhealthyPeers = new Set<string>()
   let replicaToAllUserInfoMaps: ReplicaToAllUserInfoMaps = {}
-  let userSecondarySyncMetricsMap: UserSecondarySyncMetricsMap = {}
+
+  const secondarySyncHealthTracker = new SecondarySyncHealthTracker()
+
   try {
     try {
       users = await getNodeUsers(
@@ -82,6 +84,8 @@ module.exports = async function ({
         usersLength: users?.length
       })
     } catch (e: any) {
+      tracing.recordException(e)
+
       // Make the next job try again instead of looping back to userId 0
       users = [
         {
@@ -106,12 +110,16 @@ module.exports = async function ({
     }
 
     try {
-      unhealthyPeers = await NodeHealthManager.getUnhealthyPeers(users)
+      unhealthyPeers = await CNodeHealthManager.getUnhealthyPeers(
+        users,
+        config.get('creatorNodeEndpoint')
+      )
       _addToDecisionTree(decisionTree, 'getUnhealthyPeers Success', logger, {
         unhealthyPeerSetLength: unhealthyPeers?.size,
         unhealthyPeers: Array.from(unhealthyPeers)
       })
     } catch (e: any) {
+      tracing.recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -138,7 +146,7 @@ module.exports = async function ({
 
     // Retrieve user info for all users and their current replica sets
     try {
-      const retrieveUserInfoResp = await retrieveUserInfoFromReplicaSet(
+      const retrieveUserInfoResp: any = await retrieveUserInfoFromReplicaSet(
         replicaSetNodesToUserWalletsMap
       )
       replicaToAllUserInfoMaps = retrieveUserInfoResp.replicaToAllUserInfoMaps
@@ -152,9 +160,14 @@ module.exports = async function ({
       _addToDecisionTree(
         decisionTree,
         'retrieveUserInfoFromReplicaSet Success',
-        logger
+        logger,
+        {
+          newUnhealthyPeerSetLength: retrieveUserInfoResp.unhealthyPeers.size,
+          newUnhealthyPeers: Array.from(retrieveUserInfoResp.unhealthyPeers)
+        }
       )
     } catch (e: any) {
+      tracing.recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
@@ -169,32 +182,34 @@ module.exports = async function ({
 
     // Retrieve success metrics for all users syncing to their secondaries
     try {
-      userSecondarySyncMetricsMap =
-        await computeUserSecondarySyncSuccessRatesMap(users)
+      await secondarySyncHealthTracker.computeWalletOnSecondaryExceedsMaxErrorsAllowed(
+        users.map((user) => ({
+          wallet: user.wallet,
+          secondary1: user.secondary1,
+          secondary2: user.secondary2
+        }))
+      )
       _addToDecisionTree(
         decisionTree,
-        'computeUserSecondarySyncSuccessRatesMap Success',
-        logger,
-        {
-          userSecondarySyncMetricsMapLength: Object.keys(
-            userSecondarySyncMetricsMap
-          )?.length
-        }
+        'computeWalletOnSecondaryExceedsMaxErrorsAllowed Success',
+        logger
       )
     } catch (e: any) {
+      tracing.recordException(e)
       logger.error(e.stack)
       _addToDecisionTree(
         decisionTree,
-        'computeUserSecondarySyncSuccessRatesMap Error',
+        'computeWalletOnSecondaryExceedsMaxErrorsAllowed Error',
         logger,
         { error: e.message }
       )
       throw new Error(
-        'monitor-state job processor computeUserSecondarySyncSuccessRatesMap Error'
+        'monitor-state job processor computeWalletOnSecondaryExceedsMaxErrorsAllowed Error'
       )
     }
   } catch (e: any) {
-    logger.info(`monitor-state job processor ERROR: ${e.toString()}`)
+    tracing.recordException(e)
+    logger.error(`monitor-state job processor ERROR: ${e.toString()}`)
   } finally {
     _addToDecisionTree(decisionTree, 'END monitor-state job processor', logger)
 
@@ -210,17 +225,20 @@ module.exports = async function ({
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    userSecondarySyncMetricsMap
+    secondarySyncHealthTrackerState: secondarySyncHealthTracker.getState(),
+    parentSpanContext: tracing.currentSpanContext()
   }
   const findReplicaSetUpdatesJob: FindReplicaSetUpdateJobParams = {
     users,
     unhealthyPeers: Array.from(unhealthyPeers), // Bull messes up passing a Set
     replicaToAllUserInfoMaps,
-    userSecondarySyncMetricsMap
+    secondarySyncHealthTrackerState: secondarySyncHealthTracker.getState(),
+    parentSpanContext: tracing.currentSpanContext()
   }
   const monitorStateJob: MonitorStateJobParams = {
     lastProcessedUserId: lastProcessedUser?.user_id || 0,
-    discoveryNodeEndpoint
+    discoveryNodeEndpoint,
+    parentSpanContext: tracing.currentSpanContext()
   }
   return {
     jobsToEnqueue: {
@@ -258,7 +276,7 @@ const _addToDecisionTree = (
   decisionTree.push(obj)
 
   if (logger) {
-    logger.info(logStr)
+    logger.debug(logStr)
   }
 }
 
@@ -271,12 +289,35 @@ const _printDecisionTree = (decisionTree: Decision[], logger: Logger) => {
     decisionTree[decisionTree.length - 1].fullDuration = duration
   }
   try {
-    logger.info(
+    logger.debug(
       `monitor-state job processor Decision Tree${JSON.stringify(decisionTree)}`
     )
-  } catch (e) {
+  } catch (e: any) {
+    tracing.recordException(e)
     logger.error(
       `Error printing monitor-state job processor Decision Tree ${decisionTree}`
     )
   }
+}
+
+module.exports = async (params: DecoratedJobParams<MonitorStateJobParams>) => {
+  const { parentSpanContext } = params
+  const jobProcessor = instrumentTracing({
+    name: 'monitorState.jobProcessor',
+    fn: monitorState,
+    options: {
+      links: parentSpanContext
+        ? [
+            {
+              context: parentSpanContext
+            }
+          ]
+        : [],
+      attributes: {
+        [tracing.CODE_FILEPATH]: __filename
+      }
+    }
+  })
+
+  return await jobProcessor(params)
 }

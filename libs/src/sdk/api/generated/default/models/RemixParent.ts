@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { TrackElement } from './TrackElement';
 import {
-    TrackElement,
     TrackElementFromJSON,
     TrackElementFromJSONTyped,
     TrackElementToJSON,
@@ -32,5 +33,41 @@ export interface RemixParent {
      * @memberof RemixParent
      */
     tracks?: Array<TrackElement>;
+}
+
+/**
+ * Check if a given object implements the RemixParent interface.
+ */
+export function instanceOfRemixParent(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function RemixParentFromJSON(json: any): RemixParent {
+    return RemixParentFromJSONTyped(json, false);
+}
+
+export function RemixParentFromJSONTyped(json: any, ignoreDiscriminator: boolean): RemixParent {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'tracks': !exists(json, 'tracks') ? undefined : ((json['tracks'] as Array<any>).map(TrackElementFromJSON)),
+    };
+}
+
+export function RemixParentToJSON(value?: RemixParent | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'tracks': value.tracks === undefined ? undefined : ((value.tracks as Array<any>).map(TrackElementToJSON)),
+    };
 }
 

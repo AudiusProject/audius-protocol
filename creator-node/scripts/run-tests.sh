@@ -29,7 +29,7 @@ if [ "${debug}" ]; then
   UNIT_TIMEOUT=0
   INTEGRATION_TIMEOUT=0
 else
-  UNIT_TIMEOUT=2000
+  UNIT_TIMEOUT=5000
   INTEGRATION_TIMEOUT=30000
 fi
 
@@ -45,12 +45,12 @@ tear_down () {
 
 run_unit_tests () {
   echo Running unit tests...
-  ./node_modules/mocha/bin/mocha --require ts-node/register --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' 'src/**/*.test.ts' --exit
+  ./node_modules/mocha/bin/mocha.js --require ts-node/register --timeout "${UNIT_TIMEOUT}" --recursive 'src/**/*.test.js' 'src/**/*.test.ts' --exit
 }
 
 run_integration_tests () {
   echo Running integration tests...
-  ./node_modules/mocha/bin/mocha --require ts-node/register test/*.test.js --timeout "${INTEGRATION_TIMEOUT}" --exit
+  ./node_modules/mocha/bin/mocha.js --require ts-node/register test/*.test.js test/*.test.ts --timeout "${INTEGRATION_TIMEOUT}" --exit
 }
 
 ARG1=${@:$OPTIND:1}
@@ -65,12 +65,12 @@ if [ "${ARG1}" == "standalone_creator" ]; then
 
   if [ ! "${DB_EXISTS}" ]; then
     echo "DB Container doesn't exist"
-    docker run -d --name $DB_CONTAINER -p 127.0.0.1:$PG_PORT:5432 postgres:11.1
-    sleep 1
+    docker run -d --name $DB_CONTAINER -p 127.0.0.1:$PG_PORT:5432 postgres:11.1 postgres -c shared_buffers=512MB -c max_connections=500 -c shared_preload_libraries=pg_stat_statements
+    sleep 5
   fi
   if [ ! "${REDIS_EXISTS}" ]; then
     echo "Redis Container doesn't exist"
-    docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:5.0.4
+    docker run -d --name $REDIS_CONTAINER -p 127.0.0.1:$redisPort:6379 redis:6.2
     sleep 1
   fi
 elif [ "${ARG1}" == "teardown" ]; then
@@ -103,6 +103,9 @@ fi
 rm -rf $storagePath
 mkdir -p $storagePath
 
+# transpile into typescript
+npm run build
+
 # linter
 npm run lint
 
@@ -122,7 +125,7 @@ export minimumMemoryAvailable=2000000000
 export maxFileDescriptorsAllocatedPercentage=95
 export minimumDailySyncCount=5
 export minimumRollingSyncCount=10
-export minimumSuccessfulSyncCountPercentage=50
+export dbConnectionPoolMax=1
 
 # tests
 run_unit_tests

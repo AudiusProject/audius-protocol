@@ -1,18 +1,12 @@
-const ServiceCommands = require('@audius/service-commands')
 const {
   addIPLDToBlacklist,
-  updateTrackOnChain,
   updateTrackOnChainAndCnode,
-  addTrackToChain,
   uploadTrack,
   uploadTrackCoverArt,
   uploadProfilePic,
   uploadCoverPhoto,
   getTrackMetadata,
-  updateMultihash,
   updateCreator,
-  updateCoverPhoto,
-  updateProfilePhoto,
   createPlaylist,
   updatePlaylistCoverPhoto,
   uploadPlaylistCoverPhoto,
@@ -21,7 +15,7 @@ const {
   cleanUserMetadata,
   Utils,
   RandomUtils
-} = ServiceCommands
+} = require('@audius/service-commands')
 const path = require('path')
 const fs = require('fs-extra')
 const {

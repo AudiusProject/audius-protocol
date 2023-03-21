@@ -39,12 +39,21 @@ def get_remixes_of(args):
         def get_unpopulated_remixes():
 
             # Fetch the parent track to get the track's owner id
-            parent_track_res = get_unpopulated_tracks(session, [track_id], False, False)
+            parent_track_res = get_unpopulated_tracks(
+                session=session,
+                track_ids=[track_id],
+                filter_deleted=False,
+                filter_unlisted=False,
+            )
 
             if not parent_track_res or parent_track_res[0] is None:
                 raise exceptions.ArgumentError("Invalid track_id provided")
 
             parent_track = parent_track_res[0]
+
+            if parent_track["is_premium"]:
+                return ([], [], 0)
+
             track_owner_id = parent_track["owner_id"]
 
             # Get the 'children' remix tracks

@@ -1,24 +1,30 @@
 import logging
+import os
 import time
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 
 from redis import Redis
+from sqlalchemy import bindparam, text
 from sqlalchemy.orm.session import Session
 from src.models.indexing.block import Block
+from src.models.notifications.notification import Notification
 from src.models.tracks.track import Track
 from src.queries.get_trending_tracks import (
+    _get_trending_tracks_with_session,
     generate_unpopulated_trending,
     generate_unpopulated_trending_from_mat_views,
     make_trending_cache_key,
 )
 from src.queries.get_underground_trending import (
+    _get_underground_trending_with_session,
     make_get_unpopulated_tracks,
     make_underground_trending_cache_key,
 )
 from src.tasks.celery_app import celery
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils import helpers
 from src.utils.config import shared_config
 from src.utils.prometheus_metric import (
     PrometheusMetric,
@@ -28,6 +34,7 @@ from src.utils.prometheus_metric import (
 from src.utils.redis_cache import set_json_cached_key
 from src.utils.redis_constants import trending_tracks_last_completion_redis_key
 from src.utils.session_manager import SessionManager
+from src.utils.web3_provider import get_web3
 from web3 import Web3
 
 logger = logging.getLogger(__name__)
@@ -64,6 +71,7 @@ genre_allowlist = {
     "Hardstyle",
     "Hip-Hop/Rap",
     "House",
+    "Hyperpop",
     "Jazz",
     "Jersey Club",
     "Jungle",
@@ -156,11 +164,17 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
                     cache_start_time = time.time()
                     if strategy.use_mat_view:
                         res = generate_unpopulated_trending_from_mat_views(
-                            session, genre, time_range, strategy
+                            session=session,
+                            genre=genre,
+                            time_range=time_range,
+                            strategy=strategy,
                         )
                     else:
                         res = generate_unpopulated_trending(
-                            session, genre, time_range, strategy
+                            session=session,
+                            genre=genre,
+                            time_range=time_range,
+                            strategy=strategy,
                         )
                     key = make_trending_cache_key(time_range, genre, version)
                     set_json_cached_key(redis, key, res)
@@ -201,8 +215,229 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     redis.set(trending_tracks_last_completion_redis_key, int(update_end))
     set_last_trending_datetime(redis, timestamp)
 
+    index_trending_notifications(db, timestamp)
+    index_trending_underground_notifications(db, timestamp)
+
+
+def index_trending_notifications(db: SessionManager, timestamp: int):
+    # Get the top 5 trending tracks from the new trending calculations
+    # Get the most recent trending tracks notifications
+    # Calculate any diff and write the new notifications if the trending track has moved up in rank
+    # Skip if the user was notified of the trending track within the last TRENDING_INTERVAL_HOURS
+    # Skip If the new rank is not less than the old rank, skip
+    #   ie. Skip if track moved from #2 trending to #3 trending or stayed the same
+    trending_strategy_factory = TrendingStrategyFactory()
+    # The number of tracks to notify for in the top
+    NOTIFICATIONS_TRACK_LIMIT = 5
+    with db.scoped_session() as session:
+        trending_tracks = _get_trending_tracks_with_session(
+            session,
+            {"time": "week", "exclude_premium": True},
+            trending_strategy_factory.get_strategy(TrendingType.TRACKS),
+        )
+        top_trending = trending_tracks[:NOTIFICATIONS_TRACK_LIMIT]
+        top_trending_track_ids = [str(t["track_id"]) for t in top_trending]
+
+        previous_trending_notifications = (
+            session.query(Notification)
+            .filter(
+                Notification.type == "trending",
+                Notification.specifier.in_(top_trending_track_ids),
+            )
+            .all()
+        )
+
+        latest_notification_query = text(
+            """
+                SELECT 
+                    DISTINCT ON (specifier) specifier,
+                    timestamp,
+                    data
+                FROM notification
+                WHERE 
+                    type=:type AND
+                    specifier in :track_ids
+                ORDER BY
+                    specifier desc,
+                    timestamp desc
+            """
+        )
+        latest_notification_query = latest_notification_query.bindparams(
+            bindparam("track_ids", expanding=True)
+        )
+
+        previous_trending_notifications = session.execute(
+            latest_notification_query,
+            {"track_ids": top_trending_track_ids, "type": "trending"},
+        )
+        previous_trending = {
+            n[0]: {"timestamp": n[1], **n[2]} for n in previous_trending_notifications
+        }
+
+        notifications = []
+
+        # Do not send notifications for the same track trending within 24 hours
+        NOTIFICATION_INTERVAL_SEC = 60 * 60 * 24
+
+        for index, track in enumerate(top_trending):
+            track_id = track["track_id"]
+            rank = index + 1
+            previous_track_notification = previous_trending.get(str(track["track_id"]))
+            if previous_track_notification is not None:
+                current_datetime = datetime.fromtimestamp(timestamp)
+                prev_notification_datetime = datetime.fromtimestamp(
+                    previous_track_notification["timestamp"].timestamp()
+                )
+                if (
+                    current_datetime - prev_notification_datetime
+                ).total_seconds() < NOTIFICATION_INTERVAL_SEC:
+                    continue
+                prev_rank = previous_track_notification["rank"]
+                if prev_rank <= rank:
+                    continue
+            notifications.append(
+                {
+                    "owner_id": track["owner_id"],
+                    "group_id": f"trending:time_range:week:genre:all:rank:{rank}:track_id:{track_id}:timestamp:{timestamp}",
+                    "track_id": track_id,
+                    "rank": rank,
+                }
+            )
+
+        session.bulk_save_objects(
+            [
+                Notification(
+                    user_ids=[n["owner_id"]],
+                    timestamp=datetime.fromtimestamp(timestamp),
+                    type="trending",
+                    group_id=n["group_id"],
+                    specifier=n["track_id"],
+                    data={
+                        "time_range": "week",
+                        "genre": "all",
+                        "rank": n["rank"],
+                        "track_id": n["track_id"],
+                    },
+                )
+                for n in notifications
+            ]
+        )
+        logger.info(
+            "index_trending.py | Created trending notifications",
+            extra={"job": "index_trending", "subtask": "trending notification"},
+        )
+
 
 last_trending_timestamp = "last_trending_timestamp"
+
+
+def index_trending_underground_notifications(db: SessionManager, timestamp: int):
+    # Get the top 5 trending tracks from the new trending calculations
+    # Get the most recent trending tracks notifications
+    # Calculate any diff and write the new notifications if the trending track has moved up in rank
+    # Skip if the user was notified of the trending track within the last TRENDING_INTERVAL_HOURS
+    # Skip If the new rank is not less than the old rank, skip
+    #   ie. Skip if track moved from #2 trending to #3 trending or stayed the same
+    trending_strategy_factory = TrendingStrategyFactory()
+    # The number of tracks to notify for in the top
+    NOTIFICATIONS_TRACK_LIMIT = 5
+    with db.scoped_session() as session:
+        top_trending = _get_underground_trending_with_session(
+            session,
+            {"offset": 0, "limit": NOTIFICATIONS_TRACK_LIMIT},
+            trending_strategy_factory.get_strategy(TrendingType.UNDERGROUND_TRACKS),
+            False,
+        )
+        top_trending_track_ids = [str(t["track_id"]) for t in top_trending]
+
+        previous_trending_notifications = (
+            session.query(Notification)
+            .filter(
+                Notification.type == "trending_underground",
+                Notification.specifier.in_(top_trending_track_ids),
+            )
+            .all()
+        )
+
+        latest_notification_query = text(
+            """
+                SELECT 
+                    DISTINCT ON (specifier) specifier,
+                    timestamp,
+                    data
+                FROM notification
+                WHERE 
+                    type=:type AND
+                    specifier in :track_ids
+                ORDER BY
+                    specifier desc,
+                    timestamp desc
+            """
+        )
+        latest_notification_query = latest_notification_query.bindparams(
+            bindparam("track_ids", expanding=True)
+        )
+
+        previous_trending_notifications = session.execute(
+            latest_notification_query,
+            {"track_ids": top_trending_track_ids, "type": "trending_underground"},
+        )
+        previous_trending = {
+            n[0]: {"timestamp": n[1], **n[2]} for n in previous_trending_notifications
+        }
+
+        notifications = []
+
+        # Do not send notifications for the same track trending within 24 hours
+        NOTIFICATION_INTERVAL_SEC = 60 * 60 * 24
+
+        for index, track in enumerate(top_trending):
+            track_id = track["track_id"]
+            rank = index + 1
+            previous_track_notification = previous_trending.get(str(track["track_id"]))
+            if previous_track_notification is not None:
+                current_datetime = datetime.fromtimestamp(timestamp)
+                prev_notification_datetime = datetime.fromtimestamp(
+                    previous_track_notification["timestamp"].timestamp()
+                )
+                if (
+                    current_datetime - prev_notification_datetime
+                ).total_seconds() < NOTIFICATION_INTERVAL_SEC:
+                    continue
+                prev_rank = previous_track_notification["rank"]
+                if prev_rank <= rank:
+                    continue
+            notifications.append(
+                {
+                    "owner_id": track["owner_id"],
+                    "group_id": f"trending_underground:time_range:week:genre:all:rank:{rank}:track_id:{track_id}:timestamp:{timestamp}",
+                    "track_id": track_id,
+                    "rank": rank,
+                }
+            )
+
+        session.bulk_save_objects(
+            [
+                Notification(
+                    user_ids=[n["owner_id"]],
+                    timestamp=datetime.fromtimestamp(timestamp),
+                    type="trending_underground",
+                    group_id=n["group_id"],
+                    specifier=n["track_id"],
+                    data={
+                        "time_range": "week",
+                        "genre": "all",
+                        "rank": n["rank"],
+                        "track_id": n["track_id"],
+                    },
+                )
+                for n in notifications
+            ]
+        )
+        logger.info(
+            "index_trending.py | Created underground-trending notifications",
+            extra={"job": "index_trending", "subtask": "trending notification"},
+        )
 
 
 def get_last_trending_datetime(redis: Redis):
@@ -230,9 +465,41 @@ def floor_time(dt: datetime, interval_seconds: int):
     return dt + timedelta(0, rounding - seconds, -dt.microsecond)
 
 
+def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, web3):
+    """
+    finds the minimum block number above a timestamp
+    This is needed to ensure consistency across discovery nodes on the timestamp/blocknumber
+    of a notification for updates to trending track
+    returns a tuple of the blocknumber and timestamp
+    """
+    curr_block_number = block_number
+    block = get_block(web3, block_number)
+    while datetime.fromtimestamp(block["timestamp"]) > min_timestamp:
+        prev_block = get_block(web3, curr_block_number - 1)
+        prev_timestamp = datetime.fromtimestamp(prev_block["timestamp"])
+        if prev_timestamp >= min_timestamp:
+            block = prev_block
+            curr_block_number -= 1
+        else:
+            return block
+
+    return block
+
+
+def get_block(web3, block_number: int):
+    final_poa_block = helpers.get_final_poa_block(shared_config)
+    if final_poa_block and web3.provider.endpoint_uri == os.getenv(
+        "audius_web3_nethermind_rpc"
+    ):
+        nethermind_block_number = block_number - final_poa_block
+        return web3.eth.get_block(nethermind_block_number, True)
+    else:
+        return web3.eth.get_block(block_number, True)
+
+
 def get_should_update_trending(
     db: SessionManager, web3: Web3, redis: Redis, interval_seconds: int
-) -> Optional[int]:
+) -> Tuple[Optional[int], Optional[int]]:
     """
     Checks if the trending job should re-run based off the last trending run's timestamp and
     the most recently indexed block's timestamp.
@@ -242,23 +509,32 @@ def get_should_update_trending(
     """
     with db.scoped_session() as session:
         current_db_block = (
-            session.query(Block.blockhash).filter(Block.is_current == True).first()
+            session.query(Block.number).filter(Block.is_current == True).first()
         )
-        current_block = web3.eth.get_block(current_db_block[0], True)
+        current_db_block_number = current_db_block[0]
+        current_block = get_block(web3, current_db_block_number)
         current_timestamp = current_block["timestamp"]
-        block_datetime = floor_time(
-            datetime.fromtimestamp(current_timestamp), interval_seconds
-        )
+        current_datetime = datetime.fromtimestamp(current_timestamp)
+        min_block_datetime = floor_time(current_datetime, interval_seconds)
 
+        # Handle base case of not having run last trending
         last_trending_datetime = get_last_trending_datetime(redis)
         if not last_trending_datetime:
-            return int(block_datetime.timestamp())
+            # Base case where there is no previous trending calculation in redis
+            min_block = find_min_block_above_timestamp(
+                current_db_block_number, min_block_datetime, web3
+            )
+            return min_block, int(min_block_datetime.timestamp())
 
-        duration_since_last_index = block_datetime - last_trending_datetime
+        # Handle base case of not having run last trending
+        duration_since_last_index = current_datetime - last_trending_datetime
         if duration_since_last_index.total_seconds() >= interval_seconds:
-            return int(block_datetime.timestamp())
+            min_block = find_min_block_above_timestamp(
+                current_db_block_number, min_block_datetime, web3
+            )
 
-    return None
+            return min_block, int(min_block_datetime.timestamp())
+    return None, None
 
 
 # ####### CELERY TASKS ####### #
@@ -268,21 +544,24 @@ def index_trending_task(self):
     """Caches all trending combination of time-range and genre (including no genre)."""
     db = index_trending_task.db
     redis = index_trending_task.redis
-    web3 = index_trending_task.web3
+    web3 = get_web3()
     have_lock = False
-    update_lock = redis.lock("index_trending_lock", timeout=86400)
+    timeout = 60 * 60 * 2
+    update_lock = redis.lock("index_trending_lock", timeout=timeout)
     try:
-        should_update_timestamp = get_should_update_trending(
-            db, web3, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
-        )
         have_lock = update_lock.acquire(blocking=False)
-        if should_update_timestamp and have_lock:
-            index_trending(self, db, redis, should_update_timestamp)
+        if have_lock:
+            min_block, min_timestamp = get_should_update_trending(
+                db, web3, redis, UPDATE_TRENDING_DURATION_DIFF_SEC
+            )
+            if min_block is not None and min_timestamp is not None:
+                index_trending(self, db, redis, min_timestamp)
+            else:
+                logger.info("index_trending.py | skip indexing: not min block")
         else:
             logger.info(
                 f"index_trending.py | \
-                skip indexing: have lock {have_lock}, \
-                shoud update {should_update_timestamp}"
+                skip indexing: without lock {have_lock}"
             )
     except Exception as e:
         logger.error("index_trending.py | Fatal error in main loop", exc_info=True)

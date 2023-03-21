@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,6 +13,7 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -30,12 +31,52 @@ export interface Activity {
      * @type {object}
      * @memberof Activity
      */
-    item_type?: object;
+    itemType?: object;
     /**
      * 
      * @type {object}
      * @memberof Activity
      */
     item?: object;
+}
+
+/**
+ * Check if a given object implements the Activity interface.
+ */
+export function instanceOfActivity(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function ActivityFromJSON(json: any): Activity {
+    return ActivityFromJSONTyped(json, false);
+}
+
+export function ActivityFromJSONTyped(json: any, ignoreDiscriminator: boolean): Activity {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
+        'itemType': !exists(json, 'item_type') ? undefined : json['item_type'],
+        'item': !exists(json, 'item') ? undefined : json['item'],
+    };
+}
+
+export function ActivityToJSON(value?: Activity | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'timestamp': value.timestamp,
+        'item_type': value.itemType,
+        'item': value.item,
+    };
 }
 

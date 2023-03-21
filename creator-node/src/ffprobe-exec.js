@@ -9,7 +9,7 @@ async function getSegmentsDuration(req, segmentPath) {
   const cmd = `find ${segmentPath}/ -maxdepth 1 -iname '*.ts' -print -exec ${ffprobeStatic.path} -v quiet -of csv=p=0 -show_entries format=duration {} \\;`
 
   return new Promise((resolve, reject) => {
-    exec(cmd, (err, stdout, stderr) => {
+    exec(cmd, (err, stdout, _stderr) => {
       if (err) {
         req.logger.error(err)
         reject(new Error(err))

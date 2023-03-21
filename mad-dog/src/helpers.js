@@ -5,14 +5,13 @@ const TEMP_IMG_STORAGE_PATH = '/home/ubuntu/audius/audius-protocol/mad-dog/local
 
 const { logger } = require('./logger.js')
 
-const ServiceCommands = require('@audius/service-commands')
 const {
   addUser,
   uploadProfileImagesAndAddUser,
   getLibsUserInfo,
   getClockValuesFromReplicaSet,
   RandomUtils
-} = ServiceCommands
+} = require('@audius/service-commands')
 
 const {
   genRandomUsers,

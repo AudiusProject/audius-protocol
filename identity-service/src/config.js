@@ -39,6 +39,18 @@ const config = convict({
     env: 'web3Provider',
     default: null
   },
+  nethermindEnabled: {
+    doc: 'writing to ACDC chain feature flag',
+    format: Boolean,
+    env: 'nethermindEnabled',
+    default: true
+  },
+  nethermindWeb3Provider: {
+    doc: 'nethermind web3 provider url',
+    format: String,
+    env: 'nethermindWeb3Provider',
+    default: null
+  },
   secondaryWeb3Provider: {
     doc: 'secondary web3 provider url',
     format: String,
@@ -104,12 +116,6 @@ const config = convict({
     format: String,
     env: 'instagramRedirectUrl',
     default: null
-  },
-  instagramProfileUrl: {
-    doc: 'Instagram profile url',
-    format: String,
-    env: 'instagramProfileUrl',
-    default: 'https://www.instagram.com/%USERNAME%/channel/?__a=1'
   },
   relayerPrivateKey: {
     doc: 'L2 Relayer(used to make relay transactions) private key. The source of the funds when funding wallet.',
@@ -289,6 +295,13 @@ const config = convict({
     env: 'minimumBalance',
     default: null
   },
+  finalPOABlock: {
+    doc: 'Last block number on POA',
+    format: Number,
+    env: 'finalPOABlock',
+    nullable: true,
+    default: null
+  },
   minimumRelayerBalance: {
     doc: 'Minimum token balance for relayer below which /balance_check fails',
     format: Number,
@@ -319,10 +332,10 @@ const config = convict({
     env: 'sendgridApiKey',
     default: ''
   },
-  seonApiKey: {
-    doc: 'Seon API key used to validate emails',
+  sendgridEmailValidationKey: {
+    doc: 'Sendgrid API key used to validate emails',
     format: String,
-    env: 'seonApiKey',
+    env: 'sendgridEmailValidationKey',
     default: ''
   },
   // loaded through contract-config.json, if an env variable declared, env var takes precendence
@@ -331,6 +344,12 @@ const config = convict({
     format: String,
     default: null,
     env: 'registryAddress'
+  },
+  entityManagerAddress: {
+    doc: 'EntityManager address deployed on web3Provider',
+    format: String,
+    default: '',
+    env: 'entityManagerAddress'
   },
   audiusNotificationUrl: {
     doc: 'Url of audius notifications',
@@ -485,15 +504,13 @@ const config = convict({
     env: 'pgConnectionPoolMax'
   },
   pgConnectionPoolAcquireTimeout: {
-    doc:
-      'The maximum time (ms) the pool will try to get the connection before throwing an error',
+    doc: 'The maximum time (ms) the pool will try to get the connection before throwing an error',
     format: 'nat',
     default: 60000,
     env: 'pgConnectionPoolAcquireTimeout'
   },
   pgConnectionPoolIdleTimeout: {
-    doc:
-      'The maximum time (ms) that a connection can be idle before being released',
+    doc: 'The maximum time (ms) that a connection can be idle before being released',
     format: 'nat',
     default: 10000,
     env: 'pgConnectionPoolIdleTimeout'
@@ -696,6 +713,12 @@ const config = convict({
     default: '',
     env: 'aaoAddress'
   },
+  generalAdmissionAddress: {
+    doc: 'General admission server address',
+    format: String,
+    default: '',
+    env: 'generalAdmissionAddress'
+  },
   sentryDSN: {
     doc: 'Sentry DSN key',
     format: String,
@@ -730,7 +753,7 @@ const config = convict({
     doc: 'The slot number to start indexing if no slots defined',
     format: Number,
     env: 'minSolanaNotificationSlot',
-    default: 105400000
+    default: 166928009
   },
   successAudioReporterSlackUrl: {
     doc: 'The slack url to post messages for success in audio / rewards events',
@@ -809,6 +832,42 @@ const config = convict({
     format: String,
     env: 'cognitoRetrySecret',
     default: ''
+  },
+  stripeSecretKey: {
+    doc: 'Secret key for Stripe Crypto On-Ramp Integration',
+    format: String,
+    env: 'stripeSecretKey',
+    default: ''
+  },
+  skipAbuseCheck: {
+    doc: 'Skip AAO abuse check on relay and notifs',
+    format: Boolean,
+    env: 'skipAbuseCheck',
+    default: false
+  },
+  entityManagerReplicaSetEnabled: {
+    doc: 'Enable replica set updates with Entity Manager',
+    format: Boolean,
+    env: 'entityManagerReplicaSetEnabled',
+    default: true
+  },
+  updateReplicaSetReconfigurationLimit: {
+    doc: 'The limit of the replica set reconfiguration transactions that we will relay in 10 seconds. This limit is per cluster worker, not service wide',
+    format: Number,
+    env: 'updateReplicaSetReconfigurationLimit',
+    default: 10
+  },
+  updateReplicaSetWalletWhitelist: {
+    doc: '`senderAddress` values allowed to make updateReplicaSet calls. Will still adhere to updateReplicaSetReconfigurationLimit. Empty means no whitelist, all addresses allowed.',
+    format: 'string-array',
+    env: 'updateReplicaSetWalletWhitelist',
+    default: ''
+  },
+  ipApiKey: {
+    doc: 'Key for IPAPI',
+    format: String,
+    env: 'ipApiKey',
+    default: ''
   }
 })
 
@@ -821,7 +880,10 @@ const defaultConfigExists = fs.existsSync('default-config.json')
 if (defaultConfigExists) config.loadFile('default-config.json')
 
 if (fs.existsSync('eth-contract-config.json')) {
-  let ethContractConfig = require('../eth-contract-config.json')
+  // eslint isn't smart enought to know this is a conditional require, so this fails
+  // on CI where the file doesn't exist.
+  // eslint-disable-next-line node/no-missing-require
+  const ethContractConfig = require('../eth-contract-config.json')
   config.load({
     ethTokenAddress: ethContractConfig.audiusTokenAddress,
     ethRegistryAddress: ethContractConfig.registryAddress,
@@ -831,27 +893,31 @@ if (fs.existsSync('eth-contract-config.json')) {
 }
 
 if (fs.existsSync('solana-program-config.json')) {
-  let solanaContractConfig = require('../solana-program-config.json')
+  // eslint-disable-next-line node/no-missing-require
+  const solanaContractConfig = require('../solana-program-config.json')
   config.load({
     solanaTrackListenCountAddress: solanaContractConfig.trackListenCountAddress,
-    solanaAudiusEthRegistryAddress: solanaContractConfig.audiusEthRegistryAddress,
+    solanaAudiusEthRegistryAddress:
+      solanaContractConfig.audiusEthRegistryAddress,
     solanaValidSigner: solanaContractConfig.validSigner,
     solanaFeePayerWallets: solanaContractConfig.feePayerWallets,
     solanaEndpoint: solanaContractConfig.endpoint,
     solanaSignerPrivateKey: solanaContractConfig.signerPrivateKey,
 
     solanaMintAddress: solanaContractConfig.splToken,
-    solanaClaimableTokenProgramAddress: solanaContractConfig.claimableTokenAddress,
+    solanaClaimableTokenProgramAddress:
+      solanaContractConfig.claimableTokenAddress,
     solanaRewardsManagerProgramId: solanaContractConfig.rewardsManagerAddress,
     solanaRewardsManagerProgramPDA: solanaContractConfig.rewardsManagerAccount,
-    solanaRewardsManagerTokenPDA: solanaContractConfig.rewardsManagerTokenAccount,
+    solanaRewardsManagerTokenPDA:
+      solanaContractConfig.rewardsManagerTokenAccount,
 
     solanaAudiusAnchorDataProgramId: solanaContractConfig.anchorProgramId
   })
 }
 
 if (fs.existsSync('aao-config.json')) {
-  let aaoConfig = require('../aao-config.json')
+  const aaoConfig = require('../aao-config.json')
   console.log('rewards: ' + JSON.stringify(aaoConfig))
   config.load({
     aaoAddress: aaoConfig[0]

@@ -7,7 +7,7 @@ import {
   SYSVAR_RENT_PUBKEY,
   TransactionInstruction
 } from '@solana/web3.js'
-import borsh from 'borsh'
+import { serialize } from 'borsh'
 import { getBankAccountAddress } from './userBank'
 import BN from 'bn.js'
 import { SolanaUtils } from './SolanaUtils'
@@ -463,7 +463,7 @@ export const evaluateAttestations = async ({
     id: transferId,
     ethRecipient: SolanaUtils.ethAddressToArray(recipientEthAddress)
   })
-  const serializedInstructionData = borsh.serialize(
+  const serializedInstructionData = serialize(
     validateAttestationsInstructionSchema,
     instructionData
   )
@@ -573,7 +573,7 @@ const generateSubmitAttestationInstruction = async ({
   ]
 
   const instructionData = new SubmitAttestationInstructionData({ transferId })
-  const serializedInstructionData = borsh.serialize(
+  const serializedInstructionData = serialize(
     submitAttestationInstructionSchema,
     instructionData
   )
@@ -752,7 +752,7 @@ const generateCreateSenderInstruction = async ({
       ethAddress: SolanaUtils.ethAddressToArray(senderEthAddress),
       operator: SolanaUtils.ethAddressToArray(operatorEthAddress)
     })
-  const serializedInstructionData = borsh.serialize(
+  const serializedInstructionData = serialize(
     createSenderPublicInstructionSchema,
     createSenderPublicInstructionData
   )

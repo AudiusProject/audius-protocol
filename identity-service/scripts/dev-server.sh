@@ -2,15 +2,13 @@
 set -o xtrace
 set -e
 
-link_libs=true
+link_libs=false
 
-if [ "$link_libs" = true ]
-then
+if [ "$link_libs" = true ]; then
     cd ../audius-libs
     npm link
     cd ../app
     npm link @audius/sdk
-    exec ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "./emailCache" --watch src --watch ../audius-libs/ src/index.js
-else
-    exec ./node_modules/.bin/nodemon --inspect=0.0.0.0:9229 --ignore "./emailCache" src/index.js
 fi
+ 
+npx ts-node-dev --respawn --inspect=0.0.0.0:9229 src/index.ts

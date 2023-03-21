@@ -35,7 +35,7 @@ const queryDiscprovForWalletAddressAndUserId = async (handle) => {
  * if DP does not return a user or if wallet address of returned user is not found in the database, bad request
  * otherwise, update user for that wallet address with the handle and DP user id, then proceed
  */
-async function userHandleMiddleware (req, res, next) {
+async function userHandleMiddleware(req, res, next) {
   try {
     const handle = req.query.handle
     if (!handle) {
@@ -46,7 +46,9 @@ async function userHandleMiddleware (req, res, next) {
     if (!user) {
       const discprovUser = await queryDiscprovForWalletAddressAndUserId(handle)
       const { wallet: walletAddress, user_id: blockchainUserId } = discprovUser
-      const userForWallet = await models.User.findOne({ where: { walletAddress } })
+      const userForWallet = await models.User.findOne({
+        where: { walletAddress }
+      })
       if (!userForWallet) {
         throw new Error('The handle is not associated with a user')
       }

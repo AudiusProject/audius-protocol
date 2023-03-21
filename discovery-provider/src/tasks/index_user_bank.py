@@ -3,7 +3,8 @@ import datetime
 import logging
 import re
 import time
-from typing import List, Optional, TypedDict
+from decimal import Decimal
+from typing import List, Optional, Tuple, TypedDict
 
 import base58
 from redis import Redis
@@ -12,6 +13,11 @@ from sqlalchemy import and_, desc
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event import ChallengeEvent
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.users.audio_transactions_history import (
+    AudioTransactionsHistory,
+    TransactionMethod,
+    TransactionType,
+)
 from src.models.users.user import User
 from src.models.users.user_bank import UserBankAccount, UserBankTx
 from src.models.users.user_tip import UserTip
@@ -32,7 +38,6 @@ from src.solana.solana_transaction_types import (
     ConfirmedTransaction,
     ResultMeta,
     TransactionInfoResult,
-    TransactionMessage,
     TransactionMessageInstruction,
 )
 from src.tasks.celery_app import celery
@@ -41,6 +46,12 @@ from src.utils.cache_solana_program import (
     fetch_and_cache_latest_program_tx_redis,
 )
 from src.utils.config import shared_config
+from src.utils.helpers import (
+    get_account_index,
+    get_solana_tx_token_balances,
+    get_valid_instruction,
+    has_log,
+)
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_constants import (
     latest_sol_user_bank_db_tx_key,
@@ -58,6 +69,7 @@ WAUDIO_MINT_PUBKEY = PublicKey(WAUDIO_MINT) if WAUDIO_MINT else None
 
 # Used to limit tx history if needed
 MIN_SLOT = int(shared_config["solana"]["user_bank_min_slot"])
+INITIAL_FETCH_SIZE = 10
 
 # Used to find the correct accounts for sender/receiver in the transaction
 TRANSFER_SENDER_ACCOUNT_INDEX = 1
@@ -68,7 +80,6 @@ TRANSFER_RECEIVER_ACCOUNT_INDEX = 2
 # Message formatted as follows:
 # EthereumAddress = [214, 237, 135, 129, 143, 240, 221, 138, 97, 84, 199, 236, 234, 175, 81, 23, 114, 209, 118, 39]
 def parse_eth_address_from_msg(msg: str):
-    logger.info(f"index_user_bank.py {msg}")
     res = re.findall(r"\[.*?\]", msg)
     # Remove brackets
     inner_res = res[0][1:-1]
@@ -102,7 +113,6 @@ def get_tx_in_db(session: Session, tx_sig: str) -> bool:
         session.query(UserBankTx).filter(UserBankTx.signature == tx_sig)
     ).count()
     exists = tx_sig_db_count > 0
-    # logger.info(f"index_user_bank.py | {tx_sig} exists={exists}")
     return exists
 
 
@@ -143,12 +153,11 @@ def process_transfer_instruction(
     challenge_event_bus: ChallengeEventBus,
     timestamp: datetime.datetime,
 ):
-    # The transaction might list sender/receiver in a different order in the pubKeys.
-    # The "accounts" field of the instruction has the mapping of accounts to pubKey index
-    sender_index = instruction["accounts"][TRANSFER_SENDER_ACCOUNT_INDEX]
-    receiver_index = instruction["accounts"][TRANSFER_RECEIVER_ACCOUNT_INDEX]
-    sender_account = account_keys[sender_index]
-    receiver_account = account_keys[receiver_index]
+    sender_idx = get_account_index(instruction, TRANSFER_SENDER_ACCOUNT_INDEX)
+    receiver_idx = get_account_index(instruction, TRANSFER_RECEIVER_ACCOUNT_INDEX)
+    sender_account = account_keys[sender_idx]
+    receiver_account = account_keys[receiver_idx]
+
     # Accounts to refresh balance
     logger.info(
         f"index_user_bank.py | Balance refresh accounts: {sender_account}, {receiver_account}"
@@ -156,81 +165,73 @@ def process_transfer_instruction(
     user_id_accounts = refresh_user_balances(
         session, redis, [sender_account, receiver_account]
     )
+    if not user_id_accounts:
+        logger.error("index_user_bank.py | ERROR: Neither accounts are user banks")
+        return
+
+    sender_user_id: Optional[int] = None
+    receiver_user_id: Optional[int] = None
+    for user_id_account in user_id_accounts:
+        if user_id_account[1] == sender_account:
+            sender_user_id = user_id_account[0]
+        elif user_id_account[1] == receiver_account:
+            receiver_user_id = user_id_account[0]
+    if sender_user_id is None:
+        logger.error(
+            f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
+        )
+        return
+
+    pre_sender_balance, post_sender_balance = get_solana_tx_token_balances(
+        meta, sender_idx
+    )
+    pre_receiver_balance, post_receiver_balance = get_solana_tx_token_balances(
+        meta, receiver_idx
+    )
+    if (
+        pre_sender_balance is None
+        or pre_receiver_balance is None
+        or post_sender_balance is None
+        or post_receiver_balance is None
+    ):
+        logger.error("index_user_bank.py | ERROR: Sender or Receiver balance missing!")
+        return
+    sent_amount = pre_sender_balance - post_sender_balance
+    received_amount = post_receiver_balance - pre_receiver_balance
+    if sent_amount != received_amount:
+        logger.error(
+            f"index_user_bank.py | ERROR: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
+        )
+        return
+
+    # If there was only 1 user bank, index as a send external transfer
+    # Cannot index receive external transfers this way as those use the spl-token program
+    if len(user_id_accounts) == 1:
+        audio_transfer_sent = AudioTransactionsHistory(
+            user_bank=sender_account,
+            slot=slot,
+            signature=tx_sig,
+            transaction_type=TransactionType.transfer,
+            method=TransactionMethod.send,
+            transaction_created_at=timestamp,
+            change=Decimal(sent_amount),
+            balance=Decimal(post_sender_balance),
+            tx_metadata=receiver_account,
+        )
+        logger.debug(
+            f"index_user_bank.py | Creating audio_transfer_sent {audio_transfer_sent}"
+        )
+        session.add(audio_transfer_sent)
 
     # If there are two userbanks to update, it was a transfer from user to user
     # Index as a user_tip
-    if user_id_accounts and len(user_id_accounts) == 2:
-        sender_user_id: Optional[int] = None
-        receiver_user_id: Optional[int] = None
-        for user_id_account in user_id_accounts:
-            if user_id_account[1] == sender_account:
-                sender_user_id = user_id_account[0]
-            elif user_id_account[1] == receiver_account:
-                receiver_user_id = user_id_account[0]
-        if sender_user_id is None or receiver_user_id is None:
+    elif len(user_id_accounts) == 2:
+        if receiver_user_id is None:
             logger.error(
                 f"index_user_bank.py | ERROR: Unexpected user ids in results: {user_id_accounts}"
             )
             return
 
-        # Find the right pre/post balances using the account indexes
-        # for the sender/receiver accounts since they aren't necessarily given in order
-        pre_sender_balance_dict = next(
-            (
-                balance
-                for balance in meta["preTokenBalances"]
-                if balance["accountIndex"] == sender_index
-            ),
-            None,
-        )
-        pre_receiver_balance_dict = next(
-            (
-                balance
-                for balance in meta["preTokenBalances"]
-                if balance["accountIndex"] == receiver_index
-            ),
-            None,
-        )
-        post_sender_balance_dict = next(
-            (
-                balance
-                for balance in meta["postTokenBalances"]
-                if balance["accountIndex"] == sender_index
-            ),
-            None,
-        )
-        post_receiver_balance_dict = next(
-            (
-                balance
-                for balance in meta["postTokenBalances"]
-                if balance["accountIndex"] == receiver_index
-            ),
-            None,
-        )
-        if (
-            pre_sender_balance_dict is None
-            or pre_receiver_balance_dict is None
-            or post_sender_balance_dict is None
-            or post_receiver_balance_dict is None
-        ):
-            logger.error(
-                "index_user_bank.py | ERROR: Sender or Receiver balance missing!"
-            )
-            return
-
-        pre_sender_balance = int(pre_sender_balance_dict["uiTokenAmount"]["amount"])
-        post_sender_balance = int(post_sender_balance_dict["uiTokenAmount"]["amount"])
-        pre_receiver_balance = int(pre_receiver_balance_dict["uiTokenAmount"]["amount"])
-        post_receiver_balance = int(
-            post_receiver_balance_dict["uiTokenAmount"]["amount"]
-        )
-        sent_amount = pre_sender_balance - post_sender_balance
-        received_amount = post_receiver_balance - pre_receiver_balance
-        if sent_amount != received_amount:
-            logger.error(
-                f"index_user_bank.py | ERROR: Sent and received amounts don't match. Sent = {sent_amount}, Received = {received_amount}"
-            )
-            return
         user_tip = UserTip(
             signature=tx_sig,
             amount=sent_amount,
@@ -242,6 +243,37 @@ def process_transfer_instruction(
         logger.debug(f"index_user_bank.py | Creating tip {user_tip}")
         session.add(user_tip)
         challenge_event_bus.dispatch(ChallengeEvent.send_tip, slot, sender_user_id)
+
+        audio_tx_sent = AudioTransactionsHistory(
+            user_bank=sender_account,
+            slot=slot,
+            signature=tx_sig,
+            transaction_type=TransactionType.tip,
+            method=TransactionMethod.send,
+            transaction_created_at=timestamp,
+            change=Decimal(sent_amount),
+            balance=Decimal(post_sender_balance),
+            tx_metadata=str(receiver_user_id),
+        )
+        logger.debug(
+            f"index_user_bank.py | Creating audio_tx_history send tx for tip {audio_tx_sent}"
+        )
+        session.add(audio_tx_sent)
+        audio_tx_received = AudioTransactionsHistory(
+            user_bank=receiver_account,
+            slot=slot,
+            signature=tx_sig,
+            transaction_type=TransactionType.tip,
+            method=TransactionMethod.receive,
+            transaction_created_at=timestamp,
+            change=Decimal(received_amount),
+            balance=Decimal(post_receiver_balance),
+            tx_metadata=str(sender_user_id),
+        )
+        session.add(audio_tx_received)
+        logger.debug(
+            f"index_user_bank.py | Creating audio_tx_history received tx for tip {audio_tx_received}"
+        )
 
 
 class CreateTokenAccount(TypedDict):
@@ -260,30 +292,6 @@ def parse_create_token_data(data: str) -> CreateTokenAccount:
     """
 
     return parse_instruction_data(data, create_token_account_instr)
-
-
-def get_valid_instruction(
-    tx_message: TransactionMessage, meta: ResultMeta
-) -> Optional[TransactionMessageInstruction]:
-    """Checks that the tx is valid
-    checks for the transaction message for correct instruction log
-    checks accounts keys for claimable token program
-    """
-    try:
-        account_keys = tx_message["accountKeys"]
-        instructions = tx_message["instructions"]
-        user_bank_program_index = account_keys.index(USER_BANK_ADDRESS)
-        for instruction in instructions:
-            if instruction["programIdIndex"] == user_bank_program_index:
-                return instruction
-
-        return None
-    except Exception as e:
-        logger.error(
-            f"index_user_bank.py | Error processing instruction valid, {e}",
-            exc_info=True,
-        )
-        return None
 
 
 def process_user_bank_tx_details(
@@ -306,18 +314,15 @@ def process_user_bank_tx_details(
     tx_message = result["transaction"]["message"]
 
     # Check for valid instruction
-    has_create_token_instruction = any(
-        log == "Program log: Instruction: CreateTokenAccount"
-        for log in meta["logMessages"]
+    has_create_token_instruction = has_log(
+        meta, "Program log: Instruction: CreateTokenAccount"
     )
-    has_transfer_instruction = any(
-        log == "Program log: Instruction: Transfer" for log in meta["logMessages"]
-    )
+    has_transfer_instruction = has_log(meta, "Program log: Instruction: Transfer")
 
     if not has_create_token_instruction and not has_transfer_instruction:
         return
 
-    instruction = get_valid_instruction(tx_message, meta)
+    instruction = get_valid_instruction(tx_message, meta, USER_BANK_ADDRESS)
     if instruction is None:
         logger.error(f"index_user_bank.py | {tx_sig} No Valid instruction found")
         return
@@ -364,31 +369,15 @@ def process_user_bank_tx_details(
         )
 
 
-def parse_user_bank_transaction(
-    session: Session,
+def get_sol_tx_info(
     solana_client_manager: SolanaClientManager,
-    tx_sig,
-    redis,
-    challenge_event_bus: ChallengeEventBus,
+    tx_sig: str,
 ):
     tx_info = solana_client_manager.get_sol_tx_info(tx_sig)
-    tx_slot = tx_info["result"]["slot"]
-    timestamp = tx_info["result"]["blockTime"]
-    parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
-
-    logger.info(
-        f"index_user_bank.py | parse_user_bank_transaction |\
-    {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
-    )
-
-    process_user_bank_tx_details(
-        session, redis, tx_info, tx_sig, parsed_timestamp, challenge_event_bus
-    )
-    session.add(UserBankTx(signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp))
-    return (tx_info["result"], tx_sig)
+    return (tx_info, tx_sig)
 
 
-def process_user_bank_txs():
+def process_user_bank_txs() -> None:
     solana_client_manager: SolanaClientManager = index_user_bank.solana_client_manager
     challenge_bus: ChallengeEventBus = index_user_bank.challenge_event_bus
     db = index_user_bank.db
@@ -410,6 +399,7 @@ def process_user_bank_txs():
 
     # Loop exit condition
     intersection_found = False
+    is_initial_fetch = True
 
     # Get the latests slot available globally before fetching txs to keep track of indexing progress
     try:
@@ -422,11 +412,16 @@ def process_user_bank_txs():
         latest_processed_slot = get_highest_user_bank_tx_slot(session)
         logger.info(f"index_user_bank.py | high tx = {latest_processed_slot}")
         while not intersection_found:
-            transactions_history = solana_client_manager.get_signatures_for_address(
-                USER_BANK_ADDRESS,
-                before=last_tx_signature,
-                limit=FETCH_TX_SIGNATURES_BATCH_SIZE,
+            fetch_size = (
+                INITIAL_FETCH_SIZE
+                if is_initial_fetch
+                else FETCH_TX_SIGNATURES_BATCH_SIZE
             )
+            logger.info(f"index_user_bank.py | Requesting {fetch_size} transactions")
+            transactions_history = solana_client_manager.get_signatures_for_address(
+                USER_BANK_ADDRESS, before=last_tx_signature, limit=fetch_size
+            )
+            is_initial_fetch = False
             transactions_array = transactions_history["result"]
             if not transactions_array:
                 intersection_found = True
@@ -439,7 +434,7 @@ def process_user_bank_txs():
                 for tx_info in transactions_array:
                     tx_sig = tx_info["signature"]
                     tx_slot = tx_info["slot"]
-                    logger.info(
+                    logger.debug(
                         f"index_user_bank.py | Processing tx={tx_sig} | slot={tx_slot}"
                     )
                     if tx_info["slot"] > latest_processed_slot:
@@ -482,49 +477,70 @@ def process_user_bank_txs():
                         f"index_user_bank.py | sliced tx_sigs from {prev_len} to {len(transaction_signatures)} entries"
                     )
 
-    # Reverse batches aggregated so oldest transactions are processed first
-    transaction_signatures.reverse()
+        # Reverse batches aggregated so oldest transactions are processed first
+        transaction_signatures.reverse()
 
-    last_tx_sig: Optional[str] = None
-    last_tx = None
-    if transaction_signatures and transaction_signatures[-1]:
-        last_tx_sig = transaction_signatures[-1][0]
+        last_tx_sig: Optional[str] = None
+        last_tx = None
+        if transaction_signatures and transaction_signatures[-1]:
+            last_tx_sig = transaction_signatures[-1][0]
 
-    num_txs_processed = 0
-    for tx_sig_batch in transaction_signatures:
-        logger.info(f"index_user_bank.py | processing {tx_sig_batch}")
-        batch_start_time = time.time()
-        # Process each batch in parallel
-        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-            with db.scoped_session() as session:
+        num_txs_processed = 0
+        for tx_sig_batch in transaction_signatures:
+            logger.info(f"index_user_bank.py | processing {tx_sig_batch}")
+            batch_start_time = time.time()
+
+            tx_infos: List[Tuple[ConfirmedTransaction, str]] = []
+            with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
                 parse_sol_tx_futures = {
                     executor.submit(
-                        parse_user_bank_transaction,
-                        session,
+                        get_sol_tx_info,
                         solana_client_manager,
                         tx_sig,
-                        redis,
-                        challenge_bus,
                     ): tx_sig
                     for tx_sig in tx_sig_batch
                 }
                 for future in concurrent.futures.as_completed(parse_sol_tx_futures):
                     try:
-                        # No return value expected here so we just ensure all futures are resolved
-                        tx_info, tx_sig = future.result()
-                        if tx_info and last_tx_sig and last_tx_sig == tx_sig:
-                            last_tx = tx_info
-
-                        num_txs_processed += 1
+                        tx_infos.append(future.result())
                     except Exception as exc:
                         logger.error(f"index_user_bank.py | error {exc}", exc_info=True)
                         raise
 
-        batch_end_time = time.time()
-        batch_duration = batch_end_time - batch_start_time
-        logger.info(
-            f"index_user_bank.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
-        )
+            # Sort by slot
+            # Note: while it's possible (even likely) to have multiple tx in the same slot,
+            # these transactions can't be dependent on one another, so we don't care which order
+            # we process them.
+            tx_infos.sort(key=lambda info: info[0]["result"]["slot"])
+
+            for (tx_info, tx_sig) in tx_infos:
+                if tx_info and last_tx_sig and last_tx_sig == tx_sig:
+                    last_tx = tx_info["result"]
+                num_txs_processed += 1
+
+                tx_slot = tx_info["result"]["slot"]
+                timestamp = tx_info["result"]["blockTime"]
+                parsed_timestamp = datetime.datetime.utcfromtimestamp(timestamp)
+
+                logger.debug(
+                    f"index_user_bank.py | parse_user_bank_transaction |\
+                {tx_slot}, {tx_sig} | {tx_info} | {parsed_timestamp}"
+                )
+
+                process_user_bank_tx_details(
+                    session, redis, tx_info, tx_sig, parsed_timestamp, challenge_bus
+                )
+                session.add(
+                    UserBankTx(
+                        signature=tx_sig, slot=tx_slot, created_at=parsed_timestamp
+                    )
+                )
+
+            batch_end_time = time.time()
+            batch_duration = batch_end_time - batch_start_time
+            logger.info(
+                f"index_user_bank.py | processed batch {len(tx_sig_batch)} txs in {batch_duration}s"
+            )
 
     if last_tx and last_tx_sig:
         cache_latest_sol_user_bank_db_tx(

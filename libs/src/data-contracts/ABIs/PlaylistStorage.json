@@ -2,12 +2,94 @@
   "contractName": "PlaylistStorage",
   "abi": [
     {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_registryAddress",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "isOwner",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "constant": false,
       "inputs": [],
       "name": "kill",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "playlistOwner",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
       "type": "function"
     },
     {
@@ -20,56 +102,10 @@
       "type": "function"
     },
     {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "playlistOwner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "isOwner",
-      "outputs": [
-        {
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "constant": false,
       "inputs": [
         {
+          "internalType": "address payable",
           "name": "_registryAddress",
           "type": "address"
         }
@@ -84,6 +120,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "address",
           "name": "newOwner",
           "type": "address"
         }
@@ -95,45 +132,20 @@
       "type": "function"
     },
     {
-      "inputs": [
-        {
-          "name": "_registryAddress",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "name": "previousOwner",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnershipTransferred",
-      "type": "event"
-    },
-    {
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistOwnerId",
           "type": "uint256"
         },
         {
+          "internalType": "bool",
           "name": "_isAlbum",
           "type": "bool"
         },
         {
+          "internalType": "uint256[]",
           "name": "_trackIds",
           "type": "uint256[]"
         }
@@ -141,6 +153,7 @@
       "name": "createPlaylist",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "newPlaylistId",
           "type": "uint256"
         }
@@ -153,10 +166,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "_addedTrackId",
           "type": "uint256"
         }
@@ -171,10 +186,12 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "_deletedTrackId",
           "type": "uint256"
         }
@@ -189,6 +206,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         }
@@ -196,6 +214,7 @@
       "name": "getPlaylistOwner",
       "outputs": [
         {
+          "internalType": "uint256",
           "name": "",
           "type": "uint256"
         }
@@ -208,10 +227,12 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         },
         {
+          "internalType": "uint256",
           "name": "_trackId",
           "type": "uint256"
         }
@@ -219,6 +240,7 @@
       "name": "isTrackInPlaylist",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "",
           "type": "bool"
         }
@@ -231,6 +253,7 @@
       "constant": true,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_playlistId",
           "type": "uint256"
         }
@@ -238,6 +261,7 @@
       "name": "playlistExists",
       "outputs": [
         {
+          "internalType": "bool",
           "name": "exists",
           "type": "bool"
         }

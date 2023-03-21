@@ -12,26 +12,27 @@ Create Date: 2021-05-17 15:33:56.498582
 
 """
 import logging
-from typing import Any
 from datetime import datetime
+from typing import Any
+
+from alembic import op
 from jsonschema import ValidationError
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    PrimaryKeyConstraint,
+    String,
+    Text,
+)
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.sql.functions import GenericFunction
 from sqlalchemy.orm import sessionmaker, validates
 from sqlalchemy.sql import null
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Boolean,
-    DateTime,
-    ForeignKey,
-    Text,
-    PrimaryKeyConstraint,
-)
-from alembic import op
+from sqlalchemy.sql.functions import GenericFunction
 from src.model_validator import ModelValidator
 
 # revision identifiers, used by Alembic.

@@ -8,6 +8,8 @@ import {
   HeadphoneIcon,
   MobilePhoneWithArrowIcon,
   MultipleMusicalNotesIcon,
+  MoneyMouthFaceIcon,
+  TrebleClefIcon
 } from './Icons'
 
 import { notificationTypes as NotificationType } from '../../constants'
@@ -45,6 +47,14 @@ const challengeRewardsConfig = {
   'track-upload': {
     title: 'Upload 3 Tracks',
     icon: <MultipleMusicalNotesIcon />
+  },
+  'send-first-tip': {
+    title: 'Send Your First Tip',
+    icon: <MoneyMouthFaceIcon />
+  },
+  'first-playlist': {
+    title: 'Create a Playlist',
+    icon: <TrebleClefIcon />
   }
 }
 

@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,20 +13,21 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { RemixParent } from './RemixParent';
 import {
-    RemixParent,
     RemixParentFromJSON,
     RemixParentFromJSONTyped,
     RemixParentToJSON,
 } from './RemixParent';
+import type { TrackArtwork } from './TrackArtwork';
 import {
-    TrackArtwork,
     TrackArtworkFromJSON,
     TrackArtworkFromJSONTyped,
     TrackArtworkToJSON,
 } from './TrackArtwork';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -67,31 +68,37 @@ export interface Track {
      * @type {string}
      * @memberof Track
      */
+    trackCid?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Track
+     */
     mood?: string;
     /**
      * 
      * @type {string}
      * @memberof Track
      */
-    release_date?: string;
+    releaseDate?: string;
     /**
      * 
      * @type {RemixParent}
      * @memberof Track
      */
-    remix_of?: RemixParent;
+    remixOf?: RemixParent;
     /**
      * 
      * @type {number}
      * @memberof Track
      */
-    repost_count: number;
+    repostCount: number;
     /**
      * 
      * @type {number}
      * @memberof Track
      */
-    favorite_count: number;
+    favoriteCount: number;
     /**
      * 
      * @type {string}
@@ -127,7 +134,7 @@ export interface Track {
      * @type {number}
      * @memberof Track
      */
-    play_count: number;
+    playCount: number;
     /**
      * 
      * @type {string}
@@ -139,6 +146,83 @@ export interface Track {
      * @type {boolean}
      * @memberof Track
      */
-    is_streamable?: boolean;
+    isStreamable?: boolean;
+}
+
+/**
+ * Check if a given object implements the Track interface.
+ */
+export function instanceOfTrack(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "id" in value;
+    isInstance = isInstance && "repostCount" in value;
+    isInstance = isInstance && "favoriteCount" in value;
+    isInstance = isInstance && "title" in value;
+    isInstance = isInstance && "user" in value;
+    isInstance = isInstance && "duration" in value;
+    isInstance = isInstance && "playCount" in value;
+
+    return isInstance;
+}
+
+export function TrackFromJSON(json: any): Track {
+    return TrackFromJSONTyped(json, false);
+}
+
+export function TrackFromJSONTyped(json: any, ignoreDiscriminator: boolean): Track {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'artwork': !exists(json, 'artwork') ? undefined : TrackArtworkFromJSON(json['artwork']),
+        'description': !exists(json, 'description') ? undefined : json['description'],
+        'genre': !exists(json, 'genre') ? undefined : json['genre'],
+        'id': json['id'],
+        'trackCid': !exists(json, 'track_cid') ? undefined : json['track_cid'],
+        'mood': !exists(json, 'mood') ? undefined : json['mood'],
+        'releaseDate': !exists(json, 'release_date') ? undefined : json['release_date'],
+        'remixOf': !exists(json, 'remix_of') ? undefined : RemixParentFromJSON(json['remix_of']),
+        'repostCount': json['repost_count'],
+        'favoriteCount': json['favorite_count'],
+        'tags': !exists(json, 'tags') ? undefined : json['tags'],
+        'title': json['title'],
+        'user': UserFromJSON(json['user']),
+        'duration': json['duration'],
+        'downloadable': !exists(json, 'downloadable') ? undefined : json['downloadable'],
+        'playCount': json['play_count'],
+        'permalink': !exists(json, 'permalink') ? undefined : json['permalink'],
+        'isStreamable': !exists(json, 'is_streamable') ? undefined : json['is_streamable'],
+    };
+}
+
+export function TrackToJSON(value?: Track | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'artwork': TrackArtworkToJSON(value.artwork),
+        'description': value.description,
+        'genre': value.genre,
+        'id': value.id,
+        'track_cid': value.trackCid,
+        'mood': value.mood,
+        'release_date': value.releaseDate,
+        'remix_of': RemixParentToJSON(value.remixOf),
+        'repost_count': value.repostCount,
+        'favorite_count': value.favoriteCount,
+        'tags': value.tags,
+        'title': value.title,
+        'user': UserToJSON(value.user),
+        'duration': value.duration,
+        'downloadable': value.downloadable,
+        'play_count': value.playCount,
+        'permalink': value.permalink,
+        'is_streamable': value.isStreamable,
+    };
 }
 

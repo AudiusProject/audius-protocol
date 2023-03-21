@@ -1,8 +1,7 @@
 const express = require('express')
-const { Buffer } = require('buffer')
-const fs = require('fs')
-const { promisify } = require('util')
+const fs = require('fs-extra')
 
+const config = require('../config')
 const models = require('../models')
 const { saveFileFromBufferToDisk } = require('../fileManager')
 const {
@@ -11,8 +10,10 @@ const {
   errorResponseBadRequest,
   errorResponseServerError
 } = require('../apiHelpers')
-const { validateStateForImageDirCIDAndReturnFileUUID } = require('../utils')
-const validateMetadata = require('../utils/validateAudiusUserMetadata')
+const {
+  validateStateForImageDirCIDAndReturnFileUUID,
+  validateMetadata
+} = require('../utils')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
@@ -20,8 +21,6 @@ const {
   issueAndWaitForSecondarySyncRequests
 } = require('../middlewares')
 const DBManager = require('../dbManager')
-
-const readFile = promisify(fs.readFile)
 
 const router = express.Router()
 
@@ -33,7 +32,7 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const metadataJSON = req.body.metadata
     const metadataBuffer = Buffer.from(JSON.stringify(metadataJSON))
     const cnodeUserUUID = req.session.cnodeUserUUID
@@ -96,7 +95,7 @@ router.post(
   authMiddleware,
   ensurePrimaryMiddleware,
   ensureStorageMiddleware,
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const { blockchainUserId, blockNumber, metadataFileUUID } = req.body
 
     if (!blockchainUserId || !blockNumber || !metadataFileUUID) {
@@ -115,16 +114,32 @@ router.post(
     // Verify that wallet of the user on the blockchain for the given ID matches the user attempting to update
     const serviceRegistry = req.app.get('serviceRegistry')
     const { libs } = serviceRegistry
-    const userResp = await libs.contracts.UserFactoryClient.getUser(
-      blockchainUserId
-    )
-    if (
-      !userResp?.wallet ||
-      userResp.wallet.toLowerCase() !== req.session.wallet.toLowerCase()
-    ) {
-      throw new Error(
-        `Owner wallet ${userResp.wallet} of blockchainUserId ${blockchainUserId} does not match the wallet of the user attempting to write this data: ${req.session.wallet}`
+    if (config.get('entityManagerReplicaSetEnabled')) {
+      const encodedUserId = libs.Utils.encodeHashId(blockchainUserId)
+      const spResponse = await libs.discoveryProvider.getUserReplicaSet({
+        encodedUserId,
+        blockNumber
+      })
+      if (
+        (spResponse?.wallet ?? '').toLowerCase() !==
+        req.session.wallet.toLowerCase()
+      ) {
+        throw new Error(
+          `Owner wallet ${spResponse?.wallet} of blockchainUserId ${blockchainUserId} does not match the wallet of the user attempting to write this data: ${req.session.wallet}`
+        )
+      }
+    } else {
+      const userResp = await libs.contracts.UserFactoryClient.getUser(
+        blockchainUserId
       )
+      if (
+        !userResp?.wallet ||
+        userResp.wallet.toLowerCase() !== req.session.wallet.toLowerCase()
+      ) {
+        throw new Error(
+          `Owner wallet ${userResp.wallet} of blockchainUserId ${blockchainUserId} does not match the wallet of the user attempting to write this data: ${req.session.wallet}`
+        )
+      }
     }
 
     const cnodeUserUUID = req.session.cnodeUserUUID
@@ -140,7 +155,7 @@ router.post(
     }
     let metadataJSON
     try {
-      const fileBuffer = await readFile(file.storagePath)
+      const fileBuffer = await fs.readFile(file.storagePath)
       metadataJSON = JSON.parse(fileBuffer)
     } catch (e) {
       return errorResponseServerError(

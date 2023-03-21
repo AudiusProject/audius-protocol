@@ -3,12 +3,18 @@ const config = require('../config')
 const { libs } = require('@audius/sdk')
 const SolanaUtils = libs.SolanaUtils
 
-const solanaRewardsManagerProgramId = config.get('solanaRewardsManagerProgramId')
+const solanaRewardsManagerProgramId = config.get(
+  'solanaRewardsManagerProgramId'
+)
 const solanaRewardsManager = config.get('solanaRewardsManagerProgramPDA')
 
-const solanaClaimableTokenProgramAddress = config.get('solanaClaimableTokenProgramAddress')
+const solanaClaimableTokenProgramAddress = config.get(
+  'solanaClaimableTokenProgramAddress'
+)
 const solanaMintAddress = config.get('solanaMintAddress')
-const solanaAudiusAnchorDataProgramId = config.get('solanaAudiusAnchorDataProgramId')
+const solanaAudiusAnchorDataProgramId = config.get(
+  'solanaAudiusAnchorDataProgramId'
+)
 
 const allowedProgramIds = new Set([
   solanaClaimableTokenProgramAddress,
@@ -56,7 +62,7 @@ const claimableTokenAuthorityIndices = {
   1: 4 // Transfer
 }
 
-const isRelayAllowedProgram = instructions => {
+const isRelayAllowedProgram = (instructions) => {
   for (const instruction of instructions) {
     if (!allowedProgramIds.has(instruction.programId)) {
       return false
@@ -65,21 +71,27 @@ const isRelayAllowedProgram = instructions => {
   return true
 }
 
-const isSendInstruction = instr => instr.length &&
-  instr[1] && instr[1].programId === solanaClaimableTokenProgramAddress &&
+const isSendInstruction = (instr) =>
+  instr.length &&
+  instr[1] &&
+  instr[1].programId === solanaClaimableTokenProgramAddress &&
   instr[1].data &&
   instr[1].data.data &&
   instr[1].data.data[0] === 1
 
-async function doesUserHaveSocialProof (userInstance) {
+async function doesUserHaveSocialProof(userInstance) {
   const { blockchainUserId } = userInstance
-  const twitterUser = await models.TwitterUser.findOne({ where: {
-    blockchainUserId
-  } })
+  const twitterUser = await models.TwitterUser.findOne({
+    where: {
+      blockchainUserId
+    }
+  })
 
-  const instagramUser = await models.InstagramUser.findOne({ where: {
-    blockchainUserId
-  } })
+  const instagramUser = await models.InstagramUser.findOne({
+    where: {
+      blockchainUserId
+    }
+  })
   return !!twitterUser || !!instagramUser
 }
 
@@ -156,7 +168,9 @@ const checkAccountKey = (instruction, accountIndex, expectedAccount) => {
     accountIndex >= 0 &&
     accountIndex < instruction.keys.length
   ) {
-    console.log(`${instruction.keys[accountIndex].pubkey} === ${expectedAccount}`)
+    console.log(
+      `${instruction.keys[accountIndex].pubkey} === ${expectedAccount}`
+    )
     return instruction.keys[accountIndex].pubkey === expectedAccount
   }
   console.log('false')

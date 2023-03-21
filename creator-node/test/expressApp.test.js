@@ -1,3 +1,4 @@
+// eslint-disable-next-line node/no-unpublished-require
 const request = require('supertest')
 
 const BlacklistManager = require('../src/blacklistManager')
@@ -6,6 +7,7 @@ const { getApp } = require('./lib/app')
 const { createStarterCNodeUser } = require('./lib/dataSeeds')
 const { getLibsMock } = require('./lib/libsMock')
 
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
 describe('test expressApp', async function () {
   let app, server, session
 
@@ -26,16 +28,12 @@ describe('test expressApp', async function () {
   })
 
   it('responds 404 with invalid endpoint', async function () {
-    await request(app)
-      .get('/asdf')
-      .expect(404)
+    await request(app).get('/asdf').expect(404)
   })
 
   it('returns 401 with omitted session id', async function () {
     // logout endpoint requires login / checks session
-    await request(app)
-      .post('/users/logout')
-      .expect(401)
+    await request(app).post('/users/logout').expect(401)
   })
 
   it('returns 401 with invalid session id', async function () {
@@ -47,8 +45,6 @@ describe('test expressApp', async function () {
   })
 
   it('succeeds health check', async function () {
-    await request(app)
-      .get('/health_check')
-      .expect(200)
+    await request(app).get('/health_check').expect(200)
   })
 })

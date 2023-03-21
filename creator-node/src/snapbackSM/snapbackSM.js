@@ -1,10 +1,11 @@
-const Bull = require('bull')
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// Ignoring eslint stuff for this file because it'll be deprecated soon
 const axios = require('axios')
 const _ = require('lodash')
 const retry = require('async-retry')
 
 const Utils = require('../utils')
-const asyncRetry = require('../utils/asyncRetry')
+const { asyncRetry } = require('../utils/asyncRetry')
 const models = require('../models')
 const { logger } = require('../logging')
 const redis = require('../redis.js')
@@ -339,21 +340,7 @@ class SnapbackSM {
   }
 
   // Initialize bull queue instance with provided name and settings
-  createBullQueue(queueName, settings = {}, limiter = null) {
-    return new Bull(queueName, {
-      redis: {
-        port: this.nodeConfig.get('redisPort'),
-        host: this.nodeConfig.get('redisHost')
-      },
-      defaultJobOptions: {
-        // removeOnComplete is required since the completed jobs data set will grow infinitely until memory exhaustion
-        removeOnComplete: SNAPBACK_QUEUE_HISTORY,
-        removeOnFail: SNAPBACK_QUEUE_HISTORY
-      },
-      settings,
-      limiter
-    })
-  }
+  createBullQueue(queueName, settings = {}, limiter = null) {}
 
   // Randomly select an initial slice
   randomStartingSlice() {

@@ -13,6 +13,10 @@ from src.models.social.save import SaveType
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.models.users.user import User
+from src.premium_content.premium_content_constants import (
+    SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS,
+    SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+)
 from src.queries.get_trending_tracks import (
     TRENDING_LIMIT,
     TRENDING_TTL_SEC,
@@ -61,6 +65,7 @@ def get_scorable_track_data(session, redis_instance, strategy):
         "karma": number
         "listens": number
         "owner_verified": boolean
+        "is_premium": boolean
     }
     """
 
@@ -105,6 +110,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
             AggregatePlay.count,
             Track.created_at,
             follower_query.c.is_verified,
+            Track.is_premium,
+            Track.premium_conditions,
         )
         .join(Track, Track.track_id == AggregatePlay.play_item_id)
         .join(follower_query, follower_query.c.user_id == Track.owner_id)
@@ -136,6 +143,8 @@ def get_scorable_track_data(session, redis_instance, strategy):
             "karma": 1,
             "listens": record[3],
             "owner_verified": record[5],
+            "is_premium": record[6],
+            "premium_conditions": record[7],
         }
         for record in base_query
     }
@@ -160,15 +169,15 @@ def get_scorable_track_data(session, redis_instance, strategy):
     karma_scores = get_karma(session, tuple(track_ids), strategy, None, False, xf)
 
     # Associate all the extra data
-    for (track_id, repost_count) in repost_counts:
+    for track_id, repost_count in repost_counts:
         tracks_map[track_id]["repost_count"] = repost_count
-    for (track_id, repost_count) in windowed_repost_counts:
+    for track_id, repost_count in windowed_repost_counts:
         tracks_map[track_id]["windowed_repost_count"] = repost_count
-    for (track_id, save_count) in save_counts:
+    for track_id, save_count in save_counts:
         tracks_map[track_id]["save_count"] = save_count
-    for (track_id, save_count) in windowed_save_counts:
+    for track_id, save_count in windowed_save_counts:
         tracks_map[track_id]["windowed_save_count"] = save_count
-    for (track_id, karma) in karma_scores:
+    for track_id, karma in karma_scores:
         tracks_map[track_id]["karma"] = karma
 
     return list(tracks_map.values())
@@ -189,6 +198,24 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
     def wrapped():
         # Score and sort
         track_scoring_data = get_scorable_track_data(session, redis_instance, strategy)
+
+        # If SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS is true, then filter out track ids
+        # belonging to premium tracks before applying the limit.
+        if SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS:
+            track_scoring_data = list(
+                filter(lambda item: not item["is_premium"], track_scoring_data)
+            )
+        # If SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS is true, then filter out track ids
+        # belonging to collectible gated tracks before applying the limit.
+        elif SHOULD_TRENDING_EXCLUDE_COLLECTIBLE_GATED_TRACKS:
+            track_scoring_data = list(
+                filter(
+                    lambda item: (item["premium_conditions"] is None)
+                    or ("nft_collection" not in item["premium_conditions"]),
+                    track_scoring_data,
+                )
+            )
+
         scored_tracks = [
             strategy.get_track_score("week", track) for track in track_scoring_data
         ]
@@ -197,13 +224,18 @@ def make_get_unpopulated_tracks(session, redis_instance, strategy):
 
         # Get unpopulated metadata
         track_ids = [track["track_id"] for track in sorted_tracks]
-        tracks = get_unpopulated_tracks(session, track_ids)
+        tracks = get_unpopulated_tracks(
+            session,
+            track_ids,
+            exclude_premium=SHOULD_TRENDING_EXCLUDE_PREMIUM_TRACKS,
+        )
+
         return (tracks, track_ids)
 
     return wrapped
 
 
-class GetUndergroundTrendingTrackcArgs(TypedDict, total=False):
+class GetUndergroundTrendingTrackArgs(TypedDict, total=False):
     current_user_id: Optional[Any]
     offset: int
     limit: int
@@ -211,7 +243,7 @@ class GetUndergroundTrendingTrackcArgs(TypedDict, total=False):
 
 def _get_underground_trending_with_session(
     session: Session,
-    args: GetUndergroundTrendingTrackcArgs,
+    args: GetUndergroundTrendingTrackArgs,
     strategy,
     use_request_context=True,
 ):
@@ -244,7 +276,7 @@ def _get_underground_trending_with_session(
     return sorted_tracks
 
 
-def _get_underground_trending(args: GetUndergroundTrendingTrackcArgs, strategy):
+def _get_underground_trending(args: GetUndergroundTrendingTrackArgs, strategy):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         return _get_underground_trending_with_session(session, args, strategy)

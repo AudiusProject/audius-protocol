@@ -132,7 +132,7 @@ export class AudiusContracts {
     if (this.entityManagerAddress) {
       this.EntityManagerClient = new EntityManagerClient(
         this.web3Manager,
-        EntityManagerABI,
+        EntityManagerABI as AbiItem[],
         'EntityManager',
         this.getRegistryAddressForContract,
         this.logger,
@@ -207,7 +207,10 @@ export class AudiusContracts {
    */
   async getRegistryAddressForContract(contractName: string) {
     // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Object_initializer#Computed_property_names
-    this.contracts = this.contracts ?? { [this.registryAddress]: 'registry' }
+    this.contracts = this.contracts ?? {
+      [this.registryAddress]: 'registry',
+      [this.entityManagerAddress]: 'EntityManager'
+    }
     this.contractAddresses = this.contractAddresses ?? {
       registry: this.registryAddress
     }

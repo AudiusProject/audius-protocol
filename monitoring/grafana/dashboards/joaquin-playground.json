@@ -41,35 +41,7 @@
         "fieldConfig": {
           "defaults": {
             "color": {
-              "mode": "palette-classic"
-            },
-            "custom": {
-              "axisLabel": "",
-              "axisPlacement": "auto",
-              "barAlignment": 0,
-              "drawStyle": "line",
-              "fillOpacity": 0,
-              "gradientMode": "none",
-              "hideFrom": {
-                "legend": false,
-                "tooltip": false,
-                "viz": false
-              },
-              "lineInterpolation": "linear",
-              "lineWidth": 1,
-              "pointSize": 5,
-              "scaleDistribution": {
-                "type": "linear"
-              },
-              "showPoints": "auto",
-              "spanNulls": false,
-              "stacking": {
-                "group": "A",
-                "mode": "none"
-              },
-              "thresholdsStyle": {
-                "mode": "off"
-              }
+              "mode": "thresholds"
             },
             "mappings": [],
             "thresholds": {
@@ -92,22 +64,39 @@
           "h": 8,
           "w": 12,
           "x": 0,
-          "y": 0
+          "y": 1
         },
-        "id": 51,
+        "id": 53,
         "options": {
-          "legend": {
-            "calcs": [],
-            "displayMode": "list",
-            "placement": "bottom"
+          "displayMode": "gradient",
+          "minVizHeight": 10,
+          "minVizWidth": 0,
+          "orientation": "auto",
+          "reduceOptions": {
+            "calcs": [
+              "lastNotNull"
+            ],
+            "fields": "",
+            "values": false
           },
-          "tooltip": {
-            "mode": "single",
-            "sort": "none"
-          }
+          "showUnfilled": true
         },
-        "title": "Panel Title",
-        "type": "timeseries"
+        "pluginVersion": "9.0.1",
+        "targets": [
+          {
+            "datasource": {
+              "type": "prometheus"
+            },
+            "editorMode": "code",
+            "expr": "audius_cn_http_request_duration_seconds_bucket{host=~\"$host\", environment=~\"$environment\", path=~\"$path\", status_code=~\"$status_code\", method=~\"$method\"}",
+            "format": "heatmap",
+            "legendFormat": "{{le}}",
+            "range": true,
+            "refId": "A"
+          }
+        ],
+        "title": "Bucketing for all Content Node Routes",
+        "type": "bargauge"
       },
       {
         "collapsed": true,
@@ -120,6 +109,10 @@
         "id": 47,
         "panels": [
           {
+            "datasource": {
+              "type": "prometheus",
+              "uid": "r2_nnDL7z"
+            },
             "description": "",
             "fieldConfig": {
               "defaults": {
@@ -137,7 +130,7 @@
                     "type": "value"
                   }
                 ],
-                "max": 1,
+                "max": 300,
                 "thresholds": {
                   "mode": "absolute",
                   "steps": [
@@ -147,11 +140,11 @@
                     },
                     {
                       "color": "#EAB839",
-                      "value": 1
+                      "value": 180
                     },
                     {
                       "color": "red",
-                      "value": 60
+                      "value": 600
                     }
                   ]
                 },
@@ -178,17 +171,17 @@
                 },
                 "folderName": "General",
                 "folderUid": "",
-                "updated": "2022-07-12T23:16:36Z",
+                "updated": "2022-08-31T06:15:19Z",
                 "updatedBy": {
-                  "avatarUrl": "",
-                  "id": 0,
-                  "name": ""
+                  "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+                  "id": 1,
+                  "name": "admin"
                 }
               },
               "name": "Celery Tasks (Active)",
               "type": "bargauge",
               "uid": "ilGck637k",
-              "version": 2
+              "version": 6
             },
             "options": {
               "displayMode": "gradient",
@@ -204,7 +197,7 @@
               },
               "showUnfilled": true
             },
-            "pluginVersion": "9.0.2",
+            "pluginVersion": "9.1.0",
             "targets": [
               {
                 "datasource": {
@@ -212,7 +205,7 @@
                 },
                 "editorMode": "code",
                 "exemplar": false,
-                "expr": "audius_dn_celery_task_active_duration_seconds{environment=~\"$env\", host=~\"$host\"}",
+                "expr": "max by (task_name) (audius_dn_celery_task_active_duration_seconds{environment=~\"$env\", host=~\"$host\"})",
                 "instant": false,
                 "legendFormat": "{{task_name}}",
                 "range": true,
@@ -275,8 +268,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -366,8 +358,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -472,8 +463,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -562,8 +552,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -665,8 +654,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -756,8 +744,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -852,8 +839,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -957,8 +943,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1053,8 +1038,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1158,8 +1142,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1249,8 +1232,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1340,8 +1322,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1445,8 +1426,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1536,8 +1516,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1641,8 +1620,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1757,8 +1735,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1862,8 +1839,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -1956,8 +1932,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -2035,12 +2010,84 @@
         "type": "row"
       },
       {
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 0,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            }
+          },
+          "overrides": []
+        },
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 18
+        },
+        "id": 51,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          }
+        },
+        "title": "Panel Title",
+        "type": "timeseries"
+      },
+      {
         "collapsed": true,
         "gridPos": {
           "h": 1,
           "w": 24,
           "x": 0,
-          "y": 18
+          "y": 26
         },
         "id": 41,
         "panels": [
@@ -2084,8 +2131,7 @@
                   "mode": "absolute",
                   "steps": [
                     {
-                      "color": "green",
-                      "value": null
+                      "color": "green"
                     },
                     {
                       "color": "red",
@@ -2148,7 +2194,8 @@
         {
           "allValue": ".*",
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
           },
           "definition": "label_values({__name__=~\"audius_dn_flask_route_duration_seconds_count|audius_dn_flask_route_latency_seconds_count\"}, environment)",
           "description": "",
@@ -2171,7 +2218,8 @@
         {
           "allValue": ".*",
           "datasource": {
-            "type": "prometheus"
+            "type": "prometheus",
+            "uid": "r2_nnDL7z"
           },
           "definition": "label_values(audius_dn_flask_route_duration_seconds_count{environment=~\"$env\"}, host)",
           "description": "",

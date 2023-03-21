@@ -1,14 +1,13 @@
 import logging  # pylint: disable=C0302
 from typing import List, Optional, TypedDict
 
-from sqlalchemy import and_, asc, desc, func, or_
+from sqlalchemy import and_, asc, case, desc, func, or_
 from sqlalchemy.sql.functions import coalesce
 from src.models.social.aggregate_plays import AggregatePlay
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track_route import TrackRoute
 from src.models.tracks.track_with_aggregates import TrackWithAggregates
 from src.models.users.user import User
-from src.queries.get_unpopulated_tracks import get_unpopulated_tracks
 from src.queries.query_helpers import (
     SortDirection,
     SortMethod,
@@ -46,7 +45,9 @@ class GetTrackArgs(TypedDict):
 
     query: Optional[str]
     filter_deleted: bool
+    exclude_premium: bool
     routes: List[RouteArgs]
+    filter_tracks: str
 
     # Optional sort method for the returned results
     sort_method: Optional[SortMethod]
@@ -56,10 +57,14 @@ class GetTrackArgs(TypedDict):
 def _get_tracks(session, args):
     # Create initial query
     base_query = session.query(TrackWithAggregates)
-    base_query = base_query.filter(
-        TrackWithAggregates.is_current == True, TrackWithAggregates.stem_of == None
-    )
+    base_query = base_query.filter(TrackWithAggregates.is_current == True)
 
+    # NOTE: the stem_of filter is added for content node to validate the track's owner id
+    # This is a temporary fix and should be replaced with a new endpoint to fetch a track's owner id
+    if not args.get("skip_stem_of_filter", False):
+        base_query = base_query.filter(TrackWithAggregates.stem_of == None)
+
+    # Filter out tracks the user is not authorized to view
     if "routes" in args and args.get("routes") is not None:
         routes = args.get("routes")
         # Join the routes table
@@ -77,6 +82,8 @@ def _get_tracks(session, args):
                 )
             )
         base_query = base_query.filter(or_(*filter_cond))
+    elif args.get("skip_unlisted_filter", False):
+        pass
     else:
         # Only return unlisted tracks if either
         # - above case, routes are present (direct links to hidden tracks)
@@ -112,6 +119,10 @@ def _get_tracks(session, args):
         if filter_deleted:
             base_query = base_query.filter(TrackWithAggregates.is_delete == False)
 
+    # Allow filtering of premium tracks
+    if args.get("exclude_premium", False):
+        base_query = base_query.filter(TrackWithAggregates.is_premium == False)
+
     if "min_block_number" in args and args.get("min_block_number") is not None:
         min_block_number = args.get("min_block_number")
         base_query = base_query.filter(
@@ -127,6 +138,16 @@ def _get_tracks(session, args):
             )
         )
 
+    # Allow filtering of tracks by unlisted vs public.
+    # If a user is not authorized to view unlisted tracks but has specified filter_tracks=unlisted,
+    # this will filter out all results.
+    if "filter_tracks" in args and args.get("filter_tracks") != "all":
+        filter_tracks = args.get("filter_tracks")
+        if filter_tracks == "unlisted":
+            base_query = base_query.filter(TrackWithAggregates.is_unlisted == True)
+        else:
+            base_query = base_query.filter(TrackWithAggregates.is_unlisted == False)
+
     if "sort_method" in args and args.get("sort_method") is not None:
         sort_method = args.get("sort_method")
         sort_direction = args.get("sort_direction")
@@ -134,7 +155,9 @@ def _get_tracks(session, args):
         if sort_method == SortMethod.title:
             base_query = base_query.order_by(sort_fn(TrackWithAggregates.title))
         elif sort_method == SortMethod.artist_name:
-            base_query = base_query.order_by(sort_fn(TrackWithAggregates.user.name))
+            base_query = base_query.join(
+                TrackWithAggregates.user, aliased=True
+            ).order_by(sort_fn(User.name))
         elif sort_method == SortMethod.release_date:
             base_query = base_query.order_by(
                 sort_fn(
@@ -159,6 +182,21 @@ def _get_tracks(session, args):
             base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
                 sort_fn(AggregateTrack.save_count)
             )
+    else:
+        # Return the user's pinned track first if there is no specified sort_method
+        if "user_id" in args and args.get("user_id") is not None:
+            user_id = args.get("user_id")
+            pinned_track_id = (
+                session.query(User.artist_pick_track_id)
+                .filter(User.is_current == True, User.user_id == user_id)
+                .scalar()
+            )
+            if pinned_track_id:
+                base_query = base_query.order_by(
+                    case(
+                        ((TrackWithAggregates.track_id == pinned_track_id, 0),), else_=1
+                    )
+                )
 
     # Deprecated, use sort_method and sort_direction
     if "sort" in args and args.get("sort") is not None:
@@ -244,22 +282,6 @@ def get_tracks(args: GetTrackArgs):
                 # If none of the handles were found, return empty lists
                 if not args["routes"]:
                     return ([], [])
-
-            can_use_shared_cache = (
-                "id" in args
-                and "min_block_number" not in args
-                and "sort" not in args
-                and "sort_method" not in args
-                and "user_id" not in args
-            )
-
-            if can_use_shared_cache:
-                should_filter_deleted = args.get("filter_deleted", False)
-                tracks = get_unpopulated_tracks(
-                    session, args["id"], should_filter_deleted
-                )
-                track_ids = list(map(lambda track: track["track_id"], tracks))
-                return (tracks, track_ids)
 
             (limit, offset) = get_pagination_vars()
             args["limit"] = limit

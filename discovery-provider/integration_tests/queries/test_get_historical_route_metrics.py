@@ -12,7 +12,7 @@ from src.models.metrics.aggregate_monthly_total_users_metrics import (
 from src.models.metrics.aggregate_monthly_unique_users_metrics import (
     AggregateMonthlyUniqueUsersMetric,
 )
-from src.queries.get_route_metrics import _get_historical_route_metrics
+from src.queries.get_historical_route_metrics import _get_historical_route_metrics
 from src.utils.db_session import get_db
 
 limit = 2

@@ -1,5 +1,5 @@
-// @ts-nocheck
 /* tslint:disable */
+// @ts-nocheck
 /* eslint-disable */
 /**
  * API
@@ -15,63 +15,55 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  TrackResponse,
+  TrackSearch,
+  TracksResponse,
+} from '../models';
 import {
-    TrackResponse,
     TrackResponseFromJSON,
     TrackResponseToJSON,
-    TrackSearch,
     TrackSearchFromJSON,
     TrackSearchToJSON,
-    TracksResponse,
     TracksResponseFromJSON,
     TracksResponseToJSON,
 } from '../models';
 
 export interface GetBulkTracksRequest {
-    /**
-     * The permalink of the track(s)
-     */
     permalink?: Array<string>;
-    /**
-     * The ID of the track(s)
-     */
     id?: Array<string>;
 }
 
 export interface GetTrackRequest {
-    /**
-     * A Track ID
-     */
     trackId: string;
 }
 
 export interface GetTrendingTracksRequest {
-    /**
-     * Filter trending to a specified genre
-     */
     genre?: string;
-    /**
-     * Calculate trending over a specified time range
-     */
     time?: GetTrendingTracksTimeEnum;
 }
 
+export interface GetUndergroundTrendingTracksRequest {
+    offset?: number;
+    limit?: number;
+}
+
+export interface GetUndergroundTrendingTracksWithVersionRequest {
+    version: string;
+    offset?: number;
+    limit?: number;
+}
+
 export interface SearchTracksRequest {
-    /**
-     * The search query
-     */
     query: string;
-    /**
-     * Return only downloadable tracks
-     */
     onlyDownloadable?: string;
 }
 
 export interface StreamTrackRequest {
-    /**
-     * A Track ID
-     */
     trackId: string;
+    userSignature?: string;
+    userData?: string;
+    premiumContentSignature?: string;
 }
 
 /**
@@ -82,7 +74,7 @@ export class TracksApi extends runtime.BaseAPI {
     /**
      * Gets a list of tracks using their IDs or permalinks
      */
-    async getBulkTracks(requestParameters: GetBulkTracksRequest = {}): Promise<NonNullable<TracksResponse["data"]>> {
+    async getBulkTracksRaw(requestParameters: GetBulkTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
         const queryParameters: any = {};
 
         if (requestParameters.permalink) {
@@ -95,18 +87,28 @@ export class TracksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        return this.request({
+        const response = await this.request({
             path: `/tracks`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TracksResponse["data"]>>;
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a list of tracks using their IDs or permalinks
+     */
+    async getBulkTracks(requestParameters: GetBulkTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getBulkTracksRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
      * Gets a track by ID
      */
-    async getTrack(requestParameters: GetTrackRequest): Promise<NonNullable<TrackResponse["data"]>> {
+    async getTrackRaw(requestParameters: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackResponse>> {
         if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
             throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling getTrack.');
         }
@@ -115,18 +117,28 @@ export class TracksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        return this.request({
+        const response = await this.request({
             path: `/tracks/{track_id}`.replace(`{${"track_id"}}`, encodeURIComponent(String(requestParameters.trackId))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TrackResponse["data"]>>;
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets a track by ID
+     */
+    async getTrack(requestParameters: GetTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackResponse> {
+        const response = await this.getTrackRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
      * Gets the top 100 trending (most popular) tracks on Audius
      */
-    async getTrendingTracks(requestParameters: GetTrendingTracksRequest = {}): Promise<NonNullable<TracksResponse["data"]>> {
+    async getTrendingTracksRaw(requestParameters: GetTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
         const queryParameters: any = {};
 
         if (requestParameters.genre !== undefined) {
@@ -139,18 +151,100 @@ export class TracksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        return this.request({
+        const response = await this.request({
             path: `/tracks/trending`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TracksResponse["data"]>>;
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the top 100 trending (most popular) tracks on Audius
+     */
+    async getTrendingTracks(requestParameters: GetTrendingTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getTrendingTracksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets the top 100 trending underground tracks on Audius
+     */
+    async getUndergroundTrendingTracksRaw(requestParameters: GetUndergroundTrendingTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/trending/underground`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the top 100 trending underground tracks on Audius
+     */
+    async getUndergroundTrendingTracks(requestParameters: GetUndergroundTrendingTracksRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getUndergroundTrendingTracksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
+     */
+    async getUndergroundTrendingTracksWithVersionRaw(requestParameters: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TracksResponse>> {
+        if (requestParameters.version === null || requestParameters.version === undefined) {
+            throw new runtime.RequiredError('version','Required parameter requestParameters.version was null or undefined when calling getUndergroundTrendingTracksWithVersion.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/trending/underground/{version}`.replace(`{${"version"}}`, encodeURIComponent(String(requestParameters.version))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TracksResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Gets the top 100 trending underground tracks on Audius using a given trending strategy version
+     */
+    async getUndergroundTrendingTracksWithVersion(requestParameters: GetUndergroundTrendingTracksWithVersionRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TracksResponse> {
+        const response = await this.getUndergroundTrendingTracksWithVersionRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
      * Search for a track or tracks
      */
-    async searchTracks(requestParameters: SearchTracksRequest): Promise<NonNullable<TrackSearch["data"]>> {
+    async searchTracksRaw(requestParameters: SearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<TrackSearch>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
             throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling searchTracks.');
         }
@@ -167,23 +261,76 @@ export class TracksApi extends runtime.BaseAPI {
 
         const headerParameters: runtime.HTTPHeaders = {};
 
-        return this.request({
+        const response = await this.request({
             path: `/tracks/search`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
-        }) as Promise<NonNullable<TrackSearch["data"]>>;
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => TrackSearchFromJSON(jsonValue));
+    }
+
+    /**
+     * Search for a track or tracks
+     */
+    async searchTracks(requestParameters: SearchTracksRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<TrackSearch> {
+        const response = await this.searchTracksRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
+     * Get the streamable MP3 file of a track
+     */
+    async streamTrackRaw(requestParameters: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.trackId === null || requestParameters.trackId === undefined) {
+            throw new runtime.RequiredError('trackId','Required parameter requestParameters.trackId was null or undefined when calling streamTrack.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.userSignature !== undefined) {
+            queryParameters['user_signature'] = requestParameters.userSignature;
+        }
+
+        if (requestParameters.userData !== undefined) {
+            queryParameters['user_data'] = requestParameters.userData;
+        }
+
+        if (requestParameters.premiumContentSignature !== undefined) {
+            queryParameters['premium_content_signature'] = requestParameters.premiumContentSignature;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/tracks/{track_id}/stream`.replace(`{${"track_id"}}`, encodeURIComponent(String(requestParameters.trackId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * This endpoint accepts the Range header for streaming. https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
+     * Get the streamable MP3 file of a track
+     */
+    async streamTrack(requestParameters: StreamTrackRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.streamTrackRaw(requestParameters, initOverrides);
     }
 
 }
 
 /**
-    * @export
-    * @enum {string}
-    */
-export enum GetTrendingTracksTimeEnum {
-    Week = 'week',
-    Month = 'month',
-    Year = 'year',
-    AllTime = 'allTime'
-}
+ * @export
+ */
+export const GetTrendingTracksTimeEnum = {
+    Week: 'week',
+    Month: 'month',
+    Year: 'year',
+    AllTime: 'allTime'
+} as const;
+export type GetTrendingTracksTimeEnum = typeof GetTrendingTracksTimeEnum[keyof typeof GetTrendingTracksTimeEnum];

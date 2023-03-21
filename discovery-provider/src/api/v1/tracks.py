@@ -1,11 +1,14 @@
-import logging  # pylint: disable=C0302
+import json
+import logging
+import urllib.parse
 from typing import List
 from urllib.parse import urljoin
 
 from flask import redirect
 from flask.globals import request
-from flask_restx import Namespace, Resource, fields, inputs, marshal_with
+from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
 from src.api.v1.helpers import (
+    DescriptiveArgument,
     abort_bad_path_param,
     abort_bad_request_param,
     abort_not_found,
@@ -22,6 +25,7 @@ from src.api.v1.helpers import (
     get_encoded_track_id,
     make_full_response,
     make_response,
+    pagination_parser,
     pagination_with_current_user_parser,
     search_parser,
     stem_from_track,
@@ -31,7 +35,11 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.users import user_model_full
 from src.queries.get_feed import get_feed
-from src.queries.get_max_id import get_max_id
+from src.queries.get_latest_entities import get_latest_entities
+from src.queries.get_premium_track_signatures import (
+    get_nft_gated_premium_track_signatures,
+)
+from src.queries.get_random_tracks import get_random_tracks
 from src.queries.get_recommended_tracks import (
     DEFAULT_RECOMMENDED_LIMIT,
     get_full_recommended_tracks,
@@ -43,14 +51,20 @@ from src.queries.get_remixes_of import get_remixes_of
 from src.queries.get_reposters_for_track import get_reposters_for_track
 from src.queries.get_savers_for_track import get_savers_for_track
 from src.queries.get_stems_of import get_stems_of
+from src.queries.get_subsequent_tracks import get_subsequent_tracks
 from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
-from src.queries.get_track_user_creator_node import get_track_user_creator_node
+from src.queries.get_track_stream_info import get_track_stream_info
+from src.queries.get_track_stream_signature import (
+    CID_STREAM_ENABLED,
+    get_track_stream_signature,
+)
 from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_trending import get_full_trending, get_trending
 from src.queries.get_trending_ids import get_trending_ids
 from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
+from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_underground_trending import get_underground_trending
 from src.queries.search_queries import SearchKind, search
 from src.trending_strategies.trending_strategy_factory import (
@@ -88,11 +102,12 @@ full_tracks_response = make_full_response(
 # Get single track
 
 
-def get_single_track(track_id, current_user_id, endpoint_ns):
+def get_single_track(track_id, current_user_id, endpoint_ns, exclude_premium=True):
     args = {
         "id": [track_id],
         "with_users": True,
-        "filter_deleted": True,
+        "filter_deleted": False,
+        "exclude_premium": exclude_premium,
         "current_user_id": current_user_id,
     }
     tracks = get_tracks(args)
@@ -181,7 +196,12 @@ class FullTrack(Resource):
                 decoded_id, url_title, handle, current_user_id, full_ns
             )
 
-        return get_single_track(decoded_id, current_user_id, full_ns)
+        return get_single_track(
+            track_id=decoded_id,
+            current_user_id=current_user_id,
+            endpoint_ns=full_ns,
+            exclude_premium=False,
+        )
 
 
 full_track_route_parser = current_user_parser.copy()
@@ -251,9 +271,21 @@ class BulkTracks(Resource):
         if slug and handle:
             routes_parsed.append({"handle": handle, "slug": slug})
         if ids:
-            tracks = get_tracks({"with_users": True, "id": decode_ids_array(ids)})
+            tracks = get_tracks(
+                {
+                    "with_users": True,
+                    "id": decode_ids_array(ids),
+                    "exclude_premium": True,
+                }
+            )
         else:
-            tracks = get_tracks({"with_users": True, "routes": routes_parsed})
+            tracks = get_tracks(
+                {
+                    "with_users": True,
+                    "routes": routes_parsed,
+                    "exclude_premium": True,
+                }
+            )
         if not tracks:
             if handle and slug:
                 abort_not_found(f"{handle}/{slug}", ns)
@@ -337,6 +369,26 @@ class FullBulkTracks(Resource):
 
 # Stream
 
+stream_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+stream_parser.add_argument(
+    "user_signature",
+    description="""Optional - signature from the requesting user's wallet.
+        This is needed to authenticate the user and verify access in case the track is premium.""",
+    type=str,
+)
+stream_parser.add_argument(
+    "user_data",
+    description="""Optional - data which was used to generate the optional signature argument.""",
+    type=str,
+)
+stream_parser.add_argument(
+    "premium_content_signature",
+    description="""Optional - premium content signature for this track which was previously generated by a registered DN.
+        This is so that track access won't have to be check; instead, we check that the user which generated the
+        user signature and the user for whom the DN signed are the same.""",
+    type=str,
+)
+
 
 def tranform_stream_cache(stream_url):
     return redirect(stream_url)
@@ -356,6 +408,7 @@ class TrackStream(Resource):
             500: "Server error",
         },
     )
+    @ns.expect(stream_parser)
     @cache(ttl_sec=5, transform=tranform_stream_cache)
     def get(self, track_id):
         """
@@ -365,27 +418,43 @@ class TrackStream(Resource):
         https://developer.mozilla.org/en-US/docs/Web/HTTP/Range_requests
         """
         decoded_id = decode_with_abort(track_id, ns)
-        args = {"track_id": decoded_id}
-        creator_nodes = get_track_user_creator_node(args)
-        if creator_nodes is None:
+        info = get_track_stream_info(decoded_id)
+
+        creator_nodes = info["creator_nodes"]
+        track = info["track"]
+        if not creator_nodes or not track:
             abort_not_found(track_id, ns)
+
         creator_nodes = creator_nodes.split(",")
-        if not creator_nodes:
-            abort_not_found(track_id, ns)
-
-        # before redirecting to content node,
-        # make sure the track isn't deleted and the user isn't deactivated
-        args = {
-            "id": [decoded_id],
-            "with_users": True,
-        }
-        tracks = get_tracks(args)
-        track = tracks[0]
-        if track["is_delete"] or track["user"]["is_deactivated"]:
-            abort_not_found(track_id, ns)
-
         primary_node = creator_nodes[0]
-        stream_url = urljoin(primary_node, f"tracks/stream/{track_id}")
+        request_args = stream_parser.parse_args()
+
+        # signature for the track to be included as a query param in the redirect to CN
+        signature = get_track_stream_signature(
+            {
+                "track": track,
+                "user_data": request_args.get("user_data", None),
+                "user_signature": request_args.get("user_signature", None),
+                "premium_content_signature": request_args.get(
+                    "premium_content_signature", None
+                ),
+            }
+        )
+        if not signature:
+            abort_not_found(track_id, ns)
+
+        signature_param = urllib.parse.quote(json.dumps(signature))
+        track_cid = track["track_cid"]
+        if not track_cid:
+            logger.warning(
+                f"tracks.py | stream | We should not reach here! If you see this, it's because the track with id {track_id} has no track_cid. Please investigate."
+            )
+            path = f"tracks/stream/{track_id}"
+        elif not CID_STREAM_ENABLED:
+            path = f"tracks/stream/{track_id}"
+        else:
+            path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
+        stream_url = urljoin(primary_node, path)
 
         return stream_url
 
@@ -482,6 +551,7 @@ class Trending(Resource):
             abort_bad_path_param("version", ns)
 
         args = trending_parser.parse_args()
+        args["exclude_premium"] = True
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )
@@ -531,6 +601,51 @@ class FullTrending(Resource):
             TrendingType.TRACKS, version_list[0]
         )
         trending_tracks = get_full_trending(request, args, strategy)
+        return success_response(trending_tracks)
+
+
+@ns.route(
+    "/trending/underground",
+    defaults={
+        "version": DEFAULT_TRENDING_VERSIONS[TrendingType.UNDERGROUND_TRACKS].name
+    },
+    strict_slashes=False,
+    doc={
+        "get": {
+            "id": """Get Underground Trending Tracks""",
+            "description": """Gets the top 100 trending underground tracks on Audius""",
+        }
+    },
+)
+@ns.route(
+    "/trending/underground/<string:version>",
+    doc={
+        "get": {
+            "id": "Get Underground Trending Tracks With Version",
+            "description": "Gets the top 100 trending underground tracks on Audius using a given trending strategy version",
+            "params": {"version": "The strategy version of trending to user"},
+        }
+    },
+)
+class UndergroundTrending(Resource):
+    @record_metrics
+    @ns.expect(pagination_parser)
+    @ns.marshal_with(tracks_response)
+    def get(self, version):
+        underground_trending_versions = trending_strategy_factory.get_versions_for_type(
+            TrendingType.UNDERGROUND_TRACKS
+        ).keys()
+        version_list = list(
+            filter(lambda v: v.name == version, underground_trending_versions)
+        )
+        if not version_list:
+            abort_bad_path_param("version", ns)
+
+        args = pagination_parser.parse_args()
+        strategy = trending_strategy_factory.get_strategy(
+            TrendingType.UNDERGROUND_TRACKS, version_list[0]
+        )
+        trending_tracks = get_underground_trending(request, args, strategy)
         return success_response(trending_tracks)
 
 
@@ -616,6 +731,7 @@ class RecommendedTrack(Resource):
         args = recommended_track_parser.parse_args()
         limit = format_limit(args, default_limit=DEFAULT_RECOMMENDED_LIMIT)
         args["limit"] = max(TRENDING_LIMIT, limit)
+        args["exclude_premium"] = True
         strategy = trending_strategy_factory.get_strategy(
             TrendingType.TRACKS, version_list[0]
         )
@@ -1084,6 +1200,105 @@ class MostLoved(Resource):
         return success_response(tracks)
 
 
+feeling_lucky_parser = current_user_parser.copy()
+feeling_lucky_parser.add_argument(
+    "limit",
+    required=False,
+    default=25,
+    type=int,
+    description="Number of tracks to fetch",
+)
+feeling_lucky_parser.add_argument(
+    "with_users",
+    required=False,
+    default=False,
+    type=inputs.boolean,
+    description="Boolean to include user info with tracks",
+)
+feeling_lucky_parser.add_argument(
+    "min_followers",
+    required=False,
+    default=100,
+    type=int,
+    description="Fetch tracks from users with at least this number of followers",
+)
+
+
+@full_ns.route("/feeling_lucky")
+class FeelingLucky(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Feeling Lucky Tracks""",
+        description="""Gets random tracks found on the \"Feeling Lucky\" smart playlist""",
+    )
+    @full_ns.expect(feeling_lucky_parser)
+    @full_ns.marshal_with(full_tracks_response)
+    @cache(ttl_sec=10)
+    def get(self):
+        request_args = feeling_lucky_parser.parse_args()
+        args = {
+            "with_users": request_args.get("with_users"),
+            "limit": format_limit(request_args, max_limit=100, default_limit=25),
+            "user_id": get_current_user_id(request_args),
+            "min_followers": request_args.get("min_followers"),
+        }
+        tracks = get_random_tracks(args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+
+track_signatures_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+track_signatures_parser.add_argument(
+    "track_ids",
+    description="""A list of track ids. The order of these track ids will match the order of the token ids.""",
+    type=int,
+    action="append",
+)
+track_signatures_parser.add_argument(
+    "token_ids",
+    description="""A list of ERC1155 token ids. The order of these token ids will match the order of the track ids.
+        There may be multiple token ids for a given track id, so we use a '-' as the delimiter for a track id's token ids.""",
+    type=str,
+    action="append",
+)
+
+
+@full_ns.route("/<string:user_id>/nft-gated-signatures")
+class NFTGatedPremiumTrackSignatures(Resource):
+    @record_metrics
+    @full_ns.doc(
+        id="""Get Premium Track Signatures""",
+        description="""Gets premium track signatures for passed in premium track ids""",
+        params={
+            "user_id": """The user for whom we are generating premium track signatures."""
+        },
+    )
+    @full_ns.expect(track_signatures_parser)
+    @cache(ttl_sec=5)
+    def get(self, user_id):
+        decoded_user_id = decode_with_abort(user_id, full_ns)
+        request_args = track_signatures_parser.parse_args()
+        track_ids = request_args.get("track_ids")
+        token_ids = request_args.get("token_ids")
+
+        # Track ids and token ids should have the same length.
+        # If a track id does not have token ids, then we should still receive an empty string for its token ids.
+        # We need to enforce this because we won't be able to tell which track ids the token ids are for otherwise.
+        if len(track_ids) != len(token_ids):
+            full_ns.abort(400, "Mismatch between track ids and their token ids.")
+
+        track_token_id_map = {}
+        for i, track_id in enumerate(track_ids):
+            track_token_id_map[track_id] = (
+                token_ids[i].split("-") if token_ids[i] else []
+            )
+
+        premium_track_signatures = get_nft_gated_premium_track_signatures(
+            decoded_user_id, track_token_id_map
+        )
+        return success_response(premium_track_signatures)
+
+
 @ns.route("/latest", doc=False)
 class LatestTrack(Resource):
     @record_metrics
@@ -1092,5 +1307,37 @@ class LatestTrack(Resource):
         description="""Gets the most recent track on Audius""",
     )
     def get(self):
-        latest = get_max_id("track")
+        args = {"limit": 1, "offset": 0}
+        latest = get_latest_entities("track", args)
         return success_response(latest)
+
+
+subsequent_tracks_parser = pagination_parser.copy()
+subsequent_tracks_parser.remove_argument("offset")
+
+
+@ns.route("/<string:track_id>/subsequent", doc=False)
+class SubsequentTrack(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get subsequent tracks""",
+        description="""Gets the next tracks by upload date""",
+    )
+    def get(self, track_id):
+        request_args = subsequent_tracks_parser.parse_args()
+        decoded_track_id = decode_with_abort(track_id, ns)
+        limit = format_limit(request_args)
+
+        subsequent_tracks = get_subsequent_tracks(decoded_track_id, limit)
+        return success_response(subsequent_tracks)
+
+
+@ns.route("/unclaimed_id", doc=False)
+class GetUnclaimedTrackId(Resource):
+    @ns.doc(
+        id="""Get unclaimed track ID""",
+        description="""Gets an unclaimed blockchain track ID""",
+    )
+    def get(self):
+        unclaimed_id = get_unclaimed_id("track")
+        return success_response(unclaimed_id)

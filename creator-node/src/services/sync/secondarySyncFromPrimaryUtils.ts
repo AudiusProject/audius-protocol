@@ -1,16 +1,19 @@
+import type Logger from 'bunyan'
 import type {
   ForceResyncConfig,
   ForceResyncSigningData,
   SyncRequestAxiosData
 } from '../stateMachineManager/stateReconciliation/types'
+import type { LogContext } from '../../utils'
 
-const _ = require('lodash')
-
-const { logger: genericLogger } = require('../../logging')
-const ContentNodeInfoManager = require('../stateMachineManager/ContentNodeInfoManager')
-const { recoverWallet, signatureHasExpired } = require('../../apiSigning')
-
-const asyncRetry = require('../../utils/asyncRetry')
+import {
+  getContentNodeInfoFromEndpoint,
+  getReplicaSetEndpointsByWallet
+} from '../ContentNodeInfoManager'
+import config from '../../config'
+import { isFqdn } from '../../utils'
+import { logger as genericLogger } from '../../logging'
+import { recoverWallet, signatureHasExpired } from '../../apiSigning'
 
 const generateDataForSignatureRecovery = (
   body: SyncRequestAxiosData
@@ -32,22 +35,29 @@ const generateDataForSignatureRecovery = (
  * @param {string} param.wallet the observed user's wallet
  * @param {boolean} param.forceResync flag from the request to force resync (i.e. clearing old user state) or not
  * @param {Object} param.logger log object
- * @param {Object} param.logContext object of log context. used when this sync job is enqueued
+ * @param {LogContext} param.logContext object of log context. used when this sync job is enqueued
  * @returns true or false, depending on the request flag and whether the requester host is the primary of the user
  */
 const shouldForceResync = async (
-  { libs, logContext }: any,
-  forceResyncConfig: ForceResyncConfig
+  { libs, logContext }: { libs: any; logContext: LogContext },
+  forceResyncConfig: ForceResyncConfig,
+  syncOverride = false
 ) => {
   if (!forceResyncConfig) return false
 
   const { signatureData, wallet, forceResync } = forceResyncConfig
 
-  const logger = logContext ? genericLogger.child(logContext) : genericLogger
+  const logger: Logger = logContext
+    ? genericLogger.child(logContext)
+    : genericLogger
 
   logger.debug(
     `Checking shouldForceResync: wallet=${wallet} forceResync=${forceResync}`
   )
+
+  if (forceResync && syncOverride) {
+    return true
+  }
 
   if (!forceResync || !signatureData) {
     return false
@@ -69,14 +79,17 @@ const shouldForceResync = async (
 
   try {
     // Get the delegate wallet from the primary of the observed user
-    const userPrimaryId = await asyncRetry({
-      asyncFn: async () => {
-        return (await libs.User.getUsers(1, 0, null, wallet))[0].primary_id
-      },
-      logLabel: 'shouldForceResync'
+    const replicaSetEndpoints = await getReplicaSetEndpointsByWallet({
+      libs,
+      wallet,
+      parentLogger: logger
     })
-    const { delegateOwnerWallet: actualPrimaryWallet } =
-      ContentNodeInfoManager.getContentNodeInfoFromSpId(userPrimaryId)
+    const primaryInfo = await getContentNodeInfoFromEndpoint(
+      replicaSetEndpoints.primary!,
+      logger
+    )
+    if (primaryInfo === undefined) return false
+    const { delegateOwnerWallet: actualPrimaryWallet } = primaryInfo
 
     logger.debug(
       `shouldForceResync wallets actual: ${actualPrimaryWallet} recovered: ${recoveredPrimaryWallet}`
@@ -88,11 +101,58 @@ const shouldForceResync = async (
     )
   } catch (e: any) {
     logger.error(
-      `shouldForceResync Could not verify primary delegate owner key: ${e.message}`
+      `shouldForceResync Could not verify primary delegate owner key: ${e.message}: ${e.stack}`
     )
   }
 
   return false
 }
 
-export { shouldForceResync, generateDataForSignatureRecovery }
+/**
+ * Retrieves current FQDN registered on-chain with node's owner wallet
+ * and throws if it doesn't match.
+ */
+const getAndValidateOwnEndpoint = async (logger: Logger): Promise<string> => {
+  const cNodeEndpoint = config.get('creatorNodeEndpoint')
+
+  if (!cNodeEndpoint) {
+    throw new Error('Must provide creatorNodeEndpoint config var.')
+  }
+
+  const cNodeInfo = await getContentNodeInfoFromEndpoint(cNodeEndpoint, logger)
+
+  // Confirm on-chain endpoint exists and is valid FQDN
+  // Error condition is met if any of the following are true
+  // - No spInfo returned from chain
+  // - Configured spOwnerWallet does not match on chain spOwnerWallet
+  // - Configured delegateOwnerWallet does not match on chain delegateOwnerWallet
+  // - Endpoint returned from chain but is an invalid FQDN, preventing successful operations
+  // - Endpoint returned from chain does not match configured endpoint
+  if (
+    cNodeInfo === undefined ||
+    !cNodeInfo.hasOwnProperty('endpoint') ||
+    cNodeInfo.owner.toLowerCase() !==
+      config.get('spOwnerWallet').toLowerCase() ||
+    cNodeInfo.delegateOwnerWallet.toLowerCase() !==
+      config.get('delegateOwnerWallet').toLowerCase() ||
+    !isFqdn(cNodeInfo.endpoint) ||
+    cNodeInfo.endpoint !== cNodeEndpoint
+  ) {
+    throw new Error(
+      `Cannot getAndValidateOwnEndpoint for node. Returned from chain=${JSON.stringify(
+        cNodeInfo
+      )}, configs=(creatorNodeEndpoint=${config.get(
+        'creatorNodeEndpoint'
+      )}, spOwnerWallet=${config.get(
+        'spOwnerWallet'
+      )}, delegateOwnerWallet=${config.get('delegateOwnerWallet')})`
+    )
+  }
+  return cNodeInfo.endpoint
+}
+
+export {
+  shouldForceResync,
+  generateDataForSignatureRecovery,
+  getAndValidateOwnEndpoint
+}

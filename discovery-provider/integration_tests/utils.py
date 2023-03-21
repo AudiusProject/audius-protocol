@@ -3,7 +3,9 @@ from datetime import datetime
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
+from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
+from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.reward_manager import RewardManagerTransaction
@@ -16,6 +18,7 @@ from src.models.social.play import Play
 from src.models.social.reaction import Reaction
 from src.models.social.repost import Repost
 from src.models.social.save import Save
+from src.models.social.subscription import Subscription
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.remix import Remix
 from src.models.tracks.stem import Stem
@@ -25,6 +28,7 @@ from src.models.users.aggregate_user import AggregateUser
 from src.models.users.associated_wallet import AssociatedWallet, WalletChain
 from src.models.users.supporter_rank_up import SupporterRankUp
 from src.models.users.user import User
+from src.models.users.user_balance_change import UserBalanceChange
 from src.models.users.user_bank import UserBankAccount, UserBankTx
 from src.models.users.user_listening_history import UserListeningHistory
 from src.models.users.user_tip import UserTip
@@ -102,9 +106,11 @@ def populate_mock_db(db, entities, block_offset=None):
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])
         follows = entities.get("follows", [])
+        subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
         saves = entities.get("saves", [])
         track_routes = entities.get("track_routes", [])
+        playlist_routes = entities.get("playlist_routes", [])
         remixes = entities.get("remixes", [])
         stems = entities.get("stems", [])
         challenges = entities.get("challenges", [])
@@ -126,9 +132,19 @@ def populate_mock_db(db, entities, block_offset=None):
         supporter_rank_ups = entities.get("supporter_rank_ups", [])
         reward_manager_txs = entities.get("reward_manager_txs", [])
         challenge_disbursements = entities.get("challenge_disbursements", [])
+        notification_seens = entities.get("notification_seens", [])
+        playlist_seens = entities.get("playlist_seens", [])
+        user_balance_changes = entities.get("user_balance_changes", [])
 
         num_blocks = max(
-            len(tracks), len(users), len(follows), len(saves), len(reposts)
+            len(tracks),
+            len(playlists),
+            len(users),
+            len(follows),
+            len(saves),
+            len(reposts),
+            len(subscriptions),
+            len(playlist_seens),
         )
         for i in range(block_offset, block_offset + num_blocks):
             max_block = session.query(Block).filter(Block.number == i).first()
@@ -163,7 +179,15 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_delete=track_meta.get("is_delete", False),
                 owner_id=track_meta.get("owner_id", 1),
                 route_id=track_meta.get("route_id", ""),
-                track_segments=track_meta.get("track_segments", []),
+                track_segments=track_meta.get(
+                    "track_segments",
+                    [
+                        {
+                            "duration": 0,
+                            "multihash": "QmURbJr815cnDWwYLJmJtYW8ZiAqMre5QzxpW5kahrNTYE",
+                        }
+                    ],
+                ),
                 tags=track_meta.get("tags", None),
                 genre=track_meta.get("genre", ""),
                 remix_of=track_meta.get("remix_of", None),
@@ -171,6 +195,10 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=track_meta.get("created_at", datetime.now()),
                 release_date=track_meta.get("release_date", None),
                 is_unlisted=track_meta.get("is_unlisted", False),
+                is_premium=track_meta.get("is_premium", False),
+                premium_conditions=track_meta.get("premium_conditions", None),
+                is_playlist_upload=track_meta.get("is_playlist_upload", False),
+                track_cid=track_meta.get("track_cid", None),
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
@@ -210,6 +238,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_current=user_meta.get("is_current", True),
                 handle=user_meta.get("handle", str(i)),
                 handle_lc=user_meta.get("handle", str(i)).lower(),
+                artist_pick_track_id=user_meta.get("artist_pick_track_id"),
                 wallet=user_meta.get("wallet", str(i)),
                 bio=user_meta.get("bio", str(i)),
                 profile_picture=user_meta.get("profile_picture"),
@@ -221,6 +250,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 primary_id=user_meta.get("primary_id"),
                 secondary_ids=user_meta.get("secondary_ids"),
                 replica_set_update_signer=user_meta.get("replica_set_update_signer"),
+                creator_node_endpoint=user_meta.get(
+                    "creator_node_endpoint", "https://cn.io"
+                ),
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",
@@ -242,6 +274,17 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=follow_meta.get("created_at", datetime.now()),
             )
             session.add(follow)
+        for i, subscription_meta in enumerate(subscriptions):
+            subscription = Subscription(
+                blockhash=hex(i + block_offset),
+                blocknumber=subscription_meta.get("blocknumber", i + block_offset),
+                subscriber_id=subscription_meta.get("subscriber_id", i + 1),
+                user_id=subscription_meta.get("user_id", i),
+                is_current=subscription_meta.get("is_current", True),
+                is_delete=subscription_meta.get("is_delete", False),
+                created_at=subscription_meta.get("created_at", datetime.now()),
+            )
+            session.add(subscription)
         for i, repost_meta in enumerate(reposts):
             repost = Repost(
                 blockhash=hex(i + block_offset),
@@ -253,6 +296,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_current=repost_meta.get("is_current", True),
                 is_delete=repost_meta.get("is_delete", False),
                 created_at=repost_meta.get("created_at", datetime.now()),
+                is_repost_of_repost=repost_meta.get("is_repost_of_repost", False),
             )
             session.add(repost)
         for i, save_meta in enumerate(saves):
@@ -266,6 +310,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_current=save_meta.get("is_current", True),
                 is_delete=save_meta.get("is_delete", False),
                 created_at=save_meta.get("created_at", datetime.now()),
+                is_save_of_repost=save_meta.get("is_save_of_repost", False),
             )
             session.add(save)
 
@@ -355,6 +400,20 @@ def populate_mock_db(db, entities, block_offset=None):
                 blocknumber=route_meta.get("blocknumber", i + block_offset),
                 owner_id=route_meta.get("owner_id", i + 1),
                 track_id=route_meta.get("track_id", i + 1),
+                is_current=route_meta.get("is_current", True),
+                txhash=route_meta.get("txhash", str(i + 1)),
+                collision_id=route_meta.get("collision_id", 0),
+            )
+            session.add(route)
+
+        for i, route_meta in enumerate(playlist_routes):
+            route = PlaylistRoute(
+                slug=route_meta.get("slug", ""),
+                title_slug=route_meta.get("title_slug", ""),
+                blockhash=hex(i + block_offset),
+                blocknumber=route_meta.get("blocknumber", i + block_offset),
+                owner_id=route_meta.get("owner_id", i + 1),
+                playlist_id=route_meta.get("playlist_id", i + 1),
                 is_current=route_meta.get("is_current", True),
                 txhash=route_meta.get("txhash", str(i + 1)),
                 collision_id=route_meta.get("collision_id", 0),
@@ -502,4 +561,34 @@ def populate_mock_db(db, entities, block_offset=None):
                 amount=challenge_disbursement.get("amount", i),
             )
             session.add(cb)
-        session.flush()
+        for i, playlist_seen in enumerate(playlist_seens):
+            ps = PlaylistSeen(
+                user_id=playlist_seen.get("user_id", i),
+                playlist_id=playlist_seen.get("playlist_id", i),
+                is_current=playlist_seen.get("is_current", True),
+                seen_at=playlist_seen.get("seen_at", datetime.now()),
+                blockhash=playlist_seen.get("blockhash", str(i)),
+                blocknumber=playlist_seen.get("blocknumber", str(i)),
+                txhash=playlist_seen.get("txhash", str(i)),
+            )
+            session.add(ps)
+        for i, notification_seen in enumerate(notification_seens):
+            ns = NotificationSeen(
+                user_id=notification_seen.get("user_id", i),
+                blocknumber=notification_seen.get("blocknumber", i),
+                blockhash=notification_seen.get("signature", str(i)),
+                seen_at=notification_seen.get("seen_at", datetime.now()),
+            )
+            session.add(ns)
+        for i, balance_change in enumerate(user_balance_changes):
+            ns = UserBalanceChange(
+                user_id=balance_change.get("user_id", i),
+                blocknumber=balance_change.get("blocknumber", i),
+                current_balance=balance_change.get("current_balance", 0),
+                previous_balance=balance_change.get("previous_balance", 0),
+                created_at=balance_change.get("created_at", datetime.now()),
+                updated_at=balance_change.get("updated_at", datetime.now()),
+            )
+            session.add(ns)
+
+        session.commit()

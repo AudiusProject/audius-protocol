@@ -5,11 +5,10 @@ Revises: 169519f975c2
 Create Date: 2021-08-12 12:54:57.042823
 
 """
+import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.orm.session import Session
-import sqlalchemy as sa
 from src.challenges.create_new_challenges import create_new_challenges
-
 
 # revision identifiers, used by Alembic.
 revision = "7693ab16e2e1"

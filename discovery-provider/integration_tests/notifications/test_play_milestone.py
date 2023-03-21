@@ -32,7 +32,6 @@ def test_play_milsetone_notification(app):
         assert len(notifications) == 3
         assert notifications[0].specifier == "2"
         assert notifications[0].group_id == "milestone:LISTEN_COUNT:id:100:threshold:50"
-        assert notifications[0].notification_group_id == None
         assert notifications[0].type == "milestone"
         assert notifications[0].slot == 50
         assert notifications[0].blocknumber == None

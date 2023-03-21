@@ -34,6 +34,12 @@ type RequestParams = {
   data?: Record<string, unknown>
 }
 
+type UserReplicaSet = {
+  primarySpID: number
+  secondary1SpID: number
+  secondary2SpID: number
+}
+
 export type DiscoveryProviderConfig = {
   whitelist?: Set<string>
   blacklist?: Set<string>
@@ -262,6 +268,51 @@ export class DiscoveryProvider {
   }
 
   /**
+   * get tracks with all relevant track data
+   * can be filtered by providing an integer array of ids
+   * @param limit
+   * @param offset
+   * @param idsArray
+   * @param targetUserId the owner of the tracks being queried
+   * @param sort a string of form eg. blocknumber:asc,timestamp:desc describing a sort path
+   * @param minBlockNumber The min block number
+   * @param filterDeleted If set to true, filters the deleted tracks
+   * @returns Array of track metadata Objects
+   * additional metadata fields on track objects:
+   *  {Integer} repost_count - repost count for given track
+   *  {Integer} save_count - save count for given track
+   *  {Array} followee_reposts - followees of current user that have reposted given track
+   *  {Boolean} has_current_user_reposted - has current user reposted given track
+   *  {Boolean} has_current_user_saved - has current user saved given track
+   * @example
+   * await getTracks()
+   * await getTracks(100, 0, [3,2,6]) - Invalid track ids will not be accepted
+   */
+  async getTracksVerbose(
+    limit = 100,
+    offset = 0,
+    idsArray: Nullable<string[]>,
+    targetUserId: Nullable<string>,
+    sort: Nullable<boolean>,
+    minBlockNumber: Nullable<number>,
+    filterDeleted: Nullable<boolean>,
+    withUsers?: boolean
+  ) {
+    const req = Requests.getTracks(
+      limit,
+      offset,
+      idsArray,
+      targetUserId,
+      sort,
+      minBlockNumber,
+      filterDeleted,
+      withUsers
+    )
+
+    return await this._makeRequestInternal(req)
+  }
+
+  /**
    * Gets a particular track by its creator's handle and the track's URL slug
    * @param handle the handle of the owner of the track
    * @param slug the URL slug of the track, generally the title urlized
@@ -380,7 +431,7 @@ export class DiscoveryProvider {
     idsArray: Nullable<number[]> = null,
     targetUserId: Nullable<number> = null,
     withUsers = false
-  ): Promise<unknown> {
+  ) {
     const req = Requests.getPlaylists(
       limit,
       offset,
@@ -726,6 +777,7 @@ export class DiscoveryProvider {
     limit,
     mood,
     filter,
+    encodedUserId,
     withUsers = false
   }: Requests.GetTopFullPlaylistsParams) {
     const req = Requests.getTopFullPlaylists({
@@ -733,6 +785,7 @@ export class DiscoveryProvider {
       limit,
       mood,
       filter,
+      encodedUserId,
       withUsers
     })
     return await this._makeRequest(req)
@@ -783,8 +836,17 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
-  async getLatest(type: string) {
-    const req = Requests.getLatest(type)
+  async getFeelingLuckyTracks(
+    encodedUserId: string,
+    limit: string,
+    withUsers = false
+  ) {
+    const req = Requests.getFeelingLuckyTracks(encodedUserId, limit, withUsers)
+    return await this._makeRequest(req)
+  }
+
+  async getLatest(type: string, limit = 1, offset = 0) {
+    const req = Requests.getLatest(type, limit, offset)
     return await this._makeRequest(req)
   }
 
@@ -803,6 +865,11 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
+  async getUserNotifications(params: Requests.GetUserNotificationsParams) {
+    const req = Requests.getUserNotifications(params)
+    return await this._makeRequest(req)
+  }
+
   async getURSMContentNodes(ownerWallet: string | null = null) {
     const req = Requests.getURSMContentNodes(ownerWallet)
     return await this._makeRequest(req)
@@ -814,6 +881,30 @@ export class DiscoveryProvider {
     timeout: number
   ) {
     const req = Requests.getNotifications(minBlockNumber, trackIds, timeout)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Retrieves subscribers for a given user.
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.timeout timeout in ms
+   * @returns Array of User metadata objects for each subscriber
+   */
+  async getUserSubscribers(encodedUserId: string, timeout: number) {
+    const req = Requests.getUserSubscribers(encodedUserId, timeout)
+    return await this._makeRequest(req)
+  }
+
+  /**
+   * Retrieves subscribers for the given users.
+   * @param params.encodedUserIds JSON stringified array of
+   *   encoded user ids
+   * @param params.timeout timeout in ms
+   * @returns Array of {user_id: <encoded user id>,
+   *   subscriber_ids: Array[<encoded subscriber ids>]} objects
+   */
+  async bulkGetUserSubscribers(encodedUserIds: string, timeout: number) {
+    const req = Requests.bulkGetUserSubscribers(encodedUserIds, timeout)
     return await this._makeRequest(req)
   }
 
@@ -872,6 +963,62 @@ export class DiscoveryProvider {
     const res = await this._makeRequest<Array<{ amount: string }>>(req)
     if (!res) return []
     return res.map((r) => ({ ...r, amount: parseInt(r.amount) }))
+  }
+
+  /**
+   * Retrieves listen counts for all tracks of a given artist grouped by month.
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.startTime start time of query
+   * @param params.endTime end time of query
+   * @return object containing listen counts for an artist's tracks grouped by month
+   */
+  async getUserListenCountsMonthly(
+    encodedUserId: string,
+    startTime: string,
+    endTime: string
+  ): Promise<Object | null | undefined> {
+    const req = Requests.getUserListenCountsMonthly(
+      encodedUserId,
+      startTime,
+      endTime
+    )
+
+    return await this._makeRequest<Object | null>(req)
+  }
+
+  /**
+   * Retrieves the user's replica set
+   * @param params.encodedUserId string of the encoded user id
+   * @param params.blockNumber optional integer pass to wait until the discovery node has indexed that block number
+   * @return object containing the user replica set
+   */
+  async getUserReplicaSet({
+    encodedUserId,
+    blockNumber
+  }: {
+    encodedUserId: string
+    blockNumber?: number
+  }) {
+    const req = Requests.getUserReplicaSet(encodedUserId)
+
+    return await this._makeRequest<Nullable<UserReplicaSet>>(
+      req,
+      true,
+      0,
+      false,
+      blockNumber
+    )
+  }
+
+  /**
+   * Retrieves an unclaimed ID
+   * @return encoded ID
+   */
+  async getUnclaimedId(
+    type: 'users' | 'playlists' | 'tracks'
+  ): Promise<null | undefined | string> {
+    const req = Requests.getUnclaimedId(type)
+    return await this._makeRequest(req)
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
@@ -1018,6 +1165,7 @@ export class DiscoveryProvider {
    *  queryParams: object
    *  method: string
    *  headers: object
+   *  data: object
    * }} {
    *  endpoint: the base route
    *  urlParams: string of URL params to be concatenated after base route
@@ -1026,13 +1174,63 @@ export class DiscoveryProvider {
    * }
    * @param retry whether to retry on failure
    * @param attemptedRetries number of attempted retries (stops retrying at max)
+   * @param throwError whether to throw error on error performing request or null
+   * @param blockNumber If provided, throws an error if the discovery node has not yet indexed this block
    */
   async _makeRequest<Response>(
     requestObj: Record<string, unknown>,
     retry = true,
     attemptedRetries = 0,
-    throwError = false
+    throwError = false,
+    blockNumber?: number
   ): Promise<Response | undefined | null> {
+    return (
+      await this._makeRequestInternal<Response>(
+        requestObj,
+        retry,
+        attemptedRetries,
+        throwError,
+        blockNumber
+      )
+    )?.data
+  }
+
+  /**
+   * Makes a request to a discovery node, reselecting if necessary
+   * @param {{
+   *  endpoint: string
+   *  urlParams: object
+   *  queryParams: object
+   *  method: string
+   *  headers: object
+   * }} {
+   *  endpoint: the base route
+   *  urlParams: string of URL params to be concatenated after base route
+   *  queryParams: URL query (search) params
+   *  method: string HTTP method
+   * }
+   * @param retry whether to retry on failure
+   * @param attemptedRetries number of attempted retries (stops retrying at max)
+   * @param throwError whether to throw error on error performing request or null
+   * @param blockNumber If provided, throws an error if the discovery node has not yet indexed this block
+   */
+  async _makeRequestInternal<Response>(
+    requestObj: Record<string, unknown>,
+    retry = true,
+    attemptedRetries = 0,
+    throwError = false,
+    blockNumber?: number
+  ): Promise<
+    | {
+        latest_indexed_block: number
+        latest_chain_block: number
+        latest_indexed_slot_plays: number
+        latest_chain_slot_plays: number
+        data: Response
+      }
+    | undefined
+    | null
+  > {
     const returnOrThrow = <ErrorType>(e: ErrorType) => {
       if (throwError) {
         // eslint-disable-next-line @typescript-eslint/no-throw-literal
@@ -1085,7 +1283,7 @@ export class DiscoveryProvider {
           if (this.request404Count < this.maxRequestsForTrue404) {
             // In the case of a 404, retry with a different discovery node entirely
             // using selectionRequestRetries + 1 to force reselection
-            return await this._makeRequest(
+            return await this._makeRequestInternal(
               requestObj,
               retry,
               this.selectionRequestRetries + 1,
@@ -1098,7 +1296,7 @@ export class DiscoveryProvider {
         }
 
         // In the case of an unknown error, retry with attempts += 1
-        return await this._makeRequest(
+        return await this._makeRequestInternal(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1117,13 +1315,18 @@ export class DiscoveryProvider {
       this.ethContracts && !this.ethContracts.isInRegressedMode()
 
     const blockDiff = await this._getBlocksBehind(parsedResponse)
+    if (blockNumber && parsedResponse.latest_indexed_block < blockNumber) {
+      throw new Error(
+        `Requested blocknumber ${blockNumber}, but discovery is behind at ${parsedResponse.latest_indexed_block}`
+      )
+    }
     if (notInRegressedMode && blockDiff) {
       const errorMessage = `${this.discoveryProviderEndpoint} is too far behind [block diff: ${blockDiff}]`
       if (retry) {
         console.info(
           `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequest(
+        return await this._makeRequestInternal(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1140,7 +1343,7 @@ export class DiscoveryProvider {
         console.info(
           `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequest(
+        return await this._makeRequestInternal(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1154,7 +1357,7 @@ export class DiscoveryProvider {
     this.request404Count = 0
 
     // Everything looks good, return the data!
-    return parsedResponse.data
+    return parsedResponse
   }
 
   /**

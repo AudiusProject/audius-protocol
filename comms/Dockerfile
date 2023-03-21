@@ -1,0 +1,34 @@
+FROM golang:alpine AS builder
+
+ENV GO111MODULE=on
+ENV CGO_ENABLED=0
+
+RUN apk add build-base curl ffmpeg make
+RUN go install github.com/nats-io/nats-server/v2@v2.9.15 && \
+  go install github.com/nats-io/natscli/nats@latest && \
+  go install github.com/nats-io/nkeys/nk@latest && \
+  go install github.com/nats-io/nsc/v2@latest && \
+  go install github.com/amacneil/dbmate@latest && \
+  go install github.com/cosmtrek/air@latest
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod graph | awk '{if ($1 !~ "@") print $2}' | xargs go get
+
+COPY . .
+RUN go build -ldflags="-w -s" -o comms main.go
+
+EXPOSE 4222
+VOLUME ["/tmp"]
+
+FROM alpine AS final
+
+RUN apk add curl ffmpeg
+
+COPY --from=builder /go/bin/* /bin
+COPY --from=builder /app/comms /bin/comms
+COPY --from=builder /app/discovery/db/migrations /discovery/db/migrations
+
+VOLUME ["/tmp"]
+ENTRYPOINT ["comms"]

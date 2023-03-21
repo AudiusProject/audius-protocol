@@ -1,4 +1,3 @@
-const axios = require('axios')
 const _ = require('lodash')
 
 const config = require('../../config')
@@ -7,55 +6,81 @@ const { WalletWriteLock } = redis
 const models = require('../../models')
 const { logger: genericLogger } = require('../../logging')
 const DBManager = require('../../dbManager')
-const { getUserReplicaSetEndpointsFromDiscovery } = require('../../middlewares')
-const { saveFileForMultihashToFS } = require('../../fileManager')
+const { getReplicaSetEndpointsByWallet } = require('../ContentNodeInfoManager')
+const { fetchFileFromNetworkAndSaveToFS } = require('../../fileManager')
 const SyncHistoryAggregator = require('../../snapbackSM/syncHistoryAggregator')
 const initAudiusLibs = require('../initAudiusLibs')
-const asyncRetry = require('../../utils/asyncRetry')
 const DecisionTree = require('../../utils/decisionTree')
-const UserSyncFailureCountService = require('./UserSyncFailureCountService')
+const { computeFilePath, computeFilePathInDir } = require('../../utils/fsUtils')
+const { instrumentTracing, tracing } = require('../../tracer')
+const { fetchExportFromNode } = require('./syncUtil')
+const {
+  FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
+} = require('../stateMachineManager/stateMachineConstants')
 
-const EXPORT_REQ_TIMEOUT_MS = 10000 // 10000ms = 10s
-const EXPORT_REQ_MAX_RETRIES = 3
 const DEFAULT_LOG_CONTEXT = {}
-const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 10000
-const SyncRequestMaxUserFailureCountBeforeSkip = config.get(
-  'syncRequestMaxUserFailureCountBeforeSkip'
-)
+const DB_QUERY_LIMIT = config.get('devMode') ? 5 : 1000
+const {
+  LOCAL_DB_ENTRIES_SET_KEY_PREFIX,
+  FETCHED_ENTRIES_SET_KEY_PREFIX,
+  UNIQUE_FETCHED_ENTRIES_SET_KEY_PREFIX
+} = FILTER_OUT_ALREADY_PRESENT_DB_ENTRIES_CONSTS
 
 /**
- * Export data for user from secondary and save locally, until complete
+ * Export data for user from secondary or orphaned nodes and save locally, until complete
  * Should never error, instead return errorObj, else null
  */
-module.exports = async function primarySyncFromSecondary({
+async function _primarySyncFromSecondary({
   wallet,
   secondary,
   logContext = DEFAULT_LOG_CONTEXT
 }) {
-  const logPrefix = `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`
-  const logger = genericLogger.child(logContext)
+  const logger = genericLogger.child({
+    ...logContext,
+    wallet,
+    sync: 'primarySyncFromSecondary',
+    secondary
+  })
 
-  const decisionTree = new DecisionTree({ name: logPrefix, logger })
+  const decisionTree = new DecisionTree({
+    name: `[primarySyncFromSecondary][Wallet: ${wallet}][Secondary: ${secondary}]`,
+    logger
+  })
   decisionTree.recordStage({ name: 'Begin', log: true })
 
+  let errorResult, error
   try {
     const selfEndpoint = config.get('creatorNodeEndpoint')
 
     if (!selfEndpoint) {
       decisionTree.recordStage({ name: 'selfEndpoint missing', log: false })
-      throw new Error('selfEndpoint missing')
+
+      errorResult = {
+        error: 'Content node endpoint not set on node',
+        result: 'failure_content_node_endpoint_not_initialized'
+      }
+
+      throw new Error(errorResult.error)
     }
 
     let libs
     try {
-      libs = await initAudiusLibs({})
+      tracing.info('init AudiusLibs')
+      libs = await initAudiusLibs({ logger })
       decisionTree.recordStage({ name: 'initAudiusLibs() success', log: true })
     } catch (e) {
+      tracing.recordException(e)
       decisionTree.recordStage({
         name: 'initAudiusLibs() Error',
         data: { errorMsg: e.message }
       })
-      throw new Error(`InitAudiusLibs Error - ${e.message}`)
+
+      errorResult = {
+        error: `Could not initialize audiusLibs: ${e.message}`,
+        result: 'failure_audius_libs_not_initialized'
+      }
+
+      throw new Error(errorResult.error)
     }
 
     await WalletWriteLock.acquire(
@@ -64,111 +89,228 @@ module.exports = async function primarySyncFromSecondary({
     )
 
     // TODO should be able to pass this through from StateMachine / caller
-    let userReplicaSet = await getUserReplicaSet({
-      wallet,
-      selfEndpoint,
-      logger,
-      libs
-    })
-    decisionTree.recordStage({ name: 'getUserReplicaSet() success', log: true })
-
-    // Error if this node is not primary for user
-    if (userReplicaSet[0] !== selfEndpoint) {
-      decisionTree.recordState({
-        name: 'Error - Node is not primary for user',
-        data: { userReplicaSet }
+    let userReplicaSet
+    try {
+      userReplicaSet = await getReplicaSetEndpointsByWallet({
+        libs,
+        wallet,
+        parentLogger: logger
       })
-      throw new Error(`Node is not primary for user`)
+    } catch (e) {
+      error = `Error fetching user replica set: ${e.message}`
+      errorResult = {
+        error,
+        result: 'failure_fetching_user_replica_set'
+      }
+
+      throw new Error(error)
     }
 
-    // filter out current node from user's replica set
-    userReplicaSet = userReplicaSet.filter((url) => url !== selfEndpoint)
+    decisionTree.recordStage({
+      name: 'getReplicaSetEndpointsByWallet() success',
+      log: true
+    })
+
+    // Abort if this node is not primary for user
+    if (userReplicaSet.primary !== selfEndpoint) {
+      decisionTree.recordStage({
+        name: 'Abort - Node is not primary for user',
+        data: { userReplicaSet }
+      })
+
+      return {
+        abort: 'Node is not primary for user',
+        result: 'abort_current_node_is_not_user_primary'
+      }
+    }
+
+    // Use the user's non-empty secondaries as gateways to try
+    const gatewaysToTry = [
+      userReplicaSet.secondary1,
+      userReplicaSet.secondary2
+    ].filter(Boolean)
 
     // Keep importing data from secondary until full clock range has been retrieved
     let completed = false
     let exportClockRangeMin = 0
     while (!completed) {
-      const decisionTreeData = { exportClockRangeMin }
+      decisionTree.recordStage({
+        name: 'Begin data import batch',
+        data: { exportClockRangeMin },
+        log: true
+      })
 
-      let fetchedCNodeUser
-      try {
-        fetchedCNodeUser = await fetchExportFromSecondary({
-          secondary,
-          wallet,
-          exportClockRangeMin,
-          selfEndpoint
-        })
-        decisionTree.recordStage({
-          name: 'fetchExportFromSecondary() Success',
-          data: decisionTreeData,
-          log: true
-        })
-      } catch (e) {
+      const {
+        fetchedCNodeUser,
+        error: fetchExportFromNodeError,
+        abort
+      } = await fetchExportFromNode({
+        nodeEndpointToFetchFrom: secondary,
+        wallet,
+        clockRangeMin: exportClockRangeMin,
+        selfEndpoint,
+        logger,
+        forceExport: true
+      })
+
+      if (fetchExportFromNodeError) {
         decisionTree.recordStage({
           name: 'fetchExportFromSecondary() Error',
-          data: { ...decisionTreeData, errorMsg: e.message }
+          data: { error: fetchExportFromNodeError.message }
         })
-        throw e
+
+        errorResult = {
+          error: fetchExportFromNodeError.message,
+          result: fetchExportFromNodeError.code
+        }
+
+        throw new Error(errorResult.error)
       }
+
+      if (abort) {
+        decisionTree.recordStage({
+          name: 'fetchExportFromSecondary() Abort',
+          data: { abort: abort.message }
+        })
+
+        return {
+          abort: abort.message,
+          result: abort.code
+        }
+      }
+
+      // Recompute storage paths to use this node's path prefix
+      fetchedCNodeUser.files.forEach((file) => {
+        return {
+          ...file,
+          storagePath: file.dirMultihash
+            ? computeFilePathInDir(file.dirMultihash, file.multihash)
+            : computeFilePath(file.multihash)
+        }
+      })
+
+      const { localClockMax: fetchedLocalClockMax, requestedClockRangeMax } =
+        fetchedCNodeUser.clockInfo
+      const fetchedCNodeUserClockVal = fetchedCNodeUser.clock
+
+      decisionTree.recordStage({
+        name: 'fetchExportFromSecondary() Success',
+        data: {
+          fetchedLocalClockMax,
+          requestedClockRangeMin: exportClockRangeMin,
+          requestedClockRangeMax,
+          fetchedCNodeUserClockVal
+        },
+        log: true
+      })
 
       // Save all files to disk separately from DB writes to minimize DB transaction duration
       let CIDsThatFailedSaveFileOp
       try {
+        // saveFilesToDisk() will short-circuit if files already exist on disk
         CIDsThatFailedSaveFileOp = await saveFilesToDisk({
           files: fetchedCNodeUser.files,
-          userReplicaSet,
+          gatewaysToTry,
           wallet,
           libs,
-          logger,
-          logPrefix
+          logger
         })
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Success',
           data: {
-            ...decisionTreeData,
+            numSaved:
+              fetchedCNodeUser.files.length - CIDsThatFailedSaveFileOp.size,
             numCIDsThatFailedSaveFileOp: CIDsThatFailedSaveFileOp.size,
             CIDsThatFailedSaveFileOp
           },
           log: true
         })
       } catch (e) {
+        tracing.recordException(e)
         decisionTree.recordStage({
           name: 'saveFilesToDisk() Error',
-          data: { ...decisionTreeData, errorMsg: e.message }
+          data: { errorMsg: e.message }
         })
-        throw e
+
+        errorResult = {
+          error: `Error - Failed to save files to disk: ${e.message}`,
+          result: 'failure_save_files_to_disk'
+        }
+
+        throw new Error(errorResult.error)
       }
 
+      // Save all entries from export to DB
       try {
         await saveEntriesToDB({
           fetchedCNodeUser,
-          CIDsThatFailedSaveFileOp
+          CIDsThatFailedSaveFileOp,
+          decisionTree,
+          logger
         })
         decisionTree.recordStage({
           name: 'saveEntriesToDB() Success',
-          data: decisionTreeData,
           log: true
         })
       } catch (e) {
         decisionTree.recordStage({
           name: 'saveEntriesToDB() Error',
-          data: { ...decisionTreeData, errorMsg: e.message }
+          data: { errorMsg: e.message }
         })
-        throw e
+
+        errorResult = {
+          error: `Error - Failed to save entries to DB: ${e.message}`,
+          result: 'failure_save_entries_to_db'
+        }
+
+        throw new Error(errorResult.error)
       }
 
-      const clockInfo = fetchedCNodeUser.clockInfo
-      if (clockInfo.localClockMax <= clockInfo.requestedClockRangeMax) {
+      /**
+       * TODO update this once all nodes are running 0.3.66
+       *
+       * cnodeUser.clock field is used for comparison since it is max(requestedClockRangeMax, actual clockMax)
+       * This means:
+       *    cnodeUser.clock < requestedClockRangeMax
+       *      - no more data to fetch
+       *      - completed = true
+       *    cnodeUser.clock = requestedClockRangeMax
+       *      - may or may not be more data to fetch
+       *      - completed = false
+       *    cnodeUser.clock > requestedClockRangeMax
+       *      - this never happens
+       */
+      if (fetchedCNodeUserClockVal < requestedClockRangeMax) {
         completed = true
       } else {
-        exportClockRangeMin = clockInfo.requestedClockRangeMax + 1
+        decisionTree.recordStage({
+          name: 'About to process next page of multi-page export',
+          data: {
+            fetchedLocalClockMax,
+            requestedClockRangeMin: exportClockRangeMin,
+            requestedClockRangeMax,
+            fetchedCNodeUserClockVal
+          },
+          log: true
+        })
+        exportClockRangeMin = requestedClockRangeMax + 1
       }
     }
 
     decisionTree.recordStage({ name: 'Complete Success' })
   } catch (e) {
+    tracing.recordException(e)
     await SyncHistoryAggregator.recordSyncFail(wallet)
-    return e
+
+    if (errorResult) {
+      return errorResult
+    }
+
+    // If no error was caught above, then return generic error
+    return {
+      error: `Error - Primary sync from secondary failed: ${e.message}`,
+      result: 'failure_primary_sync_from_secondary'
+    }
   } finally {
     await WalletWriteLock.release(wallet)
 
@@ -176,76 +318,22 @@ module.exports = async function primarySyncFromSecondary({
   }
 }
 
-/**
- * Fetch export for wallet from secondary for max clock range, starting at clockRangeMin
- */
-async function fetchExportFromSecondary({
-  wallet,
-  secondary,
-  clockRangeMin,
-  selfEndpoint
-}) {
-  // Makes request with default `maxExportClockValueRange`
-  const exportQueryParams = {
-    wallet_public_key: [wallet], // export requires a wallet array
-    clock_range_min: clockRangeMin,
-    source_endpoint: selfEndpoint,
-    force_export: true
+const primarySyncFromSecondary = instrumentTracing({
+  fn: _primarySyncFromSecondary,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
+    }
   }
-
-  const exportResp = await asyncRetry({
-    // Throws on any non-200 response code
-    asyncFn: () =>
-      axios({
-        method: 'get',
-        baseURL: secondary,
-        url: '/export',
-        responseType: 'json',
-        params: exportQueryParams,
-        timeout: EXPORT_REQ_TIMEOUT_MS
-      }),
-    retries: EXPORT_REQ_MAX_RETRIES,
-    log: false
-  })
-
-  // Validate export response
-  if (
-    !_.has(exportResp, 'data.data') ||
-    !_.has(exportResp.data.data, 'cnodeUsers')
-  ) {
-    throw new Error('Malformatted export response data')
-  }
-
-  const { cnodeUsers } = exportResp.data.data
-
-  if (!cnodeUsers.length === 0) {
-    throw new Error('No cnodeUser returned from export')
-  } else if (cnodeUsers.length > 1) {
-    throw new Error('Multiple cnodeUsers returned from export')
-  }
-
-  const fetchedCNodeUser = cnodeUsers[Object.keys(cnodeUsers)[0]]
-  if (fetchedCNodeUser.walletPublicKey !== wallet) {
-    throw new Error('Wallet mismatch')
-  }
-
-  return fetchedCNodeUser
-}
+})
 
 /**
  * Fetch data for all files & save to disk
  *
- * - `saveFileForMultihashToFS` will exit early if files already exist on disk
+ * - `fetchFileFromNetworkAndSaveToFS` will short-circuit if file already exists on disk
  * - Performed in batches to limit concurrent load
  */
-async function saveFilesToDisk({
-  files,
-  userReplicaSet,
-  wallet,
-  libs,
-  logger,
-  logPrefix
-}) {
+async function saveFilesToDisk({ files, gatewaysToTry, libs, logger }) {
   const FileSaveMaxConcurrency = config.get('nodeSyncFileSaveMaxConcurrency')
 
   const trackFiles = files.filter((file) =>
@@ -267,16 +355,16 @@ async function saveFilesToDisk({
      * Fetch content for each CID + save to FS
      * Record any CIDs that failed retrieval/saving for later use
      *
-     * - `saveFileForMultihashToFS()` should never reject - it will return error indicator for post processing
+     * - `fetchFileFromNetworkAndSaveToFS()` should never reject - it will return error indicator for post processing
      */
     await Promise.all(
       trackFilesSlice.map(async (trackFile) => {
-        const error = await saveFileForMultihashToFS(
+        const { error } = await fetchFileFromNetworkAndSaveToFS(
           libs,
           logger,
           trackFile.multihash,
-          trackFile.storagePath,
-          userReplicaSet,
+          trackFile.dirMultihash,
+          gatewaysToTry,
           null, // fileNameForImage
           trackFile.trackBlockchainId
         )
@@ -312,22 +400,24 @@ async function saveFilesToDisk({
         // need to also check fileName is not null to make sure it's a dir-style image. non-dir images won't have a 'fileName' db column
         let error
         if (nonTrackFile.type === 'image' && nonTrackFile.fileName !== null) {
-          error = await saveFileForMultihashToFS(
+          const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
             libs,
             logger,
             multihash,
-            nonTrackFile.storagePath,
-            userReplicaSet,
+            nonTrackFile.dirMultihash,
+            gatewaysToTry,
             nonTrackFile.fileName
           )
+          error = fetchError
         } else {
-          error = await saveFileForMultihashToFS(
+          const { error: fetchError } = await fetchFileFromNetworkAndSaveToFS(
             libs,
             logger,
             multihash,
-            nonTrackFile.storagePath,
-            userReplicaSet
+            nonTrackFile.dirMultihash,
+            gatewaysToTry
           )
+          error = fetchError
         }
 
         // If saveFile op failed, record CID for later processing
@@ -338,40 +428,24 @@ async function saveFilesToDisk({
     )
   }
 
-  /**
-   * Handle case where some CIDs were not successfully saved
-   * Reject whole operation until threshold reached, then proceed and mark those CIDs as skipped
-   */
-  if (CIDsThatFailedSaveFileOp.size > 0) {
-    const userSyncFailureCount =
-      await UserSyncFailureCountService.incrementFailureCount(wallet)
-
-    // Throw error if failure threshold not yet reached
-    if (userSyncFailureCount < SyncRequestMaxUserFailureCountBeforeSkip) {
-      throw new Error(
-        `[saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Cannot proceed because UserSyncFailureCount = ${userSyncFailureCount} below SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    } else {
-      // If threshold reached, reset failure count and continue
-      await UserSyncFailureCountService.resetFailureCount(wallet)
-
-      logger.info(
-        `${logPrefix} [saveFilesToDisk] Failed to save ${CIDsThatFailedSaveFileOp.size} files to disk. Proceeding anyway because UserSyncFailureCount = ${userSyncFailureCount} reached SyncRequestMaxUserFailureCountBeforeSkip = ${SyncRequestMaxUserFailureCountBeforeSkip}.`
-      )
-    }
-  } else {
-    // Reset failure count if all CIDs were successfully saved
-    await UserSyncFailureCountService.resetFailureCount(wallet)
-  }
-
   return CIDsThatFailedSaveFileOp
 }
 
 /**
  * Saves all entries to DB that don't already exist in DB
  */
-async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
+async function saveEntriesToDB({
+  fetchedCNodeUser,
+  CIDsThatFailedSaveFileOp,
+  decisionTree,
+  logger
+}) {
   const transaction = await models.sequelize.transaction()
+
+  decisionTree.recordStage({
+    name: 'Begin saveEntriesToDB()',
+    log: true
+  })
 
   try {
     let {
@@ -394,6 +468,12 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
     if (localCNodeUser) {
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
 
+      decisionTree.recordStage({
+        name: 'Begin filterOutAlreadyPresentDBEntries()',
+        data: { cnodeUserUUID },
+        log: true
+      })
+
       const audiusUserComparisonFields = [
         'blockchainId',
         'metadataFileUUID',
@@ -406,7 +486,9 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
         tableInstance: models.AudiusUser,
         fetchedEntries: fetchedAudiusUsers,
         transaction,
-        comparisonFields: audiusUserComparisonFields
+        comparisonFields: audiusUserComparisonFields,
+        decisionTree,
+        logger
       })
 
       const trackComparisonFields = [
@@ -420,7 +502,9 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
         tableInstance: models.Track,
         fetchedEntries: fetchedTracks,
         transaction,
-        comparisonFields: trackComparisonFields
+        comparisonFields: trackComparisonFields,
+        decisionTree,
+        logger
       })
 
       const fileComparisonFields = ['fileUUID']
@@ -429,7 +513,14 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
         tableInstance: models.File,
         fetchedEntries: fetchedFiles,
         transaction,
-        comparisonFields: fileComparisonFields
+        comparisonFields: fileComparisonFields,
+        decisionTree,
+        logger
+      })
+
+      decisionTree.recordStage({
+        name: 'filterOutAlreadyPresentDBEntries() Success',
+        log: true
       })
     } else {
       /**
@@ -442,6 +533,11 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
       )
 
       cnodeUserUUID = localCNodeUser.cnodeUserUUID
+
+      decisionTree.recordStage({
+        name: 'Create local CNodeUser DB Record - Success',
+        log: true
+      })
     }
 
     // Aggregate all entries into single array
@@ -466,18 +562,40 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
       })
     )
 
+    decisionTree.recordStage({
+      name: 'Aggregated all entries',
+      log: true
+    })
+
     // Sort by clock asc to preserve original insert order
     allEntries = _.orderBy(allEntries, ['entry.clock'], ['asc'])
 
     // Write all entries to DB
     for await (const { tableInstance, entry } of allEntries) {
-      await DBManager.createNewDataRecord(
-        _.omit(entry, ['cnodeUserUUID']),
-        cnodeUserUUID,
-        tableInstance,
-        transaction
-      )
+      try {
+        await DBManager.createNewDataRecord(
+          _.omit(entry, ['cnodeUserUUID']),
+          cnodeUserUUID,
+          tableInstance,
+          transaction
+        )
+      } catch (e) {
+        decisionTree.recordStage({
+          name: 'DBManager.createNewDataRecord() Error',
+          data: {
+            errorMsg: e.message,
+            sourceTable: tableInstance.name,
+            entry
+          },
+          log: true
+        })
+        throw e
+      }
     }
+    decisionTree.recordStage({
+      name: 'Wrote all entries to DB',
+      log: true
+    })
 
     await transaction.commit()
   } catch (e) {
@@ -498,6 +616,7 @@ async function saveEntriesToDB({ fetchedCNodeUser, CIDsThatFailedSaveFileOp }) {
  * @param {Object[]} param.fetchedEntries array of entry objects to filter out
  * @param {*} param.transaction Sequelize transaction
  * @param {string[]} comparisonFields fields to use for equality comparison
+ * @param {DecisionTree} decisionTree
  * @returns {Object[]} filteredEntries filtered version of fetchedEntries
  */
 async function filterOutAlreadyPresentDBEntries({
@@ -505,63 +624,188 @@ async function filterOutAlreadyPresentDBEntries({
   tableInstance,
   fetchedEntries,
   transaction,
-  comparisonFields
+  comparisonFields,
+  decisionTree,
+  logger
 }) {
-  let filteredEntries = fetchedEntries
+  if (!fetchedEntries || !fetchedEntries.length) {
+    return fetchedEntries
+  }
 
-  const limit = DB_QUERY_LIMIT
-  let offset = 0
+  decisionTree.recordStage({
+    name: 'filterOutAlreadyPresentDBEntries() Begin',
+    data: {
+      tableName: tableInstance.name,
+      numFetchedEntries: fetchedEntries.length
+    },
+    log: true
+  })
 
-  let complete = false
-  while (!complete) {
-    const localEntries = await tableInstance.findAll({
-      where: { cnodeUserUUID },
-      limit,
-      offset,
-      order: [['clock', 'ASC']],
-      transaction
+  /**
+   * Uses redis to perform set operations to identify which entries received from export do not already exist in local DB
+   *
+   * fetchedEntries = entries received from export
+   * localEntries = entries in local DB
+   * set(fetchedUniqueEntries) = set(fetchedEntries) - set(localEntries)
+   *
+   * For below logic, a redis Set is used for each of 3 above data sets
+   */
+
+  // Generate unique redis keys with timestamp to prevent race conditions where same user is processed twice
+  const timestamp = Date.now()
+  const LOCAL_DB_ENTRIES_SET_KEY = `${LOCAL_DB_ENTRIES_SET_KEY_PREFIX}:::${cnodeUserUUID}:::${timestamp}`
+  const FETCHED_ENTRIES_SET_KEY = `${FETCHED_ENTRIES_SET_KEY_PREFIX}:::${cnodeUserUUID}:::${timestamp}`
+  const UNIQUE_FETCHED_ENTRIES_SET_KEY = `${UNIQUE_FETCHED_ENTRIES_SET_KEY_PREFIX}:::${cnodeUserUUID}:::${timestamp}`
+
+  try {
+    // Deletes all data stored at provided redis keys
+    await redis.del(
+      LOCAL_DB_ENTRIES_SET_KEY,
+      FETCHED_ENTRIES_SET_KEY,
+      UNIQUE_FETCHED_ENTRIES_SET_KEY
+    )
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Ensure clean starting redis state',
+      log: true
     })
 
-    // filter out everything in `localEntries` from `filteredEntries
-    filteredEntries = filteredEntries.filter((fetchedEntry) => {
-      let alreadyPresent = false
-      localEntries.forEach((localEntry) => {
-        const obj1 = _.pick(fetchedEntry, comparisonFields)
-        const obj2 = _.pick(localEntry, comparisonFields)
-        const isEqual = _.isEqual(obj1, obj2)
-        if (isEqual) {
-          alreadyPresent = true
+    /**
+     * Store all fetched entries into redis Set
+     *
+     * fetchedEntries is modified to only include comparison fields so Set operations work in redis
+     * Each entry object is serialized to string for redis compatibility
+     */
+    const fetchedEntriesComparable = fetchedEntries.map((entry) =>
+      JSON.stringify(_.pick(entry, comparisonFields))
+    )
+    const numFetchedEntriesAdded = await redis.sadd(
+      FETCHED_ENTRIES_SET_KEY,
+      fetchedEntriesComparable
+    )
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Set FETCHED_ENTRIES_SET_KEY',
+      data: { numFetchedEntriesAdded },
+      log: true
+    })
+
+    /** Store all local DB entries into redis set */
+
+    const limit = DB_QUERY_LIMIT
+    let lastSeenClock = null
+    let complete = false
+    let numLocalEntriesAdded = 0
+    while (!complete) {
+      const whereCondition = { cnodeUserUUID }
+      if (lastSeenClock !== null) {
+        whereCondition.clock = {
+          [models.Sequelize.Op.gt]: lastSeenClock
         }
+      }
+      const localEntries = await tableInstance.findAll({
+        where: whereCondition,
+        limit,
+        order: [['clock', 'ASC']],
+        transaction
       })
-      return !alreadyPresent
+      decisionTree.recordStage({
+        name: 'filterOutAlreadyPresentDBEntries() Retrieved local entries',
+        data: { numLocalEntries: localEntries.length, limit, lastSeenClock },
+        log: true
+      })
+
+      // Terminate while loop when no entries returned
+      if (localEntries.length === 0) {
+        complete = true
+        continue
+      }
+
+      /**
+       * Store all local entries into redis Set
+       *
+       * localEntries is modified to only include comparison fields so Set operations work in redis
+       * Each entry object is serialized to string for redis compatibility
+       */
+      const localEntriesComparable = localEntries.map((entry) =>
+        JSON.stringify(_.pick(entry, comparisonFields))
+      )
+      const numLocalEntriesAddedBatch = await redis.sadd(
+        LOCAL_DB_ENTRIES_SET_KEY,
+        localEntriesComparable
+      )
+      numLocalEntriesAdded += numLocalEntriesAddedBatch
+
+      // Move pagination cursor
+      lastSeenClock = localEntries[localEntries.length - 1].clock
+    }
+
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Set LOCAL_DB_ENTRIES_SET_KEY',
+      data: { numLocalEntriesAdded },
+      log: true
     })
 
-    offset += limit
+    // set(uniqueFetchedEntries) = set(fetchedEntries) - set(localDBEntries)
+    const numUniqueFetchedEntriesComparable = await redis.sdiffstore(
+      UNIQUE_FETCHED_ENTRIES_SET_KEY, // destination set
+      FETCHED_ENTRIES_SET_KEY, // set A
+      LOCAL_DB_ENTRIES_SET_KEY // set B
+    )
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Computed unique fetched entries in redis',
+      data: { numUniqueFetchedEntries: numUniqueFetchedEntriesComparable },
+      log: true
+    })
 
-    if (localEntries.length < limit) {
-      complete = true
+    /**
+     * Filter fetchedEntries to the uniqueFetchedEntries set
+     *
+     * Since redis Set uniqueFetchedEntries only contains comparison fields subset, set intersection is performed with a custom comparator
+     */
+    const uniqueFetchedEntriesComparable = await redis.smembers(
+      UNIQUE_FETCHED_ENTRIES_SET_KEY
+    )
+    const uniqueFetchedEntries = _.intersectionWith(
+      fetchedEntries,
+      uniqueFetchedEntriesComparable,
+      // Custom comparator function for 2 params
+      (fetchedEntry, uniqueEntryComparable) => {
+        const fetchedEntryComparable = JSON.stringify(
+          _.pick(fetchedEntry, comparisonFields)
+        )
+        return _.isEqual(fetchedEntryComparable, uniqueEntryComparable)
+      }
+    )
+
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Great Success',
+      data: { numUniqueFetchedEntries: uniqueFetchedEntries.length },
+      log: true
+    })
+
+    return uniqueFetchedEntries
+  } catch (e) {
+    decisionTree.recordStage({
+      name: 'filterOutAlreadyPresentDBEntries() Error',
+      data: { errorMsg: e.message },
+      log: true
+    })
+
+    throw e
+  } finally {
+    // Wipe redis state
+    try {
+      await redis.del(
+        LOCAL_DB_ENTRIES_SET_KEY,
+        FETCHED_ENTRIES_SET_KEY,
+        UNIQUE_FETCHED_ENTRIES_SET_KEY
+      )
+    } catch (e) {
+      logger.error(
+        { cnodeUserUUID, errorMsg: e.message },
+        '[filterOutAlreadyPresentDBEntries] - Failure to wipe redis state'
+      )
     }
   }
-
-  return filteredEntries
 }
 
-async function getUserReplicaSet({ wallet, libs, logger }) {
-  try {
-    let userReplicaSet = await getUserReplicaSetEndpointsFromDiscovery({
-      libs,
-      logger,
-      wallet,
-      blockNumber: null,
-      ensurePrimary: false,
-      myCnodeEndpoint: null
-    })
-
-    // Spread + set uniq's the array
-    userReplicaSet = [...new Set(userReplicaSet)]
-
-    return userReplicaSet
-  } catch (e) {
-    throw new Error(`[getUserReplicaSet()] Error - ${e.message}`)
-  }
-}
+module.exports = primarySyncFromSecondary

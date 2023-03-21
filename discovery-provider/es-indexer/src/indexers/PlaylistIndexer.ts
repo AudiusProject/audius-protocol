@@ -7,6 +7,8 @@ import { BlocknumberCheckpoint } from '../types/blocknumber_checkpoint'
 import { PlaylistDoc } from '../types/docs'
 import { BaseIndexer } from './BaseIndexer'
 import {
+  lowerKeyword,
+  noWhitespaceLowerKeyword,
   sharedIndexSettings,
   standardSuggest,
   standardText,
@@ -19,13 +21,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
 
   mapping: IndicesCreateRequest = {
     index: indexNames.playlists,
-    settings: merge(sharedIndexSettings, {
-      index: {
-        number_of_shards: 1,
-        number_of_replicas: 0,
-        refresh_interval: '5s',
-      },
-    }),
+    settings: merge(sharedIndexSettings, {}),
     mappings: {
       dynamic: false,
       properties: {
@@ -35,10 +31,12 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         updated_at: { type: 'date' },
         is_album: { type: 'boolean' },
         is_private: { type: 'boolean' },
+        permalink: lowerKeyword,
         is_delete: { type: 'boolean' },
+        routes: lowerKeyword,
         suggest: standardSuggest,
         playlist_name: {
-          type: 'keyword',
+          ...lowerKeyword,
           fields: {
             searchable: standardText,
           },
@@ -48,18 +46,18 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         user: {
           properties: {
             handle: {
-              type: 'keyword',
+              ...noWhitespaceLowerKeyword,
               fields: {
                 searchable: standardText,
               },
             },
             name: {
-              type: 'keyword',
+              ...lowerKeyword,
               fields: {
                 searchable: standardText,
               },
             },
-            location: { type: 'keyword' },
+            location: lowerKeyword,
             follower_count: { type: 'integer' },
             is_verified: { type: 'boolean' },
             created_at: { type: 'date' },
@@ -76,12 +74,9 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
 
         tracks: {
           properties: {
-            mood: { type: 'keyword' },
-            genre: { type: 'keyword' },
-            tags: {
-              type: 'keyword',
-              normalizer: 'lower_asciifolding',
-            },
+            mood: lowerKeyword,
+            genre: lowerKeyword,
+            tags: lowerKeyword,
             play_count: { type: 'integer' },
             repost_count: { type: 'integer' },
             save_count: { type: 'integer' },
@@ -108,12 +103,20 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         ) as user,
 
         array(
+          select slug
+          from playlist_routes pr
+          where
+            pr.playlist_id = playlists.playlist_id
+          order by is_current
+        ) as routes,
+
+        array(
           select user_id 
           from reposts
           where
             is_current = true
             and is_delete = false
-            and repost_type = (case when is_album then 'album' else 'playlist' end)::reposttype
+            and repost_type != 'track'::reposttype
             and repost_item_id = playlist_id
             order by created_at desc
         ) as reposted_by,
@@ -124,7 +127,7 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
           where
             is_current = true
             and is_delete = false
-            and save_type = (case when is_album then 'album' else 'playlist' end)::savetype
+            and save_type != 'track'::savetype
             and save_item_id = playlist_id
             order by created_at desc
         ) as saved_by
@@ -188,6 +191,8 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
       .join(' ')
     row.repost_count = row.reposted_by.length
     row.save_count = row.saved_by.length
+    const slug = row.routes[row.routes.length - 1]
+    row.permalink = `/${row.user.handle}/playlist/${slug}`
   }
 
   private async getTracks(trackIds: number[]) {

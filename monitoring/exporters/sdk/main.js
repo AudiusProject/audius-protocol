@@ -57,6 +57,7 @@ const KNOWN_PROPOSERS = new Set([
   '0x1BD9D60a0103FF2fA25169918392f118Bc616Dc9',
   '0xA62c3ced6906B188A4d4A3c981B79f2AABf2107F',
   '0xbdbB5945f252bc3466A319CDcC3EE8056bf2e569',
+  '0x683A3C882e1DCD0A3012E2D45A47A9e8de8868d7',
 ])
 const OUTCOME = Object.freeze({
   0: 'InProgress',
@@ -71,6 +72,12 @@ const OUTCOME = Object.freeze({
 })
 let PREVIOUSLY_SEEN_PROPOSAL_ID = 0
 const PROPOSAL_OUTCOME_TALLY = {}
+
+const clearTally = () => {
+  for (const outcome in PROPOSAL_OUTCOME_TALLY) {
+    delete PROPOSAL_OUTCOME_TALLY[outcome];
+  }
+}
 
 const tallyProposalOutcomes = (outcome) => {
   if (!PROPOSAL_OUTCOME_TALLY[outcome]) {
@@ -88,6 +95,7 @@ const scanGovernanceProposals = async () => {
   // and export new metrics
   if (PREVIOUSLY_SEEN_PROPOSAL_ID !== parseInt(lastProposal.proposalId)) {
     let unknownProposerCount = 0
+    clearTally()
 
     // scan all proposals and...
     for (const proposal of proposals) {

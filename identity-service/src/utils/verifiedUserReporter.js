@@ -4,17 +4,13 @@ const config = require('../config')
 const WEBSITE_HOST = config.get('websiteHost')
 
 class VerifiedUserReporter {
-  constructor ({
-    slackUrl,
-    source,
-    childLogger = console
-  }) {
+  constructor({ slackUrl, source, childLogger = console }) {
     this.reporter = new SlackReporter({ slackUrl, childLogger })
     this.source = source
     this.childLogger = childLogger
   }
 
-  async report ({ userId, handle }) {
+  async report({ userId, handle }) {
     try {
       const report = {
         userId,

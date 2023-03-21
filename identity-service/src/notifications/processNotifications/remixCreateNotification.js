@@ -1,10 +1,6 @@
-
 const moment = require('moment')
 const models = require('../../models')
-const {
-  notificationTypes,
-  actionEntityTypes
-} = require('../constants')
+const { notificationTypes, actionEntityTypes } = require('../constants')
 
 /**
  * Process remix create notifications, note these notifications do not "stack" meaning that
@@ -12,7 +8,7 @@ const {
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
-async function processRemixCreateNotifications (notifications, tx) {
+async function processRemixCreateNotifications(notifications, tx) {
   for (const notification of notifications) {
     const {
       entity_id: childTrackId,
@@ -25,9 +21,11 @@ async function processRemixCreateNotifications (notifications, tx) {
     const blocknumber = notification.blocknumber
     const timestamp = Date.parse(notification.timestamp.slice(0, -2))
     const momentTimestamp = moment(timestamp)
-    const updatedTimestamp = momentTimestamp.add(1, 's').format('YYYY-MM-DD HH:mm:ss')
+    const updatedTimestamp = momentTimestamp
+      .add(1, 's')
+      .format('YYYY-MM-DD HH:mm:ss')
 
-    const [notificationObj] = await models.Notification.findOrCreate({
+    let notificationObj = await models.Notification.findOne({
       where: {
         type: notificationTypes.RemixCreate,
         userId: parentTrackUserId,
@@ -37,8 +35,22 @@ async function processRemixCreateNotifications (notifications, tx) {
       },
       transaction: tx
     })
+    if (notificationObj == null) {
+      notificationObj = await models.Notification.create(
+        {
+          type: notificationTypes.RemixCreate,
+          userId: parentTrackUserId,
+          entityId: childTrackId,
+          blocknumber,
+          timestamp: updatedTimestamp
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
 
-    await models.NotificationAction.findOrCreate({
+    const notificationAction = await models.NotificationAction.findOne({
       where: {
         notificationId: notificationObj.id,
         actionEntityType: actionEntityTypes.Track,
@@ -47,6 +59,19 @@ async function processRemixCreateNotifications (notifications, tx) {
       },
       transaction: tx
     })
+    if (notificationAction == null) {
+      await models.NotificationAction.create(
+        {
+          notificationId: notificationObj.id,
+          actionEntityType: actionEntityTypes.Track,
+          actionEntityId: parentTrackId,
+          blocknumber
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
   }
   return notifications
 }

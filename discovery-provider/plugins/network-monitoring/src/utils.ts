@@ -1,7 +1,6 @@
 
 import Web3 from 'web3';
 const web3 = new Web3()
-const dotenv = require('dotenv')
 
 
 import type { AxiosResponse } from 'axios';
@@ -9,6 +8,7 @@ import axios from 'axios';
 import * as http from 'http';
 import * as https from 'https';
 import retry from 'async-retry';
+import { instrumentTracing, tracing } from './tracer';
 
 // const UnhealthyTimeRangeMs = 1_800_000 // 30min
 const UnhealthyTimeRangeMs = 300_000 // 5min
@@ -18,9 +18,7 @@ axios.defaults.timeout = 300_000 // 5min
 axios.defaults.httpAgent = new http.Agent({ timeout: 60000 })
 axios.defaults.httpsAgent = new https.Agent({ timeout: 60000, rejectUnauthorized: false })
 
-let envInitialized = false
-
-export const makeRequest = async (
+const _makeRequest = async (
     request: {
         baseURL: string,
         url: string
@@ -41,14 +39,14 @@ export const makeRequest = async (
 
     // Exit early to avoid wasting time on a deregistered node
     if (deregisteredCN.includes(endpoint)) {
-        console.log(`[makeRequest] Skipping request to ${endpoint} since it has been deregistered`)
+        tracing.info(`[makeRequest] Skipping request to ${endpoint} since it has been deregistered`)
 
         return { attemptCount: 0, canceled: true }
     }
 
     // Exit early to avoid wasting time on a node recently marked unhealthy
     if (nodeRecentlyMarkedUnhealthy(endpoint)) {
-        console.log(`[makeRequest] Skipping request to ${endpoint} since it was recently confirmed unhealthy`)
+        tracing.info(`[makeRequest] Skipping request to ${endpoint} since it was recently confirmed unhealthy`)
         return { attemptCount: 0, canceled: true }
     }
 
@@ -63,24 +61,29 @@ export const makeRequest = async (
                 minTimeout: 30_000,
                 onRetry: (e: Error) => {
                     attemptCount++
-                    console.debug(`\t[makeRequest Retrying] (${fullURL}) - ${attemptCount} attempts - Error ${e.message} - ${logDuration(Date.now() - startMs)}${additionalInfoMsg}`)
+                    tracing.debug(`\t[makeRequest Retrying] (${fullURL}) - ${attemptCount} attempts - Error ${e.message} - ${logDuration(Date.now() - startMs)}${additionalInfoMsg}`)
                 }
             }
         )
-        if (log) console.debug(`\t[makeRequest Success] (${fullURL}) - ${attemptCount} attempts - ${logDuration(Date.now() - startMs)}${additionalInfoMsg}`)
+        if (log) tracing.debug(`\t[makeRequest Success] (${fullURL}) - ${attemptCount} attempts - ${logDuration(Date.now() - startMs)}${additionalInfoMsg}`)
         return { response, attemptCount, canceled: false }
-    } catch (e) {
+    } catch (e: any) {
         // mark node as unhealthy to speed up future processing
-        console.log(`\t[makeRequest] Adding ${endpoint} to unhealthyNodes at ${Date.now()}`)
+        tracing.recordException(e)
+        tracing.info(`\t[makeRequest] Adding ${endpoint} to unhealthyNodes at ${Date.now()}`)
         unhealthyNodes[endpoint] = Date.now()
 
-        const errorMsg = `[makeRequest Error] (${fullURL}) - ${attemptCount} attempts - ${logDuration(Date.now() - startMs)}${additionalInfoMsg} - ${(e as Error).message}`
-        console.log(`\t${errorMsg}`)
+        const errorMsg = `[makeRequest Error] (${fullURL}) - ${attemptCount} attempts - ${logDuration(Date.now() - startMs)}${additionalInfoMsg} - ${e.message}`
+        tracing.error(`\t${errorMsg}`)
         throw new Error(`${errorMsg}`)
     }
 }
 
-export const generateSPSignatureParams = (signatureSpID: number, signatureSPDelegatePrivateKey: string) => {
+export const makeRequest = instrumentTracing({
+    fn: _makeRequest,
+})
+
+const _generateSPSignatureParams = (signatureSpID: number, signatureSPDelegatePrivateKey: string) => {
     const { timestamp, signature } = generateTimestampAndSignature(
         { spID: signatureSpID },
         signatureSPDelegatePrivateKey
@@ -93,12 +96,16 @@ export const generateSPSignatureParams = (signatureSpID: number, signatureSPDele
     }
 }
 
+export const generateSPSignatureParams = instrumentTracing({
+    fn: _generateSPSignatureParams,
+})
+
 /**
  * Generate the timestamp and signature for api signing
  * @param {object} data
  * @param {string} privateKey
  */
-export const generateTimestampAndSignature = (data: object, privateKey: string) => {
+const _generateTimestampAndSignature = (data: object, privateKey: string) => {
     const timestamp = new Date().toISOString()
     const toSignObj = { ...data, timestamp }
     // JSON stringify automatically removes white space given 1 param
@@ -109,17 +116,25 @@ export const generateTimestampAndSignature = (data: object, privateKey: string) 
     return { timestamp, signature: signedResponse.signature }
 }
 
+export const generateTimestampAndSignature = instrumentTracing({
+    fn: _generateTimestampAndSignature,
+})
+
 /**
  * used to track unhealthy nodes and avoid frequent repeated requests to speed up processing
  */
 
-export const nodeRecentlyMarkedUnhealthy = (endpoint: string) => {
+const _nodeRecentlyMarkedUnhealthy = (endpoint: string) => {
     if (!(endpoint in unhealthyNodes)) {
         return false
     }
 
     return ((Date.now() - unhealthyNodes[endpoint]!) <= UnhealthyTimeRangeMs)
 }
+
+export const nodeRecentlyMarkedUnhealthy = instrumentTracing({
+    fn: _nodeRecentlyMarkedUnhealthy,
+})
 
 
 // Appends suffixes to log msg based on duration, for easy log parsing
@@ -143,72 +158,3 @@ export const sortObj = (obj: Record<any, any>) => {
 export const asyncSleep = (milliseconds: number) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
-
-export const getEnv = () => {
-
-    // Initialize ENV if not already initialized
-    if (!envInitialized) {
-        const nodeEnv = process.env['NODE_ENV']
-
-        if (nodeEnv === "production") {
-            console.log('[+] running in production (.env.prod)')
-            dotenv.config({ path: '.env.prod' })
-        } else if (nodeEnv === "staging") {
-            console.log('[+] running in staging (.env.stage)')
-            dotenv.config({ path: '.env.stage' })
-        } else {
-            console.log('[+] running locally (.env.local)')
-            dotenv.config({ path: '.env.local' })
-
-        }
-
-        envInitialized = true
-    }
-
-
-    const deregisteredContentNodesEnv: string = process.env['DEREGISTERED_CONTENT_NODES'] || ''
-    const signatureSpID = parseInt(process.env['SIGNATURE_SPID'] || '0')
-    const signatureSPDelegatePrivateKey = process.env['SIGNATURE_SP_DELEGATE_PRIV_KEY'] || ''
-
-    const deregisteredCN: string[] = deregisteredContentNodesEnv.split(',')
-
-    if (!signatureSpID || !signatureSPDelegatePrivateKey) {
-        throw new Error('Missing required signature configs')
-    }
-
-    const db = {
-        name: process.env['DB_NAME'] || '',
-        host: process.env['DB_HOST'] || '',
-        port: parseInt(process.env['DB_PORT'] || ''),
-        username: process.env['DB_USERNAME'] || '',
-        password: process.env['DB_PASSWORD'] || '',
-        sql_logger: (process.env['SQL_LOGGING'] || '') in ['T', 't', 'True', 'true', '1']
-    }
-
-    const fdb = {
-        name: process.env['FDB_NAME'] || '',
-        host: process.env['FDB_HOST'] || '',
-        port: process.env['FDB_PORT'] || '',
-        username: process.env['FDB_USERNAME'] || '',
-        password: process.env['FDB_PASSWORD'] || '',
-    }
-
-    const foundationNodesEnv = process.env['FOUNDATION_NODES_SPIDS'] || ''
-    const foundationNodes: number[] = foundationNodesEnv.split(',').map(elem => parseInt(elem))
-
-    const pushGatewayUrl = process.env['PUSH_GATEWAY_URL'] || 'http://localhost:9091'
-
-    const slackUrl = process.env['SLACK_URL'] || ''
-
-    return { 
-        db, 
-        fdb, 
-        deregisteredCN, 
-        signatureSpID, 
-        signatureSPDelegatePrivateKey, 
-        foundationNodes,
-        pushGatewayUrl,
-        slackUrl,
-    }
-}
-

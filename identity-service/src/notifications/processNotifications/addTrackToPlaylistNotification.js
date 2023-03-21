@@ -1,16 +1,13 @@
 const moment = require('moment')
 const models = require('../../models')
-const {
-  notificationTypes,
-  actionEntityTypes
-} = require('../constants')
+const { notificationTypes, actionEntityTypes } = require('../constants')
 
 /**
  * Process track added to playlist notification
  * @param {Array<Object>} notifications
  * @param {*} tx The DB transaction to attach to DB requests
  */
-async function processAddTrackToPlaylistNotification (notifications, tx) {
+async function processAddTrackToPlaylistNotification(notifications, tx) {
   const validNotifications = []
 
   for (const notification of notifications) {
@@ -21,9 +18,11 @@ async function processAddTrackToPlaylistNotification (notifications, tx) {
     } = notification.metadata
     const timestamp = Date.parse(notification.timestamp.slice(0, -2))
     const momentTimestamp = moment(timestamp)
-    const updatedTimestamp = momentTimestamp.add(1, 's').format('YYYY-MM-DD HH:mm:ss')
+    const updatedTimestamp = momentTimestamp
+      .add(1, 's')
+      .format('YYYY-MM-DD HH:mm:ss')
 
-    const [addTrackToPlaylistNotification] = await models.Notification.findOrCreate({
+    let addTrackToPlaylistNotification = await models.Notification.findOne({
       where: {
         type: notificationTypes.AddTrackToPlaylist,
         userId: trackOwnerId,
@@ -38,8 +37,27 @@ async function processAddTrackToPlaylistNotification (notifications, tx) {
       },
       transaction: tx
     })
+    if (addTrackToPlaylistNotification == null) {
+      addTrackToPlaylistNotification = await models.Notification.create(
+        {
+          type: notificationTypes.AddTrackToPlaylist,
+          userId: trackOwnerId,
+          entityId: trackId,
+          metadata: {
+            playlistOwnerId: notification.initiator,
+            playlistId,
+            trackId
+          },
+          blocknumber: notification.blocknumber,
+          timestamp: updatedTimestamp
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
 
-    await models.NotificationAction.findOrCreate({
+    const notificationAction = await models.NotificationAction.findOne({
       where: {
         notificationId: addTrackToPlaylistNotification.id,
         actionEntityType: actionEntityTypes.Track,
@@ -48,6 +66,19 @@ async function processAddTrackToPlaylistNotification (notifications, tx) {
       },
       transaction: tx
     })
+    if (notificationAction == null) {
+      await models.NotificationAction.create(
+        {
+          notificationId: addTrackToPlaylistNotification.id,
+          actionEntityType: actionEntityTypes.Track,
+          actionEntityId: trackId,
+          blocknumber: notification.blocknumber
+        },
+        {
+          transaction: tx
+        }
+      )
+    }
 
     validNotifications.push(addTrackToPlaylistNotification)
   }

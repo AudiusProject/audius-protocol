@@ -1,19 +1,27 @@
+import { initializeApp } from '../../src/app'
+import { ImageProcessingQueue } from '../../src/ImageProcessingQueue'
 const nodeConfig = require('../../src/config.js')
-const { runMigrations, clearDatabase } = require('../../src/migrationManager')
+const {
+  runMigrations,
+  clearDatabase,
+  clearRunningQueries
+} = require('../../src/migrationManager')
 const redisClient = require('../../src/redis')
 const MonitoringQueueMock = require('./monitoringQueueMock')
 const AsyncProcessingQueueMock = require('./asyncProcessingQueueMock')
-const SyncQueue = require('../../src/services/sync/syncQueue')
-const TrustedNotifierManager = require('../../src/services/TrustedNotifierManager.js')
+const { SyncQueue } = require('../../src/services/sync/syncQueue')
+const {
+  TrustedNotifierManager
+} = require('../../src/services/TrustedNotifierManager')
 const PrometheusRegistry = require('../../src/services/prometheusMonitoring/prometheusRegistry')
 const BlacklistManager = require('../../src/blacklistManager')
-const ImageProcessingQueue = require('../../src/ImageProcessingQueue.js')
 
-async function getApp(
+export async function getApp(
   libsClient,
   blacklistManager = BlacklistManager,
   setMockFn = null,
-  spId = 1
+  spId = 1,
+  mockContentNodeInfoManager = false
 ) {
   // we need to clear the cache that commonjs require builds, otherwise it uses old values for imports etc
   // eg if you set a new env var, it doesn't propogate well unless you clear the cache for the config file as well
@@ -21,6 +29,7 @@ async function getApp(
   clearRequireCache()
 
   // run all migrations before each test
+  await clearRunningQueries()
   await clearDatabase()
   await runMigrations()
 
@@ -28,6 +37,8 @@ async function getApp(
 
   const prometheusRegistry = new PrometheusRegistry()
   const apq = new AsyncProcessingQueueMock(libsClient, prometheusRegistry)
+  const syncQueue = new SyncQueue()
+  syncQueue.init(nodeConfig, redisClient)
   const mockServiceRegistry = {
     libs: libsClient,
     blacklistManager,
@@ -36,9 +47,47 @@ async function getApp(
     asyncProcessingQueue: apq,
     imageProcessingQueue: new ImageProcessingQueue(),
     nodeConfig,
-    syncQueue: new SyncQueue(nodeConfig, redisClient),
+    syncQueue: syncQueue,
     trustedNotifierManager: new TrustedNotifierManager(nodeConfig, libsClient),
     prometheusRegistry
+  }
+
+  // Update import to make ensureValidSPMiddleware pass
+  if (mockContentNodeInfoManager) {
+    const getContentNodeInfoFromSpId = async (spID, _genericLogger) => {
+      switch (spID) {
+        case 2:
+          return {
+            endpoint: 'http://mock-cn2.audius.co',
+            owner: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb',
+            delegateOwnerWallet: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb'
+          }
+        case 3:
+          return {
+            endpoint: 'http://mock-cn3.audius.co',
+            owner: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36',
+            delegateOwnerWallet: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36'
+          }
+
+        case 1:
+          return {
+            endpoint: 'http://mock-cn1.audius.co',
+            owner: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25',
+            delegateOwnerWallet: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
+          }
+        default:
+          return {
+            owner: '0x0000000000000000000000000000000000000000',
+            endpoint: '',
+            delegateOwnerWallet: '0x0000000000000000000000000000000000000000'
+          }
+      }
+    }
+    require.cache[
+      require.resolve('../../src/services/ContentNodeInfoManager')
+    ] = {
+      exports: { getContentNodeInfoFromSpId }
+    }
   }
 
   // Update the import to be the mocked ServiceRegistry instance
@@ -49,25 +98,27 @@ async function getApp(
   // If one needs to set mock settings, pass in a callback to set it before initializing app
   if (setMockFn) setMockFn()
 
-  const appInfo = require('../../src/app')(8000, mockServiceRegistry)
+  const appInfo = initializeApp(8000, mockServiceRegistry)
   appInfo.mockServiceRegistry = mockServiceRegistry
   return appInfo
 }
 
-function getServiceRegistryMock(libsClient, blacklistManager) {
+export async function getServiceRegistryMock(libsClient, blacklistManager) {
+  const syncQueue = new SyncQueue()
+  await syncQueue.init(nodeConfig, redisClient)
   return {
     libs: libsClient,
     blacklistManager: blacklistManager,
     redis: redisClient,
     monitoringQueue: new MonitoringQueueMock(),
-    syncQueue: new SyncQueue(nodeConfig, redisClient),
+    syncQueue: syncQueue,
     nodeConfig,
     initLibs: async function () {},
     prometheusRegistry: new PrometheusRegistry()
   }
 }
 
-function clearRequireCache() {
+export function clearRequireCache() {
   console.log('DELETING CACHE')
   Object.keys(require.cache).forEach(function (key) {
     // exclude src/models/index from the key deletion because it initalizes a new connection pool

@@ -6,6 +6,7 @@ apis/UsersApi.ts
 apis/index.ts
 index.ts
 models/Activity.ts
+models/BulkSubscribersResponse.ts
 models/ConnectedWallets.ts
 models/ConnectedWalletsResponse.ts
 models/CoverPhoto.ts
@@ -20,6 +21,8 @@ models/GetSupporters.ts
 models/GetSupporting.ts
 models/GetTipsResponse.ts
 models/HistoryResponse.ts
+models/ListenCount.ts
+models/MonthlyAggregatePlay.ts
 models/Playlist.ts
 models/PlaylistArtwork.ts
 models/PlaylistResponse.ts
@@ -29,6 +32,7 @@ models/ProfilePicture.ts
 models/RelatedArtistResponse.ts
 models/RemixParent.ts
 models/Reposts.ts
+models/SubscribersResponse.ts
 models/Supporter.ts
 models/Supporting.ts
 models/TagsResponse.ts
@@ -44,8 +48,12 @@ models/TracksResponse.ts
 models/TrendingPlaylistsResponse.ts
 models/User.ts
 models/UserAssociatedWalletResponse.ts
+models/UserReplicaSet.ts
 models/UserResponse.ts
 models/UserSearch.ts
+models/UserSubscribers.ts
+models/UserTrackListenCountsResponse.ts
+models/UsersByContentNode.ts
 models/VerifyToken.ts
 models/VersionMetadata.ts
 models/index.ts

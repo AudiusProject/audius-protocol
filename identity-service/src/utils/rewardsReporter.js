@@ -12,22 +12,28 @@ const RewardEventNames = {
 }
 
 class RewardsReporter {
-  constructor ({
+  constructor({
     successSlackUrl,
     errorSlackUrl,
     childLogger = console,
     source,
     shouldReportAnalytics = true
   }) {
-    this.successReporter = new SlackReporter({ slackUrl: successSlackUrl, childLogger })
-    this.errorReporter = new SlackReporter({ slackUrl: errorSlackUrl, childLogger })
+    this.successReporter = new SlackReporter({
+      slackUrl: successSlackUrl,
+      childLogger
+    })
+    this.errorReporter = new SlackReporter({
+      slackUrl: errorSlackUrl,
+      childLogger
+    })
     this.analyticsProvider = new AnalyticsProvider()
     this.childLogger = childLogger
     this.source = source
     this.shouldReportAnalytics = shouldReportAnalytics
   }
 
-  async reportSuccess ({ userId, challengeId, amount, specifier }) {
+  async reportSuccess({ userId, challengeId, amount, specifier }) {
     try {
       const report = {
         status: 'success',
@@ -42,20 +48,24 @@ class RewardsReporter {
       this.childLogger.info(report, `Rewards Reporter`)
 
       if (this.shouldReportAnalytics) {
-        this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_SUCCESS, userId, {
+        this.analyticsProvider.track(
+          RewardEventNames.REWARDS_CLAIM_SUCCESS,
           userId,
-          challengeId,
-          amount,
-          specifier,
-          source: this.source
-        })
+          {
+            userId,
+            challengeId,
+            amount,
+            specifier,
+            source: this.source
+          }
+        )
       }
     } catch (e) {
       console.error(`Report success failure: ${JSON.stringify(e)}`)
     }
   }
 
-  async reportRetry ({ userId, challengeId, amount, error, phase, specifier }) {
+  async reportRetry({ userId, challengeId, amount, error, phase, specifier }) {
     try {
       const report = {
         status: 'retry',
@@ -72,22 +82,33 @@ class RewardsReporter {
       this.childLogger.info(report, `Rewards Reporter`)
 
       if (this.shouldReportAnalytics) {
-        this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_RETRY, userId, {
+        this.analyticsProvider.track(
+          RewardEventNames.REWARDS_CLAIM_RETRY,
           userId,
-          challengeId,
-          amount,
-          specifier,
-          error,
-          phase,
-          source: this.source
-        })
+          {
+            userId,
+            challengeId,
+            amount,
+            specifier,
+            error,
+            phase,
+            source: this.source
+          }
+        )
       }
     } catch (e) {
       console.error(`Report retry error: ${JSON.stringify(e)}`)
     }
   }
 
-  async reportFailure ({ userId, challengeId, amount, error, phase, specifier }) {
+  async reportFailure({
+    userId,
+    challengeId,
+    amount,
+    error,
+    phase,
+    specifier
+  }) {
     try {
       const report = {
         status: 'failure',
@@ -104,22 +125,33 @@ class RewardsReporter {
       this.childLogger.info(report, `Rewards Reporter`)
 
       if (this.shouldReportAnalytics) {
-        this.analyticsProvider.track(RewardEventNames.REWARDS_CLAIM_FAILURE, userId, {
+        this.analyticsProvider.track(
+          RewardEventNames.REWARDS_CLAIM_FAILURE,
           userId,
-          challengeId,
-          amount,
-          specifier,
-          error,
-          phase,
-          source: this.source
-        })
+          {
+            userId,
+            challengeId,
+            amount,
+            specifier,
+            error,
+            phase,
+            source: this.source
+          }
+        )
       }
     } catch (e) {
       console.error(`Report failure error: ${JSON.stringify(e)}`)
     }
   }
 
-  async reportAAORejection ({ userId, challengeId, amount, error, specifier, reason }) {
+  async reportAAORejection({
+    userId,
+    challengeId,
+    amount,
+    error,
+    specifier,
+    reason
+  }) {
     try {
       const report = {
         status: 'rejection',
@@ -134,12 +166,13 @@ class RewardsReporter {
       this.childLogger.info(report, `Rewards Reporter`)
 
       if (this.shouldReportAnalytics) {
-        const event = {
-          'hcaptcha': RewardEventNames.REWARDS_CLAIM_HCAPTCHA,
-          'cognito': RewardEventNames.REWARDS_CLAIM_COGNITO,
-          'other': RewardEventNames.REWARDS_CLAIM_OTHER,
-          'blocked': RewardEventNames.REWARDS_CLAIM_BLOCKED
-        }[reason] || RewardEventNames.REWARDS_CLAIM_BLOCKED
+        const event =
+          {
+            hcaptcha: RewardEventNames.REWARDS_CLAIM_HCAPTCHA,
+            cognito: RewardEventNames.REWARDS_CLAIM_COGNITO,
+            other: RewardEventNames.REWARDS_CLAIM_OTHER,
+            blocked: RewardEventNames.REWARDS_CLAIM_BLOCKED
+          }[reason] || RewardEventNames.REWARDS_CLAIM_BLOCKED
         this.analyticsProvider.track(event, userId, {
           userId,
           challengeId,

@@ -1,7 +1,8 @@
 # pylint: disable=C0302
 import asyncio
+import json
 import logging
-from typing import Dict, KeysView, Set, Tuple
+from typing import Any, Dict, KeysView, Set, Tuple
 from urllib.parse import urlparse
 
 import aiohttp
@@ -64,7 +65,7 @@ class CIDMetadataClient:
         return metadata
 
     async def _get_metadata_async(self, async_session, multihash, gateway_endpoint):
-        url = gateway_endpoint + "/ipfs/" + multihash
+        url = gateway_endpoint + "/content/" + multihash
         # Skip URL if invalid
         try:
             validate_url = urlparse(url)
@@ -78,7 +79,12 @@ class CIDMetadataClient:
             ) as resp:
                 if resp.status == 200:
                     json_resp = await resp.json(content_type=None)
-                    return (multihash, json_resp)
+                    sanitized_data = (
+                        json.dumps(json_resp, ensure_ascii=False)
+                        .encode("utf-8", "ignore")
+                        .decode("utf-8", "ignore")
+                    )
+                    return (multihash, json.loads(sanitized_data))
         except asyncio.TimeoutError:
             logger.info(
                 f"CIDMetadataClient | _get_metadata_async TimeoutError fetching gateway address - {url}"
@@ -160,7 +166,7 @@ class CIDMetadataClient:
 
                     cid, metadata_json = future_result
 
-                    metadata_format = None
+                    metadata_format: Any = None
                     if cid_type[cid] == "track":
                         metadata_format = track_metadata_format
                     elif cid_type[cid] == "user":

@@ -13,13 +13,11 @@ if [[ "$UP" == true || "$RESTART" == true ]]; then
         -f compose/docker-compose.db.yml \
         -f compose/docker-compose.redis.yml \
         -f compose/docker-compose.elasticsearch.yml \
-        -f compose/docker-compose.backend.yml \
-        -f compose/docker-compose.ipfs.yml"
+        -f compose/docker-compose.backend.yml"
 elif [[ "$UP_WEB_SERVER" == true ]]; then
     alias dc="docker-compose \
         -f compose/docker-compose.redis.yml \
         -f compose/docker-compose.elasticsearch.yml \
-        -f compose/docker-compose.ipfs.yml \
         -f compose/docker-compose.web-server.yml"
 else
     echo '$UP, $RESTART, or $UP_WEB_SERVER must be set to "true"'

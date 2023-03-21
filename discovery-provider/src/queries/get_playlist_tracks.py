@@ -19,10 +19,11 @@ def get_playlist_tracks(session, args):
         "playlist_ids": string[]
         "current_user_id": int
         "populate_tracks": boolean # whether to add users & metadata to tracks
+        "exclude_premium": boolean # whether to filter out premium tracks
     }
 
     Returns: {
-        playlist_id: Playlist
+        playlist_id: Track[]
     }
     """
 
@@ -46,11 +47,24 @@ def get_playlist_tracks(session, args):
                 track_id = track_id_dict["track"]
                 track_ids_set.add(track_id)
 
-        playlist_tracks = (
-            session.query(Track)
-            .filter(Track.is_current == True, Track.track_id.in_(list(track_ids_set)))
-            .all()
-        )
+        if args.get("exclude_premium", False):
+            playlist_tracks = (
+                session.query(Track)
+                .filter(
+                    Track.is_current == True,
+                    Track.is_premium == False,
+                    Track.track_id.in_(list(track_ids_set)),
+                )
+                .all()
+            )
+        else:
+            playlist_tracks = (
+                session.query(Track)
+                .filter(
+                    Track.is_current == True, Track.track_id.in_(list(track_ids_set))
+                )
+                .all()
+            )
 
         tracks = helpers.query_result_to_list(playlist_tracks)
 

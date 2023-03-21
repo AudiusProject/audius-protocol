@@ -10,7 +10,10 @@ const FEATURE_FLAGS = Object.freeze({
   DETECT_ABUSE_ON_RELAY: 'detect_abuse_on_relay',
   BLOCK_ABUSE_ON_RELAY: 'block_abuse_on_relay',
   TIPPING_ENABLED: 'tipping_enabled',
-  SUPPORTER_DETHRONED_PUSH_NOTIFS_ENABLED: 'supporter_dethroned_push_notifs_enabled'
+  SUPPORTER_DETHRONED_PUSH_NOTIFS_ENABLED:
+    'supporter_dethroned_push_notifs_enabled',
+  READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED:
+    'read_subscribers_from_discovery_enabled'
 })
 
 // Default values for feature flags while optimizely has not loaded
@@ -25,7 +28,8 @@ const DEFAULTS = Object.freeze({
   [FEATURE_FLAGS.DETECT_ABUSE_ON_RELAY]: false,
   [FEATURE_FLAGS.BLOCK_ABUSE_ON_RELAY]: false,
   [FEATURE_FLAGS.TIPPING_ENABLED]: false,
-  [FEATURE_FLAGS.SUPPORTER_DETHRONED_PUSH_NOTIFS_ENABLED]: false
+  [FEATURE_FLAGS.SUPPORTER_DETHRONED_PUSH_NOTIFS_ENABLED]: false,
+  [FEATURE_FLAGS.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED]: false
 })
 
 /**
@@ -41,9 +45,7 @@ const getFeatureFlag = (optimizelyClient, flag, userId = uuidv4()) => {
   if (!optimizelyClient) {
     return DEFAULTS[flag]
   }
-  return optimizelyClient.isFeatureEnabled(
-    flag, userId
-  )
+  return optimizelyClient.isFeatureEnabled(flag, userId)
 }
 
 module.exports = {

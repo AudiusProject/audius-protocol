@@ -16,3 +16,6 @@ coverage/
 compose/env/tmp*/
 file_storage/
 build/
+build_test/
+test/segments/
+test/testTrack.m3u8

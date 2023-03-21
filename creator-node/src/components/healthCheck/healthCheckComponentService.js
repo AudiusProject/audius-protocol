@@ -3,7 +3,8 @@ const versionInfo = require(path.join(process.cwd(), '.version.json'))
 const { Keypair } = require('@solana/web3.js')
 
 const config = require('../../config')
-const utils = require('../../utils.js')
+const utils = require('../../utils')
+const { getNumWorkers } = require('../../utils/cluster/clusterUtils')
 const { MONITORS } = require('../../monitors/monitors')
 
 const MIN_NUBMER_OF_CPUS = 8 // 8 cpu
@@ -16,7 +17,6 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
  * the current git SHA, service version info, location info, and system info.
  * @param {*} ServiceRegistry
  * @param {*} logger
- * @param {*} sequelize
  * @param {*} getMonitors
  * @param {*} getTranscodeQueueJobs
  * @param {*} getAsyncProcessingQueueJobs
@@ -27,7 +27,6 @@ const MIN_FILESYSTEM_SIZE = 1950000000000 // 1950 GB of file system storage
 const healthCheck = async (
   { libs, snapbackSM, trustedNotifierManager } = {},
   logger,
-  sequelize,
   getMonitors,
   getTranscodeQueueJobs,
   transcodingQueueIsAvailable,
@@ -50,6 +49,8 @@ const healthCheck = async (
 
   // expose audiusInfraStack to see how node is being run
   const audiusContentInfraSetup = config.get('audiusContentInfraSetup')
+
+  const isReadOnlyMode = config.get('isReadOnlyMode')
 
   // System information
   const [
@@ -130,10 +131,20 @@ const healthCheck = async (
     solDelegatePublicKeyBase58 = solDelegateKeyPair.publicKey.toBase58()
   } catch (_) {}
 
+  const clusterWorkersCount = getNumWorkers()
+
+  const healthy = !config.get('considerNodeUnhealthy')
+  const databaseIsLocalhost =
+    config.get('dbUrl') ===
+      'postgres://postgres:postgres@db:5432/audius_creator_node' ||
+    config.get('dbUrl').includes('localhost')
+
   const response = {
     ...versionInfo,
-    healthy: true,
+    healthy,
+    isReadOnlyMode,
     git: process.env.GIT_SHA,
+    audiusDockerCompose: process.env.AUDIUS_DOCKER_COMPOSE_GIT_SHA,
     selectedDiscoveryProvider: 'none',
     creatorNodeEndpoint: config.get('creatorNodeEndpoint'),
     spID: config.get('spID'),
@@ -141,6 +152,7 @@ const healthCheck = async (
     isRegisteredOnURSM: config.get('isRegisteredOnURSM'),
     dataProviderUrl: config.get('dataProviderUrl'),
     audiusContentInfraSetup,
+    autoUpgradeEnabled: config.get('autoUpgradeEnabled'),
     numberOfCPUs,
     totalMemory,
     storagePathSize,
@@ -149,6 +161,7 @@ const healthCheck = async (
     longitude,
     databaseConnections,
     databaseSize,
+    databaseIsLocalhost: databaseIsLocalhost,
     usedMemory,
     usedTCPMemory,
     storagePathUsed,
@@ -205,9 +218,10 @@ const healthCheck = async (
       )
     },
     trustedNotifier: {
-      ...trustedNotifierManager.getTrustedNotifierData(),
-      id: trustedNotifierManager.trustedNotifierID
-    }
+      ...trustedNotifierManager?.getTrustedNotifierData(),
+      id: trustedNotifierManager?.trustedNotifierID
+    },
+    clusterWorkersCount
   }
 
   // If optional `randomBytesToSign` query param provided, node will include string in signed object
@@ -246,7 +260,6 @@ const parseDateOrNull = (date) => {
 const healthCheckVerbose = async (
   { libs, snapbackSM, trustedNotifierManager } = {},
   logger,
-  sequelize,
   getMonitors,
   numberOfCPUs,
   getTranscodeQueueJobs,
@@ -256,7 +269,6 @@ const healthCheckVerbose = async (
   return healthCheck(
     { libs, snapbackSM, trustedNotifierManager },
     logger,
-    sequelize,
     getMonitors,
     getTranscodeQueueJobs,
     transcodingQueueIsAvailable,
@@ -277,8 +289,19 @@ const healthCheckDuration = async () => {
   return { success: true }
 }
 
+const configCheck = () => {
+  /**
+   * Docs: https://github.com/mozilla/node-convict/tree/master/packages/convict#configtostring
+   *
+   * This roundabout approach can be removed once the PR to add a .toJson() is merged: https://github.com/mozilla/node-convict/pull/407
+   */
+  const data = JSON.parse(config.toString())
+  return data
+}
+
 module.exports = {
   healthCheck,
   healthCheckVerbose,
-  healthCheckDuration
+  healthCheckDuration,
+  configCheck
 }

@@ -71,7 +71,7 @@ def index_eth_transfer_events(db, redis_inst):
     # Run the scan
     result, total_chunks_scanned = scanner.scan(start_block, end_block)
 
-    logger.info(
+    logger.debug(
         "index_eth.py | Reached end block for eth transfer events... saving events to database"
     )
     scanner.save(end_block)

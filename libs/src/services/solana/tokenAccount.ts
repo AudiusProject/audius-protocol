@@ -3,10 +3,9 @@ import {
   PublicKey,
   SystemProgram,
   SYSVAR_RENT_PUBKEY,
-  Keypair,
   Connection
 } from '@solana/web3.js'
-import type { Nullable } from '../../utils'
+import { Nullable, randomKeyPair } from '../../utils'
 import type { IdentityService } from '../identity'
 
 type FindAssociatedTokenAddressConfig = {
@@ -34,7 +33,7 @@ export async function findAssociatedTokenAddress({
   return addresses[0]
 }
 
-type GetAssociatedTokenAccountInfoConfig = {
+type GetTokenAccountInfoConfig = {
   tokenAccountAddressKey: PublicKey
   mintKey: PublicKey
   solanaTokenProgramKey: PublicKey
@@ -44,19 +43,25 @@ type GetAssociatedTokenAccountInfoConfig = {
 /**
  * Gets token account information (e.g. balance, ownership, etc.)
  */
-export async function getAssociatedTokenAccountInfo({
+export async function getTokenAccountInfo({
   tokenAccountAddressKey,
   mintKey,
   solanaTokenProgramKey,
   connection
-}: GetAssociatedTokenAccountInfoConfig) {
+}: GetTokenAccountInfoConfig) {
   const token = new Token(
     connection,
     mintKey,
     solanaTokenProgramKey,
-    Keypair.generate()
+    randomKeyPair
   )
-  const info = await token.getAccountInfo(tokenAccountAddressKey)
+
+  // Fetch token info with 'processed commitment to get any recently changed amounts.
+  // NOTE: Our version of spl-token omits the second argument
+  // in the type definitions even though it's actually available,
+  // so we suppress error until we can upgrade.
+  // @ts-expect-error
+  const info = await token.getAccountInfo(tokenAccountAddressKey, 'processed')
   return info
 }
 

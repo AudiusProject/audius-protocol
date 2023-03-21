@@ -12,7 +12,7 @@
 # can be used as a precondition for working with the monorepo
 # i.e. $ ./diff.sh identity-service || circleci-agent step halt
 
-DIFF_BRANCH="origin/master"
+DIFF_BRANCH="origin/main"
 REPOS="
     libs
     contracts

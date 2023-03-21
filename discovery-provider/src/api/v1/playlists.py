@@ -1,5 +1,6 @@
 import logging
 
+from flask import Blueprint, Response
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
@@ -15,7 +16,6 @@ from src.api.v1.helpers import (
     get_default_max,
     make_full_response,
     make_response,
-    pagination_parser,
     pagination_with_current_user_parser,
     search_parser,
     success_response,
@@ -34,6 +34,7 @@ from src.queries.get_trending_playlists import (
     get_full_trending_playlists,
     get_trending_playlists,
 )
+from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.search_queries import SearchKind, search
 from src.trending_strategies.trending_strategy_factory import (
     DEFAULT_TRENDING_VERSIONS,
@@ -41,6 +42,7 @@ from src.trending_strategies.trending_strategy_factory import (
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.db_session import get_db_read_replica
+from src.utils.helpers import decode_string_id
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
@@ -73,26 +75,45 @@ full_playlists_with_score_response = make_full_response(
 )
 
 
-def get_playlist(playlist_id, current_user_id):
-    """Returns a single playlist, or None"""
+def format_get_playlists_args(
+    current_user_id,
+    playlist_id,
+    route,
+    with_users,
+):
     args = {
-        "playlist_id": [playlist_id],
-        "with_users": True,
         "current_user_id": current_user_id,
+        "with_users": with_users,
     }
+    if playlist_id:
+        args["playlist_ids"] = [playlist_id]
+    if route:
+        args["routes"] = [route]
+    return args
+
+
+def get_playlist(
+    current_user_id,
+    playlist_id=None,
+    route=None,
+    with_users=True,
+):
+    """Returns a single playlist, or None"""
+    args = format_get_playlists_args(current_user_id, playlist_id, route, with_users)
     playlists = get_playlists(args)
     if playlists:
         return extend_playlist(playlists[0])
     return None
 
 
-def get_tracks_for_playlist(playlist_id, current_user_id=None):
+def get_tracks_for_playlist(playlist_id, current_user_id=None, exclude_premium=False):
     db = get_db_read_replica()
     with db.scoped_session() as session:
         args = {
             "playlist_ids": [playlist_id],
             "populate_tracks": True,
             "current_user_id": current_user_id,
+            "exclude_premium": exclude_premium,
         }
         playlist_tracks_map = get_playlist_tracks(session, args)
         playlist_tracks = playlist_tracks_map[playlist_id]
@@ -116,7 +137,10 @@ class Playlist(Resource):
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         playlist_id = decode_with_abort(playlist_id, ns)
-        playlist = get_playlist(playlist_id, None)
+        playlist = get_playlist(
+            current_user_id=None,
+            playlist_id=playlist_id,
+        )
         response = success_response([playlist] if playlist else [])
         return response
 
@@ -135,12 +159,44 @@ class FullPlaylist(Resource):
         playlist_id = decode_with_abort(playlist_id, full_ns)
         args = current_user_parser.parse_args()
         current_user_id = get_current_user_id(args)
-        playlist = get_playlist(playlist_id, current_user_id)
+        playlist = get_playlist(
+            current_user_id=current_user_id,
+            playlist_id=playlist_id,
+        )
         if playlist:
             tracks = get_tracks_for_playlist(playlist_id, current_user_id)
             playlist["tracks"] = tracks
         response = success_response([playlist] if playlist else [])
         return response
+
+
+@full_ns.route("/by_permalink/<string:handle>/<string:slug>")
+class FullPlaylistByHandleAndSlug(Resource):
+    @ns.doc(
+        id="""Get Playlist By Handle and Slug""",
+        description="""Get a playlist by handle and slug""",
+        params={"handle": "playlist owner handle", "slug": "playlist slug"},
+    )
+    @ns.expect(current_user_parser)
+    @ns.marshal_with(full_playlists_response)
+    @cache(ttl_sec=5)
+    def get(self, handle, slug):
+        args = current_user_parser.parse_args()
+        current_user_id = get_current_user_id(args)
+
+        route = {
+            "handle": handle,
+            "slug": slug,
+        }
+
+        playlist = get_playlist(current_user_id=current_user_id, route=route)
+        return_response = []
+        if playlist:
+            tracks = get_tracks_for_playlist(playlist["playlist_id"], current_user_id)
+            playlist["tracks"] = tracks
+            return_response = [playlist]
+
+        return success_response(return_response)
 
 
 playlist_tracks_response = make_response(
@@ -164,7 +220,7 @@ class PlaylistTracks(Resource):
     @cache(ttl_sec=5)
     def get(self, playlist_id):
         decoded_id = decode_with_abort(playlist_id, ns)
-        tracks = get_tracks_for_playlist(decoded_id)
+        tracks = get_tracks_for_playlist(playlist_id=decoded_id, exclude_premium=True)
         return success_response(tracks)
 
 
@@ -219,7 +275,7 @@ class PlaylistSearchResult(Resource):
         return success_response(response["playlists"])
 
 
-top_parser = pagination_parser.copy()
+top_parser = pagination_with_current_user_parser.copy()
 top_parser.add_argument(
     "type",
     required=True,
@@ -229,7 +285,12 @@ top_parser.add_argument(
 top_parser.add_argument(
     "mood",
     required=False,
-    description="Filer to a mood",
+    description="Filter to a mood",
+)
+top_parser.add_argument(
+    "filter",
+    required=False,
+    description="Filter for the playlist query",
 )
 
 
@@ -249,6 +310,9 @@ class Top(Resource):
             args["offset"] = 0
         if args.get("type") not in ["album", "playlist"]:
             abort_bad_request_param("type", ns)
+        current_user_id = get_current_user_id(args)
+        if current_user_id:
+            args["current_user_id"] = current_user_id
 
         args["with_users"] = True
 
@@ -427,3 +491,38 @@ class FullTrendingPlaylists(Resource):
         )
         playlists = get_full_trending_playlists(request, args, strategy)
         return success_response(playlists)
+
+
+playlist_stream_bp = Blueprint("playlist_stream", __name__)
+
+
+@playlist_stream_bp.route("/v1/playlists/<string:playlist_id>/stream", methods=["GET"])
+def playlist_stream(playlist_id):
+    decoded_id = decode_string_id(playlist_id)
+    if decoded_id is None:
+        return f"#Invalid Id: {playlist_id}", 404
+
+    tracks = get_tracks_for_playlist(playlist_id=decoded_id, exclude_premium=True)
+
+    return Response(
+        response="#EXTM3U\n"
+        + "\n".join(
+            [
+                f"#EXTINF:{track['duration']},{track['title']}\n../../tracks/{track['id']}/stream"
+                for track in tracks
+            ]
+        ),
+        status=200,
+        mimetype="application/mpegurl",
+    )
+
+
+@ns.route("/unclaimed_id", doc=False)
+class GetUnclaimedPlaylistId(Resource):
+    @ns.doc(
+        id="""Get unclaimed playlist ID""",
+        description="""Gets an unclaimed blockchain playlist ID""",
+    )
+    def get(self):
+        unclaimed_id = get_unclaimed_id("playlist")
+        return success_response(unclaimed_id)

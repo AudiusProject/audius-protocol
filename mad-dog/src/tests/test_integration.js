@@ -4,7 +4,6 @@ const fs = require('fs-extra')
 const axios = require('axios')
 const retry = require('async-retry')
 const assert = require('assert')
-const ServiceCommands = require('@audius/service-commands')
 const {
   OPERATION_TYPE,
   TrackUploadRequest,
@@ -41,7 +40,7 @@ const {
   updateCreator,
   getURSMContentNodes,
   addPlaylistTrack
-} = ServiceCommands
+} = require('@audius/service-commands')
 const {
   getRandomTrackMetadata,
   getRandomTrackFilePath,
@@ -75,31 +74,6 @@ module.exports = coreIntegration = async ({
   enableFaultInjection
 }) => {
   // Begin: Test Setup
-
-  // If running with UserReplicaSetManager deployed, wait until all Content Nodes are registered on it
-  const URSMClient = await executeOne(0, libs => libs.libsInstance.contracts.UserReplicaSetManagerClient)
-  if (URSMClient) {
-    let retryCount = 0
-    const retryLimit = 10
-    const retryIntervalMs = 10000 // 10sec
-    while (true) {
-      console.log(`Ensuring correct URSM state with interval ${retryIntervalMs} || attempt #${retryCount} ...`)
-
-      const URSMContentNodes = await executeOne(0, libs => getURSMContentNodes(libs))
-
-      if (URSMContentNodes.length === numCreatorNodes) {
-        break
-      }
-
-      if (retryCount >= retryLimit) {
-        return { error: `URSM state not correctly initialized after ${retryIntervalMs * retryLimit}ms` }
-      }
-
-      retryCount++
-
-      await delay(retryIntervalMs)
-    }
-  }
 
   // create tmp storage dir
   await fs.ensureDir(TEMP_STORAGE_PATH)

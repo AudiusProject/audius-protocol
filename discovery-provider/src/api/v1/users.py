@@ -3,6 +3,7 @@ import json
 import logging
 
 from eth_account.messages import encode_defunct
+from flask import request
 from flask_restx import Namespace, Resource, fields, reqparse
 from src.api.v1.helpers import (
     DescriptiveArgument,
@@ -17,6 +18,7 @@ from src.api.v1.helpers import (
     extend_supporting,
     extend_track,
     extend_user,
+    format_aggregate_monthly_plays_for_user,
     format_limit,
     format_offset,
     format_query,
@@ -32,6 +34,7 @@ from src.api.v1.helpers import (
     success_response,
     track_history_parser,
     user_favorited_tracks_parser,
+    user_track_listen_count_route_parser,
     user_tracks_route_parser,
     verify_token_parser,
 )
@@ -53,7 +56,9 @@ from src.api.v1.models.users import (
     user_model,
     user_model_full,
     user_replica_set,
+    user_subscribers,
 )
+from src.api.v1.models.wildcard_model import WildcardModel
 from src.api.v1.playlists import get_tracks_for_playlist
 from src.challenges.challenge_event_bus import setup_challenge_bus
 from src.queries.get_associated_user_id import get_associated_user_id
@@ -65,6 +70,10 @@ from src.queries.get_related_artists import get_related_artists
 from src.queries.get_repost_feed_for_user import get_repost_feed_for_user
 from src.queries.get_save_tracks import GetSaveTracksArgs, get_save_tracks
 from src.queries.get_saves import get_saves
+from src.queries.get_subscribers import (
+    get_subscribers_for_user,
+    get_subscribers_for_users,
+)
 from src.queries.get_support_for_user import (
     get_support_received_by_user,
     get_support_sent_by_user,
@@ -73,10 +82,13 @@ from src.queries.get_top_genre_users import get_top_genre_users
 from src.queries.get_top_user_track_tags import get_top_user_track_tags
 from src.queries.get_top_users import get_top_users
 from src.queries.get_tracks import GetTrackArgs, get_tracks
+from src.queries.get_unclaimed_id import get_unclaimed_id
+from src.queries.get_user_listen_counts_monthly import get_user_listen_counts_monthly
 from src.queries.get_user_listening_history import (
     GetUserListeningHistoryArgs,
     get_user_listening_history,
 )
+from src.queries.get_user_replica_set import get_user_replica_set
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
@@ -201,6 +213,74 @@ tracks_response = make_response(
     "tracks_response", ns, fields.List(fields.Nested(track))
 )
 
+listen_count = ns.model(
+    "listen_count",
+    {
+        "trackId": fields.Integer,
+        "date": fields.String,
+        "listens": fields.Integer,
+    },
+)
+
+monthly_aggregate_play = ns.model(
+    "monthly_aggregate_play",
+    {
+        "totalListens": fields.Integer,
+        "trackIds": fields.List(fields.Integer),
+        "listenCounts": fields.List(fields.Nested(listen_count)),
+    },
+)
+
+wild_month = fields.Wildcard(fields.Nested(monthly_aggregate_play, required=True))
+
+wild_month_model = WildcardModel(
+    "wild_month_model",
+    {"*": wild_month},
+)
+ns.add_model("wild_month_model", wild_month_model)
+user_track_listen_counts_response = make_response(
+    "user_track_listen_counts_response",
+    ns,
+    fields.Nested(
+        wild_month_model,
+        skip_none=True,
+    ),
+)
+
+
+@ns.route("/<string:id>/listen_counts_monthly")
+class UserTrackListenCountsMonthly(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get User Monthly Track Listens""",
+        description="""Gets the listen data for a user by month and track within a given time frame.""",
+        params={
+            "id": "A User ID",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_track_listen_count_route_parser)
+    @ns.marshal_with(user_track_listen_counts_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        args = user_track_listen_count_route_parser.parse_args()
+        start_time = args.get("start_time")
+        end_time = args.get("end_time")
+
+        user_listen_counts = get_user_listen_counts_monthly(
+            {
+                "user_id": decoded_id,
+                "start_time": start_time,
+                "end_time": end_time,
+            }
+        )
+
+        formatted_user_listen_counts = format_aggregate_monthly_plays_for_user(
+            user_listen_counts
+        )
+        return success_response(formatted_user_listen_counts)
+
 
 @ns.route(USER_TRACKS_ROUTE)
 class TrackList(Resource):
@@ -227,6 +307,7 @@ class TrackList(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
+        filter_tracks = args.get("filter_tracks", "all")
         sort_method = format_sort_method(args)
         sort_direction = format_sort_direction(args)
 
@@ -235,6 +316,7 @@ class TrackList(Resource):
             authed_user_id=authed_user_id,
             current_user_id=current_user_id,
             filter_deleted=True,
+            exclude_premium=True,
             sort=sort,
             limit=limit,
             offset=offset,
@@ -246,6 +328,7 @@ class TrackList(Resource):
             id=None,
             min_block_number=None,
             routes=None,
+            filter_tracks=filter_tracks,
         )
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
@@ -281,6 +364,7 @@ class FullTrackList(Resource):
         offset = format_offset(args)
         limit = format_limit(args)
         query = format_query(args)
+        filter_tracks = args.get("filter_tracks", "all")
 
         sort = args.get("sort", None)  # Deprecated
         sort_method = format_sort_method(args)
@@ -293,6 +377,7 @@ class FullTrackList(Resource):
             authed_user_id=authed_user_id,
             current_user_id=current_user_id,
             filter_deleted=True,
+            exclude_premium=False,
             sort=sort,
             limit=limit,
             offset=offset,
@@ -304,6 +389,7 @@ class FullTrackList(Resource):
             id=None,
             min_block_number=None,
             routes=None,
+            filter_tracks=filter_tracks,
         )
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
@@ -325,6 +411,7 @@ class HandleFullTrackList(Resource):
         sort = args.get("sort", None)
         offset = format_offset(args)
         limit = format_limit(args)
+        filter_tracks = args.get("filter_tracks", "all")
 
         args = {
             "handle": handle,
@@ -335,6 +422,7 @@ class HandleFullTrackList(Resource):
             "sort": sort,
             "limit": limit,
             "offset": offset,
+            "filter_tracks": filter_tracks,
         }
         tracks = get_tracks(args)
         tracks = list(map(extend_track, tracks))
@@ -619,6 +707,42 @@ class UserFavoritedTracksFull(Resource):
         return self._get(id)
 
 
+@ns.route("/<string:id>/favorites/albums")
+class FavoritedAlbums(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Favorite Albums""",
+        description="""Gets a user's favorite albums""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(favorites_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        favorites = get_saves("albums", decoded_id)
+        favorites = list(map(extend_favorite, favorites))
+        return success_response(favorites)
+
+
+@ns.route("/<string:id>/favorites/playlists")
+class FavoritedPlaylists(Resource):
+    @record_metrics
+    @ns.doc(
+        id="""Get Favorite Playlists""",
+        description="""Gets a user's favorite playlists""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(favorites_response)
+    @cache(ttl_sec=5)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, ns)
+        favorites = get_saves("playlists", decoded_id)
+        favorites = list(map(extend_favorite, favorites))
+        return success_response(favorites)
+
+
 history_response = make_full_response(
     "history_response", ns, fields.List(fields.Nested(activity_model))
 )
@@ -715,7 +839,153 @@ class UserSearchResult(Resource):
         return success_response(response["users"])
 
 
-followers_response = make_full_response(
+subscribers_response = make_response(
+    "subscribers_response", ns, fields.List(fields.Nested(user_model))
+)
+full_subscribers_response = make_full_response(
+    "full_subscribers_response", full_ns, fields.List(fields.Nested(user_model_full))
+)
+
+USER_SUBSCRIBERS_ROUTE = "/<string:id>/subscribers"
+
+
+@full_ns.route(USER_SUBSCRIBERS_ROUTE)
+class FullUserSubscribers(Resource):
+    @record_metrics
+    @cache(ttl_sec=5)
+    def _get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = pagination_with_current_user_parser.parse_args()
+        limit = get_default_max(args.get("limit"), 10, 100)
+        offset = get_default_max(args.get("offset"), 0)
+        current_user_id = get_current_user_id(args)
+        args = {
+            "user_id": decoded_id,
+            "current_user_id": current_user_id,
+            "limit": limit,
+            "offset": offset,
+        }
+        users = get_subscribers_for_user(args)
+        users = list(map(extend_user, users))
+        return success_response(users)
+
+    @full_ns.doc(
+        id="""Get Subscribers""",
+        description="""All users that subscribe to the provided user""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(pagination_with_current_user_parser)
+    @full_ns.marshal_with(full_subscribers_response)
+    def get(self, id):
+        return self._get(id)
+
+
+@ns.route(USER_SUBSCRIBERS_ROUTE)
+class UserSubscribers(FullUserSubscribers):
+    @ns.doc(
+        id="""Get Subscribers""",
+        description="""All users that subscribe to the provided user""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(pagination_with_current_user_parser)
+    @ns.marshal_with(subscribers_response)
+    def get(self, id):
+        return super()._get(id)
+
+
+bulk_subscribers_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+bulk_subscribers_parser.add_argument(
+    "ids",
+    required=True,
+    action="split",
+    description="User IDs to fetch subscribers for",
+)
+bulk_subscribers_response = make_response(
+    "bulk_subscribers_response", ns, fields.List(fields.Nested(user_subscribers))
+)
+full_bulk_subscribers_response = make_full_response(
+    "full_bulk_subscribers_response",
+    full_ns,
+    fields.List(fields.Nested(user_subscribers)),
+)
+
+BULK_USERS_SUBSCRIBERS_ROUTE = "/subscribers"
+
+
+@full_ns.route(BULK_USERS_SUBSCRIBERS_ROUTE)
+class FullBulkUsersSubscribers(Resource):
+    def _get_subscribers(self, args):
+        decoded_user_ids = list(
+            map(lambda id: decode_with_abort(id, full_ns), args.get("ids", []))
+        )
+        subscribers = get_subscribers_for_users(
+            {
+                "user_ids": decoded_user_ids,
+            }
+        )
+        return success_response(subscribers)
+
+    @record_metrics
+    @cache(ttl_sec=5)
+    # Use POST to request subscribers for the user IDs in the JSON body.
+    # Does not actually write any data.
+    def _post(self):
+        args = request.json
+        return self._get_subscribers(args)
+
+    @record_metrics
+    @cache(ttl_sec=5)
+    def _get(self):
+        args = bulk_subscribers_parser.parse_args()
+        return self._get_subscribers(args)
+
+    @full_ns.doc(
+        id="""Bulk Get Subscribers""",
+        description="""All users that subscribe to the provided users""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(bulk_subscribers_parser)
+    @full_ns.marshal_with(full_bulk_subscribers_response)
+    def get(self):
+        return self._get()
+
+    @full_ns.doc(
+        id="""Bulk Get Subscribers via JSON request""",
+        description="""Get all users that subscribe to the users listed in the JSON request""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(bulk_subscribers_parser)
+    @full_ns.marshal_with(full_bulk_subscribers_response)
+    def post(self):
+        return self._post()
+
+
+@ns.route(BULK_USERS_SUBSCRIBERS_ROUTE)
+class BulkUsersSubscribers(FullBulkUsersSubscribers):
+    @ns.doc(
+        id="""Bulk Get Subscribers""",
+        description="""All users that subscribe to the provided users""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(bulk_subscribers_parser)
+    @ns.marshal_with(bulk_subscribers_response)
+    def get(self):
+        return super()._get()
+
+    @ns.doc(
+        id="""Bulk Get Subscribers via JSON request""",
+        description="""Get all users that subscribe to the users listed in the JSON request""",
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(bulk_subscribers_parser)
+    @ns.marshal_with(bulk_subscribers_response)
+    def post(self):
+        return super()._post()
+
+
+followers_response = make_response(
     "followers_response", ns, fields.List(fields.Nested(user_model))
 )
 full_followers_response = make_full_response(
@@ -771,7 +1041,7 @@ class FollowerUsers(FullFollowerUsers):
         return super()._get(id)
 
 
-following_response = make_full_response(
+following_response = make_response(
     "following_response", ns, fields.List(fields.Nested(user_model))
 )
 following_response_full = make_full_response(
@@ -1467,3 +1737,65 @@ class GetTokenVerification(Resource):
 
         # 5. Send back the decoded payload
         return success_response(payload)
+
+
+GET_REPLICA_SET = "/<string:id>/replica_set"
+user_replica_set_full_response = make_full_response(
+    "users_by_content_node", full_ns, fields.Nested(user_replica_set)
+)
+user_replica_set_response = make_response(
+    "users_by_content_node", ns, fields.Nested(user_replica_set)
+)
+
+
+@full_ns.route(GET_REPLICA_SET)
+class FullGetReplicaSet(Resource):
+    @record_metrics
+    @cache(ttl_sec=5)
+    def _get(self, id: str):
+        decoded_id = decode_with_abort(id, full_ns)
+        args = {"user_id": decoded_id}
+        replica_set = get_user_replica_set(args)
+        return success_response(replica_set)
+
+    @full_ns.doc(
+        id="""Get User Replica Set""",
+        description="""Gets the user's replica set""",
+        params={
+            "id": "A User ID",
+        },
+    )
+    @full_ns.expect(current_user_parser)
+    @full_ns.marshal_with(user_replica_set_full_response)
+    def get(self, id: str):
+        return self._get(id)
+
+
+@ns.route(GET_REPLICA_SET)
+class GetReplicaSet(FullGetReplicaSet):
+    @ns.doc(
+        id="""Get User Replica Set""",
+        description="""Gets the user's replica set""",
+        params={
+            "id": "A User ID",
+        },
+    )
+    @ns.marshal_with(user_replica_set_response)
+    def get(self, id: str):
+        return super()._get(id)
+
+
+verify_token_response = make_response(
+    "verify_token", ns, fields.Nested(decoded_user_token)
+)
+
+
+@ns.route("/unclaimed_id", doc=False)
+class GetUnclaimedUserId(Resource):
+    @ns.doc(
+        id="""Get unclaimed user ID""",
+        description="""Gets an unclaimed blockchain user ID""",
+    )
+    def get(self):
+        unclaimed_id = get_unclaimed_id("user")
+        return success_response(unclaimed_id)

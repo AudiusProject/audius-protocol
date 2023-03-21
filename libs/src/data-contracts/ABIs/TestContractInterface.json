@@ -5,6 +5,7 @@
       "constant": false,
       "inputs": [
         {
+          "internalType": "uint256",
           "name": "_x",
           "type": "uint256"
         }

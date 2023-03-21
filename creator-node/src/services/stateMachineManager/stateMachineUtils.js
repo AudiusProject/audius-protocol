@@ -1,23 +1,22 @@
-const BullQueue = require('bull')
+const { Queue, Worker } = require('bullmq')
 
-const { libs } = require('@audius/sdk')
-const CreatorNode = libs.CreatorNode
 const axios = require('axios')
 const retry = require('async-retry')
 
-const {
-  METRIC_RECORD_TYPE,
-  METRIC_NAMES,
-  METRIC_LABELS
-} = require('../../services/prometheusMonitoring/prometheus.constants')
 const config = require('../../config')
-const { logger, createChildLogger } = require('../../logging')
+const { logger: baseLogger, createChildLogger } = require('../../logging')
 const { generateTimestampAndSignature } = require('../../apiSigning')
 const {
   BATCH_CLOCK_STATUS_REQUEST_TIMEOUT,
   CLOCK_STATUS_REQUEST_TIMEOUT_MS,
   MAX_USER_BATCH_CLOCK_FETCH_RETRIES
 } = require('./stateMachineConstants')
+const { instrumentTracing, tracing } = require('../../tracer')
+const {
+  clusterUtilsForWorker,
+  getConcurrencyPerWorker,
+  clearActiveJobs
+} = require('../../utils')
 
 const MAX_BATCH_CLOCK_STATUS_BATCH_SIZE = config.get(
   'maxBatchClockStatusBatchSize'
@@ -88,7 +87,7 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
 
         // If failed to get response after all attempts, add replica to `unhealthyPeers` list for reconfig
         if (errorMsg) {
-          logger.error(
+          baseLogger.error(
             `[retrieveUserInfoFromReplicaSet] Could not fetch clock values from replica ${replica}: ${errorMsg.toString()}`
           )
           unhealthyPeers.add(replica)
@@ -119,7 +118,7 @@ const retrieveUserInfoFromReplicaSet = async (replicaToWalletMap) => {
  * Make request to given replica to get its clock value for given user
  * Signs request with spID to bypass rate limits
  */
-const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
+const _retrieveClockValueForUserFromReplica = async (replica, wallet) => {
   const spID = config.get('spID')
 
   const { timestamp, signature } = generateTimestampAndSignature(
@@ -127,6 +126,8 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
     DELEGATE_PRIVATE_KEY
   )
 
+  const { libs } = require('@audius/sdk')
+  const CreatorNode = libs.CreatorNode
   const clockValue = await CreatorNode.getClockValue(
     replica,
     wallet,
@@ -141,164 +142,80 @@ const retrieveClockValueForUserFromReplica = async (replica, wallet) => {
   return clockValue
 }
 
-/**
- * Returns an object that can be returned from any state machine job to record a histogram metric being observed.
- * Example: to call responseTimeHistogram.observe({ code: '200' }, 1000), you would call this function with:
- * makeHistogramToRecord('response_time', 1000, { code: '200' })
- * @param {string} metricName the name of the metric from prometheus.constants
- * @param {number} metricValue the value to observe
- * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
- */
-const makeHistogramToRecord = (metricName, metricValue, metricLabels = {}) => {
-  return makeMetricToRecord(
-    METRIC_RECORD_TYPE.HISTOGRAM_OBSERVE,
-    metricName,
-    metricValue,
-    metricLabels
-  )
-}
-
-/**
- * Returns an object that can be returned from any state machine job to record an increase in a gauge metric.
- * Example: to call testGuage.inc({ status: 'success' }, 1), you would call this function with:
- * makeGaugeIncToRecord('test_gauge', 1, { status: 'success' })
- * @param {string} metricName the name of the metric from prometheus.constants
- * @param {number} incBy the metric value to increment by in Metric#inc for the prometheus gauge
- * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
- */
-const makeGaugeIncToRecord = (metricName, incBy, metricLabels = {}) => {
-  return makeMetricToRecord(
-    METRIC_RECORD_TYPE.GAUGE_INC,
-    metricName,
-    incBy,
-    metricLabels
-  )
-}
-
-/**
- * Returns an object that can be returned from any state machine job to record a change in a metric.
- * Validates the params to make sure the metric is valid.
- * @param {string} metricType the type of metric being recorded -- HISTOGRAM or GAUGE_INC
- * @param {string} metricName the name of the metric from prometheus.constants
- * @param {number} metricValue the value to observe
- * @param {string} [metricLabels] the optional mapping of metric label name => metric label value
- */
-const makeMetricToRecord = (
-  metricType,
-  metricName,
-  metricValue,
-  metricLabels = {}
-) => {
-  if (!Object.values(METRIC_RECORD_TYPE).includes(metricType)) {
-    throw new Error(
-      `Invalid metricType. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
-        metricLabels
-      )}`
-    )
-  }
-  if (!Object.values(METRIC_NAMES).includes(metricName)) {
-    throw new Error(
-      `Invalid metricName. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
-        metricLabels
-      )}`
-    )
-  }
-  if (typeof metricValue !== 'number') {
-    throw new Error(
-      `Invalid non-numerical metricValue. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
-        metricLabels
-      )}`
-    )
-  }
-  const labelNames = Object.keys(METRIC_LABELS[metricName])
-  for (const [labelName, labelValue] of Object.entries(metricLabels)) {
-    if (!labelNames?.includes(labelName)) {
-      throw new Error(
-        `Metric label has invalid name: '${labelName}'. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
-          metricLabels
-        )}`
-      )
-    }
-    const labelValues = METRIC_LABELS[metricName][labelName]
-    if (!labelValues?.includes(labelValue) && labelValues?.length !== 0) {
-      throw new Error(
-        `Metric label has invalid value: '${labelValue}'. metricType=${metricType} metricName=${metricName} metricValue=${metricValue} metricLabels=${JSON.stringify(
-          metricLabels
-        )}`
-      )
+const retrieveClockValueForUserFromReplica = instrumentTracing({
+  fn: _retrieveClockValueForUserFromReplica,
+  options: {
+    attributes: {
+      [tracing.CODE_FILEPATH]: __filename
     }
   }
+})
 
-  const metric = {
-    metricName,
-    metricType,
-    metricValue,
-    metricLabels
-  }
-  return metric
-}
-
-const makeQueue = ({
+const makeQueue = async ({
   name,
+  processor,
+  logger,
   removeOnComplete,
   removeOnFail,
-  lockDuration,
-  prometheusRegistry = null,
+  prometheusRegistry,
+  globalConcurrency = 1,
   limiter = null
 }) => {
-  // Settings config from https://github.com/OptimalBits/bull/blob/develop/REFERENCE.md#advanced-settings
-  const queue = new BullQueue(name, {
-    redis: {
-      host: config.get('redisHost'),
-      port: config.get('redisPort')
-    },
+  const connection = {
+    host: config.get('redisHost'),
+    port: config.get('redisPort')
+  }
+  const queue = new Queue(name, {
+    connection,
     defaultJobOptions: {
       removeOnComplete,
       removeOnFail
-    },
-    settings: {
-      // Should be sufficiently larger than expected job runtime
-      lockDuration,
-      // We never want to re-process stalled jobs
-      maxStalledCount: 0
-    },
+    }
+  })
+
+  // Clear any old state if redis was running but the rest of the server restarted
+  if (clusterUtilsForWorker.isThisWorkerFirst()) {
+    await queue.obliterate({ force: true })
+    await clearActiveJobs(queue, logger)
+  }
+
+  const worker = new Worker(name, processor, {
+    connection,
+    concurrency: getConcurrencyPerWorker(globalConcurrency),
     limiter
   })
 
+  _registerQueueEvents(worker, logger)
+
   if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
-    prometheusRegistry.startQueueMetrics(queue)
+    prometheusRegistry.startQueueMetrics(queue, worker)
   }
 
-  return queue
+  return { queue, worker, logger }
 }
 
-const registerQueueEvents = (queue, queueLogger) => {
-  queue.on('global:waiting', (jobId) => {
-    const logger = createChildLogger(queueLogger, { jobId })
-    logger.info('Job waiting')
+const _registerQueueEvents = (worker, queueLogger) => {
+  worker.on('active', (job, _prev) => {
+    const logger = createChildLogger(queueLogger, { jobId: job.id })
+    logger.debug('Job active')
   })
-  queue.on('global:active', (jobId, jobPromise) => {
-    const logger = createChildLogger(queueLogger, { jobId })
-    logger.info('Job active')
+  worker.on('failed', (job, error, _prev) => {
+    const loggerWithId = createChildLogger(queueLogger, {
+      jobId: job?.id || 'unknown'
+    })
+    loggerWithId.error(`Job failed to complete. ID=${job?.id}. Error=${error}`)
   })
-  queue.on('global:lock-extension-failed', (jobId, err) => {
-    const logger = createChildLogger(queueLogger, { jobId })
-    logger.error(`Job lock extension failed. Error: ${err}`)
+  worker.on('error', (failedReason) => {
+    queueLogger.error(`Job error - ${failedReason}`)
   })
-  queue.on('global:stalled', (jobId) => {
+  worker.on('stalled', (jobId, _prev) => {
     const logger = createChildLogger(queueLogger, { jobId })
-    logger.error('Job stalled')
-  })
-  queue.on('global:error', (error) => {
-    queueLogger.error(`Queue Job Error - ${error}`)
+    logger.debug('Job stalled')
   })
 }
 
 module.exports = {
   retrieveClockValueForUserFromReplica,
-  makeHistogramToRecord,
-  makeGaugeIncToRecord,
   retrieveUserInfoFromReplicaSet,
-  makeQueue,
-  registerQueueEvents
+  makeQueue
 }

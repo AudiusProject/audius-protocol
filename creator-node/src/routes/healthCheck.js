@@ -23,7 +23,7 @@ const router = express.Router()
  */
 router.get(
   '/db_check',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const verbose = req.query.verbose === 'true'
     const maxConnections =
       parseInt(req.query.maxConnections) || MAX_DB_CONNECTIONS
@@ -68,7 +68,7 @@ router.get(
 
 router.get(
   '/version',
-  handleResponse(async (req, res) => {
+  handleResponse(async (_req, _res) => {
     if (config.get('isReadOnlyMode')) {
       return errorResponseServerError()
     }
@@ -89,7 +89,7 @@ router.get(
  */
 router.get(
   '/disk_check',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const maxUsageBytes = parseInt(req.query.maxUsageBytes)
     const maxUsagePercent =
       parseInt(req.query.maxUsagePercent) || config.get('maxStorageUsedPercent')
@@ -136,7 +136,7 @@ router.get(
 
 router.get(
   '/ip_check',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const { ip } = req
 
     return successResponse({

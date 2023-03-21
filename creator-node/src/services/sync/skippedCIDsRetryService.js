@@ -1,9 +1,13 @@
-const Bull = require('bull')
+const { Queue, Worker } = require('bullmq')
 
 const models = require('../../models')
 const { logger } = require('../../logging')
 const utils = require('../../utils')
-const { saveFileForMultihashToFS } = require('../../fileManager')
+const { clusterUtilsForWorker } = require('../../utils')
+const {
+  getAllRegisteredCNodes
+} = require('../../services/ContentNodeInfoManager')
+const { fetchFileFromNetworkAndSaveToFS } = require('../../fileManager')
 
 const LogPrefix = '[SkippedCIDsRetryQueue]'
 
@@ -17,41 +21,24 @@ class SkippedCIDsRetryQueue {
     if (!nodeConfig || !libs) {
       throw new Error(`${LogPrefix} Cannot start without nodeConfig, libs`)
     }
-
-    this.queue = new Bull('skipped-cids-retry-queue', {
-      redis: {
-        port: nodeConfig.get('redisPort'),
-        host: nodeConfig.get('redisHost')
-      },
+    this.nodeConfig = nodeConfig
+    this.libs = libs
+    const connection = {
+      host: nodeConfig.get('redisHost'),
+      port: nodeConfig.get('redisPort')
+    }
+    this.queue = new Queue('skipped-cids-retry-queue', {
+      connection,
       defaultJobOptions: {
         // these required since completed/failed jobs data set can grow infinitely until memory exhaustion
         removeOnComplete: RETRY_QUEUE_HISTORY,
         removeOnFail: RETRY_QUEUE_HISTORY
       }
     })
+  }
 
-    // Clean up anything that might be still stuck in the queue on restart
-    this.queue.empty()
-
-    const SkippedCIDsRetryQueueJobIntervalMs = nodeConfig.get(
-      'skippedCIDsRetryQueueJobIntervalMs'
-    )
-    const CIDMaxAgeMs =
-      nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
-
-    this.queue.process(async (job, done) => {
-      try {
-        await this.process(CIDMaxAgeMs, libs)
-      } catch (e) {
-        this.logError(`Failed to process job || Error: ${e.message}`)
-      }
-
-      // Re-enqueue job after some interval
-      await utils.timeout(SkippedCIDsRetryQueueJobIntervalMs, false)
-      await this.queue.add({ startTime: Date.now() })
-
-      done()
-    })
+  logDebug(msg) {
+    logger.debug(`${LogPrefix} ${msg}`)
   }
 
   logInfo(msg) {
@@ -62,11 +49,43 @@ class SkippedCIDsRetryQueue {
     logger.error(`${LogPrefix} ${msg}`)
   }
 
-  // Add first job to queue
   async init() {
     try {
-      await this.queue.add({ startTime: Date.now() })
-      this.logInfo(`Successfully initialized and enqueued initial job.`)
+      const connection = {
+        host: this.nodeConfig.get('redisHost'),
+        port: this.nodeConfig.get('redisPort')
+      }
+
+      // Clean up anything that might be still stuck in the queue on restart
+      if (clusterUtilsForWorker.isThisWorkerFirst()) {
+        await this.queue.drain(true)
+      }
+
+      const SkippedCIDsRetryQueueJobIntervalMs = this.nodeConfig.get(
+        'skippedCIDsRetryQueueJobIntervalMs'
+      )
+      const CIDMaxAgeMs =
+        this.nodeConfig.get('skippedCIDRetryQueueMaxAgeHr') * 60 * 60 * 1000 // convert from Hr to Ms
+
+      const _worker = new Worker(
+        'skipped-cids-retry-queue',
+        async (_job) => {
+          try {
+            await this.process(CIDMaxAgeMs, this.libs)
+          } catch (e) {
+            this.logError(`Failed to process job || Error: ${e.message}`)
+          }
+
+          // Re-enqueue job after some interval
+          await utils.timeout(SkippedCIDsRetryQueueJobIntervalMs, false)
+          await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
+        },
+        { connection }
+      )
+
+      // Add first job to queue
+      await this.queue.add('skipped-cids-retry', { startTime: Date.now() })
+      this.logDebug(`Successfully initialized and enqueued initial job.`)
     } catch (e) {
       this.logError(`Failed to start`)
     }
@@ -91,18 +110,18 @@ class SkippedCIDsRetryQueue {
       order: [['createdAt', 'DESC']]
     })
 
-    let registeredGateways = await utils.getAllRegisteredCNodes(libs)
+    let registeredGateways = await getAllRegisteredCNodes(logger)
     registeredGateways = registeredGateways.map((nodeInfo) => nodeInfo.endpoint)
 
     // Intentionally run sequentially to minimize node load
     const savedFileUUIDs = []
     for await (const file of skippedFiles) {
       // Returns boolean success indicator
-      const error = await saveFileForMultihashToFS(
+      const { error } = await fetchFileFromNetworkAndSaveToFS(
         libs,
         logger,
         file.multihash,
-        file.storagePath,
+        file.dirMultihash,
         registeredGateways,
         file.fileName,
         file.trackBlockchainId

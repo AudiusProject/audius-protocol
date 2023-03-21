@@ -25,9 +25,9 @@ from src.models.metrics.aggregate_monthly_unique_users_metrics import (
     AggregateMonthlyUniqueUsersMetric,
 )
 from src.utils.config import shared_config
-from src.utils.helpers import get_ip, redis_get_or_restore, redis_set_and_dump
+from src.utils.helpers import get_ip
 from src.utils.prometheus_metric import PrometheusMetric, PrometheusMetricNames
-from src.utils.query_params import app_name_param, stringify_query_params
+from src.utils.query_params import app_name_param
 from werkzeug.wrappers.response import Response as wResponse
 
 logger = logging.getLogger(__name__)
@@ -122,7 +122,7 @@ def persist_summed_unique_counts(
             .first()
         )
         if day_unique_record:
-            logger.info(
+            logger.debug(
                 f"summed unique count record for day {day} before update: {day_unique_record.summed_count}"
             )
             day_unique_record.summed_count = max(
@@ -139,7 +139,7 @@ def persist_summed_unique_counts(
             .first()
         )
         if month_unique_record:
-            logger.info(
+            logger.debug(
                 f"summed unique count record for month {month} before update: \
                 {month_unique_record.summed_count}"
             )
@@ -163,9 +163,9 @@ def persist_route_metrics(
             .first()
         )
         if day_unique_record:
-            logger.info(
+            logger.debug(
                 f"unique count record for day {day} before adding new unique count \
-                {unique_daily_count}: {day_unique_record.count}"
+                {unique_daily_count}: {day_unique_record.count} + "
             )
             day_unique_record.count += unique_daily_count
             logger.info(
@@ -187,7 +187,7 @@ def persist_route_metrics(
             .first()
         )
         if day_total_record:
-            logger.info(
+            logger.debug(
                 f"total count record for day {day} before adding new total count \
                 {count}: {day_total_record.count}"
             )
@@ -211,7 +211,7 @@ def persist_route_metrics(
             .first()
         )
         if month_unique_record:
-            logger.info(
+            logger.debug(
                 f"unique count record for month {month} before adding new unique count \
                 {unique_monthly_count}: {month_unique_record.count}"
             )
@@ -236,7 +236,7 @@ def persist_route_metrics(
             .first()
         )
         if month_total_record:
-            logger.info(
+            logger.debug(
                 f"total count record for month {month} before adding new total count \
                 {count}: {month_total_record.count}"
             )
@@ -267,7 +267,7 @@ def persist_app_metrics(db, day, month, app_count):
                 .first()
             )
             if day_record:
-                logger.info(
+                logger.debug(
                     f"daily app record for day {day} and application {application_name} \
                     before adding new count {count}: {day_record.count}"
                 )
@@ -295,7 +295,7 @@ def persist_app_metrics(db, day, month, app_count):
                 .first()
             )
             if month_record:
-                logger.info(
+                logger.debug(
                     f"monthly app record for month {month} and application {application_name} \
                     before adding new count {count}: {month_record.count}"
                 )
@@ -328,18 +328,18 @@ def merge_metrics(metrics, end_time, metric_type, db):
 
         Persist metrics in the database
     """
-    logger.info(f"about to merge {metric_type} metrics: {len(metrics)} new entries")
+    logger.debug(f"about to merge {metric_type} metrics: {len(metrics)} new entries")
     day = end_time.split(":")[0]
     month = f"{day[:7]}/01"
 
     daily_key = daily_route_metrics if metric_type == "route" else daily_app_metrics
-    daily_metrics_str = redis_get_or_restore(REDIS, daily_key)
+    daily_metrics_str = REDIS.get(daily_key)
     daily_metrics = json.loads(daily_metrics_str) if daily_metrics_str else {}
 
     monthly_key = (
         monthly_route_metrics if metric_type == "route" else monthly_app_metrics
     )
-    monthly_metrics_str = redis_get_or_restore(REDIS, monthly_key)
+    monthly_metrics_str = REDIS.get(monthly_key)
     monthly_metrics = json.loads(monthly_metrics_str) if monthly_metrics_str else {}
 
     if day not in daily_metrics:
@@ -385,7 +385,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
         if timestamp > yesterday_str
     }
     if daily_metrics:
-        redis_set_and_dump(REDIS, daily_key, json.dumps(daily_metrics))
+        REDIS.set(daily_key, json.dumps(daily_metrics))
     logger.info(f"updated cached daily {metric_type} metrics")
 
     # clean up metrics METRICS_INTERVAL after the end of the month from monthly_metrics
@@ -398,7 +398,7 @@ def merge_metrics(metrics, end_time, metric_type, db):
         if timestamp > thirty_one_days_ago
     }
     if monthly_metrics:
-        redis_set_and_dump(REDIS, monthly_key, json.dumps(monthly_metrics))
+        REDIS.set(monthly_key, json.dumps(monthly_metrics))
     logger.info(f"updated cached monthly {metric_type} metrics")
 
     # persist aggregated metrics from other nodes
@@ -426,7 +426,7 @@ def merge_app_metrics(metrics, end_time, db):
 
 
 def get_redis_metrics(redis_handle, start_time, metric_type):
-    redis_metrics_str = redis_get_or_restore(redis_handle, metric_type)
+    redis_metrics_str = redis_handle.get(metric_type)
     metrics = json.loads(redis_metrics_str) if redis_metrics_str else {}
     if not metrics:
         return {}
@@ -455,9 +455,7 @@ def get_summed_unique_metrics(start_time):
     day = start_time.strftime(day_format)
     month = f"{day[:7]}/01"
 
-    summed_unique_daily_metrics_str = redis_get_or_restore(
-        REDIS, summed_unique_daily_metrics
-    )
+    summed_unique_daily_metrics_str = REDIS.get(summed_unique_daily_metrics)
     summed_unique_daily_metrics_obj = (
         json.loads(summed_unique_daily_metrics_str)
         if summed_unique_daily_metrics_str
@@ -469,9 +467,7 @@ def get_summed_unique_metrics(start_time):
         else 0
     )
 
-    summed_unique_monthly_metrics_str = redis_get_or_restore(
-        REDIS, summed_unique_monthly_metrics
-    )
+    summed_unique_monthly_metrics_str = REDIS.get(summed_unique_monthly_metrics)
     summed_unique_monthly_metrics_obj = (
         json.loads(summed_unique_monthly_metrics_str)
         if summed_unique_monthly_metrics_str
@@ -487,51 +483,12 @@ def get_summed_unique_metrics(start_time):
 
 
 def get_aggregate_metrics_info():
-    info_str = redis_get_or_restore(REDIS, metrics_visited_nodes)
+    info_str = REDIS.get(metrics_visited_nodes)
     return json.loads(info_str) if info_str else {}
 
 
-def extract_app_name_key():
-    """
-    Extracts the application name redis key and hash from the request
-    The key should be of format:
-        <metrics_prefix>:<metrics_application>:<ip>:<rounded_date_time_format>
-        ie: "API_METRICS:applications:192.168.0.1:2020/08/04:14"
-    The hash should be of format:
-        <app_name>
-        ie: "audius_dapp"
-    """
-    application_name = request.args.get(app_name_param, type=str, default=None)
-    ip = get_request_ip(request)
-    date_time = get_rounded_date_time().strftime(datetime_format)
-
-    application_key = f"{metrics_prefix}:{metrics_applications}:{ip}:{date_time}"
-    return (application_key, application_name)
-
-
-def extract_route_key():
-    """
-    Extracts the route redis key and hash from the request
-    The key should be of format:
-        <metrics_prefix>:<metrics_routes>:<ip>:<rounded_date_time_format>
-        ie: "API_METRICS:routes:192.168.0.1:2020/08/04:14"
-    The hash should be of format:
-        <path><sorted_query_params>
-        ie: "/v1/tracks/search?genre=rap&query=best"
-    """
-    path = request.path
-    req_args = request.args.items()
-    req_args = stringify_query_params(req_args)
-    route = f"{path}?{req_args}" if req_args else path
-    ip = get_request_ip(request)
-    date_time = get_rounded_date_time().strftime(datetime_format)
-
-    route_key = f"{metrics_prefix}:{metrics_routes}:{ip}:{date_time}"
-    return (route_key, route)
-
-
 def update_personal_metrics(key, old_timestamp, timestamp, value, metric_type):
-    values_str = redis_get_or_restore(REDIS, key)
+    values_str = REDIS.get(key)
     values = json.loads(values_str) if values_str else {}
     if timestamp in values:
         values[timestamp][value] = (
@@ -547,7 +504,7 @@ def update_personal_metrics(key, old_timestamp, timestamp, value, metric_type):
         if timestamp > old_timestamp
     }
     if updated_metrics:
-        redis_set_and_dump(REDIS, key, json.dumps(updated_metrics))
+        REDIS.set(key, json.dumps(updated_metrics))
     logger.debug(f"updated cached personal {metric_type} metrics")
 
 
@@ -559,9 +516,7 @@ def update_summed_unique_metrics(now, ip):
     today_str = now.strftime(day_format)
     this_month_str = f"{today_str[:7]}/01"
 
-    summed_unique_daily_metrics_str = redis_get_or_restore(
-        REDIS, summed_unique_daily_metrics
-    )
+    summed_unique_daily_metrics_str = REDIS.get(summed_unique_daily_metrics)
     summed_unique_daily_metrics_obj = (
         json.loads(summed_unique_daily_metrics_str)
         if summed_unique_daily_metrics_str
@@ -578,13 +533,9 @@ def update_summed_unique_metrics(now, ip):
         for timestamp, ips in summed_unique_daily_metrics_obj.items()
         if timestamp >= yesterday_str
     }
-    redis_set_and_dump(
-        REDIS, summed_unique_daily_metrics, json.dumps(summed_unique_daily_metrics_obj)
-    )
+    REDIS.set(summed_unique_daily_metrics, json.dumps(summed_unique_daily_metrics_obj))
 
-    summed_unique_monthly_metrics_str = redis_get_or_restore(
-        REDIS, summed_unique_monthly_metrics
-    )
+    summed_unique_monthly_metrics_str = REDIS.get(summed_unique_monthly_metrics)
     summed_unique_monthly_metrics_obj = (
         json.loads(summed_unique_monthly_metrics_str)
         if summed_unique_monthly_metrics_str
@@ -601,8 +552,7 @@ def update_summed_unique_metrics(now, ip):
         for timestamp, ips in summed_unique_monthly_metrics_obj.items()
         if timestamp >= thirty_one_days_ago_str
     }
-    redis_set_and_dump(
-        REDIS,
+    REDIS.set(
         summed_unique_monthly_metrics,
         json.dumps(summed_unique_monthly_metrics_obj),
     )
@@ -642,12 +592,6 @@ def record_metrics(func):
     @functools.wraps(func)
     def wrap(*args, **kwargs):
         try:
-            application_key, application_name = extract_app_name_key()
-            route_key, route = extract_route_key()
-            REDIS.hincrby(route_key, route, 1)
-            if application_name:
-                REDIS.hincrby(application_key, application_name, 1)
-
             record_aggregate_metrics()
         except Exception as e:
             logger.error("Error while recording metrics: %s", e.message)
@@ -671,7 +615,7 @@ def record_metrics(func):
                 e,
             )
 
-        route = route.split("?")[0]
+        route = request.path
         if "/v1/full/search/autocomplete" in route:
             route = "/".join(route.split("/")[:5])
         elif "/v1/full/" in route or "/users/intersection/" in route:
@@ -681,7 +625,7 @@ def record_metrics(func):
         else:
             route = "/".join(route.split("/")[:3])
 
-        metric.save_time({"route": route, "code": code})
+        metric.save_time({"route": route, "code": str(code)})
 
         return result
 

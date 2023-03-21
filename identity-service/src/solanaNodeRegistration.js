@@ -6,10 +6,16 @@ const JOB_FREQUENCY_MS = 15 /* min */ * 60 /* sec */ * 1000 /* msec */
 const registerNodes = async (audiusLibs, logger) => {
   try {
     logger.info('Beginning node registration job')
-    const nodes = await audiusLibs.ServiceProvider.discoveryProvider.serviceSelector.getServices({ verbose: true })
+    const nodes =
+      await audiusLibs.ServiceProvider.discoveryProvider.serviceSelector.getServices(
+        { verbose: true }
+      )
     const unregistered = []
     for (const node of nodes) {
-      const isRegistered = await audiusLibs.solanaWeb3Manager.getIsDiscoveryNodeRegistered(node.delegateOwnerWallet)
+      const isRegistered =
+        await audiusLibs.solanaWeb3Manager.getIsDiscoveryNodeRegistered(
+          node.delegateOwnerWallet
+        )
       if (!isRegistered) {
         logger.info(`Node ${node.endpoint} is unregistered!`)
         unregistered.push(node)
@@ -17,7 +23,11 @@ const registerNodes = async (audiusLibs, logger) => {
     }
 
     if (unregistered.length) {
-      logger.info(`Found unregistered nodes: ${JSON.stringify(unregistered.map(n => n.endpoint))}}`)
+      logger.info(
+        `Found unregistered nodes: ${JSON.stringify(
+          unregistered.map((n) => n.endpoint)
+        )}}`
+      )
     } else {
       logger.info(`All nodes successfully registered on Solana!`)
       return
@@ -38,7 +48,9 @@ const registerNodes = async (audiusLibs, logger) => {
           logger.error(`Error registering: ${node.endpoint}: ${res.error}`)
         }
       } catch (e) {
-        logger.error(`Got error creating for node: ${node.endpoint}, ${e.message}`)
+        logger.error(
+          `Got error creating for node: ${node.endpoint}, ${e.message}`
+        )
       }
     }
   } catch (e) {
@@ -46,27 +58,28 @@ const registerNodes = async (audiusLibs, logger) => {
   }
 }
 
-const registrationQueue = new Bull('solana-discovery-node-registration',
-  {
-    redis: {
-      port: config.get('redisPort'),
-      host: config.get('redisHost')
-    },
-    removeOnComplete: true,
-    removeOnFail: true
-  }
-)
+const registrationQueue = new Bull('solana-discovery-node-registration', {
+  redis: {
+    port: config.get('redisPort'),
+    host: config.get('redisHost')
+  },
+  removeOnComplete: true,
+  removeOnFail: true
+})
 
 const startRegistrationQueue = async (audiusLibs, logger) => {
   registrationQueue.process(async () => {
     await registerNodes(audiusLibs, logger)
   })
 
-  await registrationQueue.add({}, {
-    repeat: {
-      every: JOB_FREQUENCY_MS
+  await registrationQueue.add(
+    {},
+    {
+      repeat: {
+        every: JOB_FREQUENCY_MS
+      }
     }
-  })
+  )
 }
 
 module.exports = {

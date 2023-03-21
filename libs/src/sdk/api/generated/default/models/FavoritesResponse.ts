@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { Favorite } from './Favorite';
 import {
-    Favorite,
     FavoriteFromJSON,
     FavoriteFromJSONTyped,
     FavoriteToJSON,
@@ -32,5 +33,41 @@ export interface FavoritesResponse {
      * @memberof FavoritesResponse
      */
     data?: Array<Favorite>;
+}
+
+/**
+ * Check if a given object implements the FavoritesResponse interface.
+ */
+export function instanceOfFavoritesResponse(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
+
+export function FavoritesResponseFromJSON(json: any): FavoritesResponse {
+    return FavoritesResponseFromJSONTyped(json, false);
+}
+
+export function FavoritesResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): FavoritesResponse {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'data': !exists(json, 'data') ? undefined : ((json['data'] as Array<any>).map(FavoriteFromJSON)),
+    };
+}
+
+export function FavoritesResponseToJSON(value?: FavoritesResponse | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'data': value.data === undefined ? undefined : ((value.data as Array<any>).map(FavoriteToJSON)),
+    };
 }
 

@@ -5,26 +5,25 @@ Revises: cb9aa46f1e46
 Create Date: 2021-07-30 15:24:52.899198
 
 """
-from alembic import op
 from typing import Any
 
-from sqlalchemy.dialects import postgresql
-from sqlalchemy.ext.declarative import declarative_base, declared_attr
-from sqlalchemy.sql import null
-from sqlalchemy.orm import relationship
+from alembic import op
 from sqlalchemy import (
-    Column,
-    Integer,
-    String,
     Boolean,
+    Column,
     DateTime,
     ForeignKey,
-    Text,
+    Integer,
     PrimaryKeyConstraint,
+    String,
+    Text,
     func,
     orm,
 )
-
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import null
 
 revision = "ed974e76d415"
 down_revision = "cb9aa46f1e46"

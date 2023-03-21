@@ -71,5 +71,5 @@ async function main() {
 module.exports = (callback) => {
   main()
     .then(callback)
-    .catch(callback);
+    .catch(() => process.exit(1));
 }

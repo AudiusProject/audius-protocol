@@ -505,6 +505,7 @@ export type GetTopFullPlaylistsParams = {
   mood?: string
   filter?: string
   withUsers?: boolean
+  encodedUserId?: string
 }
 
 export const getTopFullPlaylists = ({
@@ -512,6 +513,7 @@ export const getTopFullPlaylists = ({
   limit,
   mood,
   filter,
+  encodedUserId,
   withUsers = false
 }: GetTopFullPlaylistsParams) => {
   return {
@@ -521,7 +523,8 @@ export const getTopFullPlaylists = ({
       limit,
       mood,
       filter,
-      with_users: withUsers
+      with_users: withUsers,
+      user_id: encodedUserId
     }
   }
 }
@@ -576,6 +579,21 @@ export const getMostLovedTracks = (
   }
 }
 
+export const getFeelingLuckyTracks = (
+  encodedUserId: string,
+  limit: string,
+  withUsers = false
+) => {
+  return {
+    endpoint: `/v1/full/tracks/feeling_lucky`,
+    queryParams: {
+      limit,
+      user_id: encodedUserId,
+      with_users: withUsers
+    }
+  }
+}
+
 export const getTopFolloweeSaves = (
   type: string,
   limit: string,
@@ -590,9 +608,10 @@ export const getTopFolloweeSaves = (
   }
 }
 
-export const getLatest = (type: string) => {
+export const getLatest = (type: string, limit = 1, offset = 0) => {
   return {
-    endpoint: `/latest/${type}`
+    endpoint: `/latest/${type}`,
+    queryParams: { limit, offset }
   }
 }
 
@@ -627,6 +646,57 @@ export const getNotifications = (
     queryParams: {
       min_block_number: minBlockNumber,
       track_id: trackIds
+    },
+    timeout
+  }
+}
+
+export type GetUserNotificationsParams = {
+  encodedUserId: string
+  timestamp: number
+  groupId?: string
+  limit?: number
+  validTypes?: string[]
+}
+
+export const getUserNotifications = ({
+  encodedUserId,
+  timestamp,
+  groupId,
+  limit,
+  validTypes
+}: GetUserNotificationsParams) => {
+  return {
+    endpoint: `v1/full/notifications/${encodedUserId}`,
+    queryParams: {
+      timestamp,
+      group_id: groupId,
+      limit,
+      valid_types: validTypes
+    }
+  }
+}
+
+export const getUserSubscribers = (encodedUserId: string, timeout: number) => {
+  return {
+    endpoint: `v1/full/users/${encodedUserId}/subscribers`,
+    method: 'get',
+    timeout
+  }
+}
+
+export const bulkGetUserSubscribers = (
+  encodedUserIds: string,
+  timeout: number
+) => {
+  return {
+    endpoint: 'v1/full/users/subscribers',
+    method: 'post',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    data: {
+      ids: encodedUserIds
     },
     timeout
   }
@@ -699,6 +769,35 @@ export const verifyToken = (token: string) => {
     endpoint: '/v1/users/verify_token',
     queryParams: {
       token: token
+    }
+  }
+}
+
+export const getUserReplicaSet = (encodedUserId: string) => {
+  return {
+    endpoint: `/v1/full/users/${encodedUserId}/replica_set`,
+    timeout: 5000
+  }
+}
+
+export const getUnclaimedId = (type: 'users' | 'playlists' | 'tracks') => {
+  return {
+    endpoint: `/v1/${type}/unclaimed_id`,
+    timeout: 5000
+  }
+}
+
+export const getUserListenCountsMonthly = (
+  encodedUserId: string,
+  startTime: string,
+  endTime: string
+) => {
+  return {
+    endpoint: `/v1/users/${encodedUserId}/listen_counts_monthly`,
+    timeout: 10000,
+    queryParams: {
+      start_time: startTime,
+      end_time: endTime
     }
   }
 }

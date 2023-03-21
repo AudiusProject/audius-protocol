@@ -3,7 +3,9 @@ const path = require('path')
 const pushLib = require('safari-push-notifications')
 
 // Common between all env
-const intermediate = fs.readFileSync(path.join(__dirname, './audius.pushpackage/AppleWWDRCA.pem'))
+const intermediate = fs.readFileSync(
+  path.join(__dirname, './audius.pushpackage/AppleWWDRCA.pem')
+)
 
 // Differing env
 
@@ -38,13 +40,17 @@ const prodConfig = {
   appUrl: 'https://audius.co',
   identityUrl: 'https://identityservice.audius.co',
   appUrls: [],
-  cert: fs.readFileSync(path.join(__dirname, './audius.pushpackage/prodCert.pem')),
-  key: fs.readFileSync(path.join(__dirname, './audius.pushpackage/prodKey.pem')),
+  cert: fs.readFileSync(
+    path.join(__dirname, './audius.pushpackage/prodCert.pem')
+  ),
+  key: fs.readFileSync(
+    path.join(__dirname, './audius.pushpackage/prodKey.pem')
+  ),
   output: 'productionPushPackage.zip'
 }
 
 // Change the config to be local / staging / prod
-let config = prodConfig
+const config = prodConfig
 
 const websiteJson = pushLib.websiteJSON(
   config.websiteName,
@@ -55,13 +61,14 @@ const websiteJson = pushLib.websiteJSON(
   `${config.identityUrl}/push_notifications/safari` // webServiceURL (Must be https!)
 )
 
-pushLib.generatePackage(
-  websiteJson, // The object from before / your own website.json object
-  path.join(__dirname, '/audius.pushpackage/icon.iconsets'), // Folder containing the iconset
-  config.cert, // Certificate
-  config.key, // Private Key
-  intermediate // Intermediate certificate
-)
+pushLib
+  .generatePackage(
+    websiteJson, // The object from before / your own website.json object
+    path.join(__dirname, '/audius.pushpackage/icon.iconsets'), // Folder containing the iconset
+    config.cert, // Certificate
+    config.key, // Private Key
+    intermediate // Intermediate certificate
+  )
   .pipe(fs.createWriteStream(config.output))
   .on('finish', function () {
     console.log('pushPackage.zip is ready.')

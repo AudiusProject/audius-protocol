@@ -72,13 +72,13 @@ const isWebhookValid = (headers, path) => {
   // construct string that we will be signing
   const lines = []
   lines.push(`(request-target): post ${path}`)
-  lines.push(`date: ${headers['date']}`)
-  lines.push(`digest: ${headers['digest']}`)
+  lines.push(`date: ${headers.date}`)
+  lines.push(`digest: ${headers.digest}`)
   const toSign = lines.join('\n')
 
   // sign string and compare with authorization header
   const signature = sign(toSign)
-  return doesSignatureMatch(headers['authorization'], signature)
+  return doesSignatureMatch(headers.authorization, signature)
 }
 
 const createMaskedCognitoIdentity = (identity) => {

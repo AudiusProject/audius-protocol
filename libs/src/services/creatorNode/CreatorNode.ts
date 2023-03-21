@@ -115,7 +115,7 @@ export class CreatorNode {
   static async getClockValue(
     endpoint: string,
     wallet: string,
-    timeout: number,
+    timeout?: number,
     params: Record<string, string> = {}
   ) {
     const baseReq: AxiosRequestConfig = {
@@ -369,6 +369,7 @@ export class CreatorNode {
 
     const [trackContentResp, coverArtResp] = await Promise.all(uploadPromises)
     metadata.track_segments = trackContentResp.track_segments
+    metadata.track_cid = trackContentResp.transcodedTrackCID
     if (metadata.download?.is_downloadable) {
       metadata.download.cid = trackContentResp.transcodedTrackCID
     }
@@ -429,7 +430,7 @@ export class CreatorNode {
   async uploadPlaylistMetadata(metadata: PlaylistMetadata) {
     // Validate object before sending
     try {
-      this.schemas[playlistSchemaType].validate?.(metadata)
+      this.schemas?.[playlistSchemaType].validate?.(metadata)
     } catch (e) {
       console.error('Error validating playlist metadata', e)
     }

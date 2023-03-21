@@ -2,9 +2,6 @@ const request = require('supertest')
 const sinon = require('sinon')
 const uuid = require('uuid')
 
-const BlacklistManager = require('../src/blacklistManager')
-
-const { getApp } = require('./lib/app')
 const { getLibsMock } = require('./lib/libsMock')
 
 describe('test transcode_and_segment route', function () {
@@ -12,12 +9,50 @@ describe('test transcode_and_segment route', function () {
 
   before(function () {
     testUuid = uuid.v4()
+
+    Object.keys(require.cache).forEach(function (key) {
+      delete require.cache[key]
+    })
   })
 
   beforeEach(async function () {
+    // Update import to make ensureValidSPMiddleware pass
+    const getContentNodeInfoFromSpId = async (spID, _genericLogger) => {
+      switch (spID) {
+        case 2:
+          return {
+            endpoint: 'http://mock-cn2.audius.co',
+            owner: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb',
+            delegateOwnerWallet: '0xBdb47ebFF0eAe1A7647D029450C05666e22864Fb'
+          }
+        case 3:
+          return {
+            endpoint: 'http://mock-cn3.audius.co',
+            owner: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36',
+            delegateOwnerWallet: '0x1Fffaa556B42f4506cdb01D7BbE6a9bDbb0E5f36'
+          }
+
+        case 1:
+          return {
+            endpoint: 'http://mock-cn1.audius.co',
+            owner: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25',
+            delegateOwnerWallet: '0x1eC723075E67a1a2B6969dC5CfF0C6793cb36D25'
+          }
+        default:
+          return {
+            owner: '0x0000000000000000000000000000000000000000',
+            endpoint: '',
+            delegateOwnerWallet: '0x0000000000000000000000000000000000000000'
+          }
+      }
+    }
+    require.cache[require.resolve('../src/services/ContentNodeInfoManager')] = {
+      exports: { getContentNodeInfoFromSpId }
+    }
+    const { getApp } = require('./lib/app')
     const appInfo = await getApp(
       /* libsMock */ getLibsMock(),
-      BlacklistManager,
+      null,
       /* setMockFn */ null,
       1 /* spId */
     )
@@ -28,7 +63,9 @@ describe('test transcode_and_segment route', function () {
 
   afterEach(async () => {
     sinon.restore()
-    await server.close()
+    if (server) {
+      await server.close()
+    }
   })
 
   it('if uuid/file name/file type is not passed in, return 400', async function () {

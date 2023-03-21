@@ -1,6 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './Activity';
+export * from './BulkSubscribersResponse';
 export * from './ConnectedWallets';
 export * from './ConnectedWalletsResponse';
 export * from './CoverPhoto';
@@ -15,6 +16,8 @@ export * from './GetSupporters';
 export * from './GetSupporting';
 export * from './GetTipsResponse';
 export * from './HistoryResponse';
+export * from './ListenCount';
+export * from './MonthlyAggregatePlay';
 export * from './Playlist';
 export * from './PlaylistArtwork';
 export * from './PlaylistResponse';
@@ -24,6 +27,7 @@ export * from './ProfilePicture';
 export * from './RelatedArtistResponse';
 export * from './RemixParent';
 export * from './Reposts';
+export * from './SubscribersResponse';
 export * from './Supporter';
 export * from './Supporting';
 export * from './TagsResponse';
@@ -39,7 +43,11 @@ export * from './TracksResponse';
 export * from './TrendingPlaylistsResponse';
 export * from './User';
 export * from './UserAssociatedWalletResponse';
+export * from './UserReplicaSet';
 export * from './UserResponse';
 export * from './UserSearch';
+export * from './UserSubscribers';
+export * from './UserTrackListenCountsResponse';
+export * from './UsersByContentNode';
 export * from './VerifyToken';
 export * from './VersionMetadata';

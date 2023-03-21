@@ -1,7 +1,8 @@
 import * as _lib from './_lib/lib.js'
 import {
     EntityManager,
-    AdminUpgradeabilityProxy
+    AdminUpgradeabilityProxy,
+    TestEntityManager
 } from './_lib/artifacts.js'
 
 import * as _constants from './utils/constants'
@@ -114,4 +115,35 @@ contract('EntityManager', async (accounts) => {
         )
    })
 
+   it('EntityManager upgradeability validation', async () => {
+        // Attempt to reinitialize
+        await expectRevert(
+            entityManagerContract.initialize(verifierAddress, networkId),
+            'Contract instance has already been initialized.'
+        )
+        let deployUpgradedLogicContract = await TestEntityManager.new({ from: deployer })
+        let proxyInstance = await AdminUpgradeabilityProxy.at(entityManagerContract.address)
+        const upgradedLogicAddress = deployUpgradedLogicContract.address
+        // Attempt to upgrade from an invalid address (the initial deployer)
+        await expectRevert(
+            proxyInstance.upgradeTo(upgradedLogicAddress, { from: deployer }),
+            'revert'
+        )
+        // Perform upgrade from known admin
+        await proxyInstance.upgradeTo(upgradedLogicAddress, { from: proxyAdminAddress })
+        let testEntityManager = await TestEntityManager.at(entityManagerContract.address)
+        let newFunctionReturnValue = await testEntityManager.newFunction()
+        assert.isTrue(newFunctionReturnValue.eq(toBN(5)), "New function returned unexpected value")
+        // Confirm existing functionality
+        let verifyTx = await testEntityManager.manageIsVerified(1, true, { from: verifierAddress })
+        await expectEvent.inTransaction(
+            verifyTx.tx,
+            EntityManager,
+            'ManageIsVerified',
+            {
+                _userId: toBN(1),
+                _isVerified: true
+            }
+        )
+    })
 })

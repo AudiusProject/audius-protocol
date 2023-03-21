@@ -14,6 +14,7 @@ cd $PROTOCOL_DIR
 flake8 discovery-provider/src/
 flake8 discovery-provider/integration_tests/
 isort ${ISORT_FLAG} discovery-provider/src/
+isort ${ISORT_FLAG} discovery-provider/alembic/
 isort ${ISORT_FLAG} discovery-provider/integration_tests/
 black ${BLACK_FLAG} discovery-provider/src/
 black ${BLACK_FLAG} discovery-provider/integration_tests/

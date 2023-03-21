@@ -47,6 +47,15 @@ def get_remix_track_parents(args):
     with db.scoped_session() as session:
 
         def get_unpopulated_remix_parents():
+            track = (
+                session.query(Track)
+                .filter(Track.track_id == track_id)
+                .filter(Track.is_current == True)
+                .filter(Track.is_premium == False)
+            ).one_or_none()
+            if not track:
+                return [], []
+
             base_query = (
                 session.query(Track)
                 .join(

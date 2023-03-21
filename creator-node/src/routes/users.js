@@ -31,7 +31,7 @@ const router = express.Router()
 router.post(
   '/users',
   ensureStorageMiddleware,
-  handleResponse(async (req, res, next) => {
+  handleResponse(async (req, _res, _next) => {
     let walletAddress = req.body.walletAddress
     if (!ethereumUtils.isValidAddress(walletAddress)) {
       return errorResponseBadRequest('Ethereum address is invalid')
@@ -65,7 +65,7 @@ router.post(
 router.get(
   '/users/login/challenge',
   ensureStorageMiddleware,
-  handleResponse(async (req, res, next) => {
+  handleResponse(async (req, _res, _next) => {
     let walletPublicKey = req.query.walletPublicKey
 
     if (!walletPublicKey) {
@@ -101,7 +101,7 @@ router.get(
 router.post(
   '/users/login/challenge',
   ensureStorageMiddleware,
-  handleResponse(async (req, res, next) => {
+  handleResponse(async (req, _res, _next) => {
     const { signature, data: theirChallenge } = req.body
 
     if (!signature || !theirChallenge) {
@@ -148,7 +148,7 @@ router.post(
 router.post(
   '/users/logout',
   authMiddleware,
-  handleResponse(async (req, res, next) => {
+  handleResponse(async (req, _res, _next) => {
     await sessionManager.deleteSession(
       req.get(sessionManager.sessionTokenHeader)
     )
@@ -164,7 +164,7 @@ router.post(
  */
 router.get(
   '/users/clock_status/:walletPublicKey',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const redisClient = req.app.get('redisClient')
 
     const walletPublicKey = req.params.walletPublicKey.toLowerCase()
@@ -268,7 +268,7 @@ router.get(
  */
 router.post(
   '/users/batch_clock_status',
-  handleResponse(async (req, res) => {
+  handleResponse(async (req, _res) => {
     const { walletPublicKeys /* [walletPublicKey] */ } = req.body
 
     if (walletPublicKeys == null) {

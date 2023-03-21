@@ -1,0 +1,121 @@
+import type { TransactionReceipt } from 'web3-core'
+import { Base, BaseConstructorArgs, Services } from './base'
+import {
+  Action,
+  EntityType
+} from '../services/dataContracts/EntityManagerClient'
+import type { GetUserNotificationsParams } from '../services/discoveryProvider/requests'
+
+type AnnouncementData = {}
+
+export class Notifications extends Base {
+  constructor(...args: BaseConstructorArgs) {
+    super(...args)
+    this.viewNotification = this.viewNotification.bind(this)
+    this.createNotification = this.createNotification.bind(this)
+    this.viewPlaylist = this.viewPlaylist.bind(this)
+  }
+
+  /**
+   * Submit a user's view of notification event
+   */
+  async viewNotification(
+    {
+      logger = console
+    }: {
+      logger: any
+    } = { logger: console }
+  ): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
+    try {
+      const userId: number | null = this.userStateManager.getCurrentUserId()
+      if (!userId) {
+        return { error: 'Missing current user ID' }
+      }
+
+      const { txReceipt } =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityType.NOTIFICATION,
+          userId,
+          Action.VIEW,
+          ''
+        )
+      return { txReceipt }
+    } catch (e) {
+      const errorMessage = (e as Error).message
+      logger.error(
+        `Could not successfully submit view notification action to entity manager. Error: ${errorMessage}`
+      )
+      return { error: errorMessage }
+    }
+  }
+
+  /**
+   * Creates a new notification
+   * NOTE: currently only used for announcements and permissioned to a single wallet signer
+   */
+  async createNotification({
+    logger = console,
+    data
+  }: {
+    logger: any
+    data: AnnouncementData
+  }): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
+    try {
+      const { txReceipt } =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          1, // NOTE: This field does not matter
+          EntityType.NOTIFICATION,
+          1, // NOTE: This field does not matter
+          Action.CREATE,
+          JSON.stringify(data)
+        )
+      return { txReceipt }
+    } catch (e) {
+      const errorMessage = (e as Error).message
+      logger.error(
+        `Could not successfully submit create notification action to entity manager. Error: ${errorMessage}`
+      )
+      return { error: errorMessage }
+    }
+  }
+
+  async viewPlaylist({
+    logger = console,
+    playlistId
+  }: {
+    logger: any
+    playlistId: number
+  }): Promise<{ txReceipt?: TransactionReceipt; error?: string }> {
+    try {
+      const userId: number | null = this.userStateManager.getCurrentUserId()
+      if (!userId) {
+        return { error: 'Missing current user ID' }
+      }
+      if (!playlistId) {
+        return { error: 'Missing playlist ID' }
+      }
+
+      const { txReceipt } =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityType.NOTIFICATION,
+          playlistId,
+          Action.VIEW_PLAYLIST,
+          ''
+        )
+      return { txReceipt }
+    } catch (e) {
+      const errorMessage = (e as Error).message
+      logger.error(
+        `Could not successfully submit view playlist action to entity manager. Error: ${errorMessage}`
+      )
+      return { error: errorMessage }
+    }
+  }
+
+  async getNotifications(params: GetUserNotificationsParams): Promise<any> {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    return await this.discoveryProvider.getUserNotifications(params)
+  }
+}

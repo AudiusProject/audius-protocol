@@ -1,14 +1,10 @@
 const path = require('path')
-const ServiceCommands = require('@audius/service-commands')
+const { uploadTrack, RandomUtils } = require('@audius/service-commands')
 const { logger } = require('../logger.js')
 const {
   addAndUpgradeUsers,
   ensureReplicaSetSyncIsConsistent
 } = require('../helpers.js')
-const {
-  uploadTrack,
-  RandomUtils
-} = ServiceCommands
 const {
   getRandomTrackMetadata,
   getRandomTrackFilePath

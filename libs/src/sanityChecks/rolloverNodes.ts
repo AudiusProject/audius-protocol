@@ -1,6 +1,7 @@
 import { Nullable, Utils } from '../utils'
 import { CreatorNode } from '../services/creatorNode'
 import type { AudiusLibs } from '../AudiusLibs'
+import maxBy from 'lodash/maxBy'
 
 const THREE_SECONDS = 3000
 const MAX_TRIES = 3
@@ -23,20 +24,32 @@ const checkPrimaryHealthy = async (
 }
 
 /** Gets new endpoints from a user's secondaries */
-const getNewPrimary = async (libs: AudiusLibs, secondaries: string[]) => {
-  for (const secondary of secondaries) {
-    const syncStatus = await libs.creatorNode?.getSyncStatus(secondary)
-    if (!syncStatus) continue
-    if (!syncStatus.isBehind) {
-      return secondary
-    }
+const getNewPrimary = async (secondaries: string[], wallet: string) => {
+  const secondaryStatuses = (
+    await Promise.all(
+      secondaries.map(async (secondary) => {
+        try {
+          const clockValue = await CreatorNode.getClockValue(secondary, wallet)
+          if (clockValue) return { secondary, clockValue }
+          return undefined
+        } catch (e) {
+          console.warn(e)
+          return undefined
+        }
+      })
+    )
+  ).filter(Boolean)
+  const max = maxBy(secondaryStatuses, (s) => s?.clockValue)?.secondary
+  if (!max) {
+    throw new Error(`Could not find valid secondaries for user ${secondaries}`)
   }
-  throw new Error(`Could not find valid secondaries for user ${secondaries}`)
+  return max
 }
 
 export const rolloverNodes = async (
   libs: AudiusLibs,
-  creatorNodeWhitelist: Nullable<Set<string>>
+  creatorNodeWhitelist: Nullable<Set<string>>,
+  creatorNodeBlacklist: Nullable<Set<string>>
 ) => {
   console.debug('Sanity Check - rolloverNodes')
   const user = libs.userStateManager?.getCurrentUser()
@@ -45,14 +58,15 @@ export const rolloverNodes = async (
 
   const primary = CreatorNode.getPrimary(user.creator_node_endpoint)
   if (!primary) return
+
   const healthy = await checkPrimaryHealthy(libs, primary, MAX_TRIES)
-  if (healthy) return
+  if (healthy && !creatorNodeBlacklist?.has(primary)) return
 
   const secondaries = CreatorNode.getSecondaries(user.creator_node_endpoint)
 
   try {
     // Get a new primary
-    const newPrimary = await getNewPrimary(libs, secondaries)
+    const newPrimary = await getNewPrimary(secondaries, user.wallet!)
     const index = secondaries.indexOf(newPrimary)
     // Get new secondaries and backfill up to 2
     let newSecondaries = [...secondaries]

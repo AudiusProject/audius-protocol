@@ -11,7 +11,6 @@ from src.queries.get_support_for_user import SupportResponse
 from src.queries.get_undisbursed_challenges import UndisbursedChallengeResponse
 from src.queries.query_helpers import SortDirection, SortMethod
 from src.queries.reactions import ReactionResponse
-from src.utils.config import shared_config
 from src.utils.helpers import decode_string_id, encode_int_id
 from src.utils.spl_audio import to_wei_string
 
@@ -19,13 +18,13 @@ logger = logging.getLogger(__name__)
 
 
 def make_image(endpoint, cid, width="", height=""):
-    return f"{endpoint}/ipfs/{cid}/{width}x{height}.jpg"
+    return f"{endpoint}/content/{cid}/{width}x{height}.jpg"
 
 
 def get_primary_endpoint(user):
-    raw_endpoint = user["creator_node_endpoint"]
+    raw_endpoint = user.get("creator_node_endpoint")
     if not raw_endpoint:
-        return shared_config["discprov"]["user_metadata_service_url"]
+        return ""
     return raw_endpoint.split(",")[0]
 
 
@@ -78,14 +77,14 @@ def add_playlist_added_timestamps(playlist):
 
 def add_user_artwork(user):
     # Legacy CID-only references to images
-    user["cover_photo_legacy"] = user["cover_photo"]
-    user["profile_picture_legacy"] = user["profile_picture"]
+    user["cover_photo_legacy"] = user.get("cover_photo")
+    user["profile_picture_legacy"] = user.get("profile_picture")
 
     endpoint = get_primary_endpoint(user)
     if not endpoint:
         return user
-    cover_cid = user["cover_photo_sizes"]
-    profile_cid = user["profile_picture_sizes"]
+    cover_cid = user.get("cover_photo_sizes")
+    profile_cid = user.get("profile_picture_sizes")
     if profile_cid:
         profile = {
             "150x150": make_image(endpoint, profile_cid, 150, 150),
@@ -124,8 +123,13 @@ def extend_search(resp):
 
 
 def extend_user(user, current_user_id=None):
+    if not user.get("user_id"):
+        return user
     user_id = encode_int_id(user["user_id"])
     user["id"] = user_id
+    if user.get("artist_pick_track_id"):
+        artist_pick_track_id = encode_int_id(user["artist_pick_track_id"])
+        user["artist_pick_track_id"] = artist_pick_track_id
     user = add_user_artwork(user)
     # Do not surface playlist library in user response unless we are
     # that user specifically
@@ -193,7 +197,11 @@ def extend_track(track):
     track_id = encode_int_id(track["track_id"])
     owner_id = encode_int_id(track["owner_id"])
     if "user" in track:
-        track["user"] = extend_user(track["user"])
+        if isinstance(track["user"], list):
+            user = track["user"][0]
+        else:
+            user = track["user"]
+        track["user"] = extend_user(user)
     track["id"] = track_id
     track["user_id"] = owner_id
     if "followee_saves" in track:
@@ -210,8 +218,8 @@ def extend_track(track):
     if "save_count" in track:
         track["favorite_count"] = track["save_count"]
 
-    track["is_streamable"] = (
-        not track["is_delete"] and not track["user"]["is_deactivated"]
+    track["is_streamable"] = not track["is_delete"] and not track["user"].get(
+        "is_deactivated"
     )
 
     duration = 0.0
@@ -353,6 +361,17 @@ def extend_tip(tip):
     return new_tip
 
 
+def extend_transaction_details(transaction_details):
+    new_transaction_details = transaction_details.copy()
+    new_transaction_details["change"] = str(transaction_details["change"])
+    new_transaction_details["balance"] = str(transaction_details["balance"])
+    new_transaction_details["transaction_date"] = transaction_details[
+        "transaction_created_at"
+    ]
+    new_transaction_details["metadata"] = str(transaction_details["tx_metadata"])
+    return new_transaction_details
+
+
 def abort_bad_path_param(param, namespace):
     namespace.abort(400, f"Oh no! Bad path parameter {param}.")
 
@@ -397,13 +416,6 @@ def get_current_user_id(args):
     """Gets current_user_id from args featuring a "user_id" key"""
     if args.get("user_id"):
         return decode_string_id(args["user_id"])
-    return None
-
-
-def get_authed_user_id(args):
-    """Gets authed_user_id from args featuring a "authed_user_id" key"""
-    if args.get("authed_user_id"):
-        return decode_string_id(args["authed_user_id"])
     return None
 
 
@@ -533,6 +545,20 @@ user_favorited_tracks_parser.add_argument(
     choices=SortDirection._member_names_,
 )
 
+user_track_listen_count_route_parser = reqparse.RequestParser(
+    argument_class=DescriptiveArgument
+)
+user_track_listen_count_route_parser.add_argument(
+    "start_time",
+    required=True,
+    description="Start time from which to start results for user listen count data (inclusive).",
+)
+user_track_listen_count_route_parser.add_argument(
+    "end_time",
+    required=True,
+    description="End time until which to cut off results of listen count data (not inclusive).",
+)
+
 user_tracks_route_parser = pagination_with_current_user_parser.copy()
 user_tracks_route_parser.add_argument(
     "sort",
@@ -558,6 +584,14 @@ user_tracks_route_parser.add_argument(
     description="The sort direction",
     type=str,
     choices=SortDirection._member_names_,
+)
+user_tracks_route_parser.add_argument(
+    "filter_tracks",
+    required=False,
+    description="Filter by unlisted or public tracks",
+    type=str,
+    default="all",
+    choices=("all", "public", "unlisted"),
 )
 
 full_search_parser = pagination_with_current_user_parser.copy()
@@ -597,6 +631,31 @@ trending_parser_paginated.remove_argument("user_id")
 trending_parser = trending_parser_paginated.copy()
 trending_parser.remove_argument("limit")
 trending_parser.remove_argument("offset")
+
+
+notifications_parser = reqparse.RequestParser(argument_class=DescriptiveArgument)
+notifications_parser.add_argument(
+    "timestamp",
+    type=int,
+    required=False,
+    description="The timestamp from which to paginate",
+)
+notifications_parser.add_argument(
+    "group_id", required=False, description="The group_id form which to paginate"
+)
+notifications_parser.add_argument(
+    "limit",
+    required=False,
+    type=int,
+    description="The number of notifications to return",
+)
+notifications_parser.add_argument(
+    "valid_types",
+    required=False,
+    type=str,
+    action="append",
+    description="Additional valid notification types to return",
+)
 
 
 def success_response(entity):
@@ -643,3 +702,30 @@ def get_default_max(value, default, max=None):
     if max is None:
         return value
     return min(value, max)
+
+
+def format_aggregate_monthly_plays_for_user(aggregate_monthly_plays_for_user=[]):
+    formatted_response_data = {}
+    for aggregate_monthly_play in aggregate_monthly_plays_for_user:
+        month = aggregate_monthly_play["timestamp"].strftime("%Y-%m-%dT%H:%M:%S Z")
+        if month not in formatted_response_data:
+            formatted_response_data[month] = {}
+            formatted_response_by_month = formatted_response_data[month]
+            formatted_response_by_month["totalListens"] = 0
+            formatted_response_by_month["trackIds"] = []
+            formatted_response_by_month["listenCounts"] = []
+
+        formatted_response_by_month = formatted_response_data[month]
+        formatted_response_by_month["listenCounts"].append(
+            {
+                "trackId": aggregate_monthly_play["play_item_id"],
+                "date": month,
+                "listens": aggregate_monthly_play["count"],
+            }
+        )
+        formatted_response_by_month["trackIds"].append(
+            aggregate_monthly_play["play_item_id"]
+        )
+        formatted_response_by_month["totalListens"] += aggregate_monthly_play["count"]
+
+    return formatted_response_data

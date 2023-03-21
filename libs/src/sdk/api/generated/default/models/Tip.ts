@@ -1,6 +1,6 @@
-// @ts-nocheck
 /* tslint:disable */
 /* eslint-disable */
+// @ts-nocheck
 /**
  * API
  * Audius V1 API
@@ -13,8 +13,9 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
+import type { User } from './User';
 import {
-    User,
     UserFromJSON,
     UserFromJSONTyped,
     UserToJSON,
@@ -49,6 +50,50 @@ export interface Tip {
      * @type {string}
      * @memberof Tip
      */
-    created_at: string;
+    createdAt: string;
+}
+
+/**
+ * Check if a given object implements the Tip interface.
+ */
+export function instanceOfTip(value: object): boolean {
+    let isInstance = true;
+    isInstance = isInstance && "amount" in value;
+    isInstance = isInstance && "createdAt" in value;
+
+    return isInstance;
+}
+
+export function TipFromJSON(json: any): Tip {
+    return TipFromJSONTyped(json, false);
+}
+
+export function TipFromJSONTyped(json: any, ignoreDiscriminator: boolean): Tip {
+    if ((json === undefined) || (json === null)) {
+        return json;
+    }
+    return {
+        
+        'amount': json['amount'],
+        'sender': !exists(json, 'sender') ? undefined : UserFromJSON(json['sender']),
+        'receiver': !exists(json, 'receiver') ? undefined : UserFromJSON(json['receiver']),
+        'createdAt': json['created_at'],
+    };
+}
+
+export function TipToJSON(value?: Tip | null): any {
+    if (value === undefined) {
+        return undefined;
+    }
+    if (value === null) {
+        return null;
+    }
+    return {
+        
+        'amount': value.amount,
+        'sender': UserToJSON(value.sender),
+        'receiver': UserToJSON(value.receiver),
+        'created_at': value.createdAt,
+    };
 }
 

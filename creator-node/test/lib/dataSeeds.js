@@ -26,23 +26,31 @@ const destroyUsers = async () => {
   }
 }
 
-async function createStarterCNodeUser (userId = null, pubKey = testEthereumConstants.pubKey.toLowerCase()) {
+async function createStarterCNodeUser(
+  userId = null,
+  pubKey = testEthereumConstants.pubKey.toLowerCase()
+) {
   return createStarterCNodeUserWithKey(pubKey, userId)
 }
 
-async function createStarterCNodeUserWithKey (walletPublicKey, userId = null) {
+async function createStarterCNodeUserWithKey(walletPublicKey, userId = null) {
   const cnodeUser = await CNodeUser.create({ walletPublicKey, clock: 0 })
-  const sessionToken = await sessionManager.createSession(cnodeUser.cnodeUserUUID)
-  const resp = {
-    cnodeUserUUID: cnodeUser.cnodeUserUUID,
-    sessionToken: sessionToken,
-    walletPublicKey
-  }
+  const resp = await createUserSession(cnodeUser.cnodeUserUUID, walletPublicKey)
   if (userId) resp.userId = userId
   return resp
 }
 
-async function createSession () {
+async function createUserSession(cnodeUserUUID, walletPublicKey) {
+  const sessionToken = await sessionManager.createSession(cnodeUserUUID)
+
+  return {
+    cnodeUserUUID,
+    sessionToken: sessionToken,
+    walletPublicKey
+  }
+}
+
+async function createSession() {
   const dummyKey = uuid()
   const user = await createStarterCNodeUserWithKey(dummyKey, null)
   const tokenObject = await SessionToken.findOne({
@@ -51,4 +59,11 @@ async function createSession () {
   return tokenObject
 }
 
-module.exports = { createStarterCNodeUser, createStarterCNodeUserWithKey, testEthereumConstants, getCNodeUser, destroyUsers, createSession }
+module.exports = {
+  createStarterCNodeUser,
+  createStarterCNodeUserWithKey,
+  testEthereumConstants,
+  getCNodeUser,
+  destroyUsers,
+  createSession
+}

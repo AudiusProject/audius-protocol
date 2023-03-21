@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { AuthHeaders } from '../../constants'
 import { uuid } from '../../utils/uuid'
-import type { Captcha, Nullable } from '../../utils'
+import type { Nullable } from '../../utils'
 
 import { getTrackListens, TimeFrame } from './requests'
 import type { Web3Manager } from '../web3Manager'
@@ -61,22 +61,42 @@ type Reaction = {
   reactionValue: number
 }
 
-// Only probabilistically capture 50% of relay captchas
-const RELAY_CAPTCHA_SAMPLE_RATE = 0.5
+enum TransactionMetadataType {
+  PURCHASE_SOL_AUDIO_SWAP = 'PURCHASE_SOL_AUDIO_SWAP'
+}
+
+type InAppAudioPurchaseMetadata = {
+  discriminator: TransactionMetadataType.PURCHASE_SOL_AUDIO_SWAP
+  usd: string
+  sol: string
+  audio: string
+  purchaseTransactionId: string
+  setupTransactionId?: string
+  swapTransactionId: string
+  cleanupTransactionId?: string
+}
+
+type CreateStripeSessionRequest = {
+  destinationWallet: string
+  amount: string
+}
+
+type CreateStripeSessionResponse = {
+  id: string
+  client_secret: string
+  status: string
+}
 
 export type IdentityServiceConfig = {
   identityServiceEndpoint: string
-  captcha?: Nullable<Captcha>
 }
 
 export class IdentityService {
   identityServiceEndpoint: string
-  captcha?: Nullable<Captcha>
   web3Manager: Web3Manager | null
 
-  constructor({ identityServiceEndpoint, captcha }: IdentityServiceConfig) {
+  constructor({ identityServiceEndpoint }: IdentityServiceConfig) {
     this.identityServiceEndpoint = identityServiceEndpoint
-    this.captcha = captcha
     this.web3Manager = null
   }
 
@@ -106,18 +126,6 @@ export class IdentityService {
   }
 
   async setUserFn(obj: Data & { token?: string }) {
-    if (this.captcha) {
-      try {
-        const token = await this.captcha.generate('identity/user')
-        obj.token = token
-      } catch (e) {
-        console.warn(
-          'CAPTCHA (user) - Recaptcha failed to generate token in :',
-          e
-        )
-      }
-    }
-
     return await this._makeRequest({
       url: '/user',
       method: 'post',
@@ -134,7 +142,7 @@ export class IdentityService {
   }
 
   async sendRecoveryInfo(obj: Record<string, unknown>) {
-    return await this._makeRequest({
+    return await this._makeRequest<{ status: true }>({
       url: '/recovery',
       method: 'post',
       data: obj
@@ -194,6 +202,24 @@ export class IdentityService {
   async associateInstagramUser(uuid: string, userId: number, handle: string) {
     return await this._makeRequest({
       url: '/instagram/associate',
+      method: 'post',
+      data: {
+        uuid,
+        userId,
+        handle
+      }
+    })
+  }
+
+  /**
+   * Associates a user with an TikTok uuid.
+   * @param uuid from the TikTok API
+   * @param userId
+   * @param handle
+   */
+  async associateTikTokUser(uuid: string, userId: number, handle: string) {
+    return await this._makeRequest({
+      url: '/tiktok/associate',
       method: 'post',
       data: {
         uuid,
@@ -368,18 +394,11 @@ export class IdentityService {
     contractAddress: string | null | undefined,
     senderAddress: string,
     encodedABI: string,
-    gasLimit: number
+    gasLimit: number,
+    handle: string | null = null,
+    nethermindContractAddress: string | null | undefined,
+    nethermindEncodedAbi: string | undefined
   ): Promise<{ receipt: TransactionReceipt }> {
-    const shouldCaptcha = Math.random() < RELAY_CAPTCHA_SAMPLE_RATE
-    let token
-    if (this.captcha && shouldCaptcha) {
-      try {
-        token = await this.captcha.generate('identity/relay')
-      } catch (e) {
-        console.warn('CAPTCHA (relay) - Recaptcha failed to generate token:', e)
-      }
-    }
-
     return await this._makeRequest({
       url: '/relay',
       method: 'post',
@@ -389,7 +408,9 @@ export class IdentityService {
         senderAddress,
         encodedABI,
         gasLimit,
-        token
+        handle,
+        nethermindContractAddress,
+        nethermindEncodedAbi
       }
     })
   }
@@ -530,6 +551,52 @@ export class IdentityService {
     })
   }
 
+  /**
+   * Gets $AUDIO purchase metadata
+   */
+  async getUserBankTransactionMetadata(transactionId: string) {
+    const headers = await this._signData()
+
+    const metadatas = await this._makeRequest<
+      Array<{ metadata: InAppAudioPurchaseMetadata }>
+    >({
+      url: `/transaction_metadata?id=${transactionId}`,
+      method: 'get',
+      headers
+    })
+    return metadatas[0]?.metadata ?? null
+  }
+
+  /**
+   * Saves $AUDIO purchase metadata
+   */
+  async saveUserBankTransactionMetadata(data: {
+    transactionSignature: string
+    metadata: InAppAudioPurchaseMetadata
+  }) {
+    const headers = await this._signData()
+
+    return await this._makeRequest({
+      url: '/transaction_metadata',
+      method: 'post',
+      data,
+      headers
+    })
+  }
+
+  async createStripeSession(
+    data: CreateStripeSessionRequest
+  ): Promise<CreateStripeSessionResponse> {
+    const headers = await this._signData()
+
+    return await this._makeRequest({
+      url: '/stripe/session',
+      method: 'post',
+      data,
+      headers
+    })
+  }
+
   /* ------- INTERNAL FUNCTIONS ------- */
 
   async _makeRequest<T = unknown>(axiosRequestObj: AxiosRequestConfig) {
@@ -567,7 +634,9 @@ export class IdentityService {
     if (this.web3Manager) {
       const unixTs = Math.round(new Date().getTime() / 1000) // current unix timestamp (sec)
       const message = `Click sign to authenticate with identity service: ${unixTs}`
-      const signature = await this.web3Manager?.sign(message)
+      const signature = await this.web3Manager?.sign(
+        Buffer.from(message, 'utf-8')
+      )
       return {
         [AuthHeaders.MESSAGE]: message,
         [AuthHeaders.SIGNATURE]: signature
