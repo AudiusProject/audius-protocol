@@ -1,4 +1,7 @@
-export default async ({ slack, dp_db }, { track_id }) => {
+import { dp_db } from "../db.js";
+import { slack } from "../slack.js";
+
+export default async ({ track_id }) => {
   const trackId = track_id;
   const results = await dp_db("tracks")
     .innerJoin("users", "tracks.owner_id", "=", "users.user_id")

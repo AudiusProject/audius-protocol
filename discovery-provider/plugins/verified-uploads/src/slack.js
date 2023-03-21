@@ -1,6 +1,6 @@
 import { WebClient } from "@slack/web-api";
 
-export default () => {
+const Slack = () => {
   const { SLACK_TOKEN, SLACK_CHANNEL } = process.env;
   const web = new WebClient(SLACK_TOKEN);
   return {
@@ -25,3 +25,5 @@ const formatter = (data) => {
   const inner = msg.join("\n");
   return "```" + inner + "```";
 };
+
+export const slack = Slack();

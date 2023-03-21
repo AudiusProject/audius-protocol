@@ -1,4 +1,7 @@
-export default async ({ slack, dp_db, id_db }, { user_id }) => {
+import { dp_db, id_db } from "../db.js";
+import { slack } from "../slack.js";
+
+export default async ({ user_id }) => {
   const result = await dp_db("users")
     .select("handle", "is_verified")
     .where("user_id", "=", user_id)
@@ -13,9 +16,6 @@ export default async ({ slack, dp_db, id_db }, { user_id }) => {
   if (result.length == 2 && current.is_verified !== old.is_verified) {
     const is_verified = current.is_verified;
     const handle = current.handle;
-    const header = `User ${handle} ${
-      is_verified ? "is now" : "is no longer"
-    } verified.`;
 
     // check identity db in twitter or instagram tables to see
     // which one verified the user
@@ -50,6 +50,10 @@ export default async ({ slack, dp_db, id_db }, { user_id }) => {
     if (tiktok) {
       source = "tiktok";
     }
+
+    const header = `User ${handle} ${
+      is_verified ? "is now" : "is no longer"
+    } verified via ${source}!`;
 
     const body = {
       userId: user_id,
