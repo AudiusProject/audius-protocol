@@ -24,6 +24,7 @@ LOCALHOSTS = (
     "audius-protocol-poa-ganache-1"
 )
 
+
 class DefaultCommandGroup(click.Group):
     """allow a default command for a group"""
 
@@ -63,6 +64,7 @@ def get_git_commit(protocol_dir):
         .stdout.decode()
         .strip()
     )
+
 
 # TODO: Maybe clean up later to handle comms config (currently using explicit env vars in docker-compose.comms.yml)
 def generate_env(
