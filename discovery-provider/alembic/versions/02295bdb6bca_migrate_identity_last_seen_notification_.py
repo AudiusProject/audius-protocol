@@ -1,7 +1,7 @@
 """migrate identity last seen notification to discovery
 
 Revision ID: 02295bdb6bca
-Revises: b9b7a1444783
+Revises: e97a5ba523fc
 Create Date: 2023-03-14 20:37:36.148935
 
 """
@@ -14,7 +14,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "02295bdb6bca"
-down_revision = "b9b7a1444783"
+down_revision = "e97a5ba523fc"
 branch_labels = None
 depends_on = None
 
@@ -32,39 +32,41 @@ ENV_TO_FILEPATH = {
 # from "Notifications" where "isRead" group by "userId"
 # order by max("updatedAt") desc) to 'user_last_notif_seen_results.csv'
 # with (format csv, header)
-def insert_csv_contents_into_temp_table(path, connection, temp_table_name):
+def get_user_ids_and_seen_ats(path):
+    user_ids = []
+    user_last_seen_ats = []
     csv_filepath = Path(__file__).parent.joinpath(path)
     with open(csv_filepath) as csv_file:
         csv_reader = csv.reader(csv_file, delimiter=",")
         for row in csv_reader:
-            connection.execute(
-                "INSERT INTO {} (user_id, seen_at) VALUES ({}, '{}')".format(
-                    temp_table_name, row[0], row[1]
-                )
-            )
+            user_ids.append(row[0])
+            user_last_seen_ats.append(row[1])
+        return user_ids, user_last_seen_ats
 
 
 def upgrade():
-    if ENV == "stage" or ENV == "prod":
+    if ENV == "prod" or ENV == "stage":
         connection = op.get_bind()
-        op.create_table(
-            "temp_notification_seen",
-            sa.Column("user_id", sa.Integer(), nullable=False),
-            sa.Column("seen_at", sa.DateTime(), nullable=False),
-        )
-        insert_csv_contents_into_temp_table(
+        user_ids, users_last_seen_at = get_user_ids_and_seen_ats(
             path=ENV_TO_FILEPATH[ENV],
-            connection=connection,
-            temp_table_name="temp_notification_seen",
         )
-
-        connection.execute(
-            "INSERT INTO notification_seen (user_id, seen_at) SELECT user_id, seen_at FROM temp_notification_seen"
+        sql = sa.text(
+            """
+            INSERT INTO notification_seen(user_id, seen_at)
+            SELECT user_id, user_last_seen_at
+            FROM (SELECT unnest(:user_ids)::integer AS user_id,
+                 to_timestamp(unnest(:user_last_seen_ats), 'YYYY-MM-DD HH24:MI:SS') AS user_last_seen_at)
+                 AS csv
+            """
         )
-        op.drop_table("temp_notification_seen")
+        sql = sql.bindparams(sa.bindparam("user_ids"))
+        sql = sql.bindparams(sa.bindparam("user_last_seen_ats"))
+        params = {"user_last_seen_ats": users_last_seen_at, "user_ids": user_ids}
+        connection.execute(sql, params)
 
 
 def downgrade():
-    connection = op.get_bind()
-    delete_query = "TRUNCATE TABLE notification_seen"
-    connection.execute(delete_query)
+    if ENV == "prod" or ENV == "stage":
+        connection = op.get_bind()
+        delete_query = "TRUNCATE TABLE notification_seen"
+        connection.execute(delete_query)
