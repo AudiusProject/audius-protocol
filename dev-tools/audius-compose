@@ -320,7 +320,7 @@ def up(
     hosts_file = pathlib.Path("/etc/hosts")
     if localhosts not in hosts_file.read_text():
         print("Adding development hosts to /etc/hosts")
-        hosts_file.write_text(hosts_file.read_text() + localhosts)
+        hosts_file.write_text(hosts_file.read_text() + "\n" + localhosts + "\n")
 
     sys.exit(
         subprocess.run(

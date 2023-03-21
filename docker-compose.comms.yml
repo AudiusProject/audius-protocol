@@ -93,8 +93,6 @@ x-nats: &nats
     stop_signal: SIGKILL
     command: nats
     depends_on:
-      comms-discovery-db-1: # TODO: Should only be needed in x-discovery. Try moving it
-        condition: service_started
       ingress:
         condition: service_started
     healthcheck:
@@ -152,6 +150,8 @@ x-discovery: &discovery
       - ./comms/discovery:/app/discovery
       - ./comms/shared:/app/shared
     depends_on:
+      comms-discovery-db-1:
+        condition: service_started
       <<: *nats-nodes-healthy
     profiles:
       - comms

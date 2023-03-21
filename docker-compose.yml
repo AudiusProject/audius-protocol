@@ -1,5 +1,8 @@
 version: "3.9"
 
+# TODO: Run nethermind in a container called `chain` like https://github.com/AudiusProject/audius-docker-compose/blob/main/discovery-provider/docker-compose.yml#L247
+# This has never existed locally but seems to break discovery indexing when signing up now (was previously working)
+
 x-common: &common
   logging:
     options:
@@ -193,6 +196,7 @@ services:
     <<: *common
 
   comms-discovery-db-1:
+    container_name: audius-protocol-comms-discovery-db-1
     image: postgres
     restart: unless-stopped
     ports:
