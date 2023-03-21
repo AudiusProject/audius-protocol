@@ -90,12 +90,6 @@ def make_trending_playlist_notifications(
             bindparam("playlist_ids", expanding=True)
         )
 
-        print(
-            "top trending playlists",
-            top_trending_playlist_ids,
-            top_trending_playlists[0],
-        )
-
         previous_trending_notifications = session.execute(
             latest_notification_query,
             {"playlist_ids": top_trending_playlist_ids, "type": "trending_playlist"},
@@ -112,9 +106,8 @@ def make_trending_playlist_notifications(
         for index, playlist in enumerate(top_trending_playlists):
             playlist_id = playlist["playlist_id"]
             rank = index + 1
-            previous_playlist_notification = previous_trending.get(
-                str(playlist["playlist_id"])
-            )
+            previous_playlist_notification = previous_trending.get(str(playlist_id))
+
             if previous_playlist_notification is not None:
                 prev_notification_datetime = datetime.fromtimestamp(
                     previous_playlist_notification["timestamp"].timestamp()
@@ -126,6 +119,7 @@ def make_trending_playlist_notifications(
                 prev_rank = previous_playlist_notification["rank"]
                 if prev_rank <= rank:
                     continue
+
             notifications.append(
                 {
                     "playlist_owner_id": playlist["playlist_owner_id"],
@@ -153,6 +147,7 @@ def make_trending_playlist_notifications(
                 for n in notifications
             ]
         )
+
         logger.info(
             "index_trending.py | Created trending playlist notifications",
             extra={
