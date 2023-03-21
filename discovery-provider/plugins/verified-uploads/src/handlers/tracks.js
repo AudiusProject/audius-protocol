@@ -29,9 +29,8 @@ export default async ({ track_id }) => {
 
   console.log(results);
 
-  console.log(results.created_at === results.updated_at);
-  console.log(results.created_at == results.updated_at);
-  console.log(results && results.created_at === results.updated_at);
+  console.log(results.updated_at);
+  console.log(results.created_at);
 
   if (results && results.created_at === results.updated_at) {
     const { title, mood, release_date, is_premium, handle, name, genre, slug } =
