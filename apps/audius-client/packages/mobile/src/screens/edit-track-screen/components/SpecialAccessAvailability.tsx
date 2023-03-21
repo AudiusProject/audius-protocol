@@ -87,7 +87,7 @@ export const SpecialAccessAvailability = ({
   selected,
   disabled = false,
   disabledContent = false,
-  initialPremiumConditions
+  previousPremiumConditions
 }: TrackAvailabilitySelectionProps) => {
   const styles = useStyles()
   const secondary = useColor('secondary')
@@ -115,10 +115,12 @@ export const SpecialAccessAvailability = ({
     ? { follow_user_id: currentUserId }
     : null
   const [selectedSpecialAccessGate, setSelectedSpecialAccessGate] = useState(
-    !('nft_collection' in (initialPremiumConditions ?? {}))
-      ? initialPremiumConditions ?? defaultSpecialAccess
+    !('nft_collection' in (previousPremiumConditions ?? {}))
+      ? previousPremiumConditions ?? defaultSpecialAccess
       : defaultSpecialAccess
   )
+
+  const isContentDisabled = disabled || disabledContent
 
   // Update special access gate when selection changes
   useEffect(() => {
@@ -163,32 +165,32 @@ export const SpecialAccessAvailability = ({
         <View style={styles.selection}>
           <TouchableOpacity
             onPress={handlePressFollowers}
-            disabled={
-              disabled || disabledContent || !!premiumConditions?.follow_user_id
-            }
+            disabled={isContentDisabled || !!premiumConditions?.follow_user_id}
           >
             <View style={styles.followersOnly}>
               <RadioButton
                 checked={!!premiumConditions?.follow_user_id}
-                disabled={disabled || disabledContent}
+                disabled={isContentDisabled}
                 style={styles.radio}
               />
-              <Text>{messages.followersOnly}</Text>
+              <Text style={isContentDisabled ? styles.disabledTitle : null}>
+                {messages.followersOnly}
+              </Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handlePressSupporters}
-            disabled={
-              disabled || disabledContent || !!premiumConditions?.tip_user_id
-            }
+            disabled={isContentDisabled || !!premiumConditions?.tip_user_id}
           >
             <View style={styles.supportersOnly}>
               <RadioButton
                 checked={!!premiumConditions?.tip_user_id}
-                disabled={disabled || disabledContent}
+                disabled={isContentDisabled}
                 style={styles.radio}
               />
-              <Text>{messages.supportersOnly}</Text>
+              <Text style={isContentDisabled ? styles.disabledTitle : null}>
+                {messages.supportersOnly}
+              </Text>
               <IconInfo style={styles.infoIcon} fill={neutralLight4} />
             </View>
           </TouchableOpacity>
