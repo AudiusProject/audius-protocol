@@ -3,7 +3,6 @@ import { slack } from "../slack.js";
 
 export default async ({ track_id }) => {
   const trackId = track_id;
-  console.log(`received ${trackId}`);
   const results = await dp_db("tracks")
     .innerJoin("users", "tracks.owner_id", "=", "users.user_id")
     .innerJoin("track_routes", "tracks.track_id", "=", "track_routes.track_id")
@@ -26,7 +25,6 @@ export default async ({ track_id }) => {
     .orderBy("tracks.blocknumber", "desc")
     .limit(2)
     .catch(console.error);
-  console.log(results);
 
   if (results && results.length === 1) {
     const { title, mood, release_date, is_premium, handle, name, genre, slug } =
