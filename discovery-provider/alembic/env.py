@@ -61,6 +61,12 @@ def build_sql(file_names):
 
 
 def load_triggers(connection):
+    # first execute the ddl
+    # since trigger code may depend on table structure
+    ddl = load_sql("ddl.sql")
+    connection.execute(text(ddl))
+
+    # then reload the triggers
     trigger_dir = Path(__file__).parent.joinpath("./trigger_sql")
     file_list = [f.name for f in trigger_dir.iterdir() if f.name.startswith("handle_")]
     connection.execute(build_sql(file_list))
