@@ -1,6 +1,7 @@
-import { ChatMessage, ChatMessageRPC, TypedCommsResponse } from '@audius/sdk'
+import { ChatMessage, TypedCommsResponse } from '@audius/sdk'
 import dayjs from 'dayjs'
 import { call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
+import { ulid } from 'ulid'
 
 import { getAccountUser, getUserId } from 'store/account/selectors'
 import { setVisibility } from 'store/ui/modals/slice'
@@ -11,6 +12,7 @@ import { getContext } from '../../effects'
 
 import * as chatSelectors from './selectors'
 import { actions as chatActions } from './slice'
+import { Status } from 'models/Status'
 
 const {
   createChat,
@@ -30,11 +32,10 @@ const {
   markChatAsReadSucceeded,
   markChatAsReadFailed,
   sendMessage,
-  sendMessageSucceeded,
   sendMessageFailed,
   addMessage
 } = chatActions
-const { getChatsSummary, getChatMessagesSummary, getChat } = chatSelectors
+const { getChatsSummary, getChat } = chatSelectors
 
 function* doFetchMoreChats() {
   try {
@@ -73,17 +74,14 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
     // Ensure we get a chat so we can check the unread count
     yield* call(fetchChatIfNecessary, { chatId })
     const chat = yield* select((state) => getChat(state, chatId))
-    const summary = yield* select((state) =>
-      getChatMessagesSummary(state, chatId)
-    )
 
     // Paginate through messages until we get to the unread indicator
     let lastResponse: TypedCommsResponse<ChatMessage[]> | undefined
-    let before = summary?.prev_cursor
+    let before = chat?.messagesSummary?.prev_cursor
     let hasMoreUnread = true
     let data: ChatMessage[] = []
     while (hasMoreUnread) {
-      const limit = 50
+      const limit = 10
       const response = yield* call([sdk.chats, sdk.chats!.getMessages], {
         chatId,
         before,
@@ -208,10 +206,9 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
   }
 }
 
-let tempMessageIdCounter = 1
 function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   const { chatId, message } = action.payload
-  const temporaryMessageId = `temp-${tempMessageIdCounter++}`
+  const messageId = ulid()
   try {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
@@ -227,38 +224,23 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
         chatId,
         message: {
           sender_user_id: currentUserId,
-          message_id: temporaryMessageId,
+          message_id: messageId,
           message,
           reactions: [],
           created_at: dayjs().toISOString()
-        }
+        },
+        status: Status.LOADING
       })
     )
 
-    const response = (yield* call([sdk.chats, sdk.chats.message], {
+    yield* call([sdk.chats, sdk.chats.message], {
       chatId,
+      messageId,
       message
-    })) as ChatMessageRPC
-
-    // After successful RPC, replace with real message
-    yield* put(
-      sendMessageSucceeded({
-        chatId,
-        oldMessageId: temporaryMessageId,
-        message: {
-          sender_user_id: currentUserId,
-          message_id: response.params.message_id,
-          message,
-          reactions: [],
-          created_at: dayjs().toISOString()
-        }
-      })
-    )
+    })
   } catch (e) {
     console.error('sendMessageFailed', e)
-    yield* put(
-      sendMessageFailed({ chatId, attemptedMessageId: temporaryMessageId })
-    )
+    yield* put(sendMessageFailed({ chatId, messageId }))
   }
 }
 
