@@ -1,7 +1,6 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../main'
 import * as sns from '../sns'
-import { getRedisConnection } from './../utils/redisConnection'
 import { config } from './../config'
 import {
   randId,
@@ -10,10 +9,13 @@ import {
   insertMessage,
   insertReaction,
   setupTwoUsersWithDevices,
+  setupTest,
+  resetTests,
   createTestDB,
-  dropTestDB,
-  replaceDBName
+  replaceDBName,
+  dropTestDB
 } from '../utils/populateDB'
+import { getRedisConnection } from '../utils/redisConnection'
 
 describe('Push Notifications', () => {
   let processor: Processor
@@ -35,6 +37,12 @@ describe('Push Notifications', () => {
     redis.del(config.lastIndexedMessageRedisKey)
     redis.del(config.lastIndexedReactionRedisKey)
     processor = new Processor()
+
+    // @ts-ignore
+    processor.server.app.listen = jest.fn((port: number, cb: () => void) =>
+      cb()
+    )
+
     await processor.init({
       identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
       discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
@@ -117,7 +125,7 @@ describe('Push Notifications', () => {
       new Date(reactionTimestampMs)
     )
 
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 3))
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {

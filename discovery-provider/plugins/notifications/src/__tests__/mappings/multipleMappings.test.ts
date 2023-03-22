@@ -1,19 +1,16 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
-import * as sendEmail from '../../email/notifications/sendEmail'
 
 import {
   createUsers,
   insertFollows,
   insertMobileDevices,
   insertMobileSettings,
-  createTestDB,
-  dropTestDB,
-  replaceDBName,
   createReposts,
   createTracks,
-  setupTest
+  setupTest,
+  resetTests
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'
@@ -26,9 +23,6 @@ describe('Multiple Mappings Notification', () => {
   // Mock current date for test result consistency
   Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
 
-  const sendNotificationEmailSpy = jest
-    .spyOn(sendEmail, 'sendNotificationEmail')
-    .mockImplementation(() => Promise.resolve(true))
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
@@ -39,16 +33,7 @@ describe('Multiple Mappings Notification', () => {
   })
 
   afterEach(async () => {
-    jest.clearAllMocks()
-    await processor?.close()
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      dropTestDB(process.env.DN_DB_URL, testName),
-      dropTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
+    await resetTests(processor)
   })
 
   test('Process follow and repost push notification', async () => {
