@@ -102,9 +102,7 @@ def get_all_other_nodes() -> Tuple[List[str], List[str]]:
 
 def get_all_other_nodes_cached(redis) -> List[str]:
     """
-    Attempts to get the number of discovery nodes from redis
-    if that doesn't exist it will fetch using `get_all_other_nodes()`
-    and set the result in the cache with an expiration of 1 hour
+    Attempts to get the number of discovery nodes from redis.
     """
 
     return get_json_cached_key(redis, ALL_NODES_CACHE_KEY)
