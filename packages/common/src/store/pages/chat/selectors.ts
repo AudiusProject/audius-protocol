@@ -12,6 +12,8 @@ const { getUsers } = cacheUsersSelectors
 const { selectById: selectChatById, selectAll: selectAllChats } =
   chatsAdapter.getSelectors<CommonState>((state) => state.pages.chat.chats)
 
+const { selectAll: getAllChatMessages } = chatMessagesAdapter.getSelectors()
+
 export const getChat = selectChatById
 
 // Selectors for UserChat (all chats for a user)
@@ -46,12 +48,10 @@ export const getChats = createSelector(
 export const getChatMessages = createSelector(
   [
     (state: CommonState, chatId: string) =>
-      chatMessagesAdapter
-        .getSelectors()
-        .selectAll(
-          state.pages.chat.messages[chatId] ??
-            chatMessagesAdapter.getInitialState()
-        ),
+      getAllChatMessages(
+        state.pages.chat.messages[chatId] ??
+          chatMessagesAdapter.getInitialState()
+      ),
     getOptimisticReactions
   ],
   (messages, optimisticReactions) => {
