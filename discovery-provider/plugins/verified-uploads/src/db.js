@@ -34,7 +34,7 @@ export default async (topic, callback) => {
   const conn = await dp_db.client.acquireConnection().catch(console.error);
   const sql = `LISTEN ${topic}`;
   conn.on("notification", async (msg) => {
-    console.log(`received: ${msg}`);
+    console.log(`received: ${JSON.stringify(msg)}`);
     callback(JSON.parse(msg.payload));
   });
   conn.on("end", (err) => {
