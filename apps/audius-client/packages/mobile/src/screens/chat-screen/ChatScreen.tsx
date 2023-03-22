@@ -30,13 +30,7 @@ import { useThemePalette } from 'app/utils/theme'
 
 import { ChatMessageListItem } from './ChatMessageListItem'
 
-const {
-  getChatMessages,
-  getOtherChatUsers,
-  getChatMessagesStatus,
-  getChatMessagesSummary,
-  getChat
-} = chatSelectors
+const { getChatMessages, getOtherChatUsers, getChat } = chatSelectors
 
 const { fetchMoreMessages, sendMessage, markChatAsRead } = chatActions
 const { getUserId } = accountSelectors
@@ -192,12 +186,6 @@ export const ChatScreen = () => {
   const chatMessages = useSelector((state) =>
     getChatMessages(state, chatId ?? '')
   )
-  const status = useSelector((state) =>
-    getChatMessagesStatus(state, chatId ?? '')
-  )
-  const summary = useSelector((state) =>
-    getChatMessagesSummary(state, chatId ?? '')
-  )
   const flatListRef = useRef<FlatListT<ChatMessage>>(null)
   const unreadCount = chat?.unread_message_count ?? 0
   const isLoading = status === Status.LOADING && chatMessages?.length === 0
@@ -208,11 +196,11 @@ export const ChatScreen = () => {
   const chatFrozenRef = useRef(chat)
 
   useEffect(() => {
-    if (chatId && status === Status.IDLE) {
+    if (chatId && chat?.messagesStatus === Status.IDLE) {
       // Initial fetch
       dispatch(fetchMoreMessages({ chatId }))
     }
-  }, [dispatch, chatId, status, summary])
+  }, [dispatch, chatId, chat])
 
   useEffect(() => {
     // Update chatFrozenRef when entering a new chat screen
@@ -275,8 +263,8 @@ export const ChatScreen = () => {
     if (
       chatId &&
       status !== Status.LOADING &&
-      summary &&
-      summary.prev_count > 0
+      chat?.messagesSummary &&
+      chat?.messagesSummary.prev_count > 0
     ) {
       // Fetch more messages when user reaches the top
       dispatch(fetchMoreMessages({ chatId }))
