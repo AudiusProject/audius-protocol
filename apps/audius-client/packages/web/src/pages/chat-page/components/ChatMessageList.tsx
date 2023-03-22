@@ -34,12 +34,7 @@ import { StickyScrollList } from './StickyScrollList'
 const SPINNER_HEIGHT = 48
 
 const { fetchMoreMessages, markChatAsRead, setActiveChat } = chatActions
-const {
-  getChatMessages,
-  getChatMessagesStatus,
-  getChatMessagesSummary,
-  getChat
-} = chatSelectors
+const { getChatMessages, getChat } = chatSelectors
 
 const messages = {
   newMessages: 'New Messages'
@@ -67,13 +62,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
     const chatMessages = useSelector((state) =>
       getChatMessages(state, chatId ?? '')
     )
-    const summary = useSelector((state) =>
-      getChatMessagesSummary(state, chatId ?? '')
-    )
-    const status = useSelector((state) =>
-      getChatMessagesStatus(state, chatId ?? '')
-    )
-    const chat = useSelector((state) => getChat(state, chatId))
+    const chat = useSelector((state) => getChat(state, chatId ?? ''))
     const userId = useSelector(accountSelectors.getUserId)
     const currentUserId = encodeHashId(userId)
     const [unreadIndicatorEl, setUnreadIndicatorEl] =
@@ -104,14 +93,14 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
           if (
             chatId &&
             isScrolledToTop(e.currentTarget) &&
-            status !== Status.LOADING
+            chat?.messagesStatus !== Status.LOADING
           ) {
             // Fetch more messages when user reaches the top
             dispatch(fetchMoreMessages({ chatId }))
           }
         }
       },
-      [dispatch, chatId, status]
+      [dispatch, chatId, chat?.messagesStatus]
     )
 
     const scrollIntoViewOnMount = useCallback((el: HTMLDivElement) => {
@@ -132,12 +121,16 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
     }, [unreadIndicatorEl, chatId, setLastScrolledChatId])
 
     useEffect(() => {
-      if (chatId && status === Status.IDLE) {
+      if (
+        chatId &&
+        (chat?.messagesStatus === Status.IDLE ||
+          chat?.messagesStatus === undefined)
+      ) {
         // Initial fetch
         dispatch(fetchMoreMessages({ chatId }))
         dispatch(setActiveChat({ chatId }))
       }
-    }, [dispatch, chatId, status])
+    }, [dispatch, chatId, chat?.messagesStatus])
 
     // Fix for if the initial load doesn't have enough messages to cause scrolling
     useEffect(() => {
@@ -145,12 +138,12 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         chatId &&
         ref.current &&
         ref.current.scrollHeight - SPINNER_HEIGHT <= ref.current.clientHeight &&
-        summary &&
-        summary.prev_count > 0
+        chat?.messagesSummary &&
+        chat?.messagesSummary.prev_count > 0
       ) {
         dispatch(fetchMoreMessages({ chatId }))
       }
-    }, [dispatch, chatId, summary, chatMessages])
+    }, [dispatch, chatId, chat, chatMessages])
 
     return (
       <StickyScrollList
@@ -194,7 +187,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                 ) : null}
               </Fragment>
             ))}
-          {!summary || summary.prev_count > 0 ? (
+          {!chat?.messagesSummary || chat.messagesSummary.prev_count > 0 ? (
             <LoadingSpinner className={styles.spinner} />
           ) : null}
         </div>

@@ -1,54 +1,34 @@
 import type { UserChat } from '@audius/sdk'
 import { createSelector } from 'reselect'
 
-import { Status } from 'models/Status'
 import { accountSelectors } from 'store/account'
 import { cacheUsersSelectors } from 'store/cache'
 import { CommonState } from 'store/reducers'
 import { decodeHashId } from 'utils/hashIds'
+import { chatMessagesAdapter, chatsAdapter } from './slice'
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 
+const { selectById: selectChatById, selectAll: selectAllChats } =
+  chatsAdapter.getSelectors<CommonState>((state) => state.pages.chat.chats)
+
+export const getChat = selectChatById
+
 // Selectors for UserChat (all chats for a user)
 export const getChatsStatus = (state: CommonState) =>
-  state.pages.chat.chatList.status
+  state.pages.chat.chats.status
 
 export const getChatsSummary = (state: CommonState) =>
-  state.pages.chat.chatList.summary
+  state.pages.chat.chats.summary
 
 export const getOptimisticReads = (state: CommonState) =>
   state.pages.chat.optimisticChatRead
 
-export const getAllChatMessages = (state: CommonState) =>
-  state.pages.chat.chatMessages
-
-// Selectors for ChatMessage (specific chat conversations)
-export const getChatMessagesSummary = (state: CommonState, chatId: string) =>
-  state.pages.chat.chatMessages[chatId]?.summary
-
-export const getChatMessagesRaw = (state: CommonState, chatId: string) =>
-  state.pages.chat.chatMessages[chatId]?.data
-
-export const getChatMessagesStatus = (state: CommonState, chatId: string) =>
-  state.pages.chat.chatMessages[chatId]?.status ?? Status.IDLE
-
 export const getOptimisticReactions = (state: CommonState) =>
   state.pages.chat.optimisticReactions
 
-// Returns a UserChat that contains the ChatMessage with the given chatId
-export const getChat = (state: CommonState, chatId?: string) =>
-  chatId ? state.pages.chat.chatList.map[chatId] : undefined
-
-export const getChatsRaw = createSelector(
-  (state: CommonState) => state.pages.chat.chatList.order,
-  (state) => state.pages.chat.chatList.map,
-  (order, map) => {
-    return order.map((chatId) => map[chatId])
-  }
-)
-
 export const getChats = createSelector(
-  [getChatsRaw, getAllChatMessages, getOptimisticReads],
+  [selectAllChats, getOptimisticReads],
   (chats, optimisticReads) => {
     return chats?.map((chat) => {
       // If have a clientside optimistic read status, override the server status
@@ -64,7 +44,16 @@ export const getChats = createSelector(
 )
 
 export const getChatMessages = createSelector(
-  [getChatMessagesRaw, getOptimisticReactions],
+  [
+    (state: CommonState, chatId: string) =>
+      chatMessagesAdapter
+        .getSelectors()
+        .selectAll(
+          state.pages.chat.messages[chatId] ??
+            chatMessagesAdapter.getInitialState()
+        ),
+    getOptimisticReactions
+  ],
   (messages, optimisticReactions) => {
     return messages?.map((message) => {
       const optimisticReaction = optimisticReactions[message.message_id]

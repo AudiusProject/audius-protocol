@@ -1,4 +1,5 @@
 import { ChatEvents, type sdk } from '@audius/sdk'
+import { Status } from 'models/Status'
 import { Middleware } from 'redux'
 
 import { actions as chatActions } from './slice'
@@ -30,7 +31,9 @@ export const chatMiddleware =
             console.debug('[chats] WebSocket opened. Listening for chats...')
           }
           messageListener = ({ chatId, message }) => {
-            store.dispatch(addMessage({ chatId, message }))
+            store.dispatch(
+              addMessage({ chatId, message, status: Status.SUCCESS })
+            )
             store.dispatch(incrementUnreadCount({ chatId }))
           }
           reactionListener = ({ chatId, messageId, reaction }) => {
@@ -42,9 +45,9 @@ export const chatMiddleware =
               })
             )
           }
-          closeListener = () => {
+          closeListener = async () => {
             console.debug('[chats] WebSocket closed. Reconnecting...')
-            sdk.chats.listen()
+            await sdk.chats.listen()
           }
           sdk.chats.addEventListener('open', openListener)
           sdk.chats.addEventListener('message', messageListener)
