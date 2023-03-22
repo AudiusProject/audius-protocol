@@ -22,11 +22,12 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  FeatureFlags
+  FeatureFlags,
+  playbackRateValueMap
 } from '@audius/common'
 import { Scrubber } from '@audius/stems'
 import cn from 'classnames'
-import { connect } from 'react-redux'
+import { connect, useSelector } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { ReactComponent as IconCaret } from 'assets/img/iconCaretRight.svg'
@@ -55,7 +56,8 @@ import { withNullGuard } from 'utils/withNullGuard'
 import styles from './NowPlaying.module.css'
 import ActionsBar from './components/ActionsBar'
 const { makeGetCurrent } = queueSelectors
-const { getBuffering, getCounter, getPlaying } = playerSelectors
+const { getBuffering, getCounter, getPlaying, getPlaybackRate } =
+  playerSelectors
 
 const { seek, reset } = playerActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -146,6 +148,10 @@ const NowPlaying = g(
     const [mediaKey, setMediaKey] = useState(0)
     const seekInterval = useRef<number | undefined>(undefined)
     const [prevPlayCounter, setPrevPlayCounter] = useState<number | null>(null)
+
+    const playbackRate = useSelector(getPlaybackRate)
+    const isLongFormContent =
+      track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
 
     const startSeeking = useCallback(() => {
       clearInterval(seekInterval.current)
@@ -431,6 +437,9 @@ const NowPlaying = g(
             totalSeconds={timing.duration}
             includeTimestamps
             onScrubRelease={seek}
+            playbackRate={
+              isLongFormContent ? playbackRateValueMap[playbackRate] : 1
+            }
             style={{
               railListenedColor: 'var(--track-slider-rail)',
               handleColor: 'var(--track-slider-handle)'
