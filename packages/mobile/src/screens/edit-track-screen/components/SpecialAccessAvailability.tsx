@@ -7,7 +7,6 @@ import { Dimensions, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
 import { useSelector } from 'react-redux'
 
-import IconInfo from 'app/assets/images/iconInfo.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import { RadioButton, Text } from 'app/components/core'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
@@ -73,11 +72,6 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   supportersOnly: {
     flexDirection: 'row',
     alignItems: 'center'
-  },
-  infoIcon: {
-    marginLeft: spacing(2),
-    width: spacing(4),
-    height: spacing(4)
   }
 }))
 
@@ -191,7 +185,6 @@ export const SpecialAccessAvailability = ({
               <Text style={isContentDisabled ? styles.disabledTitle : null}>
                 {messages.supportersOnly}
               </Text>
-              <IconInfo style={styles.infoIcon} fill={neutralLight4} />
             </View>
           </TouchableOpacity>
         </View>

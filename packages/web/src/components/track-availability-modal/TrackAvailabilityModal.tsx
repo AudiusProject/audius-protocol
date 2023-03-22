@@ -154,20 +154,27 @@ const TrackAvailabilityModal = ({
 
   const initialPremiumConditions = initialForm.premium_conditions
 
+  const isInitiallyPublic =
+    !isUpload && !initialForm.is_unlisted && !initialPremiumConditions
   const isInitiallySpecialAccess =
     !isUpload &&
     !!(
       initialPremiumConditions?.follow_user_id ||
       initialPremiumConditions?.tip_user_id
     )
-  const noCollectibleGate =
-    isInitiallySpecialAccess || isRemix || !hasCollectibles
-  const noCollectibleDropdown = noCollectibleGate || !isUpload
-
   const isInitiallyCollectibleGated =
     !isUpload && !!initialPremiumConditions?.nft_collection
-  const noSpecialAccess = isInitiallyCollectibleGated || isRemix
-  const noSpecialAccessOptions = noSpecialAccess || !isUpload
+  const isInitiallyHidden = !isUpload && initialForm.is_unlisted
+
+  const noCollectibleGate =
+    isInitiallyPublic || isInitiallySpecialAccess || isRemix || !hasCollectibles
+  const noCollectibleDropdown =
+    noCollectibleGate || (!isUpload && !isInitiallyHidden)
+
+  const noSpecialAccess =
+    isInitiallyPublic || isInitiallyCollectibleGated || isRemix
+  const noSpecialAccessOptions =
+    noSpecialAccess || (!isUpload && !isInitiallyHidden)
 
   const noHidden = !isUpload && !initialForm.is_unlisted
 
