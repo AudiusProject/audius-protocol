@@ -5,6 +5,7 @@ from typing import List, Optional, Tuple
 from src.utils import web3_provider
 from src.utils.config import shared_config
 from src.utils.helpers import is_fqdn, load_eth_abi_values
+from src.utils.redis_cache import get_json_cached_key
 
 logger = logging.getLogger(__name__)
 
@@ -12,6 +13,7 @@ eth_abi_values = load_eth_abi_values()
 REWARDS_CONTRACT_ABI = eth_abi_values["EthRewardsManager"]["abi"]
 SP_FACTORY_REGISTRY_KEY = bytes("ServiceProviderFactory", "utf-8")
 DISCOVERY_NODE_SERVICE_TYPE = bytes("discovery-node", "utf-8")
+ALL_NODES_CACHE_KEY = "all-discovery-nodes"
 
 
 # Perform eth web3 call to fetch endpoint info
@@ -96,3 +98,11 @@ def get_all_other_nodes() -> Tuple[List[str], List[str]]:
             )
 
     return all_other_nodes, all_other_wallets
+
+
+def get_all_other_nodes_cached(redis) -> List[str]:
+    """
+    Attempts to get the number of discovery nodes from redis.
+    """
+
+    return get_json_cached_key(redis, ALL_NODES_CACHE_KEY)
