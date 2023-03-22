@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 
 import { modalsActions, useSelectTierInfo } from '@audius/common'
+import type { ViewStyle, StyleProp } from 'react-native'
 import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
@@ -47,10 +48,11 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 
 type ProfileTierTileProps = {
   interactive?: boolean
+  style?: StyleProp<ViewStyle>
 }
 
 export const ProfileTierTile = (props: ProfileTierTileProps) => {
-  const { interactive = true } = props
+  const { interactive = true, style } = props
   const profile = useSelectProfile(['user_id'])
   const styles = useStyles()
 
@@ -82,7 +84,7 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
     return (
       <Tile
         styles={{
-          root: styles.root,
+          root: [styles.root, style],
           tile: styles.tile,
           content: styles.content
         }}
@@ -94,7 +96,7 @@ export const ProfileTierTile = (props: ProfileTierTileProps) => {
   }
 
   return (
-    <View pointerEvents='none' style={[styles.root, styles.viewContent]}>
+    <View pointerEvents='none' style={[styles.root, styles.viewContent, style]}>
       {content}
     </View>
   )
