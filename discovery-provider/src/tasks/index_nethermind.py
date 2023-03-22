@@ -8,6 +8,7 @@ from datetime import datetime
 from operator import itemgetter, or_
 from typing import Any, Dict, Tuple
 
+from src.app import get_contract_addresses
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
@@ -1043,27 +1044,12 @@ def update_task(self):
     redis = update_task.redis
 
     final_poa_block = helpers.get_final_poa_block()
-    current_block_query_results = None
-
-    with db.scoped_session() as session:
-        current_block_query = session.query(Block).filter_by(is_current=True)
-        current_block_query_results = current_block_query.all()
-
-        if final_poa_block is None or (
-            current_block_query_results
-            and current_block_query_results[0].number < final_poa_block
-        ):
-            # need to finish indexing POA
-            return
-
     # Initialize contracts and attach to the task singleton
-    entity_manager_address = web3.toChecksumAddress(
-        os.getenv("audius_contracts_nethermind_entity_manager_address")
-    )
-
-    entity_manager_contract_abi = helpers.load_abi_values()["EntityManager"]["abi"]
-    entity_manager_contract = web3.eth.contract(
-        address=entity_manager_address,
+    entity_manager_contract_abi = update_task.abi_values[ENTITY_MANAGER_CONTRACT_NAME][
+        "abi"
+    ]
+    entity_manager_contract = update_task.web3.eth.contract(
+        address=get_contract_addresses()[ENTITY_MANAGER],
         abi=entity_manager_contract_abi,
     )
 
