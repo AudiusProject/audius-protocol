@@ -7,9 +7,9 @@ import (
 	"os/exec"
 
 	sharedConfig "comms.audius.co/shared/config"
-	"golang.org/x/exp/slog"
 	"github.com/labstack/echo/v4"
 	"github.com/nats-io/nats.go"
+	"golang.org/x/exp/slog"
 )
 
 type Peering interface {

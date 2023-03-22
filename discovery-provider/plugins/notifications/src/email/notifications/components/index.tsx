@@ -8,19 +8,19 @@ import Body from './Body' // eslint-disable-line
 const NotificationEmail = (props) => {
   return (
     <html>
-    <Head title= { props.title } />
-    <Body { ...props } />
+      <Head title={props.title} />
+      <Body {...props} />
     </html>
   )
 }
 
 type Props = {
-  title: string,
+  title: string
   notifications: any[]
-  subject: string,
+  subject: string
   copyrightYear: string
 }
 
 export const renderNotificationsEmail = (props: Props) => {
-  return ReactDOMServer.renderToString(<NotificationEmail { ...props } />)
+  return ReactDOMServer.renderToString(<NotificationEmail {...props} />)
 }

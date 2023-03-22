@@ -13,7 +13,7 @@ import { UserStateManager } from './userStateManager'
 import type { Logger, Nullable } from './utils'
 import { Utils } from './utils'
 
-import { Keypair, PublicKey } from '@solana/web3.js'
+import { Keypair } from '@solana/web3.js'
 
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import { Web3Config, Web3Manager } from './services/web3Manager'
@@ -250,19 +250,8 @@ export class AudiusLibs {
     rewardsManagerTokenPDA,
     useRelay,
     feePayerSecretKeys,
-    confirmationTimeout,
-    audiusDataAdminStorageKeypairPublicKey,
-    audiusDataProgramId,
-    audiusDataIdl
+    confirmationTimeout
   }: LibsSolanaWeb3Config): SolanaWeb3Config {
-    if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
-      audiusDataAdminStorageKeypairPublicKey = new PublicKey(
-        audiusDataAdminStorageKeypairPublicKey
-      )
-    }
-    if (audiusDataProgramId instanceof String) {
-      audiusDataProgramId = new PublicKey(audiusDataProgramId)
-    }
     return {
       solanaClusterEndpoint,
       mintAddress,
@@ -277,19 +266,8 @@ export class AudiusLibs {
       feePayerKeypairs: feePayerSecretKeys?.map((key) =>
         Keypair.fromSecretKey(key)
       ),
-      confirmationTimeout,
-      audiusDataAdminStorageKeypairPublicKey,
-      audiusDataProgramId,
-      audiusDataIdl
+      confirmationTimeout
     }
-  }
-
-  /**
-   * Configures a solana audius-data
-   * This is a stubbed version for native
-   */
-  static configSolanaAudiusData() {
-    return {}
   }
 
   version: string
@@ -572,7 +550,6 @@ export class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.solanaWeb3Manager,
-      null as any,
       this.wormholeClient,
       this.creatorNode,
       this.comstock,

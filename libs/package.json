@@ -1,6 +1,6 @@
 {
   "name": "@audius/sdk",
-  "version": "2.0.2-alpha.4",
+  "version": "2.0.3-beta.0",
   "audius": {
     "releaseSHA": "610fc7a8beb61e1dfdfa18421d25fe3d1c00c566"
   },
@@ -54,7 +54,6 @@
     "prepare": "patch-package"
   },
   "dependencies": {
-    "@audius/anchor-audius-data": "0.0.2",
     "@audius/hedgehog": "2.1.0",
     "@babel/runtime": "7.18.3",
     "@certusone/wormhole-sdk": "0.1.1",
@@ -74,7 +73,6 @@
     "bs58": "4.0.1",
     "cipher-base": "1.0.4",
     "cross-fetch": "3.1.5",
-    "cuid": "2.1.8",
     "elliptic": "6.5.4",
     "esm": "3.2.25",
     "eth-sig-util": "2.5.4",
@@ -100,6 +98,7 @@
     "secp256k1": "4.0.2",
     "semver": "6.3.0",
     "stream-browserify": "3.0.0",
+    "ulid": "2.3.0",
     "web3": "1.7.1",
     "xmlhttprequest": "1.8.0"
   },

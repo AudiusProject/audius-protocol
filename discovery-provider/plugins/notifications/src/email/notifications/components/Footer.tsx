@@ -7,30 +7,30 @@ const iconStyle = {
 }
 
 const InstagramLink = () => (
-  <a href='https://www.instagram.com/audiusmusic/'>
+  <a href="https://www.instagram.com/audiusmusic/">
     <img
-      src='https://download.audius.co/static-resources/email/iconInsta.png'
-      alt='instagram'
+      src="https://download.audius.co/static-resources/email/iconInsta.png"
+      alt="instagram"
       style={iconStyle}
     />
   </a>
 )
 
 const TwitterLink = () => (
-  <a href='https://twitter.com/AudiusProject'>
+  <a href="https://twitter.com/AudiusProject">
     <img
-      src='https://download.audius.co/static-resources/email/iconTwitter.png'
-      alt='twitter'
+      src="https://download.audius.co/static-resources/email/iconTwitter.png"
+      alt="twitter"
       style={iconStyle}
     />
   </a>
 )
 
 const DiscordLink = () => (
-  <a href='https://discordapp.com/invite/yNUg2e2'>
+  <a href="https://discordapp.com/invite/yNUg2e2">
     <img
-      src='https://download.audius.co/static-resources/email/iconDiscord.png'
-      alt='discord'
+      src="https://download.audius.co/static-resources/email/iconDiscord.png"
+      alt="discord"
       style={iconStyle}
     />
   </a>
@@ -43,8 +43,7 @@ const MadeWithLove = () => (
       textAlign: 'center',
       color: '#858199',
       fontSize: '14px'
-    }}
-  >
+    }}>
     Made with <span style={{ color: '#7E1BCC' }}>♥︎</span> in SF & LA
   </div>
 )
@@ -56,8 +55,7 @@ const AllRightsReserved = ({ copyrightYear }) => (
       textAlign: 'center',
       color: '#858199',
       fontSize: '14px'
-    }}
-  >
+    }}>
     &copy; {copyrightYear} Audius, Inc. All Rights Reserved.
   </div>
 )
@@ -69,30 +67,45 @@ const Unsubscribe = () => (
       textAlign: 'center',
       color: '#858199',
       fontSize: '14px'
-    }}
-  >
+    }}>
     {'Tired of seeing these emails? '}
-    <a href='https://audius.co/settings' className='utilityLink' style={{ textDecorationColor: '#858199' }}>
+    <a
+      href="https://audius.co/settings"
+      className="utilityLink"
+      style={{ textDecorationColor: '#858199' }}>
       <span style={{ color: '#858199' }}>
         {'Update your notification preferences'}
       </span>
     </a>
-    <span className='mobileHide' />
+    <span className="mobileHide" />
   </div>
 )
 
 const Footer = (props) => {
   return (
-    <table border='0' cellPadding='0' cellSpacing='0' style={{ margin: '0px auto', height: 'auto', paddingBotton: '25px' }}>
+    <table
+      border="0"
+      cellPadding="0"
+      cellSpacing="0"
+      style={{ margin: '0px auto', height: 'auto', paddingBotton: '25px' }}>
       <tr>
-        <td valign='center' id='socialBar' style={{ textAlign: 'center', padding: '25px 0px 20px' }}>
+        <td
+          valign="center"
+          id="socialBar"
+          style={{ textAlign: 'center', padding: '25px 0px 20px' }}>
           <InstagramLink />
           <TwitterLink />
           <DiscordLink />
         </td>
       </tr>
       <tr>
-        <td valign='center' style={{ textAlign: 'center', padding: '0px 0px 8px', margin: '0px' }}>
+        <td
+          valign="center"
+          style={{
+            textAlign: 'center',
+            padding: '0px 0px 8px',
+            margin: '0px'
+          }}>
           <MadeWithLove />
         </td>
       </tr>
@@ -104,16 +117,12 @@ const Footer = (props) => {
             height: 'auto',
             padding: '0px 0px 12px',
             margin: '0px'
-          }}
-        >
+          }}>
           <AllRightsReserved copyrightYear={props.copyrightYear} />
         </td>
       </tr>
       <tr>
-        <td
-          valign='top'
-          id='utilityBar'
-        >
+        <td valign="top" id="utilityBar">
           <Unsubscribe />
         </td>
       </tr>

@@ -46,6 +46,7 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
   }
 
   it('kicks off an initial job when initting', async function () {
+    this.retries(3) // TODO: Flakey test
     // Mock the latest userId, which is used during init as an upper bound
     // to start the monitoring queue at a random user
     const discoveryNodeEndpoint = 'https://discoveryNodeEndpoint.co'

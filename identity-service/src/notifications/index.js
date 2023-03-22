@@ -33,8 +33,6 @@ const { indexTrendingTracks } = require('./trendingTrackProcessing')
 const sendNotifications = require('./sendNotifications/index.js')
 const audiusLibsWrapper = require('../audiusLibsInstance')
 
-const NOTIFICATION_INTERVAL_SEC = 3 * 1000
-const NOTIFICATION_SOLANA_INTERVAL_SEC = 3 * 1000
 const NOTIFICATION_ANNOUNCEMENTS_INTERVAL_SEC = 30 * 1000
 
 const NOTIFICATION_JOB_LAST_SUCCESS_KEY = 'notifications:last-success'
@@ -193,10 +191,6 @@ class NotificationProcessor {
           }
         )
       }
-      // Delay 3s
-      await new Promise((resolve) =>
-        setTimeout(resolve, NOTIFICATION_INTERVAL_SEC)
-      )
     })
 
     // Solana notification processing job
@@ -276,10 +270,6 @@ class NotificationProcessor {
           }
         )
       }
-      // Delay 3s
-      await new Promise((resolve) =>
-        setTimeout(resolve, NOTIFICATION_SOLANA_INTERVAL_SEC)
-      )
     })
 
     // Email notification queue
@@ -507,7 +497,10 @@ class NotificationProcessor {
       time = Date.now()
 
       // actually send out push notifications
-      const numProcessedNotifs = await drainPublishedMessages(logger)
+      const numProcessedNotifs = await drainPublishedMessages(
+        logger,
+        optimizelyClient
+      )
       logger.info(
         `notifications main indexAll job - drainPublishedMessages complete - processed ${numProcessedNotifs} notifs in ${
           Date.now() - time

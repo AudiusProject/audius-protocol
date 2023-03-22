@@ -48,7 +48,6 @@ type StorageConfig struct {
 	RebalanceIntervalHours  float64              `envconfig:"AUDIUS_REBALANCE_INTERVAL_HOURS" default:"24" json:"rebalanceIntervalHours"`
 	HealthTTLHours          float64              `envconfig:"AUDIUS_HEALTH_TTL_HOURS" default:"24" json:"healthTtlHours"`
 	ShardLength             int                  `envconfig:"AUDIUS_SHARD_LENGTH" default:"2" json:"shardLength"`
-	ObjStorePlacementTags   []string             `envconfig:"AUDIUS_STORAGE_OBJ_STORE_PLACEMENT_TAGS" default:"type:content-node" json:"ObjStorePlacementTags"`
 }
 
 var storageConfig *StorageConfig

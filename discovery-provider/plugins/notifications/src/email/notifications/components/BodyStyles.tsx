@@ -2,8 +2,10 @@ import React from 'react'
 
 export const BodyStyles = () => {
   return (
-    <style type='text/css' dangerouslySetInnerHTML={{
-      __html: `
+    <style
+      type="text/css"
+      dangerouslySetInnerHTML={{
+        __html: `
     html {
       margin: 0;
       padding: 0;
@@ -456,7 +458,9 @@ export const BodyStyles = () => {
         line-height: 150% !important;
       }
     }
-  ` }} />
+  `
+      }}
+    />
   )
 }
 

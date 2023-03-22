@@ -1,10 +1,5 @@
 FROM golang:alpine AS builder
 
-ARG GOOS=linux
-ARG GOARCH=amd64
-
-ENV GOOS=${GOOS}
-ENV GOARCH=${GOARCH}
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 
@@ -34,6 +29,7 @@ RUN apk add curl ffmpeg
 
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/comms /bin/comms
+COPY --from=builder /app/discovery/db/migrations /discovery/db/migrations
 
 VOLUME ["/tmp"]
 ENTRYPOINT ["comms"]

@@ -1,43 +1,44 @@
-up:: down etchosts migrate
-	docker compose up -d --build
-
-localhosts="127.0.0.1       node1-storage node2-storage node3-storage node4-storage node1-discovery node2-discovery node3-discovery ingress"
-etchosts::
-	@	if ! grep -q $(localhosts) /etc/hosts; \
-		then echo Adding development hosts to /etc/hosts; \
-		echo $(localhosts) | sudo tee -a /etc/hosts; fi
+up:: down migrate
+	audius-compose up --comms comms-test
 
 down::
 	(docker compose down --volumes || true)
 
 psql::
-	docker exec -it comdb psql -U postgres audius_discovery
+	docker exec -it audius-protocol-comms-discovery-db-1 psql -U postgres audius_discovery
 
 fmt::
 	go fmt ./...
 
 test::
-	docker logs -f test
+	docker logs -f comms-test
 
 migrate::
-	docker compose up comdb -d && \
+	audius-compose up comms-discovery-db-1 && \
 	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
-	(docker exec -it comdb psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery" || true)
+	(docker exec -it audius-protocol-comms-discovery-db-1 psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery" || true)
 
 test.load::
-	docker exec -it storage1 sh -c "./comms storage loadTest"
+	docker exec -it audius-protocol-storage-1 sh -c "./comms storage loadTest"
 
 storage.seed.audio::
-	docker exec -it storage1 sh -c "./comms storage seed audio"
+	docker exec -it audius-protocol-storage-1 sh -c "./comms storage seed audio"
 
 storage.seed.image::
-	docker exec -it storage1 sh -c "./comms storage seed image"
+	docker exec -it audius-protocol-storage-1 sh -c "./comms storage seed image"
 
 # formerly build.fast but uses qemu - slow
 # note we use the "a1" tag to delineate a push from local for testing
 build.push::
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t audius/comms:a1 .
+	docker push audius/comms:a1
+
+# does not use qemu - fast
+# used for quick stage/prod deployments from localhost
+build.push.fast::
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/comms-amd64
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./DockerfileFast -t audius/comms:a1
 	docker push audius/comms:a1
 
 build.weathermap::

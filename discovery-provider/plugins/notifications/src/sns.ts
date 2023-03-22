@@ -3,27 +3,29 @@ import {
   PublishCommand,
   PublishBatchCommand,
   PublishBatchCommandInput,
-  PublishCommandInput,
-} from "@aws-sdk/client-sns"
-import { DeviceType } from "./processNotifications/mappers/base"
-
+  PublishCommandInput
+} from '@aws-sdk/client-sns'
+import { DeviceType } from './processNotifications/mappers/base'
 
 const region = process.env.AWS_REGION
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
 
 // Create SNS service object.
-const snsClient = new SNSClient({ region, credentials: { accessKeyId, secretAccessKey } })
+const snsClient = new SNSClient({
+  region,
+  credentials: { accessKeyId, secretAccessKey }
+})
 
 export const publish = async (params: PublishCommandInput) => {
   try {
     const data = await snsClient.send(new PublishCommand(params))
     // TODO remove?
-    console.log("sns send success")
+    console.log('sns send success')
     // console.log("Success.", data)
     return data // For unit tests.
   } catch (err) {
-    console.log("Error", err.stack)
+    console.log('Error', err.stack)
   }
 }
 
@@ -31,12 +33,12 @@ export const publishBatch = async (params: PublishBatchCommandInput) => {
   try {
     const data = await snsClient.send(new PublishBatchCommand(params))
     // TODO remove?
-    console.log("sns batch send success")
+    console.log('sns batch send success')
     // console.log("Success.", data)
     // console.log("Success.", data)
     return data // For unit tests.
   } catch (err) {
-    console.log("Error", err.stack)
+    console.log('Error', err.stack)
   }
 }
 
@@ -50,11 +52,11 @@ export const sendIOSMessage = async ({
   playSound = true,
   targetARN
 }: {
-  title: string,
-  body: string,
-  badgeCount: number,
-  data?: Object,
-  playSound: boolean,
+  title: string
+  body: string
+  badgeCount: number
+  data?: object
+  playSound: boolean
   targetARN: string
 }) => {
   const message = JSON.stringify({
@@ -75,7 +77,7 @@ export const sendIOSMessage = async ({
   await publish({
     TargetArn: targetARN,
     Message: message,
-    MessageStructure: 'json',
+    MessageStructure: 'json'
   })
 }
 
@@ -84,13 +86,13 @@ export const sendAndroidMessage = async ({
   body,
   targetARN,
   data = {},
-  playSound = true,
+  playSound = true
 }: {
-  title: string,
-  body: string,
-  targetARN: string,
-  data: Object,
-  playSound: boolean,
+  title: string
+  body: string
+  targetARN: string
+  data: object
+  playSound: boolean
 }) => {
   const message = JSON.stringify({
     default: body,
@@ -107,18 +109,21 @@ export const sendAndroidMessage = async ({
   await publish({
     TargetArn: targetARN,
     Message: message,
-    MessageStructure: 'json',
+    MessageStructure: 'json'
   })
 }
 
 type Device = {
-  type: DeviceType,
+  type: DeviceType
   targetARN: string
   badgeCount: number
 }
-type Message = { title: string, body: string, data: Object }
+type Message = { title: string; body: string; data: object }
 
-export const sendPushNotification = async (device: Device, message: Message) => {
+export const sendPushNotification = async (
+  device: Device,
+  message: Message
+) => {
   if (device.type == 'ios') {
     await sendIOSMessage({
       title: message.title,
@@ -126,7 +131,7 @@ export const sendPushNotification = async (device: Device, message: Message) => 
       badgeCount: device.badgeCount,
       data: message.data,
       playSound: true,
-      targetARN: device.targetARN,
+      targetARN: device.targetARN
     })
   } else if (device.type == 'android') {
     await sendAndroidMessage({
@@ -134,7 +139,7 @@ export const sendPushNotification = async (device: Device, message: Message) => 
       body: message.body,
       data: message.data,
       playSound: true,
-      targetARN: device.targetARN,
+      targetARN: device.targetARN
     })
   }
   // TODO: increment badge count

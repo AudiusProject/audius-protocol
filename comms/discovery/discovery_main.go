@@ -48,10 +48,12 @@ func DiscoveryMain() {
 			return err
 		}
 
-		err = pubkeystore.Dial(jsc)
+		err = pubkeystore.Dial()
 		if err != nil {
 			return err
 		}
+
+		go pubkeystore.StartPubkeyBackfill()
 
 		return nil
 
@@ -68,6 +70,7 @@ func DiscoveryMain() {
 
 	expvar.NewString("booted_at").Set(time.Now().UTC().String())
 
+	// Start comms server on :8925
 	e := server.NewServer(jsc, proc)
 	e.Logger.Fatal(e.Start(":8925"))
 }

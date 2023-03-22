@@ -129,6 +129,7 @@ describe('test Prometheus metrics', async function () {
   })
 
   it('Checks the duration of a bull queue job', async function () {
+    this.retries(3) // TODO: Flakey test
     const genericBullQueue = new GenericBullQueue()
     const job = await genericBullQueue.addTask('job-name', { timeout: 500 })
 

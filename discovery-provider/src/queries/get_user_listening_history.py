@@ -79,6 +79,13 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
     if not listening_history_results:
         return []
 
+    # order listening history entries by their user's play counts so our track ids will be
+    # correct order when querying for track ids
+    if sort_method == SortMethod.most_listens_by_user:
+        listening_history_results = sort_listening_history_results_by_play_count_desc(
+            listening_history_results
+        )
+
     # Map out all track ids and listen dates
     track_ids = []
     listen_dates = {}
@@ -100,43 +107,7 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
             )
         )
 
-    if sort_method == SortMethod.title:
-        base_query = base_query.order_by(sort_fn(TrackWithAggregates.title))
-    elif sort_method == SortMethod.artist_name:
-        base_query = base_query.join(TrackWithAggregates.user, aliased=True).order_by(
-            sort_fn(User.name)
-        )
-    elif sort_method == SortMethod.release_date:
-        base_query = base_query.order_by(
-            sort_fn(
-                coalesce(
-                    func.to_date_safe(
-                        TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS"
-                    ),
-                    TrackWithAggregates.created_at,
-                )
-            )
-        )
-    elif sort_method == SortMethod.last_listen_date:
-        base_query = base_query.order_by(
-            sort_fn(func.array_position(track_ids, TrackWithAggregates.track_id))
-        )
-    elif sort_method == SortMethod.plays:
-        base_query = base_query.join(TrackWithAggregates.aggregate_play).order_by(
-            sort_fn(AggregatePlay.count)
-        )
-    elif sort_method == SortMethod.reposts:
-        base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
-            sort_fn(AggregateTrack.repost_count)
-        )
-    elif sort_method == SortMethod.saves:
-        base_query = base_query.join(TrackWithAggregates.aggregate_track).order_by(
-            sort_fn(AggregateTrack.save_count)
-        )
-    else:
-        base_query = base_query.order_by(
-            sort_fn(func.array_position(track_ids, TrackWithAggregates.track_id))
-        )
+    base_query = sort_by_sort_method(sort_method, sort_fn, track_ids, base_query)
 
     # Add pagination
     base_query = add_query_pagination(base_query, limit, offset)
@@ -157,3 +128,58 @@ def _get_user_listening_history(session: Session, args: GetUserListeningHistoryA
         ]
 
     return tracks
+
+
+def sort_listening_history_results_by_play_count_desc(listening_history_results):
+    listening_histories_by_plays = [
+        listening_history for listening_history in listening_history_results
+    ]
+    listening_histories_by_plays.sort(
+        key=lambda listen: listen.get("play_count", 1), reverse=True
+    )
+    listening_history_results = listening_histories_by_plays
+    return listening_history_results
+
+
+def sort_by_sort_method(sort_method, sort_fn, track_ids, base_query):
+    if sort_method == SortMethod.title:
+        return base_query.order_by(sort_fn(TrackWithAggregates.title))
+    elif sort_method == SortMethod.artist_name:
+        return base_query.join(TrackWithAggregates.user, aliased=True).order_by(
+            sort_fn(User.name)
+        )
+    elif sort_method == SortMethod.release_date:
+        return base_query.order_by(
+            sort_fn(
+                coalesce(
+                    func.to_date_safe(
+                        TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS"
+                    ),
+                    TrackWithAggregates.created_at,
+                )
+            )
+        )
+    elif sort_method == SortMethod.last_listen_date:
+        return base_query.order_by(
+            sort_fn(func.array_position(track_ids, TrackWithAggregates.track_id))
+        )
+    elif sort_method == SortMethod.plays:
+        return base_query.join(TrackWithAggregates.aggregate_play).order_by(
+            sort_fn(AggregatePlay.count)
+        )
+    elif sort_method == SortMethod.reposts:
+        return base_query.join(TrackWithAggregates.aggregate_track).order_by(
+            sort_fn(AggregateTrack.repost_count)
+        )
+    elif sort_method == SortMethod.saves:
+        return base_query.join(TrackWithAggregates.aggregate_track).order_by(
+            sort_fn(AggregateTrack.save_count)
+        )
+    elif sort_method == SortMethod.most_listens_by_user:
+        return base_query.order_by(
+            (func.array_position(track_ids, TrackWithAggregates.track_id))
+        )
+    else:
+        return base_query.order_by(
+            sort_fn(func.array_position(track_ids, TrackWithAggregates.track_id))
+        )

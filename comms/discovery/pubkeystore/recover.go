@@ -10,17 +10,13 @@ import (
 
 	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
-	natsdConfig "comms.audius.co/natsd/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	"github.com/inconshreveable/log15"
-	"github.com/nats-io/nats.go"
 )
 
 var (
-	jsc       nats.JetStreamContext
-	kv        nats.KeyValue
 	poaClient *ethclient.Client
 
 	// on staging, and soon prod
@@ -31,25 +27,13 @@ var (
 	audiusChainClient *ethclient.Client
 )
 
-func Dial(jetstreamContext nats.JetStreamContext) error {
+func Dial() error {
 	var err error
-
-	jsc = jetstreamContext
-
-	// create kv buckets
-	kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:    discoveryConfig.PubkeystoreBucketName,
-		Replicas:  natsdConfig.NatsReplicaCount,
-		Placement: discoveryConfig.DiscoveryPlacement(),
-	})
-	if err != nil {
-		return fmt.Errorf("failed to create pubkey kv %v", err)
-	}
 
 	endpoint := "https://poa-gateway.audius.co"
 
 	if discoveryConfig.GetDiscoveryConfig().PeeringConfig.IsStaging {
-		endpoint = "http://13.52.185.5:8545"
+		endpoint = "http://54.176.124.102:8545"
 
 		// should get dynamically from
 		// https://identityservice.staging.audius.co/health_check/poa
@@ -73,13 +57,10 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 
 	conn := db.Conn
 
-	key := fmt.Sprintf("userId=%d", userId)
-
 	// first check a "pubkey cache" for a hit
 	// see: https://github.com/AudiusProject/audius-docker-compose/blob/nats/discovery-provider/clusterizer/src/recover.ts#L65
-	if got, err := kv.Get(key); err == nil {
-		logger.Debug("pubkey cache hit")
-		return string(got.Value()), nil
+	if got, err := getPubkey(userId); err == nil {
+		return got, nil
 	}
 
 	query := `
@@ -137,12 +118,11 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 
 	// success
 	if err == nil && pubkeyBase64 != "" {
-		_, err = kv.PutString(key, pubkeyBase64)
+		err = setPubkey(userId, pubkeyBase64)
 		if err != nil {
-			logger.Warn("kv set failed", "err", err)
+			logger.Warn("setPubkey failed", "err", err)
 		}
 
-		logger.Debug("recovered pubkey OK")
 		return pubkeyBase64, nil
 	}
 

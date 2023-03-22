@@ -11,12 +11,9 @@ for dir in contracts creator-node eth-contracts identity-service libs; do
     nvm install
 done
 
-# Link mad-dog (this is temporary, hopefully we can get mad-dog to run in docker)
+# Link libs
 cd $PROTOCOL_DIR/libs
 nvm use
 npm i
 npm run build
-npm link
-
-cd $PROTOCOL_DIR/libs
 npm link

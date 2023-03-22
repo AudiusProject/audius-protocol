@@ -7,10 +7,10 @@ import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { ChallengeId } from '../../email/notifications/types'
 import { formatWei } from '../../utils/format'
 
-type ChallengeRewardRow = Omit<NotificationRow, 'data'> & { data: ChallengeRewardNotification }
+type ChallengeRewardRow = Omit<NotificationRow, 'data'> & {
+  data: ChallengeRewardNotification
+}
 export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
-
-
   receiverUserId: number
   amount: number
   specifier: string
@@ -70,65 +70,77 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
 
   getPushBodyText() {
     if (this.challengeId === 'referred') {
-      return `You’ve received ${this.challengeInfoMap[this.challengeId].amount
-        } $AUDIO for being referred! Invite your friends to join to earn more!`
+      return `You’ve received ${
+        this.challengeInfoMap[this.challengeId].amount
+      } $AUDIO for being referred! Invite your friends to join to earn more!`
     }
-    return `You’ve earned ${this.challengeInfoMap[this.challengeId].amount
-      } $AUDIO for completing this challenge!`
-
+    return `You’ve earned ${
+      this.challengeInfoMap[this.challengeId].amount
+    } $AUDIO for completing this challenge!`
   }
 
   async pushNotification() {
-
-    const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
+    const res: Array<{
+      user_id: number
+      name: string
+      is_deactivated: boolean
+    }> = await this.dnDB
+      .select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId])
     const users = res.reduce((acc, user) => {
-      acc[user.user_id] = { name: user.name, isDeactivated: user.is_deactivated }
+      acc[user.user_id] = {
+        name: user.name,
+        isDeactivated: user.is_deactivated
+      }
       return acc
-    }, {} as Record<number, { name: string, isDeactivated: boolean }>)
-
+    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
 
     if (users?.[this.receiverUserId]?.isDeactivated) {
       return
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(this.receiverUserId)
+    const userNotifications = await super.getShouldSendNotification(
+      this.receiverUserId
+    )
 
     // If the user has devices to the notification to, proceed
-    if ((userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length > 0) {
-      const devices: Device[] = userNotifications.mobile?.[this.receiverUserId].devices
-      await Promise.all(devices.map(device => {
-        return sendPushNotification({
-          type: device.type,
-          badgeCount: userNotifications.mobile[this.receiverUserId].badgeCount,
-          targetARN: device.awsARN
-        }, {
-          title: this.challengeInfoMap[this.challengeId].title,
-          body: this.getPushBodyText(),
-          data: {}
+    if (
+      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
+      0
+    ) {
+      const devices: Device[] =
+        userNotifications.mobile?.[this.receiverUserId].devices
+      await Promise.all(
+        devices.map((device) => {
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount:
+                userNotifications.mobile[this.receiverUserId].badgeCount + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: this.challengeInfoMap[this.challengeId].title,
+              body: this.getPushBodyText(),
+              data: {}
+            }
+          )
         })
-      }))
-      // TODO: increment badge count
-
+      )
+      await this.incrementBadgeCount(this.receiverUserId)
     }
-    // 
 
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
-    }
     if (userNotifications.email) {
       // TODO: Send out email
     }
-
   }
 
   getResourcesForEmail(): ResourceIds {
     return {
-      users: new Set([this.receiverUserId]),
+      users: new Set([this.receiverUserId])
     }
   }
 
@@ -137,9 +149,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     return {
       type: this.notification.type,
       challengeId: this.challengeId,
-      receiverUserId: { name: receiverUser.name },
       rewardAmount: formatWei(this.amount.toString(), 'sol')
     }
   }
-
 }

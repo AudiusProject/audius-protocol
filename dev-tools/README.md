@@ -22,8 +22,8 @@ Below are suggested minimum values.
 ```
 Docker > Preferences > Resources > Advanced
 - CPUs 4
-- Memory 12 GB
-- Disk Image Size 80 GB
+- Memory 13 GB
+- Disk Image Size 120 GB
 ```
 
 If you still run into issues, you may execute a `docker system prune` to free additional space.
@@ -40,6 +40,9 @@ exit
 
 # In new terminal
 audius-compose build # takes about 10 min
+
+# Allows you to connect to containers via hostname like http://audius-protocol-discovery-provider-1/health_check
+sudo echo "127.0.0.1       ingress audius-protocol-storage-1 audius-protocol-storage-2 audius-protocol-storage-3 audius-protocol-storage-4 audius-protocol-storage-5 audius-protocol-comms-discovery-1 audius-protocol-comms-discovery-2 audius-protocol-comms-discovery-3 audius-protocol-comms-discovery-4 audius-protocol-comms-discovery-5 audius-protocol-discovery-provider-1 audius-protocol-discovery-provider-2 audius-protocol-discovery-provider-3 audius-protocol-creator-node-1 audius-protocol-creator-node-2 audius-protocol-creator-node-3 audius-protocol-identity-service-1 audius-protocol-solana-test-validator-1 audius-protocol-eth-ganache-1 audius-protocol-poa-ganache-1" >> /etc/hosts
 ```
 
 ### Bring up protocol stack
@@ -53,31 +56,6 @@ This command completes in 1-2 min, but use `watch docker ps -a` to ensure that a
 
 You can confirm that things are wired up correctly by running `audius-cmd create-user`.
 Note that `audius-cmd` requires the stack to be up and healthy, per [Bring up protocol stack](#bring-up-protocol-stack)
-
-## Port Forwarding Instructions
-
-To use the client from a mac, we need to setup a transparent proxy server to interact with the machine running the backend
-```
-brew install sshuttle
-```
-
-### Local Machine
-
-If running protocol and client on localhost
-
-```
-audius-compose connect
-```
-
-### Remote Machine
-
-If running protocol on remote instance and client on localhost
-
-```
-audius-compose connect -r
-```
-
-Then on your local machine you can go to http://audius-protocol-discovery-provider-1:5000/health_check
 
 # Helpful Commands
 

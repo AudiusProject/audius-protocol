@@ -13,10 +13,15 @@ import (
 )
 
 var (
-	mu           sync.RWMutex
-	websocketMap = map[int32]net.Conn{}
-	logger       = log15.New()
+	mu         sync.Mutex
+	websockets = []userWebsocket{}
+	logger     = log15.New()
 )
+
+type userWebsocket struct {
+	userId int32
+	conn   net.Conn
+}
 
 func init() {
 	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
@@ -25,31 +30,48 @@ func init() {
 func RegisterWebsocket(userId int32, conn net.Conn) {
 	mu.Lock()
 	defer mu.Unlock()
-	if existing, ok := websocketMap[userId]; ok {
-		logger.Warn("existing websocket found... closing", "user_id", userId)
-		existing.Close()
+	websockets = append(websockets, userWebsocket{
+		userId,
+		conn,
+	})
+}
+
+func removeWebsocket(toRemove userWebsocket) {
+	keep := make([]userWebsocket, 0, len(websockets))
+	for _, s := range websockets {
+		if s == toRemove {
+			s.conn.Close()
+		} else {
+			keep = append(keep, s)
+		}
 	}
-	websocketMap[userId] = conn
+	websockets = keep
 }
 
 func websocketPush(userId int32, data schema.ChatWebsocketEventData) {
-	mu.RLock()
-	defer mu.RUnlock()
-	if conn, ok := websocketMap[userId]; ok {
-		payload, err := json.Marshal(data)
-		if err != nil {
-			logger.Error("failed to encode json: " + err.Error())
-			return
+	mu.Lock()
+	defer mu.Unlock()
+
+	payload, err := json.Marshal(data)
+	if err != nil {
+		logger.Error("failed to encode json: " + err.Error())
+		return
+	}
+
+	for _, s := range websockets {
+		if s.userId != userId {
+			continue
 		}
-		err = wsutil.WriteServerMessage(conn, ws.OpText, payload)
+
+		err = wsutil.WriteServerMessage(s.conn, ws.OpText, payload)
 		if err != nil {
 			logger.Info("websocket push failed: " + err.Error())
-			conn.Close()
-			delete(websocketMap, userId)
+			removeWebsocket(s)
 		} else {
 			logger.Debug("websocket push", "userId", userId, "payload", string(payload))
 		}
 	}
+
 }
 
 /*

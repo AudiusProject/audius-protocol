@@ -39,7 +39,7 @@ from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.update_track_is_available import UPDATE_TRACK_IS_AVAILABLE_LOCK
-from src.utils import helpers
+from src.utils import helpers, web3_provider
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
 from src.utils.eth_manager import EthManager
@@ -103,7 +103,7 @@ def create_celery(test_config=None):
     global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
     global solana_client_manager
 
-    web3endpoint = helpers.get_web3_endpoint(shared_config)
+    web3endpoint = web3_provider.get_web3(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
@@ -289,7 +289,6 @@ def configure_celery(celery, test_config=None):
     # Update celery configuration
     celery.conf.update(
         imports=[
-            "src.tasks.index",
             "src.tasks.index_nethermind",
             "src.tasks.index_metrics",
             "src.tasks.index_aggregate_monthly_plays",
@@ -317,10 +316,6 @@ def configure_celery(celery, test_config=None):
             "src.tasks.update_track_is_available",
         ],
         beat_schedule={
-            "update_discovery_provider": {
-                "task": "update_discovery_provider",
-                "schedule": timedelta(seconds=indexing_interval_sec),
-            },
             "update_discovery_provider_nethermind": {
                 "task": "update_discovery_provider_nethermind",
                 "schedule": timedelta(seconds=indexing_interval_sec),
@@ -510,8 +505,6 @@ def configure_celery(celery, test_config=None):
                 challenge_event_bus=setup_challenge_bus(),
                 eth_manager=eth_manager,
             )
-
-    celery.autodiscover_tasks(["src.tasks"], "index", True)
 
     # Subclassing celery task with discovery provider context
     # Provided through properties defined in 'DatabaseTask'

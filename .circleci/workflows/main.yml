@@ -157,7 +157,6 @@ jobs:
       requires:
         - deploy-prod-discovery-provider-trigger
       hosts: >-
-        prod-discovery-4
         prod-discovery-1
         prod-discovery-2
         prod-discovery-3
@@ -227,3 +226,15 @@ jobs:
       context: open-vpn
       hosts: stage-identity
       service: identity-service
+
+  - deploy:
+      name: deploy-stage-discovery-provider-notifications
+      requires:
+        - push-discovery-provider-notifications
+      filters:
+        branches:
+          only: main
+      context: open-vpn
+      hosts: >-
+        stage-discovery-2
+      service: discovery-provider-notifications

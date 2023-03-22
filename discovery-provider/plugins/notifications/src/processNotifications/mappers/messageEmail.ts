@@ -3,9 +3,7 @@ import { BaseNotification } from './base'
 import { DMEmailNotification } from '../../types/notifications'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
-
 export class MessageEmail extends BaseNotification<DMEmailNotification> {
-
   receiverUserId: number
   senderUserId: number
 
@@ -29,5 +27,4 @@ export class MessageEmail extends BaseNotification<DMEmailNotification> {
       sendingUser: { name: sendingUser.name }
     }
   }
-
 }

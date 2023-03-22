@@ -428,12 +428,24 @@ describe('discoveryNodeSelector', () => {
         }
       }
 
-      await middleware.post!({
+      server.use(
+        rest.get(`${HEALTHY_NODE}/v1/full/tracks`, (_req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              data: {}
+            })
+          )
+        })
+      )
+
+      const actualResponse = await middleware.post!({
         fetch: fetch,
         url: '/v1/full/tracks',
         init: {},
         response: response as Response
       })
+      expect(actualResponse?.ok).toBe(true)
       expect(changeHandler).toBeCalledWith(HEALTHY_NODE)
     })
 
@@ -458,13 +470,24 @@ describe('discoveryNodeSelector', () => {
           return null
         }
       }
+      server.use(
+        rest.get(`${HEALTHY_NODE}/v1/full/tracks`, (_req, res, ctx) => {
+          return res(
+            ctx.status(200),
+            ctx.json({
+              data: {}
+            })
+          )
+        })
+      )
 
-      await middleware.post!({
+      const actualResponse = await middleware.post!({
         fetch: fetch,
         url: '/v1/full/tracks',
         init: {},
         response: response as Response
       })
+      expect(actualResponse?.ok).toBe(true)
       expect(changeHandler).toBeCalledWith(HEALTHY_NODE)
     })
 

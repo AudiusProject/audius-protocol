@@ -169,15 +169,15 @@ def get_scorable_track_data(session, redis_instance, strategy):
     karma_scores = get_karma(session, tuple(track_ids), strategy, None, False, xf)
 
     # Associate all the extra data
-    for (track_id, repost_count) in repost_counts:
+    for track_id, repost_count in repost_counts:
         tracks_map[track_id]["repost_count"] = repost_count
-    for (track_id, repost_count) in windowed_repost_counts:
+    for track_id, repost_count in windowed_repost_counts:
         tracks_map[track_id]["windowed_repost_count"] = repost_count
-    for (track_id, save_count) in save_counts:
+    for track_id, save_count in save_counts:
         tracks_map[track_id]["save_count"] = save_count
-    for (track_id, save_count) in windowed_save_counts:
+    for track_id, save_count in windowed_save_counts:
         tracks_map[track_id]["windowed_save_count"] = save_count
-    for (track_id, karma) in karma_scores:
+    for track_id, karma in karma_scores:
         tracks_map[track_id]["karma"] = karma
 
     return list(tracks_map.values())

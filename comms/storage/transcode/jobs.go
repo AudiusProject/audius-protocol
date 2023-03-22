@@ -90,8 +90,9 @@ func NewJobsManager(jsc nats.JetStreamContext, prefix string, replicaCount int) 
 		func() error {
 			var err error
 			kv, err = jsc.CreateKeyValue(&nats.KeyValueConfig{
-				Bucket:   kvBucketName,
-				Replicas: replicaCount,
+				Bucket:    kvBucketName,
+				Replicas:  replicaCount,
+				Placement: config.StoragePlacement(),
 			})
 			if err != nil {
 				return err
@@ -158,13 +159,10 @@ func (jobman *JobsManager) createTemporaryObjectStores() {
 		retry.Do(
 			func() error {
 				return createObjStoreIfNotExists(&nats.ObjectStoreConfig{
-					Bucket:   jobman.temporaryObjectStoreName(i),
-					TTL:      temporaryObjectStoreTTL,
-					Replicas: jobman.replicaCount,
-					Placement: &nats.Placement{
-						Cluster: config.GetStorageConfig().PeeringConfig.NatsClusterName,
-						Tags:    config.GetStorageConfig().ObjStorePlacementTags,
-					},
+					Bucket:    jobman.temporaryObjectStoreName(i),
+					TTL:       temporaryObjectStoreTTL,
+					Replicas:  jobman.replicaCount,
+					Placement: config.StoragePlacement(),
 				}, jobman.jsc)
 			},
 		)

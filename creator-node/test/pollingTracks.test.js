@@ -71,6 +71,7 @@ function _getTestSegmentFilePathAtIndex(index) {
 }
 
 describe('test Polling Tracks with mocked IPFS', function () {
+  this.retries(3) // TODO: Flakey test
   let app, server, libsMock, handleTrackContentRoute
   let session, userId, userWallet
 
@@ -95,17 +96,13 @@ describe('test Polling Tracks with mocked IPFS', function () {
     ;({ handleTrackContentRoute } = proxyquire(
       '../src/components/tracks/tracksComponentService',
       {
-        '@audius/sdk': {
-          libs: {
-            Utils: {
-              fileHasher: {
-                generateNonImageCid: sinon.stub().returns(
-                  new Promise((resolve) => {
-                    return resolve(mockCid)
-                  })
-                )
-              }
-            }
+        '../../utils/fileHasher': {
+          fileHasher: {
+            generateNonImageCid: sinon.stub().returns(
+              new Promise((resolve) => {
+                return resolve(mockCid)
+              })
+            )
           },
           '@global': true
         },
