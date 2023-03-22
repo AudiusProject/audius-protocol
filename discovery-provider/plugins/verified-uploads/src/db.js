@@ -7,7 +7,7 @@ const DB = async (url) => {
     client: "pg",
     connection: url,
     pool: { min: 2, max: 10 },
-    debug: true,
+    // debug: true,
     acquireConnectionTimeout: 120000,
   });
   console.log(`opening connection to ${url}`);
