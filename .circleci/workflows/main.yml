@@ -157,7 +157,6 @@ jobs:
       requires:
         - deploy-prod-discovery-provider-trigger
       hosts: >-
-        prod-discovery-4
         prod-discovery-1
         prod-discovery-2
         prod-discovery-3
