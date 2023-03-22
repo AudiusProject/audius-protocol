@@ -30,9 +30,6 @@ const { getTrackPosition } = playbackPositionSelectors
 const messages = {
   artistPick: "Artist's Pick",
   hiddenTrack: 'Hidden Track',
-  unlocked: 'Unlocked',
-  collectibleGated: 'Collectible Gated',
-  specialAccess: 'Special Access',
   timeLeft: 'left',
   played: 'Played'
 }
@@ -169,7 +166,7 @@ export const LineupTileTopRight = ({
       doesUserHaveAccess ? (
         <LineupTileTopRightItem
           icon={IconUnlocked}
-          label={messages.unlocked}
+          label=''
           color={accentBlue}
         />
       ) : null}
@@ -182,11 +179,7 @@ export const LineupTileTopRight = ({
               ? IconCollectible
               : IconSpecialAccess
           }
-          label={
-            premiumConditions.nft_collection
-              ? messages.collectibleGated
-              : messages.specialAccess
-          }
+          label=''
           color={accentBlue}
         />
       ) : null}

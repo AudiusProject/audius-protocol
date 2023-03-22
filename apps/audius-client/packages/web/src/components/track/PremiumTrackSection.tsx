@@ -57,6 +57,8 @@ const messages = {
   goToCollection: 'Go To Collection',
   sendTip: 'Send Tip',
   followArtist: 'Follow Artist',
+  period: '.',
+  exclamationMark: '!',
   ownCollectibleGatedPrefix:
     'Users can unlock access by linking a wallet containing a collectible from ',
   unlockCollectibleGatedTrack:
@@ -68,11 +70,10 @@ const messages = {
   ownFollowGated: 'Users can unlock access by following your account!',
   unlockFollowGatedTrackPrefix: 'Follow',
   thankYouForFollowing: 'Thank you for following',
-  unlockingFollowGatedTrackSuffix: '!',
   unlockedFollowGatedTrackSuffix: '! This track is now available.',
   ownTipGated: 'Users can unlock access by sending you a tip!',
   unlockTipGatedTrackPrefix: 'Send',
-  unlockTipGatedTrackSuffix: ' a tip',
+  unlockTipGatedTrackSuffix: ' a tip.',
   thankYouForSupporting: 'Thank you for supporting',
   unlockingTipGatedTrackSuffix: ' by sending them a tip!',
   unlockedTipGatedTrackSuffix:
@@ -197,6 +198,7 @@ const LockedPremiumTrackSection = ({
               badgeSize={14}
               useSVGTiers
             />
+            <span>{messages.period}</span>
           </div>
         </div>
       )
@@ -323,7 +325,7 @@ const UnlockingPremiumTrackSection = ({
             badgeSize={14}
             useSVGTiers
           />
-          <span>{messages.unlockingFollowGatedTrackSuffix}</span>
+          <span>{messages.exclamationMark}</span>
         </div>
       )
     }

@@ -107,25 +107,28 @@ export const TrackAvailabilityScreen = () => {
 
   const isInitiallyPublic =
     !isUpload && !initialValues.is_unlisted && !initialPremiumConditions
-
   const isInitiallySpecialAccess =
     !isUpload &&
     !!(
       initialPremiumConditions?.follow_user_id ||
       initialPremiumConditions?.tip_user_id
     )
+  const isInitiallyCollectibleGated =
+    !isUpload && !!initialPremiumConditions?.nft_collection
+  const isInitiallyHidden = !isUpload && initialValues.is_unlisted
+
   const noCollectibleGate =
     isInitiallyPublic ||
     isInitiallySpecialAccess ||
     isRemix ||
     hasNoCollectibles
-  const noCollectibleDropdown = isInitiallySpecialAccess || !isUpload
+  const noCollectibleDropdown =
+    noCollectibleGate || (!isUpload && !isInitiallyHidden)
 
-  const isInitiallyCollectibleGated =
-    !isUpload && !!initialPremiumConditions?.nft_collection
   const noSpecialAccess =
     isInitiallyPublic || isInitiallyCollectibleGated || isRemix
-  const noSpecialAccessOptions = noSpecialAccess || !isUpload
+  const noSpecialAccessOptions =
+    noSpecialAccess || (!isUpload && !isInitiallyHidden)
 
   const noHidden = !isUpload && !initialValues.is_unlisted
 

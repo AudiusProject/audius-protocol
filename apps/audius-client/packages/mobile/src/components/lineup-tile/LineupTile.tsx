@@ -77,7 +77,8 @@ export const LineupTile = ({
   const showPremiumCornerTag =
     isGatedContentEnabled &&
     premiumConditions &&
-    (isOwner || !doesUserHaveAccess)
+    (isOwner || !doesUserHaveAccess) &&
+    !(showArtistPick && isArtistPick)
   const cornerTagIconType = showPremiumCornerTag
     ? isOwner
       ? premiumConditions.nft_collection
@@ -107,7 +108,7 @@ export const LineupTile = ({
           style={{ shadowRadius: 1 }}
         />
       ) : null}
-      {!showPremiumCornerTag && showArtistPick && isArtistPick ? (
+      {showArtistPick && isArtistPick ? (
         <LineupTileBannerIcon type={LineupTileBannerIconType.STAR} />
       ) : null}
       {isUnlisted ? (
