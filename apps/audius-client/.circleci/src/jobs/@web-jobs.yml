@@ -92,7 +92,7 @@ web-test-staging:
     - attach_workspace:
         at: ./
     - cypress/install:
-        install-command: 'cd packages/probers && npm ci'
+        install-command: 'cd packages/probers && npx cypress install'
         install-browsers: true
     - cypress/run-tests:
         cypress-command: 'cd packages/probers && npx cypress run --browser chrome'

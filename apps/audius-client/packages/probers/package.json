@@ -10,8 +10,8 @@
     "test:target": "env-cmd -f .env jest --runInBand",
     "test": "npm run cypress:run",
     "test:ci": "npm run cypress:run",
-    "lint": "./node_modules/.bin/standard",
-    "lint:fix": "./node_modules/.bin/standard --fix"
+    "lint": "eslint --cache --ext=js,jsx,ts,tsx cypress",
+    "lint:fix": "eslint --cache --fix --ext=js,jsx,ts,tsx cypress"
   },
   "author": "",
   "license": "ISC",
@@ -21,7 +21,6 @@
     "cypress-file-upload": "^5.0.8",
     "cypress-wait-until": "^1.7.2",
     "dayjs": "^1.11.6",
-    "standard": "^17.0.0",
     "typescript": "^4.8.4"
   },
   "standard": {
@@ -29,5 +28,10 @@
       "jest"
     ],
     "ignore": []
+  },
+  "devDependencies": {
+    "eslint": "8.19.0",
+    "eslint-config-audius": "1.5.12",
+    "eslint-plugin-cypress": "2.12.1"
   }
 }
