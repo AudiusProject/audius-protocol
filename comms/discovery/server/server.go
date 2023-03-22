@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -72,6 +73,9 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/chats/:id", s.getChat)
 	g.GET("/chats/:id/messages", s.getMessages)
 	g.POST("/mutate", s.mutate)
+
+	g.GET("/chat_permissions", s.getChatPermissions)
+	g.POST("/validate_can_chat", s.validateCanChat)
 
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
@@ -412,6 +416,139 @@ func (s *ChatServer) getMessages(c echo.Context) error {
 		Health:  s.getHealthStatus(),
 		Data:    Map(messages, ToMessageResponse),
 		Summary: &responseSummary,
+	}
+	return c.JSON(200, response)
+}
+
+func (s *ChatServer) getChatPermissions(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := peering.ReadSignedRequest(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	permission, err := queries.GetChatPermissions(db.Conn, ctx, userId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			permission = schema.All
+		} else {
+			return err
+		}
+	}
+
+	response := schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   permission,
+	}
+	return c.JSON(200, response)
+}
+
+func (s *ChatServer) validateCanChat(c echo.Context) error {
+	payload, wallet, err := peering.ReadSignedRequest(c)
+	if err != nil {
+		return c.JSON(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, c.Request().Context(), wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	// Unmarshal RPC
+	var rawRpc schema.RawRPC
+	err = json.Unmarshal(payload, &rawRpc)
+	if err != nil {
+		return c.JSON(400, "bad request: "+err.Error())
+	}
+
+	// Validate and decode payload
+	var params schema.ValidateCanChatRPCParams
+	err = json.Unmarshal(rawRpc.Params, &params)
+	if err != nil {
+		return c.JSON(400, "bad request: "+err.Error())
+	}
+	var receiverUserIds []int32
+	var validatedPermissions map[string]bool
+	for _, encodedId := range params.ReceiverUserIDS {
+		decodedId, err := misc.DecodeHashId(encodedId)
+		if err != nil {
+			return c.JSON(400, "bad request: "+err.Error())
+		}
+		receiverUserIds = append(receiverUserIds, int32(decodedId))
+		// Initialize response map
+		validatedPermissions[encodedId] = true
+	}
+
+	// Validate permission for each <request sender, user> pair
+	permissions, err := queries.BulkGetChatPermissions(db.Conn, c.Request().Context(), receiverUserIds)
+	if err != nil {
+		return err
+	}
+	// User IDs that permit chats from followees only
+	var followeePermissions []int32
+	// User IDs that permit chats from tippers only
+	var tipperPermissions []int32
+	for _, userPermission := range permissions {
+		if userPermission.Permits == schema.Followees {
+			// Add id to followeePermissions to bulk query later
+			followeePermissions = append(followeePermissions, userPermission.UserID)
+			// Initialize response map to false for now
+			encodedId, err := misc.EncodeHashId(int(userPermission.UserID))
+			if err != nil {
+				return err
+			}
+			validatedPermissions[encodedId] = false
+		} else if userPermission.Permits == schema.Tippers {
+			// Add id to tipperPermissions to bulk query later
+			tipperPermissions = append(tipperPermissions, userPermission.UserID)
+			// Initialize response map to false for now
+			encodedId, err := misc.EncodeHashId(int(userPermission.UserID))
+			if err != nil {
+				return err
+			}
+			validatedPermissions[encodedId] = false
+		}
+	}
+	// Query follows table to validate <sender, receiver> pair against users with followees only permissions
+	follows, err := queries.BulkGetFollowers(db.Conn, c.Request().Context(), queries.BulkGetFollowersParams{
+		FollowerUserIDs: followeePermissions,
+		FolloweeUserID:  userId,
+	})
+	// Update response map if count > 0
+	for _, follow := range follows {
+		if follow.Count > 0 {
+			encodedId, err := misc.EncodeHashId(int(follow.FollowerUserID))
+			if err != nil {
+				return err
+			}
+			validatedPermissions[encodedId] = true
+		}
+	}
+
+	// Query tips table to validate <sender, receiver> pair against users with tippers only permissions
+	tips, err := queries.BulkGetTipReceivers(db.Conn, c.Request().Context(), queries.BulkGetTipReceiversParams{
+		SenderUserID:    userId,
+		ReceiverUserIDs: tipperPermissions,
+	})
+	// Update response map if count > 0
+	for _, tip := range tips {
+		if tip.Count > 0 {
+			encodedId, err := misc.EncodeHashId(int(tip.ReceiverUserID))
+			if err != nil {
+				return err
+			}
+			validatedPermissions[encodedId] = true
+		}
+	}
+
+	response := schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   validatedPermissions,
 	}
 	return c.JSON(200, response)
 }

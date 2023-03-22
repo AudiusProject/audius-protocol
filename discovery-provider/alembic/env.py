@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 import os
 import re
+from pathlib import Path
 
 from alembic import context
 from alembic.ddl.base import AddColumn, DropColumn, visit_add_column, visit_drop_column
@@ -45,6 +46,30 @@ kill_running_queries_sql = text(
     COMMIT;
 """
 )
+
+
+def load_sql(name):
+    path = Path(__file__).parent.joinpath(f"./trigger_sql/{name}")
+    with open(path) as f:
+        return f.read()
+
+
+def build_sql(file_names):
+    files = [load_sql(f) for f in file_names]
+    inner_sql = "\n;\n".join(files)
+    return text("begin; \n\n " + inner_sql + " \n\n commit;")
+
+
+def load_triggers(connection):
+    # first execute the ddl
+    # since trigger code may depend on table structure
+    ddl = load_sql("ddl.sql")
+    connection.execute(text(ddl))
+
+    # then reload the triggers
+    trigger_dir = Path(__file__).parent.joinpath("./trigger_sql")
+    file_list = [f.name for f in trigger_dir.iterdir() if f.name.startswith("handle_")]
+    connection.execute(build_sql(file_list))
 
 
 def run_migrations_offline():
@@ -95,6 +120,11 @@ def run_migrations_online():
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
+
+        try:
+            load_triggers(connection)
+        except Exception as e:
+            print(e)
 
 
 @compiles(CreateIndex)

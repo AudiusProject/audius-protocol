@@ -75,7 +75,7 @@ TX_TYPE_TO_HANDLER_MAP = {
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 logger = logging.getLogger(__name__)
-web3 = web3_provider.get_nethermind_web3()
+web3 = web3_provider.get_web3()
 
 # HELPER FUNCTIONS
 
@@ -1042,7 +1042,7 @@ def update_task(self):
     db = update_task.db
     redis = update_task.redis
 
-    final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
+    final_poa_block = helpers.get_final_poa_block()
     current_block_query_results = None
 
     with db.scoped_session() as session:

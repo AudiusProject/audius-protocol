@@ -6,7 +6,6 @@ import type { EthContracts } from '../services/ethContracts'
 import type { EthWeb3Manager } from '../services/ethWeb3Manager'
 import type { Hedgehog } from '@audius/hedgehog'
 import type { IdentityService } from '../services/identity'
-import type { SolanaAudiusData } from '../services/solanaAudiusData/SolanaAudiusData'
 import type { SolanaWeb3Manager } from '../services/solana'
 import type { Web3Manager } from '../services/web3Manager'
 import type { UserStateManager } from '../userStateManager'
@@ -31,7 +30,6 @@ export type BaseConstructorArgs = [
   EthWeb3Manager,
   EthContracts,
   SolanaWeb3Manager,
-  SolanaAudiusData,
   Wormhole,
   CreatorNode,
   Comstock,
@@ -49,7 +47,6 @@ export class Base {
   ethWeb3Manager: EthWeb3Manager
   ethContracts: EthContracts
   solanaWeb3Manager: SolanaWeb3Manager
-  anchorAudiusData: SolanaAudiusData
   wormholeClient: Wormhole
   creatorNode: CreatorNode
   comstock: Comstock
@@ -68,7 +65,6 @@ export class Base {
     ethWeb3Manager: EthWeb3Manager,
     ethContracts: EthContracts,
     solanaWeb3Manager: SolanaWeb3Manager,
-    anchorAudiusData: SolanaAudiusData,
     wormholeClient: Wormhole,
     creatorNode: CreatorNode,
     comstock: Comstock,
@@ -84,7 +80,6 @@ export class Base {
     this.ethWeb3Manager = ethWeb3Manager
     this.ethContracts = ethContracts
     this.solanaWeb3Manager = solanaWeb3Manager
-    this.anchorAudiusData = anchorAudiusData
     this.wormholeClient = wormholeClient
     this.creatorNode = creatorNode
     this.comstock = comstock
