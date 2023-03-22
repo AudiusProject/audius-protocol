@@ -5,14 +5,19 @@ import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
-type TierChangeNotificationRow = Omit<NotificationRow, 'data'> & { data: TierChangeNotification }
+type TierChangeNotificationRow = Omit<NotificationRow, 'data'> & {
+  data: TierChangeNotification
+}
 export class TierChange extends BaseNotification<TierChangeNotificationRow> {
-
   newTier: number
   receiverUserId: number
   rank: number
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: TierChangeNotificationRow) {
+  constructor(
+    dnDB: Knex,
+    identityDB: Knex,
+    notification: TierChangeNotificationRow
+  ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
     this.receiverUserId = userIds[0]
@@ -24,7 +29,7 @@ export class TierChange extends BaseNotification<TierChangeNotificationRow> {
   }
   getResourcesForEmail(): ResourceIds {
     return {
-      users: new Set([this.receiverUserId]),
+      users: new Set([this.receiverUserId])
     }
   }
 
@@ -32,9 +37,8 @@ export class TierChange extends BaseNotification<TierChangeNotificationRow> {
     const sendingUser = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      sendingUser: { name: sendingUser.name },
+      sendingUser: sendingUser,
       rank: this.rank
     }
   }
-
 }

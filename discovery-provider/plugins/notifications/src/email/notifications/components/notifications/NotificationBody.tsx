@@ -4,7 +4,7 @@ import MultiUserHeader from './MultiUserHeader'
 
 const UserImage = ({ user }) => (
   <img
-    src={user.image || user.thumbnail}
+    src={user.imageUrl || user.thumbnail}
     style={{
       height: '32px',
       width: '32px',
@@ -15,7 +15,7 @@ const UserImage = ({ user }) => (
 
 const TrackImage = ({ track }) => (
   <img
-    src={track.image || track.thumbnail}
+    src={track.imageUrl || track.thumbnail}
     style={{
       height: '42px',
       width: '42px',
@@ -27,39 +27,38 @@ const TrackImage = ({ track }) => (
 const AnnouncementHeader = () => (
   <>
     <td
-      colSpan='1'
-      valign='center'
+      colSpan="1"
+      valign="center"
       style={{
         padding: '16px 16px 0px 16px'
-      }}
-    >
+      }}>
       <img
-        src={'https://download.audius.co/static-resources/email/announcement.png'}
+        src={
+          'https://download.audius.co/static-resources/email/announcement.png'
+        }
         style={{
           height: '32px',
           width: '32px',
           borderRadius: '50%',
           display: 'block'
         }}
-        alt='Announcement'
-        titile='Announcement'
+        alt="Announcement"
+        titile="Announcement"
       />
     </td>
     <td
-      colSpan='11'
+      colSpan="11"
       style={{
         width: '100%',
         padding: '16px 0px 0px'
-      }}
-    >
+      }}>
       <span
         className={'avenir'}
         style={{
           color: '#858199',
           fontSize: '16px',
           fontWeight: 'bold'
-        }}
-      >
+        }}>
         {'Announcement'}
       </span>
     </td>
@@ -75,20 +74,19 @@ const OpenAudiusLink = () => (
       fontSize: '12px',
       fontWeight: 600,
       lineHeight: '10px'
-    }}
-  >
+    }}>
     {'Open Audius'}
     <img
-      src='https://download.audius.co/static-resources/email/iconArrow.png'
+      src="https://download.audius.co/static-resources/email/iconArrow.png"
       style={{
         height: '8px',
         width: '8px',
         marginLeft: '4px',
         display: 'inline-block'
       }}
-      alt='Arrow Right'
-      titile='Arrow Right'
-      className='arrowIcon'
+      alt="Arrow Right"
+      titile="Arrow Right"
+      className="arrowIcon"
     />
   </a>
 )
@@ -96,11 +94,10 @@ const OpenAudiusLink = () => (
 const WrapLink = (props) => {
   return (
     <a
-      href='https://audius.co/feed?openNotifications=true'
+      href="https://audius.co/feed?openNotifications=true"
       style={{ textDecoration: 'none' }}>
       {props.children}
     </a>
-
   )
 }
 
@@ -109,9 +106,9 @@ const Body = (props) => {
   const hasMultiUser = hasUsers && props.users.length > 1
   return (
     <table
-      border='0'
-      cellPadding='0'
-      cellSpacing='0'
+      border="0"
+      cellPadding="0"
+      cellSpacing="0"
       style={{
         borderCollapse: 'separate',
         border: '1px solid rgba(133,129,153,0.2)',
@@ -121,21 +118,19 @@ const Body = (props) => {
         width: '100%',
         maxWidth: '396px',
         marginBottom: '8px'
-      }}
-    >
+      }}>
       <tr>
         <td>
           <WrapLink>
             <table
-              border='0'
-              cellPadding='0'
-              cellSpacing='0'
+              border="0"
+              cellPadding="0"
+              cellSpacing="0"
               style={{
                 borderCollapse: 'separate',
                 height: 'auto',
                 width: '100%'
-              }}
-            >
+              }}>
               {props.type === 'Announcement' && (
                 <tr>
                   <AnnouncementHeader />
@@ -145,13 +140,12 @@ const Body = (props) => {
                 <tr>
                   <td
                     colSpan={'12'}
-                    valign='center'
+                    valign="center"
                     style={{
                       padding: '16px 16px 0px',
                       paddingTop: '16px',
                       borderRadius: '4px'
-                    }}
-                  >
+                    }}>
                     {props.title}
                   </td>
                 </tr>
@@ -160,13 +154,15 @@ const Body = (props) => {
                 <tr>
                   <td
                     colSpan={'12'}
-                    valign='center'
+                    valign="center"
                     style={{
                       padding: '16px 16px 0px',
-                      paddingTop: (props.type === 'Announcement' || props.title) ? '8px' : '16px',
+                      paddingTop:
+                        props.type === 'Announcement' || props.title
+                          ? '8px'
+                          : '16px',
                       borderRadius: '4px'
-                    }}
-                  >
+                    }}>
                     <MultiUserHeader users={props.users} />
                   </td>
                 </tr>
@@ -175,25 +171,27 @@ const Body = (props) => {
                 {hasUsers && !hasMultiUser && (
                   <td
                     colSpan={'1'}
-                    valign='center'
+                    valign="center"
                     style={{
                       padding: '12px 0px 8px 16px',
                       width: '60px'
-                    }}
-                  >
+                    }}>
                     <UserImage user={props.users[0]} />
                   </td>
                 )}
                 <td
-                  colSpan={(hasUsers && !hasMultiUser) ? 11 : 12}
-                  valign='center'
+                  colSpan={hasUsers && !hasMultiUser ? 11 : 12}
+                  valign="center"
                   style={{
                     padding: '12px 16px 8px',
-                    paddingLeft: (hasUsers && !hasMultiUser) ? '12px' : '16px',
-                    paddingTop: props.title ? '8px' : ((hasUsers && !hasMultiUser) ? '12px' : '16px'),
+                    paddingLeft: hasUsers && !hasMultiUser ? '12px' : '16px',
+                    paddingTop: props.title
+                      ? '8px'
+                      : hasUsers && !hasMultiUser
+                      ? '12px'
+                      : '16px',
                     width: '100%'
-                  }}
-                >
+                  }}>
                   {props.message}
                 </td>
               </tr>
@@ -201,59 +199,64 @@ const Body = (props) => {
                 <tr>
                   <td
                     colSpan={'1'}
-                    valign='center'
+                    valign="center"
                     style={{
                       padding: '6px 0px 8px 16px',
                       width: '60px'
-                    }}
-                  >
+                    }}>
                     <TrackImage track={props.track} />
                   </td>
                   <td
                     colSpan={11}
-                    valign='center'
+                    valign="center"
                     style={{
                       padding: '6px 16px 8px',
                       paddingLeft: '12px',
                       width: '100%'
-                    }}
-                  >
+                    }}>
                     {props.trackMessage}
                   </td>
                 </tr>
               )}
               {props.twitter && (
                 <tr>
-                  <td colSpan={'12'} style={{ padding: '4px 0px 16px 16px', borderRadius: '4px' }}>
+                  <td
+                    colSpan={'12'}
+                    style={{
+                      padding: '4px 0px 16px 16px',
+                      borderRadius: '4px'
+                    }}>
                     <a
                       href={props.twitter.href}
-                      target='_blank'
+                      target="_blank"
                       style={{
                         textDecoration: 'none'
-                      }}
-                    >
+                      }}>
                       <table
-                        cellSpacing='0'
-                        cellPadding='0'
-                        style={{ margin: '0px' }}
-                      >
+                        cellSpacing="0"
+                        cellPadding="0"
+                        style={{ margin: '0px' }}>
                         <tr>
-                          <td style={{ borderRadius: '4px', padding: '4px 8px', margin: '0px' }} bgcolor='#1BA1F1'>
+                          <td
+                            style={{
+                              borderRadius: '4px',
+                              padding: '4px 8px',
+                              margin: '0px'
+                            }}
+                            bgcolor="#1BA1F1">
                             <table
-                              cellSpacing='0'
-                              cellPadding='0'
-                              style={{ margin: '0px' }}
-                            >
+                              cellSpacing="0"
+                              cellPadding="0"
+                              style={{ margin: '0px' }}>
                               <tr>
                                 <td
-                                  valign='center'
+                                  valign="center"
                                   style={{
                                     margin: '0px'
-                                  }}
-                                >
+                                  }}>
                                   <img
-                                    src='https://download.audius.co/static-resources/email/iconTwitterWhite.png'
-                                    alt='twitter'
+                                    src="https://download.audius.co/static-resources/email/iconTwitterWhite.png"
+                                    alt="twitter"
                                     style={{
                                       height: '18px',
                                       width: '18px',
@@ -264,15 +267,14 @@ const Body = (props) => {
                                   />
                                 </td>
                                 <td
-                                  valign='center'
+                                  valign="center"
                                   style={{
                                     margin: '0px',
                                     fontSize: '14px',
                                     fontWeight: '500',
                                     color: '#ffffff',
                                     textDecoration: 'none'
-                                  }}
-                                >
+                                  }}>
                                   {props.twitter.message}
                                 </td>
                               </tr>
@@ -288,21 +290,23 @@ const Body = (props) => {
                 <tr>
                   <td
                     colSpan={'12'}
-                    valign='center'
+                    valign="center"
                     className={'avenir'}
                     style={{
                       padding: '0px 16px 14px',
                       color: '#7E1BCC',
                       fontSize: '14px',
                       fontWeight: '500'
-                    }}
-                  >
+                    }}>
                     {'Read More'}
                   </td>
                 </tr>
               )}
               <tr>
-                <td valign='center' colSpan={'12'} style={{ padding: '0px 16px 14px' }}>
+                <td
+                  valign="center"
+                  colSpan={'12'}
+                  style={{ padding: '0px 16px 14px' }}>
                   <OpenAudiusLink />
                 </td>
               </tr>

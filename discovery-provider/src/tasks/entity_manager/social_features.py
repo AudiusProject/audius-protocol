@@ -64,6 +64,8 @@ def create_social_record(params: ManageEntityParameters):
     record_types = action_to_record_types[params.action]
     create_record: Union[Save, Follow, Repost, Subscription, None] = None
     for record_type in record_types:
+        if not validate_duplicate_social_feature(record_type, params):
+            continue
         if record_type == EntityType.FOLLOW:
             create_record = Follow(
                 blockhash=params.event_blockhash,
@@ -167,6 +169,8 @@ def delete_social_record(params):
     record_types = action_to_record_types[params.action]
     deleted_record = None
     for record_type in record_types:
+        if not validate_duplicate_social_feature(record_type, params):
+            continue
         if record_type == EntityType.FOLLOW:
             deleted_record = Follow(
                 blockhash=params.event_blockhash,
@@ -250,7 +254,7 @@ def validate_social_feature(params: ManageEntityParameters):
         Action.UNSUBSCRIBE,
     ):
         if params.user_id == params.entity_id:
-            raise Exception(f"User {params.user_id} cannot follow themself")
+            raise Exception(f"User {params.user_id} cannot {params.action} themself")
     else:
         target_entity = params.existing_records[params.entity_type][params.entity_id]
         owner_id = (
@@ -261,26 +265,30 @@ def validate_social_feature(params: ManageEntityParameters):
         if params.user_id == owner_id:
             raise Exception(f"User {params.user_id} cannot {params.action} themself")
 
+
+def validate_duplicate_social_feature(
+    record_type: EntityType, params: ManageEntityParameters
+):
     # Cannot duplicate a social feature
     key = get_record_key(params.user_id, params.entity_type, params.entity_id)
 
-    record_types = action_to_record_types[params.action]
+    existing_record = params.existing_records.get(record_type, {}).get(key)
 
-    for record_type in record_types:
-        existing_record = params.existing_records.get(record_type, {}).get(key)
-        if existing_record:
-            duplicate_create = (
-                params.action
-                in (Action.REPOST, Action.SAVE, Action.FOLLOW, Action.SUBSCRIBE)
-                and not existing_record.is_delete
-            )
-            duplicate_delete = (
-                params.action
-                in (Action.UNREPOST, Action.UNSAVE, Action.UNFOLLOW, Action.UNSUBSCRIBE)
-                and existing_record.is_delete
-            )
+    if existing_record:
+        duplicate_create = (
+            params.action
+            in (Action.REPOST, Action.SAVE, Action.FOLLOW, Action.SUBSCRIBE)
+            and not existing_record.is_delete
+        )
+        duplicate_delete = (
+            params.action
+            in (Action.UNREPOST, Action.UNSAVE, Action.UNFOLLOW, Action.UNSUBSCRIBE)
+            and existing_record.is_delete
+        )
 
-            if duplicate_create or duplicate_delete:
-                raise Exception(
-                    f"User {params.user_id} has already sent a {params.action} for {params.entity_type} {params.entity_id}"
-                )
+        if duplicate_create or duplicate_delete:
+            logger.info(
+                f"entity_manager.py | User {params.user_id} has already sent a {params.action} for record type {record_type} for {params.entity_type} {params.entity_id}. Skipping"
+            )
+            return False
+    return True

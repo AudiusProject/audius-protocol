@@ -15,7 +15,12 @@ export const trimRightZeros = (number) => {
 const ETH_WEI = new BN('1000000000000000000')
 const SOL_WEI = new BN('100000000')
 
-export const formatWei = (num: string, chain: 'eth' | 'sol', shouldTruncate = false, significantDigits = 4) => {
+export const formatWei = (
+  num: string,
+  chain: 'eth' | 'sol',
+  shouldTruncate = false,
+  significantDigits = 4
+) => {
   const WEI = chain === 'eth' ? ETH_WEI : SOL_WEI
   const amount = new BN(num)
   const aud = amount.div(WEI)
@@ -27,13 +32,13 @@ export const formatWei = (num: string, chain: 'eth' | 'sol', shouldTruncate = fa
 
   let trimmed = `${aud}.${trimRightZeros(decimals)}`
   if (shouldTruncate) {
-    let [before, after] = trimmed.split('.')
+    const [before, after] = trimmed.split('.')
     // If we have only zeros, just lose the decimal
-    after = after.substr(0, significantDigits)
-    if (parseInt(after) === 0) {
+    const trimmedAfter = after.substr(0, significantDigits)
+    if (parseInt(trimmedAfter) === 0) {
       trimmed = before
     } else {
-      trimmed = `${before}.${after}`
+      trimmed = `${before}.${trimmedAfter}`
     }
   }
   return formatNumberCommas(trimmed)

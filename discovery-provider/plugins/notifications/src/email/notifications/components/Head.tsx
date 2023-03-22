@@ -5,8 +5,9 @@ import FontStyles from './FontStyles'
 const Head = (props) => {
   return (
     <div>
-      <div dangerouslySetInnerHTML={{
-        __html: `
+      <div
+        dangerouslySetInnerHTML={{
+          __html: `
           <!--[if gte mso 15]>
             <xml>
               <o:OfficeDocumentSettings>
@@ -15,7 +16,8 @@ const Head = (props) => {
               </o:OfficeDocumentSettings>
             </xml>
           <![endif]-->
-      ` }}
+      `
+        }}
       />
       <meta charSet={'UTF-8'} />
       <meta httpEquiv={'x-ua-compatible'} content={'IE=edge'} />

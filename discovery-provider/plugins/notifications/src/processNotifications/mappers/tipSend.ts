@@ -2,17 +2,21 @@ import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
 import { TipSendNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
-import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
-type TipSendNotificationRow = Omit<NotificationRow, 'data'> & { data: TipSendNotification }
+type TipSendNotificationRow = Omit<NotificationRow, 'data'> & {
+  data: TipSendNotification
+}
 export class TipSend extends BaseNotification<TipSendNotificationRow> {
-
   senderUserId: number
   receiverUserId: number
   amount: number
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: TipSendNotificationRow) {
+  constructor(
+    dnDB: Knex,
+    identityDB: Knex,
+    notification: TipSendNotificationRow
+  ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
     this.amount = this.notification.data.amount
@@ -26,17 +30,16 @@ export class TipSend extends BaseNotification<TipSendNotificationRow> {
 
   getResourcesForEmail(): ResourceIds {
     return {
-      users: new Set([this.senderUserId, this.receiverUserId]),
+      users: new Set([this.senderUserId, this.receiverUserId])
     }
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUserId = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.receiverUserId]
     return {
       type: this.notification.type,
-      receiverUserId: { name: receiverUserId.name },
+      receiverUser,
       amount: this.amount
     }
   }
-
 }

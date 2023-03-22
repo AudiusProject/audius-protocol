@@ -7,9 +7,10 @@ import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { capitalize } from '../../email/notifications/components/utils'
 import { formatWei } from '../../utils/format'
 
-type ReactionNotificationRow = Omit<NotificationRow, 'data'> & { data: ReactionNotification }
+type ReactionNotificationRow = Omit<NotificationRow, 'data'> & {
+  data: ReactionNotification
+}
 export class Reaction extends BaseNotification<ReactionNotificationRow> {
-
   reactedTo: string
   reactionType: string
   reactionValue: number
@@ -18,7 +19,11 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
   senderUserId: number
   tipAmount: string
 
-  constructor(dnDB: Knex, identityDB: Knex, notification: ReactionNotificationRow) {
+  constructor(
+    dnDB: Knex,
+    identityDB: Knex,
+    notification: ReactionNotificationRow
+  ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
     this.reactedTo = this.notification.data.reacted_to
@@ -31,67 +36,80 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
   }
 
   async pushNotification() {
-    const res: Array<{ user_id: number, name: string, is_deactivated: boolean }> = await this.dnDB.select('user_id', 'name', 'is_deactivated')
+    const res: Array<{
+      user_id: number
+      name: string
+      is_deactivated: boolean
+    }> = await this.dnDB
+      .select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId, this.senderUserId])
     const users = res.reduce((acc, user) => {
-      acc[user.user_id] = { name: user.name, isDeactivated: user.is_deactivated }
+      acc[user.user_id] = {
+        name: user.name,
+        isDeactivated: user.is_deactivated
+      }
       return acc
-    }, {} as Record<number, { name: string, isDeactivated: boolean }>)
+    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
 
     if (users?.[this.senderUserId]?.isDeactivated) {
       return
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(this.senderUserId)
+    const userNotifications = await super.getShouldSendNotification(
+      this.senderUserId
+    )
 
     const reactingUserName = users[this.receiverUserId]?.name
     const tipAmount = formatWei(this.tipAmount, 'sol')
 
     // If the user has devices to the notification to, proceed
-    if ((userNotifications.mobile?.[this.senderUserId]?.devices ?? []).length > 0) {
-      const devices: Device[] = userNotifications.mobile?.[this.senderUserId].devices
-      await Promise.all(devices.map(device => {
-        return sendPushNotification({
-          type: device.type,
-          badgeCount: userNotifications.mobile[this.senderUserId].badgeCount,
-          targetARN: device.awsARN
-        }, {
-          title: `${capitalize(reactingUserName)} reacted`,
-          body: `${capitalize(reactingUserName)} reacted to your tip of ${tipAmount} $AUDIO`,
-          data: {}
+    if (
+      (userNotifications.mobile?.[this.senderUserId]?.devices ?? []).length > 0
+    ) {
+      const devices: Device[] =
+        userNotifications.mobile?.[this.senderUserId].devices
+      await Promise.all(
+        devices.map((device) => {
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount:
+                userNotifications.mobile[this.senderUserId].badgeCount + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: `${capitalize(reactingUserName)} reacted`,
+              body: `${capitalize(
+                reactingUserName
+              )} reacted to your tip of ${tipAmount} $AUDIO`,
+              data: {}
+            }
+          )
         })
-      }))
-      // TODO: increment badge count
-
-    }
-
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-
+      )
+      await this.incrementBadgeCount(this.senderUserId)
     }
     if (userNotifications.email) {
       // TODO: Send out email
     }
-
   }
 
   getResourcesForEmail(): ResourceIds {
     return {
-      users: new Set([this.senderUserId, this.receiverUserId]),
+      users: new Set([this.senderUserId, this.receiverUserId])
     }
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUserId = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.receiverUserId]
     const amount = formatWei(this.tipAmount, 'sol')
     return {
       type: this.notification.type,
-      reactingUser: { name: receiverUserId.name },
+      reactingUser: { name: receiverUser.name },
       amount
     }
   }
-
 }

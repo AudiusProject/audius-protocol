@@ -1,8 +1,11 @@
-const React = require('react')
+import React from 'react'
 
 const FontStyles = () => {
   return (
-    <style type='text/css' dangerouslySetInnerHTML={{ __html: `
+    <style
+      type="text/css"
+      dangerouslySetInnerHTML={{
+        __html: `
     @font-face {
       font-family: 'Avenir Next LT Pro';
       font-style: normal;
@@ -122,7 +125,9 @@ const FontStyles = () => {
       font-family: 'Avenir Next LT Pro';
     }
 
-` }} />
+`
+      }}
+    />
   )
 }
 

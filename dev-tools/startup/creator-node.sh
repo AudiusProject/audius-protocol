@@ -10,7 +10,7 @@ export delegatePrivateKey=$(printenv "CN${replica}_SP_OWNER_PRIVATE_KEY")
 export spOwnerWallet=$(printenv "CN${replica}_SP_OWNER_ADDRESS")
 export spID=$replica
 
-export creatorNodeEndpoint="http://audius-protocol-creator-node-${replica}:4000"
+export creatorNodeEndpoint="http://audius-protocol-creator-node-${replica}"
 
 # Constants
 
@@ -51,12 +51,12 @@ export minimumRollingSyncCount=10
 export minimumSuccessfulSyncCountPercentage=50
 export snapbackHighestReconfigMode=PRIMARY_AND_OR_SECONDARIES
 export secondaryUserSyncDailyFailureCountThreshold=100
-export maxSyncMonitoringDurationInMs=10000 # 10sec
-export skippedCIDsRetryQueueJobIntervalMs=30000 # 30sec in ms
-export monitorStateJobLastSuccessfulRunDelayMs=600000 # 10min in ms
-export findSyncRequestsJobLastSuccessfulRunDelayMs=600000 # 10min in ms
+export maxSyncMonitoringDurationInMs=10000                     # 10sec
+export skippedCIDsRetryQueueJobIntervalMs=30000                # 30sec in ms
+export monitorStateJobLastSuccessfulRunDelayMs=600000          # 10min in ms
+export findSyncRequestsJobLastSuccessfulRunDelayMs=600000      # 10min in ms
 export findReplicaSetUpdatesJobLastSuccessfulRunDelayMs=600000 # 10min in ms
-export fetchCNodeEndpointToSpIdMapIntervalMs=10000 #10sec in ms
+export fetchCNodeEndpointToSpIdMapIntervalMs=10000             #10sec in ms
 export enforceWriteQuorum=true
 export recoverOrphanedDataQueueRateLimitInterval=60000 #1min in ms
 export recoverOrphanedDataQueueRateLimitJobsPerInterval=1
@@ -66,7 +66,7 @@ export maxNumberSecondsSecondaryRemainsUnhealthy=10
 
 # peerSetManager
 export peerHealthCheckRequestTimeout=2000 # ms
-export minimumMemoryAvailable=2000000000 # bytes; 2gb
+export minimumMemoryAvailable=2000000000  # bytes; 2gb
 export maxFileDescriptorsAllocatedPercentage=95
 export maxNumberSecondsPrimaryRemainsUnhealthy=5
 export maxNumberSecondsSecondaryRemainsUnhealthy=5

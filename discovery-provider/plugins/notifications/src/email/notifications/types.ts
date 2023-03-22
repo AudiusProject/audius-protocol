@@ -1,25 +1,24 @@
 export enum DeviceType {
   Mobile = 'mobile',
-  Browser = 'browser',
+  Browser = 'browser'
 }
-
 
 export enum EntityType {
   Track = 'track',
   Playlist = 'playlist',
-  Album = 'album',
+  Album = 'album'
 }
 
 export enum DMEntityType {
   Message = 'message',
-  Reaction = 'messageReaction',
+  Reaction = 'messageReaction'
 }
 
 export type User = {
   // User's name to display in email
   name: string
   // URL to the user's profile pic
-  image: string
+  imageUrl: string
 }
 
 export type Entity = {
@@ -33,11 +32,10 @@ export type Announcement = {
   text: string
 }
 
-export type BaseNotification =
-  {
-    users: User[]
-    entity: Entity
-  }
+export type BaseNotification = {
+  users: User[]
+  entity: Entity
+}
 
 export type Follow = BaseNotification & { type: 'follow' }
 export type Repost = BaseNotification & { type: 'repost' }
@@ -66,10 +64,7 @@ export type UserSubscription = {
   rank: number
 }
 
-export type Notification =
-  | Announcement
-  | Follow
-  | Repost
+export type Notification = Announcement | Follow | Repost
 
 export type ChallengeId =
   | 'referred'

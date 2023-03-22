@@ -77,7 +77,7 @@ export class TransactionHandler {
     logger = console,
     skipPreflight = false,
     feePayerOverride = null,
-    sendBlockhash = true,
+    sendBlockhash = false,
     signatures = null,
     retry = true
   }: HandleTransactionParams) {

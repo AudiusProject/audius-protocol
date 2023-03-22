@@ -1,12 +1,9 @@
 {
+  "extends": "@tsconfig/node14/tsconfig.json",
   "compilerOptions": {
     "outDir": "build",
-    "skipLibCheck": true,
-    "target": "es5",
-    "esModuleInterop": true,
     "jsx": "react",
-    "module": "CommonJS",
-    "moduleResolution": "node",
-    "isolatedModules": true
+    "isolatedModules": true,
+    "strict": false
   }
 }

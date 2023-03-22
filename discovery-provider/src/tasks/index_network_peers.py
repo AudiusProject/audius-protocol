@@ -8,7 +8,7 @@ from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
 
-LOCAL_RPC = "http://chain:8545"
+LOCAL_RPC = "http://chain:8545"  # TODO: Needs nethermind locally I think
 DOUBLE_CAST_ERROR_CODE = -32603
 
 # What is a "Peer" in this context?

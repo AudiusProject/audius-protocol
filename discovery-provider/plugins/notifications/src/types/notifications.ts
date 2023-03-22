@@ -1,4 +1,8 @@
-import { ChallengeId, EntityType, DMEntityType } from '../email/notifications/types'
+import {
+  ChallengeId,
+  EntityType,
+  DMEntityType
+} from '../email/notifications/types'
 import { NotificationRow } from './dn'
 
 export type DMNotification = {
@@ -53,10 +57,22 @@ export type RepostNotification = {
   repost_item_id: number
 }
 
+export type RepostOfRepostNotification = {
+  type: EntityType
+  user_id: number
+  repost_of_repost_item_id: number
+}
+
 export type SaveNotification = {
   type: EntityType
   user_id: number
   save_item_id: number
+}
+
+export type SaveOfRepostNotification = {
+  type: EntityType
+  user_id: number
+  save_of_repost_item_id: number
 }
 
 export type MilestoneNotification = {
@@ -135,7 +151,7 @@ export enum MilestoneType {
   TRACK_REPOST_COUNT = 'TRACK_REPOST_COUNT',
   TRACK_SAVE_COUNT = 'TRACK_SAVE_COUNT',
   PLAYLIST_REPOST_COUNT = 'PLAYLIST_REPOST_COUNT',
-  PLAYLIST_SAVE_COUNT = 'PLAYLIST_SAVE_COUNT',
+  PLAYLIST_SAVE_COUNT = 'PLAYLIST_SAVE_COUNT'
 }
 
 export type AddTrackToPlaylistNotification = {
@@ -185,7 +201,9 @@ export type NotificationData =
   | DMReactionNotification
   | FollowNotification
   | RepostNotification
+  | RepostOfRepostNotification
   | SaveNotification
+  | SaveOfRepostNotification
   | MilestoneNotification
   | RemixNotification
   | CosignRemixNotification
