@@ -22,7 +22,9 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
       title,
       titleClassName,
       zIndex,
-      containerRef
+      containerRef,
+      anchorOrigin,
+      transformOrigin
     },
     ref
   ) {
@@ -71,6 +73,8 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           titleClassName={titleClassName}
           zIndex={zIndex}
           containerRef={containerRef}
+          transformOrigin={transformOrigin}
+          anchorOrigin={anchorOrigin}
         >
           <div className={styles.menu}>
             {items.map((item, i) => (

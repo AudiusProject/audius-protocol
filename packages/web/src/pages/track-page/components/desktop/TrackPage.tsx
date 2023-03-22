@@ -16,7 +16,7 @@ import { LineupVariant } from 'components/lineup/types'
 import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
 import SectionButton from 'components/section-button/SectionButton'
-import StatBanner from 'components/stat-banner/StatBanner'
+import { StatBanner } from 'components/stat-banner/StatBanner'
 import GiantTrackTile from 'components/track/GiantTrackTile'
 import { TrackTileSize } from 'components/track/types'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
@@ -237,7 +237,7 @@ const TrackPage = ({
           userId={user ? user.user_id : null}
           coverPhotoSizes={user ? user._cover_photo_sizes : null}
         />
-        <StatBanner empty />
+        <StatBanner isEmpty />
         <NavBanner empty />
       </div>
       <div className={styles.contentWrapper}>{renderGiantTrackTile()}</div>

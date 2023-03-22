@@ -9,6 +9,11 @@ export enum Position {
   BOTTOM_RIGHT = 'bottomRight'
 }
 
+export type Origin = {
+  vertical: 'top' | 'center' | 'bottom'
+  horizontal: 'left' | 'center' | 'right'
+}
+
 export type PopupProps = {
   /**
    * A ref to the element whose position will be used to anchor the Popup
@@ -76,8 +81,19 @@ export type PopupProps = {
 
   /**
    * The position of the Popup relative to the trigger
+   * @deprecated use transformOrigin and anchorOrigin instead
    */
   position?: Position
+
+  /**
+   * The origin of the popup
+   */
+  transformOrigin?: Origin
+
+  /**
+   * The origin of the anchor
+   */
+  anchorOrigin?: Origin
 
   /**
    * A title displayed at the top of the Popup (only visible when the header is enabled)
@@ -96,7 +112,15 @@ export type PopupProps = {
   zIndex?: number
 }
 
-export const popupDefaultProps = {
+export const popupDefaultProps: Partial<PopupProps> = {
+  anchorOrigin: {
+    horizontal: 'center',
+    vertical: 'bottom'
+  },
+  transformOrigin: {
+    horizontal: 'center',
+    vertical: 'top'
+  },
   animationDuration: 90,
   onAfterClose: () => {}
 }

@@ -5,6 +5,7 @@ import { accountSelectors } from 'store/account'
 import { cacheUsersSelectors } from 'store/cache'
 import { CommonState } from 'store/reducers'
 import { decodeHashId } from 'utils/hashIds'
+
 import { chatMessagesAdapter, chatsAdapter } from './slice'
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors

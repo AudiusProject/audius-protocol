@@ -32,7 +32,8 @@ import Mask from 'components/mask/Mask'
 import NavBanner from 'components/nav-banner/NavBanner'
 import Page from 'components/page/Page'
 import ConnectedProfileCompletionHeroCard from 'components/profile-progress/ConnectedProfileCompletionHeroCard'
-import StatBanner from 'components/stat-banner/StatBanner'
+import { ProfileMode, StatBanner } from 'components/stat-banner/StatBanner'
+import { StatProps } from 'components/stats/Stats'
 import UploadChip from 'components/upload/UploadChip'
 import useTabs, { useTabRecalculator } from 'hooks/useTabs/useTabs'
 import { MIN_COLLECTIBLES_TIER } from 'pages/profile-page/ProfilePageProvider'
@@ -40,7 +41,6 @@ import EmptyTab from 'pages/profile-page/components/EmptyTab'
 import {
   albumPage,
   playlistPage,
-  profilePage,
   UPLOAD_PAGE,
   UPLOAD_ALBUM_PAGE,
   UPLOAD_PLAYLIST_PAGE
@@ -87,8 +87,8 @@ export type ProfilePageProps = {
   dropdownDisabled: boolean
   following: boolean
   isSubscribed: boolean
-  mode: string
-  stats: Array<{ number: number; title: string; key: string }>
+  mode: ProfileMode
+  stats: StatProps[]
 
   profile: ProfileUser | null
   albums: Collection[] | null
@@ -146,6 +146,7 @@ export type ProfilePageProps = {
   ) => void
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
   onCloseArtistRecommendations: () => void
+  onMessage: () => void
 }
 
 const ProfilePage = ({
@@ -199,6 +200,7 @@ const ProfilePage = ({
   editMode,
   areArtistRecommendationsVisible,
   onCloseArtistRecommendations,
+  onMessage,
 
   accountUserId,
   userId,
@@ -721,17 +723,12 @@ const ProfilePage = ({
         />
         <Mask show={editMode} zIndex={2}>
           <StatBanner
-            empty={!profile || profile.is_deactivated}
+            isEmpty={!profile || profile.is_deactivated}
             mode={mode}
             stats={stats}
-            userId={accountUserId}
-            handle={handle}
             profileId={profile?.user_id}
             areArtistRecommendationsVisible={areArtistRecommendationsVisible}
             onCloseArtistRecommendations={onCloseArtistRecommendations}
-            onClickArtistName={(handle: string) => {
-              goToRoute(profilePage(handle))
-            }}
             onEdit={onEdit}
             onSave={onSave}
             onShare={onShare}
@@ -741,6 +738,7 @@ const ProfilePage = ({
             onToggleSubscribe={toggleNotificationSubscription}
             onFollow={onFollow}
             onUnfollow={onUnfollow}
+            onMessage={onMessage}
           />
           <div className={styles.inset}>
             <NavBanner

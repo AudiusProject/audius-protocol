@@ -70,6 +70,7 @@ export const NOTIFICATION_PAGE = '/notifications'
 export const APP_REDIRECT = '/app-redirect'
 export const CHECK_PAGE = '/check'
 export const DEACTIVATE_PAGE = '/deactivate'
+export const CHATS_PAGE = '/messages'
 export const CHAT_PAGE = '/messages/:id?'
 
 // Param routes.
