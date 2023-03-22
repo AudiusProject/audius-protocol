@@ -10,7 +10,7 @@ from src.utils.session_manager import SessionManager
 
 
 def create_tastemaker_group_id(user_id, repost_item_id):
-    return f"tastemaker:{user_id}:tastemaker_item_id:{repost_item_id}"
+    return f"tastemaker_user_id:{user_id}:tastemaker_item_id:{repost_item_id}"
 
 
 def index_tastemaker_notifications(
@@ -21,39 +21,47 @@ def index_tastemaker_notifications(
     with db.scoped_session() as session:
         tastemaker_notifications = []
         for track in top_trending_tracks:
-            (
-                repost_tastemaker_notifications,
-                existing_group_ids,
-            ) = create_action_tastemaker_notifications(
+            repost_tastemaker_notifications = create_action_tastemaker_notifications(
                 tastemaker_notification_threshold,
                 session,
-                existing_group_ids=set(),
                 track=track,
                 action_type=Repost,
             )
-            tastemaker_notifications.extend(repost_tastemaker_notifications)
 
-            (
-                save_tastemaker_notifications,
-                existing_group_ids,
-            ) = create_action_tastemaker_notifications(
+            save_tastemaker_notifications = create_action_tastemaker_notifications(
                 tastemaker_notification_threshold,
                 session,
-                existing_group_ids=existing_group_ids,
                 track=track,
                 action_type=Save,
             )
-            tastemaker_notifications.extend(save_tastemaker_notifications)
+            # If a user is in a track's earliest saves and earliest reposts,
+            # only notify them once that they are tastemaker
+            tastemaker_notifications_to_add = dedupe_notifications_by_group_id(
+                repost_tastemaker_notifications, save_tastemaker_notifications
+            )
+            tastemaker_notifications.extend(tastemaker_notifications_to_add)
 
         session.bulk_save_objects(
             [notification for notification in tastemaker_notifications]
         )
 
 
+def dedupe_notifications_by_group_id(repost_notifications, save_notifications):
+    deduped_notifications_by_group_id = []
+    existing_group_ids = set(
+        [repost_notification.group_id for repost_notification in repost_notifications]
+    )
+    deduped_notifications_by_group_id = repost_notifications + [
+        save_notif
+        for save_notif in save_notifications
+        if save_notif.group_id not in existing_group_ids
+    ]
+    return deduped_notifications_by_group_id
+
+
 def create_action_tastemaker_notifications(
     tastemaker_notification_threshold,
     session,
-    existing_group_ids,
     track,
     action_type,
 ):
@@ -80,18 +88,16 @@ def create_action_tastemaker_notifications(
         )
         action_as_string = "repost" if type(action) == Repost else "save"
         group_id = create_tastemaker_group_id(action.user_id, action_item_id)
-        if group_id not in existing_group_ids:
-            tastemaker_action_notifications.append(
-                create_tastemaker_notification(
-                    track,
-                    action_item_id=action_item_id,
-                    action_user_id=action.user_id,
-                    action_as_string=action_as_string,
-                    group_id=group_id,
-                )
+        tastemaker_action_notifications.append(
+            create_tastemaker_notification(
+                track,
+                action_item_id=action_item_id,
+                action_user_id=action.user_id,
+                action_as_string=action_as_string,
+                group_id=group_id,
             )
-            existing_group_ids.add(group_id)
-    return tastemaker_action_notifications, existing_group_ids
+        )
+    return tastemaker_action_notifications
 
 
 def create_tastemaker_notification(

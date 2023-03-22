@@ -20,8 +20,8 @@ from src.queries.get_underground_trending import (
     make_get_unpopulated_tracks,
     make_underground_trending_cache_key,
 )
-from src.tasks import index_tastemaker_notifications
 from src.tasks.celery_app import celery
+from src.tasks.index_tastemaker_notifications import index_tastemaker_notifications
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils import helpers
@@ -215,18 +215,13 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     redis.set(trending_tracks_last_completion_redis_key, int(update_end))
     set_last_trending_datetime(redis, timestamp)
 
-    top_trending_tracks = index_trending_notifications(db, timestamp)
+    top_trending_tracks = get_top_trending_to_notify(db)
+
+    index_trending_notifications(db, timestamp, top_trending_tracks)
     index_tastemaker_notifications(db, top_trending_tracks)
 
 
-def index_trending_notifications(db: SessionManager, timestamp: int):
-    # Get the top 5 trending tracks from the new trending calculations
-    # Get the most recent trending tracks notifications
-    # Calculate any diff and write the new notifications if the trending track has moved up in rank
-    # Skip if the user was notified of the trending track within the last TRENDING_INTERVAL_HOURS
-    # Skip If the new rank is not less than the old rank, skip
-    #   ie. Skip if track moved from #2 trending to #3 trending or stayed the same
-    trending_strategy_factory = TrendingStrategyFactory()
+def get_top_trending_to_notify(db):
     # The number of tracks to notify for in the top
     NOTIFICATIONS_TRACK_LIMIT = 5
     with db.scoped_session() as session:
@@ -236,6 +231,20 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
             trending_strategy_factory.get_strategy(TrendingType.TRACKS),
         )
         top_trending = trending_tracks[:NOTIFICATIONS_TRACK_LIMIT]
+        return top_trending
+
+
+def index_trending_notifications(
+    db: SessionManager, timestamp: int, top_trending: List[Track]
+):
+    # Get the top 5 trending tracks from the new trending calculations
+    # Get the most recent trending tracks notifications
+    # Calculate any diff and write the new notifications if the trending track has moved up in rank
+    # Skip if the user was notified of the trending track within the last TRENDING_INTERVAL_HOURS
+    # Skip If the new rank is not less than the old rank, skip
+    #   ie. Skip if track moved from #2 trending to #3 trending or stayed the same
+    # The number of tracks to notify for in the top
+    with db.scoped_session() as session:
         top_trending_track_ids = [str(t["track_id"]) for t in top_trending]
 
         previous_trending_notifications = (

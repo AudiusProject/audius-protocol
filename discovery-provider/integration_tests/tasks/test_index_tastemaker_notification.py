@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
@@ -12,11 +12,10 @@ REDIS_URL = shared_config["redis"]["url"]
 BASE_TIME = datetime(2023, 1, 1, 0, 0)
 
 
-def test_index_tastemaker_notification_no_trending(app):
+def test_index_tastemaker_notification_no_tastemakers(app):
     with app.app_context():
         db = get_db()
 
-        # Add some users to the db so we have blocks
         entities = {
             "tracks": [{"track_id": i, "owner_id": 3} for i in range(5)],
         }
@@ -24,7 +23,7 @@ def test_index_tastemaker_notification_no_trending(app):
 
         index_tastemaker_notifications(
             db=db,
-            top_trending_tracks=[],
+            top_trending_tracks=entities["tracks"],
             tastemaker_notification_threshold=2,
         )
         with db.scoped_session() as session:
@@ -37,13 +36,12 @@ def test_index_tastemaker_notification_no_trending(app):
             assert len(notifications) == 0
 
 
-def test_index_tastemaker_notification_no_tastemakers(app):
+def test_index_tastemaker_notification_no_trending(app):
     with app.app_context():
         db = get_db()
 
-        # Add some users to the db so we have blocks
         entities = {
-            "tracks": [{"track_id": i, "owner_id": 3} for i in range(5)],
+            "tracks": [{"track_id": 1, "owner_id": 3}],
             "reposts": [
                 {
                     "user_id": 1,
@@ -59,25 +57,6 @@ def test_index_tastemaker_notification_no_tastemakers(app):
                     "save_type": "track",
                     "is_delete": True,
                 },
-                {
-                    "user_id": 3,
-                    "save_item_id": 3,
-                    "save_type": "track",
-                    "is_current": False,
-                },
-                {
-                    "user_id": 4,
-                    "save_item_id": 3,
-                    "save_type": "track",
-                    "is_current": False,
-                },
-                {
-                    "user_id": 2,
-                    "save_item_id": 1,
-                    "save_type": "track",
-                    "is_current": False,
-                    "is_delete": True,
-                },
             ],
             "users": [{"user_id": i} for i in range(10)],
         }
@@ -86,7 +65,7 @@ def test_index_tastemaker_notification_no_tastemakers(app):
         index_tastemaker_notifications(
             db=db,
             top_trending_tracks=[],
-            tastemaker_notification_threshold=2,
+            tastemaker_notification_threshold=1,
         )
         with db.scoped_session() as session:
             notifications = (
@@ -102,7 +81,6 @@ def test_index_tastemaker_notification_sends_one_notif_for_both_fav_and_repost(a
     with app.app_context():
         db = get_db()
 
-        # Add some users to the db so we have blocks
         entities = {
             "tracks": [{"track_id": i, "owner_id": 3} for i in range(5)],
             "reposts": [{"user_id": 1, "repost_item_id": 1, "repost_type": "track"}],
@@ -131,7 +109,7 @@ def test_index_tastemaker_notification_sends_one_notif_for_both_fav_and_repost(a
                 notification=notifications[0],
                 user_ids=[1],
                 type="tastemaker",
-                group_id=f"tastemaker:{1}:tastemaker_item_id:1",
+                group_id=f"tastemaker_user_id:{1}:tastemaker_item_id:1",
                 specifier="1",
                 data={
                     "track_id": 1,
@@ -144,7 +122,7 @@ def test_index_tastemaker_notification_sends_one_notif_for_both_fav_and_repost(a
                 notification=notifications[1],
                 user_ids=[2],
                 type="tastemaker",
-                group_id=f"tastemaker:{2}:tastemaker_item_id:1",
+                group_id=f"tastemaker_user_id:{2}:tastemaker_item_id:1",
                 specifier="1",
                 data={
                     "track_id": 1,
@@ -159,7 +137,6 @@ def test_index_tastemaker_notification(app):
     with app.app_context():
         db = get_db()
 
-        # Add some users to the db so we have blocks
         entities = {
             "tracks": [{"track_id": i, "owner_id": 3} for i in range(5)],
             "reposts": [
@@ -188,7 +165,7 @@ def test_index_tastemaker_notification(app):
                     notification=notifications[i],
                     user_ids=[i],
                     type="tastemaker",
-                    group_id=f"tastemaker:{i}:tastemaker_item_id:1",
+                    group_id=f"tastemaker_user_id:{i}:tastemaker_item_id:1",
                     specifier="1",
                     data={
                         "track_id": 1,
