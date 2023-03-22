@@ -112,9 +112,10 @@ def test_index_tastemaker_notification_sends_one_notif_for_both_fav_and_repost(a
                 group_id=f"tastemaker_user_id:{1}:tastemaker_item_id:1",
                 specifier="1",
                 data={
-                    "track_id": 1,
-                    "track_owner_id": 3,
+                    "tastemaker_item_id": 1,
+                    "tastemaker_item_owner_id": 3,
                     "action": "repost",
+                    "tastemaker_item_type": "track",
                     "tastemaker_user_id": 1,
                 },
             )
@@ -125,8 +126,9 @@ def test_index_tastemaker_notification_sends_one_notif_for_both_fav_and_repost(a
                 group_id=f"tastemaker_user_id:{2}:tastemaker_item_id:1",
                 specifier="1",
                 data={
-                    "track_id": 1,
-                    "track_owner_id": 3,
+                    "tastemaker_item_id": 1,
+                    "tastemaker_item_owner_id": 3,
+                    "tastemaker_item_type": "track",
                     "action": "save",
                     "tastemaker_user_id": 2,
                 },
@@ -168,8 +170,9 @@ def test_index_tastemaker_notification(app):
                     group_id=f"tastemaker_user_id:{i}:tastemaker_item_id:1",
                     specifier="1",
                     data={
-                        "track_id": 1,
-                        "track_owner_id": 3,
+                        "tastemaker_item_id": 1,
+                        "tastemaker_item_owner_id": 3,
+                        "tastemaker_item_type": "track",
                         "action": "repost",
                         "tastemaker_user_id": i,
                     },

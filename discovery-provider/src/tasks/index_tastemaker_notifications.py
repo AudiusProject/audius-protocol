@@ -110,8 +110,9 @@ def create_tastemaker_notification(
         group_id=group_id,
         specifier=action_item_id,
         data={
-            "track_id": action_item_id,
-            "track_owner_id": track["owner_id"],
+            "tastemaker_item_id": action_item_id,
+            "tastemaker_item_type": "track",
+            "tastemaker_item_owner_id": track["owner_id"],
             "action": action_as_string,
             "tastemaker_user_id": action_user_id,
         },
