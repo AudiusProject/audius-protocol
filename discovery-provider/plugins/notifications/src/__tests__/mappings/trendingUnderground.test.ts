@@ -14,6 +14,8 @@ import {
   resetTests
 } from '../../utils/populateDB'
 
+jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
+
 describe('Trending Underground Notification', () => {
   let processor: Processor
 
@@ -22,7 +24,7 @@ describe('Trending Underground Notification', () => {
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
-    const setup = await setupTest()
+    const setup = await setupTest({ mockTime: false })
     processor = setup.processor
 
     await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])

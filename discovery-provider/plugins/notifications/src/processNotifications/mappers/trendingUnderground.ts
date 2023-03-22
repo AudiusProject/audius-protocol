@@ -115,7 +115,6 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
   formatEmailProps(resources: Resources) {
     const user = resources.users[this.receiverUserId]
     const track = resources.tracks[this.trackId]
-    console.log('uhh type?', this.notification.type)
 
     return {
       type: this.notification.type,
