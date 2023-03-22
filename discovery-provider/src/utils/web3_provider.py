@@ -11,19 +11,17 @@ from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
 
 web3: Optional[Web3] = None
-LOCAL_RPC = (
-    "http://audius-protocol-poa-ganache-1"  # TODO: Needs nethermind locally I think
-)
+LOCAL_RPC = "http://chain:8545"  # TODO: Needs nethermind locally I think
 
 
-def get_web3(web3endpoint=LOCAL_RPC):
+def get_web3(web3endpoint=None):
     # only use ACDC web3 provider when
     # final_poa_block is indexed
 
     # pylint: disable=W0603
     global web3
     if not web3endpoint:
-        web3endpoint = os.getenv("audius_web3_nethermind_rpc")
+        web3endpoint = os.getenv("audius_web3_host")
     web3 = Web3(HTTPProvider(web3endpoint))
 
     # required middleware for POA

@@ -72,8 +72,7 @@ services:
       PYTHONPYCACHEPREFIX: /tmp/pycache
 
       audius_db_url: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
-      audius_web3_host: "poa-ganache"
-      audius_web3_port: "8545"
+      audius_web3_host: "http://poa-ganache:8545"
       audius_web3_eth_provider_url: "http://eth-ganache:8545"
       audius_contracts_registry: "${POA_REGISTRY_ADDRESS}"
       audius_contracts_entity_manager_address: "${ENTITY_MANAGER_ADDRESS}"

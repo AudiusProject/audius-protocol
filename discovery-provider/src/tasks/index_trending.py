@@ -500,9 +500,7 @@ def get_should_update_trending(
             session.query(Block.number).filter(Block.is_current == True).first()
         )
         current_db_block_number = current_db_block[0]
-        current_block = get_adjusted_block(
-            web3, 0 if current_db_block_number is None else current_db_block_number
-        )
+        current_block = get_adjusted_block(web3, current_db_block_number)
         current_timestamp = current_block["timestamp"]
         current_datetime = datetime.fromtimestamp(current_timestamp)
         min_block_datetime = floor_time(current_datetime, interval_seconds)
