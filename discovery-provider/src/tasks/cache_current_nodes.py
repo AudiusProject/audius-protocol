@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 @save_duration_metric(metric_group="celery_task")
 def cache_current_nodes_task(self):
     try:
+        logger.info("cache_current_nodes.py | fetching all other nodes")
         nodes = get_all_other_nodes()[0]
         current_node = get_node_endpoint()
         # add current node to list
@@ -27,5 +28,6 @@ def cache_current_nodes_task(self):
         # only get redis connection after nodes are collected
         redis = get_redis()
         set_json_cached_key(redis, ALL_NODES_CACHE_KEY, nodes)
+        logger.info("cache_current_nodes.py | set current nodes in redis")
     except Exception as e:
-        logger.error(f"get_all_other_nodes.py | ERROR caching node info {e}")
+        logger.error(f"cache_current_nodes.py | ERROR caching node info {e}")
