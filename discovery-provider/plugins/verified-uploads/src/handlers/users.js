@@ -16,7 +16,6 @@ export default async ({ user_id }) => {
     .orderBy("blocknumber", "desc")
     .limit(2)
     .catch(console.error);
-  console.log(`query took ${later - now} milliseconds`);
   if (result.length == 2) {
     const current = result[0];
     const old = result[1];
