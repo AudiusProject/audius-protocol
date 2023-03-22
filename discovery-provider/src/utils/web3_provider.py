@@ -11,7 +11,9 @@ from web3 import HTTPProvider, Web3
 from web3.middleware import geth_poa_middleware
 
 web3: Optional[Web3] = None
-LOCAL_RPC = "http://audius-protocol-poa-ganache-1"  # TODO: Needs nethermind locally I think
+LOCAL_RPC = (
+    "http://audius-protocol-poa-ganache-1"  # TODO: Needs nethermind locally I think
+)
 
 
 def get_web3(web3endpoint=LOCAL_RPC):

@@ -8,7 +8,9 @@ from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
 
-LOCAL_RPC = "http://audius-protocol-poa-ganache-1"  # TODO: Needs nethermind locally I think
+LOCAL_RPC = (
+    "http://audius-protocol-poa-ganache-1"  # TODO: Needs nethermind locally I think
+)
 DOUBLE_CAST_ERROR_CODE = -32603
 
 # What is a "Peer" in this context?
