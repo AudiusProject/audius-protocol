@@ -8,13 +8,12 @@ from src.utils.get_all_other_nodes import (
 )
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.redis_cache import set_json_cached_key
-from src.utils.redis_connection import get_redis
 
 logger = logging.getLogger(__name__)
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="cache_current_nodes")
+@celery.task(name="cache_current_nodes", bind=True)
 @save_duration_metric(metric_group="celery_task")
 def cache_current_nodes_task(self):
     try:
@@ -26,7 +25,7 @@ def cache_current_nodes_task(self):
             nodes.append(current_node)
 
         # only get redis connection after nodes are collected
-        redis = get_redis()
+        redis = cache_current_nodes_task.redis
         set_json_cached_key(redis, ALL_NODES_CACHE_KEY, nodes)
         logger.info("cache_current_nodes.py | set current nodes in redis")
     except Exception as e:
