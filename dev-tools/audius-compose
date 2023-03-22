@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import getpass
 import json
 import os
 import pathlib
@@ -12,6 +13,17 @@ import dotenv
 import eth_account
 import solana.keypair
 
+LOCALHOSTS = """
+127.0.0.1       ingress \
+audius-protocol-storage-1 audius-protocol-storage-2 audius-protocol-storage-3 audius-protocol-storage-4 audius-protocol-storage-5 \
+audius-protocol-comms-discovery-1 audius-protocol-comms-discovery-2 audius-protocol-comms-discovery-3 audius-protocol-comms-discovery-4 audius-protocol-comms-discovery-5 \
+audius-protocol-discovery-provider-1 audius-protocol-discovery-provider-2 audius-protocol-discovery-provider-3 \
+audius-protocol-creator-node-1 audius-protocol-creator-node-2 audius-protocol-creator-node-3 \
+audius-protocol-identity-service-1 \
+audius-protocol-solana-test-validator-1 \
+audius-protocol-eth-ganache-1 \
+audius-protocol-poa-ganache-1
+"""
 
 class DefaultCommandGroup(click.Group):
     """allow a default command for a group"""
@@ -362,6 +374,19 @@ def down(protocol_dir):
             "--volumes",
         ],
     )
+
+
+@cli.command()
+def connect():
+    hosts_file = pathlib.Path("/etc/hosts")
+    if LOCALHOSTS in hosts_file.read_text():
+        print("/etc/hosts already up to date")
+    else:
+        password = getpass.getpass("Adding development hosts to /etc/hosts. Enter your sudo password: ")
+        cmd = f"echo '{password}' | sudo -S sh -c 'echo \"{LOCALHOSTS}\" >> /etc/hosts'"
+        subprocess.run(cmd, shell=True)
+        print("Updated /etc/hosts")
+    
 
 
 @cli.group(cls=DefaultCommandGroup)
