@@ -1,3 +1,4 @@
+import logging
 import random
 
 from src import exceptions
@@ -15,6 +16,8 @@ from src.utils.helpers import encode_int_id
 MAX_USER_ID = 999999999  # max for reward specifier id
 MAX_POSTGRES_ID = 2147483647
 
+logger = logging.getLogger(__name__)
+
 
 def get_unclaimed_id(type):
 
@@ -25,7 +28,7 @@ def get_unclaimed_id(type):
 
     db = get_db_read_replica()
     with db.scoped_session() as session:
-        for _ in range(10):
+        for _ in range(50):
             is_claimed = True
             random_id = None
             if type == "user":
@@ -55,4 +58,5 @@ def get_unclaimed_id(type):
                 ).first()
 
             if not is_claimed:
+                logger.info(f"unclaimed_id | no unclaimed {type} ID found")
                 return encode_int_id(random_id)
