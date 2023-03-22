@@ -11,9 +11,9 @@ import {
   createUsers,
   insertMobileDevices,
   insertMobileSettings,
-  dropTestDB,
   createUserTip,
-  setupTest
+  setupTest,
+  resetTests
 } from '../../utils/populateDB'
 
 describe('Tip Notification', () => {
@@ -31,16 +31,7 @@ describe('Tip Notification', () => {
   })
 
   afterEach(async () => {
-    jest.clearAllMocks()
-    await processor?.close()
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      dropTestDB(process.env.DN_DB_URL, testName),
-      dropTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
+    await resetTests(processor)
   })
 
   test('Process push notification for tip receive', async () => {

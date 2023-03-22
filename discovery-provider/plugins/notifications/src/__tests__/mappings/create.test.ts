@@ -1,18 +1,17 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
-import { getRedisConnection } from './../../utils/redisConnection'
-import { config } from './../../config'
 
 import {
   createUsers,
   insertMobileDevices,
   insertMobileSettings,
-  dropTestDB,
   createTracks,
   createPlaylists,
   createSubscription,
-  setupTest
+  setupTest,
+  resetTests,
+  dropTestDB
 } from '../../utils/populateDB'
 import { renderEmail } from '../../email/notifications/renderEmail'
 import {
@@ -36,6 +35,7 @@ describe('Create Notification', () => {
   })
 
   afterEach(async () => {
+    await resetTests(processor)
     jest.clearAllMocks()
     await processor?.close()
     const testName = expect
@@ -114,7 +114,7 @@ describe('Create Notification', () => {
         timestamp: new Date(),
         specifier: '2',
         group_id: 'create:track:user_id:1',
-        data,
+        data: data2,
         user_ids: [2],
         receiver_user_id: 2
       }
