@@ -25,6 +25,7 @@ audius-protocol-eth-ganache-1 \
 audius-protocol-poa-ganache-1
 """
 
+
 class DefaultCommandGroup(click.Group):
     """allow a default command for a group"""
 
@@ -382,11 +383,12 @@ def connect():
     if LOCALHOSTS in hosts_file.read_text():
         print("/etc/hosts already up to date")
     else:
-        password = getpass.getpass("Adding development hosts to /etc/hosts. Enter your sudo password: ")
+        password = getpass.getpass(
+            "Adding development hosts to /etc/hosts. Enter your sudo password: "
+        )
         cmd = f"echo '{password}' | sudo -S sh -c 'echo \"{LOCALHOSTS}\" >> /etc/hosts'"
         subprocess.run(cmd, shell=True)
         print("Updated /etc/hosts")
-    
 
 
 @cli.group(cls=DefaultCommandGroup)
