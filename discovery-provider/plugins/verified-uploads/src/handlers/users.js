@@ -12,46 +12,50 @@ export default async ({ user_id }) => {
   const result = await dp_db("users")
     .select("handle", "is_verified")
     .where("user_id", "=", user_id)
+    .whereIn("is_current", ["true", "false"])
     .orderBy("blocknumber", "desc")
     .limit(2)
     .catch(console.error);
+  console.log(`query took ${later - now} milliseconds`);
   if (result.length == 2) {
-      const current = result[0];
-      const old = result[1];
+    const current = result[0];
+    const old = result[1];
 
-      if (current.is_verified !== old.is_verified) {
-        const is_verified = current.is_verified;
-        const handle = current.handle;
+    if (current.is_verified !== old.is_verified) {
+      const is_verified = current.is_verified;
+      const handle = current.handle;
 
-        // GET https://identityservice.staging.audius.co/social_handles?handle=totallynotalec
-        const { data } = await axios
-          .get(social_handle_url(handle))
-          .catch(console.error);
+      // GET https://identityservice.staging.audius.co/social_handles?handle=totallynotalec
+      const { data } = await axios
+        .get(social_handle_url(handle))
+        .catch(console.error);
 
-        const { twitterVerified, instagramVerified, tikTokVerified } = data;
+      const { twitterVerified, instagramVerified, tikTokVerified } = data;
 
-        let source = "unknown";
-        if (twitterVerified) {
-          source = "twitter";
-        }
-        if (instagramVerified) {
-          source = "instagram";
-        }
-        if (tikTokVerified) {
-          source = "tiktok";
-        }
-
-        const header = `User *${handle}* ${
-          is_verified ? "is now" : "is no longer"
-        } verified via ${source}!`;
-
-        const body = {
-          userId: user_id,
-          handle,
-          link: `https://audius.co/${handle}`,
-          source,
-        };
-        await slack.sendMsg(USERS_SLACK_CHANNEL, header, body).catch(console.error);
+      let source = "unknown";
+      if (twitterVerified) {
+        source = "twitter";
       }
+      if (instagramVerified) {
+        source = "instagram";
+      }
+      if (tikTokVerified) {
+        source = "tiktok";
+      }
+
+      const header = `User *${handle}* ${
+        is_verified ? "is now" : "is no longer"
+      } verified via ${source}!`;
+
+      const body = {
+        userId: user_id,
+        handle,
+        link: `https://audius.co/${handle}`,
+        source,
+      };
+      await slack
+        .sendMsg(USERS_SLACK_CHANNEL, header, body)
+        .catch(console.error);
+    }
   }
 };
