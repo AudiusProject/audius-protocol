@@ -133,6 +133,7 @@ workflows:
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
             packages/web/.* run-web-workflow true
+            pacakges/probers/.* run-web-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/stems/.* run-stems-workflow true
             .circleci/.* run-web-workflow true
