@@ -1,4 +1,4 @@
-import { MutableRefObject, useContext } from 'react'
+import { RefObject, useContext } from 'react'
 
 import { ID, User, cacheUsersSelectors } from '@audius/common'
 import { Popup, PopupPosition } from '@audius/stems'
@@ -13,13 +13,10 @@ import styles from './ArtistRecommendationsPopup.module.css'
 const { getUser } = cacheUsersSelectors
 
 type ArtistRecommendationsPopupProps = {
-  anchorRef: MutableRefObject<HTMLElement>
+  anchorRef: RefObject<HTMLElement>
   artistId: ID
   isVisible: boolean
   onClose: () => void
-  onArtistNameClicked: (handle: string) => void
-  onFollowAll: (userIds: ID[]) => void
-  onUnfollowAll: (userIds: ID[]) => void
 }
 
 export const ArtistRecommendationsPopup = ({

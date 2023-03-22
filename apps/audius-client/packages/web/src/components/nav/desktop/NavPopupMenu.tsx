@@ -1,7 +1,8 @@
-import { removeNullable, accountSelectors } from '@audius/common'
+import { removeNullable, accountSelectors, FeatureFlags } from '@audius/common'
 import {
   IconCrown,
   IconDashboard,
+  IconMessage,
   IconSettings,
   PopupMenu,
   PopupMenuItem,
@@ -11,8 +12,14 @@ import cn from 'classnames'
 
 import { ReactComponent as IconKebabHorizontal } from 'assets/img/iconKebabHorizontalAlt.svg'
 import { useNavigateToPage } from 'hooks/useNavigateToPage'
+import { useFlag } from 'hooks/useRemoteConfig'
 import { useSelector } from 'utils/reducer'
-import { AUDIO_PAGE, DASHBOARD_PAGE, SETTINGS_PAGE } from 'utils/route'
+import {
+  AUDIO_PAGE,
+  CHATS_PAGE,
+  DASHBOARD_PAGE,
+  SETTINGS_PAGE
+} from 'utils/route'
 import zIndex from 'utils/zIndex'
 
 import styles from './NavPopupMenu.module.css'
@@ -21,7 +28,8 @@ const { getAccountHasTracks } = accountSelectors
 const messages = {
   settings: 'Settings',
   dashboard: 'Artist Dashboard',
-  audio: '$AUDIO & Rewards'
+  audio: '$AUDIO & Rewards',
+  messages: 'Messages'
 }
 
 const useAccountHasTracks = () => {
@@ -31,8 +39,17 @@ const useAccountHasTracks = () => {
 const NavPopupMenu = () => {
   const navigate = useNavigateToPage()
   const hasTracks = useAccountHasTracks()
+  const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
 
   const menuItems: PopupMenuItem[] = [
+    isChatEnabled
+      ? {
+          text: messages.messages,
+          onClick: () => navigate(CHATS_PAGE),
+          icon: <IconMessage />,
+          iconClassName: styles.menuItemIcon
+        }
+      : null,
     {
       text: messages.settings,
       onClick: () => navigate(SETTINGS_PAGE),

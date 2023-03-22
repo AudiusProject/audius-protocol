@@ -156,7 +156,8 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
         {...other}
       >
         <div className={styles.listRoot}>
-          {status !== Status.LOADING && chatMessages?.length === 0 ? (
+          {chat?.messagesStatus === Status.SUCCESS &&
+          chatMessages?.length === 0 ? (
             <SendMessagePrompt />
           ) : null}
           {chatId &&

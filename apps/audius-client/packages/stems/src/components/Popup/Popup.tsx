@@ -19,7 +19,7 @@ import { getScrollParent } from 'utils/scrollParent'
 import { standard } from 'utils/transitions'
 
 import styles from './Popup.module.css'
-import { PopupProps, Position, popupDefaultProps } from './types'
+import { PopupProps, Position, Origin, popupDefaultProps } from './types'
 
 const messages = {
   close: 'close popup'
@@ -32,35 +32,82 @@ const messages = {
 const CONTAINER_INSET_PADDING = 16
 
 /**
- * Gets the css transform origin prop from the display position
- * @param {Position} position
- * @returns {string} transform origin
+ * Used to convert deprecated Position prop to transformOrigin prop
  */
-const getTransformOrigin = (position: Position) =>
-  ({
-    [Position.TOP_LEFT]: 'bottom right',
-    [Position.TOP_CENTER]: 'bottom center',
-    [Position.TOP_RIGHT]: 'bottom left',
-    [Position.BOTTOM_LEFT]: 'top right',
-    [Position.BOTTOM_CENTER]: 'top center',
-    [Position.BOTTOM_RIGHT]: 'top left'
-  }[position] ?? 'top center')
+const positionToTransformOriginMap: Record<Position, Origin> = {
+  [Position.TOP_LEFT]: {
+    horizontal: 'right',
+    vertical: 'bottom'
+  },
+  [Position.TOP_CENTER]: {
+    horizontal: 'center',
+    vertical: 'bottom'
+  },
+  [Position.TOP_RIGHT]: {
+    horizontal: 'left',
+    vertical: 'bottom'
+  },
+  [Position.BOTTOM_LEFT]: {
+    horizontal: 'right',
+    vertical: 'top'
+  },
+  [Position.BOTTOM_CENTER]: {
+    horizontal: 'center',
+    vertical: 'top'
+  },
+  [Position.BOTTOM_RIGHT]: {
+    horizontal: 'left',
+    vertical: 'top'
+  }
+}
+
+/**
+ * Used to convert deprecated Position prop to anchorOrigin prop
+ */
+const positionToAnchorOriginMap: Record<Position, Origin> = {
+  [Position.TOP_LEFT]: {
+    horizontal: 'left',
+    vertical: 'top'
+  },
+  [Position.TOP_CENTER]: {
+    horizontal: 'center',
+    vertical: 'top'
+  },
+  [Position.TOP_RIGHT]: {
+    horizontal: 'right',
+    vertical: 'top'
+  },
+  [Position.BOTTOM_LEFT]: {
+    horizontal: 'left',
+    vertical: 'bottom'
+  },
+  [Position.BOTTOM_CENTER]: {
+    horizontal: 'center',
+    vertical: 'bottom'
+  },
+  [Position.BOTTOM_RIGHT]: {
+    horizontal: 'right',
+    vertical: 'bottom'
+  }
+}
 
 /**
  * Figures out whether the specified position would overflow the window
  * and picks a better position accordingly
- * @param {Position} position
- * @param {ClientRect} rect the content
- * @param {ClientRect} wrapper the wrapper of the content
- * @return {string | null} null if it would not overflow
+ * @param {Origin} anchorOrigin where the origin is on the trigger
+ * @param {Origin} transformOrigin where the origin is on the popup
+ * @param {DOMRect} anchorRect the position and size of the trigger
+ * @param {DOMRect} wrapperRect the position and size of the popup
+ * @return {{ anchorOrigin: Origin, transformOrigin: Origin }} the new origin after accounting for overflow
  */
-const getComputedPosition = (
-  position: Position,
+const getComputedOrigins = (
+  anchorOrigin: Origin,
+  transformOrigin: Origin,
   anchorRect: DOMRect,
   wrapperRect: DOMRect,
   containerRef?: MutableRefObject<HTMLDivElement | undefined>
-): Position => {
-  if (!anchorRect || !wrapperRect) return position
+) => {
+  if (!anchorRect || !wrapperRect) return { anchorOrigin, transformOrigin }
 
   let containerWidth, containerHeight
   if (containerRef && containerRef.current) {
@@ -75,24 +122,36 @@ const getComputedPosition = (
     containerHeight = window.innerHeight - CONTAINER_INSET_PADDING
   }
 
-  const overflowRight = anchorRect.x + wrapperRect.width > containerWidth
-  const overflowLeft = anchorRect.x - wrapperRect.width < 0
-  const overflowBottom = anchorRect.y + wrapperRect.height > containerHeight
-  const overflowTop = anchorRect.y - wrapperRect.height < 0
+  // Get new wrapper position
+  const anchorTranslation = getOriginTranslation(anchorOrigin, anchorRect)
+  const wrapperTranslation = getOriginTranslation(transformOrigin, wrapperRect)
+  const wrapperX = anchorRect.x + anchorTranslation.x - wrapperTranslation.x
+  const wrapperY = anchorRect.y + anchorTranslation.y - wrapperTranslation.y
 
+  // Check bounds of the wrapper in new position are inside container
+  const overflowRight = wrapperX + wrapperRect.width > containerWidth
+  const overflowLeft = wrapperX < 0
+  const overflowBottom = wrapperY + wrapperRect.height > containerHeight
+  const overflowTop = wrapperY < 0
+
+  // For all overflows, flip the position
   if (overflowRight) {
-    position = position.replace('Right', 'Left') as Position
+    anchorOrigin.horizontal = 'left'
+    transformOrigin.horizontal = 'right'
   }
   if (overflowLeft) {
-    position = position.replace('Left', 'Right') as Position
+    anchorOrigin.horizontal = 'right'
+    transformOrigin.horizontal = 'left'
   }
   if (overflowTop) {
-    position = position.replace('top', 'bottom') as Position
+    anchorOrigin.vertical = 'bottom'
+    transformOrigin.vertical = 'top'
   }
   if (overflowBottom) {
-    position = position.replace('bottom', 'top') as Position
+    anchorOrigin.vertical = 'top'
+    transformOrigin.vertical = 'bottom'
   }
-  return position
+  return { anchorOrigin, transformOrigin }
 }
 
 /**
@@ -133,21 +192,62 @@ const getAdjustedPosition = (
 }
 
 /**
+ * Gets the x, y offsets for the given origin using the dimensions
+ * @param origin the relative origin
+ * @param dimensions the dimensions to use with the relative origin
+ * @returns the x and y coordinates of the new origin relative to the old one
+ */
+const getOriginTranslation = (
+  origin: Origin,
+  dimensions: { width: number; height: number }
+) => {
+  let x = 0
+  let y = 0
+  const { width, height } = dimensions
+  if (origin.horizontal === 'center') {
+    x += width / 2
+  } else if (origin.horizontal === 'right') {
+    x += width
+  }
+  if (origin.vertical === 'center') {
+    y += height / 2
+  } else if (origin.vertical === 'bottom') {
+    y += height
+  }
+  return { x, y }
+}
+
+const defaultAnchorOrigin: Origin = {
+  horizontal: 'center',
+  vertical: 'bottom'
+}
+
+const defaultTransformOrigin: Origin = {
+  horizontal: 'center',
+  vertical: 'top'
+}
+
+/**
  * A popup is an in-place container that shows on top of the UI. A popup does
  * not impact the rest of the UI (e.g. graying it out). It differs
  * from modals, which do take over the whole UI and are usually
  * center-screened.
  */
 export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
-  {
+  props,
+  ref
+) {
+  const {
     anchorRef,
-    animationDuration,
+    animationDuration = 90,
     checkIfClickInside,
     children,
     isVisible,
     onAfterClose,
     onClose,
-    position = Position.BOTTOM_CENTER,
+    position,
+    anchorOrigin: anchorOriginProp = defaultAnchorOrigin,
+    transformOrigin: transformOriginProp = defaultTransformOrigin,
     hideCloseButton = false,
     showHeader,
     title,
@@ -156,9 +256,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
     wrapperClassName,
     zIndex,
     containerRef
-  },
-  ref
-) {
+  } = props
   const handleClose = useCallback(() => {
     onClose()
     setTimeout(() => {
@@ -167,6 +265,13 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       }
     }, animationDuration)
   }, [onClose, onAfterClose, animationDuration])
+
+  const [anchorOrigin, transformOrigin] = position
+    ? [
+        positionToAnchorOriginMap[position],
+        positionToTransformOriginMap[position]
+      ]
+    : [anchorOriginProp, transformOriginProp]
 
   const popupRef: React.MutableRefObject<HTMLDivElement> = useClickOutside(
     handleClose,
@@ -177,57 +282,41 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
 
   const wrapperRef = useRef<HTMLDivElement>(null)
   const originalTopPosition = useRef<number>(0)
-  const [computedPosition, setComputedPosition] = useState(position)
-
-  const getRects = useCallback(
-    () =>
-      [anchorRef, wrapperRef].map((r) => r?.current?.getBoundingClientRect()),
-    [anchorRef, wrapperRef]
-  )
+  const [computedTransformOrigin, setComputedTransformOrigin] =
+    useState(anchorOrigin)
 
   // On visible, set the position
   useEffect(() => {
     if (isVisible) {
-      const [anchorRect, wrapperRect] = getRects()
+      const [anchorRect, wrapperRect] = [anchorRef, wrapperRef].map((r) =>
+        r?.current?.getBoundingClientRect()
+      )
       if (!anchorRect || !wrapperRect) return
 
-      const computed = getComputedPosition(
-        position,
+      const {
+        anchorOrigin: anchorOriginComputed,
+        transformOrigin: transformOriginComputed
+      } = getComputedOrigins(
+        anchorOrigin,
+        transformOrigin,
         anchorRect,
         wrapperRect,
         containerRef
       )
-      setComputedPosition(computed)
+      setComputedTransformOrigin(transformOriginComputed)
 
-      const positionMap = {
-        [Position.TOP_LEFT]: [
-          anchorRect.y - wrapperRect.height,
-          anchorRect.x - wrapperRect.width
-        ],
-        [Position.TOP_CENTER]: [
-          anchorRect.y - wrapperRect.height,
-          anchorRect.x - wrapperRect.width / 2 + anchorRect.width / 2
-        ],
-        [Position.TOP_RIGHT]: [
-          anchorRect.y - wrapperRect.height,
-          anchorRect.x + anchorRect.width
-        ],
-        [Position.BOTTOM_LEFT]: [
-          anchorRect.y + anchorRect.height,
-          anchorRect.x - wrapperRect.width
-        ],
-        [Position.BOTTOM_CENTER]: [
-          anchorRect.y + anchorRect.height,
-          anchorRect.x - wrapperRect.width / 2 + anchorRect.width / 2
-        ],
-        [Position.BOTTOM_RIGHT]: [
-          anchorRect.y + anchorRect.height,
-          anchorRect.x + anchorRect.width
-        ]
-      }
+      const anchorTranslation = getOriginTranslation(
+        anchorOriginComputed,
+        anchorRect
+      )
+      const wrapperTranslation = getOriginTranslation(
+        transformOriginComputed,
+        wrapperRect
+      )
 
-      const [top, left] =
-        positionMap[computed] ?? positionMap[Position.BOTTOM_CENTER]
+      const top = anchorRect.y + anchorTranslation.y - wrapperTranslation.y
+      const left = anchorRect.x + anchorTranslation.x - wrapperTranslation.x
+
       const { adjustedTop, adjustedLeft } = getAdjustedPosition(
         top,
         left,
@@ -242,13 +331,12 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
       originalTopPosition.current = top
     }
   }, [
-    position,
     isVisible,
     wrapperRef,
     anchorRef,
-    computedPosition,
-    setComputedPosition,
-    getRects,
+    anchorOrigin,
+    transformOrigin,
+    setComputedTransformOrigin,
     originalTopPosition,
     containerRef
   ])
@@ -337,7 +425,7 @@ export const Popup = forwardRef<HTMLDivElement, PopupProps>(function Popup(
                 key={key}
                 style={{
                   ...props,
-                  transformOrigin: getTransformOrigin(computedPosition)
+                  transformOrigin: `${computedTransformOrigin.horizontal} ${computedTransformOrigin.vertical}`
                 }}
               >
                 {showHeader && (

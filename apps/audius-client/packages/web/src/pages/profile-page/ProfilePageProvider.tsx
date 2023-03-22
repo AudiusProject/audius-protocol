@@ -34,7 +34,8 @@ import {
   newUserMetadata,
   playerSelectors,
   queueSelectors,
-  Nullable
+  Nullable,
+  chatActions
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -45,6 +46,8 @@ import { Dispatch } from 'redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
 import { getIsDone } from 'common/store/confirmer/selectors'
+import { ProfileMode } from 'components/stat-banner/StatBanner'
+import { StatProps } from 'components/stats/Stats'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
 import { getLocationPathname } from 'store/routing/selectors'
 import { AppState } from 'store/types'
@@ -70,6 +73,7 @@ const {
   getProfileUserId
 } = profilePageSelectors
 const { getAccountUser } = accountSelectors
+const { createChat } = chatActions
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -398,7 +402,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     }
   }
 
-  getMode = (isOwner: boolean) => {
+  getMode = (isOwner: boolean): ProfileMode => {
     return isOwner ? (this.state.editMode ? 'editing' : 'owner') : 'visitor'
   }
 
@@ -495,7 +499,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     })
   }
 
-  getStats = (isArtist: boolean) => {
+  getStats = (isArtist: boolean): StatProps[] => {
     const {
       profile: { profile }
     } = this.props
@@ -680,6 +684,13 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       account
     } = this.props
     return profile && account ? profile.user_id === account.user_id : false
+  }
+
+  onMessage = () => {
+    const {
+      profile: { profile }
+    } = this.props
+    return this.props.onMessage(profile!.user_id)
   }
 
   render() {
@@ -871,7 +882,8 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updateWebsite: this.updateWebsite,
       updateDonation: this.updateDonation,
       updateCoverPhoto: this.updateCoverPhoto,
-      didChangeTabsFrom: this.didChangeTabsFrom
+      didChangeTabsFrom: this.didChangeTabsFrom,
+      onMessage: this.onMessage
     }
 
     const mobileProps = {
@@ -1108,6 +1120,9 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
         { source }
       )
       dispatch(trackEvent)
+    },
+    onMessage: (userId: ID) => {
+      dispatch(createChat({ userIds: [userId] }))
     }
   }
 }
