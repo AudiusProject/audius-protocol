@@ -9,6 +9,11 @@ const DB = async (url) => {
     pool: { min: 2, max: 10 },
   });
   console.log(`opening connection to ${url}`);
+  const user = await pg("users")
+    .where("user_id", "=", "1")
+    .first()
+    .catch(console.error);
+  console.log(user);
   return pg;
 };
 
