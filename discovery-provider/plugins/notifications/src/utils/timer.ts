@@ -1,4 +1,3 @@
-
 export class Timer {
   title: string
   timer: {
@@ -7,11 +6,28 @@ export class Timer {
   duration: {
     [name: string]: number
   }
+  messages: {
+    message: string
+    time: number
+  }[]
+  lastLogTime: [number, number]
   constructor(title: string) {
     this.title = title
     this.timer = {}
+    this.messages = []
     this.duration = {}
     this.startTime(this.title)
+    this.lastLogTime = process.hrtime()
+  }
+
+  logMessage(message: string) {
+    const elapsed = process.hrtime(this.lastLogTime)
+    const elapsedMs = elapsed[0] * 1000 + Math.trunc(elapsed[1] / 1000000)
+    this.messages.push({
+      message,
+      time: elapsedMs
+    })
+    this.lastLogTime = process.hrtime()
   }
 
   startTime(name: string) {
