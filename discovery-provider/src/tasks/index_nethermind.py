@@ -1049,7 +1049,7 @@ def update_task(self):
         current_block_query = session.query(Block).filter_by(is_current=True)
         current_block_query_results = current_block_query.all()
 
-        if not final_poa_block or (
+        if final_poa_block is None or (
             current_block_query_results
             and current_block_query_results[0].number < final_poa_block
         ):

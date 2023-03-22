@@ -71,6 +71,7 @@ services:
     environment:
       PYTHONPYCACHEPREFIX: /tmp/pycache
 
+      audius_db_url: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
       audius_web3_host: "poa-ganache"
       audius_web3_port: "8545"
       audius_web3_eth_provider_url: "http://eth-ganache:8545"
@@ -105,10 +106,10 @@ services:
         condition: service_healthy
       eth-ganache:
         condition: service_healthy
-      solana-test-validator:
-        condition: service_healthy
-      discovery-provider-elasticsearch:
-        condition: "${ELASTICSEARCH_CONDITION}"
+      # solana-test-validator:
+      #   condition: service_healthy
+      # discovery-provider-elasticsearch:
+      #   condition: "${ELASTICSEARCH_CONDITION}"
     deploy:
       mode: replicated
       replicas: "${DISCOVERY_PROVIDER_REPLICAS}"

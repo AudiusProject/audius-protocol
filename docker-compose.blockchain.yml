@@ -142,3 +142,5 @@ services:
       resources:
         limits:
           memory: 3G
+    profiles:
+      - solana

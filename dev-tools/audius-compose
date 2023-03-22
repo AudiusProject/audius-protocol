@@ -305,6 +305,9 @@ def load_env(protocol_dir, service, environment):
     "-l", "--libs", is_flag=True, help="Bring up container to auto-rebuild libs"
 )
 @click.option(
+    "-s", "--solana", is_flag=True, help="Bring up solana-test-validator container"
+)
+@click.option(
     "--comms", is_flag=True, help="Bring up storage v2, comms, and nats containers"
 )
 @click.option("-w", "--wait", is_flag=True, help="Wait for services to be healthy")
@@ -319,6 +322,7 @@ def up(
     block_explorer,
     anti_abuse_oracle,
     libs,
+    solana,
     comms,
     wait,
     args,
@@ -354,6 +358,7 @@ def up(
                 *(["--profile=block-explorer"] if block_explorer else []),
                 *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
                 *(["--profile=libs"] if libs else []),
+                *(["--profile=solana"] if solana else []),
                 *(["--profile=comms"] if comms else []),
                 "up",
                 "--build",

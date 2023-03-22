@@ -74,16 +74,16 @@ if [ -z "$audius_redis_url" ]; then
     /wait
 fi
 
-if [ -z "$audius_db_url" ]; then
-    sudo -u postgres pg_ctl start -D /db -o "-c shared_preload_libraries=pg_stat_statements"
-    export WAIT_HOSTS="localhost:5432"
-    /wait
+# if [ -z "$audius_db_url" ]; then
+sudo -u postgres pg_ctl start -D /db -o "-c shared_preload_libraries=pg_stat_statements"
+export WAIT_HOSTS="localhost:5432"
+/wait
 
-    sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${postgres_password:-postgres}';"
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD '${postgres_password:-postgres}';"
 
-    export audius_db_url="postgresql+psycopg2://postgres:${postgres_password:-postgres}@localhost:5432/audius_discovery"
-    export audius_db_url_read_replica="postgresql+psycopg2://postgres:${postgres_password:-postgres}@localhost:5432/audius_discovery"
-fi
+export audius_db_url="postgresql+psycopg2://postgres:${postgres_password:-postgres}@localhost:5432/audius_discovery"
+export audius_db_url_read_replica="postgresql+psycopg2://postgres:${postgres_password:-postgres}@localhost:5432/audius_discovery"
+# fi
 
 export PYTHONUNBUFFERED=1
 

@@ -212,7 +212,20 @@ func (ss StorageServer) serveWeatherMapUI(c echo.Context) error {
 }
 
 func (ss *StorageServer) serveFileUpload(c echo.Context) error {
-	var results []*transcode.Job
+	type TrackSegment struct {
+		Duration  float64 `json:"duration"`
+		Multihash string  `json:"multihash"`
+	}
+	type Metadata struct {
+		// Legacy only - always set to an empty array to avoid breaking indexing and clients that expect this field
+		TrackSegments []TrackSegment `json:"track_segments"`
+		SourceFile    string         `json:"source_file"`
+	}
+	type UploadResult struct {
+		Job      *transcode.Job
+		Metadata Metadata
+	}
+	var results []UploadResult
 
 	// Multipart form
 	form, err := c.MultipartForm()
@@ -241,7 +254,8 @@ func (ss *StorageServer) serveFileUpload(c echo.Context) error {
 		if err != nil {
 			return err
 		}
-		results = append(results, job)
+		result := UploadResult{Job: job, Metadata: Metadata{TrackSegments: []TrackSegment{}, SourceFile: file.Filename}}
+		results = append(results, result)
 	}
 
 	if c.QueryParam("redirect") != "" {

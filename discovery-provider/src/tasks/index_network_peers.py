@@ -8,7 +8,7 @@ from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
 
-LOCAL_RPC = "http://chain:8545"  # TODO: Needs nethermind locally I think
+LOCAL_RPC = "http://audius-protocol-poa-ganache-1"  # TODO: Needs nethermind locally I think
 DOUBLE_CAST_ERROR_CODE = -32603
 
 # What is a "Peer" in this context?
@@ -122,7 +122,7 @@ def update_network_peers(self):
             # An object returned from web3 chain queries
             index_content_node_peers(self)
 
-            index_discovery_node_peers(self)
+            # index_discovery_node_peers(self)
         else:
             logger.info(
                 "index_network_peers.py | Failed to acquire update_network_peers"

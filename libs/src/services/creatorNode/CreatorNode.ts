@@ -335,7 +335,7 @@ export class CreatorNode {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: ProgressCB = () => {}
+    onProgress: ProgressCB = () => { }
   ) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
@@ -390,6 +390,44 @@ export class CreatorNode {
     // @returns {Object} {cid: CID of track metadata, id: id of track to be used with associate function}
     const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
     return { ...metadataResp, ...trackContentResp }
+  }
+
+  // TODO: Move this to SDK and have AudiusBackend.ts in client call this instead of calling libs here: https://github.com/AudiusProject/audius-client/blob/main/packages/common/src/services/audius-backend/AudiusBackend.ts#L1235-L1240
+  // TODO: Need to work out something to show progress
+  async uploadTrackContentV2(
+    trackFile: File,
+    // coverArtFile: File,
+    // metadata: TrackMetadata,
+    _: File,
+    __: TrackMetadata,
+    onProgress: ProgressCB = () => { }
+  ) {
+    // Upload track file
+    const trackFileFormData = new FormData()
+    trackFileFormData.append('template', 'audio')
+    trackFileFormData.append('files', trackFile, { contentType: 'audio', filename: trackFile.name })
+    const trackFileUploadResponse = await axios({
+      method: 'post',
+      // TODO: After the stack is better integrated, change to endpoint like this.creatorNodeEndpoint
+      url: 'http://audius-protocol-storage-1/storage/api/v1/file',
+      data: trackFileFormData,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      onUploadProgress: (progressEvent) => {
+        onProgress(progressEvent.loaded, progressEvent.total)
+      }
+    })
+    const trackFileUploadResponseData = trackFileUploadResponse.data
+    const { id } = trackFileUploadResponseData[0]
+    console.log(`uploaded track: http://audius-protocol-storage-1/storage/search/${id}`)
+    console.log('trackFileUploadResponseData', JSON.stringify(trackFileUploadResponseData))
+
+    // TODO: Upload coverArtFile (same /storage/api/v1/file endpoint)
+
+    // TODO: Need metadata to have track_cid, download.cid (if download.is_downloadable), and cover_art_sizes. I think we can stop doing the track_segments thing
+    // TODO: Write metadata to EntityManager for both audio and cover art files, and probably return the tx receipt here
+    // TODO: Make discovery stop calling /ipfs/<metadata_cid> and instead read from its own db where it already indexes this metadata
   }
 
   /**
@@ -981,7 +1019,7 @@ export class CreatorNode {
   async _uploadFile(
     file: File,
     route: string,
-    onProgress: ProgressCB = () => {},
+    onProgress: ProgressCB = () => { },
     extraFormDataOptions: Record<string, unknown> = {},
     retries = 2,
     timeoutMs: number | null = null
@@ -1091,9 +1129,8 @@ export class CreatorNode {
     if ('response' in e && e.response?.data?.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
-      const errMessage = `Server returned error: [${e.response.status.toString()}] [${
-        e.response.data.error
-      }] for request: [${cnRequestID}, ${requestId}]`
+      const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error
+        }] for request: [${cnRequestID}, ${requestId}]`
 
       console.error(errMessage)
       throw new Error(errMessage)
