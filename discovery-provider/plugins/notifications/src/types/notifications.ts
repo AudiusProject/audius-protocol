@@ -198,7 +198,7 @@ export type TrendingUndergroundNotification = {
 }
 
 export type TrendingPlaylistNotification = {
-  track_id: number
+  playlist_id: number
   rank: number
   genre: string
   time_range: string

@@ -94,6 +94,15 @@ const snippetMap = {
     const suffix = getNumberSuffix(rank)
     return `Your Track ${notification.entity.title} is ${notification.rank}${suffix} on Trending Right Now!`
   },
+  ['trending_underground'](notification) {
+    const rank = notification.rank
+    const suffix = getNumberSuffix(rank)
+    return `Your Track ${notification.entity.title} is ${notification.rank}${suffix} on Underground Trending Right Now!`
+  },
+  ['trending_playlist'](notification) {
+    const rank = notification.rank
+    return `Your Playlist ${notification.entity.title} is the #${notification.rank} on Trending Playlist on Audius Right Now!`
+  },
   ['create'](notification) {
     const [user] = notification.users
     if (

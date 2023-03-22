@@ -24,6 +24,8 @@ export enum MappingVariable {
   PushTrackAddedToPlaylist = 'push_track_added_to_playlist',
   PushCreate = 'push_create',
   PushTrending = 'push_trending',
+  PushTrendingUnderground = 'push_trending_underground',
+  PushTrendingPlaylist = 'push_trending_playlist',
   PushAnnouncement = 'push_announcement',
   PushReaction = 'push_reaction'
 }
@@ -48,6 +50,8 @@ const defaultMappingVariable = {
   [MappingVariable.PushTrackAddedToPlaylist]: false,
   [MappingVariable.PushCreate]: false,
   [MappingVariable.PushTrending]: false,
+  [MappingVariable.PushTrendingUnderground]: false,
+  [MappingVariable.PushTrendingPlaylist]: false,
   [MappingVariable.PushAnnouncement]: false,
   [MappingVariable.PushReaction]: false
 }
