@@ -6,7 +6,7 @@ const {
 } = require('../webPush')
 const racePromiseWithTimeout = require('../utils/racePromiseWithTimeout.js')
 const {
-  getRemoteFeatureVar,
+  getRemoteFeatureVarEnabled,
   DISCOVERY_NOTIFICATION_MAPPING,
   MappingVariable
 } = require('../remoteConfig')
@@ -194,7 +194,7 @@ async function processNotification(optimizelyClient, logger, notification) {
   let numProcessedNotifs = 0
   const notificationMappingVar =
     notificaitonTypeMapping[notification.notification.type]
-  const isDisabled = getRemoteFeatureVar(
+  const isDisabled = getRemoteFeatureVarEnabled(
     optimizelyClient,
     DISCOVERY_NOTIFICATION_MAPPING,
     notificationMappingVar

@@ -71,17 +71,21 @@ const getRemoteVar = (optimizelyClient, variable) => {
  * @param {String} variable REMOTE_VARS value
  * @returns
  */
-const getRemoteFeatureVar = (optimizelyClient, feature, variable) => {
+const getRemoteFeatureVarEnabled = (optimizelyClient, feature, variable) => {
   if (!optimizelyClient) {
     return DEFAULTS[variable]
   }
-  return optimizelyClient.getFeatureVariable(feature, variable, DUMMY_USER_ID)
+  return optimizelyClient.getFeatureVariableBoolean(
+    feature,
+    variable,
+    DUMMY_USER_ID
+  )
 }
 
 module.exports = {
   getRemoteVar,
   REMOTE_VARS,
-  getRemoteFeatureVar,
+  getRemoteFeatureVarEnabled,
   DISCOVERY_NOTIFICATION_MAPPING,
   MappingVariable
 }
