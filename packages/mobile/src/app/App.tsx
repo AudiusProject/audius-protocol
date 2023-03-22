@@ -1,4 +1,4 @@
-import { PortalProvider } from '@gorhom/portal'
+import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
 import Config from 'react-native-config'
@@ -82,6 +82,7 @@ const App = () => {
             <WalletConnectProvider>
               <PortalProvider>
                 <ErrorBoundary>
+                  <PortalHost name='ChatReactionsPortal' />
                   <NavigationContainer>
                     <Toasts />
                     <Airplay />
