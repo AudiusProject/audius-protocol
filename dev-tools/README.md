@@ -40,6 +40,9 @@ exit
 
 # In new terminal
 audius-compose build # takes about 10 min
+
+# Allows you to connect to containers via hostname like http://audius-protocol-discovery-provider-1/health_check
+sudo echo "127.0.0.1       ingress audius-protocol-storage-1 audius-protocol-storage-2 audius-protocol-storage-3 audius-protocol-storage-4 audius-protocol-storage-5 audius-protocol-comms-discovery-1 audius-protocol-comms-discovery-2 audius-protocol-comms-discovery-3 audius-protocol-comms-discovery-4 audius-protocol-comms-discovery-5 audius-protocol-discovery-provider-1 audius-protocol-discovery-provider-2 audius-protocol-discovery-provider-3 audius-protocol-creator-node-1 audius-protocol-creator-node-2 audius-protocol-creator-node-3 audius-protocol-identity-service-1 audius-protocol-solana-test-validator-1 audius-protocol-eth-ganache-1 audius-protocol-poa-ganache-1" >> /etc/hosts
 ```
 
 ### Bring up protocol stack
