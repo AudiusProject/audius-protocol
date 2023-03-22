@@ -9,12 +9,6 @@ const {
   successResponse,
   errorResponseBadRequest
 } = require('../apiHelpers')
-const { VerifiedUserReporter } = require('../utils/verifiedUserReporter.js')
-
-const verifiedUserReporter = new VerifiedUserReporter({
-  slackUrl: config.get('verifiedUserReporterSlackUrl'),
-  source: 'tiktok'
-})
 
 /**
  * This file contains the TikTok endpoints for oauth
@@ -187,7 +181,6 @@ module.exports = function (app) {
                 txProps,
                 'tikTokVerified'
               )
-              await verifiedUserReporter.report({ userId, handle })
             } catch (e) {
               return errorResponseBadRequest(e)
             }
