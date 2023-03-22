@@ -35,7 +35,7 @@ export default async (topic, callback) => {
   const sql = `LISTEN ${topic}`;
   conn.on("notification", async (msg) => {
     console.log(`received: ${JSON.stringify(msg)}`);
-    callback(JSON.parse(msg.payload));
+    await callback(JSON.parse(msg.payload)).catch(console.error);
   });
   conn.on("end", (err) => {
     console.log(err);
