@@ -10,12 +10,15 @@ export class Timer {
   constructor(title: string) {
     this.title = title
     this.timer = {}
+    this.duration = {}
     this.startTime(this.title)
   }
 
   startTime(name: string) {
     if (this.timer[name]) {
-      console.warn(`Timer ${this.title} warning: ${name} has already been started`)
+      console.warn(
+        `Timer ${this.title} warning: ${name} has already been started`
+      )
       return
     }
     this.timer[name] = process.hrtime()
