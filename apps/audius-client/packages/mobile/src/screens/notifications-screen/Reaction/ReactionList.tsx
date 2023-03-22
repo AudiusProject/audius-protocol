@@ -2,7 +2,11 @@ import { useCallback, useContext, useRef, useState } from 'react'
 
 import { reactionOrder } from '@audius/common'
 import type { Nullable, ReactionTypes } from '@audius/common'
-import type { PanResponderGestureState } from 'react-native'
+import type {
+  ViewStyle,
+  PanResponderGestureState,
+  StyleProp
+} from 'react-native'
 import { View, PanResponder } from 'react-native'
 
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
@@ -25,6 +29,10 @@ type ReactionListProps = {
   selectedReaction: Nullable<ReactionTypes>
   onChange: (reaction: Nullable<ReactionTypes>) => void
   isVisible: boolean
+  scale?: number
+  style?: {
+    emoji?: StyleProp<ViewStyle>
+  }
 }
 
 const initialPositions = {
@@ -44,7 +52,13 @@ type Positions = { [k in ReactionTypes]: { x: number; width: number } }
  * each reaction one of the following statuses: idle/interacting/selected/unselected
  */
 export const ReactionList = (props: ReactionListProps) => {
-  const { selectedReaction, onChange, isVisible } = props
+  const {
+    selectedReaction,
+    onChange,
+    isVisible,
+    scale,
+    style: styleProp
+  } = props
   const styles = useStyles()
   // The current reaction the user is interacting with.
   // Note this needs to be a ref since the guesture handler is also a ref
@@ -130,6 +144,8 @@ export const ReactionList = (props: ReactionListProps) => {
               status={status}
               onMeasure={handleMeasure}
               isVisible={isVisible}
+              style={styleProp?.emoji}
+              scale={scale}
             />
           )
         })}

@@ -28,6 +28,7 @@ export type ReactionProps = ViewProps & {
   reactionType: ReactionTypes
   autoPlay?: boolean
   source: AnimatedLottieViewProps['source']
+  scale?: number
   style?: StyleProp<ViewStyle>
   status?: ReactionStatus
   onMeasure?: OnMeasure
@@ -39,6 +40,7 @@ export const Reaction = (props: ReactionProps) => {
     reactionType,
     autoPlay = true,
     source,
+    scale: scaleProp = 1.3,
     style,
     status: statusProp = 'idle',
     onMeasure,
@@ -64,18 +66,18 @@ export const Reaction = (props: ReactionProps) => {
     }
   }, [status, autoPlay, isVisible])
 
-  useEffect(() => {
+  const handleLayout = () => {
     if (isVisible && onMeasure) {
       ref.current?.measureInWindow((x, _, width) => {
         onMeasure({ x, width, reactionType })
       })
     }
-  }, [isVisible, onMeasure, reactionType])
+  }
 
   useEffect(() => {
     if (previousStatus !== 'interacting' && status === 'interacting') {
       Animated.timing(scale, {
-        toValue: 1.3,
+        toValue: scaleProp,
         duration: 100,
         useNativeDriver: true
       }).start()
@@ -118,6 +120,7 @@ export const Reaction = (props: ReactionProps) => {
         ref={(animation) => {
           animationRef.current = animation
         }}
+        onLayout={handleLayout}
         autoPlay={isVisible && autoPlay}
         loop
         source={source}

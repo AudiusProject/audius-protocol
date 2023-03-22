@@ -1,21 +1,22 @@
-import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 
 import {
   chatActions,
   accountSelectors,
   chatSelectors,
   encodeUrlName,
+  decodeHashId,
   encodeHashId,
   Status,
   hasTail,
   isEarliestUnread
 } from '@audius/common'
 import type { ChatMessage } from '@audius/sdk'
+import { Portal } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
-import { View, Text, Image } from 'react-native'
+import { View, Text } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import WavingHand from 'app/assets/images/emojis/waving-hand-sign.png'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconSend from 'app/assets/images/iconSend.svg'
 import type { FlatListT } from 'app/components/core'
@@ -26,9 +27,12 @@ import { UserBadges } from 'app/components/user-badges'
 import { useRoute } from 'app/hooks/useRoute'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 import { useThemePalette } from 'app/utils/theme'
 
 import { ChatMessageListItem } from './ChatMessageListItem'
+import { EmptyChatMessages } from './EmptyChatMessages'
+import { ReactionPopup } from './ReactionPopup'
 
 const { getChatMessages, getOtherChatUsers, getChat } = chatSelectors
 
@@ -38,12 +42,11 @@ const { getUserId } = accountSelectors
 const messages = {
   title: 'Messages',
   startNewMessage: 'Start a New Message',
-  newMessage: 'New Message',
-  sayHello: 'Say Hello!',
-  firstImpressions: 'First impressions are important, so make it count!'
+  newMessage: 'New Message'
 }
 const ICON_BLUR = 0.5
 const ICON_FOCUS = 1
+export const REACTION_CONTAINER_HEIGHT = 70
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   rootContainer: {
@@ -53,7 +56,6 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     justifyContent: 'space-between'
   },
   listContainer: {
-    display: 'flex',
     flex: 1
   },
   flatListContainer: {
@@ -68,18 +70,17 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     borderColor: palette.neutralLight8
   },
   composeTextContainer: {
-    backgroundColor: palette.neutralLight10,
-    borderRadius: spacing(1),
-    paddingLeft: spacing(4),
-    paddingRight: spacing(4),
     display: 'flex',
-    alignItems: 'center'
+    alignItems: 'center',
+    backgroundColor: palette.neutralLight10,
+    paddingLeft: spacing(4),
+    paddingRight: spacing(3),
+    borderRadius: spacing(1)
   },
   composeTextInput: {
     fontSize: typography.fontSize.medium
   },
   icon: {
-    marginBottom: 2,
     width: spacing(5),
     height: spacing(5),
     fill: palette.primary
@@ -116,58 +117,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     paddingHorizontal: spacing(2),
     paddingVertical: spacing(1),
     borderRadius: spacing(0.5)
-  },
-  sayHelloContainer: {
-    marginTop: spacing(8),
-    marginHorizontal: spacing(6),
-    padding: spacing(6),
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: palette.white,
-    borderColor: palette.neutralLight7,
-    borderWidth: 1,
-    borderRadius: spacing(2)
-  },
-  sayHelloTextContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginHorizontal: spacing(6)
-  },
-  wavingHand: {
-    height: spacing(16),
-    width: spacing(16)
-  },
-  sayHelloTitle: {
-    fontSize: typography.fontSize.xxl,
-    color: palette.neutral,
-    fontFamily: typography.fontByWeight.bold,
-    lineHeight: typography.fontSize.xxl * 1.3
-  },
-  sayHelloText: {
-    marginTop: spacing(2),
-    marginRight: spacing(6),
-    fontSize: typography.fontSize.large,
-    lineHeight: typography.fontSize.large * 1.3,
-    color: palette.neutral
   }
 }))
 
 const pluralize = (message: string, shouldPluralize: boolean) =>
   message + (shouldPluralize ? 's' : '')
-
-const EmptyChatMessages = () => {
-  const styles = useStyles()
-  return (
-    <View style={styles.sayHelloContainer}>
-      <Image style={styles.wavingHand} source={WavingHand} />
-      <View style={styles.sayHelloTextContainer}>
-        <Text style={styles.sayHelloTitle}>{messages.sayHello}</Text>
-        <Text style={styles.sayHelloText}>{messages.firstImpressions}</Text>
-      </View>
-    </View>
-  )
-}
 
 export const ChatScreen = () => {
   const styles = useStyles()
@@ -179,14 +133,21 @@ export const ChatScreen = () => {
   const url = `/chat/${encodeUrlName(chatId ?? '')}`
   const [iconOpacity, setIconOpacity] = useState(ICON_BLUR)
   const [inputMessage, setInputMessage] = useState('')
+  const [shouldShowPopup, setShouldShowPopup] = useState(false)
+  const messageTop = useRef(0)
+  const containerBottom = useRef(0)
+  const [popupChatIndex, setPopupChatIndex] = useState<number | null>(null)
 
-  const userId = encodeHashId(useSelector(getUserId))
+  const userId = useSelector(getUserId)
+  const userIdEncoded = encodeHashId(userId)
   const chat = useSelector((state) => getChat(state, chatId ?? ''))
   const [otherUser] = useSelector((state) => getOtherChatUsers(state, chatId))
   const chatMessages = useSelector((state) =>
     getChatMessages(state, chatId ?? '')
   )
   const flatListRef = useRef<FlatListT<ChatMessage>>(null)
+  const itemsRef = useRef<(View | null)[]>([])
+  const composeRef = useRef<View | null>(null)
   const unreadCount = chat?.unread_message_count ?? 0
   const isLoading = status === Status.LOADING && chatMessages?.length === 0
 
@@ -203,11 +164,18 @@ export const ChatScreen = () => {
   }, [dispatch, chatId, chat])
 
   useEffect(() => {
-    // Update chatFrozenRef when entering a new chat screen
+    // Update chatFrozenRef when entering a new chat screen.
     if (chat && chatId !== chatFrozenRef.current?.chat_id) {
       chatFrozenRef.current = chat
     }
   }, [chatId, chat])
+
+  useEffect(() => {
+    // Update refs when switching chats or if more chat messages are fetched.
+    if (chatMessages) {
+      itemsRef.current = itemsRef.current.slice(0, chatMessages.length)
+    }
+  }, [chatMessages])
 
   const earliestUnreadIndex = useMemo(
     () =>
@@ -217,10 +185,10 @@ export const ChatScreen = () => {
           lastReadAt: chatFrozenRef?.current?.last_read_at,
           currentMessageIndex: index,
           messages: chatMessages,
-          currentUserId: userId
+          currentUserId: userIdEncoded
         })
       ),
-    [chatMessages, userId]
+    [chatMessages, userIdEncoded]
   )
 
   const handleSubmit = useCallback(
@@ -249,15 +217,18 @@ export const ChatScreen = () => {
     }
   }, [earliestUnreadIndex, chatMessages])
 
-  const handleScrollToIndexFailed = (e) => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToIndex({
-        index: e.index,
-        viewPosition: 0.5,
-        animated: false
-      })
-    }, 10)
-  }
+  const handleScrollToIndexFailed = useCallback(
+    (e) => {
+      setTimeout(() => {
+        flatListRef.current?.scrollToIndex({
+          index: e.index,
+          viewPosition: 0.5,
+          animated: false
+        })
+      }, 10)
+    },
+    [flatListRef]
+  )
 
   const handleScrollToTop = () => {
     if (
@@ -280,7 +251,7 @@ export const ChatScreen = () => {
     }, [dispatch, chatId])
   )
 
-  const handleKebabPress = () => {
+  const handleTopRightPress = () => {
     dispatch(
       setVisibility({
         drawer: 'ChatActions',
@@ -290,9 +261,35 @@ export const ChatScreen = () => {
     )
   }
 
+  const closeReactionPopup = useCallback(() => {
+    setShouldShowPopup(false)
+    setPopupChatIndex(null)
+  }, [setShouldShowPopup, setPopupChatIndex])
+
+  const handleMessagePress = async (index: number) => {
+    if (index < 0 || index >= chatMessages.length) {
+      return
+    }
+    const popupViewRef = itemsRef.current[index]
+    if (popupViewRef === null || popupViewRef === undefined) {
+      return
+    }
+    // Measure position of selected message to create a copy of it on top
+    // of the dimmed background inside the portal.
+    const messageY = await new Promise<number>((resolve) => {
+      popupViewRef.measureInWindow((x, y, width, height) => {
+        resolve(y)
+      })
+    })
+    // Need to subtract spacing(2) to account for padding in message View.
+    messageTop.current = messageY - spacing(2)
+    setPopupChatIndex(index)
+    setShouldShowPopup(true)
+  }
+
   const topBarRight = (
     <IconKebabHorizontal
-      onPress={handleKebabPress}
+      onPress={handleTopRightPress}
       fill={palette.neutralLight4}
     />
   )
@@ -319,6 +316,26 @@ export const ChatScreen = () => {
       topbarRight={topBarRight}
     >
       <ScreenContent>
+        {/* Everything inside the portal displays on top of all other screen contents. */}
+        <Portal hostName='ChatReactionsPortal'>
+          {shouldShowPopup && popupChatIndex !== null ? (
+            <ReactionPopup
+              chatId={chatId}
+              messageTop={messageTop.current}
+              containerBottom={containerBottom.current}
+              hasTail={hasTail(
+                chatMessages[popupChatIndex],
+                chatMessages[popupChatIndex - 1]
+              )}
+              isAuthor={
+                decodeHashId(chatMessages[popupChatIndex].sender_user_id) ===
+                userId
+              }
+              message={chatMessages[popupChatIndex]}
+              closePopup={closeReactionPopup}
+            />
+          ) : null}
+        </Portal>
         <View style={styles.rootContainer}>
           {!isLoading ? (
             chatMessages?.length > 0 ? (
@@ -329,10 +346,15 @@ export const ChatScreen = () => {
                   keyExtractor={(message) => message.message_id}
                   renderItem={({ item, index }) => (
                     <>
+                      {/* When reaction popup opens, hide reaction here so it doesn't
+                          appear underneath the reaction of the message clone inside the
+                          portal. */}
                       <ChatMessageListItem
                         message={item}
+                        ref={(el) => (itemsRef.current[index] = el)}
+                        shouldShowReaction={index !== popupChatIndex}
                         hasTail={hasTail(item, chatMessages[index - 1])}
-                        unreadCount={unreadCount}
+                        onLongPress={() => handleMessagePress(index)}
                       />
                       {index === earliestUnreadIndex ? (
                         <View style={styles.unreadTagContainer}>
@@ -351,6 +373,7 @@ export const ChatScreen = () => {
                   initialNumToRender={chatMessages?.length}
                   ref={flatListRef}
                   onScrollToIndexFailed={handleScrollToIndexFailed}
+                  refreshing={status === Status.LOADING}
                 />
               </View>
             ) : (
@@ -359,7 +382,16 @@ export const ChatScreen = () => {
           ) : (
             <LoadingSpinner />
           )}
-          <View style={styles.composeView}>
+
+          <View
+            style={styles.composeView}
+            onLayout={() => {
+              composeRef.current?.measureInWindow((x, y, width, height) => {
+                containerBottom.current = y
+              })
+            }}
+            ref={composeRef}
+          >
             <TextInput
               placeholder={messages.startNewMessage}
               Icon={() => (
