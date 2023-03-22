@@ -74,6 +74,7 @@ web-build:
                 cp apple-app-site-association-stage apple-app-site-association
     - run:
         name: build
+        no_output_timeout: 30m
         command: |
           cd packages/web
           CI=false npm run build:<< parameters.build-type >>
