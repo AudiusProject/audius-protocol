@@ -1,4 +1,5 @@
 import logging
+import os
 
 import requests
 from src.tasks.celery_app import celery
@@ -122,7 +123,8 @@ def update_network_peers(self):
             # An object returned from web3 chain queries
             index_content_node_peers(self)
 
-            index_discovery_node_peers(self)
+            if not os.getenv("audius_discprov_dev_mode"):
+                index_discovery_node_peers(self)
         else:
             logger.info(
                 "index_network_peers.py | Failed to acquire update_network_peers"

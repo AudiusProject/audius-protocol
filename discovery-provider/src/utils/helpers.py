@@ -280,16 +280,6 @@ def multihash_digest_to_cid(multihash_digest):
     return multihash.to_b58_string(buf)
 
 
-def get_web3_endpoint(shared_config):
-    if shared_config["web3"]["port"] != "443":
-        web3endpoint = (
-            f"http://{shared_config['web3']['host']}:{shared_config['web3']['port']}"
-        )
-    else:
-        web3endpoint = f"https://{shared_config['web3']['host']}"
-    return web3endpoint
-
-
 def get_discovery_provider_version():
     versionFilePath = os.path.join(os.getcwd(), ".version.json")
     data = None
@@ -546,12 +536,8 @@ def get_final_poa_block() -> int:
     # depend on identity responding with final_poa_block or the redis cached value
     final_poa_block = None
 
-    if os.getenv("audius_discprov_dev_mode"):
-        # for ganache and test envs
-        return 0
-
     try:
-        final_poa_block = int(str(os.getenv("audius_final_poa_block")))
+        final_poa_block = int(str(os.getenv("audius_final_poa_block", 0)))
     except:
         raise Exception("audius_final_poa_block not set")
 
