@@ -1,3 +1,5 @@
+const { logger } = require('./logging')
+
 const REMOTE_CONFIG_FEATURE = 'remote_config'
 
 const DISCOVERY_NOTIFICATION_MAPPING = 'discovery_notification_mapping'
@@ -72,7 +74,7 @@ const getRemoteVar = (optimizelyClient, variable) => {
  * @returns
  */
 const getRemoteFeatureVarEnabled = (optimizelyClient, feature, variable) => {
-  console.log(
+  logger.info(
     `joe:::: ${JSON.stringify(
       {
         optimizelyClient: !!optimizelyClient,
@@ -84,7 +86,7 @@ const getRemoteFeatureVarEnabled = (optimizelyClient, feature, variable) => {
     )}`
   )
   if (!optimizelyClient) {
-    console.log('joe:::: returning default')
+    logger.info('joe:::: returning default')
     return DEFAULTS[variable]
   }
   return optimizelyClient.getFeatureVariableBoolean(
