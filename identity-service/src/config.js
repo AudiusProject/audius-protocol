@@ -773,12 +773,6 @@ const config = convict({
     env: 'errorWormholeReporterSlackUrl',
     default: ''
   },
-  verifiedUserReporterSlackUrl: {
-    doc: 'The slack url to post messages for new verified users',
-    format: String,
-    env: 'verifiedUserReporterSlackUrl',
-    default: ''
-  },
   wormholeRPCHosts: {
     doc: 'Wormhole RPC Host',
     format: String,
