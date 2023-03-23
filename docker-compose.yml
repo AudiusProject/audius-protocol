@@ -50,16 +50,11 @@ services:
     volumes:
       - ./comms/discovery/db/docker-initdb:/docker-entrypoint-initdb.d
       - ./dev-tools/startup/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
-    <<: *common
+    # <<: *common
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
-    deploy:
-      mode: global
-      resources:
-        limits:
-          memory: 3G
 
   autoheal:
     # Restarts containers when they become unhealthy
