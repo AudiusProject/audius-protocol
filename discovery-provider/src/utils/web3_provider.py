@@ -21,7 +21,7 @@ def get_web3(web3endpoint=None):
     # pylint: disable=W0603
     global web3
     if not web3endpoint:
-        web3endpoint = os.getenv("audius_web3_nethermind_rpc")
+        web3endpoint = os.getenv("audius_web3_host")
     web3 = Web3(HTTPProvider(web3endpoint))
 
     # required middleware for POA
