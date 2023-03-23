@@ -19,19 +19,19 @@ export const useRecomputeToggle = (
   configLoaded: boolean,
   remoteConfigInstance: RemoteConfigInstance
 ) => {
-  const [recomputeToggle, setRecomputeToggle] = useState(false)
+  const [recomputeToggle, setRecomputeToggle] = useState(0)
 
   const hasAccount = useHasAccount()
 
   // Flip recompute bool whenever account or config state changes
   useEffect(() => {
-    setRecomputeToggle((recompute) => !recompute)
+    setRecomputeToggle((recompute) => recompute + 1)
   }, [hasAccount, configLoaded])
 
   // Register callback for remote config account set,
   // which flips recompute bool
   const onUserStateChange = useCallback(() => {
-    setRecomputeToggle((recompute) => !recompute)
+    setRecomputeToggle((recompute) => recompute + 1)
   }, [])
 
   useEffect(() => {
