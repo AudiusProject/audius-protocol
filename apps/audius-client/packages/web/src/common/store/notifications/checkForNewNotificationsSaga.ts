@@ -1,4 +1,5 @@
 import {
+  accountSelectors,
   Notification,
   notificationsActions,
   notificationsSelectors,
@@ -15,6 +16,7 @@ const { updateNotifications } = notificationsActions
 const { makeGetAllNotifications } = notificationsSelectors
 const getAllNotifications = makeGetAllNotifications()
 const { getBalance } = walletActions
+const { getHasAccount } = accountSelectors
 
 // Notifications have changed if some of the incoming ones have
 // different ids or changed length in unique entities/users
@@ -62,6 +64,9 @@ export function* handleNewNotifications(notifications: Notification[]) {
 }
 
 export function* checkForNewNotificationsSaga() {
+  const hasAccount = yield* select(getHasAccount)
+  if (!hasAccount) return
+
   const limit = NOTIFICATION_LIMIT_DEFAULT
 
   const notificationsResponse = yield* call(fetchNotifications, {
