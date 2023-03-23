@@ -149,7 +149,8 @@ export const ChatScreen = () => {
   const itemsRef = useRef<(View | null)[]>([])
   const composeRef = useRef<View | null>(null)
   const unreadCount = chat?.unread_message_count ?? 0
-  const isLoading = status === Status.LOADING && chatMessages?.length === 0
+  const isLoading =
+    chat?.messagesStatus === Status.LOADING && chatMessages?.length === 0
 
   // A ref so that the unread separator doesn't disappear immediately when the chat is marked as read
   // Using a ref instead of state here to prevent unwanted flickers.
@@ -233,7 +234,7 @@ export const ChatScreen = () => {
   const handleScrollToTop = () => {
     if (
       chatId &&
-      status !== Status.LOADING &&
+      chat?.messagesStatus !== Status.LOADING &&
       chat?.messagesSummary &&
       chat?.messagesSummary.prev_count > 0
     ) {
@@ -373,7 +374,7 @@ export const ChatScreen = () => {
                   initialNumToRender={chatMessages?.length}
                   ref={flatListRef}
                   onScrollToIndexFailed={handleScrollToIndexFailed}
-                  refreshing={status === Status.LOADING}
+                  refreshing={chat?.messagesStatus === Status.LOADING}
                 />
               </View>
             ) : (
