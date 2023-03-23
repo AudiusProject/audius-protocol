@@ -46,19 +46,15 @@ const UnreadNotifications = ({ message }) => (
 const snippetMap = {
   ['favorite'](notification) {
     const [user] = notification.users
-    return `${
-      user.name
-    } favorited your ${notification.entity.type.toLowerCase()} ${
-      notification.entity.name
-    }`
+    return `${user.name
+      } favorited your ${notification.entity.type.toLowerCase()} ${notification.entity.name
+      }`
   },
   ['repost'](notification) {
     const [user] = notification.users
-    return `${
-      user.name
-    } reposted your ${notification.entity.type.toLowerCase()} ${
-      notification.entity.name
-    }`
+    return `${user.name
+      } reposted your ${notification.entity.type.toLowerCase()} ${notification.entity.name
+      }`
   },
   ['repost_of_repost'](notification) {
     const [user] = notification.users
@@ -70,9 +66,8 @@ const snippetMap = {
   },
   ['save'](notification) {
     const [user] = notification.users
-    return `${user.name} saved your ${notification.entity.type.toLowerCase()} ${
-      notification.entity.name
-    }`
+    return `${user.name} saved your ${notification.entity.type.toLowerCase()} ${notification.entity.name
+      }`
   },
   ['save_of_repost'](notification) {
     const [user] = notification.users
@@ -94,6 +89,10 @@ const snippetMap = {
     const suffix = getNumberSuffix(rank)
     return `Your Track ${notification.entity.title} is ${notification.rank}${suffix} on Trending Right Now!`
   },
+  ['tastemaker'](notification) {
+    const entityName = notification.entity.name
+    return `${entityName} is now trending thanks to you! Great work 🙌🏽`
+  },
   ['create'](notification) {
     const [user] = notification.users
     if (
@@ -103,11 +102,9 @@ const snippetMap = {
     ) {
       return `${user.name} released ${notification.entity.count} new ${notification.entity.type}`
     }
-    return `${
-      user.name
-    } released a new ${notification.entity.type.toLowerCase()} ${
-      notification.entity.name
-    }`
+    return `${user.name
+      } released a new ${notification.entity.type.toLowerCase()} ${notification.entity.name
+      }`
   },
   ['remix'](notification) {
     const { parentTrack } = notification
@@ -142,14 +139,12 @@ const snippetMap = {
     return `${notification.playlistOwner.name} added your track ${notification.track.title} to their playlist ${notification.playlist.playlist_name}`
   },
   [DMEntityType.Message](notification) {
-    return `${notification.sendingUser.name} sent you ${
-      notification.multiple ? 'new messages' : 'a new message'
-    }`
+    return `${notification.sendingUser.name} sent you ${notification.multiple ? 'new messages' : 'a new message'
+      }`
   },
   [DMEntityType.Reaction](notification) {
-    return `${notification.sendingUser.name} reacted to your message${
-      notification.multiple ? 's' : ''
-    }`
+    return `${notification.sendingUser.name} reacted to your message${notification.multiple ? 's' : ''
+      }`
   }
 }
 

@@ -109,9 +109,8 @@ export const getUsers = (users: User[]) => {
       <>
         <HighlightText text={firstUser.name} />
         <BodyText
-          text={` and ${userCount.toLocaleString()} other${
-            users.length > 2 ? 's' : ''
-          }`}
+          text={` and ${userCount.toLocaleString()} other${users.length > 2 ? 's' : ''
+            }`}
         />
       </>
     )
@@ -225,9 +224,8 @@ const notificationMap = {
           <BodyText text={`Your ${entity} `} />
           <HighlightText text={highlight} />
           <BodyText
-            text={` has reached over ${count.toLocaleString()} ${
-              notification.achievement
-            }s`}
+            text={` has reached over ${count.toLocaleString()} ${notification.achievement
+              }s`}
           />
         </span>
       )
@@ -249,6 +247,15 @@ const notificationMap = {
         <BodyText text={`Your Track `} />
         <HighlightText text={highlight} />
         <BodyText text={` is ${rank}${rankSuffix} on Trending Right Now! 🍾`} />
+      </span>
+    )
+  },
+  ['tastemaker'](notification) {
+    const entityName = notification.entity.name
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={entityName} />
+        <BodyText text={` is now trending thanks to you! Great work 🙌🏽`} />
       </span>
     )
   },
@@ -380,9 +387,8 @@ const notificationMap = {
       <span className={'notificationText'}>
         <HighlightText text={notification.sendingUser.name} />
         <BodyText
-          text={` sent you ${
-            notification.multiple ? 'new messages' : 'a new message'
-          }`}
+          text={` sent you ${notification.multiple ? 'new messages' : 'a new message'
+            }`}
         />
       </span>
     )

@@ -102,7 +102,7 @@ describe('Repost Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 1
+        badgeCount: 2
       },
       {
         title: 'New Repost',
@@ -131,7 +131,7 @@ describe('Repost Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 1
+        badgeCount: 2
       },
       {
         title: 'New Repost',
@@ -160,7 +160,7 @@ describe('Repost Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 1
+        badgeCount: 2
       },
       {
         title: 'New Repost',
