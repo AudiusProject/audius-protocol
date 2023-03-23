@@ -4,7 +4,8 @@ import {
   RandomImage,
   accountSelectors,
   badgeTiers,
-  useSelectTierInfo
+  useSelectTierInfo,
+  removeNullable
 } from '@audius/common'
 import { Button, ButtonType, Popup, SegmentedControl } from '@audius/stems'
 import cn from 'classnames'
@@ -143,7 +144,9 @@ const CollectionPage = ({ onSelect, source }) => {
   }, {})
 
   const visibleCollectibles = collectibles?.order
-    ? collectibles.order.map((id) => collectibleIdMap[id])
+    ? collectibles.order
+        .map((id) => collectibleIdMap[id])
+        .filter(removeNullable)
     : allCollectibles
 
   const imgs = visibleCollectibles.filter((c) => c.mediaType === 'IMAGE')
