@@ -3,13 +3,15 @@ version: "3.9"
 # TODO: Run nethermind in a container called `chain` like https://github.com/AudiusProject/audius-docker-compose/blob/main/discovery-provider/docker-compose.yml#L247
 # This has never existed locally but seems to break discovery indexing when signing up now (was previously working)
 
-x-common: &common
+x-common:
+  &common
   logging:
     options:
       max-size: "50m"
       max-file: "3"
     driver: json-file
-  extra_hosts: # Allows the containers can talk to each other via their hostnames routed through nginx
+  extra_hosts:
+    # Allows the containers can talk to each other via their hostnames routed through nginx
     - "audius-protocol-storage-1:host-gateway"
     - "audius-protocol-storage-2:host-gateway"
     - "audius-protocol-storage-3:host-gateway"
@@ -31,13 +33,36 @@ x-common: &common
         memory: 3G
 
 services:
-  ingress: # Nginx ingress for all hostnames. Change nginx_ingress.conf to add more hostnames / routes
+  ingress:
+    # Nginx ingress for all hostnames. Change nginx_ingress.conf to add more hostnames / routes
     extends:
       file: docker-compose.dev.yml
       service: ingress
     <<: *common
 
-  autoheal: # Restarts containers when they become unhealthy
+  db:
+    image: postgres
+    restart: unless-stopped
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./comms/discovery/db/docker-initdb:/docker-entrypoint-initdb.d
+      - ./dev-tools/startup/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    <<: *common
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+    deploy:
+      mode: global
+      resources:
+        limits:
+          memory: 3G
+
+  autoheal:
+    # Restarts containers when they become unhealthy
     extends:
       file: docker-compose.dev.yml
       service: autoheal
@@ -56,12 +81,6 @@ services:
     <<: *common
 
   # Identity
-
-  identity-service-db:
-    extends:
-      file: docker-compose.identity.yml
-      service: identity-service-db
-    <<: *common
 
   identity-service-redis:
     extends:
@@ -95,7 +114,8 @@ services:
       service: discovery-provider
     <<: *common
 
-  comms: # Used for pushing to docker hub in CI
+  comms:
+    # Used for pushing to docker hub in CI
     extends:
       file: docker-compose.discovery.yml
       service: comms
@@ -194,23 +214,6 @@ services:
       file: docker-compose.comms.yml
       service: comms-discovery-3
     <<: *common
-
-  comms-discovery-db-1:
-    container_name: audius-protocol-comms-discovery-db-1
-    image: postgres
-    restart: unless-stopped
-    ports:
-      - 5454:5432
-    environment:
-      POSTGRES_PASSWORD: postgres
-    volumes:
-      - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
-    <<: *common
-    deploy:
-      mode: global
-      resources:
-        limits:
-          memory: 3G
 
   comms-test:
     extends:

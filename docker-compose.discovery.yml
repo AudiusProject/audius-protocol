@@ -10,7 +10,7 @@ services:
     environment:
       AUDIUS_REDIS_URL: "redis://identity-service-redis:6379/00"
       DN_DB_URL: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
-      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
+      IDENTITY_DB_URL: "postgresql://postgres:postgres@db:5432/identity_service"
     volumes:
       - ./discovery-provider/plugins/notifications:/notifications
       - /notifications/node_modules
@@ -50,7 +50,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --fail http://localhost:9200/_cluster/health || exit 1",
+          "curl --fail http://localhost:9200/_cluster/health || exit 1"
         ]
       interval: 10s
       timeout: 5s

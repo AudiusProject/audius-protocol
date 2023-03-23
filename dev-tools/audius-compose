@@ -386,8 +386,10 @@ def connect():
         password = getpass.getpass(
             "Adding development hosts to /etc/hosts. Enter your sudo password: "
         )
-        cmd = f"echo '{password}' | sudo -S sh -c 'echo \"{LOCALHOSTS}\" >> /etc/hosts'"
-        subprocess.run(cmd, shell=True)
+        subprocess.run(
+            f"echo '{password}' | sudo -S sh -c 'echo \"{LOCALHOSTS}\" >> /etc/hosts'",
+            shell=True,
+        )
         print("Updated /etc/hosts")
 
 
