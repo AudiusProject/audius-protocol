@@ -33,7 +33,7 @@ const GATED_CONTENT_UPLOAD_PROMPT_MODAL_SEEN_KEY =
   'gated_content_upload_prompt_modal_seen'
 
 const LEARN_MORE_URL =
-  'https://blog.audius.co/guide-to-audius-availability-settings'
+  'https://blog.audius.co/article/guide-to-audius-availability-settings'
 
 type GatedContentUploadPromptModalProps = {
   onSubmit: () => void
