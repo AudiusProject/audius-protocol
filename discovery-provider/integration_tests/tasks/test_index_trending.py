@@ -173,7 +173,11 @@ def test_find_min_block_above_timestamp(app):
     assert min_block["number"] == 20
 
 
-def test_index_trending(app):
+def test_index_trending(app, mocker):
+    mocker.patch(
+        "src.tasks.index_trending._get_underground_trending_with_session",
+        return_value=[{"track_id": 3, "owner_id": 2}],
+    )
     # Add some users to the db - wihch generates that number of blocks
     entities = {
         "users": [{"user_id": i} for i in range(10)],
