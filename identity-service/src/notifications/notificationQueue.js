@@ -192,6 +192,8 @@ const notificaitonTypeMapping = {
 
 async function processNotification(optimizelyClient, logger, notification) {
   let numProcessedNotifs = 0
+  logger.info(`joe::::  ${JSON.stringify(notification.notification)}`)
+  logger.info(`joe:::: type: ${notification.notification.type}`)
   const notificationMappingVar =
     notificaitonTypeMapping[notification.notification.type]
   const isDisabled = getRemoteFeatureVarEnabled(
@@ -199,7 +201,7 @@ async function processNotification(optimizelyClient, logger, notification) {
     DISCOVERY_NOTIFICATION_MAPPING,
     notificationMappingVar
   )
-  console.log(`joe:::: isDisbled: ${isDisabled}`)
+  logger.info(`joe:::: isDisbled: ${isDisabled}`)
   if (isDisabled === false) {
     logger.info(
       `Skipping send push notification for type: ${notification.notification.type}`
