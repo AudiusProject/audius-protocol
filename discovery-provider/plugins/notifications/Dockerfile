@@ -1,4 +1,4 @@
-FROM node:16.19-alpine
+FROM node:14.16-alpine
 
 WORKDIR /notifications
 
