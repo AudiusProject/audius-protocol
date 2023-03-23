@@ -1,38 +1,101 @@
 /**
  * Tests a push notification
  */
-import { sendIOSMessage, sendAndroidMessage } from "../src/sns"
-import inquirer from 'inquirer'
+import prompts from 'prompts'
 
+import {
+  SNSClient,
+  PublishCommand,
+  PublishBatchCommand,
+  PublishBatchCommandInput,
+  PublishCommandInput
+} from '@aws-sdk/client-sns'
 export const main = async () => {
   // Get Env Keys
   const message = {
     region: process.env.AWS_REGION,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    targetARN: process.env.TARGET_ARN,
   }
-  // If
-  const values = await inquirer.prompt([
-    { name: 'region', type: 'input', default: 'us-west-1' },
-    { name: 'accessKey', type: 'input', default: message.accessKeyId },
-    { name: 'secret', type: 'input', default: message.secretAccessKey },
-    { name: 'type', type: 'list', choices: ['ios', 'android'], default: 'ios' },
-    { name: 'title', type: 'input', default: 'test message' },
-    { name: 'body', type: 'input', default: 'test body' },
-    { name: 'targetARN', type: 'input' },
+  const values = await prompts([
+    { message: 'region', name: 'region', type: 'text', initial: 'us-west-1' },
+    { message: 'accessKey', name: 'accessKey', type: 'text', initial: message.accessKeyId },
+    { message: 'secret', name: 'secret', type: 'text', initial: message.secretAccessKey },
+    { message: 'type', name: 'type', type: 'list', choices: ['ios', 'android'], initial: 'ios' },
+    { message: 'title', name: 'title', type: 'text', initial: 'test message' },
+    { message: 'body', name: 'body', type: 'text', initial: 'test body' },
+    { message: 'targetARN', name: 'targetARN', type: 'text', initial: message.targetARN },
   ])
+
+  const snsClient = new SNSClient({
+    region: values.region,
+    credentials: { accessKeyId: values.accessKey, secretAccessKey: values.secret }
+  })
+
+  const publish = async (params: PublishCommandInput) => {
+    try {
+      const data = await snsClient.send(new PublishCommand(params))
+      console.log('sns send success')
+      return data // For unit tests.
+    } catch (err) {
+      console.log('Error', err.stack)
+    }
+  }
+
+  const ARN = 'APNS'
+  const sendIOSMessage = async ({
+    title,
+    body,
+    badgeCount,
+    data,
+    playSound = true,
+    targetARN
+  }: {
+    title: string
+    body: string
+    badgeCount: number
+    data?: object
+    playSound: boolean
+    targetARN: string
+  }) => {
+    const message = JSON.stringify({
+      ['default']: body,
+      [ARN]: JSON.stringify({
+        aps: {
+          alert: {
+            title,
+            body
+          },
+          sound: playSound && 'default',
+          badge: badgeCount
+        },
+        data
+      })
+    })
+    console.log(message)
+
+    await publish({
+      TargetArn: targetARN,
+      Message: message,
+      MessageStructure: 'json'
+    })
+  }
+
+
   Object.entries(values).forEach(([k, v]) => {
     message[k] = message[k] || v
   })
   console.table(Object.entries(message).map(([k, v]) => ({ key: k, val: v })));
 
-  let type = ''
-  if (type == 'android') {
-    // await sendAndroidMessage()
-  } else {
-    // await sendIOSMessage()
-  }
-
+  await sendIOSMessage({
+    title: values.title,
+    body: values.body,
+    badgeCount: 1,
+    data: {},
+    playSound: true,
+    targetARN: values.targetARN
+  })
 }
 
 main()

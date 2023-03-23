@@ -43,8 +43,6 @@ export const publishBatch = async (params: PublishBatchCommandInput) => {
   }
 }
 
-// NOTE: Should be 'APNS' for prod
-const ARN = process.env.APN || 'APNS_SANDBOX'
 export const sendIOSMessage = async ({
   title,
   body,
@@ -61,9 +59,13 @@ export const sendIOSMessage = async ({
   targetARN: string
 }) => {
   logger.info({ title, body })
+  let arn
+  if (targetARN.includes('APNS_SANDBOX')) arn = 'APNS_SANDBOX'
+  else if (targetARN.includes('APNS')) arn = 'APNS'
+
   const message = JSON.stringify({
     ['default']: body,
-    [ARN]: {
+    [arn]: {
       aps: {
         alert: {
           title,

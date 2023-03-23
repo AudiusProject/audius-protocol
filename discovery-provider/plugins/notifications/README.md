@@ -11,6 +11,8 @@ docker...
 ## Regenerate sql-ts types
 npm run sql-ts
 
+## Sending a test sns push
+npx ts-node scripts/test-push-notification.ts
 
 ### Environment Variables
 
