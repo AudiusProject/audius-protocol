@@ -62,10 +62,10 @@ export const sendIOSMessage = async ({
   let arn
   if (targetARN.includes('APNS_SANDBOX')) arn = 'APNS_SANDBOX'
   else if (targetARN.includes('APNS')) arn = 'APNS'
-
+  logger.info({ arn, title, body })
   const message = JSON.stringify({
     ['default']: body,
-    [arn]: {
+    [arn]: JSON.stringify({
       aps: {
         alert: {
           title,
@@ -75,7 +75,7 @@ export const sendIOSMessage = async ({
         badge: badgeCount
       },
       data
-    }
+    })
   })
 
   await publish({
