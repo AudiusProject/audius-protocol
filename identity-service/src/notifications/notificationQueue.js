@@ -202,6 +202,7 @@ async function processNotification(optimizelyClient, logger, notification) {
   logger.info(`joe:::: type: ${notification.notification.type}`)
   const notificationMappingVar =
     notificaitonTypeMapping[notification.notification.type]
+  logger.info(`joe:::: mapper: ${notificationMappingVar}`)
   const isDisabled = getRemoteFeatureVarEnabled(
     optimizelyClient,
     DISCOVERY_NOTIFICATION_MAPPING,

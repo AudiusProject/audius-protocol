@@ -46,7 +46,7 @@ export class Processor {
 
     // Comment out to prevent app notifications until complete
     this.listener = new Listener()
-    await this.listener.start(discoveryDBUrl)
+    await this.listener.start(discoveryDBUrl || process.env.DN_DB_URL)
     await setupTriggers(this.discoveryDB)
     this.appNotificationsProcessor = new AppNotificationsProcessor(
       this.discoveryDB,

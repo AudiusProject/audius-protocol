@@ -28,11 +28,15 @@ export class Listener {
 
   start = async (connectionString: string) => {
     this.connectionString = connectionString
+    logger.info({ connectionString })
+
     this.client = new Client({
       connectionString,
       application_name: 'notifications'
     })
+    logger.info('made client')
     await this.client.connect()
+    logger.info('did connect')
 
     this.client.on('notification', (msg: Notification) => {
       const body = JSON.parse(msg.payload)
