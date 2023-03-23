@@ -14,7 +14,7 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
 const LEARN_MORE_URL =
-  'https://blog.audius.co/guide-to-audius-availability-settings'
+  'https://blog.audius.co/article/guide-to-audius-availability-settings'
 
 const messages = {
   title: 'NEW UPDATE!',
