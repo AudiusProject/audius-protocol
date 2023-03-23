@@ -6,6 +6,7 @@ import {
   PublishCommandInput
 } from '@aws-sdk/client-sns'
 import { DeviceType } from './processNotifications/mappers/base'
+import { logger } from './logger'
 
 const region = process.env.AWS_REGION
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
@@ -59,6 +60,7 @@ export const sendIOSMessage = async ({
   playSound: boolean
   targetARN: string
 }) => {
+  logger.info({ title, body })
   const message = JSON.stringify({
     ['default']: body,
     [ARN]: {
@@ -124,6 +126,8 @@ export const sendPushNotification = async (
   device: Device,
   message: Message
 ) => {
+  logger.info({ message })
+
   if (device.type == 'ios') {
     await sendIOSMessage({
       title: message.title,
