@@ -199,6 +199,7 @@ async function processNotification(optimizelyClient, logger, notification) {
     DISCOVERY_NOTIFICATION_MAPPING,
     notificationMappingVar
   )
+  console.log(`joe:::: isDisbled: ${isDisabled}`)
   if (isDisabled === false) {
     logger.info(
       `Skipping send push notification for type: ${notification.notification.type}`
