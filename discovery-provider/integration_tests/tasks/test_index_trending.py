@@ -2,10 +2,12 @@ from datetime import datetime, timedelta
 
 import redis
 from integration_tests.utils import populate_mock_db
+from src.models.notifications.notification import Notification
 from src.tasks.index_trending import (
     find_min_block_above_timestamp,
     floor_time,
     get_should_update_trending,
+    index_trending,
     set_last_trending_datetime,
 )
 from src.utils.config import shared_config
@@ -169,3 +171,51 @@ def test_find_min_block_above_timestamp(app):
 
     min_block = find_min_block_above_timestamp(block_number, min_timestamp, web3)
     assert min_block["number"] == 20
+
+
+def test_index_trending(app, mocker):
+    mocker.patch(
+        "src.tasks.index_trending._get_underground_trending_with_session",
+        return_value=[{"track_id": 3, "owner_id": 2}],
+    )
+    # Add some users to the db - wihch generates that number of blocks
+    entities = {
+        "users": [{"user_id": i} for i in range(10)],
+        "tracks": [{"track_id": i, "owner_id": 3} for i in range(10)],
+        "saves": [
+            {"save_item_id": 6, "user_id": i, "repost_type": "track"} for i in range(20)
+        ],
+    }
+    last_trending_date = int(BASE_TIME.timestamp())
+
+    redis_conn = redis.Redis.from_url(url=REDIS_URL)
+
+    with app.app_context():
+        db = get_db()
+
+        populate_mock_db(db, entities)
+        index_trending({}, db, redis_conn, last_trending_date)
+        with db.scoped_session() as session:
+            trending_notifications = (
+                session.query(Notification)
+                .filter(Notification.type == "trending")
+                .all()
+            )
+            tastemaker_notifications = (
+                session.query(Notification)
+                .filter(Notification.type == "tastemaker")
+                .all()
+            )
+
+            assert len(trending_notifications) == 5
+            # should rank tranks 9-5 as rank 1-5
+            for i, notification in enumerate(trending_notifications):
+                assert notification.specifier == f"{10-i-1}"
+                assert notification.data["rank"] == i + 1
+
+            assert len(tastemaker_notifications) == 10
+            for i, notification in enumerate(tastemaker_notifications):
+                assert (
+                    notification.group_id
+                    == f"tastemaker_user_id:{i}:tastemaker_item_id:6"
+                )
