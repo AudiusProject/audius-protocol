@@ -1,6 +1,13 @@
 import { MouseEvent, useCallback, useMemo, useRef } from 'react'
 
-import { formatCount, formatSeconds, UID, UserTrack } from '@audius/common'
+import {
+  formatCount,
+  formatSeconds,
+  UID,
+  usePremiumContentAccessMap,
+  UserTrack
+} from '@audius/common'
+import { IconLock } from '@audius/stems'
 import cn from 'classnames'
 import moment from 'moment'
 import { Cell, Row } from 'react-table'
@@ -21,6 +28,10 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './TracksTable.module.css'
+
+const messages = {
+  locked: 'Locked'
+}
 
 type RowInfo = UserTrack & {
   name: string
@@ -140,6 +151,8 @@ export const TracksTable = ({
   userId,
   wrapperClassName
 }: TracksTableProps) => {
+  const trackAccessMap = usePremiumContentAccessMap(data)
+
   // Cell Render Functions
   const renderPlayButtonCell = useCallback(
     (cellInfo: TrackCell) => {
@@ -160,14 +173,28 @@ export const TracksTable = ({
   const renderTrackNameCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
+      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        track.track_id
+      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
+      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
       const index = cellInfo.row.index
       const deleted = track.is_delete || track.user?.is_deactivated
+
+      const renderLocked = () => {
+        return (
+          <div className={styles.locked}>
+            <IconLock />
+            <span>{messages.locked}</span>
+          </div>
+        )
+      }
+
       return (
         <div
           className={styles.textContainer}
           onClick={(e) => {
             e.stopPropagation()
-            if (!deleted) onClickTrackName?.(track)
+            if (!isLocked && !deleted) onClickTrackName?.(track)
           }}
         >
           <div
@@ -176,13 +203,16 @@ export const TracksTable = ({
               [styles.isPlaying]: index === playingIndex
             })}
           >
-            {track.name}
+            <span className={cn({ [styles.lockedTrackName]: isLocked })}>
+              {track.name}
+            </span>
+            {!deleted && isLocked ? renderLocked() : null}
             {deleted ? ` [Deleted By Artist]` : ''}
           </div>
         </div>
       )
     },
-    [onClickTrackName, playingIndex]
+    [trackAccessMap, onClickTrackName, playingIndex]
   )
 
   const renderArtistNameCell = useCallback(
@@ -267,9 +297,13 @@ export const TracksTable = ({
   const renderFavoriteButtonCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
+      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        track.track_id
+      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
+      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
       const deleted = track.is_delete || !!track.user?.is_deactivated
       const isOwner = track.owner_id === userId
-      if (deleted || isOwner) {
+      if (isLocked || deleted || isOwner) {
         return <div className={styles.placeholderButton} />
       }
 
@@ -290,16 +324,20 @@ export const TracksTable = ({
         </Tooltip>
       )
     },
-    [onClickFavorite, userId]
+    [trackAccessMap, onClickFavorite, userId]
   )
 
   const repostButtonRef = useRef<HTMLDivElement>(null)
   const renderRepostButtonCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
+      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        track.track_id
+      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
+      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
       const deleted = track.is_delete || track.user?.is_deactivated
       const isOwner = track.owner_id === userId
-      if (deleted || isOwner) {
+      if (isLocked || deleted || isOwner) {
         return <div className={styles.placeholderButton} />
       }
 
@@ -323,13 +361,17 @@ export const TracksTable = ({
         </Tooltip>
       )
     },
-    [onClickRepost, userId]
+    [trackAccessMap, onClickRepost, userId]
   )
 
   const overflowMenuRef = useRef<HTMLDivElement>(null)
   const renderOverflowMenuCell = useCallback(
     (cellInfo: TrackCell) => {
       const track = cellInfo.row.original
+      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        track.track_id
+      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
+      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
       const deleted = track.is_delete || !!track.user?.is_deactivated
       return (
         <div ref={overflowMenuRef}>
@@ -337,6 +379,8 @@ export const TracksTable = ({
             className={styles.tableActionButton}
             isDeleted={deleted}
             includeEdit={!disabledTrackEdit}
+            includeAddToPlaylist={!isLocked}
+            includeFavorite={!isLocked}
             onRemove={onClickRemove}
             removeText={removeText}
             handle={track.handle}
@@ -356,7 +400,7 @@ export const TracksTable = ({
         </div>
       )
     },
-    [disabledTrackEdit, onClickRemove, removeText, userId]
+    [trackAccessMap, disabledTrackEdit, onClickRemove, removeText, userId]
   )
 
   const renderTrackActions = useCallback(
@@ -540,6 +584,10 @@ export const TracksTable = ({
   const handleClickRow = useCallback(
     (e: MouseEvent<HTMLTableRowElement>, rowInfo: TrackRow, index: number) => {
       const track = rowInfo.original
+      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        track.track_id
+      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
+      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
       const deleted = track.is_delete || track.user?.is_deactivated
       const clickedActionButton = [
         favoriteButtonRef,
@@ -547,19 +595,26 @@ export const TracksTable = ({
         overflowMenuRef
       ].some((ref) => isDescendantElementOf(e?.target, ref.current))
 
-      if (deleted || clickedActionButton) return
+      if (isLocked || deleted || clickedActionButton) return
       onClickRow?.(track, index)
     },
-    [onClickRow]
+    [trackAccessMap, onClickRow]
   )
 
   const getRowClassName = useCallback(
     (rowIndex: number) => {
       const track = data[rowIndex]
+      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        track.track_id
+      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
+      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
       const deleted = track?.is_delete || !!track?.user?.is_deactivated
-      return cn(styles.tableRow, { [styles.disabled]: deleted })
+      return cn(styles.tableRow, {
+        [styles.disabled]: isLocked || deleted,
+        [styles.lockedRow]: isLocked && !deleted
+      })
     },
-    [data]
+    [trackAccessMap, data]
   )
 
   return (

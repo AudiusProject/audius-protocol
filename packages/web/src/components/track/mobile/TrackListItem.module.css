@@ -10,7 +10,7 @@
   transition: background 0.17s ease-in-out, border 0.17s ease-in-out;
 }
 
-.trackContainer:active {
+.trackContainer:active:not(:has(.locked)) {
   background-color: var(--neutral-light-9);
 }
 
@@ -183,4 +183,30 @@
 
 .removeTrackContainer.isRemoveActive {
   transform: rotate(-90deg);
+}
+
+.locked {
+  display: flex;
+  align-items: center;
+  padding: 2px var(--unit-2);
+  background: var(--accent-blue);
+  border-radius: 80px;
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-2xs);
+  color: var(--white);
+}
+
+.locked svg {
+  margin-right: 2px;
+  width: 10px;
+  height: 10px;
+}
+
+.locked svg path {
+  fill: var(--white);
+}
+
+.lockedTrackTitle,
+.lockedBadges {
+  opacity: 0.5;
 }

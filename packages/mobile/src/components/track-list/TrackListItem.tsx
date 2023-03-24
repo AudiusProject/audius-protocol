@@ -2,6 +2,7 @@ import { memo, useCallback, useMemo, useState } from 'react'
 
 import type { ID, Track, UID, User } from '@audius/common'
 import {
+  usePremiumContentAccess,
   FeatureFlags,
   playbackPositionSelectors,
   Genre,
@@ -20,13 +21,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconDrag from 'app/assets/images/iconDrag.svg'
 import IconHeart from 'app/assets/images/iconHeart.svg'
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
+import IconLock from 'app/assets/images/iconLock.svg'
 import IconRemoveTrack from 'app/assets/images/iconRemoveTrack.svg'
 import { IconButton } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
-import { font, makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
+import { flexRowCentered, font, makeStyles } from 'app/styles'
+import { useColor, useThemeColors } from 'app/utils/theme'
 
 import { TrackDownloadStatusIndicator } from '../offline-downloads/TrackDownloadStatusIndicator'
 
@@ -41,7 +43,7 @@ const { getTrackPosition } = playbackPositionSelectors
 
 export type TrackItemAction = 'save' | 'overflow' | 'remove'
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
+const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   trackContainer: {
     width: '100%',
     height: 72,
@@ -116,11 +118,31 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
   },
   hideDivider: {
     opacity: 0
+  },
+  locked: {
+    ...flexRowCentered(),
+    paddingVertical: spacing(0.5),
+    paddingHorizontal: spacing(2),
+    backgroundColor: palette.accentBlue,
+    borderRadius: 80
+  },
+  lockedIcon: {
+    fill: palette.white
+  },
+  lockedText: {
+    marginLeft: spacing(0.5),
+    fontFamily: typography.fontByWeight.demiBold,
+    fontSize: typography.fontSize.xxs,
+    color: palette.white
+  },
+  halfTransparent: {
+    opacity: 0.5
   }
 }))
 
 const getMessages = ({ isDeleted = false }: { isDeleted?: boolean } = {}) => ({
-  deleted: isDeleted ? ' [Deleted By Artist]' : ''
+  deleted: isDeleted ? ' [Deleted By Artist]' : '',
+  locked: 'Locked'
 })
 
 export type TrackListItemProps = {
@@ -193,6 +215,9 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
 
   const isDeleted = is_delete || !!is_deactivated || is_unlisted
 
+  const { isUserAccessTBD, doesUserHaveAccess } = usePremiumContentAccess(track)
+  const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+
   const isActive = useSelector((state) => {
     const playingUid = getUid(state)
     return uid !== undefined && uid === playingUid
@@ -211,6 +236,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const themeColors = useThemeColors()
+  const white = useColor('white')
   const [titleWidth, setTitleWidth] = useState(0)
 
   const deletedTextWidth = useMemo(
@@ -224,7 +250,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
   )
 
   const onPressTrack = () => {
-    if (uid && !isDeleted && togglePlay) {
+    if (uid && !isLocked && !isDeleted && togglePlay) {
       togglePlay(uid, track_id)
     }
   }
@@ -315,7 +341,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
           style={styles.trackInnerContainer}
           onPress={onPressTrack}
           onLongPress={drag}
-          disabled={isDeleted}
+          disabled={isDeleted || isLocked}
         >
           {!hideArt ? (
             <TrackArtwork
@@ -323,7 +349,7 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               isActive={isActive}
               isPlaying={isPlaying}
             />
-          ) : isActive && !isDeleted ? (
+          ) : isActive && !isDeleted && !isLocked ? (
             <View style={styles.playButtonContainer}>
               <TablePlayButton
                 playing
@@ -334,7 +360,12 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
             </View>
           ) : null}
           {isReorderable && <IconDrag style={styles.dragIcon} />}
-          <View style={styles.nameArtistContainer}>
+          <View
+            style={[
+              styles.nameArtistContainer,
+              !isDeleted && isLocked ? styles.halfTransparent : null
+            ]}
+          >
             <View
               style={styles.topLine}
               onLayout={(e) => setTitleWidth(e.nativeEvent.layout.width)}
@@ -362,7 +393,13 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               <UserBadges user={user} badgeSize={12} hideName />
             </Text>
           </View>
-          {trackItemAction === 'save' ? (
+          {!isDeleted && isLocked ? (
+            <View style={styles.locked}>
+              <IconLock fill={white} width={10} height={10} />
+              <Text style={styles.lockedText}>{messages.locked}</Text>
+            </View>
+          ) : null}
+          {(isDeleted || !isLocked) && trackItemAction === 'save' ? (
             <IconButton
               icon={IconHeart}
               styles={{
