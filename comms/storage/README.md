@@ -30,22 +30,22 @@ To get started with a lightweight multi node cluster and test uploads.
 make
 
 # then you can visit the web ui to test uploads
-open http://node1-storage/storage
+open http://audius-protocol-storage-1/storage
 
 # you can also curl uploads
-curl -F "files=@/path/to/file.wav" -F "template=audio" http://node1-storage/storage/api/v1/file
+curl -F "files=@/path/to/file.wav" -F "template=audio" http://audius-protocol-storage-1/storage/api/v1/file
 
 # after some uploads, you can see which nodes stored what files 
-docker logs storage1 2>&1 | grep -i storing
+docker logs audius-protocol-storage-1 2>&1 | grep -i storing
 
 # to check nats stream status
-docker exec -ti nats1-storage nats stream ls -a
+docker exec -ti audius-protocol-nats-storage-1 nats stream ls -a
 
 # explore the weathermap for a visual layout of the sharded filesystem
-open http://node1-storage/storage/weather
+open http://audius-protocol-storage-1/storage
 
 # tail logs to see hot reloading
-docker logs -f storage1
+docker logs -f audius-protocol-storage-1
 
 # now change some go files...
 ...

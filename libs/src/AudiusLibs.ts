@@ -4,10 +4,6 @@ import type { Merge } from 'type-fest'
 import { EthWeb3Config, EthWeb3Manager } from './services/ethWeb3Manager'
 
 import { version } from './version'
-import {
-  AnchorAudiusDataConfig,
-  SolanaAudiusData
-} from './services/solanaAudiusData'
 import { Web3Config, Web3Manager } from './services/web3Manager'
 import { EthContracts } from './services/ethContracts'
 import {
@@ -42,13 +38,11 @@ import { Reactions } from './api/Reactions'
 import { Notifications } from './api/Notifications'
 import Web3 from './LibsWeb3'
 
-import { Keypair, PublicKey } from '@solana/web3.js'
+import { Keypair } from '@solana/web3.js'
 import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
 import { EntityManager } from './api/entityManager'
-
-import { idl } from '@audius/anchor-audius-data'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -80,7 +74,6 @@ type AudiusLibsConfig = {
   web3Config: Web3Config
   ethWeb3Config: EthWeb3Config
   solanaWeb3Config: SolanaWeb3Config
-  solanaAudiusDataConfig: AnchorAudiusDataConfig
   identityServiceConfig: LibsIdentityServiceConfig
   discoveryProviderConfig: LibsDiscoveryProviderConfig
   creatorNodeConfig: CreatorNodeConfig
@@ -277,19 +270,8 @@ export class AudiusLibs {
     rewardsManagerTokenPDA,
     useRelay,
     feePayerSecretKeys,
-    confirmationTimeout,
-    audiusDataAdminStorageKeypairPublicKey,
-    audiusDataProgramId,
-    audiusDataIdl
+    confirmationTimeout
   }: LibsSolanaWeb3Config): SolanaWeb3Config {
-    if (audiusDataAdminStorageKeypairPublicKey instanceof String) {
-      audiusDataAdminStorageKeypairPublicKey = new PublicKey(
-        audiusDataAdminStorageKeypairPublicKey
-      )
-    }
-    if (audiusDataProgramId instanceof String) {
-      audiusDataProgramId = new PublicKey(audiusDataProgramId)
-    }
     return {
       solanaClusterEndpoint,
       mintAddress,
@@ -304,23 +286,7 @@ export class AudiusLibs {
       feePayerKeypairs: feePayerSecretKeys?.map((key) =>
         Keypair.fromSecretKey(key)
       ),
-      confirmationTimeout,
-      audiusDataAdminStorageKeypairPublicKey,
-      audiusDataProgramId,
-      audiusDataIdl: audiusDataIdl || idl
-    }
-  }
-
-  /**
-   * Configures a solana audius-data
-   */
-  static configSolanaAudiusData({
-    programId,
-    adminAccount
-  }: AnchorAudiusDataConfig) {
-    return {
-      programId,
-      adminAccount
+      confirmationTimeout
     }
   }
 
@@ -329,7 +295,6 @@ export class AudiusLibs {
   ethWeb3Config: EthWeb3Config
   web3Config: Web3Config
   solanaWeb3Config: SolanaWeb3Config
-  solanaAudiusDataConfig: AnchorAudiusDataConfig
   identityServiceConfig: LibsIdentityServiceConfig
   creatorNodeConfig: CreatorNodeConfig
   discoveryProviderConfig: LibsDiscoveryProviderConfig
@@ -352,7 +317,6 @@ export class AudiusLibs {
   ethContracts: Nullable<EthContracts>
   web3Manager: Nullable<Web3Manager>
   solanaWeb3Manager: Nullable<SolanaWeb3Manager>
-  solanaAudiusData: Nullable<SolanaAudiusData>
   contracts: Nullable<AudiusContracts>
   wormholeClient: Nullable<Wormhole>
   creatorNode: Nullable<CreatorNode>
@@ -389,7 +353,6 @@ export class AudiusLibs {
     web3Config,
     ethWeb3Config,
     solanaWeb3Config,
-    solanaAudiusDataConfig,
     identityServiceConfig,
     discoveryProviderConfig,
     creatorNodeConfig,
@@ -410,7 +373,6 @@ export class AudiusLibs {
     this.ethWeb3Config = ethWeb3Config
     this.web3Config = web3Config
     this.solanaWeb3Config = solanaWeb3Config
-    this.solanaAudiusDataConfig = solanaAudiusDataConfig
     this.identityServiceConfig = identityServiceConfig
     this.creatorNodeConfig = creatorNodeConfig
     this.discoveryProviderConfig = discoveryProviderConfig
@@ -433,7 +395,6 @@ export class AudiusLibs {
     this.ethContracts = null
     this.web3Manager = null
     this.solanaWeb3Manager = null
-    this.solanaAudiusData = null
     this.wormholeClient = null
     this.contracts = null
     this.creatorNode = null
@@ -513,14 +474,6 @@ export class AudiusLibs {
         this.web3Manager
       )
       await this.solanaWeb3Manager.init()
-    }
-    if (this.solanaWeb3Manager && this.solanaAudiusDataConfig) {
-      this.solanaAudiusData = new SolanaAudiusData(
-        this.solanaAudiusDataConfig,
-        this.solanaWeb3Manager,
-        this.web3Manager
-      )
-      await this.solanaAudiusData.init()
     }
 
     /** Contracts - Eth and Data Contracts */
@@ -630,7 +583,6 @@ export class AudiusLibs {
       this.ethWeb3Manager,
       this.ethContracts,
       this.solanaWeb3Manager,
-      this.solanaAudiusData,
       this.wormholeClient,
       this.creatorNode,
       this.comstock,

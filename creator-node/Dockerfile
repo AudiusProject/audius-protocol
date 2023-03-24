@@ -47,7 +47,6 @@ RUN echo 'http://mirror.leaseweb.com/alpine/v3.13/community' >> /etc/apk/reposit
     mkdir /usr/local/openresty/logs && \
     mkdir /usr/local/openresty/cache
 
-COPY nginx_conf /usr/local/openresty/conf/
 
 # Create a db user if postgres in case it will be run inside this container
 COPY scripts/init-db.sh scripts/init-db.sh
@@ -56,8 +55,7 @@ RUN bash scripts/init-db.sh
 COPY --from=builder /app/node_modules node_modules
 
 COPY . .
-
-RUN npm run postinstall
+COPY nginx_conf /usr/local/openresty/conf/
 
 # Compile js code to typescript based on tsconfig.build.json
 RUN ./node_modules/.bin/tsc --project tsconfig.build.json

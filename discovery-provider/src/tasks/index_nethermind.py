@@ -12,6 +12,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
 from src.models.indexing.ursm_content_node import UrsmContentNode
+from src.models.notifications.notification import NotificationSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -74,7 +75,7 @@ TX_TYPE_TO_HANDLER_MAP = {
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
 logger = logging.getLogger(__name__)
-web3 = web3_provider.get_nethermind_web3()
+web3 = web3_provider.get_web3()
 
 # HELPER FUNCTIONS
 
@@ -770,6 +771,12 @@ def revert_blocks(self, db, revert_blocks_list):
                 .all()
             )
 
+            revert_notification_seen = (
+                session.query(NotificationSeen)
+                .filter(NotificationSeen.blocknumber == revert_block_number)
+                .all()
+            )
+
             # Revert all of above transactions
             for save_to_revert in revert_save_entries:
                 save_item_id = save_to_revert.save_item_id
@@ -986,6 +993,10 @@ def revert_blocks(self, db, revert_blocks_list):
                 )
                 session.delete(playlist_route_to_revert)
 
+            for notification_seen_to_revert in revert_notification_seen:
+                session.delete(notification_seen_to_revert)
+                # NOTE: There is no need mark previous as is_current for notification seen
+
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()
 
@@ -1031,7 +1042,7 @@ def update_task(self):
     db = update_task.db
     redis = update_task.redis
 
-    final_poa_block = helpers.get_final_poa_block(update_task.shared_config)
+    final_poa_block = helpers.get_final_poa_block()
     current_block_query_results = None
 
     with db.scoped_session() as session:

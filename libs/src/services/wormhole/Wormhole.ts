@@ -327,7 +327,7 @@ export class Wormhole {
         connection, // solana web3 Connection
         this.solBridgeAddress, // bridge address
         this.solTokenBridgeAddress, // token bridge address
-        this.solanaWeb3Manager.feePayerAddress as string, // payerAddress
+        this.solanaWeb3Manager.feePayerAddress as unknown as string, // payerAddress
         tokenAccountInfo!.address.toString(), // fromAddress
         this.solanaWeb3Manager.mintAddress, // mintAddress
         wAudioAmount, // BigInt

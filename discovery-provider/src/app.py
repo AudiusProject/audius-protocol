@@ -39,7 +39,7 @@ from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.update_track_is_available import UPDATE_TRACK_IS_AVAILABLE_LOCK
-from src.utils import helpers
+from src.utils import helpers, web3_provider
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
 from src.utils.eth_manager import EthManager
@@ -103,7 +103,7 @@ def create_celery(test_config=None):
     global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
     global solana_client_manager
 
-    web3endpoint = helpers.get_web3_endpoint(shared_config)
+    web3endpoint = web3_provider.get_web3(shared_config)
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
@@ -314,6 +314,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_aggregate_tips",
             "src.tasks.index_reactions",
             "src.tasks.update_track_is_available",
+            "src.tasks.cache_current_nodes",
         ],
         beat_schedule={
             "update_discovery_provider_nethermind": {
@@ -416,6 +417,10 @@ def configure_celery(celery, test_config=None):
                 "task": "index_profile_challenge_backfill",
                 "schedule": timedelta(minutes=1),
             },
+            "cache_current_nodes": {
+                "task": "cache_current_nodes",
+                "schedule": timedelta(minutes=1)
+            }
         },
         task_serializer="json",
         accept_content=["json"],

@@ -26,10 +26,10 @@ import {
   NotificationEmailRow
 } from '../types/identity'
 import { getDB } from '../conn'
-import { config } from '../config'
 import { expect, jest } from '@jest/globals'
 import { Processor } from '../main'
 import { getRedisConnection } from './redisConnection'
+import { config } from '../config'
 
 export const setupTest = async () => {
   const testName = expect
@@ -40,7 +40,12 @@ export const setupTest = async () => {
     createTestDB(process.env.DN_DB_URL, testName),
     createTestDB(process.env.IDENTITY_DB_URL, testName)
   ])
+
   const processor = new Processor()
+
+  // @ts-ignore
+  processor.server.app.listen = jest.fn((port: number, cb: () => void) => cb())
+
   await processor.init({
     identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
     discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
@@ -51,6 +56,10 @@ export const setupTest = async () => {
 
   // Mock current date for test result consistency
   Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
+  const redis = await getRedisConnection()
+  redis.del(config.lastIndexedMessageRedisKey)
+  redis.del(config.lastIndexedReactionRedisKey)
+
   return { processor }
 }
 
@@ -102,6 +111,7 @@ export const resetTests = async (processor) => {
     .getState()
     .currentTestName.replace(/\s/g, '_')
     .toLocaleLowerCase()
+
   await Promise.all([
     dropTestDB(process.env.DN_DB_URL, testName),
     dropTestDB(process.env.IDENTITY_DB_URL, testName)

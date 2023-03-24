@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
@@ -22,10 +21,11 @@ from src.queries.get_underground_trending import (
     make_underground_trending_cache_key,
 )
 from src.tasks.celery_app import celery
+from src.tasks.index_tastemaker_notifications import index_tastemaker_notifications
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
-from src.utils import helpers
 from src.utils.config import shared_config
+from src.utils.helpers import get_adjusted_block
 from src.utils.prometheus_metric import (
     PrometheusMetric,
     PrometheusMetricNames,
@@ -215,18 +215,14 @@ def index_trending(self, db: SessionManager, redis: Redis, timestamp):
     redis.set(trending_tracks_last_completion_redis_key, int(update_end))
     set_last_trending_datetime(redis, timestamp)
 
-    index_trending_notifications(db, timestamp)
+    top_trending_tracks = get_top_trending_to_notify(db)
+
+    index_trending_notifications(db, timestamp, top_trending_tracks)
+    index_tastemaker_notifications(db, top_trending_tracks)
     index_trending_underground_notifications(db, timestamp)
 
 
-def index_trending_notifications(db: SessionManager, timestamp: int):
-    # Get the top 5 trending tracks from the new trending calculations
-    # Get the most recent trending tracks notifications
-    # Calculate any diff and write the new notifications if the trending track has moved up in rank
-    # Skip if the user was notified of the trending track within the last TRENDING_INTERVAL_HOURS
-    # Skip If the new rank is not less than the old rank, skip
-    #   ie. Skip if track moved from #2 trending to #3 trending or stayed the same
-    trending_strategy_factory = TrendingStrategyFactory()
+def get_top_trending_to_notify(db):
     # The number of tracks to notify for in the top
     NOTIFICATIONS_TRACK_LIMIT = 5
     with db.scoped_session() as session:
@@ -236,6 +232,20 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
             trending_strategy_factory.get_strategy(TrendingType.TRACKS),
         )
         top_trending = trending_tracks[:NOTIFICATIONS_TRACK_LIMIT]
+        return top_trending
+
+
+def index_trending_notifications(
+    db: SessionManager, timestamp: int, top_trending: List[Track]
+):
+    # Get the top 5 trending tracks from the new trending calculations
+    # Get the most recent trending tracks notifications
+    # Calculate any diff and write the new notifications if the trending track has moved up in rank
+    # Skip if the user was notified of the trending track within the last TRENDING_INTERVAL_HOURS
+    # Skip If the new rank is not less than the old rank, skip
+    #   ie. Skip if track moved from #2 trending to #3 trending or stayed the same
+    # The number of tracks to notify for in the top
+    with db.scoped_session() as session:
         top_trending_track_ids = [str(t["track_id"]) for t in top_trending]
 
         previous_trending_notifications = (
@@ -326,6 +336,7 @@ def index_trending_notifications(db: SessionManager, timestamp: int):
             "index_trending.py | Created trending notifications",
             extra={"job": "index_trending", "subtask": "trending notification"},
         )
+        return top_trending
 
 
 last_trending_timestamp = "last_trending_timestamp"
@@ -473,9 +484,9 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
     returns a tuple of the blocknumber and timestamp
     """
     curr_block_number = block_number
-    block = get_block(web3, block_number)
+    block = get_adjusted_block(web3, block_number)
     while datetime.fromtimestamp(block["timestamp"]) > min_timestamp:
-        prev_block = get_block(web3, curr_block_number - 1)
+        prev_block = get_adjusted_block(web3, curr_block_number - 1)
         prev_timestamp = datetime.fromtimestamp(prev_block["timestamp"])
         if prev_timestamp >= min_timestamp:
             block = prev_block
@@ -484,17 +495,6 @@ def find_min_block_above_timestamp(block_number: int, min_timestamp: datetime, w
             return block
 
     return block
-
-
-def get_block(web3, block_number: int):
-    final_poa_block = helpers.get_final_poa_block(shared_config)
-    if final_poa_block and web3.provider.endpoint_uri == os.getenv(
-        "audius_web3_nethermind_rpc"
-    ):
-        nethermind_block_number = block_number - final_poa_block
-        return web3.eth.get_block(nethermind_block_number, True)
-    else:
-        return web3.eth.get_block(block_number, True)
 
 
 def get_should_update_trending(
@@ -512,7 +512,7 @@ def get_should_update_trending(
             session.query(Block.number).filter(Block.is_current == True).first()
         )
         current_db_block_number = current_db_block[0]
-        current_block = get_block(web3, current_db_block_number)
+        current_block = get_adjusted_block(web3, current_db_block_number)
         current_timestamp = current_block["timestamp"]
         current_datetime = datetime.fromtimestamp(current_timestamp)
         min_block_datetime = floor_time(current_datetime, interval_seconds)

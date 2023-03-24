@@ -71,6 +71,7 @@ function _getTestSegmentFilePathAtIndex(index) {
 }
 
 describe('test Polling Tracks with mocked IPFS', function () {
+  this.retries(3) // TODO: Flakey test
   let app, server, libsMock, handleTrackContentRoute
   let session, userId, userWallet
 

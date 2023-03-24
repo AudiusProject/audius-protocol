@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  creator-node:
+    build:
+      context: creator-node
+      args:
+        git_sha: "${GIT_COMMIT}"
+    command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
+    env_file: .env # used by the startup script
+    volumes:
+      - ./creator-node:/usr/src/app
+      - ./dev-tools:/tmp/dev-tools
+      - audius-libs:/usr/src/audius-libs
+      - /usr/src/app/node_modules
+      - /usr/src/app/build
+    depends_on:
+      poa-ganache:
+        condition: service_healthy
+      eth-ganache:
+        condition: service_healthy
+      solana-test-validator:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+      # build-audius-libs:
+      #   condition: service_started
+    deploy:
+      mode: replicated
+      replicas: "${CREATOR_NODE_REPLICAS}"

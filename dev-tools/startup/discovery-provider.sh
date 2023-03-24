@@ -1,8 +1,13 @@
 #!/usr/bin/env sh
 
+if [[ "$audius_db_url" == "" ]]; then
+    export audius_db_url="postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_${replica}"
+    export audius_db_url_read_replica="postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_${replica}"
+fi
+
 export audius_enable_rsyslog=false
 
-export audius_discprov_url="http://$(nslookup "$(hostname -i)" | sed -n 's/.*name = \(.*\)/\1/p'):5000"
+export audius_discprov_url="http://audius-protocol-discovery-provider-${replica}"
 
 export audius_delegate_owner_wallet=$(printenv "DP${replica}_DELEGATE_OWNER_ADDRESS")
 export audius_delegate_private_key=$(printenv "DP${replica}_DELEGATE_OWNER_PRIVATE_KEY")

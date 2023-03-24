@@ -22,8 +22,8 @@ Below are suggested minimum values.
 ```
 Docker > Preferences > Resources > Advanced
 - CPUs 4
-- Memory 12 GB
-- Disk Image Size 80 GB
+- Memory 13 GB
+- Disk Image Size 120 GB
 ```
 
 If you still run into issues, you may execute a `docker system prune` to free additional space.
@@ -49,35 +49,17 @@ audius-compose up
 ```
 This command completes in 1-2 min, but use `watch docker ps -a` to ensure that all servicees report "Status" as Healthy. It currently takes ~10min for this to happen.
 
-### Perform actions with `audius-cmd`
+## Connect via hostname or client
 
-You can confirm that things are wired up correctly by running `audius-cmd create-user`.
-Note that `audius-cmd` requires the stack to be up and healthy, per [Bring up protocol stack](#bring-up-protocol-stack)
-
-## Port Forwarding Instructions
-
-To use the client from a mac, we need to setup a transparent proxy server to interact with the machine running the backend
-```
-brew install sshuttle
-```
-
-### Local Machine
-
-If running protocol and client on localhost
-
+To use the client from a mac, we need to route hostnames to the audius-compose nginx reverse proxy by running:
 ```
 audius-compose connect
 ```
 
-### Remote Machine
+### Perform actions with `audius-cmd`
 
-If running protocol on remote instance and client on localhost
-
-```
-audius-compose connect -r
-```
-
-Then on your local machine you can go to http://audius-protocol-discovery-provider-1:5000/health_check
+You can confirm that things are wired up correctly by running `audius-cmd create-user`.
+Note that `audius-cmd` requires the stack to be up and healthy, per [Bring up protocol stack](#bring-up-protocol-stack), and to have run `audius-compose connect`.
 
 # Helpful Commands
 
