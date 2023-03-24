@@ -23,7 +23,9 @@ const routeList: RouteObject[] = [
         path: '/discovery',
         children: [
           { path: 'health', element: <DiscoveryHealth /> },
-          { path: 'trending', element: <DiscoveryTrending /> },
+          { path: 'trending', element: <DiscoveryTrending trendingEndpoint='/v1/tracks/trending' /> },
+          { path: 'trending_underground', element: <DiscoveryTrending trendingEndpoint='/v1/tracks/trending/underground' /> },
+          { path: 'trending_playlists', element: <DiscoveryTrending trendingEndpoint='/v1/playlists/trending/BDNxn' /> },
           { path: 'feed', element: <DiscoveryFeed /> },
           { path: 'search', element: <DiscoverySearch /> },
           { path: 'diff', element: <APIDiff /> },
