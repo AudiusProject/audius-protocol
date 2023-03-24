@@ -21,11 +21,11 @@ body {
   background: lightyellow;
 }
 
-tr.is-behind {
-  background: navajowhite;
+.is-behind {
+  background: #ffebe9;
 }
-tr.is-behind:hover td {
-  background: yellow;
+table tr:hover td.is-behind {
+  background: rgba(255, 129, 130, 0.4);
 }
 
 a,
