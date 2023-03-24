@@ -34,46 +34,17 @@ def get_users_cnode(
         users_res = sqlalchemy.text(
             f"""
             SELECT
-            *
-            FROM
-            (
-                SELECT
-                "user_id",
-                "wallet",
-                ("creator_node_endpoints") [1] as "primary",
-                ("creator_node_endpoints") [2] as "secondary1",
-                ("creator_node_endpoints") [3] as "secondary2",
-                "primary_id" as "primarySpID",
-                ("secondary_ids") [1] as "secondary1SpID",
-                ("secondary_ids") [2] as "secondary2SpID"
-                FROM
-                (
-                    SELECT
-                    "user_id",
-                    "wallet",
-                    string_to_array("creator_node_endpoint", ',') as "creator_node_endpoints",
-                    "primary_id",
-                    "secondary_ids"
-                    FROM
-                    "users"
-                    WHERE
-                    "creator_node_endpoint" IS NOT NULL
-                    AND "is_current" IS TRUE
-                    ORDER BY
-                    "user_id" ASC
-                ) as "s"
-            ) as "t"
+              "user_id",
+              "wallet",
+              "creator_node_endpoint",
+              "primary_id",
+              "secondary_ids"
+            FROM "users"
             WHERE
-            {
-                "t.primary = :cnode_endpoint_string AND"
-                if replica_type == ReplicaType.PRIMARY
-                else '(t.secondary1 = :cnode_endpoint_string OR t.secondary2 = :cnode_endpoint_string) AND'
-                if replica_type == ReplicaType.SECONDARY
-                else '(t.primary = :cnode_endpoint_string OR '
-                    't.secondary1 = :cnode_endpoint_string OR '
-                    't.secondary2 = :cnode_endpoint_string) AND'
-            }
-            t.secondary1 is not NULL
+              "creator_node_endpoint" IS NOT NULL
+              AND "is_current" IS TRUE
+              AND "creator_node_endpoint" like :cnode_like
+              AND "secondary_ids" IS NOT NULL
             {
                 ""
                 if prev_user_id is None
@@ -89,10 +60,17 @@ def get_users_cnode(
             ;
             """
         )
+
+        cnode_like = "%" + cnode_endpoint_string + "%"
+        if replica_type == ReplicaType.PRIMARY:
+            cnode_like = cnode_endpoint_string + ",%"
+        elif replica_type == ReplicaType.SECONDARY:
+            cnode_like = "%," + cnode_endpoint_string
+
         users = session.execute(
             users_res,
             {
-                "cnode_endpoint_string": cnode_endpoint_string,
+                "cnode_like": cnode_like,
                 "prev_user_id": prev_user_id,
                 "max_users": max_users,
             },
