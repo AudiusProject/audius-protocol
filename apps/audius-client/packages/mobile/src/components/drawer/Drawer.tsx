@@ -17,9 +17,7 @@ import {
 } from 'react-native'
 import type { Edge } from 'react-native-safe-area-context'
 import { useSafeAreaInsets, SafeAreaView } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
 
-import { getAndroidNavigationBarHeight } from 'app/store/mobileUi/selectors'
 import { makeStyles } from 'app/styles'
 import { attachToDy } from 'app/utils/animation'
 
@@ -261,7 +259,6 @@ export const Drawer: DrawerComponent = ({
   disableSafeAreaView
 }: DrawerProps) => {
   const styles = useStyles()
-  const androidNavigationBarHeight = useSelector(getAndroidNavigationBarHeight)
   const insets = useSafeAreaInsets()
 
   const [drawerHeight, setDrawerHeight] = useState(
@@ -269,9 +266,10 @@ export const Drawer: DrawerComponent = ({
   )
 
   // Initial position of the drawer when closed
-  const initialPosition = FULL_DRAWER_HEIGHT + insets.bottom
+  const initialPosition = FULL_DRAWER_HEIGHT
   // Position of the drawer when it is in an offset but closed state
-  const initialOffsetOpenPosition = FULL_DRAWER_HEIGHT - initialOffsetPosition
+  const initialOffsetOpenPosition =
+    FULL_DRAWER_HEIGHT - initialOffsetPosition - insets.bottom
   // Position of the fully opened drawer
   const openPosition = FULL_DRAWER_HEIGHT - drawerHeight
 
@@ -639,7 +637,7 @@ export const Drawer: DrawerComponent = ({
         onLayout={(event: LayoutChangeEvent) => {
           if (!isFullscreen) {
             const { height } = event.nativeEvent.layout
-            setDrawerHeight(height + androidNavigationBarHeight)
+            setDrawerHeight(height)
           }
         }}
         {...edgeProps}

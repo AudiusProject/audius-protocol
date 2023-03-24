@@ -34,7 +34,6 @@ import { useDrawer } from 'app/hooks/useDrawer'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { AppDrawerContext } from 'app/screens/app-drawer-screen'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
-import { getAndroidNavigationBarHeight } from 'app/store/mobileUi/selectors'
 import { makeStyles } from 'app/styles'
 
 import { ActionsBar } from './ActionsBar'
@@ -108,10 +107,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   })
   const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
-  const androidNavigationBarHeight = useSelector(getAndroidNavigationBarHeight)
   const staticTopInset = useRef(insets.top)
-  const bottomBarHeight =
-    BOTTOM_BAR_HEIGHT + (Platform.OS === 'ios' ? insets.bottom : 0)
   const styles = useStyles()
 
   const { isOpen, onOpen, onClose } = useDrawer('NowPlaying')
@@ -281,9 +277,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
       isOpen={isOpen}
       onClose={handleDrawerCloseFromSwipe}
       onOpen={onDrawerOpen}
-      initialOffsetPosition={
-        bottomBarHeight + PLAY_BAR_HEIGHT + androidNavigationBarHeight
-      }
+      initialOffsetPosition={BOTTOM_BAR_HEIGHT + PLAY_BAR_HEIGHT}
       shouldCloseToInitialOffset={isPlayBarShowing}
       animationStyle={DrawerAnimationStyle.SPRINGY}
       shouldBackgroundDim={false}

@@ -65,7 +65,6 @@ import { all, fork } from 'typed-redux-saga'
 import accountSagas from './account/sagas'
 import mobileChatSagas from './chat/sagas'
 import initKeyboardEvents from './keyboard/sagas'
-import mobileUiSagas from './mobileUi/sagas'
 import notificationsSagas from './notifications/sagas'
 import oauthSagas from './oauth/sagas'
 import offlineDownloadSagas from './offline-downloads/sagas'
@@ -168,7 +167,6 @@ export default function* rootSaga() {
     ...vipDiscordModalSagas(),
     ...themeSagas(),
     ...tokenDashboardSagas(),
-    ...mobileUiSagas(),
     ...uploadSagas(),
     ...remixSettingsSagas(),
     ...offlineDownloadSagas(),

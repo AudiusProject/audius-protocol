@@ -100,7 +100,6 @@
     "query-string": "7.0.1",
     "react": "18.2.0",
     "react-native": "0.71.3",
-    "react-native-android-navbar-height": "github:ConnectyCube/react-native-android-navbar-height.git#3b04b4b66ce1bcc1b316fd44b368575cf8b3432d",
     "react-native-autolink": "4.0.0",
     "react-native-bars": "1.3.0",
     "react-native-bootsplash": "4.4.1",

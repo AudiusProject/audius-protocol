@@ -463,8 +463,6 @@ PODS:
   - React-jsinspector (0.71.3)
   - React-logger (0.71.3):
     - glog
-  - react-native-android-navbar-height (0.1.0):
-    - React-Core
   - react-native-blur (4.3.0):
     - React-Core
   - react-native-config (1.4.5):
@@ -781,7 +779,6 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
-  - react-native-android-navbar-height (from `../node_modules/react-native-android-navbar-height`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - "react-native-cookies (from `../node_modules/@react-native-cookies/cookies`)"
@@ -945,8 +942,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   React-logger:
     :path: "../node_modules/react-native/ReactCommon/logger"
-  react-native-android-navbar-height:
-    :path: "../node_modules/react-native-android-navbar-height"
   react-native-blur:
     :path: "../node_modules/@react-native-community/blur"
   react-native-config:
@@ -1132,7 +1127,6 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 515b703d23ffadeac7687bc2d12fb08b90f0aaa1
   React-jsinspector: 9f7c9137605e72ca0343db4cea88006cb94856dd
   React-logger: 957e5dc96d9dbffc6e0f15e0ee4d2b42829ff207
-  react-native-android-navbar-height: f975207ac8c2a5cfa885a01447851bf3b491c951
   react-native-blur: 236379a22d731b860e7791eb2db3fd6087ff7b7b
   react-native-config: 6502b1879f97ed5ac570a029961fc35ea606cd14
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c

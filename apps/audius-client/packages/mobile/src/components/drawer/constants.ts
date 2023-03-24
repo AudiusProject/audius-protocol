@@ -1,6 +1,5 @@
-import { Dimensions, StatusBar } from 'react-native'
+import { Dimensions } from 'react-native'
 
-// Not using 'window' because it isn't accurate on android
 const { height } = Dimensions.get('screen')
 
-export const FULL_DRAWER_HEIGHT = height - (StatusBar.currentHeight ?? 0)
+export const FULL_DRAWER_HEIGHT = height
