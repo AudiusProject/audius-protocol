@@ -55,6 +55,7 @@ def get_users_cnode(
                 else
                 "AND t.user_id > :prev_user_id"
             }
+            ORDER BY "user_id" ASC
             {
                 ""
                 if max_users is None
