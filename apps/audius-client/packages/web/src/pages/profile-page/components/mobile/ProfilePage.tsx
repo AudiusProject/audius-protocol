@@ -34,7 +34,6 @@ import NavContext, {
   LeftPreset,
   CenterPreset
 } from 'components/nav/store/context'
-import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkConnectivityMonitor'
 import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
 import TierExplainerDrawer from 'components/user-badges/TierExplainerDrawer'
 import useAsyncPoll from 'hooks/useAsyncPoll'
@@ -639,73 +638,66 @@ const ProfilePage = g(
 
     return (
       <>
-        <NetworkConnectivityMonitor
-          pageDidLoad={status !== Status.LOADING}
-          onDidRegainConnectivity={asyncRefresh}
+        <MobilePageContainer
+          title={title}
+          description={description}
+          canonicalUrl={canonicalUrl}
+          structuredData={structuredData}
+          containerClassName={styles.container}
         >
-          <MobilePageContainer
-            title={title}
-            description={description}
-            canonicalUrl={canonicalUrl}
-            structuredData={structuredData}
-            containerClassName={styles.container}
+          <PullToRefresh
+            fetchContent={asyncRefresh}
+            shouldPad={false}
+            overImage
+            isDisabled={isEditing || isUserConfirming}
           >
-            <PullToRefresh
-              fetchContent={asyncRefresh}
-              shouldPad={false}
-              overImage
-              isDisabled={isEditing || isUserConfirming}
-            >
-              <ProfileHeader
-                isDeactivated={profile?.is_deactivated}
-                name={name}
-                handle={handle}
-                isArtist={isArtist}
-                bio={bio}
-                verified={verified}
-                userId={profile.user_id}
-                loading={status === Status.LOADING}
-                coverPhotoSizes={coverPhotoSizes}
-                profilePictureSizes={profilePictureSizes}
-                hasProfilePicture={hasProfilePicture}
-                playlistCount={profile.playlist_count}
-                trackCount={profile.track_count}
-                followerCount={profile.follower_count}
-                followingCount={profile.followee_count}
-                doesFollowCurrentUser={!!profile.does_follow_current_user}
-                setFollowingUserId={setFollowingUserId}
-                setFollowersUserId={setFollowersUserId}
-                twitterHandle={twitterHandle}
-                instagramHandle={instagramHandle}
-                tikTokHandle={tikTokHandle}
-                website={website}
-                donation={donation}
-                followers={followers}
-                following={following}
-                isSubscribed={isSubscribed}
-                onFollow={onFollow}
-                onUnfollow={onConfirmUnfollow}
-                goToRoute={goToRoute}
-                mode={mode}
-                switchToEditMode={onEdit}
-                updatedProfilePicture={
-                  updatedProfilePicture ? updatedProfilePicture.url : null
-                }
-                updatedCoverPhoto={
-                  updatedCoverPhoto ? updatedCoverPhoto.url : null
-                }
-                onUpdateProfilePicture={updateProfilePicture}
-                onUpdateCoverPhoto={updateCoverPhoto}
-                setNotificationSubscription={setNotificationSubscription}
-                areArtistRecommendationsVisible={
-                  areArtistRecommendationsVisible
-                }
-                onCloseArtistRecommendations={onCloseArtistRecommendations}
-              />
-              {content}
-            </PullToRefresh>
-          </MobilePageContainer>
-        </NetworkConnectivityMonitor>
+            <ProfileHeader
+              isDeactivated={profile?.is_deactivated}
+              name={name}
+              handle={handle}
+              isArtist={isArtist}
+              bio={bio}
+              verified={verified}
+              userId={profile.user_id}
+              loading={status === Status.LOADING}
+              coverPhotoSizes={coverPhotoSizes}
+              profilePictureSizes={profilePictureSizes}
+              hasProfilePicture={hasProfilePicture}
+              playlistCount={profile.playlist_count}
+              trackCount={profile.track_count}
+              followerCount={profile.follower_count}
+              followingCount={profile.followee_count}
+              doesFollowCurrentUser={!!profile.does_follow_current_user}
+              setFollowingUserId={setFollowingUserId}
+              setFollowersUserId={setFollowersUserId}
+              twitterHandle={twitterHandle}
+              instagramHandle={instagramHandle}
+              tikTokHandle={tikTokHandle}
+              website={website}
+              donation={donation}
+              followers={followers}
+              following={following}
+              isSubscribed={isSubscribed}
+              onFollow={onFollow}
+              onUnfollow={onConfirmUnfollow}
+              goToRoute={goToRoute}
+              mode={mode}
+              switchToEditMode={onEdit}
+              updatedProfilePicture={
+                updatedProfilePicture ? updatedProfilePicture.url : null
+              }
+              updatedCoverPhoto={
+                updatedCoverPhoto ? updatedCoverPhoto.url : null
+              }
+              onUpdateProfilePicture={updateProfilePicture}
+              onUpdateCoverPhoto={updateCoverPhoto}
+              setNotificationSubscription={setNotificationSubscription}
+              areArtistRecommendationsVisible={areArtistRecommendationsVisible}
+              onCloseArtistRecommendations={onCloseArtistRecommendations}
+            />
+            {content}
+          </PullToRefresh>
+        </MobilePageContainer>
         <TierExplainerDrawer />
       </>
     )

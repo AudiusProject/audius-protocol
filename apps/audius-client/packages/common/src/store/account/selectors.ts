@@ -20,8 +20,6 @@ export const getUserId = (state: CommonState) => state.account.userId
 export const getAccountStatus = (state: CommonState) => state.account.status
 export const getUserPlaylistOrder = (state: CommonState) =>
   state.account.orderedPlaylists
-export const getConnectivityFailure = (state: CommonState) =>
-  state.account.connectivityFailure
 export const getNeedsAccountRecovery = (state: CommonState) =>
   state.account.needsAccountRecovery
 export const getAccountToCache = (state: CommonState) => ({

@@ -8,10 +8,6 @@ import { getPathname, HOME_PAGE, publicSiteRoutes } from 'utils/route'
 
 import Dapp from './app'
 
-const NoConnectivityPage = lazy(
-  () => import('components/no-connectivity-page/NoConnectivityPage')
-)
-
 const PublicSite = lazy(() => import('./pages/PublicSite'))
 
 const isPublicSiteRoute = (location = window.location) => {
@@ -28,7 +24,6 @@ const clientIsElectron = isElectron()
 
 const Root = () => {
   const [dappReady, setDappReady] = useState(false)
-  const [connectivityFailure, setConnectivityFailure] = useState(false)
   const [renderPublicSite, setRenderPublicSite] = useState(isPublicSiteRoute())
   const isMobileClient = useIsMobile()
 
@@ -63,11 +58,9 @@ const Root = () => {
 
   return (
     <>
-      {connectivityFailure && <NoConnectivityPage />}
       <Dapp
         isReady={dappReady}
         setReady={setReady}
-        setConnectivityFailure={setConnectivityFailure}
         shouldShowPopover={shouldShowPopover}
       />
     </>

@@ -4,7 +4,6 @@ type AppProps = {
   setReady: () => void
   isReady: boolean
   mainContentRef: MutableRefObject<HTMLDivElement | undefined>
-  setConnectivityFailure: (failure: boolean) => void
   shouldShowPopover: boolean
 }
 

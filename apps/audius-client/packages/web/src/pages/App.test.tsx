@@ -39,7 +39,6 @@ describe('smoke test', () => {
         <ConnectedRouter history={history}>
           <App
             shouldShowPopover={false}
-            setConnectivityFailure={() => {}}
             isReady
             setReady={() => {}}
             mainContentRef={mainContentRef}
