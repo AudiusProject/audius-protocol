@@ -331,7 +331,7 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
         "audius_contracts_nethermind_entity_manager_address"
     )
     if not entity_manager_address:
-        entity_manager_address = os.getenv('audius_contracts_entity_manager_address')
+        entity_manager_address = os.getenv("audius_contracts_entity_manager_address")
     tx_target_contract_address = tx["to"]
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
