@@ -262,13 +262,31 @@ async function drainPublishedMessages(logger, optimizelyClient) {
   return numProcessedNotifs
 }
 
-async function drainPublishedSolanaMessages(logger) {
+async function drainPublishedSolanaMessages(logger, optimizelyClient) {
   logger.info(
     `[notificationQueue:drainPublishedSolanaMessages] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`
   )
 
   let numProcessedNotifs = 0
   for (const bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
+    logger.info(`joe:::: solana mapper: ${bufferObj.notification.type}`)
+    const notificationMappingVar =
+      notificaitonTypeMapping[bufferObj.notification.type]
+    logger.info(`joe:::: mapper: ${notificationMappingVar}`)
+    const isDisabled = getRemoteFeatureVarEnabled(
+      optimizelyClient,
+      DISCOVERY_NOTIFICATION_MAPPING,
+      notificationMappingVar
+    )
+
+    logger.info(`joe:::: isDisbled: ${isDisabled}`)
+    if (isDisabled === true) {
+      logger.info(
+        `joe::: Skipping send push notification for type: ${bufferObj.notification.type}`
+      )
+      return
+    }
+
     if (bufferObj.types.includes(deviceType.Mobile)) {
       const numSentNotifs = await _sendNotification(
         sendAwsSns,

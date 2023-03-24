@@ -58,11 +58,9 @@ export const sendIOSMessage = async ({
   playSound: boolean
   targetARN: string
 }) => {
-  logger.info({ title, body })
   let arn
   if (targetARN.includes('APNS_SANDBOX')) arn = 'APNS_SANDBOX'
   else if (targetARN.includes('APNS')) arn = 'APNS'
-  logger.info({ arn, title, body })
   const message = JSON.stringify({
     ['default']: body,
     [arn]: JSON.stringify({
@@ -128,7 +126,6 @@ export const sendPushNotification = async (
   device: Device,
   message: Message
 ) => {
-  logger.info({ message })
 
   if (device.type == 'ios') {
     await sendIOSMessage({
