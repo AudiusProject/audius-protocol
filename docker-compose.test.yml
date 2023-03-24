@@ -2,7 +2,8 @@
 
 version: "3.9"
 
-x-logging: &default-logging
+x-logging:
+  &default-logging
   options:
     max-size: "50m"
     max-file: "3"
@@ -10,6 +11,26 @@ x-logging: &default-logging
 
 services:
   # TODO: remove duplication between docker-compose.yml and docker-compose.test.yml
+
+  db:
+    image: postgres
+    restart: unless-stopped
+    ports:
+      - 5454:5432
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ./discovery/db/docker-initdb:/docker-entrypoint-initdb.d
+      - ./dev-tools/startup/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+    deploy:
+      mode: global
+      resources:
+        limits:
+          memory: 3G
 
   poa-ganache:
     build:
@@ -56,7 +77,7 @@ services:
     image: alpine:3.14
     command: sleep inf
     healthcheck:
-      test: ["CMD", "true"]
+      test: [ "CMD", "true" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -129,7 +150,7 @@ services:
     environment:
       POSTGRES_DB: "creator_node"
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -142,7 +163,7 @@ services:
   creator-node-redis:
     image: redis:6.2
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -204,7 +225,7 @@ services:
     environment:
       POSTGRES_DB: "discovery_provider"
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -218,7 +239,7 @@ services:
   discovery-provider-redis:
     image: redis:7.0
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -335,7 +356,7 @@ services:
     environment:
       POSTGRES_DB: "identity_service"
     healthcheck:
-      test: ["CMD", "pg_isready"]
+      test: [ "CMD", "pg_isready" ]
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -350,7 +371,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
       timeout: 5s
     logging: *default-logging
