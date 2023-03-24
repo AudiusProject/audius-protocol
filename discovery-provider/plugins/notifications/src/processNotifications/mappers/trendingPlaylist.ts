@@ -89,10 +89,10 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
               targetARN: device.awsARN
             },
             {
-              title: 'Congrats - You’re Trending! 📈',
-              body: `Your Playlist ${
-                playlists[this.playlistId]?.playlist_name
-              } is the #${this.rank} Trending Playlist on Audius Right Now! 🍾`,
+              title: "📈 You're Trending",
+              body: `${playlists[this.playlistId]?.playlist_name} is the #${
+                this.rank
+              } trending playlist on Audius right now!`,
               data: {}
             }
           )

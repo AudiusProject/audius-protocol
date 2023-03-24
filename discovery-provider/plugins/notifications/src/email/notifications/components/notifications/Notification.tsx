@@ -258,7 +258,7 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         <HighlightText text={highlight} />
-        <BodyText text={` is #${rank} on Trending right now! 🍾`} />
+        <BodyText text={` is #${rank} on Trending right now!`} />
       </span>
     )
   },
@@ -268,7 +268,7 @@ const notificationMap = {
     return (
       <span className={'notificationText'}>
         <HighlightText text={highlight} />
-        <BodyText text={` is #${rank} on Underground Trending right now! 🍾`} />
+        <BodyText text={` is #${rank} on Underground Trending right now!`} />
       </span>
     )
   },
@@ -519,7 +519,7 @@ const getTwitter = (notification) => {
     case 'trending_underground': {
       const { entity } = notification
       const url = getTrackLink(entity)
-      const text = `My track ${entity.title} made it to the top of undeground trending on @AudiusProject! Check it out! #Audius #AudiusTrending `
+      const text = `My track ${entity.title} made it to the top of underground trending on @AudiusProject! Check it out! #Audius #AudiusTrending`
       return {
         message: 'Share this Milestone',
         href: `http://twitter.com/share?url=${encodeURIComponent(

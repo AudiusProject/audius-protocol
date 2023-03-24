@@ -35,8 +35,8 @@ type SetupTestConfig = {
   mockTime?: boolean
 }
 
-export const setupTest = async (config?: SetupTestConfig) => {
-  const { mockTime = true } = config ?? {}
+export const setupTest = async (setupConfig?: SetupTestConfig) => {
+  const { mockTime = true } = setupConfig ?? {}
   const testName = expect
     .getState()
     .currentTestName.replace(/\s/g, '_')

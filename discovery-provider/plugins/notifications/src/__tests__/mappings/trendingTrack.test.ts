@@ -76,8 +76,8 @@ describe('Trending Track Notification', () => {
         badgeCount: 1
       },
       {
-        title: 'Congrats - You’re Trending! 📈',
-        body: `Your Track track_title_10 is 3rd on Trending Right Now! 🍾`,
+        title: "📈 You're Trending",
+        body: 'track_title_10 is #3 on Trending right now!',
         data: {}
       }
     )

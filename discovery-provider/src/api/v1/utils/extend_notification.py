@@ -459,6 +459,6 @@ notification_action_handler = {
     "tier_change": extend_tier_change,
     "trending": extend_trending,
     "trending_playlist": extend_trending_playlist,
-    "trending_undeground": extend_trending_underground,
+    "trending_underground": extend_trending_underground,
     "announcement": extend_announcement,
 }

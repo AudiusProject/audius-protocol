@@ -75,8 +75,8 @@ describe('Trending Playlist Notification', () => {
         badgeCount: 1
       },
       {
-        title: 'Congrats - You’re Trending! 📈',
-        body: `Your Playlist playlist_name_1 is the #1 Trending Playlist on Audius Right Now! 🍾`,
+        title: "📈 You're Trending",
+        body: `playlist_name_1 is the #1 trending playlist on Audius right now!`,
         data: {}
       }
     )

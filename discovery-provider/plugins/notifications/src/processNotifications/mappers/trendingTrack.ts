@@ -1,11 +1,10 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import { TrendingTrackNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
-import { getNumberSuffix } from '../../utils/format'
 
 type TrendingTrackNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingTrackNotification
@@ -68,8 +67,6 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
       this.receiverUserId
     )
 
-    const rankSuffix = getNumberSuffix(this.rank)
-
     // If the user has devices to the notification to, proceed
     if (
       (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
@@ -88,10 +85,10 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
               targetARN: device.awsARN
             },
             {
-              title: 'Congrats - You’re Trending! 📈',
-              body: `Your Track ${tracks[this.trackId]?.title} is ${
+              title: "📈 You're Trending",
+              body: `${tracks[this.trackId]?.title} is #${
                 this.rank
-              }${rankSuffix} on Trending Right Now! 🍾`,
+              } on Trending right now!`,
               data: {}
             }
           )

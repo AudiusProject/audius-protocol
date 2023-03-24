@@ -85,10 +85,10 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
               targetARN: device.awsARN
             },
             {
-              title: 'Congrats - You’re Trending! 📈',
-              body: `Your Track ${tracks[this.trackId]?.title} is #${
+              title: "📈 You're Trending",
+              body: `${tracks[this.trackId]?.title} is #${
                 this.rank
-              } on Underground Trending Right Now! 🍾`,
+              } on Underground Trending right now!`,
               data: {}
             }
           )

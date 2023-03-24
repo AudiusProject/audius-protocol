@@ -73,8 +73,8 @@ describe('Trending Underground Notification', () => {
         badgeCount: 1
       },
       {
-        title: 'Congrats - You’re Trending! 📈',
-        body: `Your Track track_title_10 is #3 on Underground Trending Right Now! 🍾`,
+        title: "📈 You're Trending",
+        body: `track_title_10 is #3 on Underground Trending right now!`,
         data: {}
       }
     )
@@ -86,7 +86,7 @@ describe('Trending Underground Notification', () => {
         timestamp: new Date(),
         specifier: '10',
         group_id:
-          'trending_undeground:time_range:week:genre:all:rank:3:track_id:10:timestamp:1677261600',
+          'trending_underground:time_range:week:genre:all:rank:3:track_id:10:timestamp:1677261600',
         type: 'trending_underground',
         data: { rank: 3, genre: 'all', track_id: 10, time_range: 'week' },
         user_ids: [1],

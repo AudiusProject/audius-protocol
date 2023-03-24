@@ -7,5 +7,8 @@ module.exports = {
   ],
   parser: '@typescript-eslint/parser',
   plugins: ['@typescript-eslint'],
-  root: true
+  root: true,
+  rules: {
+    "@typescript-eslint/ban-ts-comment": "warn"
+  }
 }
