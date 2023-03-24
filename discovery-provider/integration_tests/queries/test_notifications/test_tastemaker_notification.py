@@ -1,7 +1,6 @@
 import logging
 
 from integration_tests.utils import populate_mock_db
-from src.models.notifications.notification import Notification
 from src.queries.get_notifications import NotificationType, get_notifications
 from src.utils.db_session import get_db
 
@@ -40,9 +39,10 @@ def test_get_tastemaker_notifications(app):
                     "group_id": "fake-group-id",
                     "specifier": 1,
                     "data": {
-                        "track_id": 1,
-                        "track_owner_id": 1,
+                        "tastemaker_item_id": 1,
+                        "tastemaker_item_owner_id": 1,
                         "action": "repost",
+                        "tastemaker_item_type": "track",
                         "tastemaker_user_id": 2,
                     },
                 },

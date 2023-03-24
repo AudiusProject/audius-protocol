@@ -157,9 +157,10 @@ def extend_tastemaker(action: NotificationAction):
         if action["timestamp"]
         else action["timestamp"],
         "data": {
-            "track_owner_id": encode_int_id(data["track_owner_id"]),
-            "track_id": encode_int_id(data["track_id"]),
+            "tastemaker_item_owner_id": encode_int_id(data["tastemaker_item_owner_id"]),
+            "tastemaker_item_id": encode_int_id(data["tastemaker_item_id"]),
             "action": data["action"],
+            "tastemaker_item_type": data["tastemaker_item_type"],
             "tastemaker_user_id": encode_int_id(data["tastemaker_user_id"]),
         },
     }

@@ -238,9 +238,10 @@ class SaveOfRepostNotification(TypedDict):
 
 
 class TastemakerNotification(TypedDict):
-    track_id: int
-    track_owner_id: int
+    tastemaker_item_id: int
+    tastemaker_item_owner_id: int
     action: str
+    tastemaker_item_type: str
     tastemaker_user_id: int
 
 
