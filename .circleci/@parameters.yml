@@ -1,15 +1,15 @@
 parameters:
   workflow:
     type: string
-    default: 'main'
+    default: 'release-audius-sdk'
 
   # release-audius-sdk params
   sdk-release-commit:
     type: string
-    default: ''
+    default: 'b87aba3f803d511336ab72f8c43f24e086f9acc5'
   sdk-release-version:
     type: string
-    default: ''
+    default: '2.0.3-beta.1'
   sdk-release-preid:
     type: string
     default: ''
