@@ -14,6 +14,8 @@ import {
   resetTests
 } from '../../utils/populateDB'
 
+jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
+
 describe('Tastemaker Notification', () => {
   let processor: Processor
 
@@ -42,22 +44,23 @@ describe('Tastemaker Notification', () => {
     const notificationRow = {
       id: 1,
       specifier: '10',
-      group_id:
-        'tastemaker_user_id:10:tastemaker_item_id:3',
+      group_id: 'tastemaker_user_id:10:tastemaker_item_id:3',
       type: 'tastemaker',
       timestamp: new Date(),
-      data: { tastemaker_item_id: 3, tastemaker_item_type: 'track', tastemaker_item_owner_id: 2, action: 'repost', tastemaker_user_id: 10 },
+      data: {
+        tastemaker_item_id: 3,
+        tastemaker_item_type: 'track',
+        tastemaker_item_owner_id: 2,
+        action: 'repost',
+        tastemaker_user_id: 10
+      },
       user_ids: [10]
     }
     await insertNotifications(processor.discoveryDB, [notificationRow])
 
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 10 },
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 10 },
-    ])
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    await insertMobileSettings(processor.identityDB, [{ userId: 10 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 10 }])
+    // await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending).not.toBe(undefined)
     const tastemaker_notifications = pending.appNotifications.filter(
@@ -89,19 +92,26 @@ describe('Tastemaker Notification', () => {
       { user_id: 3 },
       { user_id: 10 }
     ])
-    await createTracks(processor.discoveryDB, [{ track_id: 3, title: 'my track', owner_id: 2 }])
+    await createTracks(processor.discoveryDB, [
+      { track_id: 3, title: 'my track', owner_id: 2 }
+    ])
 
-    await new Promise((resolve) => setTimeout(resolve, 10))
+    // await new Promise((resolve) => setTimeout(resolve, 10))
 
     const notifications: AppEmailNotification[] = [
       {
         id: 1,
         specifier: '10',
-        group_id:
-          'tastemaker_user_id:10:tastemaker_item_id:3',
+        group_id: 'tastemaker_user_id:10:tastemaker_item_id:3',
         type: 'tastemaker',
         timestamp: new Date(),
-        data: { tastemaker_item_id: 3, tastemaker_item_type: 'track', tastemaker_item_owner_id: 2, action: 'repost', tastemaker_user_id: 10 },
+        data: {
+          tastemaker_item_id: 3,
+          tastemaker_item_type: 'track',
+          tastemaker_item_owner_id: 2,
+          action: 'repost',
+          tastemaker_user_id: 10
+        },
         user_ids: [10],
         receiver_user_id: 10
       }

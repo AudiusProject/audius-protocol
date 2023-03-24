@@ -23,11 +23,12 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
   ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
+    const { tastemaker_item_id, tastemaker_item_owner_id, tastemaker_item_type, tastemaker_user_id } = this.notification.data
     this.receiverUserId = userIds[0]
-    this.tastemakerItemId = this.notification.data.tastemaker_item_id
-    this.tastemakerItemOwnerId = this.notification.data.tastemaker_item_owner_id
-    this.tastemakerType = this.notification.data.tastemaker_item_type
-    this.tastemakerUserId = this.notification.data.tastemaker_user_id
+    this.tastemakerItemId = tastemaker_item_id
+    this.tastemakerItemOwnerId = tastemaker_item_owner_id
+    this.tastemakerType = tastemaker_item_type
+    this.tastemakerUserId = tastemaker_user_id
   }
 
   async pushNotification() {
@@ -39,7 +40,11 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       .select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
-      .whereIn('user_id', [this.tastemakerUserId, this.receiverUserId, this.tastemakerItemOwnerId])
+      .whereIn('user_id', [
+        this.tastemakerUserId,
+        this.receiverUserId,
+        this.tastemakerItemOwnerId
+      ])
     const users = res.reduce((acc, user) => {
       acc[user.user_id] = {
         name: user.name,
@@ -63,20 +68,19 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       .select('track_id', 'title')
       .from<TrackRow>('tracks')
       .where('is_current', true)
-      .whereIn('track_id', [this.tastemakerItemId]).first()
-
+      .whereIn('track_id', [this.tastemakerItemId])
+      .first()
 
     entityType = EntityType.Track
     entityName = track.title
 
+    const devices: Device[] =
+      userNotifications.mobile?.[this.receiverUserId]?.devices
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      devices && devices.length > 0
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
 
       // If the user's settings for the reposts notification is set to true, proceed
       await Promise.all(
@@ -109,7 +113,11 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
 
   getResourcesForEmail(): ResourceIds {
     return {
-      users: new Set([this.receiverUserId, this.tastemakerItemOwnerId, this.tastemakerUserId]),
+      users: new Set([
+        this.receiverUserId,
+        this.tastemakerItemOwnerId,
+        this.tastemakerUserId
+      ]),
       tracks: new Set([this.tastemakerItemId])
     }
   }
@@ -122,7 +130,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     entity = {
       type: EntityType.Track,
       name: track.title,
-      image: track.imageUrl,
+      image: track.imageUrl
     }
     return {
       type: this.notification.type,

@@ -161,8 +161,7 @@ const mapNotification = (
       data: TrendingTrackNotification
     }
     return new TrendingTrack(dnDb, identityDb, trendingNotification)
-  }
-  else if (notification.type == 'tastemaker') {
+  } else if (notification.type == 'tastemaker') {
     const tastemakerNotification = notification as NotificationRow & {
       data: TastemakerNotification
     }
