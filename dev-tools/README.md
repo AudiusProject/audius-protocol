@@ -40,9 +40,6 @@ exit
 
 # In new terminal
 audius-compose build # takes about 10 min
-
-# Allows you to connect to containers via hostname like http://audius-protocol-discovery-provider-1/health_check
-sudo echo "127.0.0.1       ingress audius-protocol-storage-1 audius-protocol-storage-2 audius-protocol-storage-3 audius-protocol-storage-4 audius-protocol-storage-5 audius-protocol-comms-discovery-1 audius-protocol-comms-discovery-2 audius-protocol-comms-discovery-3 audius-protocol-comms-discovery-4 audius-protocol-comms-discovery-5 audius-protocol-discovery-provider-1 audius-protocol-discovery-provider-2 audius-protocol-discovery-provider-3 audius-protocol-creator-node-1 audius-protocol-creator-node-2 audius-protocol-creator-node-3 audius-protocol-identity-service-1 audius-protocol-solana-test-validator-1 audius-protocol-eth-ganache-1 audius-protocol-poa-ganache-1" >> /etc/hosts
 ```
 
 ### Bring up protocol stack
@@ -52,10 +49,17 @@ audius-compose up
 ```
 This command completes in 1-2 min, but use `watch docker ps -a` to ensure that all servicees report "Status" as Healthy. It currently takes ~10min for this to happen.
 
+## Connect via hostname or client
+
+To use the client from a mac, we need to route hostnames to the audius-compose nginx reverse proxy by running:
+```
+audius-compose connect
+```
+
 ### Perform actions with `audius-cmd`
 
 You can confirm that things are wired up correctly by running `audius-cmd create-user`.
-Note that `audius-cmd` requires the stack to be up and healthy, per [Bring up protocol stack](#bring-up-protocol-stack)
+Note that `audius-cmd` requires the stack to be up and healthy, per [Bring up protocol stack](#bring-up-protocol-stack), and to have run `audius-compose connect`.
 
 # Helpful Commands
 

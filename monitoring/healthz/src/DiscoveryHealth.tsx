@@ -23,16 +23,19 @@ export function DiscoveryHealth() {
       <table className="table">
         <thead>
           <tr>
-            <th>host</th>
-            <th>ver</th>
-            <th>git sha</th>
-            <th>compose?</th>
-            <th>auto upgrade</th>
+            <th>Host</th>
+            <th>Ver</th>
+            <th>Git SHA</th>
+            <th>Compose</th>
+            <th>Auto Upgrade</th>
             {isContent && <th>selectedDiscoveryProvider</th>}
-            <th>storage</th>
-            <th>dbsize</th>
-            <th>blockdiff</th>
-            <th>chain</th>
+            <th>Storage</th>
+            <th>DB Size</th>
+            <th>Block Diff</th>
+            <th>ACDC Signer</th>
+            <th>Net ID</th>
+            <th>ACDC Block</th>
+            <th>Final POA Block</th>
           </tr>
         </thead>
         <tbody>
@@ -63,16 +66,21 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     )
 
   const isCompose = health.infra_setup || health.audiusContentInfraSetup
-  const fsUsed = bytesToGb(health.filesystem_used) || bytesToGb(health.storagePathUsed)
-  const fsSize = bytesToGb(health.filesystem_size) || bytesToGb(health.storagePathSize)
+  const composeSha =
+    health['audius-docker-compose'] || health['audiusDockerCompose']
+  const fsUsed =
+    bytesToGb(health.filesystem_used) || bytesToGb(health.storagePathUsed)
+  const fsSize =
+    bytesToGb(health.filesystem_size) || bytesToGb(health.storagePathSize)
   const storagePercent = fsUsed / fsSize
   const isBehind = health.block_difference > 5 ? 'is-behind' : ''
-  const dbSize = bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
+  const dbSize =
+    bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
 
   return (
-    <tr className={isBehind}>
+    <tr>
       <td>
         <a href={sp.endpoint + '/health_check'} target="_blank">
           {sp.endpoint.replace('https://', '')}
@@ -87,8 +95,18 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {health.git.substring(0, 8)}
         </a>
       </td>
-      <td>{isCompose && 'Yes'}</td>
-      <td>{autoUpgradeEnabled && 'Yes'}</td>
+      <td>
+        {isCompose && '✓'}{' '}
+        {composeSha && (
+          <a
+            href={`https://github.com/AudiusProject/audius-docker-compose/commits/${composeSha}`}
+            target="_blank"
+          >
+            {composeSha.substring(0, 8)}
+          </a>
+        )}
+      </td>
+      <td>{autoUpgradeEnabled && '✓'}</td>
       {isContent && (
         <td>
           <a
@@ -102,11 +120,16 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       <td>
         <progress value={storagePercent} />
         <br></br>
-        <span>{fsUsed} / {fsSize} GB</span>
+        <span>
+          {fsUsed} / {fsSize} GB
+        </span>
       </td>
       <td>{`${dbSize} GB`}</td>
-      <td>{health.block_difference}</td>
+      <td className={isBehind}>{health.block_difference}</td>
       <td>{health.chain_health?.status}</td>
+      <td>{health.chain_health?.chain_id}</td>
+      <td>{health.chain_health?.block_number}</td>
+      <td>{health.final_poa_block}</td>
     </tr>
   )
 }
