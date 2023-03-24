@@ -37,8 +37,12 @@ def get_users_cnode(
               "user_id",
               "wallet",
               "creator_node_endpoint",
-              "primary_id",
-              "secondary_ids"
+              (string_to_array("creator_node_endpoint", ',')) [1] as "primary",
+              (string_to_array("creator_node_endpoint", ',')) [2] as "secondary1",
+              (string_to_array("creator_node_endpoint", ',')) [3] as "secondary2",
+              "primary_id" as "primarySpID",
+              ("secondary_ids") [1] as "secondary1SpID",
+              ("secondary_ids") [2] as "secondary2SpID"
             FROM "users"
             WHERE
               "creator_node_endpoint" IS NOT NULL
@@ -61,11 +65,14 @@ def get_users_cnode(
             """
         )
 
+        # if no replica_type: cnode anywhere in creator_node_endpoint
         cnode_like = "%" + cnode_endpoint_string + "%"
         if replica_type == ReplicaType.PRIMARY:
+            # if replica_type primary: at start of creator_node_endpoint
             cnode_like = cnode_endpoint_string + ",%"
         elif replica_type == ReplicaType.SECONDARY:
-            cnode_like = "%," + cnode_endpoint_string
+            # if replica_type secondary: has preceeding comma
+            cnode_like = "%," + cnode_endpoint_string + "%"
 
         users = session.execute(
             users_res,
