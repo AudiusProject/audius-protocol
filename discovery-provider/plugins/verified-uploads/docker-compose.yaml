@@ -8,3 +8,10 @@ services:
     image: audius/verified_uploads
     build:
       context: '.'
+    networks:
+      - dn-network
+
+networks:
+  dn-network:
+    name: discovery-provider_discovery-provider-network
+    external: true
