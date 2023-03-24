@@ -240,15 +240,35 @@ const notificationMap = {
       )
     }
   },
+  ['trending_playlist'](notification) {
+    const highlight = notification.entity.title
+    const rank = notification.rank
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={highlight} />
+        <BodyText
+          text={` is the #${rank} trending playlist on Audius right now! 🍾`}
+        />
+      </span>
+    )
+  },
   ['trending'](notification) {
     const highlight = notification.entity.title
     const rank = notification.rank
-    const rankSuffix = getRankSuffix(rank)
     return (
       <span className={'notificationText'}>
-        <BodyText text={`Your Track `} />
         <HighlightText text={highlight} />
-        <BodyText text={` is ${rank}${rankSuffix} on Trending Right Now! 🍾`} />
+        <BodyText text={` is #${rank} on Trending right now! 🍾`} />
+      </span>
+    )
+  },
+  ['trending_underground'](notification) {
+    const highlight = notification.entity.title
+    const rank = notification.rank
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={highlight} />
+        <BodyText text={` is #${rank} on Underground Trending right now! 🍾`} />
       </span>
     )
   },
