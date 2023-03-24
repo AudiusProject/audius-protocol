@@ -110,7 +110,7 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         )
 
         latest_block_from_chain = web3.eth.get_block("latest", True)
-        if os.getenv("audius_discprov_env") != "dev":
+        if not os.getenv("audius_discprov_dev_mode"):
             # index 1 block behind to avoid reverting
             # TODO make reverting 1 block fast and remove this workaround
             latest_block_from_chain = web3.eth.get_block(
@@ -330,6 +330,8 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     entity_manager_address = os.getenv(
         "audius_contracts_nethermind_entity_manager_address"
     )
+    if not entity_manager_address:
+        entity_manager_address = os.getenv('audius_contracts_entity_manager_address')
     tx_target_contract_address = tx["to"]
     contract_type = None
     for tx_type in tx_type_to_grouped_lists_map.keys():
