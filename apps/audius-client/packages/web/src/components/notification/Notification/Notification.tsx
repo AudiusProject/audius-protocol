@@ -26,7 +26,9 @@ import { TipReceivedNotification } from './TipReceivedNotification'
 import { TipSentNotification } from './TipSentNotification'
 import { TopSupporterNotification } from './TopSupporterNotification'
 import { TopSupportingNotification } from './TopSupportingNotification'
+import { TrendingPlaylistNotification } from './TrendingPlaylistNotification'
 import { TrendingTrackNotification } from './TrendingTrackNotification'
+import { TrendingUndergroundNotification } from './TrendingUndergroundNotification'
 import { UserSubscriptionNotification } from './UserSubscriptionNotification'
 import { USER_LENGTH_LIMIT } from './utils'
 const {
@@ -118,8 +120,14 @@ export const Notification = (props: NotificationProps) => {
       case NotificationType.SupportingRankUp: {
         return <TopSupportingNotification notification={notification} />
       }
+      case NotificationType.TrendingPlaylist: {
+        return <TrendingPlaylistNotification notification={notification} />
+      }
       case NotificationType.TrendingTrack: {
         return <TrendingTrackNotification notification={notification} />
+      }
+      case NotificationType.TrendingUnderground: {
+        return <TrendingUndergroundNotification notification={notification} />
       }
       case NotificationType.UserSubscription: {
         return <UserSubscriptionNotification notification={notification} />

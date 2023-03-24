@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import type {
   Nullable,
   TrackEntity,
-  TrendingTrackNotification as TrendingTrackNotificationType
+  TrendingUndergroundNotification as TrendingUndergroundNotificationType
 } from '@audius/common'
 import { Name, notificationsSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
@@ -24,25 +24,23 @@ const { getNotificationEntity } = notificationsSelectors
 const messages = {
   title: "You're Trending",
   is: 'is',
-  trending: 'on Trending right now!',
+  trending: 'on Underground Trending right now!',
   twitterShareText: (entityTitle: string) =>
-    `My track ${entityTitle} is trending on @AudiusProject! Check it out! #Audius #AudiusTrending`
+    `My track ${entityTitle} made it to the top of underground trending on @AudiusProject! Check it out! #Audius #AudiusTrending `
 }
 
-type TrendingTrackNotificationProps = {
-  notification: TrendingTrackNotificationType
+type TrendingUndergroundNotificationProps = {
+  notification: TrendingUndergroundNotificationType
 }
 
-export const TrendingTrackNotification = (
-  props: TrendingTrackNotificationProps
+export const TrendingUndergroundNotification = (
+  props: TrendingUndergroundNotificationProps
 ) => {
   const { notification } = props
   const { rank } = notification
-
   const track = useSelector((state) =>
     getNotificationEntity(state, notification)
   ) as Nullable<TrackEntity>
-
   const navigation = useNotificationNavigation()
 
   const handlePress = useCallback(() => {
@@ -67,7 +65,8 @@ export const TrendingTrackNotification = (
         type='static'
         shareText={shareText}
         analytics={{
-          eventName: Name.NOTIFICATIONS_CLICK_TRENDING_TRACK_TWITTER_SHARE,
+          eventName:
+            Name.NOTIFICATIONS_CLICK_TRENDING_UNDERGROUND_TWITTER_SHARE,
           text: shareText
         }}
       />

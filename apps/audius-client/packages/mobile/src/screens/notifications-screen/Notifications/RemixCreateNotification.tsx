@@ -10,7 +10,6 @@ import { useSelector } from 'react-redux'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
-import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { getTrackRoute } from 'app/utils/routes'
 
@@ -69,10 +68,10 @@ export const RemixCreateNotification = (
     (handle: string | undefined) => {
       if (parentTrackTitle && handle) {
         const shareText = messages.shareTwitterText(parentTrackTitle, handle)
-        const analytics = make({
+        const analytics = {
           eventName: EventNames.NOTIFICATIONS_CLICK_REMIX_COSIGN_TWITTER_SHARE,
           text: shareText
-        })
+        } as const
         return { shareText, analytics }
       }
       return null

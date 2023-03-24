@@ -5,7 +5,7 @@ import {
   Nullable,
   notificationsSelectors,
   TrackEntity,
-  TrendingTrackNotification as TrendingTrackNotificationType
+  TrendingUndergroundNotification as TrendingUndergroundNotificationType
 } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -27,17 +27,17 @@ const { getNotificationEntity } = notificationsSelectors
 const messages = {
   title: "You're Trending",
   is: 'is',
-  trending: 'on Trending right now!',
+  trending: 'on Underground Trending right now!',
   twitterShareText: (entityTitle: string) =>
-    `My track ${entityTitle} is trending on @AudiusProject! Check it out! #Audius #AudiusTrending`
+    `My track ${entityTitle} made it to the top of underground trending on @AudiusProject! Check it out! #Audius #AudiusTrending `
 }
 
-type TrendingTrackNotificationProps = {
-  notification: TrendingTrackNotificationType
+type TrendingUndergroundNotificationProps = {
+  notification: TrendingUndergroundNotificationType
 }
 
-export const TrendingTrackNotification = (
-  props: TrendingTrackNotificationProps
+export const TrendingUndergroundNotification = (
+  props: TrendingUndergroundNotificationProps
 ) => {
   const { notification } = props
   const { entityType, rank, timeLabel, isViewed } = notification
@@ -69,9 +69,12 @@ export const TrendingTrackNotification = (
         type='static'
         url={getEntityLink(track, true)}
         shareText={shareText}
-        analytics={make(Name.NOTIFICATIONS_CLICK_TRENDING_TRACK_TWITTER_SHARE, {
-          text: shareText
-        })}
+        analytics={make(
+          Name.NOTIFICATIONS_CLICK_TRENDING_UNDERGROUND_TWITTER_SHARE,
+          {
+            text: shareText
+          }
+        )}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>

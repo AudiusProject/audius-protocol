@@ -19,7 +19,6 @@ import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Text } from 'app/components/core'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
-import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import {
@@ -99,10 +98,10 @@ export const TipReceivedNotification = (
       )
       return {
         shareText,
-        analytics: make({
+        analytics: {
           eventName: EventNames.NOTIFICATIONS_CLICK_TIP_RECEIVED_TWITTER_SHARE,
           text: shareText
-        })
+        } as const
       }
     },
     [uiAmount]

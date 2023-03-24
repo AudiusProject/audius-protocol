@@ -10,7 +10,6 @@ import { useSelector } from 'react-redux'
 
 import IconCrownSource from 'app/assets/images/crown2x.png'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
-import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import {
@@ -68,10 +67,10 @@ export const SupporterDethronedNotification = (
       const shareText = messages.twitterShare(usurpingHandle, supportingHandle)
       return {
         shareText,
-        analytics: make({
+        analytics: {
           eventName: EventNames.NOTIFICATIONS_CLICK_DETHRONED_TWITTER_SHARE,
           text: shareText
-        })
+        } as const
       }
     },
     []
