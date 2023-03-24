@@ -61,11 +61,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   headerContainer: {
     ...flexRowCentered(),
+    marginBottom: spacing(2),
     justifyContent: 'space-between'
   },
   titleContainer: {
-    ...flexRowCentered(),
-    marginBottom: spacing(2)
+    ...flexRowCentered()
   },
   title: {
     marginLeft: spacing(2),
@@ -122,6 +122,9 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   mainButton: {
     marginTop: spacing(7)
+  },
+  bottomMargin: {
+    marginBottom: spacing(2)
   }
 }))
 
@@ -156,7 +159,7 @@ const DetailsTileNoAccessSection = ({
 
   return (
     <View style={[styles.root, style]}>
-      <View style={styles.titleContainer}>
+      <View style={[styles.titleContainer, styles.bottomMargin]}>
         <IconLock fill={neutral} width={16} height={16} />
         <Text style={styles.title}>{messages.howToUnlock}</Text>
       </View>

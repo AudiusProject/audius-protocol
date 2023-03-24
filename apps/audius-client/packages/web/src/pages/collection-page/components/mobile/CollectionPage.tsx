@@ -10,7 +10,8 @@ import {
   User,
   CollectionsPageType,
   CollectionTrack,
-  OverflowAction
+  OverflowAction,
+  usePremiumContentAccessMap
 } from '@audius/common'
 
 import CollectionHeader from 'components/collection/mobile/CollectionHeader'
@@ -204,20 +205,28 @@ const CollectionPage = ({
 
   const playingUid = getPlayingUid()
 
-  const trackList = tracks.entries.map((entry) => ({
-    isLoading: false,
-    isSaved: entry.has_current_user_saved,
-    isReposted: entry.has_current_user_reposted,
-    isActive: playingUid === entry.uid,
-    isPlaying: queuedAndPlaying && playingUid === entry.uid,
-    artistName: entry?.user?.name,
-    artistHandle: entry?.user?.handle,
-    trackTitle: entry.title,
-    trackId: entry.track_id,
-    uid: entry.uid,
-    isPremium: entry.is_premium,
-    isDeleted: entry.is_delete || !!entry?.user?.is_deactivated
-  }))
+  const trackAccessMap = usePremiumContentAccessMap(tracks.entries)
+  const trackList = tracks.entries.map((entry) => {
+    const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+      entry.track_id
+    ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
+    const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+    return {
+      isLoading: false,
+      isSaved: entry.has_current_user_saved,
+      isReposted: entry.has_current_user_reposted,
+      isActive: playingUid === entry.uid,
+      isPlaying: queuedAndPlaying && playingUid === entry.uid,
+      artistName: entry?.user?.name,
+      artistHandle: entry?.user?.handle,
+      trackTitle: entry.title,
+      trackId: entry.track_id,
+      uid: entry.uid,
+      isPremium: entry.is_premium,
+      isDeleted: entry.is_delete || !!entry?.user?.is_deactivated,
+      isLocked
+    }
+  })
 
   return (
     <MobilePageContainer

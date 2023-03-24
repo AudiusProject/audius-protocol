@@ -14,6 +14,8 @@ type OverflowMenuButtonProps = {
   handle: string
   hiddenUntilHover?: boolean
   includeEdit?: boolean
+  includeAddToPlaylist?: boolean
+  includeFavorite?: boolean
   index?: number
   isArtistPick?: boolean
   isDeleted?: boolean

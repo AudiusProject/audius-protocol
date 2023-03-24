@@ -12,8 +12,13 @@
   line-height: 1.2;
 }
 
+.trackName {
+  display: flex;
+  align-items: center;
+}
+
 .artistName:hover,
-.trackName:hover {
+.trackName:hover:not(:has(.locked)) {
   cursor: pointer;
   transition: color 0.07s ease-out;
   color: var(--primary);
@@ -69,4 +74,41 @@
 .tableRow.disabled:hover .tablePlayButton {
   opacity: 0;
   pointer-events: none;
+}
+
+.tableRow.lockedRow {
+  background: var(--white);
+}
+
+.locked {
+  margin-left: var(--unit-1);
+  display: flex;
+  align-items: center;
+  padding: 2px var(--unit-2);
+  background: var(--accent-blue);
+  border-radius: 80px;
+  font-weight: var(--font-demi-bold);
+  font-size: var(--font-2xs);
+  color: var(--white);
+}
+
+.locked:hover {
+  text-decoration: none;
+}
+
+.locked svg {
+  margin-right: 2px;
+  width: 10px;
+  height: 10px;
+}
+
+.locked svg path {
+  fill: var(--white);
+}
+
+.lockedTrackName {
+  max-width: calc(100% - 64px);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

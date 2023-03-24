@@ -80,6 +80,7 @@ export const SpecialAccessAvailability = ({
           text={messages.supportersInfo}
           mouseEnterDelay={0.1}
           mount={'parent'}
+          color='--secondary'
         >
           <IconInfo className={styles.icon} />
         </Tooltip>

@@ -1,6 +1,11 @@
 import { memo, useEffect, useCallback, useContext } from 'react'
 
-import { ID, UID, LineupTrack } from '@audius/common'
+import {
+  ID,
+  UID,
+  LineupTrack,
+  usePremiumContentAccessMap
+} from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -55,8 +60,14 @@ const HistoryPage = ({
     setRight(null)
   }, [setLeft, setCenter, setRight])
 
+  const trackAccessMap = usePremiumContentAccessMap(entries)
+
   const tracks = entries.map((track: LineupTrack, index: number) => {
     const isActive = track.uid === currentQueueItem.uid
+    const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+      track.track_id
+    ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
+    const isLocked = !isUserAccessTBD && !doesUserHaveAccess
     return {
       isLoading: loading,
       isPremium: track.is_premium,
@@ -70,7 +81,8 @@ const HistoryPage = ({
       trackId: track.track_id,
       uid: track.uid,
       coverArtSizes: track._cover_art_sizes,
-      isDeleted: track.is_delete || !!track.user.is_deactivated
+      isDeleted: track.is_delete || !!track.user.is_deactivated,
+      isLocked
     }
   })
 

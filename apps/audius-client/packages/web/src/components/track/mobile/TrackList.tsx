@@ -27,6 +27,7 @@ type TrackListProps = {
     time?: number
     coverArtSizes?: CoverArtSizes
     isDeleted: boolean
+    isLocked: boolean
   }>
   showTopDivider?: boolean
   showDivider?: boolean
@@ -102,6 +103,7 @@ const TrackList = ({
           coverArtSizes={track.coverArtSizes}
           uid={track.uid}
           isDeleted={track.isDeleted}
+          isLocked={track.isLocked}
           onSave={onSave}
           isRemoveActive={track.isRemoveActive}
           onRemove={onRemove}

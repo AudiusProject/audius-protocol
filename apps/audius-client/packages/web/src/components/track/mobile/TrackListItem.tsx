@@ -1,7 +1,7 @@
 import { memo, MouseEvent } from 'react'
 
 import { ID, CoverArtSizes, SquareSizes } from '@audius/common'
-import { IconKebabHorizontal, IconButton } from '@audius/stems'
+import { IconKebabHorizontal, IconButton, IconLock } from '@audius/stems'
 import cn from 'classnames'
 import Lottie from 'react-lottie'
 
@@ -90,7 +90,8 @@ const Artwork = ({
 }
 
 const getMessages = ({ isDeleted = false }: { isDeleted?: boolean } = {}) => ({
-  deleted: isDeleted ? ' [Deleted By Artist]' : ''
+  deleted: isDeleted ? ' [Deleted By Artist]' : '',
+  locked: 'Locked'
 })
 
 export type TrackListItemProps = {
@@ -104,6 +105,7 @@ export type TrackListItemProps = {
   isPlaying?: boolean
   isRemoveActive?: boolean
   isDeleted: boolean
+  isLocked: boolean
   coverArtSizes?: CoverArtSizes
   artistName: string
   artistHandle: string
@@ -135,6 +137,7 @@ const TrackListItem = ({
   uid,
   coverArtSizes,
   isDeleted,
+  isLocked,
   onSave,
   onRemove,
   togglePlay,
@@ -146,7 +149,7 @@ const TrackListItem = ({
   const messages = getMessages({ isDeleted })
 
   const onClickTrack = () => {
-    if (uid && !isDeleted && togglePlay) togglePlay(uid, trackId)
+    if (uid && !isLocked && !isDeleted && togglePlay) togglePlay(uid, trackId)
   }
 
   const onSaveTrack = (e: MouseEvent) => {
@@ -192,7 +195,11 @@ const TrackListItem = ({
       {isReorderable && <IconDrag className={styles.dragIcon} />}
 
       <div className={styles.nameArtistContainer}>
-        <div className={styles.trackTitle}>
+        <div
+          className={cn(styles.trackTitle, {
+            [styles.lockedTrackTitle]: !isDeleted && isLocked
+          })}
+        >
           {trackTitle}
           {messages.deleted}
         </div>
@@ -201,17 +208,25 @@ const TrackListItem = ({
           <UserBadges
             userId={userId}
             badgeSize={12}
-            className={styles.badges}
+            className={cn(styles.badges, {
+              [styles.lockedBadges]: !isDeleted && isLocked
+            })}
           />
         </div>
       </div>
-      {onSaveTrack && trackItemAction === TrackItemAction.Save && (
+      {!isDeleted && isLocked ? (
+        <div className={styles.locked}>
+          <IconLock />
+          <span>{messages.locked}</span>
+        </div>
+      ) : null}
+      {!isLocked && trackItemAction === TrackItemAction.Save ? (
         <div className={styles.iconContainer} onClick={onSaveTrack}>
           <IconHeart
             className={cn(styles.heartIcon, { [styles.isSaved]: isSaved })}
           />
         </div>
-      )}
+      ) : null}
       {onClickOverflow && trackItemAction === TrackItemAction.Overflow && (
         <div className={styles.iconContainer}>
           <IconButton

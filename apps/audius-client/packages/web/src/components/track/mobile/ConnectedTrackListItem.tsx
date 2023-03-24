@@ -40,8 +40,16 @@ const ConnectedTrackListItem = (props: ConnectedTrackListItemProps) => {
 
   const onClickOverflow = () => {
     const overflowActions = [
-      props.isReposted ? OverflowAction.UNREPOST : OverflowAction.REPOST,
-      props.isSaved ? OverflowAction.UNFAVORITE : OverflowAction.FAVORITE,
+      props.isLocked
+        ? null
+        : props.isReposted
+        ? OverflowAction.UNREPOST
+        : OverflowAction.REPOST,
+      props.isLocked
+        ? null
+        : props.isSaved
+        ? OverflowAction.UNFAVORITE
+        : OverflowAction.FAVORITE,
       !isGatedContentEnabled || !props.isPremium
         ? OverflowAction.ADD_TO_PLAYLIST
         : null,
