@@ -1,5 +1,10 @@
 #!/usr/bin/env sh
 
+if [[ "$audius_db_url" == "" ]]; then
+    export audius_db_url="postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_${replica}"
+    export audius_db_url_read_replica="postgresql+psycopg2://postgres:postgres@db:5432/discovery_provider_${replica}"
+fi
+
 export audius_enable_rsyslog=false
 
 export audius_discprov_url="http://audius-protocol-discovery-provider-${replica}"
