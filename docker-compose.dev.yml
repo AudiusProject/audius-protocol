@@ -9,7 +9,6 @@ services:
       - ./comms/nginx/ingress.conf:/usr/local/openresty/nginx/conf/comms_ingress.conf
     ports:
       - 80:80
-      - 5432:5432 # to expose postgres port for discovery node
 
   autoheal:
     image: willfarrell/autoheal:latest
