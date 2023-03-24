@@ -21,7 +21,6 @@ import NavContext, {
   CenterPreset,
   RightPreset
 } from 'components/nav/store/context'
-import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkConnectivityMonitor'
 import SectionButton from 'components/section-button/SectionButton'
 import { getTrackDefaults, emptyStringGuard } from 'pages/track-page/utils'
 
@@ -179,108 +178,106 @@ const TrackPage = ({
     ) : null
 
   return (
-    <NetworkConnectivityMonitor pageDidLoad={!loading}>
-      <MobilePageContainer
-        title={title}
-        description={description}
-        canonicalUrl={canonicalUrl}
-        structuredData={structuredData}
-      >
-        <div className={styles.trackContent}>
-          <TrackPageHeader
-            isLoading={loading}
-            isPlaying={heroPlaying}
-            isReposted={isReposted}
-            isFollowing={isFollowing}
-            title={defaults.title}
-            trackId={defaults.trackId}
-            userId={heroTrack?.owner_id ?? 0}
-            artistName={emptyStringGuard(user?.name)}
-            artistVerified={user?.is_verified ?? false}
-            coverArtSizes={defaults.coverArtSizes}
-            tags={defaults.tags}
-            description={defaults.description}
-            listenCount={defaults.playCount}
-            repostCount={defaults.repostCount}
-            duration={defaults.duration}
-            released={defaults.released}
-            credits={defaults.credits}
-            genre={defaults.genre}
-            mood={defaults.mood}
-            saveCount={defaults.saveCount}
-            isOwner={isOwner}
-            isSaved={isSaved}
-            coSign={defaults.coSign}
-            // Actions (Wire up once we add backend integrations)
-            onClickArtistName={onClickArtistName}
-            onClickMobileOverflow={onClickMobileOverflow}
-            onClickTag={onClickTag}
-            onPlay={onPlay}
-            onSave={onSave}
-            onShare={onShare}
-            onRepost={onRepost}
-            onDownload={onDownload}
-            isUnlisted={defaults.isUnlisted}
-            isPremium={defaults.isPremium}
-            premiumConditions={defaults.premiumConditions}
-            doesUserHaveAccess={doesUserHaveAccess}
-            isRemix={!!defaults.remixParentTrackId}
-            fieldVisibility={defaults.fieldVisibility}
-            goToFavoritesPage={goToFavoritesPage}
-            goToRepostsPage={goToRepostsPage}
-          />
-          {defaults.fieldVisibility.remixes &&
-            defaults.remixTrackIds &&
-            defaults.remixTrackIds.length > 0 && (
-              <div className={styles.remixes}>
-                <Remixes
-                  trackIds={defaults.remixTrackIds}
-                  goToAllRemixes={goToAllRemixesPage}
-                  count={defaults.remixesCount}
+    <MobilePageContainer
+      title={title}
+      description={description}
+      canonicalUrl={canonicalUrl}
+      structuredData={structuredData}
+    >
+      <div className={styles.trackContent}>
+        <TrackPageHeader
+          isLoading={loading}
+          isPlaying={heroPlaying}
+          isReposted={isReposted}
+          isFollowing={isFollowing}
+          title={defaults.title}
+          trackId={defaults.trackId}
+          userId={heroTrack?.owner_id ?? 0}
+          artistName={emptyStringGuard(user?.name)}
+          artistVerified={user?.is_verified ?? false}
+          coverArtSizes={defaults.coverArtSizes}
+          tags={defaults.tags}
+          description={defaults.description}
+          listenCount={defaults.playCount}
+          repostCount={defaults.repostCount}
+          duration={defaults.duration}
+          released={defaults.released}
+          credits={defaults.credits}
+          genre={defaults.genre}
+          mood={defaults.mood}
+          saveCount={defaults.saveCount}
+          isOwner={isOwner}
+          isSaved={isSaved}
+          coSign={defaults.coSign}
+          // Actions (Wire up once we add backend integrations)
+          onClickArtistName={onClickArtistName}
+          onClickMobileOverflow={onClickMobileOverflow}
+          onClickTag={onClickTag}
+          onPlay={onPlay}
+          onSave={onSave}
+          onShare={onShare}
+          onRepost={onRepost}
+          onDownload={onDownload}
+          isUnlisted={defaults.isUnlisted}
+          isPremium={defaults.isPremium}
+          premiumConditions={defaults.premiumConditions}
+          doesUserHaveAccess={doesUserHaveAccess}
+          isRemix={!!defaults.remixParentTrackId}
+          fieldVisibility={defaults.fieldVisibility}
+          goToFavoritesPage={goToFavoritesPage}
+          goToRepostsPage={goToRepostsPage}
+        />
+        {defaults.fieldVisibility.remixes &&
+          defaults.remixTrackIds &&
+          defaults.remixTrackIds.length > 0 && (
+            <div className={styles.remixes}>
+              <Remixes
+                trackIds={defaults.remixTrackIds}
+                goToAllRemixes={goToAllRemixesPage}
+                count={defaults.remixesCount}
+              />
+            </div>
+          )}
+        <div className={styles.tracksContainer}>
+          {!hasValidRemixParent && renderMoreByTitle()}
+          {hasValidRemixParent && renderOriginalTrackTitle()}
+          <Lineup
+            lineup={tracks}
+            // Styles for leading element (original track if remix).
+            leadingElementId={defaults.remixParentTrackId}
+            leadingElementDelineator={
+              <div className={styles.originalTrackDelineator}>
+                <SectionButton
+                  isMobile
+                  text={messages.viewOtherRemixes}
+                  onClick={goToParentRemixesPage}
                 />
+                {renderMoreByTitle()}
               </div>
-            )}
-          <div className={styles.tracksContainer}>
-            {!hasValidRemixParent && renderMoreByTitle()}
-            {hasValidRemixParent && renderOriginalTrackTitle()}
-            <Lineup
-              lineup={tracks}
-              // Styles for leading element (original track if remix).
-              leadingElementId={defaults.remixParentTrackId}
-              leadingElementDelineator={
-                <div className={styles.originalTrackDelineator}>
-                  <SectionButton
-                    isMobile
-                    text={messages.viewOtherRemixes}
-                    onClick={goToParentRemixesPage}
-                  />
-                  {renderMoreByTitle()}
-                </div>
-              }
-              leadingElementClassName={styles.originalTrack}
-              showLeadingElementArtistPick={false}
-              // Don't render the first tile in the lineup.
-              start={1}
-              // Show max 5 loading tiles
-              count={6}
-              // Managed from the parent rather than allowing the lineup to fetch content itself.
-              selfLoad={false}
-              variant={LineupVariant.CONDENSED}
-              playingUid={currentQueueItem.uid}
-              playingSource={currentQueueItem.source}
-              playingTrackId={
-                currentQueueItem.track && currentQueueItem.track.track_id
-              }
-              playing={isPlaying}
-              buffering={isBuffering}
-              playTrack={play}
-              pauseTrack={pause}
-              actions={tracksActions}
-            />
-          </div>
+            }
+            leadingElementClassName={styles.originalTrack}
+            showLeadingElementArtistPick={false}
+            // Don't render the first tile in the lineup.
+            start={1}
+            // Show max 5 loading tiles
+            count={6}
+            // Managed from the parent rather than allowing the lineup to fetch content itself.
+            selfLoad={false}
+            variant={LineupVariant.CONDENSED}
+            playingUid={currentQueueItem.uid}
+            playingSource={currentQueueItem.source}
+            playingTrackId={
+              currentQueueItem.track && currentQueueItem.track.track_id
+            }
+            playing={isPlaying}
+            buffering={isBuffering}
+            playTrack={play}
+            pauseTrack={pause}
+            actions={tracksActions}
+          />
         </div>
-      </MobilePageContainer>
-    </NetworkConnectivityMonitor>
+      </div>
+    </MobilePageContainer>
   )
 }
 

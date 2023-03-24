@@ -13,7 +13,6 @@ import { useDispatch, useSelector } from 'react-redux'
 import loadingSpinner from 'assets/animations/loadingSpinner.json'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import NavContext, { LeftPreset } from 'components/nav/store/context'
-import NetworkConnectivityMonitor from 'components/network-connectivity/NetworkConnectivityMonitor'
 
 import { EmptyNotifications } from './EmptyNotifications'
 import { Notification } from './Notification'
@@ -70,52 +69,50 @@ export const NotificationPage = () => {
   }, [dispatch, notificationUnviewedCount])
 
   return (
-    <NetworkConnectivityMonitor pageDidLoad={status !== Status.LOADING}>
-      <MobilePageContainer
-        title={messages.documentTitle}
-        description={messages.description}
-        backgroundClassName={styles.background}
-        fullHeight
-      >
-        <div className={styles.notificationContainer}>
-          {notifications.length > 0 ? (
-            <InfiniteScroll
-              pageStart={0}
-              loadMore={loadMore}
-              hasMore={true}
-              useWindow={true}
-              initialLoad={false}
-              threshold={SCROLL_THRESHOLD}
-            >
-              <div className={styles.content}>
-                {notifications
-                  .filter(({ isHidden }: any) => !isHidden)
-                  .map((notification: Notifications) => {
-                    return (
-                      <Notification
-                        key={notification.id}
-                        notification={notification}
-                      />
-                    )
-                  })}
-                {status === Status.LOADING && (
-                  <div className={styles.spinnerContainer} key={'loading'}>
-                    <Lottie
-                      options={{
-                        loop: true,
-                        autoplay: true,
-                        animationData: loadingSpinner
-                      }}
+    <MobilePageContainer
+      title={messages.documentTitle}
+      description={messages.description}
+      backgroundClassName={styles.background}
+      fullHeight
+    >
+      <div className={styles.notificationContainer}>
+        {notifications.length > 0 ? (
+          <InfiniteScroll
+            pageStart={0}
+            loadMore={loadMore}
+            hasMore={true}
+            useWindow={true}
+            initialLoad={false}
+            threshold={SCROLL_THRESHOLD}
+          >
+            <div className={styles.content}>
+              {notifications
+                .filter(({ isHidden }: any) => !isHidden)
+                .map((notification: Notifications) => {
+                  return (
+                    <Notification
+                      key={notification.id}
+                      notification={notification}
                     />
-                  </div>
-                )}
-              </div>
-            </InfiniteScroll>
-          ) : (
-            <EmptyNotifications />
-          )}
-        </div>
-      </MobilePageContainer>
-    </NetworkConnectivityMonitor>
+                  )
+                })}
+              {status === Status.LOADING && (
+                <div className={styles.spinnerContainer} key={'loading'}>
+                  <Lottie
+                    options={{
+                      loop: true,
+                      autoplay: true,
+                      animationData: loadingSpinner
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          </InfiniteScroll>
+        ) : (
+          <EmptyNotifications />
+        )}
+      </div>
+    </MobilePageContainer>
   )
 }

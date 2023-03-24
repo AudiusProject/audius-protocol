@@ -22,14 +22,12 @@ import './index.css'
 type AudiusAppProps = {
   setReady: () => void
   isReady: boolean
-  setConnectivityFailure: (failure: boolean) => void
   shouldShowPopover: boolean
 }
 
 const AudiusApp = ({
   setReady,
   isReady,
-  setConnectivityFailure,
   shouldShowPopover
 }: AudiusAppProps) => {
   return (
@@ -55,7 +53,6 @@ const AudiusApp = ({
                           setReady={setReady}
                           isReady={isReady}
                           mainContentRef={mainContentRef}
-                          setConnectivityFailure={setConnectivityFailure}
                           shouldShowPopover={shouldShowPopover}
                         />
                       </CoinbasePayButtonProvider>

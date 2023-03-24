@@ -42,7 +42,6 @@ import Navigator from 'components/nav/Navigator'
 import { NotificationPage } from 'components/notification'
 import PinnedTrackConfirmation from 'components/pin-track-confirmation/PinTrackConfirmation'
 import PlayBarProvider from 'components/play-bar/PlayBarProvider'
-import ConnectedReachabilityBar from 'components/reachability-bar/ReachabilityBar'
 import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaimedToast'
 import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
@@ -175,13 +174,8 @@ import TopSupportersPage from './top-supporters-page/TopSupportersPage'
 const { setTheme } = themeActions
 const { getTheme } = themeSelectors
 
-const {
-  getHasAccount,
-  getAccountStatus,
-  getUserId,
-  getConnectivityFailure,
-  getUserHandle
-} = accountSelectors
+const { getHasAccount, getAccountStatus, getUserId, getUserHandle } =
+  accountSelectors
 
 const MOBILE_BANNER_LOCAL_STORAGE_KEY = 'dismissMobileAppBanner'
 
@@ -383,13 +377,6 @@ class App extends Component {
     ) {
       // Let the UI flush
       setImmediate(this.props.setReady)
-    }
-
-    if (
-      prevProps.firstLoadConnectivityFailure !==
-      this.props.firstLoadConnectivityFailure
-    ) {
-      this.props.setConnectivityFailure(this.props.firstLoadConnectivityFailure)
     }
 
     if (prevProps.theme !== this.props.theme) {
@@ -1001,23 +988,21 @@ class App extends Component {
         }
 
         {/* Non-mobile */}
-        {!isMobileClient && <Konami />}
-        {!isMobileClient && <ConfirmerPreview />}
-        {!isMobileClient && <DiscoveryNodeSelection />}
-        {!isMobileClient && <Visualizer />}
-        {!isMobileClient && <PinnedTrackConfirmation />}
-        {!isMobileClient && <DevModeMananger />}
+        {!isMobileClient ? <Konami /> : null}
+        {!isMobileClient ? <ConfirmerPreview /> : null}
+        {!isMobileClient ? <DiscoveryNodeSelection /> : null}
+        {!isMobileClient ? <Visualizer /> : null}
+        {!isMobileClient ? <PinnedTrackConfirmation /> : null}
+        {!isMobileClient ? <DevModeMananger /> : null}
 
         {/* Mobile-only */}
-        {isMobileClient && <ConnectedReachabilityBar />}
-
-        {shouldShowPopover && isMobileClient && (
+        {isMobileClient && shouldShowPopover ? (
           <AppRedirectPopover
             enablePopover={isReady}
             incrementScroll={incrementScroll}
             decrementScroll={decrementScroll}
           />
-        )}
+        ) : null}
       </div>
     )
   }
@@ -1031,8 +1016,7 @@ const mapStateToProps = (state) => ({
   signOnStatus: getSignOnStatus(state),
   web3Error: getWeb3Error(state),
   theme: getTheme(state),
-  showCookieBanner: getShowCookieBanner(state),
-  firstLoadConnectivityFailure: getConnectivityFailure(state)
+  showCookieBanner: getShowCookieBanner(state)
 })
 
 const mapDispatchToProps = (dispatch) => ({

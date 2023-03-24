@@ -2,7 +2,7 @@ import { getAssetFromKV, mapRequestToAsset } from '@cloudflare/kv-asset-handler'
 
 const DEBUG = false
 
-addEventListener('fetch', event => {
+addEventListener('fetch', (event) => {
   try {
     event.respondWith(handleEvent(event))
   } catch (e) {
@@ -39,11 +39,15 @@ async function handleEvent(event) {
 
   const userAgent = event.request.headers.get('User-Agent') || ''
 
+  const is204 = pathname === '/204'
+  if (is204) {
+    return new Response(undefined, { status: 204 })
+  }
+
   const isBot = checkIsBot(userAgent)
   const isEmbed = pathname.startsWith('/embed')
-  const is204 = pathname === '/204'
 
-  if (isBot || isEmbed || is204) {
+  if (isBot || isEmbed) {
     const destinationURL = GA + pathname + search + hash
     const newRequest = new Request(destinationURL, event.request)
     newRequest.headers.set('host', GA)
@@ -61,7 +65,7 @@ async function handleEvent(event) {
 
   const options = {}
   // Always map requests to `/`
-  options.mapRequestToAsset = request => {
+  options.mapRequestToAsset = (request) => {
     const url = new URL(request.url)
     url.pathname = `/`
     return mapRequestToAsset(new Request(url, request))
