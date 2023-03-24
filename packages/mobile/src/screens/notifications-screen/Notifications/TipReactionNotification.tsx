@@ -12,7 +12,6 @@ import { useSelector } from 'react-redux'
 import IconTip from 'app/assets/images/iconTip.svg'
 import UserBadges from 'app/components/user-badges'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
-import { make } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { EventNames } from 'app/types/analytics'
 
@@ -93,10 +92,10 @@ export const TipReactionNotification = (
     const shareText = messages.twitterShare(handle, Platform.OS === 'ios')
     return {
       shareText,
-      analytics: make({
+      analytics: {
         eventName: EventNames.NOTIFICATIONS_CLICK_TIP_REACTION_TWITTER_SHARE,
         text: shareText
-      })
+      } as const
     }
   }, [])
 

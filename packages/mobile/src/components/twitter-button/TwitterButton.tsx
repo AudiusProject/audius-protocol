@@ -12,10 +12,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import type { ButtonProps } from 'app/components/core'
 import { Button, useOnOpenLink } from 'app/components/core'
-import type { make } from 'app/services/analytics'
-import { track } from 'app/services/analytics'
+import { make, track } from 'app/services/analytics'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
+import type { AllEvents } from 'app/types/analytics'
 const { getUser } = cacheUsersSelectors
 const { fetchUserSocials } = cacheUsersActions
 
@@ -32,7 +32,7 @@ const useStyles = makeStyles(({ palette }) => ({
 type StaticTwitterProps = {
   type: 'static'
   shareText: string
-  analytics?: ReturnType<typeof make>
+  analytics?: AllEvents
 }
 
 type DynamicTwitterProps = {
@@ -44,7 +44,7 @@ type DynamicTwitterProps = {
     otherHandle?: Nullable<string>
   ) => Nullable<{
     shareText: string
-    analytics: ReturnType<typeof make>
+    analytics: AllEvents
   }>
 }
 
@@ -80,7 +80,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
 
   const handlePress = useCallback(() => {
     if (other.type === 'static' && other.analytics) {
-      track(other.analytics)
+      track(make(other.analytics))
     }
     if (other.type === 'dynamic') {
       dispatch(fetchUserSocials(other.handle))
@@ -104,7 +104,7 @@ export const TwitterButton = (props: TwitterButtonProps) => {
     if (twitterData) {
       const { shareText, analytics } = twitterData
       openLink(makeTwitterShareUrl(url, shareText))
-      track(analytics)
+      track(make(analytics))
       setIdle()
     }
   }

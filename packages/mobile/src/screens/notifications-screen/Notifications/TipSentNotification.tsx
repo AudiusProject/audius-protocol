@@ -7,7 +7,6 @@ import { useSelector } from 'react-redux'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
-import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import {
@@ -65,10 +64,10 @@ export const TipSentNotification = (props: TipSentNotificationProps) => {
       )
       return {
         shareText,
-        analytics: make({
+        analytics: {
           eventName: EventNames.NOTIFICATIONS_CLICK_TIP_SENT_TWITTER_SHARE,
           text: shareText
-        })
+        } as const
       }
     },
     [uiAmount]

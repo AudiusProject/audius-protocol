@@ -16,7 +16,6 @@ import { useSelector } from 'react-redux'
 
 import IconTrophy from 'app/assets/images/iconTrophy.svg'
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
-import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 import { formatCount } from 'app/utils/format'
 
@@ -146,10 +145,10 @@ export const MilestoneNotification = (props: MilestoneNotificationProps) => {
         type='static'
         url={link}
         shareText={text}
-        analytics={make({
+        analytics={{
           eventName: EventNames.NOTIFICATIONS_CLICK_MILESTONE_TWITTER_SHARE,
           milestone: text
-        })}
+        }}
       />
     </NotificationTile>
   )

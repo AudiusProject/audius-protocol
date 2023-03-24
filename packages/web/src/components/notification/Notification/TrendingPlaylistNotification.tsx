@@ -4,8 +4,8 @@ import {
   Name,
   Nullable,
   notificationsSelectors,
-  TrackEntity,
-  TrendingTrackNotification as TrendingTrackNotificationType
+  TrendingPlaylistNotification as TrendingPlaylistNotificationType,
+  CollectionEntity
 } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -26,35 +26,35 @@ const { getNotificationEntity } = notificationsSelectors
 
 const messages = {
   title: "You're Trending",
-  is: 'is',
-  trending: 'on Trending right now!',
+  is: 'is the',
+  trending: 'trending playlist on Audius right now!',
   twitterShareText: (entityTitle: string) =>
-    `My track ${entityTitle} is trending on @AudiusProject! Check it out! #Audius #AudiusTrending`
+    `My playlist ${entityTitle} is trending on @AudiusProject! Check it out! #Audius #AudiusTrending `
 }
 
-type TrendingTrackNotificationProps = {
-  notification: TrendingTrackNotificationType
+type TrendingPlaylistNotificationProps = {
+  notification: TrendingPlaylistNotificationType
 }
 
-export const TrendingTrackNotification = (
-  props: TrendingTrackNotificationProps
+export const TrendingPlaylistNotification = (
+  props: TrendingPlaylistNotificationProps
 ) => {
   const { notification } = props
   const { entityType, rank, timeLabel, isViewed } = notification
   const dispatch = useDispatch()
-  const track = useSelector((state) =>
+  const playlist = useSelector((state) =>
     getNotificationEntity(state, notification)
-  ) as Nullable<TrackEntity>
+  ) as Nullable<CollectionEntity>
 
   const handleClick = useCallback(() => {
-    if (track) {
-      dispatch(push(getEntityLink(track)))
+    if (playlist) {
+      dispatch(push(getEntityLink(playlist)))
     }
-  }, [dispatch, track])
+  }, [dispatch, playlist])
 
-  if (!track) return null
+  if (!playlist) return null
 
-  const shareText = messages.twitterShareText(track.title)
+  const shareText = messages.twitterShareText(playlist.playlist_name)
 
   return (
     <NotificationTile notification={notification} onClick={handleClick}>
@@ -62,16 +62,19 @@ export const TrendingTrackNotification = (
         <NotificationTitle>{messages.title}</NotificationTitle>
       </NotificationHeader>
       <NotificationBody>
-        <EntityLink entity={track} entityType={entityType} /> {messages.is} #
+        <EntityLink entity={playlist} entityType={entityType} /> {messages.is} #
         {rank} {messages.trending}
       </NotificationBody>
       <TwitterShareButton
         type='static'
-        url={getEntityLink(track, true)}
+        url={getEntityLink(playlist, true)}
         shareText={shareText}
-        analytics={make(Name.NOTIFICATIONS_CLICK_TRENDING_TRACK_TWITTER_SHARE, {
-          text: shareText
-        })}
+        analytics={make(
+          Name.NOTIFICATIONS_CLICK_TRENDING_PLAYLIST_TWITTER_SHARE,
+          {
+            text: shareText
+          }
+        )}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>

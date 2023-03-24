@@ -177,6 +177,9 @@ export enum Name {
   NOTIFICATIONS_CLICK_DETHRONED_TWITTER_SHARE = 'Notifications: Clicked Dethroned Twitter Share',
   NOTIFICATIONS_CLICK_SUPPORTER_RANK_UP_TWITTER_SHARE = 'Notifications: Clicked Supporter Rank Up Twitter Share',
   NOTIFICATIONS_CLICK_SUPPORTING_RANK_UP_TWITTER_SHARE = 'Notifications: Clicked Supporting Rank Up Twitter Share',
+  NOTIFICATIONS_CLICK_TRENDING_TRACK_TWITTER_SHARE = 'Notifications: Clicked Trending Track Twitter Share',
+  NOTIFICATIONS_CLICK_TRENDING_PLAYLIST_TWITTER_SHARE = 'Notifications: Clicked Trending Playlist Twitter Share',
+  NOTIFICATIONS_CLICK_TRENDING_UNDERGROUND_TWITTER_SHARE = 'Notifications: Clicked Trending Underground Twitter Share',
   NOTIFICATIONS_CLICK_ADD_TRACK_TO_PLAYLIST_TWITTER_SHARE = 'Notifications: Clicked Add Track to Playlist Twitter Share',
   NOTIFICATIONS_TOGGLE_SETTINGS = 'Notifications: Toggle Setting',
   BROWSER_NOTIFICATION_SETTINGS = 'Browser Push Notification',
@@ -891,6 +894,18 @@ type NotificationsClickAddTrackToPlaylist = {
   eventName: Name.NOTIFICATIONS_CLICK_ADD_TRACK_TO_PLAYLIST_TWITTER_SHARE
   text: string
 }
+type NotificationsClickTrendingTrack = {
+  eventName: Name.NOTIFICATIONS_CLICK_TRENDING_TRACK_TWITTER_SHARE
+  text: string
+}
+type NotificationsClickTrendingPlaylist = {
+  eventName: Name.NOTIFICATIONS_CLICK_TRENDING_PLAYLIST_TWITTER_SHARE
+  text: string
+}
+type NotificationsClickTrendingUnderground = {
+  eventName: Name.NOTIFICATIONS_CLICK_TRENDING_UNDERGROUND_TWITTER_SHARE
+  text: string
+}
 type NotificationsToggleSettings = {
   eventName: Name.NOTIFICATIONS_TOGGLE_SETTINGS
   settings: string
@@ -1593,6 +1608,9 @@ export type AllTrackingEvents =
   | NotificationsClickSupporterRankUp
   | NotificationsClickSupportingRankUp
   | NotificationsClickAddTrackToPlaylist
+  | NotificationsClickTrendingPlaylist
+  | NotificationsClickTrendingTrack
+  | NotificationsClickTrendingUnderground
   | NotificationsToggleSettings
   | ProfilePageTabClick
   | ProfilePageSort

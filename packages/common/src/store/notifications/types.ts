@@ -32,6 +32,8 @@ export enum NotificationType {
   RemixCreate = 'RemixCreate',
   RemixCosign = 'RemixCosign',
   TrendingTrack = 'TrendingTrack',
+  TrendingPlaylist = 'TrendingPlaylist',
+  TrendingUnderground = 'TrendingUnderground',
   ChallengeReward = 'ChallengeReward',
   TierChange = 'TierChange',
   Reaction = 'Reaction',
@@ -657,8 +659,26 @@ export type RemixCosignPushNotification = {
   ]
 }
 
+export type TrendingPlaylistNotification = BaseNotification & {
+  type: NotificationType.TrendingPlaylist
+  rank: number
+  genre: string
+  time: 'week' | 'month' | 'year'
+  entityType: Entity.Playlist
+  entityId: ID
+}
+
 export type TrendingTrackNotification = BaseNotification & {
   type: NotificationType.TrendingTrack
+  rank: number
+  genre: string
+  time: 'week' | 'month' | 'year'
+  entityType: Entity.Track
+  entityId: ID
+}
+
+export type TrendingUndergroundNotification = BaseNotification & {
+  type: NotificationType.TrendingUnderground
   rank: number
   genre: string
   time: 'week' | 'month' | 'year'
@@ -824,7 +844,9 @@ export type Notification =
   | MilestoneNotification
   | RemixCreateNotification
   | RemixCosignNotification
+  | TrendingPlaylistNotification
   | TrendingTrackNotification
+  | TrendingUndergroundNotification
   | ChallengeRewardNotification
   | TierChangeNotification
   | ReactionNotification

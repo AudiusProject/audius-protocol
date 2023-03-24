@@ -6,7 +6,6 @@ import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { useNotificationNavigation } from 'app/hooks/useNotificationNavigation'
-import { make } from 'app/services/analytics'
 import { EventNames } from 'app/types/analytics'
 
 import { NotificationTile, NotificationTwitterButton } from '../Notification'
@@ -51,11 +50,11 @@ export const TopSupportingNotification = (
       )
       return {
         shareText,
-        analytics: make({
+        analytics: {
           eventName:
             EventNames.NOTIFICATIONS_CLICK_SUPPORTING_RANK_UP_TWITTER_SHARE,
           text: shareText
-        })
+        } as const
       }
     },
     [rank]

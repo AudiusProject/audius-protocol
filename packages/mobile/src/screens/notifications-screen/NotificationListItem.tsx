@@ -13,7 +13,9 @@ import {
   MilestoneNotification,
   AnnouncementNotification,
   TierChangeNotification,
+  TrendingPlaylistNotification,
   TrendingTrackNotification,
+  TrendingUndergroundNotification,
   TopSupporterNotification,
   TopSupportingNotification,
   TipReactionNotification,
@@ -76,8 +78,12 @@ export const NotificationListItem = (props: NotificationListItemProps) => {
         return <TopSupporterNotification notification={notification} />
       case NotificationType.SupportingRankUp:
         return <TopSupportingNotification notification={notification} />
+      case NotificationType.TrendingPlaylist:
+        return <TrendingPlaylistNotification notification={notification} />
       case NotificationType.TrendingTrack:
         return <TrendingTrackNotification notification={notification} />
+      case NotificationType.TrendingUnderground:
+        return <TrendingUndergroundNotification notification={notification} />
       case NotificationType.UserSubscription:
         return <UserSubscriptionNotification notification={notification} />
       case NotificationType.AddTrackToPlaylist:

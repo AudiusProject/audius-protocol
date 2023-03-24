@@ -10,7 +10,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
-import { make, useRecord } from 'common/store/analytics/actions'
+import { useRecord, TrackEvent } from 'common/store/analytics/actions'
 import { openTwitterLink } from 'utils/tweet'
 
 import styles from './TwitterShareButton.module.css'
@@ -24,7 +24,7 @@ const messages = {
 type StaticTwitterProps = {
   type: 'static'
   shareText: string
-  analytics?: ReturnType<typeof make>
+  analytics?: TrackEvent
 }
 
 type DynamicTwitterProps = {
@@ -34,7 +34,7 @@ type DynamicTwitterProps = {
   shareData: (
     twitterHandle: string,
     otherTwitterHandle?: Nullable<string>
-  ) => Nullable<{ shareText: string; analytics: ReturnType<typeof make> }>
+  ) => Nullable<{ shareText: string; analytics: TrackEvent }>
 }
 
 type TwitterShareButtonProps = { url?: string } & (
@@ -73,7 +73,6 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
       if (other.type === 'static') {
         openTwitterLink(url, other.shareText)
         if (other.analytics) {
-          // @ts-ignore issues with record type
           record(other.analytics)
         }
       }
@@ -106,7 +105,6 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
     if (twitterData) {
       const { shareText, analytics } = twitterData
       openTwitterLink(url, shareText)
-      // @ts-ignore issues with record type
       record(analytics)
       setIdle()
     }
