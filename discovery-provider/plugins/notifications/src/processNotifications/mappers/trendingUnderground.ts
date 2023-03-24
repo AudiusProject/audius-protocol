@@ -5,7 +5,6 @@ import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
-import { getNumberSuffix } from '../../utils/format'
 
 type TrendingUndergroundNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingUndergroundNotification
@@ -68,8 +67,6 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
       this.receiverUserId
     )
 
-    const rankSuffix = getNumberSuffix(this.rank)
-
     // If the user has devices to the notification to, proceed
     if (
       (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
@@ -89,9 +86,9 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
             },
             {
               title: 'Congrats - You’re Trending! 📈',
-              body: `Your Track ${tracks[this.trackId]?.title} is ${
+              body: `Your Track ${tracks[this.trackId]?.title} is #${
                 this.rank
-              }${rankSuffix} on Underground Trending Right Now! 🍾`,
+              } on Underground Trending Right Now! 🍾`,
               data: {}
             }
           )

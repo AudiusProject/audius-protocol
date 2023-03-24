@@ -5,7 +5,6 @@ import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
-import { getNumberSuffix } from '../../utils/format'
 
 type TrendingPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingPlaylistNotification
@@ -116,16 +115,16 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
 
   formatEmailProps(resources: Resources) {
     const user = resources.users[this.receiverUserId]
-    const playlists = resources.playlists[this.playlistId]
+    const playlist = resources.playlists[this.playlistId]
     return {
       type: this.notification.type,
       rank: this.rank,
       users: [{ name: user.name, image: user.imageUrl }],
       entity: {
         type: EntityType.Playlist,
-        title: playlists.playlist_name,
-        image: playlists.imageUrl,
-        slug: playlists.slug
+        title: playlist.playlist_name,
+        image: playlist.imageUrl,
+        slug: playlist.slug
       }
     }
   }

@@ -74,7 +74,7 @@ describe('Trending Underground Notification', () => {
       },
       {
         title: 'Congrats - You’re Trending! 📈',
-        body: `Your Track track_title_10 is 3rd on Underground Trending Right Now! 🍾`,
+        body: `Your Track track_title_10 is #3 on Underground Trending Right Now! 🍾`,
         data: {}
       }
     )
