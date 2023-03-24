@@ -2,6 +2,7 @@ package natsd
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/nats-io/nats-server/v2/server"
@@ -9,6 +10,8 @@ import (
 )
 
 func selfConnectionProbe(myIP string) (bool, error) {
+	connected := false
+
 	opts := &server.Options{
 		ServerName: "connection_test",
 		Logtime:    true,
@@ -20,20 +23,19 @@ func selfConnectionProbe(myIP string) (bool, error) {
 	}
 
 	go server.Start()
-	defer server.Shutdown()
 
 	if !server.ReadyForConnections(4 * time.Second) {
-		return false, fmt.Errorf("server start timed out")
+		log.Println("self connection server failed to start in 4 seconds")
 	}
 
 	u := fmt.Sprintf("nats://%s:4222", myIP)
 	nc, err := nats.Connect(u)
-	if err != nil {
-		return false, err
+	if err == nil && nc.IsConnected() {
+		connected = true
 	}
 
 	nc.Close()
 	server.Shutdown()
 	server.WaitForShutdown()
-	return true, nil
+	return connected, err
 }

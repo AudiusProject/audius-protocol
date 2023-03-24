@@ -1,21 +1,11 @@
 version: "3.9"
 
 services:
-  identity-service-db:
-    image: postgres:11.4
-    user: postgres
-    healthcheck:
-      test: ["CMD", "pg_isready"]
-      interval: 10s
-      timeout: 5s
-    deploy:
-      mode: global
-
   identity-service-redis:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: ["CMD", "redis-cli", "PING"]
+      test: [ "CMD", "redis-cli", "PING" ]
       interval: 10s
       timeout: 5s
     deploy:
@@ -46,7 +36,7 @@ services:
       userVerifierPrivateKey: "ebba299e6163ff3208de4e82ce7db09cf7e434847b5bdab723af96ae7c763a0e"
       userVerifierPublicKey: "0xbbbb93A6B3A1D6fDd27909729b95CCB0cc9002C0'"
 
-      dbUrl: "postgres://postgres:postgres@identity-service-db:5432/postgres"
+      dbUrl: "postgres://postgres:postgres@db:5432/identity_service"
 
       redisHost: "identity-service-redis"
       redisPort: 6379
@@ -83,7 +73,7 @@ services:
       - ./dev-tools:/tmp/dev-tools
       - audius-libs:/usr/src/audius-libs
     depends_on:
-      identity-service-db:
+      db:
         condition: service_healthy
       identity-service-redis:
         condition: service_healthy

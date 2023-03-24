@@ -56,11 +56,6 @@ jobs:
       instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
       service: audius-libs
   - test:
-      name: test-poa-contracts
-      context: GCP
-      instance-name: circleci-test-poa-contracts-$CIRCLE_BUILD_NUM
-      service: poa-contracts
-  - test:
       name: test-eth-contracts
       context: GCP
       instance-name: circleci-test-eth-contracts-$CIRCLE_BUILD_NUM
@@ -157,7 +152,6 @@ jobs:
       requires:
         - deploy-prod-discovery-provider-trigger
       hosts: >-
-        prod-discovery-4
         prod-discovery-1
         prod-discovery-2
         prod-discovery-3

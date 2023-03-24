@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import getpass
 import json
 import os
 import pathlib
@@ -333,12 +334,6 @@ def up(
 
     AAO_DIR = pathlib.Path(os.getenv("AAO_DIR", protocol_dir / "../anti-abuse-oracle"))
 
-    # TODO: Consider removing /etc/hosts change on audius-compose down
-    hosts_file = pathlib.Path("/etc/hosts")
-    if LOCALHOSTS not in hosts_file.read_text():
-        print("Adding development hosts to /etc/hosts")
-        hosts_file.write_text(hosts_file.read_text() + "\n" + LOCALHOSTS + "\n")
-
     sys.exit(
         subprocess.run(
             [
@@ -380,6 +375,22 @@ def down(protocol_dir):
             "--volumes",
         ],
     )
+
+
+@cli.command()
+def connect():
+    hosts_file = pathlib.Path("/etc/hosts")
+    if LOCALHOSTS in hosts_file.read_text():
+        print("/etc/hosts already up to date")
+    else:
+        password = getpass.getpass(
+            "Adding development hosts to /etc/hosts. Enter your sudo password: "
+        )
+        subprocess.run(
+            f"echo '{password}' | sudo -S sh -c 'echo \"{LOCALHOSTS}\" >> /etc/hosts'",
+            shell=True,
+        )
+        print("Updated /etc/hosts")
 
 
 @cli.group(cls=DefaultCommandGroup)
@@ -602,7 +613,7 @@ def prune(protocol_dir, yes):
 
     if yes or click.confirm("Are you sure you want to continue?"):
         subprocess.run(["docker", "image", "prune", "-f"])
-        subprocess.run(["docker", "buildx", "prune", "-f", "--filter=until=72h"])
+        subprocess.run(["docker", "buildx", "prune", "-f", "--keep-storage=30G"])
 
 
 @cli.command()

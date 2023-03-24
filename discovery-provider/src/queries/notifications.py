@@ -25,7 +25,7 @@ from src.models.users.user_balance_change import UserBalanceChange
 from src.models.users.user_tip import UserTip
 from src.queries import response_name_constants as const
 from src.queries.get_prev_track_entries import get_prev_track_entries
-from src.utils import helpers
+from src.utils import helpers, web3_provider
 from src.utils.config import shared_config
 from src.utils.db_session import get_db_read_replica
 from src.utils.redis_connection import get_redis
@@ -852,8 +852,9 @@ def notifications():
         track_added_to_playlist_notifications = []
         track_ids = []
 
-        min_block = helpers.get_adjusted_block(min_block_number)
-        max_block = helpers.get_adjusted_block(max_block_number)
+        web3 = web3_provider.get_web3()
+        min_block = helpers.get_adjusted_block(web3, min_block_number)
+        max_block = helpers.get_adjusted_block(web3, max_block_number)
 
         for entry in playlist_track_added_results:
             # Get the track_ids from entry["playlist_contents"]

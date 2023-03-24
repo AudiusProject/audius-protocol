@@ -147,17 +147,6 @@ func (vtor *Validator) validateChatMessage(tx *sqlx.Tx, userId int32, rpc schema
 		if err != nil {
 			return err
 		}
-
-		// validate receiver permits messages from sender
-		receiver := chatMembers[0].UserID
-		if receiver == userId {
-			receiver = chatMembers[1].UserID
-		}
-
-		err = validatePermissions(q, userId, receiver)
-		if err != nil {
-			return err
-		}
 	}
 
 	// validate does not exceed new message rate limit

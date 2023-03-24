@@ -3,12 +3,7 @@ import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
 import { DMEntityType } from '../email/notifications/types'
 import { DMEmailNotification } from '../types/notifications'
-import {
-  createTestDB,
-  createUsers,
-  dropTestDB,
-  replaceDBName
-} from '../utils/populateDB'
+import { createUsers, resetTests, setupTest } from '../utils/populateDB'
 
 const initDB = async (processor: Processor) => {
   await Promise.all([
@@ -29,37 +24,15 @@ const initDB = async (processor: Processor) => {
 
 describe('Render email', () => {
   let processor: Processor
-  // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
 
   beforeEach(async () => {
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      createTestDB(process.env.DN_DB_URL, testName),
-      createTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
-    processor = new Processor()
-    await processor.init({
-      identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
-      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
-    })
+    const setup = await setupTest()
+    processor = setup.processor
     await initDB(processor)
   })
 
   afterEach(async () => {
-    jest.clearAllMocks()
-    await processor?.close()
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      dropTestDB(process.env.DN_DB_URL, testName),
-      dropTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
+    await resetTests(processor)
   })
 
   test('Render a single Message email', async () => {

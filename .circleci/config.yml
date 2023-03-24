@@ -13,6 +13,17 @@ parameters:
     type: string
     default: 'main'
 
+  # release-audius-sdk params
+  sdk_release_commit:
+    type: string
+    default: ''
+  sdk_release_version:
+    type: string
+    default: ''
+  sdk_release_preid:
+    type: string
+    default: ''
+
 jobs:
   circleci-setup:
     executor: continuation/default

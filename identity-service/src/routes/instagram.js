@@ -9,12 +9,6 @@ const {
   errorResponseBadRequest,
   errorResponseServerError
 } = require('../apiHelpers')
-const { VerifiedUserReporter } = require('../utils/verifiedUserReporter.js')
-
-const verifiedUserReporter = new VerifiedUserReporter({
-  slackUrl: config.get('verifiedUserReporterSlackUrl'),
-  source: 'instagram'
-})
 
 const generalAdmissionAddress = config.get('generalAdmissionAddress')
 
@@ -157,7 +151,6 @@ module.exports = function (app) {
                 txProps,
                 'instagramVerified'
               )
-              await verifiedUserReporter.report({ userId, handle })
             } catch (e) {
               return errorResponseBadRequest(e)
             }
