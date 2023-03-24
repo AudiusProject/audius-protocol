@@ -1,6 +1,7 @@
 import {
   FeatureFlags,
   ID,
+  playerSelectors,
   playbackPositionSelectors,
   CommonState
 } from '@audius/common'
@@ -12,6 +13,7 @@ import { useFlag } from 'hooks/useRemoteConfig'
 
 import styles from './GiantTrackTile.module.css'
 
+const { getTrackId } = playerSelectors
 const { getTrackPosition } = playbackPositionSelectors
 
 type PlayPauseButtonProps = {
@@ -45,16 +47,21 @@ export const PlayPauseButton = ({
   const trackPlaybackInfo = useSelector((state: CommonState) =>
     getTrackPosition(state, { trackId })
   )
+  const isCurrentTrack = useSelector(
+    (state: CommonState) => trackId === getTrackId(state)
+  )
 
   const playText =
     isNewPodcastControlsEnabled && trackPlaybackInfo
-      ? trackPlaybackInfo.status === 'IN_PROGRESS'
+      ? trackPlaybackInfo.status === 'IN_PROGRESS' || isCurrentTrack
         ? messages.resume
         : messages.replay
       : messages.play
 
   const playIcon =
-    isNewPodcastControlsEnabled && trackPlaybackInfo?.status === 'COMPLETED' ? (
+    isNewPodcastControlsEnabled &&
+    trackPlaybackInfo?.status === 'COMPLETED' &&
+    !isCurrentTrack ? (
       <IconRepeat />
     ) : (
       <IconPlay />
