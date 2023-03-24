@@ -44,7 +44,8 @@ export enum FeatureFlags {
   LAZY_USERBANK_CREATION_ENABLED = 'lazy_userbank_creation_enabled',
   DISCOVERY_NOTIFICATIONS = 'discovery_notifications',
   REPOST_OF_REPOST_NOTIFICATIONS = 'repost_of_repost_notifications',
-  SAVE_OF_REPOST_NOTIFICATIONS = 'save_of_repost_notifications'
+  SAVE_OF_REPOST_NOTIFICATIONS = 'save_of_repost_notifications',
+  STORAGE_V2 = 'storage_v2'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -104,5 +105,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.LAZY_USERBANK_CREATION_ENABLED]: false,
   [FeatureFlags.DISCOVERY_NOTIFICATIONS]: false,
   [FeatureFlags.REPOST_OF_REPOST_NOTIFICATIONS]: false,
-  [FeatureFlags.SAVE_OF_REPOST_NOTIFICATIONS]: false
+  [FeatureFlags.SAVE_OF_REPOST_NOTIFICATIONS]: false,
+  [FeatureFlags.STORAGE_V2]: false
 }

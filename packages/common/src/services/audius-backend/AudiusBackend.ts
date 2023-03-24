@@ -1233,12 +1233,17 @@ export const audiusBackend = ({
     metadata: TrackMetadata,
     onProgress: (loaded: number, total: number) => void
   ) {
-    return await audiusLibs.Track.uploadTrack(
-      trackFile,
-      coverArtFile,
-      metadata,
-      onProgress
-    )
+    const storageV2Enabled = await getFeatureEnabled(FeatureFlags.STORAGE_V2)
+    if (storageV2Enabled) {
+      // do storage v2 upload
+    } else {
+      return await audiusLibs.Track.uploadTrack(
+        trackFile,
+        coverArtFile,
+        metadata,
+        onProgress
+      )
+    }
   }
 
   // Used to upload multiple tracks as part of an album/playlist
