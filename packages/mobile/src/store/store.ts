@@ -31,8 +31,6 @@ import type { DrawersState } from './drawers/slice'
 import drawers from './drawers/slice'
 import type { KeyboardState } from './keyboard/slice'
 import keyboard from './keyboard/slice'
-import mobileUi from './mobileUi/slice'
-import type { MobileUiState } from './mobileUi/slice'
 import type { OAuthState } from './oauth/reducer'
 import oauth from './oauth/reducer'
 import type { OfflineDownloadsState } from './offline-downloads/slice'
@@ -64,7 +62,6 @@ export type AppState = CommonState & {
   offlineDownloads: OfflineDownloadsState
   remoteConfig: RemoteConfigState
   search: SearchState
-  mobileUi: MobileUiState
   walletConnect: WalletConnectState
   shareToStoryProgress: ShareToStoryProgressState
 }
@@ -127,7 +124,6 @@ const rootReducer = combineReducers({
   offlineDownloads,
   remoteConfig,
   search,
-  mobileUi,
   walletConnect,
   shareToStoryProgress
 })
