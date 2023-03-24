@@ -208,6 +208,7 @@ async function processNotification(optimizelyClient, logger, notification) {
     DISCOVERY_NOTIFICATION_MAPPING,
     notificationMappingVar
   )
+
   logger.info(`joe:::: isDisbled: ${isDisabled}`)
   if (isDisabled === true) {
     logger.info(
