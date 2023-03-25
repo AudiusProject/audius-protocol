@@ -89,10 +89,17 @@ const snippetMap = {
       return `You have reached over ${notification.value} Followers`
     }
   },
+  ['trending_playlist'](notification) {
+    const { entity, rank } = notification
+    return `${entity.title} is the #${rank} trending playlist on Audius right now!`
+  },
   ['trending'](notification) {
-    const rank = notification.rank
-    const suffix = getNumberSuffix(rank)
-    return `Your Track ${notification.entity.title} is ${notification.rank}${suffix} on Trending Right Now!`
+    const { entity, rank } = notification
+    return `${entity.title} is #${rank} on Trending right now!`
+  },
+  ['trending_underground'](notification) {
+    const { entity, rank } = notification
+    return `${entity.title} is #${rank} on Underground Trending right now!`
   },
   ['tastemaker'](notification) {
     const entityName = notification.entity.name

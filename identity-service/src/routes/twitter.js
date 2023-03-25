@@ -10,12 +10,6 @@ const {
   successResponse,
   errorResponseBadRequest
 } = require('../apiHelpers')
-const { VerifiedUserReporter } = require('../utils/verifiedUserReporter.js')
-
-const verifiedUserReporter = new VerifiedUserReporter({
-  slackUrl: config.get('verifiedUserReporterSlackUrl'),
-  source: 'twitter'
-})
 
 /**
  * This file contains the twitter endpoints for oauth
@@ -196,7 +190,6 @@ module.exports = function (app) {
                 txProps,
                 'twitterVerified'
               )
-              await verifiedUserReporter.report({ userId, handle })
             } catch (e) {
               return errorResponseBadRequest(e)
             }

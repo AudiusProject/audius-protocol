@@ -2,6 +2,10 @@
 
 ### Environment Variables
 
+if [[ "$dbUrl" == "" ]]; then
+    export dbUrl="postgres://postgres:postgres@db:5432/creator_node_${replica}"
+fi
+
 # Unique to each node
 
 export delegateOwnerWallet=$(printenv "CN${replica}_SP_OWNER_ADDRESS")

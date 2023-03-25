@@ -9,12 +9,14 @@ import {
   insertMobileDevices,
   insertMobileSettings,
   insertNotifications,
-  createTracks,
   setupTest,
-  resetTests
+  resetTests,
+  createPlaylists
 } from '../../utils/populateDB'
 
-describe('Trending Track Notification', () => {
+jest.useFakeTimers().setSystemTime(new Date('2020-05-13T12:33:37.000Z'))
+
+describe('Trending Playlist Notification', () => {
   let processor: Processor
 
   const sendPushNotificationSpy = jest
@@ -22,34 +24,32 @@ describe('Trending Track Notification', () => {
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
-    const setup = await setupTest()
+    const setup = await setupTest({ mockTime: false })
     processor = setup.processor
+
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createPlaylists(processor.discoveryDB, [
+      { playlist_id: 1, playlist_owner_id: 1 }
+    ])
   })
 
   afterEach(async () => {
     await resetTests(processor)
   })
 
-  test('Process push notification for trending track', async () => {
-    await createUsers(processor.discoveryDB, [
-      { user_id: 1 },
-      { user_id: 2 },
-      { user_id: 3 }
+  test('Process push notification for trending playlist track', async () => {
+    await insertNotifications(processor.discoveryDB, [
+      {
+        id: 1,
+        specifier: '1',
+        group_id:
+          'trending_playlist:time_range:week:genre:all:rank:1:playlist_id:1:timestamp:1677261600',
+        type: 'trending_playlist',
+        timestamp: new Date(),
+        data: { rank: 1, genre: 'all', playlist_id: 1, time_range: 'week' },
+        user_ids: [1]
+      }
     ])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
-
-    // User 1 follows user 2
-    const notificationRow = {
-      id: 1,
-      specifier: '10',
-      group_id:
-        'trending:time_range:week:genre:all:rank:3:track_id:10:timestamp:1677261600',
-      type: 'trending',
-      timestamp: new Date(),
-      data: { rank: 3, genre: 'all', track_id: 10, time_range: 'week' },
-      user_ids: [1]
-    }
-    await insertNotifications(processor.discoveryDB, [notificationRow])
 
     await insertMobileSettings(processor.identityDB, [
       { userId: 1 },
@@ -59,15 +59,14 @@ describe('Trending Track Notification', () => {
       { userId: 1 },
       { userId: 2 }
     ])
-    await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
-    const dethronedNotifications = pending.appNotifications.filter(
-      (n) => n.type === 'trending'
+    const playlistNotifications = pending.appNotifications.filter(
+      (n) => n.type === 'trending_playlist'
     )
-    expect(dethronedNotifications).toHaveLength(1)
 
-    // Assert single pending
-    await processor.appNotificationsProcessor.process(dethronedNotifications)
+    expect(playlistNotifications).toHaveLength(1)
+
+    await processor.appNotificationsProcessor.process(playlistNotifications)
 
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
@@ -77,30 +76,21 @@ describe('Trending Track Notification', () => {
       },
       {
         title: "📈 You're Trending",
-        body: 'track_title_10 is #3 on Trending right now!',
+        body: `playlist_name_1 is the #1 trending playlist on Audius right now!`,
         data: {}
       }
     )
   })
 
   test('Render a single email', async () => {
-    await createUsers(processor.discoveryDB, [
-      { user_id: 1 },
-      { user_id: 2 },
-      { user_id: 3 }
-    ])
-    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
-
-    await new Promise((resolve) => setTimeout(resolve, 10))
-
     const notifications: AppEmailNotification[] = [
       {
         timestamp: new Date(),
         specifier: '10',
         group_id:
-          'trending:time_range:week:genre:all:rank:3:track_id:10:timestamp:1677261600',
-        type: 'trending',
-        data: { rank: 3, genre: 'all', track_id: 10, time_range: 'week' },
+          'trending_playlist:time_range:week:genre:all:rank:1:track_id:1:timestamp:1677261600',
+        type: 'trending_playlist',
+        data: { rank: 3, genre: 'all', playlist_id: 1, time_range: 'week' },
         user_ids: [1],
         receiver_user_id: 1
       }

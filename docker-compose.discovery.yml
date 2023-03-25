@@ -9,8 +9,8 @@ services:
         git_sha: "${GIT_COMMIT}"
     environment:
       AUDIUS_REDIS_URL: "redis://identity-service-redis:6379/00"
-      DN_DB_URL: "postgresql://postgres:postgres@audius-protocol-discovery-provider-1:5432/audius_discovery"
-      IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/postgres"
+      DN_DB_URL: "postgresql://postgres:postgres@db:5432/audius_discovery"
+      IDENTITY_DB_URL: "postgresql://postgres:postgres@db:5432/identity_service"
     volumes:
       - ./discovery-provider/plugins/notifications:/notifications
       - /notifications/node_modules
@@ -50,7 +50,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --fail http://localhost:9200/_cluster/health || exit 1",
+          "curl --fail http://localhost:9200/_cluster/health || exit 1"
         ]
       interval: 10s
       timeout: 5s
@@ -98,9 +98,9 @@ services:
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - solana-programs-idl:/audius-discovery-provider/idl
       - ./dev-tools:/tmp/dev-tools
-    expose:
-      - "5432"
     depends_on:
+      db:
+        condition: service_healthy
       poa-ganache:
         condition: service_healthy
       eth-ganache:

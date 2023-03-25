@@ -1,15 +1,15 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { TrendingTrackNotification } from '../../types/notifications'
+import { TrendingUndergroundNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
 
-type TrendingTrackNotificationRow = Omit<NotificationRow, 'data'> & {
-  data: TrendingTrackNotification
+type TrendingUndergroundNotificationRow = Omit<NotificationRow, 'data'> & {
+  data: TrendingUndergroundNotification
 }
-export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow> {
+export class TrendingUnderground extends BaseNotification<TrendingUndergroundNotificationRow> {
   receiverUserId: number
   trackId: number
   rank: number
@@ -19,7 +19,7 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
   constructor(
     dnDB: Knex,
     identityDB: Knex,
-    notification: TrendingTrackNotificationRow
+    notification: TrendingUndergroundNotificationRow
   ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
@@ -88,7 +88,7 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
               title: "📈 You're Trending",
               body: `${tracks[this.trackId]?.title} is #${
                 this.rank
-              } on Trending right now!`,
+              } on Underground Trending right now!`,
               data: {}
             }
           )
@@ -103,8 +103,6 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
   }
 
   getResourcesForEmail(): ResourceIds {
-    const tracks = new Set<number>()
-
     return {
       users: new Set([this.receiverUserId]),
       tracks: new Set([this.trackId])
@@ -114,6 +112,7 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
   formatEmailProps(resources: Resources) {
     const user = resources.users[this.receiverUserId]
     const track = resources.tracks[this.trackId]
+
     return {
       type: this.notification.type,
       rank: this.rank,

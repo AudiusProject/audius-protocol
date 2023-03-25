@@ -4,7 +4,10 @@ from integration_tests.utils import populate_mock_db
 from sqlalchemy import asc
 from src.models.notifications.notification import Notification
 from src.queries.get_trending_tracks import make_trending_cache_key
-from src.tasks.index_trending import index_trending_notifications
+from src.tasks.index_trending import (
+    get_top_trending_to_notify,
+    index_trending_notifications,
+)
 from src.trending_strategies.trending_strategy_factory import TrendingStrategyFactory
 from src.trending_strategies.trending_type_and_version import TrendingType
 from src.utils.config import shared_config
@@ -51,7 +54,8 @@ def test_index_trending_notification(app):
         populate_mock_db(db, entities)
         base_time_int = int(round(BASE_TIME.timestamp()))
 
-        index_trending_notifications(db, base_time_int)
+        top_trending = get_top_trending_to_notify(db)
+        index_trending_notifications(db, base_time_int, top_trending)
         with db.scoped_session() as session:
             notifications = (
                 session.query(Notification).order_by(asc(Notification.specifier)).all()
@@ -108,7 +112,8 @@ def test_index_trending_notification(app):
         updated_time = BASE_TIME + timedelta(hours=1)
         updated_time_int = int(round(updated_time.timestamp()))
 
-        index_trending_notifications(db, updated_time_int)
+        top_trending = get_top_trending_to_notify(db)
+        index_trending_notifications(db, updated_time_int, top_trending)
         with db.scoped_session() as session:
             all_notifications = session.query(Notification).all()
             assert len(all_notifications) == 6
@@ -131,7 +136,8 @@ def test_index_trending_notification(app):
         updated_time = BASE_TIME + timedelta(hours=24)
         updated_time_int = int(round(updated_time.timestamp()))
 
-        index_trending_notifications(db, updated_time_int)
+        top_trending = get_top_trending_to_notify(db)
+        index_trending_notifications(db, updated_time_int, top_trending)
         with db.scoped_session() as session:
             all_notifications = session.query(Notification).all()
             assert len(all_notifications) == 9

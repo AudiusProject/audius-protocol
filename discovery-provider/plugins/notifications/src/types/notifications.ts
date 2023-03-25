@@ -197,6 +197,20 @@ export type TrendingTrackNotification = {
   time_range: string
 }
 
+export type TrendingUndergroundNotification = {
+  track_id: number
+  rank: number
+  genre: string
+  time_range: string
+}
+
+export type TrendingPlaylistNotification = {
+  playlist_id: number
+  rank: number
+  genre: string
+  time_range: string
+}
+
 export type AnnouncementNotification = {
   title: string
   short_description: string
@@ -231,3 +245,5 @@ export type NotificationData =
   | AnnouncementNotification
   | TastemakerNotification
   | TrendingTrackNotification
+  | TrendingUndergroundNotification
+  | TrendingPlaylistNotification

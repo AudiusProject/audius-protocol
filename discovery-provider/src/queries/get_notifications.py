@@ -132,6 +132,7 @@ class NotificationType(str, Enum):
     CHALLENGE_REWARD = "challenge_reward"
     REPOST_OF_REPOST = "repost_of_repost"
     SAVE_OF_REPOST = "save_of_repost"
+    TASTEMAKER = "tastemaker"
     REACTION = "reaction"
     SUPPORTER_DETRONED = "supporter_dethroned"
     SUPPORTER_RANK_UP = "supporter_rank_up"
@@ -234,6 +235,14 @@ class SaveOfRepostNotification(TypedDict):
     type: str
     user_id: int
     save_of_repost_item_id: int
+
+
+class TastemakerNotification(TypedDict):
+    tastemaker_item_id: int
+    tastemaker_item_owner_id: int
+    action: str
+    tastemaker_item_type: str
+    tastemaker_user_id: int
 
 
 class SaveNotification(TypedDict):
@@ -373,6 +382,7 @@ NotificationData = Union[
     CosignRemixNotification,
     CreateTrackNotification,
     CreatePlaylistNotification,
+    TastemakerNotification,
     TipReceiveNotification,
     TipSendNotification,
     ChallengeRewardNotification,

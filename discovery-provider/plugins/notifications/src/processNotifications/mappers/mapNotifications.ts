@@ -26,7 +26,9 @@ import {
   CreateTrackNotification,
   CreatePlaylistNotification,
   AnnouncementNotification,
-  TrendingTrackNotification
+  TrendingTrackNotification,
+  TrendingUndergroundNotification,
+  TrendingPlaylistNotification
 } from '../../types/notifications'
 import { Follow } from './follow'
 import { Repost } from './repost'
@@ -49,6 +51,8 @@ import { Announcement } from './announcement'
 import { TrendingTrack } from './trendingTrack'
 import { Tastemaker } from './tastemaker'
 import { SaveOfRepost } from './saveOfRepost'
+import { TrendingUnderground } from './trendingUnderground'
+import { TrendingPlaylist } from './trendingPlaylist'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
@@ -161,6 +165,16 @@ const mapNotification = (
       data: TrendingTrackNotification
     }
     return new TrendingTrack(dnDb, identityDb, trendingNotification)
+  } else if (notification.type == 'trending_underground') {
+    const trendingNotification = notification as NotificationRow & {
+      data: TrendingUndergroundNotification
+    }
+    return new TrendingUnderground(dnDb, identityDb, trendingNotification)
+  } else if (notification.type == 'trending_playlist') {
+    const trendingNotification = notification as NotificationRow & {
+      data: TrendingPlaylistNotification
+    }
+    return new TrendingPlaylist(dnDb, identityDb, trendingNotification)
   } else if (notification.type == 'tastemaker') {
     const tastemakerNotification = notification as NotificationRow & {
       data: TastemakerNotification

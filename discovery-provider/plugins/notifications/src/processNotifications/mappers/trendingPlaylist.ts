@@ -1,17 +1,18 @@
 import { Knex } from 'knex'
-import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { TrendingTrackNotification } from '../../types/notifications'
+import { NotificationRow, PlaylistRow, UserRow } from '../../types/dn'
+import { TrendingPlaylistNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
 
-type TrendingTrackNotificationRow = Omit<NotificationRow, 'data'> & {
-  data: TrendingTrackNotification
+type TrendingPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
+  data: TrendingPlaylistNotification
 }
-export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow> {
+
+export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificationRow> {
   receiverUserId: number
-  trackId: number
+  playlistId: number
   rank: number
   genre: string
   timeRange: string
@@ -19,12 +20,12 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
   constructor(
     dnDB: Knex,
     identityDB: Knex,
-    notification: TrendingTrackNotificationRow
+    notification: TrendingPlaylistNotificationRow
   ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
     this.receiverUserId = userIds[0]
-    this.trackId = this.notification.data.track_id
+    this.playlistId = this.notification.data.playlist_id
     this.rank = this.notification.data.rank
     this.genre = this.notification.data.genre
     this.timeRange = this.notification.data.time_range
@@ -52,15 +53,18 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
       return
     }
 
-    const trackRes: Array<{ track_id: number; title: string }> = await this.dnDB
-      .select('track_id', 'title')
-      .from<TrackRow>('tracks')
-      .where('is_current', true)
-      .whereIn('track_id', [this.trackId])
-    const tracks = trackRes.reduce((acc, track) => {
-      acc[track.track_id] = { title: track.title }
+    const playlistRes: Array<{ playlist_id: number; playlist_name: string }> =
+      await this.dnDB
+        .select('playlist_id', 'playlist_name')
+        .from<PlaylistRow>('playlists')
+        .where('is_current', true)
+        .whereIn('playlist_id', [this.playlistId])
+
+    const playlists = playlistRes.reduce((acc, playlist) => {
+      const { playlist_id, playlist_name } = playlist
+      acc[playlist_id] = { playlist_name }
       return acc
-    }, {} as Record<number, { title: string }>)
+    }, {} as Record<number, { playlist_name: string }>)
 
     // Get the user's notification setting from identity service
     const userNotifications = await super.getShouldSendNotification(
@@ -86,9 +90,9 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
             },
             {
               title: "📈 You're Trending",
-              body: `${tracks[this.trackId]?.title} is #${
+              body: `${playlists[this.playlistId]?.playlist_name} is the #${
                 this.rank
-              } on Trending right now!`,
+              } trending playlist on Audius right now!`,
               data: {}
             }
           )
@@ -103,26 +107,24 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
   }
 
   getResourcesForEmail(): ResourceIds {
-    const tracks = new Set<number>()
-
     return {
       users: new Set([this.receiverUserId]),
-      tracks: new Set([this.trackId])
+      playlists: new Set([this.playlistId])
     }
   }
 
   formatEmailProps(resources: Resources) {
     const user = resources.users[this.receiverUserId]
-    const track = resources.tracks[this.trackId]
+    const playlist = resources.playlists[this.playlistId]
     return {
       type: this.notification.type,
       rank: this.rank,
       users: [{ name: user.name, image: user.imageUrl }],
       entity: {
-        type: EntityType.Track,
-        title: track.title,
-        image: track.imageUrl,
-        slug: track.slug
+        type: EntityType.Playlist,
+        title: playlist.playlist_name,
+        image: playlist.imageUrl,
+        slug: playlist.slug
       }
     }
   }

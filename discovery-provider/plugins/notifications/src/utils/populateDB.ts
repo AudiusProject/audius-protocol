@@ -31,7 +31,12 @@ import { Processor } from '../main'
 import { getRedisConnection } from './redisConnection'
 import { config } from '../config'
 
-export const setupTest = async () => {
+type SetupTestConfig = {
+  mockTime?: boolean
+}
+
+export const setupTest = async (setupConfig?: SetupTestConfig) => {
+  const { mockTime = true } = setupConfig ?? {}
   const testName = expect
     .getState()
     .currentTestName.replace(/\s/g, '_')
@@ -55,11 +60,12 @@ export const setupTest = async () => {
     .mockImplementation((name: string, field: string) => true)
 
   // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
+  if (mockTime) {
+    Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
+  }
   const redis = await getRedisConnection()
   redis.del(config.lastIndexedMessageRedisKey)
   redis.del(config.lastIndexedReactionRedisKey)
-
   return { processor }
 }
 
