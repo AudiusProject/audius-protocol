@@ -103,7 +103,7 @@ def create_celery(test_config=None):
     global web3endpoint, web3, abi_values, eth_abi_values, eth_web3
     global solana_client_manager
 
-    web3endpoint = web3_provider.get_web3(shared_config)
+    web3endpoint = web3_provider.get_web3()
     web3 = Web3(HTTPProvider(web3endpoint))
     abi_values = helpers.load_abi_values()
     # Initialize eth_web3 with MultiProvider
@@ -419,8 +419,8 @@ def configure_celery(celery, test_config=None):
             },
             "cache_current_nodes": {
                 "task": "cache_current_nodes",
-                "schedule": timedelta(minutes=1)
-            }
+                "schedule": timedelta(minutes=1),
+            },
         },
         task_serializer="json",
         accept_content=["json"],

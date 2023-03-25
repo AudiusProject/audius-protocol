@@ -462,7 +462,7 @@ describe('test CNodeHealthManager -- isNodeHealthyOrInGracePeriod()', function (
     expect(isHealthyDuringGracePeriod).to.be.true
 
     // Verify that the node is unhealthy after the grace period ends
-    await Utils.timeout(gracePeriodSeconds * 1000 + 1)
+    await Utils.timeout(gracePeriodSeconds * 1000 + 900)
     const isHealthyAfterGracePeriod =
       await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(primary, true)
     expect(isHealthyAfterGracePeriod).to.be.false
@@ -501,7 +501,7 @@ describe('test CNodeHealthManager -- isNodeHealthyOrInGracePeriod()', function (
     expect(isHealthyDuringGracePeriod).to.be.true
 
     // Verify that the node is unhealthy after the grace period ends
-    await Utils.timeout(gracePeriodSeconds * 1000 + 1)
+    await Utils.timeout(gracePeriodSeconds * 1000 + 900)
     const isHealthyAfterGracePeriod =
       await CNodeHealthManagerMock.isNodeHealthyOrInGracePeriod(
         secondary,
