@@ -1,7 +1,5 @@
 import type { AudiusLibs } from '@audius/sdk/dist/native-libs'
 
-import { PlaylistUpdate } from 'store/playlist-updates'
-
 import {
   ID,
   TimeRange,
@@ -1731,10 +1729,25 @@ export class AudiusAPIClient {
   }
 
   async getPlaylistUpdates(userId: number) {
-    const response = await this._getResponse<APIResponse<PlaylistUpdate[]>>(
-      FULL_ENDPOINT_MAP.playlistUpdates(encodeHashId(userId))
-    )
-    return response?.data
+    type ApiPlaylistUpdate = {
+      playlist_id: string
+      updated_at: string
+      last_seen_at: string
+    }
+    type PlaylistUpdatesResponse = { playlist_updates: ApiPlaylistUpdate[] }
+    const response = await this._getResponse<
+      APIResponse<PlaylistUpdatesResponse>
+    >(FULL_ENDPOINT_MAP.playlistUpdates(encodeHashId(userId)))
+    const playlistUpdates = response?.data?.playlist_updates
+
+    if (!playlistUpdates) {
+      return null
+    }
+
+    return playlistUpdates.map((playlistUpdate) => ({
+      ...playlistUpdate,
+      playlist_id: decodeHashId(playlistUpdate.playlist_id) as number
+    }))
   }
 
   async init() {

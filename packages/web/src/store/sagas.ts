@@ -12,8 +12,7 @@ import {
   vipDiscordModalSagas,
   reachabilitySagas as commonReachabilitySagas,
   searchUsersModalSagas,
-  solanaSagas,
-  playlistUpdatesSagas
+  solanaSagas
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
@@ -46,6 +45,7 @@ import trendingUndergroundSagas from 'common/store/pages/trending-underground/sa
 import trendingPageSagas from 'common/store/pages/trending/sagas'
 import playerSagas from 'common/store/player/sagas'
 import playlistLibrarySagas from 'common/store/playlist-library/sagas'
+import playlistUpdatesSagas from 'common/store/playlist-updates/sagas'
 import profileSagas from 'common/store/profile/sagas'
 import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'

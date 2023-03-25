@@ -11,8 +11,6 @@ import {
   accountSelectors,
   accountActions,
   lineupSelectors,
-  notificationsSelectors,
-  notificationsActionsLegacy,
   savedPageTracksLineupActions as tracksActions,
   savedPageActions as saveActions,
   savedPageSelectors,
@@ -24,7 +22,9 @@ import {
   playerSelectors,
   queueSelectors,
   Kind,
-  LineupTrack
+  LineupTrack,
+  playlistUpdatesActions,
+  playlistUpdatesSelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { debounce, isEqual } from 'lodash'
@@ -42,10 +42,10 @@ import { SavedPageProps as MobileSavedPageProps } from './components/mobile/Save
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { getSavedTracksLineup, hasReachedEnd } = savedPageSelectors
-const { updatePlaylistLastViewedAt } = notificationsActionsLegacy
-const { getPlaylistUpdates } = notificationsSelectors
+const { updatedPlaylistViewed } = playlistUpdatesActions
 const { makeGetTableMetadatas } = lineupSelectors
 
+const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { getAccountWithNameSortedPlaylistsAndAlbums } = accountSelectors
 
 const messages = {
@@ -543,7 +543,7 @@ function makeMapStateToProps() {
       currentQueueItem: getCurrentQueueItem(state),
       playing: getPlaying(state),
       buffering: getBuffering(state),
-      playlistUpdates: getPlaylistUpdates(state),
+      playlistUpdates: selectAllPlaylistUpdateIds(state),
       hasReachedEnd: hasReachedEnd(state)
     }
   }
@@ -584,7 +584,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     fetchSavedAlbums: () => dispatch(accountActions.fetchSavedAlbums()),
     fetchSavedPlaylists: () => dispatch(accountActions.fetchSavedPlaylists()),
     updatePlaylistLastViewedAt: (playlistId: number) =>
-      dispatch(updatePlaylistLastViewedAt(playlistId)),
+      dispatch(updatedPlaylistViewed({ playlistId })),
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     play: (uid?: UID) => dispatch(tracksActions.play(uid)),
     pause: () => dispatch(tracksActions.pause()),

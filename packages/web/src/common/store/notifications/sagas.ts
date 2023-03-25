@@ -3,9 +3,7 @@ import {
   remoteConfigIntDefaults,
   RemoteConfigInstance,
   getContext,
-  notificationsActions,
-  notificationsActionsLegacy,
-  UpdatePlaylistLastViewedAt
+  notificationsActions
 } from '@audius/common'
 import { call, takeEvery } from 'typed-redux-saga'
 
@@ -32,27 +30,10 @@ export const getPollingIntervalMs = (
   )
 }
 
-export function* updatePlaylistLastViewedAt(
-  action: UpdatePlaylistLastViewedAt
-) {
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  yield* call(
-    audiusBackendInstance.updatePlaylistLastViewedAt,
-    action.playlistId
-  )
-}
-
 function* watchMarkAllNotificationsViewed() {
   yield* takeEvery(
     notificationsActions.markAllAsViewed.type,
     markAllNotificationsViewed
-  )
-}
-
-function* watchUpdatePlaylistLastViewedAt() {
-  yield* takeEvery(
-    notificationsActionsLegacy.UPDATE_PLAYLIST_VIEW,
-    updatePlaylistLastViewedAt
   )
 }
 
@@ -67,7 +48,6 @@ export default function sagas() {
     watchFetchNotifications,
     watchRefreshNotifications,
     watchMarkAllNotificationsViewed,
-    watchNotificationError,
-    watchUpdatePlaylistLastViewedAt
+    watchNotificationError
   ]
 }

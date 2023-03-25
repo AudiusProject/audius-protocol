@@ -13,13 +13,6 @@ import {
   StringWei
 } from '../../models'
 
-import {
-  setNotificationModal,
-  toggleNotificationPanel,
-  setPlaylistUpdates,
-  updatePlaylistLastViewedAt
-} from './actions'
-
 export enum NotificationType {
   Announcement = 'Announcement',
   UserSubscription = 'UserSubscription',
@@ -861,31 +854,11 @@ export type IdentityNotification = Omit<Notification, 'timestamp'> & {
   timestamp: string
 }
 
-export interface NotificationState {
-  modalNotificationId: string | undefined
-  panelIsOpen: boolean
-  modalIsOpen: boolean
-  playlistUpdates: number[]
-}
-
 export type NotificationsState = EntityState<Notification> & {
   status: Status
   hasMore: boolean
   totalUnviewed: number
 }
-
-export type SetNotificationModal = ReturnType<typeof setNotificationModal>
-export type ToggleNotificationPanel = ReturnType<typeof toggleNotificationPanel>
-export type SetPlaylistUpdates = ReturnType<typeof setPlaylistUpdates>
-export type UpdatePlaylistLastViewedAt = ReturnType<
-  typeof updatePlaylistLastViewedAt
->
-
-export type NotificationAction =
-  | SetNotificationModal
-  | ToggleNotificationPanel
-  | SetPlaylistUpdates
-  | UpdatePlaylistLastViewedAt
 
 export type AddNotificationsAction = PayloadAction<{
   notifications: Notification[]

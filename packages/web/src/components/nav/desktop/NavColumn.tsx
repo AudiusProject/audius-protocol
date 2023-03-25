@@ -17,7 +17,6 @@ import {
   averageColorSelectors,
   cacheCollectionsActions,
   notificationsSelectors,
-  notificationsActionsLegacy,
   collectionsSocialActions,
   tracksSocialActions,
   createPlaylistModalUISelectors,
@@ -29,7 +28,8 @@ import {
   playlistLibraryHelpers,
   uploadActions,
   CreateAccountOpen,
-  notificationsActions
+  notificationsActions,
+  playlistUpdatesActions
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -62,6 +62,8 @@ import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
+import { getNotificationPanelIsOpen } from 'store/application/ui/notifications/notificationsUISelectors'
+import { openNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { AppState } from 'store/types'
 import {
@@ -83,6 +85,7 @@ import styles from './NavColumn.module.css'
 import NavHeader from './NavHeader'
 import PlaylistLibrary from './PlaylistLibrary'
 
+const { updatedPlaylistViewed } = playlistUpdatesActions
 const { resetState: resetUploadState } = uploadActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { addFolderToLibrary, constructPlaylistFolder } = playlistLibraryHelpers
@@ -91,11 +94,8 @@ const { makeGetCurrent: makeGetCurrentPlayer } = playerSelectors
 const { getHideFolderTab, getIsOpen } = createPlaylistModalUISelectors
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
-const { toggleNotificationPanel, updatePlaylistLastViewedAt } =
-  notificationsActionsLegacy
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
-const { getNotificationPanelIsOpen, getNotificationUnviewedCount } =
-  notificationsSelectors
+const { getNotificationUnviewedCount } = notificationsSelectors
 const { markAllAsViewed } = notificationsActions
 const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const { getAccountStatus, getAccountUser, getPlaylistLibrary } =
@@ -124,7 +124,7 @@ const NavColumn = ({
   isElectron,
   notificationCount,
   notificationPanelIsOpen,
-  toggleNotificationPanel,
+  openNotificationPanel,
   showCreatePlaylistModal,
   hideCreatePlaylistModalFolderTab,
   updatePlaylistLibrary,
@@ -183,7 +183,7 @@ const NavColumn = ({
   }, [account, goToRoute])
 
   const onClickToggleNotificationPanel = useCallback(() => {
-    toggleNotificationPanel()
+    openNotificationPanel()
     if (!notificationPanelIsOpen) {
       record(make(Name.NOTIFICATIONS_OPEN, { source: 'button' }))
     }
@@ -192,7 +192,7 @@ const NavColumn = ({
     }
   }, [
     notificationPanelIsOpen,
-    toggleNotificationPanel,
+    openNotificationPanel,
     record,
     notificationCount,
     markAllNotificationsAsViewed
@@ -582,11 +582,11 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(addTrackToPlaylist(trackId, playlistId)),
   showActionRequiresAccount: () =>
     dispatch(signOnActions.showRequiresAccountModal()),
-  toggleNotificationPanel: () => dispatch(toggleNotificationPanel()),
+  openNotificationPanel: () => dispatch(openNotificationPanel()),
   openCreatePlaylistModal: () => dispatch(createPlaylistModalActions.open()),
   closeCreatePlaylistModal: () => dispatch(createPlaylistModalActions.close()),
   updatePlaylistLastViewedAt: (playlistId: number) =>
-    dispatch(updatePlaylistLastViewedAt(playlistId)),
+    dispatch(updatedPlaylistViewed({ playlistId })),
   updatePlaylistLibrary: (newLibrary: PlaylistLibraryType) =>
     dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary })),
   goToUpload: () => dispatch(pushRoute(UPLOAD_PAGE)),

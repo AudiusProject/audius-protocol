@@ -24,6 +24,7 @@ import cookieBanner from 'store/application/ui/cookieBanner/reducer'
 import editFolderModal from 'store/application/ui/editFolderModal/slice'
 import editPlaylistModal from 'store/application/ui/editPlaylistModal/slice'
 import editTrackModal from 'store/application/ui/editTrackModal/reducer'
+import notifications from 'store/application/ui/notifications/notificationsUISlice'
 import scrollLock from 'store/application/ui/scrollLock/reducer'
 import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickConfirmation/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
@@ -77,7 +78,8 @@ const createRootReducer = (routeHistory: History) =>
         scrollLock,
         setAsArtistPickConfirmation,
         userListModal,
-        visualizer
+        visualizer,
+        notifications
       }),
       pages: combineReducers({
         deleted,
