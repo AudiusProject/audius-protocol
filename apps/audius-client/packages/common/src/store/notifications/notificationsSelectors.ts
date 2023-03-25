@@ -21,8 +21,7 @@ import {
   EntityType,
   AddTrackToPlaylistNotification,
   CollectionEntity,
-  TrackEntity,
-  AnnouncementNotification
+  TrackEntity
 } from './types'
 
 const getBaseState = (state: CommonState) => state.notifications
@@ -37,12 +36,7 @@ export const {
   (state) => state.notifications
 )
 
-export const getNotificationPanelIsOpen = (state: CommonState) =>
-  state.notificationsLegacy.panelIsOpen
-export const getNotificationModalIsOpen = (state: CommonState) =>
-  state.notificationsLegacy.modalIsOpen
 export const getAllNotifications = selectAllNotifications
-export const getModalNotificationId = (_state: CommonState) => 'test'
 export const getNotificationUnviewedCount = (state: CommonState) =>
   getBaseState(state).totalUnviewed
 export const getNotificationStatus = (state: CommonState) =>
@@ -59,17 +53,6 @@ export const getLastNotification = (state: CommonState) => {
 }
 
 export const getNotificationById = selectNotificationById
-
-export const getModalNotification = (state: CommonState) =>
-  state.notificationsLegacy.modalNotificationId
-    ? (selectNotificationById(
-        state,
-        state.notificationsLegacy.modalNotificationId!
-      ) as AnnouncementNotification) || null
-    : null
-
-export const getPlaylistUpdates = (state: CommonState) =>
-  state.notificationsLegacy.playlistUpdates
 
 export const makeGetAllNotifications = () => {
   return createSelector(

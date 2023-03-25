@@ -1,25 +1,18 @@
 import { MouseEventHandler, useCallback } from 'react'
 
-import {
-  Name,
-  User,
-  notificationsSelectors,
-  notificationsActionsLegacy,
-  Notification
-} from '@audius/common'
+import { Name, User, Notification } from '@audius/common'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import UserBadges from 'components/user-badges/UserBadges'
+import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 import { isMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './UserNameLink.module.css'
-const { toggleNotificationPanel } = notificationsActionsLegacy
-const { getNotificationPanelIsOpen } = notificationsSelectors
 
 const messages = {
   deactivated: 'Deactivated'
@@ -41,11 +34,15 @@ export const UserNameLink = (props: UserNameLinkProps) => {
 
   const profileLink = profilePage(handle)
 
+  const handleNavigateAway = useCallback(() => {
+    dispatch(closeNotificationPanel())
+  }, [dispatch])
+
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
       event.stopPropagation()
       event.preventDefault()
-      dispatch(toggleNotificationPanel())
+      handleNavigateAway()
       dispatch(push(profilePage(handle)))
       record(
         make(Name.NOTIFICATIONS_CLICK_TILE, {
@@ -54,15 +51,8 @@ export const UserNameLink = (props: UserNameLinkProps) => {
         })
       )
     },
-    [dispatch, handle, record, type, profileLink]
+    [dispatch, handle, record, type, profileLink, handleNavigateAway]
   )
-
-  const isNotificationPanelOpen = useSelector(getNotificationPanelIsOpen)
-  const handleNavigateAway = useCallback(() => {
-    if (isNotificationPanelOpen) {
-      dispatch(toggleNotificationPanel())
-    }
-  }, [dispatch, isNotificationPanelOpen])
 
   const rootClassName = cn(styles.root, className)
 

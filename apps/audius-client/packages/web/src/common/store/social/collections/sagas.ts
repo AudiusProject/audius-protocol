@@ -13,11 +13,11 @@ import {
   cacheCollectionsSelectors,
   cacheUsersSelectors,
   cacheActions,
-  notificationsActionsLegacy as notificationActions,
   getContext,
   collectionsSocialActions as socialActions,
   playlistLibraryActions,
-  playlistLibraryHelpers
+  playlistLibraryHelpers,
+  playlistUpdatesActions
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
 
@@ -30,6 +30,7 @@ import { albumPage, audioNftPlaylistPage, playlistPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import watchCollectionErrors from './errorSagas'
+const { updatedPlaylistViewed } = playlistUpdatesActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { removeFromPlaylistLibrary } = playlistLibraryHelpers
 const { getUser } = cacheUsersSelectors
@@ -354,9 +355,7 @@ export function* saveCollectionAsync(
   )
 
   if (!collection.is_album) {
-    yield* put(
-      notificationActions.updatePlaylistLastViewedAt(action.collectionId)
-    )
+    yield* put(updatedPlaylistViewed({ playlistId: action.collectionId }))
   }
 
   const subscribedUid = makeUid(

@@ -1,22 +1,16 @@
 import { MouseEventHandler, useCallback, useEffect, useState } from 'react'
 
-import {
-  SquareSizes,
-  User,
-  notificationsSelectors,
-  notificationsActionsLegacy
-} from '@audius/common'
+import { SquareSizes, User } from '@audius/common'
 import cn from 'classnames'
 import { push } from 'connected-react-router'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import { ArtistPopover } from 'components/artist/ArtistPopover'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
+import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
 
 import styles from './ProfilePicture.module.css'
-const { toggleNotificationPanel } = notificationsActionsLegacy
-const { getNotificationPanelIsOpen } = notificationsSelectors
 
 const imageLoadDelay = 250
 
@@ -71,12 +65,9 @@ export const ProfilePicture = (props: ProfilePictureProps) => {
     [stopPropagation, disableClick, dispatch, handle]
   )
 
-  const isNotificationPanelOpen = useSelector(getNotificationPanelIsOpen)
   const handleNavigateAway = useCallback(() => {
-    if (isNotificationPanelOpen) {
-      dispatch(toggleNotificationPanel())
-    }
-  }, [dispatch, isNotificationPanelOpen])
+    dispatch(closeNotificationPanel())
+  }, [dispatch])
 
   const profilePictureElement = (
     <DynamicImage

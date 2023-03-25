@@ -5,9 +5,7 @@ import {
   removeNullable
 } from '@audius/common'
 import { partition } from 'lodash'
-import { call, fork } from 'typed-redux-saga'
-
-import { recordPlaylistUpdatesAnalytics } from './playlistUpdates'
+import { call } from 'typed-redux-saga'
 
 type FetchNotificationsParams = {
   limit: number
@@ -121,13 +119,7 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
     }
   }
 
-  const {
-    notifications,
-    totalUnread: totalUnviewed,
-    playlistUpdates
-  } = notificationsResponse
-
-  yield* fork(recordPlaylistUpdatesAnalytics, playlistUpdates)
+  const { notifications, totalUnread: totalUnviewed } = notificationsResponse
 
   return { notifications, totalUnviewed }
 }

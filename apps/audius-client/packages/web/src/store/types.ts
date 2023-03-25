@@ -1,7 +1,6 @@
 import {
   averageColorReducer,
   ChangePasswordState,
-  NotificationState,
   SmartCollectionState,
   remixesPageReducer as RemixesPageReducer,
   HistoryPageState,
@@ -40,6 +39,7 @@ import { CookieBannerState } from './application/ui/cookieBanner/types'
 import { EditFolderModalState } from './application/ui/editFolderModal/slice'
 import { EditPlaylistModalState } from './application/ui/editPlaylistModal/slice'
 import EditTrackModalState from './application/ui/editTrackModal/types'
+import { NotificationsUIState } from './application/ui/notifications/notificationsUISlice'
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
 import { UserListModalState } from './application/ui/userListModal/types'
@@ -80,6 +80,7 @@ export type AppState = CommonState & {
       stemsUpload: ReturnType<typeof StemsUploadReducer>
       userListModal: UserListModalState
       visualizer: ReturnType<typeof VisualizerReducer>
+      notifications: NotificationsUIState
     }
     pages: {
       reposts: RepostsPageState
@@ -98,7 +99,6 @@ export type AppState = CommonState & {
   dashboard: ArtistDashboardState
   history: HistoryPageState
   collection: CollectionsPageState
-  notification: NotificationState
 
   // Playback
   queue: ReturnType<typeof QueueReducer>

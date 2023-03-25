@@ -10,26 +10,37 @@ import {
   updatedPlaylistViewed
 } from './playlistUpdatesSlice'
 import { UpdatedPlaylistViewedAction } from './types'
+import { selectPlaylistUpdatesTotal } from './playlistUpdatesSelectors'
+import { Name } from 'models/Analytics'
 
 function* watchFetchPlaylistUpdates() {
-  yield* takeEvery(
-    fetchPlaylistUpdates,
-    function* fetchPlaylistUpdatesWorker() {
-      const currentUserId = yield* select(getUserId)
-      if (!currentUserId) return
+  yield* takeEvery(fetchPlaylistUpdates, fetchPlaylistUpdatesWorker)
+}
 
-      const apiClient = yield* getContext('apiClient')
+function* fetchPlaylistUpdatesWorker() {
+  const currentUserId = yield* select(getUserId)
+  if (!currentUserId) return
 
-      const playlistUpdates = yield* call(
-        [apiClient, apiClient.getPlaylistUpdates],
-        currentUserId
-      )
+  const apiClient = yield* getContext('apiClient')
+  const existingUpdatesTotal = yield* select(selectPlaylistUpdatesTotal)
 
-      if (playlistUpdates && playlistUpdates.length > 0) {
-        yield* put(playlistUpdatesReceived({ playlistUpdates }))
-      }
-    }
+  const playlistUpdates = yield* call(
+    [apiClient, apiClient.getPlaylistUpdates],
+    currentUserId
   )
+
+  if (!playlistUpdates) return
+
+  const currentUpdatesTotal = playlistUpdates.length
+
+  if (currentUpdatesTotal !== existingUpdatesTotal) {
+    yield* put(playlistUpdatesReceived({ playlistUpdates }))
+    yield* put({
+      type: 'ANALYTICS/TRACK',
+      eventName: Name.PLAYLIST_LIBRARY_HAS_UPDATE,
+      count: currentUpdatesTotal
+    })
+  }
 }
 
 function* watchUpdatedPlaylistViewedSaga() {

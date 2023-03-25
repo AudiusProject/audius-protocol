@@ -5,12 +5,13 @@ import {
   useCallback
 } from 'react'
 
-import { notificationsActionsLegacy, Notification } from '@audius/common'
+import { Notification } from '@audius/common'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
+import { closeNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
+
 import styles from './NotificationTile.module.css'
-const { toggleNotificationPanel } = notificationsActionsLegacy
 
 type NotificationTileProps = {
   notification: Notification
@@ -31,7 +32,7 @@ export const NotificationTile = (props: NotificationTileProps) => {
     (event) => {
       onClick?.(event)
       if (!disableClosePanel) {
-        dispatch(toggleNotificationPanel())
+        dispatch(closeNotificationPanel())
       }
     },
     [onClick, disableClosePanel, dispatch]

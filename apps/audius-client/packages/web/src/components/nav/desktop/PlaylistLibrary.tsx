@@ -9,12 +9,12 @@ import {
   SmartCollectionVariant,
   accountSelectors,
   cacheCollectionsActions,
-  notificationsSelectors,
   collectionsSocialActions,
   playlistLibraryActions,
   playlistLibraryHelpers,
   PlaylistLibraryKind,
-  PlaylistLibraryID
+  PlaylistLibraryID,
+  playlistUpdatesSelectors
 } from '@audius/common'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
@@ -38,6 +38,7 @@ import navColumnStyles from './NavColumn.module.css'
 import { PlaylistFolderNavItem } from './PlaylistFolderNavItem'
 import styles from './PlaylistLibrary.module.css'
 import { PlaylistNavItem, PlaylistNavLink } from './PlaylistNavItem'
+const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { update } = playlistLibraryActions
 const {
   addPlaylistToFolder,
@@ -48,7 +49,6 @@ const {
   reorderPlaylistLibrary
 } = playlistLibraryHelpers
 const { saveSmartCollection } = collectionsSocialActions
-const { getPlaylistUpdates } = notificationsSelectors
 const { addTrackToPlaylist } = cacheCollectionsActions
 const {
   getAccountCollectibles,
@@ -115,7 +115,7 @@ const PlaylistLibrary = ({
   const account = useSelector(getAccountUser)
   const playlists = useSelector(getAccountNavigationPlaylists)
   const library = useSelector(getPlaylistLibrary)
-  const updates = useSelector(getPlaylistUpdates)
+  const updates = useSelector(selectAllPlaylistUpdateIds)
   const updatesSet = new Set(updates)
   const { dragging, kind: draggingKind } = useSelector(getIsDragging)
   const dispatch = useDispatch()

@@ -21,8 +21,6 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   lineupSelectors,
-  notificationsSelectors,
-  notificationsActionsLegacy,
   collectionPageActions as collectionActions,
   collectionPageLineupActions as tracksActions,
   collectionPageSelectors,
@@ -40,7 +38,9 @@ import {
   tracksSocialActions as socialTracksActions,
   usersSocialActions as socialUsersActions,
   playerSelectors,
-  queueSelectors
+  queueSelectors,
+  playlistUpdatesActions,
+  playlistUpdatesSelectors
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -75,6 +75,7 @@ import { getCollectionPageSEOFields } from 'utils/seo'
 
 import { CollectionPageProps as DesktopCollectionPageProps } from './components/desktop/CollectionPage'
 import { CollectionPageProps as MobileCollectionPageProps } from './components/mobile/CollectionPage'
+const { selectAllPlaylistUpdateIds } = playlistUpdatesSelectors
 const { makeGetCurrent } = queueSelectors
 const { getPlaying, getBuffering } = playerSelectors
 const { setFavorite } = favoritesUserListActions
@@ -90,8 +91,7 @@ const {
   getUserUid,
   getCollectionPermalink
 } = collectionPageSelectors
-const { updatePlaylistLastViewedAt } = notificationsActionsLegacy
-const { getPlaylistUpdates } = notificationsSelectors
+const { updatedPlaylistViewed } = playlistUpdatesActions
 const { makeGetTableMetadatas, makeGetLineupOrder } = lineupSelectors
 const {
   editPlaylist,
@@ -844,7 +844,7 @@ function makeMapStateToProps() {
       playing: getPlaying(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
-      playlistUpdates: getPlaylistUpdates(state)
+      playlistUpdates: selectAllPlaylistUpdateIds(state)
     }
   }
   return mapStateToProps
@@ -1008,7 +1008,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
     onEditCollection: (playlistId: ID) =>
       dispatch(openEditCollectionModal(playlistId)),
     updatePlaylistLastViewedAt: (playlistId: ID) =>
-      dispatch(updatePlaylistLastViewedAt(playlistId))
+      dispatch(updatedPlaylistViewed({ playlistId }))
   }
 }
 

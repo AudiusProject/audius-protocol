@@ -2,13 +2,13 @@ import { useCallback } from 'react'
 
 import {
   Name,
-  notificationsActionsLegacy,
   AnnouncementNotification as AnnouncementNotificationType
 } from '@audius/common'
 import ReactMarkdown from 'react-markdown'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
+import { openNotificationModal } from 'store/application/ui/notifications/notificationsUISlice'
 
 import styles from './AnnouncementNotification.module.css'
 import { NotificationBody } from './components/NotificationBody'
@@ -17,7 +17,6 @@ import { NotificationHeader } from './components/NotificationHeader'
 import { NotificationTile } from './components/NotificationTile'
 import { NotificationTitle } from './components/NotificationTitle'
 import { IconAnnouncement } from './components/icons'
-const { setNotificationModal } = notificationsActionsLegacy
 
 const messages = {
   readMore: 'Read More'
@@ -37,7 +36,7 @@ export const AnnouncementNotification = (
   const record = useRecord()
 
   const handleOpenNotificationModal = useCallback(() => {
-    dispatch(setNotificationModal(true, id))
+    dispatch(openNotificationModal({ modalNotificationId: id }))
   }, [dispatch, id])
 
   const handleClick = useCallback(() => {
