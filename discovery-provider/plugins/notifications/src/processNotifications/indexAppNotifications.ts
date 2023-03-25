@@ -54,6 +54,8 @@ const notificationTypeMapping = {
   track_added_to_playlist: MappingVariable.PushTrackAddedToPlaylist,
   create: MappingVariable.PushCreate,
   trending: MappingVariable.PushTrending,
+  trending_underground: MappingVariable.PushTrendingUnderground,
+  trending_playlist: MappingVariable.PushTrendingPlaylist,
   announcement: MappingVariable.PushAnnouncement,
   reaction: MappingVariable.PushReaction
 }

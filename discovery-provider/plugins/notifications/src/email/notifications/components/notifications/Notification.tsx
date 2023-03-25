@@ -240,15 +240,35 @@ const notificationMap = {
       )
     }
   },
+  ['trending_playlist'](notification) {
+    const highlight = notification.entity.title
+    const rank = notification.rank
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={highlight} />
+        <BodyText
+          text={` is the #${rank} trending playlist on Audius right now! 🍾`}
+        />
+      </span>
+    )
+  },
   ['trending'](notification) {
     const highlight = notification.entity.title
     const rank = notification.rank
-    const rankSuffix = getRankSuffix(rank)
     return (
       <span className={'notificationText'}>
-        <BodyText text={`Your Track `} />
         <HighlightText text={highlight} />
-        <BodyText text={` is ${rank}${rankSuffix} on Trending Right Now! 🍾`} />
+        <BodyText text={` is #${rank} on Trending right now!`} />
+      </span>
+    )
+  },
+  ['trending_underground'](notification) {
+    const highlight = notification.entity.title
+    const rank = notification.rank
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={highlight} />
+        <BodyText text={` is #${rank} on Underground Trending right now!`} />
       </span>
     )
   },
@@ -474,11 +494,32 @@ const getTwitter = (notification) => {
         )}&text=${encodeURIComponent(text)}`
       }
     }
-    case 'trending_track': {
-      const { rank, entity } = notification
+    case 'trending_playlist': {
+      const { entity } = notification
       const url = getTrackLink(entity)
-      const rankSuffix = getRankSuffix(rank)
-      const text = `My track ${entity.title} is trending ${rank}${rankSuffix} on @AudiusProject! #AudiusTrending #Audius`
+      const text = `My playlist ${entity.title} is trending on @AudiusProject! Check it out! #Audius #AudiusTrending`
+      return {
+        message: 'Share this Milestone',
+        href: `http://twitter.com/share?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(text)}`
+      }
+    }
+    case 'trending_track': {
+      const { entity } = notification
+      const url = getTrackLink(entity)
+      const text = `My track ${entity.title} is trending on @AudiusProject! Check it out! #Audius #AudiusTrending`
+      return {
+        message: 'Share this Milestone',
+        href: `http://twitter.com/share?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(text)}`
+      }
+    }
+    case 'trending_underground': {
+      const { entity } = notification
+      const url = getTrackLink(entity)
+      const text = `My track ${entity.title} made it to the top of underground trending on @AudiusProject! Check it out! #Audius #AudiusTrending`
       return {
         message: 'Share this Milestone',
         href: `http://twitter.com/share?url=${encodeURIComponent(
