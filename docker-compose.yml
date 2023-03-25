@@ -46,13 +46,16 @@ services:
     ports:
       - 5432:5432
     environment:
-      POSTGRES_PASSWORD: postgres
+      PGUSER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
     volumes:
-      - ./comms/discovery/db/docker-initdb:/docker-entrypoint-initdb.d
+      - ./comms/discovery/db/docker-initdb/:/docker-entrypoint-initdb.d/
       - ./dev-tools/startup/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - postgresdata:/var/lib/postgresql/data
     <<: *common
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      # identity_service is the last db to be created in init-db.sql
+      test: [ "CMD", "pg_isready", "--dbname", "identity_service" ]
       interval: 10s
       timeout: 5s
 
@@ -265,3 +268,4 @@ volumes:
   eth-contracts-abis:
   solana-programs-idl:
   audius-libs:
+  postgresdata:
