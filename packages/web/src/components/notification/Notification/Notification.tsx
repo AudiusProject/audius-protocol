@@ -1,10 +1,4 @@
-import {
-  notificationsSelectors,
-  Notification as Notifications,
-  NotificationType,
-  CommonState
-} from '@audius/common'
-import { useSelector } from 'react-redux'
+import { Notification as Notifications, NotificationType } from '@audius/common'
 
 import ErrorWrapper from 'components/error-wrapper/ErrorWrapper'
 
@@ -30,46 +24,14 @@ import { TrendingPlaylistNotification } from './TrendingPlaylistNotification'
 import { TrendingTrackNotification } from './TrendingTrackNotification'
 import { TrendingUndergroundNotification } from './TrendingUndergroundNotification'
 import { UserSubscriptionNotification } from './UserSubscriptionNotification'
-import { USER_LENGTH_LIMIT } from './utils'
-const {
-  getNotificationEntities,
-  getNotificationEntity,
-  getNotificationUser,
-  getNotificationUsers
-} = notificationsSelectors
 
 type NotificationProps = {
   notification: Notifications
 }
 
 export const Notification = (props: NotificationProps) => {
-  const { notification: notificationProp } = props
+  const { notification } = props
 
-  const user = useSelector((state: CommonState) =>
-    getNotificationUser(state, notificationProp)
-  )
-
-  const users = useSelector((state: CommonState) =>
-    getNotificationUsers(state, notificationProp, USER_LENGTH_LIMIT)
-  )
-
-  const entity = useSelector((state: CommonState) =>
-    getNotificationEntity(state, notificationProp)
-  )
-
-  const entities = useSelector((state: CommonState) =>
-    getNotificationEntities(state, notificationProp)
-  )
-
-  // Based on how notification types are defined, we need to cast like this.
-  // In the future we should select user/users/entity/entities in each notif.
-  const notification = {
-    ...notificationProp,
-    user,
-    users,
-    entity,
-    entities
-  } as unknown as Notifications
   const getNotificationElement = () => {
     switch (notification.type) {
       case NotificationType.Announcement: {
