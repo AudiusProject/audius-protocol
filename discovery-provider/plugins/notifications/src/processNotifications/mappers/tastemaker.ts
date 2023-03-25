@@ -1,7 +1,7 @@
 import { Knex } from 'knex'
-import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
+import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import { TastemakerNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
@@ -60,9 +60,6 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     const userNotifications = await super.getShouldSendNotification(
       this.receiverUserId
     )
-    const tastemakerUserName = users[this.tastemakerUserId]?.name
-    let entityType
-    let entityName
 
     const track: { track_id: number; title: string } = await this.dnDB
       .select('track_id', 'title')
@@ -71,17 +68,13 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       .whereIn('track_id', [this.tastemakerItemId])
       .first()
 
-    entityType = EntityType.Track
-    entityName = track.title
+    const entityName = track.title
 
     const devices: Device[] =
       userNotifications.mobile?.[this.receiverUserId]?.devices
 
     // If the user has devices to the notification to, proceed
-    if (
-      devices && devices.length > 0
-    ) {
-
+    if (devices && devices.length > 0) {
       // If the user's settings for the reposts notification is set to true, proceed
       await Promise.all(
         devices.map((device) => {
@@ -124,10 +117,10 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
 
   formatEmailProps(resources: Resources) {
     const tastemakerUser = resources.users[this.tastemakerUserId]
+    const trackOwnerUser = resources.users[this.tastemakerItemOwnerId]
     const track = resources.tracks[this.tastemakerItemId]
 
-    let entity
-    entity = {
+    const entity = {
       type: EntityType.Track,
       name: track.title,
       image: track.imageUrl
@@ -135,6 +128,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     return {
       type: this.notification.type,
       users: [{ name: tastemakerUser.name, image: tastemakerUser.imageUrl }],
+      trackOwnerUser,
       entity
     }
   }

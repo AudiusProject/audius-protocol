@@ -495,6 +495,20 @@ const getTwitter = (notification) => {
         )}&text=${encodeURIComponent(text)}`
       }
     }
+    case 'tastemaker': {
+      const { entity, trackOwnerUser } = notification
+      const url = getTrackLink(entity)
+      const twitterHandle = trackOwnerUser.twitterHandle
+        ? `@${trackOwnerUser.twitterHandle}`
+        : trackOwnerUser.name
+      const text = `I was one of the first to discover ${entity.name} by ${twitterHandle} on @AudiusProject and it just made it onto trending! #Audius #AudiusTastemaker`
+      return {
+        message: 'Share With Your Friends',
+        href: `http://twitter.com/share?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(text)}`
+      }
+    }
     case 'challenge_reward': {
       const text = `I earned $AUDIO for completing challenges on @AudiusProject #AudioRewards`
       return {
