@@ -14,13 +14,13 @@ parameters:
     default: 'main'
 
   # release-audius-sdk params
-  sdk_release_commit:
+  sdk-release-commit:
     type: string
     default: ''
-  sdk_release_version:
+  sdk-release-version:
     type: string
     default: ''
-  sdk_release_preid:
+  sdk-release-preid:
     type: string
     default: ''
 
