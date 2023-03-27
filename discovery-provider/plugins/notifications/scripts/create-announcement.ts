@@ -53,17 +53,12 @@ export const main = async () => {
     }
   ])
 
-  console.log('makle web3')
   const dataWeb3 = await Utils.configureWeb3(values.rpc, null, false)
-  console.log('did make web3')
   if (!dataWeb3) {
     return
   }
 
   const wallet = dataWeb3.eth.accounts.privateKeyToAccount(message.privateKey)
-  console.log(wallet)
-  console.log(wallet.address)
-  console.log('got walet')
 
   // @ts-ignore
   const audiusInstance = new AudiusLibs({
@@ -79,20 +74,13 @@ export const main = async () => {
     },
     isServer: true
   })
-  console.log('made instance of l/ibs ')
 
   await audiusInstance.init()
-  // console.log({ audiusInstance })
   const notification = {
     title: values.title,
     description: values.description
   }
-  console.log('did init')
-  console.log('did init')
-  console.log('did init')
-  console.log('did init')
-  console.log(audiusInstance.contracts.EntityManagerClient)
-  console.log('making manage entity req')
+
   try {
     const res = await audiusInstance.contracts.EntityManagerClient!.manageEntity(
       0, // userId

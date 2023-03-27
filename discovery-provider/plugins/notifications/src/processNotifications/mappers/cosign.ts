@@ -29,7 +29,6 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
   }
 
   async pushNotification() {
-    logger.info('in push notif for cosign')
     const res: Array<{
       user_id: number
       name: string
@@ -39,7 +38,6 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.remixUserId, this.parentTrackUserId])
-    logger.info('in push notif got users')
     const users = res.reduce((acc, user) => {
       acc[user.user_id] = {
         name: user.name,
@@ -57,10 +55,8 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       acc[track.track_id] = { title: track.title }
       return acc
     }, {} as Record<number, { title: string }>)
-    logger.info('in push notif got track')
 
     if (users?.[this.remixUserId]?.isDeactivated) {
-      logger.info('in push notif exit early bc user is deacitnve')
       return
     }
 

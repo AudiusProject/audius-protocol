@@ -28,7 +28,6 @@ export class Listener {
 
   start = async (connectionString: string) => {
     this.connectionString = connectionString
-    logger.info({ connectionString })
 
     this.client = new Client({
       connectionString,
