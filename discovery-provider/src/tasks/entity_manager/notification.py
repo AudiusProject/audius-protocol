@@ -14,9 +14,9 @@ from src.utils.config import shared_config
 logger = logging.getLogger(__name__)
 
 
-def get_notification_creator():
-    if "notification_creator_addr" in shared_config["contracts"]:
-        return shared_config["contracts"]["notification_creator_addr"]
+def get_verifier_address():
+    if "verified_address" in shared_config["contracts"]:
+        return shared_config["contracts"]["verified_address"]
 
 
 def validate_notification_tx(params: ManageEntityParameters):
@@ -35,7 +35,7 @@ def validate_notification_tx(params: ManageEntityParameters):
 
     elif params.action == Action.CREATE:
         # Validate wallet
-        valid_notification_addr = get_notification_creator()
+        valid_notification_addr = get_verifier_address()
         if (
             not valid_notification_addr
             or valid_notification_addr.lower() != params.signer.lower()
