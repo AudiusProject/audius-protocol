@@ -21,8 +21,7 @@ services:
       PGUSER: "postgres"
       POSTGRES_PASSWORD: "postgres"
     volumes:
-      - ./comms/discovery/db/docker-initdb/:/docker-entrypoint-initdb.d/
-      - ./dev-tools/startup/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./dev-tools/startup/initdb:/docker-entrypoint-initdb.d/init-db.sql
       - postgresdata:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD", "pg_isready" ]
