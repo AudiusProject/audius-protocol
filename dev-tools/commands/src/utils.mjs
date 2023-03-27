@@ -28,7 +28,7 @@ export const initializeAudiusLibs = async (handle) => {
     }),
     discoveryProviderConfig: {},
     creatorNodeConfig: AudiusLibs.configCreatorNode(
-      "http://audius-protocol-creator-node-1.audius-protocol_default:4000",
+      "http://audius-protocol-creator-node-1",
       // process.env.FALLBACK_CREATOR_NODE_URL,
     ),
     identityServiceConfig: AudiusLibs.configIdentityService(
