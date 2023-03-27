@@ -12,7 +12,10 @@ export class NativeMobileAudio {
   play = () => {}
   pause = () => {}
   stop = () => {}
-  seek = () => {}
+  seek = (position: number) => {
+    TrackPlayer.seekTo(position)
+  }
+
   setVolume = () => null
   setPlaybackRate = () => {}
   isBuffering = () => false
