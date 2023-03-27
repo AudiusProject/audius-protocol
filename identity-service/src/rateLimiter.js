@@ -67,8 +67,8 @@ const getIP = (req) => {
   // Length is at least 2, length - 1 would be the outermost proxy, so length - 2 is the "sender"
   // either the actual user or a content node
   const senderIP = headers[headers.length - 2]
-
-  if (isIPWhitelisted(senderIP, req)) {
+  const isWhitelisted = isIPWhitelisted(senderIP, req)
+  if (isWhitelisted) {
     const forwardedIP = headers[headers.length - 3]
     if (!forwardedIP) {
       req.logger.debug(
@@ -84,7 +84,7 @@ const getIP = (req) => {
   req.logger.debug(
     `_getIP: recording listen from > 2 headers, but not creator-node, IP: ${senderIP}, Forwarded-For: ${forwardedFor}`
   )
-  return { ip: senderIP, senderIP }
+  return { ip: senderIP, senderIP, isWhitelisted }
 }
 
 let endpointRateLimits = {}

@@ -3,7 +3,7 @@ const moment = require('moment-timezone')
 const retry = require('async-retry')
 const uuidv4 = require('uuid/v4')
 const axios = require('axios')
-
+const { getIP } = require('../rateLimiter')
 const models = require('../models')
 const {
   handleResponse,
@@ -385,7 +385,12 @@ module.exports = function (app) {
       // Dedicated listen flow
       const suffix = currentHour.toISOString()
       const entropy = uuidv4()
-
+      const { ip, isWhitelisted } = getIP(req)
+      if (!isWhitelisted) {
+        // skip any client requests since 
+        // content nodes also log a listen
+        return successResponse()
+      }
       // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
       const trackingRedisKeys = getTrackingListenKeys(suffix)
       await initializeExpiringRedisKey(
@@ -400,7 +405,7 @@ module.exports = function (app) {
       )
 
       req.logger.debug(
-        `TrackListen tx submission, trackId=${trackId} userId=${userId}, ${JSON.stringify(
+        `TrackListen tx submission, forwardedIP=${ip} trackId=${trackId} userId=${userId}, ${JSON.stringify(
           trackingRedisKeys
         )}`
       )
@@ -413,14 +418,8 @@ module.exports = function (app) {
       )
       let location
       try {
-        let clientIPAddress =
-          (req.headers['x-forwarded-for'] || '').split(',').pop().trim() ||
-          req.socket.remoteAddress
-        if (clientIPAddress.startsWith('::ffff:')) {
-          clientIPAddress = clientIPAddress.slice(7)
-        }
 
-        const url = `https://api.ipdata.co/${clientIPAddress}?api-key=${config.get(
+        const url = `https://api.ipdata.co/${ip}?api-key=${config.get(
           'ipdataAPIKey'
         )}`
 
