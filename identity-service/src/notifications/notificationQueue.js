@@ -198,22 +198,15 @@ const notificaitonTypeMapping = {
 
 async function processNotification(optimizelyClient, logger, notification) {
   let numProcessedNotifs = 0
-  logger.info(`joe::::  ${JSON.stringify(notification.notification)}`)
-  logger.info(`joe:::: type: ${notification.notification.type}`)
   const notificationMappingVar =
     notificaitonTypeMapping[notification.notification.type]
-  logger.info(`joe:::: mapper: ${notificationMappingVar}`)
   const isDisabled = getRemoteFeatureVarEnabled(
     optimizelyClient,
     DISCOVERY_NOTIFICATION_MAPPING,
     notificationMappingVar
   )
 
-  logger.info(`joe:::: isDisbled: ${isDisabled}`)
   if (isDisabled === true) {
-    logger.info(
-      `joe::: Skipping send push notification for type: ${notification.notification.type}`
-    )
     return
   }
 
@@ -269,21 +262,15 @@ async function drainPublishedSolanaMessages(logger, optimizelyClient) {
 
   let numProcessedNotifs = 0
   for (const bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
-    logger.info(`joe:::: solana mapper: ${bufferObj.notification.type}`)
     const notificationMappingVar =
       notificaitonTypeMapping[bufferObj.notification.type]
-    logger.info(`joe:::: mapper: ${notificationMappingVar}`)
     const isDisabled = getRemoteFeatureVarEnabled(
       optimizelyClient,
       DISCOVERY_NOTIFICATION_MAPPING,
       notificationMappingVar
     )
 
-    logger.info(`joe:::: isDisbled: ${isDisabled}`)
     if (isDisabled === true) {
-      logger.info(
-        `joe::: Skipping send push notification for type: ${bufferObj.notification.type}`
-      )
       return
     }
 

@@ -74,19 +74,7 @@ const getRemoteVar = (optimizelyClient, variable) => {
  * @returns
  */
 const getRemoteFeatureVarEnabled = (optimizelyClient, feature, variable) => {
-  logger.info(
-    `joe:::: ${JSON.stringify(
-      {
-        optimizelyClient: !!optimizelyClient,
-        feature,
-        variable
-      },
-      null,
-      ' '
-    )}`
-  )
   if (!optimizelyClient) {
-    logger.info('joe:::: returning default')
     return DEFAULTS[variable]
   }
   return optimizelyClient.getFeatureVariableBoolean(
