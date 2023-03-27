@@ -978,6 +978,8 @@ router.get(
       )
     }
 
+    const byteRangeHeader = req.headers('range')
+    req.logger.info(`Byte range header ${byteRangeHeader}`)
     if (libs.identityService) {
       req.logger.info(
         `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
