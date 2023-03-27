@@ -63,6 +63,10 @@ export type ChatPermitRequest = {
   permit: ChatPermission
 }
 
+export type ChatCanCreateRequest = {
+  userIds: string[]
+}
+
 export type TypedCommsResponse<T> = Omit<CommsResponse, 'data'> & {
   data: T
 }

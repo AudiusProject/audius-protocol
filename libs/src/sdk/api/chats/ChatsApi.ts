@@ -15,10 +15,12 @@ import type {
   UserChat,
   ChatMessage,
   ChatWebsocketEventData,
-  RPCPayloadRequest
+  RPCPayloadRequest,
+  ChatPermission
 } from './serverTypes'
 import type {
   ChatBlockRequest,
+  ChatCanCreateRequest,
   ChatCreateRequest,
   ChatDeleteRequest,
   ChatEvents,
@@ -189,6 +191,66 @@ export class ChatsApi
       ...json,
       data: decrypted
     }
+  }
+
+  public async getPermission() {
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+    const res = await this.signAndSendRequest({
+      method: 'GET',
+      path: '/comms/chat_permissions',
+      headers: {},
+      query
+    })
+    return (await res.json()) as TypedCommsResponse<ChatPermission>
+  }
+
+  public async areUsersPermitted(
+    requestParameters: ChatCanCreateRequest
+  ): Promise<TypedCommsResponse<Record<string, boolean>>> {
+    this.assertNotNullOrUndefined(
+      requestParameters.userIds,
+      'requestParameters.userIds',
+      'areUsersPermitted'
+    )
+    this.assertMinLength(
+      requestParameters.userIds,
+      'requestParameters.userIds',
+      'areUsersPermitted'
+    )
+    const response = await this.sendQueryRpc('/comms/validate_can_chat', {
+      method: 'user.validate_can_chat',
+      params: {
+        receiver_user_ids: requestParameters.userIds
+      }
+    })
+    return (await response.json()) as TypedCommsResponse<
+      Record<string, boolean>
+    >
+  }
+
+  public async unfurl(requestParameters: { urls: string[] }) {
+    this.assertNotNullOrUndefined(
+      requestParameters.urls,
+      'requestParameters.urls',
+      'unfurl'
+    )
+    this.assertMinLength(
+      requestParameters.urls,
+      'requestParameters.urls',
+      'unfurl'
+    )
+    const query: HTTPQuery = {
+      content: requestParameters.urls
+    }
+    const res = await this.request({
+      method: 'GET',
+      path: '/comms/unfurl',
+      query,
+      headers: {}
+    })
+    return (await res.json()) as TypedCommsResponse<Record<string, boolean>>
   }
 
   // #endregion
@@ -579,6 +641,16 @@ export class ChatsApi
       body: payload
     })
     return args
+  }
+
+  private async sendQueryRpc(path: string, args: RPCPayloadRequest) {
+    const payload = JSON.stringify({ ...args, timestamp: new Date().getTime() })
+    return await this.signAndSendRequest({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      path,
+      body: payload
+    })
   }
 
   private async createWebsocket(endpoint: string) {
