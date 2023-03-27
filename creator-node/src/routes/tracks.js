@@ -978,7 +978,7 @@ router.get(
       )
     }
 
-    const byteRangeHeader = req.headers('range')
+    const byteRangeHeader = req.header('range')
     req.logger.info(`Byte range header ${byteRangeHeader}`)
     if (libs.identityService) {
       req.logger.info(
