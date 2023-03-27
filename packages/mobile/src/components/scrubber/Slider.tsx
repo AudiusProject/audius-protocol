@@ -14,7 +14,7 @@ import { makeStyles } from 'app/styles'
 import { attachToDx } from 'app/utils/animation'
 import { useThemeColors } from 'app/utils/theme'
 
-const { getPlaybackRate, getSeek } = playerSelectors
+const { getPlaybackRate, getSeek, getSeekCounter } = playerSelectors
 
 // How much the handle "grows" when pressing
 const HANDLE_GROW_SCALE = 1.1
@@ -120,6 +120,7 @@ export const Slider = memo((props: SliderProps) => {
   const styles = useStyles()
   const { primaryLight2, primaryDark2 } = useThemeColors()
   const seek = useSelector(getSeek)
+  const seekCounter = useSelector(getSeekCounter)
 
   // Animation to translate the handle and tracker
   const translationAnim = useRef(new Animated.Value(0)).current
@@ -219,7 +220,7 @@ export const Slider = memo((props: SliderProps) => {
       animateFromNowToEnd(percentComplete)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seek, duration, translationAnim, railWidth])
+  }, [seek, seekCounter, duration, translationAnim, railWidth])
 
   const handlePressOut = useCallback(() => {
     handlePressHandleOut()

@@ -128,6 +128,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     textTransform: 'uppercase'
   },
 
+  playButtonIcon: {
+    height: 20,
+    width: 20
+  },
+
   infoSection: {
     flexWrap: 'wrap',
     flexDirection: 'row',
@@ -356,7 +361,10 @@ export const DetailsTile = ({
               )}
             {!isGatedContentEnabled || doesUserHaveAccess ? (
               <Button
-                styles={{ text: styles.playButtonText }}
+                styles={{
+                  text: styles.playButtonText,
+                  icon: styles.playButtonIcon
+                }}
                 title={isPlaying ? messages.pause : playText}
                 size='large'
                 iconPosition='left'

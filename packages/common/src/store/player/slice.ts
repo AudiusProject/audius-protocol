@@ -30,6 +30,9 @@ export type PlayerState = {
 
   // Seek time into the track when a user scrubs forward or backward
   seek: number | null
+
+  // Counter to track seek calls for times where we seek to the same position multiple times
+  seekCounter: number
 }
 
 export const initialState: PlayerState = {
@@ -42,7 +45,8 @@ export const initialState: PlayerState = {
   buffering: false,
   counter: 0,
   playbackRate: '1x',
-  seek: null
+  seek: null,
+  seekCounter: 0
 }
 
 type PlayPayload = Maybe<{
@@ -160,6 +164,7 @@ const slice = createSlice({
     seek: (state, action: PayloadAction<SeekPayload>) => {
       const { seconds } = action.payload
       state.seek = seconds
+      state.seekCounter++
     },
     setPlaybackRate: (state, action: PayloadAction<SetPlaybackRatePayload>) => {
       const { rate } = action.payload
