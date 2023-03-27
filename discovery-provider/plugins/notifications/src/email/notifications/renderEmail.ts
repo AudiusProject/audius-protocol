@@ -138,7 +138,7 @@ const getPlaylistImage = (playlist: PlaylistResource) => {
   return playlistImageUrl
 }
 
-const fetchResources = async (
+export const fetchResources = async (
   dnDb: Knex,
   identityDb: Knex,
   ids: ResourceIds
@@ -265,7 +265,7 @@ const getNotificationProps = async (
   for (const notification of mappedNotifications) {
     const resourcesToFetch = notification.getResourcesForEmail()
     Object.entries(resourcesToFetch).forEach(([key, value]) => {
-      ;(value as Set<number>).forEach(
+      ; (value as Set<number>).forEach(
         idsToFetch[key as keyof ResourceIds].add,
         idsToFetch[key as keyof ResourceIds]
       )
@@ -279,7 +279,7 @@ const getNotificationProps = async (
       for (const notification of acc[n]) {
         const resourcesToFetch = notification.getResourcesForEmail()
         Object.entries(resourcesToFetch).forEach(([key, value]) => {
-          ;(value as Set<number>).forEach(
+          ; (value as Set<number>).forEach(
             idsToFetch[key as keyof ResourceIds].add,
             idsToFetch[key as keyof ResourceIds]
           )
@@ -317,15 +317,12 @@ const getEmailSubject = (
   const weekAgo = now.clone().subtract(7, 'days')
   const formattedDayAgo = dayAgo.format('MMMM Do YYYY')
   const shortWeekAgoFormat = weekAgo.format('MMMM Do')
-  const liveSubjectFormat = `${notificationCount} unread notification${
-    notificationCount > 1 ? 's' : ''
-  }`
-  const weeklySubjectFormat = `${notificationCount} unread notification${
-    notificationCount > 1 ? 's' : ''
-  } from ${shortWeekAgoFormat} - ${formattedDayAgo}`
-  const dailySubjectFormat = `${notificationCount} unread notification${
-    notificationCount > 1 ? 's' : ''
-  } from ${formattedDayAgo}`
+  const liveSubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
+    }`
+  const weeklySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
+    } from ${shortWeekAgoFormat} - ${formattedDayAgo}`
+  const dailySubjectFormat = `${notificationCount} unread notification${notificationCount > 1 ? 's' : ''
+    } from ${formattedDayAgo}`
 
   let subject
   if (frequency === 'live') {

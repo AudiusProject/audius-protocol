@@ -48,7 +48,7 @@ type UserMobileSettings = {
 }
 
 type UserEmailSettings = {
-  [userId: number]: EmailFrequency
+  [userId: number]: { frequency: EmailFrequency; email: string }
 }
 
 export abstract class BaseNotification<Type> {
@@ -199,12 +199,19 @@ export abstract class BaseNotification<Type> {
     const userNotifSettings: Array<{
       userId: number
       emailFrequency: EmailFrequency
+      email: string
     }> = await this.identityDB
       .select(
         'UserNotificationSettings.userId',
-        'UserNotificationSettings.emailFrequency'
+        'UserNotificationSettings.emailFrequency',
+        'Users.email'
       )
       .from('UserNotificationSettings')
+      .join(
+        'Users',
+        'Users.blockchainUserId',
+        'UserNotificationSettings.userId'
+      )
       .whereIn('UserNotificationSettings.userId', userIds)
       .modify((queryBuilder) => {
         if (frequency) {
@@ -213,7 +220,7 @@ export abstract class BaseNotification<Type> {
       })
     const userEmailSettings: UserEmailSettings = userNotifSettings.reduce(
       (acc, user) => {
-        acc[user.userId] = user.emailFrequency
+        acc[user.userId] = { email: user.email, frequency: user.emailFrequency }
         return acc
       },
       {} as UserEmailSettings
@@ -283,19 +290,19 @@ export abstract class BaseNotification<Type> {
         const safariSettings =
           setting.deviceType && setting.awsARN && setting.deviceToken
             ? {
-                type: setting.deviceType,
-                awsARN: setting.awsARN,
-                deviceToken: setting.deviceToken
-              }
+              type: setting.deviceType,
+              awsARN: setting.awsARN,
+              deviceToken: setting.deviceToken
+            }
             : undefined
 
         const webPushSettings =
           setting.endpoint && setting.p256dhKey && setting.authKey
             ? {
-                endpoint: setting.endpoint,
-                p256dhKey: setting.p256dhKey,
-                authKey: setting.authKey
-              }
+              endpoint: setting.endpoint,
+              p256dhKey: setting.p256dhKey,
+              authKey: setting.authKey
+            }
             : undefined
         if (!safariSettings && !webPushSettings) {
           return acc

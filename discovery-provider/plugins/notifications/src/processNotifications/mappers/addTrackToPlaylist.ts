@@ -1,9 +1,17 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { AddTrackToPlaylistNotification } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import {
+  AppEmailNotification,
+  AddTrackToPlaylistNotification
+} from '../../types/notifications'
+import { BaseNotification, Device, EmailFrequency } from './base'
 import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import {
+  fetchResources,
+  ResourceIds,
+  Resources
+} from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type AddTrackToPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AddTrackToPlaylistNotification
@@ -102,8 +110,19 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       )
       await this.incrementBadgeCount(track.owner_id)
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (userNotifications.email?.[track.owner_id].frequency === 'live') {
+      const notification: AppEmailNotification = {
+        receiver_user_id: track.owner_id,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: track.owner_id,
+        email: userNotifications.email?.[track.owner_id].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 
