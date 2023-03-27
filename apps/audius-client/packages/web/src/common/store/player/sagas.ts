@@ -76,6 +76,11 @@ export function* watchPlay() {
 
     const audioPlayer = yield* getContext('audioPlayer')
     const isNativeMobile = yield getContext('isNativeMobile')
+    const isNewPodcastControlsEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
+    )
 
     if (trackId) {
       // Load and set end action.
@@ -155,12 +160,26 @@ export function* watchPlay() {
         ? apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`, queryParams)
         : null
 
+      const isLongFormContent =
+        track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
+
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
           track.track_segments,
           () => {
             if (onEnd) {
               emitter(onEnd({}))
+            }
+            if (isNewPodcastControlsEnabled && isLongFormContent) {
+              emitter(
+                setTrackPosition({
+                  trackId,
+                  positionInfo: {
+                    status: 'COMPLETED',
+                    playbackPosition: 0
+                  }
+                })
+              )
             }
           },
           // @ts-ignore a few issues with typing here...
@@ -183,16 +202,11 @@ export function* watchPlay() {
         ])
       )
 
-      if (track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS) {
+      if (isLongFormContent) {
         // Make sure that the playback rate is set when playing a podcast
         const playbackRate = yield* select(getPlaybackRate)
         audioPlayer.setPlaybackRate(playbackRate)
 
-        const isNewPodcastControlsEnabled = yield* call(
-          getFeatureEnabled,
-          FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
-          FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
-        )
         if (isNewPodcastControlsEnabled) {
           // Set playback position for track to in progress if not already tracked
           const trackPlaybackInfo = yield* select(getTrackPosition, { trackId })
@@ -314,11 +328,37 @@ export function* watchStop() {
 }
 
 export function* watchSeek() {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const audioPlayer = yield* getContext('audioPlayer')
+
   yield* takeLatest(seek.type, function* (action: ReturnType<typeof seek>) {
     const { seconds } = action.payload
+    const isNewPodcastControlsEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+      FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
+    )
+    const trackId = yield* select(getTrackId)
 
-    const audioPlayer = yield* getContext('audioPlayer')
     audioPlayer.seek(seconds)
+
+    if (isNewPodcastControlsEnabled && trackId) {
+      const track = yield* select(getTrack, { id: trackId })
+      const isLongFormContent =
+        track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+
+      if (isLongFormContent) {
+        yield* put(
+          setTrackPosition({
+            trackId,
+            positionInfo: {
+              status: 'IN_PROGRESS',
+              playbackPosition: seconds
+            }
+          })
+        )
+      }
+    }
   })
 }
 

@@ -9,6 +9,8 @@ import {
   hlsUtils,
   playerSelectors,
   playerActions,
+  playbackPositionActions,
+  playbackPositionSelectors,
   queueActions,
   queueSelectors,
   reachabilitySelectors,
@@ -61,6 +63,8 @@ const { getUsers } = cacheUsersSelectors
 const { getTracks } = cacheTracksSelectors
 const { getPlaying, getSeek, getCurrentTrack, getCounter, getPlaybackRate } =
   playerSelectors
+const { setTrackPosition } = playbackPositionActions
+const { getTrackPositions } = playbackPositionSelectors
 const { recordListen } = tracksSocialActions
 const {
   getIndex,
@@ -78,6 +82,8 @@ const { getPremiumTrackSignatureMap } = premiumContentSelectors
 const SKIP_DURATION_SEC = 15
 const RESTART_THRESHOLD_SEC = 3
 const RECORD_LISTEN_SECONDS = 1
+
+const TRACK_END_BUFFER = 2
 
 const defaultCapabilities = [
   Capability.Play,
@@ -139,6 +145,10 @@ export const Audio = () => {
   const { isEnabled: isStreamMp3Enabled } = useFeatureFlag(
     FeatureFlags.STREAM_MP3
   )
+  const { isEnabled: isNewPodcastControlsEnabled } = useFeatureFlag(
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
+    FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
+  )
   const playbackState = usePlaybackState()
   const track = useSelector(getCurrentTrack)
   const playing = useSelector(getPlaying)
@@ -146,6 +156,7 @@ export const Audio = () => {
   const counter = useSelector(getCounter)
   const repeatMode = useSelector(getRepeat)
   const playbackRate = useSelector(getPlaybackRate)
+  const trackPositions = useSelector(getTrackPositions)
 
   const isReachable = useSelector(getIsReachable)
   const isNotReachable = isReachable === false
@@ -378,11 +389,33 @@ export const Audio = () => {
           if (!track || !doesUserHaveAccess) {
             next()
           } else {
+            // Track Player natively went to the next track
+            // Update queue info and handle playback position updates
             updateQueueIndex(playerIndex)
             updatePlayerInfo({
               trackId: track.track_id,
               uid: queueTrackUids[playerIndex]
             })
+
+            const isLongFormContent =
+              track?.genre === Genre.PODCASTS ||
+              track?.genre === Genre.AUDIOBOOKS
+            const trackPosition = trackPositions[track.track_id]
+            if (trackPosition?.status === 'IN_PROGRESS') {
+              dispatch(
+                playerActions.seek({ seconds: trackPosition.playbackPosition })
+              )
+            } else if (isNewPodcastControlsEnabled && isLongFormContent) {
+              dispatch(
+                setTrackPosition({
+                  trackId: track.track_id,
+                  positionInfo: {
+                    status: 'IN_PROGRESS',
+                    playbackPosition: 0
+                  }
+                })
+              )
+            }
           }
         }
       }
@@ -399,6 +432,31 @@ export const Audio = () => {
         await TrackPlayer.setRate(newRate)
         // Update lock screen and notification controls
         await updatePlayerOptions(isLongFormContent)
+      }
+
+      // Handle track end event
+      if (
+        isNewPodcastControlsEnabled &&
+        event?.position !== null &&
+        event?.track !== null
+      ) {
+        const track = queueTracks[event.track]
+        const isLongFormContent =
+          track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+        const isAtEndOfTrack =
+          track?.duration && event.position >= track.duration - TRACK_END_BUFFER
+
+        if (isLongFormContent && isAtEndOfTrack) {
+          dispatch(
+            setTrackPosition({
+              trackId: track.track_id,
+              positionInfo: {
+                status: 'COMPLETED',
+                playbackPosition: 0
+              }
+            })
+          )
+        }
       }
     }
   })
