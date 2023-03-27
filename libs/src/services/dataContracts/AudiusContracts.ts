@@ -1,5 +1,5 @@
 import type { AbiItem } from 'web3-utils'
-import { Utils, Logger } from '../../utils'
+import { Logger } from '../../utils'
 
 // load classes wrapping contracts
 import { EntityManagerClient } from './EntityManagerClient'

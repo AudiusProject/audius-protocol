@@ -483,10 +483,10 @@ export class ChatsApi
 
   private async decryptLastChatMessage(c: UserChat): Promise<UserChat> {
     const sharedSecret = await this.getChatSecret(c.chat_id)
-    let last_message = ''
+    let lastMessage = ''
     if (c.last_message && c.last_message.length > 0) {
       try {
-        last_message = await this.decryptString(
+        lastMessage = await this.decryptString(
           sharedSecret,
           base64.decode(c.last_message)
         )
@@ -496,12 +496,12 @@ export class ChatsApi
           c,
           e
         )
-        last_message = "Error: Couldn't decrypt message"
+        lastMessage = "Error: Couldn't decrypt message"
       }
     }
     return {
       ...c,
-      last_message
+      last_message: lastMessage
     }
   }
 

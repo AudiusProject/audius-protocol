@@ -66,8 +66,6 @@ export class Users extends Base {
     this.updateUser = this.updateUser.bind(this)
     this.updateCreator = this.updateCreator.bind(this)
     this.updateIsVerified = this.updateIsVerified.bind(this)
-    this.addUserFollow = this.addUserFollow.bind(this)
-    this.deleteUserFollow = this.deleteUserFollow.bind(this)
     this.getUserListenCountsMonthly = this.getUserListenCountsMonthly.bind(this)
     this.getUserSubscribers = this.getUserSubscribers.bind(this)
     this.bulkGetUserSubscribers = this.bulkGetUserSubscribers.bind(this)
@@ -760,28 +758,6 @@ export class Users extends Base {
       EntityManagerClient.Action.VERIFY,
       '',
       privateKey
-    )
-  }
-
-  /**
-   * Adds a user follow for a given follower and followee
-   */
-  async addUserFollow(followeeUserId: number) {
-    const followerUserId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.SocialFeatureFactoryClient.addUserFollow(
-      followerUserId!,
-      followeeUserId
-    )
-  }
-
-  /**
-   * Deletes a user follow for a given follower and followee
-   */
-  async deleteUserFollow(followeeUserId: number) {
-    const followerUserId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.SocialFeatureFactoryClient.deleteUserFollow(
-      followerUserId!,
-      followeeUserId
     )
   }
 
