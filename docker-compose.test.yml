@@ -22,7 +22,6 @@ services:
       POSTGRES_PASSWORD: "postgres"
     volumes:
       - ./dev-tools/startup/initdb:/docker-entrypoint-initdb.d
-      - postgresdata:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD", "pg_isready" ]
       interval: 10s
