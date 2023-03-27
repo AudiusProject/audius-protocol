@@ -151,7 +151,8 @@ export enum MilestoneType {
   TRACK_REPOST_COUNT = 'TRACK_REPOST_COUNT',
   TRACK_SAVE_COUNT = 'TRACK_SAVE_COUNT',
   PLAYLIST_REPOST_COUNT = 'PLAYLIST_REPOST_COUNT',
-  PLAYLIST_SAVE_COUNT = 'PLAYLIST_SAVE_COUNT'
+  PLAYLIST_SAVE_COUNT = 'PLAYLIST_SAVE_COUNT',
+  LISTEN_COUNT = 'LISTEN_COUNT'
 }
 
 export type AddTrackToPlaylistNotification = {
@@ -166,7 +167,10 @@ export type FollowerMilestoneNotification = {
 }
 
 export type TrackMilestoneNotification = {
-  type: MilestoneType.TRACK_REPOST_COUNT | MilestoneType.TRACK_SAVE_COUNT
+  type:
+  | MilestoneType.TRACK_REPOST_COUNT
+  | MilestoneType.TRACK_SAVE_COUNT
+  | MilestoneType.LISTEN_COUNT
   track_id: number
   threshold: number
 }
