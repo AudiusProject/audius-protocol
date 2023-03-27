@@ -48,6 +48,7 @@ export const setupTest = async (setupConfig?: SetupTestConfig) => {
 
   const processor = new Processor()
 
+  // eslint-disable-next-line
   // @ts-ignore
   processor.server.app.listen = jest.fn((port: number, cb: () => void) => cb())
 

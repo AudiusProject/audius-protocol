@@ -9,6 +9,7 @@ import type {
   DMReactionNotification
 } from './../types/notifications'
 import { getRedisConnection } from './../utils/redisConnection'
+import { Timer } from '../utils/timer'
 
 // Sort notifications in ascending order according to timestamp
 function notificationTimestampComparator(
@@ -133,72 +134,99 @@ function setLastIndexedTimestamp(
   }
 }
 
+enum DMPhase {
+  START = 'START',
+  GET_UNREAD_MESSAGES = 'GET_UNREAD_MESSAGES',
+  GET_UNREAD_REACTIONS = 'GET_UNREAD_REACTIONS',
+  PUSH_NOTIFICATIONS = 'PUSH_NOTIFICATIONS',
+  FINSH = 'FINSH'
+}
+
 export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
-  // Query DN for unread messages and reactions between min and max cursors
-  const redis = await getRedisConnection()
-  const cursors = await getCursors(redis)
-  // TODO remove
-  // console.log(`dmNotifications task: retrieved redis cursors: ${JSON.stringify(cursors)}`)
-  const unreadMessages = await getUnreadMessages(
-    discoveryDB,
-    cursors.minMessageTimestamp,
-    cursors.maxTimestamp
-  )
-  if (unreadMessages.length > 0) {
+  const timer = new Timer('dm')
+  try {
+    // Query DN for unread messages and reactions between min and max cursors
+    const redis = await getRedisConnection()
+    const cursors = await getCursors(redis)
+
+    timer.logMessage(DMPhase.GET_UNREAD_MESSAGES)
     // TODO remove
-    console.log(
-      `dmNotifications: unread message notifications: ${JSON.stringify(
-        unreadMessages
-      )}`
+    // console.log(`dmNotifications task: retrieved redis cursors: ${JSON.stringify(cursors)}`)
+    const unreadMessages = await getUnreadMessages(
+      discoveryDB,
+      cursors.minMessageTimestamp,
+      cursors.maxTimestamp
     )
-  }
-  const unreadReactions = await getUnreadReactions(
-    discoveryDB,
-    cursors.minReactionTimestamp,
-    cursors.maxTimestamp
-  )
-  if (unreadReactions.length > 0) {
-    // TODO remove
-    console.log(
-      `dmNotifications: unread message reaction notifications: ${JSON.stringify(
-        unreadReactions
-      )}`
+    if (unreadMessages.length > 0) {
+      // TODO remove
+      console.log(
+        `dmNotifications: unread message notifications: ${JSON.stringify(
+          unreadMessages
+        )}`
+      )
+    }
+
+    timer.logMessage(DMPhase.GET_UNREAD_REACTIONS)
+
+    const unreadReactions = await getUnreadReactions(
+      discoveryDB,
+      cursors.minReactionTimestamp,
+      cursors.maxTimestamp
     )
-  }
+    if (unreadReactions.length > 0) {
+      // TODO remove
+      console.log(
+        `dmNotifications: unread message reaction notifications: ${JSON.stringify(
+          unreadReactions
+        )}`
+      )
+    }
 
-  // Convert to notifications
-  const messageNotifications = unreadMessages.map(
-    (message) => new Message(discoveryDB, identityDB, message)
-  )
-  const reactionNotifications = unreadReactions.map(
-    (reaction) => new MessageReaction(discoveryDB, identityDB, reaction)
-  )
-  const notifications: Array<Message | MessageReaction> =
-    messageNotifications.concat(reactionNotifications)
+    // Convert to notifications
+    const messageNotifications = unreadMessages.map(
+      (message) => new Message(discoveryDB, identityDB, message)
+    )
+    const reactionNotifications = unreadReactions.map(
+      (reaction) => new MessageReaction(discoveryDB, identityDB, reaction)
+    )
+    const notifications: Array<Message | MessageReaction> =
+      messageNotifications.concat(reactionNotifications)
 
-  // Sort notifications by timestamp (asc)
-  notifications.sort(notificationTimestampComparator)
+    // Sort notifications by timestamp (asc)
+    notifications.sort(notificationTimestampComparator)
+    timer.logMessage(DMPhase.PUSH_NOTIFICATIONS)
 
-  // Send push notifications
-  for (const notification of notifications) {
-    await notification.pushNotification()
-  }
+    // Send push notifications
+    for (const notification of notifications) {
+      await notification.pushNotification()
+    }
 
-  // Set last indexed timestamps in redis
-  setLastIndexedTimestamp(
-    redis,
-    config.lastIndexedMessageRedisKey,
-    cursors.maxTimestamp,
-    messageNotifications
-  )
-  setLastIndexedTimestamp(
-    redis,
-    config.lastIndexedReactionRedisKey,
-    cursors.maxTimestamp,
-    reactionNotifications
-  )
+    // Set last indexed timestamps in redis
+    setLastIndexedTimestamp(
+      redis,
+      config.lastIndexedMessageRedisKey,
+      cursors.maxTimestamp,
+      messageNotifications
+    )
+    setLastIndexedTimestamp(
+      redis,
+      config.lastIndexedReactionRedisKey,
+      cursors.maxTimestamp,
+      reactionNotifications
+    )
 
-  if (notifications.length > 0) {
-    logger.info('dmNotifications task: processed new DM push notifications')
+    if (notifications.length > 0) {
+      logger.info('dmNotifications task: processed new DM push notifications')
+    }
+    timer.logMessage(DMPhase.PUSH_NOTIFICATIONS)
+    logger.info({
+      ...timer.getContext(),
+      numberNotifications: notifications.length
+    })
+  } catch (err) {
+    logger.error({
+      ...timer.getContext(),
+      message: err.message
+    })
   }
 }

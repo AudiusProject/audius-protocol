@@ -20,6 +20,7 @@ import {
   MappingVariable,
   RemoteConfig
 } from '../remoteConfig'
+import { Timer } from '../utils/timer'
 
 export type NotificationProcessor =
   | Follow
@@ -85,6 +86,15 @@ export class AppNotificationsProcessor {
   }
 
   async process(notifications: NotificationRow[]) {
+    if (notifications.length == 0) return
+    logger.info(`Processing ${notifications.length} push notifications`)
+    const timer = new Timer('process app push notifications')
+    const status = {
+      total: notifications.length,
+      processed: 0,
+      errored: 0,
+      skipped: 0
+    }
     const mappedNotifications = mapNotifications(
       notifications,
       this.dnDB,
@@ -95,14 +105,33 @@ export class AppNotificationsProcessor {
         notification.notification.type
       )
       if (isEnabled) {
-        await notification.pushNotification()
+        try {
+          await notification.pushNotification()
+          status.processed += 1
+        } catch (e) {
+          logger.error(
+            {
+              type: notification.notification.type,
+              message: e.message
+            },
+            `Error processing push notification`
+          )
+          status.errored += 1
+        }
       } else {
+        status.skipped += 1
         logger.info(
           `Skipping push notification of type ${notification.notification.type}`
         )
       }
     }
 
-    logger.info({ notifications })
+    logger.info(
+      {
+        ...timer.getContext(),
+        ...status
+      },
+      `Done processing push notifications`
+    )
   }
 }
