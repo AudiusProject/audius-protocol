@@ -168,9 +168,9 @@ export type FollowerMilestoneNotification = {
 
 export type TrackMilestoneNotification = {
   type:
-  | MilestoneType.TRACK_REPOST_COUNT
-  | MilestoneType.TRACK_SAVE_COUNT
-  | MilestoneType.LISTEN_COUNT
+    | MilestoneType.TRACK_REPOST_COUNT
+    | MilestoneType.TRACK_SAVE_COUNT
+    | MilestoneType.LISTEN_COUNT
   track_id: number
   threshold: number
 }

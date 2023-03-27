@@ -126,7 +126,6 @@ export const sendPushNotification = async (
   device: Device,
   message: Message
 ) => {
-
   if (device.type == 'ios') {
     await sendIOSMessage({
       title: message.title,

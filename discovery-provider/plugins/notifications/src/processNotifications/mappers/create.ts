@@ -90,8 +90,9 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     if (this.trackId) {
       description = `${userName} released a new track`
     } else {
-      description = `${userName} released a new ${this.isAlbum ? 'album' : 'playlist'
-        } ${playlist.playlist_name}`
+      description = `${userName} released a new ${
+        this.isAlbum ? 'album' : 'playlist'
+      } ${playlist.playlist_name}`
     }
 
     const validReceiverUserIds = this.receiverUserIds.filter(
