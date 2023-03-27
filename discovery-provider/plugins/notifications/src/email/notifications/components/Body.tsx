@@ -101,6 +101,10 @@ const snippetMap = {
     const { entity, rank } = notification
     return `${entity.title} is #${rank} on Underground Trending right now!`
   },
+  ['tastemaker'](notification) {
+    const entityName = notification.entity.name
+    return `${entityName} is now trending thanks to you! Great work 🙌🏽`
+  },
   ['create'](notification) {
     const [user] = notification.users
     if (

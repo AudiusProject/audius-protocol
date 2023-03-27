@@ -51,6 +51,13 @@ export type FollowNotificationEmail = {
   followerUser: EmailUser
 }
 
+export type TastemakerNotification = {
+  tastemaker_item_id: number
+  tastemaker_item_owner_id: number
+  tastemaker_user_id: number
+  tastemaker_item_type: string
+}
+
 export type RepostNotification = {
   type: EntityType
   user_id: number
@@ -236,6 +243,7 @@ export type NotificationData =
   | SupporterDethronedNotification
   | AddTrackToPlaylistNotification
   | AnnouncementNotification
+  | TastemakerNotification
   | TrendingTrackNotification
   | TrendingUndergroundNotification
   | TrendingPlaylistNotification

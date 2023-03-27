@@ -18,6 +18,7 @@ import {
   ReactionNotification,
   TipSendNotification,
   TipReceiveNotification,
+  TastemakerNotification,
   SupporterDethronedNotification,
   SupportingRankUpNotification,
   ChallengeRewardNotification,
@@ -48,6 +49,7 @@ import { AddTrackToPlaylist } from './addTrackToPlaylist'
 import { Create } from './create'
 import { Announcement } from './announcement'
 import { TrendingTrack } from './trendingTrack'
+import { Tastemaker } from './tastemaker'
 import { SaveOfRepost } from './saveOfRepost'
 import { TrendingUnderground } from './trendingUnderground'
 import { TrendingPlaylist } from './trendingPlaylist'
@@ -173,6 +175,11 @@ const mapNotification = (
       data: TrendingPlaylistNotification
     }
     return new TrendingPlaylist(dnDb, identityDb, trendingNotification)
+  } else if (notification.type == 'tastemaker') {
+    const tastemakerNotification = notification as NotificationRow & {
+      data: TastemakerNotification
+    }
+    return new Tastemaker(dnDb, identityDb, tastemakerNotification)
   } else if (notification.type == 'announcement') {
     const announcementNotification = notification as NotificationRow & {
       data: AnnouncementNotification
