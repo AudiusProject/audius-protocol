@@ -1,13 +1,13 @@
 import type { ComponentType } from 'react'
 import { useState, useCallback } from 'react'
 
+import { TouchableOpacity } from 'react-native'
 import type {
   ButtonProps,
   TextStyle,
   TouchableOpacityProps,
   ViewStyle
 } from 'react-native'
-import { TouchableOpacity } from 'react-native-gesture-handler'
 import type { GenericTouchableProps } from 'react-native-gesture-handler/lib/typescript/components/touchables/GenericTouchable'
 import type { SvgProps } from 'react-native-svg'
 

@@ -31,8 +31,8 @@ export const PickArtistsForMeButton = () => {
   const dispatch = useDispatch()
 
   // The autoselect or 'pick for me'
-  // Selects the first three aritsts in the current category along with 2 additinal
-  // random artist from the top 10
+  // Selects the first three artists in the current category along with 2 additional
+  // random artists from the top 10
   const handlePress = useCallback(() => {
     const selectedIds = new Set(followedArtistIds)
     const unselectedIds = suggestedArtistIds.filter(
