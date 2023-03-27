@@ -42,7 +42,7 @@ def test_get_trending_playlist_notifications(app):
     }
     populate_mock_db(db_mock, entities)
 
-    # When valid_types is [] we don't select any trending_underground notifications
+    # When valid_types is [] we don't select any trending_playlist notifications
     with db_mock.scoped_session() as session:
         args = {
             "limit": 10,
@@ -52,7 +52,7 @@ def test_get_trending_playlist_notifications(app):
         user1_notifications = get_notifications(session, args)
         assert len(user1_notifications) == 0
 
-    # When valid_types is ["trending_underground"] and user_id is 1,
+    # When valid_types is ["trending_playlist"] and user_id is 1,
     # select notifs for user1
     with db_mock.scoped_session() as session:
         args = {
@@ -71,7 +71,7 @@ def test_get_trending_playlist_notifications(app):
         assert notification_action["data"]["rank"] == "1"
         assert notification_action["data"]["playlist_id"] == 1
 
-    # When valid_types is ["trending_underground"] and user_id is 2,
+    # When valid_types is ["trending_playlist"] and user_id is 2,
     # select notifs for user2
     with db_mock.scoped_session() as session:
         args = {
