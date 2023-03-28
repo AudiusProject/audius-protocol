@@ -3,6 +3,7 @@ import dayjs from 'dayjs'
 import { call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 import { ulid } from 'ulid'
 
+import { Status } from 'models/Status'
 import { getAccountUser, getUserId } from 'store/account/selectors'
 import { setVisibility } from 'store/ui/modals/slice'
 
@@ -12,7 +13,6 @@ import { getContext } from '../../effects'
 
 import * as chatSelectors from './selectors'
 import { actions as chatActions } from './slice'
-import { Status } from 'models/Status'
 
 const {
   createChat,

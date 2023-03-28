@@ -206,12 +206,16 @@ const slice = createSlice({
       })
       const existingMessage = getMessage(state.messages[chatId], messageId)
       const existingReactions = existingMessage?.reactions ?? []
-      state.messages.entities[messageId]!.reactions = existingReactions.filter(
+      const filteredReactions = existingReactions.filter(
         (r) => r.user_id !== reaction.user_id
       )
       if (reaction.reaction !== null) {
-        state.messages.entities[messageId]!.reactions.push(reaction)
+        filteredReactions.push(reaction)
       }
+      chatMessagesAdapter.updateOne(state.messages[chatId], {
+        id: messageId,
+        changes: { reactions: filteredReactions }
+      })
     },
     setMessageReactionFailed: (
       state,
