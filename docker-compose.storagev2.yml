@@ -7,7 +7,7 @@ x-storagev2:
   environment:
     - MEDIORUM_ENV=single
     - PORT=1991
-  profile:
+  profiles:
     - storagev2
 
 services:
