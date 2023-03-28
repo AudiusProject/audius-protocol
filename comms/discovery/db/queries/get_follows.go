@@ -62,6 +62,6 @@ func BulkGetFollowers(q db.Queryable, ctx context.Context, arg BulkGetFollowersP
 		return counts, err
 	}
 	query = q.Rebind(query)
-	err = q.GetContext(ctx, &counts, query, args...)
+	err = q.SelectContext(ctx, &counts, query, args...)
 	return counts, err
 }

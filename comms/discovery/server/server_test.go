@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"encoding/base64"
 	"encoding/json"
@@ -9,10 +10,8 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"reflect"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 
@@ -22,6 +21,7 @@ import (
 	sharedConfig "comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -215,7 +215,7 @@ func TestGetChats(t *testing.T) {
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			reflect.DeepEqual(response, expectedResponse)
+			assert.True(t, reflect.DeepEqual(response, expectedResponse))
 		}
 	}
 
@@ -265,7 +265,7 @@ func TestGetChats(t *testing.T) {
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			reflect.DeepEqual(response, expectedResponse)
+			assert.True(t, reflect.DeepEqual(response, expectedResponse))
 		}
 	}
 
@@ -301,7 +301,7 @@ func TestGetChats(t *testing.T) {
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			reflect.DeepEqual(response, expectedResponse)
+			assert.True(t, reflect.DeepEqual(response, expectedResponse))
 		}
 	}
 }
@@ -571,7 +571,7 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := schema.All
+		expectedData := "all"
 		expectedResponse := schema.CommsResponse{
 			Health: expectedHealth,
 			Data:   expectedData,
@@ -581,7 +581,7 @@ func TestGetPermissions(t *testing.T) {
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			reflect.DeepEqual(response, expectedResponse)
+			assert.True(t, cmp.Equal(response, expectedResponse))
 		}
 	}
 
@@ -604,7 +604,7 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := schema.Followees
+		expectedData := "followees"
 		expectedResponse := schema.CommsResponse{
 			Health: expectedHealth,
 			Data:   expectedData,
@@ -614,7 +614,7 @@ func TestGetPermissions(t *testing.T) {
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			reflect.DeepEqual(response, expectedResponse)
+			assert.True(t, cmp.Equal(response, expectedResponse))
 		}
 	}
 
@@ -622,18 +622,15 @@ func TestGetPermissions(t *testing.T) {
 	{
 		// Query /comms/validate_can_chat
 		reqUrl := fmt.Sprintf("/comms/validate_can_chat?timestamp=%d", time.Now().UnixMilli())
-		data := url.Values{}
 		encodedUser2, err := misc.EncodeHashId(int(user2Id))
 		assert.NoError(t, err)
 		encodedUser3, err := misc.EncodeHashId(int(user3Id))
 		assert.NoError(t, err)
-		data.Set("method", "user.validate_can_chat")
-		data.Set("params", fmt.Sprintf(`{"receiver_user_ids": [%s, %s]}`, encodedUser2, encodedUser3))
-		req, err := http.NewRequest(http.MethodPost, reqUrl, strings.NewReader(data.Encode()))
+		payload := []byte(fmt.Sprintf(`{"method": "user.validate_can_chat", "params": {"receiver_user_ids": ["%s", "%s"]}}`, encodedUser2, encodedUser3))
+		req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(payload))
 		assert.NoError(t, err)
 
 		// Set sig header from user 1
-		payload := []byte(data.Encode())
 		sigBase64 := signPayload(t, payload, privateKey1)
 		req.Header.Set(sharedConfig.SigHeader, sigBase64)
 
@@ -652,13 +649,16 @@ func TestGetPermissions(t *testing.T) {
 			Health: expectedHealth,
 			Data:   expectedData,
 		}
-		if assert.NoError(t, testServer.getChatPermissions(c)) {
-			fmt.Println("response: ", rec.Body.String())
+		if assert.NoError(t, testServer.validateCanChat(c)) {
+			fmt.Println("encodedUser3: ", encodedUser3)
+			fmt.Println("encodedUser2: ", encodedUser2)
 			assert.Equal(t, http.StatusOK, rec.Code)
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			reflect.DeepEqual(response, expectedResponse)
+			fmt.Println("response: ", response)
+			fmt.Println("expected response: ", expectedResponse)
+			assert.True(t, reflect.DeepEqual(response.Data, expectedResponse.Data))
 		}
 	}
 }

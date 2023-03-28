@@ -60,6 +60,6 @@ func BulkGetTipReceivers(q db.Queryable, ctx context.Context, arg BulkGetTipRece
 		return counts, err
 	}
 	query = q.Rebind(query)
-	err = q.GetContext(ctx, &counts, query, args...)
+	err = q.SelectContext(ctx, &counts, query, args...)
 	return counts, err
 }

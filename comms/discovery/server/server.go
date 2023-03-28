@@ -451,7 +451,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 func (s *ChatServer) validateCanChat(c echo.Context) error {
 	payload, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
-		return c.JSON(400, "bad request: "+err.Error())
+		return c.JSON(400, "bad request 1: "+err.Error())
 	}
 
 	userId, err := queries.GetUserIDFromWallet(db.Conn, c.Request().Context(), wallet)
@@ -460,24 +460,25 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 	}
 
 	// Unmarshal RPC
+	fmt.Println("payload: ", string(payload))
 	var rawRpc schema.RawRPC
 	err = json.Unmarshal(payload, &rawRpc)
 	if err != nil {
-		return c.JSON(400, "bad request: "+err.Error())
+		return c.JSON(400, "bad request 2: "+err.Error())
 	}
 
 	// Validate and decode payload
 	var params schema.ValidateCanChatRPCParams
 	err = json.Unmarshal(rawRpc.Params, &params)
 	if err != nil {
-		return c.JSON(400, "bad request: "+err.Error())
+		return c.JSON(400, "bad request 3: "+err.Error())
 	}
 	var receiverUserIds []int32
-	var validatedPermissions map[string]bool
+	validatedPermissions := make(map[string]bool)
 	for _, encodedId := range params.ReceiverUserIDS {
 		decodedId, err := misc.DecodeHashId(encodedId)
 		if err != nil {
-			return c.JSON(400, "bad request: "+err.Error())
+			return c.JSON(400, "bad request 4: "+err.Error())
 		}
 		receiverUserIds = append(receiverUserIds, int32(decodedId))
 		// Initialize response map
