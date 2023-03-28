@@ -158,7 +158,7 @@ export const ChatScreen = () => {
   const chatFrozenRef = useRef(chat)
 
   useEffect(() => {
-    if (chatId && chat?.messagesStatus === Status.IDLE) {
+    if (chatId && (chat?.messagesStatus ?? Status.IDLE) === Status.IDLE) {
       // Initial fetch
       dispatch(fetchMoreMessages({ chatId }))
     }
