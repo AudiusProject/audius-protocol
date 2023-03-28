@@ -7,6 +7,7 @@ import (
 	"os"
 	"testing"
 
+	"comms.audius.co/discovery/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +18,8 @@ func TestRecovery(t *testing.T) {
 
 	// dagron
 	os.Setenv("AUDIUS_IS_STAGING", "true")
-	err = Dial()
+	discoveryConfig := config.Parse()
+	err = Dial(discoveryConfig)
 	assert.NoError(t, err)
 
 	// addUser on POA

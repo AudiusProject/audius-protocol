@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"time"
 
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
@@ -27,7 +28,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func NewServer(proc *rpcz.RPCProcessor) *ChatServer {
+func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor) *ChatServer {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
@@ -37,8 +38,9 @@ func NewServer(proc *rpcz.RPCProcessor) *ChatServer {
 	e.Use(middleware.CORS())
 
 	s := &ChatServer{
-		Echo: e,
-		proc: proc,
+		Echo:   e,
+		proc:   proc,
+		config: discoveryConfig,
 	}
 
 	e.GET("/", func(c echo.Context) error {
@@ -95,7 +97,8 @@ func init() {
 
 type ChatServer struct {
 	*echo.Echo
-	proc *rpcz.RPCProcessor
+	proc   *rpcz.RPCProcessor
+	config *config.DiscoveryConfig
 }
 
 func (s *ChatServer) getStatus(c echo.Context) error {
@@ -132,16 +135,14 @@ func (s *ChatServer) mutate(c echo.Context) error {
 	}
 
 	//
-	myHost := os.Getenv("audius_discprov_url")
 	rpcLog := &schema.RpcLog{
-		RelayedBy:  myHost,
+		RelayedBy:  s.config.MyHost,
 		RelayedAt:  time.Now(),
 		FromWallet: wallet,
 		Rpc:        payload,
 		Sig:        c.Request().Header.Get(signing.SigHeader),
 	}
 
-	// ok, err := s.proc.SubmitAndWait(msg)
 	ok, err := s.proc.ApplyAndPublish(rpcLog)
 	if err != nil {
 		logger.Warn(string(payload), "wallet", wallet, "err", err)
@@ -650,7 +651,6 @@ func (ss *ChatServer) getRpcStream(c echo.Context) error {
 	go func() {
 		// Received Browser Disconnection
 		<-r.Context().Done()
-		// ss.logger.Info("sse client connection closed", "ip", r.RemoteAddr)
 		log.Println("sse client connection closed", "ip", r.RemoteAddr, r.URL.String(), "took", time.Since(startedAt))
 	}()
 
@@ -661,8 +661,7 @@ func (ss *ChatServer) getRpcStream(c echo.Context) error {
 func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 	var rpcs []schema.RpcLog
 	query := `select * from rpc_log where relayed_by = $1 order by relayed_at asc`
-	myHost := os.Getenv("audius_discprov_url")
-	err := db.Conn.Select(&rpcs, query, myHost)
+	err := db.Conn.Select(&rpcs, query, ss.config.MyHost)
 	if err != nil {
 		return err
 	}

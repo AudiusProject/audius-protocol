@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"log"
+	"strings"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
@@ -17,7 +18,7 @@ func DiscoveryMain() {
 	g := errgroup.Group{}
 
 	var proc *rpcz.RPCProcessor
-	discoveryConfig := config.GetDiscoveryConfig()
+	discoveryConfig := config.Parse()
 
 	g.Go(func() error {
 		var err error
@@ -34,14 +35,26 @@ func DiscoveryMain() {
 			return err
 		}
 
-		// start SSE clients
+		// query The Graph for peers
 		peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
 		if err != nil {
 			return err
 		}
+
+		// hack: fill in hostname if missing
+		if discoveryConfig.MyHost == "" {
+			for _, peer := range peers {
+				if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+					discoveryConfig.MyHost = peer.Host
+					break
+				}
+			}
+		}
+
+		// start SSE clients
 		proc.StartSSEClients(discoveryConfig, peers)
 
-		err = pubkeystore.Dial()
+		err = pubkeystore.Dial(discoveryConfig)
 		if err != nil {
 			return err
 		}
@@ -59,6 +72,6 @@ func DiscoveryMain() {
 	}
 
 	// Start comms server on :8925
-	e := server.NewServer(proc)
+	e := server.NewServer(discoveryConfig, proc)
 	e.Logger.Fatal(e.Start(":8925"))
 }

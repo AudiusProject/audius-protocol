@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	discoveryConfig "comms.audius.co/discovery/config"
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -25,15 +25,22 @@ var (
 	// an audius chain client for newer users
 	finalPoaBlock     int64 = 0
 	audiusChainClient *ethclient.Client
+
+	chainId           int64
+	verifyingContract string
 )
 
-func Dial() error {
+func Dial(discoveryConfig *config.DiscoveryConfig) error {
 	var err error
 
 	endpoint := "https://poa-gateway.audius.co"
+	chainId = 99
+	verifyingContract = "0x981c44040cb6150a2b8a7f63fb182760505bf666"
 
-	if discoveryConfig.GetDiscoveryConfig().IsStaging {
+	if discoveryConfig.IsStaging {
 		endpoint = "http://54.176.124.102:8545"
+		chainId = 77
+		verifyingContract = "0x39d26a6a138ddf8b447d651d5d3883644d277251"
 
 		// should get dynamically from
 		// https://identityservice.staging.audius.co/health_check/poa

@@ -1,7 +1,6 @@
 package config
 
 var (
-	PubkeystoreBucketName = "pubkeyStore"
 
 	// Rate limit config
 	RateLimitRulesBucketName            = "rateLimitRules"
@@ -16,7 +15,4 @@ var (
 		RateLimitMaxNumMessagesPerRecipient: 1000,
 		RateLimitMaxNumNewChats:             100,
 	}
-
-	GlobalStreamName    = "audius"
-	GlobalStreamSubject = "audius.>"
 )

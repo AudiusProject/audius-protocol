@@ -5,6 +5,7 @@ import (
 	"os"
 	"testing"
 
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/rpcz"
 )
@@ -36,11 +37,13 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
+	discoveryConfig := config.Parse()
+
 	proc, err := rpcz.NewProcessor()
 	if err != nil {
 		log.Fatal(err)
 	}
-	testServer = NewServer(proc)
+	testServer = NewServer(discoveryConfig, proc)
 
 	// start SSE clients
 	// TODO: test peers
