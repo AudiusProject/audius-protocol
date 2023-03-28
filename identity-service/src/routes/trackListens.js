@@ -404,7 +404,7 @@ module.exports = function (app) {
         redisTxTrackingExpirySeconds
       )
 
-      req.logger.debug(
+      req.logger.info(
         `TrackListen tx submission, forwardedIP=${ip} trackId=${trackId} userId=${userId}, ${JSON.stringify(
           trackingRedisKeys
         )}`
@@ -430,7 +430,7 @@ module.exports = function (app) {
           country: locationResponse.country_name
         }
       } catch (e) {
-        req.logger.error(
+        req.logger.info(
           `TrackListen location fetch failed: ${e}, trackId=${trackId} userId=${userId}, ${JSON.stringify(
             trackingRedisKeys
           )}`
@@ -448,7 +448,7 @@ module.exports = function (app) {
           connection
         })
         const feePayerAccount = getFeePayerKeypair(false)
-        req.logger.debug(
+        req.logger.info(
           `TrackListen tx submission, trackId=${trackId} userId=${userId} - sendRawTransaction`
         )
 
@@ -467,7 +467,7 @@ module.exports = function (app) {
           )
         }
 
-        req.logger.debug(
+        req.logger.info(
           `TrackListen tx confirmed, ${solTxSignature} userId=${userId}, trackId=${trackId} `
         )
 
