@@ -5,7 +5,7 @@ down::
 	(docker compose down --volumes || true)
 
 psql::
-	docker exec -it comms-db psql -U postgres audius_discovery
+	docker exec -it audius-protocol-comms-discovery-db-1 psql -U postgres audius_discovery
 
 fmt::
 	go fmt ./...
@@ -14,10 +14,10 @@ test::
 	docker logs -f comms-test
 
 migrate::
-	audius-compose up comms-db && \
+	audius-compose up comms-discovery-db-1 && \
 	DATABASE_URL="postgresql://postgres:postgres@localhost:5454/audius_discovery?sslmode=disable" \
 		dbmate --wait --no-dump-schema --migrations-dir ./discovery/db/migrations up
-	(docker exec -it comms-db psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery" || true)
+	(docker exec -it audius-protocol-comms-discovery-db-1 psql -U postgres -c "create database comtest WITH TEMPLATE audius_discovery" || true)
 
 test.load::
 	docker exec -it audius-protocol-storage-1 sh -c "./comms storage loadTest"

@@ -194,12 +194,6 @@ services:
       service: storage-4
     <<: *common
 
-  comms-db:
-    extends:
-      file: docker-compose.comms.yml
-      service: comms-db
-    <<: *common
-
   comms-discovery-1:
     extends:
       file: docker-compose.comms.yml
