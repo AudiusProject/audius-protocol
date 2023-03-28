@@ -73,7 +73,6 @@ export const main = async () => {
         data
       })
     })
-    console.log(message)
 
     await publish({
       TargetArn: targetARN,

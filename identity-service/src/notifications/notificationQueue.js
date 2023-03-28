@@ -200,6 +200,8 @@ async function processNotification(optimizelyClient, logger, notification) {
   let numProcessedNotifs = 0
   const notificationMappingVar =
     notificaitonTypeMapping[notification.notification.type]
+  // NOTE: This flag is used betwen the notifications plugin and identity service
+  // so, when true, it is enabled in the plugin and disabeld here in identity
   const isDisabled = getRemoteFeatureVarEnabled(
     optimizelyClient,
     DISCOVERY_NOTIFICATION_MAPPING,
@@ -264,6 +266,8 @@ async function drainPublishedSolanaMessages(logger, optimizelyClient) {
   for (const bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
     const notificationMappingVar =
       notificaitonTypeMapping[bufferObj.notification.type]
+    // NOTE: This flag is used betwen the notifications plugin and identity service
+    // so, when true, it is enabled in the plugin and disabeld here in identity
     const isDisabled = getRemoteFeatureVarEnabled(
       optimizelyClient,
       DISCOVERY_NOTIFICATION_MAPPING,

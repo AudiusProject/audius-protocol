@@ -1,9 +1,8 @@
 /**
- * Tests a push notification
+ * Create an announcement notification
  */
 import prompts from 'prompts'
 import { AudiusLibs, Utils } from '@audius/sdk'
-// import { EntityManagerClient } from '@audius/sdk/dist/services/dataContracts/EntityManagerClient'
 
 export const main = async () => {
   // Get Env Keys
