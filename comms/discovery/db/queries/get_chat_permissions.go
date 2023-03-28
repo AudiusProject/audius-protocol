@@ -41,6 +41,6 @@ func BulkGetChatPermissions(q db.Queryable, ctx context.Context, userIds []int32
 		return permissions, err
 	}
 	query = q.Rebind(query)
-	err = q.GetContext(ctx, &permissions, query, args...)
+	err = q.SelectContext(ctx, &permissions, query, args...)
 	return permissions, err
 }
