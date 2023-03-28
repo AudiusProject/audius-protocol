@@ -429,7 +429,7 @@ def extend_trending_underground(action: NotificationAction):
 def extend_announcement(action: NotificationAction):
     data: AnnouncementNotification = action["data"]  # type: ignore
     notification = {
-        "specifier": encode_int_id(int(action["specifier"])),
+        "specifier": None,
         "type": action["type"],
         "timestamp": datetime.timestamp(action["timestamp"])
         if action["timestamp"]
