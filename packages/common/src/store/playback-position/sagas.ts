@@ -15,7 +15,7 @@ import {
 } from './slice'
 import { PlaybackPositionState, PLAYBACK_POSITION_LS_KEY } from './types'
 
-const RECORD_PLAYBACK_POSITION_INTERVAL = 5000
+const RECORD_PLAYBACK_POSITION_INTERVAL = 1000
 
 /**
  * Sets the playback rate from local storage when the app loads
