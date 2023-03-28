@@ -388,7 +388,7 @@ module.exports = function (app) {
       const { ip, isWhitelisted } = getIP(req)
       req.logger.info(`TrackListen ip=${ip} isWhitelisted=${isWhitelisted}`)
       if (!isWhitelisted) {
-        // skip any client requests since 
+        // skip any client requests since
         // content nodes also log a listen
         return successResponse()
       }
@@ -419,7 +419,6 @@ module.exports = function (app) {
       )
       let location
       try {
-
         const url = `https://api.ipdata.co/${ip}?api-key=${config.get(
           'ipdataAPIKey'
         )}`

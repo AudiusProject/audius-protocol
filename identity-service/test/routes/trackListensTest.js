@@ -15,14 +15,19 @@ describe('test Solana listen tracking', function () {
   beforeEach(async () => {
     delete require.cache[require.resolve('../../src/routes/trackListens')]
     sandbox = sinon.createSandbox()
-    createTrackListenInstructions = sandbox.stub(solClient, 'createTrackListenInstructions')
+    createTrackListenInstructions = sandbox.stub(
+      solClient,
+      'createTrackListenInstructions'
+    )
     const appInfo = await getApp()
     app = appInfo.app
     server = appInfo.server
     solanaWeb3Stub = sandbox.stub()
     app.get('audiusLibs').solanaWeb3Manager.solanaWeb3 = solanaWeb3Stub
     app.get('audiusLibs').solanaWeb3Manager.transactionHandler = {
-      handleTransaction: function() {return Promise.resolve('ok')}
+      handleTransaction: function () {
+        return Promise.resolve('ok')
+      }
     }
     await app.get('redis').flushdb()
   })
@@ -34,30 +39,29 @@ describe('test Solana listen tracking', function () {
   const recordSuccessfulListen = async (raw) => {
     // Common to both raw and non-raw path
     createTrackListenInstructions.resolves('expected success')
-    const resp = await request(app)
-      .post(`/tracks/${TRACK_ID}/listen`)
-      .send({
-        userId: USER_ID,
-        solanaListen: true,
-        sendRawTransaction: raw
-      })
+    const resp = await request(app).post(`/tracks/${TRACK_ID}/listen`).send({
+      userId: USER_ID,
+      solanaListen: true,
+      sendRawTransaction: raw
+    })
     assert.strictEqual(resp.status, 200)
   }
 
   const recordFailedListen = async (raw) => {
-    // Failed listen just needs createTrackListenInstructions to fail because it's called before raw/non-raw logic
-    createTrackListenInstructions.rejects('intentional failure')
-    const resp = await request(app)
-      .post(`/tracks/${TRACK_ID}/listen`)
-      .send({
-        userId: USER_ID,
-        solanaListen: true,
-        sendRawTransaction: raw
-      })
-    assert.strictEqual(resp.status, 500)
+    // Failed listen from missing user ID
+    const resp = await request(app).post(`/tracks/${TRACK_ID}/listen`).send({
+      solanaListen: true,
+      sendRawTransaction: raw
+    })
+    assert.strictEqual(resp.status, 400)
   }
 
-  const verifySuccessfulListens = async (numSuccess, numSubmission, percentSuccess, threshold) => {
+  const verifySuccessfulListens = async (
+    numSuccess,
+    numSubmission,
+    percentSuccess,
+    threshold
+  ) => {
     const resp = await request(app)
       .get(`/tracks/listen/solana/status?percent=${threshold}`)
       .send()
@@ -91,11 +95,13 @@ describe('test Solana listen tracking', function () {
   }
 
   const delaySeconds = async (seconds) => {
-    await new Promise(resolve => setTimeout(resolve, seconds * 1000))
+    await new Promise((resolve) => setTimeout(resolve, seconds * 1000))
   }
 
   for (const raw of [true, false]) {
-    const pathText = `for ${raw ? 'sendRawTransaction' : 'sendAndConfirmTransaction'} path`
+    const pathText = `for ${
+      raw ? 'sendRawTransaction' : 'sendAndConfirmTransaction'
+    } path`
     it(`records successful and failed transactions and fails when threshold is not met ${pathText}`, async function () {
       await recordSuccessfulListen()
       await recordFailedListen()
@@ -113,8 +119,16 @@ describe('test Solana listen tracking', function () {
       await delaySeconds(3)
       await recordSuccessfulListen()
 
-      await verifyListensInRange(twoSecondsInMinutes, 2, listensInLastTwoSeconds)
-      await verifyListensInRange(fourSecondsInMinutes, 2, listensInLastFourSeconds)
+      await verifyListensInRange(
+        twoSecondsInMinutes,
+        2,
+        listensInLastTwoSeconds
+      )
+      await verifyListensInRange(
+        fourSecondsInMinutes,
+        2,
+        listensInLastFourSeconds
+      )
     })
 
     it(`expires only listens greater than 1 week ${pathText}`, async function () {
@@ -125,7 +139,11 @@ describe('test Solana listen tracking', function () {
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, now, now)
       await redis.zadd(TRACKING_LISTEN_SUCCESS_KEY, lastWeek, lastWeek)
       await redis.zadd(TRACKING_LISTEN_SUBMISSION_KEY, lastWeek, lastWeek)
-      const successBeforeCleanup = await redis.zcount(TRACKING_LISTEN_SUCCESS_KEY, 0, Number.MAX_SAFE_INTEGER)
+      const successBeforeCleanup = await redis.zcount(
+        TRACKING_LISTEN_SUCCESS_KEY,
+        0,
+        Number.MAX_SAFE_INTEGER
+      )
       assert.strictEqual(successBeforeCleanup, 2)
       await verifySuccessfulListens(1, 1, 1, 1)
     })
