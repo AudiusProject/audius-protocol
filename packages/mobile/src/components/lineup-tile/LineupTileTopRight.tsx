@@ -200,13 +200,6 @@ export const LineupTileTopRight = ({
         />
       )}
       <View style={trackTileStyles.statTextContainer}>
-        {duration && isInProgress ? (
-          <ProgressBar
-            progress={(playbackPositionInfo.playbackPosition / duration) * 100}
-            max={100}
-            style={{ root: trackTileStyles.statTextProgressBar }}
-          />
-        ) : null}
         <Text
           style={[
             trackTileStyles.statText,
@@ -218,6 +211,13 @@ export const LineupTileTopRight = ({
             <IconCheck height={12} width={14} fill={secondary} />
           ) : null}
         </Text>
+        {duration && isInProgress ? (
+          <ProgressBar
+            progress={(playbackPositionInfo.playbackPosition / duration) * 100}
+            max={100}
+            style={{ root: trackTileStyles.statTextProgressBar }}
+          />
+        ) : null}
       </View>
     </View>
   )

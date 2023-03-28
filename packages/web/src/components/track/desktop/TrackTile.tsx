@@ -137,15 +137,15 @@ const TrackTile = memo(
           const remainingTime = duration - trackPositionInfo.playbackPosition
           return (
             <div className={styles.progressTextContainer}>
-              <ProgressBar
-                value={(trackPositionInfo.playbackPosition / duration) * 100}
-                sliderClassName={styles.progressTextSlider}
-              />
               <p className={styles.progressText}>
                 {`${formatLineupTileDuration(remainingTime, true)} ${
                   messages.timeLeft
                 }`}
               </p>
+              <ProgressBar
+                value={(trackPositionInfo.playbackPosition / duration) * 100}
+                sliderClassName={styles.progressTextSlider}
+              />
             </div>
           )
         } else if (trackPositionInfo.status === 'COMPLETED') {
