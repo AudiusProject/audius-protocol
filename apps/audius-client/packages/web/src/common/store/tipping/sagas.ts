@@ -236,7 +236,7 @@ function* sendTipAsync() {
   }
 
   const weiBNAmount = parseAudioInputToWei(amount) ?? (new BN('0') as BNWei)
-  const recipientERCWallet = recipient.wallet
+  const recipientERCWallet = recipient.erc_wallet ?? recipient.wallet
 
   // Create Userbanks if needed
   const feePayerOverride = yield* select(getFeePayer)
