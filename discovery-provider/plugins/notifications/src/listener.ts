@@ -1,5 +1,4 @@
-import { Knex } from 'knex'
-import { Notification } from 'pg'
+import { Client, Notification } from 'pg'
 import { logger } from './logger'
 import { NotificationRow } from './types/dn'
 
@@ -13,8 +12,8 @@ export class PendingUpdates {
 
 export class Listener {
   pending: PendingUpdates = new PendingUpdates()
-  db: Knex
-  connection: any
+  connectionString: string
+  client: Client
 
   takePending = () => {
     if (this.pending.isEmpty()) return
@@ -27,23 +26,29 @@ export class Listener {
     this.pending.appNotifications.push(row)
   }
 
-  start = async (db: Knex) => {
-    this.db = db
-    const sql = 'LISTEN notification;'
-    this.connection = await db.client.acquireConnection()
-    this.connection.on('notification', (msg: Notification) => {
+  start = async (connectionString: string) => {
+    this.connectionString = connectionString
+
+    this.client = new Client({
+      connectionString,
+      application_name: 'notifications'
+    })
+    logger.info('made client')
+    await this.client.connect()
+    logger.info('did connect')
+
+    this.client.on('notification', (msg: Notification) => {
       const body = JSON.parse(msg.payload)
       this.handler(body)
     })
 
-    await this.connection.query(sql)
+    const sql = 'LISTEN notification;'
+    await this.client.query(sql)
     logger.info('LISTENER Started')
   }
 
   close = async () => {
-    if (this.db) {
-      await this.db.client.releaseConnection(this.connection)
-      this.db = null
-    }
+    await this.client?.end()
+    this.client = null
   }
 }

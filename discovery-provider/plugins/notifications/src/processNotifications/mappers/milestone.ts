@@ -41,6 +41,8 @@ export class Milestone extends BaseNotification<MilestoneRow> {
   getPushBodyText(entityName?: string, isAlbum?: boolean) {
     if (this.type === MilestoneType.FOLLOWER_COUNT) {
       return `You have reached over ${this.threshold.toLocaleString()} Followers`
+    } else if (this.type === MilestoneType.LISTEN_COUNT) {
+      return `Your track ${entityName} has reached over ${this.threshold.toLocaleString()} listens`
     } else if (this.type === MilestoneType.TRACK_REPOST_COUNT) {
       return `Your track ${entityName} has reached over ${this.threshold.toLocaleString()} reposts`
     } else if (this.type === MilestoneType.TRACK_SAVE_COUNT) {
@@ -87,6 +89,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     let isAlbum = false
 
     if (
+      this.type === MilestoneType.LISTEN_COUNT ||
       this.type === MilestoneType.TRACK_REPOST_COUNT ||
       this.type === MilestoneType.TRACK_SAVE_COUNT
     ) {
@@ -188,6 +191,15 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     let entity
     if (this.type === MilestoneType.FOLLOWER_COUNT) {
       achievement = 'follow'
+    } else if (this.type === MilestoneType.LISTEN_COUNT) {
+      const data = this.notification.data as TrackMilestoneNotification
+      const track = resources.tracks[data.track_id]
+      achievement = 'listen'
+      entity = {
+        type: EntityType.Track,
+        name: track.title,
+        imageUrl: track.imageUrl
+      }
     } else if (this.type === MilestoneType.TRACK_REPOST_COUNT) {
       const data = this.notification.data as TrackMilestoneNotification
       const track = resources.tracks[data.track_id]

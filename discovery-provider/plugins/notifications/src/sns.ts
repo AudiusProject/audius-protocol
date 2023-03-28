@@ -6,6 +6,7 @@ import {
   PublishCommandInput
 } from '@aws-sdk/client-sns'
 import { DeviceType } from './processNotifications/mappers/base'
+import { logger } from './logger'
 
 const region = process.env.AWS_REGION
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
@@ -42,8 +43,6 @@ export const publishBatch = async (params: PublishBatchCommandInput) => {
   }
 }
 
-// NOTE: Should be 'APNS' for prod
-const ARN = process.env.APN || 'APNS_SANDBOX'
 export const sendIOSMessage = async ({
   title,
   body,
@@ -59,9 +58,12 @@ export const sendIOSMessage = async ({
   playSound: boolean
   targetARN: string
 }) => {
+  let arn
+  if (targetARN.includes('APNS_SANDBOX')) arn = 'APNS_SANDBOX'
+  else if (targetARN.includes('APNS')) arn = 'APNS'
   const message = JSON.stringify({
     ['default']: body,
-    [ARN]: {
+    [arn]: JSON.stringify({
       aps: {
         alert: {
           title,
@@ -71,7 +73,7 @@ export const sendIOSMessage = async ({
         badge: badgeCount
       },
       data
-    }
+    })
   })
 
   await publish({

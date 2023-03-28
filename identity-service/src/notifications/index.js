@@ -601,7 +601,10 @@ class NotificationProcessor {
       time = Date.now()
 
       // actually send out push notifications
-      const numProcessedNotifs = await drainPublishedSolanaMessages(logger)
+      const numProcessedNotifs = await drainPublishedSolanaMessages(
+        logger,
+        optimizelyClient
+      )
       logger.info(
         `${logLabel} - drainPublishedSolanaMessages complete - processed ${numProcessedNotifs} notifs in ${
           Date.now() - time
