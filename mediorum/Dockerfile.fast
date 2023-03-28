@@ -1,0 +1,9 @@
+FROM alpine
+
+RUN apk add curl ffmpeg
+
+COPY build/mediorum-linux-amd64 /bin/mediorum
+
+VOLUME ["/mediorum_data"]
+EXPOSE 1991
+ENTRYPOINT ["mediorum"]
