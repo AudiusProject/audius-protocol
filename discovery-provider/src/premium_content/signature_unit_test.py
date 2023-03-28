@@ -140,7 +140,7 @@ def test_signature_for_user_with_user_id():
 
     assert signature_data_obj["cid"] == track_cid
     assert signature_data_obj["user_wallet"] == user_wallet
-    assert signature_data_obj["user_id"] == user_id
+    assert signature_data_obj["userWallet"] == user_id
     assert signature_data_obj["shouldCache"] == 1
     assert before_ms <= signature_data_obj["timestamp"] <= after_ms
     assert len(signature) == 132
