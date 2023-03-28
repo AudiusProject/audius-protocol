@@ -45,6 +45,8 @@ export enum FeatureFlags {
   DISCOVERY_NOTIFICATIONS = 'discovery_notifications',
   REPOST_OF_REPOST_NOTIFICATIONS = 'repost_of_repost_notifications',
   SAVE_OF_REPOST_NOTIFICATIONS = 'save_of_repost_notifications',
+  TRENDING_PLAYLIST_NOTIFICATIONS = 'trending_playlist_notifications',
+  TRENDING_UNDERGROUND_NOTIFICATIONS = 'trending_underground_notifications',
   STORAGE_V2 = 'storage_v2'
 }
 
@@ -106,5 +108,7 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.DISCOVERY_NOTIFICATIONS]: false,
   [FeatureFlags.REPOST_OF_REPOST_NOTIFICATIONS]: false,
   [FeatureFlags.SAVE_OF_REPOST_NOTIFICATIONS]: false,
+  [FeatureFlags.TRENDING_PLAYLIST_NOTIFICATIONS]: false,
+  [FeatureFlags.TRENDING_UNDERGROUND_NOTIFICATIONS]: false,
   [FeatureFlags.STORAGE_V2]: false
 }
