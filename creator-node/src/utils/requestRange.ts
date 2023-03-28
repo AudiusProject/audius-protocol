@@ -66,5 +66,6 @@ export const formatContentRange = (
 
 module.exports = {
   getRequestRange,
+  isFirstByteRequest,
   formatContentRange
 }
