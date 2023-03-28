@@ -1,0 +1,4 @@
+m1: MEDIORUM_ENV=single PORT=1991 go run main.go
+m2: MEDIORUM_ENV=single PORT=1992 go run main.go
+m3: MEDIORUM_ENV=single PORT=1993 go run main.go
+m4: MEDIORUM_ENV=single PORT=1994 go run main.go
