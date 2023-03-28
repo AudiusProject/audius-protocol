@@ -110,7 +110,7 @@ func (c *RPCProcessor) sseDial(host, streamEndpoint, bulkEndpoint string) error 
 				logger.Warn("apply failed", "err", err)
 			}
 
-		case <-time.After(45 * time.Second):
+		case <-time.After(3 * time.Minute):
 			return errors.New("health timeout")
 		}
 	}

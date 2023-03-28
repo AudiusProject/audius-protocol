@@ -40,11 +40,19 @@ func NewProcessor() (*RPCProcessor, error) {
 	}
 
 	sseServer := sse.New()
-	sseServer.AutoReplay = false
+
+	// re-enabling AutoReplay because sse will reconnect via internal retry mechanism
+	// which won't prompt a full "backfill"... and some events can get lost
+	//   this can be fine with some upstream changes to purge old events
+	//   todo: purge old events to prevent mem growth
+	// sseServer.AutoReplay = false
+
 	sseServer.CreateStream(sseStreamName)
+
+	// this ping might be not-necessary
 	go func() {
 		for {
-			time.Sleep(time.Second * 10)
+			time.Sleep(time.Second * 30)
 			msg := fmt.Sprintf("ping: %s", time.Now().Format(time.RFC3339))
 			sseServer.Publish(sseStreamName, &sse.Event{
 				Data: []byte(msg),
