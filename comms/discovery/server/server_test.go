@@ -10,7 +10,6 @@ import (
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"strconv"
 	"testing"
 	"time"
@@ -215,7 +214,7 @@ func TestGetChats(t *testing.T) {
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			assert.True(t, reflect.DeepEqual(response, expectedResponse))
+			assert.True(t, cmp.Equal(response, expectedResponse))
 		}
 	}
 
@@ -265,7 +264,7 @@ func TestGetChats(t *testing.T) {
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			assert.True(t, reflect.DeepEqual(response, expectedResponse))
+			assert.True(t, cmp.Equal(response, expectedResponse))
 		}
 	}
 
@@ -301,7 +300,7 @@ func TestGetChats(t *testing.T) {
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			assert.True(t, reflect.DeepEqual(response, expectedResponse))
+			assert.True(t, cmp.Equal(response, expectedResponse))
 		}
 	}
 }
@@ -656,9 +655,10 @@ func TestGetPermissions(t *testing.T) {
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			fmt.Println("response: ", response)
-			fmt.Println("expected response: ", expectedResponse)
-			assert.True(t, reflect.DeepEqual(response.Data, expectedResponse.Data))
+			fmt.Println("response: ", fmt.Sprint(response.Data))
+			fmt.Println("expected response: ", fmt.Sprint(expectedResponse.Data))
+			assert.True(t, fmt.Sprint(response.Data) == fmt.Sprint(expectedResponse.Data))
+			assert.True(t, cmp.Equal(response.Data, expectedResponse.Data))
 		}
 	}
 }

@@ -451,7 +451,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 func (s *ChatServer) validateCanChat(c echo.Context) error {
 	payload, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
-		return c.JSON(400, "bad request 1: "+err.Error())
+		return c.JSON(400, "bad request: "+err.Error())
 	}
 
 	userId, err := queries.GetUserIDFromWallet(db.Conn, c.Request().Context(), wallet)
@@ -460,25 +460,24 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 	}
 
 	// Unmarshal RPC
-	fmt.Println("payload: ", string(payload))
 	var rawRpc schema.RawRPC
 	err = json.Unmarshal(payload, &rawRpc)
 	if err != nil {
-		return c.JSON(400, "bad request 2: "+err.Error())
+		return c.JSON(400, "bad request: "+err.Error())
 	}
 
 	// Validate and decode payload
 	var params schema.ValidateCanChatRPCParams
 	err = json.Unmarshal(rawRpc.Params, &params)
 	if err != nil {
-		return c.JSON(400, "bad request 3: "+err.Error())
+		return c.JSON(400, "bad request: "+err.Error())
 	}
 	var receiverUserIds []int32
 	validatedPermissions := make(map[string]bool)
 	for _, encodedId := range params.ReceiverUserIDS {
 		decodedId, err := misc.DecodeHashId(encodedId)
 		if err != nil {
-			return c.JSON(400, "bad request 4: "+err.Error())
+			return c.JSON(400, "bad request: "+err.Error())
 		}
 		receiverUserIds = append(receiverUserIds, int32(decodedId))
 		// Initialize response map
@@ -515,11 +514,14 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 			validatedPermissions[encodedId] = false
 		}
 	}
-	// Query follows table to validate <sender, receiver> pair against users with followees only permissions
+	//kQuery follows table to validate <sender, receiver> pair against users with followees only permissions
 	follows, err := queries.BulkGetFollowers(db.Conn, c.Request().Context(), queries.BulkGetFollowersParams{
 		FollowerUserIDs: followeePermissions,
 		FolloweeUserID:  userId,
 	})
+	if err != nil {
+		return err
+	}
 	// Update response map if count > 0
 	for _, follow := range follows {
 		if follow.Count > 0 {
@@ -536,6 +538,9 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 		SenderUserID:    userId,
 		ReceiverUserIDs: tipperPermissions,
 	})
+	if err != nil {
+		return err
+	}
 	// Update response map if count > 0
 	for _, tip := range tips {
 		if tip.Count > 0 {

@@ -8,7 +8,7 @@ import (
 )
 
 const countTips = `
-select count(*) from user_tips where sender_user_id = $1 and receiver_user_id = $2;
+select count(*) from aggregate_user_tips where sender_user_id = $1 and receiver_user_id = $2;
 `
 
 type CountTipsParams struct {
@@ -27,7 +27,7 @@ select
   sender_user_id,
 	receiver_user_id,
 	count(*)
-from user_tips
+from aggregate_user_tips
 where 
 	sender_user_id = :SenderUserID
   and receiver_user_id in (:ReceiverUserIDs)
@@ -51,7 +51,7 @@ func BulkGetTipReceivers(q db.Queryable, ctx context.Context, arg BulkGetTipRece
 		"SenderUserID":    arg.SenderUserID,
 		"ReceiverUserIDs": arg.ReceiverUserIDs,
 	}
-	query, args, err := sqlx.Named(bulkGetFollowers, argMap)
+	query, args, err := sqlx.Named(bulkGetTipReceivers, argMap)
 	if err != nil {
 		return counts, err
 	}

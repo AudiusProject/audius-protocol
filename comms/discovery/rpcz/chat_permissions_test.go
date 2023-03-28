@@ -34,7 +34,7 @@ func TestChatPermissions(t *testing.T) {
 	_, err = tx.Exec("insert into follows (follower_user_id, followee_user_id, is_current, is_delete, created_at) values ($1, $2, true, false, now())", user1Id, user2Id)
 	assert.NoError(t, err)
 	// user 3 has tipped user 1
-	_, err = tx.Exec("insert into user_tips (slot, signature, sender_user_id, receiver_user_id, amount) values (0, 'sig', $1, $2, 100)", user3Id, user1Id)
+	_, err = tx.Exec("insert into aggregate_user_tips (sender_user_id, receiver_user_id, amount) values ($1, $2, 100)", user3Id, user1Id)
 	assert.NoError(t, err)
 
 	assertPermissionValidation := func(tx *sqlx.Tx, sender int32, receiver int32, chatId string, errorExpected bool) {
