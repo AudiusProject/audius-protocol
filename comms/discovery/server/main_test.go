@@ -9,7 +9,6 @@ import (
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/shared/peering"
-	"github.com/nats-io/nats.go"
 )
 
 var (
@@ -46,25 +45,11 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-	nc, err := p.DialNats(nil)
+	proc, err := rpcz.NewProcessor()
 	if err != nil {
 		log.Fatal(err)
 	}
-	jsc, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// clear nats state
-	jsc.DeleteKeyValue(config.RateLimitRulesBucketName)
-	jsc.DeleteStream("audius")
-	jsc.DeleteStream("audius.rpc")
-
-	proc, err := rpcz.NewProcessor(jsc)
-	if err != nil {
-		log.Fatal(err)
-	}
-	testServer = NewServer(jsc, proc)
+	testServer = NewServer(proc)
 
 	// start SSE clients
 	peerMap := p.Solicit()

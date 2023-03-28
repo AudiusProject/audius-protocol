@@ -11,7 +11,6 @@ import (
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
 	"comms.audius.co/shared/peering"
-	"github.com/nats-io/nats.go"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -19,7 +18,6 @@ func DiscoveryMain() {
 	// dial datasources in parallel
 	g := errgroup.Group{}
 
-	var jsc nats.JetStreamContext
 	var proc *rpcz.RPCProcessor
 
 	g.Go(func() error {
@@ -37,14 +35,8 @@ func DiscoveryMain() {
 
 		peerMap := peering.Solicit()
 
-		jsc, err = peering.DialJetstream(peerMap)
-		if err != nil {
-			log.Println("jetstream dial failed", err)
-			return err
-		}
-
 		// create RPC processor
-		proc, err = rpcz.NewProcessor(jsc)
+		proc, err = rpcz.NewProcessor()
 		if err != nil {
 			return err
 		}
@@ -75,6 +67,6 @@ func DiscoveryMain() {
 	expvar.NewString("booted_at").Set(time.Now().UTC().String())
 
 	// Start comms server on :8925
-	e := server.NewServer(jsc, proc)
+	e := server.NewServer(proc)
 	e.Logger.Fatal(e.Start(":8925"))
 }

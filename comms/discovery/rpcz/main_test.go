@@ -42,7 +42,7 @@ func TestMain(m *testing.M) {
 	}
 
 	// setup test validator
-	limiter, err := NewRateLimiter(jsc)
+	limiter, err := NewRateLimiter()
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"time"
 
-	discoveryConfig "comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
@@ -27,10 +26,9 @@ import (
 	"github.com/inconshreveable/log15"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/nats-io/nats.go"
 )
 
-func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
+func NewServer(proc *rpcz.RPCProcessor) *ChatServer {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
@@ -41,7 +39,6 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 
 	s := &ChatServer{
 		Echo: e,
-		jsc:  jsc,
 		proc: proc,
 	}
 
@@ -83,22 +80,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/debug/sse", s.debugSse)
 
 	g.GET("/rpc/stream", s.getRpcStream)
-
-	g.GET("/debug/stream", func(c echo.Context) error {
-		info, err := jsc.StreamInfo(discoveryConfig.GlobalStreamName)
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, info)
-	})
-
-	g.GET("/debug/consumer", func(c echo.Context) error {
-		info, err := jsc.ConsumerInfo(discoveryConfig.GlobalStreamName, discoveryConfig.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey)
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, info)
-	})
+	g.GET("/rpc/bulk", s.getRpcBulk)
 
 	g.GET("/debug/vars", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
 	g.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
@@ -116,7 +98,6 @@ func init() {
 
 type ChatServer struct {
 	*echo.Echo
-	jsc  nats.JetStreamContext
 	proc *rpcz.RPCProcessor
 }
 
@@ -144,19 +125,23 @@ func (s *ChatServer) mutate(c echo.Context) error {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
 
-	// Publish data to the subject
-	subject := "audius.rpc"
-	msg := nats.NewMsg(subject)
-	msg.Header.Add(sharedConfig.SigHeader, c.Request().Header.Get(sharedConfig.SigHeader))
-	msg.Data = payload
+	//
+	myHost := os.Getenv("audius_discprov_url")
+	rpcLog := &schema.RpcLog{
+		RelayedBy:          myHost,
+		JetstreamTimestamp: time.Now(),
+		FromWallet:         wallet,
+		Rpc:                payload,
+		Sig:                c.Request().Header.Get(sharedConfig.SigHeader),
+	}
 
 	// ok, err := s.proc.SubmitAndWait(msg)
-	ok, err := s.proc.ApplyAndPublish(msg)
+	ok, err := s.proc.ApplyAndPublish(rpcLog)
 	if err != nil {
 		logger.Warn(string(payload), "wallet", wallet, "err", err)
 		return err
 	}
-	logger.Debug(string(payload), "seq", ok.Sequence, "wallet", wallet, "relay", true)
+	logger.Debug(string(payload), "wallet", wallet, "relay", true)
 	return c.JSON(200, ok)
 }
 
@@ -669,11 +654,24 @@ func (ss *ChatServer) getRpcStream(c echo.Context) error {
 	return nil
 }
 
-// func (ss *ChatServer) getCrudBulk(c echo.Context) error {
-// 	after := c.QueryParam("after")
-// 	var ops []*crudr.Op
-// 	ss.crud.DB.Unscoped().
-// 		Where("host = ? AND ulid > ?", ss.Config.Self.Host, after).
-// 		Find(&ops)
-// 	return c.JSON(200, ops)
-// }
+func (ss *ChatServer) getRpcBulk(c echo.Context) error {
+	var rpcs []schema.RpcLog
+	query := `select * from rpc_log where relayed_by = $1 order by jetstream_timestamp asc`
+	myHost := os.Getenv("audius_discprov_url")
+	err := db.Conn.Select(&rpcs, query, myHost)
+	if err != nil {
+		return err
+	}
+
+	// using this with debug=true
+	// pretty prints the json and sig match fails
+	// ouch!
+	// return c.JSON(200, rpcs)
+
+	j, err := json.Marshal(rpcs)
+	if err != nil {
+		return err
+	}
+	return c.JSONBlob(200, j)
+
+}

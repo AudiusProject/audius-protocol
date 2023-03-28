@@ -7,7 +7,6 @@ import (
 	"testing"
 	"time"
 
-	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
@@ -21,19 +20,17 @@ func TestRateLimit(t *testing.T) {
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
 
-	kv := testValidator.limiter.kv
-
 	// Add test rules
-	testRules := map[string]int{
-		config.RateLimitTimeframeHours:             24,
-		config.RateLimitMaxNumMessages:             3,
-		config.RateLimitMaxNumMessagesPerRecipient: 2,
-		config.RateLimitMaxNumNewChats:             2,
-	}
-	for rule, limit := range testRules {
-		_, err := kv.PutString(rule, strconv.Itoa(limit))
-		assert.NoError(t, err)
-	}
+	// testRules := map[string]int{
+	// 	config.RateLimitTimeframeHours:             24,
+	// 	config.RateLimitMaxNumMessages:             3,
+	// 	config.RateLimitMaxNumMessagesPerRecipient: 2,
+	// 	config.RateLimitMaxNumNewChats:             2,
+	// }
+	// for rule, limit := range testRules {
+	// 	_, err := kv.PutString(rule, strconv.Itoa(limit))
+	// 	assert.NoError(t, err)
+	// }
 
 	tx := db.Conn.MustBegin()
 

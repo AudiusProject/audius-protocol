@@ -1,16 +1,19 @@
 package rpcz
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"strings"
 	"time"
 
+	"comms.audius.co/discovery/schema"
 	"comms.audius.co/shared/peering"
-	"github.com/nats-io/nats.go"
 	"github.com/r3labs/sse/v2"
+	"golang.org/x/exp/slog"
 )
 
 type RpcSseMessage struct {
@@ -29,7 +32,7 @@ func (c *RPCProcessor) StartSSEClients(peerMap peering.PeerMap) {
 			log.Println("skipping self", peer)
 			continue
 		}
-		go c.sseStart(peer.Host, "/comms/rpc/stream", "comms/rpc/bulk")
+		go c.sseStart(peer.Host, "/comms/rpc/stream", "/comms/rpc/bulk")
 	}
 }
 
@@ -64,34 +67,82 @@ func (c *RPCProcessor) sseDial(host, streamEndpoint, bulkEndpoint string) error 
 		logger.Warn("sse disconnected !!!!")
 	})
 
-	// todo: backfill on boot
-	// using bulkEndpoint
-	// see mediorum crudr client code
+	// backfill on boot
+	err = c.sseBackfill(host, bulkEndpoint)
+	if err != nil {
+		return fmt.Errorf("sse backfill failed: %v", err)
+	}
 
 	logger.Debug("processing events")
 	for {
 
 		select {
 		case e := <-events:
-			var msg *nats.Msg
+
+			// check for ping
+			if bytes.HasPrefix(e.Data, []byte("ping: ")) {
+				timeString := strings.Replace(string(e.Data), "ping: ", "", 1)
+				theirTime, err := time.Parse(time.RFC3339, timeString)
+				if err != nil {
+					log.Println("invalid ping time", string(e.Data))
+				} else {
+					log.Println("ping from", host, "skew", time.Since(theirTime))
+				}
+				continue
+			}
+
+			log.Println("GOT SSE", string(e.Data))
+
+			var msg *schema.RpcLog
 			err := json.Unmarshal(e.Data, &msg)
 			if err != nil {
 				logger.Warn("bad event json: " + string(e.Data))
 				continue
 			}
 
-			log.Println("GOT SSE", string(e.Data))
+			err = c.Apply(msg)
+			if err != nil {
+				logger.Warn("apply failed", "err", err)
+			}
 
-			c.Apply(msg)
-
-			// todo: apply should return error
-			// if err != nil {
-			// 	logger.Warn("apply failed", "err", err)
-			// }
-
-		case <-time.After(600 * time.Second):
+		case <-time.After(45 * time.Second):
 			return errors.New("health timeout")
 		}
 	}
+}
 
+func (c *RPCProcessor) sseBackfill(host, bulkEndpoint string) error {
+	endpoint := host + bulkEndpoint // todo: + "?after=" + lastUlid
+
+	client := &http.Client{
+		Timeout: time.Minute,
+	}
+
+	resp, err := client.Get(endpoint)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("bad status: %d", resp.StatusCode)
+	}
+
+	var ops []*schema.RpcLog
+	dec := json.NewDecoder(resp.Body)
+	err = dec.Decode(&ops)
+	if err != nil {
+		return err
+	}
+
+	for _, op := range ops {
+		err := c.Apply(op)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
+
+	slog.Info("backfill done", "host", host, "count", len(ops))
+
+	return nil
 }
