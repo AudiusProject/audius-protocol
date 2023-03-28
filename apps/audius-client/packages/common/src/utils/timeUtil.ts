@@ -29,7 +29,12 @@ export const formatLineupTileDuration = (
   }
   const d = moment.duration(seconds, 'seconds')
   const hourText = d.hours() > 0 ? `${d.hours()}hr ` : ''
-  return `${hourText}${d.minutes()}m`
+  // Ceiling the minute value
+  const minuteText = `${
+    d.seconds() > 0 && d.minutes() < 59 ? d.minutes() + 1 : d.minutes()
+  }m`
+
+  return `${hourText}${minuteText}`
 }
 
 export const formatDate = (date: MomentInput, format?: string): string => {
