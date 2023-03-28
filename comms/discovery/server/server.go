@@ -134,11 +134,11 @@ func (s *ChatServer) mutate(c echo.Context) error {
 	//
 	myHost := os.Getenv("audius_discprov_url")
 	rpcLog := &schema.RpcLog{
-		RelayedBy:          myHost,
-		JetstreamTimestamp: time.Now(),
-		FromWallet:         wallet,
-		Rpc:                payload,
-		Sig:                c.Request().Header.Get(signing.SigHeader),
+		RelayedBy:  myHost,
+		RelayedAt:  time.Now(),
+		FromWallet: wallet,
+		Rpc:        payload,
+		Sig:        c.Request().Header.Get(signing.SigHeader),
 	}
 
 	// ok, err := s.proc.SubmitAndWait(msg)
@@ -660,7 +660,7 @@ func (ss *ChatServer) getRpcStream(c echo.Context) error {
 
 func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 	var rpcs []schema.RpcLog
-	query := `select * from rpc_log where relayed_by = $1 order by jetstream_timestamp asc`
+	query := `select * from rpc_log where relayed_by = $1 order by relayed_at asc`
 	myHost := os.Getenv("audius_discprov_url")
 	err := db.Conn.Select(&rpcs, query, myHost)
 	if err != nil {

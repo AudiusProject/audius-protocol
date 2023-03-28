@@ -36,13 +36,6 @@ func TestMain(m *testing.M) {
 		log.Fatal(err)
 	}
 
-	// connect to NATS and create JetStream Context
-	// discoveryConfig := config.GetDiscoveryConfig()
-	// p, err := peering.New(&discoveryConfig.PeeringConfig)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-
 	proc, err := rpcz.NewProcessor()
 	if err != nil {
 		log.Fatal(err)

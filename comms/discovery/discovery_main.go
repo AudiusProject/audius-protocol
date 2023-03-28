@@ -1,9 +1,7 @@
 package discovery
 
 import (
-	"expvar"
 	"log"
-	"time"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
@@ -19,11 +17,10 @@ func DiscoveryMain() {
 	g := errgroup.Group{}
 
 	var proc *rpcz.RPCProcessor
+	discoveryConfig := config.GetDiscoveryConfig()
 
 	g.Go(func() error {
 		var err error
-
-		discoveryConfig := config.GetDiscoveryConfig()
 
 		// dial db
 		err = db.Dial()
@@ -60,8 +57,6 @@ func DiscoveryMain() {
 	if err := g.Wait(); err != nil {
 		log.Fatal(err)
 	}
-
-	expvar.NewString("booted_at").Set(time.Now().UTC().String())
 
 	// Start comms server on :8925
 	e := server.NewServer(proc)

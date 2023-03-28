@@ -3,7 +3,6 @@ package rpcz
 import (
 	"context"
 	"encoding/json"
-	"expvar"
 	"fmt"
 	"log"
 	"sync"
@@ -19,11 +18,9 @@ import (
 
 type RPCProcessor struct {
 	sync.Mutex
-	waiters           map[uint64]chan error
-	validator         *Validator
-	JetstreamSequence *expvar.Int
-	ConsumerSequence  *expvar.Int
-	SSEServer         *sse.Server
+	waiters   map[uint64]chan error
+	validator *Validator
+	SSEServer *sse.Server
 }
 
 const (
@@ -57,11 +54,9 @@ func NewProcessor() (*RPCProcessor, error) {
 	}()
 
 	proc := &RPCProcessor{
-		waiters:           make(map[uint64]chan error),
-		validator:         validator,
-		JetstreamSequence: expvar.NewInt("jetstream_sequence"),
-		ConsumerSequence:  expvar.NewInt("consumer_sequence"),
-		SSEServer:         sseServer,
+		waiters:   make(map[uint64]chan error),
+		validator: validator,
+		SSEServer: sseServer,
 	}
 
 	return proc, nil
@@ -118,7 +113,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 	}
 
 	// get ts
-	messageTs := rpcLog.JetstreamTimestamp
+	messageTs := rpcLog.RelayedAt
 
 	// recover wallet + user
 	signatureHeader := rpcLog.Sig
@@ -167,19 +162,14 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		}
 		defer tx.Rollback()
 
-		// build rpc_log id
-		// todo: better ID
-		// todo: should ID be set by caller and validated here intead
-		idString := rpcLog.Sig
-
-		logger.Debug("begin tx", "took", takeSplit(), "id", idString)
+		logger.Debug("begin tx", "took", takeSplit(), "sig", rpcLog.Sig)
 
 		query := `
-		INSERT INTO rpc_log (relayed_by, jetstream_timestamp, from_wallet, rpc, sig, id)
+		INSERT INTO rpc_log (relayed_by, relayed_at, applied_at, from_wallet, rpc, sig)
 		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT DO NOTHING
 		`
-		result, err := tx.Exec(query, rpcLog.RelayedBy, messageTs, wallet, rpcLog.Rpc, signatureHeader, idString)
+		result, err := tx.Exec(query, rpcLog.RelayedBy, messageTs, time.Now(), wallet, rpcLog.Rpc, signatureHeader)
 		if err != nil {
 			return err
 		}
@@ -188,9 +178,9 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 			return err
 		}
 		if count == 0 {
-			// No rows were inserted because the jetstream seq number is already in rpc_log.
+			// No rows were inserted because the sig (id) is already in rpc_log.
 			// Do not process redelivered messages that have already been processed.
-			logger.Info("rpc already in log, skipping duplicate", "id", rpcLog)
+			logger.Info("rpc already in log, skipping duplicate", "sig", rpcLog.Sig)
 			return nil
 		}
 		logger.Debug("inserted RPC", "took", takeSplit())
