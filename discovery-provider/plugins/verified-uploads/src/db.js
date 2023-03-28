@@ -41,9 +41,11 @@ export default async (topic, callback) => {
   });
   conn.on("end", (err) => {
     console.log(err);
+    process.exit(1); // have docker restart process
   });
   conn.on("error", (err) => {
     console.log(err);
+    process.exit(1); // have docker restart process
   });
   await conn.query(sql).catch(console.error);
   console.log(`listening on topic ${topic}`);
