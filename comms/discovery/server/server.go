@@ -74,8 +74,8 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/chats/:id/messages", s.getMessages)
 	g.POST("/mutate", s.mutate)
 
-	g.GET("/chat_permissions", s.getChatPermissions)
-	g.POST("/validate_can_chat", s.validateCanChat)
+	g.GET("/chat-permissions", s.getChatPermissions)
+	g.POST("/validate-can-chat", s.validateCanChat)
 
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
@@ -527,16 +527,18 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 		FollowerUserIDs: followeePermissions,
 		FolloweeUserID:  userId,
 	})
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
-	// Update response map if current follow record exists
-	for _, follow := range follows {
-		encodedId, err := misc.EncodeHashId(int(follow.FollowerUserID))
-		if err != nil {
-			return err
+	if err != sql.ErrNoRows {
+		// Update response map if current follow record exists
+		for _, follow := range follows {
+			encodedId, err := misc.EncodeHashId(int(follow.FollowerUserID))
+			if err != nil {
+				return err
+			}
+			validatedPermissions[encodedId] = true
 		}
-		validatedPermissions[encodedId] = true
 	}
 
 	// Query tips table to validate <sender, receiver> pair against users with tippers only permissions
@@ -544,16 +546,18 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 		SenderUserID:    userId,
 		ReceiverUserIDs: tipperPermissions,
 	})
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
-	// Update response map if aggregate tip record exists
-	for _, tip := range tips {
-		encodedId, err := misc.EncodeHashId(int(tip.ReceiverUserID))
-		if err != nil {
-			return err
+	if err != sql.ErrNoRows {
+		// Update response map if aggregate tip record exists
+		for _, tip := range tips {
+			encodedId, err := misc.EncodeHashId(int(tip.ReceiverUserID))
+			if err != nil {
+				return err
+			}
+			validatedPermissions[encodedId] = true
 		}
-		validatedPermissions[encodedId] = true
 	}
 
 	response := schema.CommsResponse{

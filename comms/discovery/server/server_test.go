@@ -20,7 +20,6 @@ import (
 	sharedConfig "comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/google/go-cmp/cmp"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -204,17 +203,19 @@ func TestGetChats(t *testing.T) {
 			PrevCount:  float64(0),
 			PrevCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		}
-		expectedResponse := schema.CommsResponse{
-			Health:  expectedHealth,
-			Data:    expectedData,
-			Summary: &expectedSummary,
-		}
+
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health:  expectedHealth,
+				Data:    expectedData,
+				Summary: &expectedSummary,
+			},
+		)
+		assert.NoError(t, err)
+
 		if assert.NoError(t, testServer.getChats(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			var response schema.CommsResponse
-			err := json.Unmarshal(rec.Body.Bytes(), &response)
-			assert.NoError(t, err)
-			assert.True(t, cmp.Equal(response, expectedResponse))
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 
@@ -254,17 +255,18 @@ func TestGetChats(t *testing.T) {
 			PrevCount:  float64(0),
 			PrevCursor: message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
 		}
-		expectedResponse := schema.CommsResponse{
-			Health:  expectedHealth,
-			Data:    expectedData,
-			Summary: &expectedSummary,
-		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health:  expectedHealth,
+				Data:    expectedData,
+				Summary: &expectedSummary,
+			},
+		)
+		assert.NoError(t, err)
+
 		if assert.NoError(t, testServer.getChats(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			var response schema.CommsResponse
-			err := json.Unmarshal(rec.Body.Bytes(), &response)
-			assert.NoError(t, err)
-			assert.True(t, cmp.Equal(response, expectedResponse))
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 
@@ -291,16 +293,17 @@ func TestGetChats(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedResponse := schema.CommsResponse{
-			Health: expectedHealth,
-			Data:   expectedChat1Data,
-		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedChat1Data,
+			},
+		)
+		assert.NoError(t, err)
+
 		if assert.NoError(t, testServer.getChat(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			var response schema.CommsResponse
-			err := json.Unmarshal(rec.Body.Bytes(), &response)
-			assert.NoError(t, err)
-			assert.True(t, cmp.Equal(response, expectedResponse))
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 }
@@ -551,10 +554,10 @@ func TestGetPermissions(t *testing.T) {
 		IsHealthy: true,
 	}
 
-	// Test GET /chat_permissions (implicit ALL setting)
+	// Test GET /chat-permissions (implicit ALL setting)
 	{
-		// Query /comms/chat_permissions
-		reqUrl := fmt.Sprintf("/comms/chat_permissions?timestamp=%d", time.Now().UnixMilli())
+		// Query /comms/chat-permissions
+		reqUrl := fmt.Sprintf("/comms/chat-permissions?timestamp=%d", time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
@@ -570,24 +573,25 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := "all"
-		expectedResponse := schema.CommsResponse{
-			Health: expectedHealth,
-			Data:   expectedData,
-		}
+		expectedData := schema.All
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		assert.NoError(t, err)
+
 		if assert.NoError(t, testServer.getChatPermissions(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			var response schema.CommsResponse
-			err := json.Unmarshal(rec.Body.Bytes(), &response)
-			assert.NoError(t, err)
-			assert.True(t, cmp.Equal(response, expectedResponse))
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 
-	// Test GET /chat_permissions (explicit setting)
+	// Test GET /chat-permissions (explicit setting)
 	{
-		// Query /comms/chat_permissions
-		reqUrl := fmt.Sprintf("/comms/chat_permissions?timestamp=%d", time.Now().UnixMilli())
+		// Query /comms/chat-permissions
+		reqUrl := fmt.Sprintf("/comms/chat-permissions?timestamp=%d", time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
@@ -603,24 +607,24 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := "followees"
-		expectedResponse := schema.CommsResponse{
-			Health: expectedHealth,
-			Data:   expectedData,
-		}
+		expectedData := schema.Followees
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		assert.NoError(t, err)
 		if assert.NoError(t, testServer.getChatPermissions(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			var response schema.CommsResponse
-			err := json.Unmarshal(rec.Body.Bytes(), &response)
-			assert.NoError(t, err)
-			assert.True(t, cmp.Equal(response, expectedResponse))
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 
-	// Test POST /validate_can_chat
+	// Test POST /validate-can-chat
 	{
-		// Query /comms/validate_can_chat
-		reqUrl := fmt.Sprintf("/comms/validate_can_chat?timestamp=%d", time.Now().UnixMilli())
+		// Query /comms/validate-can-chat
+		reqUrl := fmt.Sprintf("/comms/validate-can-chat?timestamp=%d", time.Now().UnixMilli())
 		encodedUser2, err := misc.EncodeHashId(int(user2Id))
 		assert.NoError(t, err)
 		encodedUser3, err := misc.EncodeHashId(int(user3Id))
@@ -640,20 +644,19 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := map[string]interface{}{
+		expectedData := map[string]bool{
 			encodedUser2: true,
 			encodedUser3: false,
 		}
-		expectedResponse := schema.CommsResponse{
-			Health: expectedHealth,
-			Data:   expectedData,
-		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
 		if assert.NoError(t, testServer.validateCanChat(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
-			var response schema.CommsResponse
-			err := json.Unmarshal(rec.Body.Bytes(), &response)
-			assert.NoError(t, err)
-			assert.True(t, cmp.Equal(response, expectedResponse))
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 }
