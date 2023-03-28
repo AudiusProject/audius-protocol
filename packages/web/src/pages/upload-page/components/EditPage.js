@@ -232,6 +232,7 @@ class EditPage extends Component {
             requiredFields={requiredTracksFields[i]}
             playing={i === previewIndex}
             type={'track'}
+            allowPromptModal={tracks.length === 1}
             onAddStems={(stems) => this.props.onAddStems(stems, i)}
             onSelectStemCategory={(category, stemIndex) =>
               this.props.onSelectStemCategory(category, i, stemIndex)

@@ -534,9 +534,12 @@ const AdvancedForm = (props) => {
         Render the gated content upload prompt component which is responsible
         for whether or its content will modal will be displayed.
       */}
-      {props.type === 'track' && props.isUpload ? (
+      {props.allowPromptModal ? (
         <GatedContentUploadPromptModal
-          onSubmit={() => setIsAvailabilityModalOpen(true)}
+          onSubmit={() => {
+            props.toggleAdvanced()
+            setIsAvailabilityModalOpen(true)
+          }}
         />
       ) : null}
       {showAvailability && (
@@ -843,6 +846,7 @@ class FormTile extends Component {
         />
         <AdvancedForm
           {...this.props}
+          toggleAdvanced={this.toggleAdvanced}
           advancedShow={advancedShow}
           advancedVisible={advancedVisible}
           licenseType={licenseType}
@@ -916,6 +920,9 @@ FormTile.propTypes = {
   /** Whether we are in the track upload flow */
   isUpload: PropTypes.bool,
 
+  /** Whether we allow showing the gated track upload prompt modal */
+  allowPromptModal: PropTypes.bool,
+
   /** Initial form for in case we are in the edit track modal */
   initialForm: PropTypes.object,
 
@@ -962,6 +969,7 @@ FormTile.defaultProps = {
   onChangeOrder: () => {},
   onChangeField: () => {},
   isUpload: true,
+  allowPromptModal: false,
   initialForm: {},
   showUnlistedToggle: true,
   showHideTrackSectionInModal: true,
