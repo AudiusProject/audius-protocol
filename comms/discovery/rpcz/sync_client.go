@@ -2,6 +2,7 @@ package rpcz
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -10,8 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/schema"
-	"comms.audius.co/shared/peering"
+	"comms.audius.co/discovery/the_graph"
 	"github.com/r3labs/sse/v2"
 	"golang.org/x/exp/slog"
 )
@@ -21,15 +23,14 @@ type RpcSseMessage struct {
 	Data   json.RawMessage
 }
 
-func (c *RPCProcessor) StartSSEClients(peerMap peering.PeerMap) {
-	for _, peer := range peerMap {
-		// todo: better way to get discovery peers
-		if !strings.Contains(peer.Host, "discovery") {
-			log.Println("skipping non discovery node", peer.Host)
+func (c *RPCProcessor) StartSSEClients(discoveryConfig *config.DiscoveryConfig, peerList []the_graph.Peer) {
+	for _, peer := range peerList {
+		if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+			log.Println("skipping self", peer)
 			continue
 		}
-		if peer.IsSelf {
-			log.Println("skipping self", peer)
+		if peer.Host == "" {
+			log.Println("bad peer", peer)
 			continue
 		}
 		go c.sseStart(peer.Host, "/comms/rpc/stream", "/comms/rpc/bulk")
@@ -47,6 +48,9 @@ func (c *RPCProcessor) sseStart(host, streamEndpoint, bulkEndpoint string) {
 }
 
 func (c *RPCProcessor) sseDial(host, streamEndpoint, bulkEndpoint string) error {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	logger := logger.New("client_of", host)
 	logger.Debug("creating client")
 
@@ -54,10 +58,11 @@ func (c *RPCProcessor) sseDial(host, streamEndpoint, bulkEndpoint string) error 
 	client := sse.NewClient(endpoint)
 
 	events := make(chan *sse.Event, 64)
-	err := client.SubscribeChan(sseStreamName, events)
+	err := client.SubscribeChanWithContext(ctx, sseStreamName, events)
 	if err != nil {
 		return fmt.Errorf("subscribe chan failed: %v", err)
 	}
+	defer client.Unsubscribe(events)
 
 	client.OnConnect(func(c *sse.Client) {
 		logger.Debug("sse connected")

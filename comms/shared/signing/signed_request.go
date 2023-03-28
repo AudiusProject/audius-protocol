@@ -1,4 +1,4 @@
-package peering
+package signing
 
 import (
 	"encoding/base64"
@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"comms.audius.co/shared/config"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/exp/slog"
@@ -19,7 +18,7 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 	if c.Request().Method == "GET" {
 		// Check that timestamp is less than 5 seconds old
 		timestamp, err := strconv.ParseInt(c.QueryParam("timestamp"), 0, 64)
-		if err != nil || time.Now().UnixMilli()-timestamp > config.SignatureTimeToLiveMs {
+		if err != nil || time.Now().UnixMilli()-timestamp > SignatureTimeToLiveMs {
 			slog.Error("", err)
 			return nil, "", errors.New("invalid timestamp")
 		}
@@ -39,7 +38,7 @@ func ReadSignedRequest(c echo.Context) ([]byte, string, error) {
 		return nil, "", err
 	}
 
-	sigHex := c.Request().Header.Get(config.SigHeader)
+	sigHex := c.Request().Header.Get(SigHeader)
 	wallet, err := ReadSigned(sigHex, payload)
 	return payload, wallet, err
 }

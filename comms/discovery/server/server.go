@@ -17,8 +17,7 @@ import (
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
-	sharedConfig "comms.audius.co/shared/config"
-	"comms.audius.co/shared/peering"
+	"comms.audius.co/shared/signing"
 	"comms.audius.co/shared/utils"
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
@@ -48,9 +47,7 @@ func NewServer(proc *rpcz.RPCProcessor) *ChatServer {
 
 	g := e.Group("/comms")
 
-	g.GET("", func(c echo.Context) error {
-		return c.String(http.StatusOK, "comms are UP: v1")
-	})
+	g.GET("", s.getStatus)
 
 	config := unfurlist.WithBlocklistPrefixes(
 		[]string{
@@ -101,8 +98,17 @@ type ChatServer struct {
 	proc *rpcz.RPCProcessor
 }
 
+func (s *ChatServer) getStatus(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{
+		"commit": vcsRevision,
+		"built":  vcsBuildTime,
+		"booted": bootTime,
+		"wip":    vcsDirty,
+	})
+}
+
 func (s *ChatServer) mutate(c echo.Context) error {
-	payload, wallet, err := peering.ReadSignedRequest(c)
+	payload, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
@@ -132,7 +138,7 @@ func (s *ChatServer) mutate(c echo.Context) error {
 		JetstreamTimestamp: time.Now(),
 		FromWallet:         wallet,
 		Rpc:                payload,
-		Sig:                c.Request().Header.Get(sharedConfig.SigHeader),
+		Sig:                c.Request().Header.Get(signing.SigHeader),
 	}
 
 	// ok, err := s.proc.SubmitAndWait(msg)
@@ -237,7 +243,7 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 	signedData := []byte(u.String())
 
 	// Now that we have the data that was actually signed, we can recover the wallet
-	wallet, err := peering.ReadSigned(signature, signedData)
+	wallet, err := signing.ReadSigned(signature, signedData)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -255,15 +261,13 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 		return err
 	}
 
-	// rpcz.RegisterWebsocket(userId, conn)
-	time.Sleep(time.Hour)
-	fmt.Println("doing nothing with ws conn", userId, conn)
+	rpcz.RegisterWebsocket(userId, conn)
 	return nil
 }
 
 func (s *ChatServer) getChats(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -329,7 +333,7 @@ func (s *ChatServer) getChats(c echo.Context) error {
 
 func (s *ChatServer) getChat(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -355,7 +359,7 @@ func (s *ChatServer) getChat(c echo.Context) error {
 
 func (s *ChatServer) getMessages(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -414,7 +418,7 @@ func (s *ChatServer) getMessages(c echo.Context) error {
 
 func (s *ChatServer) getChatPermissions(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -476,7 +480,7 @@ func (s *ChatServer) getChatBlockedUsers(c echo.Context) error {
 }
 
 func (s *ChatServer) validateCanChat(c echo.Context) error {
-	payload, wallet, err := peering.ReadSignedRequest(c)
+	payload, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.JSON(400, "bad request: "+err.Error())
 	}

@@ -52,6 +52,7 @@ func NewProcessor() (*RPCProcessor, error) {
 			sseServer.Publish(sseStreamName, &sse.Event{
 				Data: []byte(msg),
 			})
+
 		}
 	}()
 

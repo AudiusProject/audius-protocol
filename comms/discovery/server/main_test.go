@@ -5,10 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/rpcz"
-	"comms.audius.co/shared/peering"
 )
 
 var (
@@ -39,11 +37,11 @@ func TestMain(m *testing.M) {
 	}
 
 	// connect to NATS and create JetStream Context
-	discoveryConfig := config.GetDiscoveryConfig()
-	p, err := peering.New(&discoveryConfig.PeeringConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// discoveryConfig := config.GetDiscoveryConfig()
+	// p, err := peering.New(&discoveryConfig.PeeringConfig)
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
 	proc, err := rpcz.NewProcessor()
 	if err != nil {
@@ -52,8 +50,8 @@ func TestMain(m *testing.M) {
 	testServer = NewServer(proc)
 
 	// start SSE clients
-	peerMap := p.Solicit()
-	proc.StartSSEClients(peerMap)
+	// TODO: test peers
+	proc.StartSSEClients(nil, nil)
 
 	// run tests
 	code := m.Run()

@@ -10,7 +10,7 @@ import (
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
-	"comms.audius.co/shared/peering"
+	"comms.audius.co/discovery/the_graph"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -21,19 +21,15 @@ func DiscoveryMain() {
 	var proc *rpcz.RPCProcessor
 
 	g.Go(func() error {
+		var err error
 
 		discoveryConfig := config.GetDiscoveryConfig()
-		peering, err := peering.New(&discoveryConfig.PeeringConfig)
+
+		// dial db
+		err = db.Dial()
 		if err != nil {
 			return err
 		}
-
-		err = peering.PollRegisteredNodes()
-		if err != nil {
-			return err
-		}
-
-		peerMap := peering.Solicit()
 
 		// create RPC processor
 		proc, err = rpcz.NewProcessor()
@@ -42,7 +38,11 @@ func DiscoveryMain() {
 		}
 
 		// start SSE clients
-		proc.StartSSEClients(peerMap)
+		peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
+		if err != nil {
+			return err
+		}
+		proc.StartSSEClients(discoveryConfig, peers)
 
 		err = pubkeystore.Dial()
 		if err != nil {
@@ -53,9 +53,6 @@ func DiscoveryMain() {
 
 		return nil
 
-	})
-	g.Go(func() error {
-		return db.Dial()
 	})
 	g.Go(func() error {
 		return db.RunMigrations()

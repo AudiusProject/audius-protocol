@@ -1,4 +1,4 @@
-package config
+package signing
 
 var (
 	SigHeader             = "x-sig"

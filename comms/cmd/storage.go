@@ -1,7 +1,8 @@
 package cmd
 
 import (
-	"comms.audius.co/storage"
+	"time"
+
 	"github.com/spf13/cobra"
 )
 
@@ -11,7 +12,8 @@ var storageCmd = &cobra.Command{
 	Short: "",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		storage.StorageMain()
+		// just sleep
+		time.Sleep(time.Hour * 1000)
 	},
 }
 

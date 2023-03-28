@@ -5,9 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
-	"comms.audius.co/shared/peering"
 	"github.com/nats-io/nats.go"
 )
 
@@ -18,25 +16,9 @@ var (
 
 // this runs before all tests (not a per-test setup / teardown)
 func TestMain(m *testing.M) {
-	discoveryConfig := config.GetDiscoveryConfig()
 
 	// setup
 	err := db.Dial()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// connect to NATS and create JetStream Context
-	p, err := peering.New(&discoveryConfig.PeeringConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	nc, err := p.DialNats(nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	jsc, err = nc.JetStream(nats.PublishAsyncMaxPending(256))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -56,7 +38,6 @@ func TestMain(m *testing.M) {
 
 	// teardown
 	db.Conn.Close()
-	nc.Close()
 
 	os.Exit(code)
 }

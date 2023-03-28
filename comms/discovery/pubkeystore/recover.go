@@ -32,7 +32,7 @@ func Dial() error {
 
 	endpoint := "https://poa-gateway.audius.co"
 
-	if discoveryConfig.GetDiscoveryConfig().PeeringConfig.IsStaging {
+	if discoveryConfig.GetDiscoveryConfig().IsStaging {
 		endpoint = "http://54.176.124.102:8545"
 
 		// should get dynamically from
