@@ -67,9 +67,9 @@ const getIP = (req) => {
   if (isWhitelisted) {
     const forwardedIP = headers[headers.length - 3]
     if (!forwardedIP) {
-      return { ip: senderIP, senderIP }
+      return { ip: senderIP, senderIP, isWhitelisted }
     }
-    return { ip: forwardedIP, senderIP }
+    return { ip: forwardedIP, senderIP, isWhitelisted }
   }
   return { ip: senderIP, senderIP, isWhitelisted }
 }

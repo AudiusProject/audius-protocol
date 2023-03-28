@@ -386,7 +386,9 @@ module.exports = function (app) {
       const suffix = currentHour.toISOString()
       const entropy = uuidv4()
       const { ip, isWhitelisted } = getIP(req)
-      req.logger.info(`TrackListen ip=${ip} isWhitelisted=${isWhitelisted}`)
+      req.logger.info(
+        `TrackListen userId=${userId} ip=${ip} isWhitelisted=${isWhitelisted}`
+      )
       if (!isWhitelisted) {
         // skip any client requests since
         // content nodes also log a listen
