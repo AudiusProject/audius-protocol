@@ -166,9 +166,7 @@ def _get_tracks(session, args):
                             TrackWithAggregates.release_date,
                             "Dy Mon DD YYYY HH24:MI:SS",
                         ),
-                        func.to_date_safe(
-                            TrackWithAggregates.created_at, "YYYY-MM-DD HH24:MI:SS"
-                        )
+                        func.date_trunc('day', TrackWithAggregates.created_at)
                     )
                 )
             )
@@ -209,9 +207,7 @@ def _get_tracks(session, args):
                     func.to_date_safe(
                         TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS"
                     ),
-                    func.to_date_safe(
-                        TrackWithAggregates.created_at, "YYYY-MM-DD HH24:MI:SS"
-                    )
+                    func.date_trunc('day', TrackWithAggregates.created_at)
                 ).desc(),
                 TrackWithAggregates.track_id.desc(),
             )
