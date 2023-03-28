@@ -158,7 +158,7 @@ export const ChatMessageListItem = forwardRef<View, ChatMessageListItemProps>(
         <View
           style={[
             isAuthor ? styles.rootIsAuthor : styles.rootOtherUser,
-            !hasTail && message.reactions.length > 0
+            !hasTail && message.reactions && message.reactions.length > 0
               ? styles.reactionMarginBottom
               : null,
             styleProp
