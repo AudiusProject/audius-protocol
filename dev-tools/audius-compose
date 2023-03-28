@@ -311,6 +311,11 @@ def load_env(protocol_dir, service, environment):
     "--no-solana", is_flag=True, help="Don't bring up solana-test-validator container"
 )
 @click.option(
+    "--no-notifs",
+    is_flag=True,
+    help="Don't bring up discovery provider notifications container",
+)
+@click.option(
     "--comms", is_flag=True, help="Bring up storage v2, comms, and nats containers"
 )
 @click.option("-w", "--wait", is_flag=True, help="Wait for services to be healthy")
@@ -327,6 +332,7 @@ def up(
     storagev2,
     no_libs,
     no_solana,
+    no_notifs,
     comms,
     wait,
     args,
@@ -358,6 +364,7 @@ def up(
                 *(["--profile=storagev2"] if storagev2 else []),
                 *([] if no_libs else ["--profile=libs"]),
                 *([] if no_solana else ["--profile=solana"]),
+                *([] if no_notifs else ["--profile=notifications"]),
                 *(["--profile=comms"] if comms else []),
                 "up",
                 "--build",

@@ -2,12 +2,12 @@ version: "3.9"
 
 x-storagev2:
   &storagev2
-  build: ../mediorum
+  build: mediorum
   restart: unless-stopped
   environment:
     - MEDIORUM_ENV=single
     - PORT=1991
-  profile:
+  profiles:
     - storagev2
 
 services:

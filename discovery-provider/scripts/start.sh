@@ -74,6 +74,7 @@ if [ -z "$audius_redis_url" ]; then
     /wait
 fi
 
+# Only used for tests. Local dev uses postgres:postgres@db:5432/discovery_provider_${replica}
 if [ -z "$audius_db_url" ]; then
     sudo -u postgres pg_ctl start -D /db -o "-c shared_preload_libraries=pg_stat_statements"
     export WAIT_HOSTS="localhost:5432"
