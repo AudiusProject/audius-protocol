@@ -23,24 +23,27 @@ class GetTrackStreamSignature(TypedDict):
 def get_track_stream_signature(args: Dict):
     track = args["track"]
 
+    authed_user_id = None
+
+    user_data = args["user_data"]
+    user_signature = args["user_signature"]
+
+    if user_data and user_signature:
+        authed_user = get_authed_user(user_data, user_signature)
+        authed_user_id = authed_user["user_id"]
+
     if not track["is_premium"]:
         return get_premium_content_signature(
             {
                 "track_id": track["track_id"],
                 "track_cid": track["track_cid"],
                 "type": "track",
+                "user_id": authed_user_id,
                 "is_premium": False,
             }
         )
 
-    # if the track is premium, make sure that the requesting user has access
-    user_data = args["user_data"]
-    user_signature = args["user_signature"]
-    if not user_data or not user_signature:
-        return None
-
-    authed_user = get_authed_user(user_data, user_signature)
-    if not authed_user:
+    if not authed_user_id:
         return None
 
     premium_content_signature = args["premium_content_signature"]
@@ -83,5 +86,6 @@ def get_track_stream_signature(args: Dict):
             "track_cid": track["track_cid"],
             "type": "track",
             "is_premium": True,
+            "user_id": authed_user["user_id"],
         }
     )
