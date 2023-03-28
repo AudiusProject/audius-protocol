@@ -311,7 +311,9 @@ def load_env(protocol_dir, service, environment):
     "--no-solana", is_flag=True, help="Don't bring up solana-test-validator container"
 )
 @click.option(
-    "--no-notifs", is_flag=True, help="Don't bring up discovery provider notifications container"
+    "--no-notifs",
+    is_flag=True,
+    help="Don't bring up discovery provider notifications container",
 )
 @click.option(
     "--comms", is_flag=True, help="Bring up storage v2, comms, and nats containers"
