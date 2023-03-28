@@ -1,9 +1,10 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { FollowNotification } from '../../types/notifications'
+import { AppEmailNotification, FollowNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type FollowNotificationRow = Omit<NotificationRow, 'data'> & {
   data: FollowNotification
@@ -87,8 +88,19 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
       }
     }
 
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (userNotifications.email?.[this.receiverUserId].frequency === 'live') {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotifications.email?.[this.receiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 
