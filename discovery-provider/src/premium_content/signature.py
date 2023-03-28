@@ -63,7 +63,7 @@ def get_premium_content_signature(
             cid=args["track_cid"],
             is_premium=args["is_premium"],
             user_wallet=None,
-            user_id=args["user_id"],
+            user_id=args.get("user_id"),
         )
     return None
 
@@ -77,6 +77,6 @@ def get_premium_content_signature_for_user(
             cid=args["track_cid"],
             is_premium=args["is_premium"],
             user_wallet=args["user_wallet"],
-            user_id=args["user_id"],
+            user_id=args.get("user_id"),
         )
     return None
