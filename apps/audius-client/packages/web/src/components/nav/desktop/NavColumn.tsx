@@ -63,7 +63,10 @@ import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
 import { openVisualizer } from 'pages/visualizer/store/slice'
 import { getNotificationPanelIsOpen } from 'store/application/ui/notifications/notificationsUISelectors'
-import { openNotificationPanel } from 'store/application/ui/notifications/notificationsUISlice'
+import {
+  openNotificationPanel,
+  closeNotificationPanel
+} from 'store/application/ui/notifications/notificationsUISlice'
 import { getIsDragging } from 'store/dragndrop/selectors'
 import { AppState } from 'store/types'
 import {
@@ -125,6 +128,7 @@ const NavColumn = ({
   notificationCount,
   notificationPanelIsOpen,
   openNotificationPanel,
+  closeNotificationPanel,
   showCreatePlaylistModal,
   hideCreatePlaylistModalFolderTab,
   updatePlaylistLibrary,
@@ -183,9 +187,11 @@ const NavColumn = ({
   }, [account, goToRoute])
 
   const onClickToggleNotificationPanel = useCallback(() => {
-    openNotificationPanel()
     if (!notificationPanelIsOpen) {
+      openNotificationPanel()
       record(make(Name.NOTIFICATIONS_OPEN, { source: 'button' }))
+    } else {
+      closeNotificationPanel()
     }
     if (notificationCount > 0) {
       markAllNotificationsAsViewed()
@@ -193,6 +199,7 @@ const NavColumn = ({
   }, [
     notificationPanelIsOpen,
     openNotificationPanel,
+    closeNotificationPanel,
     record,
     notificationCount,
     markAllNotificationsAsViewed
@@ -583,6 +590,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   showActionRequiresAccount: () =>
     dispatch(signOnActions.showRequiresAccountModal()),
   openNotificationPanel: () => dispatch(openNotificationPanel()),
+  closeNotificationPanel: () => dispatch(closeNotificationPanel()),
   openCreatePlaylistModal: () => dispatch(createPlaylistModalActions.open()),
   closeCreatePlaylistModal: () => dispatch(createPlaylistModalActions.close()),
   updatePlaylistLastViewedAt: (playlistId: number) =>
