@@ -277,15 +277,11 @@ export const Audio = () => {
         if (!track) {
           continue
         }
-        const {
-          track_id: trackId,
-          is_premium: isPremium,
-          premium_content_signature
-        } = track
+        const { track_id: trackId, premium_content_signature } = track
 
         if (gatedQueryParamsMap[trackId]) {
           queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
-        } else if (isGatedContentEnabled && isPremium) {
+        } else if (isGatedContentEnabled) {
           const data = `Premium content user signature at ${Date.now()}`
           const signature = await audiusBackendInstance.getSignature(data)
           const premiumContentSignature =

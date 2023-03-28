@@ -139,7 +139,7 @@ export function* watchPlay() {
         streamMp3IsEnabled ||
         (encodedTrackId && FORCE_MP3_STREAM_TRACK_IDS.has(encodedTrackId))
       let queryParams: QueryParams = {}
-      if (isGatedContentEnabled && track.is_premium) {
+      if (isGatedContentEnabled) {
         const data = `Premium content user signature at ${Date.now()}`
         const signature = yield* call(audiusBackendInstance.getSignature, data)
         const premiumTrackSignatureMap = yield* select(
