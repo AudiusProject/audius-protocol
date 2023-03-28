@@ -12,7 +12,6 @@ ENV GOARCH=${GOARCH}
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 
-RUN apk add build-base curl ffmpeg make
 RUN go install github.com/amacneil/dbmate@latest && \
   go install github.com/cosmtrek/air@latest
 
@@ -28,7 +27,6 @@ ENTRYPOINT ["air"]
 
 FROM alpine AS final
 
-RUN apk add curl ffmpeg
 
 COPY --from=builder /go/bin/* /bin
 

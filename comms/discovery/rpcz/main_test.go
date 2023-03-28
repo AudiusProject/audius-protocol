@@ -6,11 +6,9 @@ import (
 	"testing"
 
 	"comms.audius.co/discovery/db"
-	"github.com/nats-io/nats.go"
 )
 
 var (
-	jsc           nats.JetStreamContext
 	testValidator *Validator
 )
 

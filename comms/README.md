@@ -1,11 +1,6 @@
 # comms
 
-Builds a single binary with three main entrypoints:
-
-* nats - handles setuping cluster in staging / prod based on nodes registered on mainnet eth contract
-  this is not needed in dev where you can start a single instance vanilla NATS server.
-* discovery - runs on discovery nodes, reads + writes to discovery database.  Currently used for DMs.
-* storage - runs on content nodes.
+For DMs
 
 ### Setup
 
@@ -49,7 +44,3 @@ Currently docker build + push is done locally and some bash scripts are used to 
 
 * Authenticate on Dockerhub
 * `bash bash_scripts/deploy.sh`
-
-## Storage
-
-See [storage/README.md](./storage/README.md)
