@@ -487,7 +487,15 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 	// Validate permission for each <request sender, user> pair
 	permissions, err := queries.BulkGetChatPermissions(db.Conn, c.Request().Context(), receiverUserIds)
 	if err != nil {
-		return err
+		if err == sql.ErrNoRows {
+			response := schema.CommsResponse{
+				Health: s.getHealthStatus(),
+				Data:   validatedPermissions,
+			}
+			return c.JSON(200, response)
+		} else {
+			return err
+		}
 	}
 	// User IDs that permit chats from followees only
 	var followeePermissions []int32
@@ -514,7 +522,7 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 			validatedPermissions[encodedId] = false
 		}
 	}
-	//kQuery follows table to validate <sender, receiver> pair against users with followees only permissions
+	// Query follows table to validate <sender, receiver> pair against users with followees only permissions
 	follows, err := queries.BulkGetFollowers(db.Conn, c.Request().Context(), queries.BulkGetFollowersParams{
 		FollowerUserIDs: followeePermissions,
 		FolloweeUserID:  userId,
@@ -522,15 +530,13 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	// Update response map if count > 0
+	// Update response map if current follow record exists
 	for _, follow := range follows {
-		if follow.Count > 0 {
-			encodedId, err := misc.EncodeHashId(int(follow.FollowerUserID))
-			if err != nil {
-				return err
-			}
-			validatedPermissions[encodedId] = true
+		encodedId, err := misc.EncodeHashId(int(follow.FollowerUserID))
+		if err != nil {
+			return err
 		}
+		validatedPermissions[encodedId] = true
 	}
 
 	// Query tips table to validate <sender, receiver> pair against users with tippers only permissions
@@ -541,15 +547,13 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	// Update response map if count > 0
+	// Update response map if aggregate tip record exists
 	for _, tip := range tips {
-		if tip.Count > 0 {
-			encodedId, err := misc.EncodeHashId(int(tip.ReceiverUserID))
-			if err != nil {
-				return err
-			}
-			validatedPermissions[encodedId] = true
+		encodedId, err := misc.EncodeHashId(int(tip.ReceiverUserID))
+		if err != nil {
+			return err
 		}
+		validatedPermissions[encodedId] = true
 	}
 
 	response := schema.CommsResponse{

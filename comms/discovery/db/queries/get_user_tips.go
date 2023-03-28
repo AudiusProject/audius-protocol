@@ -25,8 +25,7 @@ func CountTips(q db.Queryable, ctx context.Context, arg CountTipsParams) (int64,
 const bulkGetTipReceivers = `
 select
   sender_user_id,
-	receiver_user_id,
-	count(*)
+	receiver_user_id
 from aggregate_user_tips
 where 
 	sender_user_id = :SenderUserID
@@ -42,24 +41,23 @@ type BulkGetTipReceiversParams struct {
 type BulkGetTipReceiversRow struct {
 	SenderUserID   int32 `db:"sender_user_id" json:"sender_user_id"`
 	ReceiverUserID int32 `db:"receiver_user_id" json:"receiver_user_id"`
-	Count          int32 `json:"count"`
 }
 
 func BulkGetTipReceivers(q db.Queryable, ctx context.Context, arg BulkGetTipReceiversParams) ([]BulkGetTipReceiversRow, error) {
-	var counts []BulkGetTipReceiversRow
+	var receivers []BulkGetTipReceiversRow
 	argMap := map[string]interface{}{
 		"SenderUserID":    arg.SenderUserID,
 		"ReceiverUserIDs": arg.ReceiverUserIDs,
 	}
 	query, args, err := sqlx.Named(bulkGetTipReceivers, argMap)
 	if err != nil {
-		return counts, err
+		return receivers, err
 	}
 	query, args, err = sqlx.In(query, args...)
 	if err != nil {
-		return counts, err
+		return receivers, err
 	}
 	query = q.Rebind(query)
-	err = q.SelectContext(ctx, &counts, query, args...)
-	return counts, err
+	err = q.SelectContext(ctx, &receivers, query, args...)
+	return receivers, err
 }

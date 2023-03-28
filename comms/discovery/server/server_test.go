@@ -640,7 +640,7 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := map[string]bool{
+		expectedData := map[string]interface{}{
 			encodedUser2: true,
 			encodedUser3: false,
 		}
@@ -649,16 +649,11 @@ func TestGetPermissions(t *testing.T) {
 			Data:   expectedData,
 		}
 		if assert.NoError(t, testServer.validateCanChat(c)) {
-			fmt.Println("encodedUser3: ", encodedUser3)
-			fmt.Println("encodedUser2: ", encodedUser2)
 			assert.Equal(t, http.StatusOK, rec.Code)
 			var response schema.CommsResponse
 			err := json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.NoError(t, err)
-			fmt.Println("response: ", fmt.Sprint(response.Data))
-			fmt.Println("expected response: ", fmt.Sprint(expectedResponse.Data))
-			assert.True(t, fmt.Sprint(response.Data) == fmt.Sprint(expectedResponse.Data))
-			assert.True(t, cmp.Equal(response.Data, expectedResponse.Data))
+			assert.True(t, cmp.Equal(response, expectedResponse))
 		}
 	}
 }

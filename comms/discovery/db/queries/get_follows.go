@@ -25,8 +25,7 @@ func CountFollows(q db.Queryable, ctx context.Context, arg CountFollowsParams) (
 const bulkGetFollowers = `
 select
   follower_user_id,
-	followee_user_id,
-	count(*)
+	followee_user_id
 from follows
 where 
 	followee_user_id = :FolloweeUserID
@@ -44,24 +43,23 @@ type BulkGetFollowersParams struct {
 type BulkGetFollowersRow struct {
 	FollowerUserID int32 `db:"follower_user_id" json:"follower_user_id"`
 	FolloweeUserID int32 `db:"followee_user_id" json:"followee_user_id"`
-	Count          int32 `json:"count"`
 }
 
 func BulkGetFollowers(q db.Queryable, ctx context.Context, arg BulkGetFollowersParams) ([]BulkGetFollowersRow, error) {
-	var counts []BulkGetFollowersRow
+	var followers []BulkGetFollowersRow
 	argMap := map[string]interface{}{
 		"FollowerUserIDs": arg.FollowerUserIDs,
 		"FolloweeUserID":  arg.FolloweeUserID,
 	}
 	query, args, err := sqlx.Named(bulkGetFollowers, argMap)
 	if err != nil {
-		return counts, err
+		return followers, err
 	}
 	query, args, err = sqlx.In(query, args...)
 	if err != nil {
-		return counts, err
+		return followers, err
 	}
 	query = q.Rebind(query)
-	err = q.SelectContext(ctx, &counts, query, args...)
-	return counts, err
+	err = q.SelectContext(ctx, &followers, query, args...)
+	return followers, err
 }
