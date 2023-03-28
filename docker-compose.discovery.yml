@@ -25,6 +25,8 @@ services:
         condition: service_healthy
     deploy:
       mode: global
+    profiles:
+      - notifications
 
   comms:
     build:
@@ -36,6 +38,9 @@ services:
     depends_on:
       discovery-provider:
         condition: service_healthy
+    profiles:
+      - notifications
+      - comms
 
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
@@ -69,6 +74,7 @@ services:
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     environment:
+      # Other env vars are set in the startup script (dev-tools/startup/discovery-provider.sh)
       PYTHONPYCACHEPREFIX: /tmp/pycache
 
       audius_web3_host: "http://poa-ganache:8545"

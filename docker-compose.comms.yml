@@ -268,3 +268,5 @@ services:
       comms-discovery-3:
         condition: service_started
       <<: *nats-nodes-healthy
+    profiles:
+      - comms
