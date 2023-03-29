@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"log"
+	"os"
 	"strings"
 
 	"comms.audius.co/discovery/config"
@@ -29,12 +30,6 @@ func DiscoveryMain() {
 			return err
 		}
 
-		// create RPC processor
-		proc, err = rpcz.NewProcessor()
-		if err != nil {
-			return err
-		}
-
 		// query The Graph for peers
 		peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
 		if err != nil {
@@ -49,6 +44,12 @@ func DiscoveryMain() {
 					break
 				}
 			}
+		}
+
+		// create RPC processor
+		proc, err = rpcz.NewProcessor(discoveryConfig, peers)
+		if err != nil {
+			return err
 		}
 
 		// start SSE clients
@@ -71,7 +72,11 @@ func DiscoveryMain() {
 		log.Fatal(err)
 	}
 
-	// Start comms server on :8925
+	// Start server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8925"
+	}
 	e := server.NewServer(discoveryConfig, proc)
-	e.Logger.Fatal(e.Start(":8925"))
+	e.Logger.Fatal(e.Start(":" + port))
 }

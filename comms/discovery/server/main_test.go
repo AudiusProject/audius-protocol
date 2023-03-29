@@ -39,7 +39,7 @@ func TestMain(m *testing.M) {
 
 	discoveryConfig := config.Parse()
 
-	proc, err := rpcz.NewProcessor()
+	proc, err := rpcz.NewProcessor(discoveryConfig, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,7 +47,7 @@ func TestMain(m *testing.M) {
 
 	// start SSE clients
 	// TODO: test peers
-	proc.StartSSEClients(nil, nil)
+	// proc.StartSSEClients(nil, nil)
 
 	// run tests
 	code := m.Run()

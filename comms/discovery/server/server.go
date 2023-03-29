@@ -78,8 +78,8 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
 
-	g.GET("/rpc/stream", s.getRpcStream)
 	g.GET("/rpc/bulk", s.getRpcBulk)
+	g.POST("/rpc/receive", s.postRpcReceive)
 
 	g.GET("/debug/vars", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
 	g.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
@@ -643,25 +643,19 @@ func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRo
 
 	return canChat, nil
 }
-func (ss *ChatServer) getRpcStream(c echo.Context) error {
-	w := c.Response()
-	r := c.Request()
-	startedAt := time.Now()
-
-	go func() {
-		// Received Browser Disconnection
-		<-r.Context().Done()
-		log.Println("sse client connection closed", "ip", r.RemoteAddr, r.URL.String(), "took", time.Since(startedAt))
-	}()
-
-	ss.proc.SSEServer.ServeHTTP(w, r)
-	return nil
-}
 
 func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 	var rpcs []schema.RpcLog
-	query := `select * from rpc_log where relayed_by = $1 order by relayed_at asc`
-	err := db.Conn.Select(&rpcs, query, ss.config.MyHost)
+
+	var after time.Time
+	if t, err := time.Parse(time.RFC3339, c.QueryParam("after")); err == nil {
+		after = t
+	} else {
+		fmt.Println("failed to parse time", err, c.QueryParam("after"), c.QueryString())
+	}
+
+	query := `select * from rpc_log where relayed_by = $1 and relayed_at >= $2 order by relayed_at asc`
+	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after)
 	if err != nil {
 		return err
 	}
@@ -677,4 +671,20 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 	}
 	return c.JSONBlob(200, j)
 
+}
+
+func (ss *ChatServer) postRpcReceive(c echo.Context) error {
+	// bind to RpcRow
+	u := new(schema.RpcLog)
+	if err := c.Bind(u); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	// apply
+	err := ss.proc.Apply(u)
+	if err != nil {
+		return err
+	}
+
+	return c.String(200, "OK")
 }

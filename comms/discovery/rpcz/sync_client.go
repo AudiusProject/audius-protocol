@@ -1,20 +1,18 @@
 package rpcz
 
 import (
-	"bytes"
-	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
 	"comms.audius.co/discovery/config"
+	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/schema"
 	"comms.audius.co/discovery/the_graph"
-	"github.com/r3labs/sse/v2"
 	"golang.org/x/exp/slog"
 )
 
@@ -33,91 +31,34 @@ func (c *RPCProcessor) StartSSEClients(discoveryConfig *config.DiscoveryConfig, 
 			log.Println("bad peer", peer)
 			continue
 		}
-		go c.sseStart(peer.Host, "/comms/rpc/stream", "/comms/rpc/bulk")
+
+		go c.startPullCursor(peer.Host, "/comms/rpc/bulk")
 	}
 }
 
-func (c *RPCProcessor) sseStart(host, streamEndpoint, bulkEndpoint string) {
+func (c *RPCProcessor) startPullCursor(host, bulkEndpoint string) {
 	for {
-		err := c.sseDial(host, streamEndpoint, bulkEndpoint)
+		err := c.doPull(host, bulkEndpoint)
 		if err != nil {
-			log.Println("SSE client died !!", "host", host, "err", err)
+			log.Println("PULL ERR", host, err)
 		}
-		time.Sleep(time.Second * 2)
+		time.Sleep(time.Minute)
 	}
 }
 
-func (c *RPCProcessor) sseDial(host, streamEndpoint, bulkEndpoint string) error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+func (c *RPCProcessor) doPull(host, bulkEndpoint string) error {
 
-	logger := logger.New("client_of", host)
-	logger.Debug("creating client")
-
-	endpoint := host + streamEndpoint
-	client := sse.NewClient(endpoint)
-
-	events := make(chan *sse.Event, 64)
-	err := client.SubscribeChanWithContext(ctx, sseStreamName, events)
+	// get cursor
+	var after time.Time
+	err := db.Conn.Get(&after, "SELECT relayed_at FROM rpc_cursor WHERE relayed_by=$1", host)
 	if err != nil {
-		return fmt.Errorf("subscribe chan failed: %v", err)
-	}
-	defer client.Unsubscribe(events)
-
-	client.OnConnect(func(c *sse.Client) {
-		logger.Debug("sse connected")
-	})
-
-	client.OnDisconnect(func(c *sse.Client) {
-		logger.Warn("sse disconnected !!!!")
-	})
-
-	// backfill on boot
-	err = c.sseBackfill(host, bulkEndpoint)
-	if err != nil {
-		return fmt.Errorf("sse backfill failed: %v", err)
+		log.Println("backfill failed to get cursor: ", err)
+	} else {
+		log.Println("backfill", host, "after", after)
 	}
 
-	logger.Debug("processing events")
-	for {
-
-		select {
-		case e := <-events:
-
-			// check for ping
-			if bytes.HasPrefix(e.Data, []byte("ping: ")) {
-				timeString := strings.Replace(string(e.Data), "ping: ", "", 1)
-				theirTime, err := time.Parse(time.RFC3339, timeString)
-				if err != nil {
-					log.Println("invalid ping time", string(e.Data))
-				} else {
-					log.Println("ping from", host, "skew", time.Since(theirTime))
-				}
-				continue
-			}
-
-			log.Println("GOT SSE", string(e.Data))
-
-			var msg *schema.RpcLog
-			err := json.Unmarshal(e.Data, &msg)
-			if err != nil {
-				logger.Warn("bad event json: " + string(e.Data))
-				continue
-			}
-
-			err = c.Apply(msg)
-			if err != nil {
-				logger.Warn("apply failed", "err", err)
-			}
-
-		case <-time.After(3 * time.Minute):
-			return errors.New("health timeout")
-		}
-	}
-}
-
-func (c *RPCProcessor) sseBackfill(host, bulkEndpoint string) error {
-	endpoint := host + bulkEndpoint // todo: + "?after=" + lastUlid
+	endpoint := host + bulkEndpoint + "?after=" + url.QueryEscape(after.Format(time.RFC3339))
+	started := time.Now()
 
 	client := &http.Client{
 		Timeout: time.Minute,
@@ -140,14 +81,23 @@ func (c *RPCProcessor) sseBackfill(host, bulkEndpoint string) error {
 		return err
 	}
 
+	var cursor time.Time
 	for _, op := range ops {
 		err := c.Apply(op)
 		if err != nil {
+			// todo: what to do when op apply fails during backfill???
+			// with cursor we'll not see this row again...
+			//  retry locally?
+			//  save to dead letter table?
+			//  periodically re-do all?
 			fmt.Println(err)
 		}
+		cursor = op.RelayedAt
 	}
 
-	slog.Info("backfill done", "host", host, "count", len(ops))
+	slog.Info("backfill done", "host", host, "took", time.Since(started), "count", len(ops), "cursor", cursor)
 
-	return nil
+	q := `insert into rpc_cursor values ($1, $2) on conflict (relayed_by) do update set relayed_at = $2;`
+	_, err = db.Conn.Exec(q, host, cursor)
+	return err
 }

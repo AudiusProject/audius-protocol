@@ -5,29 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"sync"
 	"time"
 
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
-	"github.com/r3labs/sse/v2"
+	"comms.audius.co/discovery/the_graph"
 	"github.com/tidwall/gjson"
 )
 
 type RPCProcessor struct {
 	sync.Mutex
-	waiters   map[uint64]chan error
 	validator *Validator
-	SSEServer *sse.Server
+
+	discoveryConfig *config.DiscoveryConfig
+	peerList        []the_graph.Peer
+	httpClient      http.Client
 }
 
-const (
-	sseStreamName = "rpc"
-)
-
-func NewProcessor() (*RPCProcessor, error) {
+func NewProcessor(discoveryConfig *config.DiscoveryConfig, peerList []the_graph.Peer) (*RPCProcessor, error) {
 
 	// set up validator + limiter
 	limiter, err := NewRateLimiter()
@@ -39,32 +39,13 @@ func NewProcessor() (*RPCProcessor, error) {
 		limiter: limiter,
 	}
 
-	sseServer := sse.New()
-
-	// re-enabling AutoReplay because sse will reconnect via internal retry mechanism
-	// which won't prompt a full "backfill"... and some events can get lost
-	//   this can be fine with some upstream changes to purge old events
-	//   todo: purge old events to prevent mem growth
-	// sseServer.AutoReplay = false
-
-	sseServer.CreateStream(sseStreamName)
-
-	// this ping might be not-necessary
-	go func() {
-		for {
-			time.Sleep(time.Second * 30)
-			msg := fmt.Sprintf("ping: %s", time.Now().Format(time.RFC3339))
-			sseServer.Publish(sseStreamName, &sse.Event{
-				Data: []byte(msg),
-			})
-
-		}
-	}()
-
 	proc := &RPCProcessor{
-		waiters:   make(map[uint64]chan error),
-		validator: validator,
-		SSEServer: sseServer,
+		validator:       validator,
+		discoveryConfig: discoveryConfig,
+		peerList:        peerList,
+		httpClient: http.Client{
+			Timeout: 5 * time.Second,
+		},
 	}
 
 	return proc, nil
@@ -98,10 +79,7 @@ func (proc *RPCProcessor) ApplyAndPublish(rpcLog *schema.RpcLog) (*schema.RpcLog
 	if err != nil {
 		log.Println("err: invalid json", err)
 	} else {
-		proc.SSEServer.Publish(sseStreamName, &sse.Event{
-			Data: j,
-		})
-		log.Println("sse published", string(rpcLog.Rpc))
+		proc.broadcast(j)
 	}
 
 	return rpcLog, nil
@@ -112,6 +90,14 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 
 	var err error
 	logger := logger.New()
+
+	// check for already applied
+	var exists int
+	db.Conn.Get(&exists, `select count(*) from rpc_log where sig = $1`, rpcLog.Sig)
+	if exists == 1 {
+		logger.Debug("rpc already in log, skipping duplicate", "sig", rpcLog.Sig)
+		return nil
+	}
 
 	startTime := time.Now()
 	takeSplit := func() time.Duration {

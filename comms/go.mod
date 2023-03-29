@@ -10,11 +10,9 @@ require (
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.10.0
 	github.com/lib/pq v1.10.7
-	github.com/r3labs/sse/v2 v2.10.0
 	github.com/speps/go-hashids/v2 v2.0.1
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
-	github.com/tabbed/pqtype v0.1.1
 	golang.org/x/sync v0.1.0
 )
 
@@ -39,7 +37,6 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
 	golang.org/x/term v0.5.0 // indirect
-	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 
