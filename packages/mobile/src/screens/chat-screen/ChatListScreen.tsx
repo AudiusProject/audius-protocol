@@ -17,6 +17,7 @@ import { useThemePalette, useColor } from 'app/utils/theme'
 import { ChatListItem } from './ChatListItem'
 
 const { getChats, getChatsStatus } = chatSelectors
+const { fetchMoreChats, connect, disconnect } = chatActions
 
 const messages = {
   title: 'Messages',
@@ -106,7 +107,14 @@ export const ChatListScreen = () => {
   const chatsStatus = useSelector(getChatsStatus)
 
   useEffect(() => {
-    dispatch(chatActions.fetchMoreChats())
+    dispatch(fetchMoreChats())
+  }, [dispatch])
+
+  useEffect(() => {
+    dispatch(connect())
+    return () => {
+      dispatch(disconnect())
+    }
   }, [dispatch])
 
   const navigateToChatUserList = () => navigation.navigate('ChatUserList')
