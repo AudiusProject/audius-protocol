@@ -40,6 +40,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     width: spacing(20),
     alignSelf: 'center'
   },
+  listContainer: {
+    height: '100%'
+  },
   startConversationContainer: {
     marginVertical: spacing(8),
     marginHorizontal: spacing(4),
@@ -128,6 +131,7 @@ export const ChatListScreen = () => {
           {chatsStatus === Status.SUCCESS ? (
             <FlatList
               data={chats}
+              contentContainerStyle={styles.listContainer}
               renderItem={({ item, index }) => <ChatListItem chat={item} />}
               keyExtractor={(item) => item.chat_id}
               ListEmptyComponent={() => (
