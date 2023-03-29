@@ -7,7 +7,8 @@ The Audius React Native mobile client
 ### Extra iOS Setup
 
 ```bash
-# install cocoapods
+# Install cocoapods using one of the below methods.
+brew install cocoapods
 sudo gem install cocoapods
 
 cd ios
@@ -18,6 +19,9 @@ cd ..
 ## Running iOS
 
 ```bash
+# Create the ios bundle. Should only have to run once.
+npm run bundle:ios
+
 # Run a simulator using a prod configuration
 npm run ios
 # Run a simulator using a stage configuration
