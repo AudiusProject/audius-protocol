@@ -119,11 +119,13 @@ export abstract class BaseIndexer<RowType> {
   }
 
   async indexIds(ids: Array<number>) {
+    logger.info(`indexing ${this.tableName} ids: ${ids.join(',')}`)
     if (!ids.length) return
     let sql = this.baseSelect()
     sql += ` and ${this.tableName}.${this.idColumn} in (${ids.join(',')}) `
     const result = await dialPg().query(sql)
     await this.indexRows(result.rows)
+    logger.info(`indexed ${this.tableName} ids: ${ids.join(',')}`)
   }
 
   async catchup(checkpoint?: BlocknumberCheckpoint) {
