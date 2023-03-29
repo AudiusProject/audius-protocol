@@ -45,8 +45,6 @@ build.weathermap::
 	cd storage/storageserver/weather-map; yarn && yarn build
 
 tools::
-	go install github.com/kyleconroy/sqlc/cmd/sqlc@main
-	CGO_ENABLED=0 go install github.com/nats-io/natscli/nats@latest
 	CGO_ENABLED=0 go install github.com/amacneil/dbmate@latest
 	go install github.com/rakyll/hey@latest
 
