@@ -163,7 +163,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     }
   }
 
-  getDataType() {
+  getPushData() {
     switch (this.type) {
       case MilestoneType.FOLLOWER_COUNT:
         return { type: 'MilestoneFollow', initiator: this.receiverUserId }
