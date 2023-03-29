@@ -59,9 +59,10 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   listContainer: {
     flex: 1
   },
-  flatListContainer: {
+  listContentContainer: {
     paddingHorizontal: spacing(6),
-    display: 'flex'
+    display: 'flex',
+    height: '100%'
   },
   composeView: {
     paddingVertical: spacing(2),
@@ -360,7 +361,7 @@ export const ChatScreen = () => {
               chatMessages?.length > 0 ? (
                 <View style={styles.listContainer}>
                   <FlatList
-                    contentContainerStyle={styles.flatListContainer}
+                    contentContainerStyle={styles.listContentContainer}
                     data={chatMessages}
                     keyExtractor={(message) => message.message_id}
                     renderItem={({ item, index }) => (
