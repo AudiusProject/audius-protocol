@@ -115,7 +115,11 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
               {
                 title: 'New Favorite',
                 body: `${saveOfRepostUserName} favorited your repost of ${entityName}`,
-                data: {}
+                data: {
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  userIds: [this.saveOfRepostUserId],
+                  type: 'FavoriteOfRepost'
+                }
               }
             )
           })

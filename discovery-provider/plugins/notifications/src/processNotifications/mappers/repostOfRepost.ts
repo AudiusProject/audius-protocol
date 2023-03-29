@@ -115,7 +115,11 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
               {
                 title: 'New Repost',
                 body: `${reposterUserName} reposted your repost of ${entityName}`,
-                data: {}
+                data: {
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  userIds: [this.repostOfRepostUserId],
+                  type: 'RepostOfRepost'
+                }
               }
             )
           })
