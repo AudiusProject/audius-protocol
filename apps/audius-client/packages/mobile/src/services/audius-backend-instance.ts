@@ -71,8 +71,6 @@ export const audiusBackendInstance = audiusBackend({
   remoteConfigInstance,
   setLocalStorageItem: async (key, value) => AsyncStorage.setItem(key, value),
   solanaConfig: {
-    anchorAdminAccount: Config.ANCHOR_ADMIN_ACCOUNT,
-    anchorProgramId: Config.ANCHOR_PROGRAM_ID,
     claimableTokenPda: Config.CLAIMABLE_TOKEN_PDA,
     claimableTokenProgramAddress: Config.CLAIMABLE_TOKEN_PROGRAM_ADDRESS,
     rewardsManagerProgramId: Config.REWARDS_MANAGER_PROGRAM_ID,

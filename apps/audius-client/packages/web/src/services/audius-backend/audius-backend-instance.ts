@@ -101,8 +101,6 @@ export const audiusBackendInstance = audiusBackend({
   setLocalStorageItem: async (key, value) =>
     window.localStorage.setItem(key, value),
   solanaConfig: {
-    anchorAdminAccount: process.env.REACT_APP_ANCHOR_ADMIN_ACCOUNT,
-    anchorProgramId: process.env.REACT_APP_ANCHOR_PROGRAM_ID,
     claimableTokenPda: process.env.REACT_APP_CLAIMABLE_TOKEN_PDA,
     claimableTokenProgramAddress:
       process.env.REACT_APP_CLAIMABLE_TOKEN_PROGRAM_ADDRESS,

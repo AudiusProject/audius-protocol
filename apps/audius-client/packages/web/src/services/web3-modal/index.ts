@@ -1,5 +1,5 @@
 import { getErrorMessage } from '@audius/common'
-import Web3Modal, { IProviderOptions } from 'web3modal'
+import type { IProviderOptions } from 'web3modal'
 
 import phantomIconPurpleSvg from 'assets/img/phantom-icon-purple.svg'
 import walletLinkSvg from 'assets/img/wallet-link.svg'
@@ -116,6 +116,7 @@ export const createSession = async (config: Config): Promise<any> => {
       }
     }
 
+    const { default: Web3Modal } = await import('web3modal')
     const web3Modal = new Web3Modal({ providerOptions })
 
     const provider = await web3Modal.connect()
