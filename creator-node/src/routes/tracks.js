@@ -992,7 +992,7 @@ router.get(
       // TODO: Consider queueing these requests
       libs.identityService.logTrackListen(
         trackId,
-        delegateOwnerWallet,
+        req.userId ?? delegateOwnerWallet,
         req.ip,
         signatureData
       )
