@@ -118,7 +118,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
                 body: `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`,
                 data: {
                   id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
-                  userIds: [this.saverUserId],
+                  userIds: [this.repostUserId],
                   type: 'Repost'
                 }
               }
