@@ -62,13 +62,6 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
         userNotifications.mobile?.[this.receiverUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
       if (userMobileSettings['followers']) {
-        console.log(this.notification.timestamp)
-        console.log(this.notification.timestamp)
-        console.log(this.notification.timestamp)
-        console.log(this.notification.timestamp)
-        console.log(this.notification.timestamp)
-        console.log(this.notification.timestamp)
-        console.log(this.notification.timestamp)
         const timestamp = Math.floor(Date.parse((this.notification.timestamp as any) as string) / 1000)
 
         await Promise.all(
