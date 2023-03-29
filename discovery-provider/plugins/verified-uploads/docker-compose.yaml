@@ -1,0 +1,17 @@
+version: '3'
+services:
+  verified_uploads:
+    container_name: "verified_uploads"
+    restart: always
+    volumes:
+      - .env:/verified_uploads/.env
+    image: audius/verified_uploads
+    build:
+      context: '.'
+    networks:
+      - dn-network
+
+networks:
+  dn-network:
+    name: discovery-provider_discovery-provider-network
+    external: true

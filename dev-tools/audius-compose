@@ -15,6 +15,7 @@ import solana.keypair
 
 LOCALHOSTS = """
 127.0.0.1       ingress \
+audius-protocol-storagev2-1 audius-protocol-storagev2-2 audius-protocol-storagev2-3 \
 audius-protocol-storage-1 audius-protocol-storage-2 audius-protocol-storage-3 audius-protocol-storage-4 audius-protocol-storage-5 \
 audius-protocol-comms-discovery-1 audius-protocol-comms-discovery-2 audius-protocol-comms-discovery-3 audius-protocol-comms-discovery-4 audius-protocol-comms-discovery-5 \
 audius-protocol-discovery-provider-1 audius-protocol-discovery-provider-2 audius-protocol-discovery-provider-3 \
@@ -302,11 +303,17 @@ def load_env(protocol_dir, service, environment):
 @click.option("-e", "--elasticsearch-replicas", default=0, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
+@click.option("--storagev2", is_flag=True)
 @click.option(
     "--no-libs", is_flag=True, help="Don't bring up container to auto-rebuild libs"
 )
 @click.option(
     "--no-solana", is_flag=True, help="Don't bring up solana-test-validator container"
+)
+@click.option(
+    "--no-notifs",
+    is_flag=True,
+    help="Don't bring up discovery provider notifications container",
 )
 @click.option(
     "--comms", is_flag=True, help="Bring up storage v2, comms, and nats containers"
@@ -322,8 +329,10 @@ def up(
     elasticsearch_replicas,
     block_explorer,
     anti_abuse_oracle,
+    storagev2,
     no_libs,
     no_solana,
+    no_notifs,
     comms,
     wait,
     args,
@@ -352,8 +361,10 @@ def up(
                 ),
                 *(["--profile=block-explorer"] if block_explorer else []),
                 *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
+                *(["--profile=storagev2"] if storagev2 else []),
                 *([] if no_libs else ["--profile=libs"]),
-                *([] if no_libs else ["--profile=solana"]),
+                *([] if no_solana else ["--profile=solana"]),
+                *([] if no_notifs else ["--profile=notifications"]),
                 *(["--profile=comms"] if comms else []),
                 "up",
                 "--build",

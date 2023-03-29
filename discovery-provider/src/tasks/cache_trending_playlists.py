@@ -31,7 +31,7 @@ def cache_trending(db, redis, strategy):
             key = make_trending_cache_key(time_range, strategy.version)
             res = make_get_unpopulated_playlists(session, time_range, strategy)()
             set_json_cached_key(redis, key, res)
-            if (time_range == "week"):
+            if time_range == "week":
                 index_trending_playlist_notifications(db, time_range, now)
 
 

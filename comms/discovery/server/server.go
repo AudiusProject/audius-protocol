@@ -74,8 +74,8 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/chats/:id/messages", s.getMessages)
 	g.POST("/mutate", s.mutate)
 
-	g.GET("/chat_permissions", s.getChatPermissions)
-	g.POST("/validate_can_chat", s.validateCanChat)
+	g.GET("/chat-permissions", s.getChatPermissions)
+	g.POST("/validate-can-chat", s.validateCanChat)
 
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
@@ -473,7 +473,7 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
 	var receiverUserIds []int32
-	var validatedPermissions map[string]bool
+	validatedPermissions := make(map[string]bool)
 	for _, encodedId := range params.ReceiverUserIDS {
 		decodedId, err := misc.DecodeHashId(encodedId)
 		if err != nil {
@@ -487,7 +487,15 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 	// Validate permission for each <request sender, user> pair
 	permissions, err := queries.BulkGetChatPermissions(db.Conn, c.Request().Context(), receiverUserIds)
 	if err != nil {
-		return err
+		if err == sql.ErrNoRows {
+			response := schema.CommsResponse{
+				Health: s.getHealthStatus(),
+				Data:   validatedPermissions,
+			}
+			return c.JSON(200, response)
+		} else {
+			return err
+		}
 	}
 	// User IDs that permit chats from followees only
 	var followeePermissions []int32
@@ -519,9 +527,12 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 		FollowerUserIDs: followeePermissions,
 		FolloweeUserID:  userId,
 	})
-	// Update response map if count > 0
-	for _, follow := range follows {
-		if follow.Count > 0 {
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if err != sql.ErrNoRows {
+		// Update response map if current follow record exists
+		for _, follow := range follows {
 			encodedId, err := misc.EncodeHashId(int(follow.FollowerUserID))
 			if err != nil {
 				return err
@@ -535,9 +546,12 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 		SenderUserID:    userId,
 		ReceiverUserIDs: tipperPermissions,
 	})
-	// Update response map if count > 0
-	for _, tip := range tips {
-		if tip.Count > 0 {
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if err != sql.ErrNoRows {
+		// Update response map if aggregate tip record exists
+		for _, tip := range tips {
 			encodedId, err := misc.EncodeHashId(int(tip.ReceiverUserID))
 			if err != nil {
 				return err

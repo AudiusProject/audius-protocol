@@ -23,6 +23,7 @@ const {
   currentNodeShouldHandleTranscode
 } = require('../utils')
 const { asyncRetry } = require('../utils/asyncRetry')
+const { isFirstByteRequest } = require('../utils/requestRange')
 const {
   authMiddleware,
   ensurePrimaryMiddleware,
@@ -733,6 +734,7 @@ router.get(
 /**
  * Gets a streamable mp3 link for a track by encodedId. Supports range request headers.
  * @dev - Wrapper around getCID, which retrieves track given its CID.
+ * @deprecated
  **/
 router.get(
   '/tracks/stream/:encodedId',
@@ -978,7 +980,8 @@ router.get(
       )
     }
 
-    if (libs.identityService) {
+    const isFirstByte = isFirstByteRequest(req)
+    if (libs.identityService && isFirstByte) {
       req.logger.info(
         `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
       )
