@@ -104,6 +104,8 @@ export const contentAccessMiddleware = async (
     ;(req as any).shouldCache = shouldCache
     // Set the trackId as the next middleware will need to check against the blacklist.
     ;(req as any).trackId = cidAccess.trackId
+    
+    ;(req as any).userId = data.userId
 
     return next()
   } catch (e: any) {
