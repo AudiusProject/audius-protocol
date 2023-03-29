@@ -45,6 +45,9 @@ export async function setupTriggers() {
   // skip = false
 
   if (skip) {
+    // quick fix to re-enable the incorrectly disabled trigger
+    client.query(`alter table tracks enable trigger trg_tracks;`)
+
     logger.info(`function ${functionName} already exists... skipping`)
   } else {
     // drop existing triggers
