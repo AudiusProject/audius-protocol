@@ -1,7 +1,7 @@
 """migrate identity last seen notification to discovery
 
 Revision ID: 02295bdb6bca
-Revises: e97a5ba523fc
+Revises: f008f6f2eee3
 Create Date: 2023-03-14 20:37:36.148935
 
 """
@@ -14,7 +14,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "02295bdb6bca"
-down_revision = "e97a5ba523fc"
+down_revision = "f008f6f2eee3"
 branch_labels = None
 depends_on = None
 
