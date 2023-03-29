@@ -50,7 +50,7 @@ const getIP = (req) => {
 
   // This shouldn't ever happen since Identity will always be behind a proxy
   if (!forwardedFor) {
-    return { ip }
+    return { ip, isWhitelisted: true }
   }
 
   const headers = forwardedFor.split(',')

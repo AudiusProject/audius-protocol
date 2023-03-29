@@ -30,7 +30,7 @@ def get_track_stream_signature(args: Dict):
 
     if user_data and user_signature:
         authed_user = get_authed_user(user_data, user_signature)
-        authed_user_id = authed_user["user_id"]
+        authed_user_id = authed_user.get("user_id") if authed_user else None
 
     if not track["is_premium"]:
         return get_premium_content_signature(

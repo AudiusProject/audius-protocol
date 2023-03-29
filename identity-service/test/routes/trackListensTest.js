@@ -4,6 +4,7 @@ const sinon = require('sinon')
 
 const { getApp } = require('../lib/app')
 const solClient = require('../../src/solana-client')
+const rateLimiter = require('../../src/rateLimiter.js')
 
 describe('test Solana listen tracking', function () {
   const TRACK_ID = 12345
@@ -48,12 +49,14 @@ describe('test Solana listen tracking', function () {
   }
 
   const recordFailedListen = async (raw) => {
-    // Failed listen from missing user ID
+    // Failed listen just needs createTrackListenInstructions to fail because it's called before raw/non-raw logic
+    createTrackListenInstructions.rejects('intentional failure')
     const resp = await request(app).post(`/tracks/${TRACK_ID}/listen`).send({
+      userId: USER_ID,
       solanaListen: true,
       sendRawTransaction: raw
     })
-    assert.strictEqual(resp.status, 400)
+    assert.strictEqual(resp.status, 500)
   }
 
   const verifySuccessfulListens = async (
