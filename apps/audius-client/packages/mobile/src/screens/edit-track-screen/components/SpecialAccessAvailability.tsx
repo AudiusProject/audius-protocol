@@ -5,11 +5,13 @@ import { accountSelectors } from '@audius/common'
 import { useField } from 'formik'
 import { Dimensions, View } from 'react-native'
 import { TouchableOpacity } from 'react-native-gesture-handler'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 
+import IconInfo from 'app/assets/images/iconInfo.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import { RadioButton, Text } from 'app/components/core'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
+import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
@@ -72,6 +74,11 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   supportersOnly: {
     flexDirection: 'row',
     alignItems: 'center'
+  },
+  infoIcon: {
+    marginLeft: spacing(2),
+    width: spacing(4),
+    height: spacing(4)
   }
 }))
 
@@ -87,6 +94,7 @@ export const SpecialAccessAvailability = ({
   const secondary = useColor('secondary')
   const neutral = useColor('neutral')
   const neutralLight4 = useColor('neutralLight4')
+  const dispatch = useDispatch()
 
   const titleStyles: object[] = [styles.title]
   if (selected) {
@@ -142,6 +150,10 @@ export const SpecialAccessAvailability = ({
     }
   }, [currentUserId])
 
+  const handleInfoPress = useCallback(() => {
+    dispatch(setVisibility({ drawer: 'SupportersInfo', visible: true }))
+  }, [dispatch])
+
   return (
     <View style={styles.root}>
       <View style={styles.titleContainer}>
@@ -185,6 +197,9 @@ export const SpecialAccessAvailability = ({
               <Text style={isContentDisabled ? styles.disabledTitle : null}>
                 {messages.supportersOnly}
               </Text>
+              <TouchableOpacity onPress={handleInfoPress}>
+                <IconInfo style={styles.infoIcon} fill={neutralLight4} />
+              </TouchableOpacity>
             </View>
           </TouchableOpacity>
         </View>
