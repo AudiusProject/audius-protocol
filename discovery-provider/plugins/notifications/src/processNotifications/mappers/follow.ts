@@ -69,7 +69,7 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
         console.log(this.notification.timestamp)
         console.log(this.notification.timestamp)
         console.log(this.notification.timestamp)
-        const timestamp = Math.floor(Date.parse(this.notification.timestamp).getTime() / 1000)
+        const timestamp = Math.floor(Date.parse((this.notification.timestamp as any) as string) / 1000)
 
         await Promise.all(
           devices.map((device) => {
