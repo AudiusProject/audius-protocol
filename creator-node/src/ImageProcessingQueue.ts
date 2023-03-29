@@ -8,6 +8,7 @@ import os from 'os'
 import config from './config'
 import { logger as genericLogger } from './logging'
 import { getConcurrencyPerWorker } from './utils'
+import resizeImageProcessor from './resizeImage'
 
 const imageProcessingMaxConcurrency = config.get(
   'imageProcessingMaxConcurrency'
@@ -56,10 +57,20 @@ export class ImageProcessingQueue {
     } else {
       processorFile = path.join(__dirname, '../build/src', 'resizeImage.js')
     }
-    const worker = new Worker('image-processing-queue', processorFile, {
-      connection,
-      concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
-    })
+    let worker: Worker
+    if (config.get('devMode')) {
+      // Don't process in a sandboxed worker locally because it doesn't work with ts-node-dev.
+      // See https://github.com/OptimalBits/bull/issues/2150#issuecomment-911930714 and https://github.com/taskforcesh/bullmq/issues/1274#issuecomment-1148154485
+      worker = new Worker('image-processing-queue', resizeImageProcessor, {
+        connection,
+        concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
+      })
+    } else {
+      worker = new Worker('image-processing-queue', processorFile, {
+        connection,
+        concurrency: getConcurrencyPerWorker(MAX_CONCURRENCY)
+      })
+    }
     if (prometheusRegistry !== null && prometheusRegistry !== undefined) {
       prometheusRegistry.startQueueMetrics(this.queue, worker)
     }

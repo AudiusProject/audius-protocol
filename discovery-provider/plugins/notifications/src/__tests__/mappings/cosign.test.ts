@@ -60,8 +60,8 @@ describe('Cosign Notification', () => {
       }
     ])
 
-    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
-    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     const cosignNotifications = pending.appNotifications.filter(
@@ -74,7 +74,7 @@ describe('Cosign Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
         type: 'ios',
-        targetARN: 'arn:1',
+        targetARN: 'arn:2',
         badgeCount: 1
       },
       {

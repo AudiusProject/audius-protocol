@@ -27,6 +27,9 @@ x-common:
     - "audius-protocol-solana-test-validator-1:host-gateway"
     - "audius-protocol-eth-ganache-1:host-gateway"
     - "audius-protocol-poa-ganache-1:host-gateway"
+    - "audius-protocol-storagev2-1:host-gateway"
+    - "audius-protocol-storagev2-2:host-gateway"
+    - "audius-protocol-storagev2-3:host-gateway"
   deploy:
     resources:
       limits:
@@ -218,6 +221,26 @@ services:
       service: comms-test
     <<: *common
 
+  # Storage v2
+
+  storagev2-1:
+    extends:
+      file: docker-compose.storagev2.yml
+      service: storagev2-1
+    <<: *common
+
+  storagev2-2:
+    extends:
+      file: docker-compose.storagev2.yml
+      service: storagev2-2
+    <<: *common
+
+  storagev2-3:
+    extends:
+      file: docker-compose.storagev2.yml
+      service: storagev2-3
+    <<: *common
+
   # Blockchain
 
   poa-ganache:
@@ -268,3 +291,6 @@ volumes:
   solana-programs-idl:
   audius-libs:
   postgresdata:
+  mediorum1:
+  mediorum2:
+  mediorum3:

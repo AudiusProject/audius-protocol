@@ -1,7 +1,8 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import { CosignRemixNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { BaseNotification, Device } from './base'
+import { logger } from '../../logger'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
@@ -55,7 +56,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       return acc
     }, {} as Record<number, { title: string }>)
 
-    if (users?.[this.parentTrackUserId]?.isDeactivated) {
+    if (users?.[this.remixUserId]?.isDeactivated) {
       return
     }
 
@@ -63,40 +64,34 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
     const remixTrackTitle = tracks[this.trackId]?.title
 
     const userNotifications = await super.getShouldSendNotification(
-      this.parentTrackUserId
+      this.remixUserId
     )
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.parentTrackUserId]?.devices ?? [])
-        .length > 0
+      (userNotifications.mobile?.[this.remixUserId]?.devices ?? []).length > 0
     ) {
-      const userMobileSettings: NotificationSettings =
-        userNotifications.mobile?.[this.parentTrackUserId].settings
       const devices: Device[] =
-        userNotifications.mobile?.[this.parentTrackUserId].devices
+        userNotifications.mobile?.[this.remixUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['favorites']) {
-        await Promise.all(
-          devices.map((device) => {
-            return sendPushNotification(
-              {
-                type: device.type,
-                badgeCount:
-                  userNotifications.mobile[this.parentTrackUserId].badgeCount +
-                  1,
-                targetARN: device.awsARN
-              },
-              {
-                title: 'New Track Co-Sign! 🔥',
-                body: `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`,
-                data: {}
-              }
-            )
-          })
-        )
-        await this.incrementBadgeCount(this.parentTrackUserId)
-      }
+      await Promise.all(
+        devices.map((device) => {
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount:
+                userNotifications.mobile[this.remixUserId].badgeCount + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: 'New Track Co-Sign! 🔥',
+              body: `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`,
+              data: {}
+            }
+          )
+        })
+      )
+      await this.incrementBadgeCount(this.remixUserId)
     }
     if (userNotifications.email) {
       // TODO: Send out email

@@ -180,7 +180,7 @@ class ManageEntityParameters:
     def add_notification_record(
         self,
         key: datetime,
-        record: NotificationSeen,
+        record: Notification,
     ):
         if key not in self.new_records[EntityType.NOTIFICATION]:  # type: ignore
             self.new_records[EntityType.NOTIFICATION][key].append(record)  # type: ignore
