@@ -18,6 +18,7 @@ import { Platform, View, Text, KeyboardAvoidingView } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
+import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconSend from 'app/assets/images/iconSend.svg'
 import type { FlatListT } from 'app/components/core'
 import { TextInput, Screen, ScreenContent, FlatList } from 'app/components/core'
@@ -316,6 +317,7 @@ export const ChatScreen = () => {
             )
           : messages.title
       }
+      icon={otherUser ? undefined : IconMessage}
       topbarRight={topBarRight}
     >
       <ScreenContent>
