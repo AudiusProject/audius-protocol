@@ -68,7 +68,13 @@ describe('Multiple Mappings Notification', () => {
       {
         title: 'Follow',
         body: 'user_2 followed you',
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:follow:1",
+          "type": "follow",
+          "userIds": [
+            2,
+          ],
+        }
       }
     )
 
@@ -83,7 +89,14 @@ describe('Multiple Mappings Notification', () => {
       {
         title: 'New Repost',
         body: 'user_2 reposted your track track_title_10',
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:repost:10:type:track",
+          "type": "Repost",
+          "userIds": [
+            2,
+          ],
+
+        }
       }
     )
 

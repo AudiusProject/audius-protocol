@@ -119,7 +119,6 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                 data: {
                   type: 'UserSubscription',
                   id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
-
                 }
               }
             )

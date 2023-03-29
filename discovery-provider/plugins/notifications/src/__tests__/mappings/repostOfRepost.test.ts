@@ -70,7 +70,8 @@ describe('Repost Of Repost Notification', () => {
       {
         user_id: 2,
         repost_item_id: 10,
-        repost_type: entityType
+        repost_type: entityType,
+        created_at: new Date(Date.now() - 10)
       }
     ])
     await createReposts(processor.discoveryDB, [
@@ -107,7 +108,13 @@ describe('Repost Of Repost Notification', () => {
       {
         title: 'New Repost',
         body: 'user_3 reposted your repost of track_title_10',
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:repost_of_repost:10:type:track",
+          "type": "RepostOfRepost",
+          "userIds": [
+            3,
+          ],
+        }
       }
     )
   })
@@ -136,7 +143,13 @@ describe('Repost Of Repost Notification', () => {
       {
         title: 'New Repost',
         body: 'user_3 reposted your repost of playlist_name_10',
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:repost_of_repost:10:type:playlist",
+          "type": "RepostOfRepost",
+          "userIds": [
+            3,
+          ],
+        }
       }
     )
   })
@@ -165,7 +178,13 @@ describe('Repost Of Repost Notification', () => {
       {
         title: 'New Repost',
         body: 'user_3 reposted your repost of playlist_name_10',
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:repost_of_repost:10:type:album",
+          "type": "RepostOfRepost",
+          "userIds": [
+            3,
+          ],
+        }
       }
     )
   })

@@ -71,7 +71,8 @@ describe('Save Of Repost Notification', () => {
       {
         user_id: 2,
         repost_item_id: 10,
-        repost_type: entityType
+        repost_type: entityType,
+        created_at: new Date(Date.now() - 10)
       }
     ])
     await createSaves(processor.discoveryDB, [
@@ -108,7 +109,13 @@ describe('Save Of Repost Notification', () => {
       {
         title: 'New Favorite',
         body: 'user_3 favorited your repost of track_title_10',
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:save_of_repost:10:type:track",
+          "type": "FavoriteOfRepost",
+          "userIds": [
+            3,
+          ],
+        }
       }
     )
   })
@@ -137,7 +144,14 @@ describe('Save Of Repost Notification', () => {
       {
         title: 'New Favorite',
         body: 'user_3 favorited your repost of playlist_name_10',
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:save_of_repost:10:type:playlist",
+          "type": "FavoriteOfRepost",
+          "userIds": [
+            3,
+          ],
+
+        }
       }
     )
   })
@@ -166,7 +180,14 @@ describe('Save Of Repost Notification', () => {
       {
         title: 'New Favorite',
         body: 'user_3 favorited your repost of playlist_name_10',
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:save_of_repost:10:type:album",
+          "type": "FavoriteOfRepost",
+          "userIds": [
+            3,
+          ],
+
+        }
       }
     )
   })
