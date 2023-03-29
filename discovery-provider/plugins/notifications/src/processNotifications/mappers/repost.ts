@@ -103,7 +103,6 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
         userNotifications.mobile?.[this.receiverUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
       if (userMobileSettings['reposts']) {
-        const timestamp = Math.floor(Date.parse((this.notification.timestamp as any) as string) / 1000)
         await Promise.all(
           devices.map((device) => {
             return sendPushNotification(
@@ -117,7 +116,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
                 title: 'New Repost',
                 body: `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`,
                 data: {
-                  id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
                   userIds: [this.repostUserId],
                   type: 'Repost'
                 }

@@ -63,26 +63,28 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
       const devices: Device[] =
         userNotifications.mobile?.[this.senderUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['favorites']) {
-        await Promise.all(
-          devices.map((device) => {
-            return sendPushNotification(
-              {
-                type: device.type,
-                badgeCount:
-                  userNotifications.mobile[this.senderUserId].badgeCount + 1,
-                targetARN: device.awsARN
-              },
-              {
-                title: `#${this.rank} Top Supporter`,
-                body: `You're now ${receivingUserName}'s #${this.rank} Top Supporter!`,
-                data: {}
+      await Promise.all(
+        devices.map((device) => {
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount:
+                userNotifications.mobile[this.senderUserId].badgeCount + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: `#${this.rank} Top Supporter`,
+              body: `You're now ${receivingUserName}'s #${this.rank} Top Supporter!`,
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                type: 'SupportingRankUp',
+                entityId: this.receiverUserId
               }
-            )
-          })
-        )
-        await this.incrementBadgeCount(this.senderUserId)
-      }
+            }
+          )
+        })
+      )
+      await this.incrementBadgeCount(this.senderUserId)
     }
     //
 

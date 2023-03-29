@@ -62,8 +62,6 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
         userNotifications.mobile?.[this.receiverUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
       if (userMobileSettings['followers']) {
-        const timestamp = Math.floor(Date.parse((this.notification.timestamp as any) as string) / 1000)
-
         await Promise.all(
           devices.map((device) => {
             return sendPushNotification(
@@ -77,7 +75,7 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
                 title: 'Follow',
                 body: `${users[this.followerUserId].name} followed you`,
                 data: {
-                  id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
                   userIds: [this.followerUserId],
                   type: 'follow'
                 }
