@@ -65,6 +65,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   writeMessageButton: {
     marginTop: spacing(6)
+  },
+  shadow: {
+    borderBottomColor: palette.neutralLight6,
+    borderBottomWidth: 3,
+    borderBottomLeftRadius: 1
   }
 }))
 
@@ -118,6 +123,7 @@ export const ChatListScreen = () => {
       topbarRight={iconCompose}
     >
       <ScreenContent>
+        <View style={styles.shadow} />
         <View style={styles.rootContainer}>
           {chatsStatus === Status.SUCCESS ? (
             <FlatList
