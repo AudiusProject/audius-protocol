@@ -119,7 +119,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
                 data: {
                   id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                   userIds: [this.saverUserId],
-                  type: 'favorite'
+                  type: 'Repost'
                 }
               }
             )
