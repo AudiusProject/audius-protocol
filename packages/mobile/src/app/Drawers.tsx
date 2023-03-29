@@ -28,6 +28,7 @@ import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
 import { SignOutConfirmationDrawer } from 'app/components/sign-out-confirmation-drawer'
+import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { TransferAudioMobileDrawer } from 'app/components/transfer-audio-mobile-drawer'
 import { TrendingRewardsDrawer } from 'app/components/trending-rewards-drawer'
 import { TrendingFilterDrawer } from 'app/screens/trending-screen'
@@ -118,7 +119,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   LockedContent: LockedContentDrawer,
   GatedContentUploadPrompt: GatedContentUploadPromptDrawer,
   ChatActions: ChatActionsDrawer,
-  BlockMessages: BlockMessagesDrawer
+  BlockMessages: BlockMessagesDrawer,
+  SupportersInfo: SupportersInfoDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [

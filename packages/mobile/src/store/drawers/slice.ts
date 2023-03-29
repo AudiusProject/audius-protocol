@@ -25,6 +25,7 @@ export type Drawer =
   | 'ChatActions'
   | 'ProfileActions'
   | 'BlockMessages'
+  | 'SupportersInfo'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -52,6 +53,7 @@ export type DrawerData = {
   ChatActions: { userId: number }
   ProfileActions: undefined
   BlockMessages: { userId: number }
+  SupportersInfo: undefined
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -79,6 +81,7 @@ const initialState: DrawersState = {
   ChatActions: false,
   ProfileActions: false,
   BlockMessages: false,
+  SupportersInfo: false,
   data: null
 }
 

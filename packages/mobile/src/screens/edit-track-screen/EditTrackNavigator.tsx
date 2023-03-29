@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer'
+import { SupportersInfoDrawer } from 'app/components/supporters-info-drawer'
 import { useIsGatedContentEnabled } from 'app/hooks/useIsGatedContentEnabled'
 import { useAppScreenOptions } from 'app/screens/app-screen/useAppScreenOptions'
 
@@ -64,6 +65,7 @@ export const EditTrackNavigator = (props: EditTrackNavigatorProps) => {
       <GatedContentUploadPromptDrawer
         isUpload={!props.initialValues.track_id}
       />
+      <SupportersInfoDrawer />
     </>
   )
 }
