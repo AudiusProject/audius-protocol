@@ -141,6 +141,9 @@ const initializeApis = ({
     tips,
     resolve,
     full,
-    chats
+    chats,
+    services
   }
 }
+
+export type AudiusSdk = ReturnType<typeof sdk>

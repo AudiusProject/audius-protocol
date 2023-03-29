@@ -428,7 +428,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    * @param endpoint the endpoint to health_check
    * @returns a new discovery node if reselect was necessary, or the existing endpoint if reselect unnecessary
    */
-  private async reselectIfNecessary({
+  async reselectIfNecessary({
     endpoint,
     health,
     reason,

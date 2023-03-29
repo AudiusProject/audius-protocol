@@ -20,12 +20,14 @@ import {
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import type { EthContracts } from '../ethContracts'
 import type { Web3Manager } from '../web3Manager'
+import { HealthCheckStatus } from '../../sdk/services/DiscoveryNodeSelector/healthCheckTypes'
+import type { AudiusSdk } from '../../sdk/sdk'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
 
 type RequestParams = {
-  queryParams: Record<string, string>
+  queryParams: Record<string, any>
   endpoint: string
   timeout?: number
   method?: Method
@@ -40,6 +42,15 @@ type UserReplicaSet = {
   secondary2SpID: number
 }
 
+type DiscoveryResponse<Response> = {
+  latest_indexed_block: number
+  latest_chain_block: number
+  latest_indexed_slot_plays: number
+  latest_chain_slot_plays: number
+  version: { service: string; version: string }
+  data: Response
+}
+
 export type DiscoveryProviderConfig = {
   whitelist?: Set<string>
   blacklist?: Set<string>
@@ -51,6 +62,7 @@ export type DiscoveryProviderConfig = {
   selectionRequestRetries?: number
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
+  audiusSdk?: AudiusSdk
 } & Pick<
   DiscoveryProviderSelectionConfig,
   'selectionCallback' | 'monitoringCallbacks' | 'localStorage'
@@ -105,6 +117,8 @@ export class DiscoveryProvider {
 
   discoveryProviderEndpoint: string | undefined
   isInitialized = false
+  audiusSdk?: AudiusSdk
+  discoveryNodeMiddleware: any
 
   constructor({
     whitelist,
@@ -119,7 +133,8 @@ export class DiscoveryProvider {
     selectionRequestRetries = MAX_MAKE_REQUEST_RETRY_COUNT,
     localStorage,
     unhealthySlotDiffPlays,
-    unhealthyBlockDiff
+    unhealthyBlockDiff,
+    audiusSdk
   }: DiscoveryProviderConfig) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -154,19 +169,35 @@ export class DiscoveryProvider {
     this.maxRequestsForTrue404 = MAX_MAKE_REQUEST_RETRIES_WITH_404
 
     this.monitoringCallbacks = monitoringCallbacks
+
+    this.audiusSdk = audiusSdk
   }
 
   async init() {
-    const endpoint = await this.serviceSelector.select()
-    this.setEndpoint(endpoint)
+    if (this.audiusSdk) {
+      const { discoveryNodeSelector } = this.audiusSdk.services
 
-    if (endpoint && this.web3Manager && this.web3Manager.web3) {
-      // Set current user if it exists
-      const userAccount = await this.getUserAccount(
-        this.web3Manager.getWalletAddress()
-      )
-      if (userAccount) {
-        await this.userStateManager.setCurrentUser(userAccount)
+      discoveryNodeSelector.addEventListener('change', (endpoint: string) => {
+        this.setEndpoint(endpoint)
+      })
+
+      const endpoint = await discoveryNodeSelector.getSelectedEndpoint()
+      if (endpoint) {
+        this.setEndpoint(endpoint)
+      }
+    } else {
+      // Need this for backwards compat
+      const endpoint = await this.serviceSelector.select()
+      this.setEndpoint(endpoint)
+
+      if (endpoint && this.web3Manager && this.web3Manager.web3) {
+        // Set current user if it exists
+        const userAccount = await this.getUserAccount(
+          this.web3Manager.getWalletAddress()
+        )
+        if (userAccount) {
+          await this.userStateManager.setCurrentUser(userAccount)
+        }
       }
     }
   }
@@ -1197,13 +1228,6 @@ export class DiscoveryProvider {
 
   /**
    * Makes a request to a discovery node, reselecting if necessary
-   * @param {{
-   *  endpoint: string
-   *  urlParams: object
-   *  queryParams: object
-   *  method: string
-   *  headers: object
-   * }} {
    *  endpoint: the base route
    *  urlParams: string of URL params to be concatenated after base route
    *  queryParams: URL query (search) params
@@ -1215,6 +1239,26 @@ export class DiscoveryProvider {
    * @param blockNumber If provided, throws an error if the discovery node has not yet indexed this block
    */
   async _makeRequestInternal<Response>(
+    requestObj: Record<string, unknown>,
+    retry = true,
+    attemptedRetries = 0,
+    throwError = false,
+    blockNumber?: number
+  ) {
+    if (this.audiusSdk) {
+      return await this._makeRequestInternal1<Response>(requestObj, throwError)
+    }
+
+    return await this._makeRequestInternalLegacy<Response>(
+      requestObj,
+      retry,
+      attemptedRetries,
+      throwError,
+      blockNumber
+    )
+  }
+
+  async _makeRequestInternalLegacy<Response>(
     requestObj: Record<string, unknown>,
     retry = true,
     attemptedRetries = 0,
@@ -1283,7 +1327,7 @@ export class DiscoveryProvider {
           if (this.request404Count < this.maxRequestsForTrue404) {
             // In the case of a 404, retry with a different discovery node entirely
             // using selectionRequestRetries + 1 to force reselection
-            return await this._makeRequestInternal(
+            return await this._makeRequestInternalLegacy(
               requestObj,
               retry,
               this.selectionRequestRetries + 1,
@@ -1296,7 +1340,7 @@ export class DiscoveryProvider {
         }
 
         // In the case of an unknown error, retry with attempts += 1
-        return await this._makeRequestInternal(
+        return await this._makeRequestInternalLegacy(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1326,7 +1370,7 @@ export class DiscoveryProvider {
         console.info(
           `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequestInternal(
+        return await this._makeRequestInternalLegacy(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1343,7 +1387,7 @@ export class DiscoveryProvider {
         console.info(
           `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequestInternal(
+        return await this._makeRequestInternalLegacy(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1358,6 +1402,81 @@ export class DiscoveryProvider {
 
     // Everything looks good, return the data!
     return parsedResponse
+  }
+
+  async _makeRequestInternal1<Response>(
+    requestObj: Record<string, unknown>,
+    throwError = false
+  ) {
+    let parsedResponse: DiscoveryResponse<Response>
+
+    if (!this.discoveryProviderEndpoint || !this.audiusSdk) return
+
+    try {
+      parsedResponse = await this._performRequestWithMonitoring(
+        requestObj as RequestParams,
+        this.discoveryProviderEndpoint
+      )
+
+      const { health, reason } = this.parseApiHealthStatusReason(parsedResponse)
+
+      const { latest_chain_block, latest_indexed_block, version } =
+        parsedResponse
+
+      const blockDifference = latest_chain_block - latest_indexed_block
+
+      const newEndpoint =
+        await this.audiusSdk.services.discoveryNodeSelector.reselectIfNecessary(
+          {
+            endpoint: this.discoveryProviderEndpoint,
+            health,
+            reason,
+            data: {
+              block_difference: blockDifference,
+              version: version.version
+            }
+          }
+        )
+
+      if (newEndpoint && newEndpoint !== this.discoveryProviderEndpoint) {
+        this.setEndpoint(newEndpoint)
+        parsedResponse = await this._performRequestWithMonitoring(
+          requestObj as RequestParams,
+          newEndpoint
+        )
+      }
+
+      // const response = await this.discoveryNodeMiddleware({response: parsedResponse, })
+      // TODO call post middleware
+    } catch (e) {
+      if (throwError) {
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        throw e
+      }
+      return null
+    }
+    // Everything looks good, return the data!
+    return parsedResponse
+  }
+
+  parseApiHealthStatusReason = (response: DiscoveryResponse<unknown>) => {
+    const { latest_chain_block, latest_indexed_block } = response
+    const blockDifference = latest_chain_block - latest_indexed_block
+
+    const { latest_chain_slot_plays, latest_indexed_slot_plays } = response
+    const apiSlotDifference =
+      latest_chain_slot_plays - latest_indexed_slot_plays
+
+    const isIndexerHealthy = blockDifference <= this.unhealthyBlockDiff
+    const isSolanaApiIndexerHealthy =
+      apiSlotDifference <= (this.unhealthySlotDiffPlays ?? 0)
+    if (!isIndexerHealthy) {
+      return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
+    }
+    if (!isSolanaApiIndexerHealthy) {
+      return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
+    }
+    return { health: HealthCheckStatus.HEALTHY }
   }
 
   /**
