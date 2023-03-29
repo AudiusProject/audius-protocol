@@ -430,6 +430,7 @@ export const ChatScreen = () => {
                   setInputMessage(text)
                   text ? setIconOpacity(ICON_FOCUS) : setIconOpacity(ICON_BLUR)
                 }}
+                inputAccessoryViewID='none'
                 onBlur={() => setIconOpacity(ICON_BLUR)}
                 multiline
                 value={inputMessage}
