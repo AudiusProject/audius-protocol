@@ -4,7 +4,8 @@ import {
   toastActions,
   ErrorLevel,
   remoteConfigReducer as remoteConfig,
-  reducers as commonReducers
+  reducers as commonReducers,
+  chatMiddleware
 } from '@audius/common'
 import backend from 'audius-client/src/common/store/backend/reducer'
 import type { BackendState } from 'audius-client/src/common/store/backend/types'
@@ -23,6 +24,7 @@ import { createStore, combineReducers, applyMiddleware } from 'redux'
 import { persistStore } from 'redux-persist'
 import createSagaMiddleware from 'redux-saga'
 
+import { audiusSdk } from 'app/services/audius-sdk'
 import { reportToSentry } from 'app/utils/reportToSentry'
 
 import type { DownloadState } from './download/slice'
@@ -133,7 +135,7 @@ const sagaMiddleware = createSagaMiddleware({
   onError: onSagaError
 })
 
-const middlewares = [sagaMiddleware]
+const middlewares = [sagaMiddleware, chatMiddleware(audiusSdk)]
 
 if (__DEV__) {
   const createDebugger = require('redux-flipper').default
