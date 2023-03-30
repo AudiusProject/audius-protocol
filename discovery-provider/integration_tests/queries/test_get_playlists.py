@@ -1,3 +1,4 @@
+import datetime
 import logging
 
 import pytest
@@ -23,14 +24,71 @@ def test_entities():
                 "playlist_name": "playlist 2",
                 "is_private": True,
             },
+            {
+                "playlist_id": 3,
+                "playlist_owner_id": 3,
+                "playlist_name": "playlist 3",
+                "track_ids": [
+                    {"track": 1}, 
+                    {"track": 2}, 
+                    {"track": 3}, 
+                    {"track": 4}, 
+                ]
+            },
+            {
+                "playlist_id": 4,
+                "playlist_owner_id": 3,
+                "playlist_name": "playlist 4",
+                "is_private": True,
+                "track_ids": [
+                    {"track": 1}, 
+                    {"track": 2}, 
+                    {"track": 3}, 
+                    {"track": 4}, 
+                ]
+            },
         ],
         "users": [
             {"user_id": 1, "handle": "user1"},
             {"user_id": 2, "handle": "user2"},
+            {"user_id": 3, "handle": "user3"},
         ],
         "playlist_routes": [
             {"slug": "playlist-1", "owner_id": 1, "playlist_id": 1},
             {"slug": "playlist-2", "owner_id": 2, "playlist_id": 2},
+            {"slug": "playlist-3", "owner_id": 3, "playlist_id": 3},
+            {"slug": "playlist-4", "owner_id": 3, "playlist_id": 4},
+        ],
+        "tracks": [
+            {
+                "track_id": 1,
+                "title": "track 1",
+                "owner_id": 1287289,
+                "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
+                "created_at": datetime(2018, 5, 17),
+            },
+            {
+                "track_id": 2,
+                "title": "track 2",
+                "owner_id": 1287289,
+                "created_at": datetime(2018, 5, 18),
+            },
+            {
+                "track_id": 3,
+                "title": "track 3",
+                "owner_id": 1287289,
+                "release_date": "Wed Dec 18 2019 12:00:00 GMT-0800",
+                "created_at": datetime(2020, 5, 17),
+                "is_unlisted": True,
+            },
+            {
+                "track_id": 4,
+                "title": "track 4",
+                "owner_id": 1287289,
+                "release_date": "",
+                "created_at": datetime(2018, 5, 19),
+                "is_unlisted": True,
+            },
         ],
     }
 
@@ -139,3 +197,21 @@ def test_get_playlist_with_permalink_private_playlist(app, test_entities):
                 playlist_name="playlist 2",
                 playlist_owner_id=2,
             )
+
+
+def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
+    with app.test_request_context(
+        # Request context and args are required for passing
+        # pagination info into paginate_query inside get_playlists
+        data={"limit": 5, "offset": 3},
+    ):
+        db = get_db()
+        populate_mock_db(db, test_entities)
+        with db.scoped_session():
+            playlists = get_playlists(
+                GetPlaylistsArgs(
+                    current_user_id=1,
+                    routes=[{"handle": "user2", "slug": "playlist-2"}],
+                ),
+            )
+            assert len(playlists) == 2
