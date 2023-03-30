@@ -208,8 +208,9 @@ def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
     ):
         db = get_db()
         populate_mock_db(db, test_entities)
-        with db.scoped_session():
+        with db.scoped_session() as session:
             playlists = get_playlist_tracks(
+                session,
                 {"args": {
                 "playlist_ids": ["3", "4"],
                 "current_user_id": 3
