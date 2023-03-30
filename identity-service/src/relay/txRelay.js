@@ -607,7 +607,7 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
     const toChecksumAddress = nethermindWeb3.utils.toChecksumAddress
 
     console.log(
-      `txRelay - relayToNethermind starting estimateGas from: {toChecksumAddress(wallet.address), to: {toChecksumAddress(contractAddress)}}`
+      `txRelay - relayToNethermind starting estimateGas from: ${toChecksumAddress(wallet.address)}, to: ${toChecksumAddress(contractAddress)}}`
     )
     const nethermindGasLimit = await nethermindWeb3.eth.estimateGas({
       from: toChecksumAddress(wallet.address),
@@ -615,7 +615,7 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
       data: encodedABI
     })
     console.log(
-      `txRelay - relayToNethermind completed estimateGas. nethermindGasLimit: {nethermindGasLimit}, contractAddress: {contractAddress}}`
+      `txRelay - relayToNethermind completed estimateGas. nethermindGasLimit: ${nethermindGasLimit}, contractAddress: ${contractAddress}}`
     )
 
     const transaction = {
@@ -631,7 +631,7 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
       privateKey
     )
     console.log(
-      `txRelay - relayToNethermind signed transaction. signedTx: {signedTx}}`
+      `txRelay - relayToNethermind signed transaction. signedTx: ${signedTx}}`
     )
 
     inFlight++
