@@ -16,12 +16,13 @@ const messages = {
   subscribed: 'subscribed'
 }
 
-const useStyles = makeStyles(({ spacing }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
     paddingHorizontal: 0,
     height: spacing(8),
     width: spacing(8),
-    marginRight: spacing(2)
+    marginRight: spacing(2),
+    borderColor: palette.neutralLight4
   }
 }))
 
