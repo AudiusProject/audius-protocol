@@ -703,6 +703,7 @@ export interface UserRow {
   has_collectibles?: boolean
   is_current: boolean
   is_deactivated?: boolean
+  is_available?: boolean
   is_verified?: boolean
   location?: string | null
   metadata_multihash?: string | null
