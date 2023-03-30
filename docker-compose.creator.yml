@@ -11,7 +11,7 @@ services:
     volumes:
       - ./creator-node:/usr/src/app
       - ./dev-tools:/tmp/dev-tools
-      - audius-libs:/usr/src/audius-libs
+      - ./libs:/usr/src/audius-libs
       - /usr/src/app/node_modules
       - /usr/src/app/build
     depends_on:

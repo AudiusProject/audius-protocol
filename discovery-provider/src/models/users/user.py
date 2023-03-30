@@ -61,6 +61,7 @@ class User(Base, RepresentableMixin):
     is_deactivated = Column(
         Boolean, nullable=False, index=True, server_default=text("false")
     )
+    is_available = Column(Boolean, nullable=False, server_default=text("true"))
     slot = Column(Integer)
     user_storage_account = Column(String)
     user_authority_account = Column(String)

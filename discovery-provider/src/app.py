@@ -39,6 +39,7 @@ from src.solana.solana_client_manager import SolanaClientManager
 from src.tasks import celery_app
 from src.tasks.index_reactions import INDEX_REACTIONS_LOCK
 from src.tasks.update_track_is_available import UPDATE_TRACK_IS_AVAILABLE_LOCK
+from src.tasks.update_user_is_available import UPDATE_USER_IS_AVAILABLE_LOCK
 from src.utils import helpers, web3_provider
 from src.utils.cid_metadata_client import CIDMetadataClient
 from src.utils.config import ConfigIni, config_files, shared_config
@@ -413,6 +414,10 @@ def configure_celery(celery, test_config=None):
                 "task": "update_track_is_available",
                 "schedule": timedelta(hours=3),
             },
+            "update_user_is_available": {
+                "task": "update_user_is_available",
+                "schedule": timedelta(hours=3),
+            },
             "index_profile_challenge_backfill": {
                 "task": "index_profile_challenge_backfill",
                 "schedule": timedelta(minutes=1),
@@ -486,6 +491,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete("index_trending_lock")
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
+    redis_inst.delete(UPDATE_USER_IS_AVAILABLE_LOCK)
 
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)

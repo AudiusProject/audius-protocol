@@ -7,6 +7,11 @@ begin;
   comment on table users is 'the users table';
 commit;
 
+-- 3/28/23: add is_available to users table
+begin;
+    alter table users
+    add column if not exists is_available boolean not null default true;
+commit;
 
 -- 3/29/23: define `to_timestamp_safe`
 begin;

@@ -287,7 +287,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
         missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
         raise Exception(missing_cids_msg)
 
-    logger.info(
+    logger.debug(
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
     return cid_metadata, cid_type
@@ -328,7 +328,7 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
         tx_is_type = tx_target_contract_address == get_contract_addresses()[tx_type]
         if tx_is_type:
             contract_type = tx_type
-            logger.info(
+            logger.debug(
                 f"index.py | {tx_type} contract addr: {tx_target_contract_address}"
                 f" tx from block - {tx}, receipt - {tx_receipt}"
             )
@@ -418,7 +418,7 @@ def save_cid_metadata(
 
 
 def create_and_raise_indexing_error(err, redis):
-    logger.info(
+    logger.debug(
         f"index.py | Error in the indexing task at"
         f" block={err.blocknumber} and hash={err.txhash}"
     )
@@ -466,7 +466,7 @@ def index_blocks(self, db, blocks_list):
             skip_tx_hash = get_tx_hash_to_skip(session, redis)
             skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
             if skip_whole_block:
-                logger.info(
+                logger.debug(
                     f"index.py | Skipping all txs in block {block.hash} {block.number}"
                 )
                 save_skipped_tx(session, redis)
@@ -485,7 +485,7 @@ def index_blocks(self, db, blocks_list):
                         {"scope": "fetch_tx_receipts"},
                         start_time=fetch_tx_receipts_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index.py | index_blocks - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
                     )
 
@@ -510,7 +510,7 @@ def index_blocks(self, db, blocks_list):
                         ) or (skip_tx_hash is not None and skip_tx_hash == tx_hash)
 
                         if should_skip_tx:
-                            logger.info(
+                            logger.debug(
                                 f"index.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
                             )
                             save_skipped_tx(session, redis)
@@ -525,7 +525,7 @@ def index_blocks(self, db, blocks_list):
                         {"scope": "parse_tx_receipts"},
                         start_time=parse_tx_receipts_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index.py | index_blocks - parse_tx_receipts in {time.time() - parse_tx_receipts_start_time}s"
                     )
 
@@ -548,7 +548,7 @@ def index_blocks(self, db, blocks_list):
                         {"scope": "fetch_metadata"},
                         start_time=fetch_metadata_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index.py | index_blocks - fetch_metadata in {duration_ms}ms"
                     )
 
@@ -566,7 +566,7 @@ def index_blocks(self, db, blocks_list):
                         {"scope": "add_indexed_block_to_db"},
                         start_time=add_indexed_block_to_db_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index.py | index_blocks - add_indexed_block_to_db in {duration_ms}ms"
                     )
 
@@ -588,7 +588,7 @@ def index_blocks(self, db, blocks_list):
                         {"scope": "process_state_changes"},
                         start_time=process_state_changes_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
                     is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
@@ -605,7 +605,7 @@ def index_blocks(self, db, blocks_list):
                             {"scope": "save_cid_metadata"},
                             start_time=save_cid_metadata_time,
                         )
-                        logger.info(
+                        logger.debug(
                             f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
                         )
 
@@ -620,7 +620,7 @@ def index_blocks(self, db, blocks_list):
                 commit_start_time = time.time()
                 session.commit()
                 metric.save_time({"scope": "commit_time"}, start_time=commit_start_time)
-                logger.info(
+                logger.debug(
                     f"index.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
             except Exception as e:
@@ -651,7 +651,7 @@ def index_blocks(self, db, blocks_list):
                 clear_indexing_error(redis)
 
         add_indexed_block_to_redis(block, redis)
-        logger.info(
+        logger.debug(
             f"index.py | update most recently processed block complete for block=${block_number}"
         )
 
@@ -690,8 +690,8 @@ def revert_blocks(self, db, revert_blocks_list):
             f"index.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}"
         )
 
-    logger.info(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
-    logger.info(revert_blocks_list)
+    logger.debug(f"index.py | {self.request.id} | Reverting {num_revert_blocks} blocks")
+    logger.debug(revert_blocks_list)
 
     with db.scoped_session() as session:
         rebuild_playlist_index = False
@@ -702,7 +702,7 @@ def revert_blocks(self, db, revert_blocks_list):
             # Cache relevant information about current block
             revert_hash = revert_block.blockhash
             revert_block_number = revert_block.number
-            logger.info(f"Reverting {revert_block_number}")
+            logger.debug(f"Reverting {revert_block_number}")
             parent_hash = revert_block.parenthash
 
             # Special case for default start block value of 0x0 / 0x0...0
@@ -802,7 +802,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 if previous_repost_entry:
                     previous_repost_entry.is_current = True
                 # Remove outdated repost entry
-                logger.info(f"Reverting repost: {repost_to_revert}")
+                logger.debug(f"Reverting repost: {repost_to_revert}")
                 session.delete(repost_to_revert)
 
             for follow_to_revert in revert_follow_entries:
@@ -821,7 +821,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 if previous_follow_entry:
                     previous_follow_entry.is_current = True
                 # remove outdated follow entry
-                logger.info(f"Reverting follow: {follow_to_revert}")
+                logger.debug(f"Reverting follow: {follow_to_revert}")
                 session.delete(follow_to_revert)
 
             for subscription_to_revert in revert_subscription_entries:
@@ -838,7 +838,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 )
                 if previous_subscription_entry:
                     previous_subscription_entry.is_current = True
-                logger.info(f"Reverting subscription: {subscription_to_revert}")
+                logger.debug(f"Reverting subscription: {subscription_to_revert}")
                 session.delete(subscription_to_revert)
 
             for playlist_to_revert in revert_playlist_entries:
@@ -868,7 +868,7 @@ def revert_blocks(self, db, revert_blocks_list):
                     # First element in descending order is new current track item
                     previous_track_entry.is_current = True
                 # Remove track entries
-                logger.info(f"Reverting track: {track_to_revert}")
+                logger.debug(f"Reverting track: {track_to_revert}")
                 session.delete(track_to_revert)
 
             for ursm_content_node_to_revert in revert_ursm_content_node_entries:
@@ -883,7 +883,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 if previous_ursm_content_node_entry:
                     previous_ursm_content_node_entry.is_current = True
                 # Remove previous ursm Content Node entires
-                logger.info(
+                logger.debug(
                     f"Reverting ursm Content Node: {ursm_content_node_to_revert}"
                 )
                 session.delete(ursm_content_node_to_revert)
@@ -907,7 +907,7 @@ def revert_blocks(self, db, revert_blocks_list):
                     # Update previous user row, setting is_current to true
                     previous_user_entry.is_current = True
                 # Remove outdated user entries
-                logger.info(f"Reverting user: {user_to_revert}")
+                logger.debug(f"Reverting user: {user_to_revert}")
                 session.delete(user_to_revert)
 
             for associated_wallets_to_revert in revert_associated_wallets:
@@ -929,7 +929,7 @@ def revert_blocks(self, db, revert_blocks_list):
                         {"is_current": True}
                     )
                 # Remove outdated associated wallets
-                logger.info(f"Reverting associated Wallet: {user_id}")
+                logger.debug(f"Reverting associated Wallet: {user_id}")
                 session.delete(associated_wallets_to_revert)
 
             revert_user_events(session, revert_user_events_entries, revert_block_number)
@@ -947,7 +947,7 @@ def revert_blocks(self, db, revert_blocks_list):
                 )
                 if previous_track_route_entry:
                     previous_track_route_entry.is_current = True
-                logger.info(f"Reverting track route {track_route_to_revert}")
+                logger.debug(f"Reverting track route {track_route_to_revert}")
                 session.delete(track_route_to_revert)
 
             for notification_seen_to_revert in revert_notification_seen:
@@ -979,7 +979,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
             session.query(UserEvent).filter(UserEvent.user_id == user_id).filter(
                 UserEvent.blocknumber == previous_user_events_entry.blocknumber
             ).update({"is_current": True})
-        logger.info(f"Reverting user events: {user_events_to_revert}")
+        logger.debug(f"Reverting user events: {user_events_to_revert}")
         session.delete(user_events_to_revert)
 
 
