@@ -4,7 +4,8 @@ const {
   getAllContentBlacklist,
   addToContentBlacklist,
   removeFromContentBlacklist,
-  getAllTrackIds
+  getAllTrackIds,
+  getAllUserIds
 } = require('./contentBlacklistComponentService')
 const {
   handleResponse,
@@ -38,6 +39,21 @@ const getTracksController = async (req) => {
   }
 
   return successResponse({ values: trackIds })
+}
+
+const getUsersController = async (req) => {
+  let userIds
+  try {
+    userIds = await getAllUserIds()
+  } catch (e) {
+    req.logger.error(
+      `ContentBlackListController - Could not fetch users: ${e.message}`
+    )
+
+    return errorResponseServerError(`Could not fetch users`)
+  }
+
+  return successResponse({ values: userIds })
 }
 
 const contentBlacklistGetAllController = async (_req) => {
@@ -281,6 +297,7 @@ const filterNonexistentIds = async (libs, type, ids) => {
 
 // Routes
 router.get('/blacklist/tracks', handleResponse(getTracksController))
+router.get('/blacklist/users', handleResponse(getUsersController))
 router.get('/blacklist', handleResponse(contentBlacklistGetAllController))
 router.post('/blacklist/add', handleResponse(contentBlacklistAddController))
 router.post(

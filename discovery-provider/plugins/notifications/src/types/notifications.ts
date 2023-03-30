@@ -51,6 +51,13 @@ export type FollowNotificationEmail = {
   followerUser: EmailUser
 }
 
+export type TastemakerNotification = {
+  tastemaker_item_id: number
+  tastemaker_item_owner_id: number
+  tastemaker_user_id: number
+  tastemaker_item_type: string
+}
+
 export type RepostNotification = {
   type: EntityType
   user_id: number
@@ -151,7 +158,8 @@ export enum MilestoneType {
   TRACK_REPOST_COUNT = 'TRACK_REPOST_COUNT',
   TRACK_SAVE_COUNT = 'TRACK_SAVE_COUNT',
   PLAYLIST_REPOST_COUNT = 'PLAYLIST_REPOST_COUNT',
-  PLAYLIST_SAVE_COUNT = 'PLAYLIST_SAVE_COUNT'
+  PLAYLIST_SAVE_COUNT = 'PLAYLIST_SAVE_COUNT',
+  LISTEN_COUNT = 'LISTEN_COUNT'
 }
 
 export type AddTrackToPlaylistNotification = {
@@ -166,7 +174,10 @@ export type FollowerMilestoneNotification = {
 }
 
 export type TrackMilestoneNotification = {
-  type: MilestoneType.TRACK_REPOST_COUNT | MilestoneType.TRACK_SAVE_COUNT
+  type:
+    | MilestoneType.TRACK_REPOST_COUNT
+    | MilestoneType.TRACK_SAVE_COUNT
+    | MilestoneType.LISTEN_COUNT
   track_id: number
   threshold: number
 }
@@ -236,6 +247,7 @@ export type NotificationData =
   | SupporterDethronedNotification
   | AddTrackToPlaylistNotification
   | AnnouncementNotification
+  | TastemakerNotification
   | TrendingTrackNotification
   | TrendingUndergroundNotification
   | TrendingPlaylistNotification

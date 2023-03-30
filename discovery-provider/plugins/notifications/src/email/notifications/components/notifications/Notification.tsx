@@ -272,6 +272,15 @@ const notificationMap = {
       </span>
     )
   },
+  ['tastemaker'](notification) {
+    const entityName = notification.entity.name
+    return (
+      <span className={'notificationText'}>
+        <HighlightText text={entityName} />
+        <BodyText text={` is now trending thanks to you! Great work 🙌🏽`} />
+      </span>
+    )
+  },
   ['create'](notification) {
     const [user] = notification.users
     if (
@@ -522,6 +531,20 @@ const getTwitter = (notification) => {
       const text = `My track ${entity.title} made it to the top of underground trending on @AudiusProject! Check it out! #Audius #AudiusTrending`
       return {
         message: 'Share this Milestone',
+        href: `http://twitter.com/share?url=${encodeURIComponent(
+          url
+        )}&text=${encodeURIComponent(text)}`
+      }
+    }
+    case 'tastemaker': {
+      const { entity, trackOwnerUser } = notification
+      const url = getTrackLink(entity)
+      const twitterHandle = trackOwnerUser.twitterHandle
+        ? `@${trackOwnerUser.twitterHandle}`
+        : trackOwnerUser.name
+      const text = `I was one of the first to discover ${entity.name} by ${twitterHandle} on @AudiusProject and it just made it onto trending! #Audius #AudiusTastemaker`
+      return {
+        message: 'Share With Your Friends',
         href: `http://twitter.com/share?url=${encodeURIComponent(
           url
         )}&text=${encodeURIComponent(text)}`

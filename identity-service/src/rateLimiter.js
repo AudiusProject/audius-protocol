@@ -50,41 +50,28 @@ const getIP = (req) => {
 
   // This shouldn't ever happen since Identity will always be behind a proxy
   if (!forwardedFor) {
-    req.logger.debug('_getIP: no forwarded-for')
-    return { ip }
+    return { ip, isWhitelisted: true }
   }
 
   const headers = forwardedFor.split(',')
   // headers length == 1 means that we are not running behind normal 2 layer proxy (probably locally),
   // We can just use req.ip which corresponds to the best guess forward-for that was added if any
   if (headers.length === 1) {
-    req.logger.debug(
-      `_getIP: found 1 x-forwarded-for header, IP: ${ip}, Forwarded-For: ${forwardedFor}`
-    )
     return { ip }
   }
 
   // Length is at least 2, length - 1 would be the outermost proxy, so length - 2 is the "sender"
   // either the actual user or a content node
   const senderIP = headers[headers.length - 2]
-
-  if (isIPWhitelisted(senderIP, req)) {
+  const isWhitelisted = isIPWhitelisted(senderIP, req)
+  if (isWhitelisted) {
     const forwardedIP = headers[headers.length - 3]
     if (!forwardedIP) {
-      req.logger.debug(
-        `_getIP: content node sent a req that was missing a forwarded-for header, using IP: ${senderIP}, Forwarded-For: ${forwardedFor}`
-      )
-      return { ip: senderIP, senderIP }
+      return { ip: senderIP, senderIP, isWhitelisted }
     }
-    req.logger.debug(
-      `_getIP: recording listen from creatornode: ${senderIP}, forwarded IP: ${forwardedIP}, Forwarded-For: ${forwardedFor}`
-    )
-    return { ip: forwardedIP, senderIP }
+    return { ip: forwardedIP, senderIP, isWhitelisted }
   }
-  req.logger.debug(
-    `_getIP: recording listen from > 2 headers, but not creator-node, IP: ${senderIP}, Forwarded-For: ${forwardedFor}`
-  )
-  return { ip: senderIP, senderIP }
+  return { ip: senderIP, senderIP, isWhitelisted }
 }
 
 let endpointRateLimits = {}

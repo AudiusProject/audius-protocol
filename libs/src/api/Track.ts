@@ -377,6 +377,104 @@ export class Track extends Base {
   /* ------- SETTERS ------- */
 
   /**
+ * Takes in a readable stream if isServer is true, or a file reference if isServer is
+ * false.
+ * Uploads file, retrieves multihash, adds multihash to input metadata object,
+ * uploads metadata, and finally returns metadata multihash
+ * Wraps the stateless function in AudiusLib.
+ *
+ * @param trackFile ReadableStream from server, or File handle on client
+ * @param coverArtFile ReadableStream from server, or File handle on client
+ * @param metadata json of the track metadata with all fields, missing fields will error
+ * @param onProgress callback fired with (loaded, total) on byte upload progress
+ */
+  async uploadTrackV2(
+    trackFile: File,
+    coverArtFile: File,
+    metadata: TrackMetadata,
+    onProgress: () => void
+  ) {
+    this.REQUIRES(Services.CREATOR_NODE) // TODO: Change to storage node
+    this.FILE_IS_VALID(trackFile)
+
+    try {
+      if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
+
+      this.IS_OBJECT(metadata)
+
+      const ownerId = this.userStateManager.getCurrentUserId()
+      if (!ownerId) {
+        return {
+          error: 'No users loaded for this wallet'
+        }
+      }
+
+      metadata.owner_id = ownerId
+      this._validateTrackMetadata(metadata)
+
+      // Upload metadata
+      const {
+        metadataMultihash,
+        // metadataFileUUID,
+        // transcodedTrackUUID,
+        transcodedTrackCID
+      } = await retry(
+        async () => {
+          return this.creatorNode.uploadTrackContentV2(
+            trackFile,
+            coverArtFile,
+            metadata,
+            onProgress
+          )
+          // return this.creatorNode.uploadTrackContent(
+          //   trackFile,
+          //   coverArtFile,
+          //   metadata,
+          //   onProgress
+          // )
+        },
+        {
+          // Retry function 3x
+          // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
+          minTimeout: 500,
+          maxTimeout: 4000,
+          factor: 3,
+          retries: 3,
+          onRetry: (err) => {
+            if (err) {
+              console.log('uploadTrackContentV2 retry error: ', err)
+            }
+          }
+        }
+      )
+
+      // Write metadata to chain
+      // TODO: Make discovery index by reading its own db instead of hitting CN /ipfs
+      const trackId = await this._generateTrackId()
+      const response = await this.contracts.EntityManagerClient!.manageEntity(
+        ownerId,
+        EntityManagerClient.EntityType.TRACK,
+        trackId,
+        EntityManagerClient.Action.CREATE,
+        metadataMultihash
+      )
+      const txReceipt = response.txReceipt
+
+      return {
+        blockHash: txReceipt.blockHash,
+        blockNumber: txReceipt.blockNumber,
+        trackId,
+        transcodedTrackCID,
+        error: false
+      }
+    } catch (e) {
+      return {
+        error: (e as Error).message,
+        stack: (e as Error).stack
+      }
+    }
+  }
+  /**
    * Takes in a readable stream if isServer is true, or a file reference if isServer is
    * false.
    * Uploads file, retrieves multihash, adds multihash to input metadata object,

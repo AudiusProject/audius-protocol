@@ -34,20 +34,31 @@ export function dialEs() {
 
 export async function recoverFromRedIndex() {
   const es = dialEs()
-  const indices = await es.cat.indices({ format: 'json' })
-  const hasRed = indices.find((i) => i.health == 'red')
-  if (Boolean(hasRed)) {
-    logger.warn('found red index... nuking')
-    try {
-      await Promise.all(
-        indices.map((idx) =>
-          es.indices.delete({ index: idx.index }, { ignore: [404] })
-        )
-      )
-      logger.info('nuke worked')
-    } catch (e) {
-      logger.error(e, 'nuke failed')
+
+  let redIndices = []
+
+  // on startup check for red indices...
+  // check several times with delay to give ES a chance to recover
+  for (let i = 0; i < 10; i++) {
+    const indices = await es.cat.indices({ format: 'json' })
+    redIndices = indices.filter((i) => i.health == 'red')
+    // no red indices... all good!
+    if (redIndices.length == 0) {
+      return
     }
+    await new Promise((r) => setTimeout(r, 5000))
+  }
+
+  try {
+    await Promise.all(
+      redIndices.map((idx) => {
+        logger.warn('nuking red index ' + idx.index)
+        return es.indices.delete({ index: idx.index }, { ignore: [404] })
+      })
+    )
+    logger.info('nuke worked')
+  } catch (e) {
+    logger.error(e, 'nuke failed')
   }
 }
 

@@ -47,7 +47,7 @@ begin
           subscriber_user_ids,
           new.updated_at,
           'create',
-          new.owner_id,
+          new.track_id,
           'create:track:user_id:' || new.owner_id,
           json_build_object('track_id', new.track_id)
         )

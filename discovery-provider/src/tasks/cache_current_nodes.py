@@ -21,7 +21,9 @@ def cache_current_nodes_task(self):
     have_lock = False
     # Define redis lock object
     # Max duration of lock is 4hrs or 14400 seconds
-    update_lock = redis.lock("cache_current_nodes_lock", blocking_timeout=25, timeout=14400)
+    update_lock = redis.lock(
+        "cache_current_nodes_lock", blocking_timeout=25, timeout=14400
+    )
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:

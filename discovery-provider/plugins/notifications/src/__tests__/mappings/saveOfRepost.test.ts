@@ -99,12 +99,11 @@ describe('Save Of Repost Notification', () => {
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    console.log(sendPushNotificationSpy.mock.calls)
     expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 1
+        badgeCount: 2
       },
       {
         title: 'New Favorite',
@@ -133,7 +132,7 @@ describe('Save Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 1
+        badgeCount: 2
       },
       {
         title: 'New Favorite',
@@ -162,7 +161,7 @@ describe('Save Of Repost Notification', () => {
       {
         type: 'ios',
         targetARN: 'arn:2',
-        badgeCount: 1
+        badgeCount: 2
       },
       {
         title: 'New Favorite',

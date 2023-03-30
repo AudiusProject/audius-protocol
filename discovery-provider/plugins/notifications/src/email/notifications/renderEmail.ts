@@ -2,34 +2,15 @@ import moment from 'moment-timezone'
 
 import { logger } from '../../logger'
 
-import { DMEntityType } from './types'
 import {
   AppEmailNotification,
-  DMEmailNotification,
   EmailNotification
 } from '../../types/notifications'
 import { renderNotificationsEmail } from './components/index'
 import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { Knex } from 'knex'
-import { EntityType } from './types'
 import { mapNotifications } from '../../processNotifications/mappers/mapNotifications'
 import { BaseNotification } from '../../processNotifications/mappers/base'
-import {
-  CosignRemixNotification,
-  CreatePlaylistNotification,
-  CreateTrackNotification,
-  FollowerMilestoneNotification,
-  PlaylistMilestoneNotification,
-  RemixNotification,
-  RepostNotification,
-  SaveNotification,
-  SupporterRankUpNotification,
-  SupportingRankUpNotification,
-  TierChangeNotification,
-  TipReceiveNotification,
-  TipSendNotification,
-  TrackMilestoneNotification
-} from '../../types/notifications'
 
 type RenderEmailProps = {
   userId: number

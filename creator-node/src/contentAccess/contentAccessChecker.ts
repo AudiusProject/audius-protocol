@@ -38,7 +38,8 @@ export async function checkCIDAccess({
     cid: copy320CID,
     trackId,
     timestamp: signedTimestamp,
-    shouldCache
+    shouldCache,
+    userId
   } = data
 
   if (copy320CID.replace('\n', '') !== cid) {

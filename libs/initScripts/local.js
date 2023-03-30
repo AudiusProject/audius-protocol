@@ -474,7 +474,7 @@ const _registerDiscProv = async (ethAccounts, serviceNumber) => {
 
 const makeCreatorNodeEndpoint = (serviceNumber) => process.env.OLD_FLOW
   ? `http://cn${serviceNumber}_creator-node_1:${4000 + parseInt(serviceNumber) - 1}`
-  : `http://audius-protocol-creator-node-${serviceNumber}:4000`
+  : `http://audius-protocol-creator-node-${serviceNumber}`
 
 // Templated cnode to allow for dynamic number of services
 const _registerCnode = async (ethAccounts, serviceNumber) => {

@@ -6,11 +6,13 @@ import { NotificationRow } from '../types/dn'
 import { Follow } from './mappers/follow'
 import { Repost } from './mappers/repost'
 import { RepostOfRepost } from './mappers/repostOfRepost'
+import { SaveOfRepost } from './mappers/saveOfRepost'
 import { Save } from './mappers/save'
 import { Remix } from './mappers/remix'
 import { CosignRemix } from './mappers/cosign'
 import { SupporterRankUp } from './mappers/supporterRankUp'
 import { SupportingRankUp } from './mappers/supportingRankUp'
+import { Tastemaker } from './mappers/tastemaker'
 import { TierChange } from './mappers/tierChange'
 import { TipReceive } from './mappers/tipReceive'
 import { TipSend } from './mappers/tipSend'
@@ -30,8 +32,10 @@ export type NotificationProcessor =
   | CosignRemix
   | Milestone
   | RepostOfRepost
+  | SaveOfRepost
   | SupporterRankUp
   | SupportingRankUp
+  | Tastemaker
   | TierChange
   | TipReceive
   | TipSend
@@ -57,6 +61,7 @@ const notificationTypeMapping = {
   trending: MappingVariable.PushTrending,
   trending_underground: MappingVariable.PushTrendingUnderground,
   trending_playlist: MappingVariable.PushTrendingPlaylist,
+  tastemaker: MappingVariable.PushTastemaker,
   announcement: MappingVariable.PushAnnouncement,
   reaction: MappingVariable.PushReaction
 }

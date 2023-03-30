@@ -109,7 +109,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
               {
                 type: device.type,
                 badgeCount:
-                  userNotifications.mobile[this.receiverUserId].badgeCount,
+                  userNotifications.mobile[this.receiverUserId].badgeCount + 1,
                 targetARN: device.awsARN
               },
               {
@@ -120,10 +120,9 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
             )
           })
         )
-        // TODO: increment badge count
+        await this.incrementBadgeCount(this.receiverUserId)
       }
     }
-    //
 
     if (userNotifications.browser) {
       // TODO: Send out browser

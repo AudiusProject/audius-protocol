@@ -6,7 +6,7 @@ const {
 } = require('../webPush')
 const racePromiseWithTimeout = require('../utils/racePromiseWithTimeout.js')
 const {
-  getRemoteFeatureVar,
+  getRemoteFeatureVarEnabled,
   DISCOVERY_NOTIFICATION_MAPPING,
   MappingVariable
 } = require('../remoteConfig')
@@ -163,9 +163,15 @@ async function promiseAllInBatches(
 const notificaitonTypeMapping = {
   announcement: MappingVariable.PushAnnouncement,
   [notificationTypes.Follow]: MappingVariable.PushFollow,
-  [notificationTypes.Repost.base]: MappingVariable.PushRepost,
-  [notificationTypes.Favorite.base]: MappingVariable.PushFavorite,
-  [notificationTypes.Create.base]: MappingVariable.PushCreate,
+  [notificationTypes.Repost.playlist]: MappingVariable.PushRepost,
+  [notificationTypes.Repost.album]: MappingVariable.PushRepost,
+  [notificationTypes.Repost.track]: MappingVariable.PushRepost,
+  [notificationTypes.Favorite.playlist]: MappingVariable.PushSave,
+  [notificationTypes.Favorite.album]: MappingVariable.PushSave,
+  [notificationTypes.Favorite.track]: MappingVariable.PushSave,
+  [notificationTypes.Create.track]: MappingVariable.PushCreate,
+  [notificationTypes.Create.playlist]: MappingVariable.PushCreate,
+  [notificationTypes.Create.album]: MappingVariable.PushCreate,
   [notificationTypes.RemixCreate]: MappingVariable.PushRemix,
   [notificationTypes.RemixCosign]: MappingVariable.PushCosign,
   [notificationTypes.Milestone]: MappingVariable.PushMilestone,
@@ -194,15 +200,15 @@ async function processNotification(optimizelyClient, logger, notification) {
   let numProcessedNotifs = 0
   const notificationMappingVar =
     notificaitonTypeMapping[notification.notification.type]
-  const isDisabled = getRemoteFeatureVar(
+  // NOTE: This flag is used betwen the notifications plugin and identity service
+  // so, when true, it is enabled in the plugin and disabeld here in identity
+  const isDisabled = getRemoteFeatureVarEnabled(
     optimizelyClient,
     DISCOVERY_NOTIFICATION_MAPPING,
     notificationMappingVar
   )
-  if (isDisabled === false) {
-    logger.info(
-      `Skipping send push notification for type: ${notification.notification.type}`
-    )
+
+  if (isDisabled === true) {
     return
   }
 
@@ -251,13 +257,27 @@ async function drainPublishedMessages(logger, optimizelyClient) {
   return numProcessedNotifs
 }
 
-async function drainPublishedSolanaMessages(logger) {
+async function drainPublishedSolanaMessages(logger, optimizelyClient) {
   logger.info(
     `[notificationQueue:drainPublishedSolanaMessages] Beginning processing of ${pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER.length} notifications...`
   )
 
   let numProcessedNotifs = 0
   for (const bufferObj of pushNotificationQueue.PUSH_SOLANA_NOTIFICATIONS_BUFFER) {
+    const notificationMappingVar =
+      notificaitonTypeMapping[bufferObj.notification.type]
+    // NOTE: This flag is used betwen the notifications plugin and identity service
+    // so, when true, it is enabled in the plugin and disabeld here in identity
+    const isDisabled = getRemoteFeatureVarEnabled(
+      optimizelyClient,
+      DISCOVERY_NOTIFICATION_MAPPING,
+      notificationMappingVar
+    )
+
+    if (isDisabled === true) {
+      return
+    }
+
     if (bufferObj.types.includes(deviceType.Mobile)) {
       const numSentNotifs = await _sendNotification(
         sendAwsSns,
