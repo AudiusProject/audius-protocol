@@ -113,6 +113,7 @@ def _get_eth_nft_gated_track_signatures(
     eth_associated_wallets: List[str],
     tracks: List[Track],
     track_token_id_map: Dict[int, List[str]],
+    user_id: int,
 ):
     track_signature_map = {}
     track_cid_to_id_map = {}
@@ -194,6 +195,7 @@ def _get_eth_nft_gated_track_signatures(
                                 "track_cid": track_cid,
                                 "type": "track",
                                 "user_wallet": user_wallet,
+                                "user_id": user_id,
                                 "is_premium": True,
                             }
                         )
@@ -385,6 +387,7 @@ def _get_sol_nft_gated_track_signatures(
     user_wallet: str,
     sol_associated_wallets: List[str],
     tracks: List[Track],
+    user_id: int,
 ):
     track_signature_map = {}
     track_cid_to_id_map = {}
@@ -427,6 +430,7 @@ def _get_sol_nft_gated_track_signatures(
                                 "track_cid": track_cid,
                                 "type": "track",
                                 "user_wallet": user_wallet,
+                                "user_id": user_id,
                                 "is_premium": True,
                             }
                         )
@@ -475,11 +479,13 @@ def get_nft_gated_premium_track_signatures(
             eth_associated_wallets=associated_wallets["eth"],
             tracks=eth_nft_gated_tracks,
             track_token_id_map=track_token_id_map,
+            user_id=user_id,
         )
         sol_nft_gated_track_signatures = _get_sol_nft_gated_track_signatures(
             user_wallet=user_wallet,
             sol_associated_wallets=associated_wallets["sol"],
             tracks=sol_nft_gated_tracks,
+            user_id=user_id,
         )
 
         result = {}
@@ -543,6 +549,7 @@ def get_premium_track_signatures(user_id: int, track_ids: List[int]):
                     "track_cid": tracks_map[track_id].track_cid,
                     "type": "track",
                     "user_wallet": user_wallet,
+                    "user_id": user_id,
                     "is_premium": track_id in premium_track_ids,
                 }
             )

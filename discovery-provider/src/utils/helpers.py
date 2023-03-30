@@ -236,7 +236,7 @@ def configure_flask_app_logging(app, loglevel_str):
             part = f"{name}={value}"
             parts.append(part)
 
-        logger.info("handle flask request", extra=log_params)
+        logger.debug("handle flask request", extra=log_params)
         return response
 
 

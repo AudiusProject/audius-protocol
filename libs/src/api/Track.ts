@@ -55,10 +55,6 @@ export class Track extends Base {
     this.addTracksToChainAndCnode = this.addTracksToChainAndCnode.bind(this)
     this.updateTrack = this.updateTrack.bind(this)
     this.logTrackListen = this.logTrackListen.bind(this)
-    this.addTrackRepost = this.addTrackRepost.bind(this)
-    this.deleteTrackRepost = this.deleteTrackRepost.bind(this)
-    this.addTrackSave = this.addTrackSave.bind(this)
-    this.deleteTrackSave = this.deleteTrackSave.bind(this)
     this.deleteTrack = this.deleteTrack.bind(this)
   }
   /* ------- GETTERS ------- */
@@ -765,53 +761,6 @@ export class Track extends Base {
       null,
       null,
       solanaListen
-    )
-  }
-
-  /** Adds a repost for a given user and track
-   * @param trackId track being reposted
-   */
-  async addTrackRepost(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.SocialFeatureFactoryClient.addTrackRepost(
-      userId!,
-      trackId
-    )
-  }
-
-  /**
-   * Deletes a repost for a given user and track
-   * @param track id of deleted repost
-   */
-  async deleteTrackRepost(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.SocialFeatureFactoryClient.deleteTrackRepost(
-      userId!,
-      trackId
-    )
-  }
-
-  /**
-   * Adds a rack save for a given user and track
-   * @param trackId track being saved
-   */
-  async addTrackSave(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.UserLibraryFactoryClient.addTrackSave(
-      userId!,
-      trackId
-    )
-  }
-
-  /**
-   * Delete a track save for a given user and track
-   * @param trackId save being removed
-   */
-  async deleteTrackSave(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.UserLibraryFactoryClient.deleteTrackSave(
-      userId!,
-      trackId
     )
   }
 

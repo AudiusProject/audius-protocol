@@ -606,7 +606,7 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
   try {
     const toChecksumAddress = nethermindWeb3.utils.toChecksumAddress
 
-    let nethermindGasLimit = await nethermindWeb3.eth.estimateGas({
+    const nethermindGasLimit = await nethermindWeb3.eth.estimateGas({
       from: toChecksumAddress(wallet.address),
       to: toChecksumAddress(contractAddress),
       data: encodedABI

@@ -38,7 +38,7 @@ class ContentNodeInfo(TypedDict):
 
 
 def _get_redis_set_members_as_list(redis: Redis, key: str) -> List[int]:
-    """Fetches the unavailable track ids per Content Node"""
+    """Converts a redis set to an integer list"""
     values = redis.smembers(key)
     return [int(value.decode()) for value in values]
 
@@ -95,7 +95,6 @@ def update_tracks_is_available_status(db: SessionManager, redis: Redis) -> None:
                         and entry[2][0] is not None  # secondary_id 1
                         and entry[2][1] is not None  # secondary_id 2
                     ):
-
                         spID_replica_set = [entry[1], *entry[2]]
                         is_available = check_track_is_available(
                             redis=redis,
@@ -129,20 +128,9 @@ def fetch_unavailable_track_ids(node: str, session: Session) -> List[int]:
 
     try:
         resp = requests.get(
-            f"{node}/blacklist", timeout=REQUESTS_TIMEOUT_SECONDS
+            f"{node}/blacklist/tracks", timeout=REQUESTS_TIMEOUT_SECONDS
         ).json()
-        unavailable_cids = set(resp["data"]["individualSegments"])
-        track_ids_from_cids = (
-            session.query(Track.track_id)
-            .filter(
-                Track.is_current == True,
-                Track.track_cid.in_(unavailable_cids),
-            )
-            .all()
-        )
-        unavailable_track_ids = list(
-            set(resp["data"]["trackIds"] + [track[0] for track in track_ids_from_cids])
-        )
+        unavailable_track_ids = list(set(resp["data"]["values"]))
 
     except Exception as e:
         logger.warn(
