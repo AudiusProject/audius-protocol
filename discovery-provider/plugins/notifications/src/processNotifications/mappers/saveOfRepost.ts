@@ -56,6 +56,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
     const saveOfRepostUserName = users[this.saveOfRepostUserId]?.name
     let entityType
     let entityName
+    const entityId = this.saveOfRepostItemId
 
     if (this.saveOfRepostType === EntityType.Track) {
       const res: Array<{ track_id: number; title: string }> = await this.dnDB
@@ -118,7 +119,9 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
                 data: {
                   id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
                   userIds: [this.saveOfRepostUserId],
-                  type: 'FavoriteOfRepost'
+                  type: 'FavoriteOfRepost',
+                  entityId,
+                  entityType
                 }
               }
             )

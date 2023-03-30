@@ -56,6 +56,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
     const reposterUserName = users[this.repostOfRepostUserId]?.name
     let entityType
     let entityName
+    const entityId = this.repostOfRepostItemId
 
     if (this.repostOfRepostType === EntityType.Track) {
       const res: Array<{ track_id: number; title: string }> = await this.dnDB
@@ -118,7 +119,9 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
                 data: {
                   id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
                   userIds: [this.repostOfRepostUserId],
-                  type: 'RepostOfRepost'
+                  type: 'RepostOfRepost',
+                  entityType,
+                  entityId
                 }
               }
             )

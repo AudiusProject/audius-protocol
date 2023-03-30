@@ -81,9 +81,12 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
                 newTopSupporterHandle
               )} dethroned you as ${supportedUserName}'s #1 Top Supporter! Tip to reclaim your spot?`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'SupporterDethroned',
-                entityId: this.receiverUserId
+                entityId: this.receiverUserId,
+                supportedUserId: this.receiverUserId
               }
             }
           )

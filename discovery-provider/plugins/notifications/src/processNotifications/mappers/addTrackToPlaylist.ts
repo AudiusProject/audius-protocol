@@ -97,7 +97,9 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
               body: `${playlistOwnerName} added ${trackTitle} to their playlist ${playlistName}`,
               data: {
                 type: 'AddTrackToPlaylist',
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 playlistId: this.playlistId
               }
             }
