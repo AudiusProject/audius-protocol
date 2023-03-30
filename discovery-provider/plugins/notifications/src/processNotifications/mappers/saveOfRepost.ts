@@ -5,6 +5,7 @@ import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { capitalize } from 'lodash'
 
 type SaveOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveOfRepostNotification
@@ -121,7 +122,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
                   userIds: [this.saveOfRepostUserId],
                   type: 'FavoriteOfRepost',
                   entityId,
-                  entityType
+                  entityType: capitalize(entityType)
                 }
               }
             )

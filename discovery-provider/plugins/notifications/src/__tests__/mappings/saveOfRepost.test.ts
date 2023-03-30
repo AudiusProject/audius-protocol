@@ -113,7 +113,7 @@ describe('Save Of Repost Notification', () => {
           id: 'timestamp:1589373217:group_id:save_of_repost:10:type:track',
           type: 'FavoriteOfRepost',
           userIds: [3],
-          entityType: 'track',
+          entityType: 'Track',
           entityId: 10
         }
       }
@@ -148,7 +148,7 @@ describe('Save Of Repost Notification', () => {
           id: 'timestamp:1589373217:group_id:save_of_repost:10:type:playlist',
           type: 'FavoriteOfRepost',
           userIds: [3],
-          entityType: 'track',
+          entityType: 'Track',
           entityId: 10
         }
       }
@@ -183,7 +183,7 @@ describe('Save Of Repost Notification', () => {
           id: 'timestamp:1589373217:group_id:save_of_repost:10:type:album',
           type: 'FavoriteOfRepost',
           userIds: [3],
-          entityType: 'track',
+          entityType: 'Track',
           entityId: 10
         }
       }

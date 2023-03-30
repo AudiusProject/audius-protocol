@@ -5,6 +5,7 @@ import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { capitalize } from 'lodash'
 
 type RepostOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostOfRepostNotification
@@ -120,7 +121,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
                   id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
                   userIds: [this.repostOfRepostUserId],
                   type: 'RepostOfRepost',
-                  entityType,
+                  entityType: capitalize(entityType),
                   entityId
                 }
               }

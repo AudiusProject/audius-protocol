@@ -111,7 +111,7 @@ describe('Repost Of Repost Notification', () => {
         data: {
           id: 'timestamp:1589373217:group_id:repost_of_repost:10:type:track',
           type: 'RepostOfRepost',
-          entityType: 'track',
+          entityType: 'Track',
           entityId: 10,
           userIds: [3]
         }
