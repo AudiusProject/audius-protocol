@@ -1,0 +1,50 @@
+[api]
+  enabled = true
+  address = "0.0.0.0:8686"
+
+[sources.logs]
+  type = "docker_logs"
+  docker_host = "/var/run/docker.sock"
+  include_containers = [
+    "server",
+    "indexer",
+    "postgres",
+    "redis"
+  ]
+  exclude_containers = [
+    # System containers
+    "vector",
+    "logspout",
+    "autoheal",
+    "exporter",  # Exclude all containers beginning with exporter
+  ]
+
+[transforms.parse]
+  type = "remap"
+  inputs = ["logs"]
+  source = '''
+    if exists(.message) {
+      . = parse_json(string!(.message)) ?? .message
+    }
+    if exists(.log) {
+      . = parse_json(string!(.log)) ?? .log
+    }
+    .node = "$node"
+
+    del(.otelServiceName)
+    del(.otelSpanID)
+    del(.otelTraceID)
+  '''
+
+# Enable for debugging purposes
+# [sinks.out]
+#   inputs = [ "parse" ]
+#   type = "console"
+#   encoding.codec = "json"
+
+[sinks.axiom]
+  inputs = [ "parse" ]
+  type = "axiom"
+  token = "$audius_axiom_token"
+  dataset = "$audius_axiom_dataset"
+  org_id = "audius-Lu52"
