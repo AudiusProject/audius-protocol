@@ -54,9 +54,9 @@ describe('Follow Notification', () => {
         title: 'Follow',
         body: 'user_1 followed you',
         data: {
-          "id": "timestamp:1589373217:group_id:follow:2",
-          "type": "follow",
-          "userIds": [1]
+          id: 'timestamp:1589373217:group_id:follow:2',
+          type: 'Follow',
+          userIds: [1]
         }
       }
     )
