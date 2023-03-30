@@ -39,7 +39,7 @@ func TestMain(m *testing.M) {
 
 	discoveryConfig := config.Parse()
 
-	proc, err := rpcz.NewProcessor(discoveryConfig, nil)
+	proc, err := rpcz.NewProcessor(discoveryConfig)
 	if err != nil {
 		log.Fatal(err)
 	}

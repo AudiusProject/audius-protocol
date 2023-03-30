@@ -12,7 +12,7 @@ import (
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/schema"
-	"comms.audius.co/discovery/the_graph"
+	"comms.audius.co/shared/signing"
 	"golang.org/x/exp/slog"
 )
 
@@ -21,8 +21,8 @@ type RpcSseMessage struct {
 	Data   json.RawMessage
 }
 
-func (c *RPCProcessor) StartSSEClients(discoveryConfig *config.DiscoveryConfig, peerList []the_graph.Peer) {
-	for _, peer := range peerList {
+func (c *RPCProcessor) StartSweepers(discoveryConfig *config.DiscoveryConfig) {
+	for _, peer := range discoveryConfig.Peers() {
 		if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
 			log.Println("skipping self", peer)
 			continue
@@ -32,13 +32,13 @@ func (c *RPCProcessor) StartSSEClients(discoveryConfig *config.DiscoveryConfig, 
 			continue
 		}
 
-		go c.startPullCursor(peer.Host, "/comms/rpc/bulk")
+		go c.startSweeper(peer.Host, "/comms/rpc/bulk")
 	}
 }
 
-func (c *RPCProcessor) startPullCursor(host, bulkEndpoint string) {
+func (c *RPCProcessor) startSweeper(host, bulkEndpoint string) {
 	for {
-		err := c.doPull(host, bulkEndpoint)
+		err := c.doSweep(host, bulkEndpoint)
 		if err != nil {
 			log.Println("PULL ERR", host, err)
 		}
@@ -46,7 +46,7 @@ func (c *RPCProcessor) startPullCursor(host, bulkEndpoint string) {
 	}
 }
 
-func (c *RPCProcessor) doPull(host, bulkEndpoint string) error {
+func (c *RPCProcessor) doSweep(host, bulkEndpoint string) error {
 
 	// get cursor
 	var after time.Time
@@ -60,11 +60,19 @@ func (c *RPCProcessor) doPull(host, bulkEndpoint string) error {
 	endpoint := host + bulkEndpoint + "?after=" + url.QueryEscape(after.Format(time.RFC3339))
 	started := time.Now()
 
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	// add header for signed nonce
+	req.Header.Add("Authorization", signing.BasicAuthNonce(c.discoveryConfig.MyPrivateKey))
+
 	client := &http.Client{
 		Timeout: time.Minute,
 	}
 
-	resp, err := client.Get(endpoint)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}

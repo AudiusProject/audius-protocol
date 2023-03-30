@@ -18,6 +18,7 @@ import (
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
+	"comms.audius.co/discovery/the_graph"
 	"comms.audius.co/shared/signing"
 	"comms.audius.co/shared/utils"
 	"github.com/Doist/unfurlist"
@@ -26,6 +27,7 @@ import (
 	"github.com/inconshreveable/log15"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/exp/slog"
 )
 
 func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor) *ChatServer {
@@ -78,8 +80,8 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
 
-	g.GET("/rpc/bulk", s.getRpcBulk)
-	g.POST("/rpc/receive", s.postRpcReceive)
+	g.GET("/rpc/bulk", s.getRpcBulk, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
+	g.POST("/rpc/receive", s.postRpcReceive, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
 
 	g.GET("/debug/vars", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
 	g.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
@@ -447,7 +449,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 
 func (s *ChatServer) getChatBlockedUsers(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -645,6 +647,7 @@ func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRo
 }
 
 func (ss *ChatServer) getRpcBulk(c echo.Context) error {
+
 	var rpcs []schema.RpcLog
 
 	var after time.Time
@@ -674,17 +677,22 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 }
 
 func (ss *ChatServer) postRpcReceive(c echo.Context) error {
+	// set by our custom basic auth middleware
+	peer := c.Get("peer").(the_graph.Peer)
+
 	// bind to RpcRow
-	u := new(schema.RpcLog)
-	if err := c.Bind(u); err != nil {
+	rpc := new(schema.RpcLog)
+	if err := c.Bind(rpc); err != nil {
 		return c.String(http.StatusBadRequest, err.Error())
 	}
 
 	// apply
-	err := ss.proc.Apply(u)
+	err := ss.proc.Apply(rpc)
 	if err != nil {
 		return err
 	}
+
+	slog.Info("got relay", "from", peer.Host, "sig", rpc.Sig)
 
 	return c.String(200, "OK")
 }

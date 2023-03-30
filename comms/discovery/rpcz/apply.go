@@ -14,7 +14,6 @@ import (
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
-	"comms.audius.co/discovery/the_graph"
 	"github.com/tidwall/gjson"
 )
 
@@ -23,11 +22,10 @@ type RPCProcessor struct {
 	validator *Validator
 
 	discoveryConfig *config.DiscoveryConfig
-	peerList        []the_graph.Peer
 	httpClient      http.Client
 }
 
-func NewProcessor(discoveryConfig *config.DiscoveryConfig, peerList []the_graph.Peer) (*RPCProcessor, error) {
+func NewProcessor(discoveryConfig *config.DiscoveryConfig) (*RPCProcessor, error) {
 
 	// set up validator + limiter
 	limiter, err := NewRateLimiter()
@@ -42,7 +40,6 @@ func NewProcessor(discoveryConfig *config.DiscoveryConfig, peerList []the_graph.
 	proc := &RPCProcessor{
 		validator:       validator,
 		discoveryConfig: discoveryConfig,
-		peerList:        peerList,
 		httpClient: http.Client{
 			Timeout: 5 * time.Second,
 		},

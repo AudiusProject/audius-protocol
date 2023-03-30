@@ -31,29 +31,35 @@ func DiscoveryMain() {
 		}
 
 		// query The Graph for peers
-		peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
-		if err != nil {
-			return err
-		}
+		// soon: easy to configure peer source for local cluster / test stuff
+		// also: refresh peers on interval (in stage / prod at least)
+		{
+			peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
+			if err != nil {
+				return err
+			}
 
-		// hack: fill in hostname if missing
-		if discoveryConfig.MyHost == "" {
-			for _, peer := range peers {
-				if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
-					discoveryConfig.MyHost = peer.Host
-					break
+			// hack: fill in hostname if missing
+			if discoveryConfig.MyHost == "" {
+				for _, peer := range peers {
+					if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+						discoveryConfig.MyHost = peer.Host
+						break
+					}
 				}
 			}
+
+			discoveryConfig.SetPeers(peers)
 		}
 
 		// create RPC processor
-		proc, err = rpcz.NewProcessor(discoveryConfig, peers)
+		proc, err = rpcz.NewProcessor(discoveryConfig)
 		if err != nil {
 			return err
 		}
 
-		// start SSE clients
-		proc.StartSSEClients(discoveryConfig, peers)
+		// start sweepers
+		proc.StartSweepers(discoveryConfig)
 
 		err = pubkeystore.Dial(discoveryConfig)
 		if err != nil {

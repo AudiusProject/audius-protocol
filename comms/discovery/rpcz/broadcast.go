@@ -3,7 +3,10 @@ package rpcz
 import (
 	"bytes"
 	"log"
+	"net/http"
 	"strings"
+
+	"comms.audius.co/shared/signing"
 )
 
 // this is a crappy version of POST broadcast
@@ -15,14 +18,24 @@ import (
 //
 // if push fails, it's okay because the pull consumer has a cursor and will come along and get it on an interval.
 func (proc *RPCProcessor) broadcast(payload []byte) {
-	for _, peer := range proc.peerList {
+	for _, peer := range proc.discoveryConfig.Peers() {
 		if strings.EqualFold(peer.Wallet, proc.discoveryConfig.MyWallet) {
 			continue
 		}
 
 		peer := peer
 		go func() {
-			resp, err := proc.httpClient.Post(peer.Host+"/comms/rpc/receive", "application/json", bytes.NewReader(payload))
+			endpoint := peer.Host + "/comms/rpc/receive"
+			req, err := http.NewRequest("POST", endpoint, bytes.NewReader(payload))
+			if err != nil {
+				panic(err)
+			}
+
+			// add header for signed nonce
+			req.Header.Add("Content-Type", "application/json")
+			req.Header.Add("Authorization", signing.BasicAuthNonce(proc.discoveryConfig.MyPrivateKey))
+
+			resp, err := proc.httpClient.Do(req)
 			if err != nil {
 				log.Println("push failed", "host", peer.Host, "err", err)
 			}
