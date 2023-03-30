@@ -1,10 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { RepostNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  RepostNotification
+} from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type RepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostNotification
@@ -120,9 +124,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
                 title: 'New Repost',
                 body: `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`,
                 data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                    this.notification.group_id
-                  }`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                    }`,
                   userIds: [this.repostUserId],
                   type: 'Repost'
                 }
@@ -133,8 +136,22 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
         await this.incrementBadgeCount(this.receiverUserId)
       }
     }
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotifications.email?.[this.receiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

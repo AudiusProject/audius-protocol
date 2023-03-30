@@ -1,10 +1,11 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { SaveNotification } from '../../types/notifications'
+import { AppEmailNotification, SaveNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type SaveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveNotification
@@ -132,8 +133,22 @@ export class Save extends BaseNotification<SaveNotificationRow> {
         await this.incrementBadgeCount(this.receiverUserId)
       }
     }
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotifications.email?.[this.receiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 
