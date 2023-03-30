@@ -1,7 +1,7 @@
 """user_is_available
 
 Revision ID: 9f5539bdd5bc
-Revises: f008f6f2eee3
+Revises: 02295bdb6bca
 Create Date: 2023-03-29 12:42:11.193802
 
 """
@@ -10,7 +10,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "9f5539bdd5bc"
-down_revision = "f008f6f2eee3"
+down_revision = "02295bdb6bca"
 branch_labels = None
 depends_on = None
 
