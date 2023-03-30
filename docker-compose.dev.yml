@@ -67,8 +67,8 @@ services:
       - audius-libs:/usr/src/app/node_modules/@audius/sdk
       - ./dev-tools/commands/src:/usr/src/app/src
       - ./dev-tools/commands/test:/usr/src/app/test
-    # depends_on:
-    #   build-audius-libs:
-    #     condition: service_started
+    depends_on:
+      build-audius-libs:
+        condition: service_started
     deploy:
       mode: global
