@@ -211,7 +211,7 @@ def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
             playlists = get_playlists(
                 GetPlaylistsArgs(
                     current_user_id=1,
-                    routes=[{"handle": "user2", "slug": "playlist-2"}],
+                    playlist_ids=[3, 4],
                 ),
             )
             assert len(playlists) == 2
