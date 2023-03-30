@@ -1,11 +1,12 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { ChallengeRewardNotification } from '../../types/notifications'
+import { AppEmailNotification, ChallengeRewardNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { ChallengeId } from '../../email/notifications/types'
 import { formatWei } from '../../utils/format'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type ChallengeRewardRow = Omit<NotificationRow, 'data'> & {
   data: ChallengeRewardNotification
@@ -70,13 +71,11 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
 
   getPushBodyText() {
     if (this.challengeId === 'referred') {
-      return `You’ve received ${
-        this.challengeInfoMap[this.challengeId].amount
-      } $AUDIO for being referred! Invite your friends to join to earn more!`
+      return `You’ve received ${this.challengeInfoMap[this.challengeId].amount
+        } $AUDIO for being referred! Invite your friends to join to earn more!`
     }
-    return `You’ve earned ${
-      this.challengeInfoMap[this.challengeId].amount
-    } $AUDIO for completing this challenge!`
+    return `You’ve earned ${this.challengeInfoMap[this.challengeId].amount
+      } $AUDIO for completing this challenge!`
   }
 
   async pushNotification({
@@ -130,9 +129,8 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
               title: this.challengeInfoMap[this.challengeId].title,
               body: this.getPushBodyText(),
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                  this.notification.group_id
-                }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                  }`,
                 type: 'ChallengeReward'
               }
             }
@@ -142,8 +140,22 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotifications.email?.[this.receiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

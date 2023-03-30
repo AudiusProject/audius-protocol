@@ -1,9 +1,10 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { SupportingRankUpNotification } from '../../types/notifications'
+import { AppEmailNotification, SupportingRankUpNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type SupportingRankUpNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupportingRankUpNotification
@@ -80,9 +81,8 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
               title: `#${this.rank} Top Supporter`,
               body: `You're now ${receivingUserName}'s #${this.rank} Top Supporter!`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                  this.notification.group_id
-                }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                  }`,
                 type: 'SupportingRankUp',
                 entityId: this.receiverUserId
               }
@@ -92,10 +92,23 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
       )
       await this.incrementBadgeCount(this.senderUserId)
     }
-    //
 
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotifications.email?.[this.receiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

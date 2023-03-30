@@ -1,10 +1,11 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { TrendingTrackNotification } from '../../types/notifications'
+import { AppEmailNotification, TrendingTrackNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type TrendingTrackNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingTrackNotification
@@ -90,14 +91,12 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
             },
             {
               title: "📈 You're Trending",
-              body: `${tracks[this.trackId]?.title} is #${
-                this.rank
-              } on Trending right now!`,
+              body: `${tracks[this.trackId]?.title} is #${this.rank
+                } on Trending right now!`,
               data: {
                 type: 'TrendingTrack',
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                  this.notification.group_id
-                }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                  }`,
                 entityId: this.trackId
               }
             }
@@ -107,8 +106,22 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotifications.email?.[this.receiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

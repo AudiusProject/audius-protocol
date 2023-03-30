@@ -1,12 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import {
+  AppEmailNotification,
   RemixNotification,
   RepostNotification
 } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type RemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RemixNotification
@@ -101,9 +103,8 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
               title: 'New Remix Of Your Track ♻️',
               body: `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                  this.notification.group_id
-                }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                  }`,
                 type: 'RemixCreate',
                 childTrackId: this.trackId
               }
@@ -113,9 +114,25 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       )
       await this.incrementBadgeCount(this.parentTrackUserId)
     }
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.parentTrackUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.parentTrackUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.parentTrackUserId,
+        email: userNotifications.email?.[this.parentTrackUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
+
   }
 
   getResourcesForEmail(): ResourceIds {

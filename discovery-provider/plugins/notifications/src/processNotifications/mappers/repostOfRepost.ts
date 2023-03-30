@@ -1,10 +1,11 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { RepostOfRepostNotification } from '../../types/notifications'
+import { AppEmailNotification, RepostOfRepostNotification } from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type RepostOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostOfRepostNotification
@@ -120,9 +121,8 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
                 title: 'New Repost',
                 body: `${reposterUserName} reposted your repost of ${entityName}`,
                 data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                    this.notification.group_id
-                  }`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                    }`,
                   userIds: [this.repostOfRepostUserId],
                   type: 'RepostOfRepost'
                 }
@@ -134,11 +134,22 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
       }
     }
 
-    if (userNotifications.browser) {
-      // TODO: Send out browser
-    }
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotifications.email?.[this.receiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

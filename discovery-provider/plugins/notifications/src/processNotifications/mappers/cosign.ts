@@ -1,10 +1,11 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { CosignRemixNotification } from '../../types/notifications'
+import { AppEmailNotification, CosignRemixNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { logger } from '../../logger'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type CosignRemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CosignRemixNotification
@@ -91,9 +92,8 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
               title: 'New Track Co-Sign! 🔥',
               body: `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                  this.notification.group_id
-                }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                  }`,
                 type: 'RemixCosign',
                 childTrackId: this.trackId
               }
@@ -103,8 +103,23 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       )
       await this.incrementBadgeCount(this.remixUserId)
     }
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.remixUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.remixUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.remixUserId,
+        email: userNotifications.email?.[this.remixUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

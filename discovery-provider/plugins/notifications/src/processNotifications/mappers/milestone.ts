@@ -1,6 +1,7 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import {
+  AppEmailNotification,
   FollowerMilestoneNotification,
   MilestoneType,
   PlaylistMilestoneNotification,
@@ -10,12 +11,13 @@ import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type MilestoneRow = Omit<NotificationRow, 'data'> & {
   data:
-    | FollowerMilestoneNotification
-    | TrackMilestoneNotification
-    | PlaylistMilestoneNotification
+  | FollowerMilestoneNotification
+  | TrackMilestoneNotification
+  | PlaylistMilestoneNotification
 }
 
 export class Milestone extends BaseNotification<MilestoneRow> {
@@ -48,13 +50,11 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     } else if (this.type === MilestoneType.TRACK_SAVE_COUNT) {
       return `Your track ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
     } else if (this.type === MilestoneType.PLAYLIST_REPOST_COUNT) {
-      return `Your ${
-        isAlbum ? 'album' : 'playlist'
-      } ${entityName} has reached over ${this.threshold.toLocaleString()} reposts`
+      return `Your ${isAlbum ? 'album' : 'playlist'
+        } ${entityName} has reached over ${this.threshold.toLocaleString()} reposts`
     } else if (this.type === MilestoneType.PLAYLIST_SAVE_COUNT) {
-      return `Your ${
-        isAlbum ? 'album' : 'playlist'
-      } ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
+      return `Your ${isAlbum ? 'album' : 'playlist'
+        } ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
     }
   }
 
@@ -155,9 +155,8 @@ export class Milestone extends BaseNotification<MilestoneRow> {
               title: 'Congratulations! 🎉',
               body: this.getPushBodyText(entityName, isAlbum),
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                  this.notification.group_id
-                }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                  }`,
                 ...this.getPushData()
               }
             }
@@ -166,8 +165,23 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       )
       await this.incrementBadgeCount(this.receiverUserId)
     }
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotifications.email?.[this.receiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

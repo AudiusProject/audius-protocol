@@ -1,10 +1,11 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { SupporterDethronedNotification } from '../../types/notifications'
+import { AppEmailNotification, SupporterDethronedNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { capitalize } from '../../email/notifications/components/utils'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type SupporterDethronedNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupporterDethronedNotification
@@ -85,9 +86,8 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
                 newTopSupporterHandle
               )} dethroned you as ${supportedUserName}'s #1 Top Supporter! Tip to reclaim your spot?`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                  this.notification.group_id
-                }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                  }`,
                 type: 'SupporterDethroned',
                 entityId: this.receiverUserId
               }
@@ -97,8 +97,23 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       )
       await this.incrementBadgeCount(this.dethronedUserId)
     }
-    if (isLiveEmailEnabled) {
-      // TODO: send out email
+
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotifications.email?.[this.receiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 
