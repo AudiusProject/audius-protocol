@@ -210,10 +210,10 @@ def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
         populate_mock_db(db, test_entities)
         with db.scoped_session():
             playlists = get_playlist_tracks(
-                {
+                {"args": {
                 "playlist_ids": ["3", "4"],
                 "current_user_id": 3
-                }
+                }}
             )
             assert len(playlists) == 2
             playlist_3 = playlists[0]
