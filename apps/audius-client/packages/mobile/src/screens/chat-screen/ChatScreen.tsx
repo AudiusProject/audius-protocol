@@ -62,7 +62,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   listContentContainer: {
     paddingHorizontal: spacing(6),
     display: 'flex',
-    height: '100%'
+    minHeight: '100%'
   },
   composeView: {
     paddingVertical: spacing(2),
