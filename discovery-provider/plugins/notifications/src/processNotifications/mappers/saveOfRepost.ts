@@ -28,7 +28,11 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
     this.saveOfRepostUserId = this.notification.data.user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -116,7 +120,9 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
                 title: 'New Favorite',
                 body: `${saveOfRepostUserName} favorited your repost of ${entityName}`,
                 data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                    this.notification.group_id
+                  }`,
                   userIds: [this.saveOfRepostUserId],
                   type: 'FavoriteOfRepost'
                 }
@@ -131,8 +137,8 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
     if (userNotifications.browser) {
       // TODO: Send out browser
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

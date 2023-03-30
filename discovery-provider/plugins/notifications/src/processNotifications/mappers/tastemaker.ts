@@ -23,7 +23,12 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
   ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
-    const { tastemaker_item_id, tastemaker_item_owner_id, tastemaker_item_type, tastemaker_user_id } = this.notification.data
+    const {
+      tastemaker_item_id,
+      tastemaker_item_owner_id,
+      tastemaker_item_type,
+      tastemaker_user_id
+    } = this.notification.data
     this.receiverUserId = userIds[0]
     this.tastemakerItemId = tastemaker_item_id
     this.tastemakerItemOwnerId = tastemaker_item_owner_id
@@ -31,7 +36,11 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     this.tastemakerUserId = tastemaker_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -99,8 +108,8 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     if (userNotifications.browser) {
       // TODO: Send out browser
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

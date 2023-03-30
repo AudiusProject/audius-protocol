@@ -27,7 +27,11 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     this.senderUserId = this.notification.data.sender_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -79,7 +83,9 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
                 sendingUserName
               )} sent you a tip of ${tipAmount} $AUDIO`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'TipReceive',
                 entityId: this.senderUserId
               }
@@ -91,8 +97,8 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     }
     //
 
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

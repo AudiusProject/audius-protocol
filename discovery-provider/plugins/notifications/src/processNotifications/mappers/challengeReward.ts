@@ -70,14 +70,20 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
 
   getPushBodyText() {
     if (this.challengeId === 'referred') {
-      return `You’ve received ${this.challengeInfoMap[this.challengeId].amount
-        } $AUDIO for being referred! Invite your friends to join to earn more!`
+      return `You’ve received ${
+        this.challengeInfoMap[this.challengeId].amount
+      } $AUDIO for being referred! Invite your friends to join to earn more!`
     }
-    return `You’ve earned ${this.challengeInfoMap[this.challengeId].amount
-      } $AUDIO for completing this challenge!`
+    return `You’ve earned ${
+      this.challengeInfoMap[this.challengeId].amount
+    } $AUDIO for completing this challenge!`
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -124,7 +130,9 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
               title: this.challengeInfoMap[this.challengeId].title,
               body: this.getPushBodyText(),
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'ChallengeReward'
               }
             }
@@ -134,8 +142,8 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

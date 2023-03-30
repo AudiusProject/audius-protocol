@@ -18,7 +18,11 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
     this.senderUserId = this.notification.sender_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -78,8 +82,8 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
       }
     }
 
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 }

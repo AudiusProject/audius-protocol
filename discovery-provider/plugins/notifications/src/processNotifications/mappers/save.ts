@@ -24,7 +24,11 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     this.saverUserId = this.notification.data.user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -101,7 +105,9 @@ export class Save extends BaseNotification<SaveNotificationRow> {
         userNotifications.mobile?.[this.receiverUserId].devices
       // If the user's settings for the follow notification is set to true, proceed
       if (userMobileSettings['favorites']) {
-        const timestamp = Math.floor(Date.parse((this.notification.timestamp as any) as string) / 1000)
+        const timestamp = Math.floor(
+          Date.parse(this.notification.timestamp as any as string) / 1000
+        )
         await Promise.all(
           devices.map((device) => {
             return sendPushNotification(
@@ -126,8 +132,8 @@ export class Save extends BaseNotification<SaveNotificationRow> {
         await this.incrementBadgeCount(this.receiverUserId)
       }
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

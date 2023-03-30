@@ -30,7 +30,11 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
     this.timeRange = this.notification.data.time_range
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -97,8 +101,8 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

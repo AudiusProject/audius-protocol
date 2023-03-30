@@ -35,7 +35,11 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     this.tipAmount = this.notification.data.tip_amount
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -88,7 +92,9 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
               data: {
                 entityId: this.receiverUserId,
                 type: 'Reaction',
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`
               }
             }
           )
@@ -96,8 +102,8 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
       )
       await this.incrementBadgeCount(this.senderUserId)
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

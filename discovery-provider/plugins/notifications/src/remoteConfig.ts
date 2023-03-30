@@ -31,6 +31,12 @@ export enum MappingVariable {
   PushReaction = 'push_reaction'
 }
 
+export const NotificationsEmailPlugin = 'notification_email_plugin'
+export const EmailPluginMappings = {
+  Live: 'live',
+  Scheduled: 'scheduled'
+}
+
 const defaultMappingVariable = {
   [MappingVariable.PushRepost]: false,
   [MappingVariable.PushSave]: false,

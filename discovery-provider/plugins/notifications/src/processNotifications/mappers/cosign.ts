@@ -28,7 +28,11 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
     this.trackId = this.notification.data.track_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -87,7 +91,9 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
               title: 'New Track Co-Sign! 🔥',
               body: `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'RemixCosign',
                 childTrackId: this.trackId
               }
@@ -97,8 +103,8 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       )
       await this.incrementBadgeCount(this.remixUserId)
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

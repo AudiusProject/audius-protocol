@@ -30,7 +30,11 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
     this.timeRange = this.notification.data.time_range
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -86,11 +90,14 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
             },
             {
               title: "📈 You're Trending",
-              body: `${tracks[this.trackId]?.title} is #${this.rank
-                } on Trending right now!`,
+              body: `${tracks[this.trackId]?.title} is #${
+                this.rank
+              } on Trending right now!`,
               data: {
                 type: 'TrendingTrack',
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 entityId: this.trackId
               }
             }
@@ -100,8 +107,8 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

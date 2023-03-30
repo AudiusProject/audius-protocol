@@ -64,9 +64,9 @@ describe('Save Notification', () => {
         title: 'New Favorite',
         body: 'user_2 favorited your track track_title_10',
         data: {
-          "id": "timestamp:1589373217:group_id:save:10:type:track",
-          "type": "Favorite",
-          "userIds": [2]
+          id: 'timestamp:1589373217:group_id:save:10:type:track',
+          type: 'Favorite',
+          userIds: [2]
         }
       }
     )
@@ -102,9 +102,9 @@ describe('Save Notification', () => {
         title: 'New Favorite',
         body: 'user_2 favorited your playlist playlist_name_20',
         data: {
-          "id": "timestamp:1589373217:group_id:save:20:type:playlist",
-          "type": "Favorite",
-          "userIds": [2]
+          id: 'timestamp:1589373217:group_id:save:20:type:playlist',
+          type: 'Favorite',
+          userIds: [2]
         }
       }
     )
@@ -140,9 +140,9 @@ describe('Save Notification', () => {
         title: 'New Favorite',
         body: 'user_2 favorited your album playlist_name_30',
         data: {
-          "id": "timestamp:1589373217:group_id:save:30:type:playlist",
-          "type": "Favorite",
-          "userIds": [2]
+          id: 'timestamp:1589373217:group_id:save:30:type:playlist',
+          type: 'Favorite',
+          userIds: [2]
         }
       }
     )

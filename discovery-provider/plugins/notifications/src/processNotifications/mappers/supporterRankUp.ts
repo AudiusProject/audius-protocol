@@ -26,7 +26,11 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
     this.senderUserId = this.notification.data.sender_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -76,10 +80,13 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
             },
             {
               title: `#${this.rank} Top Supporter`,
-              body: `${capitalize(sendingUserName)} became your #${this.rank
-                } Top Supporter!`,
+              body: `${capitalize(sendingUserName)} became your #${
+                this.rank
+              } Top Supporter!`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'SupporterRankUp',
                 entityId: this.senderUserId
               }
@@ -89,8 +96,8 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
       )
       await this.incrementBadgeCount(this.receiverUserId)
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

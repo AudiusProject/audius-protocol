@@ -30,7 +30,11 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     this.remixUserId = parseInt(this.notification.specifier)
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -97,7 +101,9 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
               title: 'New Remix Of Your Track ♻️',
               body: `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'RemixCreate',
                 childTrackId: this.trackId
               }
@@ -107,8 +113,8 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       )
       await this.incrementBadgeCount(this.parentTrackUserId)
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

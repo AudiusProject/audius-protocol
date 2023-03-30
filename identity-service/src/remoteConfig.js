@@ -24,6 +24,13 @@ const MappingVariable = {
   PushAnnouncement: 'push_announcement',
   PushReaction: 'push_reaction'
 }
+
+const NOTIFICATIONS_EMAIL_PLUGIN = 'notification_email_plugin'
+const EmailPluginMappings = {
+  Live: 'live',
+  Scheduled: 'scheduled'
+}
+
 // Declaration of remote config variables set in optimizely
 const REMOTE_VARS = Object.freeze({
   TRENDING_EXPERIMENT: 'TRENDING_EXPERIMENT',
@@ -89,5 +96,7 @@ module.exports = {
   REMOTE_VARS,
   getRemoteFeatureVarEnabled,
   DISCOVERY_NOTIFICATION_MAPPING,
-  MappingVariable
+  MappingVariable,
+  NOTIFICATIONS_EMAIL_PLUGIN,
+  EmailPluginMappings
 }

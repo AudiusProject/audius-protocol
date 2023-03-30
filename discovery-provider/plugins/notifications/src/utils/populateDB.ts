@@ -1,5 +1,8 @@
 import { Knex } from 'knex'
-import { BaseNotification, EmailFrequency } from '../processNotifications/mappers/base'
+import {
+  BaseNotification,
+  EmailFrequency
+} from '../processNotifications/mappers/base'
 import {
   RepostRow,
   FollowRow,
@@ -420,10 +423,14 @@ export const insertNotifications = async (
   db: Knex,
   notifications: CreateNotificationRow[]
 ) => {
-  await db.insert(notifications.map(n => ({
-    timestamp: new Date(Date.now()),
-    ...n
-  }))).into('notification')
+  await db
+    .insert(
+      notifications.map((n) => ({
+        timestamp: new Date(Date.now()),
+        ...n
+      }))
+    )
+    .into('notification')
 }
 
 type CreateNotificationEmail = Pick<

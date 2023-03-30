@@ -1,9 +1,13 @@
 import { Knex } from 'knex'
-import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { AnnouncementNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { NotificationRow, UserRow } from '../../types/dn'
+import {
+  AnnouncementNotification,
+  AppEmailNotification
+} from '../../types/notifications'
+import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AnnouncementNotification
@@ -20,7 +24,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     this.receiverUserIds = this.notification.user_ids!
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -64,7 +72,8 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
                 title: this.notification.data.title,
                 body: this.notification.data.short_description,
                 data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                    }`,
                   type: 'Announcement'
                 }
               }
@@ -73,8 +82,23 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
         )
         await this.incrementBadgeCount(userId)
       }
-      if (userNotifications.email) {
-        // TODO: Send out email
+
+      if (
+        isLiveEmailEnabled &&
+        userNotifications.email?.[userId].frequency === 'live'
+      ) {
+        const notification: AppEmailNotification = {
+          receiver_user_id: userId,
+          ...this.notification
+        }
+        await sendNotificationEmail({
+          userId: userId,
+          email: userNotifications.email?.[userId].email,
+          frequency: 'live',
+          notifications: [notification],
+          dnDb: this.dnDB,
+          identityDb: this.identityDB
+        })
       }
     }
   }

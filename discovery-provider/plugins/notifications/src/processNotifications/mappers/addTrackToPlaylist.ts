@@ -4,10 +4,9 @@ import {
   AppEmailNotification,
   AddTrackToPlaylistNotification
 } from '../../types/notifications'
-import { BaseNotification, Device, EmailFrequency } from './base'
+import { BaseNotification, Device } from './base'
 import { sendPushNotification } from '../../sns'
 import {
-  fetchResources,
   ResourceIds,
   Resources
 } from '../../email/notifications/renderEmail'
@@ -33,7 +32,11 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     this.playlistId = notification.data.playlist_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const trackRes: Array<{
       track_id: number
       title: string
@@ -105,7 +108,8 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
               body: `${playlistOwnerName} added ${trackTitle} to their playlist ${playlistName}`,
               data: {
                 type: 'AddTrackToPlaylist',
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
+                  }`,
                 playlistId: this.playlistId
               }
             }
@@ -114,7 +118,10 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       )
       await this.incrementBadgeCount(track.owner_id)
     }
-    if (userNotifications.email?.[track.owner_id].frequency === 'live') {
+    if (
+      isLiveEmailEnabled &&
+      userNotifications.email?.[track.owner_id].frequency === 'live'
+    ) {
       const notification: AppEmailNotification = {
         receiver_user_id: track.owner_id,
         ...this.notification

@@ -1,6 +1,9 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { AppEmailNotification, FollowNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  FollowNotification
+} from '../../types/notifications'
 import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
@@ -25,7 +28,11 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     this.receiverUserId = followeeUserId
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -76,7 +83,9 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
                 title: 'Follow',
                 body: `${users[this.followerUserId].name} followed you`,
                 data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                    this.notification.group_id
+                  }`,
                   userIds: [this.followerUserId],
                   type: 'follow'
                 }

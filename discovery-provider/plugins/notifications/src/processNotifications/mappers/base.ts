@@ -290,19 +290,19 @@ export abstract class BaseNotification<Type> {
         const safariSettings =
           setting.deviceType && setting.awsARN && setting.deviceToken
             ? {
-              type: setting.deviceType,
-              awsARN: setting.awsARN,
-              deviceToken: setting.deviceToken
-            }
+                type: setting.deviceType,
+                awsARN: setting.awsARN,
+                deviceToken: setting.deviceToken
+              }
             : undefined
 
         const webPushSettings =
           setting.endpoint && setting.p256dhKey && setting.authKey
             ? {
-              endpoint: setting.endpoint,
-              p256dhKey: setting.p256dhKey,
-              authKey: setting.authKey
-            }
+                endpoint: setting.endpoint,
+                p256dhKey: setting.p256dhKey,
+                authKey: setting.authKey
+              }
             : undefined
         if (!safariSettings && !webPushSettings) {
           return acc
@@ -333,13 +333,14 @@ export abstract class BaseNotification<Type> {
     return userBrowserSettings
   }
 
-  async pushNotification() {
+  async pushNotification(params: { isLiveEmailEnabled: boolean }) {
     return
   }
 
-
   getNotificationTimestamp() {
-    const timestamp = Math.floor(Date.parse((this.notification as any).timestamp as string) / 1000)
+    const timestamp = Math.floor(
+      Date.parse((this.notification as any).timestamp as string) / 1000
+    )
     return timestamp
   }
 

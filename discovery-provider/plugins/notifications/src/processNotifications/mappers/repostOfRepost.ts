@@ -28,7 +28,11 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
     this.repostOfRepostUserId = this.notification.data.user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -116,7 +120,9 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
                 title: 'New Repost',
                 body: `${reposterUserName} reposted your repost of ${entityName}`,
                 data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                    this.notification.group_id
+                  }`,
                   userIds: [this.repostOfRepostUserId],
                   type: 'RepostOfRepost'
                 }
@@ -131,8 +137,8 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
     if (userNotifications.browser) {
       // TODO: Send out browser
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (isLiveEmailEnabled) {
+      // TODO: send out email
     }
   }
 

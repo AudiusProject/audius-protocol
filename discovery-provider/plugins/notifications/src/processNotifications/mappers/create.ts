@@ -35,7 +35,11 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     }
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     let track
     let ownerId
     let description
@@ -90,8 +94,9 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     if (this.trackId) {
       description = `${userName} released a new track`
     } else {
-      description = `${userName} released a new ${this.isAlbum ? 'album' : 'playlist'
-        } ${playlist.playlist_name}`
+      description = `${userName} released a new ${
+        this.isAlbum ? 'album' : 'playlist'
+      } ${playlist.playlist_name}`
     }
 
     const validReceiverUserIds = this.receiverUserIds.filter(
@@ -118,7 +123,9 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                 body: description,
                 data: {
                   type: 'UserSubscription',
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                    this.notification.group_id
+                  }`
                 }
               }
             )
