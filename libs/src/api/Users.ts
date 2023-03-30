@@ -1,4 +1,4 @@
-import { pick, isEqual } from 'lodash'
+import { pick } from 'lodash'
 import { Base, BaseConstructorArgs, Services } from './base'
 import { Nullable, UserMetadata, Utils } from '../utils'
 import {
@@ -62,8 +62,6 @@ export class Users extends Base {
     this.getTopCreatorsByGenres = this.getTopCreatorsByGenres.bind(this)
     this.uploadProfileImages = this.uploadProfileImages.bind(this)
     this.createEntityManagerUser = this.createEntityManagerUser.bind(this)
-    this.addUser = this.addUser.bind(this)
-    this.updateUser = this.updateUser.bind(this)
     this.updateCreator = this.updateCreator.bind(this)
     this.updateIsVerified = this.updateIsVerified.bind(this)
     this.getUserListenCountsMonthly = this.getUserListenCountsMonthly.bind(this)
@@ -77,8 +75,6 @@ export class Users extends Base {
       this.getClockValuesFromReplicaSet.bind(this)
     this._waitForCreatorNodeEndpointIndexing =
       this._waitForCreatorNodeEndpointIndexing.bind(this)
-    this._addUserOperations = this._addUserOperations.bind(this)
-    this._updateUserOperations = this._updateUserOperations.bind(this)
     this._validateUserMetadata = this._validateUserMetadata.bind(this)
     this.cleanUserMetadata = this.cleanUserMetadata.bind(this)
 
@@ -559,45 +555,6 @@ export class Users extends Base {
     }
   }
 
-  /**
-   * Create an on-chain non-creator user. Some fields are restricted (ex.
-   * creator_node_endpoint); this should error if the metadata given attempts to set them.
-   * @param {Object} metadata metadata to associate with the user
-   */
-  async addUser(metadata: UserMetadata) {
-    this.IS_OBJECT(metadata)
-    const newMetadata = this.cleanUserMetadata(metadata)
-    this._validateUserMetadata(newMetadata)
-
-    let userId
-    const currentUser = this.userStateManager.getCurrentUser()
-    if (currentUser?.handle) {
-      userId = currentUser.user_id
-    } else {
-      userId = (
-        await this.contracts.UserFactoryClient.addUser(newMetadata.handle)
-      ).userId
-    }
-
-    const result = await this._addUserOperations(userId, newMetadata)
-    const blockHash: string | undefined = result.latestBlockHash
-    const blockNumber: number = result.latestBlockNumber
-
-    newMetadata.wallet = this.web3Manager.getWalletAddress()
-    newMetadata.user_id = userId
-
-    this.userStateManager.setCurrentUser({
-      ...newMetadata,
-      // Initialize counts to be 0. We don't want to write this data to backends ever really
-      // (hence the cleanUserMetadata above), but we do want to make sure clients
-      // can properly "do math" on these numbers.
-      followee_count: 0,
-      follower_count: 0,
-      repost_count: 0
-    })
-    return { blockHash, blockNumber, userId }
-  }
-
   async updateEntityManagerReplicaSet({
     userId,
     primary,
@@ -627,36 +584,6 @@ export class Users extends Base {
       blockHash: response.txReceipt.blockHash,
       blockNumber: response.txReceipt.blockNumber
     }
-  }
-
-  /**
-   * Updates a user
-   */
-  async updateUser(userId: number, metadata: UserMetadata) {
-    this.REQUIRES(Services.DISCOVERY_PROVIDER)
-    this.IS_OBJECT(metadata)
-    const newMetadata = this.cleanUserMetadata(metadata)
-    this._validateUserMetadata(newMetadata)
-
-    // Retrieve the current user metadata
-    const users = await this.discoveryProvider.getUsers(
-      1,
-      0,
-      [userId],
-      null,
-      null,
-      null
-    )
-    if (!users || !users[0])
-      throw new Error(
-        `Cannot update user because no current record exists for user id ${userId}`
-      )
-
-    const oldMetadata = users[0]
-    const { latestBlockHash: blockHash, latestBlockNumber: blockNumber } =
-      await this._updateUserOperations(newMetadata, oldMetadata, userId)
-    this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
-    return { blockHash, blockNumber }
   }
 
   /**
@@ -1032,177 +959,6 @@ export class Users extends Base {
     )
   }
 
-  async _waitForURSMCreatorNodeEndpointIndexing(
-    userId: number,
-    replicaSetSPIDs: number[],
-    timeoutMs = 60000
-  ) {
-    const asyncFn = async () => {
-      while (true) {
-        const replicaSet =
-          await this.contracts.UserReplicaSetManagerClient?.getUserReplicaSet(
-            userId
-          )
-        if (
-          replicaSet &&
-          Object.prototype.hasOwnProperty.call(replicaSet, 'primaryId') &&
-          Object.prototype.hasOwnProperty.call(replicaSet, 'secondaryIds') &&
-          replicaSet.primaryId === replicaSetSPIDs[0] &&
-          isEqual(replicaSet.secondaryIds, replicaSetSPIDs.slice(1, 3))
-        ) {
-          break
-        }
-      }
-      await Utils.wait(500)
-    }
-    await Utils.racePromiseWithTimeout(
-      asyncFn(),
-      timeoutMs,
-      `[User:_waitForURSMCreatorNodeEndpointIndexing()] Timeout error after ${timeoutMs}ms`
-    )
-  }
-
-  async _addUserOperations(
-    userId: number,
-    newMetadata: UserMetadata,
-    exclude = []
-  ) {
-    const addOps = []
-
-    // Remove excluded keys from metadata object
-    const metadata = { ...newMetadata }
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    exclude.map((excludedKey) => delete metadata[excludedKey])
-
-    if (metadata.name) {
-      addOps.push(
-        this.contracts.UserFactoryClient.updateName(userId, metadata.name)
-      )
-    }
-    if (metadata.location) {
-      addOps.push(
-        this.contracts.UserFactoryClient.updateLocation(
-          userId,
-          metadata.location
-        )
-      )
-    }
-    if (metadata.bio) {
-      addOps.push(
-        this.contracts.UserFactoryClient.updateBio(userId, metadata.bio)
-      )
-    }
-    if (metadata.profile_picture_sizes) {
-      addOps.push(
-        this.contracts.UserFactoryClient.updateProfilePhoto(
-          userId,
-          Utils.decodeMultihash(metadata.profile_picture_sizes).digest
-        )
-      )
-    }
-    if (metadata.cover_photo_sizes) {
-      addOps.push(
-        this.contracts.UserFactoryClient.updateCoverPhoto(
-          userId,
-          Utils.decodeMultihash(metadata.cover_photo_sizes).digest
-        )
-      )
-    }
-
-    let ops
-    let latestBlockNumber = -Infinity
-    let latestBlockHash
-    if (addOps.length > 0) {
-      // Execute update promises concurrently
-      // TODO - what if one or more of these fails?
-      // sort transactions by blocknumber and return most recent transaction
-      ops = await Promise.all(addOps)
-      const sortedOpsDesc = ops.sort(
-        (op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber
-      )
-      const latestTx = sortedOpsDesc[0]!.txReceipt
-      latestBlockNumber = latestTx.blockNumber
-      latestBlockHash = latestTx.blockHash
-    }
-
-    return { ops, latestBlockNumber, latestBlockHash }
-  }
-
-  async _updateUserOperations(
-    newMetadata: UserMetadata,
-    currentMetadata: UserMetadata,
-    userId: number,
-    exclude: Array<keyof UserMetadata> = []
-  ) {
-    const updateOps = []
-
-    // Remove excluded keys from metadata object
-    const metadata = { ...newMetadata }
-    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-    exclude.map((excludedKey) => delete metadata[excludedKey])
-    // Compare the existing metadata with the new values and conditionally
-    // perform update operations
-    for (const key in metadata) {
-      const typedKey = key as keyof UserMetadata
-      if (
-        Object.prototype.hasOwnProperty.call(metadata, key) &&
-        Object.prototype.hasOwnProperty.call(currentMetadata, key) &&
-        metadata[typedKey] !== currentMetadata[typedKey]
-      ) {
-        if (key === 'name') {
-          updateOps.push(
-            this.contracts.UserFactoryClient.updateName(userId, metadata.name)
-          )
-        }
-        if (key === 'bio') {
-          updateOps.push(
-            this.contracts.UserFactoryClient.updateBio(userId, metadata.bio)
-          )
-        }
-        if (key === 'location') {
-          updateOps.push(
-            this.contracts.UserFactoryClient.updateLocation(
-              userId,
-              metadata.location!
-            )
-          )
-        }
-        if (key === 'profile_picture_sizes') {
-          updateOps.push(
-            this.contracts.UserFactoryClient.updateProfilePhoto(
-              userId,
-              Utils.decodeMultihash(metadata.profile_picture_sizes!).digest
-            )
-          )
-        }
-        if (key === 'cover_photo_sizes') {
-          updateOps.push(
-            this.contracts.UserFactoryClient.updateCoverPhoto(
-              userId,
-              Utils.decodeMultihash(metadata.cover_photo_sizes!).digest
-            )
-          )
-        }
-      }
-    }
-
-    let ops
-    let latestBlockNumber = -Infinity
-    let latestBlockHash
-    if (updateOps.length > 0) {
-      // sort transactions by blocknumber and return most recent transaction
-      ops = await Promise.all(updateOps)
-      const sortedOpsDesc = ops.sort(
-        (op1, op2) => op2.txReceipt.blockNumber - op1.txReceipt.blockNumber
-      )
-      const latestTx = sortedOpsDesc[0]!.txReceipt
-      latestBlockNumber = latestTx.blockNumber
-      latestBlockHash = latestTx.blockHash
-    }
-
-    return { ops, latestBlockNumber, latestBlockHash }
-  }
-
   _validateUserMetadata(metadata: UserMetadata) {
     this.OBJECT_HAS_PROPS(metadata, USER_PROPS, USER_REQUIRED_PROPS)
   }
@@ -1223,14 +979,7 @@ export class Users extends Base {
   }
 
   // Perform replica set update
-  // Conditionally write to UserFactory contract, else write to UserReplicaSetManager
-  // This behavior is to ensure backwards compatibility prior to contract deploy
   async _updateReplicaSetOnChain(userId: number, creatorNodeEndpoint: string) {
-    // Attempt to update through UserReplicaSetManagerClient if present
-    if (!this.contracts.UserReplicaSetManagerClient) {
-      await this.contracts.initUserReplicaSetManagerClient()
-    }
-
     const primaryEndpoint = CreatorNode.getPrimary(creatorNodeEndpoint)
     const secondaries = CreatorNode.getSecondaries(creatorNodeEndpoint)
 

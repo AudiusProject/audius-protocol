@@ -1,10 +1,13 @@
 import type { AbiItem } from 'web3-utils'
-import { Logger } from '../../utils'
+import type { Logger } from '../../utils'
 
 // load classes wrapping contracts
 import { EntityManagerClient } from './EntityManagerClient'
 import type { Web3Manager } from '../web3Manager'
-import type { ContractClient } from '../contracts/ContractClient'
+import type {
+  ContractClient,
+  GetRegistryAddress
+} from '../contracts/ContractClient'
 import { abi as EntityManagerABI } from '../../data-contracts/ABIs/EntityManager.json'
 
 export class AudiusContracts {
@@ -38,12 +41,16 @@ export class AudiusContracts {
         this.web3Manager,
         EntityManagerABI as AbiItem[],
         'EntityManager',
-        null,
+        this.getEmptyRegistryAddress,
         this.logger,
         this.entityManagerAddress
       )
       this.contractClients.push(this.EntityManagerClient)
     }
+  }
+
+  getEmptyRegistryAddress: GetRegistryAddress = async () => {
+    return Promise.resolve('')
   }
 
   async init() {
