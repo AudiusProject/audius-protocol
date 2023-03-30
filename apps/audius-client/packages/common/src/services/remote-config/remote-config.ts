@@ -37,13 +37,6 @@ type State = {
   id: Nullable<number>
 }
 
-type MobileClientInfo = {
-  /** This is the type of Platform.OS, but we only expect ios or android here */
-  mobilePlatform: 'ios' | 'android' | 'web' | 'windows' | 'macos'
-  mobileAppVersion: string
-  codePushUpdateNumber: number | undefined
-}
-
 export type RemoteConfigOptions<Client> = {
   createOptimizelyClient: () => Promise<Client>
   getFeatureFlagSessionId: () => Promise<Nullable<number>>
@@ -51,8 +44,7 @@ export type RemoteConfigOptions<Client> = {
   setLogLevel: () => void
   environment: Environment
   appVersion: string
-  platform: 'web' | 'mobile' | 'desktop'
-  getMobileClientInfo?: () => Promise<MobileClientInfo> | MobileClientInfo
+  getMobileClientVersion?: () => Promise<string> | string
 }
 
 export const remoteConfig = <
@@ -72,8 +64,7 @@ export const remoteConfig = <
   setLogLevel,
   environment,
   appVersion,
-  platform,
-  getMobileClientInfo
+  getMobileClientVersion
 }: RemoteConfigOptions<Client>) => {
   const state: State = {
     didInitialize: false,
@@ -85,9 +76,8 @@ export const remoteConfig = <
 
   // Optimizely client
   let client: Client | undefined
-
-  /** Mobile app info if platform is mobile */
-  let mobileClientInfo: MobileClientInfo | undefined
+  /** Mobile app version that is being run */
+  let mobileClientVersion: string | undefined
 
   const emitter = new EventEmitter()
   emitter.setMaxListeners(1000)
@@ -102,8 +92,8 @@ export const remoteConfig = <
     } else {
       state.id = savedSessionId
     }
-    mobileClientInfo = getMobileClientInfo
-      ? await getMobileClientInfo()
+    mobileClientVersion = getMobileClientVersion
+      ? await getMobileClientVersion()
       : undefined
     client = await createOptimizelyClient()
 
@@ -244,10 +234,7 @@ export const remoteConfig = <
       return client.isFeatureEnabled(f, id.toString(), {
         userId: id,
         appVersion,
-        platform,
-        mobilePlatform: mobileClientInfo?.mobilePlatform,
-        mobileAppVersion: mobileClientInfo?.mobileAppVersion,
-        codePushUpdateNumber: mobileClientInfo?.codePushUpdateNumber
+        mobileClientVersion: mobileClientVersion ?? 'N/A'
       })
     }
 
