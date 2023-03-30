@@ -621,7 +621,7 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
     const transaction = {
       to: contractAddress,
       value: 0,
-      gas: nethermindGasLimit,
+      gas: Math.ceil(nethermindGasLimit * 1.2),
       gasPrice: 0,
       data: encodedABI
     }
