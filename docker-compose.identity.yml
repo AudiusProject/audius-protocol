@@ -71,7 +71,7 @@ services:
       - ./identity-service:/usr/src/app
       - /usr/src/app/node_modules
       - ./dev-tools:/tmp/dev-tools
-      - audius-libs:/usr/src/audius-libs
+      - ./libs:/usr/src/audius-libs
     depends_on:
       db:
         condition: service_healthy
