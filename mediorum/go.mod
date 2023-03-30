@@ -28,6 +28,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.0 // indirect
 	github.com/ipfs/go-cid v0.3.2 // indirect
+	github.com/ipfs/go-ipfs-util v0.0.2 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.4 // indirect

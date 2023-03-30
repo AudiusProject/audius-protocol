@@ -398,84 +398,45 @@ export class Track extends Base {
     metadata: TrackMetadata,
     onProgress: () => void
   ) {
-    this.REQUIRES(Services.CREATOR_NODE) // TODO: Change to storage node
+    // Validate inputs
+    this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
-
-    try {
-      if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
-
-      this.IS_OBJECT(metadata)
-
-      const ownerId = this.userStateManager.getCurrentUserId()
-      if (!ownerId) {
-        return {
-          error: 'No users loaded for this wallet'
-        }
-      }
-
-      metadata.owner_id = ownerId
-      this._validateTrackMetadata(metadata)
-
-      // Upload metadata
-      const {
-        metadataMultihash,
-        // metadataFileUUID,
-        // transcodedTrackUUID,
-        transcodedTrackCID
-      } = await retry(
-        async () => {
-          return this.creatorNode.uploadTrackContentV2(
-            trackFile,
-            coverArtFile,
-            metadata,
-            onProgress
-          )
-          // return this.creatorNode.uploadTrackContent(
-          //   trackFile,
-          //   coverArtFile,
-          //   metadata,
-          //   onProgress
-          // )
-        },
-        {
-          // Retry function 3x
-          // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
-          minTimeout: 500,
-          maxTimeout: 4000,
-          factor: 3,
-          retries: 3,
-          onRetry: (err) => {
-            if (err) {
-              console.log('uploadTrackContentV2 retry error: ', err)
-            }
-          }
-        }
-      )
-
-      // Write metadata to chain
-      // TODO: Make discovery index by reading its own db instead of hitting CN /ipfs
-      const trackId = await this._generateTrackId()
-      const response = await this.contracts.EntityManagerClient!.manageEntity(
-        ownerId,
-        EntityManagerClient.EntityType.TRACK,
-        trackId,
-        EntityManagerClient.Action.CREATE,
-        metadataMultihash
-      )
-      const txReceipt = response.txReceipt
-
+    if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
+    this.IS_OBJECT(metadata)
+    const ownerId = this.userStateManager.getCurrentUserId()
+    if (!ownerId) {
       return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber,
-        trackId,
-        transcodedTrackCID,
-        error: false
+        error: 'No users loaded for this wallet'
       }
-    } catch (e) {
-      return {
-        error: (e as Error).message,
-        stack: (e as Error).stack
-      }
+    }
+    metadata.owner_id = ownerId
+    this._validateTrackMetadata(metadata)
+
+    // Upload track audio and cover art to storage node
+    const updatedMetadata = await this.creatorNode.uploadTrackAudioAndCoverArtV2(
+      trackFile,
+      coverArtFile,
+      metadata,
+      onProgress
+    )
+
+    // Write metadata to chain
+    const trackId = await this._generateTrackId()
+    const response = await this.contracts.EntityManagerClient!.manageEntity(
+      ownerId,
+      EntityManagerClient.EntityType.TRACK,
+      trackId,
+      EntityManagerClient.Action.CREATE,
+      JSON.stringify(updatedMetadata) // TODO: @michelle: would this work? It doesn't need to be a different EntityType that accepts metadata instead of metadata hash?
+    )
+    const txReceipt = response.txReceipt
+
+    return {
+      blockHash: txReceipt.blockHash,
+      blockNumber: txReceipt.blockNumber,
+      trackId,
+      transcodedTrackCID: updatedMetadata.track_cid,
+      error: false
     }
   }
   /**

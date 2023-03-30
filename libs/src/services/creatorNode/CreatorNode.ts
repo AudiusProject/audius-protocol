@@ -15,6 +15,7 @@ import type { MonitoringCallbacks } from '../types'
 const { wait } = Utils
 
 const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
+const MAX_IMAGE_RESIZE_TIMEOUT_MS = 5 * 60_000 // 5 minutes
 const POLL_STATUS_INTERVAL = 3000 // 3s
 const BROWSER_SESSION_REFRESH_TIMEOUT = 604800000 // 1 week
 
@@ -392,46 +393,99 @@ export class CreatorNode {
     return { ...metadataResp, ...trackContentResp }
   }
 
-  // TODO: Move this to SDK and have AudiusBackend.ts in client call this instead of calling libs here: https://github.com/AudiusProject/audius-client/blob/main/packages/common/src/services/audius-backend/AudiusBackend.ts#L1235-L1240
-  // TODO: Need to work out something to show progress
-  async uploadTrackContentV2(
+  async uploadTrackAudioAndCoverArtV2(
     trackFile: File,
-    // coverArtFile: File,
-    // metadata: TrackMetadata,
-    _: File,
-    __: TrackMetadata,
+    coverArtFile: File,
+    metadata: TrackMetadata,
     onProgress: ProgressCB = () => { }
   ) {
-    // Upload track file
-    const trackFileFormData = new FormData()
-    trackFileFormData.append('template', 'audio')
-    trackFileFormData.append('files', trackFile, { contentType: 'audio', filename: trackFile.name })
-    const trackFileUploadResponse = await axios({
-      method: 'post',
-      url: this.creatorNodeEndpoint + '/mediorum/uploads',
-      data: trackFileFormData,
-      headers: {
-        'Content-Type': 'multipart/form-data'
-      },
-      onUploadProgress: (progressEvent) => {
-        onProgress(progressEvent.loaded, progressEvent.total)
-      }
-    })
-    const trackFileUploadResponseData = trackFileUploadResponse.data
-    console.log('trackFileUploadResponseData for v2 upload', JSON.stringify(trackFileUploadResponseData))
+    const updatedMetadata = { ...metadata }
 
-    return {
-      metadataMultihash: '',
-      metadataFileUUID: '',
-      transcodedTrackUUID: '',
-      transcodedTrackCID: ''
+    // Upload audio and cover art
+    const [audioResp, coverArtResp] = await Promise.all([
+      this._retry3(async () => this.uploadTrackAudioV2(trackFile, onProgress), (e) => { console.log('Retrying uploadTrackAudioV2', e) }),
+      this._retry3(async () => this.uploadTrackCoverArtV2(coverArtFile, onProgress), (e) => { console.log('Retrying uploadTrackCoverArtV2', e) })
+    ])
+
+    // Update metadata to include uploaded CIDs
+    // TODO: Make sure discovery and elsewhere accept 0-length array. Some checks in CN currently fail if there's not at least 1 valid segment
+    updatedMetadata.track_segments = []
+    updatedMetadata.track_cid = audioResp.results["320"]
+    if (updatedMetadata.download?.is_downloadable) {
+      updatedMetadata.download.cid = updatedMetadata.track_cid
+    }
+    // TODO: Decide if we want to go the dirCID route of table lookup, or if we want to store the CID for each size
+    updatedMetadata.cover_art_sizes = coverArtResp.id
+
+    return updatedMetadata
+  }
+
+  async uploadTrackAudioV2(file: File, onProgress: ProgressCB) {
+    return this.uploadFileV2(file, onProgress, 'audio')
+  }
+
+  async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB) {
+    return this.uploadFileV2(file, onProgress, 'img_square')
+  }
+
+  async uploadFileV2(file: File, onProgress: ProgressCB, template: 'audio' | 'img_square' | 'img_backdrop') {
+    const formData = new FormData()
+    formData.append('template', template)
+    formData.append(
+      'files',
+      file,
+      { contentType: template === 'audio' ? 'audio' : 'image', filename: file.name }
+    )
+    const response = await this._makeRequestV2({
+      method: 'post',
+      url: '/mediorum/uploads',
+      data: formData,
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent) => onProgress(progressEvent.loaded, progressEvent.total)
+    })
+    return this.pollProcessingStatusV2(
+      response.data[0].id,
+      template === 'audio' ? MAX_TRACK_TRANSCODE_TIMEOUT : MAX_IMAGE_RESIZE_TIMEOUT_MS
+    )
+  }
+
+  /**
+   * Works for both track transcode and image resize jobs
+   * @param id ID of the transcode/resize job
+   * @param maxPollingMs millis to stop polling and error if job is not done
+   * @returns successful job info, or throws error if job fails / times out
+   */
+  async pollProcessingStatusV2(id: string, maxPollingMs: number) {
+    const start = Date.now()
+    while (Date.now() - start < maxPollingMs) {
+      try {
+        const resp = await this.getProcessingStatusV2(id)
+        if (resp?.status === 'done') return resp
+        if (resp?.status === 'error') {
+          throw new Error(`Upload failed: id=${id}, resp=${JSON.stringify(resp)}`)
+        }
+      } catch (e) {
+        // Swallow errors caused by failure to establish connection to node so we can retry polling
+        console.error(`Failed to poll for processing status, ${e}`)
+      }
+
+      await wait(POLL_STATUS_INTERVAL)
     }
 
-    // TODO: Upload coverArtFile (same /storage/api/v1/file endpoint)
+    throw new Error(`Upload took over ${maxPollingMs}ms. id=${id}`)
+  }
 
-    // TODO: Need metadata to have track_cid, download.cid (if download.is_downloadable), and cover_art_sizes. I think we can stop doing the track_segments thing
-    // TODO: Write metadata to EntityManager for both audio and cover art files, and probably return the tx receipt here
-    // TODO: Make discovery stop calling /ipfs/<metadata_cid> and instead read from its own db where it already indexes this metadata
+  /**
+   * Gets the task progress given the task type and id associated with the job
+   * @param id the id of the transcoding or resizing job
+   * @returns the status, and the success or failed response if the job is complete
+   */
+  async getProcessingStatusV2(id: string) {
+    const { data } = await this._makeRequestV2({
+      method: 'get',
+      url: `/mediorum/uploads/${id}`
+    })
+    return data
   }
 
   /**
@@ -709,6 +763,19 @@ export class CreatorNode {
   }
 
   /* ------- INTERNAL FUNCTIONS ------- */
+
+  /**
+ * Makes an axios request to the connected creator node
+ * @return response body
+ */
+  async _makeRequestV2(
+    axiosRequestObj: AxiosRequestConfig
+  ) {
+    // TODO: This might want to have other error handling, request UUIDs, etc...
+    //       But I didn't want to pull in all the chaos and incompatiblity of the old _makeRequest
+    axiosRequestObj.baseURL = this.creatorNodeEndpoint
+    return axios(axiosRequestObj)
+  }
 
   /**
    * Signs up a creator node user with a wallet address
@@ -1176,5 +1243,20 @@ export class CreatorNode {
       console.error(errorMsg, e)
       throw e
     }
+  }
+
+  /**
+   * Calls fn and then retries once after 500ms, again after 1500ms, and again after 4000ms
+   */
+  async _retry3(fn: () => Promise<any>, onRetry = (_err: any) => { }) {
+    return retry(fn,
+      {
+        minTimeout: 500,
+        maxTimeout: 4000,
+        factor: 3,
+        retries: 3,
+        onRetry
+      }
+    )
   }
 }

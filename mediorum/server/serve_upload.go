@@ -6,10 +6,12 @@ import (
 	"crypto/sha1"
 	"encoding/base32"
 	"io"
-	"mime/multipart"
+	"io/ioutil"
 	"sync"
 	"time"
 
+	"github.com/ipfs/go-cid"
+	util "github.com/ipfs/go-ipfs-util"
 	"github.com/labstack/echo/v4"
 )
 
@@ -67,13 +69,13 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			}
 			uploads[idx] = upload
 
-			fileHash, err := hashFileUpload(formFile)
+			randomID, err := randomHash()
 			if err != nil {
 				upload.Error = err.Error()
 				return
 			}
 
-			upload.ID = fileHash
+			upload.ID = randomID
 			upload.FFProbe, _ = ffprobeUpload(formFile)
 
 			// mirror to n peers
@@ -83,13 +85,13 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				return
 			}
 
-			upload.Mirrors, err = ss.replicateFile(fileHash, file)
+			upload.Mirrors, err = ss.replicateFile(randomID, file)
 			if err != nil {
 				upload.Error = err.Error()
 				return
 			}
 
-			ss.logger.Info("mirrored", "name", formFile.Filename, "hash", fileHash, "mirrors", upload.Mirrors)
+			ss.logger.Info("mirrored", "name", formFile.Filename, "randomID", randomID, "mirrors", upload.Mirrors)
 
 			err = ss.crud.Create(upload)
 			if err != nil {
@@ -106,20 +108,18 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(200, uploads)
 }
 
-func hashFileUpload(upload *multipart.FileHeader) (string, error) {
-	// for testing... want to be able to upload same stuff repeatedly
-	return randomHash()
-
-	file, err := upload.Open()
+func computeFileCID(file io.Reader) (string, error) {
+	builder := cid.V0Builder{}
+	contents, err := ioutil.ReadAll(file)
 	if err != nil {
 		return "", err
 	}
-	hash := sha1.New()
-	if _, err := io.Copy(hash, file); err != nil {
+	hash := util.Hash(contents)
+	cid, err := builder.Sum(hash)
+	if err != nil {
 		return "", err
 	}
-	fileHash := base32.StdEncoding.EncodeToString(hash.Sum(nil))
-	return fileHash, nil
+	return cid.String(), nil
 }
 
 func randomHash() (string, error) {

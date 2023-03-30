@@ -204,17 +204,18 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		for _, targetBox := range squares {
 			temp.Seek(0, 0)
 			out, w, h := Resized(".jpg", temp, targetBox, targetBox, "fill")
-			outName := fmt.Sprintf("%s_%d", fileHash, targetBox)
-			mirrors, err := ss.replicateFile(outName, out)
+			resultHash, err := computeFileCID(out)
+			if err != nil {
+				return onError(err, "computeFileCID")
+			}
+			mirrors, err := ss.replicateFile(resultHash, out)
 			if err != nil {
 				return onError(err, "replicate")
 			}
-			logger.Debug("did square", "w", w, "h", h, "key", outName, "mirrors", mirrors)
+			logger.Debug("did square", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
 
-			// for now use this made up result key
-			// in future... will be SHA of transcode result
 			variantName := fmt.Sprintf("%dx%[1]d", targetBox)
-			upload.TranscodeResults[variantName] = outName
+			upload.TranscodeResults[variantName] = resultHash
 		}
 
 	case JobTemplateImgBackdrop:
@@ -223,17 +224,18 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		for _, targetWidth := range widths {
 			temp.Seek(0, 0)
 			out, w, h := Resized(".jpg", temp, targetWidth, AUTO, "fill")
-			outName := fmt.Sprintf("%s_%d", fileHash, targetWidth)
-			mirrors, err := ss.replicateFile(outName, out)
+			resultHash, err := computeFileCID(out)
+			if err != nil {
+				return onError(err, "computeFileCID")
+			}
+			mirrors, err := ss.replicateFile(resultHash, out)
 			if err != nil {
 				return onError(err, "replicate")
 			}
-			logger.Debug("did backdrop", "w", w, "h", h, "key", outName, "mirrors", mirrors)
+			logger.Debug("did backdrop", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
 
-			// for now use this made up result key
-			// in future... will be SHA of transcode result
 			variantName := fmt.Sprintf("%dwide", targetWidth)
-			upload.TranscodeResults[variantName] = outName
+			upload.TranscodeResults[variantName] = resultHash
 		}
 
 	case JobTemplateAudio, "":
@@ -297,14 +299,16 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 		// replicate to peers
 		// attempt to forward to an assigned node
-		resultKey := fileHash + "_320.mp3"
-		mirrors, err := ss.replicateFile(resultKey, dest)
+		resultHash, err := computeFileCID(dest)
+		if err != nil {
+			return onError(err, "computeFileCID")
+		}
+		resultKey := resultHash
+		mirrors, err := ss.replicateFile(resultHash, dest)
 		if err != nil {
 			return onError(err)
 		}
 
-		// for now use this made up result key
-		// in future... will be SHA of transcode result
 		upload.TranscodeResults["320"] = resultKey
 
 		ss.logger.Info("transcode done", "mirrors", mirrors)

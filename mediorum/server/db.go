@@ -1,7 +1,6 @@
 package server
 
 import (
-	"encoding/json"
 	"mediorum/crudr"
 	"time"
 
@@ -13,11 +12,6 @@ type Blob struct {
 	Key       string    `json:"key" gorm:"primaryKey;not null;default:null"`
 	Host      string    `json:"host" gorm:"primaryKey;not null;default:null"`
 	CreatedAt time.Time `json:"created_at"`
-}
-
-type JsonCid struct {
-	Cid  string          `json:"key" gorm:"primaryKey;not null;default:null"`
-	Data json.RawMessage `json:"data"`
 }
 
 type Upload struct {
@@ -86,12 +80,12 @@ func dbMustDial(dbPath string) *gorm.DB {
 
 func dbMigrate(crud *crudr.Crudr) {
 	// Migrate the schema
-	err := crud.DB.AutoMigrate(&Blob{}, &Upload{}, &ServerHealth{}, &LogLine{}, &JsonCid{})
+	err := crud.DB.AutoMigrate(&Blob{}, &Upload{}, &ServerHealth{}, &LogLine{})
 	if err != nil {
 		panic(err)
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{}, &JsonCid{})
+	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{})
 
 }
