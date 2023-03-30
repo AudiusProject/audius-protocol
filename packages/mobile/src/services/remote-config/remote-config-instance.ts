@@ -19,12 +19,13 @@ const { version: appVersion } = packageInfo
 const OPTIMIZELY_KEY = Config.OPTIMIZELY_KEY
 const DATA_FILE_URL = 'https://experiments.audius.co/datafiles/%s.json'
 
-/** Returns mobile platform (ios or android), mobile app version, and code push update number (if any) */
-const getMobileClientInfo = async () => {
-  const mobilePlatform = Platform.OS
-  const mobileAppVersion = VersionNumber.appVersion
-
-  let codePushUpdateMetadata: LocalPackage | null = null
+/** Returns version in the form of `a1.1.33+codepush:v5` if Android, `i1.1.33+codepush:v5` if iOS. The `+codepush:*` portion is omitted if there is no CodePush update installed. */
+const getMobileClientVersion = async () => {
+  const baseVersion = `${Platform.OS === 'android' ? 'a' : 'i'}${
+    VersionNumber.appVersion
+  }`
+  let res = baseVersion // This is our default value if getting the CodePush update metadata fails for some reason, or if there is no CodePush update installed.
+  let codePushUpdateMetadata: LocalPackage | null
   try {
     codePushUpdateMetadata = await codePush.getUpdateMetadata()
   } catch (e) {
@@ -32,28 +33,17 @@ const getMobileClientInfo = async () => {
       'Error getting CodePush metadata for remote config instance.',
       e
     )
+    return res
   }
-
-  let codePushUpdateNumber: number | undefined
-  if (
-    codePushUpdateMetadata &&
-    codePushUpdateMetadata.label &&
-    codePushUpdateMetadata.label.length > 1
-  ) {
-    // Codepush version nunbers are formatted as e.g."v10" - remove the leading "v".
-    codePushUpdateNumber = Number(codePushUpdateMetadata.label.slice(1))
+  if (codePushUpdateMetadata) {
+    res = `${baseVersion}+codepush:${codePushUpdateMetadata.label}`
   }
-  return {
-    mobilePlatform,
-    mobileAppVersion,
-    codePushUpdateNumber
-  }
+  return res
 }
 
 export const remoteConfigInstance = remoteConfig({
   appVersion,
-  platform: 'mobile',
-  getMobileClientInfo,
+  getMobileClientVersion,
   createOptimizelyClient: async () => {
     return optimizely.createInstance({
       sdkKey: OPTIMIZELY_KEY,
