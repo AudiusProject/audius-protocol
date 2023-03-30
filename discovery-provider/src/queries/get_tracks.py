@@ -165,7 +165,7 @@ def _get_tracks(session, args):
                         func.to_timestamp_safe(
                             TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM"
                         ),
-                        func.date_trunc('day', TrackWithAggregates.created_at)
+                        TrackWithAggregates.created_at
                     )
                 )
             )
