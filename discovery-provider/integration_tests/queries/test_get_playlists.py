@@ -212,7 +212,7 @@ def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
             playlists = get_playlist_tracks(
                 session,
                 {"args": {
-                "playlist_ids": ["3", "4"],
+                "playlist_ids": [3, 4],
                 "current_user_id": 3
                 }}
             )
