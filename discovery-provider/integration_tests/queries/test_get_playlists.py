@@ -3,6 +3,7 @@ import logging
 
 import pytest
 from integration_tests.utils import populate_mock_db
+from src.queries.get_playlist_tracks import get_playlist_tracks
 from src.queries.get_playlists import GetPlaylistsArgs, get_playlists
 from src.utils.db_session import get_db
 
@@ -208,10 +209,29 @@ def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
         db = get_db()
         populate_mock_db(db, test_entities)
         with db.scoped_session():
-            playlists = get_playlists(
-                GetPlaylistsArgs(
-                    current_user_id=1,
-                    playlist_ids=[3, 4],
-                ),
+            playlists = get_playlist_tracks(
+                {
+                "playlist_ids": ["3", "4"],
+                "current_user_id": 3
+                }
             )
             assert len(playlists) == 2
+            playlist_3 = playlists[0]
+            playlist_4 = playlists[1]
+
+            assert_playlist(
+                playlist=playlist_3,
+                playlist_id=3,
+                playlist_name="playlist 3",
+                playlist_owner_id=3,
+            )
+
+            assert_playlist(
+                playlist=playlist_4,
+                playlist_id=4,
+                playlist_name="playlist 4",
+                playlist_owner_id=3,
+            )
+
+
+
