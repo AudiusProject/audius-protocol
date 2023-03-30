@@ -1,5 +1,5 @@
 import { OAuth } from './oauth'
-import { TracksApi } from './api/TracksApi'
+import { TracksApi } from './api/tracks/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
 import { ChatsApi } from './api/chats/ChatsApi'
 import {
