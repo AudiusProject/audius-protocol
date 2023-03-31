@@ -25,9 +25,8 @@ import { useDispatch, useSelector } from 'react-redux'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconMessage from 'app/assets/images/iconMessage.svg'
-import IconSend from 'app/assets/images/iconSend.svg'
 import type { FlatListT } from 'app/components/core'
-import { TextInput, Screen, ScreenContent, FlatList } from 'app/components/core'
+import { Screen, ScreenContent, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
@@ -41,22 +40,21 @@ import { useThemePalette } from 'app/utils/theme'
 import type { AppTabScreenParamList } from '../app-screen'
 
 import { ChatMessageListItem } from './ChatMessageListItem'
+import { ChatTextInput } from './ChatTextInput'
 import { EmptyChatMessages } from './EmptyChatMessages'
 import { ReactionPopup } from './ReactionPopup'
 
 const { getChatMessages, getOtherChatUsers, getChat } = chatSelectors
 
-const { fetchMoreMessages, sendMessage, markChatAsRead } = chatActions
+const { fetchMoreMessages, markChatAsRead } = chatActions
 const { getUserId } = accountSelectors
+
+export const REACTION_CONTAINER_HEIGHT = 70
 
 const messages = {
   title: 'Messages',
-  startNewMessage: 'Start a New Message',
   newMessage: 'New Message'
 }
-const ICON_BLUR = 0.5
-const ICON_FOCUS = 1
-export const REACTION_CONTAINER_HEIGHT = 70
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   rootContainer: {
@@ -148,8 +146,6 @@ export const ChatScreen = () => {
   const { params } = useRoute<'Chat'>()
   const { chatId } = params
   const url = `/chat/${encodeUrlName(chatId ?? '')}`
-  const [iconOpacity, setIconOpacity] = useState(ICON_BLUR)
-  const [inputMessage, setInputMessage] = useState('')
   const [shouldShowPopup, setShouldShowPopup] = useState(false)
   const messageTop = useRef(0)
   const chatContainerBottom = useRef(0)
@@ -210,17 +206,6 @@ export const ChatScreen = () => {
         })
       ),
     [chatMessages, userIdEncoded]
-  )
-
-  const handleSubmit = useCallback(
-    (message) => {
-      if (chatId && message) {
-        dispatch(sendMessage({ chatId, message }))
-        setInputMessage('')
-        setIconOpacity(ICON_BLUR)
-      }
-    },
-    [chatId, setInputMessage, dispatch]
   )
 
   useEffect(() => {
@@ -432,33 +417,9 @@ export const ChatScreen = () => {
                 })
               }}
               ref={composeRef}
+              pointerEvents={'box-none'}
             >
-              <TextInput
-                placeholder={messages.startNewMessage}
-                Icon={() => (
-                  <IconSend
-                    width={styles.icon.width}
-                    height={styles.icon.height}
-                    opacity={iconOpacity}
-                    fill={styles.icon.fill}
-                    onPress={() => handleSubmit(inputMessage)}
-                  />
-                )}
-                styles={{
-                  root: styles.composeTextContainer,
-                  input: [
-                    styles.composeTextInput,
-                    Platform.OS === 'ios' ? { paddingBottom: spacing(1) } : null
-                  ]
-                }}
-                onChangeText={(text) => {
-                  setInputMessage(text)
-                  text ? setIconOpacity(ICON_FOCUS) : setIconOpacity(ICON_BLUR)
-                }}
-                inputAccessoryViewID='none'
-                multiline
-                value={inputMessage}
-              />
+              <ChatTextInput chatId={chatId} />
             </View>
           </KeyboardAvoidingView>
         </View>
