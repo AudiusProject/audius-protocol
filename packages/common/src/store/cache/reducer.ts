@@ -423,8 +423,12 @@ export const asCache =
   (state: any, action: { kind: any; type: string | number }) => {
     if (action.kind && action.kind !== kind) return state
 
-    const matchingReduceFunction = actionsMap[action.type]
-    if (matchingReduceFunction) return matchingReduceFunction(state, action)
+    let updatedState = state
 
-    return reducer(state, action)
+    const matchingReduceFunction = actionsMap[action.type]
+    if (matchingReduceFunction) {
+      updatedState = matchingReduceFunction(state, action)
+    }
+
+    return reducer(updatedState, action)
   }

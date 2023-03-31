@@ -5,7 +5,8 @@ import { getUser, getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 import { removeNullable, createDeepEqualSelector } from 'utils'
 
-import { ID, Status, User, UserCollection } from '../../../models'
+import { Status } from '../../../models'
+import type { ID, User, UserCollection } from '../../../models'
 
 import { initialState as initialFeedState } from './lineups/feed/reducer'
 import { PREFIX as TRACKS_PREFIX } from './lineups/tracks/actions'

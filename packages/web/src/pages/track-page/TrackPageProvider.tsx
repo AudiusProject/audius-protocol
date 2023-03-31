@@ -127,6 +127,7 @@ class TrackPageProvider extends Component<
     const params = parseTrackRoute(this.props.pathname)
     // Go to 404 if the track id isn't parsed correctly or if should redirect
     if (!params || (params.trackId && shouldRedirectTrack(params.trackId))) {
+      console.log('not found 1')
       this.props.goToRoute(NOT_FOUND_PAGE)
       return
     }
@@ -144,6 +145,7 @@ class TrackPageProvider extends Component<
       trackPermalink
     } = this.props
     if (status === Status.ERROR) {
+      console.log('not found 2')
       this.props.goToRoute(NOT_FOUND_PAGE)
     }
     if (user && user.is_deactivated) {

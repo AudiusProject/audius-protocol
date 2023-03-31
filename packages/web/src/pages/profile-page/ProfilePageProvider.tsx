@@ -950,7 +950,6 @@ function makeMapStateToProps() {
 
     return {
       account: getAccountUser(state),
-      // @ts-ignore getProfile doesn't strictly need a second arg
       profile: getProfile(state, handleLower),
       artistTracks: getProfileTracksLineup(state, handleLower),
       userFeed: getProfileFeedLineup(state, handleLower),

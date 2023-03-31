@@ -5,7 +5,6 @@ import { Kind } from 'models/Kind'
 
 import { Metadata } from './types'
 
-// TODO(nkang) - convert to TS
 export const ADD = 'CACHE/ADD'
 export const ADD_SUCCEEDED = 'CACHE/ADD_SUCCEEDED'
 export const UPDATE = 'CACHE/UPDATE'
@@ -34,12 +33,13 @@ export const add = (kind, entries, replace = false, persist = true) => ({
   persist
 })
 
-export type AddSuccededAction = {
+export type AddSuccededAction<EntryT extends Metadata = Metadata> = {
+  type: typeof ADD_SUCCEEDED
   kind: Kind
   entries: {
     id: ID
     uid: UID
-    metadata: Metadata
+    metadata: EntryT
     timestamp: number
   }[]
   // replace optionally replaces the entire entry instead of joining metadata

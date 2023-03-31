@@ -1,5 +1,5 @@
-import { Cache, Track } from '../../../models'
+import { Cache, ID, Track } from '../../../models'
 
 export interface TracksCacheState extends Cache<Track> {
-  permalinks: { [permalink: string]: { id: number } }
+  permalinks: { [permalink: string]: ID }
 }

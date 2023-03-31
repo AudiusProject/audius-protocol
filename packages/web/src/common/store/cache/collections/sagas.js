@@ -1213,15 +1213,6 @@ function* fetchRepostInfo(entries) {
 function* watchAdd() {
   yield takeEvery(cacheActions.ADD_SUCCEEDED, function* (action) {
     if (action.kind === Kind.COLLECTIONS) {
-      const collectionPermalinksToIds = {}
-      action.entries
-        .filter((entry) => !!entry.metadata.permalink)
-        .forEach((entry) => {
-          collectionPermalinksToIds[entry.metadata.permalink] = entry.id
-        })
-      yield put(
-        collectionActions.setCollectionPermalinks(collectionPermalinksToIds)
-      )
       yield fork(fetchRepostInfo, action.entries)
     }
   })

@@ -1,7 +1,6 @@
 import {
   ID,
   Kind,
-  Status,
   Track,
   TrackMetadata,
   UserTrackMetadata,
@@ -9,8 +8,8 @@ import {
   CommonState,
   getContext,
   cacheSelectors,
-  cacheTracksActions as trackActions,
-  cacheTracksSelectors
+  cacheTracksSelectors,
+  cacheTracksActions
 } from '@audius/common'
 import { call, put, select, spawn } from 'typed-redux-saga'
 
@@ -26,6 +25,7 @@ import { addUsersFromTracks } from './helpers'
 import { reformat } from './reformat'
 const { getEntryTimestamp } = cacheSelectors
 const { getTracks: getTracksSelector } = cacheTracksSelectors
+const { setPermalink } = cacheTracksActions
 const getUserId = accountSelectors.getUserId
 
 type UnlistedTrackRequest = { id: ID; url_title: string; handle: string }
@@ -101,15 +101,11 @@ export function* retrieveTrackByHandleAndSlug({
       onBeforeAddToCache: function* (tracks: TrackMetadata[]) {
         const audiusBackendInstance = yield* getContext('audiusBackendInstance')
         yield* addUsersFromTracks(tracks)
-        yield* put(
-          trackActions.setPermalinkStatus([
-            {
-              permalink,
-              id: tracks[0].track_id,
-              status: Status.SUCCESS
-            }
-          ])
-        )
+        const [track] = tracks
+        const isLegacyPermalink = track.permalink !== permalink
+        if (isLegacyPermalink) {
+          yield* put(setPermalink(permalink, track.track_id))
+        }
         return tracks.map((track) => reformat(track, audiusBackendInstance))
       }
     }

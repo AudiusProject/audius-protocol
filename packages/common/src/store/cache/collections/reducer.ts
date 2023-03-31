@@ -1,8 +1,9 @@
 import { initialCacheState } from 'store/cache/reducer'
 
-import { ID } from '../../../models'
+import { Collection, ID } from '../../../models'
+import { AddSuccededAction, ADD_SUCCEEDED } from '../actions'
 
-import { SET_COLLECTION_PERMALINKS } from './actions'
+import { SET_PERMALINK, setPermalink } from './actions'
 import { CollectionsCacheState } from './types'
 
 const initialState = {
@@ -11,16 +12,39 @@ const initialState = {
 }
 
 const actionsMap = {
-  [SET_COLLECTION_PERMALINKS](
+  [ADD_SUCCEEDED](
     state: CollectionsCacheState,
-    action: { permalinksToIds: { [permalink: string]: ID } }
+    action: AddSuccededAction<Collection>
   ) {
+    const { entries } = action
+
+    const newPermalinks: Record<string, ID> = {}
+
+    for (const entry of entries) {
+      const { playlist_id, permalink } = entry.metadata
+
+      if (permalink) {
+        newPermalinks[permalink] = playlist_id
+      }
+    }
+
     return {
       ...state,
       permalinks: {
         ...state.permalinks,
-        ...action.permalinksToIds
+        ...newPermalinks
       }
+    }
+  },
+  [SET_PERMALINK](
+    state: CollectionsCacheState,
+    action: ReturnType<typeof setPermalink>
+  ): CollectionsCacheState {
+    const { permalink, collectionId } = action
+
+    return {
+      ...state,
+      permalinks: { ...state.permalinks, [permalink]: collectionId }
     }
   }
 }
