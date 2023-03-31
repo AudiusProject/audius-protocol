@@ -775,6 +775,8 @@ func TestValidateCanChat(t *testing.T) {
 	user3Id := seededRand.Int31()
 	user4Id := seededRand.Int31()
 
+	encodedUser1, err := misc.EncodeHashId(int(user1Id))
+	assert.NoError(t, err)
 	encodedUser2, err := misc.EncodeHashId(int(user2Id))
 	assert.NoError(t, err)
 	encodedUser3, err := misc.EncodeHashId(int(user3Id))
@@ -782,12 +784,16 @@ func TestValidateCanChat(t *testing.T) {
 	encodedUser4, err := misc.EncodeHashId(int(user4Id))
 	assert.NoError(t, err)
 
-	// Create 3 users
+	// Create 4 users
 	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true), ($5, lower($6), true), ($7, lower($8), true)", user1Id, wallet1, user2Id, wallet2, user3Id, wallet3, user4Id, wallet4)
 	assert.NoError(t, err)
 
 	// user 2 follows user 1
 	_, err = tx.Exec("insert into follows (follower_user_id, followee_user_id, is_current, is_delete, created_at) values ($1, $2, true, false, now())", user2Id, user1Id)
+	assert.NoError(t, err)
+
+	// user 2 has tipped user 3
+	_, err = tx.Exec("insert into aggregate_user_tips (sender_user_id, receiver_user_id, amount) values ($1, $2, 5)", user2Id, user3Id)
 	assert.NoError(t, err)
 
 	// user 4 blocks user 1
@@ -808,7 +814,7 @@ func TestValidateCanChat(t *testing.T) {
 		IsHealthy: true,
 	}
 
-	// Test POST /validate-can-chat
+	// Test POST /validate-can-chat (with blocking + all permission types)
 	{
 		// Query /comms/validate-can-chat
 		reqUrl := fmt.Sprintf("/comms/validate-can-chat?timestamp=%d", time.Now().UnixMilli())
@@ -831,6 +837,41 @@ func TestValidateCanChat(t *testing.T) {
 			encodedUser2: true,
 			encodedUser3: false,
 			encodedUser4: false,
+		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		if assert.NoError(t, testServer.validateCanChat(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
+	}
+
+	// Test POST /validate-can-chat (subset of permission types)
+	{
+		// Query /comms/validate-can-chat
+		reqUrl := fmt.Sprintf("/comms/validate-can-chat?timestamp=%d", time.Now().UnixMilli())
+		payload := []byte(fmt.Sprintf(`{"method": "user.validate_can_chat", "params": {"receiver_user_ids": ["%s", "%s"]}}`, encodedUser1, encodedUser3))
+		req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(payload))
+		assert.NoError(t, err)
+
+		// Set sig header from user 2
+		sigBase64 := signPayload(t, payload, privateKey2)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := map[string]bool{
+			encodedUser1: true,
+			encodedUser3: true,
 		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
