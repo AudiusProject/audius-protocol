@@ -1,7 +1,6 @@
 import {
   DefaultSizes,
   Kind,
-  Status,
   accountSelectors,
   cacheActions,
   cacheUsersSelectors,
@@ -132,24 +131,6 @@ export function* fetchUserCollections(userId) {
       }
     ])
   )
-}
-
-function* watchAdd() {
-  yield takeEvery(cacheActions.ADD_SUCCEEDED, function* (action) {
-    if (action.kind === Kind.USERS) {
-      yield put(
-        userActions.setHandleStatus(
-          action.entries
-            .filter((entry) => !!entry.metadata.handle)
-            .map((entry) => ({
-              handle: entry.metadata.handle,
-              id: entry.id,
-              status: Status.SUCCESS
-            }))
-        )
-      )
-    }
-  })
 }
 
 // For updates and adds, sync the account user to local storage.
@@ -377,7 +358,6 @@ function* watchFetchUsers() {
 
 const sagas = () => {
   return [
-    watchAdd,
     watchFetchProfilePicture,
     watchFetchCoverPhoto,
     watchSyncLocalStorageUser,

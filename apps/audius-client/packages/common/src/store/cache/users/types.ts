@@ -1,5 +1,5 @@
-import { Status, Cache, User } from '../../../models'
+import { Cache, User, ID } from '../../../models'
 
 export interface UsersCacheState extends Cache<User> {
-  handles: { [handle: string]: { id: number; status: Status } }
+  handles: { [handle: string]: ID }
 }

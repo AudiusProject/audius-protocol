@@ -9,9 +9,9 @@ import {
   accountSelectors,
   cacheCollectionsSelectors,
   cacheSelectors,
-  cacheCollectionsActions as collectionActions,
   CommonState,
-  getContext
+  getContext,
+  cacheCollectionsActions
 } from '@audius/common'
 import { chunk } from 'lodash'
 import { all, call, select, put } from 'typed-redux-saga'
@@ -25,6 +25,7 @@ import { addUsersFromCollections } from './addUsersFromCollections'
 import { reformat } from './reformat'
 const { getEntryTimestamp } = cacheSelectors
 const { getCollections } = cacheCollectionsSelectors
+const { setPermalink } = cacheCollectionsActions
 const getUserId = accountSelectors.getUserId
 
 function* markCollectionDeleted(
@@ -188,20 +189,23 @@ export function* retrieveCollectionByPermalink(
 
       return metadatasWithDeleted
     },
-    onBeforeAddToCache: function* (metadatas: UserCollectionMetadata[]) {
+    onBeforeAddToCache: function* (collections: UserCollectionMetadata[]) {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      yield* addUsersFromCollections(metadatas)
-      yield* addTracksFromCollections(metadatas)
-      yield* put(
-        collectionActions.setCollectionPermalinks({
-          [permalink]: metadatas[0].playlist_id
-        })
-      )
-      if (fetchTracks) {
-        yield* call(retrieveTracksForCollections, metadatas, new Set())
+      yield* addUsersFromCollections(collections)
+      yield* addTracksFromCollections(collections)
+
+      const [collection] = collections
+
+      const isLegacyPermalink = permalink !== collection.permalink
+      if (isLegacyPermalink) {
+        yield* put(setPermalink(permalink, collection.playlist_id))
       }
 
-      const reformattedCollections = metadatas.map((c) =>
+      if (fetchTracks) {
+        yield* call(retrieveTracksForCollections, collections, new Set())
+      }
+
+      const reformattedCollections = collections.map((c) =>
         reformat(c, audiusBackendInstance)
       )
 

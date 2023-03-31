@@ -12,6 +12,7 @@ export type UserMetadata = {
   album_count: number
   artist_pick_track_id: Nullable<number>
   bio: Nullable<string>
+  blocknumber: number
   cover_photo: Nullable<CID>
   creator_node_endpoint: Nullable<string>
   current_user_followee_follow_count: number

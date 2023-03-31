@@ -39,6 +39,7 @@ export type CollectionMetadata = {
   playlist_id: ID
   cover_art: CID | null
   cover_art_sizes: Nullable<CID>
+  permalink?: string
   playlist_name: string
   playlist_owner_id: ID
   repost_count: number

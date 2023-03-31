@@ -3,7 +3,6 @@ import {
   DefaultSizes,
   SquareSizes,
   Kind,
-  Status,
   makeKindId,
   squashNewLines,
   formatUrlName,
@@ -58,17 +57,6 @@ function* fetchRepostInfo(entries) {
 function* watchAdd() {
   yield takeEvery(cacheActions.ADD_SUCCEEDED, function* (action) {
     if (action.kind === Kind.TRACKS) {
-      yield put(
-        trackActions.setPermalinkStatus(
-          action.entries
-            .filter((entry) => !!entry.metadata.permalink)
-            .map((entry) => ({
-              permalink: entry.metadata.permalink,
-              id: entry.id,
-              status: Status.SUCCESS
-            }))
-        )
-      )
       const isNativeMobile = yield getContext('isNativeMobile')
       if (!isNativeMobile) {
         yield fork(fetchRepostInfo, action.entries)
