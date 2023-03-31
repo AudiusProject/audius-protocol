@@ -53,17 +53,20 @@ export const usePremiumContentAccessMap = (tracks: Partial<Track>[]) => {
   const user = useSelector(getAccountUser)
 
   const result = useMemo(() => {
-    let map: {[id: ID]: { isUserAccessTBD: boolean, doesUserHaveAccess: boolean }} = {}
+    const map: {
+      [id: ID]: { isUserAccessTBD: boolean; doesUserHaveAccess: boolean }
+    } = {}
 
-    tracks.forEach(track => {
+    tracks.forEach((track) => {
       if (!track.track_id) {
         return
       }
 
       const trackId = track.track_id
       const isPremium = track.is_premium
-      const hasPremiumContentSignature =
-        !!(track.premium_content_signature || premiumTrackSignatureMap[trackId])
+      const hasPremiumContentSignature = !!(
+        track.premium_content_signature || premiumTrackSignatureMap[trackId]
+      )
       const isCollectibleGated = !!track.premium_conditions?.nft_collection
       const isSignatureToBeFetched =
         isCollectibleGated &&

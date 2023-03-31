@@ -7,12 +7,16 @@ type PremiumContentState = {
   premiumTrackSignatureMap: { [id: ID]: Nullable<PremiumContentSignature> }
   statusMap: { [id: ID]: PremiumTrackStatus }
   lockedContentId: Nullable<ID>
+  followeeIds: ID[]
+  tippedUserIds: ID[]
 }
 
 const initialState: PremiumContentState = {
   premiumTrackSignatureMap: {},
   statusMap: {},
-  lockedContentId: null
+  lockedContentId: null,
+  followeeIds: [],
+  tippedUserIds: []
 }
 
 type UpdatePremiumContentSignaturesPayload = {
@@ -32,7 +36,7 @@ type UpdatePremiumTrackStatusesPayload = {
   [id: ID]: PremiumTrackStatus
 }
 
-type SetLockedContentIdPayload = {
+type IdPayload = {
   id: ID
 }
 
@@ -72,14 +76,27 @@ const slice = createSlice({
         ...action.payload
       }
     },
-    setLockedContentId: (
-      state,
-      action: PayloadAction<SetLockedContentIdPayload>
-    ) => {
+    setLockedContentId: (state, action: PayloadAction<IdPayload>) => {
       state.lockedContentId = action.payload.id
     },
     resetLockedContentId: (state) => {
       state.lockedContentId = null
+    },
+    addFolloweeId: (state, action: PayloadAction<IdPayload>) => {
+      state.followeeIds.push(action.payload.id)
+    },
+    removeFolloweeId: (state, action: PayloadAction<IdPayload>) => {
+      state.followeeIds = state.followeeIds.filter(
+        (id) => id !== action.payload.id
+      )
+    },
+    addTippedUserId: (state, action: PayloadAction<IdPayload>) => {
+      state.tippedUserIds.push(action.payload.id)
+    },
+    removeTippedUserId: (state, action: PayloadAction<IdPayload>) => {
+      state.tippedUserIds = state.tippedUserIds.filter(
+        (id) => id !== action.payload.id
+      )
     }
   }
 })
@@ -90,7 +107,11 @@ export const {
   updatePremiumTrackStatus,
   updatePremiumTrackStatuses,
   setLockedContentId,
-  resetLockedContentId
+  resetLockedContentId,
+  addFolloweeId,
+  removeFolloweeId,
+  addTippedUserId,
+  removeTippedUserId
 } = slice.actions
 
 export const reducer = slice.reducer
