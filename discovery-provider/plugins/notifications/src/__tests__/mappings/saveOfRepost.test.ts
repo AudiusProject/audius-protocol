@@ -87,20 +87,14 @@ describe('Save Of Repost Notification', () => {
 
   test('Process push notification for save of repost track', async () => {
     await setUpSaveOfRepostMockData(EntityType.Track)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 50))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
+    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -117,25 +111,19 @@ describe('Save Of Repost Notification', () => {
           entityId: 10
         }
       }
-    )
+    ])
   })
 
   test('Process push notification for save of repost playlist', async () => {
     await setUpSaveOfRepostMockData(EntityType.Playlist)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 50))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
+    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -148,29 +136,23 @@ describe('Save Of Repost Notification', () => {
           id: 'timestamp:1589373217:group_id:save_of_repost:10:type:playlist',
           type: 'FavoriteOfRepost',
           userIds: [3],
-          entityType: 'Track',
+          entityType: 'Playlist',
           entityId: 10
         }
       }
-    )
+    ])
   })
 
   test('Process push notification for save of repost for album', async () => {
     await setUpSaveOfRepostMockData(EntityType.Album)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
+    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -183,23 +165,17 @@ describe('Save Of Repost Notification', () => {
           id: 'timestamp:1589373217:group_id:save_of_repost:10:type:album',
           type: 'FavoriteOfRepost',
           userIds: [3],
-          entityType: 'Track',
+          entityType: 'Album',
           entityId: 10
         }
       }
-    )
+    ])
   })
 
   test('Render a single email', async () => {
     setUpSaveOfRepostMockData(EntityType.Playlist)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
 
     const notifications: AppEmailNotification[] = [
