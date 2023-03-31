@@ -21,7 +21,7 @@ import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import type { EthContracts } from '../ethContracts'
 import type { Web3Manager } from '../web3Manager'
 import { HealthCheckStatus } from '../../sdk/services/DiscoveryNodeSelector/healthCheckTypes'
-import type { AudiusSdk } from '../../sdk/sdk'
+import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
@@ -62,7 +62,7 @@ export type DiscoveryProviderConfig = {
   selectionRequestRetries?: number
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
-  audiusSdk?: AudiusSdk
+  discoveryNodeSelector?: DiscoveryNodeSelector
 } & Pick<
   DiscoveryProviderSelectionConfig,
   'selectionCallback' | 'monitoringCallbacks' | 'localStorage'
@@ -117,8 +117,8 @@ export class DiscoveryProvider {
 
   discoveryProviderEndpoint: string | undefined
   isInitialized = false
-  audiusSdk?: AudiusSdk
-  discoveryNodeMiddleware: any
+  discoveryNodeSelector?: DiscoveryNodeSelector
+  discoveryNodeMiddleware?: Middleware
 
   constructor({
     whitelist,
@@ -134,7 +134,7 @@ export class DiscoveryProvider {
     localStorage,
     unhealthySlotDiffPlays,
     unhealthyBlockDiff,
-    audiusSdk
+    discoveryNodeSelector
   }: DiscoveryProviderConfig) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -169,19 +169,20 @@ export class DiscoveryProvider {
     this.maxRequestsForTrue404 = MAX_MAKE_REQUEST_RETRIES_WITH_404
 
     this.monitoringCallbacks = monitoringCallbacks
-
-    this.audiusSdk = audiusSdk
+    this.discoveryNodeSelector = discoveryNodeSelector
+    this.discoveryNodeMiddleware = discoveryNodeSelector?.createMiddleware()
   }
 
   async init() {
-    if (this.audiusSdk) {
-      const { discoveryNodeSelector } = this.audiusSdk.services
+    if (this.discoveryNodeSelector) {
+      this.discoveryNodeSelector.addEventListener(
+        'change',
+        (endpoint: string) => {
+          this.setEndpoint(endpoint)
+        }
+      )
 
-      discoveryNodeSelector.addEventListener('change', (endpoint: string) => {
-        this.setEndpoint(endpoint)
-      })
-
-      const endpoint = await discoveryNodeSelector.getSelectedEndpoint()
+      const endpoint = await this.discoveryNodeSelector.getSelectedEndpoint()
       if (endpoint) {
         this.setEndpoint(endpoint)
       }
@@ -189,15 +190,19 @@ export class DiscoveryProvider {
       // Need this for backwards compat
       const endpoint = await this.serviceSelector.select()
       this.setEndpoint(endpoint)
+    }
 
-      if (endpoint && this.web3Manager && this.web3Manager.web3) {
-        // Set current user if it exists
-        const userAccount = await this.getUserAccount(
-          this.web3Manager.getWalletAddress()
-        )
-        if (userAccount) {
-          await this.userStateManager.setCurrentUser(userAccount)
-        }
+    if (
+      this.discoveryProviderEndpoint &&
+      this.web3Manager &&
+      this.web3Manager.web3
+    ) {
+      // Set current user if it exists
+      const userAccount = await this.getUserAccount(
+        this.web3Manager.getWalletAddress()
+      )
+      if (userAccount) {
+        await this.userStateManager.setCurrentUser(userAccount)
       }
     }
   }
@@ -1245,8 +1250,11 @@ export class DiscoveryProvider {
     throwError = false,
     blockNumber?: number
   ) {
-    if (this.audiusSdk) {
-      return await this._makeRequestInternal1<Response>(requestObj, throwError)
+    if (this.discoveryNodeSelector) {
+      return await this._makeRequestInternalNext<Response>(
+        requestObj,
+        throwError
+      )
     }
 
     return await this._makeRequestInternalLegacy<Response>(
@@ -1404,59 +1412,61 @@ export class DiscoveryProvider {
     return parsedResponse
   }
 
-  async _makeRequestInternal1<Response>(
+  async _makeRequestInternalNext<Response>(
     requestObj: Record<string, unknown>,
     throwError = false
   ) {
-    let parsedResponse: DiscoveryResponse<Response>
+    if (!this.discoveryProviderEndpoint || !this.discoveryNodeMiddleware) return
 
-    if (!this.discoveryProviderEndpoint || !this.audiusSdk) return
+    const axiosRequest = this._createDiscProvRequest(
+      requestObj as RequestParams,
+      this.discoveryProviderEndpoint
+    )
+
+    const { data, url = '', ...restRequest } = axiosRequest
+
+    const fetchRequestInit: RequestInit = { body: data, ...restRequest }
+    let fetchParams = { url, init: fetchRequestInit }
+
+    fetchParams =
+      (await this.discoveryNodeMiddleware.pre?.({ fetch, ...fetchParams })) ??
+      fetchParams
+    let response: globalThis.Response | undefined
 
     try {
-      parsedResponse = await this._performRequestWithMonitoring(
-        requestObj as RequestParams,
-        this.discoveryProviderEndpoint
-      )
+      response = await fetch(fetchParams.url, fetchParams.init)
+    } catch (error) {
+      response =
+        (await this.discoveryNodeMiddleware.onError?.({
+          fetch,
+          ...fetchParams,
+          error,
+          response: response ? response.clone() : undefined
+        })) ?? response
 
-      const { health, reason } = this.parseApiHealthStatusReason(parsedResponse)
-
-      const { latest_chain_block, latest_indexed_block, version } =
-        parsedResponse
-
-      const blockDifference = latest_chain_block - latest_indexed_block
-
-      const newEndpoint =
-        await this.audiusSdk.services.discoveryNodeSelector.reselectIfNecessary(
-          {
-            endpoint: this.discoveryProviderEndpoint,
-            health,
-            reason,
-            data: {
-              block_difference: blockDifference,
-              version: version.version
-            }
+      if (response === undefined) {
+        if (throwError) {
+          if (error instanceof Error) {
+            throw new FetchError(
+              error,
+              'The request failed and the interceptors did not return an alternative response'
+            )
+          } else {
+            throw error
           }
-        )
-
-      if (newEndpoint && newEndpoint !== this.discoveryProviderEndpoint) {
-        this.setEndpoint(newEndpoint)
-        parsedResponse = await this._performRequestWithMonitoring(
-          requestObj as RequestParams,
-          newEndpoint
-        )
+        }
+        return null
       }
-
-      // const response = await this.discoveryNodeMiddleware({response: parsedResponse, })
-      // TODO call post middleware
-    } catch (e) {
-      if (throwError) {
-        // eslint-disable-next-line @typescript-eslint/no-throw-literal
-        throw e
-      }
-      return null
     }
-    // Everything looks good, return the data!
-    return parsedResponse
+
+    response =
+      (await this.discoveryNodeMiddleware.post?.({
+        fetch,
+        ...fetchParams,
+        response
+      })) ?? response
+
+    return response as unknown as DiscoveryResponse<Response>
   }
 
   parseApiHealthStatusReason = (response: DiscoveryResponse<unknown>) => {

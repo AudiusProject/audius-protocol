@@ -43,7 +43,6 @@ import { getPlatformLocalStorage, LocalStorage } from './utils/localStorage'
 import type { BaseConstructorArgs } from './api/base'
 import type { MonitoringCallbacks } from './services/types'
 import { EntityManager } from './api/entityManager'
-import type { AudiusSdk } from './sdk/sdk'
 
 type LibsIdentityServiceConfig = {
   url: string
@@ -72,7 +71,6 @@ type LibsComstockConfig = {
 }
 
 type AudiusLibsConfig = {
-  audiusSdk?: AudiusSdk
   web3Config: Web3Config
   ethWeb3Config: EthWeb3Config
   solanaWeb3Config: SolanaWeb3Config
@@ -340,7 +338,6 @@ export class AudiusLibs {
   preferHigherPatchForPrimary: boolean
   preferHigherPatchForSecondaries: boolean
   localStorage: LocalStorage
-  audiusSdk?: AudiusSdk
 
   /**
    * Constructs an Audius Libs instance with configs.
@@ -353,7 +350,6 @@ export class AudiusLibs {
    *  await audius.init()
    */
   constructor({
-    audiusSdk,
     web3Config,
     ethWeb3Config,
     solanaWeb3Config,
@@ -372,7 +368,6 @@ export class AudiusLibs {
   }: AudiusLibsConfig) {
     // set version
 
-    this.audiusSdk = audiusSdk
     this.version = version
 
     this.ethWeb3Config = ethWeb3Config
@@ -544,8 +539,7 @@ export class AudiusLibs {
         ethContracts: this.ethContracts,
         web3Manager: this.web3Manager,
         localStorage: this.localStorage,
-        ...this.discoveryProviderConfig,
-        audiusSdk: this.audiusSdk
+        ...this.discoveryProviderConfig
       })
       await this.discoveryProvider.init()
     }
