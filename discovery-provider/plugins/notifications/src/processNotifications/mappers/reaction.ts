@@ -85,7 +85,11 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
               body: `${capitalize(
                 reactingUserName
               )} reacted to your tip of ${tipAmount} $AUDIO`,
-              data: {}
+              data: {
+                entityId: this.receiverUserId,
+                type: 'Reaction',
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+              }
             }
           )
         })

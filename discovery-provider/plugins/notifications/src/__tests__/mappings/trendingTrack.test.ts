@@ -45,7 +45,7 @@ describe('Trending Track Notification', () => {
       group_id:
         'trending:time_range:week:genre:all:rank:3:track_id:10:timestamp:1677261600',
       type: 'trending',
-      timestamp: new Date(),
+      timestamp: new Date(Date.now()),
       data: { rank: 3, genre: 'all', track_id: 10, time_range: 'week' },
       user_ids: [1]
     }
@@ -78,7 +78,11 @@ describe('Trending Track Notification', () => {
       {
         title: "📈 You're Trending",
         body: 'track_title_10 is #3 on Trending right now!',
-        data: {}
+        data: {
+          "entityId": 10,
+          "id": "timestamp:1589373217:group_id:trending:time_range:week:genre:all:rank:3:track_id:10:timestamp:1677261600",
+          "type": "TrendingTrack",
+        }
       }
     )
   })

@@ -110,6 +110,20 @@ def populate_tracks(db):
                 "release_date": "Wed Dec 25 2019 12:00:00 GMT-0800",
                 "created_at": datetime(2020, 5, 17),
             },
+            {
+                "track_id": 15,
+                "title": "track 15",
+                "owner_id": 1287289,
+                "release_date": "",
+                "created_at": datetime(2017, 5, 19, 1),
+            },
+            {
+                "track_id": 16,
+                "title": "track 16",
+                "owner_id": 1287289,
+                "release_date": "Fri May 19 2017 12:00:00 GMT-0800",
+                "created_at": datetime(2017, 5, 19, 10),
+            },
         ],
         "track_routes": [
             {"slug": "track-1", "owner_id": 1287289},
@@ -158,12 +172,17 @@ def test_get_tracks_by_date(app):
             session, {"user_id": 1287289, "offset": 0, "limit": 10, "sort": "date"}
         )
 
-        assert len(tracks) == 5
+        assert len(tracks) == 7
         assert tracks[0]["track_id"] == 1
         assert tracks[1]["track_id"] == 3
         assert tracks[2]["track_id"] == 5
         assert tracks[3]["track_id"] == 4
         assert tracks[4]["track_id"] == 2
+
+        # tracks created on the same day, with one missing 'release_date`
+        # should fall back to sorting by id
+        assert tracks[5]["track_id"] == 16
+        assert tracks[6]["track_id"] == 15
 
         assert tracks[0]["permalink"] == "/some-test-user/track-1"
         assert tracks[4]["permalink"] == "/some-test-user/track-2"
@@ -209,7 +228,7 @@ def test_get_tracks_by_date_authed(app):
             },
         )
 
-        assert len(tracks) == 6
+        assert len(tracks) == 8
         assert tracks[0]["track_id"] == 1
         assert tracks[1]["track_id"] == 11
         assert tracks[2]["track_id"] == 3

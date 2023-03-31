@@ -78,7 +78,10 @@ describe('Create Notification', () => {
       {
         title: 'New Artist Update',
         body: `user_1 released a new track`,
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:create:track:user_id:1",
+          "type": "UserSubscription",
+        }
       }
     )
   })
@@ -168,7 +171,10 @@ describe('Create Notification', () => {
       {
         title: 'New Artist Update',
         body: 'user_1 released a new playlist I am a playlist',
-        data: {}
+        data: {
+          "type": "UserSubscription",
+          "id": "timestamp:1589373217:group_id:create:playlist_id:10",
+        }
       }
     )
   })
@@ -250,7 +256,10 @@ describe('Create Notification', () => {
       {
         title: 'New Artist Update',
         body: 'user_1 released a new album I am an album',
-        data: {}
+        data: {
+          "type": "UserSubscription",
+          "id": "timestamp:1589373217:group_id:create:playlist_id:10",
+        }
       }
     )
   })

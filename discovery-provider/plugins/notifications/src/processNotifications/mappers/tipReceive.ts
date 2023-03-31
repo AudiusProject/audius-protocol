@@ -78,7 +78,11 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
               body: `${capitalize(
                 sendingUserName
               )} sent you a tip of ${tipAmount} $AUDIO`,
-              data: {}
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                type: 'TipReceive',
+                entityId: this.senderUserId
+              }
             }
           )
         })

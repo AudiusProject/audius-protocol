@@ -144,3 +144,5 @@ const initializeApis = ({
     chats
   }
 }
+
+export type AudiusSdk = ReturnType<typeof sdk>

@@ -5,6 +5,7 @@ import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { capitalize } from 'lodash'
 
 type RepostOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostOfRepostNotification
@@ -56,6 +57,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
     const reposterUserName = users[this.repostOfRepostUserId]?.name
     let entityType
     let entityName
+    const entityId = this.repostOfRepostItemId
 
     if (this.repostOfRepostType === EntityType.Track) {
       const res: Array<{ track_id: number; title: string }> = await this.dnDB
@@ -115,7 +117,13 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
               {
                 title: 'New Repost',
                 body: `${reposterUserName} reposted your repost of ${entityName}`,
-                data: {}
+                data: {
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  userIds: [this.repostOfRepostUserId],
+                  type: 'RepostOfRepost',
+                  entityType: capitalize(entityType),
+                  entityId
+                }
               }
             )
           })

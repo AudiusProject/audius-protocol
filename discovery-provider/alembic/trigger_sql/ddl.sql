@@ -12,3 +12,23 @@ begin;
     alter table users
     add column if not exists is_available boolean not null default true;
 commit;
+
+-- 3/29/23: define `to_timestamp_safe`
+begin;
+  CREATE OR REPLACE FUNCTION to_timestamp_safe(p_timestamp VARCHAR, p_format VARCHAR)
+  RETURNS TIMESTAMP
+  LANGUAGE plpgsql
+  as $$
+  DECLARE
+      ret_timestamp TIMESTAMP;
+  BEGIN
+      IF p_timestamp = '' THEN
+          RETURN NULL;
+      END IF;
+      RETURN to_timestamp( p_timestamp, p_format );
+  EXCEPTION
+  WHEN others THEN
+      RETURN null;
+  END;
+  $$;
+commit;

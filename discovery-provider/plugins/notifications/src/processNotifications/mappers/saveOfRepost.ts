@@ -5,6 +5,7 @@ import { BaseNotification, Device, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { capitalize } from 'lodash'
 
 type SaveOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveOfRepostNotification
@@ -56,6 +57,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
     const saveOfRepostUserName = users[this.saveOfRepostUserId]?.name
     let entityType
     let entityName
+    const entityId = this.saveOfRepostItemId
 
     if (this.saveOfRepostType === EntityType.Track) {
       const res: Array<{ track_id: number; title: string }> = await this.dnDB
@@ -115,7 +117,13 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
               {
                 title: 'New Favorite',
                 body: `${saveOfRepostUserName} favorited your repost of ${entityName}`,
-                data: {}
+                data: {
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  userIds: [this.saveOfRepostUserId],
+                  type: 'FavoriteOfRepost',
+                  entityId,
+                  entityType: capitalize(entityType)
+                }
               }
             )
           })
