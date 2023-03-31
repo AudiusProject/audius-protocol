@@ -13,9 +13,9 @@ import { EntityType } from '../../email/notifications/types'
 
 type MilestoneRow = Omit<NotificationRow, 'data'> & {
   data:
-    | FollowerMilestoneNotification
-    | TrackMilestoneNotification
-    | PlaylistMilestoneNotification
+  | FollowerMilestoneNotification
+  | TrackMilestoneNotification
+  | PlaylistMilestoneNotification
 }
 
 export class Milestone extends BaseNotification<MilestoneRow> {
@@ -48,13 +48,11 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     } else if (this.type === MilestoneType.TRACK_SAVE_COUNT) {
       return `Your track ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
     } else if (this.type === MilestoneType.PLAYLIST_REPOST_COUNT) {
-      return `Your ${
-        isAlbum ? 'album' : 'playlist'
-      } ${entityName} has reached over ${this.threshold.toLocaleString()} reposts`
+      return `Your ${isAlbum ? 'album' : 'playlist'
+        } ${entityName} has reached over ${this.threshold.toLocaleString()} reposts`
     } else if (this.type === MilestoneType.PLAYLIST_SAVE_COUNT) {
-      return `Your ${
-        isAlbum ? 'album' : 'playlist'
-      } ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
+      return `Your ${isAlbum ? 'album' : 'playlist'
+        } ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
     }
   }
 
@@ -150,7 +148,10 @@ export class Milestone extends BaseNotification<MilestoneRow> {
             {
               title: 'Congratulations! 🎉',
               body: this.getPushBodyText(entityName, isAlbum),
-              data: {}
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                ...this.getPushData()
+              }
             }
           )
         })
@@ -159,6 +160,23 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     }
     if (userNotifications.email) {
       // TODO: Send out email
+    }
+  }
+
+  getPushData() {
+    switch (this.type) {
+      case MilestoneType.FOLLOWER_COUNT:
+        return { type: 'MilestoneFollow', initiator: this.receiverUserId }
+      case MilestoneType.LISTEN_COUNT:
+        return { type: 'MilestoneListen', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Track' }] }
+      case MilestoneType.PLAYLIST_REPOST_COUNT:
+        return { type: 'MilestoneRepost', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Collection' }] }
+      case MilestoneType.TRACK_REPOST_COUNT:
+        return { type: 'MilestoneRepost', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Track' }] }
+      case MilestoneType.PLAYLIST_SAVE_COUNT:
+        return { type: 'MilestoneFavorite', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Collection' }] }
+      case MilestoneType.TRACK_SAVE_COUNT:
+        return { type: 'MilestoneFavorite', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Track' }] }
     }
   }
 

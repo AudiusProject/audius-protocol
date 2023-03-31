@@ -51,7 +51,7 @@ describe('Announcement Notification', () => {
         group_id: 'announcement:blocknumber:1',
         type: 'announcement',
         blocknumber: 2,
-        timestamp: new Date(),
+        timestamp: new Date(Date.now()),
         data: {
           title: 'This is an announcement',
           short_description:
@@ -75,7 +75,10 @@ describe('Announcement Notification', () => {
       {
         title: 'This is an announcement',
         body: 'This is some information about the announcement we need to display',
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:announcement:blocknumber:1",
+          "type": "Announcement",
+        }
       }
     )
   })

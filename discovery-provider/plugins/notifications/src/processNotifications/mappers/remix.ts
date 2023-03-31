@@ -96,7 +96,13 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
             {
               title: 'New Remix Of Your Track ♻️',
               body: `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`,
-              data: {}
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
+                type: 'RemixCreate',
+                childTrackId: this.trackId
+              }
             }
           )
         })

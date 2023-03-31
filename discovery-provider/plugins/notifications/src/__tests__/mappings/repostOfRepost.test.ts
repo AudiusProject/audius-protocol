@@ -48,7 +48,7 @@ describe('Repost Of Repost Notification', () => {
         break
       case EntityType.Album:
         await createPlaylists(processor.discoveryDB, [
-          { playlist_id: 10, playlist_owner_id: 1 }
+          { playlist_id: 10, playlist_owner_id: 1, is_album: true }
         ])
         break
       default:
@@ -70,7 +70,8 @@ describe('Repost Of Repost Notification', () => {
       {
         user_id: 2,
         repost_item_id: 10,
-        repost_type: entityType
+        repost_type: entityType,
+        created_at: new Date(Date.now() - 10)
       }
     ])
     await createReposts(processor.discoveryDB, [
@@ -85,20 +86,14 @@ describe('Repost Of Repost Notification', () => {
 
   test('Process push notification for repost of repost track', async () => {
     await setUpRepostOfRepostMockData(EntityType.Track)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
+    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -107,27 +102,27 @@ describe('Repost Of Repost Notification', () => {
       {
         title: 'New Repost',
         body: 'user_3 reposted your repost of track_title_10',
-        data: {}
+        data: {
+          id: 'timestamp:1589373217:group_id:repost_of_repost:10:type:track',
+          type: 'RepostOfRepost',
+          entityType: 'Track',
+          entityId: 10,
+          userIds: [3]
+        }
       }
-    )
+    ])
   })
 
   test('Process push notification for repost of repost playlist', async () => {
     await setUpRepostOfRepostMockData(EntityType.Playlist)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
+    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -136,27 +131,27 @@ describe('Repost Of Repost Notification', () => {
       {
         title: 'New Repost',
         body: 'user_3 reposted your repost of playlist_name_10',
-        data: {}
+        data: {
+          id: 'timestamp:1589373217:group_id:repost_of_repost:10:type:playlist',
+          type: 'RepostOfRepost',
+          userIds: [3],
+          entityType: 'Playlist',
+          entityId: 10
+        }
       }
-    )
+    ])
   })
 
   test('Process push notification for repost of album', async () => {
     await setUpRepostOfRepostMockData(EntityType.Album)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
+    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -165,21 +160,21 @@ describe('Repost Of Repost Notification', () => {
       {
         title: 'New Repost',
         body: 'user_3 reposted your repost of playlist_name_10',
-        data: {}
+        data: {
+          id: 'timestamp:1589373217:group_id:repost_of_repost:10:type:album',
+          type: 'RepostOfRepost',
+          userIds: [3],
+          entityType: 'Album',
+          entityId: 10
+        }
       }
-    )
+    ])
   })
 
   test('Render a single email', async () => {
     await setUpRepostOfRepostMockData(EntityType.Playlist)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
 
     const notifications: AppEmailNotification[] = [

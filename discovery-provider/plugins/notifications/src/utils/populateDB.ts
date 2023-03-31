@@ -1,5 +1,5 @@
 import { Knex } from 'knex'
-import { EmailFrequency } from '../processNotifications/mappers/base'
+import { BaseNotification, EmailFrequency } from '../processNotifications/mappers/base'
 import {
   RepostRow,
   FollowRow,
@@ -134,8 +134,8 @@ export const createTracks = async (db: Knex, tracks: CreateTrack[]) => {
         is_current: true,
         is_unlisted: false,
         is_available: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        created_at: new Date(Date.now()),
+        updated_at: new Date(Date.now()),
         title: `track_title_${track.track_id}`,
         track_segments: [],
         ...track
@@ -172,8 +172,8 @@ export const createPlaylists = async (
         is_private: false,
         is_current: true,
         is_album: false,
-        created_at: new Date(),
-        updated_at: new Date(),
+        created_at: new Date(Date.now()),
+        updated_at: new Date(Date.now()),
         playlist_name: `playlist_name_${playlist.playlist_id}`,
         description: `description_${playlist.playlist_id}`,
         playlist_contents: [],
@@ -207,6 +207,7 @@ export const createUserTip = async (db: Knex, userTips: CreateUserTip[]) => {
         amount: '1' + '00000000',
         signature: `sig_${userTip.sender_user_id}_${userTip.receiver_user_id}`,
         slot: 1,
+        created_at: new Date(Date.now()),
         ...userTip
       }))
     )
@@ -223,7 +224,7 @@ export const createReaction = async (db: Knex, reactions: CreateReaction[]) => {
     .insert(
       reactions.map((reaction) => ({
         slot: 1,
-        timestamp: new Date(),
+        timestamp: new Date(Date.now()),
         ...reaction
       }))
     )
@@ -270,8 +271,8 @@ export const createUsers = async (db: Knex, users: CreateUser[]) => {
     .insert(
       users.map((user) => ({
         is_current: true,
-        created_at: new Date(),
-        updated_at: new Date(),
+        created_at: new Date(Date.now()),
+        updated_at: new Date(Date.now()),
         name: `user_${user.user_id}`,
         handle: `handle_${user.user_id}`,
         wallet: `0x${user.user_id}`,
@@ -294,7 +295,7 @@ export const createReposts = async (db: Knex, reposts: CreateRepost[]) => {
       reposts.map((repost) => ({
         is_delete: false,
         is_current: true,
-        created_at: new Date(),
+        created_at: new Date(Date.now()),
         ...repost
       }))
     )
@@ -309,7 +310,7 @@ export const createSaves = async (db: Knex, saves: CreateSave[]) => {
       saves.map((save) => ({
         is_delete: false,
         is_current: true,
-        created_at: new Date(),
+        created_at: new Date(Date.now()),
         ...save
       }))
     )
@@ -324,7 +325,7 @@ export const insertFollows = async (db: Knex, follows: CreateFollow[]) => {
       follows.map((follow) => ({
         is_delete: false,
         is_current: true,
-        created_at: new Date(),
+        created_at: new Date(Date.now()),
         ...follow
       }))
     )
@@ -340,7 +341,7 @@ export const createUserBank = async (db: Knex, userBanks: CreateUserBank[]) => {
   await db
     .insert(
       userBanks.map((userBlock) => ({
-        created_at: new Date(),
+        created_at: new Date(Date.now()),
         ...userBlock
       }))
     )
@@ -352,7 +353,7 @@ export const createUserBankTx = async (db: Knex, txs: CreateUserBankTx[]) => {
   await db
     .insert(
       txs.map((tx) => ({
-        created_at: new Date(),
+        created_at: new Date(Date.now()),
         ...tx
       }))
     )
@@ -387,7 +388,7 @@ export const createRewardManagerTx = async (
   await db
     .insert(
       rewards.map((reward) => ({
-        created_at: new Date(),
+        created_at: new Date(Date.now()),
         ...reward
       }))
     )
@@ -420,7 +421,10 @@ export const insertNotifications = async (
   db: Knex,
   notifications: CreateNotificationRow[]
 ) => {
-  await db.insert(notifications).into('notification')
+  await db.insert(notifications.map(n => ({
+    timestamp: new Date(Date.now()),
+    ...n
+  }))).into('notification')
 }
 
 type CreateNotificationEmail = Pick<
@@ -449,9 +453,9 @@ export const setUserEmailAndSettings = async (
   userId: number
 ): Promise<IdentityUserRow> => {
   const user = {
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    lastSeenDate: new Date(),
+    createdAt: new Date(Date.now()),
+    updatedAt: new Date(Date.now()),
+    lastSeenDate: new Date(Date.now()),
     handle: `user_${userId}`,
     email: `user_${userId}@gmail.com`,
     blockchainUserId: userId
@@ -459,8 +463,8 @@ export const setUserEmailAndSettings = async (
   await db.insert(user).into('Users')
   await db
     .insert({
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      createdAt: new Date(Date.now()),
+      updatedAt: new Date(Date.now()),
       userId: userId,
       emailFrequency: frequency
     })

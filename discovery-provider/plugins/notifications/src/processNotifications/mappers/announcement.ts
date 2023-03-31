@@ -63,7 +63,10 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
               {
                 title: this.notification.data.title,
                 body: this.notification.data.short_description,
-                data: {}
+                data: {
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  type: 'Announcement'
+                }
               }
             )
           })

@@ -74,7 +74,11 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
               {
                 title: 'Follow',
                 body: `${users[this.followerUserId].name} followed you`,
-                data: {}
+                data: {
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  userIds: [this.followerUserId],
+                  type: 'Follow'
+                }
               }
             )
           })

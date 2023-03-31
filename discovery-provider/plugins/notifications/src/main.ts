@@ -89,17 +89,17 @@ export class Processor {
 
       // NOTE: Temp to test DM email notifs in staging
       // TODO run job for all email frequencies
-      if (
-        !this.lastDailyEmailSent ||
-        this.lastDailyEmailSent < moment.utc().subtract(1, 'days')
-      ) {
-        await processEmailNotifications(
-          this.discoveryDB,
-          this.identityDB,
-          'daily'
-        )
-        this.lastDailyEmailSent = moment.utc()
-      }
+      // if (
+      //   !this.lastDailyEmailSent ||
+      //   this.lastDailyEmailSent < moment.utc().subtract(1, 'days')
+      // ) {
+      //   await processEmailNotifications(
+      //     this.discoveryDB,
+      //     this.identityDB,
+      //     'daily'
+      //   )
+      //   this.lastDailyEmailSent = moment.utc()
+      // }
 
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))

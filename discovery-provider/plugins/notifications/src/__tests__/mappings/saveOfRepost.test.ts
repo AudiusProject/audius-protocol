@@ -71,7 +71,8 @@ describe('Save Of Repost Notification', () => {
       {
         user_id: 2,
         repost_item_id: 10,
-        repost_type: entityType
+        repost_type: entityType,
+        created_at: new Date(Date.now() - 10)
       }
     ])
     await createSaves(processor.discoveryDB, [
@@ -86,20 +87,14 @@ describe('Save Of Repost Notification', () => {
 
   test('Process push notification for save of repost track', async () => {
     await setUpSaveOfRepostMockData(EntityType.Track)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 50))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
+    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -108,27 +103,27 @@ describe('Save Of Repost Notification', () => {
       {
         title: 'New Favorite',
         body: 'user_3 favorited your repost of track_title_10',
-        data: {}
+        data: {
+          id: 'timestamp:1589373217:group_id:save_of_repost:10:type:track',
+          type: 'FavoriteOfRepost',
+          userIds: [3],
+          entityType: 'Track',
+          entityId: 10
+        }
       }
-    )
+    ])
   })
 
   test('Process push notification for save of repost playlist', async () => {
     await setUpSaveOfRepostMockData(EntityType.Playlist)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 50))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
+    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -137,27 +132,27 @@ describe('Save Of Repost Notification', () => {
       {
         title: 'New Favorite',
         body: 'user_3 favorited your repost of playlist_name_10',
-        data: {}
+        data: {
+          id: 'timestamp:1589373217:group_id:save_of_repost:10:type:playlist',
+          type: 'FavoriteOfRepost',
+          userIds: [3],
+          entityType: 'Playlist',
+          entityId: 10
+        }
       }
-    )
+    ])
   })
 
   test('Process push notification for save of repost for album', async () => {
     await setUpSaveOfRepostMockData(EntityType.Album)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy).toHaveBeenLastCalledWith(
+    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -166,21 +161,21 @@ describe('Save Of Repost Notification', () => {
       {
         title: 'New Favorite',
         body: 'user_3 favorited your repost of playlist_name_10',
-        data: {}
+        data: {
+          id: 'timestamp:1589373217:group_id:save_of_repost:10:type:album',
+          type: 'FavoriteOfRepost',
+          userIds: [3],
+          entityType: 'Album',
+          entityId: 10
+        }
       }
-    )
+    ])
   })
 
   test('Render a single email', async () => {
     setUpSaveOfRepostMockData(EntityType.Playlist)
-    await insertMobileSettings(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
-    await insertMobileDevices(processor.identityDB, [
-      { userId: 1 },
-      { userId: 2 }
-    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 2 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 2 }])
     await new Promise((resolve) => setTimeout(resolve, 10))
 
     const notifications: AppEmailNotification[] = [
