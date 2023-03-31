@@ -10,6 +10,7 @@ import { ReactComponent as IconTipBase } from 'assets/img/iconTip.svg'
 import { ReactComponent as IconTrendingBase } from 'assets/img/iconTrending.svg'
 import { ReactComponent as IconTrophy } from 'assets/img/iconTrophy.svg'
 import { ReactComponent as IconUser } from 'assets/img/iconUser.svg'
+import { ReactComponent as Tastemaker } from 'assets/img/tastemaker.svg'
 
 import styles from './icons.module.css'
 
@@ -39,6 +40,10 @@ export const IconRewards = ({ children }: { children: ReactNode }) => {
 
 export const IconTrending = () => {
   return <IconTrendingBase className={styles.iconTrending} />
+}
+
+export const IconTastemaker = () => {
+  return <Tastemaker className={styles.iconTrending} />
 }
 
 export const IconTier = ({ children }: { children: ReactNode }) => {

@@ -180,6 +180,7 @@ export enum Name {
   NOTIFICATIONS_CLICK_TRENDING_TRACK_TWITTER_SHARE = 'Notifications: Clicked Trending Track Twitter Share',
   NOTIFICATIONS_CLICK_TRENDING_PLAYLIST_TWITTER_SHARE = 'Notifications: Clicked Trending Playlist Twitter Share',
   NOTIFICATIONS_CLICK_TRENDING_UNDERGROUND_TWITTER_SHARE = 'Notifications: Clicked Trending Underground Twitter Share',
+  NOTIFICATIONS_CLICK_TASTEMAKER_TWITTER_SHARE = 'Notifications: Clicked Tastemaker Twitter Share',
   NOTIFICATIONS_CLICK_ADD_TRACK_TO_PLAYLIST_TWITTER_SHARE = 'Notifications: Clicked Add Track to Playlist Twitter Share',
   NOTIFICATIONS_TOGGLE_SETTINGS = 'Notifications: Toggle Setting',
   BROWSER_NOTIFICATION_SETTINGS = 'Browser Push Notification',
@@ -906,6 +907,10 @@ type NotificationsClickTrendingUnderground = {
   eventName: Name.NOTIFICATIONS_CLICK_TRENDING_UNDERGROUND_TWITTER_SHARE
   text: string
 }
+type NotificationsClickTastemaker = {
+  eventName: Name.NOTIFICATIONS_CLICK_TASTEMAKER_TWITTER_SHARE
+  text: string
+}
 type NotificationsToggleSettings = {
   eventName: Name.NOTIFICATIONS_TOGGLE_SETTINGS
   settings: string
@@ -1611,6 +1616,7 @@ export type AllTrackingEvents =
   | NotificationsClickTrendingPlaylist
   | NotificationsClickTrendingTrack
   | NotificationsClickTrendingUnderground
+  | NotificationsClickTastemaker
   | NotificationsToggleSettings
   | ProfilePageTabClick
   | ProfilePageSort

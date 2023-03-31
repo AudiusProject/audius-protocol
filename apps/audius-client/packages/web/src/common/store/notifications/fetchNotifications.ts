@@ -85,12 +85,17 @@ function* fetchDiscoveryNotifications(params: FetchNotificationsParams) {
     getFeatureEnabled,
     FeatureFlags.TRENDING_UNDERGROUND_NOTIFICATIONS
   )
+  const isTastemakerEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.TASTEMAKER_NOTIFICATIONS
+  )
 
   const validTypes = [
     isRepostOfRepostEnabled ? 'repost_of_repost' : null,
     isSaveOfRepostEnabled ? 'save_of_repost' : null,
     isTrendingPlaylistEnabled ? 'trending_playlist' : null,
-    isTrendingUndergroundEnabled ? 'trending_underground' : null
+    isTrendingUndergroundEnabled ? 'trending_underground' : null,
+    isTastemakerEnabled ? 'tastemaker' : null
   ].filter(removeNullable)
 
   const discoveryNotifications = yield* call(

@@ -14,6 +14,7 @@ import { RemixCreateNotification } from './RemixCreateNotification'
 import { RepostNotification } from './RepostNotification'
 import { RepostOfRepostNotification } from './RepostOfRepostNotification'
 import { SupporterDethronedNotification } from './SupporterDethronedNotification'
+import { TastemakerNotification } from './TastemakerNotification'
 import { TierChangeNotification } from './TierChangeNotification'
 import { TipReactionNotification } from './TipReactionNotification'
 import { TipReceivedNotification } from './TipReceivedNotification'
@@ -60,6 +61,9 @@ export const Notification = (props: NotificationProps) => {
       }
       case NotificationType.RepostOfRepost: {
         return <RepostOfRepostNotification notification={notification} />
+      }
+      case NotificationType.Tastemaker: {
+        return <TastemakerNotification notification={notification} />
       }
       case NotificationType.FavoriteOfRepost: {
         return <FavoriteOfRepostNotification notification={notification} />
