@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 
 import pytest
 from integration_tests.utils import populate_mock_db
@@ -201,21 +201,20 @@ def test_get_playlist_with_permalink_private_playlist(app, test_entities):
 
 
 def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
-    with app.test_request_context(
-        # Request context and args are required for passing
-        # pagination info into paginate_query inside get_playlists
-        data={"limit": 5, "offset": 3},
-    ):
+    with app.test_request_context():
         db = get_db()
         populate_mock_db(db, test_entities)
         with db.scoped_session() as session:
             playlists = get_playlist_tracks(
                 session,
-                {"args": {
-                "playlist_ids": [3, 4],
-                "current_user_id": 3
-                }}
+                { 
+                    "args": {
+                        "playlist_ids": [3, 4],
+                        "current_user_id": 3
+                    }
+                }
             )
+            print(playlists)
             assert len(playlists) == 2
             playlist_3 = playlists[0]
             playlist_4 = playlists[1]
