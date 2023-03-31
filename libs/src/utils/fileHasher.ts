@@ -4,7 +4,6 @@ import {
   UserImporterOptions
 } from 'ipfs-unixfs-importer'
 import fs from 'fs'
-import { hrtime } from 'process'
 import { promisify } from 'util'
 import { Stream } from 'stream'
 import type { Blockstore, Options } from 'interface-blockstore'
@@ -238,19 +237,7 @@ export const fileHasher = {
     logger: any = console
   ): Promise<string> {
     const buffer = await fileHasher.convertToBuffer(content, logger)
-
-    const startHashing: bigint = hrtime.bigint()
-    const cid = await fileHasher.hashNonImages(buffer)
-
-    const hashDurationMs = fileHasher.convertNanosToMillis(
-      hrtime.bigint() - startHashing
-    )
-
-    logger.debug(
-      `[fileHasher - generateNonImageCid()] CID=${cid} hashDurationMs=${hashDurationMs}ms`
-    )
-
-    return cid
+    return fileHasher.hashNonImages(buffer)
   },
 
   /**
@@ -261,18 +248,8 @@ export const fileHasher = {
    */
   async generateImageCids(
     content: ImportCandidate,
-    logger: any = console
+    _: any = console
   ): Promise<HashedImage[]> {
-    const startHashing: bigint = hrtime.bigint()
-    const hashedImages: HashedImage[] = await fileHasher.hashImages(content)
-    const hashDurationMs = fileHasher.convertNanosToMillis(
-      hrtime.bigint() - startHashing
-    )
-
-    const hashedImagesStr = JSON.stringify(hashedImages)
-    logger.debug(
-      `[fileHasher - generateImageCids()] hashedImages=${hashedImagesStr} hashImagesDurationMs=${hashDurationMs}ms`
-    )
-    return hashedImages
+    return fileHasher.hashImages(content)
   }
 }
