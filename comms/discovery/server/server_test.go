@@ -554,10 +554,10 @@ func TestGetPermissions(t *testing.T) {
 		IsHealthy: true,
 	}
 
-	// Test GET /chat-permissions (implicit ALL setting)
+	// Test GET /chats/permissions (implicit ALL setting)
 	{
-		// Query /comms/chat-permissions
-		reqUrl := fmt.Sprintf("/comms/chat-permissions?timestamp=%d", time.Now().UnixMilli())
+		// Query /comms/chats/permissions
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d", time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
@@ -588,10 +588,10 @@ func TestGetPermissions(t *testing.T) {
 		}
 	}
 
-	// Test GET /chat-permissions (explicit setting)
+	// Test GET /chats/permissions (explicit setting)
 	{
-		// Query /comms/chat-permissions
-		reqUrl := fmt.Sprintf("/comms/chat-permissions?timestamp=%d", time.Now().UnixMilli())
+		// Query /comms/chats/permissions
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d", time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 

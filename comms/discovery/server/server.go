@@ -74,7 +74,8 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/chats/:id/messages", s.getMessages)
 	g.POST("/mutate", s.mutate)
 
-	g.GET("/chat-permissions", s.getChatPermissions)
+	g.GET("/chats/permissions", s.getChatPermissions)
+	g.GET("/chats/blocked", s.getChatBlocked)
 	g.POST("/validate-can-chat", s.validateCanChat)
 
 	g.GET("/debug/ws", s.debugWs)
@@ -444,6 +445,41 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 	response := schema.CommsResponse{
 		Health: s.getHealthStatus(),
 		Data:   permission,
+	}
+	return c.JSON(200, response)
+}
+
+func (s *ChatServer) getChatBlocked(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := peering.ReadSignedRequest(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	encodedBlocked := []string{}
+	blocked, err := queries.GetChatBlockedUsers(db.Conn, ctx, userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	if err != sql.ErrNoRows {
+		for _, user := range blocked {
+			encodedId, err := misc.EncodeHashId(int(user))
+			if err != nil {
+				return err
+			}
+			encodedBlocked = append(encodedBlocked, encodedId)
+		}
+	}
+
+	response := schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   encodedBlocked,
 	}
 	return c.JSON(200, response)
 }
