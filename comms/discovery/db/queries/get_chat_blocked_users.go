@@ -37,27 +37,27 @@ func CountChatBlocks(q db.Queryable, ctx context.Context, arg CountChatBlocksPar
 	return count, err
 }
 
-const bulkGetChatBlocksOrReceivedBlocks = `
+const bulkGetChatBlockedOrBlocking = `
 select blocker_user_id, blockee_user_id from chat_blocked_users where (blocker_user_id = :SenderUserID and blockee_user_id in (:ReceiverUserIDs)) or (blockee_user_id = :SenderUserID and blocker_user_id in (:ReceiverUserIDs))
 `
 
-type BulkGetChatBlocksOrReceivedBlocksParams struct {
+type BulkGetChatBlockedOrBlockingParams struct {
 	SenderUserID    int32   `json:"sender_user_id"`
 	ReceiverUserIDs []int32 `json:"receiver_user_ids"`
 }
 
-type BulkGetChatBlocksOrReceivedBlocksRow struct {
+type BulkGetChatBlockedOrBlockingRow struct {
 	BlockerUserID int32 `db:"blocker_user_id" json:"blocker_user_id"`
 	BlockeeUserID int32 `db:"blockee_user_id" json:"blockee_user_id"`
 }
 
-func BulkGetChatBlocksOrReceivedBlocks(q db.Queryable, ctx context.Context, arg BulkGetChatBlocksOrReceivedBlocksParams) ([]BulkGetChatBlocksOrReceivedBlocksRow, error) {
-	var rows []BulkGetChatBlocksOrReceivedBlocksRow
+func BulkGetChatBlockedOrBlocking(q db.Queryable, ctx context.Context, arg BulkGetChatBlockedOrBlockingParams) ([]BulkGetChatBlockedOrBlockingRow, error) {
+	var rows []BulkGetChatBlockedOrBlockingRow
 	argMap := map[string]interface{}{
 		"SenderUserID":    arg.SenderUserID,
 		"ReceiverUserIDs": arg.ReceiverUserIDs,
 	}
-	query, args, err := sqlx.Named(bulkGetChatBlocksOrReceivedBlocks, argMap)
+	query, args, err := sqlx.Named(bulkGetChatBlockedOrBlocking, argMap)
 	if err != nil {
 		return rows, err
 	}

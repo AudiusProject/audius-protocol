@@ -76,7 +76,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.POST("/mutate", s.mutate)
 
 	g.GET("/chats/permissions", s.getChatPermissions)
-	g.GET("/chats/blocked", s.getChatBlocked)
+	g.GET("/chats/blocked-users", s.getChatBlockedUsers)
 	g.POST("/validate-can-chat", s.validateCanChat)
 
 	g.GET("/debug/ws", s.debugWs)
@@ -450,7 +450,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
-func (s *ChatServer) getChatBlocked(c echo.Context) error {
+func (s *ChatServer) getChatBlockedUsers(c echo.Context) error {
 	ctx := c.Request().Context()
 	_, wallet, err := peering.ReadSignedRequest(c)
 	if err != nil {
@@ -522,7 +522,7 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 	}
 
 	// Validate request sender is not the blocker or blockee for each receiver
-	blocks, err := queries.BulkGetChatBlocksOrReceivedBlocks(db.Conn, c.Request().Context(), queries.BulkGetChatBlocksOrReceivedBlocksParams{
+	blocks, err := queries.BulkGetChatBlockedOrBlocking(db.Conn, c.Request().Context(), queries.BulkGetChatBlockedOrBlockingParams{
 		SenderUserID:    userId,
 		ReceiverUserIDs: receiverUserIds,
 	})

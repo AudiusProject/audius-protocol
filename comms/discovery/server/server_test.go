@@ -672,7 +672,7 @@ func TestGetBlocked(t *testing.T) {
 		IsHealthy: true,
 	}
 
-	// Test GET /chats/blocked
+	// Test GET /chats/blocked-users
 	{
 		// Query /comms/chats/permissions
 		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d", time.Now().UnixMilli())
@@ -700,13 +700,13 @@ func TestGetBlocked(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		if assert.NoError(t, testServer.getChatBlocked(c)) {
+		if assert.NoError(t, testServer.getChatBlockedUsers(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 
-	// Test GET /chats/blocked (no blocked users)
+	// Test GET /chats/blocked-users (no blocked users)
 	{
 		// Query /comms/chats/permissions
 		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d", time.Now().UnixMilli())
@@ -734,7 +734,7 @@ func TestGetBlocked(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		if assert.NoError(t, testServer.getChatBlocked(c)) {
+		if assert.NoError(t, testServer.getChatBlockedUsers(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
