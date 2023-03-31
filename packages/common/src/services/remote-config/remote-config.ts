@@ -37,6 +37,13 @@ type State = {
   id: Nullable<number>
 }
 
+type MobileClientInfo = {
+  /** This is the type of Platform.OS, but we only expect ios or android here */
+  mobilePlatform: 'ios' | 'android' | 'web' | 'windows' | 'macos'
+  mobileAppVersion: string
+  codePushUpdateNumber: number | undefined
+}
+
 export type RemoteConfigOptions<Client> = {
   createOptimizelyClient: () => Promise<Client>
   getFeatureFlagSessionId: () => Promise<Nullable<number>>
@@ -44,7 +51,8 @@ export type RemoteConfigOptions<Client> = {
   setLogLevel: () => void
   environment: Environment
   appVersion: string
-  getMobileClientVersion?: () => Promise<string> | string
+  platform: 'web' | 'mobile' | 'desktop'
+  getMobileClientInfo?: () => Promise<MobileClientInfo> | MobileClientInfo
 }
 
 export const remoteConfig = <
@@ -64,7 +72,8 @@ export const remoteConfig = <
   setLogLevel,
   environment,
   appVersion,
-  getMobileClientVersion
+  platform,
+  getMobileClientInfo
 }: RemoteConfigOptions<Client>) => {
   const state: State = {
     didInitialize: false,
@@ -76,8 +85,9 @@ export const remoteConfig = <
 
   // Optimizely client
   let client: Client | undefined
-  /** Mobile app version that is being run */
-  let mobileClientVersion: string | undefined
+
+  /** Mobile app info if platform is mobile */
+  let mobileClientInfo: MobileClientInfo | undefined
 
   const emitter = new EventEmitter()
   emitter.setMaxListeners(1000)
@@ -92,8 +102,8 @@ export const remoteConfig = <
     } else {
       state.id = savedSessionId
     }
-    mobileClientVersion = getMobileClientVersion
-      ? await getMobileClientVersion()
+    mobileClientInfo = getMobileClientInfo
+      ? await getMobileClientInfo()
       : undefined
     client = await createOptimizelyClient()
 
@@ -234,7 +244,10 @@ export const remoteConfig = <
       return client.isFeatureEnabled(f, id.toString(), {
         userId: id,
         appVersion,
-        mobileClientVersion: mobileClientVersion ?? 'N/A'
+        platform,
+        mobilePlatform: mobileClientInfo?.mobilePlatform ?? null,
+        mobileAppVersion: mobileClientInfo?.mobileAppVersion ?? null,
+        codePushUpdateNumber: mobileClientInfo?.codePushUpdateNumber ?? null
       })
     }
 
