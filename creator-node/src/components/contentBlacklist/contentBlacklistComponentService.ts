@@ -24,6 +24,11 @@ const getAllTrackIds = async (): Promise<number[]> => {
   return resp.map((trackId: string) => parseInt(trackId))
 }
 
+const getAllUserIds = async (): Promise<number[]> => {
+  const resp = await BlacklistManager.getAllUserIds()
+  return resp.map((userId: string) => parseInt(userId))
+}
+
 const getAllContentBlacklist = async (): Promise<BlacklistedContent> => {
   // Segments stored in the ContentBlacklist may not be associated with a track
   const segmentsFromCBL = await models.ContentBlacklist.findAll({
@@ -72,5 +77,6 @@ module.exports = {
   getAllContentBlacklist,
   addToContentBlacklist,
   removeFromContentBlacklist,
-  getAllTrackIds
+  getAllTrackIds,
+  getAllUserIds
 }

@@ -276,6 +276,7 @@ export const createUsers = async (db: Knex, users: CreateUser[]) => {
         handle: `handle_${user.user_id}`,
         wallet: `0x${user.user_id}`,
         creator_node_endpoint: `https://dn1.io,https://dn2.io,https://dn3.io`,
+        is_available: true,
         ...user
       }))
     )

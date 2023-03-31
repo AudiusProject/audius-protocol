@@ -28,7 +28,6 @@ export class Account extends Base {
     this.associateTwitterUser = this.associateTwitterUser.bind(this)
     this.associateInstagramUser = this.associateInstagramUser.bind(this)
     this.associateTikTokUser = this.associateTikTokUser.bind(this)
-    this.handleIsValid = this.handleIsValid.bind(this)
     this.lookupTwitterHandle = this.lookupTwitterHandle.bind(this)
     this.updateCreatorNodeEndpoint = this.updateCreatorNodeEndpoint.bind(this)
     this.searchFull = this.searchFull.bind(this)
@@ -264,13 +263,6 @@ export class Account extends Base {
   async associateTikTokUser(uuid: string, userId: number, handle: string) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return await this.identityService.associateTikTokUser(uuid, userId, handle)
-  }
-
-  /**
-   * Checks if a requested handle is valid (unused).
-   */
-  async handleIsValid(handle: string) {
-    return await this.contracts.UserFactoryClient.handleIsValid(handle)
   }
 
   /**

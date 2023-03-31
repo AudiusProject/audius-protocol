@@ -55,10 +55,6 @@ export class Track extends Base {
     this.addTracksToChainAndCnode = this.addTracksToChainAndCnode.bind(this)
     this.updateTrack = this.updateTrack.bind(this)
     this.logTrackListen = this.logTrackListen.bind(this)
-    this.addTrackRepost = this.addTrackRepost.bind(this)
-    this.deleteTrackRepost = this.deleteTrackRepost.bind(this)
-    this.addTrackSave = this.addTrackSave.bind(this)
-    this.deleteTrackSave = this.deleteTrackSave.bind(this)
     this.deleteTrack = this.deleteTrack.bind(this)
   }
   /* ------- GETTERS ------- */
@@ -381,17 +377,17 @@ export class Track extends Base {
   /* ------- SETTERS ------- */
 
   /**
- * Takes in a readable stream if isServer is true, or a file reference if isServer is
- * false.
- * Uploads file, retrieves multihash, adds multihash to input metadata object,
- * uploads metadata, and finally returns metadata multihash
- * Wraps the stateless function in AudiusLib.
- *
- * @param trackFile ReadableStream from server, or File handle on client
- * @param coverArtFile ReadableStream from server, or File handle on client
- * @param metadata json of the track metadata with all fields, missing fields will error
- * @param onProgress callback fired with (loaded, total) on byte upload progress
- */
+   * Takes in a readable stream if isServer is true, or a file reference if isServer is
+   * false.
+   * Uploads file, retrieves multihash, adds multihash to input metadata object,
+   * uploads metadata, and finally returns metadata multihash
+   * Wraps the stateless function in AudiusLib.
+   *
+   * @param trackFile ReadableStream from server, or File handle on client
+   * @param coverArtFile ReadableStream from server, or File handle on client
+   * @param metadata json of the track metadata with all fields, missing fields will error
+   * @param onProgress callback fired with (loaded, total) on byte upload progress
+   */
   async uploadTrackV2(
     trackFile: File,
     coverArtFile: File,
@@ -424,7 +420,7 @@ export class Track extends Base {
         transcodedTrackCID
       } = await retry(
         async () => {
-          return this.creatorNode.uploadTrackContentV2(
+          return await this.creatorNode.uploadTrackContentV2(
             trackFile,
             coverArtFile,
             metadata,
@@ -478,6 +474,7 @@ export class Track extends Base {
       }
     }
   }
+
   /**
    * Takes in a readable stream if isServer is true, or a file reference if isServer is
    * false.
@@ -804,53 +801,6 @@ export class Track extends Base {
       null,
       null,
       solanaListen
-    )
-  }
-
-  /** Adds a repost for a given user and track
-   * @param trackId track being reposted
-   */
-  async addTrackRepost(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.SocialFeatureFactoryClient.addTrackRepost(
-      userId!,
-      trackId
-    )
-  }
-
-  /**
-   * Deletes a repost for a given user and track
-   * @param track id of deleted repost
-   */
-  async deleteTrackRepost(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.SocialFeatureFactoryClient.deleteTrackRepost(
-      userId!,
-      trackId
-    )
-  }
-
-  /**
-   * Adds a rack save for a given user and track
-   * @param trackId track being saved
-   */
-  async addTrackSave(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.UserLibraryFactoryClient.addTrackSave(
-      userId!,
-      trackId
-    )
-  }
-
-  /**
-   * Delete a track save for a given user and track
-   * @param trackId save being removed
-   */
-  async deleteTrackSave(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.UserLibraryFactoryClient.deleteTrackSave(
-      userId!,
-      trackId
     )
   }
 

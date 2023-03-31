@@ -65,3 +65,8 @@ LAST_SEEN_NEW_REACTION_TIME_KEY = "reactions_last_new_reaction_time"
 UPDATE_TRACK_IS_AVAILABLE_START_REDIS_KEY = "update_track_is_available:start"
 UPDATE_TRACK_IS_AVAILABLE_FINISH_REDIS_KEY = "update_track_is_available:finish"
 ALL_UNAVAILABLE_TRACKS_REDIS_KEY = "update_track_is_available:unavailable_tracks_all"
+
+# User unavailability worker job keys
+UPDATE_USER_IS_AVAILABLE_START_REDIS_KEY = "update_user_is_available:start"
+UPDATE_USER_IS_AVAILABLE_FINISH_REDIS_KEY = "update_user_is_available:finish"
+ALL_UNAVAILABLE_USERS_REDIS_KEY = "update_user_is_available:unavailable_user_all"
