@@ -2172,6 +2172,16 @@ export const audiusBackend = ({
         reactionValue: data.reaction_value,
         ...formatBaseNotification(notification)
       }
+    } else if (notification.type === 'tastemaker') {
+      const data = notification.actions[0].data
+      return {
+        type: NotificationType.Tastemaker,
+        entityType: Entity.Track,
+        entityId: decodeHashId(data.tastemaker_item_id),
+        tastemakerUserId: decodeHashId(data.tastemaker_user_id),
+        userId: decodeHashId(data.tastemaker_item_owner_id), // owner of the tastemaker track
+        ...formatBaseNotification(notification)
+      }
     } else if (notification.type === 'supporter_rank_up') {
       const data = notification.actions[0].data
       const senderUserId = decodeHashId(data.receiver_user_id)
@@ -2272,11 +2282,35 @@ export const audiusBackend = ({
         childTrackId,
         ...formatBaseNotification(notification)
       }
+    } else if (notification.type === 'trending_playlist') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.TrendingPlaylist,
+        rank: data.rank,
+        genre: data.genre,
+        time: data.time_range,
+        entityType: Entity.Playlist,
+        entityId: decodeHashId(data.playlist_id),
+        ...formatBaseNotification(notification)
+      }
     } else if (notification.type === 'trending') {
       const data = notification.actions[0].data
 
       return {
         type: NotificationType.TrendingTrack,
+        rank: data.rank,
+        genre: data.genre,
+        time: data.time_range,
+        entityType: Entity.Track,
+        entityId: decodeHashId(data.track_id),
+        ...formatBaseNotification(notification)
+      }
+    } else if (notification.type === 'trending_underground') {
+      const data = notification.actions[0].data
+
+      return {
+        type: NotificationType.TrendingUnderground,
         rank: data.rank,
         genre: data.genre,
         time: data.time_range,
