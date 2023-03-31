@@ -76,15 +76,16 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignItems: 'center',
     backgroundColor: palette.neutralLight10,
     paddingLeft: spacing(4),
-    paddingRight: spacing(3),
     borderRadius: spacing(1)
   },
   composeTextInput: {
-    fontSize: typography.fontSize.medium
+    fontSize: typography.fontSize.medium,
+    lineHeight: spacing(6),
+    paddingTop: 0
   },
   icon: {
-    width: spacing(5),
-    height: spacing(5),
+    width: spacing(7),
+    height: spacing(7),
     fill: palette.primary
   },
   userBadgeTitle: {
@@ -416,23 +417,25 @@ export const ChatScreen = () => {
                 placeholder={messages.startNewMessage}
                 Icon={() => (
                   <IconSend
-                    fill={palette.primary}
                     width={styles.icon.width}
                     height={styles.icon.height}
                     opacity={iconOpacity}
+                    fill={styles.icon.fill}
                     onPress={() => handleSubmit(inputMessage)}
                   />
                 )}
                 styles={{
                   root: styles.composeTextContainer,
-                  input: styles.composeTextInput
+                  input: [
+                    styles.composeTextInput,
+                    Platform.OS === 'ios' ? { paddingBottom: spacing(1) } : null
+                  ]
                 }}
                 onChangeText={(text) => {
                   setInputMessage(text)
                   text ? setIconOpacity(ICON_FOCUS) : setIconOpacity(ICON_BLUR)
                 }}
                 inputAccessoryViewID='none'
-                onBlur={() => setIconOpacity(ICON_BLUR)}
                 multiline
                 value={inputMessage}
               />
