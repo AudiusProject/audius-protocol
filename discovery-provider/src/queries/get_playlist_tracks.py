@@ -81,7 +81,6 @@ def get_playlist_tracks(session, args):
 
         # { playlist_id => [track]}
         playlists_map = {}
-        # CHECK PLAYLIST OBJ AND TRACK OBJ HERE
         for playlist in playlists:
             playlist_id = playlist["playlist_id"]
             playlist_is_public = not playlist["is_private"]

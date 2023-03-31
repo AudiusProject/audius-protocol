@@ -29,24 +29,30 @@ def test_entities():
                 "playlist_id": 3,
                 "playlist_owner_id": 3,
                 "playlist_name": "playlist 3",
-                "track_ids": [
-                    {"track": 1}, 
-                    {"track": 2}, 
-                    {"track": 3}, 
-                    {"track": 4}, 
-                ]
+                "is_current": True,
+                "playlist_contents": {
+                   "track_ids": [
+                        {"track": 1}, 
+                        {"track": 2}, 
+                        {"track": 3}, 
+                        {"track": 4}, 
+                    ]
+                }
             },
             {
                 "playlist_id": 4,
                 "playlist_owner_id": 3,
                 "playlist_name": "playlist 4",
                 "is_private": True,
-                "track_ids": [
-                    {"track": 1}, 
-                    {"track": 2}, 
-                    {"track": 3}, 
-                    {"track": 4}, 
-                ]
+                "is_current": True,
+                "playlist_contents": {
+                   "track_ids": [
+                        {"track": 1}, 
+                        {"track": 2}, 
+                        {"track": 3}, 
+                        {"track": 4}, 
+                    ]
+                }
             },
         ],
         "users": [
@@ -65,6 +71,7 @@ def test_entities():
                 "track_id": 1,
                 "title": "track 1",
                 "owner_id": 1287289,
+                "is_current": True,
                 "release_date": "Fri Dec 20 2019 12:00:00 GMT-0800",
                 "created_at": datetime(2018, 5, 17),
             },
@@ -72,12 +79,14 @@ def test_entities():
                 "track_id": 2,
                 "title": "track 2",
                 "owner_id": 1287289,
+                "is_current": True,
                 "created_at": datetime(2018, 5, 18),
             },
             {
                 "track_id": 3,
                 "title": "track 3",
                 "owner_id": 1287289,
+                "is_current": True,
                 "release_date": "Wed Dec 18 2019 12:00:00 GMT-0800",
                 "created_at": datetime(2020, 5, 17),
                 "is_unlisted": True,
@@ -86,6 +95,7 @@ def test_entities():
                 "track_id": 4,
                 "title": "track 4",
                 "owner_id": 1287289,
+                "is_current": True,
                 "release_date": "",
                 "created_at": datetime(2018, 5, 19),
                 "is_unlisted": True,
@@ -208,30 +218,30 @@ def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
             playlists = get_playlist_tracks(
                 session,
                 { 
-                    "args": {
-                        "playlist_ids": [3, 4],
-                        "current_user_id": 3
-                    }
+                    "playlist_ids": [3, 4],
+                    "current_user_id": 3
                 }
             )
-            print(playlists)
             assert len(playlists) == 2
-            playlist_3 = playlists[0]
-            playlist_4 = playlists[1]
+            tracks_playlist_3 = playlists[3]
+            tracks_playlist_4 = playlists[4]
 
-            assert_playlist(
-                playlist=playlist_3,
-                playlist_id=3,
-                playlist_name="playlist 3",
-                playlist_owner_id=3,
-            )
+            # public, doesnt have all four tracks
+            assert len(tracks_playlist_3) == 2
+            t1_p3, t2_p3 = tracks_playlist_3
+            assert not t1_p3["is_unlisted"]
+            assert not t2_p3["is_unlisted"]
 
-            assert_playlist(
-                playlist=playlist_4,
-                playlist_id=4,
-                playlist_name="playlist 4",
-                playlist_owner_id=3,
-            )
+            # private, has all four tracks
+            assert len(tracks_playlist_4) == 4
+            t1_p4, t2_p4, t3_p4, t4_p4 = tracks_playlist_4
+            assert not t1_p4["is_unlisted"]
+            assert not t2_p4["is_unlisted"]
+            assert t3_p4["is_unlisted"]
+            assert t4_p4["is_unlisted"]
+            
+            
+
 
 
 
