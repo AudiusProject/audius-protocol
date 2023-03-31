@@ -1,15 +1,18 @@
 import { useCallback } from 'react'
 
+import { FeatureFlags } from '@audius/common'
 import { Image, Platform } from 'react-native'
 
 import audiusLogoHorizontal from 'app/assets/images/Horizontal-Logo-Full-Color.png'
 import IconDownload from 'app/assets/images/iconCloudDownload.svg'
 import IconInfo from 'app/assets/images/iconInfo.svg'
+import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconNotificationOn from 'app/assets/images/iconNotificationOn.svg'
 import IconSettings from 'app/assets/images/iconSettings.svg'
 import { Screen, ScreenContent, ScrollView } from 'app/components/core'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { Theme } from 'app/utils/theme'
 
@@ -26,6 +29,7 @@ const IS_IOS = Platform.OS === 'ios'
 
 const messages = {
   title: 'Settings',
+  inbox: 'Inbox Settings',
   downloads: 'Download Settings',
   notifications: 'Configure Notifications',
   about: 'About'
@@ -47,8 +51,13 @@ const IconProps = { height: 28, width: 28, style: { marginRight: 4 } }
 export const SettingsScreen = () => {
   const styles = useStyles()
   const isOfflineDownloadEnabled = useIsOfflineModeEnabled()
+  const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
 
   const navigation = useNavigation<ProfileTabScreenParamList>()
+
+  const handlePressInbox = useCallback(() => {
+    navigation.push('InboxSettingsScreen')
+  }, [navigation])
 
   const handlePressDownloads = useCallback(() => {
     navigation.push('DownloadSettingsScreen')
@@ -76,6 +85,11 @@ export const SettingsScreen = () => {
           <Image source={audiusLogoHorizontal} style={styles.logo} />
           <AccountSettingsRow />
           <Divider />
+          {isChatEnabled ? (
+            <SettingsRow onPress={handlePressInbox}>
+              <SettingsRowLabel label={messages.inbox} icon={IconMessage} />
+            </SettingsRow>
+          ) : null}
           {isOfflineDownloadEnabled ? (
             <SettingsRow onPress={handlePressDownloads}>
               <SettingsRowLabel
