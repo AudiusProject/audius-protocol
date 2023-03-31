@@ -1,10 +1,4 @@
-import {
-  MouseEvent,
-  useCallback,
-  useRef,
-  useState,
-  MouseEventHandler
-} from 'react'
+import { MouseEvent, useCallback, useRef, useState } from 'react'
 
 import {
   CreatePlaylistSource,
@@ -14,7 +8,6 @@ import {
   PlaylistLibrary as PlaylistLibraryType,
   Status,
   accountSelectors,
-  averageColorSelectors,
   cacheCollectionsActions,
   notificationsSelectors,
   collectionsSocialActions,
@@ -22,8 +15,6 @@ import {
   createPlaylistModalUISelectors,
   createPlaylistModalUIActions as createPlaylistModalActions,
   imageProfilePicEmpty,
-  playerSelectors,
-  queueSelectors,
   playlistLibraryActions,
   playlistLibraryHelpers,
   uploadActions,
@@ -36,12 +27,7 @@ import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
-import {
-  NavLink,
-  RouteComponentProps,
-  useHistory,
-  withRouter
-} from 'react-router-dom'
+import { NavLink, RouteComponentProps, withRouter } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 import { Dispatch } from 'redux'
 
@@ -52,7 +38,6 @@ import { PlaylistFormFields } from 'components/create-playlist/PlaylistForm'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import Droppable from 'components/dragndrop/Droppable'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import CurrentlyPlaying from 'components/nav/desktop/CurrentlyPlaying'
 import NavButton from 'components/nav/desktop/NavButton'
 import RouteNav from 'components/nav/desktop/RouteNav'
 import Pill from 'components/pill/Pill'
@@ -60,8 +45,6 @@ import ConnectedProfileCompletionPane from 'components/profile-progress/Connecte
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
-import { openVisualizer } from 'pages/visualizer/store/slice'
 import { getNotificationPanelIsOpen } from 'store/application/ui/notifications/notificationsUISelectors'
 import {
   openNotificationPanel,
@@ -73,7 +56,6 @@ import {
   DASHBOARD_PAGE,
   EXPLORE_PAGE,
   FEED_PAGE,
-  fullTrackPage,
   HISTORY_PAGE,
   playlistPage,
   profilePage,
@@ -86,21 +68,19 @@ import { getTempPlaylistId } from 'utils/tempPlaylistId'
 import NavAudio from './NavAudio'
 import styles from './NavColumn.module.css'
 import NavHeader from './NavHeader'
+import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
 import PlaylistLibrary from './PlaylistLibrary'
 
 const { updatedPlaylistViewed } = playlistUpdatesActions
 const { resetState: resetUploadState } = uploadActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { addFolderToLibrary, constructPlaylistFolder } = playlistLibraryHelpers
-const { makeGetCurrent } = queueSelectors
-const { makeGetCurrent: makeGetCurrentPlayer } = playerSelectors
 const { getHideFolderTab, getIsOpen } = createPlaylistModalUISelectors
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const { getNotificationUnviewedCount } = notificationsSelectors
 const { markAllAsViewed } = notificationsActions
-const getDominantColorsByTrack = averageColorSelectors.getDominantColorsByTrack
 const { getAccountStatus, getAccountUser, getPlaylistLibrary } =
   accountSelectors
 
@@ -132,8 +112,6 @@ const NavColumn = ({
   showCreatePlaylistModal,
   hideCreatePlaylistModalFolderTab,
   updatePlaylistLibrary,
-  currentQueueItem,
-  currentPlayerItem,
   dragging: { dragging, kind, isOwner: draggingIsOwner },
   saveTrack,
   saveCollection,
@@ -145,13 +123,9 @@ const NavColumn = ({
   goToSignUp: routeToSignup,
   goToSignIn,
   goToUpload,
-  showVisualizer,
-  dominantColors,
   markAllNotificationsAsViewed
 }: NavColumnProps) => {
   const record = useRecord()
-  const { location } = useHistory()
-  const { pathname } = location
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
     polyfill: ResizeObserver
   })
@@ -266,33 +240,6 @@ const NavColumn = ({
         scrollbarRef.current.scrollTop + difference
     }
   }, [])
-
-  /** @param {bool} full whether or not to get the full page link */
-  const getTrackPageLink = useCallback(
-    (full = false) => {
-      if (currentQueueItem && currentQueueItem.user && currentQueueItem.track) {
-        return full
-          ? fullTrackPage(currentQueueItem.track.permalink)
-          : currentQueueItem.track.permalink
-      }
-      return null
-    },
-    [currentQueueItem]
-  )
-
-  const onClickArtwork = useCallback(() => {
-    const route = getTrackPageLink()
-    if (route) goToRoute(route)
-  }, [goToRoute, getTrackPageLink])
-
-  const onShowVisualizer: MouseEventHandler = useCallback(
-    (e) => {
-      if (NO_VISUALIZER_ROUTES.has(pathname)) return
-      showVisualizer()
-      e.stopPropagation()
-    },
-    [showVisualizer, pathname]
-  )
 
   const onClickUpload = useCallback(() => {
     if (!upload.uploading) resetUploadState()
@@ -527,40 +474,14 @@ const NavColumn = ({
           onCreateAccount={onClickNavButton}
           onUpload={onClickUpload}
         />
-        <CurrentlyPlaying
-          trackId={currentQueueItem.track?.track_id ?? null}
-          trackTitle={currentQueueItem.track?.title ?? null}
-          isUnlisted={currentQueueItem.track?.is_unlisted ?? false}
-          isOwner={
-            // Note: if neither are defined, it should eval to false, so setting default to different values
-            (currentQueueItem?.user?.handle ?? null) ===
-            (account?.handle ?? undefined)
-          }
-          coverArtColor={dominantColors ? dominantColors[0] : null}
-          coverArtSizes={currentQueueItem.track?._cover_art_sizes ?? null}
-          artworkLink={
-            currentPlayerItem.collectible?.imageUrl ||
-            currentPlayerItem.collectible?.frameUrl ||
-            currentPlayerItem.collectible?.gifUrl
-          }
-          draggableLink={getTrackPageLink()}
-          onClick={onClickArtwork}
-          onShowVisualizer={onShowVisualizer}
-        />
+        <NowPlayingArtworkTile />
       </div>
     </nav>
   )
 }
 
-const getCurrentQueueItem = makeGetCurrent()
-const getCurrentPlayerItem = makeGetCurrentPlayer()
-
 const mapStateToProps = (state: AppState) => {
-  const currentQueueItem = getCurrentQueueItem(state)
-  const currentPlayerItem = getCurrentPlayerItem(state)
   return {
-    currentQueueItem,
-    currentPlayerItem,
     account: getAccountUser(state),
     accountStatus: getAccountStatus(state),
     dragging: getIsDragging(state),
@@ -569,10 +490,7 @@ const mapStateToProps = (state: AppState) => {
     upload: state.upload,
     library: getPlaylistLibrary(state),
     showCreatePlaylistModal: getIsOpen(state),
-    hideCreatePlaylistModalFolderTab: getHideFolderTab(state),
-    dominantColors: getDominantColorsByTrack(state, {
-      track: currentQueueItem.track
-    })
+    hideCreatePlaylistModalFolderTab: getHideFolderTab(state)
   }
 }
 
@@ -601,7 +519,6 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
   goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true)),
-  showVisualizer: () => dispatch(openVisualizer()),
   markAllNotificationsAsViewed: () => dispatch(markAllAsViewed())
 })
 
