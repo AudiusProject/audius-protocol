@@ -335,7 +335,7 @@ export class CreatorNode {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: ProgressCB = () => { }
+    onProgress: ProgressCB = () => {}
   ) {
     let loadedImageBytes = 0
     let loadedTrackBytes = 0
@@ -400,12 +400,15 @@ export class CreatorNode {
     // metadata: TrackMetadata,
     _: File,
     __: TrackMetadata,
-    onProgress: ProgressCB = () => { }
+    onProgress: ProgressCB = () => {}
   ) {
     // Upload track file
     const trackFileFormData = new FormData()
     trackFileFormData.append('template', 'audio')
-    trackFileFormData.append('files', trackFile, { contentType: 'audio', filename: trackFile.name })
+    trackFileFormData.append('files', trackFile, {
+      contentType: 'audio',
+      filename: trackFile.name
+    })
     const trackFileUploadResponse = await axios({
       method: 'post',
       url: this.creatorNodeEndpoint + '/mediorum/uploads',
@@ -418,7 +421,10 @@ export class CreatorNode {
       }
     })
     const trackFileUploadResponseData = trackFileUploadResponse.data
-    console.log('trackFileUploadResponseData for v2 upload', JSON.stringify(trackFileUploadResponseData))
+    console.log(
+      'trackFileUploadResponseData for v2 upload',
+      JSON.stringify(trackFileUploadResponseData)
+    )
 
     return {
       metadataMultihash: '',
@@ -1023,7 +1029,7 @@ export class CreatorNode {
   async _uploadFile(
     file: File,
     route: string,
-    onProgress: ProgressCB = () => { },
+    onProgress: ProgressCB = () => {},
     extraFormDataOptions: Record<string, unknown> = {},
     retries = 2,
     timeoutMs: number | null = null
@@ -1133,8 +1139,9 @@ export class CreatorNode {
     if ('response' in e && e.response?.data?.error) {
       const cnRequestID = e.response.headers['cn-request-id']
       // cnRequestID will be the same as requestId if it receives the X-Request-ID header
-      const errMessage = `Server returned error: [${e.response.status.toString()}] [${e.response.data.error
-        }] for request: [${cnRequestID}, ${requestId}]`
+      const errMessage = `Server returned error: [${e.response.status.toString()}] [${
+        e.response.data.error
+      }] for request: [${cnRequestID}, ${requestId}]`
 
       console.error(errMessage)
       throw new Error(errMessage)
