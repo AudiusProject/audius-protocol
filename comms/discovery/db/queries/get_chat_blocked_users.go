@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"comms.audius.co/discovery/db"
+	"github.com/jmoiron/sqlx"
 )
 
 const chatBlock = `
@@ -36,18 +37,36 @@ func CountChatBlocks(q db.Queryable, ctx context.Context, arg CountChatBlocksPar
 	return count, err
 }
 
-const getChatBlocksOrReceivedBlocks = `
-select blocker_user_id, blockee_user_id from chat_blocked_users where blocker_user_id = $1 or blockee_user_id = $1
+const bulkGetChatBlocksOrReceivedBlocks = `
+select blocker_user_id, blockee_user_id from chat_blocked_users where (blocker_user_id = :SenderUserID and blockee_user_id in (:ReceiverUserIDs)) or (blockee_user_id = :SenderUserID and blocker_user_id in (:ReceiverUserIDs))
 `
 
-type GetChatBlocksOrReceivedBlocksRow struct {
+type BulkGetChatBlocksOrReceivedBlocksParams struct {
+	SenderUserID    int32   `json:"sender_user_id"`
+	ReceiverUserIDs []int32 `json:"receiver_user_ids"`
+}
+
+type BulkGetChatBlocksOrReceivedBlocksRow struct {
 	BlockerUserID int32 `db:"blocker_user_id" json:"blocker_user_id"`
 	BlockeeUserID int32 `db:"blockee_user_id" json:"blockee_user_id"`
 }
 
-func GetChatBlocksOrReceivedBlocks(q db.Queryable, ctx context.Context, userId int32) ([]GetChatBlocksOrReceivedBlocksRow, error) {
-	var rows []GetChatBlocksOrReceivedBlocksRow
-	err := q.SelectContext(ctx, &rows, getChatBlocksOrReceivedBlocks, userId)
+func BulkGetChatBlocksOrReceivedBlocks(q db.Queryable, ctx context.Context, arg BulkGetChatBlocksOrReceivedBlocksParams) ([]BulkGetChatBlocksOrReceivedBlocksRow, error) {
+	var rows []BulkGetChatBlocksOrReceivedBlocksRow
+	argMap := map[string]interface{}{
+		"SenderUserID":    arg.SenderUserID,
+		"ReceiverUserIDs": arg.ReceiverUserIDs,
+	}
+	query, args, err := sqlx.Named(bulkGetChatBlocksOrReceivedBlocks, argMap)
+	if err != nil {
+		return rows, err
+	}
+	query, args, err = sqlx.In(query, args...)
+	if err != nil {
+		return rows, err
+	}
+	query = q.Rebind(query)
+	err = q.SelectContext(ctx, &rows, query, args...)
 	return rows, err
 }
 

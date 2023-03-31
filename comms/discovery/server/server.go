@@ -20,6 +20,7 @@ import (
 	"comms.audius.co/discovery/schema"
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
+	"comms.audius.co/shared/utils"
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -509,7 +510,7 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
 	var receiverUserIds []int32
-	validatedPermissions := make(map[string]bool)
+	canChat := make(map[string]bool)
 	for _, encodedId := range params.ReceiverUserIDS {
 		decodedId, err := misc.DecodeHashId(encodedId)
 		if err != nil {
@@ -517,22 +518,66 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 		}
 		receiverUserIds = append(receiverUserIds, int32(decodedId))
 		// Initialize response map
-		validatedPermissions[encodedId] = true
+		canChat[encodedId] = true
 	}
 
-	// Validate permission for each <request sender, user> pair
-	permissions, err := queries.BulkGetChatPermissions(db.Conn, c.Request().Context(), receiverUserIds)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			response := schema.CommsResponse{
-				Health: s.getHealthStatus(),
-				Data:   validatedPermissions,
+	// Validate request sender is not the blocker or blockee for each receiver
+	blocks, err := queries.BulkGetChatBlocksOrReceivedBlocks(db.Conn, c.Request().Context(), queries.BulkGetChatBlocksOrReceivedBlocksParams{
+		SenderUserID:    userId,
+		ReceiverUserIDs: receiverUserIds,
+	})
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if err != sql.ErrNoRows {
+		var encodedId string
+		var receiver int32
+		var blockedReceivers []int32
+		for _, block := range blocks {
+			if block.BlockerUserID == userId {
+				// Request sender blocked this receiver
+				receiver = block.BlockeeUserID
+			} else {
+				// Receiver blocked request sender
+				receiver = block.BlockerUserID
 			}
-			return c.JSON(200, response)
-		} else {
+			// Update response map
+			encodedId, err = misc.EncodeHashId(int(receiver))
+			if err != nil {
+				return err
+			}
+			canChat[encodedId] = false
+			blockedReceivers = append(blockedReceivers, receiver)
+		}
+
+		// Remove blockedReceivers from receiverUserIds.
+		// We know sender cannot chat with blockedReceivers - no need
+		// to perform further validations.
+		receiverUserIds = utils.Difference(receiverUserIds, blockedReceivers)
+	}
+
+	if len(receiverUserIds) > 0 {
+		// Validate permission for each <request sender, user> pair
+		permissions, err := queries.BulkGetChatPermissions(db.Conn, c.Request().Context(), receiverUserIds)
+		if err != nil && err != sql.ErrNoRows {
 			return err
 		}
+		if err != sql.ErrNoRows {
+			canChat, err = validatePermissions(c, permissions, userId, canChat)
+			if err != nil {
+				return err
+			}
+		}
 	}
+
+	response := schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   canChat,
+	}
+	return c.JSON(200, response)
+}
+
+func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRow, senderUserId int32, canChat map[string]bool) (map[string]bool, error) {
 	// User IDs that permit chats from followees only
 	var followeePermissions []int32
 	// User IDs that permit chats from tippers only
@@ -544,61 +589,62 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 			// Initialize response map to false for now
 			encodedId, err := misc.EncodeHashId(int(userPermission.UserID))
 			if err != nil {
-				return err
+				return canChat, err
 			}
-			validatedPermissions[encodedId] = false
+			canChat[encodedId] = false
 		} else if userPermission.Permits == schema.Tippers {
 			// Add id to tipperPermissions to bulk query later
 			tipperPermissions = append(tipperPermissions, userPermission.UserID)
 			// Initialize response map to false for now
 			encodedId, err := misc.EncodeHashId(int(userPermission.UserID))
 			if err != nil {
-				return err
+				return canChat, err
 			}
-			validatedPermissions[encodedId] = false
-		}
-	}
-	// Query follows table to validate <sender, receiver> pair against users with followees only permissions
-	follows, err := queries.BulkGetFollowers(db.Conn, c.Request().Context(), queries.BulkGetFollowersParams{
-		FollowerUserIDs: followeePermissions,
-		FolloweeUserID:  userId,
-	})
-	if err != nil && err != sql.ErrNoRows {
-		return err
-	}
-	if err != sql.ErrNoRows {
-		// Update response map if current follow record exists
-		for _, follow := range follows {
-			encodedId, err := misc.EncodeHashId(int(follow.FollowerUserID))
-			if err != nil {
-				return err
-			}
-			validatedPermissions[encodedId] = true
+			canChat[encodedId] = false
 		}
 	}
 
-	// Query tips table to validate <sender, receiver> pair against users with tippers only permissions
-	tips, err := queries.BulkGetTipReceivers(db.Conn, c.Request().Context(), queries.BulkGetTipReceiversParams{
-		SenderUserID:    userId,
-		ReceiverUserIDs: tipperPermissions,
-	})
-	if err != nil && err != sql.ErrNoRows {
-		return err
-	}
-	if err != sql.ErrNoRows {
-		// Update response map if aggregate tip record exists
-		for _, tip := range tips {
-			encodedId, err := misc.EncodeHashId(int(tip.ReceiverUserID))
-			if err != nil {
-				return err
+	if len(followeePermissions) > 0 {
+		// Query follows table to validate <sender, receiver> pair against users with followees only permissions
+		follows, err := queries.BulkGetFollowers(db.Conn, c.Request().Context(), queries.BulkGetFollowersParams{
+			FollowerUserIDs: followeePermissions,
+			FolloweeUserID:  senderUserId,
+		})
+		if err != nil && err != sql.ErrNoRows {
+			return canChat, err
+		}
+		if err != sql.ErrNoRows {
+			// Update response map if current follow record exists
+			for _, follow := range follows {
+				encodedId, err := misc.EncodeHashId(int(follow.FollowerUserID))
+				if err != nil {
+					return canChat, err
+				}
+				canChat[encodedId] = true
 			}
-			validatedPermissions[encodedId] = true
 		}
 	}
 
-	response := schema.CommsResponse{
-		Health: s.getHealthStatus(),
-		Data:   validatedPermissions,
+	if len(tipperPermissions) > 0 {
+		// Query tips table to validate <sender, receiver> pair against users with tippers only permissions
+		tips, err := queries.BulkGetTipReceivers(db.Conn, c.Request().Context(), queries.BulkGetTipReceiversParams{
+			SenderUserID:    senderUserId,
+			ReceiverUserIDs: tipperPermissions,
+		})
+		if err != nil && err != sql.ErrNoRows {
+			return canChat, err
+		}
+		if err != sql.ErrNoRows {
+			// Update response map if aggregate tip record exists
+			for _, tip := range tips {
+				encodedId, err := misc.EncodeHashId(int(tip.ReceiverUserID))
+				if err != nil {
+					return canChat, err
+				}
+				canChat[encodedId] = true
+			}
+		}
 	}
-	return c.JSON(200, response)
+
+	return canChat, nil
 }

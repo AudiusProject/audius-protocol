@@ -620,6 +620,45 @@ func TestGetPermissions(t *testing.T) {
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
+
+	// Test POST /validate-can-chat
+	{
+		// Query /comms/validate-can-chat
+		reqUrl := fmt.Sprintf("/comms/validate-can-chat?timestamp=%d", time.Now().UnixMilli())
+		encodedUser2, err := misc.EncodeHashId(int(user2Id))
+		assert.NoError(t, err)
+		encodedUser3, err := misc.EncodeHashId(int(user3Id))
+		assert.NoError(t, err)
+		payload := []byte(fmt.Sprintf(`{"method": "user.validate_can_chat", "params": {"receiver_user_ids": ["%s", "%s"]}}`, encodedUser2, encodedUser3))
+		req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(payload))
+		assert.NoError(t, err)
+
+		// Set sig header from user 1
+		sigBase64 := signPayload(t, payload, privateKey1)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := map[string]bool{
+			encodedUser2: true,
+			encodedUser3: false,
+		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		if assert.NoError(t, testServer.validateCanChat(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
+	}
 }
 
 func TestGetBlocked(t *testing.T) {
@@ -651,7 +690,9 @@ func TestGetBlocked(t *testing.T) {
 	user2Id := seededRand.Int31()
 	user3Id := seededRand.Int31()
 
-	encodedUser3, err := misc.EncodeHashId(int(user3Id))
+	encodedUser1, err := misc.EncodeHashId(int(user1Id))
+	assert.NoError(t, err)
+	encodedUser2, err := misc.EncodeHashId(int(user2Id))
 	assert.NoError(t, err)
 
 	// Create 3 users
@@ -672,16 +713,16 @@ func TestGetBlocked(t *testing.T) {
 		IsHealthy: true,
 	}
 
-	// Test GET /chats/blocked
+	// Test GET /chats/blocked (multiple blocked users)
 	{
 		// Query /comms/chats/permissions
 		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d", time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
-		// Set sig header from user 1
+		// Set sig header from user 3
 		payload := []byte(reqUrl)
-		sigBase64 := signPayload(t, payload, privateKey1)
+		sigBase64 := signPayload(t, payload, privateKey3)
 		req.Header.Set(sharedConfig.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
@@ -691,7 +732,7 @@ func TestGetBlocked(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := []string{encodedUser3}
+		expectedData := []string{encodedUser1, encodedUser2}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
 				Health: expectedHealth,
@@ -791,7 +832,6 @@ func TestValidateCanChat(t *testing.T) {
 	assert.NoError(t, err)
 
 	// user 4 blocks user 1
-	_, err = tx.Exec("insert into chat_blocked_users (blocker_user_id, blockee_user_id, created_at) values ($1, $2, $3)", user4Id, user1Id, time.Now())
 
 	// Set permissions:
 	// - user 1: implicit all
