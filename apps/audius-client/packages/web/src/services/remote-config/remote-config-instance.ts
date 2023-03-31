@@ -3,6 +3,7 @@ import optimizely, { Config } from '@optimizely/optimizely-sdk'
 import { isEmpty } from 'lodash'
 
 import { reportToSentry } from 'store/errors/reportToSentry'
+import { isElectron } from 'utils/clientUtil'
 
 import packageInfo from '../../../package.json'
 
@@ -18,6 +19,7 @@ export const FEATURE_FLAG_LOCAL_STORAGE_SESSION_KEY = 'featureFlagSessionId-2'
 
 export const remoteConfigInstance = remoteConfig({
   appVersion,
+  platform: isElectron() ? 'desktop' : 'web',
   createOptimizelyClient: async () => {
     // Wait for optimizely to load if necessary (as it can be an async or defer tag)
     if (!window.optimizelyDatafile) {
