@@ -1,10 +1,7 @@
 import type { Middleware } from '../../api/generated/default'
 import type { DeepPartial } from '../../utils/deepPartial'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
-import type {
-  HealthCheckStatus,
-  HealthCheckThresholds
-} from './healthCheckTypes'
+import type { HealthCheckThresholds } from './healthCheckTypes'
 
 export type Decision = {
   stage: string
@@ -89,11 +86,5 @@ export type ServiceSelectionEvents = {
 export type DiscoveryNodeSelectorService =
   EventEmitterTarget<ServiceSelectionEvents> & {
     getSelectedEndpoint: () => Promise<string | null>
-    reselectIfNecessary: (config: {
-      endpoint: string
-      health: HealthCheckStatus
-      reason?: string
-      data: BackupHealthData
-    }) => Promise<string | null>
     createMiddleware: () => Middleware
   }

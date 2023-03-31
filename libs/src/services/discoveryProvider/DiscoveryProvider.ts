@@ -1,4 +1,3 @@
-// TODO: strictly type each method with the models defined in audius-client
 import axios, {
   AxiosError,
   AxiosRequestConfig,
@@ -20,14 +19,13 @@ import {
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import type { EthContracts } from '../ethContracts'
 import type { Web3Manager } from '../web3Manager'
-import { HealthCheckStatus } from '../../sdk/services/DiscoveryNodeSelector/healthCheckTypes'
 import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
 
 type RequestParams = {
-  queryParams: Record<string, any>
+  queryParams: Record<string, string>
   endpoint: string
   timeout?: number
   method?: Method
@@ -1467,26 +1465,6 @@ export class DiscoveryProvider {
       })) ?? response
 
     return response as unknown as DiscoveryResponse<Response>
-  }
-
-  parseApiHealthStatusReason = (response: DiscoveryResponse<unknown>) => {
-    const { latest_chain_block, latest_indexed_block } = response
-    const blockDifference = latest_chain_block - latest_indexed_block
-
-    const { latest_chain_slot_plays, latest_indexed_slot_plays } = response
-    const apiSlotDifference =
-      latest_chain_slot_plays - latest_indexed_slot_plays
-
-    const isIndexerHealthy = blockDifference <= this.unhealthyBlockDiff
-    const isSolanaApiIndexerHealthy =
-      apiSlotDifference <= (this.unhealthySlotDiffPlays ?? 0)
-    if (!isIndexerHealthy) {
-      return { health: HealthCheckStatus.BEHIND, reason: 'block diff' }
-    }
-    if (!isSolanaApiIndexerHealthy) {
-      return { health: HealthCheckStatus.BEHIND, reason: 'slot diff' }
-    }
-    return { health: HealthCheckStatus.HEALTHY }
   }
 
   /**

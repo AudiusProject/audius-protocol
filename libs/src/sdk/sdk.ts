@@ -141,8 +141,7 @@ const initializeApis = ({
     tips,
     resolve,
     full,
-    chats,
-    services
+    chats
   }
 }
 
