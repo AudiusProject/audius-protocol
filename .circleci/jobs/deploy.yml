@@ -14,13 +14,11 @@ parameters:
 machine:
   image: ubuntu-2004:202201-02
 steps:
-  - run:
-      name: Is frozen
-      command: |
-        freeze=(<< parameters.freeze >>)
-        if [ "$freeze" = "true" ]; then
-          circleci-agent step halt
-        fi
+  - when:
+      condition:
+        matches: { pattern: "^true$", value: << parameters.freeze >> }
+      steps:
+        - run: circleci-agent step halt
   - run:
       name: Install OpenVPN
       command: |
