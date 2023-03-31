@@ -1,9 +1,12 @@
 FROM node:14.16-alpine
+RUN apk add --no-cache --virtual .gyp python make g++ 
 
 WORKDIR /notifications
 
+RUN apk add --no-cache python3 py3-pip build-base
+
 COPY package*.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci --verbose
+RUN --mount=type=cache,target=/root/.npm npm i --verbose
 
 COPY . .
 

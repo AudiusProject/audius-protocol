@@ -1,4 +1,3 @@
-// TODO: strictly type each method with the models defined in audius-client
 import axios, {
   AxiosError,
   AxiosRequestConfig,
@@ -20,6 +19,7 @@ import {
 import type { CurrentUser, UserStateManager } from '../../userStateManager'
 import type { EthContracts } from '../ethContracts'
 import type { Web3Manager } from '../web3Manager'
+import { DiscoveryNodeSelector, FetchError, Middleware } from '../../sdk'
 
 const MAX_MAKE_REQUEST_RETRY_COUNT = 5
 const MAX_MAKE_REQUEST_RETRIES_WITH_404 = 2
@@ -40,6 +40,15 @@ type UserReplicaSet = {
   secondary2SpID: number
 }
 
+type DiscoveryResponse<Response> = {
+  latest_indexed_block: number
+  latest_chain_block: number
+  latest_indexed_slot_plays: number
+  latest_chain_slot_plays: number
+  version: { service: string; version: string }
+  data: Response
+}
+
 export type DiscoveryProviderConfig = {
   whitelist?: Set<string>
   blacklist?: Set<string>
@@ -51,6 +60,7 @@ export type DiscoveryProviderConfig = {
   selectionRequestRetries?: number
   unhealthySlotDiffPlays?: number
   unhealthyBlockDiff?: number
+  discoveryNodeSelector?: DiscoveryNodeSelector
 } & Pick<
   DiscoveryProviderSelectionConfig,
   'selectionCallback' | 'monitoringCallbacks' | 'localStorage'
@@ -105,6 +115,8 @@ export class DiscoveryProvider {
 
   discoveryProviderEndpoint: string | undefined
   isInitialized = false
+  discoveryNodeSelector?: DiscoveryNodeSelector
+  discoveryNodeMiddleware?: Middleware
 
   constructor({
     whitelist,
@@ -119,7 +131,8 @@ export class DiscoveryProvider {
     selectionRequestRetries = MAX_MAKE_REQUEST_RETRY_COUNT,
     localStorage,
     unhealthySlotDiffPlays,
-    unhealthyBlockDiff
+    unhealthyBlockDiff,
+    discoveryNodeSelector
   }: DiscoveryProviderConfig) {
     this.whitelist = whitelist
     this.blacklist = blacklist
@@ -154,13 +167,34 @@ export class DiscoveryProvider {
     this.maxRequestsForTrue404 = MAX_MAKE_REQUEST_RETRIES_WITH_404
 
     this.monitoringCallbacks = monitoringCallbacks
+    this.discoveryNodeSelector = discoveryNodeSelector
+    this.discoveryNodeMiddleware = discoveryNodeSelector?.createMiddleware()
   }
 
   async init() {
-    const endpoint = await this.serviceSelector.select()
-    this.setEndpoint(endpoint)
+    if (this.discoveryNodeSelector) {
+      this.discoveryNodeSelector.addEventListener(
+        'change',
+        (endpoint: string) => {
+          this.setEndpoint(endpoint)
+        }
+      )
 
-    if (endpoint && this.web3Manager && this.web3Manager.web3) {
+      const endpoint = await this.discoveryNodeSelector.getSelectedEndpoint()
+      if (endpoint) {
+        this.setEndpoint(endpoint)
+      }
+    } else {
+      // Need this for backwards compat
+      const endpoint = await this.serviceSelector.select()
+      this.setEndpoint(endpoint)
+    }
+
+    if (
+      this.discoveryProviderEndpoint &&
+      this.web3Manager &&
+      this.web3Manager.web3
+    ) {
       // Set current user if it exists
       const userAccount = await this.getUserAccount(
         this.web3Manager.getWalletAddress()
@@ -1197,13 +1231,6 @@ export class DiscoveryProvider {
 
   /**
    * Makes a request to a discovery node, reselecting if necessary
-   * @param {{
-   *  endpoint: string
-   *  urlParams: object
-   *  queryParams: object
-   *  method: string
-   *  headers: object
-   * }} {
    *  endpoint: the base route
    *  urlParams: string of URL params to be concatenated after base route
    *  queryParams: URL query (search) params
@@ -1215,6 +1242,29 @@ export class DiscoveryProvider {
    * @param blockNumber If provided, throws an error if the discovery node has not yet indexed this block
    */
   async _makeRequestInternal<Response>(
+    requestObj: Record<string, unknown>,
+    retry = true,
+    attemptedRetries = 0,
+    throwError = false,
+    blockNumber?: number
+  ) {
+    if (this.discoveryNodeSelector) {
+      return await this._makeRequestInternalNext<Response>(
+        requestObj,
+        throwError
+      )
+    }
+
+    return await this._makeRequestInternalLegacy<Response>(
+      requestObj,
+      retry,
+      attemptedRetries,
+      throwError,
+      blockNumber
+    )
+  }
+
+  async _makeRequestInternalLegacy<Response>(
     requestObj: Record<string, unknown>,
     retry = true,
     attemptedRetries = 0,
@@ -1283,7 +1333,7 @@ export class DiscoveryProvider {
           if (this.request404Count < this.maxRequestsForTrue404) {
             // In the case of a 404, retry with a different discovery node entirely
             // using selectionRequestRetries + 1 to force reselection
-            return await this._makeRequestInternal(
+            return await this._makeRequestInternalLegacy(
               requestObj,
               retry,
               this.selectionRequestRetries + 1,
@@ -1296,7 +1346,7 @@ export class DiscoveryProvider {
         }
 
         // In the case of an unknown error, retry with attempts += 1
-        return await this._makeRequestInternal(
+        return await this._makeRequestInternalLegacy(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1326,7 +1376,7 @@ export class DiscoveryProvider {
         console.info(
           `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequestInternal(
+        return await this._makeRequestInternalLegacy(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1343,7 +1393,7 @@ export class DiscoveryProvider {
         console.info(
           `${errorMessage}. Retrying request at attempt #${attemptedRetries}...`
         )
-        return await this._makeRequestInternal(
+        return await this._makeRequestInternalLegacy(
           requestObj,
           retry,
           attemptedRetries + 1,
@@ -1358,6 +1408,63 @@ export class DiscoveryProvider {
 
     // Everything looks good, return the data!
     return parsedResponse
+  }
+
+  async _makeRequestInternalNext<Response>(
+    requestObj: Record<string, unknown>,
+    throwError = false
+  ) {
+    if (!this.discoveryProviderEndpoint || !this.discoveryNodeMiddleware) return
+
+    const axiosRequest = this._createDiscProvRequest(
+      requestObj as RequestParams,
+      this.discoveryProviderEndpoint
+    )
+
+    const { data, url = '', ...restRequest } = axiosRequest
+
+    const fetchRequestInit: RequestInit = { body: data, ...restRequest }
+    let fetchParams = { url, init: fetchRequestInit }
+
+    fetchParams =
+      (await this.discoveryNodeMiddleware.pre?.({ fetch, ...fetchParams })) ??
+      fetchParams
+    let response: globalThis.Response | undefined
+
+    try {
+      response = await fetch(fetchParams.url, fetchParams.init)
+    } catch (error) {
+      response =
+        (await this.discoveryNodeMiddleware.onError?.({
+          fetch,
+          ...fetchParams,
+          error,
+          response: response ? response.clone() : undefined
+        })) ?? response
+
+      if (response === undefined) {
+        if (throwError) {
+          if (error instanceof Error) {
+            throw new FetchError(
+              error,
+              'The request failed and the interceptors did not return an alternative response'
+            )
+          } else {
+            throw error
+          }
+        }
+        return null
+      }
+    }
+
+    response =
+      (await this.discoveryNodeMiddleware.post?.({
+        fetch,
+        ...fetchParams,
+        response
+      })) ?? response
+
+    return response as unknown as DiscoveryResponse<Response>
   }
 
   /**

@@ -69,7 +69,10 @@ describe('Challenge Reward Notification', () => {
       {
         title: `✅️ Complete your Profile`,
         body: `You’ve earned 1 $AUDIO for completing this challenge!`,
-        data: {}
+        data: {
+          "id": "timestamp:1589373217:group_id:challenge_reward:1:challenge:profile-completion:specifier:1",
+          "type": "ChallengeReward",
+        }
       }
     )
   })

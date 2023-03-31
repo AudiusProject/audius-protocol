@@ -67,7 +67,11 @@ describe('Supporting Rank Up Notification', () => {
       {
         title: `#2 Top Supporter`,
         body: `You're now user_1's #2 Top Supporter!`,
-        data: {}
+        data: {
+          "entityId": 1,
+          "id": "timestamp:1589373217:group_id:supporting_rank_up:2:slot:1",
+          "type": "SupportingRankUp",
+        }
       }
     )
   })
