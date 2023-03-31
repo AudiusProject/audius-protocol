@@ -14,7 +14,13 @@ import {
 import type { ChatMessage } from '@audius/sdk'
 import { Portal } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
-import { Platform, View, Text, KeyboardAvoidingView } from 'react-native'
+import {
+  Platform,
+  View,
+  Text,
+  KeyboardAvoidingView,
+  Pressable
+} from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
@@ -25,11 +31,14 @@ import { TextInput, Screen, ScreenContent, FlatList } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 import { spacing } from 'app/styles/spacing'
 import { useThemePalette } from 'app/utils/theme'
+
+import type { AppTabScreenParamList } from '../app-screen'
 
 import { ChatMessageListItem } from './ChatMessageListItem'
 import { EmptyChatMessages } from './EmptyChatMessages'
@@ -63,6 +72,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     paddingHorizontal: spacing(6),
     display: 'flex',
     minHeight: '100%'
+  },
+  profileTitle: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center'
   },
   composeView: {
     paddingVertical: spacing(2),
@@ -141,6 +155,7 @@ export const ChatScreen = () => {
   const chatContainerBottom = useRef(0)
   const chatContainerTop = useRef(0)
   const [popupChatIndex, setPopupChatIndex] = useState<number | null>(null)
+  const navigation = useNavigation<AppTabScreenParamList>()
 
   const userId = useSelector(getUserId)
   const userIdEncoded = encodeHashId(userId)
@@ -306,7 +321,12 @@ export const ChatScreen = () => {
       headerTitle={
         otherUser
           ? () => (
-              <>
+              <Pressable
+                onPress={() =>
+                  navigation.push('Profile', { id: otherUser.user_id })
+                }
+                style={styles.profileTitle}
+              >
                 <ProfilePicture
                   profile={otherUser}
                   style={styles.profilePicture}
@@ -315,7 +335,7 @@ export const ChatScreen = () => {
                   user={otherUser}
                   nameStyle={styles.userBadgeTitle}
                 />
-              </>
+              </Pressable>
             )
           : messages.title
       }
