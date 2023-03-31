@@ -251,6 +251,8 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			"-i", srcPath,
 			"-b:a", "320k",
 			"-f", "mp3",
+			"-metadata", "fileName="+upload.OrigFileName,
+			"-metadata", "uuid="+upload.ID,
 			"-progress", "pipe:2",
 			destPath)
 

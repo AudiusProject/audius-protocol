@@ -414,7 +414,6 @@ export class CreatorNode {
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
     }
-    // TODO: Decide if we want to go the dirCID route of table lookup, or if we want to store the CID for each size
     updatedMetadata.cover_art_sizes = coverArtResp.id
 
     return updatedMetadata
@@ -431,11 +430,7 @@ export class CreatorNode {
   async uploadFileV2(file: File, onProgress: ProgressCB, template: 'audio' | 'img_square' | 'img_backdrop') {
     const formData = new FormData()
     formData.append('template', template)
-    formData.append(
-      'files',
-      file,
-      { contentType: template === 'audio' ? 'audio' : 'image', filename: file.name }
-    )
+    formData.append('files', file, file.name)
     const response = await this._makeRequestV2({
       method: 'post',
       url: '/mediorum/uploads',

@@ -109,7 +109,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 }
 
 func computeFileCID(file io.Reader) (string, error) {
-	builder := cid.V0Builder{}
+	builder := cid.V1Builder{}
 	contents, err := ioutil.ReadAll(file)
 	if err != nil {
 		return "", err
