@@ -7,6 +7,7 @@ declare
   owner_user_id int;
   track_remix_of json;
   is_remix_cosign boolean;
+  delta int;
 begin
 
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
@@ -16,34 +17,33 @@ begin
     insert into aggregate_playlist (playlist_id, is_album) values (new.save_item_id, new.save_type = 'album') on conflict do nothing;
   end if;
 
+  -- increment or decrement?
+  if new.is_delete then
+    delta := -1;
+  else
+    delta := 1;
+  end if;
+
   -- update agg track or playlist
   if new.save_type = 'track' then
     milestone_name := 'TRACK_SAVE_COUNT';
 
-    update aggregate_track 
-    set save_count = (
-      SELECT count(*)
-      FROM saves r
-      WHERE
-          r.is_current IS TRUE
-          AND r.is_delete IS FALSE
-          AND r.save_type = new.save_type
-          AND r.save_item_id = new.save_item_id
-    )
-    where track_id = new.save_item_id
-    returning save_count into new_val;
+  update
+    aggregate_track
+    set save_count = save_count + delta
+  where
+    track_id = new.save_item_id
+  returning
+    save_count into new_val;
+
 
     -- update agg user
-    update aggregate_user 
-    set track_save_count = (
-      select count(*)
-      from saves r
-      where r.is_current IS TRUE
-        AND r.is_delete IS FALSE
-        AND r.user_id = new.user_id
-        AND r.save_type = new.save_type
-    )
-    where user_id = new.user_id;
+    update
+      aggregate_user
+    set track_save_count = track_save_count + delta
+    where
+      user_id = new.user_id;
+
   	if new.is_delete IS FALSE then
 		  select tracks.owner_id, tracks.remix_of into owner_user_id, track_remix_of from tracks where is_current and track_id = new.save_item_id;
 	  end if;
@@ -51,17 +51,11 @@ begin
     milestone_name := 'PLAYLIST_SAVE_COUNT';
 
     update aggregate_playlist
-    set save_count = (
-      SELECT count(*)
-      FROM saves r
-      WHERE
-          r.is_current IS TRUE
-          AND r.is_delete IS FALSE
-          AND r.save_type = new.save_type
-          AND r.save_item_id = new.save_item_id
-    )
+    set save_count = save_count + delta
+    where playlist_id = new.save_item_id
     where playlist_id = new.save_item_id
     returning save_count into new_val;
+
     if new.is_delete IS FALSE then
 		  select playlists.playlist_owner_id into owner_user_id from playlists where is_current and playlist_id = new.save_item_id;
 	  end if;

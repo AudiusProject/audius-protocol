@@ -9,6 +9,8 @@ begin
   insert into aggregate_track (track_id) values (new.track_id) on conflict do nothing;
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
+  -- full recalculate for now
+  -- this isn't as frequent as social actions and this query isn't as expensive
   update aggregate_user 
   set track_count = (
     select count(*)
