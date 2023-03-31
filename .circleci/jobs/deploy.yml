@@ -9,8 +9,8 @@ parameters:
     type: string
   freeze:
     description: "Whether to freeze and skip deploy"
-    type: boolean
-    default: false
+    type: string
+    default: "false"
 machine:
   image: ubuntu-2004:202201-02
 steps:
