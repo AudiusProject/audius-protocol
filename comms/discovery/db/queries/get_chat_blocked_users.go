@@ -70,12 +70,22 @@ func BulkGetChatBlockedOrBlocking(q db.Queryable, ctx context.Context, arg BulkG
 	return rows, err
 }
 
-const getChatBlockedUsers = `
+const getChatBlockees = `
 select blockee_user_id from chat_blocked_users where blocker_user_id = $1;
 `
 
-func GetChatBlockedUsers(q db.Queryable, ctx context.Context, blockerUserId int32) ([]int32, error) {
-	var blockedUsers []int32
-	err := q.SelectContext(ctx, &blockedUsers, getChatBlockedUsers, blockerUserId)
-	return blockedUsers, err
+func GetChatBlockees(q db.Queryable, ctx context.Context, userId int32) ([]int32, error) {
+	var blockees []int32
+	err := q.SelectContext(ctx, &blockees, getChatBlockees, userId)
+	return blockees, err
+}
+
+const getChatBlockers = `
+select blocker_user_id from chat_blocked_users where blockee_user_id = $1;
+`
+
+func GetChatBlockers(q db.Queryable, ctx context.Context, userId int32) ([]int32, error) {
+	var blockers []int32
+	err := q.SelectContext(ctx, &blockers, getChatBlockers, userId)
+	return blockers, err
 }

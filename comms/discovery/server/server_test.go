@@ -622,7 +622,7 @@ func TestGetPermissions(t *testing.T) {
 	}
 }
 
-func TestGetBlocked(t *testing.T) {
+func TestGetBlockersAndBlockees(t *testing.T) {
 	var err error
 
 	// Generate user keys
@@ -651,6 +651,8 @@ func TestGetBlocked(t *testing.T) {
 	user2Id := seededRand.Int31()
 	user3Id := seededRand.Int31()
 
+	encodedUser1, err := misc.EncodeHashId(int(user1Id))
+	assert.NoError(t, err)
 	encodedUser3, err := misc.EncodeHashId(int(user3Id))
 	assert.NoError(t, err)
 
@@ -661,8 +663,8 @@ func TestGetBlocked(t *testing.T) {
 	// Set blocks:
 	// - user 1 blocks user 3
 	// - user 2 blocks no one
-	// - user 3 blocks users 1 and 2
-	_, err = tx.Exec("insert into chat_blocked_users (blocker_user_id, blockee_user_id, created_at) values ($1, $2, $3), ($4, $5, $3), ($6, $7, $3)", user1Id, user3Id, time.Now(), user3Id, user1Id, user3Id, user2Id)
+	// - user 3 blocks user 2
+	_, err = tx.Exec("insert into chat_blocked_users (blocker_user_id, blockee_user_id, created_at) values ($1, $2, $3), ($4, $5, $3)", user1Id, user3Id, time.Now(), user3Id, user2Id)
 
 	err = tx.Commit()
 	assert.NoError(t, err)
@@ -672,10 +674,10 @@ func TestGetBlocked(t *testing.T) {
 		IsHealthy: true,
 	}
 
-	// Test GET /chats/blocked-users
+	// Test GET /chats/blockees
 	{
-		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d", time.Now().UnixMilli())
+		// Query /comms/chats/blockees
+		reqUrl := fmt.Sprintf("/comms/chats/blockees?timestamp=%d", time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
@@ -700,16 +702,16 @@ func TestGetBlocked(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		if assert.NoError(t, testServer.getChatBlockedUsers(c)) {
+		if assert.NoError(t, testServer.getChatBlockees(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
 	}
 
-	// Test GET /chats/blocked-users (no blocked users)
+	// Test GET /chats/blockees (no blocked users)
 	{
-		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d", time.Now().UnixMilli())
+		// Query /comms/chats/blockees
+		reqUrl := fmt.Sprintf("/comms/chats/blockees?timestamp=%d", time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
@@ -734,7 +736,75 @@ func TestGetBlocked(t *testing.T) {
 		)
 		assert.NoError(t, err)
 
-		if assert.NoError(t, testServer.getChatBlockedUsers(c)) {
+		if assert.NoError(t, testServer.getChatBlockees(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
+	}
+
+	// Test GET /chats/blockers
+	{
+		// Query /comms/chats/blockers
+		reqUrl := fmt.Sprintf("/comms/chats/blockers?timestamp=%d", time.Now().UnixMilli())
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+		assert.NoError(t, err)
+
+		// Set sig header from user 3
+		payload := []byte(reqUrl)
+		sigBase64 := signPayload(t, payload, privateKey3)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := []string{encodedUser1}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		assert.NoError(t, err)
+
+		if assert.NoError(t, testServer.getChatBlockers(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
+	}
+
+	// Test GET /chats/blockers (no blocking users)
+	{
+		// Query /comms/chats/blockers
+		reqUrl := fmt.Sprintf("/comms/chats/blockers?timestamp=%d", time.Now().UnixMilli())
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+		assert.NoError(t, err)
+
+		// Set sig header from user 1
+		payload := []byte(reqUrl)
+		sigBase64 := signPayload(t, payload, privateKey1)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := []string{}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		assert.NoError(t, err)
+
+		if assert.NoError(t, testServer.getChatBlockers(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
