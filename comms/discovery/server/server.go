@@ -76,7 +76,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 
 	g.GET("/chats/permissions", s.getChatPermissions)
 	g.GET("/chats/blockees", s.getChatBlockees)
-	g.GET("chats/blockers", s.getChatBlockers)
+	g.GET("/chats/blockers", s.getChatBlockers)
 
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
