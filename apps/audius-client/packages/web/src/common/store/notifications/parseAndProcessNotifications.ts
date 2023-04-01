@@ -52,26 +52,26 @@ export function* parseAndProcessNotifications(
   const reactionSignatureToFetch: string[] = []
 
   notifications.forEach((notification) => {
-    if (notification.type === NotificationType.UserSubscription) {
+    const { type } = notification
+    if (type === NotificationType.UserSubscription) {
       if (notification.entityType === Entity.Track) {
-        // @ts-ignore
         notification.entityIds = [...new Set(notification.entityIds)]
         trackIdsToFetch.push(...notification.entityIds)
       } else if (
         notification.entityType === Entity.Playlist ||
         notification.entityType === Entity.Album
       ) {
-        // @ts-ignore
         notification.entityIds = [...new Set(notification.entityIds)]
         collectionIdsToFetch.push(...notification.entityIds)
       }
       userIdsToFetch.push(notification.userId)
     }
     if (
-      notification.type === NotificationType.Repost ||
-      notification.type === NotificationType.Favorite ||
-      (notification.type === NotificationType.Milestone &&
-        'entityType' in notification)
+      type === NotificationType.Repost ||
+      type === NotificationType.RepostOfRepost ||
+      type === NotificationType.Favorite ||
+      type === NotificationType.FavoriteOfRepost ||
+      (type === NotificationType.Milestone && 'entityType' in notification)
     ) {
       if (notification.entityType === Entity.Track) {
         trackIdsToFetch.push(notification.entityId)
@@ -85,57 +85,64 @@ export function* parseAndProcessNotifications(
       }
     }
     if (
-      notification.type === NotificationType.Follow ||
-      notification.type === NotificationType.Repost ||
-      notification.type === NotificationType.Favorite
+      type === NotificationType.Follow ||
+      type === NotificationType.Repost ||
+      type === NotificationType.RepostOfRepost ||
+      type === NotificationType.Favorite ||
+      type === NotificationType.FavoriteOfRepost
     ) {
-      // @ts-ignore
       notification.userIds = [...new Set(notification.userIds)]
       userIdsToFetch.push(
         ...notification.userIds.slice(0, USER_INITIAL_LOAD_COUNT)
       )
     }
-    if (notification.type === NotificationType.RemixCreate) {
+    if (type === NotificationType.RemixCreate) {
       trackIdsToFetch.push(
         notification.parentTrackId,
         notification.childTrackId
       )
       notification.entityType = Entity.Track
-      notification.entityIds = [
-        notification.parentTrackId,
-        notification.childTrackId
-      ]
     }
-    if (notification.type === NotificationType.RemixCosign) {
+    if (type === NotificationType.RemixCosign) {
       trackIdsToFetch.push(notification.childTrackId)
       userIdsToFetch.push(notification.parentTrackUserId)
       notification.entityType = Entity.Track
       notification.entityIds = [notification.childTrackId]
       notification.userId = notification.parentTrackUserId
     }
-    if (notification.type === NotificationType.TrendingTrack) {
+    if (
+      type === NotificationType.TrendingTrack ||
+      type === NotificationType.TrendingUnderground
+    ) {
       trackIdsToFetch.push(notification.entityId)
     }
+    if (type === NotificationType.TrendingPlaylist) {
+      collectionIdsToFetch.push(notification.entityId)
+    }
     if (
-      notification.type === NotificationType.TipSend ||
-      notification.type === NotificationType.TipReceive ||
-      notification.type === NotificationType.SupporterRankUp ||
-      notification.type === NotificationType.SupportingRankUp ||
-      notification.type === NotificationType.Reaction
+      type === NotificationType.TipSend ||
+      type === NotificationType.TipReceive ||
+      type === NotificationType.SupporterRankUp ||
+      type === NotificationType.SupportingRankUp ||
+      type === NotificationType.Reaction
     ) {
       userIdsToFetch.push(notification.entityId)
     }
-    if (notification.type === NotificationType.TipReceive) {
+    if (type === NotificationType.TipReceive) {
       reactionSignatureToFetch.push(notification.tipTxSignature)
     }
-    if (notification.type === NotificationType.AddTrackToPlaylist) {
+    if (type === NotificationType.AddTrackToPlaylist) {
       trackIdsToFetch.push(notification.trackId)
       userIdsToFetch.push(notification.playlistOwnerId)
       collectionIdsToFetch.push(notification.playlistId)
     }
-    if (notification.type === NotificationType.SupporterDethroned) {
+    if (type === NotificationType.SupporterDethroned) {
       userIdsToFetch.push(notification.supportedUserId)
       userIdsToFetch.push(notification.entityId)
+    }
+    if (type === NotificationType.Tastemaker) {
+      userIdsToFetch.push(notification.userId)
+      trackIdsToFetch.push(notification.entityId)
     }
   })
 

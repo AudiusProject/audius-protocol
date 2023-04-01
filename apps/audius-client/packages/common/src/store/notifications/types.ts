@@ -627,7 +627,6 @@ export type RemixCreateNotification = BaseNotification & {
   parentTrackId: ID
   childTrackId: ID
   entityType: Entity.Track
-  entityIds: ID[]
 }
 
 export type RemixCreatePushNotification = {
