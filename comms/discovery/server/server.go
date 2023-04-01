@@ -20,7 +20,6 @@ import (
 	"comms.audius.co/discovery/schema"
 	sharedConfig "comms.audius.co/shared/config"
 	"comms.audius.co/shared/peering"
-	"comms.audius.co/shared/utils"
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
@@ -78,7 +77,6 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/chats/permissions", s.getChatPermissions)
 	g.GET("/chats/blockees", s.getChatBlockees)
 	g.GET("chats/blockers", s.getChatBlockers)
-	g.POST("/validate-can-chat", s.validateCanChat)
 
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
@@ -120,8 +118,8 @@ type ChatServer struct {
 }
 
 type ValidatedPermission struct {
-	Permission               schema.ChatPermission
-	CurrentUserHasPermission bool
+	Permits                  schema.ChatPermission `json:"permits"`
+	CurrentUserHasPermission bool                  `json:"current_user_has_permission"`
 }
 
 func (s *ChatServer) mutate(c echo.Context) error {
@@ -443,7 +441,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 	validatedPermissions := make(map[string]*ValidatedPermission)
 
 	query := c.Request().URL.Query()
-	encodedIds := query["userIds"]
+	encodedIds := query["users"]
 	if encodedIds != nil && len(encodedIds) > 0 {
 		var userIds []int32
 		for _, encodedId := range encodedIds {
@@ -454,7 +452,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 			userIds = append(userIds, int32(decodedId))
 			// Initialize response map
 			validatedPermissions[encodedId] = &ValidatedPermission{
-				Permission:               schema.All,
+				Permits:                  schema.All,
 				CurrentUserHasPermission: true,
 			}
 		}
@@ -549,98 +547,6 @@ func (s *ChatServer) getChatBlockers(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
-func (s *ChatServer) validateCanChat(c echo.Context) error {
-	payload, wallet, err := peering.ReadSignedRequest(c)
-	if err != nil {
-		return c.JSON(400, "bad request: "+err.Error())
-	}
-
-	userId, err := queries.GetUserIDFromWallet(db.Conn, c.Request().Context(), wallet)
-	if err != nil {
-		return c.String(400, "wallet not found: "+err.Error())
-	}
-
-	// Unmarshal RPC
-	var rawRpc schema.RawRPC
-	err = json.Unmarshal(payload, &rawRpc)
-	if err != nil {
-		return c.JSON(400, "bad request: "+err.Error())
-	}
-
-	// Validate and decode payload
-	var params schema.ValidateCanChatRPCParams
-	err = json.Unmarshal(rawRpc.Params, &params)
-	if err != nil {
-		return c.JSON(400, "bad request: "+err.Error())
-	}
-	var receiverUserIds []int32
-	canChat := make(map[string]bool)
-	for _, encodedId := range params.ReceiverUserIDS {
-		decodedId, err := misc.DecodeHashId(encodedId)
-		if err != nil {
-			return c.JSON(400, "bad request: "+err.Error())
-		}
-		receiverUserIds = append(receiverUserIds, int32(decodedId))
-		// Initialize response map
-		canChat[encodedId] = true
-	}
-
-	// Validate request sender is not the blocker or blockee for each receiver
-	blocks, err := queries.BulkGetChatBlockedOrBlocking(db.Conn, c.Request().Context(), queries.BulkGetChatBlockedOrBlockingParams{
-		SenderUserID:    userId,
-		ReceiverUserIDs: receiverUserIds,
-	})
-	if err != nil && err != sql.ErrNoRows {
-		return err
-	}
-	if err != sql.ErrNoRows {
-		var encodedId string
-		var receiver int32
-		var blockedReceivers []int32
-		for _, block := range blocks {
-			if block.BlockerUserID == userId {
-				// Request sender blocked this receiver
-				receiver = block.BlockeeUserID
-			} else {
-				// Receiver blocked request sender
-				receiver = block.BlockerUserID
-			}
-			// Update response map
-			encodedId, err = misc.EncodeHashId(int(receiver))
-			if err != nil {
-				return err
-			}
-			canChat[encodedId] = false
-			blockedReceivers = append(blockedReceivers, receiver)
-		}
-
-		// Remove blockedReceivers from receiverUserIds.
-		// We know sender cannot chat with blockedReceivers - no need
-		// to perform further validations.
-		receiverUserIds = utils.Difference(receiverUserIds, blockedReceivers)
-	}
-
-	if len(receiverUserIds) > 0 {
-		// Validate permission for each <request sender, user> pair
-		permissions, err := queries.BulkGetChatPermissions(db.Conn, c.Request().Context(), receiverUserIds)
-		if err != nil && err != sql.ErrNoRows {
-			return err
-		}
-		if err != sql.ErrNoRows {
-			canChat, err = validatePermissions(c, permissions, userId, canChat)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	response := schema.CommsResponse{
-		Health: s.getHealthStatus(),
-		Data:   canChat,
-	}
-	return c.JSON(200, response)
-}
-
 func getValidatedPermission(userId int32, validatedPermissions map[string]*ValidatedPermission) (*ValidatedPermission, error) {
 	encodedId, err := misc.EncodeHashId(int(userId))
 	if err != nil {
@@ -718,7 +624,7 @@ func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRo
 		if err != nil {
 			return err
 		}
-		(*validatedPermission).Permission = userPermission.Permits
+		(*validatedPermission).Permits = userPermission.Permits
 		if userPermission.Permits == schema.All || userPermission.UserID == currentUserId {
 			(*validatedPermission).CurrentUserHasPermission = true
 		} else {

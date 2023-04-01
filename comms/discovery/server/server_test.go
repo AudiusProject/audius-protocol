@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"crypto/ecdsa"
 	"encoding/base64"
 	"encoding/json"
@@ -62,18 +61,6 @@ func TestGetChats(t *testing.T) {
 	assert.NoError(t, err)
 	wallet1 := crypto.PubkeyToAddress(privateKey1.PublicKey).Hex()
 
-	privateKey2, err := crypto.GenerateKey()
-	assert.NoError(t, err)
-	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
-
-	privateKey3, err := crypto.GenerateKey()
-	assert.NoError(t, err)
-	wallet3 := crypto.PubkeyToAddress(privateKey3.PublicKey).Hex()
-
-	privateKey4, err := crypto.GenerateKey()
-	assert.NoError(t, err)
-	wallet4 := crypto.PubkeyToAddress(privateKey4.PublicKey).Hex()
-
 	// Set up db
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
@@ -88,8 +75,8 @@ func TestGetChats(t *testing.T) {
 	user3Id := seededRand.Int31()
 	user4Id := seededRand.Int31()
 
-	// Create 4 users
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true), ($5, lower($6), true), ($7, lower($8), true)", user1Id, wallet1, user2Id, wallet2, user3Id, wallet3, user4Id, wallet4)
+	// Create 1 user with wallet
+	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true)", user1Id, wallet1)
 	assert.NoError(t, err)
 
 	// Create 3 chats
@@ -316,10 +303,6 @@ func TestGetMessages(t *testing.T) {
 	assert.NoError(t, err)
 	wallet1 := crypto.PubkeyToAddress(privateKey1.PublicKey).Hex()
 
-	privateKey2, err := crypto.GenerateKey()
-	assert.NoError(t, err)
-	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
-
 	// Set up db
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
@@ -333,8 +316,8 @@ func TestGetMessages(t *testing.T) {
 	user1Id := seededRand.Int31()
 	user2Id := seededRand.Int31()
 
-	// Create 2 users
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true)", user1Id, wallet1, user2Id, wallet2)
+	// Create 1 user with wallet
+	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true)", user1Id, wallet1)
 	assert.NoError(t, err)
 
 	// Create a chat
@@ -515,10 +498,6 @@ func TestGetPermissions(t *testing.T) {
 	assert.NoError(t, err)
 	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
 
-	privateKey3, err := crypto.GenerateKey()
-	assert.NoError(t, err)
-	wallet3 := crypto.PubkeyToAddress(privateKey3.PublicKey).Hex()
-
 	// Set up db
 	_, err = db.Conn.Exec("truncate table chat cascade")
 	assert.NoError(t, err)
@@ -531,20 +510,43 @@ func TestGetPermissions(t *testing.T) {
 	user1Id := seededRand.Int31()
 	user2Id := seededRand.Int31()
 	user3Id := seededRand.Int31()
+	user4Id := seededRand.Int31()
+	user5Id := seededRand.Int31()
+	user6Id := seededRand.Int31()
 
-	// Create 3 users
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true), ($5, lower($6), true)", user1Id, wallet1, user2Id, wallet2, user3Id, wallet3)
+	encodedUser1, err := misc.EncodeHashId(int(user1Id))
+	assert.NoError(t, err)
+	encodedUser2, err := misc.EncodeHashId(int(user2Id))
+	assert.NoError(t, err)
+	encodedUser3, err := misc.EncodeHashId(int(user3Id))
+	assert.NoError(t, err)
+	encodedUser4, err := misc.EncodeHashId(int(user4Id))
+	assert.NoError(t, err)
+	encodedUser5, err := misc.EncodeHashId(int(user5Id))
+	assert.NoError(t, err)
+	encodedUser6, err := misc.EncodeHashId(int(user6Id))
+	assert.NoError(t, err)
+
+	// Create 2 users with wallets
+	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true)", user1Id, wallet1, user2Id, wallet2)
 	assert.NoError(t, err)
 
 	// user 2 follows user 1
 	_, err = tx.Exec("insert into follows (follower_user_id, followee_user_id, is_current, is_delete, created_at) values ($1, $2, true, false, now())", user2Id, user1Id)
 	assert.NoError(t, err)
 
+	// user 2 has tipped user 3
+	_, err = tx.Exec("insert into aggregate_user_tips (sender_user_id, receiver_user_id, amount) values ($1, $2, 5)", user2Id, user3Id)
+	assert.NoError(t, err)
+
 	// Set permissions:
 	// - user 1: implicit all
 	// - user 2: followees
 	// - user 3: tippers
-	_, err = tx.Exec("insert into chat_permissions (user_id, permits) values ($1, $2), ($3, $4)", user2Id, schema.Followees, user3Id, schema.Tippers)
+	// - user 4: followees
+	// - user 5: explicit all
+	// - user 6: none
+	_, err = tx.Exec("insert into chat_permissions (user_id, permits) values ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10)", user2Id, schema.Followees, user3Id, schema.Tippers, user4Id, schema.Followees, user5Id, schema.All, user6Id, schema.None)
 
 	err = tx.Commit()
 	assert.NoError(t, err)
@@ -554,44 +556,10 @@ func TestGetPermissions(t *testing.T) {
 		IsHealthy: true,
 	}
 
-	// Test GET /chats/permissions (implicit ALL setting)
+	// Test GET /chats/permissions (current user)
 	{
 		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d", time.Now().UnixMilli())
-		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
-		assert.NoError(t, err)
-
-		// Set sig header from user 1
-		payload := []byte(reqUrl)
-		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
-
-		rec := httptest.NewRecorder()
-		c := testServer.NewContext(req, rec)
-
-		res := rec.Result()
-		defer res.Body.Close()
-
-		// Assertions
-		expectedData := schema.All
-		expectedResponse, err := json.Marshal(
-			schema.CommsResponse{
-				Health: expectedHealth,
-				Data:   expectedData,
-			},
-		)
-		assert.NoError(t, err)
-
-		if assert.NoError(t, testServer.getChatPermissions(c)) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
-		}
-	}
-
-	// Test GET /chats/permissions (explicit setting)
-	{
-		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d", time.Now().UnixMilli())
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d&users=%s", time.Now().UnixMilli(), encodedUser2)
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
@@ -607,7 +575,144 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := schema.Followees
+		expectedData := map[string]*ValidatedPermission{
+			encodedUser2: {
+				Permits:                  schema.Followees,
+				CurrentUserHasPermission: true,
+			},
+		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		assert.NoError(t, err)
+
+		if assert.NoError(t, testServer.getChatPermissions(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
+	}
+
+	// Test GET /chats/permissions (implicit all, explicit all, none)
+	{
+		// Query /comms/chats/permissions
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d&users=%s&users=%s&users=%s", time.Now().UnixMilli(), encodedUser1, encodedUser5, encodedUser6)
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+		assert.NoError(t, err)
+
+		// Set sig header from user 2
+		payload := []byte(reqUrl)
+		sigBase64 := signPayload(t, payload, privateKey2)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := map[string]*ValidatedPermission{
+			encodedUser1: {
+				Permits:                  schema.All,
+				CurrentUserHasPermission: true,
+			},
+			encodedUser5: {
+				Permits:                  schema.All,
+				CurrentUserHasPermission: true,
+			},
+			encodedUser6: {
+				Permits:                  schema.None,
+				CurrentUserHasPermission: false,
+			},
+		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		assert.NoError(t, err)
+
+		if assert.NoError(t, testServer.getChatPermissions(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
+	}
+
+	// Test GET /chats/permissions (followees, tippers) -> (true, false)
+	{
+		// Query /comms/chats/permissions
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d&users=%s&users=%s", time.Now().UnixMilli(), encodedUser2, encodedUser3)
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+		assert.NoError(t, err)
+
+		// Set sig header from user 1
+		payload := []byte(reqUrl)
+		sigBase64 := signPayload(t, payload, privateKey1)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := map[string]*ValidatedPermission{
+			encodedUser2: {
+				Permits:                  schema.Followees,
+				CurrentUserHasPermission: true,
+			},
+			encodedUser3: {
+				Permits:                  schema.Tippers,
+				CurrentUserHasPermission: false,
+			},
+		}
+		expectedResponse, err := json.Marshal(
+			schema.CommsResponse{
+				Health: expectedHealth,
+				Data:   expectedData,
+			},
+		)
+		assert.NoError(t, err)
+		if assert.NoError(t, testServer.getChatPermissions(c)) {
+			assert.Equal(t, http.StatusOK, rec.Code)
+			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
+		}
+	}
+
+	// Test GET /chats/permissions (followees, tippers) -> (false, true)
+	{
+		// Query /comms/chats/permissions
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d&users=%s&users=%s", time.Now().UnixMilli(), encodedUser3, encodedUser4)
+		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
+		assert.NoError(t, err)
+
+		// Set sig header from user 2
+		payload := []byte(reqUrl)
+		sigBase64 := signPayload(t, payload, privateKey2)
+		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+
+		rec := httptest.NewRecorder()
+		c := testServer.NewContext(req, rec)
+
+		res := rec.Result()
+		defer res.Body.Close()
+
+		// Assertions
+		expectedData := map[string]*ValidatedPermission{
+			encodedUser3: {
+				Permits:                  schema.Tippers,
+				CurrentUserHasPermission: true,
+			},
+			encodedUser4: {
+				Permits:                  schema.Followees,
+				CurrentUserHasPermission: false,
+			},
+		}
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
 				Health: expectedHealth,
@@ -805,151 +910,6 @@ func TestGetBlockersAndBlockees(t *testing.T) {
 		assert.NoError(t, err)
 
 		if assert.NoError(t, testServer.getChatBlockers(c)) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
-		}
-	}
-}
-
-func TestValidateCanChat(t *testing.T) {
-	var err error
-
-	// Generate user keys
-	privateKey1, err := crypto.GenerateKey()
-	assert.NoError(t, err)
-	wallet1 := crypto.PubkeyToAddress(privateKey1.PublicKey).Hex()
-
-	privateKey2, err := crypto.GenerateKey()
-	assert.NoError(t, err)
-	wallet2 := crypto.PubkeyToAddress(privateKey2.PublicKey).Hex()
-
-	privateKey3, err := crypto.GenerateKey()
-	assert.NoError(t, err)
-	wallet3 := crypto.PubkeyToAddress(privateKey3.PublicKey).Hex()
-
-	privateKey4, err := crypto.GenerateKey()
-	assert.NoError(t, err)
-	wallet4 := crypto.PubkeyToAddress(privateKey4.PublicKey).Hex()
-
-	// Set up db
-	_, err = db.Conn.Exec("truncate table chat cascade")
-	assert.NoError(t, err)
-	_, err = db.Conn.Exec("truncate table users cascade")
-	assert.NoError(t, err)
-
-	tx := db.Conn.MustBegin()
-
-	seededRand := rand.New(rand.NewSource(time.Now().UnixNano()))
-	user1Id := seededRand.Int31()
-	user2Id := seededRand.Int31()
-	user3Id := seededRand.Int31()
-	user4Id := seededRand.Int31()
-
-	encodedUser1, err := misc.EncodeHashId(int(user1Id))
-	assert.NoError(t, err)
-	encodedUser2, err := misc.EncodeHashId(int(user2Id))
-	assert.NoError(t, err)
-	encodedUser3, err := misc.EncodeHashId(int(user3Id))
-	assert.NoError(t, err)
-	encodedUser4, err := misc.EncodeHashId(int(user4Id))
-	assert.NoError(t, err)
-
-	// Create 4 users
-	_, err = tx.Exec("insert into users (user_id, wallet, is_current) values ($1, lower($2), true), ($3, lower($4), true), ($5, lower($6), true), ($7, lower($8), true)", user1Id, wallet1, user2Id, wallet2, user3Id, wallet3, user4Id, wallet4)
-	assert.NoError(t, err)
-
-	// user 2 follows user 1
-	_, err = tx.Exec("insert into follows (follower_user_id, followee_user_id, is_current, is_delete, created_at) values ($1, $2, true, false, now())", user2Id, user1Id)
-	assert.NoError(t, err)
-
-	// user 2 has tipped user 3
-	_, err = tx.Exec("insert into aggregate_user_tips (sender_user_id, receiver_user_id, amount) values ($1, $2, 5)", user2Id, user3Id)
-	assert.NoError(t, err)
-
-	// user 4 blocks user 1
-	_, err = tx.Exec("insert into chat_blocked_users (blocker_user_id, blockee_user_id, created_at) values ($1, $2, $3)", user4Id, user1Id, time.Now())
-
-	// Set permissions:
-	// - user 1: implicit all
-	// - user 2: followees
-	// - user 3: tippers
-	// - user 4: implicit all
-	_, err = tx.Exec("insert into chat_permissions (user_id, permits) values ($1, $2), ($3, $4)", user2Id, schema.Followees, user3Id, schema.Tippers)
-
-	err = tx.Commit()
-	assert.NoError(t, err)
-
-	// Common expected responses
-	expectedHealth := schema.Health{
-		IsHealthy: true,
-	}
-
-	// Test POST /validate-can-chat (with blocking + all permission types)
-	{
-		// Query /comms/validate-can-chat
-		reqUrl := fmt.Sprintf("/comms/validate-can-chat?timestamp=%d", time.Now().UnixMilli())
-		payload := []byte(fmt.Sprintf(`{"method": "user.validate_can_chat", "params": {"receiver_user_ids": ["%s", "%s", "%s"]}}`, encodedUser2, encodedUser3, encodedUser4))
-		req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(payload))
-		assert.NoError(t, err)
-
-		// Set sig header from user 1
-		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
-
-		rec := httptest.NewRecorder()
-		c := testServer.NewContext(req, rec)
-
-		res := rec.Result()
-		defer res.Body.Close()
-
-		// Assertions
-		expectedData := map[string]bool{
-			encodedUser2: true,
-			encodedUser3: false,
-			encodedUser4: false,
-		}
-		expectedResponse, err := json.Marshal(
-			schema.CommsResponse{
-				Health: expectedHealth,
-				Data:   expectedData,
-			},
-		)
-		if assert.NoError(t, testServer.validateCanChat(c)) {
-			assert.Equal(t, http.StatusOK, rec.Code)
-			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
-		}
-	}
-
-	// Test POST /validate-can-chat (subset of permission types)
-	{
-		// Query /comms/validate-can-chat
-		reqUrl := fmt.Sprintf("/comms/validate-can-chat?timestamp=%d", time.Now().UnixMilli())
-		payload := []byte(fmt.Sprintf(`{"method": "user.validate_can_chat", "params": {"receiver_user_ids": ["%s", "%s"]}}`, encodedUser1, encodedUser3))
-		req, err := http.NewRequest(http.MethodPost, reqUrl, bytes.NewBuffer(payload))
-		assert.NoError(t, err)
-
-		// Set sig header from user 2
-		sigBase64 := signPayload(t, payload, privateKey2)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
-
-		rec := httptest.NewRecorder()
-		c := testServer.NewContext(req, rec)
-
-		res := rec.Result()
-		defer res.Body.Close()
-
-		// Assertions
-		expectedData := map[string]bool{
-			encodedUser1: true,
-			encodedUser3: true,
-		}
-		expectedResponse, err := json.Marshal(
-			schema.CommsResponse{
-				Health: expectedHealth,
-				Data:   expectedData,
-			},
-		)
-		if assert.NoError(t, testServer.validateCanChat(c)) {
 			assert.Equal(t, http.StatusOK, rec.Code)
 			assert.JSONEq(t, string(expectedResponse), rec.Body.String())
 		}
