@@ -7,7 +7,7 @@ from src.tasks.index_trending import (
     find_min_block_above_timestamp,
     floor_time,
     get_should_update_trending,
-    index_trending,
+    index_trending_tracks,
     set_last_trending_datetime,
 )
 from src.utils.config import shared_config
@@ -194,7 +194,7 @@ def test_index_trending(app, mocker):
         db = get_db()
 
         populate_mock_db(db, entities)
-        index_trending({}, db, redis_conn, last_trending_date)
+        index_trending_tracks({}, db, redis_conn, last_trending_date)
         with db.scoped_session() as session:
             trending_notifications = (
                 session.query(Notification)
