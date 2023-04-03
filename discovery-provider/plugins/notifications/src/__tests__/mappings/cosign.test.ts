@@ -80,7 +80,11 @@ describe('Cosign Notification', () => {
       {
         title: 'New Track Co-Sign! 🔥',
         body: 'user_1 Co-Signed your Remix of track_title_20',
-        data: {}
+        data: {
+          "childTrackId": 20,
+          "id": "timestamp:1589373217:group_id:cosign:parent_track10:original_track:20",
+          "type": "RemixCosign",
+        }
       }
     )
   })

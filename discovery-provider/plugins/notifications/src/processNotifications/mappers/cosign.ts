@@ -86,7 +86,11 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
             {
               title: 'New Track Co-Sign! 🔥',
               body: `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`,
-              data: {}
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                type: 'RemixCosign',
+                childTrackId: this.trackId
+              }
             }
           )
         })

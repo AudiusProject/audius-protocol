@@ -216,13 +216,12 @@ export async function sendDMNotifications(discoveryDB: Knex, identityDB: Knex) {
     )
 
     if (notifications.length > 0) {
-      logger.info('dmNotifications task: processed new DM push notifications')
+      timer.logMessage(DMPhase.PUSH_NOTIFICATIONS)
+      logger.info({
+        ...timer.getContext(),
+        numberNotifications: notifications.length
+      }, 'dmNotifications task: processed new DM push notifications')
     }
-    timer.logMessage(DMPhase.PUSH_NOTIFICATIONS)
-    logger.info({
-      ...timer.getContext(),
-      numberNotifications: notifications.length
-    })
   } catch (err) {
     logger.error({
       ...timer.getContext(),

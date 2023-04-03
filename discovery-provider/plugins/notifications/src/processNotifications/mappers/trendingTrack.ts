@@ -89,7 +89,13 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
               body: `${tracks[this.trackId]?.title} is #${
                 this.rank
               } on Trending right now!`,
-              data: {}
+              data: {
+                type: 'TrendingTrack',
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
+                entityId: this.trackId
+              }
             }
           )
         })

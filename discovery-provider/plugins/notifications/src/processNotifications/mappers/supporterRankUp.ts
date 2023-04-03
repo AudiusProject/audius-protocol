@@ -76,10 +76,13 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
             },
             {
               title: `#${this.rank} Top Supporter`,
-              body: `${capitalize(sendingUserName)} became your #${
-                this.rank
-              } Top Supporter!`,
-              data: {}
+              body: `${capitalize(sendingUserName)} became your #${this.rank
+                } Top Supporter!`,
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                type: 'SupporterRankUp',
+                entityId: this.senderUserId
+              }
             }
           )
         })
