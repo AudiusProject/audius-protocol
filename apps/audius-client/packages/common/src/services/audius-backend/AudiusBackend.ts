@@ -2094,7 +2094,7 @@ export const audiusBackend = ({
     return {
       groupId: notification.group_id,
       timestamp,
-      isViewed: notification.seen_at == null,
+      isViewed: !!notification.seen_at,
       id: `timestamp:${timestamp}:group_id:${notification.group_id}`
     }
   }
