@@ -166,9 +166,9 @@ const NavColumn = ({
       record(make(Name.NOTIFICATIONS_OPEN, { source: 'button' }))
     } else {
       closeNotificationPanel()
-    }
-    if (notificationCount > 0) {
-      markAllNotificationsAsViewed()
+      if (notificationCount > 0) {
+        markAllNotificationsAsViewed()
+      }
     }
   }, [
     notificationPanelIsOpen,
