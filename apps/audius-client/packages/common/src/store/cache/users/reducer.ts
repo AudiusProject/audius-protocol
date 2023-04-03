@@ -1,8 +1,10 @@
+import { Cache } from 'models/Cache'
 import { ID } from 'models/Identifiers'
 import { User } from 'models/User'
-import { Cache } from 'models/Cache'
 import { initialCacheState } from 'store/cache/reducer'
+
 import { AddSuccededAction, ADD_SUCCEEDED } from '../actions'
+
 import type { UsersCacheState } from './types'
 
 const initialState: UsersCacheState = {

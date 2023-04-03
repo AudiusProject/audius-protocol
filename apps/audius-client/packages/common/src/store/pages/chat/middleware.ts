@@ -1,6 +1,7 @@
 import { ChatEvents, type sdk } from '@audius/sdk'
-import { Status } from 'models/Status'
 import { Middleware } from 'redux'
+
+import { Status } from 'models/Status'
 
 import { actions as chatActions } from './slice'
 

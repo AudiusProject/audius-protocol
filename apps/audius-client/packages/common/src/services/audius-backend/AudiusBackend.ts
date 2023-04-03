@@ -2558,7 +2558,6 @@ export const audiusBackend = ({
         message: 'success'
         notifications: IdentityNotification[]
         totalUnread: number
-        playlistUpdates: number[]
       }
       const notificationsResult: NotificationsResult =
         await notificationsResponse.json()
@@ -3123,43 +3122,15 @@ export const audiusBackend = ({
    * @param {playlistId} playlistId playlist id or folder id
    */
   async function updatePlaylistLastViewedAt(playlistId: ID) {
-    if (!(await getFeatureEnabled(FeatureFlags.PLAYLIST_UPDATES_ENABLED)))
-      return
-
     await waitForLibsInit()
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
 
-    let updatedPlaylistResponse = false
     try {
-      const { data, signature } = await signData()
-      const response = await fetch(
-        `${identityServiceUrl}/user_playlist_updates?walletAddress=${account.wallet}&playlistId=${playlistId}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            [AuthHeaders.Message]: data,
-            [AuthHeaders.Signature]: signature
-          }
-        }
-      )
-      updatedPlaylistResponse = await response.json()
+      return await audiusLibs.Notifications.viewPlaylist({ playlistId })
     } catch (err) {
       console.log(getErrorMessage(err))
     }
-    try {
-      if (
-        await getFeatureEnabled(
-          FeatureFlags.ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED
-        )
-      ) {
-        await audiusLibs.Notifications.viewPlaylist({ playlistId })
-      }
-    } catch (err) {
-      console.log(getErrorMessage(err))
-    }
-    return updatedPlaylistResponse
   }
 
   async function updateHCaptchaScore(token: string) {
