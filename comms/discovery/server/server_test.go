@@ -682,7 +682,7 @@ func TestGetBlocked(t *testing.T) {
 		// Set sig header from user 1
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -716,7 +716,7 @@ func TestGetBlocked(t *testing.T) {
 		// Set sig header from user 2
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey2)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -860,7 +860,7 @@ func TestValidateCanChat(t *testing.T) {
 
 		// Set sig header from user 2
 		sigBase64 := signPayload(t, payload, privateKey2)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
