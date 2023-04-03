@@ -61,6 +61,9 @@ export type DetailsTileProps = {
   /** Is the item playing */
   isPlaying?: boolean
 
+  /** Is the item loaded and in a playable state */
+  isPlayable?: boolean
+
   /** Function to call when the favorites count is pressed */
   onPressFavorites?: GestureResponderHandler
 

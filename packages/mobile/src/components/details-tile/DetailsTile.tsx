@@ -194,6 +194,7 @@ export const DetailsTile = ({
   hideRepostCount,
   hideShare,
   isPlaying,
+  isPlayable = true,
   onPressFavorites,
   onPressOverflow,
   onPressPlay,
@@ -370,6 +371,7 @@ export const DetailsTile = ({
                 iconPosition='left'
                 icon={isPlaying ? IconPause : PlayIcon}
                 onPress={handlePressPlay}
+                disabled={!isPlayable}
                 fullWidth
               />
             ) : null}
