@@ -53,7 +53,6 @@ begin
     update aggregate_playlist
     set save_count = save_count + delta
     where playlist_id = new.save_item_id
-    where playlist_id = new.save_item_id
     returning save_count into new_val;
 
     if new.is_delete IS FALSE then

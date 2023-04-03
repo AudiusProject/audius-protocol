@@ -69,19 +69,6 @@ begin
 
   return null;
 end; 
-
--- create or replace function revert_follow() returns trigger as $$
--- begin
---   update aggregate_user 
---   set following_count = following_count - 1 
---   where user_id = new.follower_user_id;
-
---   update aggregate_user 
---   set follower_count = follower_count - 1
---   where user_id = new.followee_user_id;
--- end;
-
-
 $$ language plpgsql;
 
 do $$ begin
@@ -91,11 +78,3 @@ do $$ begin
 exception
   when others then null;
 end $$;
-
--- do $$ begin
---   create trigger revert_follow
---   after delete on follows
---   for each row execute procedure revert_follow();
--- exception
---   when others then null;
--- end $$;

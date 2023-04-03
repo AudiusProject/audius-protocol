@@ -9,19 +9,18 @@ begin
   insert into aggregate_track (track_id) values (new.track_id) on conflict do nothing;
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
+  -- increment or decrement?
+  if (new.is_delete) then
+    delta := -1;
+  else
+    delta := 1;
+  end if;
+
+
   -- full recalculate for now
   -- this isn't as frequent as social actions and this query isn't as expensive
   update aggregate_user 
-  set track_count = (
-    select count(*)
-    from tracks t
-    where t.is_current is true
-      and t.is_delete is false
-      and t.is_unlisted is false
-      and t.is_available is true
-      and t.stem_of is null
-      and t.owner_id = new.owner_id
-  )
+    set track_count = track_count + delta
   where user_id = new.owner_id
   ;
 

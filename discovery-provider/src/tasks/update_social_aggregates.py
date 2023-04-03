@@ -1,6 +1,8 @@
-import datetime
 import logging
+from datetime import datetime
+from typing import List
 
+from src.models.tracks.aggregate_track import AggregateTrack
 from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
@@ -53,7 +55,7 @@ from new_aggregate_playlist nap
 where
     ap.playlist_id = nap.playlist_id
 		and (ap.save_count != nap.save_count or ap.repost_count != nap.repost_count)
-returning ap.user_id;
+returning ap.playlist_id;
 """
 
 update_aggregate_track_query = """
@@ -106,7 +108,7 @@ where
     at.save_count != nat.save_count
     or at.repost_count != nat.repost_count
   )
-returning at.user_id;
+returning at.track_id;
 """
 
 update_aggregate_user_query = """
@@ -259,10 +261,15 @@ def _update_social_aggregates(session):
     )
     start_time = datetime.now()
 
-    session.execute(update_aggregate_track_query)
+    res = session.execute(update_aggregate_track_query)
     logger.info(
-        f"update_social_aggregates.py | updated aggregate_track in {datetime.now() - start_time}"
+        f"update_social_aggregates.py | updated aggregate_track {res.fetchall()} in {datetime.now() - start_time}"
     )
+    aggregate_track_all: List[AggregateTrack] = (
+        session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
+    )
+    # update aggregate track
+    logger.info(f"asdf updated results {aggregate_track_all}")
 
     start_time = datetime.now()
     session.execute(update_aggregate_playlist_query)
