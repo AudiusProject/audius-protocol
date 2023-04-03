@@ -3,7 +3,6 @@ import { Environment } from '../env'
 /* FeatureFlags must be lowercase snake case */
 export enum FeatureFlags {
   SOLANA_LISTEN_ENABLED = 'solana_listen_enabled',
-  PLAYLIST_UPDATES_ENABLED = 'playlist_updates_enabled',
   SHARE_SOUND_TO_TIKTOK = 'share_sound_to_tiktok',
   CHALLENGE_REWARDS_UI = 'challenge_rewards_ui',
   SURFACE_AUDIO_ENABLED = 'surface_audio_enabled',
@@ -36,7 +35,6 @@ export enum FeatureFlags {
   CHAT_ENABLED = 'chat_enabled',
   FAST_CACHE = 'fast_cache',
   SAFE_FAST_CACHE = 'safe_fast_cache',
-  ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED = 'entity_manager_view_playlist_enabled',
   ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED = 'entity_manager_view_notifications_enabled',
   SHARE_VIDEO_TO_TIKTOK = 'share_video_to_tiktok_2',
   PODCAST_CONTROL_UPDATES_ENABLED = 'podcast_control_updates_enabled',
@@ -67,7 +65,6 @@ export const environmentFlagDefaults: Record<
  */
 export const flagDefaults: FlagDefaults = {
   [FeatureFlags.SOLANA_LISTEN_ENABLED]: false,
-  [FeatureFlags.PLAYLIST_UPDATES_ENABLED]: false,
   [FeatureFlags.SHARE_SOUND_TO_TIKTOK]: false,
   [FeatureFlags.CHALLENGE_REWARDS_UI]: false,
   [FeatureFlags.SURFACE_AUDIO_ENABLED]: false,
@@ -100,7 +97,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.CHAT_ENABLED]: false,
   [FeatureFlags.FAST_CACHE]: false,
   [FeatureFlags.SAFE_FAST_CACHE]: false,
-  [FeatureFlags.ENTITY_MANAGER_VIEW_PLAYLIST_ENABLED]: false,
   [FeatureFlags.ENTITY_MANAGER_VIEW_NOTIFICATIONS_ENABLED]: false,
   [FeatureFlags.SHARE_VIDEO_TO_TIKTOK]: false,
   [FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED]: false,

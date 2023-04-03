@@ -599,7 +599,12 @@ function* handleUnfollowUser(
 function* handleFollowUser(
   action: ReturnType<typeof usersSocialActions.followUser>
 ) {
-  yield* call(updateSpecialAccessTracks, action.userId, 'follow', action.trackId)
+  yield* call(
+    updateSpecialAccessTracks,
+    action.userId,
+    'follow',
+    action.trackId
+  )
 }
 
 function* handleTipGatedTracks(

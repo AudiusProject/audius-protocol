@@ -1,17 +1,17 @@
 import { call, takeEvery, select, put } from 'typed-redux-saga'
 
+import { Name } from 'models/Analytics'
 import { getContext } from 'store/effects'
 
 import { getUserId } from '../account/selectors'
 
+import { selectPlaylistUpdatesTotal } from './playlistUpdatesSelectors'
 import {
   fetchPlaylistUpdates,
   playlistUpdatesReceived,
   updatedPlaylistViewed
 } from './playlistUpdatesSlice'
 import { UpdatedPlaylistViewedAction } from './types'
-import { selectPlaylistUpdatesTotal } from './playlistUpdatesSelectors'
-import { Name } from 'models/Analytics'
 
 function* watchFetchPlaylistUpdates() {
   yield* takeEvery(fetchPlaylistUpdates, fetchPlaylistUpdatesWorker)
