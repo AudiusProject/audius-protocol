@@ -10,6 +10,7 @@ import {
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
 
+import { make } from 'common/store/analytics/actions'
 import { useSelector } from 'utils/reducer'
 
 import { EntityLink } from './components/EntityLink'
@@ -57,10 +58,10 @@ export const TastemakerNotification = (props: TastemakerNotificationProps) => {
     (trackOwnerHandle: string) => {
       const trackTitle = track?.title || ''
       const shareText = messages.twitterShare(trackOwnerHandle, trackTitle)
-      const analytics = {
-        eventName: Name.NOTIFICATIONS_CLICK_TASTEMAKER_TWITTER_SHARE,
-        text: shareText
-      }
+      const analytics = make(
+        Name.NOTIFICATIONS_CLICK_TASTEMAKER_TWITTER_SHARE,
+        { text: shareText }
+      )
       return { shareText: track ? shareText : '', analytics }
     },
     [track]
@@ -80,7 +81,6 @@ export const TastemakerNotification = (props: TastemakerNotificationProps) => {
       <TwitterShareButton
         type='dynamic'
         handle={trackOwnerUser.handle}
-        // @ts-ignore -- TODO fix befere merge
         shareData={handleShare}
       />
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
