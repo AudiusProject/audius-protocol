@@ -559,7 +559,7 @@ func TestGetPermissions(t *testing.T) {
 	// Test GET /chats/permissions (current user)
 	{
 		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d&users=%s", time.Now().UnixMilli(), encodedUser2)
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?id=%s&timestamp=%d", encodedUser2, time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
@@ -598,7 +598,7 @@ func TestGetPermissions(t *testing.T) {
 	// Test GET /chats/permissions (implicit all, explicit all, none)
 	{
 		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d&users=%s&users=%s&users=%s", time.Now().UnixMilli(), encodedUser1, encodedUser5, encodedUser6)
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?id=%s&id=%s&id=%s&timestamp=%d", encodedUser1, encodedUser5, encodedUser6, time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
@@ -645,7 +645,7 @@ func TestGetPermissions(t *testing.T) {
 	// Test GET /chats/permissions (followees, tippers) -> (true, false)
 	{
 		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d&users=%s&users=%s", time.Now().UnixMilli(), encodedUser2, encodedUser3)
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?id=%s&id=%s&timestamp=%d", encodedUser2, encodedUser3, time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 
@@ -687,7 +687,7 @@ func TestGetPermissions(t *testing.T) {
 	// Test GET /chats/permissions (followees, tippers) -> (false, true)
 	{
 		// Query /comms/chats/permissions
-		reqUrl := fmt.Sprintf("/comms/chats/permissions?timestamp=%d&users=%s&users=%s", time.Now().UnixMilli(), encodedUser3, encodedUser4)
+		reqUrl := fmt.Sprintf("/comms/chats/permissions?id=%s&id=%s&timestamp=%d", encodedUser3, encodedUser4, time.Now().UnixMilli())
 		req, err := http.NewRequest(http.MethodGet, reqUrl, nil)
 		assert.NoError(t, err)
 

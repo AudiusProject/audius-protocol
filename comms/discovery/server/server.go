@@ -441,7 +441,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 	validatedPermissions := make(map[string]*ValidatedPermission)
 
 	query := c.Request().URL.Query()
-	encodedIds := query["users"]
+	encodedIds := query["id"]
 	if encodedIds != nil && len(encodedIds) > 0 {
 		var userIds []int32
 		for _, encodedId := range encodedIds {
