@@ -2,13 +2,15 @@ import {
   Name,
   signOutActions,
   getContext,
-  accountActions
+  accountActions,
+  tokenDashboardPageActions
 } from '@audius/common'
 import { takeLatest, put } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
 import { signOut } from 'store/sign-out/signOut'
 const { resetAccount, unsubscribeBrowserPushNotifications } = accountActions
+const { resetState: resetWalletState } = tokenDashboardPageActions
 const { signOut: signOutAction } = signOutActions
 
 function* watchSignOut() {
@@ -17,6 +19,7 @@ function* watchSignOut() {
   yield takeLatest(signOutAction.type, function* () {
     yield put(resetAccount())
     yield put(unsubscribeBrowserPushNotifications())
+    yield put(resetWalletState())
     yield put(
       make(Name.SETTINGS_LOG_OUT, {
         callback: () => signOut(audiusBackendInstance, localStorage)

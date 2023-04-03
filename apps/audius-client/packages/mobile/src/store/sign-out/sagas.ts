@@ -5,7 +5,8 @@ import {
   feedPageLineupActions,
   themeActions,
   Theme,
-  waitForValue
+  waitForValue,
+  tokenDashboardPageActions
 } from '@audius/common'
 import { setupBackend } from 'audius-client/src/common/store/backend/actions'
 import { getIsSettingUp } from 'audius-client/src/common/store/backend/selectors'
@@ -26,6 +27,7 @@ import { clearHistory } from '../search/searchSlice'
 import { disablePushNotifications } from '../settings/sagas'
 
 const { resetAccount } = accountActions
+const { resetState: resetWalletState } = tokenDashboardPageActions
 const { signOut: signOutAction } = signOutActions
 const { setTheme } = themeActions
 
@@ -43,6 +45,7 @@ function* signOut() {
   yield* put(clearHistory())
   yield* put(resetOAuthState())
   yield* put(clearOfflineDownloads())
+  yield* put(resetWalletState())
 
   yield* call(disablePushNotifications)
   yield* call([localStorage, 'clearAudiusAccount'])

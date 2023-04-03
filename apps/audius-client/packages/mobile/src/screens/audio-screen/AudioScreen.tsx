@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import type { StringWei, CommonState } from '@audius/common'
 import {
+  tokenDashboardPageActions,
   StringKeys,
   vipDiscordModalActions,
   formatWei,
@@ -49,6 +50,7 @@ const { setVisibility } = modalsActions
 const { getBalance } = walletActions
 const { getAccountTotalBalance } = walletSelectors
 const { getHasAssociatedWallets } = tokenDashboardPageSelectors
+const { fetchAssociatedWallets } = tokenDashboardPageActions
 const { pressDiscord } = vipDiscordModalActions
 
 const LEARN_MORE_LINK = 'https://blog.audius.co/article/community-meet-audio'
@@ -195,6 +197,7 @@ export const AudioScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
+      dispatch(fetchAssociatedWallets())
       dispatch(getBalance())
     }, [dispatch])
   )
