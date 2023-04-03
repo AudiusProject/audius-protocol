@@ -162,9 +162,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	basePath.GET("/debug/uploads", ss.dumpUploads)
 	basePath.GET("/debug/ls", ss.getLs)
 
-	// JSON CID stuff
-	// basePath.POST("/tracks/metadata", ss.postMetadataCid)
-
 	// internal
 	internalApi := basePath.Group("/internal")
 
