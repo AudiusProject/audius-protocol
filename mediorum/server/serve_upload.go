@@ -6,13 +6,12 @@ import (
 	"crypto/sha1"
 	"encoding/base32"
 	"io"
-	"io/ioutil"
 	"sync"
 	"time"
 
 	"github.com/ipfs/go-cid"
-	util "github.com/ipfs/go-ipfs-util"
 	"github.com/labstack/echo/v4"
+	"github.com/multiformats/go-multihash"
 )
 
 var (
@@ -108,13 +107,13 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(200, uploads)
 }
 
-func computeFileCID(file io.Reader) (string, error) {
+func computeFileCID(f io.ReadSeeker) (string, error) {
+	defer f.Seek(0, 0)
 	builder := cid.V1Builder{}
-	contents, err := ioutil.ReadAll(file)
+	hash, err := multihash.SumStream(f, multihash.SHA2_256, -1)
 	if err != nil {
 		return "", err
 	}
-	hash := util.Hash(contents)
 	cid, err := builder.Sum(hash)
 	if err != nil {
 		return "", err
