@@ -78,9 +78,15 @@ func (ss *MediorumServer) postBlob(c echo.Context) error {
 		}
 		defer inp.Close()
 
-		// this allows caller to write any key
-		// a safer option might be to hash everything all the time
-		err = ss.replicateToMyBucket(upload.Filename, inp)
+		cid, err := computeFileCID(inp)
+		if err != nil {
+			return err
+		}
+		if cid != upload.Filename {
+			ss.logger.Warn("postBlob CID mismatch", "filename", upload.Filename, "cid", cid)
+		}
+
+		err = ss.replicateToMyBucket(cid, inp)
 		if err != nil {
 			ss.logger.Info("accept ERR", "file", upload.Filename, "err", err)
 		}

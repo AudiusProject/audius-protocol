@@ -19,6 +19,7 @@ type Upload struct {
 
 	Template     string         `json:"template"`
 	OrigFileName string         `json:"orig_filename"`
+	OrigFileCID  string         `json:"orig_file_cid"`
 	FFProbe      *FFProbeResult `json:"probe" gorm:"serializer:json"`
 	Error        string         `json:"error,omitempty"`
 	Mirrors      []string       `json:"mirrors" gorm:"serializer:json"`

@@ -180,7 +180,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	upload.Status = JobStatusBusy
 	ss.crud.Update(upload)
 
-	fileHash := upload.ID
+	fileHash := upload.OrigFileCID
 	logger := ss.logger.New("template", upload.Template, "hash", fileHash)
 
 	onError := func(err error, info ...string) error {

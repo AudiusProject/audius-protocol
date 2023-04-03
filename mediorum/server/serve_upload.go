@@ -6,6 +6,7 @@ import (
 	"crypto/sha1"
 	"encoding/base32"
 	"io"
+	"mime/multipart"
 	"sync"
 	"time"
 
@@ -73,8 +74,14 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				upload.Error = err.Error()
 				return
 			}
+			formFileCID, err := computeFileHeaderCID(formFile)
+			if err != nil {
+				upload.Error = err.Error()
+				return
+			}
 
 			upload.ID = randomID
+			upload.OrigFileCID = formFileCID
 			upload.FFProbe, _ = ffprobeUpload(formFile)
 
 			// mirror to n peers
@@ -84,13 +91,13 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				return
 			}
 
-			upload.Mirrors, err = ss.replicateFile(randomID, file)
+			upload.Mirrors, err = ss.replicateFile(formFileCID, file)
 			if err != nil {
 				upload.Error = err.Error()
 				return
 			}
 
-			ss.logger.Info("mirrored", "name", formFile.Filename, "randomID", randomID, "mirrors", upload.Mirrors)
+			ss.logger.Info("mirrored", "name", formFile.Filename, "randomID", randomID, "formFileCID", formFileCID, "mirrors", upload.Mirrors)
 
 			err = ss.crud.Create(upload)
 			if err != nil {
@@ -105,6 +112,15 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	}
 
 	return c.JSON(200, uploads)
+}
+
+func computeFileHeaderCID(fh *multipart.FileHeader) (string, error) {
+	f, err := fh.Open()
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+	return computeFileCID(f)
 }
 
 func computeFileCID(f io.ReadSeeker) (string, error) {
