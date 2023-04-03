@@ -179,19 +179,7 @@ export const fileHasher = {
    */
   async generateNonImageCid(content, logger = console) {
     const buffer = await fileHasher.convertToBuffer(content, logger)
-
-    const startHashing = process.hrtime.bigint()
-    const cid = await fileHasher.hashNonImages(buffer)
-
-    const hashDurationMs = fileHasher.convertNanosToMillis(
-      process.hrtime.bigint() - startHashing
-    )
-
-    logger.debug(
-      `[fileHasher - generateNonImageCid()] CID=${cid} hashDurationMs=${hashDurationMs}ms`
-    )
-
-    return cid
+    return fileHasher.hashNonImages(buffer)
   },
 
   /**
@@ -200,17 +188,7 @@ export const fileHasher = {
    * @param {Object?} logger
    * @returns {HashedImage[]} only hash responses with the structure [{path: <string>, cid: <string>, size: <number>}]
    */
-  async generateImageCids(content, logger = console) {
-    const startHashing = process.hrtime.bigint()
-    const hashedImages = await fileHasher.hashImages(content)
-    const hashDurationMs = fileHasher.convertNanosToMillis(
-      process.hrtime.bigint() - startHashing
-    )
-
-    const hashedImagesStr = JSON.stringify(hashedImages)
-    logger.debug(
-      `[fileHasher - generateImageCids()] hashedImages=${hashedImagesStr} hashImagesDurationMs=${hashDurationMs}ms`
-    )
-    return hashedImages
+  async generateImageCids(content, _ = console) {
+    return fileHasher.hashImages(content)
   }
 }

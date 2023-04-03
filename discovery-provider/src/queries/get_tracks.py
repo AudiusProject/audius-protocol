@@ -163,9 +163,10 @@ def _get_tracks(session, args):
                 sort_fn(
                     coalesce(
                         func.to_timestamp_safe(
-                            TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM"
+                            TrackWithAggregates.release_date,
+                            "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
                         ),
-                        TrackWithAggregates.created_at
+                        TrackWithAggregates.created_at,
                     )
                 )
             )
@@ -204,7 +205,8 @@ def _get_tracks(session, args):
                 coalesce(
                     # This func is defined in alembic migrations
                     func.to_timestamp_safe(
-                        TrackWithAggregates.release_date, "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM"
+                        TrackWithAggregates.release_date,
+                        "Dy Mon DD YYYY HH24:MI:SS GMTTZHTZM",
                     ),
                     TrackWithAggregates.created_at,
                 ).desc()
