@@ -23,7 +23,7 @@ var (
 	// we will need two clients:
 	// a POA client for older users
 	// an audius chain client for newer users
-	finalPoaBlock     int64 = 0
+	finalPoaBlock     int64 = 31413000
 	audiusChainClient *ethclient.Client
 
 	chainId           int64
@@ -33,7 +33,7 @@ var (
 func Dial(discoveryConfig *config.DiscoveryConfig) error {
 	var err error
 
-	endpoint := "https://poa-gateway.audius.co"
+	endpoint := "http://54.241.83.13:8545"
 	chainId = 99
 	verifyingContract = "0x981c44040cb6150a2b8a7f63fb182760505bf666"
 

@@ -53,3 +53,24 @@ func TestRecovery(t *testing.T) {
 	}
 
 }
+
+func TestRecoveryProd(t *testing.T) {
+	t.Skip()
+
+	var err error
+
+	// dagron
+	discoveryConfig := config.Parse()
+	err = Dial(discoveryConfig)
+	assert.NoError(t, err)
+
+	// addUser on POA
+	{
+		// 8592904
+		blocknumber := big.NewInt(8592904)
+
+		pk, err := findAddUserTransaction(context.Background(), blocknumber)
+		assert.NoError(t, err)
+		fmt.Println(pk)
+	}
+}
