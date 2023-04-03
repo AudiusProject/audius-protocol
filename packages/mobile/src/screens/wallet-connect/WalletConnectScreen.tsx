@@ -1,4 +1,7 @@
+import { tokenDashboardPageActions } from '@audius/common'
 import { View } from 'react-native'
+import { useDispatch } from 'react-redux'
+import { useEffectOnce } from 'react-use'
 
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconRemove from 'app/assets/images/iconRemove.svg'
@@ -12,6 +15,8 @@ import { ConnectNewWalletButton } from './ConnectNewWalletButton'
 import { LinkedWallets } from './components'
 import type { WalletConnectParamList } from './types'
 import { useWalletStatusToasts } from './useWalletStatusToasts'
+
+const { fetchAssociatedWallets } = tokenDashboardPageActions
 
 const messages = {
   title: 'Connect Wallets',
@@ -48,7 +53,12 @@ const useStyles = makeStyles(({ spacing, typography, palette }) => ({
 export const WalletConnectScreen = () => {
   const styles = useStyles()
   const navigation = useNavigation<WalletConnectParamList>()
+  const dispatch = useDispatch()
   useWalletStatusToasts()
+
+  useEffectOnce(() => {
+    dispatch(fetchAssociatedWallets())
+  })
 
   return (
     <Screen
