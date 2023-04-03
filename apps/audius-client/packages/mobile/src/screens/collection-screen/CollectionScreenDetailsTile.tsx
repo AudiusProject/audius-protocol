@@ -173,7 +173,7 @@ export const CollectionScreenDetailsTile = ({
     } else if (!isPlaying && isQueued) {
       dispatch(tracksActions.play())
       recordPlay(playingTrackId)
-    } else if (trackCount > 0) {
+    } else if (trackCount > 0 && firstTrack) {
       dispatch(tracksActions.play(firstTrack.uid))
       recordPlay(firstTrack.id)
     }
@@ -222,6 +222,8 @@ export const CollectionScreenDetailsTile = ({
     trackCount
   ])
 
+  const isPlayable = isQueued || (trackCount > 0 && !!firstTrack)
+
   return (
     <DetailsTile
       {...detailsTileProps}
@@ -236,6 +238,7 @@ export const CollectionScreenDetailsTile = ({
       renderHeader={renderHeader}
       renderImage={renderImage}
       onPressPlay={handlePressPlay}
+      isPlayable={isPlayable}
     />
   )
 }
