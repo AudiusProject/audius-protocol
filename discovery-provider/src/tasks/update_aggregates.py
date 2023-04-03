@@ -5,7 +5,6 @@ from typing import List
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import save_duration_metric
-from src.utils.update_indexing_checkpoints import get_last_indexed_checkpoint
 
 logger = logging.getLogger(__name__)
 
@@ -251,59 +250,54 @@ returning au.user_id;
 """
 
 
-def _update_social_aggregates(session):
+def _update_aggregates(session):
     start_time = datetime.now()
 
-    logger.info("update_social_aggregates.py | updating aggregates...")
-    session.execute(update_aggregate_user_query)
+    logger.info("update_aggregates.py | updating aggregates...")
+    updated_user_ids = session.execute(update_aggregate_user_query).fetchall()
     logger.info(
-        f"update_social_aggregates.py | updated aggregate_user in {datetime.now() - start_time}"
+        f"update_aggregates.py | updated aggregate_user {updated_user_ids} in {datetime.now() - start_time}"
     )
     start_time = datetime.now()
 
-    res = session.execute(update_aggregate_track_query)
+    updated_track_ids = session.execute(update_aggregate_track_query).fetchall()
     logger.info(
-        f"update_social_aggregates.py | updated aggregate_track {res.fetchall()} in {datetime.now() - start_time}"
+        f"update_aggregates.py | updated aggregate_track {updated_track_ids} in {datetime.now() - start_time}"
     )
-    aggregate_track_all: List[AggregateTrack] = (
-        session.query(AggregateTrack).order_by(AggregateTrack.track_id).all()
-    )
-    # update aggregate track
-    logger.info(f"asdf updated results {aggregate_track_all}")
 
     start_time = datetime.now()
-    session.execute(update_aggregate_playlist_query)
+    updated_playlist_ids = session.execute(update_aggregate_playlist_query).fetchall()
     logger.info(
-        f"update_social_aggregates.py | updated aggregate_playlist in {datetime.now() - start_time}"
+        f"update_aggregates.py | updated aggregate_playlist {updated_playlist_ids} in {datetime.now() - start_time}"
     )
     return
 
 
 # ####### CELERY TASKS ####### #
-@celery.task(name="update_social_aggregates", bind=True)
+@celery.task(name="update_aggregates", bind=True)
 @save_duration_metric(metric_group="celery_task")
-def update_social_aggregates(self):
-    redis = update_social_aggregates.redis
-    db = update_social_aggregates.db
+def update_aggregates(self):
+    redis = update_aggregates.redis
+    db = update_aggregates.db
 
     # Define lock acquired boolean
     have_lock = False
     # Define redis lock object
     # Max duration of lock is 4hrs or 14400 seconds
     update_lock = redis.lock(
-        "update_social_aggregates_lock", blocking_timeout=25, timeout=14400
+        "update_aggregates_lock", blocking_timeout=25, timeout=14400
     )
     try:
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
             with db.scoped_session() as session:
 
-                _update_social_aggregates(session)
+                _update_aggregates(session)
 
         else:
-            logger.info("update_social_aggregates.py | Failed to acquire lock")
+            logger.info("update_aggregates.py | Failed to acquire lock")
     except Exception as e:
-        logger.error(f"update_social_aggregates.py | ERROR caching node info {e}")
+        logger.error(f"update_aggregates.py | ERROR caching node info {e}")
         raise e
     finally:
         if have_lock:

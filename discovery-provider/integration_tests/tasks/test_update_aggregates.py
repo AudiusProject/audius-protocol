@@ -1,16 +1,11 @@
 import logging
-from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
 from src.models.playlists.aggregate_playlist import AggregatePlaylist
-from src.models.social.repost import Repost
 from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.users.aggregate_user import AggregateUser
-from src.tasks.update_social_aggregates import (
-    _update_social_aggregates,
-    update_aggregate_track_query,
-)
+from src.tasks.update_aggregates import _update_aggregates
 from src.utils.db_session import get_db
 
 logger = logging.getLogger(__name__)
@@ -49,7 +44,7 @@ def test_update_aggregate_track(app):
         aggregate_track.save_count = 0
 
     with db.scoped_session() as session:
-        _update_social_aggregates(session)
+        _update_aggregates(session)
 
         aggregate_track = session.query(AggregateTrack).filter_by(track_id=1).first()
         assert aggregate_track.track_id == 1
@@ -115,7 +110,7 @@ def test_update_aggregate_playlist(app):
 
     with db.scoped_session() as session:
 
-        _update_social_aggregates(session)
+        _update_aggregates(session)
 
         aggregate_playlist = (
             session.query(AggregatePlaylist).filter_by(playlist_id=1).first()
@@ -181,7 +176,7 @@ def test_update_aggregate_user(app):
 
     with db.scoped_session() as session:
 
-        _update_social_aggregates(session)
+        _update_aggregates(session)
 
         aggregate_user = session.query(AggregateUser).filter_by(user_id=1).first()
         assert aggregate_user.user_id == 1
