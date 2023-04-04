@@ -32,3 +32,8 @@ begin;
   END;
   $$;
 commit;
+
+-- 4/4/23: drop blocks_copy
+begin;
+  drop table if exists blocks_copy;
+commit;
