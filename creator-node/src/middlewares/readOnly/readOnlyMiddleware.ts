@@ -3,6 +3,7 @@ import { sendResponse, errorResponseServerError } from '../../apiHelpers'
 import config from '../../config'
 
 const EXCLUDED_ROUTES: string[] = [
+  '/health_check',
   '/batch_cids_exist',
   '/batch_image_cids_exist',
   '/batch_id_to_cid',
@@ -50,7 +51,7 @@ export function canProceedInReadOnlyMode(
   method: string,
   originalUrl: string
 ) {
-  if (spIDNotDefined) return false
+  if (spIDNotDefined && !EXCLUDED_ROUTES.includes(originalUrl)) return false
   if (
     isReadOnlyMode &&
     method !== 'GET' &&
