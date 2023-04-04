@@ -11,7 +11,7 @@ function* watchGoToChat() {
       payload: { chatId }
     } = action
     if (navigationRef.isReady()) {
-      // @ts-ignore navigationRef is not parametrized correctly (PAY-954)
+      // @ts-ignore navigationRef is not parametrized correctly (PAY-1141)
       navigationRef.navigate('Chat', { chatId })
     }
   })

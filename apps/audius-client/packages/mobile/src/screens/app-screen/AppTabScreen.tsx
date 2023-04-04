@@ -286,7 +286,14 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
       <Stack.Group>
         <Stack.Screen name='ChatList' component={ChatListScreen} />
         <Stack.Screen name='ChatUserList' component={ChatUserListScreen} />
-        <Stack.Screen name='Chat' component={ChatScreen} />
+        <Stack.Screen
+          name='Chat'
+          component={ChatScreen}
+          getId={({ params }) =>
+            // @ts-ignore hard to correctly type navigation params (PAY-1141)
+            params?.chatId
+          }
+        />
       </Stack.Group>
     </Stack.Navigator>
   )
