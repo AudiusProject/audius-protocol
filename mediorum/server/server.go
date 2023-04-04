@@ -194,6 +194,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// legacy:
 	basePath.GET("/cid/:cid", ss.serveLegacyIPFS)
 	basePath.GET("/cid2/:cid", ss.serveLegacyIPFS2)
+	basePath.GET("/metadata", ss.serveCidMetadata)
 
 	// internal
 	internalApi := basePath.Group("/internal")

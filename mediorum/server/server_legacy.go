@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -62,4 +63,32 @@ func sniffMimeType(r io.ReadSeeker) string {
 	r.Read(buffer)
 	r.Seek(0, 0)
 	return http.DetectContentType(buffer)
+}
+
+func (ss *MediorumServer) serveCidMetadata(c echo.Context) error {
+	ctx := c.Request().Context()
+	sql := `select multihash, "storagePath" from "Files" where type = 'metadata' order by multihash limit 1000000`
+
+	rows, err := ss.pgPool.Query(ctx, sql)
+	if err != nil {
+		return err
+	}
+
+	w := c.Response().Writer
+	for rows.Next() {
+		var cid string
+		var storagePath string
+		err := rows.Scan(&cid, &storagePath)
+		if err != nil {
+			return err
+		}
+
+		if data, err := os.ReadFile(storagePath); err == nil {
+			fmt.Fprintf(w, "%s\t%s\n", cid, data)
+		} else {
+			log.Println("err reading cid file", storagePath, cid, err)
+		}
+	}
+
+	return nil
 }
