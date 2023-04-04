@@ -4,7 +4,8 @@ import type { FavoriteNotification as FavoriteNotificationType } from '@audius/c
 import {
   formatCount,
   notificationsSelectors,
-  useProxySelector
+  useProxySelector,
+  Entity
 } from '@audius/common'
 
 import IconHeart from 'app/assets/images/iconHeart.svg'
@@ -50,6 +51,11 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
     [notification]
   )
 
+  const entityTypeText =
+    entity && 'is_album' in entity && entity.is_album
+      ? Entity.Album
+      : entityType
+
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
   }, [navigation, notification])
@@ -64,7 +70,7 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
       <NotificationText>
         <UserNameLink user={firstUser} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
-        {messages.favorited} {entityType.toLowerCase()}{' '}
+        {messages.favorited} {entityTypeText.toLowerCase()}{' '}
         <EntityLink entity={entity} />
       </NotificationText>
     </NotificationTile>

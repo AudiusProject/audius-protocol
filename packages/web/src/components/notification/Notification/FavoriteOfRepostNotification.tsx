@@ -1,6 +1,7 @@
 import {
   notificationsSelectors,
-  FavoriteOfRepostNotification as FavoriteOfRepostNotificationType
+  FavoriteOfRepostNotification as FavoriteOfRepostNotificationType,
+  Entity
 } from '@audius/common'
 
 import { useSelector } from 'utils/reducer'
@@ -39,6 +40,11 @@ export const FavoriteOfRepostNotification = (
     getNotificationEntity(state, notification)
   )
 
+  const entityTypeText =
+    entity && 'is_album' in entity && entity.is_album
+      ? Entity.Album
+      : entityType
+
   const handleGoToEntity = useGoToEntity(entity, entityType)
 
   if (!users || !firstUser || !entity) return null
@@ -62,8 +68,8 @@ export const FavoriteOfRepostNotification = (
           <OthersText othersCount={otherUsersCount} />
         ) : null}
         {messages.favorited}
-        {entityType.toLowerCase()}{' '}
-        <EntityLink entity={entity} entityType={entityType} />
+        {entityTypeText.toLowerCase()}{' '}
+        <EntityLink entity={entity} entityType={entityTypeText} />
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>

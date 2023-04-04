@@ -1,6 +1,7 @@
 import { MouseEventHandler, useCallback } from 'react'
 
 import {
+  Entity,
   notificationsSelectors,
   RepostNotification as RepostNotificationType
 } from '@audius/common'
@@ -49,6 +50,11 @@ export const RepostNotification = (props: RepostNotificationProps) => {
     getNotificationEntity(state, notification)
   )
 
+  const entityTypeText =
+    entity && 'is_album' in entity && entity.is_album
+      ? Entity.Album
+      : entityType
+
   const dispatch = useDispatch()
 
   const handleGoToEntity = useGoToEntity(entity, entityType)
@@ -95,8 +101,8 @@ export const RepostNotification = (props: RepostNotificationProps) => {
         {otherUsersCount > 0 ? (
           <OthersLink othersCount={otherUsersCount} onClick={handleClick} />
         ) : null}{' '}
-        {messages.reposted} {entityType.toLowerCase()}{' '}
-        <EntityLink entity={entity} entityType={entityType} />
+        {messages.reposted} {entityTypeText.toLowerCase()}{' '}
+        <EntityLink entity={entity} entityType={entityTypeText} />
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>
