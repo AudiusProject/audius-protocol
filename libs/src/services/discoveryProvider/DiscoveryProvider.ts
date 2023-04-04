@@ -117,6 +117,7 @@ export class DiscoveryProvider {
   isInitialized = false
   discoveryNodeSelector?: DiscoveryNodeSelector
   discoveryNodeMiddleware?: Middleware
+  selectionCallback?: DiscoveryProviderSelectionConfig['selectionCallback']
 
   constructor({
     whitelist,
@@ -139,6 +140,7 @@ export class DiscoveryProvider {
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
+    this.selectionCallback = selectionCallback
 
     this.unhealthyBlockDiff = unhealthyBlockDiff ?? DEFAULT_UNHEALTHY_BLOCK_DIFF
     this.serviceSelector = new DiscoveryProviderSelection(
@@ -177,6 +179,7 @@ export class DiscoveryProvider {
         'change',
         (endpoint: string) => {
           this.setEndpoint(endpoint)
+          this.selectionCallback?.(endpoint, [])
         }
       )
 
