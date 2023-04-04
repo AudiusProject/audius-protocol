@@ -38,6 +38,7 @@ import Button from 'app/components/button'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { remindUserToTurnOnNotifications } from 'app/components/notification-reminder/NotificationReminder'
 import useAppState from 'app/hooks/useAppState'
+import { useToast } from 'app/hooks/useToast'
 import { screen, track, make } from 'app/services/analytics'
 import { setVisibility } from 'app/store/drawers/slice'
 import { EventNames } from 'app/types/analytics'
@@ -257,7 +258,8 @@ const messages = {
   newToAudius: 'New to Audius?',
   createAccount: 'Create an Account',
   hasAccountAlready: 'Already have an account?',
-  forgotPassword: 'Forgot your password?'
+  forgotPassword: 'Forgot your password?',
+  error: 'Something went wrong, please try again later'
 }
 
 const errorMessages = {
@@ -610,6 +612,8 @@ const SignOn = ({ navigation }: SignOnProps) => {
   }) => {
     let opacity = new Animated.Value(1)
 
+    const { toast } = useToast()
+
     // fade the sign up/in button out and in when switch between signup and signin
     if (lastIsSignin !== isSignin) {
       opacity = new Animated.Value(0)
@@ -657,7 +661,9 @@ const SignOn = ({ navigation }: SignOnProps) => {
                       setIsWorking(false)
                     },
                     () => {
-                      // On any unknown error, do nothing, but let the user try again
+                      // On any unknown error, toast and let the user try again
+                      // This could be due to the user being blocked by CloudFlare
+                      toast({ content: messages.error })
                       setIsWorking(false)
                     }
                   )
