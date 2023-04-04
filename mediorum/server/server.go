@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/inconshreveable/log15"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gocloud.dev/blob"
@@ -38,6 +39,8 @@ type MediorumConfig struct {
 	Dir               string `default:"/tmp/mediorum"`
 	BlobStoreDSN      string `json:"-"`
 	SqliteDSN         string `json:"-"`
+	PostgresDSN       string `json:"-"`
+	LegacyFSRoot      string `json:"-"`
 	PrivateKey        string `json:"-"`
 	ListenPort        string `envconfig:"PORT"`
 
@@ -55,6 +58,7 @@ type MediorumServer struct {
 	placement *placement
 	logger    log15.Logger
 	crud      *crudr.Crudr
+	pgPool    *pgxpool.Pool
 	quit      chan os.Signal
 
 	StartedAt time.Time
@@ -109,6 +113,12 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// db
 	db := dbMustDial(config.SqliteDSN)
 
+	// pg pool
+	pgPool, err := pgxpool.New(context.Background(), config.PostgresDSN)
+	if err != nil {
+		log.Println("dial postgres failed", err)
+	}
+
 	// crud
 	crud := crudr.New(config.Self.Host, db)
 	dbMigrate(crud)
@@ -126,6 +136,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		bucket:    bucket,
 		placement: newPlacement(config),
 		crud:      crud,
+		pgPool:    pgPool,
 		logger:    log15.New("from", config.Self.Host),
 		quit:      make(chan os.Signal, 1),
 
@@ -147,6 +158,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// Middleware
 	basePath.Use(middleware.Recover())
 	basePath.Use(middleware.CORS())
+	basePath.Use(middleware.Logger())
 
 	// TODO: Use middleware to cache whenever content is streamed, except if it's premium content.
 	// See Johannes's previous PR for reference. From CN:
@@ -178,6 +190,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	basePath.GET("/debug/blobs", ss.dumpBlobs)
 	basePath.GET("/debug/uploads", ss.dumpUploads)
 	basePath.GET("/debug/ls", ss.getLs)
+
+	// legacy:
+	basePath.GET("/cid/:cid", ss.serveLegacyIPFS)
+	basePath.GET("/cid2/:cid", ss.serveLegacyIPFS2)
 
 	// internal
 	internalApi := basePath.Group("/internal")

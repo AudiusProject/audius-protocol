@@ -48,6 +48,8 @@ func startStagingOrProd(isProd bool) {
 		ReplicationFactor: 3,
 		PrivateKey:        privateKey,
 		Dir:               "/mediorum_data",
+		PostgresDSN:       os.Getenv("dbUrl"),
+		LegacyFSRoot:      "/file_storage",
 	}
 
 	ss, err := server.New(config)
