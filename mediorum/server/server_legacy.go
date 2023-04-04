@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"sync"
 
 	"github.com/labstack/echo/v4"
+	"github.com/sourcegraph/conc/stream"
 )
 
 func (ss *MediorumServer) serveLegacyIPFS(c echo.Context) error {
@@ -74,56 +74,36 @@ func (ss *MediorumServer) serveCidMetadata(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	defer rows.Close()
 
-	type cidPair struct {
-		cid         string
-		storagePath string
-	}
-
-	work := make(chan cidPair)
-	results := make(chan string)
-	wg := sync.WaitGroup{}
-
-	// start some workers
-	for i := 0; i < 5; i++ {
-		wg.Add(1)
-		go func() {
-			for pair := range work {
-				if data, err := os.ReadFile(pair.storagePath); err == nil {
-					results <- fmt.Sprintf("%s\t%s\n", pair.cid, data)
-				} else {
-					log.Println("err reading cid file", pair.cid, pair.storagePath, err)
-				}
-			}
-			wg.Done()
-		}()
-	}
-
-	// start result reader
-	go func() {
-		w := c.Response().Writer
-		for row := range results {
-			w.Write([]byte(row))
-		}
-		fmt.Println("bye...")
-	}()
-
-	// when each worker closes out... close the result channel
-	go func() {
-		wg.Wait()
-		fmt.Println("jobs done...")
-		close(results)
-	}()
+	pool := stream.New().WithMaxGoroutines(4)
+	w := c.Response().Writer
 
 	for rows.Next() {
-		var pair cidPair
-		err := rows.Scan(&pair.cid, &pair.storagePath)
+		var cid string
+		var storagePath string
+		// var pair cidPair
+		err := rows.Scan(&cid, &storagePath)
 		if err != nil {
 			return err
 		}
-		work <- pair
+
+		pool.Go(func() stream.Callback {
+			var row string
+			if data, err := os.ReadFile(storagePath); err == nil {
+				row = fmt.Sprintf("%s\t%s\n", cid, data)
+			} else {
+				log.Println("err reading cid file", storagePath, cid, err)
+			}
+			return func() {
+				if row != "" {
+					w.Write([]byte(row))
+				}
+			}
+		})
 	}
-	close(work)
+
+	pool.Wait()
 
 	return nil
 }
