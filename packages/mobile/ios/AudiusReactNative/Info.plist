@@ -78,10 +78,10 @@
 		<string>${PRODUCT_NAME} uses the local network to discover Cast-enabled devices on your WiFi network.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string></string>
-		<key>NSPhotoLibraryAddUsageDescription</key>
-		<string>This lets you share tracks to TikTok.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>This lets you select photos for uploading to Audius, including setting your profile picture and track cover art.</string>
+		<key>NSPhotoLibraryAddUsageDescription</key>
+		<string>This lets you select photos for uploading to Audius, and lets you share tracks to TikTok and other social media.</string>
 		<key>SCSDKClientId</key>
 		<string>$(SCSDK_CLIENT_ID)</string>
 		<key>SCSDKRedirectUrl</key>
