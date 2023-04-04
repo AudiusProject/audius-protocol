@@ -2,7 +2,8 @@ import { MouseEventHandler, useCallback } from 'react'
 
 import {
   notificationsSelectors,
-  FavoriteNotification as FavoriteNotificationType
+  FavoriteNotification as FavoriteNotificationType,
+  Entity
 } from '@audius/common'
 import { push } from 'connected-react-router'
 import { useDispatch } from 'react-redux'
@@ -48,6 +49,11 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
     getNotificationEntity(state, notification)
   )
 
+  const entityTypeText =
+    entity && 'is_album' in entity && entity.is_album
+      ? Entity.Album
+      : entityType
+
   const dispatch = useDispatch()
 
   const handleGoToEntity = useGoToEntity(entity, entityType)
@@ -91,8 +97,8 @@ export const FavoriteNotification = (props: FavoriteNotificationProps) => {
           <OthersLink othersCount={otherUsersCount} onClick={handleClick} />
         ) : null}
         {messages.favorited}
-        {entityType.toLowerCase()}{' '}
-        <EntityLink entity={entity} entityType={entityType} />
+        {entityTypeText.toLowerCase()}{' '}
+        <EntityLink entity={entity} entityType={entityTypeText} />
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>

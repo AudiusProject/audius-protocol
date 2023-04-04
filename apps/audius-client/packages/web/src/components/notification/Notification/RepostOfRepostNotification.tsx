@@ -1,4 +1,5 @@
 import {
+  Entity,
   notificationsSelectors,
   RepostOfRepostNotification as RepostOfRepostNotificationType
 } from '@audius/common'
@@ -40,6 +41,11 @@ export const RepostOfRepostNotification = (
     getNotificationEntity(state, notification)
   )
 
+  const entityTypeText =
+    entity && 'is_album' in entity && entity.is_album
+      ? Entity.Album
+      : entityType
+
   const handleGoToEntity = useGoToEntity(entity, entityType)
 
   if (!users || !firstUser || !entity) return null
@@ -62,8 +68,8 @@ export const RepostOfRepostNotification = (
         {otherUsersCount > 0 ? (
           <OthersText othersCount={otherUsersCount} />
         ) : null}{' '}
-        {messages.reposted} {entityType.toLowerCase()}{' '}
-        <EntityLink entity={entity} entityType={entityType} />
+        {messages.reposted} {entityTypeText.toLowerCase()}{' '}
+        <EntityLink entity={entity} entityType={entityTypeText} />
       </NotificationBody>
       <NotificationFooter timeLabel={timeLabel} isViewed={isViewed} />
     </NotificationTile>

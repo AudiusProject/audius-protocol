@@ -4,7 +4,8 @@ import type { RepostNotification as RepostNotificationType } from '@audius/commo
 import {
   useProxySelector,
   formatCount,
-  notificationsSelectors
+  notificationsSelectors,
+  Entity
 } from '@audius/common'
 
 import IconRepost from 'app/assets/images/iconRepost.svg'
@@ -49,6 +50,11 @@ export const RepostNotification = (props: RepostNotificationProps) => {
     [notification]
   )
 
+  const entityTypeText =
+    entity && 'is_album' in entity && entity.is_album
+      ? Entity.Album
+      : entityType
+
   const handlePress = useCallback(() => {
     navigation.navigate(notification)
   }, [navigation, notification])
@@ -63,7 +69,7 @@ export const RepostNotification = (props: RepostNotificationProps) => {
       <NotificationText>
         <UserNameLink user={firstUser} />
         {otherUsersCount > 0 ? messages.others(otherUsersCount) : null}
-        {messages.reposted} {entityType.toLowerCase()}{' '}
+        {messages.reposted} {entityTypeText.toLowerCase()}{' '}
         <EntityLink entity={entity} />
       </NotificationText>
     </NotificationTile>
