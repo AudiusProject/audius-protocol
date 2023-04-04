@@ -240,7 +240,8 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         continue
 
                     # Check if metadata blob was passed directly.
-                    # If so, add to cid_metadata and cid_type dicts and continue.
+                    # If so, add to cid_metadata_from_chain and cid_type_from_chain
+                    # dicts and do not query CNs for these CIDs.
                     # TODO remove after CID metadata migration.
                     try:
                         data = json.loads(cid)
