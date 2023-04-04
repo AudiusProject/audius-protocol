@@ -25,19 +25,20 @@ export const useReachabilityEffect = (
 
   const handleReachabilityStateChange = useCallback(
     (nextReachabilityState: boolean) => {
-      const wasUnreachable = includeFirstRender
-        ? !prevReachability
-        : prevReachability !== undefined && !prevReachability
+      const isFirstRenderRun =
+        includeFirstRender && prevReachability === undefined
+      const wasUnreachable = prevReachability !== undefined && !prevReachability
+      const wasReachable = prevReachability !== undefined && prevReachability
 
-      const wasReachable = includeFirstRender
-        ? prevReachability
-        : prevReachability !== undefined && prevReachability
-
-      if (nextReachabilityState && wasUnreachable && onBecomeReachable) {
+      if (
+        nextReachabilityState &&
+        (wasUnreachable || isFirstRenderRun) &&
+        onBecomeReachable
+      ) {
         onBecomeReachable()
       } else if (
         !nextReachabilityState &&
-        wasReachable &&
+        (wasReachable || isFirstRenderRun) &&
         onBecomeUnreachable
       ) {
         onBecomeUnreachable()
