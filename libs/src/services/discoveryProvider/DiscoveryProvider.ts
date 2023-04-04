@@ -1464,7 +1464,8 @@ export class DiscoveryProvider {
         response
       })) ?? response
 
-    return response as unknown as DiscoveryResponse<Response>
+    const responseBody: DiscoveryResponse<Response> = await response.json()
+    return responseBody
   }
 
   /**
