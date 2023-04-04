@@ -10,15 +10,27 @@ begin
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
   -- increment or decrement?
-  if (new.is_delete) then
-    delta := -1;
+  if TG_OP = 'UPDATE' then
+      old_row := OLD;
+
+    if old_row.is_delete != new.is_delete or old_row.is_available != new.is_available then
+      delta := -1;
+    else
+      delta := 1;
+    end if;
   else
-    delta := 1;
+    if new.is_delete or new.is_available = false or new.stem_of is not null then
+      delta := -1;
+    else
+      delta := 1;
+    end if;
+
+    -- special case when unlisted
+    if new.is_unlisted then
+      delta := 0;
+    end if;
   end if;
 
-
-  -- full recalculate for now
-  -- this isn't as frequent as social actions and this query isn't as expensive
   update aggregate_user 
     set track_count = track_count + delta
   where user_id = new.owner_id
