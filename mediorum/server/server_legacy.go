@@ -1,7 +1,9 @@
 package server
 
 import (
+	"io"
 	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 
@@ -23,7 +25,8 @@ func (ss *MediorumServer) serveLegacyIPFS(c echo.Context) error {
 
 	for _, p := range tryPaths {
 		if f, err := os.Open(p); err == nil {
-			return c.Stream(200, "", f)
+			mime := sniffMimeType(f)
+			return c.Stream(200, mime, f)
 		} else {
 			log.Println("err reading cid file", p, cid, err)
 		}
@@ -45,10 +48,18 @@ func (ss *MediorumServer) serveLegacyIPFS2(c echo.Context) error {
 
 	log.Println("serving cid", cid, storagePath)
 	if f, err := os.Open(storagePath); err == nil {
-		return c.Stream(200, "", f)
+		mime := sniffMimeType(f)
+		return c.Stream(200, mime, f)
 	} else {
 		log.Println("err reading cid file", storagePath, cid, err)
 	}
 
 	return c.String(404, "no dice")
+}
+
+func sniffMimeType(r io.ReadSeeker) string {
+	buffer := make([]byte, 512)
+	r.Read(buffer)
+	r.Seek(0, 0)
+	return http.DetectContentType(buffer)
 }
