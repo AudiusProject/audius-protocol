@@ -37,7 +37,7 @@ export const ChatListItem = ({ chat }: { chat: UserChat }) => {
   )
 
   const handlePress = useCallback(() => {
-    navigation.navigate('Chat', { chatId: currentChatId })
+    navigation.push('Chat', { chatId: currentChatId })
   }, [navigation, currentChatId])
 
   if (!users[0]) {
