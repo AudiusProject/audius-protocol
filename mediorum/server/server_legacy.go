@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 )
@@ -74,21 +75,55 @@ func (ss *MediorumServer) serveCidMetadata(c echo.Context) error {
 		return err
 	}
 
-	w := c.Response().Writer
+	type cidPair struct {
+		cid         string
+		storagePath string
+	}
+
+	work := make(chan cidPair)
+	results := make(chan string)
+	wg := sync.WaitGroup{}
+
+	// start some workers
+	for i := 0; i < 5; i++ {
+		wg.Add(1)
+		go func() {
+			for pair := range work {
+				if data, err := os.ReadFile(pair.storagePath); err == nil {
+					results <- fmt.Sprintf("%s\t%s\n", pair.cid, data)
+				} else {
+					log.Println("err reading cid file", pair.cid, pair.storagePath, err)
+				}
+			}
+			wg.Done()
+		}()
+	}
+
+	// start result reader
+	go func() {
+		w := c.Response().Writer
+		for row := range results {
+			w.Write([]byte(row))
+		}
+		fmt.Println("bye...")
+	}()
+
+	// when each worker closes out... close the result channel
+	go func() {
+		wg.Wait()
+		fmt.Println("jobs done...")
+		close(results)
+	}()
+
 	for rows.Next() {
-		var cid string
-		var storagePath string
-		err := rows.Scan(&cid, &storagePath)
+		var pair cidPair
+		err := rows.Scan(&pair.cid, &pair.storagePath)
 		if err != nil {
 			return err
 		}
-
-		if data, err := os.ReadFile(storagePath); err == nil {
-			fmt.Fprintf(w, "%s\t%s\n", cid, data)
-		} else {
-			log.Println("err reading cid file", storagePath, cid, err)
-		}
+		work <- pair
 	}
+	close(work)
 
 	return nil
 }
