@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
+import json
 import logging
 import os
 import time
@@ -194,9 +195,14 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
+def get_entity_manager_events_tx(update_task, event_type, tx_receipt):
+    return getattr(
+        update_task.entity_manager_contract.events, event_type
+    )().processReceipt(tx_receipt)
+
+
 def fetch_cid_metadata(db, entity_manager_txs):
     start_time = datetime.now()
-    entity_manager_contract = update_task.entity_manager_contract
 
     cids_txhash_set: Tuple[str, Any] = set()
     cid_type: Dict[str, str] = {}  # cid -> entity type track / user
@@ -205,14 +211,19 @@ def fetch_cid_metadata(db, entity_manager_txs):
     cid_to_user_id: Dict[str, int] = {}
     cid_metadata: Dict[str, Dict] = {}  # cid -> metadata
 
+    # metadata blobs sent through chain
+    # merged with cid_metadata and cid_type before returning
+    cid_type_from_chain: Dict[str, str] = {}  # cid -> entity type track / user
+    cid_metadata_from_chain: Dict[str, Dict] = {}  # cid -> metadata
+
     # fetch transactions
     with db.scoped_session() as session:
         for tx_receipt in entity_manager_txs:
             txhash = web3.toHex(tx_receipt.transactionHash)
             for event_type in entity_manager_event_types_arr:
-                entity_manager_events_tx = getattr(
-                    entity_manager_contract.events, event_type
-                )().processReceipt(tx_receipt)
+                entity_manager_events_tx = get_entity_manager_events_tx(
+                    update_task, event_type, tx_receipt
+                )
                 for entry in entity_manager_events_tx:
                     event_args = entry["args"]
                     user_id = event_args._userId
@@ -238,6 +249,25 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         ]
                     ):
                         continue
+
+                    # Check if metadata blob was passed directly.
+                    # If so, add to cid_metadata and cid_type dicts and continue.
+                    # TODO remove after CID metadata migration.
+                    try:
+                        data = json.loads(cid)
+                        cid = data["cid"]
+                        metadata = data["data"]
+                        # do not add to cid_metadata or cid_type yet to avoid interfering with the retry conditions
+                        cid_metadata_from_chain[cid] = metadata
+                        if event_type == EntityType.PLAYLIST:
+                            cid_type_from_chain[cid] = "playlist_data"
+                        elif event_type == EntityType.TRACK:
+                            cid_type_from_chain[cid] = "track"
+                        elif event_type == EntityType.USER:
+                            cid_type_from_chain[cid] = "user"
+                        continue
+                    except Exception:
+                        pass
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
@@ -295,6 +325,8 @@ def fetch_cid_metadata(db, entity_manager_txs):
     logger.debug(
         f"index_nethermind.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
+    cid_metadata.update(cid_metadata_from_chain)
+    cid_type.update(cid_type_from_chain)
     return cid_metadata, cid_type
 
 

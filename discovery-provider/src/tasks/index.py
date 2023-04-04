@@ -200,6 +200,11 @@ def fetch_cid_metadata(db, entity_manager_txs):
     cid_to_user_id: Dict[str, int] = {}
     cid_metadata: Dict[str, Dict] = {}  # cid -> metadata
 
+    # metadata blobs sent through chain
+    # merged with cid_metadata and cid_type before returning
+    cid_type_from_chain: Dict[str, str] = {}  # cid -> entity type track / user
+    cid_metadata_from_chain: Dict[str, Dict] = {}  # cid -> metadata
+
     # fetch transactions
     with db.scoped_session() as session:
         for tx_receipt in entity_manager_txs:
@@ -233,6 +238,25 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         and event_type == EntityType.NOTIFICATION
                     ):
                         continue
+
+                    # Check if metadata blob was passed directly.
+                    # If so, add to cid_metadata and cid_type dicts and continue.
+                    # TODO remove after CID metadata migration.
+                    try:
+                        data = json.loads(cid)
+                        cid = data["cid"]
+                        metadata = data["data"]
+                        # do not add to cid_metadata or cid_type yet to avoid interfering with the retry conditions
+                        cid_metadata_from_chain[cid] = metadata
+                        if event_type == EntityType.PLAYLIST:
+                            cid_type_from_chain[cid] = "playlist_data"
+                        elif event_type == EntityType.TRACK:
+                            cid_type_from_chain[cid] = "track"
+                        elif event_type == EntityType.USER:
+                            cid_type_from_chain[cid] = "user"
+                        continue
+                    except Exception:
+                        pass
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
@@ -290,6 +314,8 @@ def fetch_cid_metadata(db, entity_manager_txs):
     logger.debug(
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
+    cid_metadata.update(cid_metadata_from_chain)
+    cid_type.update(cid_type_from_chain)
     return cid_metadata, cid_type
 
 

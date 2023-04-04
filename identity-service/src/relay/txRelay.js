@@ -137,9 +137,20 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   ) {
     sendToNethermindOnly = true
   }
+
+  const contractName =
+    contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
+  const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
+
+  const nonce = decodedABI.params.find((param) => param.name === '_nonce').value
+  const sig = decodedABI.params.find(
+    (param) => param.name === '_subjectSig'
+  ).value
+  const hashedData = web3.utils.keccak256(nonce + sig)
+
   const existingTx = await models.Transaction.findOne({
     where: {
-      encodedABI: encodedABI // this should always be unique because of the nonce / sig
+      encodedABI: hashedData // this should always be unique
     }
   })
 
@@ -147,10 +158,6 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   if (existingTx) {
     return existingTx.receipt
   }
-
-  const contractName =
-    contractRegistryKey.charAt(0).toUpperCase() + contractRegistryKey.slice(1) // uppercase the first letter
-  const decodedABI = AudiusABIDecoder.decodeMethod(contractName, encodedABI)
 
   filterReplicaSetUpdates(decodedABI, senderAddress)
 
@@ -378,7 +385,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     contractFn: decodedABI.name,
     contractAddress: contractAddress,
     senderAddress: senderAddress,
-    encodedABI: encodedABI,
+    encodedABI: hashedData,
     decodedABI: decodedABI,
     receipt: txReceipt
   })

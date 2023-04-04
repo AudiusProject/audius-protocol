@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict, Union
@@ -123,7 +124,13 @@ class ManageEntityParameters:
         self.entity_id = helpers.get_tx_arg(event, "_entityId")
         self.entity_type = helpers.get_tx_arg(event, "_entityType")
         self.action = helpers.get_tx_arg(event, "_action")
-        self.metadata_cid = helpers.get_tx_arg(event, "_metadata")
+        # Check if metadata blob was passed directly.
+        # TODO remove after CID metadata migration.
+        try:
+            data = json.loads(helpers.get_tx_arg(event, "_metadata"))
+            self.metadata_cid = data["cid"]
+        except Exception:
+            self.metadata_cid = helpers.get_tx_arg(event, "_metadata")
         self.signer = helpers.get_tx_arg(event, "_signer")
         self.block_datetime = datetime.utcfromtimestamp(block_timestamp)
         self.block_integer_time = int(block_timestamp)
