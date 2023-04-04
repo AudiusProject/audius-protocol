@@ -203,11 +203,12 @@ function* confirmEditTrack(
           confirmedTrack._is_publishing = false
         }
         // Update the cached track so it no longer contains image upload artifacts
+        const { artwork: ignoredArtwork, ...metadata } = confirmedTrack
         yield put(
           cacheActions.update(Kind.TRACKS, [
             {
               id: confirmedTrack.track_id,
-              metadata: { ...confirmedTrack, artwork: {} }
+              metadata
             }
           ])
         )
