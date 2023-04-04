@@ -7,6 +7,7 @@ import (
 	"encoding/base32"
 	"io"
 	"mime/multipart"
+	"strings"
 	"sync"
 	"time"
 
@@ -40,7 +41,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	template := c.FormValue("template")
+	template := JobTemplate(c.FormValue("template"))
 	files := form.File[filesFormFieldName]
 	defer form.RemoveAll()
 
@@ -99,6 +100,10 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 
 			ss.logger.Info("mirrored", "name", formFile.Filename, "randomID", randomID, "formFileCID", formFileCID, "mirrors", upload.Mirrors)
 
+			if template == JobTemplateImgSquare || template == JobTemplateImgBackdrop {
+				upload.TranscodeResults["original.jpg"] = formFileCID
+			}
+
 			err = ss.crud.Create(upload)
 			if err != nil {
 				ss.logger.Warn("create upload failed", "err", err)
@@ -112,6 +117,25 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	}
 
 	return c.JSON(200, uploads)
+}
+
+func (ss *MediorumServer) getJobResult(c echo.Context) error {
+	if c.Param("jobID") == "" || c.Param("variant") == "" {
+		return c.JSON(400, "Invalid request, no multihash provided")
+	}
+	if len(c.Param("jobID")) == 46 && strings.HasPrefix(c.Param("jobID"), "Qm") {
+		return c.JSON(400, "Invalid request, CID V0 provided - should've redirected to Content Node")
+	} else {
+		var upload *Upload
+		err := ss.crud.DB.First(&upload, "id = ?", c.Param("jobID")).Error
+		if err != nil {
+			return err
+		}
+		cid := upload.TranscodeResults[c.Param("variant")]
+		c.SetParamNames("key")
+		c.SetParamValues(cid)
+		return ss.getBlob(c)
+	}
 }
 
 func computeFileHeaderCID(fh *multipart.FileHeader) (string, error) {

@@ -214,7 +214,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			}
 			logger.Debug("did square", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
 
-			variantName := fmt.Sprintf("%dx%[1]d", targetBox)
+			variantName := fmt.Sprintf("%dx%[1]d.jpg", targetBox)
 			upload.TranscodeResults[variantName] = resultHash
 		}
 
@@ -234,13 +234,13 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			}
 			logger.Debug("did backdrop", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
 
-			variantName := fmt.Sprintf("%dwide", targetWidth)
+			variantName := fmt.Sprintf("%x.jpg", targetWidth)
 			upload.TranscodeResults[variantName] = resultHash
 		}
 
 	case JobTemplateAudio, "":
 		if upload.Template == "" {
-			fmt.Println("empty template, falling back to audio")
+			logger.Warn("empty template (shouldn't happen), falling back to audio")
 		}
 
 		srcPath := temp.Name()
