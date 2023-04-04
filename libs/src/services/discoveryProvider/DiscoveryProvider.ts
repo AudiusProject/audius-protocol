@@ -1254,7 +1254,8 @@ export class DiscoveryProvider {
     if (this.discoveryNodeSelector) {
       return await this._makeRequestInternalNext<Response>(
         requestObj,
-        throwError
+        throwError,
+        blockNumber
       )
     }
 
@@ -1415,7 +1416,8 @@ export class DiscoveryProvider {
 
   async _makeRequestInternalNext<Response>(
     requestObj: Record<string, unknown>,
-    throwError = false
+    throwError = false,
+    blockNumber?: number
   ) {
     if (!this.discoveryProviderEndpoint || !this.discoveryNodeMiddleware) return
 
@@ -1468,6 +1470,13 @@ export class DiscoveryProvider {
       })) ?? response
 
     const responseBody: DiscoveryResponse<Response> = await response.json()
+
+    if (blockNumber && responseBody.latest_indexed_block < blockNumber) {
+      throw new Error(
+        `Requested blocknumber ${blockNumber}, but discovery is behind at ${responseBody.latest_indexed_block}`
+      )
+    }
+
     return responseBody
   }
 

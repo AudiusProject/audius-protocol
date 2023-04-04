@@ -50,7 +50,7 @@ export class AudiusContracts {
   }
 
   getEmptyRegistryAddress: GetRegistryAddress = async () => {
-    return Promise.resolve('')
+    return await Promise.resolve('')
   }
 
   async init() {

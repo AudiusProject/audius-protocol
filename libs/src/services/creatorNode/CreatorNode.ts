@@ -397,20 +397,30 @@ export class CreatorNode {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: ProgressCB = () => { }
+    onProgress: ProgressCB = () => {}
   ) {
     const updatedMetadata = { ...metadata }
 
     // Upload audio and cover art
     const [audioResp, coverArtResp] = await Promise.all([
-      this._retry3(async () => this.uploadTrackAudioV2(trackFile, onProgress), (e) => { console.log('Retrying uploadTrackAudioV2', e) }),
-      this._retry3(async () => this.uploadTrackCoverArtV2(coverArtFile, onProgress), (e) => { console.log('Retrying uploadTrackCoverArtV2', e) })
+      this._retry3(
+        async () => await this.uploadTrackAudioV2(trackFile, onProgress),
+        (e) => {
+          console.log('Retrying uploadTrackAudioV2', e)
+        }
+      ),
+      this._retry3(
+        async () => await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
+        (e) => {
+          console.log('Retrying uploadTrackCoverArtV2', e)
+        }
+      )
     ])
 
     // Update metadata to include uploaded CIDs
     // TODO: Make sure discovery and elsewhere accept 0-length array. Some checks in CN currently fail if there's not at least 1 valid segment
     updatedMetadata.track_segments = []
-    updatedMetadata.track_cid = audioResp.results["320"]
+    updatedMetadata.track_cid = audioResp.results['320']
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
     }
@@ -420,14 +430,18 @@ export class CreatorNode {
   }
 
   async uploadTrackAudioV2(file: File, onProgress: ProgressCB) {
-    return this.uploadFileV2(file, onProgress, 'audio')
+    return await this.uploadFileV2(file, onProgress, 'audio')
   }
 
   async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB) {
-    return this.uploadFileV2(file, onProgress, 'img_square')
+    return await this.uploadFileV2(file, onProgress, 'img_square')
   }
 
-  async uploadFileV2(file: File, onProgress: ProgressCB, template: 'audio' | 'img_square' | 'img_backdrop') {
+  async uploadFileV2(
+    file: File,
+    onProgress: ProgressCB,
+    template: 'audio' | 'img_square' | 'img_backdrop'
+  ) {
     const formData = new FormData()
     formData.append('template', template)
     formData.append('files', file, file.name)
@@ -436,11 +450,14 @@ export class CreatorNode {
       url: '/mediorum/uploads',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: (progressEvent) => onProgress(progressEvent.loaded, progressEvent.total)
+      onUploadProgress: (progressEvent) =>
+        onProgress(progressEvent.loaded, progressEvent.total)
     })
-    return this.pollProcessingStatusV2(
+    return await this.pollProcessingStatusV2(
       response.data[0].id,
-      template === 'audio' ? MAX_TRACK_TRANSCODE_TIMEOUT : MAX_IMAGE_RESIZE_TIMEOUT_MS
+      template === 'audio'
+        ? MAX_TRACK_TRANSCODE_TIMEOUT
+        : MAX_IMAGE_RESIZE_TIMEOUT_MS
     )
   }
 
@@ -457,7 +474,9 @@ export class CreatorNode {
         const resp = await this.getProcessingStatusV2(id)
         if (resp?.status === 'done') return resp
         if (resp?.status === 'error') {
-          throw new Error(`Upload failed: id=${id}, resp=${JSON.stringify(resp)}`)
+          throw new Error(
+            `Upload failed: id=${id}, resp=${JSON.stringify(resp)}`
+          )
         }
       } catch (e) {
         // Swallow errors caused by failure to establish connection to node so we can retry polling
@@ -760,16 +779,14 @@ export class CreatorNode {
   /* ------- INTERNAL FUNCTIONS ------- */
 
   /**
- * Makes an axios request to the connected creator node
- * @return response body
- */
-  async _makeRequestV2(
-    axiosRequestObj: AxiosRequestConfig
-  ) {
+   * Makes an axios request to the connected creator node
+   * @return response body
+   */
+  async _makeRequestV2(axiosRequestObj: AxiosRequestConfig) {
     // TODO: This might want to have other error handling, request UUIDs, etc...
     //       But I didn't want to pull in all the chaos and incompatiblity of the old _makeRequest
     axiosRequestObj.baseURL = this.creatorNodeEndpoint
-    return axios(axiosRequestObj)
+    return await axios(axiosRequestObj)
   }
 
   /**
@@ -1244,15 +1261,13 @@ export class CreatorNode {
   /**
    * Calls fn and then retries once after 500ms, again after 1500ms, and again after 4000ms
    */
-  async _retry3(fn: () => Promise<any>, onRetry = (_err: any) => { }) {
-    return retry(fn,
-      {
-        minTimeout: 500,
-        maxTimeout: 4000,
-        factor: 3,
-        retries: 3,
-        onRetry
-      }
-    )
+  async _retry3(fn: () => Promise<any>, onRetry = (_err: any) => {}) {
+    return await retry(fn, {
+      minTimeout: 500,
+      maxTimeout: 4000,
+      factor: 3,
+      retries: 3,
+      onRetry
+    })
   }
 }

@@ -409,12 +409,13 @@ export class Track extends Base {
     this._validateTrackMetadata(metadata)
 
     // Upload track audio and cover art to storage node
-    const updatedMetadata = await this.creatorNode.uploadTrackAudioAndCoverArtV2(
-      trackFile,
-      coverArtFile,
-      metadata,
-      onProgress
-    )
+    const updatedMetadata =
+      await this.creatorNode.uploadTrackAudioAndCoverArtV2(
+        trackFile,
+        coverArtFile,
+        metadata,
+        onProgress
+      )
 
     // Write metadata to chain
     const trackId = await this._generateTrackId()
