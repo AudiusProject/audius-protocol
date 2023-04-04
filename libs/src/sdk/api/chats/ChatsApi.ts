@@ -427,6 +427,20 @@ export class ChatsApi
     })
   }
 
+  public async unblock(requestParameters: ChatBlockRequest) {
+    this.assertNotNullOrUndefined(
+      requestParameters.userId,
+      'requestParameters.userId',
+      'unblock'
+    )
+    return await this.sendRpc({
+      method: 'chat.unblock',
+      params: {
+        user_id: requestParameters.userId
+      }
+    })
+  }
+
   public async delete(requestParameters: ChatDeleteRequest) {
     this.assertNotNullOrUndefined(
       requestParameters.chatId,
