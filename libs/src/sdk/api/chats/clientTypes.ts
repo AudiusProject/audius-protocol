@@ -63,6 +63,14 @@ export type ChatPermitRequest = {
   permit: ChatPermission
 }
 
+export type ChatValidateCanCreateRequest = {
+  userIds: string[]
+}
+
+export type ChatGetPermissionRequest = {
+  userIds?: string[]
+}
+
 export type TypedCommsResponse<T> = Omit<CommsResponse, 'data'> & {
   data: T
 }
@@ -77,4 +85,20 @@ export type ChatEvents = {
     messageId: string
     reaction: ChatMessageNullableReaction
   }) => void
+}
+
+export type UnfurlResponse = {
+  url: string
+  url_type?: string
+  site_name?: string
+  title?: string
+  description?: string
+  image?: string
+  html?: string
+  favicon?: string
+}
+
+export type ChatPermissionResponse = {
+  permission: ChatPermission
+  current_user_has_permission: boolean
 }
