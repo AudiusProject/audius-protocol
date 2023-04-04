@@ -3,7 +3,11 @@ import json
 from integration_tests.challenges.index_helpers import UpdateTask
 from sqlalchemy import desc
 from src.models.indexing.cid_data import CIDData
-from src.tasks.entity_manager.utils import TRACK_ID_OFFSET, USER_ID_OFFSET
+from src.tasks.entity_manager.utils import (
+    PLAYLIST_ID_OFFSET,
+    TRACK_ID_OFFSET,
+    USER_ID_OFFSET,
+)
 from src.tasks.index import save_cid_metadata
 from src.tasks.index_nethermind import fetch_cid_metadata
 from src.utils.cid_metadata_client import CIDMetadataClient
@@ -61,23 +65,24 @@ def test_fetch_cid_metadata(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(CIDMetadataClient, web3, None)
 
-        expected_cid_type = {"QmUpdateUser1": "user"}
+        expected_cid_type = {
+            "QmUpdateUser1": "user",
+            "QmCreateTrack1": "track",
+            "QmUpdatePlaylist1": "playlist_data",
+        }
         expected_metadata = {
             "QmUpdateUser1": {
-                "is_verified": False,
-                "is_deactivated": False,
-                "name": "raymont updated",
-                "handle": "rayjacobsonupdated",
                 "profile_picture": None,
                 "profile_picture_sizes": "QmYRHAJ4YuLjT4fLLRMg5STnQA4yDpiBmzk5R3iCDTmkmk",
                 "cover_photo": None,
                 "cover_photo_sizes": "QmUk61QDUTzhNqjnCAWipSp3jnMmXBmtTUC2mtF5F6VvUy",
                 "bio": "ðŸŒžðŸ‘„ðŸŒž",
+                "name": "raymont updated",
                 "location": "chik fil yay!!",
-                "artist_pick_track_id": TRACK_ID_OFFSET,
-                "creator_node_endpoint": "https://creatornode.audius.co,https://content-node.audius.co,https://blockdaemon-audius-content-06.bdnodes.net",
+                "handle": "rayjacobsonupdated",
                 "associated_wallets": None,
                 "associated_sol_wallets": None,
+                "collectibles": None,
                 "playlist_library": {
                     "contents": [
                         {"playlist_id": "Audio NFTs", "type": "explore_playlist"},
@@ -121,11 +126,81 @@ def test_fetch_cid_metadata(app, mocker):
                     ]
                 },
                 "events": {"is_mobile_user": True},
-                "user_id": USER_ID_OFFSET,
+                "is_deactivated": False,
+                "artist_pick_track_id": TRACK_ID_OFFSET,
+            },
+            "QmCreateTrack1": {
+                "track_cid": "some-track-cid",
+                "owner_id": 1,
+                "title": "track 1",
+                "route_id": None,
+                "length": 0,
+                "cover_art": None,
+                "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
+                "tags": "realmagic,rickyreed,theroom",
+                "genre": "R&B/Soul",
+                "mood": "Empowering",
+                "credits_splits": None,
+                "create_date": "2020-07-11 08:22:15",
+                "release_date": "Sat Jul 11 2020 01:19:58 GMT-0700",
+                "file_type": None,
+                "description": None,
+                "license": "All rights reserved",
+                "isrc": None,
+                "iswc": None,
+                "track_segments": [
+                    {
+                        "duration": 6.016,
+                        "multihash": "QmabM5svgDgcRdQZaEKSMBCpSZrrYy2y87L8Dx8EQ3T2jp",
+                    }
+                ],
+                "download": {
+                    "cid": None,
+                    "is_downloadable": False,
+                    "requires_follow": False,
+                },
+                "remix_of": {"tracks": [{"parent_track_id": 75808}]},
+                "is_unlisted": False,
+                "field_visibility": {
+                    "mood": True,
+                    "tags": True,
+                    "genre": True,
+                    "share": True,
+                    "play_count": True,
+                    "remixes": True,
+                },
+                "stem_of": None,
+                "is_premium": False,
+                "premium_conditions": None,
+                "is_playlist_upload": True,
+            },
+            "QmUpdatePlaylist1": {
+                "playlist_id": 1,
+                "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
+                "playlist_name": "playlist 1 updated",
+                "playlist_image_sizes_multihash": "",
+                "description": "",
+                "is_album": None,
+                "is_private": None,
             },
         }
 
-        user1JSON = json.dumps(expected_metadata["QmUpdateUser1"])
+        # Add invalid keys and remove valid keys to verify fetch_cid_metadata validates and corrects format
+        user1_tx_metadata = expected_metadata["QmUpdateUser1"].copy()
+        user1_tx_metadata.pop("collectibles")
+        user1_tx_metadata["incorrect_key"] = True
+        user1_json = json.dumps(user1_tx_metadata)
+
+        track1_tx_metadata = expected_metadata["QmCreateTrack1"].copy()
+        track1_tx_metadata.pop("premium_conditions")
+        track1_tx_metadata["incorrect_key"] = True
+        track1_json = json.dumps(track1_tx_metadata)
+
+        playlist1_tx_metadata = expected_metadata["QmUpdatePlaylist1"].copy()
+        playlist1_tx_metadata.pop("is_album")
+        playlist1_tx_metadata["incorrect_key"] = True
+        playlist1_json = json.dumps(playlist1_tx_metadata)
+
         tx_receipts = {
             "UpdateUser1Tx": [
                 {
@@ -135,7 +210,35 @@ def test_fetch_cid_metadata(app, mocker):
                             "_entityType": "User",
                             "_userId": USER_ID_OFFSET,
                             "_action": "Update",
-                            "_metadata": f'{{"cid": "QmUpdateUser1", "data": {user1JSON}}}',
+                            "_metadata": f'{{"cid": "QmUpdateUser1", "data": {user1_json}}}',
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+            "CreateTrack1Tx": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": TRACK_ID_OFFSET,
+                            "_entityType": "Track",
+                            "_userId": 1,
+                            "_action": "Create",
+                            "_metadata": f'{{"cid": "QmCreateTrack1", "data": {track1_json}}}',
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+            "UpdatePlaylist1Tx": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": PLAYLIST_ID_OFFSET,
+                            "_entityType": "Playlist",
+                            "_userId": 1,
+                            "_action": "Update",
+                            "_metadata": f'{{"cid": "QmUpdatePlaylist1", "data": {playlist1_json}}}',
                             "_signer": "user1wallet",
                         }
                     )

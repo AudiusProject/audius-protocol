@@ -39,8 +39,14 @@ from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.tasks.index import save_cid_metadata
+from src.tasks.metadata import (
+    playlist_metadata_format,
+    track_metadata_format,
+    user_metadata_format,
+)
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
+from src.utils.cid_metadata_client import get_metadata_from_json
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
@@ -257,15 +263,25 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     try:
                         data = json.loads(cid)
                         cid = data["cid"]
-                        metadata = data["data"]
-                        # do not add to cid_metadata or cid_type yet to avoid interfering with the retry conditions
-                        cid_metadata_from_chain[cid] = metadata
+                        metadata_json = data["data"]
+
+                        metadata_format: Any = None
+                        metadata_type = None
                         if event_type == EntityType.PLAYLIST:
-                            cid_type_from_chain[cid] = "playlist_data"
+                            metadata_type = "playlist_data"
+                            metadata_format = playlist_metadata_format
                         elif event_type == EntityType.TRACK:
-                            cid_type_from_chain[cid] = "track"
+                            metadata_type = "track"
+                            metadata_format = track_metadata_format
                         elif event_type == EntityType.USER:
-                            cid_type_from_chain[cid] = "user"
+                            metadata_type = "user"
+                            metadata_format = user_metadata_format
+                        formatted_json = get_metadata_from_json(
+                            metadata_format, metadata_json
+                        )
+                        # do not add to cid_metadata or cid_type yet to avoid interfering with the retry conditions
+                        cid_type_from_chain[cid] = metadata_type
+                        cid_metadata_from_chain[cid] = formatted_json
                         continue
                     except Exception:
                         pass
