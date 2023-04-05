@@ -5,6 +5,7 @@ import { CreatorNode } from '../services/creatorNode'
 import { Nullable, TrackMetadata, Utils } from '../utils'
 import retry from 'async-retry'
 import type { TransactionReceipt } from 'web3-core'
+import type { ManageEntityCIDMetadata } from '../services/dataContracts/EntityManagerClient'
 import { EntityManagerClient } from '../services/dataContracts/EntityManagerClient'
 
 const TRACK_PROPS = [
@@ -518,14 +519,26 @@ export class Track extends Base {
       )
       phase = phases.ADDING_TRACK
 
+      const txMetadata: ManageEntityCIDMetadata = {
+        cid: metadataMultihash,
+        data: metadata
+      }
+
       // Write metadata to chain
       const trackId = await this._generateTrackId()
+      // const response = await this.contracts.EntityManagerClient!.manageEntity(
+      //   ownerId,
+      //   EntityManagerClient.EntityType.TRACK,
+      //   trackId,
+      //   EntityManagerClient.Action.CREATE,
+      //   metadataMultihash
+      // )
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         ownerId,
         EntityManagerClient.EntityType.TRACK,
         trackId,
         EntityManagerClient.Action.CREATE,
-        metadataMultihash
+        JSON.stringify(txMetadata)
       )
       const txReceipt = response.txReceipt
 
