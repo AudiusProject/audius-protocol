@@ -19,7 +19,7 @@ fi
 required_ruby_version=$(<'.ruby-version')
 current_ruby_version=$(ruby --version)
 
-if [[ $current_ruby_version =~ $required_node_version ]]; then
+if [[ ! $current_ruby_version =~ $required_ruby_version ]]; then
   echo "Invalid ruby version. Expected $required_ruby_version, got $current_ruby_version"
   should_error=true
 fi
@@ -27,7 +27,7 @@ fi
 required_python_version=$(<'.python-version')
 current_python_version=$(python --version)
 
-if [[ $required_python_version =~ $current_python_version ]]; then
+if [[ ! $current_python_version =~ $required_python_version ]]; then
   echo "Invalid python version. Expected $required_python_version, got $current_python_version"
   should_error=true
 fi
