@@ -11,25 +11,25 @@ import (
 	"strconv"
 	"time"
 
-	discoveryConfig "comms.audius.co/discovery/config"
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
-	sharedConfig "comms.audius.co/shared/config"
-	"comms.audius.co/shared/peering"
+	"comms.audius.co/discovery/the_graph"
+	"comms.audius.co/shared/signing"
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/inconshreveable/log15"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/nats-io/nats.go"
+	"golang.org/x/exp/slog"
 )
 
-func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
+func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor) *ChatServer {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
@@ -39,9 +39,9 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	e.Use(middleware.CORS())
 
 	s := &ChatServer{
-		Echo: e,
-		jsc:  jsc,
-		proc: proc,
+		Echo:   e,
+		proc:   proc,
+		config: discoveryConfig,
 	}
 
 	e.GET("/", func(c echo.Context) error {
@@ -50,9 +50,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 
 	g := e.Group("/comms")
 
-	g.GET("", func(c echo.Context) error {
-		return c.String(http.StatusOK, "comms are UP: v1")
-	})
+	g.GET("", s.getStatus)
 
 	config := unfurlist.WithBlocklistPrefixes(
 		[]string{
@@ -81,21 +79,8 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
 
-	g.GET("/debug/stream", func(c echo.Context) error {
-		info, err := jsc.StreamInfo(discoveryConfig.GlobalStreamName)
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, info)
-	})
-
-	g.GET("/debug/consumer", func(c echo.Context) error {
-		info, err := jsc.ConsumerInfo(discoveryConfig.GlobalStreamName, discoveryConfig.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey)
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, info)
-	})
+	g.GET("/rpc/bulk", s.getRpcBulk, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
+	g.POST("/rpc/receive", s.postRpcReceive, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
 
 	g.GET("/debug/vars", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
 	g.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
@@ -113,8 +98,17 @@ func init() {
 
 type ChatServer struct {
 	*echo.Echo
-	jsc  nats.JetStreamContext
-	proc *rpcz.RPCProcessor
+	proc   *rpcz.RPCProcessor
+	config *config.DiscoveryConfig
+}
+
+func (s *ChatServer) getStatus(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{
+		"commit": vcsRevision,
+		"built":  vcsBuildTime,
+		"booted": bootTime,
+		"wip":    vcsDirty,
+	})
 }
 
 type ValidatedPermission struct {
@@ -123,7 +117,7 @@ type ValidatedPermission struct {
 }
 
 func (s *ChatServer) mutate(c echo.Context) error {
-	payload, wallet, err := peering.ReadSignedRequest(c)
+	payload, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
@@ -146,18 +140,21 @@ func (s *ChatServer) mutate(c echo.Context) error {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
 
-	// Publish data to the subject
-	subject := "audius.rpc"
-	msg := nats.NewMsg(subject)
-	msg.Header.Add(sharedConfig.SigHeader, c.Request().Header.Get(sharedConfig.SigHeader))
-	msg.Data = payload
+	//
+	rpcLog := &schema.RpcLog{
+		RelayedBy:  s.config.MyHost,
+		RelayedAt:  time.Now(),
+		FromWallet: wallet,
+		Rpc:        payload,
+		Sig:        c.Request().Header.Get(signing.SigHeader),
+	}
 
-	ok, err := s.proc.SubmitAndWait(msg)
+	ok, err := s.proc.ApplyAndPublish(rpcLog)
 	if err != nil {
 		logger.Warn(string(payload), "wallet", wallet, "err", err)
 		return err
 	}
-	logger.Debug(string(payload), "seq", ok.Sequence, "wallet", wallet, "relay", true)
+	logger.Debug(string(payload), "wallet", wallet, "relay", true)
 	return c.JSON(200, ok)
 }
 
@@ -253,7 +250,7 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 	signedData := []byte(u.String())
 
 	// Now that we have the data that was actually signed, we can recover the wallet
-	wallet, err := peering.ReadSigned(signature, signedData)
+	wallet, err := signing.ReadSigned(signature, signedData)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -277,7 +274,7 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 
 func (s *ChatServer) getChats(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -343,7 +340,7 @@ func (s *ChatServer) getChats(c echo.Context) error {
 
 func (s *ChatServer) getChat(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -369,7 +366,7 @@ func (s *ChatServer) getChat(c echo.Context) error {
 
 func (s *ChatServer) getMessages(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -428,7 +425,7 @@ func (s *ChatServer) getMessages(c echo.Context) error {
 
 func (s *ChatServer) getChatPermissions(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -479,7 +476,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 
 func (s *ChatServer) getChatBlockees(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -514,7 +511,7 @@ func (s *ChatServer) getChatBlockees(c echo.Context) error {
 
 func (s *ChatServer) getChatBlockers(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -648,4 +645,55 @@ func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRo
 	}
 
 	return nil
+}
+
+func (ss *ChatServer) getRpcBulk(c echo.Context) error {
+
+	var rpcs []schema.RpcLog
+
+	var after time.Time
+	if t, err := time.Parse(time.RFC3339, c.QueryParam("after")); err == nil {
+		after = t
+	} else {
+		fmt.Println("failed to parse time", err, c.QueryParam("after"), c.QueryString())
+	}
+
+	query := `select * from rpc_log where relayed_by = $1 and relayed_at >= $2 order by relayed_at asc`
+	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after)
+	if err != nil {
+		return err
+	}
+
+	// using this with debug=true
+	// pretty prints the json and sig match fails
+	// ouch!
+	// return c.JSON(200, rpcs)
+
+	j, err := json.Marshal(rpcs)
+	if err != nil {
+		return err
+	}
+	return c.JSONBlob(200, j)
+
+}
+
+func (ss *ChatServer) postRpcReceive(c echo.Context) error {
+	// set by our custom basic auth middleware
+	peer := c.Get("peer").(the_graph.Peer)
+
+	// bind to RpcRow
+	rpc := new(schema.RpcLog)
+	if err := c.Bind(rpc); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	// apply
+	err := ss.proc.Apply(rpc)
+	if err != nil {
+		return err
+	}
+
+	slog.Info("got relay", "from", peer.Host, "sig", rpc.Sig)
+
+	return c.String(200, "OK")
 }

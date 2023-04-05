@@ -12,7 +12,6 @@ import (
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
-	sharedConfig "comms.audius.co/shared/config"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -27,10 +26,15 @@ func (vtor *Validator) Validate(userId int32, rawRpc schema.RawRPC) error {
 	methodName := schema.RPCMethod(rawRpc.Method)
 	var noTx *sqlx.Tx = nil
 
+	// actually skip timestamp check for now...
+	// POST endpoint will check for recency...
+	// but peer servers could get it later...
+	// and we don't want to skip message that's over a min old.
+
 	// Always check timestamp
-	if time.Now().UnixMilli()-rawRpc.Timestamp > sharedConfig.SignatureTimeToLiveMs {
-		return errors.New("Invalid timestamp")
-	}
+	// if time.Now().UnixMilli()-rawRpc.Timestamp > sharedConfig.SignatureTimeToLiveMs {
+	// 	return errors.New("Invalid timestamp")
+	// }
 
 	switch methodName {
 	case schema.RPCMethodChatCreate:

@@ -16,7 +16,7 @@ import (
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
-	sharedConfig "comms.audius.co/shared/config"
+	"comms.audius.co/shared/signing"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/stretchr/testify/assert"
@@ -169,7 +169,7 @@ func TestGetChats(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -216,7 +216,7 @@ func TestGetChats(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -267,7 +267,7 @@ func TestGetChats(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec) // test
@@ -394,7 +394,7 @@ func TestGetMessages(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -441,7 +441,7 @@ func TestGetMessages(t *testing.T) {
 		// Set sig header
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -566,7 +566,7 @@ func TestGetPermissions(t *testing.T) {
 		// Set sig header from user 2
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey2)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -605,7 +605,7 @@ func TestGetPermissions(t *testing.T) {
 		// Set sig header from user 2
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey2)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -652,7 +652,7 @@ func TestGetPermissions(t *testing.T) {
 		// Set sig header from user 1
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -694,7 +694,7 @@ func TestGetPermissions(t *testing.T) {
 		// Set sig header from user 2
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey2)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -789,7 +789,7 @@ func TestGetBlockersAndBlockees(t *testing.T) {
 		// Set sig header from user 1
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -823,7 +823,7 @@ func TestGetBlockersAndBlockees(t *testing.T) {
 		// Set sig header from user 2
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey2)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -857,7 +857,7 @@ func TestGetBlockersAndBlockees(t *testing.T) {
 		// Set sig header from user 3
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey3)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
@@ -891,7 +891,7 @@ func TestGetBlockersAndBlockees(t *testing.T) {
 		// Set sig header from user 1
 		payload := []byte(reqUrl)
 		sigBase64 := signPayload(t, payload, privateKey1)
-		req.Header.Set(sharedConfig.SigHeader, sigBase64)
+		req.Header.Set(signing.SigHeader, sigBase64)
 
 		rec := httptest.NewRecorder()
 		c := testServer.NewContext(req, rec)
