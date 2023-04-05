@@ -2,10 +2,13 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 
+	"github.com/georgysavva/scany/v2/pgxscan"
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 	"github.com/sourcegraph/conc/stream"
 )
@@ -17,15 +20,18 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 
 	var storagePath string
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&storagePath)
-	if err != nil {
-		if ok := ss.redirectToCid(c, cid); ok {
-			return nil
-		}
+	if err == pgx.ErrNoRows {
+		return ss.redirectToCid(c, cid)
+	} else if err != nil {
 		return err
 	}
 
-	log.Println("serving cid", cid, storagePath)
-	return c.File(storagePath)
+	if err = c.File(storagePath); err != nil {
+		log.Println("error serving cid", cid, storagePath, err)
+		return ss.redirectToCid(c, cid)
+	}
+
+	return nil
 }
 
 func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
@@ -36,42 +42,46 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 
 	var storagePath string
 	err := ss.pgPool.QueryRow(ctx, sql, dirCid, fileName).Scan(&storagePath)
-	if err != nil {
-		if ok := ss.redirectToCid(c, dirCid); ok {
-			return nil
-		}
+	if err == pgx.ErrNoRows {
+		return ss.redirectToCid(c, dirCid)
+	} else if err != nil {
 		return err
 	}
 
-	log.Println("serving dirCid", dirCid, fileName, storagePath)
-	return c.File(storagePath)
+	if err = c.File(storagePath); err != nil {
+		log.Println("error serving dirCid", dirCid, storagePath, err)
+		return ss.redirectToCid(c, dirCid)
+	}
+
+	return nil
 }
 
-func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) bool {
+func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 	ctx := c.Request().Context()
-	// here instead of just finding one host with cid...
-	// we could lookup all
-	// and loop over, do double tripple check
-	// and redirect to first one that's OK
-	if host, err := ss.findCid(ctx, cid); err == nil {
-		dest := host + c.Request().URL.Path
-		// double tripple check here
-		log.Println("redirecting to", dest)
-		c.Redirect(302, dest)
-		return true
+
+	hosts, err := ss.findHostsWithCid(ctx, cid)
+	if err != nil {
+		return err
 	}
-	return false
+
+	// here we would want to check that host in question is up
+	// (perhaps using healthy hosts convetion from elsewhere)
+	// for now just use first host
+	log.Println("potential hosts for cid", cid, hosts)
+	for _, host := range hosts {
+		dest := host + c.Request().URL.Path
+		log.Println("redirecting to", dest)
+		return c.Redirect(302, dest)
+	}
+
+	return errors.New("no host found with cid: " + cid)
 }
 
-func (ss *MediorumServer) findCid(ctx context.Context, cid string) (string, error) {
-	var host string
-	sql := `select "host" from cid_lookup where "multihash" = $1`
-	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&host)
-	if err != nil {
-		log.Println("findCid err", err)
-		return "", err
-	}
-	return host, nil
+func (ss *MediorumServer) findHostsWithCid(ctx context.Context, cid string) ([]string, error) {
+	var hosts []string
+	sql := `select "host" from cid_lookup where "multihash" = $1 order by random()`
+	err := pgxscan.Select(ctx, ss.pgPool, &hosts, sql, cid)
+	return hosts, err
 }
 
 func (ss *MediorumServer) serveCidMetadata(c echo.Context) error {
