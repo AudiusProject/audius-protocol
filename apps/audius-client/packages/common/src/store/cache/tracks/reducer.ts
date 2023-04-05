@@ -24,7 +24,7 @@ const actionsMap = {
     for (const entry of entries) {
       const { track_id, permalink } = entry.metadata
 
-      newPermalinks[permalink] = track_id
+      newPermalinks[permalink.toLowerCase()] = track_id
     }
 
     return {
@@ -43,7 +43,7 @@ const actionsMap = {
 
     return {
       ...state,
-      permalinks: { ...state.permalinks, [permalink]: trackId }
+      permalinks: { ...state.permalinks, [permalink.toLowerCase()]: trackId }
     }
   }
 }

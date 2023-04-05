@@ -24,7 +24,7 @@ const actionsMap = {
       const { playlist_id, permalink } = entry.metadata
 
       if (permalink) {
-        newPermalinks[permalink] = playlist_id
+        newPermalinks[permalink.toLowerCase()] = playlist_id
       }
     }
 
@@ -44,7 +44,10 @@ const actionsMap = {
 
     return {
       ...state,
-      permalinks: { ...state.permalinks, [permalink]: collectionId }
+      permalinks: {
+        ...state.permalinks,
+        [permalink.toLowerCase()]: collectionId
+      }
     }
   }
 }
