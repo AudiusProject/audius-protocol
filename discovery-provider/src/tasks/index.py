@@ -37,8 +37,14 @@ from src.queries.skipped_transactions import add_network_level_skipped_transacti
 from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
+from src.tasks.metadata import (
+    playlist_metadata_format,
+    track_metadata_format,
+    user_metadata_format,
+)
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers
+from src.utils.cid_metadata_client import get_metadata_from_json
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
@@ -200,6 +206,11 @@ def fetch_cid_metadata(db, entity_manager_txs):
     cid_to_user_id: Dict[str, int] = {}
     cid_metadata: Dict[str, Dict] = {}  # cid -> metadata
 
+    # metadata blobs sent through chain
+    # merged with cid_metadata and cid_type before returning
+    cid_type_from_chain: Dict[str, str] = {}  # cid -> entity type track / user
+    cid_metadata_from_chain: Dict[str, Dict] = {}  # cid -> metadata
+
     # fetch transactions
     with db.scoped_session() as session:
         for tx_receipt in entity_manager_txs:
@@ -233,6 +244,36 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         and event_type == EntityType.NOTIFICATION
                     ):
                         continue
+
+                    # Check if metadata blob was passed directly.
+                    # If so, add to cid_metadata_from_chain and cid_type_from_chain
+                    # dicts and do not query CNs for these CIDs.
+                    # TODO remove after CID metadata migration.
+                    try:
+                        data = json.loads(cid)
+                        cid = data["cid"]
+                        metadata_json = data["data"]
+
+                        metadata_format: Any = None
+                        metadata_type = None
+                        if event_type == EntityType.PLAYLIST:
+                            metadata_type = "playlist_data"
+                            metadata_format = playlist_metadata_format
+                        elif event_type == EntityType.TRACK:
+                            metadata_type = "track"
+                            metadata_format = track_metadata_format
+                        elif event_type == EntityType.USER:
+                            metadata_type = "user"
+                            metadata_format = user_metadata_format
+                        formatted_json = get_metadata_from_json(
+                            metadata_format, metadata_json
+                        )
+                        # do not add to cid_metadata or cid_type yet to avoid interfering with the retry conditions
+                        cid_type_from_chain[cid] = metadata_type
+                        cid_metadata_from_chain[cid] = formatted_json
+                        continue
+                    except Exception:
+                        pass
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
@@ -290,6 +331,8 @@ def fetch_cid_metadata(db, entity_manager_txs):
     logger.debug(
         f"index.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
+    cid_metadata.update(cid_metadata_from_chain)
+    cid_type.update(cid_type_from_chain)
     return cid_metadata, cid_type
 
 

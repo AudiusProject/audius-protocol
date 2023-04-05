@@ -15,6 +15,7 @@ from web3.datastructures import AttributeDict
 
 @pytest.fixture()
 def tx_receipts():
+    playlist4_json = '{"playlist_contents": {"track_ids": []},"description": "","playlist_image_sizes_multihash": "","playlist_name": "playlist 4"}'
     return {
         "CreatePlaylist1Tx": [
             {
@@ -100,6 +101,20 @@ def tx_receipts():
                 )
             },
         ],
+        "CreatePlaylist4Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": PLAYLIST_ID_OFFSET + 4,
+                        "_entityType": "Playlist",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreatePlaylist4", "data": {playlist4_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
     }
 
 
@@ -117,6 +132,12 @@ def test_metadata():
             "description": "test description",
             "playlist_image_sizes_multihash": "",
             "playlist_name": "playlist 2",
+        },
+        "QmCreatePlaylist4": {
+            "playlist_contents": {"track_ids": []},
+            "description": "",
+            "playlist_image_sizes_multihash": "",
+            "playlist_name": "playlist 4",
         },
         "QmUpdatePlaylist1": {
             "playlist_contents": {"track_ids": [{"time": 1660927554, "track": 1}]},
@@ -527,7 +548,7 @@ def test_index_valid_playlists(app, mocker, tx_receipts, test_metadata):
 
         # validate db records
         all_playlists: List[Playlist] = session.query(Playlist).all()
-        assert len(all_playlists) == 7
+        assert len(all_playlists) == 8
 
         playlists_1: List[Playlist] = (
             session.query(Playlist)
@@ -572,6 +593,21 @@ def test_index_valid_playlists(app, mocker, tx_receipts, test_metadata):
         assert playlist_3.playlist_name == "playlist 3 updated"
         assert playlist_3.is_delete == False
         assert playlist_3.is_current == True
+
+        playlists_4: List[Playlist] = (
+            session.query(Playlist)
+            .filter(
+                Playlist.is_current == True,
+                Playlist.playlist_id == PLAYLIST_ID_OFFSET + 4,
+            )
+            .all()
+        )
+        assert len(playlists_4) == 1
+        playlist_4 = playlists_4[0]
+        assert playlist_4.last_added_to == None
+        assert playlist_4.playlist_name == "playlist 4"
+        assert playlist_4.is_delete == False
+        assert playlist_4.is_current == True
 
         albums: List[Playlist] = (
             session.query(Playlist)
