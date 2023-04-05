@@ -519,26 +519,14 @@ export class Track extends Base {
       )
       phase = phases.ADDING_TRACK
 
-      const txMetadata: ManageEntityCIDMetadata = {
-        cid: metadataMultihash,
-        data: metadata
-      }
-
       // Write metadata to chain
       const trackId = await this._generateTrackId()
-      // const response = await this.contracts.EntityManagerClient!.manageEntity(
-      //   ownerId,
-      //   EntityManagerClient.EntityType.TRACK,
-      //   trackId,
-      //   EntityManagerClient.Action.CREATE,
-      //   metadataMultihash
-      // )
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         ownerId,
         EntityManagerClient.EntityType.TRACK,
         trackId,
         EntityManagerClient.Action.CREATE,
-        JSON.stringify(txMetadata)
+        metadataMultihash
       )
       const txReceipt = response.txReceipt
 
