@@ -553,7 +553,7 @@ const getCID = async (req, res) => {
       time: `${Date.now() - startMs}ms`
     })
 
-    if (noMp3 && await isMp3File(storagePath,)) {
+    if (noMp3 && await isMp3File(storagePath)) {
       req.logger.debug(`The file at ${storagePath} is a mp3 file.`)
       decisionTree.push({
         stage: `INVALID_CID_FOUND_IN_NETWORK`,
