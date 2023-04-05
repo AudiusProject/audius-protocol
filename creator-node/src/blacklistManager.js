@@ -112,19 +112,13 @@ class BlacklistManager {
     userIdsToBlacklist = [],
     segmentsToBlacklist = []
   }) {
-    // Get all tracks from users and combine with explicit trackIds to BL
-    const tracksFromUsers = await this._getTracksFromUsers(userIdsToBlacklist)
-    const allTrackIdsToBlacklist = trackIdsToBlacklist.concat(
-      tracksFromUsers.map((track) => track.blockchainId)
-    )
-
     // Dedupe trackIds
-    const allTrackIdsToBlacklistSet = new Set(allTrackIdsToBlacklist)
+    const allTrackIdsToBlacklistSet = new Set(trackIdsToBlacklist)
 
     try {
       await this._addToRedis(
         REDIS_SET_BLACKLIST_TRACKID_KEY,
-        allTrackIdsToBlacklist
+        trackIdsToBlacklist
       )
       await this._addToRedis(REDIS_SET_BLACKLIST_USERID_KEY, userIdsToBlacklist)
       await this._addToRedis(
