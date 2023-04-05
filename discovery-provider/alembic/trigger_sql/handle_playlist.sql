@@ -3,7 +3,7 @@ declare
   track_owner_id int := 0;
   track_item json;
   subscriber_user_ids integer[];
-  old_row playlists%rowtype;
+  old_row playlists%rowtype := null;
   delta int := 0;
 begin
 
@@ -13,7 +13,7 @@ begin
   select * into old_row from playlists where playlist_id = new.playlist_id and is_current = false order by blocknumber desc limit 1;
 
   delta := 0;
-  if (new.is_delete = true) and (old_row.is_delete = false and old_row.is_private = false) then
+  if (new.is_delete = true and new.is_current = true) and (old_row.is_delete = false and old_row.is_private = false) then
     delta := -1;
   end if;
 
