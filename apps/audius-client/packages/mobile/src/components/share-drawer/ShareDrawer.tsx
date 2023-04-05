@@ -79,15 +79,6 @@ export const ShareDrawer = () => {
   const { isEnabled: isShareSoundToTikTokEnabled } = useFeatureFlag(
     FeatureFlags.SHARE_SOUND_TO_TIKTOK
   )
-  const { isEnabled: isShareToInstagramStoryEnabled } = useFeatureFlag(
-    FeatureFlags.SHARE_TO_STORY
-  )
-  const { isEnabled: isShareToSnapchatEnabled } = useFeatureFlag(
-    FeatureFlags.SHARE_TO_SNAPCHAT
-  )
-  const { isEnabled: isShareVideoToTikTokEnabled } = useFeatureFlag(
-    FeatureFlags.SHARE_VIDEO_TO_TIKTOK
-  )
 
   const { secondary, neutralLight2 } = useThemeColors()
   const dispatch = useDispatch()
@@ -100,6 +91,8 @@ export const ShareDrawer = () => {
     account &&
     account.user_id === content.artist.user_id
   const shareType = content?.type ?? 'track'
+
+  const isPremiumTrack = content?.type === 'track' && content.track.is_premium
 
   const handleShareToTwitter = useCallback(async () => {
     if (!content) return
@@ -159,22 +152,11 @@ export const ShareDrawer = () => {
     content?.type === 'track' &&
     !content.track.is_unlisted &&
     !content.track.is_invalid &&
-    !content.track.is_delete
+    !content.track.is_delete &&
+    !isPremiumTrack
 
   const shouldIncludeTikTokSoundAction = Boolean(
     isShareSoundToTikTokEnabled && isOwner && isShareableTrack
-  )
-
-  const shouldIncludeInstagramStoryAction = Boolean(
-    isShareToInstagramStoryEnabled && isShareableTrack
-  )
-
-  const shouldIncludeSnapchatAction = Boolean(
-    isShareToSnapchatEnabled && isShareableTrack
-  )
-
-  const shouldIncludeTikTokVideoAction = Boolean(
-    isShareVideoToTikTokEnabled && isShareableTrack
   )
 
   const getRows = useCallback(() => {
@@ -230,15 +212,11 @@ export const ShareDrawer = () => {
     if (shouldIncludeTikTokSoundAction) {
       result.push(shareSoundToTiktokAction)
     }
-    if (shouldIncludeTikTokVideoAction) {
-      result.push(shareVideoToTiktokAction)
-    }
-    if (shouldIncludeInstagramStoryAction) {
-      result.push(shareToInstagramStoriesAction)
-    }
 
-    if (shouldIncludeSnapchatAction) {
+    if (isShareableTrack) {
+      result.push(shareToInstagramStoriesAction)
       result.push(shareToSnapchatAction)
+      result.push(shareVideoToTiktokAction)
     }
 
     result.push(copyLinkAction, shareSheetAction)
@@ -254,10 +232,8 @@ export const ShareDrawer = () => {
     handleShareToSnapchat,
     handleShareToInstagramStory,
     shouldIncludeTikTokSoundAction,
-    shouldIncludeInstagramStoryAction,
-    shouldIncludeSnapchatAction,
-    handleShareVideoToTiktok,
-    shouldIncludeTikTokVideoAction
+    isShareableTrack,
+    handleShareVideoToTiktok
   ])
 
   return (
