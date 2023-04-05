@@ -34,8 +34,14 @@ const useStyles = makeStyles(({ palette, typography, spacing }) => ({
   textContainer: {
     paddingVertical: spacing(1)
   },
+  primaryTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   primaryText: {
     ...typography.h3,
+    marginBottom: 0,
     color: palette.neutral,
     textAlign: 'center',
     // needed to keep emojis from increasing text height
@@ -100,15 +106,17 @@ export const Card = (props: CardProps) => {
         style: [styles.cardImage, props.type === 'user' && styles.userImage]
       })}
       <View style={styles.textContainer}>
-        <Text
-          numberOfLines={1}
-          style={[styles.primaryText, stylesProp?.primaryText]}
-        >
-          {primaryText}
+        <View style={styles.primaryTextContainer}>
+          <Text
+            numberOfLines={1}
+            style={[styles.primaryText, stylesProp?.primaryText]}
+          >
+            {primaryText}
+          </Text>
           {props.type === 'user' ? (
             <UserBadges user={props.user} badgeSize={12} hideName />
           ) : null}
-        </Text>
+        </View>
         <View style={styles.secondaryTextContainer}>
           <Text
             numberOfLines={1}
