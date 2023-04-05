@@ -12,8 +12,9 @@ require (
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/oklog/ulid/v2 v2.1.0
 	github.com/r3labs/sse/v2 v2.10.0
+	github.com/sourcegraph/conc v0.3.0
 	github.com/spf13/cast v1.5.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/tysonmote/rendezvous v0.0.0-20220626212128-be0258dbbd3d
 	gocloud.dev v0.28.0
 	golang.org/x/exp v0.0.0-20230223210539-50820d90acfd
@@ -47,11 +48,12 @@ require (
 	github.com/multiformats/go-multibase v0.0.3 // indirect
 	github.com/multiformats/go-varint v0.0.6 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.opencensus.io v0.24.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
+	go.uber.org/multierr v1.9.0 // indirect
 	golang.org/x/crypto v0.7.0 // indirect
 	golang.org/x/image v0.5.0 // indirect
 	golang.org/x/net v0.8.0 // indirect

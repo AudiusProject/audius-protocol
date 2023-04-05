@@ -158,7 +158,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// Middleware
 	basePath.Use(middleware.Recover())
 	basePath.Use(middleware.CORS())
-	basePath.Use(middleware.Logger())
+	// basePath.Use(middleware.Logger())
 
 	// TODO: Use middleware to cache whenever content is streamed, except if it's premium content.
 	// See Johannes's previous PR for reference. From CN:
@@ -192,9 +192,11 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	basePath.GET("/debug/ls", ss.getLs)
 
 	// legacy:
-	basePath.GET("/cid/:cid", ss.serveLegacyIPFS)
-	basePath.GET("/cid2/:cid", ss.serveLegacyIPFS2)
+	basePath.GET("/cid/:cid", ss.serveLegacyCid)
+	basePath.GET("/cid/:dirCid/:fileName", ss.serveLegacyDirCid)
 	basePath.GET("/metadata", ss.serveCidMetadata)
+
+	basePath.GET("/beam/files", ss.servePgBeam)
 
 	// internal
 	internalApi := basePath.Group("/internal")
@@ -237,6 +239,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startHealthBroadcaster()
 
 	go ss.startRepairer()
+
+	go ss.startBeamClient()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
