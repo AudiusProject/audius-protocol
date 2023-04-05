@@ -10,7 +10,8 @@ import {
   IconKebabHorizontal,
   IconMessage,
   PopupMenu,
-  IconUnblockMessages
+  IconUnblockMessages,
+  IconBlockMessages
 } from '@audius/stems'
 import cn from 'classnames'
 
@@ -58,6 +59,9 @@ type StatsBannerProps = {
   isSubscribed?: boolean
   onToggleSubscribe?: () => void
   onMessage?: () => void
+  onBlock?: () => void
+  onUnblock?: () => void
+  isBlocked?: boolean
 }
 
 export const StatBanner = (props: StatsBannerProps) => {
@@ -78,8 +82,11 @@ export const StatBanner = (props: StatsBannerProps) => {
     onCancel,
     onFollow,
     onUnfollow,
-    onMessage,
     following,
+    onMessage,
+    onBlock,
+    onUnblock,
+    isBlocked,
     isSubscribed,
     onToggleSubscribe
   } = props
@@ -146,13 +153,17 @@ export const StatBanner = (props: StatsBannerProps) => {
                     onClick: onShare!,
                     icon: <IconShare />
                   },
-                  {
-                    text: messages.unblockMessages,
-                    onClick: () => {
-                      // TODO
-                    },
-                    icon: <IconUnblockMessages />
-                  }
+                  isBlocked
+                    ? {
+                        text: messages.unblockMessages,
+                        onClick: onUnblock!,
+                        icon: <IconUnblockMessages />
+                      }
+                    : {
+                        text: messages.blockMessages,
+                        onClick: onBlock!,
+                        icon: <IconBlockMessages />
+                      }
                 ]}
                 transformOrigin={{ horizontal: 'right', vertical: 'top' }}
                 anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
