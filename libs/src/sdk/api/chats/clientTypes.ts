@@ -99,6 +99,6 @@ export type UnfurlResponse = {
 }
 
 export type ChatPermissionResponse = {
-  permission: ChatPermission
+  permits: ChatPermission
   current_user_has_permission: boolean
 }
