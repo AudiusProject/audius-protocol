@@ -3,37 +3,35 @@ declare
   track_owner_id int := 0;
   track_item json;
   subscriber_user_ids integer[];
+  old_row playlists%rowtype := null;
+  delta int := 0;
 begin
 
   insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
   insert into aggregate_playlist (playlist_id, is_album) values (new.playlist_id, new.is_album) on conflict do nothing;
 
-  if new.is_album then
-    update aggregate_user 
-    set album_count = (
-      select count(*)
-      from playlists p
-      where p.is_album IS TRUE
-        AND p.is_current IS TRUE
-        AND p.is_delete IS FALSE
-        AND p.is_private IS FALSE
-        AND p.playlist_owner_id = new.playlist_owner_id
-    )
-    where user_id = new.playlist_owner_id;
-  else
-    update aggregate_user 
-    set playlist_count = (
-      select count(*)
-      from playlists p
-      where p.is_album IS FALSE
-        AND p.is_current IS TRUE
-        AND p.is_delete IS FALSE
-        AND p.is_private IS FALSE
-        AND p.playlist_owner_id = new.playlist_owner_id
-    )
-    where user_id = new.playlist_owner_id;
+  select * into old_row from playlists where playlist_id = new.playlist_id and is_current = false order by blocknumber desc limit 1;
+
+  delta := 0;
+  if (new.is_delete = true and new.is_current = true) and (old_row.is_delete = false and old_row.is_private = false) then
+    delta := -1;
   end if;
 
+  if (old_row is null and new.is_private = false) or (old_row.is_private = true and new.is_private = false) then
+    delta := 1;
+  end if;
+
+  if delta != 0 then
+    if new.is_album then
+      update aggregate_user 
+      set album_count = album_count + delta
+      where user_id = new.playlist_owner_id;
+    else
+      update aggregate_user 
+      set playlist_count = playlist_count + delta
+      where user_id = new.playlist_owner_id;
+    end if;
+  end if;
   -- Create playlist notification
   begin
     if new.created_at = new.updated_at AND 
