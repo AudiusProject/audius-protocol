@@ -502,6 +502,7 @@ type AudiusAPIClientConfig = {
   remoteConfigInstance: RemoteConfigInstance
   localStorage: LocalStorage
   env: Env
+  waitForLibsInit: () => Promise<unknown>
 }
 
 export class AudiusAPIClient {
@@ -516,6 +517,7 @@ export class AudiusAPIClient {
   localStorage: LocalStorage
   env: Env
   isReachable?: boolean = true
+  waitForLibsInit: () => Promise<unknown>
 
   constructor({
     audiusBackendInstance,
@@ -523,7 +525,8 @@ export class AudiusAPIClient {
     overrideEndpoint,
     remoteConfigInstance,
     localStorage,
-    env
+    env,
+    waitForLibsInit
   }: AudiusAPIClientConfig) {
     this.audiusBackendInstance = audiusBackendInstance
     this.getAudiusLibs = getAudiusLibs
@@ -531,6 +534,7 @@ export class AudiusAPIClient {
     this.remoteConfigInstance = remoteConfigInstance
     this.localStorage = localStorage
     this.env = env
+    this.waitForLibsInit = waitForLibsInit
   }
 
   setIsReachable(isReachable: boolean) {
@@ -1870,9 +1874,7 @@ export class AudiusAPIClient {
       // Something went wrong with the request and we should wait for the libs
       // initialization state if needed before retrying
       if (this.initializationState.type === 'manual') {
-        // use wait for libs init from audius backend instance
-        // BEEP
-        // await waitForLibsInit()
+        await this.waitForLibsInit()
       }
       return this._getResponse(path, sanitizedParams, retry, pathType)
     }

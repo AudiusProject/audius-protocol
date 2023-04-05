@@ -1,4 +1,4 @@
-import { ChatEvents, type sdk } from '@audius/sdk'
+import { type AudiusSdk, ChatEvents } from '@audius/sdk'
 import { Middleware } from 'redux'
 
 import { Status } from 'models/Status'
@@ -14,7 +14,7 @@ const {
 } = chatActions
 
 export const chatMiddleware =
-  (audiusSdk: () => Promise<ReturnType<typeof sdk>>): Middleware =>
+  (audiusSdk: () => Promise<AudiusSdk>): Middleware =>
   (store) => {
     let messageListener: ChatEvents['message'] | null = null
     let reactionListener: ChatEvents['reaction'] | null = null
