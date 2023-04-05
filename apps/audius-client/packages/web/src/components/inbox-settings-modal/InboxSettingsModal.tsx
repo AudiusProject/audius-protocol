@@ -1,6 +1,11 @@
-import { ChangeEvent, useCallback, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 
-import { Status } from '@audius/common'
+import {
+  accountSelectors,
+  chatActions,
+  chatSelectors,
+  Status
+} from '@audius/common'
 import { ChatPermission } from '@audius/sdk'
 import {
   Button,
@@ -11,6 +16,7 @@ import {
   ModalTitle,
   RadioButtonGroup
 } from '@audius/stems'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -61,11 +67,22 @@ const options = [
   }
 ]
 
+const { fetchPermissions } = chatActions
+const { getPermissionsMap } = chatSelectors
+const { getUserId } = accountSelectors
+
 export const InboxSettingsModal = () => {
+  const dispatch = useDispatch()
+  const permissionsMap = useSelector(getPermissionsMap)
+  const userId = useSelector(getUserId)
+  const currentPermission = userId
+    ? // @ts-ignore temporary ignore while sdk updates types
+      permissionsMap[userId]?.permits
+    : null
   const [isVisible, setIsVisible] = useModalState('InboxSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   const [permission, setPermission] = useState<ChatPermission>(
-    ChatPermission.ALL
+    currentPermission ?? ChatPermission.ALL
   )
   const [saveState, setSaveState] = useState<Status>(Status.IDLE)
   const [showSpinner, setShowSpinner] = useState(false)
@@ -97,6 +114,22 @@ export const InboxSettingsModal = () => {
       fn()
     }
   }, [saveState, permission, setSaveState, handleClose, setShowSpinner])
+
+  // Fetch the latest permissions for the current user when the modal is made visible
+  // Note that this will trigger the following effect as well, causing the permission state to update
+  useEffect(() => {
+    if (isVisible && userId) {
+      dispatch(fetchPermissions({ userIds: [userId] }))
+    }
+  }, [dispatch, isVisible, userId])
+
+  // Since the modal is always mounted (booo!) we have to manually set the default
+  // permission every time it's made visible
+  useEffect(() => {
+    if (isVisible && currentPermission) {
+      setPermission(currentPermission)
+    }
+  }, [setPermission, isVisible, currentPermission])
 
   return (
     <Modal

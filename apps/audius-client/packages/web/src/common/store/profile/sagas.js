@@ -19,7 +19,8 @@ import {
   MAX_PROFILE_SUPPORTING_TILES,
   MAX_PROFILE_TOP_SUPPORTERS,
   collectiblesActions,
-  processAndCacheUsers
+  processAndCacheUsers,
+  chatActions
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -63,6 +64,8 @@ const {
   updateSolCollections,
   setHasUnsupportedCollection
 } = collectiblesActions
+
+const { fetchPermissions } = chatActions
 
 function* watchFetchProfile() {
   yield takeEvery(profileActions.FETCH_PROFILE, fetchProfileAsync)
@@ -319,6 +322,9 @@ function* fetchProfileAsync(action) {
       yield fork(fetchUserCollections, user.user_id)
       yield fork(fetchSupportersAndSupporting, user.user_id)
     }
+
+    // Get chat permissions
+    yield put(fetchPermissions({ userIds: [user.user_id] }))
 
     yield fork(fetchProfileCustomizedCollectibles, user)
     yield fork(fetchOpenSeaAssets, user)

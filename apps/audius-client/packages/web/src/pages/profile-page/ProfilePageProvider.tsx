@@ -75,7 +75,7 @@ const {
 } = profilePageSelectors
 const { getAccountUser } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
-const { getBlockees } = chatSelectors
+const { getBlockees, getBlockers, getPermissionsMap } = chatSelectors
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -828,6 +828,12 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       activeTab === ProfilePageTabs.REPOSTS ||
       activeTab === ProfilePageTabs.COLLECTIBLES
     const following = !!profile && profile.does_current_user_follow
+    const hasChatPermission =
+      (this.props.profile.profile?.user_id &&
+        !this.props.blockerList.includes(this.props.profile.profile.user_id) &&
+        this.props.permissionsMap[this.props.profile.profile.user_id]
+          ?.current_user_has_permission) ??
+      false
 
     const childProps = {
       // Computed
@@ -899,7 +905,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updateDonation: this.updateDonation,
       updateCoverPhoto: this.updateCoverPhoto,
       didChangeTabsFrom: this.didChangeTabsFrom,
-      onMessage: this.onMessage,
+      onMessage: hasChatPermission ? this.onMessage : undefined,
       onBlock: this.onBlock,
       onUnblock: this.onUnblock
     }
@@ -944,7 +950,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
       updateProfile: this.props.updateProfile,
       isBlocked: this.props.profile.profile
-        ? this.props.blockedList.includes(this.props.profile.profile.user_id)
+        ? this.props.blockeeList.includes(this.props.profile.profile.user_id)
         : false
     }
 
@@ -984,7 +990,9 @@ function makeMapStateToProps() {
       relatedArtists: getRelatedArtists(state, {
         id: getProfileUserId(state, handleLower) ?? 0
       }),
-      blockedList: getBlockees(state)
+      permissionsMap: getPermissionsMap(state),
+      blockeeList: getBlockees(state),
+      blockerList: getBlockers(state)
     }
   }
   return mapStateToProps

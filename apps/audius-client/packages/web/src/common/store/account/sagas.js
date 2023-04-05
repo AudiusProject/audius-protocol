@@ -23,7 +23,7 @@ import disconnectedWallets from './disconnected_wallet_fix.json'
 
 const { fetchProfile } = profilePageActions
 const { getFeePayer } = solanaSelectors
-const { fetchBlockees } = chatActions
+const { fetchBlockees, fetchBlockers } = chatActions
 
 const {
   getUserId,
@@ -259,8 +259,9 @@ function* cacheAccount(account) {
 
   yield put(fetchAccountSucceeded(formattedAccount))
 
-  // Fetch user's chat blockee list after fetching their account
+  // Fetch user's chat blockee and blocker list after fetching their account
   yield put(fetchBlockees())
+  yield put(fetchBlockers())
 }
 
 // Pull from redux cache and persist to local storage cache

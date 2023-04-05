@@ -179,14 +179,16 @@ export const StatBanner = (props: StatsBannerProps) => {
                   />
                 )}
               />
-              <Button
-                type={ButtonType.COMMON}
-                size={ButtonSize.SMALL}
-                className={cn(styles.iconButton, styles.statButton)}
-                aria-label={messages.message}
-                text={<IconMessage />}
-                onClick={onMessage}
-              />
+              {onMessage ? (
+                <Button
+                  type={ButtonType.COMMON}
+                  size={ButtonSize.SMALL}
+                  className={cn(styles.iconButton, styles.statButton)}
+                  aria-label={messages.message}
+                  text={<IconMessage />}
+                  onClick={onMessage}
+                />
+              ) : null}
             </>
           ) : (
             <Button
