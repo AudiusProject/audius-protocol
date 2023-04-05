@@ -1,12 +1,10 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import type { UserMetadata } from '@audius/common'
 import {
-  SquareSizes,
   accountSelectors,
   profilePageActions,
-  profilePageSelectors,
-  Status
+  SquareSizes
 } from '@audius/common'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
@@ -17,7 +15,7 @@ import IconInstagram from 'app/assets/images/iconInstagram.svg'
 import IconLink from 'app/assets/images/iconLink.svg'
 import IconTikTokInverted from 'app/assets/images/iconTikTokInverted.svg'
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
-import { FormTextInput, FormImageInput, ScrollView } from 'app/components/core'
+import { FormImageInput, FormTextInput, ScrollView } from 'app/components/core'
 import { FormScreen } from 'app/components/form-screen'
 import { useUserCoverImage } from 'app/components/image/UserCoverImage'
 import { useUserImage } from 'app/components/image/UserImage'
@@ -28,9 +26,8 @@ import type { Image } from 'app/types/image'
 
 import type { ProfileValues, UpdatedProfile } from './types'
 
-const { getAccountUser, getUserHandle } = accountSelectors
+const { getAccountUser } = accountSelectors
 const { updateProfile } = profilePageActions
-const { getProfileEditStatus } = profilePageSelectors
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   coverPhoto: {
@@ -79,17 +76,6 @@ const EditProfileForm = (props: EditProfileFormProps) => {
     isTikTokVerified
   } = props
   const styles = useStyles()
-  const accountHandle = useSelector(getUserHandle)
-  const navigation = useNavigation()
-  const editStatus = useSelector((state) =>
-    getProfileEditStatus(state, accountHandle!)
-  )
-  useEffect(() => {
-    // Ensure we kick off the edit action before returning to profile screen
-    if (editStatus === Status.LOADING) {
-      navigation.goBack()
-    }
-  }, [editStatus, navigation])
 
   return (
     <FormScreen variant='white' onReset={handleReset} onSubmit={handleSubmit}>
@@ -145,6 +131,7 @@ export const EditProfileScreen = () => {
   const isTwitterVerified = profile ? profile.twitterVerified : false
   const isInstagramVerified = profile ? profile.instagramVerified : false
   const isTikTokVerified = profile ? profile.tikTokVerified : false
+  const navigation = useNavigation()
 
   const { source: coverPhotoSource } = useUserCoverImage(profile)
 
@@ -171,8 +158,9 @@ export const EditProfileScreen = () => {
         newProfile.updatedProfilePicture = profile_picture
       }
       dispatch(updateProfile(newProfile as UserMetadata))
+      navigation.goBack()
     },
-    [dispatch, profile]
+    [dispatch, navigation, profile]
   )
 
   if (!profile) return null
