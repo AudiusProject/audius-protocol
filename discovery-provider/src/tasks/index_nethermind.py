@@ -282,6 +282,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         # do not add to cid_metadata or cid_type yet to avoid interfering with the retry conditions
                         cid_type_from_chain[cid] = metadata_type
                         cid_metadata_from_chain[cid] = formatted_json
+                        logger.info(f"using metadata from tx. cid_type: {metadata_type}, formatted_json: {formatted_json}")
                         continue
                     except Exception:
                         pass
