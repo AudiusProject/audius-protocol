@@ -39,7 +39,8 @@ const {
   timeout,
   computeFilePath,
   computeFilePathInDir,
-  computeLegacyFilePath
+  computeLegacyFilePath,
+  isMp3File
 } = require('../utils')
 const DBManager = require('../dbManager')
 const DiskManager = require('../diskManager')
@@ -177,6 +178,7 @@ const getCID = async (req, res) => {
   const CID = req.params.CID
   const trackId = parseInt(req.query.trackId)
   const localOnly = req.query.localOnly === 'true'
+  const noMp3 = req.noMp3
 
   const decisionTree = [{ stage: `BEGIN`, time: `${Date.now()}` }]
   const logPrefix = `[getCID] [CID=${CID}]`
@@ -382,6 +384,19 @@ const getCID = async (req, res) => {
   if (fileFoundOnFS) {
     startMs = Date.now()
     try {
+      if (noMp3 && await isMp3File(storagePath)) {
+        req.logger.debug(`The file at ${storagePath} is a mp3 file.`)
+        decisionTree.push({
+          stage: `INVALID_CID_FROM_FILE_SYSTEM`,
+          time: `${Date.now() - startMs}ms`
+        })
+        return sendResponse(
+          req,
+          res,
+          errorResponseBadRequest('CID not supported')
+        )
+      }
+
       const fsStream = await streamFromFileSystem(
         req,
         res,
@@ -440,6 +455,16 @@ const getCID = async (req, res) => {
         req,
         res,
         errorResponseBadRequest('this dag node is a directory')
+      )
+    } else if (['track', 'copy320'].includes(queryResults.type)) {
+      decisionTree.push({
+        stage: `DB_CID_QUERY_INVALID_TYPE`
+      })
+      logGetCIDDecisionTree(decisionTree, req)
+      return sendResponse(
+        req,
+        res,
+        errorResponseBadRequest('this CID is invalid')
       )
     } else {
       decisionTree.push({
@@ -527,6 +552,19 @@ const getCID = async (req, res) => {
       stage: `FIND_CID_IN_NETWORK_COMPLETE`,
       time: `${Date.now() - startMs}ms`
     })
+
+    if (noMp3 && await isMp3File(storagePath)) {
+      req.logger.debug(`The file at ${storagePath} is a mp3 file.`)
+      decisionTree.push({
+        stage: `INVALID_CID_FOUND_IN_NETWORK`,
+        time: `${Date.now() - startMs}ms`
+      })
+      return sendResponse(
+        req,
+        res,
+        errorResponseBadRequest('CID not supported')
+      )
+    }
 
     startMs = Date.now()
     const fsStream = await streamFromFileSystem(req, res, storagePath, false)
@@ -837,7 +875,14 @@ router.post(
  * @dev This route does not handle responses by design, so we can pipe the response to client.
  * TODO: It seems like handleResponse does work with piped responses, as seen from the track/stream endpoint.
  */
-router.get(['/ipfs/:CID', '/content/:CID'], getCID)
+router.get(
+  ['/ipfs/:CID', '/content/:CID'],
+  async (req, _res, next) => {
+    req.noMp3 = true
+    next()
+  },
+  getCID
+)
 
 /**
  * Serve images hosted by content node.
