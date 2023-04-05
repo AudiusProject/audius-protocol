@@ -7,6 +7,7 @@ declare
   owner_user_id int;
   track_remix_of json;
   is_remix_cosign boolean;
+  delta int;
 begin
 
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
@@ -16,30 +17,23 @@ begin
     insert into aggregate_playlist (playlist_id, is_album) values (new.repost_item_id, new.repost_type = 'album') on conflict do nothing;
   end if;
 
+  -- increment or decrement?
+  if new.is_delete then
+    delta := -1;
+  else
+    delta := 1;
+  end if;
+
   -- update agg user
   update aggregate_user 
-  set repost_count = (
-    select count(*)
-    from reposts r
-    where r.is_current IS TRUE
-      AND r.is_delete IS FALSE
-      AND r.user_id = new.user_id
-  )
+  set repost_count = repost_count + delta
   where user_id = new.user_id;
 
   -- update agg track or playlist
   if new.repost_type = 'track' then
     milestone_name := 'TRACK_REPOST_COUNT';
     update aggregate_track 
-    set repost_count = (
-      SELECT count(*)
-      FROM reposts r
-      WHERE
-          r.is_current IS TRUE
-          AND r.is_delete IS FALSE
-          AND r.repost_type = new.repost_type
-          AND r.repost_item_id = new.repost_item_id
-    )
+    set repost_count = repost_count + delta
     where track_id = new.repost_item_id
     returning repost_count into new_val;
   	if new.is_delete IS FALSE then
@@ -48,17 +42,10 @@ begin
   else
     milestone_name := 'PLAYLIST_REPOST_COUNT';
     update aggregate_playlist
-    set repost_count = (
-      SELECT count(*)
-      FROM reposts r
-      WHERE
-          r.is_current IS TRUE
-          AND r.is_delete IS FALSE
-          AND r.repost_type = new.repost_type
-          AND r.repost_item_id = new.repost_item_id
-    )
+    set repost_count = repost_count + delta
     where playlist_id = new.repost_item_id
     returning repost_count into new_val;
+
   	if new.is_delete IS FALSE then
 		  select playlist_owner_id into owner_user_id from playlists where is_current and playlist_id = new.repost_item_id;
 	  end if;

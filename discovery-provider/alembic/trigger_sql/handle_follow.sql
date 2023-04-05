@@ -2,28 +2,24 @@ create or replace function handle_follow() returns trigger as $$
 declare
   new_follower_count int;
   milestone integer;
+  delta int;
 begin
   insert into aggregate_user (user_id) values (new.followee_user_id) on conflict do nothing;
   insert into aggregate_user (user_id) values (new.follower_user_id) on conflict do nothing;
 
+  -- increment or decrement?
+  if new.is_delete then
+    delta := -1;
+  else
+    delta := 1;
+  end if;
+
   update aggregate_user 
-  set following_count = (
-      select count(*) 
-      from follows 
-      where follower_user_id = new.follower_user_id 
-        and is_current = true
-        and is_delete = false
-  )
+  set following_count = following_count + delta 
   where user_id = new.follower_user_id;
 
   update aggregate_user 
-  set follower_count = (
-      select count(*) 
-      from follows 
-      where followee_user_id = new.followee_user_id 
-        and is_current = true
-        and is_delete = false
-  )
+  set follower_count = follower_count + delta
   where user_id = new.followee_user_id
   returning follower_count into new_follower_count;
 
