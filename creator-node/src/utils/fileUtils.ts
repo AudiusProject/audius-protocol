@@ -1,6 +1,5 @@
 import isMp3 from 'is-mp3'
-
-const readChunk = require('read-chunk')
+import readChunk from 'read-chunk'
 
 const ffmpegCharCodes = Array.from('FFmpeg').map(s => s.charCodeAt(0))
 
