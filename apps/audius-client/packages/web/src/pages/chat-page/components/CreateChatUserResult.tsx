@@ -3,6 +3,7 @@ import { useCallback, useEffect } from 'react'
 import {
   accountSelectors,
   chatActions,
+  chatSelectors,
   tippingActions,
   tippingSelectors,
   User
@@ -12,6 +13,7 @@ import {
   IconButton,
   IconKebabHorizontal,
   IconMessage,
+  IconUnblockMessages,
   IconUser,
   PopupMenu,
   PopupPosition
@@ -29,7 +31,8 @@ const messages = {
   moreOptions: 'More options',
   message: 'Message This User',
   visit: "Visit User's Profile",
-  block: 'Block Messages'
+  block: 'Block Messages',
+  unblock: 'Unblock Messages'
 }
 
 type UserResultComposeProps = {
@@ -41,7 +44,8 @@ const { getUserId } = accountSelectors
 const { getOptimisticSupporters, getOptimisticSupporting } = tippingSelectors
 
 const { fetchSupportersForUser } = tippingActions
-const { createChat } = chatActions
+const { createChat, blockUser, unblockUser } = chatActions
+const { getBlockees } = chatSelectors
 
 const renderTrigger = (
   anchorRef: React.MutableRefObject<any>,
@@ -61,6 +65,8 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   const currentUserId = useSelector(getUserId)
   const supportingMap = useSelector(getOptimisticSupporting)
   const supportersMap = useSelector(getOptimisticSupporters)
+  const blockeeList = useSelector(getBlockees)
+  const isBlocked = blockeeList.includes(user.user_id)
 
   const handleComposeClicked = useCallback(() => {
     dispatch(createChat({ userIds: [user.user_id] }))
@@ -72,8 +78,12 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   }, [dispatch, user, closeModal])
 
   const handleBlockClicked = useCallback(() => {
-    // TODO
-  }, [])
+    dispatch(blockUser({ userId: user.user_id }))
+  }, [dispatch, user])
+
+  const handleUnblockClicked = useCallback(() => {
+    dispatch(unblockUser({ userId: user.user_id }))
+  }, [dispatch, user])
 
   const items = [
     {
@@ -82,11 +92,17 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
       onClick: handleComposeClicked
     },
     { icon: <IconUser />, text: messages.visit, onClick: handleVisitClicked },
-    {
-      icon: <IconBlockMessages />,
-      text: messages.block,
-      onClick: handleBlockClicked
-    }
+    isBlocked
+      ? {
+          icon: <IconUnblockMessages />,
+          text: messages.unblock,
+          onClick: handleUnblockClicked
+        }
+      : {
+          icon: <IconBlockMessages />,
+          text: messages.block,
+          onClick: handleBlockClicked
+        }
   ]
 
   useEffect(() => {

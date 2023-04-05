@@ -8,7 +8,8 @@ import {
   solanaSelectors,
   createUserBankIfNeeded,
   getContext,
-  FeatureFlags
+  FeatureFlags,
+  chatActions
 } from '@audius/common'
 import { call, put, fork, select, takeEvery } from 'redux-saga/effects'
 
@@ -22,6 +23,7 @@ import disconnectedWallets from './disconnected_wallet_fix.json'
 
 const { fetchProfile } = profilePageActions
 const { getFeePayer } = solanaSelectors
+const { fetchBlockees } = chatActions
 
 const {
   getUserId,
@@ -256,6 +258,9 @@ function* cacheAccount(account) {
   yield call([localStorage, 'setAudiusAccountUser'], account)
 
   yield put(fetchAccountSucceeded(formattedAccount))
+
+  // Fetch user's chat blockee list after fetching their account
+  yield put(fetchBlockees())
 }
 
 // Pull from redux cache and persist to local storage cache

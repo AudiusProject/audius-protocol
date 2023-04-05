@@ -41,6 +41,7 @@ type ChatState = {
   optimisticReactions: Record<string, ChatMessageReaction>
   optimisticChatRead: Record<string, UserChat>
   activeChatId: string | null
+  blockees: ID[]
 }
 
 type SetMessageReactionPayload = {
@@ -81,7 +82,8 @@ const initialState: ChatState = {
   messages: {},
   optimisticChatRead: {},
   optimisticReactions: {},
-  activeChatId: null
+  activeChatId: null,
+  blockees: []
 }
 
 const slice = createSlice({
@@ -340,6 +342,21 @@ const slice = createSlice({
     },
     disconnect: (_state, _action: Action) => {
       // triggers middleware
+    },
+    fetchBlockees: (_state, _action: Action) => {
+      // triggers saga
+    },
+    fetchBlockeesSucceeded: (
+      state,
+      action: PayloadAction<{ blockees: ID[] }>
+    ) => {
+      state.blockees = action.payload.blockees
+    },
+    blockUser: (_state, _action: PayloadAction<{ userId: ID }>) => {
+      // triggers saga
+    },
+    unblockUser: (_state, _action: PayloadAction<{ userId: ID }>) => {
+      // triggers saga
     }
   }
 })

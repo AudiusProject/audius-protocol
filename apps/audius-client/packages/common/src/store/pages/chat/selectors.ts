@@ -30,6 +30,8 @@ export const getOptimisticReads = (state: CommonState) =>
 export const getOptimisticReactions = (state: CommonState) =>
   state.pages.chat.optimisticReactions
 
+export const getBlockees = (state: CommonState) => state.pages.chat.blockees
+
 export const getChats = createSelector(
   [selectAllChats, getOptimisticReads],
   (chats, optimisticReads) => {

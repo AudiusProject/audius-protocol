@@ -89,6 +89,7 @@ export type ProfilePageProps = {
   isSubscribed: boolean
   mode: ProfileMode
   stats: StatProps[]
+  isBlocked: boolean
 
   profile: ProfileUser | null
   albums: Collection[] | null
@@ -147,6 +148,8 @@ export type ProfilePageProps = {
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
   onCloseArtistRecommendations: () => void
   onMessage: () => void
+  onBlock: () => void
+  onUnblock: () => void
 }
 
 const ProfilePage = ({
@@ -201,6 +204,9 @@ const ProfilePage = ({
   areArtistRecommendationsVisible,
   onCloseArtistRecommendations,
   onMessage,
+  onBlock,
+  onUnblock,
+  isBlocked,
 
   accountUserId,
   userId,
@@ -739,6 +745,9 @@ const ProfilePage = ({
             onFollow={onFollow}
             onUnfollow={onUnfollow}
             onMessage={onMessage}
+            isBlocked={isBlocked}
+            onBlock={onBlock}
+            onUnblock={onUnblock}
           />
           <div className={styles.inset}>
             <NavBanner

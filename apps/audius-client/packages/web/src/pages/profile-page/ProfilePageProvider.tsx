@@ -35,7 +35,8 @@ import {
   playerSelectors,
   queueSelectors,
   Nullable,
-  chatActions
+  chatActions,
+  chatSelectors
 } from '@audius/common'
 import { push as pushRoute, replace } from 'connected-react-router'
 import { UnregisterCallback } from 'history'
@@ -73,7 +74,8 @@ const {
   getProfileUserId
 } = profilePageSelectors
 const { getAccountUser } = accountSelectors
-const { createChat } = chatActions
+const { createChat, blockUser, unblockUser } = chatActions
+const { getBlockees } = chatSelectors
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -693,6 +695,20 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     return this.props.onMessage(profile!.user_id)
   }
 
+  onBlock = () => {
+    const {
+      profile: { profile }
+    } = this.props
+    return this.props.onBlock(profile!.user_id)
+  }
+
+  onUnblock = () => {
+    const {
+      profile: { profile }
+    } = this.props
+    return this.props.onUnblock(profile!.user_id)
+  }
+
   render() {
     const {
       profile: {
@@ -883,7 +899,9 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updateDonation: this.updateDonation,
       updateCoverPhoto: this.updateCoverPhoto,
       didChangeTabsFrom: this.didChangeTabsFrom,
-      onMessage: this.onMessage
+      onMessage: this.onMessage,
+      onBlock: this.onBlock,
+      onUnblock: this.onUnblock
     }
 
     const mobileProps = {
@@ -924,7 +942,10 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
       openCreatePlaylistModal,
 
-      updateProfile: this.props.updateProfile
+      updateProfile: this.props.updateProfile,
+      isBlocked: this.props.profile.profile
+        ? this.props.blockedList.includes(this.props.profile.profile.user_id)
+        : false
     }
 
     return (
@@ -962,7 +983,8 @@ function makeMapStateToProps() {
       }),
       relatedArtists: getRelatedArtists(state, {
         id: getProfileUserId(state, handleLower) ?? 0
-      })
+      }),
+      blockedList: getBlockees(state)
     }
   }
   return mapStateToProps
@@ -1122,6 +1144,12 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
     },
     onMessage: (userId: ID) => {
       dispatch(createChat({ userIds: [userId] }))
+    },
+    onBlock: (userId: ID) => {
+      dispatch(blockUser({ userId }))
+    },
+    onUnblock: (userId: ID) => {
+      dispatch(unblockUser({ userId }))
     }
   }
 }
