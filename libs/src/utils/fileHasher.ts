@@ -237,7 +237,7 @@ export const fileHasher = {
     logger: any = console
   ): Promise<string> {
     const buffer = await fileHasher.convertToBuffer(content, logger)
-    return fileHasher.hashNonImages(buffer)
+    return await fileHasher.hashNonImages(buffer)
   },
 
   /**
@@ -250,6 +250,6 @@ export const fileHasher = {
     content: ImportCandidate,
     _: any = console
   ): Promise<HashedImage[]> {
-    return fileHasher.hashImages(content)
+    return await fileHasher.hashImages(content)
   }
 }
