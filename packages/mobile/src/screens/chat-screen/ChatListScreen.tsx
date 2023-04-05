@@ -42,7 +42,8 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignSelf: 'center'
   },
   listContainer: {
-    height: '100%'
+    display: 'flex',
+    minHeight: '100%'
   },
   startConversationContainer: {
     marginVertical: spacing(8),
