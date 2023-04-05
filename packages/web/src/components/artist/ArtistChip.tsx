@@ -81,6 +81,7 @@ type ArtistChipProps = {
   showSupportFrom?: ID
   className?: string
   popoverMount?: MountPlacement
+  customChips?: React.ReactNode
   onNavigateAway?: () => void
 }
 const ArtistChip = ({
@@ -91,6 +92,7 @@ const ArtistChip = ({
   showSupportFrom,
   className = '',
   popoverMount = MountPlacement.PAGE,
+  customChips = null,
   onNavigateAway
 }: ArtistChipProps) => {
   const {
@@ -148,22 +150,26 @@ const ArtistChip = ({
             onNavigateAway={onNavigateAway}
           />
         </div>
-        <ArtistChipFollowers
-          followerCount={followers}
-          doesFollowCurrentUser={!!doesFollowCurrentUser}
-        />
-        {showSupportFor ? (
-          <ArtistChipSupportFor
-            artistId={user.user_id}
-            userId={showSupportFor}
-          />
-        ) : null}
-        {showSupportFrom ? (
-          <ArtistChipSupportFrom
-            artistId={user.user_id}
-            userId={showSupportFrom}
-          />
-        ) : null}
+        {customChips || (
+          <>
+            <ArtistChipFollowers
+              followerCount={followers}
+              doesFollowCurrentUser={!!doesFollowCurrentUser}
+            />
+            {showSupportFor ? (
+              <ArtistChipSupportFor
+                artistId={user.user_id}
+                userId={showSupportFor}
+              />
+            ) : null}
+            {showSupportFrom ? (
+              <ArtistChipSupportFrom
+                artistId={user.user_id}
+                userId={showSupportFrom}
+              />
+            ) : null}
+          </>
+        )}
       </div>
     </div>
   )

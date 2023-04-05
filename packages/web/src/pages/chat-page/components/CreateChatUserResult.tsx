@@ -4,6 +4,7 @@ import {
   accountSelectors,
   chatActions,
   chatSelectors,
+  removeNullable,
   tippingActions,
   tippingSelectors,
   User
@@ -18,6 +19,7 @@ import {
   PopupMenu,
   PopupPosition
 } from '@audius/stems'
+import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -32,7 +34,8 @@ const messages = {
   message: 'Message This User',
   visit: "Visit User's Profile",
   block: 'Block Messages',
-  unblock: 'Unblock Messages'
+  unblock: 'Unblock Messages',
+  notPermitted: 'Cannot Be Messaged'
 }
 
 type UserResultComposeProps = {
@@ -44,8 +47,8 @@ const { getUserId } = accountSelectors
 const { getOptimisticSupporters, getOptimisticSupporting } = tippingSelectors
 
 const { fetchSupportersForUser } = tippingActions
-const { createChat, blockUser, unblockUser } = chatActions
-const { getBlockees } = chatSelectors
+const { createChat, blockUser, unblockUser, fetchPermissions } = chatActions
+const { getBlockees, getBlockers, getPermissionsMap } = chatSelectors
 
 const renderTrigger = (
   anchorRef: React.MutableRefObject<any>,
@@ -66,7 +69,13 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   const supportingMap = useSelector(getOptimisticSupporting)
   const supportersMap = useSelector(getOptimisticSupporters)
   const blockeeList = useSelector(getBlockees)
-  const isBlocked = blockeeList.includes(user.user_id)
+  const blockerList = useSelector(getBlockers)
+  const isBlockee = blockeeList.includes(user.user_id)
+  const isBlocker = blockerList.includes(user.user_id)
+  const permissionsMap = useSelector(getPermissionsMap)
+  const isPermitted =
+    !(isBlocker || isBlockee) &&
+    (permissionsMap[user.user_id]?.current_user_has_permission ?? true)
 
   const handleComposeClicked = useCallback(() => {
     dispatch(createChat({ userIds: [user.user_id] }))
@@ -86,13 +95,15 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   }, [dispatch, user])
 
   const items = [
-    {
-      icon: <IconMessage />,
-      text: messages.message,
-      onClick: handleComposeClicked
-    },
+    isPermitted
+      ? {
+          icon: <IconMessage />,
+          text: messages.message,
+          onClick: handleComposeClicked
+        }
+      : null,
     { icon: <IconUser />, text: messages.visit, onClick: handleVisitClicked },
-    isBlocked
+    isBlockee
       ? {
           icon: <IconUnblockMessages />,
           text: messages.unblock,
@@ -103,7 +114,7 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
           text: messages.block,
           onClick: handleBlockClicked
         }
-  ]
+  ].filter(removeNullable)
 
   useEffect(() => {
     if (
@@ -115,13 +126,26 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
     }
   }, [dispatch, currentUserId, supportingMap, supportersMap, user])
 
+  useEffect(() => {
+    dispatch(fetchPermissions({ userIds: [user.user_id] }))
+  }, [dispatch, user])
+
   return (
-    <div className={styles.root}>
+    <div
+      className={cn(styles.root, {
+        [styles.disabled]: !isPermitted
+      })}
+    >
       <ArtistChip
         className={styles.artistChip}
         user={user}
         showPopover={false}
         showSupportFor={currentUserId ?? undefined}
+        customChips={
+          isPermitted ? null : (
+            <div className={styles.notPermitted}>{messages.notPermitted}</div>
+          )
+        }
         onClickArtistName={handleComposeClicked}
       />
       <PopupMenu

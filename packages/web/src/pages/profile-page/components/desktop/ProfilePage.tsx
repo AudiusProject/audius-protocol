@@ -147,7 +147,7 @@ export type ProfilePageProps = {
   ) => void
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
   onCloseArtistRecommendations: () => void
-  onMessage: () => void
+  onMessage?: () => void
   onBlock: () => void
   onUnblock: () => void
 }
