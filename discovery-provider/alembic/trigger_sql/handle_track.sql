@@ -14,7 +14,7 @@ begin
   if TG_OP = 'UPDATE' then
     old_row := OLD;
 
-    if old_row.is_delete = false and new.is_delete = true then
+    if (old_row.is_delete = false and new.is_delete = true) or (old_row.is_available = true and new.is_available = false) then
       delta := -1;
     end if;
   else

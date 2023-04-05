@@ -64,7 +64,7 @@ def test_update_aggregate_playlist(app):
             {
                 "playlist_id": 2,
                 "playlist_owner_id": 1,
-                "is_private": False,
+                "is_private": True,
             },
         ],
         "user": [{"user_id": 1}, {"user_id": 2}],
@@ -101,8 +101,8 @@ def test_update_aggregate_playlist(app):
             .order_by(AggregatePlaylist.playlist_id)
             .all()
         )
-        # update aggregate track
-        assert len(aggregate_playlist_all) == 1
+
+        assert len(aggregate_playlist_all) == 2
         aggregate_playlist = (
             session.query(AggregatePlaylist).filter_by(playlist_id=1).first()
         )
