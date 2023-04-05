@@ -137,5 +137,4 @@ export const sendPushNotification = async (
       targetARN: device.targetARN
     })
   }
-  // TODO: increment badge count
 }

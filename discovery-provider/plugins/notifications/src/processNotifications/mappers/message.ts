@@ -37,7 +37,7 @@ export class Message extends BaseNotification<DMNotification> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.receiverUserId
     )
 

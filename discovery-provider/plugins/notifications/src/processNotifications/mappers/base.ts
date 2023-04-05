@@ -86,21 +86,49 @@ export abstract class BaseNotification<Type> {
    * @param userId User id to fetch notification settings for
    * @returns
    */
-  async getShouldSendNotification(userId: number) {
+  async getUserNotificationSettings(userId: number) {
     const [
       userMobileNotificationSettings,
       userBrowserNotificationSettings,
-      userEmailSettings
+      userEmailSettings,
+      userIsAbusive
     ] = await Promise.all([
       this.getUserMobileNotificationSettings([userId]),
       this.getUserBrowserSettings([userId]),
-      this.getUserEmailSettings([userId])
+      this.getUserEmailSettings([userId]),
+      this.getUserIsAbusive([userId])
     ])
     return {
       mobile: userMobileNotificationSettings,
       browser: userBrowserNotificationSettings,
-      email: userEmailSettings
+      email: userEmailSettings,
+      userIsAbusive: userIsAbusive
     }
+  }
+
+  async getDevices() {}
+
+  async shouldSendPushNotification(userId: number, notificationSettings) {
+    const isAbusive = false
+    return (
+      (notificationSettings.mobile?.[userId]?.devices ?? []).length > 0 &&
+      !isAbusive
+    )
+  }
+
+  async getUserIsAbusive(userIds: number[]) {
+    const usersIsAbusive: Array<{
+      userId: number
+      isAbusive: boolean
+    }> = await this.identityDB
+      .select(
+        'Users.blockchainUserId',
+        'Users.isBlockedFromNotifications',
+        'Users.isBlockedFromRelay'
+      )
+      .from('Users')
+      .whereIn('Users.blockchainUserId', userIds)
+    return usersIsAbusive
   }
 
   /**

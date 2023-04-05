@@ -86,7 +86,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.receiverUserId
     )
 

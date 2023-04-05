@@ -63,7 +63,7 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
     }, {} as Record<number, { title: string }>)
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.receiverUserId
     )
 

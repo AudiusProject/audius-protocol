@@ -98,7 +98,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
       (userId) => !(users?.[userId]?.isDeactivated ?? true)
     )
     for (const userId of validReceiverUserIds) {
-      const userNotifications = await super.getShouldSendNotification(userId)
+      const userNotifications = await super.getUserNotificationSettings(userId)
 
       // If the user has devices to the notification to, proceed
       if ((userNotifications.mobile?.[userId]?.devices ?? []).length > 0) {

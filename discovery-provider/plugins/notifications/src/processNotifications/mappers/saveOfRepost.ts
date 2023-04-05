@@ -51,7 +51,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
       return
     }
 
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.receiverUserId
     )
     const saveOfRepostUserName = users[this.saveOfRepostUserId]?.name

@@ -48,7 +48,7 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.senderUserId
     )
 

@@ -67,7 +67,7 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     }, {} as Record<number, { playlist_name: string }>)
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.receiverUserId
     )
 

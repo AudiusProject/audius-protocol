@@ -57,7 +57,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       return
     }
 
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.receiverUserId
     )
 

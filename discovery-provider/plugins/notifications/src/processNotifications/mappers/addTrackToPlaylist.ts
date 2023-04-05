@@ -69,9 +69,11 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotificationSettings = await super.getUserNotificationSettings(
       track.owner_id
     )
+    console.log('track.owner id ', track.owner_id)
+    console.log('receiver user id ', this.receiverUserId)
 
     const playlistOwnerName = users[playlist.playlist_owner_id]?.name
     const trackTitle = track.title
@@ -79,17 +81,17 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[track.owner_id]?.devices ?? []).length > 0
+      super.shouldSendPushNotification(track.owner_id, userNotificationSettings)
     ) {
       const devices: Device[] =
-        userNotifications.mobile?.[track.owner_id].devices
+        userNotificationSettings.mobile?.[track.owner_id].devices
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[track.owner_id].badgeCount + 1,
+                userNotificationSettings.mobile[track.owner_id].badgeCount + 1,
               targetARN: device.awsARN
             },
             {
@@ -108,7 +110,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       )
       await this.incrementBadgeCount(track.owner_id)
     }
-    if (userNotifications.email) {
+    if (userNotificationSettings.email) {
       // TODO: Send out email
     }
   }

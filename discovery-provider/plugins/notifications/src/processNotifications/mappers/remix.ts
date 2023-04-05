@@ -65,7 +65,7 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     // TODO: Fetch the remix track and parent track
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.parentTrackUserId
     )
 
@@ -79,8 +79,6 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       (userNotifications.mobile?.[this.parentTrackUserId]?.devices ?? [])
         .length > 0
     ) {
-      const userMobileSettings: NotificationSettings =
-        userNotifications.mobile?.[this.parentTrackUserId].settings
       const devices: Device[] =
         userNotifications.mobile?.[this.parentTrackUserId].devices
       // If the user's settings for the follow notification is set to true, proceed

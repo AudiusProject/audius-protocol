@@ -54,7 +54,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       return
     }
 
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.dethronedUserId
     )
     const newTopSupporterHandle = users[this.senderUserId]?.handle

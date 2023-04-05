@@ -63,7 +63,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
     const parentTrackUserName = users[this.parentTrackUserId]?.name
     const remixTrackTitle = tracks[this.trackId]?.title
 
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.remixUserId
     )
 

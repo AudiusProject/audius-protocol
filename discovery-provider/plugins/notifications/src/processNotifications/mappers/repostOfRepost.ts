@@ -51,7 +51,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
       return
     }
 
-    const userNotifications = await super.getShouldSendNotification(
+    const userNotifications = await super.getUserNotificationSettings(
       this.receiverUserId
     )
     const reposterUserName = users[this.repostOfRepostUserId]?.name
