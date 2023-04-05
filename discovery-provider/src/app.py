@@ -429,7 +429,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_aggregates": {
                 "task": "update_aggregates",
-                "schedule": timedelta(minutes=10),
+                "schedule": timedelta(hours=1),
             },
         },
         task_serializer="json",

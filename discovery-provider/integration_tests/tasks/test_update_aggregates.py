@@ -61,6 +61,11 @@ def test_update_aggregate_playlist(app):
     entities = {
         "playlists": [
             {"playlist_id": 1, "playlist_owner_id": 1},
+            {
+                "playlist_id": 2,
+                "playlist_owner_id": 1,
+                "is_private": False,
+            },
         ],
         "user": [{"user_id": 1}, {"user_id": 2}],
         "saves": [{"user_id": 2, "save_item_id": 1, "save_type": "playlist"}],

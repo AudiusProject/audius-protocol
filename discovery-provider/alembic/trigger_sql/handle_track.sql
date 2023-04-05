@@ -9,14 +9,13 @@ begin
   insert into aggregate_track (track_id) values (new.track_id) on conflict do nothing;
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
+
   -- increment or decrement?
   if TG_OP = 'UPDATE' then
-      old_row := OLD;
+    old_row := OLD;
 
-    if old_row.is_delete != new.is_delete or old_row.is_available != new.is_available then
+    if old_row.is_delete = false and new.is_delete = true then
       delta := -1;
-    else
-      delta := 1;
     end if;
   else
     if new.is_delete or new.is_available = false or new.stem_of is not null then

@@ -10,13 +10,14 @@ begin
   insert into aggregate_user (user_id) values (new.playlist_owner_id) on conflict do nothing;
   insert into aggregate_playlist (playlist_id, is_album) values (new.playlist_id, new.is_album) on conflict do nothing;
 
+  select * into old_row from playlists where playlist_id = new.playlist_id and is_current = false order by blocknumber desc limit 1;
 
-  -- should decrement
-  if old_row.is_delete != new.is_delete or old_row.is_private != new.is_private then
+  delta := 0;
+  if (new.is_delete = true) and (old_row.is_delete = false and old_row.is_private = false) then
     delta := -1;
   end if;
 
-  if old_row is null and new.is_delete = false and new.is_private = false then
+  if (old_row is null and new.is_private = false) or (old_row.is_private = true and new.is_private = false) then
     delta := 1;
   end if;
 
