@@ -7,6 +7,7 @@ import {
   waitForLibsInit,
   withEagerOption
 } from 'services/audius-backend/eagerLoadUtils'
+import { discoveryNodeSelectorInstance } from 'services/discovery-node-selector'
 import { getFeatureEnabled } from 'services/remote-config/featureFlagHelpers'
 import { remoteConfigInstance } from 'services/remote-config/remote-config-instance'
 import { monitoringCallbacks } from 'services/serviceMonitoring'
@@ -35,6 +36,7 @@ export const audiusBackendInstance = audiusBackend({
   getFeatureEnabled,
   getHostUrl: () => window.location.origin,
   getLibs: () => import('@audius/sdk/dist/legacy'),
+  discoveryNodeSelectorInstance,
   getWeb3Config: async (
     libs,
     registryAddress,
