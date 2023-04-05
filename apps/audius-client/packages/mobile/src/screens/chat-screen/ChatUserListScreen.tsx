@@ -9,8 +9,7 @@ import {
   chatActions,
   Status
 } from '@audius/common'
-import { Text, View } from 'react-native'
-import { TouchableHighlight } from 'react-native-gesture-handler'
+import { Text, View, TouchableOpacity } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
@@ -43,10 +42,15 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     backgroundColor: palette.white,
     flexGrow: 1
   },
+  spinnerContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexGrow: 1
+  },
   loadingSpinner: {
-    height: spacing(20),
-    width: spacing(20),
-    alignSelf: 'center'
+    height: spacing(15),
+    width: spacing(15),
+    marginBottom: spacing(20)
   },
   searchContainer: {
     marginTop: spacing(8),
@@ -58,11 +62,12 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     height: spacing(5)
   },
   searchInputContainer: {
-    paddingRight: spacing(4.5),
-    paddingVertical: spacing(4.5)
+    paddingRight: spacing(5),
+    paddingLeft: spacing(4),
+    paddingVertical: spacing(5)
   },
   searchInputText: {
-    fontFamily: typography.fontByWeight.bold,
+    fontFamily: typography.fontByWeight.demiBold,
     fontSize: typography.fontSize.large
   },
   profilePicture: {
@@ -129,6 +134,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     borderColor: palette.neutralLight4,
     paddingVertical: spacing(1),
     paddingHorizontal: spacing(2)
+  },
+  shadow: {
+    borderBottomColor: palette.neutralLight6,
+    borderBottomWidth: 3,
+    borderBottomLeftRadius: 1
   }
 }))
 
@@ -165,6 +175,7 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
     },
     [hasQuery, userIds]
   )
+  const isLoading = hasQuery && status === Status.LOADING
 
   useDebounce(
     () => {
@@ -203,7 +214,7 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
     }
 
     return (
-      <TouchableHighlight onPress={() => handlePress(item)}>
+      <TouchableOpacity onPress={() => handlePress(item)}>
         <View style={styles.userContainer} key={item.key}>
           <ProfilePicture profile={item} style={styles.profilePicture} />
           <View style={styles.userNameContainer}>
@@ -225,7 +236,7 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
             </View>
           </View>
         </View>
-      </TouchableHighlight>
+      </TouchableOpacity>
     )
   }
 
@@ -238,6 +249,7 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
       topbarRight={null}
     >
       <ScreenContent>
+        <View style={styles.shadow} />
         <View style={styles.rootContainer}>
           <View style={styles.searchContainer}>
             <TextInput
@@ -255,10 +267,11 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
               }}
               onChangeText={handleChange}
               value={query}
+              inputAccessoryViewID='none'
             />
           </View>
 
-          {users.length > 0 ? (
+          {!isLoading ? (
             <FlatList
               onEndReached={handleLoadMore}
               data={users}
@@ -266,7 +279,9 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
               keyExtractor={(user) => user.user_id}
             />
           ) : (
-            <LoadingSpinner style={styles.loadingSpinner} />
+            <View style={styles.spinnerContainer}>
+              <LoadingSpinner style={styles.loadingSpinner} />
+            </View>
           )}
         </View>
       </ScreenContent>
