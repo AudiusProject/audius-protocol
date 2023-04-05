@@ -1,3 +1,4 @@
+import json
 import logging  # pylint: disable=C0302
 from typing import List
 
@@ -32,78 +33,6 @@ def test_index_valid_track(app, mocker):
         challenge_event_bus: ChallengeEventBus = setup_challenge_bus()
         update_task = UpdateTask(None, web3, challenge_event_bus)
 
-    tx_receipts = {
-        "CreateTrack1Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": "QmCreateTrack1",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "UpdateTrack1Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Update",
-                        "_metadata": "QmUpdateTrack1",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "DeleteTrack1Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Delete",
-                        "_metadata": "",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreateTrack2Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET + 1,
-                        "_entityType": "Track",
-                        "_userId": 1,
-                        "_action": "Create",
-                        "_metadata": "QmCreateTrack2",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-    }
-
-    entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
-        for tx_receipt in tx_receipts
-    ]
-
-    def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
-
-    mocker.patch(
-        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
-        side_effect=get_events_side_effect,
-        autospec=True,
-    )
     test_metadata = {
         "QmCreateTrack1": {
             "owner_id": 1,
@@ -194,6 +123,44 @@ def test_index_valid_track(app, mocker):
             "isrc": "",
             "iswc": "",
         },
+        "QmCreateTrack3": {
+            "owner_id": 1,
+            "track_cid": "some-track-cid-3",
+            "title": "track 3",
+            "length": None,
+            "cover_art": None,
+            "cover_art_sizes": "QmQKXkVxGBbCFjcnhgxftzYDhph1CT8PJCuPEsRpffjjGC",
+            "tags": None,
+            "genre": "Rock",
+            "mood": None,
+            "credits_splits": None,
+            "created_at": None,
+            "create_date": None,
+            "updated_at": None,
+            "release_date": None,
+            "file_type": None,
+            "track_segments": [],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
+            "field_visibility": {
+                "genre": True,
+                "mood": True,
+                "tags": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True,
+            },
+            "remix_of": None,
+            "repost_count": 0,
+            "save_count": 0,
+            "description": "",
+            "license": "",
+            "isrc": "",
+            "iswc": "",
+        },
         "QmUpdateTrack1": {
             "owner_id": 1,
             "track_cid": "some-track-cid",
@@ -246,6 +213,94 @@ def test_index_valid_track(app, mocker):
         },
     }
 
+    track3_json = json.dumps(test_metadata["QmCreateTrack3"])
+    tx_receipts = {
+        "CreateTrack1Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "QmCreateTrack1",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateTrack1Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "QmUpdateTrack1",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteTrack1Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrack2Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "QmCreateTrack2",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrack3Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 2,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreateTrack3", "data": {track3_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
+
     entities = {
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
@@ -268,7 +323,7 @@ def test_index_valid_track(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
-        assert len(all_tracks) == 4
+        assert len(all_tracks) == 5
 
         track_1: Track = (
             session.query(Track)
@@ -288,6 +343,17 @@ def test_index_valid_track(app, mocker):
         )
         assert track_2.title == "track 2"
         assert track_2.is_delete == False
+
+        track_3: Track = (
+            session.query(Track)
+            .filter(
+                Track.is_current == True,
+                Track.track_id == TRACK_ID_OFFSET + 2,
+            )
+            .first()
+        )
+        assert track_3.title == "track 3"
+        assert track_3.is_delete == False
 
         # Check that track routes are updated appropriately
         track_routes = (

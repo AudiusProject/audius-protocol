@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import List
 from unittest import mock
@@ -60,92 +61,6 @@ def test_index_valid_user(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(None, web3, bus_mock)
 
-    tx_receipts = {
-        "CreateUser1Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET,
-                        "_entityType": "User",
-                        "_userId": USER_ID_OFFSET,
-                        "_action": "Create",
-                        "_metadata": "1,2,3",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "UpdateArtistPickTrack": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": TRACK_ID_OFFSET,
-                        "_entityType": "Track",
-                        "_userId": USER_ID_OFFSET,
-                        "_action": "Update",
-                        "_metadata": "QmUpdateArtistPickTrack",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "UpdateUser1Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET,
-                        "_entityType": "User",
-                        "_userId": USER_ID_OFFSET,
-                        "_action": "Update",
-                        "_metadata": "QmUpdateUser1",
-                        "_signer": "user1wallet",
-                    }
-                )
-            },
-        ],
-        "CreateUser2Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET + 1,
-                        "_entityType": "User",
-                        "_userId": USER_ID_OFFSET + 1,
-                        "_action": "Create",
-                        "_metadata": "2,3,4",
-                        "_signer": "user2wallet",
-                    }
-                )
-            },
-        ],
-        "UpdateUser2Tx": [
-            {
-                "args": AttributeDict(
-                    {
-                        "_entityId": USER_ID_OFFSET + 1,
-                        "_entityType": "User",
-                        "_userId": USER_ID_OFFSET + 1,
-                        "_action": "Update",
-                        "_metadata": "QmUpdateUser2",
-                        "_signer": "user2wallet",
-                    }
-                )
-            },
-        ],
-    }
-
-    entity_manager_txs = [
-        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
-        for tx_receipt in tx_receipts
-    ]
-
-    def get_events_side_effect(_, tx_receipt):
-        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
-
-    mocker.patch(
-        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
-        side_effect=get_events_side_effect,
-        autospec=True,
-    )
     test_metadata = {
         "QmUpdateUser2": {
             "is_verified": False,
@@ -236,6 +151,94 @@ def test_index_valid_user(app, mocker):
             "user_id": USER_ID_OFFSET,
         },
     }
+
+    user1_update_json = json.dumps(test_metadata["QmUpdateArtistPickTrack"])
+    tx_receipts = {
+        "CreateUser1Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET,
+                        "_action": "Create",
+                        "_metadata": "1,2,3",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateArtistPickTrack": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": USER_ID_OFFSET,
+                        "_action": "Update",
+                        "_metadata": f'{{"cid": "QmUpdateArtistPickTrack", "data": {user1_update_json}}}',
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateUser1Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET,
+                        "_action": "Update",
+                        "_metadata": "QmUpdateUser1",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateUser2Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 1,
+                        "_action": "Create",
+                        "_metadata": "2,3,4",
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateUser2Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": USER_ID_OFFSET + 1,
+                        "_entityType": "User",
+                        "_userId": USER_ID_OFFSET + 1,
+                        "_action": "Update",
+                        "_metadata": "QmUpdateUser2",
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
 
     entities = {
         "users": [
