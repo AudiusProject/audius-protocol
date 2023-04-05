@@ -15,14 +15,13 @@
   z-index: 1;
   display: inline-block;
   max-width: 448px;
-  padding: var(--unit-4);
   border-radius: var(--unit-3);
   filter: var(--drop-shadow-near);
   color: var(--netural);
   background-color: var(--bubble-color);
 }
 
-.bubble a {
+.text a {
   color: var(--neutral);
   text-decoration: underline !important;
 }
@@ -37,7 +36,7 @@
   --bubble-color: var(--secondary-light-2);
 }
 
-.isAuthor .bubble a {
+.isAuthor .text a {
   color: var(--white);
 }
 
@@ -46,6 +45,7 @@
 }
 
 .text {
+  padding: var(--unit-4);
   white-space: pre-wrap;
   word-break: break-word;
   text-align: left;
