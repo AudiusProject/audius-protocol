@@ -57,6 +57,7 @@ import {
   pickTwoMostDominantAndVibrant
 } from 'app/utils/dominantColors'
 import { reportToSentry } from 'app/utils/reportToSentry'
+import { getTrackRoute } from 'app/utils/routes'
 import { useThemeColors } from 'app/utils/theme'
 
 import { NativeDrawer } from '../drawer'
@@ -258,7 +259,7 @@ export const useShareToStory = ({
           rotationDegreesInClockwise: 0,
           isAnimated: false
         },
-        attachmentUrl: `${Config.AUDIUS_URL}${trackPermalink}`
+        attachmentUrl: trackPermalink
       }
       await CreativeKit.shareVideo(videoContent)
     },
@@ -419,7 +420,7 @@ export const useShareToStory = ({
             await pasteToSnapchatApp(
               videoUri,
               `file://${stickerUri}`,
-              content.track.permalink
+              encodeURI(getTrackRoute(content.track, true))
             )
           } else if (platform === 'tiktok') {
             pasteToTikTokApp(`${storyVideoPath}`)
