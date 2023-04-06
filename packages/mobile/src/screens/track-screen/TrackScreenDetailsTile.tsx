@@ -335,7 +335,9 @@ export const TrackScreenDetailsTile = ({
         : null
     const overflowActions = [
       addToPlaylistAction,
-      user.does_current_user_follow
+      isOwner
+        ? null
+        : user.does_current_user_follow
         ? OverflowAction.UNFOLLOW_ARTIST
         : OverflowAction.FOLLOW_ARTIST,
       isNewPodcastControlsEnabled && isLongFormContent
