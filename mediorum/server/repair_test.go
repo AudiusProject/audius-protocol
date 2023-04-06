@@ -15,14 +15,16 @@ func TestRepair(t *testing.T) {
 
 	// first, write a blob only to my storage
 	data := []byte("repair test")
-	err := ss.replicateToMyBucket("abc", bytes.NewReader(data))
+	cid, err := computeFileCID(bytes.NewReader(data))
+	assert.NoError(t, err)
+	err = ss.replicateToMyBucket(cid, bytes.NewReader(data))
 	assert.NoError(t, err)
 
 	// verify it reports as under-replicated
 	{
 		problems, err := ss.findProblemBlobs(false)
 		assert.NoError(t, err)
-		assert.Equal(t, problems[0].Key, "abc")
+		assert.Equal(t, problems[0].Key, cid)
 		assert.Equal(t, problems[0].R, 1)
 	}
 
@@ -40,7 +42,7 @@ func TestRepair(t *testing.T) {
 		assert.Len(t, problems, 0)
 
 		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: "abc"}).Find(&blobs)
+		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
 		assert.Len(t, blobs, replicationFactor)
 	}
 
@@ -49,7 +51,7 @@ func TestRepair(t *testing.T) {
 	// now over-replicate file
 	//
 	for _, server := range testNetwork {
-		ss.replicateFileToHost(server.Config.Self, "abc", bytes.NewReader(data))
+		ss.replicateFileToHost(server.Config.Self, cid, bytes.NewReader(data))
 	}
 
 	// wait for crud
@@ -59,11 +61,11 @@ func TestRepair(t *testing.T) {
 	{
 		problems, err := ss.findProblemBlobs(true)
 		assert.NoError(t, err)
-		assert.Equal(t, problems[0].Key, "abc")
+		assert.Equal(t, problems[0].Key, cid)
 		assert.Equal(t, problems[0].R, 9)
 
 		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: "abc"}).Find(&blobs)
+		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
 		assert.True(t, len(blobs) == len(testNetwork))
 	}
 
@@ -83,7 +85,7 @@ func TestRepair(t *testing.T) {
 		assert.Len(t, problems, 0)
 
 		blobs := []Blob{}
-		ss.crud.DB.Where(Blob{Key: "abc"}).Find(&blobs)
+		ss.crud.DB.Where(Blob{Key: cid}).Find(&blobs)
 		assert.True(t, len(blobs) == replicationFactor)
 	}
 }
