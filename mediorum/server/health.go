@@ -1,7 +1,7 @@
 package server
 
 import (
-	"strings"
+	"fmt"
 	"time"
 )
 
@@ -43,13 +43,12 @@ func (ss *MediorumServer) healthReport() ServerHealth {
 }
 
 func (ss *MediorumServer) findHealthyPeers(aliveInLast string) ([]ServerHealth, error) {
-	if !strings.HasPrefix(aliveInLast, "-") {
-		aliveInLast = "-" + aliveInLast
-	}
+	whereAlive := fmt.Sprintf("alive_at >= NOW() - INTERVAL '%s'", aliveInLast)
+	fmt.Println("huh", whereAlive)
 
 	healths := []ServerHealth{}
 	err := ss.crud.DB.
-		Where("alive_at >= datetime('now', ?)", aliveInLast).
+		Where("alive_at >= NOW() - INTERVAL '2 minutes'").
 		Order("host").
 		Find(&healths).
 		Error

@@ -107,13 +107,14 @@ func startDevCluster() {
 	network := devNetwork(5)
 	wg := sync.WaitGroup{}
 
-	for _, peer := range network {
+	for idx, peer := range network {
 		peer := peer
 		config := server.MediorumConfig{
 			Self:              peer,
 			Peers:             network,
 			ReplicationFactor: 3,
 			Dir:               fmt.Sprintf("/tmp/mediorum_%s", peer.Wallet),
+			PostgresDSN:       fmt.Sprintf("postgres://postgres:example@localhost:5444/m%d", idx+1),
 		}
 
 		wg.Add(1)

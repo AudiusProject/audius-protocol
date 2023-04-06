@@ -38,7 +38,6 @@ type MediorumConfig struct {
 	ReplicationFactor int
 	Dir               string `default:"/tmp/mediorum"`
 	BlobStoreDSN      string `json:"-"`
-	SqliteDSN         string `json:"-"`
 	PostgresDSN       string `json:"-"`
 	LegacyFSRoot      string `json:"-"`
 	PrivateKey        string `json:"-"`
@@ -88,10 +87,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		config.BlobStoreDSN = "file://" + config.Dir + "/blobs"
 	}
 
-	if config.SqliteDSN == "" {
-		config.SqliteDSN = config.Dir + "/data.db"
-	}
-
 	if pk, err := parsePrivateKey(config.PrivateKey); err != nil {
 		log.Println("invalid private key: ", err)
 	} else {
@@ -111,7 +106,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	// db
-	db := dbMustDial(config.SqliteDSN)
+	db := dbMustDial(config.PostgresDSN)
 
 	// pg pool
 	pgPool, err := pgxpool.New(context.Background(), config.PostgresDSN)
