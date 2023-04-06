@@ -48,6 +48,8 @@ func startStagingOrProd(isProd bool) {
 		ReplicationFactor: 3,
 		PrivateKey:        privateKey,
 		Dir:               "/mediorum_data",
+		PostgresDSN:       os.Getenv("dbUrl"),
+		LegacyFSRoot:      getenvWithDefault("storagePath", "/file_storage"),
 	}
 
 	ss, err := server.New(config)
@@ -62,6 +64,14 @@ func mustGetenv(key string) string {
 	val := os.Getenv(key)
 	if val == "" {
 		log.Fatal("missing required env variable: ", key)
+	}
+	return val
+}
+
+func getenvWithDefault(key string, fallback string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		return fallback
 	}
 	return val
 }

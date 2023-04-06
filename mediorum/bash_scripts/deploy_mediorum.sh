@@ -3,7 +3,7 @@ set -e
 
 cd audius-docker-compose/creator-node
 git fetch
-git checkout main
+git checkout dev
 git pull
 
 
