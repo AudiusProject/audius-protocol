@@ -170,8 +170,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	echoServer.GET("/ipfs/:key", ss.getBlob)
 	echoServer.GET("/content/:key", ss.getBlob)
-	echoServer.GET("/ipfs/:jobID/:variant", ss.getJobResult)
-	echoServer.GET("/content/:jobID/:variant", ss.getJobResult)
+	echoServer.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
+	echoServer.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
 
 	// status + debug:
 	basePath.GET("/status", ss.getStatus)

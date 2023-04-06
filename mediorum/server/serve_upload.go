@@ -119,7 +119,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(200, uploads)
 }
 
-func (ss *MediorumServer) getJobResult(c echo.Context) error {
+func (ss *MediorumServer) getV1CIDBlob(c echo.Context) error {
 	if c.Param("jobID") == "" || c.Param("variant") == "" {
 		return c.JSON(400, "Invalid request, no multihash provided")
 	}
