@@ -49,7 +49,6 @@ export type OwnProps = {
   onHeroPlay: (isPlaying: boolean) => void
   onHeroShare: (trackId: ID) => void
   goToProfilePage: (handle: string) => void
-  goToSearchResultsPage: (tag: string) => void
   goToAllRemixesPage: () => void
   goToParentRemixesPage: () => void
   onHeroRepost: (isReposted: boolean, trackId: number) => void
@@ -91,7 +90,6 @@ const TrackPage = ({
   onHeroPlay,
   onHeroShare,
   goToProfilePage,
-  goToSearchResultsPage,
   goToAllRemixesPage,
   goToParentRemixesPage,
   onSaveTrack,
@@ -142,8 +140,6 @@ const TrackPage = ({
   const onShare = () => {
     heroTrack && onHeroShare(heroTrack.track_id)
   }
-
-  const onClickTag = (tag: string) => goToSearchResultsPage(`#${tag}`)
 
   const defaults = getTrackDefaults(heroTrack)
 
@@ -212,7 +208,6 @@ const TrackPage = ({
           // Actions (Wire up once we add backend integrations)
           onClickArtistName={onClickArtistName}
           onClickMobileOverflow={onClickMobileOverflow}
-          onClickTag={onClickTag}
           onPlay={onPlay}
           onSave={onSave}
           onShare={onShare}

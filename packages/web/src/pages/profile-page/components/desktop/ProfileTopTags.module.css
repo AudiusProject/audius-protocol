@@ -26,14 +26,10 @@
   height: 1px;
 }
 
-.tags {
-  margin-top: 32px;
-}
-
-.tags > .tagsContent {
+.tagsContent {
   display: flex;
   flex-wrap: wrap;
 }
-.tags > .tagsContent > .tag {
+.tag {
   margin: 4px 8px 4px 0;
 }

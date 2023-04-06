@@ -117,6 +117,7 @@ const ENDPOINT_MAP = {
   associatedWalletUserId: '/users/id',
   userChallenges: (userId: OpaqueID) => `/users/${userId}/challenges`,
   userFavorites: (userId: OpaqueID) => `/users/${userId}/favorites`,
+  userTags: (userId: OpaqueID) => `/users/${userId}/tags`,
   undisbursedUserChallenges: `/challenges/undisbursed`
 }
 
@@ -1440,6 +1441,16 @@ export class AudiusAPIClient {
       }
     })
     return challenges
+  }
+
+  getUserTags = async ({ userId }: { userId: ID }) => {
+    const encodedUserId = encodeHashId(userId)
+    return await this._getResponse<APIResponse<string[]>>(
+      ENDPOINT_MAP.userTags(encodedUserId),
+      undefined,
+      false,
+      PathType.VersionPath
+    )
   }
 
   getUndisbursedUserChallenges = async ({ userID }: { userID: ID }) => {

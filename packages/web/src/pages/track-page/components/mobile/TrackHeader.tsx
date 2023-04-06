@@ -35,6 +35,7 @@ import HoverInfo from 'components/co-sign/HoverInfo'
 import { Size } from 'components/co-sign/types'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
+import { SearchTag } from 'components/search/SearchTag'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
 import TrackBannerIcon, {
   TrackBannerIconType
@@ -112,7 +113,6 @@ type TrackHeaderProps = {
   isRemix: boolean
   fieldVisibility: FieldVisibility
   coSign: Remix | null
-  onClickTag: (tag: string) => void
   onClickArtistName: () => void
   onClickMobileOverflow: (
     trackId: ID,
@@ -163,7 +163,6 @@ const TrackHeader = ({
   genre,
   tags,
   onClickArtistName,
-  onClickTag,
   onPlay,
   onShare,
   onSave,
@@ -253,13 +252,12 @@ const TrackHeader = ({
         {filteredTags.length > 0 ? (
           <div className={styles.tags}>
             {filteredTags.map((tag) => (
-              <h2
+              <SearchTag
                 key={tag}
-                onClick={() => onClickTag(tag)}
+                tag={tag}
                 className={styles.tag}
-              >
-                {tag}
-              </h2>
+                source='track page'
+              />
             ))}
           </div>
         ) : null}

@@ -25,12 +25,14 @@ import {
   FETCH_FOLLOW_USERS_SUCCEEDED,
   FETCH_FOLLOW_USERS_FAILED,
   DISMISS_PROFILE_METER,
-  UPDATE_MOST_USED_TAGS,
   SET_NOTIFICATION_SUBSCRIPTION,
   SET_CURRENT_USER,
   FETCH_COLLECTIONS,
   FETCH_COLLECTIONS_SUCCEEDED,
-  FETCH_COLLECTIONS_FAILED
+  FETCH_COLLECTIONS_FAILED,
+  FETCH_TOP_TAGS,
+  FETCH_TOP_TAGS_SUCCEEDED,
+  FETCH_TOP_TAGS_FAILED
 } from './actions'
 import { PREFIX as feedPrefix } from './lineups/feed/actions'
 import { PREFIX as tracksPrefix } from './lineups/tracks/actions'
@@ -44,7 +46,8 @@ const initialProfileState = {
   updating: false,
   updateSuccess: false,
   updateError: false,
-  mostUsedTags: [],
+  topTagsStatus: Status.IDLE,
+  topTags: [],
   collectionStatus: Status.IDLE,
 
   collectionSortMode: CollectionSortMode.TIMESTAMP,
@@ -192,10 +195,6 @@ const actionsMap = {
   [FETCH_PROFILE_FAILED](state, action) {
     return updateProfile(state, action, { status: Status.ERROR })
   },
-  [UPDATE_MOST_USED_TAGS](state, action) {
-    const { mostUsedTags } = action
-    return updateProfile(state, action, { mostUsedTags })
-  },
   [UPDATE_PROFILE](state, action) {
     return updateProfile(state, action, {
       updating: true,
@@ -237,6 +236,19 @@ const actionsMap = {
   },
   [FETCH_COLLECTIONS_FAILED](state, action) {
     return updateProfile(state, action, { collectionStatus: Status.ERROR })
+  },
+  [FETCH_TOP_TAGS](state, action) {
+    return updateProfile(state, action, { topTagsStatus: Status.LOADING })
+  },
+  [FETCH_TOP_TAGS_SUCCEEDED](state, action) {
+    const { topTags } = action
+    return updateProfile(state, action, {
+      topTagsStatus: Status.SUCCESS,
+      topTags
+    })
+  },
+  [FETCH_TOP_TAGS_FAILED](state, action) {
+    return updateProfile(state, action, { topTagsStatus: Status.ERROR })
   }
 }
 

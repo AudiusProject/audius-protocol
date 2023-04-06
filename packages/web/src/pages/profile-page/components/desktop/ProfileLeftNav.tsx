@@ -16,7 +16,7 @@ import UploadChip from 'components/upload/UploadChip'
 import ProfilePageBadge from 'components/user-badges/ProfilePageBadge'
 import { Type } from 'pages/profile-page/components/SocialLink'
 import SocialLinkInput from 'pages/profile-page/components/SocialLinkInput'
-import { ProfileTags } from 'pages/profile-page/components/desktop/ProfileTags'
+import { ProfileTopTags } from 'pages/profile-page/components/desktop/ProfileTopTags'
 import { UPLOAD_PAGE } from 'utils/route'
 
 import { ProfileBio } from './ProfileBio'
@@ -59,7 +59,6 @@ type ProfileLeftNavProps = {
   twitterVerified: boolean
   instagramVerified: boolean
   tikTokVerified: boolean
-  tags: string[]
   isOwner: boolean
 }
 
@@ -90,7 +89,6 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     twitterVerified,
     instagramVerified,
     tikTokVerified,
-    tags,
     isOwner
   } = props
 
@@ -210,7 +208,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         <div className={styles.profileBottomSection}>
           <TopSupporters />
           <ProfileMutuals />
-          {isArtist ? <ProfileTags goToRoute={goToRoute} tags={tags} /> : null}
+          {isArtist ? <ProfileTopTags /> : null}
           {showUploadChip ? (
             <UploadChip
               type='track'

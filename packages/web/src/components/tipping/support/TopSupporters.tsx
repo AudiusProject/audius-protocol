@@ -72,7 +72,7 @@ export const TopSupporters = () => {
   }
 
   return (
-    <div className={styles.container}>
+    <div>
       <ProfilePageNavSectionTitle
         title={messages.topSupporters}
         titleIcon={<IconTrophy className={styles.trophyIcon} />}

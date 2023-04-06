@@ -25,7 +25,9 @@ export const FETCH_FOLLOW_USERS_FAILED = 'PROFILE/FETCH_FOLLOW_USERS_FAILED'
 
 export const DISMISS_PROFILE_METER = 'PROFILE/DISMISS_PROFILE_METER'
 
-export const UPDATE_MOST_USED_TAGS = 'PROFILE/UPDATE_MOST_USED_TAGS'
+export const FETCH_TOP_TAGS = 'PROFILE/FETCH_TOP_TAGS'
+export const FETCH_TOP_TAGS_SUCCEEDED = 'PROFILE/FETCH_TOP_TAGS_SUCCEEDED'
+export const FETCH_TOP_TAGS_FAILED = 'PROFILE/FETCH_TOP_TAGS_FAILED'
 export const SET_NOTIFICATION_SUBSCRIPTION =
   'PROFILE/SET_NOTIFICATION_SUBSCRIPTION'
 
@@ -142,10 +144,6 @@ export function profileMeterDismissed() {
   return { type: DISMISS_PROFILE_METER }
 }
 
-export function updateMostUsedTags(mostUsedTags: string[]) {
-  return { type: UPDATE_MOST_USED_TAGS, mostUsedTags }
-}
-
 export function setNotificationSubscription(
   userId: ID,
   isSubscribed: boolean,
@@ -180,6 +178,29 @@ export function fetchCollectionsSucceded(handle: string) {
 export function fetchCollectionsFailed(handle: string) {
   return {
     type: FETCH_COLLECTIONS_FAILED,
+    handle
+  }
+}
+
+export function fetchTopTags(handle: string, userId: ID) {
+  return {
+    type: FETCH_TOP_TAGS,
+    handle,
+    userId
+  }
+}
+
+export function fetchTopTagsSucceeded(handle: string, topTags: string[]) {
+  return {
+    type: FETCH_TOP_TAGS_SUCCEEDED,
+    handle,
+    topTags
+  }
+}
+
+export function fetchTopTagsFailed(handle: string) {
+  return {
+    type: FETCH_TOP_TAGS_FAILED,
     handle
   }
 }

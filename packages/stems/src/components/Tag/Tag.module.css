@@ -23,8 +23,8 @@
 
 .textLabel {
   color: var(--white);
-  font-size: 10px;
-  font-weight: bold;
+  font-size: var(--font-2xs);
+  font-weight: var(--font-bold);
   letter-spacing: 0.75px;
   line-height: 8px;
 

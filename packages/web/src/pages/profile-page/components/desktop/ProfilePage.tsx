@@ -58,7 +58,6 @@ export type ProfilePageProps = {
   shouldMaskContent: boolean
   areArtistRecommendationsVisible: boolean
 
-  mostUsedTags: string[]
   // Computed
   accountUserId: ID | null
   isArtist: boolean
@@ -174,7 +173,6 @@ const ProfilePage = ({
   openCreatePlaylistModal,
   updateProfile,
 
-  mostUsedTags,
   onFollow,
   onUnfollow,
   updateName,
@@ -703,7 +701,6 @@ const ProfilePage = ({
           website={website}
           donation={donation}
           created={created}
-          tags={mostUsedTags || []}
           onUpdateName={updateName}
           onUpdateProfilePicture={updateProfilePicture}
           onUpdateBio={updateBio}

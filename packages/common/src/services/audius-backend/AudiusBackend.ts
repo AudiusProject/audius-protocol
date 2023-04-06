@@ -2486,7 +2486,7 @@ export const audiusBackend = ({
     validTypes?: string[]
   }) {
     await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
+    const account = audiusLibs.Account?.getCurrentUser()
     if (!account)
       return {
         message: 'error',

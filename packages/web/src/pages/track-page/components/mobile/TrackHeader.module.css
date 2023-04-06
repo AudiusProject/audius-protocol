@@ -238,16 +238,6 @@
 
 .tag {
   margin: 4px;
-  border-radius: 2px;
-  background-color: var(--neutral-light-4);
-  padding: 4px 8px;
-  color: var(--white);
-  font-family: var(--font-family);
-  font-size: var(--font-2xs);
-  font-weight: var(--font-bold);
-  letter-spacing: 0.75px;
-  line-height: 8px;
-  text-transform: uppercase;
 }
 
 /* Loading */
