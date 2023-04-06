@@ -45,7 +45,7 @@ export class File extends Base {
    */
   async fetchCIDFromDiscovery(
     cid: string,
-    responseType: ResponseType = 'blob'
+    responseType: ResponseType = 'json'
   ) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     const timeoutMs = 4000
