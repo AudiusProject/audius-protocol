@@ -21,7 +21,7 @@ build::
 	docker push audius/mediorum:latest
 
 build.fast::
-	CC=x86_64-linux-musl-gcc CXX=x86_64-linux-musl-g++ GOARCH=amd64 GOOS=linux CGO_ENABLED=1 go build -tags "sqlite_stat4 sqlite_trace" -ldflags "-linkmode external -extldflags -static" -o build/mediorum-linux-amd64
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-linux-amd64
 	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:latest
 	docker push audius/mediorum:latest
 

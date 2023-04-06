@@ -26,7 +26,4 @@ docker run -it -p 1991:1991 mediorum
 
 ## Deploy
 
-As per [sqlite3 readme](https://github.com/mattn/go-sqlite3#cross-compiling-from-macos)
-do `brew install FiloSottile/musl-cross/musl-cross`.
-
 * `make build.fast`

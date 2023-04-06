@@ -47,7 +47,7 @@ func startStagingOrProd(isProd bool) {
 		Peers:             peers,
 		ReplicationFactor: 3,
 		PrivateKey:        privateKey,
-		Dir:               "/mediorum_data",
+		Dir:               "/tmp/mediorum",
 		PostgresDSN:       os.Getenv("dbUrl"),
 		LegacyFSRoot:      getenvWithDefault("storagePath", "/file_storage"),
 	}
