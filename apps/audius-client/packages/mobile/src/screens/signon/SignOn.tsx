@@ -466,12 +466,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
     }
     if (!isSignin && !emailIsAvailable && email !== '') {
       return (
-        <TouchableOpacity
-          style={styles.errorButton}
-          onPress={() => {
-            switchForm(true)
-          }}
-        >
+        <TouchableOpacity style={styles.errorButton} onPress={switchForm}>
           <Animated.View
             style={[styles.errorContainer, { opacity: errorOpacity }]}
           >
@@ -537,7 +532,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
     )
   }
 
-  const switchForm = (keepEmail = false) => {
+  const switchForm = () => {
     if (!isWorking) {
       if (isSignin) {
         setFormButtonMarginTop(28)
@@ -555,10 +550,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
             source: 'sign up page'
           })
         )
-      }
-
-      if (!keepEmail) {
-        setEmail('')
       }
 
       setShowInvalidEmailError(false)
@@ -657,7 +648,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
                     () => {
                       // On unavailable email (e.g. user exists with that email),
                       // Switch to the sign in form
-                      switchForm(true)
+                      switchForm()
                       setIsWorking(false)
                     },
                     () => {
@@ -795,9 +786,7 @@ const SignOn = ({ navigation }: SignOnProps) => {
             <TouchableOpacity
               style={styles.switchFormBtn}
               activeOpacity={0.6}
-              onPress={() => {
-                switchForm()
-              }}
+              onPress={switchForm}
             >
               {renderFormSwitchButton()}
             </TouchableOpacity>
