@@ -15,16 +15,13 @@ import {
 } from '@reduxjs/toolkit'
 import dayjs from 'dayjs'
 
-import { ID, Status } from 'models'
+import { ID, Status, ChatMessageWithExtras } from 'models'
+import { hasTail } from 'utils/chatUtils'
 import { encodeHashId } from 'utils/hashIds'
 
 type UserChatWithMessagesStatus = UserChat & {
   messagesStatus?: Status
   messagesSummary?: TypedCommsResponse<ChatMessage>['summary']
-}
-
-type ChatMessageWithSendStatus = ChatMessage & {
-  status?: Status
 }
 
 type ChatState = {
@@ -34,7 +31,7 @@ type ChatState = {
   }
   messages: Record<
     string,
-    EntityState<ChatMessageWithSendStatus> & {
+    EntityState<ChatMessageWithExtras> & {
       status?: Status
       summary?: TypedCommsResponse<ChatMessage>['summary']
     }
@@ -69,11 +66,10 @@ const { selectById: getChat } = chatsAdapter.getSelectors(
 const messageSortComparator = (a: ChatMessage, b: ChatMessage) =>
   dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1
 
-export const chatMessagesAdapter =
-  createEntityAdapter<ChatMessageWithSendStatus>({
-    selectId: (message) => message.message_id,
-    sortComparer: messageSortComparator
-  })
+export const chatMessagesAdapter = createEntityAdapter<ChatMessageWithExtras>({
+  selectId: (message) => message.message_id,
+  sortComparer: messageSortComparator
+})
 
 const { selectById: getMessage } = chatMessagesAdapter.getSelectors()
 
@@ -161,7 +157,22 @@ const slice = createSlice({
         id: chatId,
         changes: { messagesStatus: Status.SUCCESS, messagesSummary: summary }
       })
-      chatMessagesAdapter.upsertMany(state.messages[chatId], data)
+      const messagesWithTail = data.map((item, index) => {
+        return { ...item, hasTail: hasTail(item, data[index - 1]) }
+      })
+      // Recalculate hasTail for latest message of new batch
+      if (state.messages[chatId].ids.length > 0) {
+        const prevEarliestMessageId =
+          state.messages[chatId].ids[state.messages[chatId].ids.length - 1]
+        const prevEarliestMessage =
+          state.messages[chatId].entities[prevEarliestMessageId]
+        const newLatestMessage = messagesWithTail[0]
+        newLatestMessage.hasTail = hasTail(
+          newLatestMessage,
+          prevEarliestMessage
+        )
+      }
+      chatMessagesAdapter.upsertMany(state.messages[chatId], messagesWithTail)
     },
     fetchMoreMessagesFailed: (
       state,
@@ -209,7 +220,8 @@ const slice = createSlice({
         reactions: [],
         message: '',
         sender_user_id: '',
-        created_at: ''
+        created_at: '',
+        hasTail: false
       })
       const existingMessage = getMessage(state.messages[chatId], messageId)
       const existingReactions = existingMessage?.reactions ?? []
@@ -289,8 +301,22 @@ const slice = createSlice({
     ) => {
       // triggers saga to get chat if not exists
       const { chatId, message, status } = action.payload
+
+      // Recalculate hasTail of previous message
+      const prevLatestMessageId = state.messages[chatId].ids[0]
+      const prevLatestMessage =
+        state.messages[chatId].entities[prevLatestMessageId]
+      if (prevLatestMessage) {
+        const prevMsgHasTail = hasTail(prevLatestMessage, message)
+        chatMessagesAdapter.updateOne(state.messages[chatId], {
+          id: prevLatestMessageId,
+          changes: { hasTail: prevMsgHasTail }
+        })
+      }
+
       chatMessagesAdapter.upsertOne(state.messages[chatId], {
         ...message,
+        hasTail: true,
         status: status ?? Status.IDLE
       })
       chatsAdapter.updateOne(state.chats, {

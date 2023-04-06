@@ -1,12 +1,12 @@
-import { forwardRef } from 'react'
+import { memo, useCallback } from 'react'
 
-import type { ReactionTypes } from '@audius/common'
+import type { ReactionTypes, ChatMessageWithExtras } from '@audius/common'
 import {
   accountSelectors,
   decodeHashId,
   formatMessageDate
 } from '@audius/common'
-import type { ChatMessage, ChatMessageReaction } from '@audius/sdk'
+import type { ChatMessageReaction } from '@audius/sdk'
 import type { ViewStyle, StyleProp } from 'react-native'
 import { View } from 'react-native'
 import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
@@ -128,101 +128,110 @@ const ChatReaction = ({ reaction }: ChatReactionProps) => {
 }
 
 type ChatMessageListItemProps = {
-  message: ChatMessage
-  hasTail: boolean
-  shouldShowReaction?: boolean
-  shouldShowDate?: boolean
+  message: ChatMessageWithExtras
+  isPopup: boolean
   style?: StyleProp<ViewStyle>
-  onLongPress?: () => void
+  onLongPress?: (id: string) => void
+  itemsRef?: any
 }
 
-export const ChatMessageListItem = forwardRef<View, ChatMessageListItemProps>(
-  (props: ChatMessageListItemProps, refProp) => {
-    const {
-      message,
-      hasTail,
-      shouldShowReaction = true,
-      shouldShowDate = true,
-      style: styleProp,
-      onLongPress
-    } = props
-    const styles = useStyles()
-    const palette = useThemePalette()
+export const ChatMessageListItem = memo(function ChatMessageListItem(
+  props: ChatMessageListItemProps
+) {
+  const {
+    message,
+    isPopup = false,
+    style: styleProp,
+    onLongPress,
+    itemsRef
+  } = props
+  const styles = useStyles()
+  const palette = useThemePalette()
 
-    const userId = useSelector(getUserId)
-    const senderUserId = decodeHashId(message.sender_user_id)
-    const isAuthor = senderUserId === userId
+  const userId = useSelector(getUserId)
+  const senderUserId = decodeHashId(message.sender_user_id)
+  const isAuthor = senderUserId === userId
 
-    return (
-      <>
-        <View
-          style={[
-            isAuthor ? styles.rootIsAuthor : styles.rootOtherUser,
-            !hasTail && message.reactions && message.reactions.length > 0
-              ? styles.reactionMarginBottom
-              : null,
-            styleProp
-          ]}
-        >
-          <View>
-            <TouchableWithoutFeedback onPress={onLongPress}>
-              <View>
-                <View
-                  style={[styles.bubble, isAuthor && styles.isAuthor]}
-                  ref={refProp}
-                >
-                  <Text
-                    style={[styles.message, isAuthor && styles.messageIsAuthor]}
-                  >
-                    {message.message}
-                  </Text>
-                </View>
-                {message.reactions?.length > 0 ? (
-                  <>
-                    {shouldShowReaction ? (
-                      <View
-                        style={[
-                          styles.reactionContainer,
-                          isAuthor
-                            ? styles.reactionContainerIsAuthor
-                            : styles.reactionContainerOtherUser
-                        ]}
-                      >
-                        {message.reactions.map((reaction, index) => {
-                          return (
-                            <ChatReaction key={index} reaction={reaction} />
-                          )
-                        })}
-                      </View>
-                    ) : null}
-                  </>
-                ) : null}
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-          {hasTail ? (
-            <>
+  const handleLongPress = useCallback(() => {
+    onLongPress?.(message.message_id)
+  }, [message.message_id, onLongPress])
+
+  return (
+    <>
+      <View
+        style={[
+          isAuthor ? styles.rootIsAuthor : styles.rootOtherUser,
+          !message.hasTail && message.reactions && message.reactions.length > 0
+            ? styles.reactionMarginBottom
+            : null,
+          styleProp
+        ]}
+      >
+        <View>
+          <TouchableWithoutFeedback onPress={handleLongPress}>
+            <View>
               <View
-                style={[
-                  styles.tail,
-                  isAuthor ? styles.tailIsAuthor : styles.tailOtherUser,
-                  !shouldShowDate && { bottom: 0 }
-                ]}
+                style={[styles.bubble, isAuthor && styles.isAuthor]}
+                ref={
+                  itemsRef
+                    ? (el) => (itemsRef.current[message.message_id] = el)
+                    : null
+                }
               >
-                <View style={styles.tailShadow} />
-                <ChatTail fill={isAuthor ? palette.secondary : palette.white} />
+                <Text
+                  style={[styles.message, isAuthor && styles.messageIsAuthor]}
+                >
+                  {message.message}
+                </Text>
               </View>
-              {shouldShowDate ? (
-                <View style={styles.dateContainer}>
-                  <Text style={styles.date}>
-                    {formatMessageDate(message.created_at)}
-                  </Text>
-                </View>
+              {message.reactions?.length > 0 ? (
+                <>
+                  {!isPopup ? (
+                    <View
+                      style={[
+                        styles.reactionContainer,
+                        isAuthor
+                          ? styles.reactionContainerIsAuthor
+                          : styles.reactionContainerOtherUser
+                      ]}
+                    >
+                      {message.reactions.map((reaction) => {
+                        return (
+                          <ChatReaction
+                            key={reaction.created_at}
+                            reaction={reaction}
+                          />
+                        )
+                      })}
+                    </View>
+                  ) : null}
+                </>
               ) : null}
-            </>
-          ) : null}
+            </View>
+          </TouchableWithoutFeedback>
         </View>
-      </>
-    )
-  }
-)
+        {message.hasTail ? (
+          <>
+            <View
+              style={[
+                styles.tail,
+                isAuthor ? styles.tailIsAuthor : styles.tailOtherUser,
+                isPopup && { bottom: 0 }
+              ]}
+            >
+              <View style={styles.tailShadow} />
+              <ChatTail fill={isAuthor ? palette.secondary : palette.white} />
+            </View>
+            {!isPopup ? (
+              <View style={styles.dateContainer}>
+                <Text style={styles.date}>
+                  {formatMessageDate(message.created_at)}
+                </Text>
+              </View>
+            ) : null}
+          </>
+        ) : null}
+      </View>
+    </>
+  )
+})
