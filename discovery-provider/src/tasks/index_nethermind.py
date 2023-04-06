@@ -628,7 +628,7 @@ def index_blocks(self, db, blocks_list):
                     logger.debug(
                         f"index_nethermind.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
-                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
+                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"] == "true"
                     if is_save_cid_enabled:
                         """
                         Add CID Metadata to db (cid -> json blob, etc.)
