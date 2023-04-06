@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react'
 
 import { chatActions } from '@audius/common'
 import { Platform } from 'react-native'
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'
 
 import IconSend from 'app/assets/images/iconSend.svg'
@@ -62,15 +63,14 @@ export const ChatTextInput = ({ chatId }: ChatTextInputProps) => {
     <TextInput
       placeholder={messages.startNewMessage}
       Icon={() => (
-        <IconSend
-          width={styles.icon.width}
-          height={styles.icon.height}
-          opacity={inputMessage ? ICON_FOCUS : ICON_BLUR}
-          fill={styles.icon.fill}
-          onPress={() => {
-            handleSubmit(inputMessage)
-          }}
-        />
+        <TouchableWithoutFeedback onPress={() => handleSubmit(inputMessage)}>
+          <IconSend
+            width={styles.icon.width}
+            height={styles.icon.height}
+            opacity={inputMessage ? ICON_FOCUS : ICON_BLUR}
+            fill={styles.icon.fill}
+          />
+        </TouchableWithoutFeedback>
       )}
       styles={{
         root: styles.composeTextContainer,

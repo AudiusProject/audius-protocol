@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 
 import { chatActions, chatSelectors, Status } from '@audius/common'
 import { View, Text } from 'react-native'
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconCompose from 'app/assets/images/iconCompose.svg'
@@ -120,10 +121,9 @@ export const ChatListScreen = () => {
 
   const navigateToChatUserList = () => navigation.navigate('ChatUserList')
   const iconCompose = (
-    <IconCompose
-      fill={palette.neutralLight4}
-      onPress={navigateToChatUserList}
-    />
+    <TouchableWithoutFeedback onPress={navigateToChatUserList}>
+      <IconCompose fill={palette.neutralLight4} />
+    </TouchableWithoutFeedback>
   )
 
   return (
