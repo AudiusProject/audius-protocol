@@ -13,7 +13,11 @@ const { getUsers } = cacheUsersSelectors
 const { selectById: selectChatById, selectAll: selectAllChats } =
   chatsAdapter.getSelectors<CommonState>((state) => state.pages.chat.chats)
 
-const { selectAll: getAllChatMessages } = chatMessagesAdapter.getSelectors()
+const {
+  selectAll: getAllChatMessages,
+  selectById,
+  selectIds: getChatMessageIds
+} = chatMessagesAdapter.getSelectors()
 
 export const getChat = selectChatById
 
@@ -105,4 +109,24 @@ export const getOtherChatUsers = (state: CommonState, chatId?: string) => {
   }
   const chat = getChat(state, chatId)
   return getOtherChatUsersFromChat(state, chat)
+}
+
+export const getChatMessageByIndex = (
+  state: CommonState,
+  chatId: string,
+  messageIndex: number
+) => {
+  const chatMessagesState = state.pages.chat.messages[chatId]
+  const messageIds = getChatMessageIds(chatMessagesState)
+  const messageIdAtIndex = messageIds[messageIndex]
+  return selectById(chatMessagesState, messageIdAtIndex)
+}
+
+export const getChatMessageById = (
+  state: CommonState,
+  chatId: string,
+  messageId: string
+) => {
+  const chatMessagesState = state.pages.chat.messages[chatId]
+  return selectById(chatMessagesState, messageId)
 }

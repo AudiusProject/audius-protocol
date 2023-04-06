@@ -1,8 +1,11 @@
 import { useRef, useCallback, useEffect } from 'react'
 
-import type { Nullable, ReactionTypes } from '@audius/common'
+import type {
+  ChatMessageWithExtras,
+  Nullable,
+  ReactionTypes
+} from '@audius/common'
 import { chatActions, encodeHashId, accountSelectors } from '@audius/common'
-import type { ChatMessage } from '@audius/sdk'
 import { View, Dimensions, Pressable, Animated } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -68,9 +71,8 @@ type ReactionPopupProps = {
   chatId: string
   messageTop: number
   containerBottom: number
-  hasTail: boolean
   isAuthor: boolean
-  message: ChatMessage
+  message: ChatMessageWithExtras
   closePopup: () => void
 }
 
@@ -78,7 +80,6 @@ export const ReactionPopup = ({
   chatId,
   messageTop,
   containerBottom,
-  hasTail,
   isAuthor,
   message,
   closePopup
@@ -114,7 +115,7 @@ export const ReactionPopup = ({
   }, [beginAnimation])
 
   const handleReactionSelected = useCallback(
-    (message: Nullable<ChatMessage>, reaction: ReactionTypes) => {
+    (message: Nullable<ChatMessageWithExtras>, reaction: ReactionTypes) => {
       if (userId && message) {
         dispatch(
           setMessageReaction({
@@ -160,9 +161,7 @@ export const ReactionPopup = ({
         <Animated.View style={{ opacity: otherOpacity.current }}>
           <ChatMessageListItem
             message={message}
-            hasTail={hasTail ?? false}
-            ref={() => null}
-            shouldShowDate={false}
+            isPopup={true}
             style={[
               styles.popupChatMessage,
               {
