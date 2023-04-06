@@ -42,6 +42,7 @@ const actionsMap = {
   ): CollectionsCacheState {
     const { permalink, collectionId } = action
 
+    if (!permalink) return state
     return {
       ...state,
       permalinks: {

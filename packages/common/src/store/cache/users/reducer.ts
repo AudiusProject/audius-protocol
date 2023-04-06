@@ -23,7 +23,9 @@ const actionsMap = {
 
     for (const entry of entries) {
       const { user_id, handle } = entry.metadata
-      newHandles[handle.toLowerCase()] = user_id
+      if (handle) {
+        newHandles[handle.toLowerCase()] = user_id
+      }
     }
 
     return {
