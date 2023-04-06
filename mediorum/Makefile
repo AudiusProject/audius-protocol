@@ -9,8 +9,6 @@ dev2::
 	LIVE_UI=true goreman -set-ports=false start
 
 test:: pg.bounce
-	sleep 2
-	docker compose up -d --wait
 	go test ./... -count=1
 
 
@@ -35,3 +33,4 @@ psql::
 pg.bounce::
 	docker compose down --volumes
 	docker compose up -d --wait
+	sleep 2
