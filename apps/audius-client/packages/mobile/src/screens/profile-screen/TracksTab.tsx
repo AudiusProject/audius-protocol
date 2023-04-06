@@ -16,13 +16,11 @@ const { getProfileTracksLineup } = profilePageSelectors
 export const TracksTab = () => {
   const dispatch = useDispatch()
 
-  const { handle, user_id, track_count, artist_pick_track_id } =
-    useSelectProfile([
-      'handle',
-      'user_id',
-      'track_count',
-      'artist_pick_track_id'
-    ])
+  const { handle, user_id, artist_pick_track_id } = useSelectProfile([
+    'handle',
+    'user_id',
+    'artist_pick_track_id'
+  ])
 
   const handleLower = handle.toLowerCase()
 
@@ -52,7 +50,6 @@ export const TracksTab = () => {
       leadingElementId={artist_pick_track_id}
       actions={tracksActions}
       lineup={lineup}
-      limit={track_count}
       loadMore={loadMore}
       disableTopTabScroll
       LineupEmptyComponent={<EmptyProfileTile tab='tracks' />}
