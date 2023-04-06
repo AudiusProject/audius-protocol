@@ -716,7 +716,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         status: profileLoadingStatus,
         albums,
         playlists,
-        mostUsedTags,
         isSubscribed
       },
       // Tracks
@@ -861,7 +860,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       mode,
       stats,
       activeTab,
-      mostUsedTags,
       twitterVerified,
       instagramVerified,
       tikTokVerified,

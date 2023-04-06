@@ -26,6 +26,7 @@ import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import Menu from 'components/menu/Menu'
 import RepostFavoritesStats from 'components/repost-favorites-stats/RepostFavoritesStats'
+import { SearchTag } from 'components/search/SearchTag'
 import Skeleton from 'components/skeleton/Skeleton'
 import Toast from 'components/toast/Toast'
 import Tooltip from 'components/tooltip/Tooltip'
@@ -42,7 +43,6 @@ import { GiantTrackTileProgressInfo } from './GiantTrackTileProgressInfo'
 import InfoLabel from './InfoLabel'
 import { PlayPauseButton } from './PlayPauseButton'
 import { PremiumTrackSection } from './PremiumTrackSection'
-import Tag from './Tag'
 import { TrackBannerIconType } from './TrackBannerIcon'
 
 const BUTTON_COLLAPSE_WIDTHS = {
@@ -276,7 +276,7 @@ class GiantTrackTile extends PureComponent {
   }
 
   renderTags() {
-    const { isUnlisted, fieldVisibility, tags, onClickTag } = this.props
+    const { isUnlisted, fieldVisibility, tags } = this.props
     const shouldShow = !isUnlisted || fieldVisibility.tags
     return (
       shouldShow &&
@@ -286,11 +286,11 @@ class GiantTrackTile extends PureComponent {
             .split(',')
             .filter((t) => t)
             .map((tag) => (
-              <Tag
+              <SearchTag
                 className={styles.tagFormatting}
-                textLabel={tag}
+                tag={tag}
                 key={tag}
-                onClick={() => onClickTag(tag)}
+                source='track page'
               />
             ))}
         </div>

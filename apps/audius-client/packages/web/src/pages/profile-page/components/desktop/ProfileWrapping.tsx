@@ -34,7 +34,6 @@ type ProfileWrappingProps = {
   website: string
   donation: string
   created: string
-  tags: string[]
   onUpdateName: (name: string) => void
   onUpdateProfilePicture: (
     selectedFiles: any,
@@ -76,7 +75,6 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
     website,
     donation,
     created,
-    tags,
     onUpdateName,
     onUpdateProfilePicture,
     onUpdateBio,
@@ -149,7 +147,6 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
             website={website}
             donation={donation}
             created={created}
-            tags={tags}
             onUpdateBio={onUpdateBio}
             onUpdateLocation={onUpdateLocation}
             onUpdateTwitterHandle={onUpdateTwitterHandle}

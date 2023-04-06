@@ -69,7 +69,7 @@ export const ProfileMutuals = () => {
   }
 
   return (
-    <div className={styles.mutualsContainer}>
+    <div>
       <ProfilePageNavSectionTitle
         title={messages.mutuals}
         titleIcon={<IconFollowing className={styles.followingIcon} />}

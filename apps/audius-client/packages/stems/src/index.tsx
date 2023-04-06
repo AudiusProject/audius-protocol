@@ -83,3 +83,5 @@ export {
   RadioGroupContext
 } from './components/RadioButtonGroup'
 export { RadioButton, RadioButtonProps } from './components/RadioButton'
+
+export { Tag, TagProps } from './components/Tag'
