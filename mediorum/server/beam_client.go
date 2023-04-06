@@ -17,6 +17,8 @@ func (ss *MediorumServer) startBeamClient() {
 	// migration: create cid_lookup table
 	ddl := `
 
+	drop table if exists cid_temp;
+
 	create table if not exists cid_lookup (
 		"multihash" text,
 		"host" text
@@ -40,8 +42,8 @@ func (ss *MediorumServer) startBeamClient() {
 		// and then copy to main table
 		// ignoring duplicates
 		_, err := ss.pgPool.Exec(ctx, `
-		drop table if exists cid_temp;
-		create table cid_temp (like cid_lookup);
+		create table if not exists cid_temp (like cid_lookup);
+		truncate cid_temp;
 		`)
 		if err != nil {
 			log.Println("create temp table failed", err)
@@ -67,8 +69,16 @@ func (ss *MediorumServer) startBeamClient() {
 
 		// copy temp to main
 		result, err := ss.pgPool.Exec(ctx, `
+		begin;
+
+		truncate cid_lookup;
+
 		insert into cid_lookup (select * from cid_temp)
-		on conflict do nothing;
+			on conflict do nothing;
+
+		truncate cid_temp;
+
+		commit;
 		`)
 		if err != nil {
 			log.Println("insert from cid_temp failed", err)
@@ -76,16 +86,19 @@ func (ss *MediorumServer) startBeamClient() {
 			log.Println("beam all done", "took", time.Since(startedAt), "added", result.RowsAffected())
 		}
 
-		time.Sleep(time.Minute * 8)
+		time.Sleep(time.Minute * 30)
 	}
 }
 
 func (ss *MediorumServer) beamFromPeer(peer Peer) error {
 	ctx := context.Background()
+	client := http.Client{
+		Timeout: 5 * time.Minute,
+	}
 
 	startedAt := time.Now()
 	logger := log15.New("beam_client", peer.Host)
-	resp, err := http.Get(peer.ApiPath("beam/files"))
+	resp, err := client.Get(peer.ApiPath("beam/files"))
 	if err != nil {
 		return err
 	}

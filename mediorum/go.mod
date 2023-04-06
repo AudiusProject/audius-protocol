@@ -5,6 +5,7 @@ go 1.20
 require (
 	github.com/disintegration/imaging v1.6.2
 	github.com/ethereum/go-ethereum v1.11.4
+	github.com/georgysavva/scany/v2 v2.0.0
 	github.com/inconshreveable/log15 v2.16.0+incompatible
 	github.com/ipfs/go-cid v0.3.2
 	github.com/jackc/pgx/v5 v5.3.1
@@ -26,7 +27,6 @@ require (
 	github.com/btcsuite/btcd/btcec/v2 v2.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.0.1 // indirect
-	github.com/georgysavva/scany/v2 v2.0.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect

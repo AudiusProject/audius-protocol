@@ -9,7 +9,11 @@ import (
 func (ss *MediorumServer) servePgBeam(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	query := fmt.Sprintf(`select coalesce("dirMultihash", "multihash"), '%s' from "Files" where "type" != 'track'`, ss.Config.Self.Host)
+	query := fmt.Sprintf(`
+		select distinct "multihash", '%s' from "Files"
+		union
+		select distinct "dirMultihash", '%[1]s' from "Files" where "dirMultihash" is not null`,
+		ss.Config.Self.Host)
 	copySql := fmt.Sprintf("COPY (%s) TO STDOUT", query)
 
 	// pg COPY TO
