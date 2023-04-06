@@ -148,6 +148,18 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	basePath.Use(middleware.Recover())
 	basePath.Use(middleware.CORS())
 
+	// TODO: Use middleware to cache whenever content is streamed, except if it's premium content.
+	// See Johannes's previous PR for reference. From CN:
+	// If content is gated, set cache-control to no-cache.
+	// Otherwise, set the CID cache-control so that client caches the response for 30 days.
+	// The contentAccessMiddleware sets the req.contentAccess object so that we do not
+	// have to make another database round trip to get this info.
+	// if (req.shouldCache) {
+	//   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+	// } else {
+	//   res.setHeader('cache-control', 'no-cache')
+	// }
+
 	basePath.GET("", ss.serveUploadUI)
 	basePath.GET("/", ss.serveUploadUI)
 
@@ -155,6 +167,11 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	basePath.GET("/uploads", ss.getUploads)
 	basePath.GET("/uploads/:id", ss.getUpload)
 	basePath.POST("/uploads", ss.postUpload)
+
+	echoServer.GET("/ipfs/:key", ss.getBlob)
+	echoServer.GET("/content/:key", ss.getBlob)
+	echoServer.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
+	echoServer.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
 
 	// status + debug:
 	basePath.GET("/status", ss.getStatus)

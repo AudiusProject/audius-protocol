@@ -31,13 +31,13 @@ def test_entities():
                 "playlist_name": "playlist 3",
                 "is_current": True,
                 "playlist_contents": {
-                   "track_ids": [
-                        {"track": 1}, 
-                        {"track": 2}, 
-                        {"track": 3}, 
-                        {"track": 4}, 
+                    "track_ids": [
+                        {"track": 1},
+                        {"track": 2},
+                        {"track": 3},
+                        {"track": 4},
                     ]
-                }
+                },
             },
             {
                 "playlist_id": 4,
@@ -46,13 +46,13 @@ def test_entities():
                 "is_private": True,
                 "is_current": True,
                 "playlist_contents": {
-                   "track_ids": [
-                        {"track": 1}, 
-                        {"track": 2}, 
-                        {"track": 3}, 
-                        {"track": 4}, 
+                    "track_ids": [
+                        {"track": 1},
+                        {"track": 2},
+                        {"track": 3},
+                        {"track": 4},
                     ]
-                }
+                },
             },
         ],
         "users": [
@@ -216,11 +216,7 @@ def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
         populate_mock_db(db, test_entities)
         with db.scoped_session() as session:
             playlists = get_playlist_tracks(
-                session,
-                { 
-                    "playlist_ids": [3, 4],
-                    "current_user_id": 3
-                }
+                session, {"playlist_ids": [3, 4], "current_user_id": 3}
             )
             assert len(playlists) == 2
             tracks_playlist_3 = playlists[3]
@@ -239,9 +235,3 @@ def test_get_playlist_with_listed_and_unlisted_tracks(app, test_entities):
             assert not t2_p4["is_unlisted"]
             assert t3_p4["is_unlisted"]
             assert t4_p4["is_unlisted"]
-            
-            
-
-
-
-

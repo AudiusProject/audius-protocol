@@ -17,7 +17,7 @@ type Blob struct {
 type Upload struct {
 	ID string `json:"id"` // base32 file hash
 
-	Template     string         `json:"template"`
+	Template     JobTemplate    `json:"template"`
 	OrigFileName string         `json:"orig_filename"`
 	OrigFileCID  string         `json:"orig_file_cid"`
 	FFProbe      *FFProbeResult `json:"probe" gorm:"serializer:json"`
