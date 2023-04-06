@@ -24,7 +24,9 @@ const actionsMap = {
     for (const entry of entries) {
       const { track_id, permalink } = entry.metadata
 
-      newPermalinks[permalink.toLowerCase()] = track_id
+      if (permalink) {
+        newPermalinks[permalink.toLowerCase()] = track_id
+      }
     }
 
     return {
@@ -41,6 +43,7 @@ const actionsMap = {
   ): TracksCacheState {
     const { permalink, trackId } = action
 
+    if (!permalink) return state
     return {
       ...state,
       permalinks: { ...state.permalinks, [permalink.toLowerCase()]: trackId }
