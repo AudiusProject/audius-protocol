@@ -5,6 +5,7 @@ stores files and stuff
 ## Status + Run it
 
 * `make tools` - install tools (make sure `~/go/bin` is in path)
+* `make pg.bounce` - starts postgres via docker-compose
 * `make` - starts single process dev cluster
 
 * `make test`

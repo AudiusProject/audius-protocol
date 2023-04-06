@@ -30,6 +30,9 @@ psql::
 	docker compose up -d --wait
 	docker exec -it pg psql -U postgres
 
+pg.up:
+	docker compose up -d --wait
+
 pg.bounce::
 	docker compose down --volumes
 	docker compose up -d --wait

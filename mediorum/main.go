@@ -80,19 +80,20 @@ func startDevInstance() {
 	// synthetic network
 	network := devNetwork(7)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		log.Fatal("PORT env var required")
+	idx := os.Getenv("IDX")
+	if idx == "" {
+		log.Fatal("IDX env var required")
 	}
 
 	config := server.MediorumConfig{
 		Self: server.Peer{
-			Host:   "http://localhost:" + port,
-			Wallet: "0xPort" + port,
+			Host:   "http://localhost:199" + idx,
+			Wallet: "0xPort" + idx,
 		},
 		Peers:             network,
 		ReplicationFactor: 3,
-		Dir:               fmt.Sprintf("/tmp/mediorum_dev_%s", port),
+		Dir:               fmt.Sprintf("/tmp/mediorum_dev_%s", idx),
+		PostgresDSN:       fmt.Sprintf("postgres://postgres:example@localhost:5444/m%s", idx),
 	}
 
 	ss, err := server.New(config)
