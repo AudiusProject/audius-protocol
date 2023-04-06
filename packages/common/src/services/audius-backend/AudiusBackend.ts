@@ -1236,7 +1236,16 @@ export const audiusBackend = ({
   ) {
     const storageV2Enabled = await getFeatureEnabled(FeatureFlags.STORAGE_V2)
     if (storageV2Enabled) {
-      // do storage v2 upload
+      try {
+        return await audiusLibs.Track.uploadTrackV2(
+          trackFile,
+          coverArtFile,
+          metadata,
+          onProgress
+        )
+      } catch (e: any) {
+        return { error: e }
+      }
     } else {
       return await audiusLibs.Track.uploadTrack(
         trackFile,
@@ -1255,6 +1264,7 @@ export const audiusBackend = ({
     metadata: TrackMetadata,
     onProgress: (loaded: number, total: number) => void
   ) {
+    // TODO: Call storage v2 upload if USE_STORAGE_V2_FEATURE_FLAG is true
     return audiusLibs.Track.uploadTrackContentToCreatorNode(
       trackFile,
       coverArtFile,
