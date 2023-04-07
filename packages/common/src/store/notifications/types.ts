@@ -232,7 +232,7 @@ export type DiscoveryCreateTrackNotificationAction = {
 }
 export type DiscoveryCreatePlaylistNotificationAction = {
   is_album: boolean
-  playlist_id: string
+  playlist_id: string[]
 }
 
 export type TrendingRange = 'week' | 'month' | 'year'

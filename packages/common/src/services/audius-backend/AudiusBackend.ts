@@ -2277,11 +2277,14 @@ export const audiusBackend = ({
           const data = action.data
           if ('playlist_id' in data) {
             entityType = data.is_album ? Entity.Album : Entity.Playlist
-            return decodeHashId(data.playlist_id)
+            return data.playlist_id.map((playlist_id) =>
+              decodeHashId(playlist_id)
+            )
           }
           entityType = Entity.Track
           return decodeHashId(data.track_id)
         })
+        .flat()
         .filter(removeNullable)
       const userId = decodeHashId(notification.actions[0].specifier) as number
       return {
