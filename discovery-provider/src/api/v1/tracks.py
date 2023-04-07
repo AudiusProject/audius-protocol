@@ -455,13 +455,14 @@ class TrackStream(Resource):
         else:
             path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
 
+        # Try primary first then fallback to replica set
+        # Perform a partial content request to verify 206 success
         for creator_node in creator_nodes:
             stream_url = urljoin(creator_node, path)
             headers = {"Range": "bytes=0-1"}
             try:
                 response = requests.get(stream_url, headers=headers)
-                logger.info(f"asdf {stream_url} {response.status}")
-                if response.status == 200:
+                if response.status == 206:
                     return stream_url
             except:
                 pass
