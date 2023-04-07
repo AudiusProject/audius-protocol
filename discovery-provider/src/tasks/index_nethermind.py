@@ -1056,12 +1056,12 @@ def revert_blocks(self, db, revert_blocks_list):
                 # NOTE: There is no need mark previous as is_current for notification seen
 
             for playlist_seen_to_revert in revert_playlist_seen:
-                playlist_seen_id = playlist_seen_to_revert.playlist_id
+
                 previous_playlist_seen_entry = (
                     session.query(PlaylistSeen)
                     .filter(
-                        PlaylistSeen.playlist_id == playlist_seen_id,
-                        PlaylistSeen.user_id == user_id,
+                        PlaylistSeen.playlist_id == playlist_seen_to_revert.playlist_id,
+                        PlaylistSeen.user_id == playlist_seen_to_revert.user_id,
                         PlaylistSeen.blocknumber < revert_block_number,
                     )
                     .order_by(PlaylistSeen.blocknumber.desc())
