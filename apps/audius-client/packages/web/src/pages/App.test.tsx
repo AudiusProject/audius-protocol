@@ -37,12 +37,7 @@ describe('smoke test', () => {
     ReactDOM.render(
       <Provider store={store}>
         <ConnectedRouter history={history}>
-          <App
-            shouldShowPopover={false}
-            isReady
-            setReady={() => {}}
-            mainContentRef={mainContentRef}
-          />
+          <App shouldShowPopover={false} mainContentRef={mainContentRef} />
         </ConnectedRouter>
       </Provider>,
       rootNode

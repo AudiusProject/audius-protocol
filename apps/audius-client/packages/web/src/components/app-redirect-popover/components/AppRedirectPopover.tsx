@@ -72,7 +72,6 @@ const springProps = {
 }
 
 type AppRedirectPopoverProps = {
-  enablePopover: boolean
   incrementScroll: () => void
   decrementScroll: () => void
   onBeforeClickApp?: () => void
@@ -85,7 +84,6 @@ type AppRedirectPopoverProps = {
  * if no app is installed.
  */
 export const AppRedirectPopover = ({
-  enablePopover,
   incrementScroll,
   decrementScroll,
   onBeforeClickApp = () => {},
@@ -95,8 +93,8 @@ export const AppRedirectPopover = ({
 
   const [animDelay, setAnimDelay] = useState(false)
   useEffect(() => {
-    enablePopover && setTimeout(() => setAnimDelay(true), 1000)
-  }, [enablePopover])
+    setTimeout(() => setAnimDelay(true), 1000)
+  }, [])
 
   const shouldShow =
     !matchPath(window.location.pathname, { path: '/', exact: true }) &&
