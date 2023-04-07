@@ -633,7 +633,7 @@ const config = convict({
     doc: 'Maximum number of users to process in each SnapbackSM job',
     format: 'nat',
     env: 'snapbackUsersPerJob',
-    default: 1000
+    default: 100
   },
   maxManualRequestSyncJobConcurrency: {
     doc: 'Max bull queue concurrency for manual sync request jobs',
@@ -880,10 +880,10 @@ config.set(
   _.isEmpty(config.get('reconfigSPIdBlacklistString'))
     ? []
     : config
-        .get('reconfigSPIdBlacklistString')
-        .split(',')
-        .filter((e) => e)
-        .map((e) => parseInt(e))
+      .get('reconfigSPIdBlacklistString')
+      .split(',')
+      .filter((e) => e)
+      .map((e) => parseInt(e))
 )
 
 // Perform validation and error any properties are not present on schema
