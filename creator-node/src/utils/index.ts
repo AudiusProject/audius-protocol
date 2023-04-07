@@ -44,7 +44,6 @@ import {
 } from './cluster/clusterUtils'
 import { clusterUtilsForPrimary } from './cluster/clusterUtilsForPrimary'
 import { clusterUtilsForWorker } from './cluster/clusterUtilsForWorker'
-import { isMp3File } from './fileUtils'
 
 export * from './types'
 export {
@@ -78,8 +77,7 @@ export {
   computeFilePathInDirAndEnsureItExists,
   computeLegacyFilePath,
   getCharsInRange,
-  getCharsInRanges,
-  isMp3File
+  getCharsInRanges
 }
 
 module.exports = {
@@ -114,6 +112,5 @@ module.exports = {
   computeFilePathInDirAndEnsureItExists,
   computeLegacyFilePath,
   getCharsInRange,
-  getCharsInRanges,
-  isMp3File
+  getCharsInRanges
 }
