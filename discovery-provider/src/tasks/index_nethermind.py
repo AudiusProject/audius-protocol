@@ -14,7 +14,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
 from src.models.indexing.ursm_content_node import UrsmContentNode
-from src.models.notifications.notification import NotificationSeen
+from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -69,6 +69,7 @@ from src.utils.redis_constants import (
     most_recent_indexed_block_redis_key,
 )
 from src.utils.session_manager import SessionManager
+from src.utils.structured_logger import StructuredLogger, log_duration
 from src.utils.user_event_constants import entity_manager_event_types_arr
 from web3.datastructures import AttributeDict
 
@@ -82,7 +83,9 @@ TX_TYPE_TO_HANDLER_MAP = {
 
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(logging.getLogger(__name__))
+
+
 web3 = web3_provider.get_web3()
 
 # HELPER FUNCTIONS
@@ -96,6 +99,7 @@ default_config_start_hash = "0x0"
 zero_address = "0x0000000000000000000000000000000000000000"
 
 
+@log_duration(logger)
 def get_latest_block(db: SessionManager, final_poa_block: int):
     latest_block = None
     block_processing_window = int(
@@ -128,7 +132,6 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         target_latest_block_number = min(
             target_latest_block_number, latest_block_number_from_chain
         )
-
         logger.info(
             f"index_nethermind.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
         )
@@ -166,6 +169,7 @@ def fetch_tx_receipt(transaction):
     return response
 
 
+@log_duration(logger)
 def fetch_tx_receipts(self, block):
     block_hash = web3.toHex(block.hash)
     block_number = block.number
@@ -207,6 +211,7 @@ def get_entity_manager_events_tx(update_task, event_type, tx_receipt):
     )().processReceipt(tx_receipt)
 
 
+@log_duration(logger)
 def fetch_cid_metadata(db, entity_manager_txs):
     start_time = datetime.now()
 
@@ -399,6 +404,7 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
     return contract_type
 
 
+@log_duration(logger)
 def add_indexed_block_to_db(db_session, block):
     current_block_query = db_session.query(Block).filter_by(is_current=True)
 
@@ -422,6 +428,7 @@ def add_indexed_block_to_redis(block, redis):
     redis.set(most_recent_indexed_block_hash_redis_key, block.hash.hex())
 
 
+@log_duration(logger)
 def process_state_changes(
     main_indexing_task,
     session,
@@ -469,6 +476,7 @@ def create_and_raise_indexing_error(err, redis):
     raise err
 
 
+@log_duration(logger)
 def index_blocks(self, db, blocks_list):
     redis = update_task.redis
     shared_config = update_task.shared_config
@@ -490,6 +498,7 @@ def index_blocks(self, db, blocks_list):
         block_number, block_hash, latest_block_timestamp = itemgetter(
             "number", "hash", "timestamp"
         )(block)
+        logger.set_context("block", block_number)
         logger.info(
             f"index_nethermind.py | index_blocks | {self.request.id} | block {block.number} - {block_index}/{num_blocks}"
         )
@@ -708,6 +717,7 @@ def index_blocks(self, db, blocks_list):
 
 
 # transactions are reverted in reverse dependency order (social features --> playlists --> tracks --> users)
+@log_duration(logger)
 def revert_blocks(self, db, revert_blocks_list):
     start_time = datetime.now()
     # TODO: Remove this exception once the unexpected revert scenario has been diagnosed
@@ -826,6 +836,12 @@ def revert_blocks(self, db, revert_blocks_list):
             revert_notification_seen = (
                 session.query(NotificationSeen)
                 .filter(NotificationSeen.blocknumber == revert_block_number)
+                .all()
+            )
+
+            revert_playlist_seen = (
+                session.query(PlaylistSeen)
+                .filter(PlaylistSeen.blocknumber == revert_block_number)
                 .all()
             )
 
@@ -1049,6 +1065,25 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.delete(notification_seen_to_revert)
                 # NOTE: There is no need mark previous as is_current for notification seen
 
+            for playlist_seen_to_revert in revert_playlist_seen:
+                playlist_seen_id = playlist_seen_to_revert.playlist_id
+                previous_playlist_seen_entry = (
+                    session.query(PlaylistSeen)
+                    .filter(
+                        PlaylistSeen.playlist_id == playlist_seen_id,
+                        PlaylistSeen.user_id == user_id,
+                        PlaylistSeen.blocknumber < revert_block_number,
+                    )
+                    .order_by(PlaylistSeen.blocknumber.desc())
+                    .first()
+                )
+                if previous_playlist_seen_entry:
+                    previous_playlist_seen_entry.is_current = True
+                logger.info(
+                    f"index_nethermind.py | Reverting playlist seen {playlist_seen_to_revert}"
+                )
+                session.delete(playlist_seen_to_revert)
+
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()
 
@@ -1063,6 +1098,7 @@ def revert_blocks(self, db, revert_blocks_list):
     )
 
 
+@log_duration(logger)
 def revert_user_events(session, revert_user_events_entries, revert_block_number):
     for user_events_to_revert in revert_user_events_entries:
         user_id = user_events_to_revert.user_id
@@ -1084,6 +1120,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
 # CELERY TASKS
 @celery.task(name="update_discovery_provider_nethermind", bind=True)
 @save_duration_metric(metric_group="celery_task")
+@log_duration(logger)
 def update_task(self):
     # ask identity did you switch relay
     # start indexing from the start block we've configured (stage/prod may be different)
@@ -1123,9 +1160,8 @@ def update_task(self):
         # Attempt to acquire lock - do not block if unable to acquire
         have_lock = update_lock.acquire(blocking=False)
         if have_lock:
-            logger.info(
-                f"index_nethermind.py | {self.request.id} | update_task | Acquired disc_prov_lock_nethermind"
-            )
+            logger.set_context("request_id", self.request.id)
+            logger.info("Acquired disc_prov_lock_nethermind")
 
             latest_block = get_latest_block(db, final_poa_block)
 
