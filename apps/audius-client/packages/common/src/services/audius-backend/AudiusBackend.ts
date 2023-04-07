@@ -2277,9 +2277,10 @@ export const audiusBackend = ({
           const data = action.data
           if ('playlist_id' in data) {
             entityType = data.is_album ? Entity.Album : Entity.Playlist
-            return data.playlist_id.map((playlist_id) =>
-              decodeHashId(playlist_id)
-            )
+            const playlist_ids = Array.isArray(data.playlist_id)
+              ? data.playlist_id
+              : [data.playlist_id]
+            return playlist_ids.map((playlist_id) => decodeHashId(playlist_id))
           }
           entityType = Entity.Track
           return decodeHashId(data.track_id)
