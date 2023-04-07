@@ -1,8 +1,12 @@
 import { Knex } from 'knex'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { BaseNotification } from './base'
 import { UserRow } from '../../types/dn'
 import { DMNotification } from '../../types/notifications'
 import { sendPushNotification } from '../../sns'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 export class Message extends BaseNotification<DMNotification> {
   receiverUserId: number
@@ -37,41 +41,48 @@ export class Message extends BaseNotification<DMNotification> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getUserNotificationSettings(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId, this.senderUserId]
     )
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        initiatorUserId: this.senderUserId,
+        receiverUserId: this.receiverUserId
+      }) &&
+      userNotificationSettings.isNotificationTypeEnabled(
+        this.receiverUserId,
+        'messages'
+      )
     ) {
-      const userMobileSettings: NotificationSettings =
-        userNotifications.mobile?.[this.receiverUserId].settings
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
-      if (userMobileSettings['messages']) {
-        await Promise.all(
-          devices.map((device) => {
-            return sendPushNotification(
-              {
-                type: device.type,
-                badgeCount:
-                  userNotifications.mobile[this.receiverUserId].badgeCount + 1,
-                targetARN: device.awsARN
-              },
-              {
-                title: 'Message',
-                body: `New message from ${users[this.senderUserId].name}`,
-                data: {}
-              }
-            )
-          })
-        )
-        await this.incrementBadgeCount(this.receiverUserId)
-      }
+      const devices = userNotificationSettings.getDevices(this.receiverUserId)
+      await Promise.all(
+        devices.map((device) => {
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount:
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: 'Message',
+              body: `New message from ${users[this.senderUserId].name}`,
+              data: {}
+            }
+          )
+        })
+      )
+      await this.incrementBadgeCount(this.receiverUserId)
     }
-    if (userNotifications.email) {
+    if (
+      userNotificationSettings.shouldSendEmail({
+        initiatorUserId: this.senderUserId,
+        receiverUserId: this.receiverUserId
+      })
+    ) {
       // TODO: Send out email
     }
   }

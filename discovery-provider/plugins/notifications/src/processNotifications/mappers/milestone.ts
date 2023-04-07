@@ -6,10 +6,14 @@ import {
   PlaylistMilestoneNotification,
   TrackMilestoneNotification
 } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type MilestoneRow = Omit<NotificationRow, 'data'> & {
   data:
@@ -79,10 +83,10 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getUserNotificationSettings(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId]
     )
-
     let entityName
     let isAlbum = false
 
@@ -131,25 +135,29 @@ export class Milestone extends BaseNotification<MilestoneRow> {
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        receiverUserId: this.receiverUserId
+      })
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.receiverUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
               targetARN: device.awsARN
             },
             {
               title: 'Congratulations! 🎉',
               body: this.getPushBodyText(entityName, isAlbum),
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 ...this.getPushData()
               }
             }
@@ -158,7 +166,11 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       )
       await this.incrementBadgeCount(this.receiverUserId)
     }
-    if (userNotifications.email) {
+    if (
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: this.receiverUserId
+      })
+    ) {
       // TODO: Send out email
     }
   }

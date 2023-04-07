@@ -1,7 +1,6 @@
 import { Knex } from 'knex'
 import moment from 'moment-timezone'
 import { config } from '../../config'
-import { EmailFrequency } from '../../processNotifications/mappers/base'
 import {
   DMEmailNotification,
   EmailNotification
@@ -10,6 +9,7 @@ import { DMEntityType } from './types'
 
 import { logger } from '../../logger'
 import { sendNotificationEmail } from './sendEmail'
+import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
 
 // blockchainUserId => email
 type EmailUsers = {
