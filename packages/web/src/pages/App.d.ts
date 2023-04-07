@@ -1,8 +1,6 @@
 import { MutableRefObject } from 'react'
 
 type AppProps = {
-  setReady: () => void
-  isReady: boolean
   mainContentRef: MutableRefObject<HTMLDivElement | undefined>
   shouldShowPopover: boolean
 }

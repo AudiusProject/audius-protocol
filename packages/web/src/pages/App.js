@@ -364,21 +364,6 @@ class App extends Component {
       this.setState({ showWeb3ErrorBanner: true })
     }
 
-    // Once the user is loaded, we can mark the page as ready for UI
-    // Alternatively, if the page is the signup page, say we're ready without a user
-    // This is necessary for the AppRedirectPopover to load
-    if (
-      (prevProps.accountStatus === Status.LOADING &&
-        this.props.accountStatus !== Status.LOADING) ||
-      matchPath(getPathname(this.props.location), {
-        path: SIGN_UP_PAGE,
-        exact: true
-      })
-    ) {
-      // Let the UI flush
-      setImmediate(this.props.setReady)
-    }
-
     if (prevProps.theme !== this.props.theme) {
       this.handleTheme()
     }
@@ -452,7 +437,6 @@ class App extends Component {
   render() {
     const {
       theme,
-      isReady,
       incrementScroll,
       decrementScroll,
       shouldShowPopover,
@@ -971,11 +955,9 @@ class App extends Component {
           </Suspense>
         </div>
         <PlayBarProvider />
-
         <Suspense fallback={null}>
           <Modals />
         </Suspense>
-
         {
           <Suspense fallback={null}>
             <ConnectedMusicConfetti />
@@ -986,7 +968,6 @@ class App extends Component {
             <RewardClaimedToast />
           </Suspense>
         }
-
         {/* Non-mobile */}
         {!isMobileClient ? <Konami /> : null}
         {!isMobileClient ? <ConfirmerPreview /> : null}
@@ -994,11 +975,9 @@ class App extends Component {
         {!isMobileClient ? <Visualizer /> : null}
         {!isMobileClient ? <PinnedTrackConfirmation /> : null}
         {!isMobileClient ? <DevModeMananger /> : null}
-
         {/* Mobile-only */}
         {isMobileClient && shouldShowPopover ? (
           <AppRedirectPopover
-            enablePopover={isReady}
             incrementScroll={incrementScroll}
             decrementScroll={decrementScroll}
           />

@@ -41,7 +41,10 @@ async function handleEvent(event) {
 
   const is204 = pathname === '/204'
   if (is204) {
-    return new Response(undefined, { status: 204 })
+    const response = new Response(undefined, { status: 204 })
+    response.headers.set('access-control-allow-methods', '*')
+    response.headers.set('access-control-allow-origin', '*')
+    return response
   }
 
   const isBot = checkIsBot(userAgent)

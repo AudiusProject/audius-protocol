@@ -20,16 +20,10 @@ import './services/webVitals'
 import './index.css'
 
 type AudiusAppProps = {
-  setReady: () => void
-  isReady: boolean
   shouldShowPopover: boolean
 }
 
-const AudiusApp = ({
-  setReady,
-  isReady,
-  shouldShowPopover
-}: AudiusAppProps) => {
+const AudiusApp = ({ shouldShowPopover }: AudiusAppProps) => {
   return (
     <Provider store={store}>
       <ConnectedRouter history={history}>
@@ -50,8 +44,6 @@ const AudiusApp = ({
                     <AppErrorBoundary>
                       <CoinbasePayButtonProvider>
                         <App
-                          setReady={setReady}
-                          isReady={isReady}
                           mainContentRef={mainContentRef}
                           shouldShowPopover={shouldShowPopover}
                         />

@@ -1,4 +1,4 @@
-import { Suspense, useState, useEffect, useCallback, lazy } from 'react'
+import { Suspense, useState, useEffect, lazy } from 'react'
 
 import { useAsync } from 'react-use'
 
@@ -23,7 +23,6 @@ const isPublicSiteSubRoute = (location = window.location) => {
 const clientIsElectron = isElectron()
 
 const Root = () => {
-  const [dappReady, setDappReady] = useState(false)
   const [renderPublicSite, setRenderPublicSite] = useState(isPublicSiteRoute())
   const isMobileClient = useIsMobile()
 
@@ -37,8 +36,6 @@ const Root = () => {
       setRenderPublicSite(isPublicSiteRoute())
     }
   }, [])
-
-  const setReady = useCallback(() => setDappReady(true), [])
 
   const [shouldShowPopover, setShouldShowPopover] = useState(true)
 
@@ -58,11 +55,7 @@ const Root = () => {
 
   return (
     <>
-      <Dapp
-        isReady={dappReady}
-        setReady={setReady}
-        shouldShowPopover={shouldShowPopover}
-      />
+      <Dapp shouldShowPopover={shouldShowPopover} />
     </>
   )
 }
