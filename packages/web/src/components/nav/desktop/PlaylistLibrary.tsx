@@ -394,7 +394,7 @@ const PlaylistLibrary = ({
           renderFolder={renderFolder}
         />
       ) : null}
-      {isEmpty(library?.contents) ? (
+      {isEmpty(library?.contents) && isEmpty(playlistsNotInLibrary) ? (
         <div className={cn(navColumnStyles.link, navColumnStyles.disabled)}>
           Create your first playlist!
         </div>
