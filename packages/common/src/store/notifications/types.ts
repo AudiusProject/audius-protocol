@@ -380,14 +380,8 @@ export type UserSubscriptionNotification = BaseNotification & {
   type: NotificationType.UserSubscription
   userId: ID
   entityIds: ID[]
-} & (
-    | {
-        entityType: Entity.Track
-      }
-    | {
-        entityType: Entity.Playlist | Entity.Album
-      }
-  )
+  entityType: Entity
+}
 
 export type FollowNotification = BaseNotification & {
   type: NotificationType.Follow
