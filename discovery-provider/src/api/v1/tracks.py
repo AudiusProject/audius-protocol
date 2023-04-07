@@ -460,6 +460,7 @@ class TrackStream(Resource):
             headers = {"Range": "bytes=0-1"}
             try:
                 response = requests.get(stream_url, headers=headers)
+                logger.info(f"asdf {stream_url} {response.status}")
                 if response.status == 200:
                     return stream_url
             except:
