@@ -4,6 +4,7 @@ import urllib.parse
 from typing import List
 from urllib.parse import urljoin
 
+import requests
 from flask import redirect
 from flask.globals import request
 from flask_restx import Namespace, Resource, fields, inputs, marshal_with, reqparse
@@ -426,7 +427,6 @@ class TrackStream(Resource):
             abort_not_found(track_id, ns)
 
         creator_nodes = creator_nodes.split(",")
-        primary_node = creator_nodes[0]
         request_args = stream_parser.parse_args()
 
         # signature for the track to be included as a query param in the redirect to CN
@@ -454,9 +454,17 @@ class TrackStream(Resource):
             path = f"tracks/stream/{track_id}"
         else:
             path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
-        stream_url = urljoin(primary_node, path)
 
-        return stream_url
+        for creator_node in creator_nodes:
+            stream_url = urljoin(creator_node, path)
+            headers = {"Range": "bytes=0-1"}
+            try:
+                response = requests.get(stream_url, headers=headers)
+                if response.status == 200:
+                    return stream_url
+            except:
+                pass
+        abort_not_found(track_id, ns)
 
 
 track_search_result = make_response(
