@@ -274,7 +274,8 @@ export const useNotificationNavigation = () => {
             { id: notification.entityIds[0] }
           )
         }
-      }
+      },
+      [NotificationType.Tastemaker]: entityHandler
     }),
     [
       dispatch,
