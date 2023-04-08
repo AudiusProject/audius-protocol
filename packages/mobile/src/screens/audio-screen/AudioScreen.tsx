@@ -10,8 +10,7 @@ import {
   walletSelectors,
   walletActions,
   getTierAndNumberForBalance,
-  modalsActions,
-  FeatureFlags
+  modalsActions
 } from '@audius/common'
 import { useFocusEffect } from '@react-navigation/native'
 import { Image, Linking, View } from 'react-native'
@@ -24,6 +23,7 @@ import IconDiscord from 'app/assets/images/iconDiscord.svg'
 import IconInfo from 'app/assets/images/iconInfo.svg'
 import IconReceive from 'app/assets/images/iconReceive.svg'
 import IconSend from 'app/assets/images/iconSend.svg'
+import IconWallet from 'app/assets/images/iconWallet.svg'
 import Bronze from 'app/assets/images/tokenBadgeBronze108.png'
 import Gold from 'app/assets/images/tokenBadgeGold108.png'
 import Platinum from 'app/assets/images/tokenBadgePlatinum108.png'
@@ -39,7 +39,7 @@ import {
   ScreenContent
 } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useFeatureFlag, useRemoteVar } from 'app/hooks/useRemoteConfig'
+import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
@@ -61,7 +61,7 @@ const messages = {
   totalAudio: 'Total $AUDIO',
   send: 'Send $AUDIO',
   receive: 'Receive $AUDIO',
-  connect: 'Connect Wallets',
+  manageWallet: 'Manage Wallets',
   rewards: 'Earn Rewards',
   rewardsBody1: 'Complete tasks to earn $AUDIO tokens!',
   trending: 'Trending Competitions',
@@ -174,9 +174,6 @@ export const AudioScreen = () => {
     useThemeColors()
   const dispatch = useDispatch()
   const navigation = useNavigation()
-  const { isEnabled: isMobileWalletConnectEnabled } = useFeatureFlag(
-    FeatureFlags.MOBILE_WALLET_CONNECT
-  )
   const audioFeaturesDegradedText = useRemoteVar(
     StringKeys.AUDIO_FEATURES_DEGRADED_TEXT
   )
@@ -261,15 +258,9 @@ export const AudioScreen = () => {
     )
   }, [dispatch])
 
-  const handlePressConnectWallets = useCallback(() => {
-    if (isMobileWalletConnectEnabled) {
-      navigation.navigate('WalletConnect')
-    } else {
-      dispatch(
-        setVisibility({ modal: 'MobileConnectWalletsDrawer', visible: true })
-      )
-    }
-  }, [isMobileWalletConnectEnabled, dispatch, navigation])
+  const handlePressManageWallets = useCallback(() => {
+    navigation.navigate('WalletConnect')
+  }, [navigation])
 
   const renderWalletTile = () => {
     return (
@@ -307,15 +298,17 @@ export const AudioScreen = () => {
           onPress={handlePressReceive}
         />
         <Button
-          title={messages.connect}
+          title={messages.manageWallet}
           styles={{
             root: styles.buttonRoot,
             text: styles.buttonText,
             button: styles.button
           }}
           variant='commonAlt'
+          iconPosition='left'
           size='medium'
-          onPress={handlePressConnectWallets}
+          icon={IconWallet}
+          onPress={handlePressManageWallets}
         />
       </Tile>
     )

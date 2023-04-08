@@ -11,7 +11,6 @@ import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
 import { CognitoDrawer } from 'app/components/cognito-drawer/CognitoDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
-import { ConnectWalletsDrawer } from 'app/components/connect-wallets-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
 import { DownloadTrackProgressDrawer } from 'app/components/download-track-progress-drawer'
@@ -86,7 +85,6 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   ChallengeRewardsExplainer: ChallengeRewardsDrawer,
   APIRewardsExplainer: ApiRewardsDrawer,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
-  MobileConnectWalletsDrawer: ConnectWalletsDrawer,
   MobileEditCollectiblesDrawer: EditCollectiblesDrawer,
   Share: ShareDrawer,
   ShareSoundToTikTok: ShareToTikTokDrawer,

@@ -1,7 +1,6 @@
 import {
   BNWei,
   tokenDashboardPageActions,
-  tokenDashboardPageSelectors,
   walletSelectors
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
@@ -15,15 +14,13 @@ import { useSelector } from 'utils/reducer'
 
 import styles from './WalletActionsTile.module.css'
 const { getAccountBalance } = walletSelectors
-const { getHasAssociatedWallets } = tokenDashboardPageSelectors
 const { pressReceive, pressSend, pressConnectWallets } =
   tokenDashboardPageActions
 
 const messages = {
   receiveLabel: 'RECEIVE $AUDIO',
   sendLabel: 'SEND $AUDIO',
-  manageWallets: 'Manage Wallets',
-  connectWallets: 'Connect Other Wallets'
+  manageWallets: 'Manage Wallets'
 }
 
 export const WalletActions = ({ className }: { className?: string }) => {
@@ -34,7 +31,6 @@ export const WalletActions = ({ className }: { className?: string }) => {
   const onClickReceive = () => dispatch(pressReceive())
   const onClickSend = () => dispatch(pressSend())
   const onClickConnectWallets = () => dispatch(pressConnectWallets())
-  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
 
   return (
     <div className={cn([styles.container, className])}>
@@ -60,9 +56,7 @@ export const WalletActions = ({ className }: { className?: string }) => {
       />
       <Button
         className={cn(styles.btn, styles.connectWalletsBtn)}
-        text={
-          hasMultipleWallets ? messages.manageWallets : messages.connectWallets
-        }
+        text={messages.manageWallets}
         includeHoverAnimations
         textClassName={styles.textClassName}
         onClick={onClickConnectWallets}
