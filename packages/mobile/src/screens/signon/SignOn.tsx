@@ -264,7 +264,6 @@ const messages = {
 
 const errorMessages = {
   invalidEmail: 'Please enter a valid email',
-  emailInUse: 'Email is already in use, please sign-in',
   emptyPassword: 'Please enter a password',
   default: 'Invalid Credentials'
 }
@@ -333,7 +332,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
 
   const signedIn = signOnStatus === 'success'
   const isSigninError = passwordField.error
-  const emailIsAvailable = emailField.error !== 'inUse'
   const emailIsValid = emailField.error !== 'characters'
 
   const topDrawer = useRef(new Animated.Value(-800)).current
@@ -404,7 +402,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
   useEffect(() => {
     if (
       (isSignin && isSigninError && showDefaultError) ||
-      (!isSignin && !emailIsAvailable && email !== '') ||
       showInvalidEmailError ||
       showEmptyPasswordError
     ) {
@@ -421,7 +418,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
     isSignin,
     isSigninError,
     showDefaultError,
-    emailIsAvailable,
     email,
     showInvalidEmailError,
     showEmptyPasswordError
@@ -462,26 +458,6 @@ const SignOn = ({ navigation }: SignOnProps) => {
           <ValidationIconX style={styles.errorIcon} />
           <Text style={styles.errorText}>{errorMessages.default}</Text>
         </Animated.View>
-      )
-    }
-    if (!isSignin && !emailIsAvailable && email !== '') {
-      return (
-        <TouchableOpacity style={styles.errorButton} onPress={switchForm}>
-          <Animated.View
-            style={[styles.errorContainer, { opacity: errorOpacity }]}
-          >
-            <ValidationIconX style={styles.errorIcon} />
-            <Text
-              style={[
-                styles.errorText,
-                { flex: 0, textDecorationLine: 'underline' }
-              ]}
-            >
-              {errorMessages.emailInUse}
-            </Text>
-            <Text style={[styles.errorText, { fontSize: 13 }]}> ➔</Text>
-          </Animated.View>
-        </TouchableOpacity>
       )
     }
     if (showInvalidEmailError) {
