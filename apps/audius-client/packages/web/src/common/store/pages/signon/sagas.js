@@ -15,7 +15,8 @@ import {
   MAX_HANDLE_LENGTH,
   PushNotificationSetting,
   getCityAndRegion,
-  processAndCacheUsers
+  processAndCacheUsers,
+  toastActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { isEmpty } from 'lodash'
@@ -56,6 +57,7 @@ const { getFeePayer } = solanaSelectors
 const { saveCollection } = collectionsSocialActions
 const { getUsers } = cacheUsersSelectors
 const getAccountUser = accountSelectors.getAccountUser
+const { toast } = toastActions
 
 const IS_PRODUCTION_BUILD = process.env.NODE_ENV === 'production'
 const IS_PRODUCTION = process.env.REACT_APP_ENVIRONMENT === 'production'
@@ -65,7 +67,8 @@ const SIGN_UP_TIMEOUT_MILLIS = 20 /* min */ * 60 * 1000
 
 const messages = {
   incompleteAccount:
-    'Oops, it looks like your account was never fully completed!'
+    'Oops, it looks like your account was never fully completed!',
+  emailCheckFailed: 'Something has gone wrong, please try again later.'
 }
 
 // Users ID to filter out of the suggested artists to follow list and to follow by default
@@ -277,7 +280,7 @@ function* checkEmail(action) {
       }
     }
   } catch (err) {
-    yield put(signOnActions.validateEmailFailed(err.message))
+    yield put(toast({ content: messages.emailCheckFailed }))
     if (action.onError) {
       yield call(action.onError)
     }
