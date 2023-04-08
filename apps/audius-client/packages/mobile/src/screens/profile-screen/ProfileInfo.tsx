@@ -21,27 +21,28 @@ import { useSelectProfile } from './selectors'
 const { getUserHandle } = accountSelectors
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
+  name: {
+    ...flexRowCentered(),
+    marginRight: spacing(2)
+  },
   username: {
     ...typography.h1,
-    color: palette.neutral
-  },
-  name: {
-    ...flexRowCentered()
+    color: palette.neutral,
+    flexShrink: 1
   },
   badges: {
     marginBottom: 6,
-    marginLeft: 2
+    marginLeft: 2,
+    flexGrow: 1
   },
   handleInfo: {
     marginTop: -6,
     flexDirection: 'row',
     alignItems: 'center',
     alignContent: 'center',
-    flexWrap: 'wrap',
-    maxWidth: 200
+    flexShrink: 1
   },
   handle: {
-    flexShrink: 0,
     marginRight: spacing(2),
     textAlignVertical: 'bottom'
   },
@@ -71,10 +72,15 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
     justifyContent: 'space-between',
     marginBottom: spacing(4)
   },
+  text: {
+    flexShrink: 1
+  },
   actionButtons: {
     flexDirection: 'row',
     position: 'relative',
-    alignSelf: 'flex-start'
+    justifyContent: 'flex-end',
+    alignSelf: 'flex-start',
+    flexGrow: 1
   },
   followButton: {
     width: 110
@@ -131,9 +137,13 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
 
   return (
     <View pointerEvents='box-none' style={styles.info}>
-      <View>
+      <View style={styles.text}>
         <View style={styles.name}>
-          <Text accessibilityRole='header' style={styles.username}>
+          <Text
+            accessibilityRole='header'
+            numberOfLines={1}
+            style={styles.username}
+          >
             {name}
           </Text>
           <UserBadges
@@ -145,7 +155,9 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
         </View>
         <View style={styles.handleInfo}>
           <View style={styles.handle}>
-            <Text style={styles.handleText}>@{handle}</Text>
+            <Text style={styles.handleText} numberOfLines={1}>
+              @{handle}
+            </Text>
           </View>
           {does_follow_current_user ? <FollowsYouChip /> : null}
         </View>
