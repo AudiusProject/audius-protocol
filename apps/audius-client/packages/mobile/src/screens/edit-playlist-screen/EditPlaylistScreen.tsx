@@ -146,11 +146,8 @@ export const EditPlaylistScreen = () => {
 
   if (!playlist) return null
 
-  const { playlist_name, description } = playlist
-
   const initialValues = {
-    playlist_name,
-    description,
+    ...playlist,
     artwork: {
       url:
         trackImage && isImageUriSource(trackImage.source)
