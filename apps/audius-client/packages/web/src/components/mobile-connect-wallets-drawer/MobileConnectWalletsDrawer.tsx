@@ -4,7 +4,7 @@ import Drawer from 'components/drawer/Drawer'
 import styles from './MobileConnectWalletsDrawer.module.css'
 
 const messages = {
-  title: 'Connect Wallets',
+  title: 'Manage Wallets',
   visit:
     'To connect additional wallets please visit audius.co from a desktop browser'
 }

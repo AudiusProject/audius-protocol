@@ -54,7 +54,6 @@ const messages = {
   transactionsLabel: 'View Transactions',
   audio: '$AUDIO',
   manageWallets: 'Manage Wallets',
-  connectWallets: 'Connect Other Wallets',
   totalAudio: 'Total $AUDIO',
   buyAudio: 'Buy $AUDIO',
   buyAudioSubheader:
@@ -118,7 +117,6 @@ const AdvancedWalletActions = () => {
     setOpen(false)
   }, [setOpen])
 
-  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
   return (
     <div className={styles.moreOptionsSection}>
       <div className={styles.subtitle}>{messages.advancedOptions}</div>
@@ -158,11 +156,7 @@ const AdvancedWalletActions = () => {
         )}
         <Button
           className={cn(styles.advancedButton, styles.manageWalletsButton)}
-          text={
-            hasMultipleWallets
-              ? messages.manageWallets
-              : messages.connectWallets
-          }
+          text={messages.manageWallets}
           includeHoverAnimations
           textClassName={styles.textClassName}
           onClick={onClickConnectWallets}

@@ -33,7 +33,6 @@ const messages = {
   sendLabel: 'SEND $AUDIO',
   audio: '$AUDIO',
   manageWallets: 'Manage Wallets',
-  connectWallets: 'Connect Other Wallets',
   totalAudio: 'Total $AUDIO'
 }
 
@@ -120,8 +119,6 @@ export const WalletTile = ({ className }: { className?: string }) => {
     setOpen(false)
   }, [setOpen])
 
-  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
-
   return (
     <Tile className={cn([styles.walletTile, className])}>
       <>
@@ -148,11 +145,7 @@ export const WalletTile = ({ className }: { className?: string }) => {
           />
           <Button
             className={cn(styles.balanceBtn, styles.connectWalletsBtn)}
-            text={
-              hasMultipleWallets
-                ? messages.manageWallets
-                : messages.connectWallets
-            }
+            text={messages.manageWallets}
             includeHoverAnimations
             textClassName={styles.textClassName}
             onClick={onClickConnectWallets}

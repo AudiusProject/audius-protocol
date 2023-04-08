@@ -38,7 +38,6 @@ import SendingModalBody from './components/SendingModalBody'
 import ModalDrawer from './components/modals/ModalDrawer'
 const { getAccountBalance } = walletSelectors
 const {
-  getHasAssociatedWallets,
   getAssociatedWallets,
   getModalState,
   getModalVisible,
@@ -57,7 +56,6 @@ const messages = {
   sending: 'Your $AUDIO is Sending',
   sent: 'Your $AUDIO Has Been Sent',
   sendError: 'Uh oh! Something went wrong sending your $AUDIO.',
-  connectOtherWallets: 'Connect Other Wallets',
   manageWallets: 'Manage Wallets',
   removeWallets: 'Remove Wallet',
   awaitConvertingEthToSolAudio: 'Hold On a Moment'
@@ -78,20 +76,9 @@ export const TitleWrapper = ({
   )
 }
 
-const AddWalletTitle = () => {
-  const hasMultipleWallets = useSelector(getHasAssociatedWallets)
-  return (
-    <>
-      {hasMultipleWallets
-        ? messages.manageWallets
-        : messages.connectOtherWallets}
-    </>
-  )
-}
-
 const titlesMap = {
   CONNECT_WALLETS: {
-    ADD_WALLET: () => <AddWalletTitle />,
+    ADD_WALLET: () => messages.manageWallets,
     REMOVE_WALLET: () => messages.removeWallets,
     ERROR: () => messages.sendError
   },
