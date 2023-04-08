@@ -250,7 +250,6 @@ const TrackTile = ({
           <div
             className={cn(
               styles.titleRow,
-              styles.title,
               isPremium ? styles.withPremium : null
             )}
           >
