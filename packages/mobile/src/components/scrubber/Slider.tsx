@@ -106,7 +106,7 @@ type SliderProps = {
  * independently in such a way where dragging the Slider does not cause
  * re-renders of itself, despite having to update external timestamps on "drag."
  */
-export const Slider = memo((props: SliderProps) => {
+export const Slider = memo(function Slider(props: SliderProps) {
   const {
     mediaKey,
     isPlaying,

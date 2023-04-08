@@ -51,7 +51,6 @@ export const LineupTile = ({
   showRankIcon,
   title,
   item,
-  uid,
   user,
   isPlayingUid,
   TileProps
@@ -131,7 +130,6 @@ export const LineupTile = ({
           coSign={coSign}
           renderImage={renderImage}
           onPressTitle={onPressTitle}
-          uid={uid}
           title={title}
           user={user}
           isPlayingUid={isPlayingUid}

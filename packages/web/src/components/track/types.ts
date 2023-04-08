@@ -116,17 +116,20 @@ export type DesktopTrackTileProps = {
   /** If there is nothing underneath, it's standalone */
   standalone?: boolean
 
-  /** If the track is currently playing */
+  /** If the track is currently active */
   isActive: boolean
 
   /** If the button actions should be clickable */
   isDisabled?: boolean
 
-  /** If the track is unlisted/hidden */
-  isUnlisted?: boolean
+  /** If the track is playing */
+  isPlaying?: boolean
 
   /** If the track is premium */
   isPremium?: boolean
+
+  /** If the track is unlisted/hidden */
+  isUnlisted?: boolean
 
   /** Premium conditions if track is premium */
   premiumConditions?: Nullable<PremiumConditions>
@@ -232,8 +235,11 @@ export type DesktopPlaylistTileProps = {
   /** Prefix order number displayed on the left side of the track tile */
   order?: number
 
-  /** If the track is currently playing */
+  /** If the playlist is currently active */
   isActive: boolean
+
+  /** If the playlist is currently playing */
+  isPlaying: boolean
 
   /** If the button actions should be clickable */
   isDisabled?: boolean
