@@ -45,7 +45,7 @@ const selectFirstTrack = (state: AppState) =>
   getCollectionTracksLineup(state).entries[0]
 
 const selectTrackCount = (state: AppState) => {
-  return getCollectionTracksLineup(state).total
+  return getCollectionTracksLineup(state).entries.length
 }
 
 const selectIsLineupLoading = (state: AppState) => {
