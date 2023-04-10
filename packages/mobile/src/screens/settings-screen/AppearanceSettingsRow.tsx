@@ -10,7 +10,7 @@ import {
 import Config from 'react-native-config'
 import { useDispatch, useSelector } from 'react-redux'
 
-import IconMood from 'app/assets/images/iconMood.svg'
+import IconAppearance from 'app/assets/images/iconAppearance.svg'
 import { SegmentedControl } from 'app/components/core'
 import { make, track } from 'app/services/analytics'
 import { Theme } from 'app/utils/theme'
@@ -71,7 +71,7 @@ export const AppearanceSettingsRow = () => {
 
   return (
     <SettingsRow>
-      <SettingsRowLabel label={messages.appearance} icon={IconMood} />
+      <SettingsRowLabel label={messages.appearance} icon={IconAppearance} />
       <SettingsRowDescription>
         {messages.appearanceDescription}
       </SettingsRowDescription>

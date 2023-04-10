@@ -1,16 +1,16 @@
 import type { ComponentType } from 'react'
 
-import type { ImageSourcePropType, TextStyle, ViewStyle } from 'react-native'
-import { Text, View, Image } from 'react-native'
-import type { SvgProps } from 'react-native-svg'
+import type { TextStyle, ViewStyle } from 'react-native'
+import { View } from 'react-native'
 
+import { Text } from 'app/components/core'
 import type { StylesProps } from 'app/styles'
 import { makeStyles } from 'app/styles'
-import { useThemeColors } from 'app/utils/theme'
+import type { SvgProps } from 'app/types/svg'
+import { useThemePalette } from 'app/utils/theme'
 
-const useStyles = makeStyles(({ typography, palette, spacing }) => ({
+const useStyles = makeStyles(({ spacing }) => ({
   root: { flexDirection: 'row', alignItems: 'center' },
-  label: { ...typography.h4, color: palette.neutral, marginBottom: 0 },
   icon: {
     height: spacing(4),
     width: spacing(4),
@@ -18,47 +18,35 @@ const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   }
 }))
 
-type BaseProps = {
+type SettingsRowLabelProps = {
   label: string
+  icon?: ComponentType<SvgProps>
 } & StylesProps<{ root?: ViewStyle; label: TextStyle }>
 
-type SettingsRowLabelProps =
-  | BaseProps
-  | (BaseProps & {
-      iconSource: ImageSourcePropType
-    })
-  | (BaseProps & {
-      icon: ComponentType<SvgProps>
-    })
-
 export const SettingsRowLabel = (props: SettingsRowLabelProps) => {
-  const { label, styles: stylesProp, style } = props
-  const { neutralLight4 } = useThemeColors()
+  const { label, styles: stylesProp, style, icon: Icon } = props
+  const palette = useThemePalette()
   const styles = useStyles()
-
-  const renderIcon = () => {
-    if ('iconSource' in props) {
-      const { iconSource } = props
-      return <Image style={styles.icon} source={iconSource} />
-    }
-    if ('icon' in props) {
-      const { icon: Icon } = props
-      return (
-        <Icon
-          height={styles.icon.height}
-          width={styles.icon.width}
-          fill={neutralLight4}
-          style={styles.icon}
-        />
-      )
-    }
-    return null
-  }
 
   return (
     <View style={[styles.root, style, stylesProp?.root]}>
-      {renderIcon()}
-      <Text style={[styles.label, stylesProp?.label]}>{label}</Text>
+      {Icon ? (
+        <Icon
+          height={styles.icon.height}
+          width={styles.icon.width}
+          fill={palette.neutral}
+          fillSecondary={palette.white}
+          style={styles.icon}
+        />
+      ) : null}
+      <Text
+        fontSize='small'
+        weight='demiBold'
+        color='neutral'
+        style={stylesProp?.label}
+      >
+        {label}
+      </Text>
     </View>
   )
 }

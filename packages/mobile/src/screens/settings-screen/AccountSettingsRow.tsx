@@ -14,7 +14,7 @@ import { SettingsRow } from './SettingsRow'
 const getAccountUser = accountSelectors.getAccountUser
 
 const useStyles = makeStyles(({ typography, spacing, palette }) => ({
-  root: { paddingVertical: spacing(5) },
+  root: { paddingVertical: spacing(4) },
   content: { flexDirection: 'row', alignItems: 'center' },
   profilePicture: { height: 52, width: 52 },
   info: { marginLeft: spacing(4) },

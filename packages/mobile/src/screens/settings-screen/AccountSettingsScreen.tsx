@@ -10,14 +10,11 @@ import {
 import { Text, View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
-import Door from 'app/assets/images/emojis/door.png'
-import Key from 'app/assets/images/emojis/key.png'
-import Lock from 'app/assets/images/emojis/lock.png'
-import StopSign from 'app/assets/images/emojis/octagonal-sign.png'
-import Checkmark from 'app/assets/images/emojis/white-heavy-check-mark.png'
-import IconMail from 'app/assets/images/iconMail.svg'
-import IconRemove from 'app/assets/images/iconRemove.svg'
+import IconKey from 'app/assets/images/iconKey.svg'
+import IconRecoveryEmail from 'app/assets/images/iconRecoveryEmail.svg'
 import IconSignOut from 'app/assets/images/iconSignOut.svg'
+import IconSkull from 'app/assets/images/iconSkull.svg'
+import IconUser from 'app/assets/images/iconUser.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { ScrollView, Screen, ScreenContent } from 'app/components/core'
 import { ProfilePicture } from 'app/components/user'
@@ -38,30 +35,28 @@ const messages = {
   recoveryTitle: 'Recovery Email',
   recoveryDescription:
     'Store your recovery email safely. This email is the only way to recover your account if you forget your password.',
-  recoveryButtonTitle: 'Resend',
+  recoveryButtonTitle: 'Resend Recovery Email',
   recoveryEmailSent: 'Recovery Email Sent!',
   recoveryEmailNotSent: 'Unable to send recovery email. Please try again!',
-  verifyTitle: 'Get Verified',
+  verifyTitle: 'Verification',
   verifyDescription:
-    'Get verified by linking a verified social account to Audius',
-  verifyButtonTitle: 'Verification',
+    'Verify your Audius profile by linking a verified account from Twitter, Instagram, or TikTok.',
+  verifyButtonTitle: 'Get Verified!',
   passwordTitle: 'Change Password',
-  passwordDescription: 'Change your password',
-  passwordButtonTitle: 'Change',
-  deactivateAccountTitle: 'Delete Account',
-  deactivateAccountDescription: 'Delete your account. This cannot be undone',
-  deactivateAccountButtonTitle: 'Delete',
+  passwordDescription: 'Change the password to your Audius account.',
+  passwordButtonTitle: 'Change Password',
   signOutTitle: 'Sign Out',
-  signOutDescription:
-    'Make sure you have your account recovery email stored somewhere safe before signing out!',
-  signOutButtonTitle: 'Sign Out'
+  signOutDescription: 'Sign out of your Audius Account.',
+  signOutButtonTitle: 'Sign Out',
+  deleteAccountTitle: 'Delete Account',
+  deleteAccountDescription: 'Delete your account. This cannot be undone',
+  deleteAccountButtonTitle: 'Delete Account'
 }
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   header: {
     alignItems: 'center',
-    paddingTop: spacing(12),
-    paddingBottom: spacing(6)
+    paddingVertical: spacing(8)
   },
   profilePhoto: {
     height: 128,
@@ -119,7 +114,12 @@ export const AccountSettingsScreen = () => {
   const { name, handle } = accountUser
 
   return (
-    <Screen title={messages.title} topbarRight={null} variant='secondary'>
+    <Screen
+      title={messages.title}
+      icon={IconUser}
+      topbarRight={null}
+      variant='secondary'
+    >
       <ScreenContent>
         <ScrollView>
           <View style={styles.header}>
@@ -129,43 +129,38 @@ export const AccountSettingsScreen = () => {
           </View>
           <AccountSettingsItem
             title={messages.recoveryTitle}
-            titleIconSource={Key}
+            titleIcon={IconRecoveryEmail}
             description={messages.recoveryDescription}
             buttonTitle={messages.recoveryButtonTitle}
-            buttonIcon={IconMail}
             onPress={handlePressRecoveryEmail}
           />
           <AccountSettingsItem
             title={messages.verifyTitle}
-            titleIconSource={Checkmark}
+            titleIcon={IconVerified}
             description={messages.verifyDescription}
             buttonTitle={messages.verifyButtonTitle}
-            buttonIcon={IconVerified}
             onPress={handlePressVerification}
           />
           <AccountSettingsItem
             title={messages.passwordTitle}
-            titleIconSource={Lock}
+            titleIcon={IconKey}
             description={messages.passwordDescription}
             buttonTitle={messages.passwordButtonTitle}
-            buttonIcon={IconMail}
             onPress={handlePressChangePassword}
           />
           <AccountSettingsItem
-            title={messages.deactivateAccountTitle}
-            titleIconSource={Door}
-            description={messages.deactivateAccountDescription}
-            buttonTitle={messages.deactivateAccountButtonTitle}
-            buttonIcon={IconRemove}
-            onPress={openDeactivateAccountDrawer}
-          />
-          <AccountSettingsItem
             title={messages.signOutTitle}
-            titleIconSource={StopSign}
+            titleIcon={IconSignOut}
             description={messages.signOutDescription}
             buttonTitle={messages.signOutButtonTitle}
-            buttonIcon={IconSignOut}
             onPress={openSignOutDrawer}
+          />
+          <AccountSettingsItem
+            title={messages.deleteAccountTitle}
+            titleIcon={IconSkull}
+            description={messages.deleteAccountDescription}
+            buttonTitle={messages.deleteAccountButtonTitle}
+            onPress={openDeactivateAccountDrawer}
           />
         </ScrollView>
       </ScreenContent>
