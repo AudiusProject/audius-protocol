@@ -88,6 +88,7 @@
     "formik": "2.2.9",
     "fxa-common-password-list": "0.0.4",
     "jimp": "0.14.0",
+    "linkifyjs": "4.1.0",
     "lodash.samplesize": "4.2.0",
     "lottie-react-native": "5.1.4",
     "module": "1.2.5",

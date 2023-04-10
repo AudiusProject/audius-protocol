@@ -38,7 +38,7 @@ type PositionedLink = {
 }
 
 export type HyperlinkProps = ComponentProps<typeof Autolink> & {
-  source: 'profile page' | 'track page' | 'collection page'
+  source?: 'profile page' | 'track page' | 'collection page'
   // Pass touches through text elements
   allowPointerEventsToPassThrough?: boolean
   styles?: StylesProp<{ root: TextStyle; link: TextStyle }>
