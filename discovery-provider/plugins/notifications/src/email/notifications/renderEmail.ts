@@ -7,10 +7,10 @@ import {
   EmailNotification
 } from '../../types/notifications'
 import { renderNotificationsEmail } from './components/index'
-import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { Knex } from 'knex'
 import { mapNotifications } from '../../processNotifications/mappers/mapNotifications'
 import { BaseNotification } from '../../processNotifications/mappers/base'
+import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
 
 type RenderEmailProps = {
   userId: number

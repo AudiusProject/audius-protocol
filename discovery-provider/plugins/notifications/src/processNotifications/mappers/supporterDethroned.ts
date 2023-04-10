@@ -1,10 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
 import { SupporterDethronedNotification } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { capitalize } from '../../email/notifications/components/utils'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type SupporterDethronedNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupporterDethronedNotification
@@ -54,25 +58,29 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       return
     }
 
-    const userNotifications = await super.getShouldSendNotification(
-      this.dethronedUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.senderUserId, this.dethronedUserId]
     )
     const newTopSupporterHandle = users[this.senderUserId]?.handle
     const supportedUserName = users[this.receiverUserId]?.name
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.dethronedUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        initiatorUserId: this.senderUserId,
+        receiverUserId: this.dethronedUserId
+      })
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[this.dethronedUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.dethronedUserId
+      )
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.dethronedUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(this.dethronedUserId) + 1,
               targetARN: device.awsARN
             },
             {
@@ -94,7 +102,12 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       )
       await this.incrementBadgeCount(this.dethronedUserId)
     }
-    if (userNotifications.email) {
+    if (
+      userNotificationSettings.shouldSendEmail({
+        initiatorUserId: this.senderUserId,
+        receiverUserId: this.dethronedUserId
+      })
+    ) {
       // TODO: Send out email
     }
   }

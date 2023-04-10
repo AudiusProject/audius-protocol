@@ -1,11 +1,11 @@
 import { renderEmail } from './renderEmail'
 
 import { EmailNotification } from '../../types/notifications'
-import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { logger } from '../../logger'
 import { getSendgrid } from '../../sendgrid'
 import { MailDataRequired } from '@sendgrid/mail'
 import { Knex } from 'knex'
+import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
 
 // Sendgrid object
 

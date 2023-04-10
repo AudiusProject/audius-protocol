@@ -1,5 +1,4 @@
 import { Knex } from 'knex'
-import { BaseNotification, EmailFrequency } from '../processNotifications/mappers/base'
 import {
   RepostRow,
   FollowRow,
@@ -30,6 +29,7 @@ import { expect, jest } from '@jest/globals'
 import { Processor } from '../main'
 import { getRedisConnection } from './redisConnection'
 import { config } from '../config'
+import { EmailFrequency } from '../processNotifications/mappers/userNotificationSettings'
 
 type SetupTestConfig = {
   mockTime?: boolean
@@ -609,6 +609,12 @@ export async function insertMobileDevices(
       }))
     )
     .into('NotificationDeviceTokens')
+  await insertAbusiveSettings(
+    db,
+    mobileDevices.map((device) =>
+      createAbusiveSettingForUser(device.userId, false, false, true)
+    )
+  )
 }
 
 type MobileSetting = Pick<UserNotificationMobileSettingRow, 'userId'> &
@@ -627,6 +633,42 @@ export async function insertMobileSettings(
       }))
     )
     .into('UserNotificationMobileSettings')
+}
+
+export function createAbusiveSettingForUser(
+  blockchainUserId,
+  isBlockedFromRelay,
+  isBlockedFromNotifications,
+  isEmailDeliverable
+) {
+  return {
+    blockchainUserId,
+    isBlockedFromRelay,
+    isBlockedFromNotifications,
+    isEmailDeliverable
+  }
+}
+
+export async function insertAbusiveSettings(
+  db: Knex,
+  abusiveSettings: {
+    blockchainUserId: number
+    isBlockedFromRelay: boolean
+    isBlockedFromNotifications: boolean
+    isEmailDeliverable: boolean
+  }[]
+) {
+  await db
+    .insert(
+      abusiveSettings.map((setting) => ({
+        email: 'fake_email@audius.co',
+        lastSeenDate: new Date(Date.now()).toISOString(),
+        createdAt: new Date(Date.now()).toISOString(),
+        updatedAt: new Date(Date.now()).toISOString(),
+        ...setting
+      }))
+    )
+    .into('Users')
 }
 
 export type UserWithDevice = {
