@@ -385,6 +385,12 @@ stream_parser.add_argument(
         user signature and the user for whom the DN signed are the same.""",
     type=str,
 )
+stream_parser.add_argument(
+    "filename",
+    description="""Optional - Filename in case user is trying to download track.
+        This is needed by the CN in order to set the Content-Disposition response header.""",
+    type=str,
+)
 
 
 def tranform_stream_cache(stream_url):
@@ -424,7 +430,7 @@ class TrackStream(Resource):
 
         track_cid = track["track_cid"]
         if not track_cid:
-            logger.warning(
+            logger.error(
                 f"tracks.py | stream | We should not reach here! Track with id {track_id} has no track_cid. Please investigate."
             )
             abort_not_found(track_id, ns)
@@ -450,7 +456,7 @@ class TrackStream(Resource):
         signature_param = urllib.parse.quote(json.dumps(signature))
         path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
 
-        # Grab filemame in case the user is requesting track download
+        # Grab filename in case the user is requesting track download
         filename = request_args.get("filename", None)
         if filename:
             path = f"{path}&filename={filename}"
