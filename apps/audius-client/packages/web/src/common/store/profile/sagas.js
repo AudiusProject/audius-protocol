@@ -96,7 +96,7 @@ function* fetchProfileCustomizedCollectibles(user) {
           {
             id: user.user_id,
             metadata: {
-              ...metadata,
+              collectibles: metadata.collectibles,
               collectiblesOrderUnset: false
             }
           }
@@ -108,7 +108,6 @@ function* fetchProfileCustomizedCollectibles(user) {
           {
             id: user.user_id,
             metadata: {
-              ...metadata,
               collectiblesOrderUnset: true
             }
           }
