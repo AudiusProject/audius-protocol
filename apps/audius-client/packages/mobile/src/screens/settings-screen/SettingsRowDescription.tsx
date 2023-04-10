@@ -5,7 +5,8 @@ import { makeStyles } from 'app/styles'
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   root: {
-    ...typography.body,
+    ...typography.body2,
+    lineHeight: 19,
     color: palette.neutralLight2,
     marginVertical: spacing(2)
   }

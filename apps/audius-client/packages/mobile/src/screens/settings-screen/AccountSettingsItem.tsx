@@ -1,6 +1,5 @@
 import type { ComponentType } from 'react'
 
-import type { ImageSourcePropType } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
 import { Button } from 'app/components/core'
@@ -12,44 +11,29 @@ import { SettingsRowDescription } from './SettingsRowDescription'
 
 type AccountSettingsItemProps = {
   title: string
-  titleIconSource: ImageSourcePropType
+  titleIcon: ComponentType<SvgProps>
   description: string
   buttonTitle: string
-  buttonIcon: ComponentType<SvgProps>
   onPress?: () => void
 }
 
-const useStyles = makeStyles(({ palette, spacing }) => ({
-  root: {
-    marginBottom: spacing(6)
-  },
+const useStyles = makeStyles(({ spacing }) => ({
   button: {
-    marginVertical: spacing(2)
-  },
-  buttonIcon: {
-    marginRight: spacing(3)
+    marginTop: spacing(2)
   }
 }))
 
 export const AccountSettingsItem = (props: AccountSettingsItemProps) => {
-  const {
-    title,
-    titleIconSource,
-    description,
-    buttonTitle,
-    buttonIcon,
-    onPress
-  } = props
+  const { title, titleIcon, description, buttonTitle, onPress } = props
   const styles = useStyles()
 
   return (
-    <SettingsRow style={styles.root}>
-      <SettingsRowLabel label={title} iconSource={titleIconSource} />
+    <SettingsRow>
+      <SettingsRowLabel label={title} icon={titleIcon} />
       <SettingsRowDescription>{description}</SettingsRowDescription>
       <Button
-        styles={{ root: styles.button, icon: styles.buttonIcon }}
+        style={styles.button}
         title={buttonTitle}
-        icon={buttonIcon}
         iconPosition='left'
         variant='commonAlt'
         fullWidth

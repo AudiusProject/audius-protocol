@@ -10,7 +10,7 @@ import { useThemeColors } from 'app/utils/theme'
 
 const useStyles = makeStyles(({ palette, spacing }) => ({
   firstItem: {
-    borderTopColor: palette.neutralLight8,
+    borderTopColor: palette.neutralLight7,
     borderTopWidth: 1
   },
   root: {
@@ -23,7 +23,7 @@ const useStyles = makeStyles(({ palette, spacing }) => ({
     alignItems: 'center',
     paddingVertical: spacing(3),
     paddingHorizontal: spacing(5),
-    borderBottomColor: palette.neutralLight8,
+    borderBottomColor: palette.neutralLight7,
     borderBottomWidth: 1
   },
   content: {

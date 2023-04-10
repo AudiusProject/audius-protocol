@@ -24,21 +24,24 @@ import { CastSettingsRow } from './CastSettingsRow'
 import { Divider } from './Divider'
 import { SettingsRowLabel } from './SettingRowLabel'
 import { SettingsRow } from './SettingsRow'
+import { SettingsRowDescription } from './SettingsRowDescription'
 
 const IS_IOS = Platform.OS === 'ios'
 
 const messages = {
   title: 'Settings',
   inbox: 'Inbox Settings',
-  downloads: 'Download Settings',
+  inboxDescription: 'Configure who is able to send messages to your inbox.',
   notifications: 'Configure Notifications',
+  notificationsDescription: 'Review your notification preferences.',
+  downloads: 'Download Settings',
   about: 'About'
 }
 
 const useStyles = makeStyles(({ spacing, palette, type }) => ({
   logo: {
-    width: '80%',
-    height: 85,
+    width: 200,
+    height: 48,
     marginVertical: spacing(6),
     alignSelf: 'center',
     resizeMode: 'contain',
@@ -85,11 +88,25 @@ export const SettingsScreen = () => {
           <Image source={audiusLogoHorizontal} style={styles.logo} />
           <AccountSettingsRow />
           <Divider />
+          <AppearanceSettingsRow />
           {isChatEnabled ? (
             <SettingsRow onPress={handlePressInbox}>
               <SettingsRowLabel label={messages.inbox} icon={IconMessage} />
+              <SettingsRowDescription>
+                {messages.inboxDescription}
+              </SettingsRowDescription>
             </SettingsRow>
           ) : null}
+          <SettingsRow onPress={handlePressNotifications}>
+            <SettingsRowLabel
+              label={messages.notifications}
+              icon={IconNotificationOn}
+            />
+            <SettingsRowDescription>
+              {messages.notificationsDescription}
+            </SettingsRowDescription>
+          </SettingsRow>
+          {IS_IOS ? <CastSettingsRow /> : null}
           {isOfflineDownloadEnabled ? (
             <SettingsRow onPress={handlePressDownloads}>
               <SettingsRowLabel
@@ -98,14 +115,6 @@ export const SettingsScreen = () => {
               />
             </SettingsRow>
           ) : null}
-          <SettingsRow onPress={handlePressNotifications}>
-            <SettingsRowLabel
-              label={messages.notifications}
-              icon={IconNotificationOn}
-            />
-          </SettingsRow>
-          <AppearanceSettingsRow />
-          {IS_IOS ? <CastSettingsRow /> : null}
           <Divider />
           <SettingsRow onPress={handlePressAbout}>
             <SettingsRowLabel label={messages.about} icon={IconInfo} />
