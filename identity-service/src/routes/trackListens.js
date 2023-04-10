@@ -389,11 +389,11 @@ module.exports = function (app) {
       req.logger.info(
         `TrackListen userId=${userId} ip=${ip} isWhitelisted=${isWhitelisted}`
       )
-      if (!isWhitelisted) {
-        // skip any client requests since
-        // content nodes also log a listen
-        return successResponse()
-      }
+      // if (!isWhitelisted) {
+      //   // skip any client requests since
+      //   // content nodes also log a listen
+      //   return successResponse()
+      // }
       // Example key format = listens-tx-success::2022-01-25T21:00:00.000Z
       const trackingRedisKeys = getTrackingListenKeys(suffix)
       await initializeExpiringRedisKey(
