@@ -3,6 +3,7 @@ import { memo, useCallback } from 'react'
 import type { ReactionTypes, ChatMessageWithExtras } from '@audius/common'
 import {
   accountSelectors,
+  chatSelectors,
   decodeHashId,
   formatMessageDate
 } from '@audius/common'
@@ -23,6 +24,7 @@ import { LinkPreview } from './LinkPreview'
 import { REACTION_LONGPRESS_DELAY } from './constants'
 
 const { getUserId } = accountSelectors
+const { isIdEqualToReactionsPopupMessageId } = chatSelectors
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   rootOtherUser: {
@@ -159,6 +161,10 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
   const userId = useSelector(getUserId)
   const senderUserId = decodeHashId(message.sender_user_id)
   const isAuthor = senderUserId === userId
+  const isUnderneathPopup =
+    useSelector((state) =>
+      isIdEqualToReactionsPopupMessageId(state, message.message_id)
+    ) && !isPopup
 
   const handleLongPress = useCallback(() => {
     onLongPress?.(message.message_id)
@@ -218,7 +224,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
             </View>
             {message.reactions?.length > 0 ? (
               <>
-                {!isPopup ? (
+                {!isUnderneathPopup ? (
                   <View
                     style={[
                       styles.reactionContainer,

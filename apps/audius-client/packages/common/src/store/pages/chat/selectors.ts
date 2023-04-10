@@ -130,3 +130,14 @@ export const getChatMessageById = (
   const chatMessagesState = state.pages.chat.messages[chatId]
   return selectById(chatMessagesState, messageId)
 }
+
+export const getReactionsPopupMessageId = (state: CommonState) => {
+  return state.pages.chat.reactionsPopupMessageId
+}
+
+export const isIdEqualToReactionsPopupMessageId = (
+  state: CommonState,
+  messageId: string
+) => {
+  return messageId === getReactionsPopupMessageId(state)
+}
