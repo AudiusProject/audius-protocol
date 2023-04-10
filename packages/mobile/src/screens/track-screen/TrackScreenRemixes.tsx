@@ -21,7 +21,7 @@ type TrackScreenRemixesProps = {
   count: number | null
 }
 
-const useStyles = makeStyles(({ palette, spacing, typography }) => ({
+const useStyles = makeStyles(({ palette, spacing }) => ({
   root: {
     marginBottom: spacing(6)
   },
