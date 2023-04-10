@@ -336,6 +336,14 @@
   margin-right: 10px;
 }
 
+.verifiedGreenIcon path:nth-child(1) {
+  fill: var(--accent-green);
+}
+
+.verifiedGreenIcon path:nth-child(2) {
+  fill: var(--static-white);
+}
+
 .bottomSection {
   padding: 20px 24px 20px;
   border-top: 1px solid var(--neutral-light-8);

@@ -154,7 +154,7 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
   const styles = useStyles()
   const dispatch = useDispatch()
   const { toast } = useToast()
-  const { neutralLight4, staticWhite } = useThemeColors()
+  const { neutralLight4, staticWhite, staticPrimary } = useThemeColors()
   const twitterInfo = useSelector(getTwitterInfo)
   const twitterError = useSelector(getTwitterError)
   const instagramInfo = useSelector(getInstagramInfo)
@@ -475,6 +475,8 @@ const ProfileAuto = ({ navigation }: ProfileAutoProps) => {
                   height={24}
                   width={24}
                   style={styles.verifiedIcon}
+                  fill={staticPrimary}
+                  fillSecondary={staticWhite}
                 />
                 <Text variant={'h4'} noGutter style={styles.tileListItemText}>
                   {messages.verifiedTileContent}

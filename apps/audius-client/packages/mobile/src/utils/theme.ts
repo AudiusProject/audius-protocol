@@ -55,6 +55,7 @@ export const defaultTheme = {
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
   staticAccentGreenLight1: '#23AD1A',
+  staticPrimary: '#CC0FE0',
   staticSecondary: '#7E1BCC',
   pageHeaderGradientColor1: '#5B23E1',
   pageHeaderGradientColor2: '#A22FEB',
@@ -111,6 +112,7 @@ export const darkTheme = {
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
   staticAccentGreenLight1: '#23AD1A',
+  staticPrimary: '#CC0FE0',
   staticSecondary: '#7E1BCC',
   pageHeaderGradientColor1: '#7652CC',
   pageHeaderGradientColor2: '#B05CE6',
@@ -158,6 +160,7 @@ export const matrixTheme = {
   staticNeutralLight2: '#AAA7B8',
   staticNeutralLight8: '#F2F2F4',
   staticAccentGreenLight1: '#23AD1A',
+  staticPrimary: '#CC0FE0',
   staticSecondary: '#7E1BCC',
   pageHeaderGradientColor1: '#4FF069',
   pageHeaderGradientColor2: '#09BD51',
@@ -217,6 +220,7 @@ export type ThemeColors = {
   staticNeutralLight2: string
   staticNeutralLight8: string
   staticAccentGreenLight1: string
+  staticPrimary: string
   staticSecondary: string
   pageHeaderGradientColor1: string
   pageHeaderGradientColor2: string
