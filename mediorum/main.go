@@ -118,7 +118,7 @@ func startDevCluster() {
 	dbUrlTemplate := getenvWithDefault("dbUrlTemplate", "postgres://postgres:example@localhost:5454/m%d")
 	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
 
-	network := devNetwork(hostNameTemplate, 3)
+	network := devNetwork(hostNameTemplate, 5)
 	wg := sync.WaitGroup{}
 
 	for idx, peer := range network {

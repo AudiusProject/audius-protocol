@@ -217,6 +217,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/blobs/:cid", ss.getBlob)
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
+	// WIP internal: metrics
+	internalApi.GET("/metrics", ss.getMetrics)
+
 	// reverse proxy stuff
 	if config.Env == "stage" || config.Env == "prod" {
 		upstream, _ := url.Parse("http://server:4000")

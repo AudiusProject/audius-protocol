@@ -58,6 +58,29 @@ func (ss *MediorumServer) findProblemBlobs(overReplicated bool) ([]ProblemBlob, 
 	return problems, err
 }
 
+func (ss *MediorumServer) findProblemBlobsCount(overReplicated bool) (int64, error) {
+
+	comparator := "<"
+	if overReplicated {
+		comparator = ">"
+	}
+
+	// make this really low for the demo
+	healthyHosts := ss.findHealthyHostNames("1 minute")
+	var count int64 = 0
+	problems := []ProblemBlob{}
+	err := ss.crud.DB.Model(&Blob{}).
+		Select("key, count(distinct host) as r, array_to_string(array_agg(distinct host), ',') as hosts").
+		Where("host in ?", healthyHosts).
+		Group("key").
+		Having(fmt.Sprintf("count(distinct host) %s %d", comparator, ss.Config.ReplicationFactor)).
+		Order("key").
+		Count(&count).
+		Scan(&problems).
+		Error
+	return count, err
+}
+
 func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
 	// find under-replicated content
 	ctx := context.Background()

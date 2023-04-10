@@ -29,6 +29,11 @@ jobs:
       context: [GCP, dockerhub]
       instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
       service: comms
+  - push-docker-image:
+      name: push-mediorum
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
+      service: mediorum
 
   - test:
       name: test-creator-node
@@ -63,6 +68,11 @@ jobs:
   - test-audius-cmd:
       context: GCP
       instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
+  - test:
+      name: test-mediorum
+      context: GCP
+      instance-name: circleci-test-mediorum-$CIRCLE_BUILD_NUM
+      service: mediorum
 
   # Release
 

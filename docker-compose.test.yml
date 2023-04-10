@@ -347,6 +347,55 @@ services:
       - tests
       - notifications
 
+  # mediorum
+
+  mediorum-db:
+    image: postgres:11.4
+    environment:
+      POSTGRES_PASSWORD: example
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 3s
+      timeout: 3s
+    logging: *default-logging
+    volumes:
+      - ./mediorum/.initdb:/docker-entrypoint-initdb.d
+    profiles:
+      - mediorum
+
+  mediorum:
+    build:
+      context: mediorum
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      dbUrlTemplate: "postgres://postgres:example@mediorum-db:5432/m%d"
+    healthcheck:
+      test: ["CMD", "curl", "http://localhost:1991/internal/health"]
+      interval: 3s
+      timeout: 3s
+    logging: *default-logging
+    profiles:
+      - mediorum
+    depends_on:
+      mediorum-db:
+        condition: service_healthy
+
+  test-mediorum:
+    build:
+      context: mediorum
+      dockerfile: Dockerfile
+    entrypoint:
+      - "/bin/mediorum-cmd"
+    environment:
+      hostNameTemplate: "http://mediorum:199%d"
+    logging: *default-logging
+    profiles:
+      - mediorum
+    depends_on:
+      mediorum:
+        condition: service_healthy
+
   # identity-service
 
   identity-service-db:
