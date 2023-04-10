@@ -79,11 +79,7 @@ function* fetchProfileCustomizedCollectibles(user) {
   )
   const cid = user?.metadata_multihash ?? null
   if (cid) {
-    const {
-      is_verified: ignored_is_verified,
-      creator_node_endpoint: ignored_creator_node_endpoint,
-      ...metadata
-    } = yield call(
+    const metadata = yield call(
       audiusBackendInstance.fetchCID,
       cid,
       gateways,
@@ -110,9 +106,9 @@ function* fetchProfileCustomizedCollectibles(user) {
             metadata: {
               collectiblesOrderUnset: true
             }
-          }
-        ])
-      )
+          ])
+        )
+      }
     }
   }
 }
@@ -124,35 +120,38 @@ export function* fetchOpenSeaAssetsForWallets(wallets) {
 
 export function* fetchOpenSeaAssets(user) {
   const apiClient = yield getContext('apiClient')
-  const { wallets } = yield apiClient.getAssociatedWallets({
+  const associatedWallets = yield apiClient.getAssociatedWallets({
     userID: user.user_id
   })
-  const collectiblesMap = yield call(fetchOpenSeaAssetsForWallets, [
-    user.wallet,
-    ...wallets
-  ])
-
-  const collectibleList = Object.values(collectiblesMap).flat()
-  if (!collectibleList.length) {
-    console.log('profile has no assets in OpenSea')
-  }
-
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: user.user_id,
-        metadata: {
-          collectibleList
-        }
-      }
+  if (associatedWallets) {
+    const { wallets } = associatedWallets
+    const collectiblesMap = yield call(fetchOpenSeaAssetsForWallets, [
+      user.wallet,
+      ...wallets
     ])
-  )
-  yield put(
-    updateUserEthCollectibles({
-      userId: user.user_id,
-      userCollectibles: collectibleList
-    })
-  )
+
+    const collectibleList = Object.values(collectiblesMap).flat()
+    if (!collectibleList.length) {
+      console.log('profile has no assets in OpenSea')
+    }
+
+    yield put(
+      cacheActions.update(Kind.USERS, [
+        {
+          id: user.user_id,
+          metadata: {
+            collectibleList
+          }
+        }
+      ])
+    )
+    yield put(
+      updateUserEthCollectibles({
+        userId: user.user_id,
+        userCollectibles: collectibleList
+      })
+    )
+  }
 }
 
 export function* fetchSolanaCollectiblesForWallets(wallets) {
