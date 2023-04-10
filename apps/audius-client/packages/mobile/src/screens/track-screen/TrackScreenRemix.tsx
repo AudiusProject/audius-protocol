@@ -10,11 +10,10 @@ import type { StyleProp, ViewStyle } from 'react-native'
 import { Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
-import CoSign from 'app/components/co-sign/CoSign'
-import { Size } from 'app/components/co-sign/types'
+import CoSign, { Size } from 'app/components/co-sign'
 import { TrackImage } from 'app/components/image/TrackImage'
-import { UserImage } from 'app/components/image/UserImage'
 import Text from 'app/components/text'
+import { ProfilePicture } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { StylesProp } from 'app/styles'
@@ -48,15 +47,11 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
   profilePicture: {
     zIndex: 1,
-    overflow: 'hidden',
     position: 'absolute',
     top: spacing(-2),
     left: spacing(-2),
     height: 36,
-    width: 36,
-    borderWidth: 2,
-    borderColor: palette.neutralLight8,
-    borderRadius: 18
+    width: 36
   },
 
   artist: {
@@ -82,7 +77,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   }
 }))
 
-export const TrackScreenRemix = ({ id, ...props }: TrackScreenRemixProps) => {
+export const TrackScreenRemix = (props: TrackScreenRemixProps) => {
+  const { id, ...other } = props
   const track = useSelector((state) => getTrack(state, { id }))
   const user = useSelector((state) => getUserFromTrack(state, { id }))
 
@@ -93,7 +89,7 @@ export const TrackScreenRemix = ({ id, ...props }: TrackScreenRemixProps) => {
     return null
   }
 
-  return <TrackScreenRemixComponent {...props} track={track} user={user} />
+  return <TrackScreenRemixComponent {...other} track={track} user={user} />
 }
 
 type TrackScreenRemixComponentProps = {
@@ -127,12 +123,12 @@ const TrackScreenRemixComponent = ({
 
   const images = (
     <>
-      <View style={styles.profilePicture}>
-        <UserImage user={user} size={SquareSizes.SIZE_150_BY_150} />
-      </View>
-      <View style={styles.coverArt}>
-        <TrackImage track={track} size={SquareSizes.SIZE_480_BY_480} />
-      </View>
+      <ProfilePicture profile={user} style={styles.profilePicture} />
+      <TrackImage
+        track={track}
+        style={styles.coverArt}
+        size={SquareSizes.SIZE_480_BY_480}
+      />
     </>
   )
 
