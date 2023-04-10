@@ -5,6 +5,7 @@ const {
   errorResponseServerError
 } = require('../apiHelpers')
 const config = require('../config.js')
+const { getClientIp } = require('request-ip')
 
 const path = require('path')
 const versionInfo = require(path.join(process.cwd(), '.version.json'))
@@ -140,7 +141,8 @@ router.get(
     const { ip } = req
 
     return successResponse({
-      ip: ip || ''
+      ip: ip || '',
+      clientIp: getClientIp(req)
     })
   })
 )
