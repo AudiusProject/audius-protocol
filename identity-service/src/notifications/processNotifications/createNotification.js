@@ -147,11 +147,13 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
       )
     }
     if (subscriberIdsWithNotification.length > 0) {
+      // find existing unread notification
       const createTrackNotifTx = await models.Notification.findAll({
         where: {
           userId: { [models.Sequelize.Op.in]: subscriberIdsWithNotification },
           type: createType,
-          entityId: notificationEntityId
+          entityId: notificationEntityId,
+          isViewed: false
         }
       })
       const createdNotificationIds = createTrackNotifTx.map((notif) => notif.id)
