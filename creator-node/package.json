@@ -86,6 +86,7 @@
     "prom-client": "14.0.1",
     "promise.any": "2.0.2",
     "rate-limit-redis": "1.7.0",
+    "request-ip": "3.3.0",
     "sequelize": "4.44.4",
     "shortid": "2.2.16",
     "sockstat": "1.0.1",
