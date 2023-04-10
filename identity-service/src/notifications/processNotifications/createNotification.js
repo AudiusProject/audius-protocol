@@ -119,7 +119,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
     logger.info(`got unread ${subscriberIdsWithoutNotification.length}`)
 
     if (subscriberIdsWithoutNotification.length > 0) {
-      // Bulk create notifications for users that do not have a un-viewed notification
+      // Bulk create notifications for users that do not have new notifications
       const createTrackNotifTx = await models.Notification.bulkCreate(
         subscriberIdsWithoutNotification.map(
           (id) => ({
@@ -147,7 +147,7 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
       )
     }
     if (subscriberIdsWithNotification.length > 0) {
-      // find existing unread notification
+      // Find existing unread notifications
       const createTrackNotifTx = await models.Notification.findAll({
         where: {
           userId: { [models.Sequelize.Op.in]: subscriberIdsWithNotification },
@@ -157,6 +157,8 @@ async function processCreateNotifications(notifications, tx, optimizelyClient) {
         }
       })
       const createdNotificationIds = createTrackNotifTx.map((notif) => notif.id)
+
+      // Append new notification actions to those existing unread notifications
       await models.NotificationAction.bulkCreate(
         createdNotificationIds.map((notificationId) => ({
           notificationId,
