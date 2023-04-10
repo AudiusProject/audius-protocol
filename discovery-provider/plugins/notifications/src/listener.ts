@@ -23,6 +23,7 @@ export class Listener {
   }
 
   handler = (row: NotificationRow) => {
+    // DONT PUT USER COLUMN HERE ON ANNOUNCEMENTS
     this.pending.appNotifications.push(row)
   }
 
@@ -38,6 +39,7 @@ export class Listener {
     logger.info('did connect')
 
     this.client.on('notification', (msg: Notification) => {
+      // THis means the entire user id record is pushed through postgres???
       const body = JSON.parse(msg.payload)
       this.handler(body)
     })

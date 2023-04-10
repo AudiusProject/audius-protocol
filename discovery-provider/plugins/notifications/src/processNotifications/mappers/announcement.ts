@@ -25,6 +25,13 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
   }
 
   async pushNotification() {
+    const pushAnnouncements = false;
+    if (!pushAnnouncements) {
+      // TODO: ADD .env CONFIG TO SHUT OFF ANNOUNCEMENTS
+      return;
+    }
+
+    // THIS WILL PULL ALL USERS FROM THE DATABASE, BAAADDDDD
     const res: Array<{
       user_id: number
       name: string
