@@ -7,17 +7,20 @@ import {
   formatMessageDate
 } from '@audius/common'
 import type { ChatMessageReaction } from '@audius/sdk'
+import { find } from 'linkifyjs'
 import type { ViewStyle, StyleProp } from 'react-native'
-import { View } from 'react-native'
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler'
+import { Pressable, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import ChatTail from 'app/assets/images/ChatTail.svg'
-import { Text } from 'app/components/core'
+import { Hyperlink, Text } from 'app/components/core'
 import { makeStyles } from 'app/styles'
 import { useThemePalette } from 'app/utils/theme'
 
 import { reactionMap } from '../notifications-screen/Reaction'
+
+import { LinkPreview } from './LinkPreview'
+import { REACTION_LONGPRESS_DELAY } from './constants'
 
 const { getUserId } = accountSelectors
 
@@ -31,21 +34,23 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignItems: 'flex-end'
   },
   bubble: {
-    paddingHorizontal: spacing(4),
-    paddingVertical: spacing(3),
     marginTop: spacing(2),
     backgroundColor: palette.white,
-    borderRadius: spacing(3),
     shadowColor: 'black',
     shadowOffset: { width: -2, height: 3 },
     shadowOpacity: 0.2,
-    shadowRadius: 5
+    shadowRadius: 5,
+    borderRadius: spacing(3)
   },
   isAuthor: {
     backgroundColor: palette.secondary
   },
   message: {
+    marginHorizontal: spacing(4),
+    marginTop: spacing(3),
+    marginBottom: spacing(3),
     fontSize: typography.fontSize.medium,
+    fontFamily: typography.fontByWeight.medium,
     lineHeight: spacing(6),
     color: palette.neutral
   },
@@ -59,6 +64,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   date: {
     fontSize: typography.fontSize.xs,
     color: palette.neutralLight2
+  },
+  link: {
+    textDecorationLine: 'underline'
   },
   tail: {
     display: 'flex',
@@ -156,6 +164,10 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
     onLongPress?.(message.message_id)
   }, [message.message_id, onLongPress])
 
+  const links = find(message.message)
+  const link = links.filter((link) => link.type === 'url' && link.isLink)[0]
+  const isLinkPreviewOnly = link && link.value === message.message
+
   return (
     <>
       <View
@@ -168,47 +180,66 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
         ]}
       >
         <View>
-          <TouchableWithoutFeedback onPress={handleLongPress}>
-            <View>
-              <View
-                style={[styles.bubble, isAuthor && styles.isAuthor]}
-                ref={
-                  itemsRef
-                    ? (el) => (itemsRef.current[message.message_id] = el)
-                    : null
-                }
-              >
-                <Text
-                  style={[styles.message, isAuthor && styles.messageIsAuthor]}
-                >
-                  {message.message}
-                </Text>
+          <Pressable
+            onLongPress={handleLongPress}
+            delayLongPress={REACTION_LONGPRESS_DELAY}
+          >
+            <View
+              style={[styles.bubble, isAuthor && styles.isAuthor]}
+              ref={
+                itemsRef
+                  ? (el) => (itemsRef.current[message.message_id] = el)
+                  : null
+              }
+            >
+              <View>
+                {link ? (
+                  <LinkPreview
+                    key={`${link.value}-${link.start}-${link.end}`}
+                    href={link.href}
+                    isLinkPreviewOnly={isLinkPreviewOnly}
+                    onLongPress={handleLongPress}
+                  />
+                ) : null}
               </View>
-              {message.reactions?.length > 0 ? (
-                <>
-                  {!isPopup ? (
-                    <View
-                      style={[
-                        styles.reactionContainer,
-                        isAuthor
-                          ? styles.reactionContainerIsAuthor
-                          : styles.reactionContainerOtherUser
-                      ]}
-                    >
-                      {message.reactions.map((reaction) => {
-                        return (
-                          <ChatReaction
-                            key={reaction.created_at}
-                            reaction={reaction}
-                          />
-                        )
-                      })}
-                    </View>
-                  ) : null}
-                </>
+              {!isLinkPreviewOnly ? (
+                <Hyperlink
+                  text={message.message}
+                  styles={{
+                    root: [styles.message, isAuthor && styles.messageIsAuthor],
+                    link: [
+                      styles.message,
+                      styles.link,
+                      isAuthor && styles.messageIsAuthor
+                    ]
+                  }}
+                />
               ) : null}
             </View>
-          </TouchableWithoutFeedback>
+            {message.reactions?.length > 0 ? (
+              <>
+                {!isPopup ? (
+                  <View
+                    style={[
+                      styles.reactionContainer,
+                      isAuthor
+                        ? styles.reactionContainerIsAuthor
+                        : styles.reactionContainerOtherUser
+                    ]}
+                  >
+                    {message.reactions.map((reaction) => {
+                      return (
+                        <ChatReaction
+                          key={reaction.created_at}
+                          reaction={reaction}
+                        />
+                      )
+                    })}
+                  </View>
+                ) : null}
+              </>
+            ) : null}
+          </Pressable>
         </View>
         {message.hasTail ? (
           <>
@@ -220,7 +251,13 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
               ]}
             >
               <View style={styles.tailShadow} />
-              <ChatTail fill={isAuthor ? palette.secondary : palette.white} />
+              <ChatTail
+                fill={
+                  isAuthor && !isLinkPreviewOnly
+                    ? palette.secondary
+                    : palette.white
+                }
+              />
             </View>
             {!isPopup ? (
               <View style={styles.dateContainer}>
