@@ -7,7 +7,7 @@
     "audius-cmd": "src/index.mjs"
   },
   "scripts": {
-    "start": "node src/index.js",
+    "audius-cmd": "node src/index.mjs",
     "test": "bats test"
   },
   "author": "Audius",
