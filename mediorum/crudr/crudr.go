@@ -3,12 +3,13 @@ package crudr
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/inconshreveable/log15"
 	"github.com/oklog/ulid/v2"
-	"github.com/r3labs/sse/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -25,38 +26,38 @@ const (
 )
 
 type Crudr struct {
-	DB        *gorm.DB
-	SSEServer *sse.Server
+	DB *gorm.DB
 
 	host    string
 	logger  log15.Logger
 	typeMap map[string]reflect.Type
 
+	// todo: Peer is in server package now, so this is a simple list of strings
+	// todo: move Peer to registrar and use that
+	peerHosts  []string
+	httpClient http.Client
+
 	mu        sync.Mutex
 	callbacks []func(op *Op, records interface{})
 }
 
-func New(host string, db *gorm.DB) *Crudr {
-	err := db.AutoMigrate(&Op{})
+func New(host string, peerHosts []string, db *gorm.DB) *Crudr {
+	err := db.AutoMigrate(&Op{}, &Cursor{})
 	if err != nil {
 		panic(err)
 	}
 
-	sseServer := sse.New()
-
-	// ojala falso
-	sseServer.AutoReplay = false
-
-	sseServer.CreateStream(LocalStreamName)
-	sseServer.CreateStream(GlobalStreamName)
-
 	c := &Crudr{
-		DB:        db,
-		SSEServer: sseServer,
+		DB: db,
 
 		host:    host,
 		logger:  log15.New("module", "crud", "from", host),
 		typeMap: map[string]reflect.Type{},
+
+		peerHosts: peerHosts,
+		httpClient: http.Client{
+			Timeout: 60 * time.Second,
+		},
 	}
 
 	return c
@@ -128,7 +129,7 @@ func (c *Crudr) newOp(action string, data interface{}, opts ...withOption) *Op {
 
 func (c *Crudr) doOp(op *Op) error {
 	// apply locally
-	err := c.apply(op)
+	err := c.ApplyOp(op)
 	if err != nil {
 		c.logger.Warn("apply failed", "op", op, "err", err)
 		return err
@@ -166,7 +167,7 @@ func (c *Crudr) tableNameFor(obj interface{}) string {
 	return c.DB.NamingStrategy.TableName(typeName)
 }
 
-func (c *Crudr) apply(op *Op) error {
+func (c *Crudr) ApplyOp(op *Op) error {
 	elemType, ok := c.typeMap[op.Table]
 	if !ok {
 		return fmt.Errorf("no type registered for %s", op.Table)
@@ -181,11 +182,6 @@ func (c *Crudr) apply(op *Op) error {
 
 	// create op + records in a db transaction
 
-	// using a mutex here to force one tx at a time
-	// due to sqlite perf issues in prod.
-	// it should not really be necessary tho.
-	// see: https://github.com/AudiusProject/mediorum/issues/1
-	c.mu.Lock()
 	err = c.DB.Transaction(func(tx *gorm.DB) error {
 		if !op.Transient {
 			res := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(op)
@@ -220,31 +216,16 @@ func (c *Crudr) apply(op *Op) error {
 
 		return err
 	})
-	c.mu.Unlock()
 
 	if err != nil {
 		return err
 	}
 
-	msg, _ := json.Marshal(op)
-	sseEvent := &sse.Event{
-		Data: msg,
-	}
-
-	// if this host is origin...
-	// broadcast op to local outbox
+	// broadcast if this host is origin...
 	if op.Host == c.host {
-		if op.Transient {
-			c.SSEServer.TryPublish(LocalStreamName, sseEvent)
-		} else {
-			c.SSEServer.Publish(LocalStreamName, sseEvent)
-		}
+		msg, _ := json.Marshal(op)
+		c.broadcast(msg)
 	}
-
-	// broadcast op to global feed
-	// atm global feed is just used by status UI
-	// so it's okay to always TryPublish
-	c.SSEServer.TryPublish(GlobalStreamName, sseEvent)
 
 	// notify any local (in memory) subscribers
 	c.callOpCallbacks(op, records)

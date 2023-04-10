@@ -11,7 +11,7 @@ dev2::
 	LIVE_UI=true goreman -set-ports=false start
 
 test::
-	go test ./... -v -count=1
+	go test ./... -v -count=1 -timeout 60s
 
 
 tools::

@@ -2,6 +2,7 @@ package server
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 	"time"
 
@@ -24,6 +25,7 @@ func TestRepair(t *testing.T) {
 	{
 		problems, err := ss.findProblemBlobs(false)
 		assert.NoError(t, err)
+		fmt.Println("PROBLEM", problems)
 		assert.Equal(t, problems[0].Key, cid)
 		assert.Equal(t, problems[0].R, 1)
 	}

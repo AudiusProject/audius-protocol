@@ -23,7 +23,7 @@ func TestCrudr(t *testing.T) {
 	err := db.AutoMigrate(TestBlobThing{})
 	assert.NoError(t, err)
 
-	c := New("host1", db).RegisterModels(&TestBlobThing{})
+	c := New("host1", nil, db).RegisterModels(&TestBlobThing{})
 
 	// table name
 	{
