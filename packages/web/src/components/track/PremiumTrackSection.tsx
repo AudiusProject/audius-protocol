@@ -30,7 +30,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.svg'
-import { ReactComponent as IconVerifiedGreen } from 'assets/img/iconVerifiedGreen.svg'
+import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { showRequiresAccountModal } from 'common/store/pages/signon/actions'
 import FollowButton from 'components/follow-button/FollowButton'
@@ -388,7 +388,7 @@ const UnlockedPremiumTrackSection = ({
         </div>
       ) : (
         <div>
-          <IconVerifiedGreen className={styles.verifiedGreenIcon} />
+          <IconVerified className={styles.verifiedGreenIcon} />
           <span>
             {messages.aCollectibleFrom}
             <span className={styles.collectibleName} onClick={goToCollection}>
@@ -408,7 +408,7 @@ const UnlockedPremiumTrackSection = ({
         </div>
       ) : (
         <div>
-          <IconVerifiedGreen className={styles.verifiedGreenIcon} />
+          <IconVerified className={styles.verifiedGreenIcon} />
           <span>{messages.thankYouForFollowing}&nbsp;</span>
           <span>{followee?.name}</span>
           <UserBadges
@@ -429,7 +429,7 @@ const UnlockedPremiumTrackSection = ({
         </div>
       ) : (
         <div>
-          <IconVerifiedGreen className={styles.verifiedGreenIcon} />
+          <IconVerified className={styles.verifiedGreenIcon} />
           <span>{messages.thankYouForSupporting}&nbsp;</span>
           <span>{tippedUser?.name}</span>
           <UserBadges

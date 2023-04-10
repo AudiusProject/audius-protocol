@@ -14,7 +14,7 @@ import { useDispatch } from 'react-redux'
 import { animated, Transition } from 'react-spring/renderprops'
 import { usePrevious } from 'react-use'
 
-import { ReactComponent as IconVerifiedGreen } from 'assets/img/iconVerifiedGreen.svg'
+import { ReactComponent as IconSuccess } from 'assets/img/iconVerified.svg'
 import IconGoldBadge from 'assets/img/tokenBadgeGold40@2x.png'
 import { useSelector } from 'common/hooks/useSelector'
 import { useRemoteVar } from 'hooks/useRemoteConfig'
@@ -60,7 +60,7 @@ const titleIconsMap: { [key in TippingSendStatus]?: Nullable<JSX.Element> } = {
   SENDING: <GoldBadgeIconImage />,
   CONVERTING: null,
   ERROR: <GoldBadgeIconImage />,
-  SUCCESS: <IconVerifiedGreen width={24} height={24} />
+  SUCCESS: <IconSuccess width={24} height={24} className={styles.iconSuccess} />
 }
 
 const renderModalContent = (pageNumber: number) => {

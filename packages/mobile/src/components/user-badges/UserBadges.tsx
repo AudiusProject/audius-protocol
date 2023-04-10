@@ -5,6 +5,7 @@ import { StyleSheet, View, Text } from 'react-native'
 
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { IconAudioBadge } from 'app/components/audio-rewards'
+import { useThemePalette } from 'app/utils/theme'
 
 type UserBadgesProps = {
   user: Pick<User, 'user_id' | 'name' | 'is_verified'>
@@ -28,6 +29,7 @@ const styles = StyleSheet.create({
 export const UserBadges = (props: UserBadgesProps) => {
   const { user, badgeSize = 14, style, nameStyle, hideName } = props
   const { tier } = useSelectTierInfo(user.user_id)
+  const palette = useThemePalette()
 
   return (
     <View style={[styles.container, style]}>
@@ -41,6 +43,8 @@ export const UserBadges = (props: UserBadgesProps) => {
           height={badgeSize}
           width={badgeSize}
           style={styles.badge}
+          fill={palette.staticPrimary}
+          fillSecondary={palette.staticWhite}
         />
       ) : null}
       <IconAudioBadge

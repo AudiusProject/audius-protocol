@@ -19,6 +19,7 @@ import LoadingSpinner from 'app/components/loading-spinner'
 import { ProgressBar } from 'app/components/progress-bar'
 import Text from 'app/components/text'
 import { flexRowCentered, makeStyles } from 'app/styles'
+import { useThemePalette } from 'app/utils/theme'
 
 const messages = {
   task: 'Task',
@@ -198,6 +199,7 @@ export const ChallengeRewardsDrawer = ({
   children
 }: ChallengeRewardsDrawerProps) => {
   const styles = useStyles()
+  const palette = useThemePalette()
   const isInProgress = challengeState === 'in_progress'
   const claimInProgress =
     claimStatus === ClaimStatus.CLAIMING ||
@@ -251,7 +253,11 @@ export const ChallengeRewardsDrawer = ({
         <View style={styles.task}>
           {isVerifiedChallenge ? (
             <View style={styles.taskHeaderVerified}>
-              <IconVerified style={styles.subheaderIcon} />
+              <IconVerified
+                style={styles.subheaderIcon}
+                fill={palette.staticPrimary}
+                fillSecondary={palette.staticWhite}
+              />
               <Text style={styles.subheader} weight='heavy'>
                 {messages.taskVerified}
               </Text>

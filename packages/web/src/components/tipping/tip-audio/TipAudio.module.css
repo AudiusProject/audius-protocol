@@ -330,3 +330,11 @@
 .buttonIcon {
   margin: 0 2px 0 0px !important;
 }
+
+.iconSuccess path:nth-child(1) {
+  fill: var(--accent-green);
+}
+
+.iconSuccess path:nth-child(2) {
+  fill: var(--static-white);
+}
