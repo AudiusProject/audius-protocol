@@ -4,9 +4,9 @@ import type { StyleProp, ViewStyle } from 'react-native'
 import { View, Text } from 'react-native'
 
 import { makeStyles } from 'app/styles'
-import { spacing } from 'app/styles/spacing'
 
 import { ProfilePicture } from './ProfilePicture'
+import { PROFILE_PICTURE_BORDER_WIDTH } from './constants'
 
 const USER_LENGTH_LIMIT = 9
 
@@ -34,9 +34,13 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   imageExtraDim: {
     backgroundColor: 'rgba(0,0,0,0.1)',
-    borderRadius: 15,
-    width: 24,
-    height: 24
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: PROFILE_PICTURE_BORDER_WIDTH,
+    right: PROFILE_PICTURE_BORDER_WIDTH,
+    bottom: PROFILE_PICTURE_BORDER_WIDTH,
+    left: PROFILE_PICTURE_BORDER_WIDTH
   },
   imageCount: {
     textAlign: 'center',
@@ -73,6 +77,15 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
     imageStyles
   } = props
   const imageWidth = imageStyles?.width ?? defaultImageDimensions.width
+  const imageHeight = imageStyles?.height ?? defaultImageDimensions.height
+
+  // We want the View containing the "+" count to be the size of the
+  // inside content of the ProfilePicture it is sitting above.
+  // So we will set its width and height to be the image's minus the
+  // border width, accounting for both edges.
+  const dimWidth = imageWidth - PROFILE_PICTURE_BORDER_WIDTH * 2
+  const dimHeight = imageHeight - PROFILE_PICTURE_BORDER_WIDTH * 2
+
   const styles = useStyles()
   const showUserListDrawer = totalUserCount > limit
   /**
@@ -114,17 +127,18 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
           <View
             style={[
               styles.imageExtraDim,
-              { marginLeft: spacing(2.5) - imageWidth }
-            ]}
-          />
-          <Text
-            style={[
-              styles.imageCount,
-              { width: imageWidth, marginLeft: spacing(0.5) - imageWidth }
+              {
+                width: dimWidth,
+                height: dimHeight,
+                // borderRadius of 50% or greater gives us a circle
+                borderRadius: Math.ceil(dimWidth / 2)
+              }
             ]}
           >
-            {`+${formatCount(remainingUsersCount)}`}
-          </Text>
+            <Text style={styles.imageCount}>
+              {`+${formatCount(remainingUsersCount)}`}
+            </Text>
+          </View>
         </View>
       ) : null}
     </View>
