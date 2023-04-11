@@ -109,11 +109,6 @@ web-distribute:
           cd packages/web
           npm run dist:<< parameters.build-type >>
 
-web-install-awscli:
-  steps:
-    - run:
-        name: install-awscli
-        command: sudo pip install awscli
 
 web-install-wrangler:
   steps:
@@ -164,9 +159,7 @@ web-deploy-cloudflare:
 
 web-deploy-sourcemaps-s3:
   steps:
-    - run:
-        name: install-awscli
-        command: pip install awscli
+    - aws-cli/install
     - attach_workspace:
         at: ./
     - run:

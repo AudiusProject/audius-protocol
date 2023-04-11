@@ -3,15 +3,13 @@ jobs:
   download-dapp:
     working_directory: ~/probers
     docker:
-      - image: circleci/python:2.7-jessie
+      - image: cimg/python:3.7.12-node
     steps:
       - checkout
-      - run:
-          name: install-awscli
-          command: sudo pip install awscli
+      - aws-cli/install
       - run:
           name: Download Dapp from S3
-          command: | 
+          command: |
             cd ../
             aws s3 sync s3://staging.audius.co ./build-staging
       - persist_to_workspace:
@@ -39,7 +37,7 @@ jobs:
           name: install probers dependencies
           command: |
             cd probers
-            npm ci 
+            npm ci
       - save_cache:
           key: probers-dependency-cache-{{ checksum "probers/package.json" }}
           paths:
