@@ -1,7 +1,7 @@
 import { Knex } from 'knex'
-import { NotificationRow, UserRow } from '../../types/dn'
+import { NotificationRow } from '../../types/dn'
 import { TipSendNotification } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import { BaseNotification } from './base'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 
 type TipSendNotificationRow = Omit<NotificationRow, 'data'> & {
