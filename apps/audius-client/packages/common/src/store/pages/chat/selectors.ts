@@ -141,3 +141,12 @@ export const isIdEqualToReactionsPopupMessageId = (
 ) => {
   return messageId === getReactionsPopupMessageId(state)
 }
+
+export const getUnfurlMetadata = (
+  state: CommonState,
+  chatId: string,
+  messageId: string
+) => {
+  const message = getChatMessageById(state, chatId, messageId)
+  return message?.unfurlMetadata
+}

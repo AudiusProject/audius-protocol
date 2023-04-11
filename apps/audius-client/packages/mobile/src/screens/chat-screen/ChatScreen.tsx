@@ -320,6 +320,7 @@ export const ChatScreen = () => {
       <>
         <ChatMessageListItem
           message={item}
+          chatId={chatId}
           itemsRef={itemsRef}
           isPopup={false}
           onLongPress={handleMessagePress}
@@ -338,6 +339,7 @@ export const ChatScreen = () => {
     [
       earliestUnreadMessageId,
       handleMessagePress,
+      chatId,
       styles.unreadSeparator,
       styles.unreadTag,
       styles.unreadTagContainer,

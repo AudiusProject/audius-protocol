@@ -160,6 +160,7 @@ export const ReactionPopup = ({
         <Pressable style={[styles.innerPressable]} onPress={closePopup} />
         <Animated.View style={{ opacity: otherOpacity.current }}>
           <ChatMessageListItem
+            chatId={chatId}
             message={message}
             isPopup={true}
             style={[

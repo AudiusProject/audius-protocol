@@ -104,6 +104,8 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             <LinkPreview
               key={`${link.value}-${link.start}-${link.end}`}
               href={link.href}
+              chatId={chatId}
+              messageId={message.message_id}
             />
           ))}
         <div className={styles.text}>
