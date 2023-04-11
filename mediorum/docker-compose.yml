@@ -5,7 +5,7 @@ services:
     image: postgres
     container_name: pg
     ports:
-      - 5444:5432
+      - 5454:5432
     volumes:
       - ./.initdb:/docker-entrypoint-initdb.d
     environment:

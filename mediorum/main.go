@@ -80,9 +80,14 @@ func startDevInstance() {
 	// synthetic network
 	network := devNetwork(7)
 
-	idx := os.Getenv("IDX")
-	if idx == "" {
-		log.Fatal("IDX env var required")
+	idx := "1"
+	if v := os.Getenv("IDX"); v != "" {
+		idx = v
+	}
+
+	postgresDSN := fmt.Sprintf("postgres://postgres:example@localhost:5454/m%s", idx)
+	if v := os.Getenv("dbUrl"); v != "" {
+		postgresDSN = v
 	}
 
 	config := server.MediorumConfig{
@@ -93,7 +98,7 @@ func startDevInstance() {
 		Peers:             network,
 		ReplicationFactor: 3,
 		Dir:               fmt.Sprintf("/tmp/mediorum_dev_%s", idx),
-		PostgresDSN:       fmt.Sprintf("postgres://postgres:example@localhost:5444/m%s", idx),
+		PostgresDSN:       postgresDSN,
 	}
 
 	ss, err := server.New(config)
@@ -108,14 +113,17 @@ func startDevCluster() {
 	network := devNetwork(5)
 	wg := sync.WaitGroup{}
 
+	dirTemplate := getenvWithDefault("dirTemplate", "/tmp/mediorum_dev_%d")
+	dbUrlTemplate := getenvWithDefault("dbUrlTemplate", "postgres://postgres:example@localhost:5444/m%d")
+
 	for idx, peer := range network {
 		peer := peer
 		config := server.MediorumConfig{
 			Self:              peer,
 			Peers:             network,
 			ReplicationFactor: 3,
-			Dir:               fmt.Sprintf("/tmp/mediorum_%s", peer.Wallet),
-			PostgresDSN:       fmt.Sprintf("postgres://postgres:example@localhost:5444/m%d", idx+1),
+			Dir:               fmt.Sprintf(dirTemplate, idx+1),
+			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),
 		}
 
 		wg.Add(1)

@@ -230,18 +230,6 @@ services:
       service: storagev2-1
     <<: *common
 
-  storagev2-2:
-    extends:
-      file: docker-compose.storagev2.yml
-      service: storagev2-2
-    <<: *common
-
-  storagev2-3:
-    extends:
-      file: docker-compose.storagev2.yml
-      service: storagev2-3
-    <<: *common
-
   # Blockchain
 
   poa-ganache:
@@ -293,5 +281,4 @@ volumes:
   audius-libs:
   postgresdata:
   mediorum1:
-  mediorum2:
-  mediorum3:
+

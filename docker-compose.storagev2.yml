@@ -4,9 +4,6 @@ x-storagev2:
   &storagev2
   build: mediorum
   restart: unless-stopped
-  environment:
-    - MEDIORUM_ENV=single
-    - PORT=1991
   profiles:
     - storagev2
 
@@ -14,17 +11,14 @@ services:
   storagev2-1:
     container_name: audius-protocol-storagev2-1
     <<: *storagev2
+    environment:
+      - dirTemplate=/data/mediorum_dev_%d
+      - dbUrlTemplate=postgresql://postgres:postgres@db:5432/mediorum%d
+    ports:
+      - 1991:1991
+      - 1992:1992
+      - 1993:1993
+      - 1994:1994
+      - 1995:1995
     volumes:
-      - mediorum1:/tmp/mediorum_dev_1991
-
-  storagev2-2:
-    container_name: audius-protocol-storagev2-2
-    <<: *storagev2
-    volumes:
-      - mediorum2:/tmp/mediorum_dev_1991
-
-  storagev2-3:
-    container_name: audius-protocol-storagev2-3
-    <<: *storagev2
-    volumes:
-      - mediorum3:/tmp/mediorum_dev_1991
+      - mediorum1:/data
