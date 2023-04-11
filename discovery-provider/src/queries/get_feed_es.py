@@ -1,3 +1,5 @@
+import logging
+
 from src.queries.query_helpers import _populate_premium_track_metadata, get_users_ids
 from src.utils.db_session import get_db_read_replica
 from src.utils.elasticdsl import (
@@ -12,6 +14,7 @@ from src.utils.elasticdsl import (
     populate_user_metadata_es,
 )
 
+logger = logging.getLogger(__name__)
 
 def get_feed_es(args, limit=10):
 
@@ -295,12 +298,17 @@ def fetch_followed_saves_and_reposts(current_user, items):
     item_keys = [item_key(i) for i in items]
     follow_reposts = {k: [] for k in item_keys}
     follow_saves = {k: [] for k in item_keys}
+    logger.info(f"asdf current_user {current_user}")
+    logger.info(f"asdf items {items}")
 
+    logger.info(f"asdf item_keys {item_keys}")
     if not current_user or not item_keys:
         return (follow_saves, follow_reposts)
 
     mget_social_activity = []
     my_friends = set(current_user.get("following_ids", []))
+
+    logger.info(f"asdf my_friends {my_friends}")
 
     for item in items:
         key = item_key(item)
@@ -315,6 +323,8 @@ def fetch_followed_saves_and_reposts(current_user, items):
         for id in repost_friends[0:5]:
             mget_social_activity.append({"_index": ES_REPOSTS, "_id": id})
 
+    logger.info(f"asdf mget_social_activity {mget_social_activity}")
+
     if mget_social_activity:
         social_activity = esclient.mget(docs=mget_social_activity)
         for doc in social_activity["docs"]:
@@ -326,6 +336,8 @@ def fetch_followed_saves_and_reposts(current_user, items):
                 follow_reposts[s["item_key"]].append(s)
             else:
                 follow_saves[s["item_key"]].append(s)
+
+    logger.info(f"asdf (follow_saves, follow_reposts) {(follow_saves, follow_reposts)}")
 
     return (follow_saves, follow_reposts)
 
