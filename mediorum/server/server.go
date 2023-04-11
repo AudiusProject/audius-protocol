@@ -130,6 +130,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// Middleware
 	echoServer.Use(middleware.Recover())
+	echoServer.Use(middleware.CORS()) // TODO: Should probably set explicit AllowOrigins instead of using default *
 
 	ss := &MediorumServer{
 		echo:      echoServer,
@@ -156,8 +157,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	basePath := echoServer.Group(apiBasePath)
 
 	// Middleware
-	basePath.Use(middleware.Recover())
-	basePath.Use(middleware.CORS())
 	// basePath.Use(middleware.Logger())
 
 	// TODO: Use middleware to cache whenever content is streamed, except if it's premium content.
@@ -184,6 +183,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.GET("/content/:key", ss.getBlob)
 	echoServer.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
 	echoServer.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
+	echoServer.GET("/tracks/cidstream/:key", ss.getBlob) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
 
 	// status + debug:
 	basePath.GET("/status", ss.getStatus)
