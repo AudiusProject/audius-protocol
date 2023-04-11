@@ -1,8 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List
 
-from src.models.tracks.aggregate_track import AggregateTrack
 from src.tasks.celery_app import celery
 from src.utils.prometheus_metric import save_duration_metric
 
@@ -39,21 +37,21 @@ new_aggregate_playlist as (
     select
         ap.playlist_id,
         coalesce(ps.save_count, 0) as save_count,
-				coalesce(pr.repost_count, 0) as repost_count
+        coalesce(pr.repost_count, 0) as repost_count
     from
         aggregate_playlist ap
         left join playlist_saves ps on ap.playlist_id = ps.save_item_id
-				left join playlist_reposts pr on ap.playlist_id = pr.repost_item_id
+        left join playlist_reposts pr on ap.playlist_id = pr.repost_item_id
 )
 update
     aggregate_playlist ap
 set
     save_count = nap.save_count,
-		repost_count = nap.repost_count
+    repost_count = nap.repost_count
 from new_aggregate_playlist nap
 where
     ap.playlist_id = nap.playlist_id
-		and (ap.save_count != nap.save_count or ap.repost_count != nap.repost_count)
+    and (ap.save_count != nap.save_count or ap.repost_count != nap.repost_count)
 returning ap.playlist_id;
 """
 

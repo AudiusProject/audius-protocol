@@ -693,6 +693,16 @@ describe('test ContentBlacklist', function () {
       .query({ type, 'values[]': ids, signature, timestamp })
       .expect(200)
 
+    // Hit /ipfs/:CID route for all track CIDs and ensure error response is returned
+    await Promise.all(
+      data.track.trackSegments.map((segment) =>
+        request(app)
+          .get(`/ipfs/${segment.multihash}`)
+          .query({ trackId })
+          .expect(200)
+      )
+    )
+
     // TODO: add remove and test that the segments are unblacklisted
   })
 
@@ -752,6 +762,16 @@ describe('test ContentBlacklist', function () {
       .post('/blacklist/remove')
       .query({ type, 'values[]': ids, signature, timestamp })
       .expect(200)
+
+    // After removing from blacklist, track should be streamable
+    await Promise.all(
+      data.track.trackSegments.map((segment) =>
+        request(app)
+          .get(`/ipfs/${segment.multihash}`)
+          .query({ trackId })
+          .expect(200)
+      )
+    )
   })
 
   it('should throw an error when adding a track id to the blacklist, and streaming /ipfs/:CID?trackId=<trackIdThatDoesntContainCID>', async () => {
@@ -804,6 +824,16 @@ describe('test ContentBlacklist', function () {
       .post('/blacklist/add')
       .query({ type, 'values[]': ids, signature, timestamp })
       .expect(200)
+
+    // Successfully stream the second track
+    await Promise.all(
+      track2.track.trackSegments.map((segment) =>
+        request(app)
+          .get(`/ipfs/${segment.multihash}`)
+          .query({ trackId: track2.track.blockchainId })
+          .expect(200)
+      )
+    )
   })
 
   it('should throw an error when adding a cid to the blacklist and streaming /ipfs/:CID', async () => {

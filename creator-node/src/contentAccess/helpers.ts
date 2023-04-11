@@ -19,6 +19,6 @@ export async function isRegisteredDiscoveryNode({
     redis
   })
   return allRegisteredDiscoveryNodes.some(
-    (node) => node.delegateOwnerWallet === discoveryNodeDelegateOwnerWallet
+    (node) => node.delegateOwnerWallet.toLowerCase() === discoveryNodeDelegateOwnerWallet.toLowerCase()
   )
 }

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 
 import type { Nullable } from '../../utils'
+import type { ResponseType } from 'axios'
 
 export const getUsers = (
   limit = 100,
@@ -698,6 +699,19 @@ export const bulkGetUserSubscribers = (
     data: {
       ids: encodedUserIds
     },
+    timeout
+  }
+}
+
+export const getCIDData = (
+  cid: string,
+  responseType: ResponseType = 'json',
+  timeout: number
+) => {
+  return {
+    endpoint: `v1/full/cid_data/${cid}`,
+    method: 'get',
+    responseType,
     timeout
   }
 }

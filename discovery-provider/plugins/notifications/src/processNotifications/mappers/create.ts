@@ -4,10 +4,14 @@ import {
   CreatePlaylistNotification,
   CreateTrackNotification
 } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type CreateNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CreateTrackNotification | CreatePlaylistNotification
@@ -118,11 +122,18 @@ export class Create extends BaseNotification<CreateNotificationRow> {
       (userId) => !(users?.[userId]?.isDeactivated ?? true)
     )
     for (const userId of validReceiverUserIds) {
-      const userNotifications = await super.getShouldSendNotification(userId)
-
+      const userNotificationSettings = await buildUserNotificationSettings(
+        this.identityDB,
+        [userId]
+      )
       // If the user has devices to the notification to, proceed
-      if ((userNotifications.mobile?.[userId]?.devices ?? []).length > 0) {
-        const devices: Device[] = userNotifications.mobile?.[userId].devices
+      if (
+        userNotificationSettings.shouldSendPushNotification({
+          initiatorUserId: ownerId,
+          receiverUserId: userId
+        })
+      ) {
+        const devices: Device[] = userNotificationSettings.getDevices(userId)
         // If the user's settings for the follow notification is set to true, proceed
 
         await Promise.all(
@@ -130,7 +141,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
             return sendPushNotification(
               {
                 type: device.type,
-                badgeCount: userNotifications.mobile[userId].badgeCount + 1,
+                badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,
                 targetARN: device.awsARN
               },
               {
@@ -151,7 +162,12 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         )
         await this.incrementBadgeCount(userId)
       }
-      if (userNotifications.email) {
+      if (
+        userNotificationSettings.shouldSendEmail({
+          initiatorUserId: ownerId,
+          receiverUserId: userId
+        })
+      ) {
         // TODO: Send out email
       }
     }
