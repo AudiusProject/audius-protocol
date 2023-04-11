@@ -128,7 +128,7 @@ func startDevInstance() {
 }
 
 func startDevCluster() {
-	network := devNetwork(5)
+	network := devNetwork(3)
 	wg := sync.WaitGroup{}
 
 	dirTemplate := getenvWithDefault("dirTemplate", "/tmp/mediorum_dev_%d")
