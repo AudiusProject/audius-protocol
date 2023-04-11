@@ -1,7 +1,7 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
 import { TierChangeNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 

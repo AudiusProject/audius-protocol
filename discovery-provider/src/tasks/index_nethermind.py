@@ -14,7 +14,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
 from src.models.indexing.ursm_content_node import UrsmContentNode
-from src.models.notifications.notification import NotificationSeen
+from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -628,7 +628,7 @@ def index_blocks(self, db, blocks_list):
                     logger.debug(
                         f"index_nethermind.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
-                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
+                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"] == "true"
                     if is_save_cid_enabled:
                         """
                         Add CID Metadata to db (cid -> json blob, etc.)
@@ -826,6 +826,12 @@ def revert_blocks(self, db, revert_blocks_list):
             revert_notification_seen = (
                 session.query(NotificationSeen)
                 .filter(NotificationSeen.blocknumber == revert_block_number)
+                .all()
+            )
+
+            revert_playlist_seen = (
+                session.query(PlaylistSeen)
+                .filter(PlaylistSeen.blocknumber == revert_block_number)
                 .all()
             )
 
@@ -1048,6 +1054,25 @@ def revert_blocks(self, db, revert_blocks_list):
             for notification_seen_to_revert in revert_notification_seen:
                 session.delete(notification_seen_to_revert)
                 # NOTE: There is no need mark previous as is_current for notification seen
+
+            for playlist_seen_to_revert in revert_playlist_seen:
+
+                previous_playlist_seen_entry = (
+                    session.query(PlaylistSeen)
+                    .filter(
+                        PlaylistSeen.playlist_id == playlist_seen_to_revert.playlist_id,
+                        PlaylistSeen.user_id == playlist_seen_to_revert.user_id,
+                        PlaylistSeen.blocknumber < revert_block_number,
+                    )
+                    .order_by(PlaylistSeen.blocknumber.desc())
+                    .first()
+                )
+                if previous_playlist_seen_entry:
+                    previous_playlist_seen_entry.is_current = True
+                logger.info(
+                    f"index_nethermind.py | Reverting playlist seen {playlist_seen_to_revert}"
+                )
+                session.delete(playlist_seen_to_revert)
 
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()

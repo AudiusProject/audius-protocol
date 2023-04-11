@@ -1,3 +1,5 @@
+GIT_HASH ?= $(shell git rev-parse --verify HEAD)
+
 dev::
 	rm -rf **/*.db
 	rm -rf /tmp/mediorum*
@@ -17,14 +19,15 @@ tools::
 	go install github.com/cosmtrek/air@latest
 
 build::
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/mediorum:latest
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -t audius/mediorum:latest -t audius/mediorum:${GIT_HASH}
 	docker push audius/mediorum:latest
+	docker push audius/mediorum:${GIT_HASH}
 
 build.fast::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-linux-amd64
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:latest
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:latest -t audius/mediorum:${GIT_HASH}
 	docker push audius/mediorum:latest
-
+  docker push audius/mediorum:${GIT_HASH}
 
 psql::
 	docker compose up -d --wait

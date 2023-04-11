@@ -1,9 +1,13 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import { AnnouncementNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AnnouncementNotification
@@ -45,11 +49,17 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       (userId) => !(users?.[userId]?.isDeactivated ?? true)
     )
     for (const userId of validReceiverUserIds) {
-      const userNotifications = await super.getShouldSendNotification(userId)
-
+      const userNotificationSettings = await buildUserNotificationSettings(
+        this.identityDB,
+        [userId]
+      )
       // If the user has devices to the notification to, proceed
-      if ((userNotifications.mobile?.[userId]?.devices ?? []).length > 0) {
-        const devices: Device[] = userNotifications.mobile?.[userId].devices
+      if (
+        userNotificationSettings.shouldSendPushNotification({
+          receiverUserId: userId
+        })
+      ) {
+        const devices: Device[] = userNotificationSettings.getDevices(userId)
         // If the user's settings for the follow notification is set to true, proceed
 
         await Promise.all(
@@ -57,14 +67,16 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
             return sendPushNotification(
               {
                 type: device.type,
-                badgeCount: userNotifications.mobile[userId].badgeCount + 1,
+                badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,
                 targetARN: device.awsARN
               },
               {
                 title: this.notification.data.title,
                 body: this.notification.data.short_description,
                 data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                    this.notification.group_id
+                  }`,
                   type: 'Announcement'
                 }
               }
@@ -73,7 +85,9 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
         )
         await this.incrementBadgeCount(userId)
       }
-      if (userNotifications.email) {
+      if (
+        userNotificationSettings.shouldSendEmail({ receiverUserId: userId })
+      ) {
         // TODO: Send out email
       }
     }

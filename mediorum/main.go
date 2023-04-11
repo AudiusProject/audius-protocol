@@ -6,7 +6,9 @@ import (
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
+	"strings"
 	"sync"
+	"time"
 )
 
 func main() {
@@ -55,6 +57,22 @@ func startStagingOrProd(isProd bool) {
 	ss, err := server.New(config)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// for prod: gradual rollout to a subset of hosts
+	if isProd {
+		hostSubset := []string{"audius.co", "cultur3stake.com"}
+		shouldStart := false
+		for _, tld := range hostSubset {
+			if strings.Contains(config.Self.Host, tld) {
+				shouldStart = true
+			}
+		}
+		if !shouldStart {
+			log.Println("shouldStart = false... sleeping")
+			time.Sleep(time.Hour * 10000)
+			log.Fatal("bye")
+		}
 	}
 
 	ss.MustStart()
