@@ -54,6 +54,7 @@ export const FeedScreen = () => {
           delineate
           selfLoad
           header={<FeedTipTile />}
+          hideHeaderOnEmpty
           ListFooterComponent={<EndOfFeedNotice />}
           LineupEmptyComponent={<EmptyFeedSuggestedFollows />}
           actions={feedActions}

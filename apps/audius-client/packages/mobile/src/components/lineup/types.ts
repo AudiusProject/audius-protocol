@@ -60,6 +60,11 @@ export type LineupProps = {
   extraFetchOptions?: Record<string, unknown>
 
   /**
+   * When `true` hide the header when the lineup is empty
+   */
+  hideHeaderOnEmpty?: boolean
+
+  /**
    * A header to display at the top of the lineup,
    * will scroll with the rest of the content
    */

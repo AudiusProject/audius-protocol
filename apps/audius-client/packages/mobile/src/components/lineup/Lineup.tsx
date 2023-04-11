@@ -204,12 +204,13 @@ export const Lineup = ({
   disableTopTabScroll,
   fetchPayload,
   header,
-  LineupEmptyComponent,
+  hideHeaderOnEmpty,
   isTrending,
   lazy,
   leadingElementId,
   leadingElementDelineator,
   lineup: lineupProp,
+  LineupEmptyComponent,
   lineupSelector = fallbackLineupSelector,
   loadMore,
   pullToRefresh,
@@ -507,7 +508,10 @@ export const Lineup = ({
   )
 
   const pullToRefreshProps =
-    pullToRefresh || refreshProp ? { onRefresh: refresh, refreshing } : {}
+    pullToRefresh || refreshProp
+      ? // Need to disable refresh so scrolling the "ListEmptyComponent" doesn't trigger refresh
+        { onRefresh: areSectionsEmpty ? undefined : refresh, refreshing }
+      : {}
 
   const handleEndReached = useCallback(() => handleLoadMore(), [handleLoadMore])
 
@@ -518,14 +522,16 @@ export const Lineup = ({
         {...pullToRefreshProps}
         ref={ref}
         onScroll={handleScroll}
-        ListHeaderComponent={header}
+        ListHeaderComponent={
+          hideHeaderOnEmpty && areSectionsEmpty ? undefined : header
+        }
         ListFooterComponent={
           lineup.hasMore ? <View style={{ height: 16 }} /> : ListFooterComponent
         }
         ListEmptyComponent={LineupEmptyComponent}
         onEndReached={handleEndReached}
         onEndReachedThreshold={LOAD_MORE_THRESHOLD}
-        sections={sections}
+        sections={areSectionsEmpty ? [] : sections}
         stickySectionHeadersEnabled={false}
         keyExtractor={(item, index) => `${item?.id}  ${index}`}
         renderItem={renderItem}

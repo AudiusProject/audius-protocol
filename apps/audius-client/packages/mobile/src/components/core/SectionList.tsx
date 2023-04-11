@@ -152,7 +152,7 @@ export const SectionList = forwardRef(function SectionList<
   props: Animated.AnimatedProps<RNSectionListProps<ItemT, SectionT>>,
   ref: Ref<RNSectionList<ItemT, SectionT>>
 ) {
-  const { ListFooterComponent, sections, ...other } = props
+  const { ListFooterComponent, ...other } = props
   const { sceneName } = useContext(CollapsibleTabNavigatorContext)
 
   const FooterComponent = ListFooterComponent ? (
@@ -164,15 +164,8 @@ export const SectionList = forwardRef(function SectionList<
     PlayBarChin
   )
 
-  const areSectionsEmpty = sections.every(
-    (section) => section.data.length === 0
-  )
-
   const sectionListProps = {
     ...other,
-    // Need to disable refresh so scrolling the "ListEmptyComponent" doesn't trigger refresh
-    onRefresh: areSectionsEmpty ? undefined : other.onRefresh,
-    sections: areSectionsEmpty ? [] : sections,
     ListFooterComponent: FooterComponent
   }
 
