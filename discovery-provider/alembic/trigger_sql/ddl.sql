@@ -37,3 +37,18 @@ commit;
 begin;
   drop table if exists blocks_copy;
 commit;
+
+-- 4/10/23: inverse supporter rank up and supporting rank up notifications
+begin;
+  UPDATE notification
+  SET type = 'supporter_rank_up_old'
+  WHERE type = 'supporter_rank_up';
+
+  UPDATE notification
+  SET type = 'supporter_rank_up'
+  WHERE type = 'supporting_rank_up';
+
+  UPDATE notification
+  SET type = 'supporting_rank_up'
+  WHERE type = 'supporter_rank_up_old';
+commit;
