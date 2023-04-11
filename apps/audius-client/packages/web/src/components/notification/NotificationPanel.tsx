@@ -41,6 +41,9 @@ const {
   makeGetAllNotifications
 } = notificationsSelectors
 
+const { getNotificationUnviewedCount } = notificationsSelectors
+const { markAllAsViewed } = notificationsActions
+
 const getNotifications = makeGetAllNotifications()
 
 const scrollbarId = 'notificationsPanelScroll'
@@ -76,6 +79,7 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const isNotificationModalOpen = useSelector(getNotificationModalIsOpen)
   const modalNotification = useSelector(getModalNotification)
   const isUserListOpen = useSelector(getIsUserListOpen)
+  const unviewedNotificationCount = useSelector(getNotificationUnviewedCount)
 
   const panelRef = useRef<Nullable<HTMLDivElement>>(null)
 
@@ -111,6 +115,12 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
       dispatch(openNotificationPanel())
     }
   }, [openNotifications, dispatch])
+
+  useEffect(() => {
+    if (unviewedNotificationCount > 0) {
+      dispatch(markAllAsViewed())
+    }
+  }, [unviewedNotificationCount, dispatch])
 
   return (
     <>

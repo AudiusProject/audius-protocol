@@ -19,7 +19,6 @@ import {
   playlistLibraryHelpers,
   uploadActions,
   CreateAccountOpen,
-  notificationsActions,
   playlistUpdatesActions
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
@@ -80,7 +79,6 @@ const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
 const { getNotificationUnviewedCount } = notificationsSelectors
-const { markAllAsViewed } = notificationsActions
 const { getAccountStatus, getAccountUser, getPlaylistLibrary } =
   accountSelectors
 
@@ -122,8 +120,7 @@ const NavColumn = ({
   goToRoute,
   goToSignUp: routeToSignup,
   goToSignIn,
-  goToUpload,
-  markAllNotificationsAsViewed
+  goToUpload
 }: NavColumnProps) => {
   const record = useRecord()
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
@@ -166,17 +163,12 @@ const NavColumn = ({
       record(make(Name.NOTIFICATIONS_OPEN, { source: 'button' }))
     } else {
       closeNotificationPanel()
-      if (notificationCount > 0) {
-        markAllNotificationsAsViewed()
-      }
     }
   }, [
     notificationPanelIsOpen,
     openNotificationPanel,
     closeNotificationPanel,
-    record,
-    notificationCount,
-    markAllNotificationsAsViewed
+    record
   ])
 
   const onCreatePlaylist = useCallback(
@@ -518,8 +510,7 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   goToUpload: () => dispatch(pushRoute(UPLOAD_PAGE)),
   goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
-  goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true)),
-  markAllNotificationsAsViewed: () => dispatch(markAllAsViewed())
+  goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true))
 })
 
 const ConnectedNavColumn = withRouter(
