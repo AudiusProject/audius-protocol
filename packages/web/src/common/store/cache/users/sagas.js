@@ -213,17 +213,17 @@ function* watchFetchProfilePicture() {
           )
 
           if (url) {
-            const updatedUser = yield select(getUser, { id: userId })
-            const userWithProfilePicture = {
-              ...updatedUser,
-              _profile_picture_sizes: {
-                ...user._profile_picture_sizes,
-                [size]: url
-              }
-            }
             yield put(
               cacheActions.update(Kind.USERS, [
-                { id: userId, metadata: userWithProfilePicture }
+                {
+                  id: userId,
+                  metadata: {
+                    _profile_picture_sizes: {
+                      ...user._profile_picture_sizes,
+                      [size]: url
+                    }
+                  }
+                }
               ])
             )
           }
@@ -235,17 +235,17 @@ function* watchFetchProfilePicture() {
             gateways
           )
           if (url) {
-            const updatedUser = yield select(getUser, { id: userId })
-            const userWithProfilePicture = {
-              ...updatedUser,
-              _profile_picture_sizes: {
-                ...user._profile_picture_sizes,
-                [DefaultSizes.OVERRIDE]: url
-              }
-            }
             yield put(
               cacheActions.update(Kind.USERS, [
-                { id: userId, metadata: userWithProfilePicture }
+                {
+                  id: userId,
+                  metadata: {
+                    _profile_picture_sizes: {
+                      ...user._profile_picture_sizes,
+                      [DefaultSizes.OVERRIDE]: url
+                    }
+                  }
+                }
               ])
             )
           }

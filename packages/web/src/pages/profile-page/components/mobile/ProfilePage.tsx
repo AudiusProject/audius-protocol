@@ -88,7 +88,6 @@ export type ProfilePageProps = {
   onCancel: () => void
   stats: Array<{ number: number; title: string; key: string }>
   trackIsActive: boolean
-  isUserConfirming: boolean
 
   profile: ProfileUser | null
   albums: Collection[] | null
@@ -244,7 +243,6 @@ const ProfilePage = g(
     playlists,
     artistTracks,
     userFeed,
-    isUserConfirming,
     getLineupProps,
     loadMoreArtistTracks,
     loadMoreUserFeed,
@@ -649,7 +647,7 @@ const ProfilePage = g(
             fetchContent={asyncRefresh}
             shouldPad={false}
             overImage
-            isDisabled={isEditing || isUserConfirming}
+            isDisabled={isEditing}
           >
             <ProfileHeader
               isDeactivated={profile?.is_deactivated}

@@ -8,7 +8,8 @@ export const ProfilePicture = (props: Partial<ProfilePictureProps>) => {
     'user_id',
     'profile_picture',
     'profile_picture_sizes',
-    'creator_node_endpoint'
+    'creator_node_endpoint',
+    'updatedProfilePicture'
   ])
 
   return <ProfilePictureBase profile={profile} {...props} />
