@@ -13,7 +13,6 @@ type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AnnouncementNotification
 }
 export class Announcement extends BaseNotification<AnnouncementNotificationRow> {
-  receiverUserIds: number[]
 
   constructor(
     dnDB: Knex,
@@ -21,7 +20,6 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     notification: AnnouncementNotificationRow
   ) {
     super(dnDB, identityDB, notification)
-    this.receiverUserIds = this.notification.user_ids!
   }
 
   async pushNotification() {
@@ -40,6 +38,8 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       .select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
+      .where('is_deactivated', false)
+      // CHANGE TO PAGINATION
       .whereIn('user_id', this.receiverUserIds)
 
     const users = res.reduce((acc, user) => {
@@ -51,10 +51,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     }, {} as Record<number, { name: string; isDeactivated: boolean }>)
 
     // TODO: Batch send out notifications
-
-    const validReceiverUserIds = this.receiverUserIds.filter(
-      (userId) => !(users?.[userId]?.isDeactivated ?? true)
-    )
+    const validReceiverUserIds = res.map((user) => user.user_id)
     for (const userId of validReceiverUserIds) {
       const userNotificationSettings = await buildUserNotificationSettings(
         this.identityDB,
