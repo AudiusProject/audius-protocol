@@ -139,6 +139,7 @@ const ChatReaction = ({ reaction }: ChatReactionProps) => {
 
 type ChatMessageListItemProps = {
   message: ChatMessageWithExtras
+  chatId: string
   isPopup: boolean
   style?: StyleProp<ViewStyle>
   onLongPress?: (id: string) => void
@@ -150,6 +151,7 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
 ) {
   const {
     message,
+    chatId,
     isPopup = false,
     style: styleProp,
     onLongPress,
@@ -202,6 +204,8 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
                 {link ? (
                   <LinkPreview
                     key={`${link.value}-${link.start}-${link.end}`}
+                    chatId={chatId}
+                    messageId={message.message_id}
                     href={link.href}
                     isLinkPreviewOnly={isLinkPreviewOnly}
                     onLongPress={handleLongPress}

@@ -46,9 +46,11 @@ const {
   unblockUser,
   blockUser,
   fetchPermissions,
-  fetchPermissionsSucceeded
+  fetchPermissionsSucceeded,
+  fetchLinkUnfurl,
+  fetchLinkUnfurlSucceeded
 } = chatActions
-const { getChatsSummary, getChat } = chatSelectors
+const { getChatsSummary, getChat, getUnfurlMetadata } = chatSelectors
 
 function* doFetchMoreChats() {
   try {
@@ -347,6 +349,30 @@ function* doFetchPermissions(action: ReturnType<typeof fetchPermissions>) {
   }
 }
 
+function* doFetchLinkUnfurlMetadata(
+  action: ReturnType<typeof fetchLinkUnfurl>
+) {
+  const { messageId, chatId, href } = action.payload
+  try {
+    const unfurlMetadata = yield* select((state) =>
+      getUnfurlMetadata(state, chatId, messageId)
+    )
+    if (unfurlMetadata) {
+      return
+    }
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const data = yield* call([sdk.chats, sdk.chats.unfurl], {
+      urls: [href]
+    })
+    yield* put(
+      fetchLinkUnfurlSucceeded({ chatId, messageId, unfurlMetadata: data[0] })
+    )
+  } catch (e) {
+    console.error('fetchPermissionsFailed', e)
+  }
+}
+
 function* watchAddMessage() {
   yield takeEvery(addMessage, ({ payload }) => fetchChatIfNecessary(payload))
 }
@@ -395,6 +421,10 @@ function* watchFetchPermissions() {
   yield takeEvery(fetchPermissions, doFetchPermissions)
 }
 
+function* watchFetchLinkUnfurlMetadata() {
+  yield takeEvery(fetchLinkUnfurl, doFetchLinkUnfurlMetadata)
+}
+
 export const sagas = () => {
   return [
     watchFetchChats,
@@ -408,6 +438,7 @@ export const sagas = () => {
     watchFetchBlockers,
     watchBlockUser,
     watchUnblockUser,
-    watchFetchPermissions
+    watchFetchPermissions,
+    watchFetchLinkUnfurlMetadata
   ]
 }

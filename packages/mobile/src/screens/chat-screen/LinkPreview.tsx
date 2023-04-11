@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react'
-
+import { useLinkUnfurlMetadata } from '@audius/common'
 import type { GestureResponderEvent } from 'react-native'
 import { View, Image } from 'react-native'
 
 import { Text, Link } from 'app/components/core'
-import { audiusSdk } from 'app/services/audius-sdk'
-import { makeStyles, flexRowCentered } from 'app/styles'
+import { makeStyles } from 'app/styles'
 
 import { REACTION_LONGPRESS_DELAY } from './constants'
 
@@ -20,7 +18,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     borderRadius: spacing(3)
   },
   thumbnail: {
-    ...flexRowCentered(),
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     width: '100%',
     maxHeight: spacing(50)
   },
@@ -64,41 +64,23 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 }))
 
 type LinkPreviewProps = {
+  chatId: string
+  messageId: string
   href: string
   isLinkPreviewOnly: boolean
   onLongPress: (event: GestureResponderEvent) => void
 }
 
-type UnfurlResponse = {
-  url: string
-  url_type: string
-  site_name: string
-  title: string
-  description: string
-  image: string
-  html: string
-  favicon: string
-}
-
-export const LinkPreview = (props: LinkPreviewProps) => {
+export const LinkPreview = ({
+  chatId,
+  messageId,
+  href,
+  isLinkPreviewOnly,
+  onLongPress
+}: LinkPreviewProps) => {
   const styles = useStyles()
-  const { href, isLinkPreviewOnly, onLongPress } = props
-
-  const [metadata, setMetadata] = useState<Partial<UnfurlResponse>>()
+  const metadata = useLinkUnfurlMetadata(chatId, messageId, href)
   const domain = metadata?.url ? new URL(metadata.url).hostname : ''
-
-  useEffect(() => {
-    const fn = async () => {
-      try {
-        const sdk = await audiusSdk()
-        const unfurled = await sdk.chats.unfurl({ urls: [href] })
-        setMetadata(unfurled[0])
-      } catch (e) {
-        console.error('Failed to unfurl url', href, e)
-      }
-    }
-    fn()
-  }, [setMetadata, href])
 
   if (!metadata) {
     return null

@@ -4,7 +4,8 @@ import {
   ChatMessage,
   ChatMessageReaction,
   ChatMessageNullableReaction,
-  ChatPermissionResponse
+  ChatPermissionResponse,
+  UnfurlResponse
 } from '@audius/sdk'
 import {
   Action,
@@ -423,6 +424,30 @@ const slice = createSlice({
       }>
     ) => {
       state.reactionsPopupMessageId = action.payload.messageId
+    },
+    fetchLinkUnfurl: (
+      _state,
+      _action: PayloadAction<{
+        chatId: string
+        messageId: string
+        href: string
+      }>
+    ) => {
+      // triggers saga
+    },
+    fetchLinkUnfurlSucceeded: (
+      state,
+      action: PayloadAction<{
+        messageId: string
+        chatId: string
+        unfurlMetadata: Partial<UnfurlResponse>
+      }>
+    ) => {
+      const { messageId, chatId, unfurlMetadata } = action.payload
+      chatMessagesAdapter.updateOne(state.messages[chatId], {
+        id: messageId,
+        changes: { unfurlMetadata }
+      })
     }
   }
 })
