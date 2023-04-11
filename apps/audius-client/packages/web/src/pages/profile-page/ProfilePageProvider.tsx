@@ -7,9 +7,7 @@ import {
   FollowSource,
   ShareSource,
   BadgeTier,
-  Kind,
   Status,
-  makeKindId,
   formatCount,
   getErrorMessage,
   accountSelectors,
@@ -46,7 +44,6 @@ import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
 
 import { make, TrackEvent } from 'common/store/analytics/actions'
-import { getIsDone } from 'common/store/confirmer/selectors'
 import { ProfileMode } from 'components/stat-banner/StatBanner'
 import { StatProps } from 'components/stats/Stats'
 import * as unfollowConfirmationActions from 'components/unfollow-confirmation-modal/store/actions'
@@ -258,8 +255,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   fetchProfile = (
     pathname: string,
     forceUpdate = false,
-    shouldSetLoading = true,
-    deleteExistingEntry = false
+    shouldSetLoading = true
   ) => {
     const params = parseUserRoute(pathname)
     if (params) {
@@ -267,8 +263,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
         params?.handle?.toLowerCase() ?? null,
         params.userId,
         forceUpdate,
-        shouldSetLoading,
-        deleteExistingEntry
+        shouldSetLoading
       )
       if (params.tab) {
         this.setState({ activeTab: getTabForRoute(params.tab) })
@@ -279,7 +274,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   refreshProfile = () => {
-    this.fetchProfile(getPathname(this.props.location), true, false, true)
+    this.fetchProfile(getPathname(this.props.location), true, false)
   }
 
   updateName = (name: string) => {
@@ -911,7 +906,6 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const mobileProps = {
       trackIsActive: !!currentQueueItem,
       onConfirmUnfollow: this.props.onConfirmUnfollow,
-      isUserConfirming: this.props.isUserConfirming,
       hasMadeEdit:
         updatedName !== null ||
         updatedBio !== null ||
@@ -982,9 +976,6 @@ function makeMapStateToProps() {
       playing: getPlaying(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
-      isUserConfirming: !getIsDone(state, {
-        uid: makeKindId(Kind.USERS, getAccountUser(state)?.user_id)
-      }),
       relatedArtists: getRelatedArtists(state, {
         id: getProfileUserId(state, handleLower) ?? 0
       }),
@@ -1007,8 +998,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
       handle: Nullable<string>,
       userId: ID | null,
       forceUpdate: boolean,
-      shouldSetLoading: boolean,
-      deleteExistingEntry: boolean
+      shouldSetLoading: boolean
     ) =>
       dispatch(
         profileActions.fetchProfile(
@@ -1016,7 +1006,7 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           userId,
           forceUpdate,
           shouldSetLoading,
-          deleteExistingEntry
+          /* deleteExistingEntry */ false
         )
       ),
     updateProfile: (metadata: any) =>

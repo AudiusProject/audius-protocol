@@ -106,9 +106,9 @@ function* fetchProfileCustomizedCollectibles(user) {
             metadata: {
               collectiblesOrderUnset: true
             }
-          ])
-        )
-      }
+          }
+        ])
+      )
     }
   }
 }

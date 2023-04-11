@@ -98,15 +98,14 @@ export function* retrieve({
     call(getEntriesTimestamp, uniqueIds)
   ])
 
-  // Figure out which IDs we need to retrive from source
   const idsToFetch = []
   uniqueIds.forEach((id) => {
-    if (
+    const shouldFetch =
       !(id in cachedEntries) ||
       isMissingFields(cachedEntries[id], requiredFields) ||
       isExpired(timestamps[id]) ||
       forceRetrieveFromSource
-    ) {
+    if (shouldFetch) {
       idsToFetch.push(id)
     }
   })

@@ -43,7 +43,8 @@ export const CoverPhoto = ({ scrollY }: { scrollY?: Animated.Value }) => {
     'cover_photo_sizes',
     'cover_photo',
     'creator_node_endpoint',
-    'track_count'
+    'track_count',
+    'updatedCoverPhoto'
   ])
 
   const { track_count } = user

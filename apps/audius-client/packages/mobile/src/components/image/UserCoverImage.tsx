@@ -25,18 +25,33 @@ const interpolateImageTranslate = (animatedValue: Animated.Value) =>
   })
 
 type CoverImageUser = Nullable<
-  Pick<User, 'cover_photo_sizes' | 'cover_photo' | 'creator_node_endpoint'>
+  Pick<
+    User,
+    | 'cover_photo_sizes'
+    | 'cover_photo'
+    | 'creator_node_endpoint'
+    | 'updatedCoverPhoto'
+  >
 >
 
 export const useUserCoverImage = (user: CoverImageUser) => {
   const cid = user ? user.cover_photo_sizes || user.cover_photo : null
 
-  return useContentNodeImage({
+  const contentNodeImage = useContentNodeImage({
     cid,
     user,
     size: WidthSizes.SIZE_640,
     fallbackImageSource: imageCoverPhotoBlank
   })
+
+  if (user?.updatedCoverPhoto) {
+    return {
+      source: { uri: user.updatedCoverPhoto.url },
+      handleError: () => {}
+    }
+  }
+
+  return contentNodeImage
 }
 
 type UserCoverImageProps = {
