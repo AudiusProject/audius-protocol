@@ -2,6 +2,7 @@ import csv
 import json
 import logging
 import tempfile
+import os
 from itertools import islice
 
 import requests
@@ -13,12 +14,6 @@ from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
 
-source_tsv_url = (
-    shared_config["discprov"]["backfill_cid_data_url"]
-    if "backfill_cid_data_url" in shared_config["discprov"]
-    else ""
-)
-
 # Note, because the file is several GB
 # Number of rows to insert at a time
 chunk_size = 1_000
@@ -26,6 +21,13 @@ chunk_size = 1_000
 
 def backfill_cid_data(db: SessionManager):
     logger.info("backfill_cid_data.py | starting backfill")
+    source_tsv_url = ""
+    env = os.getenv("audius_discprov_env")
+    if env == "stage" and "stage_backfill_cid_data_url" in shared_config["discprov"]:
+        source_tsv_url = shared_config["discprov"]["stage_backfill_cid_data_url"]
+    elif env == "prod" and "prod_backfill_cid_data_url" in shared_config["discprov"]:
+        source_tsv_url = shared_config["discprov"]["prod_backfill_cid_data_url"]
+
     response = requests.get(source_tsv_url, stream=True)
     with tempfile.NamedTemporaryFile() as tmp:
         for block in response.iter_content(8192):
@@ -50,6 +52,7 @@ def backfill_cid_data(db: SessionManager):
                         cid_type[cid] = type
                     # Write chunk to db
                     save_cid_metadata(session, cid_metadata, cid_type)
+    logger.info("backfill_cid_data.py | finished backfill")
 
 
 # ####### CELERY TASKS ####### #

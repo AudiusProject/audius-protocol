@@ -438,7 +438,13 @@ def configure_celery(celery, test_config=None):
     )
 
     # backfill cid data if url is provided
-    if "backfill_cid_data_url" in shared_config["discprov"]:
+    env = os.getenv("audius_discprov_env")
+    backfill_cid_data_url = None
+    if env == "stage":
+        backfill_cid_data_url = "stage_backfill_cid_data_url"
+    elif env == "prod":
+        backfill_cid_data_url = "prod_backfill_cid_data_url"
+    if backfill_cid_data_url and backfill_cid_data_url in shared_config["discprov"]:
         celery.send_task("backfill_cid_data")
 
     # Initialize DB object for celery task context
