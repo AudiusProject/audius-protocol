@@ -71,7 +71,7 @@ services:
       - ./identity-service:/usr/src/app
       - /usr/src/app/node_modules
       - ./dev-tools:/tmp/dev-tools
-      - ./libs:/usr/src/audius-libs
+      - audius-libs:/usr/src/audius-libs
     depends_on:
       db:
         condition: service_healthy
@@ -83,7 +83,7 @@ services:
         condition: service_healthy
       solana-test-validator:
         condition: service_healthy
-      # build-audius-libs:
-      #   condition: service_started
+      build-audius-libs:
+        condition: service_started
     deploy:
       mode: global

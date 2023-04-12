@@ -419,17 +419,14 @@ export class Track extends Base {
 
     // Write metadata to chain
     const trackId = await this._generateTrackId()
-    // TODO: Uncomment once we can index full metadata (not metadata hash)
-    // TODO: DON'T UNCOMMENTED ON STAGE OR PROD UNTIL THEN, OR ELSE INDEXING WILL STALL!!
-    // const response = await this.contracts.EntityManagerClient!.manageEntity(
-    //   ownerId,
-    //   EntityManagerClient.EntityType.TRACK,
-    //   trackId,
-    //   EntityManagerClient.Action.CREATE,
-    //   JSON.stringify(updatedMetadata) // TODO: @michelle: would this work? It doesn't need to be a different EntityType that accepts metadata instead of metadata hash?
-    // )
-    // const txReceipt = response.txReceipt
-    const txReceipt = { blockHash: 'UNCOMMENT ABOVE', blockNumber: 1 }
+    const response = await this.contracts.EntityManagerClient!.manageEntity(
+      ownerId,
+      EntityManagerClient.EntityType.TRACK,
+      trackId,
+      EntityManagerClient.Action.CREATE,
+      JSON.stringify({ cid: updatedMetadata.track_cid, data: updatedMetadata })
+    )
+    const txReceipt = response.txReceipt
 
     return {
       blockHash: txReceipt.blockHash,

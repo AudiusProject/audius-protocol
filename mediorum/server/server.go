@@ -38,7 +38,6 @@ type MediorumConfig struct {
 	ReplicationFactor int
 	Dir               string `default:"/tmp/mediorum"`
 	BlobStoreDSN      string `json:"-"`
-	SqliteDSN         string `json:"-"`
 	PostgresDSN       string `json:"-"`
 	LegacyFSRoot      string `json:"-"`
 	PrivateKey        string `json:"-"`
@@ -88,10 +87,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		config.BlobStoreDSN = "file://" + config.Dir + "/blobs"
 	}
 
-	if config.SqliteDSN == "" {
-		config.SqliteDSN = config.Dir + "/data.db"
-	}
-
 	if pk, err := parsePrivateKey(config.PrivateKey); err != nil {
 		log.Println("invalid private key: ", err)
 	} else {
@@ -111,7 +106,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	// db
-	db := dbMustDial(config.SqliteDSN)
+	db := dbMustDial(config.PostgresDSN)
 
 	// pg pool
 	pgPool, err := pgxpool.New(context.Background(), config.PostgresDSN)
@@ -137,6 +132,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// Middleware
 	echoServer.Use(middleware.Recover())
+	echoServer.Use(middleware.CORS()) // TODO: Should probably set explicit AllowOrigins instead of using default *
 
 	ss := &MediorumServer{
 		echo:      echoServer,
@@ -163,8 +159,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	basePath := echoServer.Group(apiBasePath)
 
 	// Middleware
-	basePath.Use(middleware.Recover())
-	basePath.Use(middleware.CORS())
 	// basePath.Use(middleware.Logger())
 
 	// TODO: Use middleware to cache whenever content is streamed, except if it's premium content.
@@ -191,6 +185,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.GET("/content/:key", ss.getBlob)
 	echoServer.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
 	echoServer.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
+	echoServer.GET("/tracks/cidstream/:key", ss.getBlob) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
 
 	// status + debug:
 	basePath.GET("/status", ss.getStatus)

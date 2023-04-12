@@ -42,7 +42,26 @@ type Crudr struct {
 }
 
 func New(host string, peerHosts []string, db *gorm.DB) *Crudr {
-	err := db.AutoMigrate(&Op{}, &Cursor{})
+
+	// err := db.AutoMigrate(&Op{})
+
+	opDDL := `
+	create table if not exists ops (
+		ulid text primary key,
+		host text not null,
+		action text not null,
+		"table" text not null,
+		data json
+	);
+	`
+	err := db.Exec(opDDL).Error
+
+	if err != nil {
+		panic(err)
+	}
+
+	// todo: combine with above
+	err = db.AutoMigrate(&Cursor{})
 	if err != nil {
 		panic(err)
 	}
@@ -181,7 +200,6 @@ func (c *Crudr) ApplyOp(op *Op) error {
 	}
 
 	// create op + records in a db transaction
-
 	err = c.DB.Transaction(func(tx *gorm.DB) error {
 		if !op.Transient {
 			res := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(op)

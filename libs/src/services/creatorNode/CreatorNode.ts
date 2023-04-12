@@ -418,8 +418,6 @@ export class CreatorNode {
     ])
 
     // Update metadata to include uploaded CIDs
-    // TODO: Make sure discovery and elsewhere accept 0-length array. Some checks in CN currently fail if there's not at least 1 valid segment
-    updatedMetadata.track_segments = []
     updatedMetadata.track_cid = audioResp.results['320']
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid

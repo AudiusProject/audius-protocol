@@ -130,73 +130,7 @@ services:
       service: creator-node
     <<: *common
 
-  # Comms (nats, storage v2, and comms/dms)
-
-  nats-storage-1:
-    extends:
-      file: docker-compose.comms.yml
-      service: nats-storage-1
-    <<: *common
-
-  nats-storage-2:
-    extends:
-      file: docker-compose.comms.yml
-      service: nats-storage-2
-    <<: *common
-
-  nats-storage-3:
-    extends:
-      file: docker-compose.comms.yml
-      service: nats-storage-3
-    <<: *common
-
-  nats-storage-4:
-    extends:
-      file: docker-compose.comms.yml
-      service: nats-storage-4
-    <<: *common
-
-  nats-discovery-1:
-    extends:
-      file: docker-compose.comms.yml
-      service: nats-discovery-1
-    <<: *common
-
-  nats-discovery-2:
-    extends:
-      file: docker-compose.comms.yml
-      service: nats-discovery-2
-    <<: *common
-
-  nats-discovery-3:
-    extends:
-      file: docker-compose.comms.yml
-      service: nats-discovery-3
-    <<: *common
-
-  storage-1:
-    extends:
-      file: docker-compose.comms.yml
-      service: storage-1
-    <<: *common
-
-  storage-2:
-    extends:
-      file: docker-compose.comms.yml
-      service: storage-2
-    <<: *common
-
-  storage-3:
-    extends:
-      file: docker-compose.comms.yml
-      service: storage-3
-    <<: *common
-
-  storage-4:
-    extends:
-      file: docker-compose.comms.yml
-      service: storage-4
-    <<: *common
+  # Comms (aka dms)
 
   comms-discovery-1:
     extends:
@@ -228,18 +162,6 @@ services:
     extends:
       file: docker-compose.storagev2.yml
       service: storagev2-1
-    <<: *common
-
-  storagev2-2:
-    extends:
-      file: docker-compose.storagev2.yml
-      service: storagev2-2
-    <<: *common
-
-  storagev2-3:
-    extends:
-      file: docker-compose.storagev2.yml
-      service: storagev2-3
     <<: *common
 
   # Blockchain
@@ -293,5 +215,4 @@ volumes:
   audius-libs:
   postgresdata:
   mediorum1:
-  mediorum2:
-  mediorum3:
+

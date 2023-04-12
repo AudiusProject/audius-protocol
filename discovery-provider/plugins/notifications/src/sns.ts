@@ -5,8 +5,8 @@ import {
   PublishBatchCommandInput,
   PublishCommandInput
 } from '@aws-sdk/client-sns'
-import { DeviceType } from './processNotifications/mappers/base'
 import { logger } from './logger'
+import { DeviceType } from './processNotifications/mappers/userNotificationSettings'
 
 const region = process.env.AWS_REGION
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID
@@ -137,5 +137,4 @@ export const sendPushNotification = async (
       targetARN: device.targetARN
     })
   }
-  // TODO: increment badge count
 }

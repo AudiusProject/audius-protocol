@@ -79,8 +79,11 @@ describe('Create Notification', () => {
         title: 'New Artist Update',
         body: `user_1 released a new track`,
         data: {
-          "id": "timestamp:1589373217:group_id:create:track:user_id:1",
-          "type": "UserSubscription",
+          id: 'timestamp:1589373217:group_id:create:track:user_id:1',
+          type: 'UserSubscription',
+          entityId: 10,
+          entityOwnerId: 1,
+          entityType: 'track'
         }
       }
     )
@@ -172,8 +175,11 @@ describe('Create Notification', () => {
         title: 'New Artist Update',
         body: 'user_1 released a new playlist I am a playlist',
         data: {
-          "type": "UserSubscription",
-          "id": "timestamp:1589373217:group_id:create:playlist_id:10",
+          type: 'UserSubscription',
+          id: 'timestamp:1589373217:group_id:create:playlist_id:10',
+          entityId: 10,
+          entityOwnerId: 1,
+          entityType: 'playlist'
         }
       }
     )
@@ -257,8 +263,11 @@ describe('Create Notification', () => {
         title: 'New Artist Update',
         body: 'user_1 released a new album I am an album',
         data: {
-          "type": "UserSubscription",
-          "id": "timestamp:1589373217:group_id:create:playlist_id:10",
+          type: 'UserSubscription',
+          id: 'timestamp:1589373217:group_id:create:playlist_id:10',
+          entityId: 10,
+          entityOwnerId: 1,
+          entityType: 'album'
         }
       }
     )
