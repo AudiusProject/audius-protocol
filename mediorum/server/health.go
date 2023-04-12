@@ -1,7 +1,7 @@
 package server
 
 import (
-	"strings"
+	"fmt"
 	"time"
 )
 
@@ -43,13 +43,15 @@ func (ss *MediorumServer) healthReport() ServerHealth {
 }
 
 func (ss *MediorumServer) findHealthyPeers(aliveInLast string) ([]ServerHealth, error) {
-	if !strings.HasPrefix(aliveInLast, "-") {
-		aliveInLast = "-" + aliveInLast
-	}
+	// was unable to get this to work with ? or $1
+	// so use string interpolation.
+	// this value should always be programmer provided, so not worried about sql injection
+	// so long as we don't expose as a query param or whatever
+	whereAlive := fmt.Sprintf("alive_at >= NOW() - INTERVAL '%s'", aliveInLast)
 
 	healths := []ServerHealth{}
 	err := ss.crud.DB.
-		Where("alive_at >= datetime('now', ?)", aliveInLast).
+		Where(whereAlive).
 		Order("host").
 		Find(&healths).
 		Error

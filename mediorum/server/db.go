@@ -4,7 +4,7 @@ import (
 	"mediorum/crudr"
 	"time"
 
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -53,22 +53,12 @@ type LogLine struct {
 }
 
 func dbMustDial(dbPath string) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
 		panic(err)
 	}
-
-	err = db.Exec(`
-	PRAGMA busy_timeout       = 10000;
-	PRAGMA journal_mode       = WAL;
-	PRAGMA journal_size_limit = 200000000;
-	PRAGMA synchronous        = NORMAL;
-	PRAGMA foreign_keys       = TRUE;
-
-	PRAGMA optimize;
-	`).Error
 
 	if err != nil {
 		panic(err)
