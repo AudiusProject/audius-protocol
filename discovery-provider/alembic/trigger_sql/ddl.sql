@@ -37,3 +37,24 @@ commit;
 begin;
   drop table if exists blocks_copy;
 commit;
+
+-- 4/10/23: inverse supporter rank up and supporting rank up notifications
+-- context: supporter rank up and supporting rank up notifications were
+-- reversed when we first added them to the handle_supporter_rank_up.sql trigger.
+-- this migration is meant to swap those types for any notification made when this migration
+-- was first run. we indicate whether the entry is from when a migration was first run
+-- by looking at whether type_v2 is null. supporter/ing_rank_up notifications
+-- created after this migration was run should have type_v2 as not null
+-- (see handle_supporter_rank_ups.sql)
+begin;
+alter table notification
+add column if not exists type_v2 varchar default null;
+
+update notification n
+set type = 'supporter_rank_up', type_v2 = 'supporter_rank_up', group_id = 'supporter_rank_up' || substring(group_id from position(':' in group_id))
+where type = 'supporting_rank_up' and type_v2 is null;
+
+update notification 
+set type = 'supporting_rank_up', type_v2 = 'supporting_rank_up', group_id = 'supporting_rank_up' || substring(group_id from position(':' in group_id))
+where type = 'supporter_rank_up' and type_v2 is null;
+commit;

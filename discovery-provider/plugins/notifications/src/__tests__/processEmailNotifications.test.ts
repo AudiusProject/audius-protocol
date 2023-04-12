@@ -385,15 +385,16 @@ describe('Email Notifications', () => {
 
     const expectedNotifications = [
       {
-        type: DMEntityType.Message,
-        sender_user_id: user1,
-        receiver_user_id: user2
-      },
-      {
         receiver_user_id: user2,
         blocknumber: null,
         slot: null,
+        type_v2: null,
         ...notificationRow
+      },
+      {
+        type: DMEntityType.Message,
+        sender_user_id: user1,
+        receiver_user_id: user2
       }
     ]
     await processEmailNotifications(discoveryDB, identityDB, frequency)
@@ -402,7 +403,7 @@ describe('Email Notifications', () => {
       userId: user2,
       email: user2Email,
       frequency: frequency,
-      notifications: expect.arrayContaining(expectedNotifications),
+      notifications: expectedNotifications,
       dnDb: discoveryDB,
       identityDb: identityDB
     })
@@ -437,6 +438,7 @@ describe('Email Notifications', () => {
         receiver_user_id: user2,
         blocknumber: null,
         slot: null,
+        type_v2: null,
         ...notificationRow
       }
     ]
