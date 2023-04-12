@@ -36,6 +36,7 @@ export class Account extends Base {
     this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
     this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
     this.userHasClaimedSolAccount = this.userHasClaimedSolAccount.bind(this)
+    this.signUpV2 = this.signUpV2.bind(this)
   }
 
   /**
@@ -151,11 +152,85 @@ export class Account extends Base {
       }
 
       // Add user to chain
+      phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =
         await this.User.createEntityManagerUser({
           metadata
         })
+      phase = phases.UPLOAD_PROFILE_IMAGES
       await this.User.uploadProfileImages(
+        profilePictureFile!,
+        coverPhotoFile!,
+        newMetadata
+      )
+      return { blockHash, blockNumber, userId: newMetadata.user_id }
+    } catch (e: any) {
+      return {
+        error: e.message,
+        phase,
+        errorStatus: e.response ? e.response.status : null
+      }
+    }
+  }
+
+  /**
+   * Signs a user up for Audius
+   * @param email
+   * @param password
+   * @param metadata
+   * @param profilePictureFile an optional file to upload as the profile picture
+   * @param coverPhotoFile an optional file to upload as the cover phtoo
+   * @param hasWallet
+   * @param host The host url used for the recovery email
+   * @param generateRecoveryLink an optional flag to skip generating recovery link for testing purposes
+   */
+  async signUpV2(
+    email: string,
+    password: string,
+    metadata: UserMetadata,
+    profilePictureFile: Nullable<File> = null,
+    coverPhotoFile: Nullable<File> = null,
+    hasWallet = false,
+    host = (typeof window !== 'undefined' && window.location.origin) || null,
+    generateRecoveryLink = true
+  ) {
+    const phases = {
+      CREATE_USER_RECORD: 'CREATE_USER_RECORD',
+      HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
+      ADD_USER: 'ADD_USER'
+    }
+    let phase = ''
+    try {
+      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+
+      if (this.web3Manager.web3IsExternal()) {
+        phase = phases.CREATE_USER_RECORD
+        await this.identityService.createUserRecord(
+          email,
+          this.web3Manager.getWalletAddress()
+        )
+      } else {
+        this.REQUIRES(Services.HEDGEHOG)
+        // If an owner wallet already exists, don't try to recreate it
+        if (!hasWallet) {
+          phase = phases.HEDGEHOG_SIGNUP
+          const ownerWallet = await this.hedgehog.signUp(email, password)
+          this.web3Manager.setOwnerWallet(ownerWallet)
+          if (generateRecoveryLink) {
+            await this.generateRecoveryLink({ handle: metadata.handle, host })
+          }
+        }
+      }
+
+      // Add user to chain
+      phase = phases.ADD_USER
+      const { newMetadata, blockHash, blockNumber } =
+        await this.User.createEntityManagerUserV2({
+          metadata
+        })
+      phase = phases.UPLOAD_PROFILE_IMAGES
+      await this.User.uploadProfileImagesV2(
         profilePictureFile!,
         coverPhotoFile!,
         newMetadata

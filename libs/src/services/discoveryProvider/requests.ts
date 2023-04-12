@@ -9,7 +9,8 @@ export const getUsers = (
   idsArray: Nullable<number[]>,
   walletAddress?: Nullable<string>,
   handle?: Nullable<string>,
-  minBlockNumber?: Nullable<number>
+  minBlockNumber?: Nullable<number>,
+  includeIncomplete?: Nullable<boolean>
 ) => {
   type QueryParams = {
     limit: number
@@ -17,7 +18,8 @@ export const getUsers = (
     handle?: string
     wallet?: string
     min_block_number?: number
-    id?: string[]
+    id?: string[],
+    include_incomplete?: boolean
   }
 
   const queryParams: QueryParams = { limit: limit, offset: offset }
@@ -36,6 +38,10 @@ export const getUsers = (
     }
     queryParams.id = idsArray as unknown as string[]
   }
+  if (includeIncomplete != null) {
+    queryParams.include_incomplete = includeIncomplete
+  }
+  
 
   const req = { endpoint: 'users', queryParams }
 

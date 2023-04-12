@@ -36,6 +36,7 @@ user_model = ns.model(
         "does_follow_current_user": fields.Boolean,
         "handle": fields.String(required=True),
         "id": fields.String(required=True),
+        "is_storage_v2": fields.Boolean(required=True),
         "is_verified": fields.Boolean(required=True),
         "location": fields.String,
         "name": fields.String(required=True),

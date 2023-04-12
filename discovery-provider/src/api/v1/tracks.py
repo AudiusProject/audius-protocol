@@ -420,13 +420,20 @@ class TrackStream(Resource):
         decoded_id = decode_with_abort(track_id, ns)
         info = get_track_stream_info(decoded_id)
 
-        creator_nodes = info["creator_nodes"]
         track = info["track"]
-        if not creator_nodes or not track:
+        if not track:
             abort_not_found(track_id, ns)
 
-        creator_nodes = creator_nodes.split(",")
-        primary_node = creator_nodes[0]
+        is_storage_v2 = not (track["track_cid"] and len(track["track_cid"]) == 46 and track["track_cid"].startswith("Qm"))
+        if is_storage_v2:
+            # TODO: Read from chain and implement rendezvous hash to select (fallback) node(s) to query
+            primary_node = 'http://audius-protocol-creator-node-1'
+        elif info["creator_nodes"]:
+            creator_nodes = info["creator_nodes"].split(",")
+            primary_node = creator_nodes[0]
+        else:
+            abort_not_found(track_id, ns)
+
         request_args = stream_parser.parse_args()
 
         # signature for the track to be included as a query param in the redirect to CN

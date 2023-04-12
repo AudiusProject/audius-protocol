@@ -33,6 +33,7 @@ class User(Base, RepresentableMixin):
     cover_photo = Column(String)
     bio = Column(String)
     location = Column(String)
+    is_storage_v2 = Column(Boolean, nullable=False, server_default=text("false"))
     metadata_multihash = Column(String)
     creator_node_endpoint = Column(String)
     blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore

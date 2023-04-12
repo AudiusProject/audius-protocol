@@ -37,3 +37,9 @@ commit;
 begin;
   drop table if exists blocks_copy;
 commit;
+
+-- 4/12/23: add is_storage_v2 to users table
+begin;
+    alter table users
+    add column if not exists is_storage_v2 boolean not null default false;
+commit;

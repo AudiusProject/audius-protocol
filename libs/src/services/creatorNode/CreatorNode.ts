@@ -435,6 +435,14 @@ export class CreatorNode {
     return await this.uploadFileV2(file, onProgress, 'img_square')
   }
 
+  async uploadProfilePictureV2(file: File, onProgress: ProgressCB = () => {}) {
+    return await this.uploadFileV2(file, onProgress, 'img_square')
+  }
+
+  async uploadCoverPhotoV2(file: File, onProgress: ProgressCB = () => {}) {
+    return await this.uploadFileV2(file, onProgress, 'img_backdrop')
+  }
+
   async uploadFileV2(
     file: File,
     onProgress: ProgressCB,

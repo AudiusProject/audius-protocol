@@ -91,6 +91,8 @@ def get_users_route():
         args["id"] = parse_id_array_param(request.args.getlist("id"))
     if "min_block_number" in request.args:
         args["min_block_number"] = request.args.get("min_block_number", type=int)
+    if "include_incomplete" in request.args:
+        args["include_incomplete"] = parse_bool_param(request.args.get("include_incomplete"))
     current_user_id = get_current_user_id(required=False)
     args["current_user_id"] = current_user_id
     users = get_users(args)
