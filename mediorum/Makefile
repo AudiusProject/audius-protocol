@@ -39,4 +39,5 @@ pg.up:
 pg.bounce::
 	docker compose down --volumes
 	docker compose up -d --wait
+	rm -rf /tmp/mediorum*
 	sleep 2

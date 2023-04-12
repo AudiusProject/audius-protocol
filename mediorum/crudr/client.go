@@ -88,7 +88,7 @@ func (c *Crudr) clientBackfill(host, bulkEndpoint string) error {
 		}
 	}
 
-	c.logger.Debug("backfill done", "host", host, "count", len(ops))
+	c.logger.Debug("backfill done", "host", host, "count", len(ops), "last_ulid", lastUlid)
 
 	return nil
 }

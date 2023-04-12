@@ -2,6 +2,7 @@ package crudr
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -23,6 +24,10 @@ const (
 const (
 	LocalStreamName  = "ops"
 	GlobalStreamName = "global"
+)
+
+var (
+	errDuplicateOp = errors.New("duplicate op")
 )
 
 type Crudr struct {
@@ -208,10 +213,10 @@ func (c *Crudr) ApplyOp(op *Op) error {
 			}
 
 			// if ulid already in ops table
-			// it is already applied... move on
+			// with belt+suspenders we see every event twice
+			// so no need to log anything here
 			if res.RowsAffected == 0 {
-				c.logger.Debug("already have ulid", "ulid", op.ULID)
-				return nil
+				return errDuplicateOp
 			}
 		}
 
@@ -235,7 +240,10 @@ func (c *Crudr) ApplyOp(op *Op) error {
 		return err
 	})
 
-	if err != nil {
+	if err == errDuplicateOp {
+		// belt+suspenders: just move on
+		return nil
+	} else if err != nil {
 		return err
 	}
 

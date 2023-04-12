@@ -60,41 +60,15 @@
 
       connectedCallback() {
         super.connectedCallback();
+        this.doPoll();
+        setInterval(this.doPoll.bind(this), 1000);
+      }
 
-        // streaming updates
-        const sse = new EventSource(
-          "/mediorum/internal/crud/stream?stream=global"
-        );
-        sse.onmessage = (event) => {
-          const op = JSON.parse(event.data);
-          console.log(op);
-
-          if (op.table == "server_healths") {
-            for (const record of op.data) {
-              this.hostHealth[record.host] = record;
-            }
-          }
-
-          if (op.table == "uploads") {
-            for (const record of op.data) {
-              const i = this.uploads.findIndex((j) => j.id == record.id);
-              if (i == -1) {
-                this.uploads.unshift(record);
-              } else {
-                this.uploads[i] = record;
-              }
-            }
-          }
-
-          this.requestUpdate();
-        };
-
-        // request history via GET
+      doPoll() {
         fetch("/mediorum/uploads")
           .then((r) => r.json())
           .then((r) => {
             if (Array.isArray(r)) {
-              console.log("history", r);
               this.uploads = r;
               this.requestUpdate();
             }
