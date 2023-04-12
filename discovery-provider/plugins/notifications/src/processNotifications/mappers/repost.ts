@@ -9,6 +9,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { logger } from '../../logger'
 
 type RepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostNotification
@@ -33,6 +34,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
   }
 
   async pushNotification() {
+    logger.info(`asdf pushNotification`)
+
     const res: Array<{
       user_id: number
       name: string
@@ -42,7 +45,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [this.receiverUserId, this.repostUserId])
-    const users = res.reduce((acc, user) => {
+
+      const users = res.reduce((acc, user) => {
       acc[user.user_id] = {
         name: user.name,
         isDeactivated: user.is_deactivated
@@ -54,10 +58,14 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       return
     }
 
+    logger.info(`asdf buldUserNotificationSettings`)
+
     const userNotificationSettings = await buildUserNotificationSettings(
       this.identityDB,
       [this.receiverUserId, this.repostUserId]
     )
+    logger.info(`asdf buldUserNotificationSettings done`)
+
     const reposterUserName = users[this.repostUserId]?.name
     let entityType
     let entityName
@@ -96,6 +104,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       entityType = playlist?.is_album ? 'album' : 'playlist'
       entityName = playlist?.playlist_name
     }
+    logger.info(`asdf shouldSendPushNotification`)
 
     // If the user has devices to the notification to, proceed
     if (

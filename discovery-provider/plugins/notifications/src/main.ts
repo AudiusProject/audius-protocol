@@ -63,6 +63,7 @@ export class Processor {
     discoveryDBUrl?: string
     identityDBUrl?: string
   } = {}) => {
+    logger.info('asdf setupDB')
     const discoveryDBConnection = discoveryDBUrl || process.env.DN_DB_URL
     const identityDBConnection = identityDBUrl || process.env.IDENTITY_DB_URL
     this.discoveryDB = await getDB(discoveryDBConnection)
