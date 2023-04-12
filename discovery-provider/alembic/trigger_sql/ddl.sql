@@ -50,11 +50,11 @@ begin;
 alter table notification
 add column if not exists type_v2 varchar default null;
 
-UPDATE notification n
-SET type = 'supporter_rank_up', type_v2 = 'supporter_rank_up', group_id = 'supporter_rank_up' || substring(group_id from position(':' in group_id))
-WHERE type = 'supporting_rank_up' and type_v2 is null;
+update notification n
+set type = 'supporter_rank_up', type_v2 = 'supporter_rank_up', group_id = 'supporter_rank_up' || substring(group_id from position(':' in group_id))
+where type = 'supporting_rank_up' and type_v2 is null;
 
-UPDATE notification 
-SET type = 'supporting_rank_up', type_v2 = 'supporting_rank_up', group_id = 'supporting_rank_up' || substring(group_id from position(':' in group_id))
-WHERE type = 'supporter_rank_up' and type_v2 is null;
+update notification 
+set type = 'supporting_rank_up', type_v2 = 'supporting_rank_up', group_id = 'supporting_rank_up' || substring(group_id from position(':' in group_id))
+where type = 'supporter_rank_up' and type_v2 is null;
 commit;

@@ -11,6 +11,7 @@ begin
       (slot, user_ids, timestamp, type, specifier, group_id, data, type_v2)
     values
       (
+      -- supporting_rank_up notifs are sent to the sender of the tip
         new.slot,
         ARRAY [new.sender_user_id],
         user_bank_tx.created_at,
@@ -21,6 +22,7 @@ begin
         'supporting_rank_up'
       ),
       (
+      -- supporter_rank_up notifs are sent to the receiver of the tip
         new.slot,
         ARRAY [new.receiver_user_id],
         user_bank_tx.created_at,
