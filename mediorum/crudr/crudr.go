@@ -37,7 +37,19 @@ type Crudr struct {
 }
 
 func New(host string, db *gorm.DB) *Crudr {
-	err := db.AutoMigrate(&Op{})
+	// err := db.AutoMigrate(&Op{})
+
+	opDDL := `
+	create table if not exists ops (
+		ulid text primary key,
+		host text not null,
+		action text not null,
+		"table" text not null,
+		data json
+	);
+	`
+	err := db.Exec(opDDL).Error
+
 	if err != nil {
 		panic(err)
 	}
@@ -180,12 +192,6 @@ func (c *Crudr) apply(op *Op) error {
 	}
 
 	// create op + records in a db transaction
-
-	// using a mutex here to force one tx at a time
-	// due to sqlite perf issues in prod.
-	// it should not really be necessary tho.
-	// see: https://github.com/AudiusProject/mediorum/issues/1
-	c.mu.Lock()
 	err = c.DB.Transaction(func(tx *gorm.DB) error {
 		if !op.Transient {
 			res := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(op)
@@ -220,7 +226,6 @@ func (c *Crudr) apply(op *Op) error {
 
 		return err
 	})
-	c.mu.Unlock()
 
 	if err != nil {
 		return err
