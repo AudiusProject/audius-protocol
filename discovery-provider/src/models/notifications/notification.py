@@ -29,6 +29,13 @@ class Notification(Base, RepresentableMixin):
     timestamp = Column(DateTime, nullable=False)
     data = Column(postgresql.JSONB())  # type: ignore
     user_ids = Column(postgresql.ARRAY(Integer()), index=True)
+    # When notifications were first created, we accidentally swapped
+    # supporter_rank_up (sent to the tip receiver)
+    # with supporting_rank_up (sent to the tip sender) in the db trigger
+    # on creation of these notifs. We added this type_v2 column to
+    # help us migrate only notifications created before we fixed the trigger.
+    # This column should not be used otherwise.
+    type_v2 = Column(String, nullable=True)
     UniqueConstraint("group_id", "specifier", name="uq_notification")
 
 
