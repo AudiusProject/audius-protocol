@@ -424,10 +424,14 @@ class TrackStream(Resource):
         if not track:
             abort_not_found(track_id, ns)
 
-        is_storage_v2 = not (track["track_cid"] and len(track["track_cid"]) == 46 and track["track_cid"].startswith("Qm"))
+        is_storage_v2 = not (
+            track["track_cid"]
+            and len(track["track_cid"]) == 46
+            and track["track_cid"].startswith("Qm")
+        )
         if is_storage_v2:
             # TODO: Read from chain and implement rendezvous hash to select (fallback) node(s) to query
-            primary_node = 'http://audius-protocol-creator-node-1'
+            primary_node = "http://audius-protocol-creator-node-1"
         elif info["creator_nodes"]:
             creator_nodes = info["creator_nodes"].split(",")
             primary_node = creator_nodes[0]

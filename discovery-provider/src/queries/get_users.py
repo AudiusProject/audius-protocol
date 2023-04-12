@@ -38,9 +38,9 @@ def get_users(args):
             base_query = session.query(User)
             # Don't return the user if they have no wallet or handle (user creation did not finish properly on chain)
             if "include_incomplete" not in args or not args["include_incomplete"]:
-              base_query = base_query.filter(
-                  User.is_current == True, User.wallet != None, User.handle_lc != None
-              )
+                base_query = base_query.filter(
+                    User.is_current == True, User.wallet != None, User.handle_lc != None
+                )
 
             # Process filters
             if "wallet" in args:

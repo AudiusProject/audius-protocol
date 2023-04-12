@@ -126,17 +126,17 @@ def create_user(params: ManageEntityParameters):
     if params.metadata_cid == "v2":
         user_record.is_storage_v2 = True
     else:
-      sp_ids = parse_sp_ids(params.metadata_cid)
+        sp_ids = parse_sp_ids(params.metadata_cid)
 
-      # Update the user's new replica set in the model and save!
-      user_record.primary_id = sp_ids[0]
-      user_record.secondary_ids = sp_ids[1:]
+        # Update the user's new replica set in the model and save!
+        user_record.primary_id = sp_ids[0]
+        user_record.secondary_ids = sp_ids[1:]
 
-      # Update cnode endpoint string reconstructed from sp ID
-      creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
-          params.redis, sp_ids[0], sp_ids[1:]
-      )
-      user_record.creator_node_endpoint = creator_node_endpoint_str
+        # Update cnode endpoint string reconstructed from sp ID
+        creator_node_endpoint_str = get_endpoint_string_from_sp_ids(
+            params.redis, sp_ids[0], sp_ids[1:]
+        )
+        user_record.creator_node_endpoint = creator_node_endpoint_str
 
     user_record = validate_user_record(user_record)
     params.add_user_record(user_id, user_record)
