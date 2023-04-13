@@ -2254,7 +2254,7 @@ export const audiusBackend = ({
       }
     } else if (notification.type === 'supporter_rank_up') {
       const data = notification.actions[0].data
-      const senderUserId = decodeHashId(data.receiver_user_id) as number
+      const senderUserId = decodeHashId(data.sender_user_id) as number
       return {
         type: NotificationType.SupporterRankUp,
         entityId: senderUserId,
