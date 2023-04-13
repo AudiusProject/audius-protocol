@@ -91,16 +91,15 @@ export const sendAndroidMessage = async ({
 }) => {
   const message = JSON.stringify({
     default: body,
-    GCM: {
+    GCM: JSON.stringify({
       notification: {
         ...(title ? { title } : {}),
         body,
         sound: playSound && 'default'
       },
       data
-    }
+    })
   })
-
   await publish({
     TargetArn: targetARN,
     Message: message,
