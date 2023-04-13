@@ -78,26 +78,7 @@ func startStagingOrProd(isProd bool) {
 	ss.MustStart()
 }
 
-func mustGetenv(key string) string {
-	val := os.Getenv(key)
-	if val == "" {
-		log.Fatal("missing required env variable: ", key)
-	}
-	return val
-}
-
-func getenvWithDefault(key string, fallback string) string {
-	val := os.Getenv(key)
-	if val == "" {
-		return fallback
-	}
-	return val
-}
-
 func startDevInstance() {
-	// synthetic network
-	network := devNetwork(7)
-
 	idx := "1"
 	if v := os.Getenv("IDX"); v != "" {
 		idx = v
@@ -108,15 +89,19 @@ func startDevInstance() {
 		postgresDSN = v
 	}
 
+	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
+	network := devNetwork(hostNameTemplate, 7)
+
 	config := server.MediorumConfig{
 		Self: server.Peer{
-			Host:   "http://localhost:199" + idx,
-			Wallet: "0xPort" + idx,
+			Host:   fmt.Sprintf(hostNameTemplate, idx),
+			Wallet: "0xWallet" + idx,
 		},
 		Peers:             network,
 		ReplicationFactor: 3,
 		Dir:               fmt.Sprintf("/tmp/mediorum_dev_%s", idx),
 		PostgresDSN:       postgresDSN,
+		ListenPort:        "199" + idx,
 	}
 
 	ss, err := server.New(config)
@@ -128,11 +113,13 @@ func startDevInstance() {
 }
 
 func startDevCluster() {
-	network := devNetwork(3)
-	wg := sync.WaitGroup{}
 
 	dirTemplate := getenvWithDefault("dirTemplate", "/tmp/mediorum_dev_%d")
 	dbUrlTemplate := getenvWithDefault("dbUrlTemplate", "postgres://postgres:example@localhost:5454/m%d")
+	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
+
+	network := devNetwork(hostNameTemplate, 3)
+	wg := sync.WaitGroup{}
 
 	for idx, peer := range network {
 		peer := peer
@@ -142,6 +129,7 @@ func startDevCluster() {
 			ReplicationFactor: 3,
 			Dir:               fmt.Sprintf(dirTemplate, idx+1),
 			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),
+			ListenPort:        fmt.Sprintf("199%d", idx+1),
 		}
 
 		wg.Add(1)
@@ -159,13 +147,29 @@ func startDevCluster() {
 	wg.Wait()
 }
 
-func devNetwork(n int) []server.Peer {
+func devNetwork(hostNameTemplate string, n int) []server.Peer {
 	network := []server.Peer{}
 	for i := 1; i <= n; i++ {
 		network = append(network, server.Peer{
-			Host:   fmt.Sprintf("http://localhost:199%d", i),
+			Host:   fmt.Sprintf(hostNameTemplate, i),
 			Wallet: fmt.Sprintf("0xWallet%d", i), // todo keypair stuff
 		})
 	}
 	return network
+}
+
+func mustGetenv(key string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		log.Fatal("missing required env variable: ", key)
+	}
+	return val
+}
+
+func getenvWithDefault(key string, fallback string) string {
+	val := os.Getenv(key)
+	if val == "" {
+		return fallback
+	}
+	return val
 }
