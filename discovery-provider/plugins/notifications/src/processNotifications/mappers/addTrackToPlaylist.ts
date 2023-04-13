@@ -4,13 +4,17 @@ import {
   AppEmailNotification,
   AddTrackToPlaylistNotification
 } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import {
   ResourceIds,
   Resources
 } from '../../email/notifications/renderEmail'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type AddTrackToPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AddTrackToPlaylistNotification
@@ -80,8 +84,9 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      track.owner_id
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [track.owner_id]
     )
 
     const playlistOwnerName = users[playlist.playlist_owner_id]?.name
@@ -90,17 +95,19 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[track.owner_id]?.devices ?? []).length > 0
+      userNotificationSettings.shouldSendPushNotification({
+        receiverUserId: track.owner_id
+      })
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[track.owner_id].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        track.owner_id
+      )
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
               type: device.type,
-              badgeCount:
-                userNotifications.mobile[track.owner_id].badgeCount + 1,
+              badgeCount: userNotificationSettings.getBadgeCount(track.owner_id) + 1,
               targetARN: device.awsARN
             },
             {
@@ -108,8 +115,9 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
               body: `${playlistOwnerName} added ${trackTitle} to their playlist ${playlistName}`,
               data: {
                 type: 'AddTrackToPlaylist',
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
-                  }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 playlistId: this.playlistId
               }
             }
@@ -119,8 +127,11 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       await this.incrementBadgeCount(track.owner_id)
     }
     if (
-      isLiveEmailEnabled &&
-      userNotifications.email?.[track.owner_id].frequency === 'live'
+      isLiveEmailEnabled && 
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: track.owner_id,
+
+      })
     ) {
       const notification: AppEmailNotification = {
         receiver_user_id: track.owner_id,
@@ -128,8 +139,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       }
       await sendNotificationEmail({
         userId: track.owner_id,
-        email: userNotifications.email?.[track.owner_id].email,
-        frequency: 'live',
+        userNotificationSettings,
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

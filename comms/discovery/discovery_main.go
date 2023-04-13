@@ -1,17 +1,16 @@
 package discovery
 
 import (
-	"expvar"
 	"log"
-	"time"
+	"os"
+	"strings"
 
 	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
-	"comms.audius.co/shared/peering"
-	"github.com/nats-io/nats.go"
+	"comms.audius.co/discovery/the_graph"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -19,36 +18,50 @@ func DiscoveryMain() {
 	// dial datasources in parallel
 	g := errgroup.Group{}
 
-	var jsc nats.JetStreamContext
 	var proc *rpcz.RPCProcessor
+	discoveryConfig := config.Parse()
 
 	g.Go(func() error {
-		discoveryConfig := config.GetDiscoveryConfig()
-		peering, err := peering.New(&discoveryConfig.PeeringConfig)
+		var err error
+
+		// dial db
+		err = db.Dial()
 		if err != nil {
 			return err
 		}
 
-		err = peering.PollRegisteredNodes()
-		if err != nil {
-			return err
-		}
+		// query The Graph for peers
+		// soon: easy to configure peer source for local cluster / test stuff
+		// also: refresh peers on interval (in stage / prod at least)
+		{
+			peers, err := the_graph.Query(discoveryConfig.IsStaging, false)
+			if err != nil {
+				return err
+			}
 
-		peerMap := peering.Solicit()
+			// hack: fill in hostname if missing
+			if discoveryConfig.MyHost == "" {
+				for _, peer := range peers {
+					if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+						discoveryConfig.MyHost = peer.Host
+						break
+					}
+				}
+			}
 
-		jsc, err = peering.DialJetstream(peerMap)
-		if err != nil {
-			log.Println("jetstream dial failed", err)
-			return err
+			discoveryConfig.SetPeers(peers)
 		}
 
 		// create RPC processor
-		proc, err = rpcz.NewProcessor(jsc)
+		proc, err = rpcz.NewProcessor(discoveryConfig)
 		if err != nil {
 			return err
 		}
 
-		err = pubkeystore.Dial()
+		// start sweepers
+		proc.StartSweepers(discoveryConfig)
+
+		err = pubkeystore.Dial(discoveryConfig)
 		if err != nil {
 			return err
 		}
@@ -59,18 +72,17 @@ func DiscoveryMain() {
 
 	})
 	g.Go(func() error {
-		return db.Dial()
-	})
-	g.Go(func() error {
 		return db.RunMigrations()
 	})
 	if err := g.Wait(); err != nil {
 		log.Fatal(err)
 	}
 
-	expvar.NewString("booted_at").Set(time.Now().UTC().String())
-
-	// Start comms server on :8925
-	e := server.NewServer(jsc, proc)
-	e.Logger.Fatal(e.Start(":8925"))
+	// Start server
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8925"
+	}
+	e := server.NewServer(discoveryConfig, proc)
+	e.Logger.Fatal(e.Start(":" + port))
 }

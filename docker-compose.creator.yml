@@ -23,8 +23,8 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
-      # build-audius-libs:
-      #   condition: service_started
+      build-audius-libs:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: "${CREATOR_NODE_REPLICAS}"

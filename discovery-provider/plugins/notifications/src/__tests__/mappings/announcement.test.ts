@@ -76,8 +76,8 @@ describe('Announcement Notification', () => {
         title: 'This is an announcement',
         body: 'This is some information about the announcement we need to display',
         data: {
-          id: 'timestamp:1589373217:group_id:announcement:blocknumber:1',
-          type: 'Announcement'
+          "id": "timestamp:1589373217:group_id:announcement:blocknumber:1",
+          "type": "Announcement",
         }
       }
     )

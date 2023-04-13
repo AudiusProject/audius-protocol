@@ -336,8 +336,6 @@ def item_key(item):
     elif "track_id" in item:
         return "track:" + str(item["track_id"])
     elif "playlist_id" in item:
-        if item["is_album"]:
-            return "album:" + str(item["playlist_id"])
         return "playlist:" + str(item["playlist_id"])
     elif "user_id" in item:
         return "user:" + str(item["user_id"])

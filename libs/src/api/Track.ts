@@ -55,10 +55,6 @@ export class Track extends Base {
     this.addTracksToChainAndCnode = this.addTracksToChainAndCnode.bind(this)
     this.updateTrack = this.updateTrack.bind(this)
     this.logTrackListen = this.logTrackListen.bind(this)
-    this.addTrackRepost = this.addTrackRepost.bind(this)
-    this.deleteTrackRepost = this.deleteTrackRepost.bind(this)
-    this.addTrackSave = this.addTrackSave.bind(this)
-    this.deleteTrackSave = this.deleteTrackSave.bind(this)
     this.deleteTrack = this.deleteTrack.bind(this)
   }
   /* ------- GETTERS ------- */
@@ -381,103 +377,66 @@ export class Track extends Base {
   /* ------- SETTERS ------- */
 
   /**
- * Takes in a readable stream if isServer is true, or a file reference if isServer is
- * false.
- * Uploads file, retrieves multihash, adds multihash to input metadata object,
- * uploads metadata, and finally returns metadata multihash
- * Wraps the stateless function in AudiusLib.
- *
- * @param trackFile ReadableStream from server, or File handle on client
- * @param coverArtFile ReadableStream from server, or File handle on client
- * @param metadata json of the track metadata with all fields, missing fields will error
- * @param onProgress callback fired with (loaded, total) on byte upload progress
- */
+   * Takes in a readable stream if isServer is true, or a file reference if isServer is
+   * false.
+   * Uploads file, retrieves multihash, adds multihash to input metadata object,
+   * uploads metadata, and finally returns metadata multihash
+   * Wraps the stateless function in AudiusLib.
+   *
+   * @param trackFile ReadableStream from server, or File handle on client
+   * @param coverArtFile ReadableStream from server, or File handle on client
+   * @param metadata json of the track metadata with all fields, missing fields will error
+   * @param onProgress callback fired with (loaded, total) on byte upload progress
+   */
   async uploadTrackV2(
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
     onProgress: () => void
   ) {
-    this.REQUIRES(Services.CREATOR_NODE) // TODO: Change to storage node
+    // Validate inputs
+    this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
-
-    try {
-      if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
-
-      this.IS_OBJECT(metadata)
-
-      const ownerId = this.userStateManager.getCurrentUserId()
-      if (!ownerId) {
-        return {
-          error: 'No users loaded for this wallet'
-        }
-      }
-
-      metadata.owner_id = ownerId
-      this._validateTrackMetadata(metadata)
-
-      // Upload metadata
-      const {
-        metadataMultihash,
-        // metadataFileUUID,
-        // transcodedTrackUUID,
-        transcodedTrackCID
-      } = await retry(
-        async () => {
-          return this.creatorNode.uploadTrackContentV2(
-            trackFile,
-            coverArtFile,
-            metadata,
-            onProgress
-          )
-          // return this.creatorNode.uploadTrackContent(
-          //   trackFile,
-          //   coverArtFile,
-          //   metadata,
-          //   onProgress
-          // )
-        },
-        {
-          // Retry function 3x
-          // 1st retry delay = 500ms, 2nd = 1500ms, 3rd...nth retry = 4000 ms (capped)
-          minTimeout: 500,
-          maxTimeout: 4000,
-          factor: 3,
-          retries: 3,
-          onRetry: (err) => {
-            if (err) {
-              console.log('uploadTrackContentV2 retry error: ', err)
-            }
-          }
-        }
-      )
-
-      // Write metadata to chain
-      // TODO: Make discovery index by reading its own db instead of hitting CN /ipfs
-      const trackId = await this._generateTrackId()
-      const response = await this.contracts.EntityManagerClient!.manageEntity(
-        ownerId,
-        EntityManagerClient.EntityType.TRACK,
-        trackId,
-        EntityManagerClient.Action.CREATE,
-        metadataMultihash
-      )
-      const txReceipt = response.txReceipt
-
+    if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
+    this.IS_OBJECT(metadata)
+    const ownerId = this.userStateManager.getCurrentUserId()
+    if (!ownerId) {
       return {
-        blockHash: txReceipt.blockHash,
-        blockNumber: txReceipt.blockNumber,
-        trackId,
-        transcodedTrackCID,
-        error: false
-      }
-    } catch (e) {
-      return {
-        error: (e as Error).message,
-        stack: (e as Error).stack
+        error: 'No users loaded for this wallet'
       }
     }
+    metadata.owner_id = ownerId
+    this._validateTrackMetadata(metadata)
+
+    // Upload track audio and cover art to storage node
+    const updatedMetadata =
+      await this.creatorNode.uploadTrackAudioAndCoverArtV2(
+        trackFile,
+        coverArtFile,
+        metadata,
+        onProgress
+      )
+
+    // Write metadata to chain
+    const trackId = await this._generateTrackId()
+    const response = await this.contracts.EntityManagerClient!.manageEntity(
+      ownerId,
+      EntityManagerClient.EntityType.TRACK,
+      trackId,
+      EntityManagerClient.Action.CREATE,
+      JSON.stringify({ cid: updatedMetadata.track_cid, data: updatedMetadata })
+    )
+    const txReceipt = response.txReceipt
+
+    return {
+      blockHash: txReceipt.blockHash,
+      blockNumber: txReceipt.blockNumber,
+      trackId,
+      transcodedTrackCID: updatedMetadata.track_cid,
+      error: false
+    }
   }
+
   /**
    * Takes in a readable stream if isServer is true, or a file reference if isServer is
    * false.
@@ -804,53 +763,6 @@ export class Track extends Base {
       null,
       null,
       solanaListen
-    )
-  }
-
-  /** Adds a repost for a given user and track
-   * @param trackId track being reposted
-   */
-  async addTrackRepost(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.SocialFeatureFactoryClient.addTrackRepost(
-      userId!,
-      trackId
-    )
-  }
-
-  /**
-   * Deletes a repost for a given user and track
-   * @param track id of deleted repost
-   */
-  async deleteTrackRepost(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.SocialFeatureFactoryClient.deleteTrackRepost(
-      userId!,
-      trackId
-    )
-  }
-
-  /**
-   * Adds a rack save for a given user and track
-   * @param trackId track being saved
-   */
-  async addTrackSave(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.UserLibraryFactoryClient.addTrackSave(
-      userId!,
-      trackId
-    )
-  }
-
-  /**
-   * Delete a track save for a given user and track
-   * @param trackId save being removed
-   */
-  async deleteTrackSave(trackId: number) {
-    const userId = this.userStateManager.getCurrentUserId()
-    return await this.contracts.UserLibraryFactoryClient.deleteTrackSave(
-      userId!,
-      trackId
     )
   }
 

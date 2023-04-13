@@ -24,13 +24,16 @@ import type {
   ChatEvents,
   ChatGetAllRequest,
   ChatGetMessagesRequest,
+  ChatGetPermissionRequest,
   ChatGetRequest,
   ChatInviteRequest,
   ChatMessageRequest,
+  ChatPermissionResponse,
   ChatPermitRequest,
   ChatReactRequest,
   ChatReadRequest,
-  TypedCommsResponse
+  TypedCommsResponse,
+  UnfurlResponse
 } from './clientTypes'
 import WebSocket from 'isomorphic-ws'
 import EventEmitter from 'events'
@@ -189,6 +192,75 @@ export class ChatsApi
       ...json,
       data: decrypted
     }
+  }
+
+  public async getPermissions(requestParameters?: ChatGetPermissionRequest) {
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+
+    if (requestParameters?.userIds) {
+      query['id'] = requestParameters.userIds
+    }
+
+    const res = await this.signAndSendRequest({
+      method: 'GET',
+      path: '/comms/chats/permissions',
+      headers: {},
+      query
+    })
+    return (await res.json()) as TypedCommsResponse<
+      Record<string, ChatPermissionResponse>
+    >
+  }
+
+  public async getBlockers() {
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+    const response = await this.signAndSendRequest({
+      method: 'GET',
+      path: `/comms/chats/blockers`,
+      headers: {},
+      query
+    })
+    return (await response.json()) as TypedCommsResponse<string[]>
+  }
+
+  public async getBlockees() {
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+    const response = await this.signAndSendRequest({
+      method: 'GET',
+      path: `/comms/chats/blockees`,
+      headers: {},
+      query
+    })
+    return (await response.json()) as TypedCommsResponse<string[]>
+  }
+
+  public async unfurl(requestParameters: { urls: string[] }) {
+    this.assertNotNullOrUndefined(
+      requestParameters.urls,
+      'requestParameters.urls',
+      'unfurl'
+    )
+    this.assertMinLength(
+      requestParameters.urls,
+      'requestParameters.urls',
+      'unfurl'
+    )
+    const query: HTTPQuery = {
+      content: requestParameters.urls
+    }
+    const res = await this.request({
+      method: 'GET',
+      path: '/comms/unfurl',
+      query,
+      headers: {}
+    })
+    return (await res.json()) as UnfurlResponse[]
   }
 
   // #endregion
@@ -355,6 +427,20 @@ export class ChatsApi
     })
   }
 
+  public async unblock(requestParameters: ChatBlockRequest) {
+    this.assertNotNullOrUndefined(
+      requestParameters.userId,
+      'requestParameters.userId',
+      'unblock'
+    )
+    return await this.sendRpc({
+      method: 'chat.unblock',
+      params: {
+        user_id: requestParameters.userId
+      }
+    })
+  }
+
   public async delete(requestParameters: ChatDeleteRequest) {
     this.assertNotNullOrUndefined(
       requestParameters.chatId,
@@ -483,10 +569,10 @@ export class ChatsApi
 
   private async decryptLastChatMessage(c: UserChat): Promise<UserChat> {
     const sharedSecret = await this.getChatSecret(c.chat_id)
-    let last_message = ''
+    let lastMessage = ''
     if (c.last_message && c.last_message.length > 0) {
       try {
-        last_message = await this.decryptString(
+        lastMessage = await this.decryptString(
           sharedSecret,
           base64.decode(c.last_message)
         )
@@ -496,12 +582,12 @@ export class ChatsApi
           c,
           e
         )
-        last_message = "Error: Couldn't decrypt message"
+        lastMessage = "Error: Couldn't decrypt message"
       }
     }
     return {
       ...c,
-      last_message
+      last_message: lastMessage
     }
   }
 

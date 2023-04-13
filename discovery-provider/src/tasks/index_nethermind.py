@@ -1,6 +1,7 @@
 # pylint: disable=C0302
 import asyncio
 import concurrent.futures
+import json
 import logging
 import os
 import time
@@ -13,7 +14,7 @@ from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.challenges.trending_challenge import should_trending_challenge_update
 from src.models.indexing.block import Block
 from src.models.indexing.ursm_content_node import UrsmContentNode
-from src.models.notifications.notification import NotificationSeen
+from src.models.notifications.notification import NotificationSeen, PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
 from src.models.social.follow import Follow
@@ -38,8 +39,14 @@ from src.tasks.celery_app import celery
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.tasks.index import save_cid_metadata
+from src.tasks.metadata import (
+    playlist_metadata_format,
+    track_metadata_format,
+    user_metadata_format,
+)
 from src.tasks.sort_block_transactions import sort_block_transactions
 from src.utils import helpers, web3_provider
+from src.utils.cid_metadata_client import get_metadata_from_json
 from src.utils.constants import CONTRACT_NAMES_ON_CHAIN, CONTRACT_TYPES
 from src.utils.index_blocks_performance import (
     record_add_indexed_block_to_db_ms,
@@ -180,7 +187,7 @@ def fetch_tx_receipts(self, block):
                 )
     num_processed_txs = len(block_tx_with_receipts.keys())
     num_submitted_txs = len(block_transactions)
-    logger.info(
+    logger.debug(
         f"index_nethermind.py num_processed_txs {num_processed_txs} num_submitted_txs {num_submitted_txs}"
     )
     if num_processed_txs != num_submitted_txs:
@@ -194,9 +201,14 @@ def fetch_tx_receipts(self, block):
     return block_tx_with_receipts
 
 
+def get_entity_manager_events_tx(update_task, event_type, tx_receipt):
+    return getattr(
+        update_task.entity_manager_contract.events, event_type
+    )().processReceipt(tx_receipt)
+
+
 def fetch_cid_metadata(db, entity_manager_txs):
     start_time = datetime.now()
-    entity_manager_contract = update_task.entity_manager_contract
 
     cids_txhash_set: Tuple[str, Any] = set()
     cid_type: Dict[str, str] = {}  # cid -> entity type track / user
@@ -205,14 +217,19 @@ def fetch_cid_metadata(db, entity_manager_txs):
     cid_to_user_id: Dict[str, int] = {}
     cid_metadata: Dict[str, Dict] = {}  # cid -> metadata
 
+    # metadata blobs sent through chain
+    # merged with cid_metadata and cid_type before returning
+    cid_type_from_chain: Dict[str, str] = {}  # cid -> entity type track / user
+    cid_metadata_from_chain: Dict[str, Dict] = {}  # cid -> metadata
+
     # fetch transactions
     with db.scoped_session() as session:
         for tx_receipt in entity_manager_txs:
             txhash = web3.toHex(tx_receipt.transactionHash)
             for event_type in entity_manager_event_types_arr:
-                entity_manager_events_tx = getattr(
-                    entity_manager_contract.events, event_type
-                )().processReceipt(tx_receipt)
+                entity_manager_events_tx = get_entity_manager_events_tx(
+                    update_task, event_type, tx_receipt
+                )
                 for entry in entity_manager_events_tx:
                     event_args = entry["args"]
                     user_id = event_args._userId
@@ -238,6 +255,36 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         ]
                     ):
                         continue
+
+                    # Check if metadata blob was passed directly.
+                    # If so, add to cid_metadata_from_chain and cid_type_from_chain
+                    # dicts and do not query CNs for these CIDs.
+                    # TODO remove after CID metadata migration.
+                    try:
+                        data = json.loads(cid)
+                        cid = data["cid"]
+                        metadata_json = data["data"]
+
+                        metadata_format: Any = None
+                        metadata_type = None
+                        if event_type == EntityType.PLAYLIST:
+                            metadata_type = "playlist_data"
+                            metadata_format = playlist_metadata_format
+                        elif event_type == EntityType.TRACK:
+                            metadata_type = "track"
+                            metadata_format = track_metadata_format
+                        elif event_type == EntityType.USER:
+                            metadata_type = "user"
+                            metadata_format = user_metadata_format
+                        formatted_json = get_metadata_from_json(
+                            metadata_format, metadata_json
+                        )
+                        # do not add to cid_metadata or cid_type yet to avoid interfering with the retry conditions
+                        cid_type_from_chain[cid] = metadata_type
+                        cid_metadata_from_chain[cid] = formatted_json
+                        continue
+                    except Exception:
+                        pass
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
@@ -292,9 +339,11 @@ def fetch_cid_metadata(db, entity_manager_txs):
         missing_cids_msg = f"Did not fetch all CIDs - missing {[set(cid_type.keys()) - set(cid_metadata.keys())]} CIDs"
         raise Exception(missing_cids_msg)
 
-    logger.info(
+    logger.debug(
         f"index_nethermind.py | finished fetching {len(cid_metadata)} CIDs in {datetime.now() - start_time} seconds"
     )
+    cid_metadata.update(cid_metadata_from_chain)
+    cid_type.update(cid_type_from_chain)
     return cid_metadata, cid_type
 
 
@@ -338,13 +387,13 @@ def get_contract_type_for_tx(tx_type_to_grouped_lists_map, tx, tx_receipt):
         tx_is_type = tx_target_contract_address == entity_manager_address
         if tx_is_type:
             contract_type = tx_type
-            logger.info(
+            logger.debug(
                 f"index_nethermind.py | {tx_type} contract addr: {tx_target_contract_address}"
                 f" tx from block - {tx}, receipt - {tx_receipt}"
             )
             break
 
-    logger.info(
+    logger.debug(
         f"index_nethermind.py | checking returned {contract_type} vs {tx_target_contract_address}"
     )
     return contract_type
@@ -409,7 +458,7 @@ def process_state_changes(
 
 
 def create_and_raise_indexing_error(err, redis):
-    logger.info(
+    logger.error(
         f"index_nethermind.py | Error in the indexing task at"
         f" block={err.blocknumber} and hash={err.txhash}"
     )
@@ -450,7 +499,7 @@ def index_blocks(self, db, blocks_list):
             skip_tx_hash = get_tx_hash_to_skip(session, redis)
             skip_whole_block = skip_tx_hash == "commit"  # db tx failed at commit level
             if skip_whole_block:
-                logger.info(
+                logger.warn(
                     f"index_nethermind.py | Skipping all txs in block {block.hash} {block.number}"
                 )
                 save_skipped_tx(session, redis)
@@ -464,13 +513,13 @@ def index_blocks(self, db, blocks_list):
                     Fetch transaction receipts
                     """
                     fetch_tx_receipts_start_time = time.time()
-                    logger.info(f"index_nethermind.py fetching block {block}")
+                    logger.debug(f"index_nethermind.py fetching block {block}")
                     tx_receipt_dict = fetch_tx_receipts(self, block)
                     metric.save_time(
                         {"scope": "fetch_tx_receipts"},
                         start_time=fetch_tx_receipts_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index_nethermind.py | index_blocks - fetch_tx_receipts in {time.time() - fetch_tx_receipts_start_time}s"
                     )
 
@@ -495,7 +544,7 @@ def index_blocks(self, db, blocks_list):
                         ) or (skip_tx_hash is not None and skip_tx_hash == tx_hash)
 
                         if should_skip_tx:
-                            logger.info(
+                            logger.debug(
                                 f"index_nethermind.py | Skipping tx {tx_hash} targeting {tx_target_contract_address}"
                             )
                             save_skipped_tx(session, redis)
@@ -510,7 +559,7 @@ def index_blocks(self, db, blocks_list):
                         {"scope": "parse_tx_receipts"},
                         start_time=parse_tx_receipts_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index_nethermind.py | index_blocks - parse_tx_receipts in {time.time() - parse_tx_receipts_start_time}s"
                     )
 
@@ -524,7 +573,7 @@ def index_blocks(self, db, blocks_list):
                         db,
                         txs_grouped_by_type[ENTITY_MANAGER],
                     )
-                    logger.info(
+                    logger.debug(
                         f"index_nethermind.py | index_blocks - fetch_metadata in {time.time() - fetch_metadata_start_time}s"
                     )
                     # Record the time this took in redis
@@ -536,7 +585,7 @@ def index_blocks(self, db, blocks_list):
                         {"scope": "fetch_metadata"},
                         start_time=fetch_metadata_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index_nethermind.py | index_blocks - fetch_metadata in {duration_ms}ms"
                     )
 
@@ -554,7 +603,7 @@ def index_blocks(self, db, blocks_list):
                         {"scope": "add_indexed_block_to_db"},
                         start_time=add_indexed_block_to_db_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index_nethermind.py | index_blocks - add_indexed_block_to_db in {duration_ms}ms"
                     )
 
@@ -576,10 +625,10 @@ def index_blocks(self, db, blocks_list):
                         {"scope": "process_state_changes"},
                         start_time=process_state_changes_start_time,
                     )
-                    logger.info(
+                    logger.debug(
                         f"index_nethermind.py | index_blocks - process_state_changes in {time.time() - process_state_changes_start_time}s"
                     )
-                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"]
+                    is_save_cid_enabled = shared_config["discprov"]["enable_save_cid"] == "true"
                     if is_save_cid_enabled:
                         """
                         Add CID Metadata to db (cid -> json blob, etc.)
@@ -593,7 +642,7 @@ def index_blocks(self, db, blocks_list):
                             {"scope": "save_cid_metadata"},
                             start_time=save_cid_metadata_time,
                         )
-                        logger.info(
+                        logger.debug(
                             f"index.py | index_blocks - save_cid_metadata in {time.time() - save_cid_metadata_time}s"
                         )
 
@@ -608,7 +657,7 @@ def index_blocks(self, db, blocks_list):
                 commit_start_time = time.time()
                 session.commit()
                 metric.save_time({"scope": "commit_time"}, start_time=commit_start_time)
-                logger.info(
+                logger.debug(
                     f"index_nethermind.py | session committed to db for block={block_number} in {time.time() - commit_start_time}s"
                 )
             except Exception as e:
@@ -639,7 +688,7 @@ def index_blocks(self, db, blocks_list):
                 clear_indexing_error(redis)
 
         add_indexed_block_to_redis(block, redis)
-        logger.info(
+        logger.debug(
             f"index_nethermind.py | update most recently processed block complete for block=${block_number}"
         )
 
@@ -683,10 +732,10 @@ def revert_blocks(self, db, revert_blocks_list):
             f"index_nethermind.py | {self.request.id} | Sliced revert blocks list {revert_blocks_list}"
         )
 
-    logger.info(
+    logger.debug(
         f"index_nethermind.py | {self.request.id} | Reverting {num_revert_blocks} blocks"
     )
-    logger.info(revert_blocks_list)
+    logger.debug(revert_blocks_list)
 
     with db.scoped_session() as session:
         rebuild_playlist_index = False
@@ -697,7 +746,7 @@ def revert_blocks(self, db, revert_blocks_list):
             # Cache relevant information about current block
             revert_hash = revert_block.blockhash
             revert_block_number = revert_block.number
-            logger.info(f"Reverting {revert_block_number}")
+            logger.debug(f"Reverting {revert_block_number}")
             parent_hash = revert_block.parenthash
 
             # Special case for default start block value of 0x0 / 0x0...0
@@ -777,6 +826,12 @@ def revert_blocks(self, db, revert_blocks_list):
             revert_notification_seen = (
                 session.query(NotificationSeen)
                 .filter(NotificationSeen.blocknumber == revert_block_number)
+                .all()
+            )
+
+            revert_playlist_seen = (
+                session.query(PlaylistSeen)
+                .filter(PlaylistSeen.blocknumber == revert_block_number)
                 .all()
             )
 
@@ -1000,6 +1055,25 @@ def revert_blocks(self, db, revert_blocks_list):
                 session.delete(notification_seen_to_revert)
                 # NOTE: There is no need mark previous as is_current for notification seen
 
+            for playlist_seen_to_revert in revert_playlist_seen:
+
+                previous_playlist_seen_entry = (
+                    session.query(PlaylistSeen)
+                    .filter(
+                        PlaylistSeen.playlist_id == playlist_seen_to_revert.playlist_id,
+                        PlaylistSeen.user_id == playlist_seen_to_revert.user_id,
+                        PlaylistSeen.blocknumber < revert_block_number,
+                    )
+                    .order_by(PlaylistSeen.blocknumber.desc())
+                    .first()
+                )
+                if previous_playlist_seen_entry:
+                    previous_playlist_seen_entry.is_current = True
+                logger.info(
+                    f"index_nethermind.py | Reverting playlist seen {playlist_seen_to_revert}"
+                )
+                session.delete(playlist_seen_to_revert)
+
             # Remove outdated block entry
             session.query(Block).filter(Block.blockhash == revert_hash).delete()
 
@@ -1028,7 +1102,7 @@ def revert_user_events(session, revert_user_events_entries, revert_block_number)
             session.query(UserEvent).filter(UserEvent.user_id == user_id).filter(
                 UserEvent.blocknumber == previous_user_events_entry.blocknumber
             ).update({"is_current": True})
-        logger.info(f"Reverting user events: {user_events_to_revert}")
+        logger.debug(f"Reverting user events: {user_events_to_revert}")
         session.delete(user_events_to_revert)
 
 
@@ -1120,7 +1194,7 @@ def update_task(self):
 
                     num_blocks = len(index_blocks_list)
                     if num_blocks % 50 == 0:
-                        logger.info(
+                        logger.debug(
                             f"index_nethermind.py | update_task | Populating index_blocks_list, current length == {num_blocks}"
                         )
 
@@ -1152,13 +1226,13 @@ def update_task(self):
                 )
 
                 if undo_operations_required:
-                    logger.info(
+                    logger.debug(
                         f"index_nethermind.py | update_task | Undo required - {undo_operations_required}. \
                                 Intersect_blockhash : {intersect_block_hash}.\
                                 DB current blockhash {db_current_block.blockhash}"
                     )
                 else:
-                    logger.info(
+                    logger.debug(
                         f"index_nethermind.py | update_task | Intersect_blockhash : {intersect_block_hash}"
                     )
 
@@ -1177,7 +1251,7 @@ def update_task(self):
                     )
 
                     if parent_query.count() == 0:
-                        logger.info(
+                        logger.debug(
                             f"index_nethermind.py | update_task | Special case exit traverse block parenthash - "
                             f"{traverse_block.parenthash}"
                         )
@@ -1193,7 +1267,7 @@ def update_task(self):
 
             # Perform indexing operations
             index_blocks(self, db, index_blocks_list)
-            logger.info(
+            logger.debug(
                 f"index_nethermind.py | update_task | {self.request.id} | Processing complete within session"
             )
         else:

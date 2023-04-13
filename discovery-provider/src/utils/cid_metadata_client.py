@@ -19,6 +19,15 @@ GET_METADATA_TIMEOUT_SECONDS = 2
 GET_METADATA_ALL_GATEWAY_TIMEOUT_SECONDS = 5
 
 
+def get_metadata_from_json(default_metadata_fields, resp_json):
+    metadata = {}
+    for parameter, value in default_metadata_fields.items():
+        metadata[parameter] = (
+            resp_json.get(parameter) if resp_json.get(parameter) is not None else value
+        )
+    return metadata
+
+
 class CIDMetadataClient:
     """Helper class for Audius Discovery Provider + CID Metadata interaction"""
 
@@ -55,14 +64,6 @@ class CIDMetadataClient:
                 f"CIDMetadataClient | update_cnode_urls with endpoints {cnode_endpoints}"
             )
             self._cnode_endpoints = cnode_endpoints
-
-    def _get_metadata_from_json(self, default_metadata_fields, resp_json):
-        metadata = {}
-        for parameter, value in default_metadata_fields.items():
-            metadata[parameter] = (
-                resp_json.get(parameter) if resp_json.get(parameter) != None else value
-            )
-        return metadata
 
     async def _get_metadata_async(self, async_session, multihash, gateway_endpoint):
         url = gateway_endpoint + "/content/" + multihash
@@ -176,7 +177,7 @@ class CIDMetadataClient:
                     else:
                         raise Exception(f"Unknown metadata type ${cid_type[cid]}")
 
-                    formatted_json = self._get_metadata_from_json(
+                    formatted_json = get_metadata_from_json(
                         metadata_format, metadata_json
                     )
 

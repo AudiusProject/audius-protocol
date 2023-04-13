@@ -401,10 +401,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         abortController.abort()
         // Refresh service list with the healthy list from DN
         if (
-          data?.network?.discoveryNodes &&
-          data.network.discoveryNodes.length > 0
+          data?.network?.discovery_nodes &&
+          data.network.discovery_nodes.length > 0
         ) {
-          this.services = data.network.discoveryNodes
+          this.services = data.network.discovery_nodes
         } else {
           this.warn(
             "Couldn't load new service list from healthy service",

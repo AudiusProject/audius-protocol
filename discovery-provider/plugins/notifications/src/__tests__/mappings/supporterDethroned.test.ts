@@ -76,7 +76,8 @@ describe('Supporter Dethroned Notification', () => {
         data: {
           entityId: 1,
           id: 'timestamp:1589373217:group_id:supporter_dethroned:receiver_user_id:1:slot:2',
-          type: 'SupporterDethroned'
+          type: 'SupporterDethroned',
+          supportedUserId: 1
         }
       }
     )

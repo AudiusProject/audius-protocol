@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 from collections import defaultdict
@@ -313,13 +314,17 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
 
             # Add playlist track ids in entities to fetch
             # to prevent playlists from including premium tracks
-            metadata_cid = helpers.get_tx_arg(event, "_metadata")
-            if metadata_cid in metadata:
-                tracks = (
-                    metadata[metadata_cid]
-                    .get("playlist_contents", {})
-                    .get("track_ids", [])
-                )
+            cid = helpers.get_tx_arg(event, "_metadata")
+            # Check if metadata blob was passed directly and use if so.
+            # TODO remove after CID metadata migration.
+            try:
+                data = json.loads(cid)
+                cid = data["cid"]
+            except Exception:
+                pass
+
+            if cid in metadata:
+                tracks = metadata[cid].get("playlist_contents", {}).get("track_ids", [])
                 for track in tracks:
                     entities_to_fetch[EntityType.TRACK].add(track["track"])
 

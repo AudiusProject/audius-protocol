@@ -64,9 +64,9 @@ describe('Repost Notification', () => {
         title: 'New Repost',
         body: 'user_2 reposted your track track_title_10',
         data: {
-          id: 'timestamp:1589373217:group_id:repost:10:type:track',
-          type: 'Repost',
-          userIds: [2]
+          "id": "timestamp:1589373217:group_id:repost:10:type:track",
+          "type": "Repost",
+          "userIds": [2]
         }
       }
     )
@@ -102,9 +102,9 @@ describe('Repost Notification', () => {
         title: 'New Repost',
         body: 'user_2 reposted your playlist playlist_name_20',
         data: {
-          id: 'timestamp:1589373217:group_id:repost:20:type:playlist',
-          type: 'Repost',
-          userIds: [2]
+          "id": "timestamp:1589373217:group_id:repost:20:type:playlist",
+          "type": "Repost",
+          "userIds": [2]
         }
       }
     )
@@ -140,9 +140,9 @@ describe('Repost Notification', () => {
         title: 'New Repost',
         body: 'user_2 reposted your album playlist_name_30',
         data: {
-          id: 'timestamp:1589373217:group_id:repost:30:type:playlist',
-          type: 'Repost',
-          userIds: [2]
+          "id": "timestamp:1589373217:group_id:repost:30:type:playlist",
+          "type": "Repost",
+          "userIds": [2]
         }
       }
     )

@@ -72,9 +72,9 @@ describe('Reaction Notification', () => {
         title: `User_1 reacted`,
         body: `User_1 reacted to your tip of 5 $AUDIO`,
         data: {
-          entityId: 1,
-          id: 'timestamp:1589373217:group_id:reaction:reaction_to:sig_2_1:reaction_type:tip:reaction_value:2:timestamp:2020-05-13 12:33:37',
-          type: 'Reaction'
+          "entityId": 1,
+          "id": "timestamp:1589373217:group_id:reaction:reaction_to:sig_2_1:reaction_type:tip:reaction_value:2:timestamp:2020-05-13 12:33:37",
+          "type": "Reaction",
         }
       }
     )

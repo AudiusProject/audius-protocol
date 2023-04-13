@@ -97,7 +97,7 @@ describe('Push Notifications', () => {
       messageTimestamp
     )
 
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 4))
 
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(

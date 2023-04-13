@@ -24,7 +24,8 @@ export default async ({ track_id }) => {
       "users.is_verified",
       "track_routes.slug",
       "tracks.created_at",
-      "tracks.updated_at"
+      "tracks.updated_at",
+      "tracks.is_unlisted"
     )
     .where("tracks.track_id", "=", trackId)
     .where("users.is_verified", "=", true)
@@ -36,8 +37,23 @@ export default async ({ track_id }) => {
     JSON.stringify(results.updated_at) === JSON.stringify(results.created_at);
 
   if (firstEvent) {
-    const { title, mood, release_date, is_premium, handle, name, genre, slug } =
-      results;
+    const {
+      title,
+      mood,
+      release_date,
+      is_premium,
+      handle,
+      name,
+      genre,
+      slug,
+      is_unlisted,
+    } = results;
+    if (is_unlisted) {
+      console.log(
+        `received new verified track from ${handle} but it's unlisted`
+      );
+      return;
+    }
     console.log(`received new verified track from ${handle}`);
     const { sendMsg } = slack;
     const header = `:audius-spin: New upload from *${name}* 🔥`;

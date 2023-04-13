@@ -5,6 +5,7 @@ import { Buffer as SafeBuffer } from 'safe-buffer'
 import { ContractClient } from '../contracts/ContractClient'
 import * as signatureSchemas from '../../data-contracts/signatureSchemas'
 import type { Web3Manager } from '../web3Manager'
+import type { TrackMetadata, UserMetadata } from '../../utils'
 
 export enum Action {
   CREATE = 'Create',
@@ -29,6 +30,11 @@ export enum EntityType {
   USER = 'User',
   USER_REPLICA_SET = 'UserReplicaSet',
   NOTIFICATION = 'Notification'
+}
+
+export type ManageEntityCIDMetadata = {
+  cid: string
+  data: TrackMetadata | UserMetadata
 }
 
 /**
@@ -91,7 +97,7 @@ export class EntityManagerClient extends ContractClient {
    * @param {EntityType} entityType The type of entity being modified
    * @param {number} entityId The id of the entity
    * @param {Action} action Action being performed on the entity
-   * @param {string} metadataMultihash CID multihash or metadata associated with action
+   * @param {string} metadata CID multihash or metadata associated with action
    * @param {string}privateKey The private key used to sign the transaction
    */
   async manageEntity(
@@ -99,7 +105,7 @@ export class EntityManagerClient extends ContractClient {
     entityType: EntityType,
     entityId: number,
     action: Action,
-    metadataMultihash: string,
+    metadata: string,
     privateKey?: string
   ): Promise<{ txReceipt: TransactionReceipt }> {
     const nonce = signatureSchemas.getNonce()
@@ -113,7 +119,7 @@ export class EntityManagerClient extends ContractClient {
       entityType,
       entityId,
       action,
-      metadataMultihash,
+      metadata,
       nonce
     )
     let sig
@@ -133,7 +139,7 @@ export class EntityManagerClient extends ContractClient {
       entityType,
       entityId,
       action,
-      metadataMultihash,
+      metadata,
       nonce,
       sig
     )
@@ -148,7 +154,7 @@ export class EntityManagerClient extends ContractClient {
           entityType,
           entityId,
           action,
-          metadataMultihash,
+          metadata,
           nonce
         )
       const nethermindSig = await this.web3Manager.signTypedData(
@@ -161,7 +167,7 @@ export class EntityManagerClient extends ContractClient {
         entityType,
         entityId,
         action,
-        metadataMultihash,
+        metadata,
         nonce,
         nethermindSig
       )

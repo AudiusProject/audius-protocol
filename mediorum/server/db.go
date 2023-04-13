@@ -1,11 +1,10 @@
 package server
 
 import (
-	"encoding/json"
 	"mediorum/crudr"
 	"time"
 
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -15,16 +14,12 @@ type Blob struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type JsonCid struct {
-	Cid  string          `json:"key" gorm:"primaryKey;not null;default:null"`
-	Data json.RawMessage `json:"data"`
-}
-
 type Upload struct {
 	ID string `json:"id"` // base32 file hash
 
-	Template     string         `json:"template"`
+	Template     JobTemplate    `json:"template"`
 	OrigFileName string         `json:"orig_filename"`
+	OrigFileCID  string         `json:"orig_file_cid"`
 	FFProbe      *FFProbeResult `json:"probe" gorm:"serializer:json"`
 	Error        string         `json:"error,omitempty"`
 	Mirrors      []string       `json:"mirrors" gorm:"serializer:json"`
@@ -58,22 +53,12 @@ type LogLine struct {
 }
 
 func dbMustDial(dbPath string) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
 		panic(err)
 	}
-
-	err = db.Exec(`
-	PRAGMA busy_timeout       = 10000;
-	PRAGMA journal_mode       = WAL;
-	PRAGMA journal_size_limit = 200000000;
-	PRAGMA synchronous        = NORMAL;
-	PRAGMA foreign_keys       = TRUE;
-
-	PRAGMA optimize;
-	`).Error
 
 	if err != nil {
 		panic(err)
@@ -86,12 +71,12 @@ func dbMustDial(dbPath string) *gorm.DB {
 
 func dbMigrate(crud *crudr.Crudr) {
 	// Migrate the schema
-	err := crud.DB.AutoMigrate(&Blob{}, &Upload{}, &ServerHealth{}, &LogLine{}, &JsonCid{})
+	err := crud.DB.AutoMigrate(&Blob{}, &Upload{}, &ServerHealth{}, &LogLine{})
 	if err != nil {
 		panic(err)
 	}
 
 	// register any models to be managed by crudr
-	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{}, &JsonCid{})
+	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{})
 
 }

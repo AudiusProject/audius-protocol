@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/inconshreveable/log15"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gocloud.dev/blob"
@@ -37,7 +38,8 @@ type MediorumConfig struct {
 	ReplicationFactor int
 	Dir               string `default:"/tmp/mediorum"`
 	BlobStoreDSN      string `json:"-"`
-	SqliteDSN         string `json:"-"`
+	PostgresDSN       string `json:"-"`
+	LegacyFSRoot      string `json:"-"`
 	PrivateKey        string `json:"-"`
 	ListenPort        string `envconfig:"PORT"`
 
@@ -55,6 +57,7 @@ type MediorumServer struct {
 	placement *placement
 	logger    log15.Logger
 	crud      *crudr.Crudr
+	pgPool    *pgxpool.Pool
 	quit      chan os.Signal
 
 	StartedAt time.Time
@@ -84,10 +87,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		config.BlobStoreDSN = "file://" + config.Dir + "/blobs"
 	}
 
-	if config.SqliteDSN == "" {
-		config.SqliteDSN = config.Dir + "/data.db"
-	}
-
 	if pk, err := parsePrivateKey(config.PrivateKey); err != nil {
 		log.Println("invalid private key: ", err)
 	} else {
@@ -107,7 +106,13 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	// db
-	db := dbMustDial(config.SqliteDSN)
+	db := dbMustDial(config.PostgresDSN)
+
+	// pg pool
+	pgPool, err := pgxpool.New(context.Background(), config.PostgresDSN)
+	if err != nil {
+		log.Println("dial postgres failed", err)
+	}
 
 	// crud
 	crud := crudr.New(config.Self.Host, db)
@@ -120,12 +125,14 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// Middleware
 	echoServer.Use(middleware.Recover())
+	echoServer.Use(middleware.CORS()) // TODO: Should probably set explicit AllowOrigins instead of using default *
 
 	ss := &MediorumServer{
 		echo:      echoServer,
 		bucket:    bucket,
 		placement: newPlacement(config),
 		crud:      crud,
+		pgPool:    pgPool,
 		logger:    log15.New("from", config.Self.Host),
 		quit:      make(chan os.Signal, 1),
 
@@ -145,8 +152,19 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	basePath := echoServer.Group(apiBasePath)
 
 	// Middleware
-	basePath.Use(middleware.Recover())
-	basePath.Use(middleware.CORS())
+	// basePath.Use(middleware.Logger())
+
+	// TODO: Use middleware to cache whenever content is streamed, except if it's premium content.
+	// See Johannes's previous PR for reference. From CN:
+	// If content is gated, set cache-control to no-cache.
+	// Otherwise, set the CID cache-control so that client caches the response for 30 days.
+	// The contentAccessMiddleware sets the req.contentAccess object so that we do not
+	// have to make another database round trip to get this info.
+	// if (req.shouldCache) {
+	//   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
+	// } else {
+	//   res.setHeader('cache-control', 'no-cache')
+	// }
 
 	basePath.GET("", ss.serveUploadUI)
 	basePath.GET("/", ss.serveUploadUI)
@@ -156,14 +174,24 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	basePath.GET("/uploads/:id", ss.getUpload)
 	basePath.POST("/uploads", ss.postUpload)
 
+	echoServer.GET("/ipfs/:key", ss.getBlob)
+	echoServer.GET("/content/:key", ss.getBlob)
+	echoServer.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
+	echoServer.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
+	echoServer.GET("/tracks/cidstream/:key", ss.getBlob) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
+
 	// status + debug:
 	basePath.GET("/status", ss.getStatus)
 	basePath.GET("/debug/blobs", ss.dumpBlobs)
 	basePath.GET("/debug/uploads", ss.dumpUploads)
 	basePath.GET("/debug/ls", ss.getLs)
 
-	// JSON CID stuff
-	// basePath.POST("/tracks/metadata", ss.postMetadataCid)
+	// legacy:
+	basePath.GET("/cid/:cid", ss.serveLegacyCid)
+	basePath.GET("/cid/:dirCid/:fileName", ss.serveLegacyDirCid)
+	basePath.GET("/metadata", ss.serveCidMetadata)
+
+	basePath.GET("/beam/files", ss.servePgBeam)
 
 	// internal
 	internalApi := basePath.Group("/internal")
@@ -206,6 +234,8 @@ func (ss *MediorumServer) MustStart() {
 	go ss.startHealthBroadcaster()
 
 	go ss.startRepairer()
+
+	go ss.startBeamClient()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

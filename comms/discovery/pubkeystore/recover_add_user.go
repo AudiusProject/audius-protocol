@@ -6,7 +6,6 @@ import (
 	"errors"
 	"math/big"
 
-	"comms.audius.co/discovery/config"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -14,13 +13,6 @@ import (
 )
 
 func findAddUserTransaction(ctx context.Context, blockNumber *big.Int) (string, error) {
-	var chainId int64 = 99
-	verifyingContract := "0x981c44040cb6150a2b8a7f63fb182760505bf666"
-
-	if config.GetDiscoveryConfig().PeeringConfig.IsStaging {
-		chainId = 77
-		verifyingContract = "0x39d26a6a138ddf8b447d651d5d3883644d277251"
-	}
 
 	block, err := poaClient.BlockByNumber(ctx, blockNumber)
 	if err != nil {

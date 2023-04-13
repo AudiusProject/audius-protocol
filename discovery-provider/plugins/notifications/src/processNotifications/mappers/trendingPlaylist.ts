@@ -1,10 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, UserRow } from '../../types/dn'
 import { TrendingPlaylistNotification } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type TrendingPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingPlaylistNotification
@@ -71,17 +75,21 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     }, {} as Record<number, { playlist_name: string }>)
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId]
     )
 
+    const notificationReceiverUserId = this.receiverUserId
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        receiverUserId: notificationReceiverUserId
+      })
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        notificationReceiverUserId
+      )
       // If the user's settings for the follow notification is set to true, proceed
       await Promise.all(
         devices.map((device) => {
@@ -89,7 +97,9 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.receiverUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(
+                  notificationReceiverUserId
+                ) + 1,
               targetARN: device.awsARN
             },
             {
@@ -105,7 +115,12 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (isLiveEmailEnabled) {
+    if (isLiveEmailEnabled && 
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: notificationReceiverUserId
+      })
+
+      ) {
       // TODO: send out email
     }
   }

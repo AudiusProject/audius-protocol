@@ -39,7 +39,6 @@ def save_duration_metric(metric_group):
                 except Exception as e:
                     logger.exception("Failed to save successful metrics", e)
                 finally:
-
                     # safely return the result out of the decorator
                     return result
 
@@ -54,7 +53,6 @@ def save_duration_metric(metric_group):
                 except Exception as inner_e:
                     logger.exception("Failed to save unsuccessful metrics", inner_e)
                 finally:
-
                     # safely raise the exception out of the decorator
                     raise e
 
@@ -106,6 +104,9 @@ class PrometheusMetricNames:
     UPDATE_AGGREGATE_TABLE_DURATION_SECONDS = "update_aggregate_table_duration_seconds"
     UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS = (
         "update_track_is_available_duration_seconds"
+    )
+    UPDATE_USER_IS_AVAILABLE_DURATION_SECONDS = (
+        "update_user_is_available_duration_seconds"
     )
     UPDATE_TRENDING_VIEW_DURATION_SECONDS = "update_trending_view_duration_seconds"
     ENTITY_MANAGER_UPDATE_CHANGED_LATEST = "entity_manager_update_changed_latest"
@@ -205,6 +206,11 @@ PrometheusRegistry = {
     PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS: Histogram(
         f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_TRACK_IS_AVAILABLE_DURATION_SECONDS}",
         "Runtimes for src.task.update_track_is_available:celery.task()",
+        ("success",),
+    ),
+    PrometheusMetricNames.UPDATE_USER_IS_AVAILABLE_DURATION_SECONDS: Histogram(
+        f"{METRIC_PREFIX}_{PrometheusMetricNames.UPDATE_USER_IS_AVAILABLE_DURATION_SECONDS}",
+        "Runtimes for src.task.update_user_is_available:celery.task()",
         ("success",),
     ),
     PrometheusMetricNames.UPDATE_TRENDING_VIEW_DURATION_SECONDS: Histogram(

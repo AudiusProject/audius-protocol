@@ -62,9 +62,9 @@ describe('Tip Notification', () => {
         title: 'You Received a Tip!',
         body: `User_2 sent you a tip of 5 $AUDIO`,
         data: {
-          entityId: 2,
-          id: 'timestamp:1589373217:group_id:tip_receive:user_id:1:signature:sig_2_1',
-          type: 'TipReceive'
+          "entityId": 2,
+          "id": "timestamp:1589373217:group_id:tip_receive:user_id:1:signature:sig_2_1",
+          "type": "TipReceive",
         }
       }
     )

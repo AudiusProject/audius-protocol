@@ -5,10 +5,14 @@ import {
   RemixNotification,
   RepostNotification
 } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { BaseNotification, NotificationSettings } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type RemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RemixNotification
@@ -71,8 +75,9 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     // TODO: Fetch the remix track and parent track
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.parentTrackUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.parentTrackUserId, this.remixUserId]
     )
 
     // TODO Fill this out
@@ -82,13 +87,14 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.parentTrackUserId]?.devices ?? [])
-        .length > 0
+      userNotificationSettings.shouldSendPushNotification({
+        initiatorUserId: this.remixUserId,
+        receiverUserId: this.parentTrackUserId
+      })
     ) {
-      const userMobileSettings: NotificationSettings =
-        userNotifications.mobile?.[this.parentTrackUserId].settings
-      const devices: Device[] =
-        userNotifications.mobile?.[this.parentTrackUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.parentTrackUserId
+      )
       // If the user's settings for the follow notification is set to true, proceed
       await Promise.all(
         devices.map((device) => {
@@ -96,15 +102,17 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.parentTrackUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(this.parentTrackUserId) +
+                1,
               targetARN: device.awsARN
             },
             {
               title: 'New Remix Of Your Track ♻️',
               body: `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
-                  }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'RemixCreate',
                 childTrackId: this.trackId
               }
@@ -117,7 +125,10 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotifications.email?.[this.parentTrackUserId].frequency === 'live'
+      userNotificationSettings.shouldSendEmail({
+        initiatorUserId: this.remixUserId,
+        receiverUserId: this.parentTrackUserId
+      })
     ) {
       const notification: AppEmailNotification = {
         receiver_user_id: this.parentTrackUserId,
@@ -125,8 +136,7 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       }
       await sendNotificationEmail({
         userId: this.parentTrackUserId,
-        email: userNotifications.email?.[this.parentTrackUserId].email,
-        frequency: 'live',
+        userNotificationSettings,
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

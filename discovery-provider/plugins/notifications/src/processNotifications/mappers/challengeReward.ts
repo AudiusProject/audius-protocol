@@ -1,12 +1,16 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
 import { AppEmailNotification, ChallengeRewardNotification } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { ChallengeId } from '../../email/notifications/types'
 import { formatWei } from '../../utils/format'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type ChallengeRewardRow = Omit<NotificationRow, 'data'> & {
   data: ChallengeRewardNotification
@@ -105,32 +109,35 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId]
     )
-
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        receiverUserId: this.receiverUserId
+      })
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.receiverUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
               targetARN: device.awsARN
             },
             {
               title: this.challengeInfoMap[this.challengeId].title,
               body: this.getPushBodyText(),
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
-                  }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'ChallengeReward'
               }
             }
@@ -142,7 +149,9 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: this.receiverUserId
+      })
     ) {
       const notification: AppEmailNotification = {
         receiver_user_id: this.receiverUserId,
@@ -150,8 +159,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       }
       await sendNotificationEmail({
         userId: this.receiverUserId,
-        email: userNotifications.email?.[this.receiverUserId].email,
-        frequency: 'live',
+        userNotificationSettings,
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

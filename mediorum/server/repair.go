@@ -48,10 +48,10 @@ func (ss *MediorumServer) findProblemBlobs(overReplicated bool) ([]ProblemBlob, 
 
 	problems := []ProblemBlob{}
 	err := ss.crud.DB.Model(&Blob{}).
-		Select("key, count(distinct host) as r, group_concat(distinct host) as hosts").
+		Select("key, count(distinct host) as r, array_to_string(array_agg(distinct host), ',') as hosts").
 		Where("host in ?", healthyHosts).
 		Group("key").
-		Having(fmt.Sprintf("r %s %d", comparator, ss.Config.ReplicationFactor)).
+		Having(fmt.Sprintf("count(distinct host) %s %d", comparator, ss.Config.ReplicationFactor)).
 		Order("key").
 		Scan(&problems).
 		Error

@@ -1,18 +1,17 @@
 import { renderEmail } from './renderEmail'
 
 import { EmailNotification } from '../../types/notifications'
-import { EmailFrequency } from '../../processNotifications/mappers/base'
 import { logger } from '../../logger'
 import { getSendgrid } from '../../sendgrid'
 import { MailDataRequired } from '@sendgrid/mail'
 import { Knex } from 'knex'
+import { EmailFrequency, UserNotificationSettings } from '../../processNotifications/mappers/userNotificationSettings'
 
 // Sendgrid object
 
 type SendNotificationEmailProps = {
   userId: number
-  email: string
-  frequency: EmailFrequency
+  userNotificationSettings: UserNotificationSettings
   notifications: EmailNotification[]
   dnDb: Knex
   identityDb: Knex
@@ -21,13 +20,14 @@ type SendNotificationEmailProps = {
 // Master function to render and send email for a given userId
 export const sendNotificationEmail = async ({
   userId,
-  email,
-  frequency,
+  userNotificationSettings,
   notifications,
   dnDb,
   identityDb
 }: SendNotificationEmailProps) => {
   try {
+    const email = userNotificationSettings.email?.[userId].email
+    const frequency = userNotificationSettings.email?.[userId].frequency
     logger.debug(`SendNotificationEmail | ${userId}, ${email}, ${frequency}`)
 
     const notificationCount = notifications.length

@@ -1,18 +1,18 @@
 package crudr
 
 import (
-	"os"
-
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func SetupTestDB() *gorm.DB {
-	name := "test.db"
-	os.Remove(name)
-	db, err := gorm.Open(sqlite.Open(name), nil)
+	dsn := "postgres://postgres:example@localhost:5444/mediorum_test"
+	db, err := gorm.Open(postgres.Open(dsn))
 	if err != nil {
 		panic(err)
 	}
+
+	db.Exec(`truncate ops`)
+
 	return db
 }

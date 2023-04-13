@@ -75,9 +75,9 @@ describe('Milestone Notification', () => {
         title: 'Congratulations! 🎉',
         body: 'You have reached over 10 Followers',
         data: {
-          id: 'timestamp:1589373217:group_id:milestone:FOLLOWER_COUNT:id:1:threshold:10',
-          initiator: 1,
-          type: 'MilestoneFollow'
+          "id": "timestamp:1589373217:group_id:milestone:FOLLOWER_COUNT:id:1:threshold:10",
+          "initiator": 1,
+          "type": "MilestoneFollow",
         }
       }
     )
@@ -162,14 +162,14 @@ describe('Milestone Notification', () => {
         title: 'Congratulations! 🎉',
         body: 'Your track track_title_2 has reached over 10 reposts',
         data: {
-          actions: [
+          "actions": [
             {
-              actionEntityType: 'Track'
-            }
+              "actionEntityType": "Track",
+            },
           ],
-          entityId: '2',
-          id: 'timestamp:1589373217:group_id:milestone:TRACK_REPOST_COUNT:id:2:threshold:10',
-          type: 'MilestoneRepost'
+          "entityId": "2",
+          "id": "timestamp:1589373217:group_id:milestone:TRACK_REPOST_COUNT:id:2:threshold:10",
+          "type": "MilestoneRepost",
         }
       }
     )
@@ -259,14 +259,14 @@ describe('Milestone Notification', () => {
         title: 'Congratulations! 🎉',
         body: 'Your playlist playlist_name_32 has reached over 10 reposts',
         data: {
-          actions: [
+          "actions": [
             {
-              actionEntityType: 'Collection'
-            }
+              "actionEntityType": "Collection",
+            },
           ],
-          entityId: '32',
-          id: 'timestamp:1589373217:group_id:milestone:PLAYLIST_REPOST_COUNT:id:32:threshold:10',
-          type: 'MilestoneRepost'
+          "entityId": "32",
+          "id": "timestamp:1589373217:group_id:milestone:PLAYLIST_REPOST_COUNT:id:32:threshold:10",
+          "type": "MilestoneRepost",
         }
       }
     )
@@ -356,14 +356,14 @@ describe('Milestone Notification', () => {
         title: 'Congratulations! 🎉',
         body: 'Your track track_title_2 has reached over 10 favorites',
         data: {
-          actions: [
+          "actions": [
             {
-              actionEntityType: 'Track'
-            }
+              "actionEntityType": "Track",
+            },
           ],
-          entityId: '2',
-          id: 'timestamp:1589373217:group_id:milestone:TRACK_SAVE_COUNT:id:2:threshold:10',
-          type: 'MilestoneFavorite'
+          "entityId": "2",
+          "id": "timestamp:1589373217:group_id:milestone:TRACK_SAVE_COUNT:id:2:threshold:10",
+          "type": "MilestoneFavorite",
         }
       }
     )
@@ -453,14 +453,14 @@ describe('Milestone Notification', () => {
         title: 'Congratulations! 🎉',
         body: 'Your playlist playlist_name_32 has reached over 10 favorites',
         data: {
-          actions: [
+          "actions": [
             {
-              actionEntityType: 'Collection'
-            }
+              "actionEntityType": "Collection",
+            },
           ],
-          entityId: '32',
-          id: 'timestamp:1589373217:group_id:milestone:PLAYLIST_SAVE_COUNT:id:32:threshold:10',
-          type: 'MilestoneFavorite'
+          "entityId": "32",
+          "id": "timestamp:1589373217:group_id:milestone:PLAYLIST_SAVE_COUNT:id:32:threshold:10",
+          "type": "MilestoneFavorite",
         }
       }
     )

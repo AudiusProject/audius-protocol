@@ -83,7 +83,7 @@ services:
         condition: service_healthy
       solana-test-validator:
         condition: service_healthy
-      # build-audius-libs:
-      #   condition: service_started
+      build-audius-libs:
+        condition: service_started
     deploy:
       mode: global

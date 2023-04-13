@@ -1,11 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
 import { AppEmailNotification, CosignRemixNotification } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
-import { logger } from '../../logger'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type CosignRemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CosignRemixNotification
@@ -68,32 +71,37 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
     const parentTrackUserName = users[this.parentTrackUserId]?.name
     const remixTrackTitle = tracks[this.trackId]?.title
 
-    const userNotifications = await super.getShouldSendNotification(
-      this.remixUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.parentTrackUserId, this.remixUserId]
     )
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.remixUserId]?.devices ?? []).length > 0
+      userNotificationSettings.shouldSendPushNotification({
+        initiatorUserId: this.parentTrackUserId,
+        receiverUserId: this.remixUserId
+      })
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[this.remixUserId].devices
-      // If the user's settings for the follow notification is set to true, proceed
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.remixUserId
+      )
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.remixUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(this.remixUserId) + 1,
               targetARN: device.awsARN
             },
             {
               title: 'New Track Co-Sign! 🔥',
               body: `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
-                  }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'RemixCosign',
                 childTrackId: this.trackId
               }
@@ -106,7 +114,10 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotifications.email?.[this.remixUserId].frequency === 'live'
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: this.remixUserId,
+        initiatorUserId: this.parentTrackUserId
+      })
     ) {
       const notification: AppEmailNotification = {
         receiver_user_id: this.remixUserId,
@@ -114,8 +125,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       }
       await sendNotificationEmail({
         userId: this.remixUserId,
-        email: userNotifications.email?.[this.remixUserId].email,
-        frequency: 'live',
+        userNotificationSettings,
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

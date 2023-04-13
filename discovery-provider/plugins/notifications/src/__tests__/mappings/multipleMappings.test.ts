@@ -70,7 +70,7 @@ describe('Multiple Mappings Notification', () => {
         body: 'user_2 followed you',
         data: {
           id: 'timestamp:1589373217:group_id:follow:1',
-          type: 'follow',
+          type: 'Follow',
           userIds: [2]
         }
       }

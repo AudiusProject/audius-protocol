@@ -23,7 +23,7 @@ export const BATCH_CLOCK_STATUS_REQUEST_TIMEOUT = 1000 * 10
 export const MAX_USER_BATCH_CLOCK_FETCH_RETRIES = 5
 
 // Number of users to process in each batch when calculating reconfigs
-export const FIND_REPLICA_SET_UPDATES_BATCH_SIZE = 500
+export const FIND_REPLICA_SET_UPDATES_BATCH_SIZE = 50
 
 // Number of users to process in each batch when calculating reconfigs and syncs
 export const AGGREGATE_RECONFIG_AND_POTENTIAL_SYNC_OPS_BATCH_SIZE = 500

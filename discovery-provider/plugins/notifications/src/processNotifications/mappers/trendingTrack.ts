@@ -6,6 +6,15 @@ import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import { TrendingTrackNotification } from '../../types/notifications'
+import { BaseNotification } from './base'
+import { sendPushNotification } from '../../sns'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { EntityType } from '../../email/notifications/types'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type TrendingTrackNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingTrackNotification
@@ -68,17 +77,21 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
     }, {} as Record<number, { title: string }>)
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId]
     )
+    const notificationReceiverUserId = this.receiverUserId
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        receiverUserId: notificationReceiverUserId
+      })
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        notificationReceiverUserId
+      )
       // If the user's settings for the follow notification is set to true, proceed
       await Promise.all(
         devices.map((device) => {
@@ -86,17 +99,21 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.receiverUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(
+                  notificationReceiverUserId
+                ) + 1,
               targetARN: device.awsARN
             },
             {
               title: "📈 You're Trending",
-              body: `${tracks[this.trackId]?.title} is #${this.rank
-                } on Trending right now!`,
+              body: `${tracks[this.trackId]?.title} is #${
+                this.rank
+              } on Trending right now!`,
               data: {
                 type: 'TrendingTrack',
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
-                  }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 entityId: this.trackId
               }
             }
@@ -108,7 +125,9 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
 
     if (
       isLiveEmailEnabled &&
-      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: notificationReceiverUserId
+      })
     ) {
       const notification: AppEmailNotification = {
         receiver_user_id: this.receiverUserId,
@@ -116,8 +135,7 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
       }
       await sendNotificationEmail({
         userId: this.receiverUserId,
-        email: userNotifications.email?.[this.receiverUserId].email,
-        frequency: 'live',
+        userNotificationSettings,
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

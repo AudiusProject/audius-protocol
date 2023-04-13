@@ -91,9 +91,6 @@ export async function validateStateForImageDirCIDAndReturnFileUUID(
   if (!imageDirCID) {
     return null
   }
-  req.logger.debug(
-    `Beginning validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`
-  )
 
   // Ensure db row exists for dirCID
   const dirFile = await models.File.findOne({
@@ -139,9 +136,6 @@ export async function validateStateForImageDirCIDAndReturnFileUUID(
     })
   )
 
-  req.logger.debug(
-    `Completed validateStateForImageDirCIDAndReturnFileUUID for imageDirCID ${imageDirCID}`
-  )
   return dirFile.fileUUID
 }
 
@@ -262,7 +256,6 @@ export function computeFilePathInDir(dirName: string, fileName: string) {
 
   const parentDirPath = computeFilePath(dirName)
   const absolutePath = path.join(parentDirPath, fileName)
-  genericLogger.debug(`File path computed, absolutePath=${absolutePath}`)
   return absolutePath
 }
 
@@ -279,7 +272,6 @@ export async function computeFilePathInDirAndEnsureItExists(
   const parentDirPath = computeFilePath(dirName)
   await ensureDirPathExists(parentDirPath)
   const absolutePath = path.join(parentDirPath, fileName)
-  genericLogger.debug(`File path computed, absolutePath=${absolutePath}`)
   return absolutePath
 }
 

@@ -2,11 +2,17 @@ import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
 import { AppEmailNotification, TipReceiveNotification } from '../../types/notifications'
 import { BaseNotification, Device } from './base'
+import { TipReceiveNotification } from '../../types/notifications'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { capitalize } from 'lodash'
 import { formatWei } from '../../utils/format'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type TipReceiveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TipReceiveNotification
@@ -55,8 +61,9 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId, this.senderUserId]
     )
 
     const sendingUserName = users[this.senderUserId]?.name
@@ -64,18 +71,21 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        receiverUserId: this.receiverUserId,
+        initiatorUserId: this.senderUserId
+      })
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.receiverUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
               targetARN: device.awsARN
             },
             {
@@ -84,8 +94,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
                 sendingUserName
               )} sent you a tip of ${tipAmount} $AUDIO`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id
-                  }`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
                 type: 'TipReceive',
                 entityId: this.senderUserId
               }
@@ -98,7 +107,10 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotifications.email?.[this.receiverUserId].frequency === 'live'
+      userNotificationSettings.shouldSendEmail({
+        initiatorUserId: this.senderUserId,
+        receiverUserId: this.receiverUserId
+      })
     ) {
       const notification: AppEmailNotification = {
         receiver_user_id: this.receiverUserId,
@@ -106,8 +118,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
       }
       await sendNotificationEmail({
         userId: this.receiverUserId,
-        email: userNotifications.email?.[this.receiverUserId].email,
-        frequency: 'live',
+        userNotificationSettings,
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

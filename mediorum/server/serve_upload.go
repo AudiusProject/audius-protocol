@@ -7,10 +7,13 @@ import (
 	"encoding/base32"
 	"io"
 	"mime/multipart"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/ipfs/go-cid"
 	"github.com/labstack/echo/v4"
+	"github.com/multiformats/go-multihash"
 )
 
 var (
@@ -38,7 +41,7 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	template := c.FormValue("template")
+	template := JobTemplate(c.FormValue("template"))
 	files := form.File[filesFormFieldName]
 	defer form.RemoveAll()
 
@@ -67,13 +70,19 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 			}
 			uploads[idx] = upload
 
-			fileHash, err := hashFileUpload(formFile)
+			randomID, err := randomHash()
+			if err != nil {
+				upload.Error = err.Error()
+				return
+			}
+			formFileCID, err := computeFileHeaderCID(formFile)
 			if err != nil {
 				upload.Error = err.Error()
 				return
 			}
 
-			upload.ID = fileHash
+			upload.ID = randomID
+			upload.OrigFileCID = formFileCID
 			upload.FFProbe, _ = ffprobeUpload(formFile)
 
 			// mirror to n peers
@@ -83,13 +92,17 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 				return
 			}
 
-			upload.Mirrors, err = ss.replicateFile(fileHash, file)
+			upload.Mirrors, err = ss.replicateFile(formFileCID, file)
 			if err != nil {
 				upload.Error = err.Error()
 				return
 			}
 
-			ss.logger.Info("mirrored", "name", formFile.Filename, "hash", fileHash, "mirrors", upload.Mirrors)
+			ss.logger.Info("mirrored", "name", formFile.Filename, "randomID", randomID, "formFileCID", formFileCID, "mirrors", upload.Mirrors)
+
+			if template == JobTemplateImgSquare || template == JobTemplateImgBackdrop {
+				upload.TranscodeResults["original.jpg"] = formFileCID
+			}
 
 			err = ss.crud.Create(upload)
 			if err != nil {
@@ -106,20 +119,46 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(200, uploads)
 }
 
-func hashFileUpload(upload *multipart.FileHeader) (string, error) {
-	// for testing... want to be able to upload same stuff repeatedly
-	return randomHash()
+func (ss *MediorumServer) getV1CIDBlob(c echo.Context) error {
+	if c.Param("jobID") == "" || c.Param("variant") == "" {
+		return c.JSON(400, "Invalid request, no multihash provided")
+	}
+	if len(c.Param("jobID")) == 46 && strings.HasPrefix(c.Param("jobID"), "Qm") {
+		return c.JSON(400, "Invalid request, CID V0 provided - should've redirected to Content Node")
+	} else {
+		var upload *Upload
+		err := ss.crud.DB.First(&upload, "id = ?", c.Param("jobID")).Error
+		if err != nil {
+			return err
+		}
+		cid := upload.TranscodeResults[c.Param("variant")]
+		c.SetParamNames("key")
+		c.SetParamValues(cid)
+		return ss.getBlob(c)
+	}
+}
 
-	file, err := upload.Open()
+func computeFileHeaderCID(fh *multipart.FileHeader) (string, error) {
+	f, err := fh.Open()
 	if err != nil {
 		return "", err
 	}
-	hash := sha1.New()
-	if _, err := io.Copy(hash, file); err != nil {
+	defer f.Close()
+	return computeFileCID(f)
+}
+
+func computeFileCID(f io.ReadSeeker) (string, error) {
+	defer f.Seek(0, 0)
+	builder := cid.V1Builder{}
+	hash, err := multihash.SumStream(f, multihash.SHA2_256, -1)
+	if err != nil {
 		return "", err
 	}
-	fileHash := base32.StdEncoding.EncodeToString(hash.Sum(nil))
-	return fileHash, nil
+	cid, err := builder.Sum(hash)
+	if err != nil {
+		return "", err
+	}
+	return cid.String(), nil
 }
 
 func randomHash() (string, error) {

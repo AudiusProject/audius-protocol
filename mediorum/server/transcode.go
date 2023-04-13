@@ -180,7 +180,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	upload.Status = JobStatusBusy
 	ss.crud.Update(upload)
 
-	fileHash := upload.ID
+	fileHash := upload.OrigFileCID
 	logger := ss.logger.New("template", upload.Template, "hash", fileHash)
 
 	onError := func(err error, info ...string) error {
@@ -204,17 +204,18 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		for _, targetBox := range squares {
 			temp.Seek(0, 0)
 			out, w, h := Resized(".jpg", temp, targetBox, targetBox, "fill")
-			outName := fmt.Sprintf("%s_%d", fileHash, targetBox)
-			mirrors, err := ss.replicateFile(outName, out)
+			resultHash, err := computeFileCID(out)
+			if err != nil {
+				return onError(err, "computeFileCID")
+			}
+			mirrors, err := ss.replicateFile(resultHash, out)
 			if err != nil {
 				return onError(err, "replicate")
 			}
-			logger.Debug("did square", "w", w, "h", h, "key", outName, "mirrors", mirrors)
+			logger.Debug("did square", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
 
-			// for now use this made up result key
-			// in future... will be SHA of transcode result
-			variantName := fmt.Sprintf("%dx%[1]d", targetBox)
-			upload.TranscodeResults[variantName] = outName
+			variantName := fmt.Sprintf("%dx%[1]d.jpg", targetBox)
+			upload.TranscodeResults[variantName] = resultHash
 		}
 
 	case JobTemplateImgBackdrop:
@@ -223,22 +224,23 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		for _, targetWidth := range widths {
 			temp.Seek(0, 0)
 			out, w, h := Resized(".jpg", temp, targetWidth, AUTO, "fill")
-			outName := fmt.Sprintf("%s_%d", fileHash, targetWidth)
-			mirrors, err := ss.replicateFile(outName, out)
+			resultHash, err := computeFileCID(out)
+			if err != nil {
+				return onError(err, "computeFileCID")
+			}
+			mirrors, err := ss.replicateFile(resultHash, out)
 			if err != nil {
 				return onError(err, "replicate")
 			}
-			logger.Debug("did backdrop", "w", w, "h", h, "key", outName, "mirrors", mirrors)
+			logger.Debug("did backdrop", "w", w, "h", h, "key", resultHash, "mirrors", mirrors)
 
-			// for now use this made up result key
-			// in future... will be SHA of transcode result
-			variantName := fmt.Sprintf("%dwide", targetWidth)
-			upload.TranscodeResults[variantName] = outName
+			variantName := fmt.Sprintf("%x.jpg", targetWidth)
+			upload.TranscodeResults[variantName] = resultHash
 		}
 
 	case JobTemplateAudio, "":
 		if upload.Template == "" {
-			fmt.Println("empty template, falling back to audio")
+			logger.Warn("empty template (shouldn't happen), falling back to audio")
 		}
 
 		srcPath := temp.Name()
@@ -249,6 +251,8 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 			"-i", srcPath,
 			"-b:a", "320k",
 			"-f", "mp3",
+			"-metadata", "fileName="+upload.OrigFileName,
+			"-metadata", "uuid="+upload.ID,
 			"-progress", "pipe:2",
 			destPath)
 
@@ -297,14 +301,16 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 
 		// replicate to peers
 		// attempt to forward to an assigned node
-		resultKey := fileHash + "_320.mp3"
-		mirrors, err := ss.replicateFile(resultKey, dest)
+		resultHash, err := computeFileCID(dest)
+		if err != nil {
+			return onError(err, "computeFileCID")
+		}
+		resultKey := resultHash
+		mirrors, err := ss.replicateFile(resultHash, dest)
 		if err != nil {
 			return onError(err)
 		}
 
-		// for now use this made up result key
-		// in future... will be SHA of transcode result
 		upload.TranscodeResults["320"] = resultKey
 
 		ss.logger.Info("transcode done", "mirrors", mirrors)
