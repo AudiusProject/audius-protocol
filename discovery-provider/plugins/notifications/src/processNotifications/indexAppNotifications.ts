@@ -90,7 +90,7 @@ export class AppNotificationsProcessor {
     return Boolean(featureEnabled)
   }
 
-  async process(notifications: NotificationRow[]) {
+  async process(notifications: NotificationRow[], remoteConfig: RemoteConfig) {
     if (notifications.length == 0) return
     logger.info(`Processing ${notifications.length} push notifications`)
     const timer = new Timer('process app push notifications')
@@ -103,7 +103,8 @@ export class AppNotificationsProcessor {
     const mappedNotifications = mapNotifications(
       notifications,
       this.dnDB,
-      this.identityDB
+      this.identityDB,
+      remoteConfig
     )
     for (const notification of mappedNotifications) {
       const isEnabled = this.getIsPushNotificationEnabled(

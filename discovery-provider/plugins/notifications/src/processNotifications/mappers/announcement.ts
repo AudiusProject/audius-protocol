@@ -8,27 +8,25 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { MappingFeatureName, MappingVariable, RemoteConfig } from '../../remoteConfig'
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AnnouncementNotification
 }
 export class Announcement extends BaseNotification<AnnouncementNotificationRow> {
+  remoteConfig: RemoteConfig
 
   constructor(
     dnDB: Knex,
     identityDB: Knex,
-    notification: AnnouncementNotificationRow
+    notification: AnnouncementNotificationRow,
+    remoteConfig: RemoteConfig
   ) {
     super(dnDB, identityDB, notification)
+    this.remoteConfig = remoteConfig
   }
 
   async pushNotification() {
-    const pushAnnouncements = false;
-    if (!pushAnnouncements) {
-      // TODO: ADD .env CONFIG TO SHUT OFF ANNOUNCEMENTS
-      return;
-    }
-
     const res_count = await this.dnDB('users')
       .count('user_id')
       .where('is_current', true)
@@ -44,7 +42,6 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
 
     // this will leave out a few extra people
     while (offset < count) {
-      const start = new Date().getTime()
       // query next page
       const res: Array<{
         user_id: number
@@ -66,59 +63,58 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
         .limit(page_count)
 
       offset = res[res.length - 1].user_id + 1
-      const elapsed = new Date().getTime() - start
-      console.log(
-        `count: ${count} offset: ${offset} from: [${res[0].user_id}:${res[res.length - 1].user_id}] queried in ${elapsed} ms`
-      )
-
       const validReceiverUserIds = res.map((user) => user.user_id)
+      if (!this.remoteConfig.getFeatureVariableEnabled(MappingFeatureName, MappingVariable.PushAnnouncement)) {
+        // dry run
+        continue
+      }
       for (const userId of validReceiverUserIds) {
-        const userNotificationSettings = await buildUserNotificationSettings(
-          this.identityDB,
-          [userId]
-        )
-        // If the user has devices to the notification to, proceed
-        if (
-          userNotificationSettings.shouldSendPushNotification({
-            receiverUserId: userId
-          })
-        ) {
-          const devices: Device[] = userNotificationSettings.getDevices(userId)
-          // If the user's settings for the follow notification is set to true, proceed
-
-          await Promise.all(
-            devices.map((device) => {
-              // this may get rate limited by AWS
-              return sendPushNotification(
-                {
-                  type: device.type,
-                  badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,
-                  targetARN: device.awsARN
-                },
-                {
-                  title: this.notification.data.title,
-                  body: this.notification.data.short_description,
-                  data: {
-                    id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                      this.notification.group_id
-                    }`,
-                    type: 'Announcement'
-                  }
-                }
-              )
-            })
+          const userNotificationSettings = await buildUserNotificationSettings(
+            this.identityDB,
+            [userId]
           )
-          await this.incrementBadgeCount(userId)
-        }
-        if (
-          userNotificationSettings.shouldSendEmail({ receiverUserId: userId })
-        ) {
-          // TODO: Send out email
-        }
-    }
+          // If the user has devices to the notification to, proceed
+          if (
+            userNotificationSettings.shouldSendPushNotification({
+              receiverUserId: userId
+            })
+          ) {
+            const devices: Device[] = userNotificationSettings.getDevices(userId)
+            // If the user's settings for the follow notification is set to true, proceed
+
+            await Promise.all(
+              devices.map((device) => {
+                // this may get rate limited by AWS
+                return sendPushNotification(
+                  {
+                    type: device.type,
+                    badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,
+                    targetARN: device.awsARN
+                  },
+                  {
+                    title: this.notification.data.title,
+                    body: this.notification.data.short_description,
+                    data: {
+                      id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                        this.notification.group_id
+                      }`,
+                      type: 'Announcement'
+                    }
+                  }
+                )
+              })
+            )
+            await this.incrementBadgeCount(userId)
+          }
+          if (
+            userNotificationSettings.shouldSendEmail({ receiverUserId: userId })
+          ) {
+            // TODO: Send out email
+          }
+      }
     }
     const total_elapsed = new Date().getTime() - total_start
-    console.log(`done! in ${total_elapsed} ms`)
+    console.log(`announcement complete in ${total_elapsed} ms`)
   }
 
   getResourcesForEmail(): ResourceIds {

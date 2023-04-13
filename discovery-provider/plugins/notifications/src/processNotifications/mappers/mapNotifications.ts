@@ -53,21 +53,24 @@ import { Tastemaker } from './tastemaker'
 import { SaveOfRepost } from './saveOfRepost'
 import { TrendingUnderground } from './trendingUnderground'
 import { TrendingPlaylist } from './trendingPlaylist'
+import { RemoteConfig } from '../../remoteConfig'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
   dnDb: Knex,
-  identityDb: Knex
+  identityDb: Knex,
+  remoteConfig: RemoteConfig
 ) => {
   return notifications
-    .map((notification) => mapNotification(notification, dnDb, identityDb))
+    .map((notification) => mapNotification(notification, dnDb, identityDb, remoteConfig))
     .filter(Boolean)
 }
 
 const mapNotification = (
   notification: NotificationRow | EmailNotification,
   dnDb: Knex,
-  identityDb: Knex
+  identityDb: Knex,
+  remoteConfig: RemoteConfig
 ) => {
   if (notification.type == 'follow') {
     const followNotification = notification as NotificationRow & {
@@ -184,7 +187,7 @@ const mapNotification = (
     const announcementNotification = notification as NotificationRow & {
       data: AnnouncementNotification
     }
-    return new Announcement(dnDb, identityDb, announcementNotification)
+    return new Announcement(dnDb, identityDb, announcementNotification, remoteConfig)
   } else if (notification.type == 'reaction') {
     const reactionNotification = notification as NotificationRow & {
       data: ReactionNotification
