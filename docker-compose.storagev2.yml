@@ -14,7 +14,7 @@ services:
     environment:
       - dirTemplate=/data/mediorum_dev_%d
       - dbUrlTemplate=postgresql://postgres:postgres@db:5432/mediorum%d
-      - hostNameTemplate=http://example-mediorum-container-hostname-%d
+      - hostNameTemplate=http://audius-protocol-creator-node-%d
     ports:
       - 1991:1991
       - 1992:1992
