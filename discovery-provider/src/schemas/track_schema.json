@@ -266,8 +266,7 @@
                     "type": [
                         "string",
                         "null"
-                    ],
-                    "$ref": "#/definitions/CID"
+                    ]
                 },
                 "is_downloadable": {
                     "type": "boolean"

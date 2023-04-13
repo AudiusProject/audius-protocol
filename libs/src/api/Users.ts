@@ -976,8 +976,8 @@ export class Users extends Base {
     this._validateUserMetadata(newMetadata)
 
     try {
-      // TODO: Compute CID V1 of metadata. Golang computation should arrive at the same result as the JS computation
       // Write metadata to chain
+      const cid = await Utils.fileHasher.generateMetadataCidV1(newMetadata)
       const { txReceipt } =
         await this.contracts.EntityManagerClient!.manageEntity(
           userId,
@@ -985,9 +985,9 @@ export class Users extends Base {
           userId,
           EntityManagerClient.Action.UPDATE,
           JSON.stringify({
-            cid: `TODO_COMPUTE_CIDV1_${userId}`,
+            cid: cid.toString(),
             data: newMetadata
-          }) // TODO: use CID of newMetadata. Was previously computed/returned from POST /audius_users/metadata
+          })
         )
       const blockNumber = txReceipt.blockNumber
 
