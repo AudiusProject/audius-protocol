@@ -94,11 +94,15 @@
         }
         style += hostHealthStyle(h);
 
+        let title = Object.entries(h)
+          .map((v) => v.join("\n"))
+          .join("\n");
+
         // if (aliveAge)
         return html` <a
           style=${style}
           href="${h.host}${window.location.pathname}"
-          title="last seen ${h.alive_at}"
+          title="${title}"
         >
           ${url.host}
         </a>`;
@@ -154,7 +158,7 @@
                   <td>${hostName(upload.transcoded_by)}</td>
                   <td>
                     <blob-link
-                      key=${upload.id}
+                      key=${upload.orig_file_cid}
                       label=${upload.orig_filename}
                       .hostHealth=${this.hostHealth}
                     ></blob-link>
