@@ -248,32 +248,43 @@ def fetch_cid_metadata(db, entity_manager_txs):
                     # Check if metadata blob was passed directly.
                     # If so, add to cid_metadata_from_chain and cid_type_from_chain
                     # dicts and do not query CNs for these CIDs.
-                    # TODO remove after CID metadata migration.
-                    try:
-                        data = json.loads(cid)
-                        cid = data["cid"]
-                        metadata_json = data["data"]
+                    # TODO remove legacy CN path after CID metadata migration.
+                    if len(cid) > 0 and cid[0] == "{" and cid[-1] == "}":
+                        try:
+                            data = json.loads(cid)
 
-                        metadata_format: Any = None
-                        metadata_type = None
-                        if event_type == EntityType.PLAYLIST:
-                            metadata_type = "playlist_data"
-                            metadata_format = playlist_metadata_format
-                        elif event_type == EntityType.TRACK:
-                            metadata_type = "track"
-                            metadata_format = track_metadata_format
-                        elif event_type == EntityType.USER:
-                            metadata_type = "user"
-                            metadata_format = user_metadata_format
-                        formatted_json = get_metadata_from_json(
-                            metadata_format, metadata_json
-                        )
-                        # do not add to cid_metadata or cid_type yet to avoid interfering with the retry conditions
-                        cid_type_from_chain[cid] = metadata_type
-                        cid_metadata_from_chain[cid] = formatted_json
+                            # If metadata blob does not contain the required keys, skip
+                            if "cid" not in data.keys() or "data" not in data.keys():
+                                continue
+                            cid = data["cid"]
+                            metadata_json = data["data"]
+
+                            metadata_format: Any = None
+                            metadata_type = None
+                            if event_type == EntityType.PLAYLIST:
+                                metadata_type = "playlist_data"
+                                metadata_format = playlist_metadata_format
+                            elif event_type == EntityType.TRACK:
+                                metadata_type = "track"
+                                metadata_format = track_metadata_format
+                            elif event_type == EntityType.USER:
+                                metadata_type = "user"
+                                metadata_format = user_metadata_format
+
+                            formatted_json = get_metadata_from_json(
+                                metadata_format, metadata_json
+                            )
+                            # Only index valid changes
+                            if formatted_json != metadata_format:
+                                # Do not add to cid_metadata or cid_type yet to avoid
+                                # interfering with the retry conditions
+                                cid_type_from_chain[cid] = metadata_type
+                                cid_metadata_from_chain[cid] = formatted_json
+                        except Exception as e:
+                            logger.info(
+                                f"index_nethermind.py | error deserializing metadata {cid}: {e}"
+                            )
                         continue
-                    except Exception:
-                        pass
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
