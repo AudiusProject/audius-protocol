@@ -227,6 +227,10 @@ export class AudioPlayer {
       // TODO: Test to make sure that this doesn't break anything
       this.stop()
       const prevVolume = this.audio.volume
+      if (this.audio) {
+        this.audio.src = ''
+        this.audio.remove()
+      }
       this.audio = new Audio()
 
       // Connect this.audio to the window so that 3P's can interact with it.
