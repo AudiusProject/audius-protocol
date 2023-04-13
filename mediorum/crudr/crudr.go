@@ -2,13 +2,15 @@ package crudr
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/inconshreveable/log15"
 	"github.com/oklog/ulid/v2"
-	"github.com/r3labs/sse/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -24,19 +26,28 @@ const (
 	GlobalStreamName = "global"
 )
 
+var (
+	errDuplicateOp = errors.New("duplicate op")
+)
+
 type Crudr struct {
-	DB        *gorm.DB
-	SSEServer *sse.Server
+	DB *gorm.DB
 
 	host    string
 	logger  log15.Logger
 	typeMap map[string]reflect.Type
 
+	// todo: Peer is in server package now, so this is a simple list of strings
+	// todo: move Peer to registrar and use that
+	peerHosts  []string
+	httpClient http.Client
+
 	mu        sync.Mutex
 	callbacks []func(op *Op, records interface{})
 }
 
-func New(host string, db *gorm.DB) *Crudr {
+func New(host string, peerHosts []string, db *gorm.DB) *Crudr {
+
 	// err := db.AutoMigrate(&Op{})
 
 	opDDL := `
@@ -54,21 +65,23 @@ func New(host string, db *gorm.DB) *Crudr {
 		panic(err)
 	}
 
-	sseServer := sse.New()
-
-	// ojala falso
-	sseServer.AutoReplay = false
-
-	sseServer.CreateStream(LocalStreamName)
-	sseServer.CreateStream(GlobalStreamName)
+	// todo: combine with above
+	err = db.AutoMigrate(&Cursor{})
+	if err != nil {
+		panic(err)
+	}
 
 	c := &Crudr{
-		DB:        db,
-		SSEServer: sseServer,
+		DB: db,
 
 		host:    host,
 		logger:  log15.New("module", "crud", "from", host),
 		typeMap: map[string]reflect.Type{},
+
+		peerHosts: peerHosts,
+		httpClient: http.Client{
+			Timeout: 60 * time.Second,
+		},
 	}
 
 	return c
@@ -140,7 +153,7 @@ func (c *Crudr) newOp(action string, data interface{}, opts ...withOption) *Op {
 
 func (c *Crudr) doOp(op *Op) error {
 	// apply locally
-	err := c.apply(op)
+	err := c.ApplyOp(op)
 	if err != nil {
 		c.logger.Warn("apply failed", "op", op, "err", err)
 		return err
@@ -178,7 +191,7 @@ func (c *Crudr) tableNameFor(obj interface{}) string {
 	return c.DB.NamingStrategy.TableName(typeName)
 }
 
-func (c *Crudr) apply(op *Op) error {
+func (c *Crudr) ApplyOp(op *Op) error {
 	elemType, ok := c.typeMap[op.Table]
 	if !ok {
 		return fmt.Errorf("no type registered for %s", op.Table)
@@ -200,10 +213,10 @@ func (c *Crudr) apply(op *Op) error {
 			}
 
 			// if ulid already in ops table
-			// it is already applied... move on
+			// with belt+suspenders we see every event twice
+			// so no need to log anything here
 			if res.RowsAffected == 0 {
-				c.logger.Debug("already have ulid", "ulid", op.ULID)
-				return nil
+				return errDuplicateOp
 			}
 		}
 
@@ -227,29 +240,18 @@ func (c *Crudr) apply(op *Op) error {
 		return err
 	})
 
-	if err != nil {
+	if err == errDuplicateOp {
+		// belt+suspenders: just move on
+		return nil
+	} else if err != nil {
 		return err
 	}
 
-	msg, _ := json.Marshal(op)
-	sseEvent := &sse.Event{
-		Data: msg,
-	}
-
-	// if this host is origin...
-	// broadcast op to local outbox
+	// broadcast if this host is origin...
 	if op.Host == c.host {
-		if op.Transient {
-			c.SSEServer.TryPublish(LocalStreamName, sseEvent)
-		} else {
-			c.SSEServer.Publish(LocalStreamName, sseEvent)
-		}
+		msg, _ := json.Marshal(op)
+		c.broadcast(msg)
 	}
-
-	// broadcast op to global feed
-	// atm global feed is just used by status UI
-	// so it's okay to always TryPublish
-	c.SSEServer.TryPublish(GlobalStreamName, sseEvent)
 
 	// notify any local (in memory) subscribers
 	c.callOpCallbacks(op, records)

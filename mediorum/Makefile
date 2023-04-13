@@ -11,7 +11,7 @@ dev2::
 	LIVE_UI=true goreman -set-ports=false start
 
 test:: pg.bounce
-	go test ./... -count=1
+	go test ./... -v -count=1 -timeout 60s
 
 
 tools::
@@ -39,4 +39,5 @@ pg.up:
 pg.bounce::
 	docker compose down --volumes
 	docker compose up -d --wait
+	rm -rf /tmp/mediorum*
 	sleep 2

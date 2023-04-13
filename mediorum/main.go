@@ -132,7 +132,7 @@ func startDevCluster() {
 	wg := sync.WaitGroup{}
 
 	dirTemplate := getenvWithDefault("dirTemplate", "/tmp/mediorum_dev_%d")
-	dbUrlTemplate := getenvWithDefault("dbUrlTemplate", "postgres://postgres:example@localhost:5444/m%d")
+	dbUrlTemplate := getenvWithDefault("dbUrlTemplate", "postgres://postgres:example@localhost:5454/m%d")
 
 	for idx, peer := range network {
 		peer := peer

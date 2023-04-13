@@ -6,7 +6,7 @@ import (
 )
 
 func SetupTestDB() *gorm.DB {
-	dsn := "postgres://postgres:example@localhost:5444/mediorum_test"
+	dsn := "postgres://postgres:example@localhost:5454/mediorum_test"
 	db, err := gorm.Open(postgres.Open(dsn))
 	if err != nil {
 		panic(err)

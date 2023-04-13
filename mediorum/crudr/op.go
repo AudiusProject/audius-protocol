@@ -26,3 +26,8 @@ func WithTransient() withOption {
 func (op Op) String() string {
 	return fmt.Sprintf("%s: %s %s %s", op.Host, op.Action, op.Table, op.Data)
 }
+
+type Cursor struct {
+	Host     string `json:"host" gorm:"primaryKey"`
+	LastULID string `json:"last_ulid" gorm:"column:last_ulid"`
+}

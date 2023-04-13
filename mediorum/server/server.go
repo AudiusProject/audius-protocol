@@ -115,7 +115,14 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	// crud
-	crud := crudr.New(config.Self.Host, db)
+	peerHosts := []string{}
+	for _, peer := range config.Peers {
+		if peer.Host == config.Self.Host {
+			continue
+		}
+		peerHosts = append(peerHosts, peer.Host)
+	}
+	crud := crudr.New(config.Self.Host, peerHosts, db)
 	dbMigrate(crud)
 
 	// echoServer server
@@ -197,8 +204,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi := basePath.Group("/internal")
 
 	// internal: crud
-	internalApi.GET("/crud/stream", ss.getCrudStream)
-	internalApi.GET("/crud/bulk", ss.getCrudBulk)
+	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
+	internalApi.POST("/crud/push", ss.serveCrudPush)
 
 	// should health be internal or public?
 	internalApi.GET("/health", ss.getMyHealth)
@@ -218,7 +225,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 func (ss *MediorumServer) MustStart() {
 	// start crud clients
 	// routes should match crud routes setup above
-	ss.startCrudClients("/mediorum/internal/crud/stream", "/mediorum/internal/crud/bulk")
+	ss.startCrudClients("/mediorum/internal/crud/stream", "/mediorum/internal/crud/sweep")
 
 	// start server
 	go func() {
@@ -250,8 +257,6 @@ func (ss *MediorumServer) Stop() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	ss.crud.SSEServer.Close()
 
 	if err := ss.echo.Shutdown(ctx); err != nil {
 		ss.logger.Crit("echo shutdown: " + err.Error())

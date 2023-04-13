@@ -12,7 +12,6 @@ require (
 	github.com/labstack/echo/v4 v4.10.0
 	github.com/multiformats/go-multihash v0.2.1
 	github.com/oklog/ulid/v2 v2.1.0
-	github.com/r3labs/sse/v2 v2.10.0
 	github.com/sourcegraph/conc v0.3.0
 	github.com/spf13/cast v1.5.0
 	github.com/stretchr/testify v1.8.2
@@ -67,7 +66,6 @@ require (
 	google.golang.org/genproto v0.0.0-20221201204527-e3fa12d562f3 // indirect
 	google.golang.org/grpc v1.51.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
-	gopkg.in/cenkalti/backoff.v1 v1.1.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	lukechampine.com/blake3 v1.1.6 // indirect
 )

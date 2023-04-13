@@ -32,7 +32,7 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 			Peers:             network,
 			ReplicationFactor: replicationFactor,
 			Dir:               fmt.Sprintf("/tmp/mediorum_test/%s", peer.Wallet),
-			PostgresDSN:       fmt.Sprintf("postgres://postgres:example@localhost:5444/m%d", idx+1),
+			PostgresDSN:       fmt.Sprintf("postgres://postgres:example@localhost:5454/m%d", idx+1),
 		}
 		server, err := New(config)
 		if err != nil {
