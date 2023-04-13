@@ -320,9 +320,7 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Don't bring up creator/content node containers",
 )
-@click.option(
-    "--comms", is_flag=True, help="Bring up comms/dms containers"
-)
+@click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
 @click.option("-w", "--wait", is_flag=True, help="Wait for services to be healthy")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
