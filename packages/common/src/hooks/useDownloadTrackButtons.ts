@@ -42,7 +42,6 @@ type UseDownloadTrackButtonsArgs = {
   isOwner: boolean
   onDownload: (
     trackID: number,
-    cid: string,
     category?: string,
     parentTrackId?: ID
   ) => void
@@ -179,7 +178,7 @@ const getStemButtons = ({
           if (!isLoggedIn) {
             onNotLoggedInClick?.()
           }
-          onDownload(id, downloadURL, u.label, parentTrackId)
+          onDownload(id, u.label, parentTrackId)
         }
       } else {
         return undefined
@@ -228,8 +227,7 @@ const makeDownloadOriginalButton = ({
     }
   }
 
-  const { cid } = track.download
-  if (cid) {
+  if (track.download.cid) {
     return {
       ...config,
       state: isLoggedIn
@@ -239,7 +237,7 @@ const makeDownloadOriginalButton = ({
         if (!isLoggedIn) {
           onNotLoggedInClick?.()
         }
-        onDownload(track.track_id, cid)
+        onDownload(track.track_id)
       }
     }
   }

@@ -447,7 +447,6 @@ export const TrackScreenDetailsTile = ({
         doesUserHaveAccess={doesUserHaveAccess}
         isOwner={isOwner}
         trackId={track_id}
-        user={user}
       />
     )
   }
