@@ -47,7 +47,6 @@ def backfill_cid_data(db: SessionManager):
                         cid_type[cid] = type
                     # Write chunk to db
                     save_cid_metadata(session, cid_metadata, cid_type)
-    logger.info("backfill_cid_data.py | finished backfill")
 
 
 # ####### CELERY TASKS ####### #
