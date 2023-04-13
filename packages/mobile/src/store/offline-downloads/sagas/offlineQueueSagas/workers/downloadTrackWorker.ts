@@ -164,7 +164,10 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   const apiClient = yield* getContext('apiClient')
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isGatedContentEnabled = yield* call(getFeatureEnabled, FeatureFlags.GATED_CONTENT_ENABLED)
+  const isGatedContentEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.GATED_CONTENT_ENABLED
+  )
   let queryParams: QueryParams = {}
   if (isGatedContentEnabled) {
     const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
