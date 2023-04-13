@@ -418,6 +418,7 @@ export class CreatorNode {
     ])
 
     // Update metadata to include uploaded CIDs
+    updatedMetadata.track_segments = []
     updatedMetadata.track_cid = audioResp.results['320']
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid

@@ -111,7 +111,7 @@ user_metadata_format = {
     "collectibles": None,
     "playlist_library": None,
     "events": None,
-    "is_storage_v2": None,  # TODO: I think it should be False by default, but why are the other boolean properties None when their sql column has them as non-nullable?
+    "is_storage_v2": False,
     "is_deactivated": None,
     "artist_pick_track_id": None,
 }

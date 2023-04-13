@@ -23,8 +23,7 @@
                         "string",
                         "null"
                     ],
-                    "default": null,
-                    "$ref": "#/definitions/CID"
+                    "default": null
                 },
                 "cover_art_sizes": {
                     "$comment": "type can be null if attached as a stem",
@@ -32,8 +31,7 @@
                         "string",
                         "null"
                     ],
-                    "default": null,
-                    "$ref": "#/definitions/CID"
+                    "default": null
                 },
                 "tags": {
                     "type": [
@@ -115,7 +113,7 @@
                 },
                 "track_segments": {
                     "type": "array",
-                    "minItems": 1,
+                    "minItems": 0,
                     "items": {
                         "$ref": "#/definitions/TrackSegment"
                     },
@@ -126,6 +124,10 @@
                     "type": "boolean",
                     "default": false
                 },
+                "is_storage_v2": {
+                  "type": "boolean",
+                  "default": false
+              },
                 "field_visibility": {
                     "type": "object",
                     "$ref": "#/definitions/FieldVisibility",
