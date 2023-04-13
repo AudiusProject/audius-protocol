@@ -1,6 +1,9 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { AppEmailNotification, SaveOfRepostNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SaveOfRepostNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'

@@ -1,16 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { AppEmailNotification, SupporterRankUpNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
-import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import { capitalize } from '../../email/notifications/components/utils'
-import { sendNotificationEmail } from '../../email/notifications/sendEmail'
-import { SupporterRankUpNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SupporterRankUpNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { capitalize } from '../../email/notifications/components/utils'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
@@ -128,7 +126,6 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
         identityDb: this.identityDB
       })
     }
-
   }
 
   getResourcesForEmail(): ResourceIds {

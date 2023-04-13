@@ -1,16 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { AppEmailNotification, TrendingTrackNotification } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
-import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import { EntityType } from '../../email/notifications/types'
-import { sendNotificationEmail } from '../../email/notifications/sendEmail'
-import { TrendingTrackNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  TrendingTrackNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device

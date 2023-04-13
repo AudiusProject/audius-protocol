@@ -1,6 +1,9 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { AppEmailNotification, SupporterDethronedNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SupporterDethronedNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
@@ -85,7 +88,8 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
             {
               type: device.type,
               badgeCount:
-                userNotificationSettings.getBadgeCount(this.dethronedUserId) + 1,
+                userNotificationSettings.getBadgeCount(this.dethronedUserId) +
+                1,
               targetARN: device.awsARN
             },
             {

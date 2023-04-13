@@ -4,7 +4,7 @@ import {
   AppEmailNotification,
   RepostNotification
 } from '../../types/notifications'
-import { BaseNotification, NotificationSettings } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'

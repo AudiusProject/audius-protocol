@@ -118,12 +118,12 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     if (userNotificationSettings.browser) {
       // TODO: Send out browser
     }
-    if (isLiveEmailEnabled &&
+    if (
+      isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: this.receiverUserId
       })
-
-      ) {
+    ) {
       // TODO: send out email
     }
   }

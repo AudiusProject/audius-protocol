@@ -104,11 +104,13 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (isLiveEmailEnabled &&       userNotificationSettings.shouldSendEmail({
-      receiverUserId: this.receiverUserId,
-      initiatorUserId: this.followerUserId
-    })
-) {
+    if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: this.receiverUserId,
+        initiatorUserId: this.followerUserId
+      })
+    ) {
       const notification: AppEmailNotification = {
         receiver_user_id: this.receiverUserId,
         ...this.notification

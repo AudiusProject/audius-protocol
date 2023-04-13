@@ -81,13 +81,13 @@ export class Message extends BaseNotification<DMNotification> {
       )
       await this.incrementBadgeCount(this.receiverUserId)
     }
-    if (isLiveEmailEnabled &&
+    if (
+      isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.senderUserId,
         receiverUserId: this.receiverUserId
       })
-
-      ) {
+    ) {
       // TODO: send out email
     }
   }

@@ -6,10 +6,7 @@ import {
 } from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
-import {
-  ResourceIds,
-  Resources
-} from '../../email/notifications/renderEmail'
+import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
@@ -107,7 +104,8 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
           return sendPushNotification(
             {
               type: device.type,
-              badgeCount: userNotificationSettings.getBadgeCount(track.owner_id) + 1,
+              badgeCount:
+                userNotificationSettings.getBadgeCount(track.owner_id) + 1,
               targetARN: device.awsARN
             },
             {
@@ -127,10 +125,9 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       await this.incrementBadgeCount(track.owner_id)
     }
     if (
-      isLiveEmailEnabled && 
+      isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmail({
-        receiverUserId: track.owner_id,
-
+        receiverUserId: track.owner_id
       })
     ) {
       const notification: AppEmailNotification = {

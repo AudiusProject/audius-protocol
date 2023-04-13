@@ -111,11 +111,12 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (isLiveEmailEnabled && 
+    if (
+      isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: notificationReceiverUserId
       })
-      ) {
+    ) {
       // TODO: send out email
     }
   }

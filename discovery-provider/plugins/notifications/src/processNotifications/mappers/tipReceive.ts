@@ -1,8 +1,9 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { AppEmailNotification, TipReceiveNotification } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
-import { TipReceiveNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  TipReceiveNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
@@ -94,7 +95,9 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
                 sendingUserName
               )} sent you a tip of ${tipAmount} $AUDIO`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'TipReceive',
                 entityId: this.senderUserId
               }

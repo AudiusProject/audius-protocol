@@ -9,7 +9,10 @@ import { DMEntityType } from './types'
 
 import { logger } from '../../logger'
 import { sendNotificationEmail } from './sendEmail'
-import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
+import {
+  EmailFrequency,
+  buildUserNotificationSettings
+} from '../../processNotifications/mappers/userNotificationSettings'
 
 // blockchainUserId => email
 type EmailUsers = {
@@ -301,6 +304,11 @@ export async function processEmailNotifications(
     }
     const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      Object.keys(users).map(Number)
+    )
+
     if (Object.keys(users).length == 0) {
       return
     }
@@ -334,8 +342,7 @@ export async function processEmailNotifications(
               const notifications = userNotifications.notifications
               const sent = await sendNotificationEmail({
                 userId: user.blockchainUserId,
-                email: user.email,
-                frequency,
+                userNotificationSettings,
                 notifications: notifications,
                 dnDb: dnDb,
                 identityDb: identityDb

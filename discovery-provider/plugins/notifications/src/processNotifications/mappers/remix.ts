@@ -5,7 +5,7 @@ import {
   RemixNotification,
   RepostNotification
 } from '../../types/notifications'
-import { BaseNotification, NotificationSettings } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
@@ -142,7 +142,6 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
         identityDb: this.identityDB
       })
     }
-
   }
 
   getResourcesForEmail(): ResourceIds {

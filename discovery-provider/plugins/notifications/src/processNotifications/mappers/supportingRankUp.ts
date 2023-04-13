@@ -1,14 +1,13 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { AppEmailNotification, SupportingRankUpNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
-import { sendPushNotification } from '../../sns'
-import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
-import { sendNotificationEmail } from '../../email/notifications/sendEmail'
-import { SupportingRankUpNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SupportingRankUpNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
