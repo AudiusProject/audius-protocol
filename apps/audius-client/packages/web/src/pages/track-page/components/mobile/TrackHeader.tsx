@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 
 import {
-  CID,
   ID,
   Name,
   SquareSizes,
@@ -122,12 +121,7 @@ type TrackHeaderProps = {
   onShare: () => void
   onSave: () => void
   onRepost: () => void
-  onDownload: (
-    trackId: ID,
-    cid: CID,
-    category?: string,
-    parentTrackId?: ID
-  ) => void
+  onDownload: (trackId: ID, category?: string, parentTrackId?: ID) => void
   goToFavoritesPage: (trackId: ID) => void
   goToRepostsPage: (trackId: ID) => void
 }

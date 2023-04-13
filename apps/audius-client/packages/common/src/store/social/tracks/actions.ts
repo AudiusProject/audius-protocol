@@ -5,7 +5,7 @@ import {
   FavoriteSource,
   ShareSource
 } from '../../../models/Analytics'
-import { ID, CID } from '../../../models/Identifiers'
+import { ID } from '../../../models/Identifiers'
 
 export const REPOST_TRACK = 'SOCIAL/REPOST_TRACK'
 export const UNDO_REPOST_TRACK = 'SOCIAL/UNDO_REPOST_TRACK'
@@ -96,10 +96,8 @@ export const recordListen = createCustomAction(
 
 export const downloadTrack = createCustomAction(
   DOWNLOAD_TRACK,
-  (trackId: ID, cid: CID, creatorNodeEndpoints: string, stemName?: string) => ({
+  (trackId: ID, stemName?: string) => ({
     trackId,
-    cid,
-    creatorNodeEndpoints,
     stemName
   })
 )
