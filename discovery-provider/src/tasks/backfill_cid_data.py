@@ -1,8 +1,8 @@
 import csv
 import json
 import logging
-import tempfile
 import os
+import tempfile
 from itertools import islice
 
 import requests
