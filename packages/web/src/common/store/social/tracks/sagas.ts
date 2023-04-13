@@ -651,7 +651,10 @@ function* downloadTrack({
     const apiClient = yield* getContext('apiClient')
     const trackDownload = yield* getContext('trackDownload')
     const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-    const isGatedContentEnabled = yield* call(getFeatureEnabled, FeatureFlags.GATED_CONTENT_ENABLED)
+    const isGatedContentEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.GATED_CONTENT_ENABLED
+    )
     let queryParams: QueryParams = {}
     if (isGatedContentEnabled) {
       const premiumTrackSignatureMap = yield* select(
