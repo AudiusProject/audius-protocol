@@ -43,7 +43,8 @@ export enum FeatureFlags {
   TRENDING_UNDERGROUND_NOTIFICATIONS = 'trending_underground_notifications',
   TASTEMAKER_NOTIFICATIONS = 'tastemaker_notifications',
   STORAGE_V2 = 'storage_v2',
-  SDK_V2 = 'sdk_v2'
+  SDK_V2 = 'sdk_v2',
+  GET_METADATA_FROM_DISCOVERY_ENABLED = 'get_metadata_from_discovery_enabled'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -102,5 +103,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.TRENDING_UNDERGROUND_NOTIFICATIONS]: false,
   [FeatureFlags.TASTEMAKER_NOTIFICATIONS]: false,
   [FeatureFlags.STORAGE_V2]: false,
-  [FeatureFlags.SDK_V2]: false
+  [FeatureFlags.SDK_V2]: false,
+  [FeatureFlags.GET_METADATA_FROM_DISCOVERY_ENABLED]: false
 }
