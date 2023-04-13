@@ -21,12 +21,7 @@ chunk_size = 1_000
 
 def backfill_cid_data(db: SessionManager):
     logger.info("backfill_cid_data.py | starting backfill")
-    source_tsv_url = ""
-    env = os.getenv("audius_discprov_env")
-    if env == "stage" and "stage_backfill_cid_data_url" in shared_config["discprov"]:
-        source_tsv_url = shared_config["discprov"]["stage_backfill_cid_data_url"]
-    elif env == "prod" and "prod_backfill_cid_data_url" in shared_config["discprov"]:
-        source_tsv_url = shared_config["discprov"]["prod_backfill_cid_data_url"]
+    source_tsv_url = os.getenv("backfill_cid_data_url") or ""
 
     response = requests.get(source_tsv_url, stream=True)
     with tempfile.NamedTemporaryFile() as tmp:
