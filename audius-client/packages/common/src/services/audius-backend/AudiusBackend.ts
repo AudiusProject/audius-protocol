@@ -2304,8 +2304,29 @@ export const audiusBackend = ({
       setLocalStorageItem('is-mobile-user', 'true')
     }
 
+    const storageV2Enabled = await getFeatureEnabled(FeatureFlags.STORAGE_V2)
+    if (storageV2Enabled || email?.startsWith('storage_v2_test_')) {
+      return await audiusLibs.Account.signUpV2(
+        email,
+        password,
+        metadata,
+        formFields.profilePicture,
+        formFields.coverPhoto,
+        hasWallet,
+        getHostUrl(),
+        (eventName: string, properties: Record<string, unknown>) =>
+          recordAnalytics({ eventName, properties }),
+        {
+          Request: Name.CREATE_USER_BANK_REQUEST,
+          Success: Name.CREATE_USER_BANK_SUCCESS,
+          Failure: Name.CREATE_USER_BANK_FAILURE
+        },
+        feePayerOverride,
+        true
+      )
+    }
     // Returns { userId, error, phase }
-    return audiusLibs.Account.signUp(
+    return await audiusLibs.Account.signUp(
       email,
       password,
       metadata,
