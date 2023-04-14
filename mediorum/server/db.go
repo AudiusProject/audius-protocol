@@ -60,7 +60,10 @@ func dbMustDial(dbPath string) *gorm.DB {
 		panic(err)
 	}
 
-	// db = db.Debug()
+	sqlDb, _ := db.DB()
+	sqlDb.SetMaxOpenConns(50)
+
+	db = db.Debug()
 
 	return db
 }

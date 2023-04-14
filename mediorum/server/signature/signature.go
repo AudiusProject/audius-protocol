@@ -24,6 +24,11 @@ type RecoveredSignature struct {
 	SignerWallet string
 }
 
+func (r *RecoveredSignature) String() string {
+	j, _ := json.Marshal(r)
+	return string(j)
+}
+
 func ParseFromQueryString(queryStringValue string) (*RecoveredSignature, error) {
 	var envelope *SignatureEnvelope
 

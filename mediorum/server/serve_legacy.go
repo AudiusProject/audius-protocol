@@ -65,6 +65,11 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 	ctx := c.Request().Context()
 
+	// don't redirect if the legacy "localOnly" query parameter is set
+	if c.QueryParam("localOnly") == "true" {
+		return c.String(404, "not redirecting because localOnly=true")
+	}
+
 	hosts, err := ss.findHostsWithCid(ctx, cid)
 	if err != nil {
 		return err
@@ -75,9 +80,9 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 	// for now just use first host
 	log.Println("potential hosts for cid", cid, hosts)
 	for _, host := range hosts {
-		dest := host + c.Request().URL.Path
-		log.Println("redirecting to", dest)
-		return c.Redirect(302, dest)
+		dest := replaceHost(*c.Request().URL, host)
+		log.Println("redirecting to: ", dest.String())
+		return c.Redirect(302, dest.String())
 	}
 
 	return errors.New("no host found with cid: " + cid)

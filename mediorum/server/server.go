@@ -212,9 +212,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// internal: blobs
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
-	internalApi.GET("/blobs/location/:key", ss.getBlobLocation)
-	internalApi.GET("/blobs/info/:key", ss.getBlobInfo)
-	internalApi.GET("/blobs/:key", ss.getBlob)
+	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
+	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
+	internalApi.GET("/blobs/:cid", ss.getBlob)
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// reverse proxy stuff
@@ -248,7 +248,7 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startRepairer()
 
-	go ss.startBeamClient()
+	// go ss.startBeamClient()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
