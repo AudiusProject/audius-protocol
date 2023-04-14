@@ -80,3 +80,15 @@ func ToMessageResponse(message queries.ChatMessageAndReactionsRow) schema.ChatMe
 	}
 	return messageData
 }
+
+func ToChatPermissionsResponse(validatedPermissions map[string]*ValidatedPermission) []schema.ValidatedChatPermissions {
+	var chatPermissions []schema.ValidatedChatPermissions
+	for encodedId, permission := range validatedPermissions {
+		chatPermissions = append(chatPermissions, schema.ValidatedChatPermissions{
+			UserID:                   encodedId,
+			Permits:                  (*permission).Permits,
+			CurrentUserHasPermission: (*permission).CurrentUserHasPermission,
+		})
+	}
+	return chatPermissions
+}

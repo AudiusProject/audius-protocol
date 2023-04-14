@@ -351,6 +351,9 @@ func (s *ChatServer) getChat(c echo.Context) error {
 	}
 	chat, err := queries.UserChat(db.Conn, ctx, queries.ChatMembershipParams{UserID: int32(userId), ChatID: c.Param("id")})
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.String(404, "chat does not exist")
+		}
 		return err
 	}
 	members, err := queries.ChatMembers(db.Conn, ctx, chat.ChatID)
@@ -469,7 +472,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 
 	response := schema.CommsResponse{
 		Health: s.getHealthStatus(),
-		Data:   validatedPermissions,
+		Data:   ToChatPermissionsResponse(validatedPermissions),
 	}
 	return c.JSON(200, response)
 }
