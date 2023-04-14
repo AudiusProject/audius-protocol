@@ -1,6 +1,8 @@
 package server
 
 import (
+	"mediorum/server/signature"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -31,6 +33,18 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
+
+	// verify signature... just print result for now
+	{
+		sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
+		if err != nil {
+			ss.logger.Warn("invalid signautre, would reject", "err", err)
+		} else {
+			// todo should check that track / timestamp all match up
+			// and that signer is a discovery node
+			ss.logger.Info("parsed signature ok", "sig", sig)
+		}
+	}
 
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
