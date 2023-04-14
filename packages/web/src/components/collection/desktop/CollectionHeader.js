@@ -6,7 +6,9 @@ import {
   SmartCollectionVariant,
   squashNewLines,
   formatSecondsAsText,
-  formatDate
+  formatDate,
+  getPathFromAudiusUrl,
+  isAudiusUrl
 } from '@audius/common'
 import {
   Button,
@@ -542,6 +544,7 @@ class CollectionHeader extends PureComponent {
       saves,
       onClickArtistName,
       onClickDescriptionExternalLink,
+      onClickDescriptionInternalLink,
       onPlay,
       onEdit,
       onShare,
@@ -626,7 +629,22 @@ class CollectionHeader extends PureComponent {
             <div className={cn(styles.description, fadeIn)}>
               <Linkify
                 options={{
-                  attributes: { onClick: onClickDescriptionExternalLink }
+                  attributes: {
+                    onClick: (event) => {
+                      const url = event.currentTarget.href
+
+                      if (isAudiusUrl(url)) {
+                        const path = getPathFromAudiusUrl(url)
+                        event.nativeEvent.preventDefault()
+                        onClickDescriptionInternalLink(path ?? '/')
+                      } else {
+                        onClickDescriptionExternalLink(event)
+                      }
+                    }
+                  },
+                  target: (href, type, tokens) => {
+                    return isAudiusUrl(href) ? '' : '_blank'
+                  }
                 }}
               >
                 {squashNewLines(description)}
@@ -723,6 +741,7 @@ CollectionHeader.propTypes = {
   onPlay: PropTypes.func,
   onEdit: PropTypes.func,
   onClickDescriptionExternalLink: PropTypes.func,
+  onClickDescriptionInternalLink: PropTypes.func,
 
   // Smart collection
   variant: PropTypes.any, // CollectionVariant

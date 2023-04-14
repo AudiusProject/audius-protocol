@@ -733,7 +733,8 @@ class CollectionPage extends Component<
       tracks,
       userId,
       userPlaylists,
-      smartCollection
+      smartCollection,
+      onClickDescriptionInternalLink
     } = this.props
 
     const { playlistId, allowReordering } = this.state
@@ -783,6 +784,7 @@ class CollectionPage extends Component<
       onClickArtistName: this.onClickArtistName,
       onClickRepostTrack: this.onClickRepostTrack,
       onClickDescriptionExternalLink: this.onClickDescriptionExternalLink,
+      onClickDescriptionInternalLink,
       onSortTracks: this.onSortTracks,
       onReorderTracks: this.onReorderTracks,
       onClickRemove: this.onClickRemove,
@@ -1008,7 +1010,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
     onEditCollection: (playlistId: ID) =>
       dispatch(openEditCollectionModal(playlistId)),
     updatePlaylistLastViewedAt: (playlistId: ID) =>
-      dispatch(updatedPlaylistViewed({ playlistId }))
+      dispatch(updatedPlaylistViewed({ playlistId })),
+    onClickDescriptionInternalLink: (path: string) => dispatch(pushRoute(path))
   }
 }
 
