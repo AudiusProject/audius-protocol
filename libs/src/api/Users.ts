@@ -1109,15 +1109,17 @@ export class Users extends Base {
         // Try to get user. Catch+ignore error if the block number isn't yet indexed
         let user
         try {
-          user = (await this.discoveryProvider.getUsers(
-            1, // limit
-            0, // offset
-            [userId], // userIds
-            null, // walletAddress
-            null, // handle
-            blockNumber, // minBlockNumber
-            true // includeIncomplete
-          ))?.[0]
+          user = (
+            await this.discoveryProvider.getUsers(
+              1, // limit
+              0, // offset
+              [userId], // userIds
+              null, // walletAddress
+              null, // handle
+              blockNumber, // minBlockNumber
+              true // includeIncomplete
+            )
+          )?.[0]
         } catch (err) {}
 
         // All done (success) if the user was indexed and ID matches

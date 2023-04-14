@@ -18,7 +18,7 @@ export const getUsers = (
     handle?: string
     wallet?: string
     min_block_number?: number
-    id?: string[],
+    id?: string[]
     include_incomplete?: boolean
   }
 
@@ -41,7 +41,6 @@ export const getUsers = (
   if (includeIncomplete != null) {
     queryParams.include_incomplete = includeIncomplete
   }
-  
 
   const req = { endpoint: 'users', queryParams }
 

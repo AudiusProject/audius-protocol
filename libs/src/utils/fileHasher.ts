@@ -249,7 +249,9 @@ export const fileHasher = {
    * CID<T, 512, SHA_256, 1> represents CID with json codec (512) and sha256 hash using CID V1.
    * Call toString() on the result to get the CID V1 string.
    */
-  async generateMetadataCidV1<T>(metadata: T): Promise<CID<T, 512, SHA_256, 1>> {
+  async generateMetadataCidV1<T>(
+    metadata: T
+  ): Promise<CID<T, 512, SHA_256, 1>> {
     const bytes = json.encode(metadata)
     const hash = await sha256.digest(bytes)
     return CID.create(1, json.code, hash)

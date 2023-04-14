@@ -433,7 +433,9 @@ class TrackStream(Resource):
         )
         if is_storage_v2:
             redis = redis_connection.get_redis()
-            content_nodes = redis.get(CONTENT_PEERS_REDIS_KEY).decode("utf-8").split(",")
+            content_nodes = (
+                redis.get(CONTENT_PEERS_REDIS_KEY).decode("utf-8").split(",")
+            )
             # TODO: Implement rendezvous to load balance instead of always using node at index 0 below
         elif info["creator_nodes"]:
             content_nodes = info["creator_nodes"].split(",")
