@@ -15,7 +15,7 @@ import type {
   KeyQuery
 } from 'interface-store'
 import type { SHA_256 } from 'multiformats/interface'
-import { CID } from 'multiformats/cid'
+import { CID } from 'multiformats'
 import * as json from 'multiformats/codecs/json'
 import { sha256 } from 'multiformats/hashes/sha2'
 
