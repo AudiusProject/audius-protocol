@@ -438,11 +438,8 @@ def configure_celery(celery, test_config=None):
     )
 
     # backfill cid data if url is provided
-    backfill_cid_data_url = None
     env = os.getenv("audius_discprov_env")
     if env == "stage":
-        backfill_cid_data_url = "https://s3.us-west-1.amazonaws.com/download.staging.audius.co/stage-cid-metadata.tsv"
-    if backfill_cid_data_url:
         celery.send_task("backfill_cid_data")
 
     # Initialize DB object for celery task context
