@@ -429,9 +429,15 @@ class TrackStream(Resource):
         if not track:
             abort_not_found(track_id, ns)
 
+        track_cid = track["track_cid"]
+        if not track_cid:
+            logger.error(
+                f"tracks.py | stream | We should not reach here! Track with id {track_id} has no track_cid. Please investigate."
+            )
+            abort_not_found(track_id, ns)
+
         is_storage_v2 = not (
-            track["track_cid"]
-            and len(track["track_cid"]) == 46
+            len(track["track_cid"]) == 46
             and track["track_cid"].startswith("Qm")
         )
         if is_storage_v2:
@@ -443,13 +449,6 @@ class TrackStream(Resource):
         elif info["creator_nodes"]:
             content_nodes = info["creator_nodes"].split(",")
         else:
-            abort_not_found(track_id, ns)
-
-        track_cid = track["track_cid"]
-        if not track_cid:
-            logger.error(
-                f"tracks.py | stream | We should not reach here! Track with id {track_id} has no track_cid. Please investigate."
-            )
             abort_not_found(track_id, ns)
 
         request_args = stream_parser.parse_args()

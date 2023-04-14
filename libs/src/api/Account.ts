@@ -197,8 +197,8 @@ export class Account extends Base {
     const phases = {
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
-      UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES',
-      ADD_USER: 'ADD_USER'
+      ADD_USER: 'ADD_USER',
+      UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES'
     }
     let phase = ''
     try {
@@ -229,6 +229,8 @@ export class Account extends Base {
         await this.User.createEntityManagerUserV2({
           metadata
         })
+
+      // Upload user's profile images, if any
       phase = phases.UPLOAD_PROFILE_IMAGES
       await this.User.uploadProfileImagesV2(
         profilePictureFile!,
