@@ -63,3 +63,4 @@ commit;
 begin;
     alter table users
     add column if not exists is_storage_v2 boolean not null default false;
+commit;
