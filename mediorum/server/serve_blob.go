@@ -30,7 +30,12 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
-	key := c.Param("key")
+	key := c.Param("cid")
+
+	if isLegacyCID(key) {
+		ss.logger.Debug("serving legacy cid", "cid", key)
+		return ss.serveLegacyCid(c)
+	}
 
 	if iHave, _ := ss.bucket.Exists(ctx, key); iHave {
 		blob, err := ss.bucket.NewReader(ctx, key, nil)
