@@ -69,7 +69,7 @@ describe('Announcement Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
         type: 'ios',
-        targetARN: 'arn:2',
+        targetARN: 'arn:1',
         badgeCount: 1
       },
       {
