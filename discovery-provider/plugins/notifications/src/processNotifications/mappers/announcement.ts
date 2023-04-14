@@ -40,8 +40,9 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
 
     const total_start = new Date().getTime()
 
-    // this will leave out a few extra people
-    while (offset < count) {
+    // naive but it works
+    // adds extra page to total count so we get the last page of trailing users
+    while (offset < (count + page_count)) {
       // query next page
       const res: Array<{
         user_id: number
