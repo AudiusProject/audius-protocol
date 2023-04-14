@@ -8,11 +8,14 @@ import {
   encodeHashId,
   ReactionTypes,
   useProxySelector,
-  formatMessageDate
+  formatMessageDate,
+  isAudiusUrl,
+  getPathFromAudiusUrl
 } from '@audius/common'
 import type { ChatMessage } from '@audius/sdk'
 import { IconPlus, PopupPosition } from '@audius/stems'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
 import Linkify from 'linkify-react'
 import { find } from 'linkifyjs'
 import { useDispatch } from 'react-redux'
@@ -89,6 +92,12 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
     },
     [dispatch, handleCloseReactionPopup, userId, chatId, message]
   )
+  const onClickInternalLink = useCallback(
+    (url: string) => {
+      dispatch(pushRoute(url))
+    },
+    [dispatch]
+  )
 
   return (
     <div
@@ -109,7 +118,26 @@ export const ChatMessageListItem = (props: ChatMessageListItemProps) => {
             />
           ))}
         <div className={styles.text}>
-          <Linkify options={{ target: '_blank' }}>{message.message}</Linkify>
+          <Linkify
+            options={{
+              attributes: {
+                onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
+                  const url = event.currentTarget.href
+
+                  if (isAudiusUrl(url)) {
+                    const path = getPathFromAudiusUrl(url)
+                    event.nativeEvent.preventDefault()
+                    onClickInternalLink(path ?? '/')
+                  }
+                }
+              },
+              target: (href, type, tokens) => {
+                return isAudiusUrl(href) ? '' : '_blank'
+              }
+            }}
+          >
+            {message.message}
+          </Linkify>
         </div>
         <div
           ref={reactionButtonRef}

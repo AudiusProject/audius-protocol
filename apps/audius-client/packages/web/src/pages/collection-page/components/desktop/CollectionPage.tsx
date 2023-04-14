@@ -99,6 +99,7 @@ export type CollectionPageProps = {
   onClickReposts?: () => void
   onClickFavorites?: () => void
   onClickDescriptionExternalLink: (e: any) => void
+  onClickDescriptionInternalLink: (e: any) => void
 }
 
 const CollectionPage = ({
@@ -137,7 +138,8 @@ const CollectionPage = ({
   onUnfollow,
   onClickReposts,
   onClickFavorites,
-  onClickDescriptionExternalLink
+  onClickDescriptionExternalLink,
+  onClickDescriptionInternalLink
 }: CollectionPageProps) => {
   // TODO: Consider dynamic lineups, esp. for caching improvement.
   const [dataSource, playingIndex] =
@@ -232,6 +234,7 @@ const CollectionPage = ({
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
       onClickDescriptionExternalLink={onClickDescriptionExternalLink}
+      onClickDescriptionInternalLink={onClickDescriptionInternalLink}
       // Smart collection
       variant={variant}
       gradient={gradient}

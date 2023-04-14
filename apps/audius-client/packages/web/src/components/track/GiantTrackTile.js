@@ -6,7 +6,9 @@ import {
   formatDate,
   formatSeconds,
   Genre,
-  FeatureFlags
+  FeatureFlags,
+  isAudiusUrl,
+  getPathFromAudiusUrl
 } from '@audius/common'
 import {
   Button,
@@ -387,6 +389,7 @@ class GiantTrackTile extends PureComponent {
       premiumConditions,
       doesUserHaveAccess,
       onExternalLinkClick,
+      onInternalLinkClick,
       coSign,
       loading,
       userId
@@ -568,7 +571,26 @@ class GiantTrackTile extends PureComponent {
             ) : null}
           </div>
           {description ? (
-            <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
+            <Linkify
+              options={{
+                attributes: {
+                  onClick: (event) => {
+                    const url = event.currentTarget.href
+
+                    if (isAudiusUrl(url)) {
+                      const path = getPathFromAudiusUrl(url)
+                      event.nativeEvent.preventDefault()
+                      onInternalLinkClick(path ?? '/')
+                    } else {
+                      onExternalLinkClick(event)
+                    }
+                  }
+                },
+                target: (href, type, tokens) => {
+                  return isAudiusUrl(href) ? '' : '_blank'
+                }
+              }}
+            >
               <h3 className={styles.description}>
                 {squashNewLines(description)}
               </h3>

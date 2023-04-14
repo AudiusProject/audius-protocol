@@ -1,9 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { Name, squashNewLines } from '@audius/common'
+import {
+  Name,
+  getPathFromAudiusUrl,
+  isAudiusUrl,
+  squashNewLines
+} from '@audius/common'
 import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
+import { push as pushRoute } from 'connected-react-router'
 import Linkify from 'linkify-react'
+import { useDispatch } from 'react-redux'
 import { animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
 
@@ -47,6 +54,7 @@ export const ProfileBio = ({
   instagramHandle,
   tikTokHandle
 }: ProfileBioProps) => {
+  const dispatch = useDispatch()
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isCollapsible, setIsCollapsible] = useState(false)
   const [bioRef, { height: bioSize }] = useMeasure({
@@ -92,15 +100,21 @@ export const ProfileBio = ({
   const record = useRecord()
 
   const onExternalLinkClick = useCallback(
-    (event: { target: { href: string } }) => {
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
       record(
         make(Name.LINK_CLICKING, {
-          url: event.target.href,
+          url: event.currentTarget.href,
           source: 'profile page'
         })
       )
     },
     [record]
+  )
+  const onInternalLinkClick = useCallback(
+    (url: string) => {
+      dispatch(pushRoute(url))
+    },
+    [dispatch]
   )
 
   const onClickTwitter = useCallback(() => {
@@ -231,7 +245,26 @@ export const ProfileBio = ({
 
   return (
     <div>
-      <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
+      <Linkify
+        options={{
+          attributes: {
+            onClick: (event: React.MouseEvent<HTMLAnchorElement>) => {
+              const url = event.currentTarget.innerText
+
+              if (isAudiusUrl(url)) {
+                const path = getPathFromAudiusUrl(url)
+                event.nativeEvent.preventDefault()
+                onInternalLinkClick(path ?? '/')
+              } else {
+                onExternalLinkClick(event)
+              }
+            }
+          },
+          target: (href, type, tokens) => {
+            return isAudiusUrl(href) ? '' : '_blank'
+          }
+        }}
+      >
         <div
           className={cn(styles.description, {
             [styles.truncated]: isCollapsed
