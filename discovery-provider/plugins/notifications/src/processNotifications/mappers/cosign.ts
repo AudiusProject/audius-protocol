@@ -128,7 +128,8 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       }
       await sendNotificationEmail({
         userId: this.remixUserId,
-        userNotificationSettings,
+        email: userNotificationSettings.email?.[this.remixUserId].email,
+        frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

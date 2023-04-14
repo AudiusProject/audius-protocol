@@ -62,6 +62,7 @@ export class Message extends BaseNotification<DMNotification> {
       )
     ) {
       const devices = userNotificationSettings.getDevices(this.receiverUserId)
+
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(

@@ -13,6 +13,7 @@ import {
   EmailFrequency,
   buildUserNotificationSettings
 } from '../../processNotifications/mappers/userNotificationSettings'
+import { identity } from 'lodash'
 
 // blockchainUserId => email
 type EmailUsers = {
@@ -305,7 +306,7 @@ export async function processEmailNotifications(
     const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
     const userNotificationSettings = await buildUserNotificationSettings(
-      this.identityDB,
+      identityDb,
       Object.keys(users).map(Number)
     )
 
@@ -342,7 +343,8 @@ export async function processEmailNotifications(
               const notifications = userNotifications.notifications
               const sent = await sendNotificationEmail({
                 userId: user.blockchainUserId,
-                userNotificationSettings,
+                email: user.email,
+                frequency: frequency,
                 notifications: notifications,
                 dnDb: dnDb,
                 identityDb: identityDb

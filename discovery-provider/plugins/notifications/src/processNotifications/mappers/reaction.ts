@@ -131,7 +131,8 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
       }
       await sendNotificationEmail({
         userId: this.receiverUserId,
-        userNotificationSettings,
+        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

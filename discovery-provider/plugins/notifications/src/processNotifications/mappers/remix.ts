@@ -136,7 +136,8 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       }
       await sendNotificationEmail({
         userId: this.parentTrackUserId,
-        userNotificationSettings,
+        email: userNotificationSettings.email?.[this.parentTrackUserId].email,
+        frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

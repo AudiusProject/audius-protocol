@@ -182,7 +182,8 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         }
         await sendNotificationEmail({
           userId: userId,
-          userNotificationSettings,
+          email: userNotificationSettings.email?.[userId].email,
+          frequency: 'live',
           notifications: [notification],
           dnDb: this.dnDB,
           identityDb: this.identityDB

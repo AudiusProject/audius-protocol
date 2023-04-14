@@ -13,6 +13,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { CoverPhotoFromJSONTyped } from '@audius/sdk'
 
 type SupporterDethronedNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupporterDethronedNotification
@@ -111,7 +112,6 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       )
       await this.incrementBadgeCount(this.dethronedUserId)
     }
-
     if (
       isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmail({
@@ -125,7 +125,8 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       }
       await sendNotificationEmail({
         userId: this.receiverUserId,
-        userNotificationSettings,
+        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

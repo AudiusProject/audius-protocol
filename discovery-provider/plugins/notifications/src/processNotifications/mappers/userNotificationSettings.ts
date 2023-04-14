@@ -277,6 +277,11 @@ export class UserNotificationSettings {
         'Users.email'
       )
       .from('UserNotificationSettings')
+      .join(
+        'Users',
+        'Users.blockchainUserId',
+        'UserNotificationSettings.userId'
+      )
       .whereIn('UserNotificationSettings.userId', userIds)
       .modify((queryBuilder) => {
         if (frequency) {

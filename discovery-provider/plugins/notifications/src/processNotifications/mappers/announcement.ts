@@ -104,7 +104,8 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
         }
         await sendNotificationEmail({
           userId: userId,
-          userNotificationSettings,
+          email: userNotificationSettings.email?.[userId].email,
+          frequency: 'live',
           notifications: [notification],
           dnDb: this.dnDB,
           identityDb: this.identityDB

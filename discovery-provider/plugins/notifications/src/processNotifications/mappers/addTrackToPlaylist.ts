@@ -136,7 +136,8 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       }
       await sendNotificationEmail({
         userId: track.owner_id,
-        userNotificationSettings,
+        email: userNotificationSettings.email?.[track.owner_id].email,
+        frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB

@@ -117,7 +117,8 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
       }
       await sendNotificationEmail({
         userId: this.receiverUserId,
-        userNotificationSettings,
+        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,
         identityDb: this.identityDB
