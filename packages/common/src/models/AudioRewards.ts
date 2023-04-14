@@ -35,8 +35,6 @@ export type ChallengeRewardID =
 export enum FailureReason {
   // The attestation requires the user to fill out a captcha
   HCAPTCHA = 'HCAPTCHA',
-  // The attestation requires the user to fill out cognito
-  COGNITO_FLOW = 'COGNITO_FLOW',
   // The attestation is blocked
   BLOCKED = 'BLOCKED',
   // This reward has already been disbursed

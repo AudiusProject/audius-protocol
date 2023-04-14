@@ -3605,17 +3605,14 @@ export const audiusBackend = ({
         console.error(
           `Got errors in processChallenges: ${JSON.stringify(res.errors)}`
         )
-        const hcaptchaOrCognito = res.errors.find(
+        const hcaptcha = res.errors.find(
           ({ error }: { error: FailureReason }) =>
-            error === FailureReason.HCAPTCHA ||
-            error === FailureReason.COGNITO_FLOW
+            error === FailureReason.HCAPTCHA
         )
 
-        // If any of the errors are HCAPTCHA or Cognito, return that one
+        // If any of the errors are HCAPTCHA, return that one
         // Otherwise, just return the first error we saw
-        const error = hcaptchaOrCognito
-          ? hcaptchaOrCognito.error
-          : res.errors[0].error
+        const error = hcaptcha ? hcaptcha.error : res.errors[0].error
         const aaoErrorCode = res.errors[0].aaoErrorCode
 
         return { error, aaoErrorCode }

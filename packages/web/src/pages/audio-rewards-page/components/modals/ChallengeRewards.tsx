@@ -8,7 +8,6 @@ import {
   audioRewardsPageActions,
   ChallengeRewardsModalType,
   ClaimStatus,
-  CognitoFlowStatus,
   audioRewardsPageSelectors,
   getAAOErrorEmojis,
   musicConfettiActions,
@@ -47,12 +46,8 @@ import PurpleBox from '../PurpleBox'
 import styles from './ChallengeRewards.module.css'
 import ModalDrawer from './ModalDrawer'
 const { show: showConfetti } = musicConfettiActions
-const {
-  getCognitoFlowStatus,
-  getAAOErrorCode,
-  getChallengeRewardsModalType,
-  getClaimStatus
-} = audioRewardsPageSelectors
+const { getAAOErrorCode, getChallengeRewardsModalType, getClaimStatus } =
+  audioRewardsPageSelectors
 const {
   setChallengeRewardsModalType,
   resetAndCancelClaimReward,
@@ -481,7 +476,6 @@ export const ChallengeRewardsModal = () => {
     dispatch(resetAndCancelClaimReward())
   }, [dispatch, setOpen])
   const [isHCaptchaModalOpen] = useModalState('HCaptcha')
-  const cognitoFlowStatus = useSelector(getCognitoFlowStatus)
 
   const { title, icon } = getChallengeConfig(modalType)
 
@@ -500,12 +494,8 @@ export const ChallengeRewardsModal = () => {
       useGradientTitle={false}
       titleClassName={wm(styles.title)}
       headerContainerClassName={styles.header}
-      showDismissButton={
-        !isHCaptchaModalOpen && cognitoFlowStatus === CognitoFlowStatus.CLOSED
-      }
-      dismissOnClickOutside={
-        !isHCaptchaModalOpen && cognitoFlowStatus === CognitoFlowStatus.CLOSED
-      }
+      showDismissButton={!isHCaptchaModalOpen}
+      dismissOnClickOutside={!isHCaptchaModalOpen}
     >
       <ChallengeRewardsBody dismissModal={onClose} />
     </ModalDrawer>

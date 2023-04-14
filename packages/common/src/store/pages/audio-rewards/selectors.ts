@@ -59,15 +59,6 @@ export const getClaimToRetry = (state: CommonState) =>
 export const getHCaptchaStatus = (state: CommonState) =>
   state.pages.audioRewards.hCaptchaStatus
 
-export const getCognitoFlowStatus = (state: CommonState) =>
-  state.pages.audioRewards.cognitoFlowStatus
-
-export const getCognitoFlowUrl = (state: CommonState) =>
-  state.pages.audioRewards.cognitoFlowUrl
-
-export const getCognitoFlowUrlStatus = (state: CommonState) =>
-  state.pages.audioRewards.cognitoFlowUrlStatus
-
 export const getShowRewardClaimedToast = (state: CommonState) =>
   state.pages.audioRewards.showRewardClaimedToast
 

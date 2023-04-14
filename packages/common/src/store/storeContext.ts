@@ -4,7 +4,6 @@ import { AnalyticsEvent, LineupState, Track } from '../models'
 import { AudioPlayer } from '../services/audio-player'
 import { AudiusAPIClient } from '../services/audius-api-client'
 import { AudiusBackend } from '../services/audius-backend'
-import { Cognito } from '../services/cognito'
 import { Env } from '../services/env'
 import { Explore } from '../services/explore'
 import { FingerprintClient } from '../services/fingerprint'
@@ -53,7 +52,6 @@ export type CommonStoreContext = {
     setTag: (key: string, value: string) => void
     configureScope: (fn: (scope: { setUser: any }) => void) => void
   }
-  cognito: Cognito
   trackDownload: TrackDownload
   instagramAppId?: string
   instagramRedirectUrl?: string

@@ -190,15 +190,11 @@ export class ClientRewardsReporter {
     amount: number
     error: string
     specifier: string
-    reason: 'hcaptcha' | 'cognito' | 'rejection' | 'unknown'
+    reason: 'hcaptcha' | 'rejection' | 'unknown'
   }) {
     ;(async () => {
-      const map: Record<
-        'hcaptcha' | 'cognito' | 'rejection' | 'unknown',
-        Name
-      > = {
+      const map: Record<'hcaptcha' | 'rejection' | 'unknown', Name> = {
         hcaptcha: Name.REWARDS_CLAIM_HCAPTCHA,
-        cognito: Name.REWARDS_CLAIM_COGNITO,
         rejection: Name.REWARDS_CLAIM_REJECTION,
         unknown: Name.REWARDS_CLAIM_UNKNOWN
       }

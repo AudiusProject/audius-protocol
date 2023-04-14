@@ -33,11 +33,6 @@ export enum HCaptchaStatus {
   USER_CLOSED = 'user_closed'
 }
 
-export enum CognitoFlowStatus {
-  CLOSED = 'closed',
-  OPENED = 'opened'
-}
-
 export enum ClaimStatus {
   NONE = 'none',
   CLAIMING = 'claiming',

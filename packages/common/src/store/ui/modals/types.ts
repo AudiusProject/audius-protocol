@@ -14,7 +14,6 @@ export type Modals =
   | 'AudioBreakdown'
   | 'CollectibleDetails'
   | 'DeactivateAccountConfirmation'
-  | 'Cognito'
   | 'FeedFilter'
   | 'TrendingGenreSelection'
   | 'SocialProof'

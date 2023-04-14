@@ -1,18 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-import {
-  Status,
-  UserChallenge,
-  ChallengeRewardID,
-  Specifier
-} from '../../../models'
+import { UserChallenge, ChallengeRewardID, Specifier } from '../../../models'
 
 import {
   AudioRewardsClaim,
   ChallengeRewardsModalType,
   ClaimState,
   ClaimStatus,
-  CognitoFlowStatus,
   HCaptchaStatus,
   TrendingRewardsModalType,
   UndisbursedUserChallenge
@@ -37,9 +31,6 @@ type RewardsUIState = {
   claimState: ClaimState
   claimToRetry?: AudioRewardsClaim
   hCaptchaStatus: HCaptchaStatus
-  cognitoFlowStatus: CognitoFlowStatus
-  cognitoFlowUrlStatus?: Status
-  cognitoFlowUrl?: string
   showRewardClaimedToast: boolean
 }
 
@@ -53,7 +44,6 @@ const initialState: RewardsUIState = {
   loading: true,
   claimState: { status: ClaimStatus.NONE },
   hCaptchaStatus: HCaptchaStatus.NONE,
-  cognitoFlowStatus: CognitoFlowStatus.CLOSED,
   showRewardClaimedToast: false
 }
 
@@ -240,23 +230,6 @@ const slice = createSlice({
     claimChallengeRewardSucceeded: (state) => {
       state.claimState = { status: ClaimStatus.SUCCESS }
     },
-    setCognitoFlowStatus: (
-      state,
-      action: PayloadAction<{ status: CognitoFlowStatus }>
-    ) => {
-      const { status } = action.payload
-      state.cognitoFlowStatus = status
-    },
-    fetchCognitoFlowUrl: (state) => {
-      state.cognitoFlowUrlStatus = Status.LOADING
-    },
-    fetchCognitoFlowUrlSucceeded: (state, action: PayloadAction<string>) => {
-      state.cognitoFlowUrlStatus = Status.SUCCESS
-      state.cognitoFlowUrl = action.payload
-    },
-    fetchCognitoFlowUrlFailed: (state) => {
-      state.cognitoFlowUrlStatus = Status.ERROR
-    },
     showRewardClaimedToast: (state) => {
       state.showRewardClaimedToast = true
     },
@@ -283,10 +256,6 @@ export const {
   claimChallengeRewardAlreadyClaimed,
   claimChallengeRewardFailed,
   claimChallengeRewardSucceeded,
-  setCognitoFlowStatus,
-  fetchCognitoFlowUrl,
-  fetchCognitoFlowUrlFailed,
-  fetchCognitoFlowUrlSucceeded,
   showRewardClaimedToast,
   resetRewardClaimedToast,
   updateOptimisticListenStreak,

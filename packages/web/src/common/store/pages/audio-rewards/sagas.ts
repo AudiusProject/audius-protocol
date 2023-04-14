@@ -11,8 +11,6 @@ import {
   accountActions,
   audioRewardsPageActions,
   ClaimStatus,
-  CognitoFlowStatus,
-  CognitoFlowExistsResponse,
   HCaptchaStatus,
   UndisbursedUserChallenge,
   audioRewardsPageSelectors,
@@ -22,7 +20,6 @@ import {
   waitForValue,
   Env,
   musicConfettiActions,
-  CognitoFlowResponse,
   createUserBankIfNeeded
 } from '@audius/common'
 import {
@@ -60,13 +57,9 @@ const {
   claimChallengeRewardFailed,
   claimChallengeRewardSucceeded,
   claimChallengeRewardWaitForRetry,
-  fetchCognitoFlowUrl,
-  fetchCognitoFlowUrlFailed,
-  fetchCognitoFlowUrlSucceeded,
   fetchUserChallenges,
   fetchUserChallengesFailed,
   fetchUserChallengesSucceeded,
-  setCognitoFlowStatus,
   setHCaptchaStatus,
   setUserChallengesDisbursed,
   updateHCaptchaScore,
@@ -79,13 +72,10 @@ const {
 } = audioRewardsPageActions
 const fetchAccountSucceeded = accountActions.fetchAccountSucceeded
 
-const { getAccountUser, getUserHandle, getUserId } = accountSelectors
+const { getAccountUser, getUserId } = accountSelectors
 
 const HCAPTCHA_MODAL_NAME = 'HCaptcha'
-const COGNITO_MODAL_NAME = 'Cognito'
 const CHALLENGE_REWARDS_MODAL_NAME = 'ChallengeRewardsExplainer'
-const COGNITO_CHECK_MAX_RETRIES = 5
-const COGNITO_CHECK_DELAY_MS = 3000
 
 function getOracleConfig(remoteConfigInstance: RemoteConfigInstance, env: Env) {
   const { ENVIRONMENT, ORACLE_ETH_ADDRESSES, AAO_ENDPOINT } = env
@@ -301,12 +291,6 @@ function* claimChallengeRewardAsync(
             )
             yield put(claimChallengeRewardWaitForRetry(claim))
             break
-          case FailureReason.COGNITO_FLOW:
-            yield put(
-              setVisibility({ modal: COGNITO_MODAL_NAME, visible: true })
-            )
-            yield put(claimChallengeRewardWaitForRetry(claim))
-            break
 
           case FailureReason.ALREADY_DISBURSED:
           case FailureReason.ALREADY_SENT:
@@ -383,56 +367,6 @@ function* watchSetHCaptchaStatus() {
         errorResolved: status === HCaptchaStatus.SUCCESS,
         retryOnFailure: true
       })
-    }
-  )
-}
-
-function* watchSetCognitoFlowStatus() {
-  const cognito = yield* getContext('cognito')
-  yield* takeLatest(
-    setCognitoFlowStatus.type,
-    function* (action: ReturnType<typeof setCognitoFlowStatus>) {
-      const { status } = action.payload
-      // Only attempt retry on closed, so that we don't error on open
-      if (status === CognitoFlowStatus.CLOSED) {
-        // poll identity for a recent cognito entry for this user
-        // before proceeding with another attempt at claiming
-        // otherwise may get failure reason that says cognito
-        // even though user completed the cognito flow
-        let numRetries = 0
-        const handle = yield* select(getUserHandle)
-        if (!handle) return
-        do {
-          try {
-            const { exists } = (yield* call(
-              [cognito, 'getCognitoExists'],
-              handle
-            )) as CognitoFlowExistsResponse
-            if (exists) {
-              yield* call(retryClaimChallengeReward, {
-                errorResolved: true,
-                retryOnFailure: false
-              })
-              break
-            } else {
-              yield delay(COGNITO_CHECK_DELAY_MS)
-            }
-          } catch (e) {
-            console.error(
-              `Error checking whether cognito record exists for handle ${handle}: ${
-                e && (e as any).message
-              }`
-            )
-          }
-        } while (numRetries++ < COGNITO_CHECK_MAX_RETRIES)
-
-        if (numRetries === COGNITO_CHECK_MAX_RETRIES) {
-          yield* call(retryClaimChallengeReward, {
-            errorResolved: false,
-            retryOnFailure: false
-          })
-        }
-      }
     }
   )
 }
@@ -648,35 +582,15 @@ function* userChallengePollingDaemon() {
   )
 }
 
-function* fetchCognitoFlowUriAsync() {
-  const cognito = yield* getContext('cognito')
-  try {
-    const response = (yield* call([
-      cognito,
-      'getCognitoFlow'
-    ])) as CognitoFlowResponse
-    yield put(fetchCognitoFlowUrlSucceeded(response.shareable_url))
-  } catch (e) {
-    console.error(e)
-    yield put(fetchCognitoFlowUrlFailed())
-  }
-}
-
-function* watchFetchCognitoFlowUrl() {
-  yield takeLatest(fetchCognitoFlowUrl.type, fetchCognitoFlowUriAsync)
-}
-
 const sagas = () => {
   const sagas = [
     watchFetchUserChallenges,
     watchFetchUserChallengesSucceeded,
     watchClaimChallengeReward,
     watchSetHCaptchaStatus,
-    watchSetCognitoFlowStatus,
     watchUpdateHCaptchaScore,
     userChallengePollingDaemon,
-    watchUpdateOptimisticListenStreak,
-    watchFetchCognitoFlowUrl
+    watchUpdateOptimisticListenStreak
   ]
   return sagas
 }
