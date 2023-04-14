@@ -626,8 +626,6 @@ export class Users extends Base {
         repost_count: 0
       })
 
-      // TODO: Libs calls from here on out will fail because there's no connected CN. Use rendezvous to find a CN
-
       // Update metadata on chain to include wallet
       const { blockHash, blockNumber } = await this.updateMetadataV2({
         newMetadata,

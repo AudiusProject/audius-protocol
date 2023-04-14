@@ -67,11 +67,13 @@ from src.queries.get_trending_tracks import TRENDING_LIMIT, TRENDING_TTL_SEC
 from src.queries.get_unclaimed_id import get_unclaimed_id
 from src.queries.get_underground_trending import get_underground_trending
 from src.queries.search_queries import SearchKind, search
+from src.tasks.index_network_peers import CONTENT_PEERS_REDIS_KEY
 from src.trending_strategies.trending_strategy_factory import (
     DEFAULT_TRENDING_VERSIONS,
     TrendingStrategyFactory,
 )
 from src.trending_strategies.trending_type_and_version import TrendingType
+from src.utils import redis_connection
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
@@ -430,11 +432,11 @@ class TrackStream(Resource):
             and track["track_cid"].startswith("Qm")
         )
         if is_storage_v2:
-            # TODO: Read from chain and implement rendezvous hash to select (fallback) node(s) to query
-            primary_node = "http://audius-protocol-creator-node-1"
+            redis = redis_connection.get_redis()
+            content_nodes = redis.get(CONTENT_PEERS_REDIS_KEY).decode("utf-8").split(",")
+            # TODO: Implement rendezvous to load balance instead of always using node at index 0 below
         elif info["creator_nodes"]:
-            creator_nodes = info["creator_nodes"].split(",")
-            primary_node = creator_nodes[0]
+            content_nodes = info["creator_nodes"].split(",")
         else:
             abort_not_found(track_id, ns)
 
@@ -465,7 +467,7 @@ class TrackStream(Resource):
             path = f"tracks/stream/{track_id}"
         else:
             path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
-        stream_url = urljoin(primary_node, path)
+        stream_url = urljoin(content_nodes[0], path)
 
         return stream_url
 

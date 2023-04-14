@@ -36,11 +36,12 @@ export interface HashedImage {
   size: number
 }
 
+type CIDType = any
 const block: Blockstore = {
-  get: async (key: CID, _options?: Options) => {
+  get: async (key: CIDType, _options?: Options) => {
     throw new Error(`unexpected block API get for ${key}`)
   },
-  put: async (_key: CID, _val: Uint8Array, _options?: Options) => {
+  put: async (_key: CIDType, _val: Uint8Array, _options?: Options) => {
     throw new Error('unexpected block API put')
   },
   open: async function (): Promise<void> {
@@ -49,43 +50,43 @@ const block: Blockstore = {
   close: async function (): Promise<void> {
     throw new Error('Function not implemented.')
   },
-  has: async function (_key: CID, _options?: Options): Promise<boolean> {
+  has: async function (_key: CIDType, _options?: Options): Promise<boolean> {
     throw new Error('Function not implemented.')
   },
-  delete: async function (_key: CID, _options?: Options): Promise<void> {
+  delete: async function (_key: CIDType, _options?: Options): Promise<void> {
     throw new Error('Function not implemented.')
   },
   putMany: function (
-    _source: AwaitIterable<Pair<CID, Uint8Array>>,
+    _source: AwaitIterable<Pair<CIDType, Uint8Array>>,
     _options?: Options
-  ): AsyncIterable<Pair<CID, Uint8Array>> {
+  ): AsyncIterable<Pair<CIDType, Uint8Array>> {
     throw new Error('Function not implemented.')
   },
   getMany: function (
-    _source: AwaitIterable<CID>,
+    _source: AwaitIterable<CIDType>,
     _options?: Options
   ): AsyncIterable<Uint8Array> {
     throw new Error('Function not implemented.')
   },
   deleteMany: function (
-    _source: AwaitIterable<CID>,
+    _source: AwaitIterable<CIDType>,
     _options?: Options
-  ): AsyncIterable<CID> {
+  ): AsyncIterable<CIDType> {
     throw new Error('Function not implemented.')
   },
-  batch: function (): Batch<CID, Uint8Array> {
+  batch: function (): Batch<CIDType, Uint8Array> {
     throw new Error('Function not implemented.')
   },
   query: function (
-    _query: Query<CID, Uint8Array>,
+    _query: Query<CIDType, Uint8Array>,
     _options?: Options
-  ): AsyncIterable<Pair<CID, Uint8Array>> {
+  ): AsyncIterable<Pair<CIDType, Uint8Array>> {
     throw new Error('Function not implemented.')
   },
   queryKeys: function (
-    _query: KeyQuery<CID>,
+    _query: KeyQuery<CIDType>,
     _options?: Options
-  ): AsyncIterable<CID> {
+  ): AsyncIterable<CIDType> {
     throw new Error('Function not implemented.')
   }
 }
