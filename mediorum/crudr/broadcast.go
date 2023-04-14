@@ -19,7 +19,7 @@ func (c *Crudr) broadcast(payload []byte) {
 		peerHost := peerHost
 		go func() {
 			// todo: endpoint config
-			endpoint := peerHost + "/mediorum/internal/crud/push"
+			endpoint := peerHost + "/internal/crud/push"
 			resp, err := http.Post(endpoint, "application/json", bytes.NewReader(payload))
 			if err != nil {
 				log.Println("push failed", "host", peerHost, "err", err)

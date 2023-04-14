@@ -1,14 +1,19 @@
 package server
 
 import (
-	"path"
+	"net/url"
 	"strings"
 )
 
 func apiPath(parts ...string) string {
 	host := parts[0]
 	parts[0] = apiBasePath
-	return host + path.Join(parts...)
+	u, err := url.Parse(host)
+	if err != nil {
+		panic(err)
+	}
+	u = u.JoinPath(parts...)
+	return u.String()
 }
 
 func isLegacyCID(cid string) bool {

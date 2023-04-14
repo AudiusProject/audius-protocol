@@ -34,6 +34,7 @@ func (p Peer) ApiPath(parts ...string) string {
 }
 
 type MediorumConfig struct {
+	Env               string
 	Self              Peer
 	Peers             []Peer
 	ReplicationFactor int
@@ -70,6 +71,7 @@ var (
 )
 
 func New(config MediorumConfig) (*MediorumServer, error) {
+	config.Env = os.Getenv("MEDIORUM_ENV")
 
 	// validate host config
 	if config.Self.Host == "" {
@@ -216,9 +218,11 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// reverse proxy stuff
-	upstream, _ := url.Parse("http://server:4000")
-	proxy := httputil.NewSingleHostReverseProxy(upstream)
-	echoServer.Any("*", echo.WrapHandler(proxy))
+	if config.Env == "stage" || config.Env == "prod" {
+		upstream, _ := url.Parse("http://server:4000")
+		proxy := httputil.NewSingleHostReverseProxy(upstream)
+		echoServer.Any("*", echo.WrapHandler(proxy))
+	}
 
 	return ss, nil
 
@@ -227,7 +231,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 func (ss *MediorumServer) MustStart() {
 	// start crud clients
 	// routes should match crud routes setup above
-	ss.startCrudClients("/mediorum/internal/crud/stream", "/mediorum/internal/crud/sweep")
+	ss.startCrudClients("/internal/crud/stream", "/internal/crud/sweep")
 
 	// start server
 	go func() {
