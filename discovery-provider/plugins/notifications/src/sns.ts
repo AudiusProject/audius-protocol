@@ -108,6 +108,55 @@ export const sendAndroidMessage = async ({
   })
 }
 
+const formatPushMessage = ({
+  device,
+  title,
+  body,
+  targetARN,
+  data = {},
+  playSound = true
+}: {
+  device: Device
+  title: string
+  body: string
+  targetARN: string
+  data: object
+  playSound: boolean
+}): string => {
+  if (device.type == "android") {
+    return JSON.stringify({
+      default: body,
+      GCM: {
+        notification: {
+          ...(title ? { title } : {}),
+          body,
+          sound: playSound && 'default'
+        },
+        data
+      }
+    })
+  }
+  else if (device.type == "ios") {
+    let arn: string
+    if (targetARN.includes('APNS_SANDBOX')) arn = 'APNS_SANDBOX'
+    else if (targetARN.includes('APNS')) arn = 'APNS'
+    return JSON.stringify({
+      ['default']: body,
+      [arn]: JSON.stringify({
+        aps: {
+          alert: {
+            title,
+            body
+          },
+          sound: playSound && 'default',
+          badge: device.badgeCount
+        },
+        data
+      })
+    })
+  }
+}
+
 type Device = {
   type: DeviceType
   targetARN: string
@@ -137,4 +186,13 @@ export const sendPushNotification = async (
       targetARN: device.targetARN
     })
   }
+}
+
+export const sendPushNotificationBatch = async (
+  messages: [Device, Message][]
+) => {
+  const batchArgs = messages.reduce((acc, message) => {}, new PublishBatchCommand({
+    TopicArn: undefined,
+    PublishBatchRequestEntries: []
+  }))
 }
