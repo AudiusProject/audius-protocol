@@ -18,7 +18,6 @@ const initialState: ModalsState = {
   AudioBreakdown: false,
   CollectibleDetails: false,
   DeactivateAccountConfirmation: false,
-  Cognito: false,
   FeedFilter: false,
   TrendingGenreSelection: false,
   SocialProof: false,

@@ -280,11 +280,8 @@ export enum Name {
   REWARDS_CLAIM_RETRY = 'Rewards Claim: Retry',
   REWARDS_CLAIM_FAILURE = 'Rewards Claim: Failure',
   REWARDS_CLAIM_HCAPTCHA = 'Rewards Claim: Hcaptcha',
-  REWARDS_CLAIM_COGNITO = 'Rewards Claim: Cognito',
   REWARDS_CLAIM_REJECTION = 'Rewards Claim: Rejection',
   REWARDS_CLAIM_UNKNOWN = 'Rewards Claim: Unknown',
-  REWARDS_CLAIM_START_COGNITO_FLOW = 'Rewards Claim: Start Cognito Flow',
-  REWARDS_CLAIM_FINISH_COGNITO_FLOW = 'Rewards Claim: Finish Cognito Flow',
 
   // Tipping
   TIP_AUDIO_REQUEST = 'Tip Audio: Request',
@@ -1476,18 +1473,6 @@ type RateCtaResponseYes = {
   eventName: Name.RATE_CTA_RESPONSE_YES
 }
 
-type RewardsClaimStartCognitoFlow = {
-  eventName: Name.REWARDS_CLAIM_START_COGNITO_FLOW
-  handle: string | null
-  source: string
-}
-
-type RewardsClaimFinishCognitoFlow = {
-  eventName: Name.REWARDS_CLAIM_FINISH_COGNITO_FLOW
-  handle: string | null
-  source: string
-}
-
 type ConnectWalletNewWalletStart = {
   eventName: Name.CONNECT_WALLET_NEW_WALLET_START
 }
@@ -1717,8 +1702,6 @@ export type AllTrackingEvents =
   | RateCtaDisplayed
   | RateCtaResponseNo
   | RateCtaResponseYes
-  | RewardsClaimStartCognitoFlow
-  | RewardsClaimFinishCognitoFlow
   | ConnectWalletNewWalletStart
   | ConnectWalletNewWalletConnecting
   | ConnectWalletNewWalletConnected

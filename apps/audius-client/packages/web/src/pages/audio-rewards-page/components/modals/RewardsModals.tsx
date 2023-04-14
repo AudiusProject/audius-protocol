@@ -10,7 +10,6 @@ import TrendingRewardsModal from './TrendingRewards'
 import VerifiedUpload from './VerifiedUpload'
 
 const HCaptchaModal = lazyWithPreload(() => import('./HCaptchaModal'))
-const CognitoModal = lazyWithPreload(() => import('./CognitoModal'))
 
 const RewardsModals = () => {
   // TODO: preload HCaptchaModal when we decide to turn it on
@@ -23,7 +22,6 @@ const RewardsModals = () => {
       <TopAPIModal />
       <Suspense fallback={null}>
         <HCaptchaModal />
-        <CognitoModal />
       </Suspense>
       {isMobile() && <TransferAudioMobileDrawer />}
     </>

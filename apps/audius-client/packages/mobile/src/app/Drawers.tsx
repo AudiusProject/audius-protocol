@@ -9,7 +9,6 @@ import { TiersExplainerDrawer } from 'app/components/audio-rewards'
 import { BlockMessagesDrawer } from 'app/components/block-messages'
 import { ChallengeRewardsDrawer } from 'app/components/challenge-rewards-drawer'
 import { ChatActionsDrawer } from 'app/components/chat-actions-drawer'
-import { CognitoDrawer } from 'app/components/cognito-drawer/CognitoDrawer'
 import { CollectibleDetailsDrawer } from 'app/components/collectible-details-drawer'
 import { DeactivateAccountConfirmationDrawer } from 'app/components/deactivate-account-confirmation-drawer'
 import { DeletePlaylistConfirmationDrawer } from 'app/components/delete-playlist-confirmation-drawer'
@@ -90,7 +89,6 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   ShareSoundToTikTok: ShareToTikTokDrawer,
   CollectibleDetails: CollectibleDetailsDrawer,
   DeactivateAccountConfirmation: DeactivateAccountConfirmationDrawer,
-  Cognito: CognitoDrawer,
   FeedFilter: FeedFilterDrawer,
   TrendingGenreSelection: TrendingFilterDrawer,
   Overflow: OverflowMenuDrawer,

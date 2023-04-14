@@ -50,7 +50,6 @@ import AnnouncementPage from 'pages/announcement-page/AnnoucementPage'
 import ArtistDashboardPage from 'pages/artist-dashboard-page/ArtistDashboardPage'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
 import { AudioTransactionsPage } from 'pages/audio-transactions-page'
-import CheckPage from 'pages/check-page/CheckPage'
 import CollectionPage from 'pages/collection-page/CollectionPage'
 import EmptyPage from 'pages/empty-page/EmptyPage'
 import ExplorePage from 'pages/explore-page/ExplorePage'
@@ -141,7 +140,6 @@ import {
   PROFILE_PAGE_REPOSTS,
   TRENDING_UNDERGROUND_PAGE,
   EXPLORE_REMIXABLES_PAGE,
-  CHECK_PAGE,
   getPathname,
   TRENDING_PLAYLISTS_PAGE_LEGACY,
   AUDIO_NFT_PLAYLIST_PAGE,
@@ -785,7 +783,6 @@ class App extends Component {
                 isMobile={isMobileClient}
                 component={SettingsPage}
               />
-              <Route exact path={CHECK_PAGE} component={CheckPage} />
               <MobileRoute
                 exact
                 path={ACCOUNT_SETTINGS_PAGE}

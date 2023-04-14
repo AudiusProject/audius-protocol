@@ -9,7 +9,6 @@ import {
   audioRewardsPageActions,
   AudioRewardsClaim,
   ClaimStatus,
-  CognitoFlowStatus,
   HCaptchaStatus,
   audioRewardsPageSelectors,
   solanaSelectors,
@@ -25,7 +24,6 @@ import { all, fork } from 'redux-saga/effects'
 
 import { waitForBackendSetup } from 'common/store/backend/sagas'
 import { apiClient } from 'services/audius-api-client'
-import { getCognitoExists } from 'services/audius-backend/Cognito'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 // Need the mock type to get the helper function that sets the config
 // eslint-disable-next-line jest/no-mocks-import
@@ -53,7 +51,6 @@ const {
   fetchUserChallenges,
   fetchUserChallengesSucceeded,
   resetUserChallengeCurrentStepCount,
-  setCognitoFlowStatus,
   setHCaptchaStatus,
   setUserChallengesDisbursed,
   showRewardClaimedToast
@@ -183,39 +180,6 @@ describe('Rewards Page Sagas', () => {
       )
     })
 
-    it('should open cognito modal and save the claim for retry on cognito error', () => {
-      return (
-        expectSaga(saga)
-          .dispatch(
-            claimChallengeReward({
-              claim: testClaim,
-              retryOnFailure: true
-            })
-          )
-          .provide([
-            ...claimAsyncProvisions,
-            [
-              call.fn(audiusBackendInstance.submitAndEvaluateAttestations),
-              { error: FailureReason.COGNITO_FLOW }
-            ]
-          ])
-          // Assertions
-          .call.like({
-            fn: audiusBackendInstance.submitAndEvaluateAttestations,
-            args: [expectedRequestArgs]
-          })
-          .put(claimChallengeRewardWaitForRetry(testClaim))
-          .put(setVisibility({ modal: 'Cognito', visible: true }))
-          .not.put(
-            setVisibility({
-              modal: 'ChallengeRewardsExplainer',
-              visible: false
-            })
-          )
-          .silentRun()
-      )
-    })
-
     it('should fail and not retry nor open modals on user blocked', () => {
       return (
         expectSaga(saga)
@@ -238,7 +202,6 @@ describe('Rewards Page Sagas', () => {
             args: [expectedRequestArgs]
           })
           .not.put(claimChallengeRewardWaitForRetry(testClaim))
-          .not.put(setVisibility({ modal: 'Cognito', visible: true }))
           .not.put(
             setVisibility({
               modal: 'ChallengeRewardsExplainer',
@@ -479,29 +442,12 @@ describe('Rewards Page Sagas', () => {
       ])
     })
 
-    it('should retry the claim on cognito close', () => {
-      return expectSaga(saga)
-        .dispatch(setCognitoFlowStatus({ status: CognitoFlowStatus.CLOSED }))
-        .provide([
-          ...retryClaimProvisions,
-          ...claimAsyncProvisions,
-          [select(getUserHandle), testUser.handle],
-          [call.fn(getCognitoExists), { exists: true }],
-          [call.fn(audiusBackendInstance.submitAndEvaluateAttestations), {}]
-        ])
-        .put(claimChallengeReward({ claim: testClaim, retryOnFailure: false }))
-        .put(claimChallengeRewardSucceeded())
-        .silentRun()
-    })
-
     it('should not retry twice', () => {
       return expectSaga(saga)
-        .dispatch(setCognitoFlowStatus({ status: CognitoFlowStatus.CLOSED }))
         .provide([
           ...retryClaimProvisions,
           ...claimAsyncProvisions,
           [select(getUserHandle), testUser.handle],
-          [call.fn(getCognitoExists), { exists: true }],
           [
             call.fn(audiusBackendInstance.submitAndEvaluateAttestations),
             { error: FailureReason.BLOCKED }
