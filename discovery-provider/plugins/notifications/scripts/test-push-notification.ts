@@ -6,8 +6,6 @@ import prompts from 'prompts'
 import {
   SNSClient,
   PublishCommand,
-  PublishBatchCommand,
-  PublishBatchCommandInput,
   PublishCommandInput
 } from '@aws-sdk/client-sns'
 export const main = async () => {
@@ -16,21 +14,45 @@ export const main = async () => {
     region: process.env.AWS_REGION,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    targetARN: process.env.TARGET_ARN,
+    targetARN: process.env.TARGET_ARN
   }
   const values = await prompts([
     { message: 'region', name: 'region', type: 'text', initial: 'us-west-1' },
-    { message: 'accessKey', name: 'accessKey', type: 'text', initial: message.accessKeyId },
-    { message: 'secret', name: 'secret', type: 'text', initial: message.secretAccessKey },
-    { message: 'type', name: 'type', type: 'list', choices: ['ios', 'android'], initial: 'ios' },
+    {
+      message: 'accessKey',
+      name: 'accessKey',
+      type: 'text',
+      initial: message.accessKeyId
+    },
+    {
+      message: 'secret',
+      name: 'secret',
+      type: 'text',
+      initial: message.secretAccessKey
+    },
+    {
+      message: 'type',
+      name: 'type',
+      type: 'list',
+      choices: ['ios', 'android'],
+      initial: 'ios'
+    },
     { message: 'title', name: 'title', type: 'text', initial: 'test message' },
     { message: 'body', name: 'body', type: 'text', initial: 'test body' },
-    { message: 'targetARN', name: 'targetARN', type: 'text', initial: message.targetARN },
+    {
+      message: 'targetARN',
+      name: 'targetARN',
+      type: 'text',
+      initial: message.targetARN
+    }
   ])
 
   const snsClient = new SNSClient({
     region: values.region,
-    credentials: { accessKeyId: values.accessKey, secretAccessKey: values.secret }
+    credentials: {
+      accessKeyId: values.accessKey,
+      secretAccessKey: values.secret
+    }
   })
 
   const publish = async (params: PublishCommandInput) => {
@@ -80,21 +102,65 @@ export const main = async () => {
       MessageStructure: 'json'
     })
   }
+  const sendAndroidMessage = async ({
+    title,
+    body,
+    targetARN,
+    data = {},
+    playSound = true
+  }: {
+    title: string
+    body: string
+    targetARN: string
+    data: object
+    playSound: boolean
+  }) => {
+    const message = JSON.stringify({
+      default: body,
+      GCM: {
+        notification: {
+          ...(title ? { title } : {}),
+          body,
+          sound: playSound && 'default'
+        },
+        data
+      }
+    })
 
+    await publish({
+      TargetArn: targetARN,
+      Message: message,
+      MessageStructure: 'json'
+    })
+  }
 
   Object.entries(values).forEach(([k, v]) => {
     message[k] = message[k] || v
   })
   console.table(Object.entries(message).map(([k, v]) => ({ key: k, val: v })));
 
-  await sendIOSMessage({
-    title: values.title,
-    body: values.body,
-    badgeCount: 1,
-    data: {},
-    playSound: true,
-    targetARN: values.targetARN
-  })
+  if (values.type.includes('android')) {
+    console.log('sending android notification')
+    await sendAndroidMessage({
+      title: values.title,
+      body: values.body,
+      data: {},
+      playSound: true,
+      targetARN: values.targetARN
+    })
+  }
+
+  if (values.type.includes('ios')) {
+    console.log('sending ios notification')
+    await sendIOSMessage({
+      title: values.title,
+      body: values.body,
+      badgeCount: 1,
+      data: {},
+      playSound: true,
+      targetARN: values.targetARN
+    })
+  }
 }
 
 main()

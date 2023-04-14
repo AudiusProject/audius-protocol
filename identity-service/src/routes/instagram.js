@@ -132,14 +132,10 @@ module.exports = function (app) {
                 userId,
                 config.get('userVerifierPrivateKey')
               )
-            const contractRegKey =
-              await audiusLibsInstance.contracts.getRegistryContractForAddress(
-                contractAddress
-              )
             const senderAddress = config.get('userVerifierPublicKey')
             try {
               const txProps = {
-                contractRegistryKey: contractRegKey,
+                contractRegistryKey: 'EntityManager',
                 contractAddress: contractAddress,
                 encodedABI: encodedABI,
                 senderAddress: senderAddress,

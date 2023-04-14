@@ -35,7 +35,6 @@ def test_supporter_rank_up_notification(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         supporter_notifications: List[Notification] = (
             session.query(Notification)
             .filter(Notification.type == "supporter_rank_up")
@@ -51,9 +50,10 @@ def test_supporter_rank_up_notification(app):
         assert len(supporter_notifications) == 3
         assert len(supporting_notifications) == 3
 
-        assert supporter_notifications[0].specifier == "1"
+        assert supporter_notifications[0].specifier == "3"
         assert supporter_notifications[0].group_id == "supporter_rank_up:3:slot:2"
         assert supporter_notifications[0].type == "supporter_rank_up"
+        assert supporter_notifications[0].type_v2 == "supporter_rank_up"
         assert supporter_notifications[0].slot == 2
         assert supporter_notifications[0].blocknumber == None
         assert supporter_notifications[0].data == {
@@ -61,11 +61,12 @@ def test_supporter_rank_up_notification(app):
             "sender_user_id": 1,
             "receiver_user_id": 3,
         }
-        assert supporter_notifications[0].user_ids == [1]
+        assert supporter_notifications[0].user_ids == [3]
 
-        assert supporting_notifications[0].specifier == "3"
+        assert supporting_notifications[0].specifier == "1"
         assert supporting_notifications[0].group_id == "supporting_rank_up:3:slot:2"
         assert supporting_notifications[0].type == "supporting_rank_up"
+        assert supporting_notifications[0].type_v2 == "supporting_rank_up"
         assert supporting_notifications[0].slot == 2
         assert supporting_notifications[0].blocknumber == None
         assert supporting_notifications[0].data == {
@@ -73,4 +74,4 @@ def test_supporter_rank_up_notification(app):
             "sender_user_id": 1,
             "receiver_user_id": 3,
         }
-        assert supporting_notifications[0].user_ids == [3]
+        assert supporting_notifications[0].user_ids == [1]

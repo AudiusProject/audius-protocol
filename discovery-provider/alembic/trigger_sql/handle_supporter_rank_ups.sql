@@ -8,25 +8,29 @@ begin
   if user_bank_tx is not null then
     -- create a notification for the sender and receiver
     insert into notification
-      (slot, user_ids, timestamp, type, specifier, group_id, data)
+      (slot, user_ids, timestamp, type, specifier, group_id, data, type_v2)
     values
       (
+      -- supporting_rank_up notifs are sent to the sender of the tip
         new.slot,
         ARRAY [new.sender_user_id],
         user_bank_tx.created_at,
-        'supporter_rank_up',
+        'supporting_rank_up',
         new.sender_user_id,
-        'supporter_rank_up:' || new.rank || ':slot:' || new.slot,
-        json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'rank', new.rank)
+        'supporting_rank_up:' || new.rank || ':slot:' || new.slot,
+        json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'rank', new.rank),
+        'supporting_rank_up'
       ),
       (
+      -- supporter_rank_up notifs are sent to the receiver of the tip
         new.slot,
         ARRAY [new.receiver_user_id],
         user_bank_tx.created_at,
-        'supporting_rank_up',
+        'supporter_rank_up',
         new.receiver_user_id,
-        'supporting_rank_up:' || new.rank || ':slot:' || new.slot,
-        json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'rank', new.rank)
+        'supporter_rank_up:' || new.rank || ':slot:' || new.slot,
+        json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'rank', new.rank),
+        'supporter_rank_up'
       )
     on conflict do nothing;
 
@@ -35,7 +39,7 @@ begin
       if dethroned_user_id is not NULL then
         -- create a notification for the sender and receiver
         insert into notification
-          (slot, user_ids, timestamp, type, specifier, group_id, data)
+          (slot, user_ids, timestamp, type, specifier, group_id, data, type_v2)
         values
           (
             new.slot,
@@ -44,7 +48,8 @@ begin
             'supporter_dethroned',
             new.sender_user_id,
             'supporter_dethroned:receiver_user_id:' || new.receiver_user_id || ':slot:' || new.slot,
-            json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'dethroned_user_id', dethroned_user_id)
+            json_build_object('sender_user_id', new.sender_user_id, 'receiver_user_id', new.receiver_user_id, 'dethroned_user_id', dethroned_user_id),
+            'supporter_dethroned'
           ) on conflict do nothing;
 
       end if;

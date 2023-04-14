@@ -55,10 +55,7 @@ from src.queries.get_subsequent_tracks import get_subsequent_tracks
 from src.queries.get_top_followee_saves import get_top_followee_saves
 from src.queries.get_top_followee_windowed import get_top_followee_windowed
 from src.queries.get_track_stream_info import get_track_stream_info
-from src.queries.get_track_stream_signature import (
-    CID_STREAM_ENABLED,
-    get_track_stream_signature,
-)
+from src.queries.get_track_stream_signature import get_track_stream_signature
 from src.queries.get_tracks import RouteArgs, get_tracks
 from src.queries.get_tracks_including_unlisted import get_tracks_including_unlisted
 from src.queries.get_trending import get_full_trending, get_trending
@@ -390,6 +387,12 @@ stream_parser.add_argument(
         user signature and the user for whom the DN signed are the same.""",
     type=str,
 )
+stream_parser.add_argument(
+    "filename",
+    description="""Optional - Filename in case user is trying to download track.
+        This is needed by the CN in order to set the Content-Disposition response header.""",
+    type=str,
+)
 
 
 def tranform_stream_cache(stream_url):
@@ -442,6 +445,13 @@ class TrackStream(Resource):
         else:
             abort_not_found(track_id, ns)
 
+        track_cid = track["track_cid"]
+        if not track_cid:
+            logger.error(
+                f"tracks.py | stream | We should not reach here! Track with id {track_id} has no track_cid. Please investigate."
+            )
+            abort_not_found(track_id, ns)
+
         request_args = stream_parser.parse_args()
 
         # signature for the track to be included as a query param in the redirect to CN
@@ -459,16 +469,13 @@ class TrackStream(Resource):
             abort_not_found(track_id, ns)
 
         signature_param = urllib.parse.quote(json.dumps(signature))
-        track_cid = track["track_cid"]
-        if not track_cid:
-            logger.warning(
-                f"tracks.py | stream | We should not reach here! If you see this, it's because the track with id {track_id} has no track_cid. Please investigate."
-            )
-            path = f"tracks/stream/{track_id}"
-        elif not CID_STREAM_ENABLED:
-            path = f"tracks/stream/{track_id}"
-        else:
-            path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
+        path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
+
+        # Grab filename in case the user is requesting track download
+        filename = request_args.get("filename", None)
+        if filename:
+            path = f"{path}&filename={filename}"
+
         stream_url = urljoin(content_nodes[0], path)
 
         return stream_url

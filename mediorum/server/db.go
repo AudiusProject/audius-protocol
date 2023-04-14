@@ -19,14 +19,14 @@ type Upload struct {
 
 	Template     JobTemplate    `json:"template"`
 	OrigFileName string         `json:"orig_filename"`
-	OrigFileCID  string         `json:"orig_file_cid"`
+	OrigFileCID  string         `json:"orig_file_cid" gorm:"column:orig_file_cid;index:idx_uploads_orig_file_cid"` //
 	FFProbe      *FFProbeResult `json:"probe" gorm:"serializer:json"`
 	Error        string         `json:"error,omitempty"`
 	Mirrors      []string       `json:"mirrors" gorm:"serializer:json"`
 	Status       string         `json:"status" gorm:"index"`
 
 	CreatedBy string    `json:"created_by" `
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime:false"`
 
 	TranscodedBy      string    `json:"transcoded_by"`
 	TranscodeProgress float64   `json:"transcode_progress"`
@@ -60,10 +60,6 @@ func dbMustDial(dbPath string) *gorm.DB {
 		panic(err)
 	}
 
-	if err != nil {
-		panic(err)
-	}
-
 	// db = db.Debug()
 
 	return db
@@ -75,6 +71,13 @@ func dbMigrate(crud *crudr.Crudr) {
 	if err != nil {
 		panic(err)
 	}
+
+	// bonus migrations
+	// must be idempotent
+	crud.DB.Exec(`
+		alter table uploads drop column if exists orig_file_c_id;
+		delete from uploads where orig_file_cid is null;
+	`)
 
 	// register any models to be managed by crudr
 	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{})
