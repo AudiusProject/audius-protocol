@@ -255,6 +255,9 @@ def fetch_cid_metadata(db, entity_manager_txs):
 
                             # If metadata blob does not contain the required keys, skip
                             if "cid" not in data.keys() or "data" not in data.keys():
+                                logger.info(
+                                    f"index_nethermind.py | required keys missing in metadata {cid}"
+                                )
                                 continue
                             cid = data["cid"]
                             metadata_json = data["data"]
