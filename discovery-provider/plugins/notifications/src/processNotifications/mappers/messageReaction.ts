@@ -91,6 +91,7 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
     }
 
     if (
+      isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.senderUserId,
         receiverUserId: this.receiverUserId

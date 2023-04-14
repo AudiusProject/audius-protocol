@@ -126,7 +126,7 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
       })
     ) {
       const notification: AppEmailNotification = {
-        receiver_user_id: this.receiverUserId,
+        receiver_user_id: this.senderUserId,
         ...this.notification
       }
       await sendNotificationEmail({

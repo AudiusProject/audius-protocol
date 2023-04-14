@@ -118,7 +118,7 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
           )
         })
       )
-      await this.incrementBadgeCount(this.receiverUserId)
+      await this.incrementBadgeCount(notificationReceiverUserId)
     }
 
     if (
@@ -128,12 +128,13 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
       })
     ) {
       const notification: AppEmailNotification = {
-        receiver_user_id: this.receiverUserId,
+        receiver_user_id: notificationReceiverUserId,
         ...this.notification
       }
       await sendNotificationEmail({
-        userId: this.receiverUserId,
-        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        userId: notificationReceiverUserId,
+        email:
+          userNotificationSettings.email?.[notificationReceiverUserId].email,
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,

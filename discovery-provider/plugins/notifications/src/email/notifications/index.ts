@@ -338,6 +338,16 @@ export async function processEmailNotifications(
         groupedNotifications
           .slice(start, end)
           .map(async (userNotifications: UserEmailNotification) => {
+            if (
+              !userNotificationSettings.shouldSendEmail({
+                receiverUserId: userNotifications.user.blockchainUserId
+              })
+            ) {
+              return {
+                result: Results.SHOULD_SKIP,
+                error: 'User turned off or is abusive'
+              }
+            }
             try {
               const user = userNotifications.user
               const notifications = userNotifications.notifications
