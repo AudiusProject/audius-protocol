@@ -97,7 +97,7 @@ describe('Push Notifications', () => {
       messageTimestamp
     )
 
-    await new Promise((r) => setTimeout(r, config.pollInterval * 4))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 10))
 
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
@@ -151,7 +151,7 @@ describe('Push Notifications', () => {
     // Start processor
     processor.start()
     // Let notifications job run for a few cycles to initialize the min cursors in redis
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 10))
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
