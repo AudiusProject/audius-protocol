@@ -248,7 +248,8 @@ export class DiscoveryProvider {
     idsArray: Nullable<number[]>,
     walletAddress?: Nullable<string>,
     handle?: Nullable<string>,
-    minBlockNumber?: Nullable<number>
+    minBlockNumber?: Nullable<number>,
+    includeIncomplete?: Nullable<boolean>
   ) {
     const req = Requests.getUsers(
       limit,
@@ -256,7 +257,8 @@ export class DiscoveryProvider {
       idsArray,
       walletAddress,
       handle,
-      minBlockNumber
+      minBlockNumber,
+      includeIncomplete
     )
     return await this._makeRequest<Nullable<User[]>>(req)
   }

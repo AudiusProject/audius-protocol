@@ -158,10 +158,10 @@ services:
 
   # Storage v2
 
-  storagev2-1:
+  storagev2:
     extends:
       file: docker-compose.storagev2.yml
-      service: storagev2-1
+      service: storagev2
     <<: *common
 
   # Blockchain
@@ -214,5 +214,5 @@ volumes:
   solana-programs-idl:
   audius-libs:
   postgresdata:
-  mediorum1:
+  mediorum:
 

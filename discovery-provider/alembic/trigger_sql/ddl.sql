@@ -58,3 +58,8 @@ update notification
 set type = 'supporting_rank_up', type_v2 = 'supporting_rank_up', group_id = 'supporting_rank_up' || substring(group_id from position(':' in group_id))
 where type = 'supporter_rank_up' and type_v2 is null;
 commit;
+
+-- 4/13/23: add is_storage_v2 to users table
+begin;
+    alter table users
+    add column if not exists is_storage_v2 boolean not null default false;
