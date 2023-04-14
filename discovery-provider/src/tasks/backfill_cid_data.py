@@ -20,7 +20,10 @@ chunk_size = 1_000
 
 def backfill_cid_data(db: SessionManager):
     logger.info("backfill_cid_data.py | starting backfill")
-    source_tsv_url = os.getenv("backfill_cid_data_url") or ""
+    source_tsv_url = ""
+    env = os.getenv("audius_discprov_env")
+    if env == "stage":
+        source_tsv_url = "https://s3.us-west-1.amazonaws.com/download.staging.audius.co/stage-cid-metadata.tsv"
 
     response = requests.get(source_tsv_url, stream=True)
     with tempfile.NamedTemporaryFile() as tmp:
