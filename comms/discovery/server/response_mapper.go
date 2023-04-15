@@ -1,6 +1,7 @@
 package server
 
 import (
+	"sort"
 	"time"
 
 	"comms.audius.co/discovery/db"
@@ -90,5 +91,8 @@ func ToChatPermissionsResponse(validatedPermissions map[string]*ValidatedPermiss
 			CurrentUserHasPermission: (*permission).CurrentUserHasPermission,
 		})
 	}
+	sort.Slice(chatPermissions, func(i, j int) bool {
+		return chatPermissions[i].UserID < chatPermissions[j].UserID
+	})
 	return chatPermissions
 }

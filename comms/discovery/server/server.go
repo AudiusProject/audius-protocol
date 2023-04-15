@@ -70,6 +70,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	g.GET("/chats/ws", s.chatWebsocket)
 	g.GET("/chats/:id", s.getChat)
 	g.GET("/chats/:id/messages", s.getMessages)
+	g.GET("/chats/unread-count", s.getUnreadChatCount)
 	g.POST("/mutate", s.mutate)
 
 	g.GET("/chats/permissions", s.getChatPermissions)
@@ -422,6 +423,33 @@ func (s *ChatServer) getMessages(c echo.Context) error {
 		Health:  s.getHealthStatus(),
 		Data:    Map(messages, ToMessageResponse),
 		Summary: &responseSummary,
+	}
+	return c.JSON(200, response)
+}
+
+func (s *ChatServer) getUnreadChatCount(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := signing.ReadSignedRequest(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	unreadCount, err := queries.UnreadChatCount(db.Conn, ctx, userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if err == sql.ErrNoRows {
+		unreadCount = 0
+	}
+
+	response := schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   unreadCount,
 	}
 	return c.JSON(200, response)
 }
