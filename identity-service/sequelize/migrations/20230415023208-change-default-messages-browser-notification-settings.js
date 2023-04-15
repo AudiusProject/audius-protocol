@@ -9,10 +9,11 @@ module.exports = {
           'UserNotificationBrowserSettings',
           'messages',
           {
-          type: Sequelize.BOOLEAN,
-          allowNull: false,
-          defaultValue: false
-          })
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false
+          }
+        )
       )
   },
 
@@ -24,10 +25,11 @@ module.exports = {
           'UserNotificationBrowserSettings',
           'messages',
           {
-          type: Sequelize.BOOLEAN,
-          allowNull: false,
-          defaultValue: true
-          })
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: true
+          }
+        )
       )
   }
 }

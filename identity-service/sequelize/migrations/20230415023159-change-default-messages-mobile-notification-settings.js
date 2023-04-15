@@ -5,12 +5,11 @@ module.exports = {
     return queryInterface
       .removeColumn('UserNotificationMobileSettings', 'messages')
       .then(() =>
-        queryInterface.addColumn('UserNotificationMobileSettings', 'messages',
-          {
+        queryInterface.addColumn('UserNotificationMobileSettings', 'messages', {
           type: Sequelize.BOOLEAN,
           allowNull: false,
           defaultValue: false
-          })
+        })
       )
   },
 
@@ -18,12 +17,11 @@ module.exports = {
     return queryInterface
       .removeColumn('UserNotificationMobileSettings', 'messages')
       .then(() =>
-        queryInterface.addColumn('UserNotificationMobileSettings', 'messages',
-          {
+        queryInterface.addColumn('UserNotificationMobileSettings', 'messages', {
           type: Sequelize.BOOLEAN,
           allowNull: false,
           defaultValue: true
-          })
+        })
       )
   }
 }
