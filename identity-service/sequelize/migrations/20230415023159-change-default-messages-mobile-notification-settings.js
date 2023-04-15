@@ -2,26 +2,28 @@
 
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.changeColumn(
-      'UserNotificationMobileSettings',
-      'messages',
-      {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: false
-      }
-    )
+    return queryInterface
+      .removeColumn('UserNotificationMobileSettings', 'messages')
+      .then(() =>
+        queryInterface.addColumn('UserNotificationMobileSettings', 'messages',
+          {
+          type: Sequelize.BOOLEAN,
+          allowNull: false,
+          defaultValue: false
+          })
+      )
   },
 
   down: (queryInterface, Sequelize) => {
-    return queryInterface.changeColumn(
-      'UserNotificationMobileSettings',
-      'messages',
-      {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: true
-      }
-    )
+    return queryInterface
+      .removeColumn('UserNotificationMobileSettings', 'messages')
+      .then(() =>
+        queryInterface.addColumn('UserNotificationMobileSettings', 'messages',
+          {
+          type: Sequelize.BOOLEAN,
+          allowNull: false,
+          defaultValue: true
+          })
+      )
   }
 }
