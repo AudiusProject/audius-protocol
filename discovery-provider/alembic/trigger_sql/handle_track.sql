@@ -37,7 +37,8 @@ begin
 
   -- If new track, create notification
   begin
-    if new.is_unlisted = FALSE AND 
+    if new.created_at = new.updated_at AND 
+    new.is_unlisted = FALSE AND 
     new.is_available = True AND 
     new.is_delete = FALSE AND 
     new.is_playlist_upload = FALSE AND
