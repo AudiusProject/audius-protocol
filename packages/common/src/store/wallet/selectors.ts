@@ -18,6 +18,10 @@ export const getAccountBalance = createSelector(
   (balance) => (balance ? stringWeiToBN(balance) : zeroBNWei)
 )
 
+export const getAccountBalanceLoading = (state: CommonState) => {
+  return state.wallet.balanceLoading
+}
+
 const getAccountTotalBalanceStr = (state: CommonState) =>
   state.wallet.totalBalance
 

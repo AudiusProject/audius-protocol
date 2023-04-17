@@ -1,5 +1,11 @@
+.interactive:hover {
+  cursor: pointer;
+}
+
 .audio {
-  opacity: 0;
+  display: flex;
+  align-items: center;
+  padding-left: 8px;
   position: relative;
   min-height: 16px;
   flex-wrap: wrap;
@@ -16,25 +22,12 @@
   border-radius: 4px;
 }
 
-.audio.show {
-  display: flex;
-  align-items: center;
-  padding-left: 8px;
-  transition: opacity ease-in-out 0.5s;
-  opacity: 1;
-}
-
-.audio.hasBalance {
-  cursor: pointer;
-}
-
 .audioAmount {
   margin-left: 4px;
   font-size: var(--font-s);
   font-weight: var(--font-heavy);
   color: var(--neutral-light-4);
   transition: color 0.07s ease-in-out;
-  cursor: pointer;
 }
 
 .hasBalance .audioAmount:hover {
@@ -58,6 +51,7 @@
 }
 
 .actionBubble {
+  position: absolute;
   display: flex;
   align-items: center;
   padding: 4px 8px;
@@ -72,7 +66,6 @@
 }
 
 .actionBubble:hover {
-  cursor: pointer;
   transform: scale3d(1.03, 1.03, 1.03);
 }
 

@@ -8,6 +8,7 @@ import { StringWei } from '../../models/Wallet'
 
 type WalletState = {
   balance: Nullable<StringWei>
+  balanceLoading: boolean
   totalBalance: Nullable<StringWei>
   localBalanceDidChange: boolean
   freezeBalanceUntil: Nullable<number>
@@ -15,6 +16,7 @@ type WalletState = {
 
 const initialState: WalletState = {
   balance: null,
+  balanceLoading: true,
   totalBalance: null,
   localBalanceDidChange: false,
   freezeBalanceUntil: null
@@ -36,6 +38,7 @@ const slice = createSlice({
       }: PayloadAction<{ balance: StringWei; totalBalance?: StringWei }>
     ) => {
       state.balance = balance
+      state.balanceLoading = false
       if (totalBalance) state.totalBalance = totalBalance
       state.localBalanceDidChange = false
     },

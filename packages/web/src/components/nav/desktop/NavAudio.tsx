@@ -1,4 +1,4 @@
-import { cloneElement, useCallback, useEffect, useState } from 'react'
+import { cloneElement, useCallback, useMemo } from 'react'
 
 import {
   BadgeTier,
@@ -6,6 +6,7 @@ import {
   StringKeys,
   formatWei,
   accountSelectors,
+  audioRewardsPageSelectors,
   walletSelectors,
   useSelectTierInfo,
   useAccountHasClaimableRewards
@@ -23,8 +24,9 @@ import { useSelector } from 'utils/reducer'
 import { AUDIO_PAGE } from 'utils/route'
 
 import styles from './NavAudio.module.css'
-const { getAccountTotalBalance } = walletSelectors
+const { getAccountTotalBalance, getAccountBalanceLoading } = walletSelectors
 const getAccountUser = accountSelectors.getAccountUser
+const { getUserChallengesLoading } = audioRewardsPageSelectors
 
 type BubbleType = 'none' | 'claim' | 'earn'
 
@@ -33,14 +35,66 @@ const messages = {
   claimRewards: 'Claim Rewards'
 }
 
-const NavAudio = () => {
-  const navigate = useNavigateToPage()
-  const account = useSelector(getAccountUser)
-  let totalBalance = useSelector(getAccountTotalBalance)
-  if (totalBalance.eq(new BN(0)) && account?.total_balance) {
-    totalBalance = new BN(account?.total_balance) as BNWei
+type RewardsActionBubbleProps = {
+  bubbleType: BubbleType
+  onClick(): void
+  style?: React.CSSProperties
+}
+
+const RewardsActionBubble = ({
+  bubbleType,
+  onClick,
+  style
+}: RewardsActionBubbleProps) => {
+  if (bubbleType === 'none') {
+    return null
   }
+  return (
+    <animated.span
+      style={style}
+      className={cn(styles.actionBubble, styles.interactive, {
+        [styles.claimRewards]: bubbleType === 'claim'
+      })}
+      onClick={onClick}
+    >
+      <span>
+        {bubbleType === 'claim' ? messages.claimRewards : messages.earnAudio}
+      </span>
+      <IconCaretRight className={styles.actionCaret} />
+    </animated.span>
+  )
+}
+
+/**
+ * Pulls balances from account and wallet selectors. Will prefer the wallet
+ * balance once it has loaded. Otherwise, will return the account balance if
+ * available. Falls back to 0 if neither wallet or account balance are available.
+ */
+const useTotalBalanceWithFallback = () => {
+  const account = useSelector(getAccountUser)
+  const balanceLoading = useSelector(getAccountBalanceLoading)
+  const walletTotalBalance = useSelector(getAccountTotalBalance)
+
+  return useMemo(() => {
+    if (!balanceLoading) {
+      return walletTotalBalance
+    } else if (account?.total_balance != null) {
+      return new BN(account.total_balance) as BNWei
+    }
+
+    return new BN(0) as BNWei
+  }, [account, balanceLoading, walletTotalBalance])
+}
+
+const NavAudio = () => {
+  const userChallengesLoading = useSelector(getUserChallengesLoading)
+  const balanceLoading = useSelector(getAccountBalanceLoading)
+  const account = useSelector(getAccountUser)
+  const navigate = useNavigateToPage()
+
+  const totalBalance = useTotalBalanceWithFallback()
   const positiveTotalBalance = totalBalance.gt(new BN(0))
+
   // we only show the audio balance and respective badge when there is an account
   // so below null-coalescing is okay
   const { tier } = useSelectTierInfo(account?.user_id ?? 0)
@@ -49,36 +103,40 @@ const NavAudio = () => {
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
 
-  const [bubbleType, setBubbleType] = useState<BubbleType>('none')
-
   const goToAudioPage = useCallback(() => {
     navigate(AUDIO_PAGE)
   }, [navigate])
-
-  useEffect(() => {
-    if (hasClaimableRewards) {
-      setBubbleType('claim')
-    } else if (!positiveTotalBalance) {
-      setBubbleType('earn')
-    } else {
-      setBubbleType('none')
-    }
-  }, [setBubbleType, hasClaimableRewards, positiveTotalBalance])
 
   if (!account) {
     return null
   }
 
+  let bubbleType: BubbleType = 'none'
+  /*
+   * Logic here is:
+   * - If user challenges have loaded and there are some to claim, show that immediately
+   * - Otherwise, once wallet AND challenges have loaded (to prevent flashing),
+   *   show the "earn" variant if the balance is zero.
+   * - Fall back to "none" (hidden)
+   */
+  if (hasClaimableRewards && !userChallengesLoading) {
+    bubbleType = 'claim'
+  } else if (
+    !positiveTotalBalance &&
+    !balanceLoading &&
+    !userChallengesLoading
+  ) {
+    bubbleType = 'earn'
+  }
+
   return (
-    <div
-      className={cn(
-        styles.audio,
-        { [styles.hasBalance]: positiveTotalBalance },
-        { [styles.show]: true }
-      )}
-      onClick={goToAudioPage}
-    >
-      <div className={styles.amountContainer}>
+    <div className={styles.audio}>
+      <div
+        className={cn(styles.amountContainer, styles.interactive, {
+          [styles.hasBalance]: positiveTotalBalance
+        })}
+        onClick={goToAudioPage}
+      >
         {positiveTotalBalance && audioBadge ? (
           cloneElement(audioBadge, {
             height: 16,
@@ -99,21 +157,13 @@ const NavAudio = () => {
           leave={{ opacity: 0 }}
           config={{ duration: 100 }}
         >
-          {(item) => (props) =>
-            item !== 'none' && (
-              <animated.span
-                style={props}
-                className={cn(styles.actionBubble, {
-                  [styles.claimRewards]: item === 'claim'
-                })}
-              >
-                <span>
-                  {item === 'claim'
-                    ? messages.claimRewards
-                    : messages.earnAudio}
-                </span>
-                <IconCaretRight className={styles.actionCaret} />
-              </animated.span>
+          {(bubbleType) => (style) =>
+            (
+              <RewardsActionBubble
+                bubbleType={bubbleType}
+                style={style}
+                onClick={goToAudioPage}
+              />
             )}
         </Transition>
       </div>
