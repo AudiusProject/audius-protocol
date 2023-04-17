@@ -240,6 +240,27 @@ export const outputConfigs = {
   },
 
   /**
+   * Libs Web Package
+   * Used by the Audius Web Client as a more performant/smaller bundle
+   */
+  webConfig: {
+    input: 'src/web-libs.ts',
+    output: [{ file: 'dist/web-libs.js', format: 'cjs', sourcemap: true }],
+    plugins: [
+      ignore(['web3', 'graceful-fs', 'node-localstorage']),
+      resolve({ extensions, preferBuiltins: true }),
+      commonjs({ extensions }),
+      alias({
+        entries: [{ find: 'stream', replacement: 'stream-browserify' }]
+      }),
+      babel({ babelHelpers: 'bundled', extensions }),
+      json(),
+      pluginTypescript
+    ],
+    external
+  },
+
+  /**
    * Libs Legacy React Native Package
    * Used by the Audius React Native Client
    * - Includes a modified version of AudiusLibs with Solana dependencies removed
