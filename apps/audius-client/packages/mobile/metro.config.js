@@ -70,6 +70,22 @@ module.exports = (async () => {
         fs: resolveModule('react-native-fs'),
         net: emptyPolyfill,
         tls: resolveModule('tls-browserify')
+      },
+      resolveRequest: (context, moduleName, platform) => {
+        if (moduleName === 'react') {
+          return {
+            filePath: `${resolveModule('react')}/index.js`,
+            type: 'sourceFile'
+          }
+        }
+
+        if (moduleName === 'react-redux') {
+          return {
+            filePath: `${resolveModule('react-redux')}/lib/index.js`,
+            type: 'sourceFile'
+          }
+        }
+        return context.resolveRequest(context, moduleName, platform)
       }
     },
     maxWorkers: 2

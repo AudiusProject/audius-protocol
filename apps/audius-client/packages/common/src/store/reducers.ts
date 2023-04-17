@@ -2,7 +2,7 @@ import { combineReducers } from 'redux'
 
 import { Kind } from '../models'
 
-import accountSlice from './account/slice'
+import account from './account/slice'
 import averageColorReducer from './average-color/slice'
 import collectionsReducer from './cache/collections/reducer'
 import { CollectionsCacheState } from './cache/collections/types'
@@ -14,7 +14,7 @@ import { UsersCacheState } from './cache/users/types'
 import cast from './cast/slice'
 import changePasswordReducer from './change-password/slice'
 import { ChangePasswordState } from './change-password/types'
-import collectiblesSlice from './collectibles/slice'
+import collectibles from './collectibles/slice'
 import musicConfettiReducer, {
   MusicConfettiState
 } from './music-confetti/slice'
@@ -58,7 +58,7 @@ import {
   PlaylistLibraryState
 } from './playlist-library'
 import { playlistUpdatesReducer, PlaylistUpdateState } from './playlist-updates'
-import premiumContentSlice from './premium-content/slice'
+import premiumContent from './premium-content/slice'
 import queue from './queue/slice'
 import reachability from './reachability/reducer'
 import { ReachabilityState } from './reachability/types'
@@ -123,7 +123,7 @@ import wallet from './wallet/slice'
  * @returns an object of all reducers to be used with `combineReducers`
  */
 export const reducers = () => ({
-  account: accountSlice.reducer,
+  account,
 
   // TODO: Move to common
   // signOn: signOnReducer,
@@ -230,16 +230,16 @@ export const reducers = () => ({
   tipping: tippingReducer,
 
   // Premium content
-  premiumContent: premiumContentSlice.reducer,
+  premiumContent,
 
   // Collectibles
-  collectibles: collectiblesSlice.reducer,
+  collectibles,
 
   upload
 })
 
 export type CommonState = {
-  account: ReturnType<typeof accountSlice.reducer>
+  account: ReturnType<typeof account>
   // TODO: Migrate to common
   // signOn: ReturnType<typeof signOnReducer>
 
@@ -339,10 +339,10 @@ export type CommonState = {
   tipping: ReturnType<typeof tippingReducer>
 
   // Premium content
-  premiumContent: ReturnType<typeof premiumContentSlice.reducer>
+  premiumContent: ReturnType<typeof premiumContent>
 
   // Collectibles
-  collectibles: ReturnType<typeof collectiblesSlice.reducer>
+  collectibles: ReturnType<typeof collectibles>
 
   upload: UploadState
 }

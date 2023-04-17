@@ -12,16 +12,16 @@ import { playbackPositionSagas } from 'store/playback-position'
 import { playerSagas } from 'store/player'
 import { premiumContentSagas } from 'store/premium-content'
 import remoteConfigSagas from 'store/remote-config/sagas'
-import { searchUsersModalSagas } from 'store/ui'
-
-import { playlistUpdatesSagas } from './playlist-updates'
-import { CommonStoreContext } from './storeContext'
 import {
+  searchUsersModalSagas,
   toastSagas,
   deletePlaylistConfirmationModalUISagas,
   mobileOverflowMenuUISagas,
   shareModalUISagas
-} from './ui'
+} from 'store/ui'
+
+import { playlistUpdatesSagas } from './playlist-updates'
+import { CommonStoreContext } from './storeContext'
 
 /**
  * A function that creates common sagas. The function takes

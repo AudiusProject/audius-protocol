@@ -171,7 +171,5 @@ export const {
   unsubscribeBrowserPushNotifications
 } = slice.actions
 
-export const reducer = slice.reducer
 export const actions = slice.actions
-
-export default slice
+export default slice.reducer

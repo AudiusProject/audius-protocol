@@ -1,5 +1,5 @@
 export {
-  reducer as collectiblesReducer,
+  default as collectiblesReducer,
   actions as collectiblesActions
 } from './slice'
 export * as collectiblesSelectors from './selectors'
