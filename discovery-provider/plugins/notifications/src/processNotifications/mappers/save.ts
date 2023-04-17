@@ -145,7 +145,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     }
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
         'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.saverUserId,
@@ -158,7 +158,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       }
       await sendNotificationEmail({
         userId: this.receiverUserId,
-        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,

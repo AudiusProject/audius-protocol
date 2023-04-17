@@ -96,7 +96,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
 
       if (
         isLiveEmailEnabled &&
-        userNotificationSettings.email?.[userId].frequency === 'live' &&
+        userNotificationSettings.getUserEmailFrequency(userId) === 'live' &&
         userNotificationSettings.shouldSendEmail({ receiverUserId: userId })
       ) {
         const notification: AppEmailNotification = {
@@ -105,7 +105,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
         }
         await sendNotificationEmail({
           userId: userId,
-          email: userNotificationSettings.email?.[userId].email,
+          email: userNotificationSettings.getUserEmail(userId),
           frequency: 'live',
           notifications: [notification],
           dnDb: this.dnDB,

@@ -154,7 +154,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
         'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: this.receiverUserId
@@ -166,7 +166,7 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       }
       await sendNotificationEmail({
         userId: this.receiverUserId,
-        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,

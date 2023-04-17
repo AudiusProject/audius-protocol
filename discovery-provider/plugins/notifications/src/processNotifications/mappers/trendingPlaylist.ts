@@ -1,6 +1,9 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, UserRow } from '../../types/dn'
-import { TrendingPlaylistNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  TrendingPlaylistNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
@@ -9,6 +12,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type TrendingPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingPlaylistNotification
@@ -117,13 +121,26 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.email?.[notificationReceiverUserId].frequency ===
-        'live' &&
+      userNotificationSettings.getUserEmailFrequency(
+        notificationReceiverUserId
+      ) === 'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: notificationReceiverUserId
       })
     ) {
-      // TODO: send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: notificationReceiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: notificationReceiverUserId,
+        email:
+          userNotificationSettings.email?.[notificationReceiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

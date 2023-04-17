@@ -110,7 +110,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
         'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.senderUserId,
@@ -123,7 +123,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
       }
       await sendNotificationEmail({
         userId: this.receiverUserId,
-        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,

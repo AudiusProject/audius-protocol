@@ -117,7 +117,8 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.email?.[this.remixUserId].frequency === 'live' &&
+      userNotificationSettings.getUserEmailFrequency(this.remixUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: this.remixUserId,
         initiatorUserId: this.parentTrackUserId
@@ -129,7 +130,7 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       }
       await sendNotificationEmail({
         userId: this.remixUserId,
-        email: userNotificationSettings.email?.[this.remixUserId].email,
+        email: userNotificationSettings.getUserEmail(this.remixUserId),
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,

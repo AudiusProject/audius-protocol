@@ -122,6 +122,14 @@ export class UserNotificationSettings {
     return this.mobile[userId].badgeCount
   }
 
+  getUserEmail(userId: number) {
+    return this.email?.[userId].email
+  }
+
+  getUserEmailFrequency(userId: number) {
+    return this.email?.[userId].frequency
+  }
+
   shouldSendEmail({
     initiatorUserId,
     receiverUserId

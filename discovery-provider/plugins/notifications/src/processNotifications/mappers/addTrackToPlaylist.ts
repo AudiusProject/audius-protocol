@@ -126,7 +126,8 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     }
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.email?.[track.owner_id].frequency === 'live' &&
+      userNotificationSettings.getUserEmailFrequency(track.owner_id) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: track.owner_id
       })
@@ -137,7 +138,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       }
       await sendNotificationEmail({
         userId: track.owner_id,
-        email: userNotificationSettings.email?.[track.owner_id].email,
+        email: userNotificationSettings.getUserEmail(track.owner_id),
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,

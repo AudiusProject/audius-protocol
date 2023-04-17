@@ -114,7 +114,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     }
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.email?.[this.dethronedUserId].frequency ===
+      userNotificationSettings.getUserEmailFrequency(this.dethronedUserId) ===
         'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.senderUserId,
@@ -127,7 +127,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       }
       await sendNotificationEmail({
         userId: this.dethronedUserId,
-        email: userNotificationSettings.email?.[this.dethronedUserId].email,
+        email: userNotificationSettings.getUserEmail(this.dethronedUserId),
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,

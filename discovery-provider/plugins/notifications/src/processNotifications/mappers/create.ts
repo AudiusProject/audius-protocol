@@ -171,7 +171,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
       if (
         isLiveEmailEnabled &&
-        userNotificationSettings.email?.[userId].frequency === 'live' &&
+        userNotificationSettings.getUserEmailFrequency(userId) === 'live' &&
         userNotificationSettings.shouldSendEmail({
           initiatorUserId: ownerId,
           receiverUserId: userId
@@ -183,7 +183,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         }
         await sendNotificationEmail({
           userId: userId,
-          email: userNotificationSettings.email?.[userId].email,
+          email: userNotificationSettings.getUserEmail(userId),
           frequency: 'live',
           notifications: [notification],
           dnDb: this.dnDB,

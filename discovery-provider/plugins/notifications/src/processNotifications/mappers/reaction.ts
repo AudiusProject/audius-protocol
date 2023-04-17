@@ -120,7 +120,7 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
         'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.receiverUserId,
@@ -132,8 +132,8 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
         ...this.notification
       }
       await sendNotificationEmail({
-        userId: this.receiverUserId,
-        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        userId: this.senderUserId,
+        email: userNotificationSettings.getUserEmail(this.senderUserId),
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,
