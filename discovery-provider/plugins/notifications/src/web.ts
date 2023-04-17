@@ -30,6 +30,7 @@ const sendBrowserNotification = async (idDb: Knex, userId: string, title: string
   
     try {
       if (!webPushIsConfigured) return numSentNotifs
+      // TODO: USE THIS getUserBrowserSettings
       const notificationBrowsers = await idDb('NotificationBrowserSubscriptions')
         .select('endpoint', 'p256dhKey', 'authKey')
         .where('userId', userId)
