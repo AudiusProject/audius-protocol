@@ -57,6 +57,7 @@ export class UserNotificationSettings {
   email: object
   userIsAbusive: object
   userIsEmailDeliverable: object
+  userTimezone: object
 
   constructor(identityDB: Knex) {
     this.identityDB = identityDB
@@ -65,6 +66,7 @@ export class UserNotificationSettings {
     this.email = {}
     this.userIsAbusive = {}
     this.userIsEmailDeliverable = {}
+    this.userTimezone = {}
   }
 
   /**
@@ -90,6 +92,7 @@ export class UserNotificationSettings {
     this.email = userEmailSettings
     this.userIsAbusive = userAbusiveSettings.usersAbuseMap
     this.userIsEmailDeliverable = userAbusiveSettings.usersIsEmailDeliverableMap
+    this.userTimezone = userAbusiveSettings.usersTimezoneMap
   }
 
   isNotificationTypeEnabled(userId: number, feature: string) {
@@ -122,6 +125,10 @@ export class UserNotificationSettings {
     return this.mobile[userId].badgeCount
   }
 
+  getTimezone(userId: number) {
+    return this.userTimezone[userId]
+  }
+
   shouldSendEmail({
     initiatorUserId,
     receiverUserId
@@ -136,7 +143,27 @@ export class UserNotificationSettings {
     return (
       this.userIsEmailDeliverable[receiverUserId] &&
       !isInitiatorAbusive &&
-      !userIsAbusive[receiverUserId]
+      !userIsAbusive[receiverUserId] &&
+      this.email?.[receiverUserId].frequency === 'live'
+    )
+  }
+
+  shouldSendScheduledEmail({
+    initiatorUserId,
+    receiverUserId
+  }: {
+    initiatorUserId?: number
+    receiverUserId: number
+  }) {
+    const { userIsAbusive } = this
+    const isInitiatorAbusive = initiatorUserId
+      ? userIsAbusive[initiatorUserId]
+      : false
+    return (
+      this.userIsEmailDeliverable[receiverUserId] &&
+      !isInitiatorAbusive &&
+      !userIsAbusive[receiverUserId] &&
+      this.email?.[receiverUserId].frequency in ['weekly', 'daily']
     )
   }
 
@@ -151,13 +178,15 @@ export class UserNotificationSettings {
         'Users.blockchainUserId',
         'Users.isBlockedFromNotifications',
         'Users.isBlockedFromRelay',
-        'Users.isEmailDeliverable'
+        'Users.isEmailDeliverable',
+        'Users.timezone'
       )
       .from('Users')
       .whereIn('Users.blockchainUserId', userIds)
 
     const usersAbuseMap = {}
     const usersIsEmailDeliverableMap = {}
+    const usersTimezoneMap = {}
     users.forEach((user) => {
       usersAbuseMap[user.blockchainUserId] =
         user.isBlockedFromRelay || user.isBlockedFromNotifications
@@ -166,9 +195,14 @@ export class UserNotificationSettings {
       usersIsEmailDeliverableMap[user.blockchainUserId] =
         user.isEmailDeliverable
     })
+    users.forEach((user) => {
+      usersTimezoneMap[user.blockchainUserId] = user.timezone
+    })
+
     return {
       usersAbuseMap,
-      usersIsEmailDeliverableMap
+      usersIsEmailDeliverableMap,
+      usersTimezoneMap
     }
   }
 

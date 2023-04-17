@@ -9,7 +9,11 @@ import { DMEntityType } from './types'
 
 import { logger } from '../../logger'
 import { sendNotificationEmail } from './sendEmail'
-import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
+import {
+  buildUserNotificationSettings,
+  EmailFrequency,
+  UserNotificationSettings
+} from '../../processNotifications/mappers/userNotificationSettings'
 
 // blockchainUserId => email
 type EmailUsers = {
@@ -20,6 +24,7 @@ type UserEmailNotification = {
   user: {
     blockchainUserId: number
     email: string
+    timezone: string
   }
   notifications: EmailNotification[]
 }
@@ -305,6 +310,11 @@ export async function processEmailNotifications(
       return
     }
 
+    const userNotificationSettings = await buildUserNotificationSettings(
+      identityDb,
+      Object.keys(users).map(Number)
+    )
+
     const notifications = await getNotifications(
       dnDb,
       frequency,
@@ -332,13 +342,19 @@ export async function processEmailNotifications(
             try {
               const user = userNotifications.user
               const notifications = userNotifications.notifications
+              // Set the timezone
+              const sendAt = getUserSendAt(
+                userNotificationSettings,
+                user.blockchainUserId
+              )
               const sent = await sendNotificationEmail({
                 userId: user.blockchainUserId,
                 email: user.email,
                 frequency,
-                notifications: notifications,
-                dnDb: dnDb,
-                identityDb: identityDb
+                notifications,
+                dnDb,
+                identityDb,
+                sendAt
               })
               if (!sent) {
                 // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent
@@ -385,4 +401,14 @@ export async function processEmailNotifications(
     )
     logger.error(e)
   }
+}
+function getUserSendAt(
+  userNotificationSettings: UserNotificationSettings,
+  userId: number
+) {
+  const timezone = userNotificationSettings.getTimezone(userId)
+  const sendAt = moment.tz(timezone).add(1, 'day').startOf('day')
+  // sendgrid's send api expects a send_at value in
+  // unix timestamp in seconds
+  return Math.floor(sendAt.toDate().getTime() / 1000)
 }
