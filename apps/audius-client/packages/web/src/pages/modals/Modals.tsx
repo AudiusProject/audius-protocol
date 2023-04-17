@@ -1,4 +1,4 @@
-import { ComponentType } from 'react'
+import { ComponentType, lazy } from 'react'
 
 import { Client } from '@audius/common'
 import type { Modals as ModalTypes } from '@audius/common'
@@ -31,19 +31,49 @@ import UnloadDialog from 'components/unload-dialog/UnloadDialog'
 import TierExplainerModal from 'components/user-badges/TierExplainerModal'
 import ConnectedUserListModal from 'components/user-list-modal/ConnectedUserListModal'
 import AudioBreakdownModal from 'pages/audio-rewards-page/components/modals/AudioBreakdownModal'
-import RewardsModals from 'pages/audio-rewards-page/components/modals/RewardsModals'
+import ChallengeRewardsModal from 'pages/audio-rewards-page/components/modals/ChallengeRewards'
+import TopAPIModal from 'pages/audio-rewards-page/components/modals/TopAPI'
+import TransferAudioMobileDrawer from 'pages/audio-rewards-page/components/modals/TransferAudioMobileDrawer'
+import TrendingRewardsModal from 'pages/audio-rewards-page/components/modals/TrendingRewards'
 import { VipDiscordModal } from 'pages/audio-rewards-page/components/modals/VipDiscordModal'
 import { CreateChatModal } from 'pages/chat-page/components/CreateChatModal'
 import { getClient } from 'utils/clientUtil'
 
 import { AppModal } from './AppModal'
 
-const appModalsMap = {
+const HCaptchaModal = lazy(
+  () => import('pages/audio-rewards-page/components/modals/HCaptchaModal')
+)
+
+const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   Share: ShareModal,
-  VipDiscord: VipDiscordModal
+  VipDiscord: VipDiscordModal,
+  AudioBreakdown: AudioBreakdownModal,
+  EditFolder: EditFolderModal,
+  AddToPlaylist: AddToPlaylistModal,
+  TiersExplainer: TierExplainerModal,
+  DeletePlaylistConfirmation: DeletePlaylistConfirmationModal,
+  BuyAudio: BuyAudioModal,
+  BuyAudioRecovery: BuyAudioRecoveryModal,
+  TransactionDetails: TransactionDetailsModal,
+  StripeOnRamp: StripeOnRampModal,
+  CreateChat: CreateChatModal,
+  InboxSettings: InboxSettingsModal,
+  LockedContent: LockedContentModal,
+  HCaptcha: HCaptchaModal,
+  APIRewardsExplainer: TopAPIModal,
+  TrendingRewardsExplainer: TrendingRewardsModal,
+  ChallengeRewardsExplainer: ChallengeRewardsModal,
+  TransferAudioMobileWarning: TransferAudioMobileDrawer,
+  FeatureFlagOverride: FeatureFlagOverrideModal,
+  BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
+  ShareSoundToTikTok: ShareSoundToTikTokModal
 }
 
-const appModals = Object.entries(appModalsMap) as [ModalTypes, ComponentType][]
+const commonModals = Object.entries(commonModalsMap) as [
+  ModalTypes,
+  ComponentType
+][]
 
 const Modals = () => {
   const client = getClient()
@@ -51,7 +81,7 @@ const Modals = () => {
 
   return (
     <>
-      {appModals.map(([modalName, Modal]) => {
+      {commonModals.map(([modalName, Modal]) => {
         return <AppModal key={modalName} name={modalName} modal={Modal} />
       })}
       <ServiceSelectionModal />
@@ -59,25 +89,14 @@ const Modals = () => {
       <PasswordResetModal />
       <FirstUploadModal />
       <UnloadDialog />
-      <RewardsModals />
-      <ShareSoundToTikTokModal />
-      {/* Enable and use this audio breakdown modal until we get
-      the feature flags to work for native mobile */}
-      <AudioBreakdownModal />
       <CollectibleDetailsModal />
-
-      {client !== Client.ELECTRON && <BrowserPushConfirmationModal />}
 
       {!isMobileClient && (
         <>
           <EmbedModal />
           <EditPlaylistModal />
-          <EditFolderModal />
-          <AddToPlaylistModal />
-          <FeatureFlagOverrideModal />
           <ConnectedUserListModal />
           <AppCTAModal />
-          <TierExplainerModal />
         </>
       )}
 
@@ -85,18 +104,10 @@ const Modals = () => {
         <>
           <ConnectedMobileOverflowModal />
           <UnfollowConfirmationModal />
-          <DeletePlaylistConfirmationModal />
         </>
       )}
 
-      <LockedContentModal />
       <TipAudioModal />
-      <BuyAudioModal />
-      <TransactionDetailsModal />
-      <StripeOnRampModal />
-      <BuyAudioRecoveryModal />
-      <CreateChatModal />
-      <InboxSettingsModal />
     </>
   )
 }

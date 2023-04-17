@@ -212,7 +212,9 @@ const EditTrackModal = ({
   )
 }
 
-function mapStateToProps(state: AppState, ownProps: OwnProps) {
+const noUploads: StemUploadWithFile[] = []
+
+function mapStateToProps(state: AppState) {
   const metadata = getMetadata(state)
   return {
     metadata,
@@ -220,7 +222,7 @@ function mapStateToProps(state: AppState, ownProps: OwnProps) {
     stems: getStems(state),
     currentUploads: metadata?.track_id
       ? getCurrentUploads(state, metadata.track_id)
-      : []
+      : noUploads
   }
 }
 
