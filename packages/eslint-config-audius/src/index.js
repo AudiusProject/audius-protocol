@@ -108,6 +108,11 @@ module.exports = {
     },
     react: {
       version: '17'
-    }
+    },
+    'import/resolver': {
+      typescript: true,
+      node: true
+    },
+    'import/extensions': ['.js', '.jsx', '.ts', '.tsx']
   }
 }

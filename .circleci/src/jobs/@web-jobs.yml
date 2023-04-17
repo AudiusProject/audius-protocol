@@ -26,6 +26,8 @@ web-init:
         command: |
           npm run link
 
+    - common-lint
+
     - run:
         name: typecheck
         command: |
