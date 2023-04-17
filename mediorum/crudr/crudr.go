@@ -4,10 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"reflect"
 	"sync"
-	"time"
 
 	"github.com/inconshreveable/log15"
 	"github.com/oklog/ulid/v2"
@@ -37,18 +35,13 @@ type Crudr struct {
 	logger  log15.Logger
 	typeMap map[string]reflect.Type
 
-	// todo: Peer is in server package now, so this is a simple list of strings
-	// todo: move Peer to registrar and use that
-	peerHosts  []string
-	httpClient http.Client
+	peerClients []*PeerClient
 
 	mu        sync.Mutex
 	callbacks []func(op *Op, records interface{})
 }
 
 func New(host string, peerHosts []string, db *gorm.DB) *Crudr {
-
-	// err := db.AutoMigrate(&Op{})
 
 	opDDL := `
 	create table if not exists ops (
@@ -78,13 +71,20 @@ func New(host string, peerHosts []string, db *gorm.DB) *Crudr {
 		logger:  log15.New("module", "crud", "from", host),
 		typeMap: map[string]reflect.Type{},
 
-		peerHosts: peerHosts,
-		httpClient: http.Client{
-			Timeout: 60 * time.Second,
-		},
+		peerClients: make([]*PeerClient, len(peerHosts)),
+	}
+
+	for idx, host := range peerHosts {
+		c.peerClients[idx] = NewPeerClient(host, c)
 	}
 
 	return c
+}
+
+func (c *Crudr) StartClients() {
+	for _, p := range c.peerClients {
+		p.Start()
+	}
 }
 
 // RegisterModels accepts a instance of a GORM model and registers it

@@ -229,9 +229,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 }
 
 func (ss *MediorumServer) MustStart() {
-	// start crud clients
-	// routes should match crud routes setup above
-	ss.startCrudClients("/internal/crud/stream", "/internal/crud/sweep")
 
 	// start server
 	go func() {
@@ -248,6 +245,10 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startRepairer()
 
+	ss.crud.StartClients()
+
+	// when enabled the "pg_beam" stuff would beam Files table between peers.
+	// Disabling for now in case it causes db too much stress.
 	// go ss.startBeamClient()
 
 	// signals

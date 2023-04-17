@@ -1,47 +1,95 @@
 package crudr
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
+	"github.com/inconshreveable/log15"
 	"gorm.io/gorm/clause"
 )
 
-func (c *Crudr) NewClient(host, streamEndpoint, bulkEndpoint string) {
-	for {
-		err := c.newClient(host, streamEndpoint, bulkEndpoint)
-		if err != nil {
-			c.logger.Warn("sse client died", "host", host, "err", err)
-		}
-		time.Sleep(time.Second * 5)
+type PeerClient struct {
+	Host   string
+	outbox chan []byte
+	crudr  *Crudr
+	logger log15.Logger
+}
+
+func NewPeerClient(host string, crudr *Crudr) *PeerClient {
+	// buffer up to N outgoing messages
+	// if full, Send will drop outgoing message
+	// which is okay because of sweep
+	outboxBufferSize := 8
+
+	return &PeerClient{
+		Host:   host,
+		outbox: make(chan []byte, outboxBufferSize),
+		crudr:  crudr,
+		logger: log15.New("cruder_client", host),
 	}
 }
 
-func (c *Crudr) newClient(host, streamEndpoint, bulkEndpoint string) error {
+func (p *PeerClient) Start() {
+	// todo: should be able to stop these
+	go p.startSender()
+	go p.startSweeper()
+}
 
-	logger := c.logger.New("client_of", host)
-	logger.Debug("creating client")
+func (p *PeerClient) Send(data []byte) bool {
+	select {
+	case p.outbox <- data:
+		return true
+	default:
+		return false
+	}
+}
 
-	for {
-		err := c.clientBackfill(host, bulkEndpoint)
+func (p *PeerClient) startSender() {
+	httpClient := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	for data := range p.outbox {
+		endpoint := p.Host + "/internal/crud/push" // hardcoded
+		resp, err := httpClient.Post(endpoint, "application/json", bytes.NewReader(data))
 		if err != nil {
-			logger.Warn("sweep failed", "err", err)
+			log.Println("push failed", "host", p.Host, "err", err)
+			return
+		}
+
+		if resp.StatusCode != 200 {
+			log.Println("push bad status", "host", p.Host, "status", resp.StatusCode)
+		}
+
+		resp.Body.Close()
+	}
+}
+
+func (p *PeerClient) startSweeper() {
+	for {
+		err := p.doSweep()
+		if err != nil {
+			p.logger.Warn("sweep failed", "err", err)
 		}
 		time.Sleep(time.Minute)
 	}
 }
 
-func (c *Crudr) clientBackfill(host, bulkEndpoint string) error {
+func (p *PeerClient) doSweep() error {
+
+	host := p.Host
+	bulkEndpoint := "/internal/crud/sweep" // hardcoded
 
 	// get cursor
 	lastUlid := ""
 	{
 		var cursor Cursor
-		err := c.DB.Where("host = ?", host).First(&cursor).Error
+		err := p.crudr.DB.Where("host = ?", host).First(&cursor).Error
 		if err != nil {
-			c.logger.Info("failed to get cursor", "err", err)
+			p.logger.Info("failed to get cursor", "err", err)
 		} else {
 			lastUlid = cursor.LastULID
 		}
@@ -71,7 +119,7 @@ func (c *Crudr) clientBackfill(host, bulkEndpoint string) error {
 	}
 
 	for _, op := range ops {
-		err := c.ApplyOp(op)
+		err := p.crudr.ApplyOp(op)
 		if err != nil {
 			fmt.Println(err)
 		} else {
@@ -82,13 +130,13 @@ func (c *Crudr) clientBackfill(host, bulkEndpoint string) error {
 	// set cursor
 	{
 		upsertClause := clause.OnConflict{UpdateAll: true}
-		err := c.DB.Clauses(upsertClause).Create(&Cursor{Host: host, LastULID: lastUlid}).Error
+		err := p.crudr.DB.Clauses(upsertClause).Create(&Cursor{Host: host, LastULID: lastUlid}).Error
 		if err != nil {
-			c.logger.Info("failed to set cursor", "err", err)
+			p.logger.Info("failed to set cursor", "err", err)
 		}
 	}
 
-	c.logger.Debug("backfill done", "host", host, "count", len(ops), "last_ulid", lastUlid)
+	p.logger.Debug("backfill done", "host", host, "count", len(ops), "last_ulid", lastUlid)
 
 	return nil
 }
