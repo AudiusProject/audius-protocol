@@ -4,6 +4,27 @@ import { Utils } from '../../utils/utils'
 
 const { decodeHashId } = Utils
 
+const errors = {
+  ...SubmitAndEvaluateError,
+  USERBANK_CREATION: 'USERBANK_CREATION'
+}
+const AAO_ERRORS = new Set<string>([
+  errors.AAO_ATTESTATION_REJECTION,
+  errors.AAO_ATTESTATION_UNKNOWN_RESPONSE
+])
+// Account for errors from DN aggregation + Solana program
+// CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
+// safe to assume those won't work if we see them at this point.
+const NEEDS_RESELECT_ERRORS = new Set<string>([
+  errors.INSUFFICIENT_DISCOVERY_NODE_COUNT,
+  errors.CHALLENGE_INCOMPLETE,
+  errors.MISSING_CHALLENGES
+])
+const ALREADY_COMPLETE_ERRORS = new Set<string>([
+  errors.ALREADY_DISBURSED,
+  errors.ALREADY_SENT
+])
+
 // `BaseRewardsReporter` is intended to be subclassed, and provides
 // "reporting" functionality to RewardsAttester (i.e. posts to Slack if something notable happens)
 class BaseRewardsReporter {
@@ -698,6 +719,31 @@ export class RewardsAttester {
       )}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`
     )
 
+    const feePayerOverride = this._getFeePayer()
+    const { error: userbankCreationError } =
+      await this.libs.solanaWeb3Manager.createUserBankIfNeeded(
+        feePayerOverride,
+        wallet
+      )
+
+    if (userbankCreationError) {
+      this.logger.error(
+        `Failed to create user bank for user [${decodeHashId(userId)}]`,
+        userbankCreationError
+      )
+
+      return {
+        challengeId,
+        userId,
+        specifier,
+        amount,
+        handle,
+        wallet,
+        completedBlocknumber,
+        error: errors.USERBANK_CREATION
+      }
+    }
+
     const { success, error, aaoErrorCode, phase, nodesToReselect } =
       await this.libs.Rewards.submitAndEvaluate({
         challengeId,
@@ -711,7 +757,7 @@ export class RewardsAttester {
         AAOEndpoint: this.aaoEndpoint,
         endpoints: this.endpoints,
         logger: this.logger,
-        feePayerOverride: this._getFeePayer(),
+        feePayerOverride,
         maxAggregationAttempts: this.maxAggregationAttempts
       })
 
@@ -890,26 +936,6 @@ export class RewardsAttester {
     shouldReselect: boolean
     failingNodes: string[]
   }> {
-    const errors = SubmitAndEvaluateError
-    const AAO_ERRORS = new Set([
-      errors.HCAPTCHA,
-      errors.COGNITO_FLOW,
-      errors.AAO_ATTESTATION_REJECTION,
-      errors.AAO_ATTESTATION_UNKNOWN_RESPONSE
-    ])
-    // Account for errors from DN aggregation + Solana program
-    // CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
-    // safe to assume those won't work if we see them at this point.
-    const NEEDS_RESELECT_ERRORS = new Set([
-      errors.INSUFFICIENT_DISCOVERY_NODE_COUNT,
-      errors.CHALLENGE_INCOMPLETE,
-      errors.MISSING_CHALLENGES
-    ])
-    const ALREADY_COMPLETE_ERRORS = new Set([
-      errors.ALREADY_DISBURSED,
-      errors.ALREADY_SENT
-    ])
-
     const noRetry: AttestationResult[] = []
     const successful: AttestationResult[] = []
     // Filter our successful responses
