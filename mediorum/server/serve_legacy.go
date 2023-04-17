@@ -18,6 +18,12 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 	cid := c.Param("cid")
 	sql := `select "storagePath" from "Files" where "multihash" = $1 limit 1`
 
+	// check blacklist
+	if ss.isCidBlacklisted(ctx, cid) {
+		return c.String(403, "cid is blacklisted by this node")
+	}
+
+	// lookup on-disk storage path
 	var storagePath string
 	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&storagePath)
 	if err == pgx.ErrNoRows {
@@ -38,8 +44,8 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 	ctx := c.Request().Context()
 	dirCid := c.Param("dirCid")
 	fileName := c.Param("fileName")
-	sql := `select "storagePath" from "Files" where "dirMultihash" = $1 and "fileName" = $2`
 
+	sql := `select "storagePath" from "Files" where "dirMultihash" = $1 and "fileName" = $2`
 	var storagePath string
 	err := ss.pgPool.QueryRow(ctx, sql, dirCid, fileName).Scan(&storagePath)
 	if err == pgx.ErrNoRows {
@@ -59,6 +65,11 @@ func (ss *MediorumServer) serveLegacyDirCid(c echo.Context) error {
 func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 	ctx := c.Request().Context()
 
+	// don't redirect if the legacy "localOnly" query parameter is set
+	if c.QueryParam("localOnly") == "true" {
+		return c.String(404, "not redirecting because localOnly=true")
+	}
+
 	hosts, err := ss.findHostsWithCid(ctx, cid)
 	if err != nil {
 		return err
@@ -69,9 +80,9 @@ func (ss *MediorumServer) redirectToCid(c echo.Context, cid string) error {
 	// for now just use first host
 	log.Println("potential hosts for cid", cid, hosts)
 	for _, host := range hosts {
-		dest := host + c.Request().URL.Path
-		log.Println("redirecting to", dest)
-		return c.Redirect(302, dest)
+		dest := replaceHost(*c.Request().URL, host)
+		log.Println("redirecting to: ", dest.String())
+		return c.Redirect(302, dest.String())
 	}
 
 	return errors.New("no host found with cid: " + cid)
@@ -84,6 +95,18 @@ func (ss *MediorumServer) findHostsWithCid(ctx context.Context, cid string) ([]s
 	return hosts, err
 }
 
+func (ss *MediorumServer) isCidBlacklisted(ctx context.Context, cid string) bool {
+	blacklisted := false
+	sql := `select count(*) = 1 from "ContentBlacklists" where "value" = $1 and "type" = 'CID'`
+	err := ss.pgPool.QueryRow(ctx, sql, cid).Scan(&blacklisted)
+	if err != nil {
+		log.Println("isCidBlacklisted err", err)
+	}
+	return blacklisted
+}
+
+// this is a POC bulk endpoint for streaming all the type = 'metadata'
+// json blobs
 func (ss *MediorumServer) serveCidMetadata(c echo.Context) error {
 	ctx := c.Request().Context()
 	sql := `select multihash, "storagePath" from "Files" where type = 'metadata' order by multihash limit 1000000`
