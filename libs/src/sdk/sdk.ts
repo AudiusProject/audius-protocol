@@ -27,6 +27,8 @@ import {
   DiscoveryNodeSelector,
   WalletApi
 } from './services'
+import { AudiusApolloClient } from './services/AudiusApolloClient/AudiusApolloClient'
+import { AudiusLibs } from '../AudiusLibs'
 
 type ServicesContainer = {
   /**
@@ -37,6 +39,7 @@ type ServicesContainer = {
    * Helpers to faciliate requests that require signatures or encryption
    */
   walletApi: WalletApiService
+  audiusApolloClient: AudiusApolloClient
 }
 
 type SdkConfig = {
@@ -48,6 +51,7 @@ type SdkConfig = {
    * Services injection
    */
   services?: Partial<ServicesContainer>
+  libs?: AudiusLibs
 }
 
 /**
@@ -80,7 +84,8 @@ export const sdk = (config: SdkConfig) => {
 const initializeServices = (config: SdkConfig) => {
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
-    walletApi: new WalletApi()
+    walletApi: new WalletApi(),
+    audiusApolloClient: new AudiusApolloClient(config.libs)
   }
   return { ...defaultServices, ...config.services }
 }
@@ -141,7 +146,10 @@ const initializeApis = ({
     tips,
     resolve,
     full,
-    chats
+    chats,
+    graphql: {
+      client: services.audiusApolloClient
+    }
   }
 }
 
