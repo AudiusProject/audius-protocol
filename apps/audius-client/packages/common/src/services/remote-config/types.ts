@@ -294,9 +294,6 @@ export enum StringKeys {
   /** Embedded tweet for underground trending rewards UI  */
   REWARDS_TWEET_ID_UNDERGROUND = 'REWARDS_TWEET_ID_UNDERGROUND',
 
-  /** Audio that should be streamed via mp3 rather than HLS. Comma separated hash ids. */
-  FORCE_MP3_STREAM_TRACK_IDS = 'FORCE_MP3_STREAM_TRACK_IDS',
-
   /** TF */
   TF = 'TF',
   TPF = 'TPF',

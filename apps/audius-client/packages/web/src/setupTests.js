@@ -1,7 +1,4 @@
 // eslint-disable-next-line
-// import '__mocks__/Hls.js'
-
-// eslint-disable-next-line
 import '__mocks__/Hashids'
 
 // Mock Canvas / Context2D calls
@@ -63,10 +60,4 @@ window.Worker = Worker
 
 window.URL = {
   createObjectURL: () => {}
-}
-
-window.Hls = {
-  DefaultConfig: {
-    loader: jest.fn()
-  }
 }
