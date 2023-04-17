@@ -16,7 +16,7 @@ def test_playlist_track_added_notification(app):
     with app.app_context():
         db = get_db()
 
-    # Insert Playlist with two new tracks and check that a notificaiton is created for the track owners
+    # Insert Playlist with two new tracks and check that a notification is created for the track owners
     now = datetime.now()
     entities = {
         "tracks": [
@@ -79,7 +79,7 @@ def test_playlist_create_notification(app):
     with app.app_context():
         db = get_db()
 
-    # Insert Playlist with two new tracks and check that a notificaiton is created for the track owners
+    # Insert Playlist with two new tracks and check that a notification is created for the track owners
     now = datetime.now()
     entities = {
         "users": [{"user_id": i + 1} for i in range(5)],
@@ -124,7 +124,7 @@ def test_playlist_create_notification_on_playlist_update(app):
     with app.app_context():
         db = get_db()
 
-    # Insert Playlist with two new tracks and check that a notificaiton is created for the track owners
+    # Insert Playlist with two new tracks and check that a notification is created for the track owners
     now = datetime.now()
     entities = {
         "users": [{"user_id": i + 1} for i in range(5)],
