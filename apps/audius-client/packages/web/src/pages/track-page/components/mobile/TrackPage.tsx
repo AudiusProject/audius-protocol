@@ -1,6 +1,7 @@
 import { useEffect, useContext } from 'react'
 
 import {
+  CID,
   ID,
   LineupState,
   Track,
@@ -57,7 +58,13 @@ export type OwnProps = {
   ) => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
-  onDownloadTrack: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownloadTrack: (
+    trackId: ID,
+    cid: CID,
+    creatorNodeEndpoints: string,
+    category?: string,
+    parentTrackId?: ID
+  ) => void
   // Tracks Lineup Props
   tracks: LineupState<{ id: ID }>
   currentQueueItem: QueueItem
@@ -140,6 +147,24 @@ const TrackPage = ({
     <div className={styles.lineupHeader}>{messages.originalTrack}</div>
   )
 
+  const onDownload = (
+    trackId: ID,
+    cid: CID,
+    category?: string,
+    parentTrackId?: ID
+  ) => {
+    if (!user) return
+    const { creator_node_endpoint } = user
+    if (!creator_node_endpoint) return
+    onDownloadTrack(
+      trackId,
+      cid,
+      creator_node_endpoint,
+      category,
+      parentTrackId
+    )
+  }
+
   const renderMoreByTitle = () =>
     (defaults.remixParentTrackId && entries.length > 2) ||
     (!defaults.remixParentTrackId && entries.length > 1) ? (
@@ -187,7 +212,7 @@ const TrackPage = ({
           onSave={onSave}
           onShare={onShare}
           onRepost={onRepost}
-          onDownload={onDownloadTrack}
+          onDownload={onDownload}
           isUnlisted={defaults.isUnlisted}
           isPremium={defaults.isPremium}
           premiumConditions={defaults.premiumConditions}

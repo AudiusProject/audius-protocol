@@ -2,7 +2,6 @@ import { useRef, useEffect, useCallback, useState } from 'react'
 
 import type { ID, Nullable, QueryParams, Track } from '@audius/common'
 import {
-  getQueryParams,
   removeNullable,
   playbackRateValueMap,
   cacheUsersSelectors,
@@ -283,12 +282,19 @@ export const Audio = () => {
         if (gatedQueryParamsMap[trackId]) {
           queryParamsMap[trackId] = gatedQueryParamsMap[trackId]
         } else if (isGatedContentEnabled) {
+          const data = `Premium content user signature at ${Date.now()}`
+          const signature = await audiusBackendInstance.getSignature(data)
           const premiumContentSignature =
             premium_content_signature || premiumTrackSignatureMap[trackId]
-          queryParamsMap[trackId] = await getQueryParams({
-            audiusBackendInstance,
-            premiumContentSignature
-          })
+          queryParamsMap[trackId] = {
+            user_data: data,
+            user_signature: signature
+          }
+          if (premiumContentSignature) {
+            queryParamsMap[trackId].premium_content_signature = JSON.stringify(
+              premiumContentSignature
+            )
+          }
         }
       }
 

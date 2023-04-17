@@ -1,5 +1,6 @@
 import {
   ID,
+  CID,
   LineupState,
   Track,
   User,
@@ -55,7 +56,13 @@ export type OwnProps = {
   onClickFavorites: () => void
 
   onSaveTrack: (isSaved: boolean, trackId: ID) => void
-  onDownloadTrack: (trackId: ID, category?: string, parentTrackId?: ID) => void
+  onDownloadTrack: (
+    trackId: ID,
+    cid: CID,
+    creatorNodeEndpoints: string,
+    category?: string,
+    parentTrackId?: ID
+  ) => void
   makePublic: (trackId: ID) => void
   // Tracks Lineup Props
   tracks: LineupState<{ id: ID }>
@@ -123,6 +130,23 @@ const TrackPage = ({
   const onShare = () => (heroTrack ? onHeroShare(heroTrack.track_id) : null)
   const onRepost = () =>
     heroTrack ? onHeroRepost(isReposted, heroTrack.track_id) : null
+  const onDownload = (
+    trackId: ID,
+    cid: CID,
+    category?: string,
+    parentTrackId?: ID
+  ) => {
+    if (!user) return
+    const { creator_node_endpoint } = user
+    if (!creator_node_endpoint) return
+    onDownloadTrack(
+      trackId,
+      cid,
+      creator_node_endpoint,
+      category,
+      parentTrackId
+    )
+  }
 
   const defaults = getTrackDefaults(heroTrack)
 
@@ -176,7 +200,7 @@ const TrackPage = ({
       onFollow={onFollow}
       onUnfollow={onUnfollow}
       download={defaults.download}
-      onDownload={onDownloadTrack}
+      onDownload={onDownload}
       makePublic={makePublic}
       onClickReposts={onClickReposts}
       onClickFavorites={onClickFavorites}
