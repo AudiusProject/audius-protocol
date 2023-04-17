@@ -3,7 +3,7 @@
 ```
 nvm use
 
-npm i --legacy-peer-deps
+npm i
 npm run dev
 ```
 
