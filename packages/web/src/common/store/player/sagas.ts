@@ -18,8 +18,7 @@ import {
   FeatureFlags,
   premiumContentSelectors,
   QueryParams,
-  Genre,
-  getQueryParams
+  Genre
 } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import {
@@ -141,14 +140,21 @@ export function* watchPlay() {
         (encodedTrackId && FORCE_MP3_STREAM_TRACK_IDS.has(encodedTrackId))
       let queryParams: QueryParams = {}
       if (isGatedContentEnabled) {
+        const data = `Premium content user signature at ${Date.now()}`
+        const signature = yield* call(audiusBackendInstance.getSignature, data)
         const premiumTrackSignatureMap = yield* select(
           getPremiumTrackSignatureMap
         )
         const premiumContentSignature = premiumTrackSignatureMap[track.track_id]
-        queryParams = yield* call(getQueryParams, {
-          audiusBackendInstance,
-          premiumContentSignature
-        })
+        queryParams = {
+          user_data: data,
+          user_signature: signature
+        }
+        if (premiumContentSignature) {
+          queryParams.premium_content_signature = JSON.stringify(
+            premiumContentSignature
+          )
+        }
       }
       const forceStreamMp3Url = forceStreamMp3
         ? apiClient.makeUrl(`/tracks/${encodedTrackId}/stream`, queryParams)

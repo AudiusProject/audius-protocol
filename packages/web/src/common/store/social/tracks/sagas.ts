@@ -12,12 +12,7 @@ import {
   cacheActions,
   getContext,
   tracksSocialActions as socialActions,
-  waitForValue,
-  QueryParams,
-  FeatureFlags,
-  premiumContentSelectors,
-  encodeHashId,
-  getQueryParams
+  waitForValue
 } from '@audius/common'
 import { fork } from 'redux-saga/effects'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
@@ -34,8 +29,8 @@ import watchTrackErrors from './errorSagas'
 import { watchRecordListen } from './recordListen'
 const { getUser } = cacheUsersSelectors
 const { getTrack, getTracks } = cacheTracksSelectors
+
 const { getUserId, getUserHandle } = accountSelectors
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
 
 /* REPOST TRACK */
 export function* watchRepostTrack() {
@@ -639,56 +634,11 @@ export function* watchUnsetArtistPick() {
 
 /* DOWNLOAD TRACK */
 
-function* downloadTrack({
-  track,
-  filename
-}: {
-  track: Track
-  filename: string
-}) {
-  try {
-    const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-    const apiClient = yield* getContext('apiClient')
-    const trackDownload = yield* getContext('trackDownload')
-    const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-    const isGatedContentEnabled = yield* call(
-      getFeatureEnabled,
-      FeatureFlags.GATED_CONTENT_ENABLED
-    )
-    let queryParams: QueryParams = {}
-    if (isGatedContentEnabled) {
-      const premiumTrackSignatureMap = yield* select(
-        getPremiumTrackSignatureMap
-      )
-      const premiumContentSignature =
-        track.premium_content_signature ||
-        premiumTrackSignatureMap[track.track_id]
-      queryParams = yield* call(getQueryParams, {
-        audiusBackendInstance,
-        premiumContentSignature
-      })
-    }
-    queryParams.filename = filename
-
-    const encodedTrackId = encodeHashId(track.track_id)
-    const url = apiClient.makeUrl(
-      `/tracks/${encodedTrackId}/stream`,
-      queryParams
-    )
-    yield* call(trackDownload.downloadTrack, { url, filename })
-  } catch (e) {
-    console.error(
-      `Could not download track ${track.track_id}: ${
-        (e as Error).message
-      }. Error: ${e}`
-    )
-  }
-}
-
 function* watchDownloadTrack() {
   yield* takeEvery(
     socialActions.DOWNLOAD_TRACK,
     function* (action: ReturnType<typeof socialActions.downloadTrack>) {
+      const trackDownload = yield* getContext('trackDownload')
       yield* call(waitForRead)
 
       // Check if there is a logged in account and if not,
@@ -730,7 +680,16 @@ function* watchDownloadTrack() {
         return
       }
 
-      yield* call(downloadTrack, { track, filename })
+      const endpoints = action.creatorNodeEndpoints
+        .split(',')
+        .map((endpoint) => `${endpoint}/ipfs/`)
+
+      yield* call(
+        [trackDownload, 'downloadTrack'],
+        action.cid,
+        endpoints,
+        filename
+      )
     }
   )
 }

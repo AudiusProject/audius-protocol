@@ -1,8 +1,5 @@
-import type { ID, QueryParams, Track, UserTrackMetadata } from '@audius/common'
+import type { ID, Track, UserTrackMetadata } from '@audius/common'
 import {
-  getQueryParams,
-  FeatureFlags,
-  premiumContentSelectors,
   removeNullable,
   SquareSizes,
   encodeHashId,
@@ -42,7 +39,6 @@ import { shouldCancelJob } from '../../utils/shouldCancelJob'
 import { downloadFile } from './downloadFile'
 
 const { getUserId } = accountSelectors
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
 
 const MAX_RETRY_COUNT = 3
 const MAX_REQUEUE_COUNT = 3
@@ -152,7 +148,7 @@ function* downloadTrackAsync(
 }
 
 function* downloadTrackAudio(track: UserTrackMetadata) {
-  const { track_id, user, premium_content_signature } = track
+  const { track_id, user } = track
 
   const { creator_node_endpoint } = user
   const creatorNodeEndpoints = creator_node_endpoint?.split(',')
@@ -161,32 +157,12 @@ function* downloadTrackAudio(track: UserTrackMetadata) {
   const trackFilePath = getLocalAudioPath(track_id)
   const encodedTrackId = encodeHashId(track_id)
 
-  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-  const apiClient = yield* getContext('apiClient')
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isGatedContentEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
-  let queryParams: QueryParams = {}
-  if (isGatedContentEnabled) {
-    const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
-    const premiumContentSignature =
-      premium_content_signature || premiumTrackSignatureMap[track_id]
-    queryParams = yield* call(getQueryParams, {
-      audiusBackendInstance,
-      premiumContentSignature
-    })
+  for (const creatorNodeEndpoint of creatorNodeEndpoints) {
+    const trackAudioUri = `${creatorNodeEndpoint}/tracks/stream/${encodedTrackId}`
+    const response = yield* call(downloadFile, trackAudioUri, trackFilePath)
+    const { status } = response.info()
+    if (status === 200) return
   }
-  queryParams.filename = `${track_id}.mp3`
-
-  const trackAudioUri = apiClient.makeUrl(
-    `/tracks/${encodedTrackId}/stream`,
-    queryParams
-  )
-  const response = yield* call(downloadFile, trackAudioUri, trackFilePath)
-  const { status } = response.info()
-  if (status === 200) return
 
   throw new Error('Unable to download track audio')
 }

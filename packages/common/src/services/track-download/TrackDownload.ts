@@ -19,7 +19,9 @@ export class TrackDownload {
   }
 
   async downloadTrack(
-    _args: { url: string, filename: string }
+    _cid: CID,
+    _creatorNodeEndpoints: string[],
+    _filename: string
   ) {
     throw new Error('downloadTrack not implemented')
   }

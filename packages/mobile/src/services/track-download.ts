@@ -1,5 +1,5 @@
 import { TrackDownload as TrackDownloadBase } from '@audius/common'
-import type { Nullable } from '@audius/common'
+import type { CID, Nullable } from '@audius/common'
 import { Platform, Share } from 'react-native'
 import type {
   FetchBlobResponse,
@@ -74,10 +74,12 @@ const download = async ({
   }
 }
 
-type DownloadTrackConfig = { url: string; filename: string }
+type DownloadTrackConfig = { urls: string[]; filename: string }
 
-const downloadTrack = async ({ url, filename }: DownloadTrackConfig) => {
-  const fileUrl = url
+const downloadTrack = async ({ urls, filename }: DownloadTrackConfig) => {
+  const fileUrl = urls.find(
+    (url) => url !== null && url !== undefined
+  ) as string
   const fileName = filename
   const trackName = fileName.split('.').slice(0, -1).join('')
 
@@ -125,8 +127,16 @@ const downloadTrack = async ({ url, filename }: DownloadTrackConfig) => {
 }
 
 class TrackDownload extends TrackDownloadBase {
-  async downloadTrack({ url, filename }: { url: string; filename: string }) {
-    await downloadTrack({ filename, url })
+  async downloadTrack(
+    cid: CID,
+    creatorNodeGateways: string[],
+    filename: string
+  ) {
+    const urls = creatorNodeGateways.map((gateway) =>
+      encodeURI(`${gateway}${cid}?filename=${filename}`)
+    )
+
+    await downloadTrack({ filename, urls })
   }
 }
 
