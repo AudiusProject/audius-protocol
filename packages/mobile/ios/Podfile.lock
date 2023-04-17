@@ -520,7 +520,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - react-native-tiktok (1.1.1):
     - React-Core
-    - TikTokOpenSDK (~> 5.0.0)
+    - TikTokOpenSDK (= 5.0.0)
   - react-native-track-player (3.2.0):
     - React-Core
     - SwiftAudioEx (= 0.15.3)
@@ -1071,11 +1071,11 @@ SPEC CHECKSUMS:
   Amplitude: ef9ed339ddd33c9183edf63fa4bbaa86cf873321
   amplitude-react-native: c7d779d1e2ec4062c833207df7588cc2a9146325
   Base64: cecfb41a004124895a7bcee567a89bae5a89d49b
-  boost: a7c83b31436843459a1961bfd74b96033dc77234
+  boost: 57d2868c099736d80fcd648bf211b4431e51a558
   BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   CodePush: 7e699d8c8039f67afb2193fad0b1e52219d82693
-  DoubleConversion: 831926d9b8bf8166fd87886c4abab286c2422662
+  DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   FBLazyVector: 60195509584153283780abdac5569feffb8f08cc
   FBReactNativeSpec: 9c191fb58d06dc05ab5559a5505fc32139e9e4a2
   ffmpeg-kit-ios-https-gpl: fb9fc0617a646209f8f4a62b5581000dc4ee6a67
@@ -1097,7 +1097,7 @@ SPEC CHECKSUMS:
   Flipper-RSocket: d9d9ade67cbecf6ac10730304bf5607266dd2541
   FlipperKit: 9f6df8cb028c2acd537ce24c1993aba142eceaf0
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 5337263514dd6f09803962437687240c5dc39aa4
+  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
   google-cast-sdk-dynamic-xcframework-no-bluetooth: 1fa9e267df3fd6f8a1c6e3345142ca5286297968
   GoogleAppMeasurement: 4c19f031220c72464d460c9daa1fb5d1acce958e
   GoogleDataTransport: ea169759df570f4e37bdee1623ec32a7e64e67c4
@@ -1113,7 +1113,7 @@ SPEC CHECKSUMS:
   Permission-Notifications: 2662b6885535a98892b8e48da04b74fc898d70f8
   Permission-PhotoLibraryAddOnly: 90b427e4a2acd37d1128618704b53364d73826c2
   PromisesObjC: ab77feca74fa2823e7af4249b8326368e61014cb
-  RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
+  RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: bec48f07daf7bcdc2655a0cde84e07d24d2a9e2a
   RCTTypeSafety: 171394eebacf71e1cfad79dbfae7ee8fc16ca80a
   React: d7433ccb6a8c36e4cbed59a73c0700fc83c3e98a
@@ -1146,7 +1146,7 @@ SPEC CHECKSUMS:
   react-native-randombytes: 5fc412efe7b5c55b9002c0004d75fe5fabcaa507
   react-native-restart: 8af4579c94638f38bd9074ec477ebf087de87dc5
   react-native-safe-area-context: ec0d85aca8110dae9327430a9541fec165352dab
-  react-native-tiktok: 9ef23158b524c39fd5902c6e92458608daf24e7e
+  react-native-tiktok: a10460b01267b30a979095ccd7ec52964c80bb48
   react-native-track-player: 86649137952f7beeed18b4be7974be1d431d967f
   react-native-version-number: 15563dc4145a94aabfc1faab2a9af10174a4204e
   react-native-video: 79a186e378d327b6c08bc3982c17ef455c6bd75c

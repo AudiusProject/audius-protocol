@@ -1,15 +1,8 @@
 import {
   TrackSegment,
-  decodeHashId,
-  hlsUtils,
   PlaybackRate,
   playbackRateValueMap
 } from '@audius/common'
-import Hls from 'hls.js'
-
-import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
-
-const { generateM3U8, generateM3U8Variants } = hlsUtils
 
 declare global {
   interface Window {
@@ -30,62 +23,11 @@ const BUFFERING_DELAY_MILLISECONDS = 1000
 const FADE_IN_TIME_MILLISECONDS = 320
 const FADE_OUT_TIME_MILLISECONDS = 400
 
-// In the case of audio errors, try to resume playback
-// by nudging the playhead this many seconds ahead.
-const ON_ERROR_NUDGE_SECONDS = 0.2
-
-// This calculation comes from chrome's audio SourceBuffer max of
-// 12MB. Each segment is ~260KB, so we can only fit ~ 47 segments in memory.
-// Read more: https://github.com/w3c/media-source/issues/172
-const MAX_SEGMENTS = 47
-const AVERAGE_SEGMENT_DURATION = 6 /* seconds */
-const MAX_BUFFER_LENGTH = MAX_SEGMENTS * AVERAGE_SEGMENT_DURATION
-
-const PUBLIC_IPFS_GATEWAY = `http://cloudflare-ipfs.com/ipfs/`
-
 const IS_CHROME_LIKE =
   /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
 
 export enum AudioError {
-  AUDIO = 'AUDIO',
-  HLS = 'HLS'
-}
-
-// Custom fragment loader for HLS that utilizes the audius CID resolver.
-// eslint-disable-next-line
-class fLoader extends Hls.DefaultConfig.loader {
-  getFallbacks = () => []
-  getTrackId = () => ''
-
-  constructor(config: Hls.LoaderConfig) {
-    super(config)
-    const load = this.load.bind(this)
-    this.load = function (context, config, callbacks) {
-      // @ts-ignore: relurl is indeed on Fragment
-      const segmentUrl = context.frag.relurl
-      if (!segmentUrl.startsWith('blob')) {
-        audiusBackendInstance
-          .fetchCID(
-            segmentUrl,
-            this.getFallbacks(),
-            /* cache */ false,
-            /* asUrl */ true,
-            decodeHashId(this.getTrackId()) ?? undefined
-          )
-          .then((resolved) => {
-            const updatedContext = { ...context, url: resolved }
-            load(updatedContext, config, callbacks)
-          })
-      } else {
-        load(context, config, callbacks)
-      }
-    }
-  }
-}
-
-const HlsConfig = {
-  maxBufferLength: MAX_BUFFER_LENGTH,
-  fLoader
+  AUDIO = 'AUDIO'
 }
 
 export class AudioPlayer {
@@ -106,9 +48,7 @@ export class AudioPlayer {
   waitingListener: ((this: HTMLAudioElement, e: Event) => void) | null
   canPlayListener: ((this: HTMLAudioElement, e: Event) => void) | null
   url: string | null
-  hls: Hls | null
   onError: (e: string, data: string | Event) => void
-  errorRateLimiter: Set<string>
 
   constructor() {
     this.audio = new Audio()
@@ -145,15 +85,9 @@ export class AudioPlayer {
 
     // M3U8 file
     this.url = null
-    // HLS audio object
-    this.hls = null
 
     // Listen for errors
     this.onError = (e, data) => {}
-    // Per load / instantiation of HLS (once per track),
-    // we limit rate limit logging to once per type
-    // this is to prevent log spam, something HLS.js is *very* good at
-    this.errorRateLimiter = new Set()
   }
 
   _initContext = () => {
@@ -188,42 +122,15 @@ export class AudioPlayer {
       // "We tend to be more strict about decoding errors than other browsers.
       // Ignoring them will lead to a/v sync issues."
       // https://bugs.chromium.org/p/chromium/issues/detail?id=1071899
-      if (IS_CHROME_LIKE) {
-        // Likely there isn't a case where an error is thrown while we're in a paused
-        // state, but just in case, we record what state we were in.
-        const wasPlaying = !this.audio.paused
-        if (this.hls && this.url) {
-          const newTime = this.audio.currentTime + ON_ERROR_NUDGE_SECONDS
-          this.hls.loadSource(this.url)
-          this.hls.attachMedia(this.audio)
-          // Set the new time to the current plus the nudge. If this nudge
-          // wasn't enough, this error will be thrown again and we will just continue
-          // to nudge the playhead forward until the errors stop or the song ends.
-          if (isFinite(newTime)) {
-            this.audio.currentTime = newTime
-          }
-          if (wasPlaying) {
-            this.audio.play()
-          }
-        }
-      }
     }
   }
 
   load = (
     segments: TrackSegment[],
     onEnd: () => void,
-    prefetchedSegments: string[] = [],
-    gateways: string[] = [],
-    info = {
-      id: '',
-      title: '',
-      artist: '',
-      artwork: ''
-    },
-    forceStreamSrc: string | null = null
+    mp3Url: string | null = null
   ) => {
-    if (forceStreamSrc) {
+    if (mp3Url) {
       // TODO: Test to make sure that this doesn't break anything
       this.stop()
       const prevVolume = this.audio.volume
@@ -243,85 +150,9 @@ export class AudioPlayer {
       this._initContext()
       this.audio.preload = 'none'
       this.audio.crossOrigin = 'anonymous'
-      this.audio.src = forceStreamSrc
+      this.audio.src = mp3Url
       this.audio.volume = prevVolume
       this.audio.onloadedmetadata = () => (this.duration = this.audio.duration)
-    } else {
-      this._initContext()
-      if (Hls.isSupported()) {
-        // Clean up any existing hls.
-        if (this.hls) {
-          this.hls.destroy()
-        }
-        // Hls.js via MediaExtensions
-        const m3u8 = generateM3U8({ segments, prefetchedSegments })
-        // eslint-disable-next-line
-        class creatorFLoader extends fLoader {
-          getFallbacks = () => gateways as never[]
-          getTrackId = () => info.id
-        }
-        const hlsConfig = { ...HlsConfig, fLoader: creatorFLoader }
-        this.hls = new Hls(hlsConfig)
-
-        // On load of HLS, reset error rate limiter
-        this.errorRateLimiter = new Set()
-
-        this.hls.on(Hls.Events.ERROR, (event, data) => {
-          // Only emit on fatal because HLS is very noisy (e.g. pauses trigger errors)
-          if (data.fatal) {
-            // Buffer stall errors occur but are rarely fatal even if they claim to be.
-            // This occurs when you play a track, pause it, and then wait a few seconds.
-            // It appears as if we see this despite being able to play through the track.
-            if (data.details === 'bufferStalledError') {
-              return
-            }
-
-            // Only emit an error if we haven't errored on an error with the same "details"
-            if (!this.errorRateLimiter.has(data.details)) {
-              // typecasting here just to prevent having to put HLS types in common
-              this.onError(AudioError.HLS, data as unknown as Event)
-            }
-
-            // Only one "details" of error are allowed per HLS load
-            this.errorRateLimiter.add(data.details)
-
-            switch (data.type) {
-              case Hls.ErrorTypes.NETWORK_ERROR:
-                // Try to recover network error
-                this.hls!.startLoad()
-                break
-              case Hls.ErrorTypes.MEDIA_ERROR:
-                // Try to recover fatal media errors
-                this.hls!.recoverMediaError()
-                break
-              default:
-                break
-            }
-          }
-        })
-        const m3u8Blob = new Blob([m3u8], {
-          type: 'application/vnd.apple.mpegURL'
-        })
-        const url = URL.createObjectURL(m3u8Blob)
-        this.url = url
-        this.hls.loadSource(this.url)
-        this.hls.attachMedia(this.audio)
-      } else {
-        // Native HLS (ios Safari)
-        const m3u8Gateways =
-          gateways.length > 0 ? [gateways[0]] : [PUBLIC_IPFS_GATEWAY]
-        const m3u8 = generateM3U8Variants({
-          segments,
-          prefetchedSegments,
-          gateways: m3u8Gateways
-        })
-
-        this.audio.src = m3u8
-        this.audio.title =
-          info.title && info.artist
-            ? `${info.title} by ${info.artist}`
-            : 'Audius'
-      }
     }
 
     this.duration = segments.reduce(

@@ -11,8 +11,7 @@ export type AudioInfo = {
 }
 
 export enum AudioError {
-  AUDIO = 'AUDIO',
-  HLS = 'HLS'
+  AUDIO = 'AUDIO'
 }
 
 export type AudioPlayer = {
@@ -20,10 +19,7 @@ export type AudioPlayer = {
   load: (
     segments: TrackSegment[],
     onEnd: () => void,
-    prefetchedSegments: string[],
-    gateways: string[],
-    info: AudioInfo,
-    forceStreamSrc?: Nullable<string>
+    mp3Url: Nullable<string>
   ) => void
   play: () => void
   pause: () => void

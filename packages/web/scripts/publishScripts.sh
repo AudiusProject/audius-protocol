@@ -9,13 +9,11 @@ make -C "./node_modules/exif-parser" build-browser-bundle
 declare -a modules=(
   "./node_modules/jimp/browser/lib/jimp.min.js"
   "./node_modules/exif-parser/dist/exif-parser-0.1.12-min.js"
-  "./node_modules/hls.js/dist/hls.min.js"
   "./node_modules/web3/dist/web3.min.js"
 )
 
 mkdir -p "$PUBLISH_DESTINATION"
-for script in "${modules[@]}"
-do
+for script in "${modules[@]}"; do
   echo "published $script"
   cp "$script" "$PUBLISH_DESTINATION"
 done
