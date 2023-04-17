@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timedelta
 from typing import List
 
 from integration_tests.utils import populate_mock_db
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 def test_track_remix_notification(app):
     with app.app_context():
         db = get_db()
-
+    track_created_at = datetime.now()
     # Insert a track with remix_of and check that a notificaiton is created for the track remix owner
     entities = {
         "users": [{"user_id": 1}, {"user_id": 2}],
@@ -25,12 +26,21 @@ def test_track_remix_notification(app):
                     "tracks": [{"parent_track_id": 20}],
                 },
             },
+            # user should not receive notification of an update to this track remix row
+            {
+                "track_id": 100,
+                "owner_id": 2,
+                "created_at": track_created_at,
+                "updated_at": track_created_at + timedelta(days=1),
+                "remix_of": {
+                    "tracks": [{"parent_track_id": 20}],
+                },
+            },
         ],
     }
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         notifications: List[Notification] = session.query(Notification).all()
         assert len(notifications) == 1
         notification = notifications[0]
@@ -46,7 +56,38 @@ def test_track_remix_notification(app):
         assert notification.user_ids == [1]
 
 
-def test_track_create_notification(app):
+def test_track_create_notification_on_track_update(app):
+    with app.app_context():
+        db = get_db()
+
+    entities = {
+        "users": [{"user_id": i + 1} for i in range(5)],
+        "subscriptions": [{"subscriber_id": i, "user_id": 1} for i in range(1, 5)],
+    }
+    populate_mock_db(db, entities)
+    track_20_creation_datetime = datetime.now()
+    entities = {
+        "tracks": [
+            {
+                "track_id": 20,
+                "owner_id": 1,
+                "created_at": track_20_creation_datetime,
+                "updated_at": track_20_creation_datetime + timedelta(days=1),
+            },
+            {"track_id": 21, "owner_id": 1, "is_playlist_upload": True},
+            {"track_id": 2, "owner_id": 2},
+        ],
+    }
+    populate_mock_db(db, entities)
+
+    with db.scoped_session() as session:
+        notifications: List[Notification] = (
+            session.query(Notification).filter(Notification.type == "create").all()
+        )
+        assert len(notifications) == 0
+
+
+def test_track_create_notification_on_track_creation(app):
     with app.app_context():
         db = get_db()
 
@@ -65,7 +106,6 @@ def test_track_create_notification(app):
     populate_mock_db(db, entities)
 
     with db.scoped_session() as session:
-
         notifications: List[Notification] = (
             session.query(Notification).filter(Notification.type == "create").all()
         )

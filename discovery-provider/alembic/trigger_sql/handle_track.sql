@@ -74,6 +74,7 @@ begin
   -- If remix, create notification
   begin
     if new.remix_of is not null AND
+    new.created_at = new.updated_at AND 
     new.is_unlisted = FALSE AND
     new.is_available = true AND
     new.is_delete = FALSE AND
