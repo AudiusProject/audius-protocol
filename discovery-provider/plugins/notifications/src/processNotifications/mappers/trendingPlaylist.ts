@@ -117,6 +117,8 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
 
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[notificationReceiverUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: notificationReceiverUserId
       })

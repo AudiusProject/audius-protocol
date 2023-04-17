@@ -145,6 +145,8 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     }
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.saverUserId,
         receiverUserId: this.receiverUserId

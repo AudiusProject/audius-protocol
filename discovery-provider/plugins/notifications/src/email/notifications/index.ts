@@ -305,6 +305,7 @@ export async function processEmailNotifications(
     }
     const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
+
     const userNotificationSettings = await buildUserNotificationSettings(
       identityDb,
       Object.keys(users).map(Number)
@@ -321,7 +322,6 @@ export async function processEmailNotifications(
       Object.keys(users)
     )
     const groupedNotifications = groupNotifications(notifications, users)
-
     // TODO Validate their timezones to send at the right time!
 
     const currentUtcTime = moment.utc()
@@ -338,17 +338,18 @@ export async function processEmailNotifications(
         groupedNotifications
           .slice(start, end)
           .map(async (userNotifications: UserEmailNotification) => {
-            if (
-              !userNotificationSettings.shouldSendEmail({
-                receiverUserId: userNotifications.user.blockchainUserId
-              })
-            ) {
-              return {
-                result: Results.SHOULD_SKIP,
-                error: 'User turned off or is abusive'
-              }
-            }
             try {
+              if (
+                !userNotificationSettings.shouldSendEmail({
+                  receiverUserId: userNotifications.user.blockchainUserId
+                })
+              ) {
+                return {
+                  result: Results.SHOULD_SKIP,
+                  error: 'User turned off or is abusive'
+                }
+              }
+
               const user = userNotifications.user
               const notifications = userNotifications.notifications
               const sent = await sendNotificationEmail({

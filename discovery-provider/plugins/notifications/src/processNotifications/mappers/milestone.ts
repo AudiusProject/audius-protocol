@@ -177,6 +177,8 @@ export class Milestone extends BaseNotification<MilestoneRow> {
 
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: this.receiverUserId
       })

@@ -107,6 +107,8 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
 
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: this.senderUserId
       })
@@ -116,8 +118,8 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
         ...this.notification
       }
       await sendNotificationEmail({
-        userId: this.receiverUserId,
-        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        userId: this.senderUserId,
+        email: userNotificationSettings.email?.[this.senderUserId].email,
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,

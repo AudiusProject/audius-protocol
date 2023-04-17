@@ -113,6 +113,8 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
 
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[notificationReceiverUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: notificationReceiverUserId
       })

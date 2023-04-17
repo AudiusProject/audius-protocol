@@ -125,6 +125,8 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[this.parentTrackUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.remixUserId,
         receiverUserId: this.parentTrackUserId

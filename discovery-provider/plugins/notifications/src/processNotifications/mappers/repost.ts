@@ -147,6 +147,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     }
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.repostUserId,
         receiverUserId: this.receiverUserId

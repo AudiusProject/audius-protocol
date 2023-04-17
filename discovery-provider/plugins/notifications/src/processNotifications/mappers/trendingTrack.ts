@@ -123,6 +123,8 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
 
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[notificationReceiverUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: notificationReceiverUserId
       })

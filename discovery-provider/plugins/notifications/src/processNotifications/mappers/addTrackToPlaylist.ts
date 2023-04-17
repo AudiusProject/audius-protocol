@@ -126,6 +126,7 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     }
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[track.owner_id].frequency === 'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: track.owner_id
       })

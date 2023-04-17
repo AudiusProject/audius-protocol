@@ -137,7 +137,7 @@ export class UserNotificationSettings {
       this.userIsEmailDeliverable[receiverUserId] &&
       !isInitiatorAbusive &&
       !userIsAbusive[receiverUserId] &&
-      this.email?.[receiverUserId] === 'off'
+      this.email?.[receiverUserId] !== 'off'
     )
   }
 

@@ -114,18 +114,20 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     }
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[this.dethronedUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.senderUserId,
         receiverUserId: this.dethronedUserId
       })
     ) {
       const notification: AppEmailNotification = {
-        receiver_user_id: this.receiverUserId,
+        receiver_user_id: this.dethronedUserId,
         ...this.notification
       }
       await sendNotificationEmail({
-        userId: this.receiverUserId,
-        email: userNotificationSettings.email?.[this.receiverUserId].email,
+        userId: this.dethronedUserId,
+        email: userNotificationSettings.email?.[this.dethronedUserId].email,
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,
@@ -136,12 +138,12 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
 
   getResourcesForEmail(): ResourceIds {
     return {
-      users: new Set([this.senderUserId, this.receiverUserId])
+      users: new Set([this.senderUserId, this.dethronedUserId])
     }
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUser = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.dethronedUserId]
     return {
       type: this.notification.type,
       receiverUser: receiverUser

@@ -171,6 +171,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
       if (
         isLiveEmailEnabled &&
+        userNotificationSettings.email?.[userId].frequency === 'live' &&
         userNotificationSettings.shouldSendEmail({
           initiatorUserId: ownerId,
           receiverUserId: userId

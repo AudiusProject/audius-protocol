@@ -152,6 +152,8 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
 
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.saveOfRepostUserId,
         receiverUserId: this.receiverUserId

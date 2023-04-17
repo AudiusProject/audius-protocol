@@ -120,6 +120,8 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
+      userNotificationSettings.email?.[this.receiverUserId].frequency ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.receiverUserId,
         receiverUserId: this.senderUserId
