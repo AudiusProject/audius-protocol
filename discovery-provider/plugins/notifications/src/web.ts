@@ -1,5 +1,6 @@
 import webpush from 'web-push'
 import { logger } from './logger'
+import { Knex } from 'knex'
 
 // setup and configuration
 let webPushIsConfigured = false
@@ -24,16 +25,15 @@ const vapidKeys = {
   }
 
 // utility functions
-const sendBrowserNotification = async (userId: string, title: string, message: string) => {
+const sendBrowserNotification = async (idDb: Knex, userId: string, title: string, message: string) => {
     let numSentNotifs = 0
   
     try {
       if (!webPushIsConfigured) return numSentNotifs
-      // TODO: convert to knex
-      const notificationBrowsers =
-        await models.NotificationBrowserSubscription.findAll({
-          where: { userId, enabled: true }
-        })
+      const notificationBrowsers = await idDb('NotificationBrowserSubscriptions')
+        .select('endpoint', 'p256dhKey', 'authKey')
+        .where('userId', userId)
+        .andWhere('enabled', true)
       await Promise.all(
         notificationBrowsers.map(async (notificationBrowser) => {
           const pushSubscription = {
@@ -53,7 +53,10 @@ const sendBrowserNotification = async (userId: string, title: string, message: s
             if (err.statusCode === 410) {
               // If the send Notification response was not successful
               // delete the browser subscription as it is no longer valid
-              await notificationBrowser.destroy()
+              await idDb('NotificationBrowserSubscriptions')
+                .where('userId', userId)
+                .andWhere('endpoint', notificationBrowser.endpoint)
+                .del()
             }
           }
         })
