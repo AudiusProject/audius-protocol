@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import type { PremiumConditions, ID } from '@audius/common'
+import type { PremiumConditions, ID, User } from '@audius/common'
 import {
   Chain,
   FollowSource,
@@ -44,7 +44,7 @@ const messages = {
   unlockingCollectibleGatedSuffix: ' was found in a linked wallet.',
   lockedFollowGatedPrefix: 'Follow ',
   unlockingFollowGatedPrefix: 'Thank you for following ',
-  unlockingFollowGatedSuffix: ' !',
+  unlockingFollowGatedSuffix: '!',
   lockedTipGatedPrefix: 'Send ',
   lockedTipGatedSuffix: ' a tip.',
   unlockingTipGatedPrefix: 'Thank you for supporting ',
@@ -84,7 +84,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     color: palette.neutral,
     lineHeight: spacing(6)
   },
-  collectionName: {
+  name: {
     color: palette.secondary
   },
   collectionContainer: {
@@ -205,6 +205,38 @@ export const DetailsTileNoAccess = ({
     navigation.navigate('TipArtist')
   }, [tippedUser, navigation, dispatch, source, trackId])
 
+  const handlePressArtistName = useCallback(
+    (handle: string) => () => {
+      navigation.push('Profile', { handle })
+    },
+    [navigation]
+  )
+
+  const renderLockedSpecialAccessDescription = useCallback(
+    (args: { entity: User; prefix: string; suffix?: string }) => {
+      const { entity, prefix, suffix } = args
+      return (
+        <View style={styles.descriptionContainer}>
+          <Text style={styles.description}>{prefix}</Text>
+          <Text
+            style={[styles.description, styles.name]}
+            onPress={handlePressArtistName(entity.handle)}
+          >
+            {entity.name}
+          </Text>
+          <UserBadges
+            badgeSize={16}
+            user={entity}
+            nameStyle={styles.description}
+            hideName
+          />
+          {suffix ? <Text style={styles.description}>{suffix}</Text> : null}
+        </View>
+      )
+    },
+    [styles, handlePressArtistName]
+  )
+
   const renderLockedDescription = useCallback(() => {
     if (nftCollection) {
       return (
@@ -246,18 +278,10 @@ export const DetailsTileNoAccess = ({
     if (followee) {
       return (
         <View>
-          <Text style={styles.descriptionContainer}>
-            <Text style={styles.description}>
-              {messages.lockedFollowGatedPrefix}
-            </Text>
-            <Text style={styles.description}>{followee.name}</Text>
-            <UserBadges
-              badgeSize={16}
-              user={followee}
-              nameStyle={styles.description}
-              hideName
-            />
-          </Text>
+          {renderLockedSpecialAccessDescription({
+            entity: followee,
+            prefix: messages.lockedFollowGatedPrefix
+          })}
           <Button
             style={styles.mainButton}
             styles={{ icon: { width: 16, height: 16 } }}
@@ -274,21 +298,11 @@ export const DetailsTileNoAccess = ({
     if (tippedUser) {
       return (
         <View style={styles.descriptionContainer}>
-          <Text>
-            <Text style={styles.description}>
-              {messages.lockedTipGatedPrefix}
-            </Text>
-            <Text style={styles.description}>{tippedUser.name}</Text>
-            <UserBadges
-              badgeSize={16}
-              user={tippedUser}
-              nameStyle={styles.description}
-              hideName
-            />
-            <Text style={styles.description}>
-              {messages.lockedTipGatedSuffix}
-            </Text>
-          </Text>
+          {renderLockedSpecialAccessDescription({
+            entity: tippedUser,
+            prefix: messages.lockedTipGatedPrefix,
+            suffix: messages.lockedTipGatedSuffix
+          })}
           <Button
             style={styles.mainButton}
             styles={{ icon: { width: 16, height: 16 } }}
@@ -312,10 +326,38 @@ export const DetailsTileNoAccess = ({
     followee,
     tippedUser,
     handlePressCollection,
+    renderLockedSpecialAccessDescription,
     handleFollowArtist,
     handleSendTip,
     styles
   ])
+
+  const renderUnlockingSpecialAccessDescription = useCallback(
+    (args: { entity: User; prefix: string; suffix: string }) => {
+      const { entity, prefix, suffix } = args
+      return (
+        <View style={styles.descriptionContainer}>
+          <Text>
+            <Text style={styles.description}>{prefix}</Text>
+            <Text
+              style={[styles.description, styles.name]}
+              onPress={handlePressArtistName(entity.handle)}
+            >
+              {entity.name}
+            </Text>
+            <UserBadges
+              badgeSize={16}
+              user={entity}
+              nameStyle={styles.description}
+              hideName
+            />
+            <Text style={styles.description}>{suffix}</Text>
+          </Text>
+        </View>
+      )
+    },
+    [styles, handlePressArtistName]
+  )
 
   const renderUnlockingDescription = useCallback(() => {
     if (nftCollection) {
@@ -327,7 +369,7 @@ export const DetailsTileNoAccess = ({
             </Text>
             <Text
               onPress={handlePressCollection}
-              style={[styles.description, styles.collectionName]}
+              style={[styles.description, styles.name]}
             >
               {nftCollection.name}
             </Text>
@@ -339,53 +381,32 @@ export const DetailsTileNoAccess = ({
       )
     }
     if (followee) {
-      return (
-        <View style={styles.descriptionContainer}>
-          <Text>
-            <Text style={styles.description}>
-              {messages.unlockingFollowGatedPrefix}
-            </Text>
-            <Text style={styles.description}>{followee.name}</Text>
-            <UserBadges
-              badgeSize={16}
-              user={followee}
-              nameStyle={styles.description}
-              hideName
-            />
-            <Text style={styles.description}>
-              {messages.unlockingFollowGatedSuffix}
-            </Text>
-          </Text>
-        </View>
-      )
+      return renderUnlockingSpecialAccessDescription({
+        entity: followee,
+        prefix: messages.unlockingFollowGatedPrefix,
+        suffix: messages.unlockingFollowGatedSuffix
+      })
     }
     if (tippedUser) {
-      return (
-        <View style={styles.descriptionContainer}>
-          <Text>
-            <Text style={styles.description}>
-              {messages.unlockingTipGatedPrefix}
-            </Text>
-            <Text style={styles.description}>{tippedUser.name}</Text>
-            <UserBadges
-              badgeSize={16}
-              user={tippedUser}
-              nameStyle={styles.description}
-              hideName
-            />
-            <Text style={styles.description}>
-              {messages.unlockingTipGatedSuffix}
-            </Text>
-          </Text>
-        </View>
-      )
+      return renderUnlockingSpecialAccessDescription({
+        entity: tippedUser,
+        prefix: messages.unlockingTipGatedPrefix,
+        suffix: messages.unlockingTipGatedSuffix
+      })
     }
 
     console.warn(
       'No entity for premium conditions... should not have reached here.'
     )
     return null
-  }, [nftCollection, followee, tippedUser, handlePressCollection, styles])
+  }, [
+    nftCollection,
+    followee,
+    tippedUser,
+    handlePressCollection,
+    renderUnlockingSpecialAccessDescription,
+    styles
+  ])
 
   const isUnlocking = premiumTrackStatus === 'UNLOCKING'
 

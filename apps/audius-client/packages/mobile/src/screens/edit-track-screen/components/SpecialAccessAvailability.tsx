@@ -55,7 +55,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   subtitle: {
     color: palette.neutral
   },
-  selection: {
+  selectionContainer: {
+    marginLeft: spacing(-10),
     marginTop: spacing(2),
     padding: spacing(4),
     backgroundColor: palette.neutralLight10,
@@ -168,7 +169,7 @@ export const SpecialAccessAvailability = ({
         </Text>
       </View>
       {selected && (
-        <View style={styles.selection}>
+        <View style={styles.selectionContainer}>
           <TouchableOpacity
             onPress={handlePressFollowers}
             disabled={isContentDisabled || !!premiumConditions?.follow_user_id}
