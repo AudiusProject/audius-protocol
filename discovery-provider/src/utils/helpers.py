@@ -210,7 +210,6 @@ def configure_flask_app_logging(app, loglevel_str):
     # Log the request
     @app.after_request
     def log_request(response):  # pylint: disable=W0612
-
         now = time.time()
         duration = int((now - g.start) * 1000)
         ip = get_ip(request)
@@ -542,3 +541,8 @@ def get_final_poa_block() -> int:
         raise Exception("audius_final_poa_block not set")
 
     return final_poa_block
+
+
+def format_total_audio_balance(balance: str) -> str:
+    balance_float = float(balance) / 10e17
+    return f"{balance_float:.2f}"
