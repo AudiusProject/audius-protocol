@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import time
+import math
 import unicodedata
 from functools import reduce
 from json.encoder import JSONEncoder
@@ -544,5 +545,5 @@ def get_final_poa_block() -> int:
 
 
 def format_total_audio_balance(balance: str) -> str:
-    balance_float = float(balance) / 10e17
-    return f"{balance_float:.2f}"
+    balance_dec = float(balance) / 1e18
+    return math.floor(balance_dec)
