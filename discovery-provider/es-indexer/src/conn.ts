@@ -9,7 +9,8 @@ import { logger } from './logger'
 // we want numbers as floats instead of strings.
 // no worries about precision.
 // https://github.com/brianc/node-postgres/issues/811#issuecomment-1500255173
-types.setTypeParser(types.builtins.NUMERIC, (value) => parseFloat(value))
+// 20 = INT8 (64 bit int)
+types.setTypeParser(20, (value) => parseFloat(value))
 
 let pool: PG | undefined = undefined
 export function dialPg(): PG {
