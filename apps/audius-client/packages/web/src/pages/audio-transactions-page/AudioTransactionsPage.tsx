@@ -11,7 +11,8 @@ import {
   TransactionType,
   audioTransactionsPageActions,
   audioTransactionsPageSelectors,
-  transactionDetailsActions
+  transactionDetailsActions,
+  statusIsNotFinalized
 } from '@audius/common'
 import { full } from '@audius/sdk'
 import { IconCaretRight } from '@audius/stems'
@@ -28,12 +29,15 @@ import { useSelector } from 'utils/reducer'
 import styles from './AudioTransactionsPage.module.css'
 const {
   fetchAudioTransactions,
-  setAudioTransactions,
   fetchAudioTransactionMetadata,
   fetchAudioTransactionsCount
 } = audioTransactionsPageActions
-const { getAudioTransactions, getAudioTransactionsCount } =
-  audioTransactionsPageSelectors
+const {
+  getAudioTransactions,
+  getAudioTransactionsStatus,
+  getAudioTransactionsCount,
+  getAudioTransactionsCountStatus
+} = audioTransactionsPageSelectors
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
 const messages = {
@@ -82,22 +86,15 @@ export const AudioTransactionsPage = () => {
 
   const audioTransactions: (TransactionDetails | {})[] =
     useSelector(getAudioTransactions)
+  const audioTransactionsStatus = useSelector(getAudioTransactionsStatus)
   const audioTransactionsCount: number = useSelector(getAudioTransactionsCount)
+  const audioTransactionsCountStatus = useSelector(
+    getAudioTransactionsCountStatus
+  )
 
   useEffect(() => {
     dispatch(fetchAudioTransactionsCount())
   }, [dispatch])
-
-  // Reset audio transactions data on sort change, but not on offset and
-  // limit change to allow pagination.
-  useEffect(() => {
-    dispatch(
-      setAudioTransactions({
-        txDetails: Array(audioTransactionsCount ?? 0).fill({}) as {}[],
-        offset: 0
-      })
-    )
-  }, [dispatch, sortMethod, sortDirection, audioTransactionsCount])
 
   useLayoutEffect(() => {
     dispatch(
@@ -118,6 +115,7 @@ export const AudioTransactionsPage = () => {
           ? full.GetAudioTransactionHistorySortDirectionEnum.Asc
           : full.GetAudioTransactionHistorySortDirectionEnum.Desc
       setSortDirection(sortDirectionRes)
+      setOffset(0)
     },
     [setSortMethod, setSortDirection]
   )
@@ -131,7 +129,7 @@ export const AudioTransactionsPage = () => {
   )
 
   const onClickRow = useCallback(
-    (txDetails: TransactionDetails, index: number) => {
+    (txDetails: TransactionDetails) => {
       dispatch(
         fetchTransactionDetailsSucceeded({
           transactionId: txDetails.signature,
@@ -150,9 +148,9 @@ export const AudioTransactionsPage = () => {
     [dispatch, setVisibility]
   )
 
-  const tableLoading = audioTransactions.every(
-    (transaction: any) => !transaction.signature
-  )
+  const tableLoading =
+    statusIsNotFinalized(audioTransactionsStatus) ||
+    statusIsNotFinalized(audioTransactionsCountStatus)
   const isEmpty = audioTransactions.length === 0
 
   return (
@@ -162,27 +160,25 @@ export const AudioTransactionsPage = () => {
       header={<Header primary={messages.headerText} />}
     >
       <div className={styles.bodyWrapper}>
+        <Disclaimer />
         {isEmpty && !tableLoading ? (
           <EmptyTable
             primaryText={messages.emptyTableText}
             secondaryText={messages.emptyTableSecondaryText}
           />
         ) : (
-          <>
-            <Disclaimer />
-            <AudioTransactionsTable
-              key='audioTransactions'
-              data={audioTransactions}
-              loading={tableLoading}
-              onSort={onSort}
-              onClickRow={onClickRow}
-              fetchMore={fetchMore}
-              isVirtualized={true}
-              totalRowCount={audioTransactionsCount}
-              scrollRef={mainContentRef}
-              fetchBatchSize={AUDIO_TRANSACTIONS_BATCH_SIZE}
-            />
-          </>
+          <AudioTransactionsTable
+            key='audioTransactions'
+            data={audioTransactions}
+            loading={tableLoading}
+            onSort={onSort}
+            onClickRow={onClickRow}
+            fetchMore={fetchMore}
+            isVirtualized={true}
+            totalRowCount={audioTransactionsCount}
+            scrollRef={mainContentRef}
+            fetchBatchSize={AUDIO_TRANSACTIONS_BATCH_SIZE}
+          />
         )}
       </div>
     </Page>

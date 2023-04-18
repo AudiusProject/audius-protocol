@@ -19,10 +19,10 @@ import { waitForLibsInit } from 'services/audius-backend/eagerLoadUtils'
 
 const {
   fetchAudioTransactions,
+  fetchAudioTransactionsSucceeded,
   fetchAudioTransactionMetadata,
   fetchAudioTransactionsCount,
-  setAudioTransactions,
-  setAudioTransactionsCount
+  fetchAudioTransactionsCountSucceeded
 } = audioTransactionsPageActions
 const { fetchTransactionDetailsSucceeded } = transactionDetailsActions
 
@@ -128,7 +128,7 @@ function* fetchAudioTransactionsAsync() {
       const txDetails: TransactionDetails[] =
         response.data?.map((tx) => parseTransaction(tx)) ?? []
       const { offset } = action.payload
-      yield put(setAudioTransactions({ txDetails, offset }))
+      yield put(fetchAudioTransactionsSucceeded({ txDetails, offset }))
       const userIds = txDetails
         .map((tx) => {
           if (tx.transactionType === TransactionType.TIP) {
@@ -199,7 +199,7 @@ function* fetchTransactionsCount() {
       return
     }
     yield put(
-      setAudioTransactionsCount({
+      fetchAudioTransactionsCountSucceeded({
         count: response.data ?? 0
       })
     )
