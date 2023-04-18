@@ -19,6 +19,13 @@ export const getLineupHasTracks = <T, State>(
   return lineup && lineup.entries.length > 0
 }
 
+export const getLineupEntries = <T, State>(
+  selector: LineupSelector<T, State>,
+  state: State
+) => {
+  return selector(state).entries
+}
+
 export const makeGetTableMetadatas = <T, State>(
   lineupSelector: LineupSelector<T, State>
 ) => {
