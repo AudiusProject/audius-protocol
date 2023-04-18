@@ -9,7 +9,9 @@ import BrowserPushConfirmationModal from 'components/browser-push-confirmation-m
 import { BuyAudioModal } from 'components/buy-audio-modal/BuyAudioModal'
 import { BuyAudioRecoveryModal } from 'components/buy-audio-modal/BuyAudioRecoveryModal'
 import CollectibleDetailsModal from 'components/collectibles/components/CollectibleDetailsModal'
+import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import DeletePlaylistConfirmationModal from 'components/delete-playlist-confirmation-modal/DeletePlaylistConfirmationModal'
+import DiscoveryNodeSelection from 'components/discovery-node-selection/DiscoveryNodeSelection'
 import EditFolderModal from 'components/edit-folder-modal/EditFolderModal'
 import EditPlaylistModal from 'components/edit-playlist/desktop/EditPlaylistModal'
 import EditTrackModal from 'components/edit-track/EditTrackModal'
@@ -65,7 +67,6 @@ const commonModalsMap: { [Modal in ModalTypes]?: ComponentType } = {
   TrendingRewardsExplainer: TrendingRewardsModal,
   ChallengeRewardsExplainer: ChallengeRewardsModal,
   TransferAudioMobileWarning: TransferAudioMobileDrawer,
-  FeatureFlagOverride: FeatureFlagOverrideModal,
   BrowserPushPermissionConfirmation: BrowserPushConfirmationModal,
   ShareSoundToTikTok: ShareSoundToTikTokModal
 }
@@ -97,6 +98,11 @@ const Modals = () => {
           <EditPlaylistModal />
           <ConnectedUserListModal />
           <AppCTAModal />
+
+          {/* dev-mode hot-key modals */}
+          <ConfirmerPreview />
+          <DiscoveryNodeSelection />
+          <FeatureFlagOverrideModal />
         </>
       )}
 

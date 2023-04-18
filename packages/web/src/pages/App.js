@@ -32,7 +32,6 @@ import { AppRedirectPopover } from 'components/app-redirect-popover/components/A
 import MobileDesktopBanner from 'components/banner/CTABanner'
 import UpdateAppBanner from 'components/banner/UpdateAppBanner'
 import Web3ErrorBanner from 'components/banner/Web3ErrorBanner'
-import ConfirmerPreview from 'components/confirmer-preview/ConfirmerPreview'
 import CookieBanner from 'components/cookie-banner/CookieBanner'
 import { DevModeMananger } from 'components/dev-mode-manager/DevModeManager'
 import { BACKGROUND_ELEMENT_ID as HEADER_BACKGROUND_GUTTER_ID } from 'components/header/desktop/Header'
@@ -152,7 +151,6 @@ import {
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
 import AnimatedSwitch from '../components/animated-switch/AnimatedSwitch'
-import DiscoveryNodeSelection from '../components/discovery-node-selection/DiscoveryNodeSelection'
 import TopLevelPage from '../components/nav/mobile/TopLevelPage'
 import Notice from '../components/notice/Notice'
 
@@ -967,8 +965,6 @@ class App extends Component {
         }
         {/* Non-mobile */}
         {!isMobileClient ? <Konami /> : null}
-        {!isMobileClient ? <ConfirmerPreview /> : null}
-        {!isMobileClient ? <DiscoveryNodeSelection /> : null}
         {!isMobileClient ? <Visualizer /> : null}
         {!isMobileClient ? <PinnedTrackConfirmation /> : null}
         {!isMobileClient ? <DevModeMananger /> : null}
