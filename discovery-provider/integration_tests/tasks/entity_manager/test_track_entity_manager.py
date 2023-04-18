@@ -122,6 +122,7 @@ def test_index_valid_track(app, mocker):
             "license": "",
             "isrc": "",
             "iswc": "",
+            "is_playlist_upload": True,
         },
         "QmCreateTrack3": {
             "owner_id": 1,
@@ -160,6 +161,7 @@ def test_index_valid_track(app, mocker):
             "license": "",
             "isrc": "",
             "iswc": "",
+            "is_playlist_upload": False,
         },
         "QmUpdateTrack1": {
             "owner_id": 1,
@@ -210,6 +212,7 @@ def test_index_valid_track(app, mocker):
             },
             "track_id": 77955,
             "stem_of": None,
+            "is_playlist_upload": False,
         },
     }
 
