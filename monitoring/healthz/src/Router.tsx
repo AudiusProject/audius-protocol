@@ -5,14 +5,13 @@ import {
   RouteObject,
   useRoutes,
 } from 'react-router-dom'
-import { APIDiff } from './APIDiff'
 import { ContentHealth } from './Content'
 import { DiscoveryFeed } from './DiscoveryFeed'
 import { DiscoveryHealth } from './DiscoveryHealth'
 import { DiscoverySearch } from './DiscoverySearch'
 import { DiscoveryTrending } from './DiscoveryTrending'
 import { IdTranslator } from './IdTranslator'
-import { Nats } from './Nats'
+import { DMs } from './DMs'
 
 const routeList: RouteObject[] = [
   {
@@ -23,14 +22,28 @@ const routeList: RouteObject[] = [
         path: '/discovery',
         children: [
           { path: 'health', element: <DiscoveryHealth /> },
-          { path: 'trending', element: <DiscoveryTrending trendingEndpoint='/v1/tracks/trending' /> },
-          { path: 'trending_underground', element: <DiscoveryTrending trendingEndpoint='/v1/tracks/trending/underground' /> },
-          { path: 'trending_playlists', element: <DiscoveryTrending trendingEndpoint='/v1/playlists/trending/BDNxn' /> },
+          {
+            path: 'trending',
+            element: (
+              <DiscoveryTrending trendingEndpoint="/v1/tracks/trending" />
+            ),
+          },
+          {
+            path: 'trending_underground',
+            element: (
+              <DiscoveryTrending trendingEndpoint="/v1/tracks/trending/underground" />
+            ),
+          },
+          {
+            path: 'trending_playlists',
+            element: (
+              <DiscoveryTrending trendingEndpoint="/v1/playlists/trending/BDNxn" />
+            ),
+          },
           { path: 'feed', element: <DiscoveryFeed /> },
           { path: 'search', element: <DiscoverySearch /> },
-          { path: 'diff', element: <APIDiff /> },
           { path: 'id', element: <IdTranslator /> },
-          { path: 'nats', element: <Nats /> },
+          { path: 'dms', element: <DMs /> },
         ],
       },
 

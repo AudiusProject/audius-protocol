@@ -10,7 +10,6 @@ const DB = async (url) => {
     // debug: true,
     acquireConnectionTimeout: 120000,
   });
-  console.log(`opening connection to ${url}`);
   return pg;
 };
 

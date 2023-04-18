@@ -61,7 +61,7 @@ const handlers = [
       version: '1.2.3',
       block_difference: 0,
       network: {
-        discoveryNodes: NETWORK_DISCOVERY_NODES
+        discovery_nodes: NETWORK_DISCOVERY_NODES
       }
     }
     return res(ctx.delay(25), ctx.status(200), ctx.json({ data }))

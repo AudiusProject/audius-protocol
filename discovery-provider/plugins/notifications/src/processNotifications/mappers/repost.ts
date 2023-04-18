@@ -1,10 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import { RepostNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type RepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostNotification
@@ -50,8 +54,9 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       return
     }
 
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId, this.repostUserId]
     )
     const reposterUserName = users[this.repostUserId]?.name
     let entityType
@@ -94,40 +99,50 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        initiatorUserId: this.repostUserId,
+        receiverUserId: this.receiverUserId
+      }) &&
+      userNotificationSettings.isNotificationTypeEnabled(
+        this.receiverUserId,
+        'reposts'
+      )
     ) {
-      const userMobileSettings: NotificationSettings =
-        userNotifications.mobile?.[this.receiverUserId].settings
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['reposts']) {
-        await Promise.all(
-          devices.map((device) => {
-            return sendPushNotification(
-              {
-                type: device.type,
-                badgeCount:
-                  userNotifications.mobile[this.receiverUserId].badgeCount + 1,
-                targetARN: device.awsARN
-              },
-              {
-                title: 'New Repost',
-                body: `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`,
-                data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
-                  userIds: [this.repostUserId],
-                  type: 'Repost'
-                }
+      await Promise.all(
+        devices.map((device) => {
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount:
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: 'New Repost',
+              body: `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`,
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
+                userIds: [this.repostUserId],
+                type: 'Repost'
               }
-            )
-          })
-        )
-        await this.incrementBadgeCount(this.receiverUserId)
-      }
+            }
+          )
+        })
+      )
+      await this.incrementBadgeCount(this.receiverUserId)
     }
-    if (userNotifications.email) {
+    if (
+      userNotificationSettings.shouldSendEmail({
+        initiatorUserId: this.repostUserId,
+        receiverUserId: this.receiverUserId
+      })
+    ) {
       // TODO: Send out email
     }
   }

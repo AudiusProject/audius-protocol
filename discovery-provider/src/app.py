@@ -316,6 +316,7 @@ def configure_celery(celery, test_config=None):
             "src.tasks.index_reactions",
             "src.tasks.update_track_is_available",
             "src.tasks.cache_current_nodes",
+            "src.tasks.update_aggregates",
         ],
         beat_schedule={
             "update_discovery_provider_nethermind": {
@@ -426,6 +427,10 @@ def configure_celery(celery, test_config=None):
                 "task": "cache_current_nodes",
                 "schedule": timedelta(minutes=1),
             },
+            "update_aggregates": {
+                "task": "update_aggregates",
+                "schedule": timedelta(hours=1),
+            },
         },
         task_serializer="json",
         accept_content=["json"],
@@ -492,6 +497,7 @@ def configure_celery(celery, test_config=None):
     redis_inst.delete(INDEX_REACTIONS_LOCK)
     redis_inst.delete(UPDATE_TRACK_IS_AVAILABLE_LOCK)
     redis_inst.delete(UPDATE_USER_IS_AVAILABLE_LOCK)
+    redis_inst.delete("update_aggregates_lock")
 
     # delete cached final_poa_block in case it has changed
     redis_inst.delete(final_poa_block_redis_key)

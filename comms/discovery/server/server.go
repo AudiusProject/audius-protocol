@@ -11,25 +11,25 @@ import (
 	"strconv"
 	"time"
 
-	discoveryConfig "comms.audius.co/discovery/config"
+	"comms.audius.co/discovery/config"
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/db/queries"
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/pubkeystore"
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/schema"
-	sharedConfig "comms.audius.co/shared/config"
-	"comms.audius.co/shared/peering"
+	"comms.audius.co/discovery/the_graph"
+	"comms.audius.co/shared/signing"
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 	"github.com/inconshreveable/log15"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/nats-io/nats.go"
+	"golang.org/x/exp/slog"
 )
 
-func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
+func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor) *ChatServer {
 	e := echo.New()
 	e.HideBanner = true
 	e.Debug = true
@@ -39,9 +39,9 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	e.Use(middleware.CORS())
 
 	s := &ChatServer{
-		Echo: e,
-		jsc:  jsc,
-		proc: proc,
+		Echo:   e,
+		proc:   proc,
+		config: discoveryConfig,
 	}
 
 	e.GET("/", func(c echo.Context) error {
@@ -50,9 +50,7 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 
 	g := e.Group("/comms")
 
-	g.GET("", func(c echo.Context) error {
-		return c.String(http.StatusOK, "comms are UP: v1")
-	})
+	g.GET("", s.getStatus)
 
 	config := unfurlist.WithBlocklistPrefixes(
 		[]string{
@@ -72,29 +70,18 @@ func NewServer(jsc nats.JetStreamContext, proc *rpcz.RPCProcessor) *ChatServer {
 	g.GET("/chats/ws", s.chatWebsocket)
 	g.GET("/chats/:id", s.getChat)
 	g.GET("/chats/:id/messages", s.getMessages)
+	g.GET("/chats/unread", s.getUnreadChatCount)
 	g.POST("/mutate", s.mutate)
 
-	g.GET("/chat-permissions", s.getChatPermissions)
-	g.POST("/validate-can-chat", s.validateCanChat)
+	g.GET("/chats/permissions", s.getChatPermissions)
+	g.GET("/chats/blockees", s.getChatBlockees)
+	g.GET("/chats/blockers", s.getChatBlockers)
 
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
 
-	g.GET("/debug/stream", func(c echo.Context) error {
-		info, err := jsc.StreamInfo(discoveryConfig.GlobalStreamName)
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, info)
-	})
-
-	g.GET("/debug/consumer", func(c echo.Context) error {
-		info, err := jsc.ConsumerInfo(discoveryConfig.GlobalStreamName, discoveryConfig.GetDiscoveryConfig().PeeringConfig.Keys.DelegatePublicKey)
-		if err != nil {
-			return err
-		}
-		return c.JSON(200, info)
-	})
+	g.GET("/rpc/bulk", s.getRpcBulk, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
+	g.POST("/rpc/receive", s.postRpcReceive, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
 
 	g.GET("/debug/vars", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
 	g.GET("/debug/pprof/*", echo.WrapHandler(http.StripPrefix("/comms", http.DefaultServeMux)))
@@ -112,12 +99,26 @@ func init() {
 
 type ChatServer struct {
 	*echo.Echo
-	jsc  nats.JetStreamContext
-	proc *rpcz.RPCProcessor
+	proc   *rpcz.RPCProcessor
+	config *config.DiscoveryConfig
+}
+
+func (s *ChatServer) getStatus(c echo.Context) error {
+	return c.JSON(http.StatusOK, map[string]string{
+		"commit": vcsRevision,
+		"built":  vcsBuildTime,
+		"booted": bootTime,
+		"wip":    vcsDirty,
+	})
+}
+
+type ValidatedPermission struct {
+	Permits                  schema.ChatPermission `json:"permits"`
+	CurrentUserHasPermission bool                  `json:"current_user_has_permission"`
 }
 
 func (s *ChatServer) mutate(c echo.Context) error {
-	payload, wallet, err := peering.ReadSignedRequest(c)
+	payload, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
@@ -140,18 +141,21 @@ func (s *ChatServer) mutate(c echo.Context) error {
 		return c.JSON(400, "bad request: "+err.Error())
 	}
 
-	// Publish data to the subject
-	subject := "audius.rpc"
-	msg := nats.NewMsg(subject)
-	msg.Header.Add(sharedConfig.SigHeader, c.Request().Header.Get(sharedConfig.SigHeader))
-	msg.Data = payload
+	//
+	rpcLog := &schema.RpcLog{
+		RelayedBy:  s.config.MyHost,
+		RelayedAt:  time.Now(),
+		FromWallet: wallet,
+		Rpc:        payload,
+		Sig:        c.Request().Header.Get(signing.SigHeader),
+	}
 
-	ok, err := s.proc.SubmitAndWait(msg)
+	ok, err := s.proc.ApplyAndPublish(rpcLog)
 	if err != nil {
 		logger.Warn(string(payload), "wallet", wallet, "err", err)
 		return err
 	}
-	logger.Debug(string(payload), "seq", ok.Sequence, "wallet", wallet, "relay", true)
+	logger.Debug(string(payload), "wallet", wallet, "relay", true)
 	return c.JSON(200, ok)
 }
 
@@ -247,7 +251,7 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 	signedData := []byte(u.String())
 
 	// Now that we have the data that was actually signed, we can recover the wallet
-	wallet, err := peering.ReadSigned(signature, signedData)
+	wallet, err := signing.ReadSigned(signature, signedData)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -271,7 +275,7 @@ func (s *ChatServer) chatWebsocket(c echo.Context) error {
 
 func (s *ChatServer) getChats(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -337,7 +341,7 @@ func (s *ChatServer) getChats(c echo.Context) error {
 
 func (s *ChatServer) getChat(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -348,6 +352,9 @@ func (s *ChatServer) getChat(c echo.Context) error {
 	}
 	chat, err := queries.UserChat(db.Conn, ctx, queries.ChatMembershipParams{UserID: int32(userId), ChatID: c.Param("id")})
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.String(404, "chat does not exist")
+		}
 		return err
 	}
 	members, err := queries.ChatMembers(db.Conn, ctx, chat.ChatID)
@@ -363,7 +370,7 @@ func (s *ChatServer) getChat(c echo.Context) error {
 
 func (s *ChatServer) getMessages(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -420,9 +427,9 @@ func (s *ChatServer) getMessages(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
-func (s *ChatServer) getChatPermissions(c echo.Context) error {
+func (s *ChatServer) getUnreadChatCount(c echo.Context) error {
 	ctx := c.Request().Context()
-	_, wallet, err := peering.ReadSignedRequest(c)
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
 		return c.String(400, "bad request: "+err.Error())
 	}
@@ -432,100 +439,159 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 		return c.String(400, "wallet not found: "+err.Error())
 	}
 
-	permission, err := queries.GetChatPermissions(db.Conn, ctx, userId)
+	unreadCount, err := queries.UnreadChatCount(db.Conn, ctx, userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if err == sql.ErrNoRows {
+		unreadCount = 0
+	}
+
+	response := schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   unreadCount,
+	}
+	return c.JSON(200, response)
+}
+
+func (s *ChatServer) getChatPermissions(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			permission = schema.All
-		} else {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	validatedPermissions := make(map[string]*ValidatedPermission)
+
+	query := c.Request().URL.Query()
+	encodedIds := query["id"]
+	if encodedIds != nil && len(encodedIds) > 0 {
+		var userIds []int32
+		for _, encodedId := range encodedIds {
+			decodedId, err := misc.DecodeHashId(encodedId)
+			if err != nil {
+				return c.JSON(400, "bad request: "+err.Error())
+			}
+			userIds = append(userIds, int32(decodedId))
+			// Initialize response map
+			validatedPermissions[encodedId] = &ValidatedPermission{
+				Permits:                  schema.All,
+				CurrentUserHasPermission: true,
+			}
+		}
+
+		// Validate permission for each <request sender, user> pair
+		permissions, err := queries.BulkGetChatPermissions(db.Conn, c.Request().Context(), userIds)
+		if err != nil && err != sql.ErrNoRows {
 			return err
+		}
+		if err != sql.ErrNoRows {
+			err = validatePermissions(c, permissions, userId, validatedPermissions)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
 	response := schema.CommsResponse{
 		Health: s.getHealthStatus(),
-		Data:   permission,
+		Data:   ToChatPermissionsResponse(validatedPermissions),
 	}
 	return c.JSON(200, response)
 }
 
-func (s *ChatServer) validateCanChat(c echo.Context) error {
-	payload, wallet, err := peering.ReadSignedRequest(c)
+func (s *ChatServer) getChatBlockees(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := signing.ReadSignedRequest(c)
 	if err != nil {
-		return c.JSON(400, "bad request: "+err.Error())
+		return c.String(400, "bad request: "+err.Error())
 	}
 
-	userId, err := queries.GetUserIDFromWallet(db.Conn, c.Request().Context(), wallet)
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
 	if err != nil {
 		return c.String(400, "wallet not found: "+err.Error())
 	}
 
-	// Unmarshal RPC
-	var rawRpc schema.RawRPC
-	err = json.Unmarshal(payload, &rawRpc)
-	if err != nil {
-		return c.JSON(400, "bad request: "+err.Error())
+	encodedBlockees := []string{}
+	blockees, err := queries.GetChatBlockees(db.Conn, ctx, userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
 	}
 
-	// Validate and decode payload
-	var params schema.ValidateCanChatRPCParams
-	err = json.Unmarshal(rawRpc.Params, &params)
-	if err != nil {
-		return c.JSON(400, "bad request: "+err.Error())
-	}
-	var receiverUserIds []int32
-	validatedPermissions := make(map[string]bool)
-	for _, encodedId := range params.ReceiverUserIDS {
-		decodedId, err := misc.DecodeHashId(encodedId)
-		if err != nil {
-			return c.JSON(400, "bad request: "+err.Error())
-		}
-		receiverUserIds = append(receiverUserIds, int32(decodedId))
-		// Initialize response map
-		validatedPermissions[encodedId] = true
-	}
-
-	// Validate permission for each <request sender, user> pair
-	permissions, err := queries.BulkGetChatPermissions(db.Conn, c.Request().Context(), receiverUserIds)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			response := schema.CommsResponse{
-				Health: s.getHealthStatus(),
-				Data:   validatedPermissions,
-			}
-			return c.JSON(200, response)
-		} else {
-			return err
-		}
-	}
-	// User IDs that permit chats from followees only
-	var followeePermissions []int32
-	// User IDs that permit chats from tippers only
-	var tipperPermissions []int32
-	for _, userPermission := range permissions {
-		if userPermission.Permits == schema.Followees {
-			// Add id to followeePermissions to bulk query later
-			followeePermissions = append(followeePermissions, userPermission.UserID)
-			// Initialize response map to false for now
-			encodedId, err := misc.EncodeHashId(int(userPermission.UserID))
+	if err != sql.ErrNoRows {
+		for _, user := range blockees {
+			encodedId, err := misc.EncodeHashId(int(user))
 			if err != nil {
 				return err
 			}
-			validatedPermissions[encodedId] = false
-		} else if userPermission.Permits == schema.Tippers {
-			// Add id to tipperPermissions to bulk query later
-			tipperPermissions = append(tipperPermissions, userPermission.UserID)
-			// Initialize response map to false for now
-			encodedId, err := misc.EncodeHashId(int(userPermission.UserID))
+			encodedBlockees = append(encodedBlockees, encodedId)
+		}
+	}
+
+	response := schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   encodedBlockees,
+	}
+	return c.JSON(200, response)
+}
+
+func (s *ChatServer) getChatBlockers(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := signing.ReadSignedRequest(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	encodedBlockers := []string{}
+	blockers, err := queries.GetChatBlockers(db.Conn, ctx, userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+
+	if err != sql.ErrNoRows {
+		for _, user := range blockers {
+			encodedId, err := misc.EncodeHashId(int(user))
 			if err != nil {
 				return err
 			}
-			validatedPermissions[encodedId] = false
+			encodedBlockers = append(encodedBlockers, encodedId)
 		}
 	}
+
+	response := schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   encodedBlockers,
+	}
+	return c.JSON(200, response)
+}
+
+func getValidatedPermission(userId int32, validatedPermissions map[string]*ValidatedPermission) (*ValidatedPermission, error) {
+	encodedId, err := misc.EncodeHashId(int(userId))
+	if err != nil {
+		return nil, err
+	}
+	validatedPermission, ok := validatedPermissions[encodedId]
+	if !ok || validatedPermission == nil {
+		return validatedPermission, fmt.Errorf(`Could not find encoded id %s in response map`, encodedId)
+	}
+	return validatedPermission, nil
+}
+
+func validateFolloweePermissions(c echo.Context, userIds []int32, currentUserId int32, validatedPermissions map[string]*ValidatedPermission) error {
 	// Query follows table to validate <sender, receiver> pair against users with followees only permissions
 	follows, err := queries.BulkGetFollowers(db.Conn, c.Request().Context(), queries.BulkGetFollowersParams{
-		FollowerUserIDs: followeePermissions,
-		FolloweeUserID:  userId,
+		FollowerUserIDs: userIds,
+		FolloweeUserID:  currentUserId,
 	})
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -533,18 +599,21 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 	if err != sql.ErrNoRows {
 		// Update response map if current follow record exists
 		for _, follow := range follows {
-			encodedId, err := misc.EncodeHashId(int(follow.FollowerUserID))
+			validatedPermission, err := getValidatedPermission(follow.FollowerUserID, validatedPermissions)
 			if err != nil {
 				return err
 			}
-			validatedPermissions[encodedId] = true
+			(*validatedPermission).CurrentUserHasPermission = true
 		}
 	}
+	return nil
+}
 
+func validateTipperPermissions(c echo.Context, userIds []int32, currentUserId int32, validatedPermissions map[string]*ValidatedPermission) error {
 	// Query tips table to validate <sender, receiver> pair against users with tippers only permissions
 	tips, err := queries.BulkGetTipReceivers(db.Conn, c.Request().Context(), queries.BulkGetTipReceiversParams{
-		SenderUserID:    userId,
-		ReceiverUserIDs: tipperPermissions,
+		SenderUserID:    currentUserId,
+		ReceiverUserIDs: userIds,
 	})
 	if err != nil && err != sql.ErrNoRows {
 		return err
@@ -552,17 +621,110 @@ func (s *ChatServer) validateCanChat(c echo.Context) error {
 	if err != sql.ErrNoRows {
 		// Update response map if aggregate tip record exists
 		for _, tip := range tips {
-			encodedId, err := misc.EncodeHashId(int(tip.ReceiverUserID))
+			validatedPermission, err := getValidatedPermission(tip.ReceiverUserID, validatedPermissions)
 			if err != nil {
 				return err
 			}
-			validatedPermissions[encodedId] = true
+			(*validatedPermission).CurrentUserHasPermission = true
+		}
+	}
+	return nil
+}
+
+func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRow, currentUserId int32, validatedPermissions map[string]*ValidatedPermission) error {
+	// User IDs that permit chats from followees only
+	var followeePermissions []int32
+	// User IDs that permit chats from tippers only
+	var tipperPermissions []int32
+	for _, userPermission := range permissions {
+		// Add ids to validate by bulk querying respective tables later
+		// Don't validate for current user
+		if userPermission.UserID != currentUserId {
+			if userPermission.Permits == schema.Followees {
+				followeePermissions = append(followeePermissions, userPermission.UserID)
+			} else if userPermission.Permits == schema.Tippers {
+				tipperPermissions = append(tipperPermissions, userPermission.UserID)
+			}
+		}
+
+		// Add permissions to response map
+		validatedPermission, err := getValidatedPermission(userPermission.UserID, validatedPermissions)
+		if err != nil {
+			return err
+		}
+		(*validatedPermission).Permits = userPermission.Permits
+		if userPermission.Permits == schema.All || userPermission.UserID == currentUserId {
+			(*validatedPermission).CurrentUserHasPermission = true
+		} else {
+			// Initialize response map to false for now
+			(*validatedPermission).CurrentUserHasPermission = false
 		}
 	}
 
-	response := schema.CommsResponse{
-		Health: s.getHealthStatus(),
-		Data:   validatedPermissions,
+	if len(followeePermissions) > 0 {
+		err := validateFolloweePermissions(c, followeePermissions, currentUserId, validatedPermissions)
+		if err != nil {
+			return err
+		}
 	}
-	return c.JSON(200, response)
+
+	if len(tipperPermissions) > 0 {
+		err := validateTipperPermissions(c, tipperPermissions, currentUserId, validatedPermissions)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (ss *ChatServer) getRpcBulk(c echo.Context) error {
+
+	var rpcs []schema.RpcLog
+
+	var after time.Time
+	if t, err := time.Parse(time.RFC3339, c.QueryParam("after")); err == nil {
+		after = t
+	} else {
+		fmt.Println("failed to parse time", err, c.QueryParam("after"), c.QueryString())
+	}
+
+	query := `select * from rpc_log where relayed_by = $1 and relayed_at >= $2 order by relayed_at asc`
+	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after)
+	if err != nil {
+		return err
+	}
+
+	// using this with debug=true
+	// pretty prints the json and sig match fails
+	// ouch!
+	// return c.JSON(200, rpcs)
+
+	j, err := json.Marshal(rpcs)
+	if err != nil {
+		return err
+	}
+	return c.JSONBlob(200, j)
+
+}
+
+func (ss *ChatServer) postRpcReceive(c echo.Context) error {
+	// set by our custom basic auth middleware
+	peer := c.Get("peer").(the_graph.Peer)
+
+	// bind to RpcRow
+	rpc := new(schema.RpcLog)
+	if err := c.Bind(rpc); err != nil {
+		return c.String(http.StatusBadRequest, err.Error())
+	}
+
+	// apply
+	err := ss.proc.Apply(rpc)
+	if err != nil {
+		return err
+	}
+
+	slog.Info("got relay", "from", peer.Host, "sig", rpc.Sig)
+
+	return c.String(200, "OK")
 }

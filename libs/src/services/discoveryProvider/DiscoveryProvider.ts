@@ -2,7 +2,8 @@ import axios, {
   AxiosError,
   AxiosRequestConfig,
   AxiosResponse,
-  Method
+  Method,
+  ResponseType
 } from 'axios'
 
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
@@ -32,6 +33,7 @@ type RequestParams = {
   urlParams?: PathArg
   headers?: Record<string, string>
   data?: Record<string, unknown>
+  responseType?: ResponseType
 }
 
 type UserReplicaSet = {
@@ -117,6 +119,7 @@ export class DiscoveryProvider {
   isInitialized = false
   discoveryNodeSelector?: DiscoveryNodeSelector
   discoveryNodeMiddleware?: Middleware
+  selectionCallback?: DiscoveryProviderSelectionConfig['selectionCallback']
 
   constructor({
     whitelist,
@@ -139,6 +142,7 @@ export class DiscoveryProvider {
     this.userStateManager = userStateManager
     this.ethContracts = ethContracts
     this.web3Manager = web3Manager
+    this.selectionCallback = selectionCallback
 
     this.unhealthyBlockDiff = unhealthyBlockDiff ?? DEFAULT_UNHEALTHY_BLOCK_DIFF
     this.serviceSelector = new DiscoveryProviderSelection(
@@ -177,6 +181,7 @@ export class DiscoveryProvider {
         'change',
         (endpoint: string) => {
           this.setEndpoint(endpoint)
+          this.selectionCallback?.(endpoint, [])
         }
       )
 
@@ -243,7 +248,8 @@ export class DiscoveryProvider {
     idsArray: Nullable<number[]>,
     walletAddress?: Nullable<string>,
     handle?: Nullable<string>,
-    minBlockNumber?: Nullable<number>
+    minBlockNumber?: Nullable<number>,
+    includeIncomplete?: Nullable<boolean>
   ) {
     const req = Requests.getUsers(
       limit,
@@ -251,7 +257,8 @@ export class DiscoveryProvider {
       idsArray,
       walletAddress,
       handle,
-      minBlockNumber
+      minBlockNumber,
+      includeIncomplete
     )
     return await this._makeRequest<Nullable<User[]>>(req)
   }
@@ -942,6 +949,11 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
+  async getCIDData(cid: string, responseType: ResponseType, timeout: number) {
+    const req = Requests.getCIDData(cid, responseType, timeout)
+    return await this._makeRequest(req)
+  }
+
   async getSolanaNotifications(minSlotNumber: number, timeout: number) {
     const req = Requests.getSolanaNotifications(minSlotNumber, timeout)
     return await this._makeRequest(req)
@@ -1251,7 +1263,8 @@ export class DiscoveryProvider {
     if (this.discoveryNodeSelector) {
       return await this._makeRequestInternalNext<Response>(
         requestObj,
-        throwError
+        throwError,
+        blockNumber
       )
     }
 
@@ -1412,7 +1425,8 @@ export class DiscoveryProvider {
 
   async _makeRequestInternalNext<Response>(
     requestObj: Record<string, unknown>,
-    throwError = false
+    throwError = false,
+    blockNumber?: number
   ) {
     if (!this.discoveryProviderEndpoint || !this.discoveryNodeMiddleware) return
 
@@ -1464,7 +1478,15 @@ export class DiscoveryProvider {
         response
       })) ?? response
 
-    return response as unknown as DiscoveryResponse<Response>
+    const responseBody: DiscoveryResponse<Response> = await response.json()
+
+    if (blockNumber && responseBody.latest_indexed_block < blockNumber) {
+      throw new Error(
+        `Requested blocknumber ${blockNumber}, but discovery is behind at ${responseBody.latest_indexed_block}`
+      )
+    }
+
+    return responseBody
   }
 
   /**
@@ -1533,6 +1555,7 @@ export class DiscoveryProvider {
       url: requestUrl,
       headers: headers,
       method: requestObj.method ?? 'get',
+      responseType: requestObj.responseType ?? 'json',
       timeout
     }
 

@@ -24,13 +24,16 @@ import type {
   ChatEvents,
   ChatGetAllRequest,
   ChatGetMessagesRequest,
+  ChatGetPermissionRequest,
   ChatGetRequest,
   ChatInviteRequest,
   ChatMessageRequest,
+  ChatPermissionResponse,
   ChatPermitRequest,
   ChatReactRequest,
   ChatReadRequest,
-  TypedCommsResponse
+  TypedCommsResponse,
+  UnfurlResponse
 } from './clientTypes'
 import WebSocket from 'isomorphic-ws'
 import EventEmitter from 'events'
@@ -191,6 +194,75 @@ export class ChatsApi
     }
   }
 
+  public async getPermissions(requestParameters?: ChatGetPermissionRequest) {
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+
+    if (requestParameters?.userIds) {
+      query['id'] = requestParameters.userIds
+    }
+
+    const res = await this.signAndSendRequest({
+      method: 'GET',
+      path: '/comms/chats/permissions',
+      headers: {},
+      query
+    })
+    return (await res.json()) as TypedCommsResponse<
+      Record<string, ChatPermissionResponse>
+    >
+  }
+
+  public async getBlockers() {
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+    const response = await this.signAndSendRequest({
+      method: 'GET',
+      path: `/comms/chats/blockers`,
+      headers: {},
+      query
+    })
+    return (await response.json()) as TypedCommsResponse<string[]>
+  }
+
+  public async getBlockees() {
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+    const response = await this.signAndSendRequest({
+      method: 'GET',
+      path: `/comms/chats/blockees`,
+      headers: {},
+      query
+    })
+    return (await response.json()) as TypedCommsResponse<string[]>
+  }
+
+  public async unfurl(requestParameters: { urls: string[] }) {
+    this.assertNotNullOrUndefined(
+      requestParameters.urls,
+      'requestParameters.urls',
+      'unfurl'
+    )
+    this.assertMinLength(
+      requestParameters.urls,
+      'requestParameters.urls',
+      'unfurl'
+    )
+    const query: HTTPQuery = {
+      content: requestParameters.urls
+    }
+    const res = await this.request({
+      method: 'GET',
+      path: '/comms/unfurl',
+      query,
+      headers: {}
+    })
+    return (await res.json()) as UnfurlResponse[]
+  }
+
   // #endregion
 
   // #region MUTATE
@@ -349,6 +421,20 @@ export class ChatsApi
     )
     return await this.sendRpc({
       method: 'chat.block',
+      params: {
+        user_id: requestParameters.userId
+      }
+    })
+  }
+
+  public async unblock(requestParameters: ChatBlockRequest) {
+    this.assertNotNullOrUndefined(
+      requestParameters.userId,
+      'requestParameters.userId',
+      'unblock'
+    )
+    return await this.sendRpc({
+      method: 'chat.unblock',
       params: {
         user_id: requestParameters.userId
       }

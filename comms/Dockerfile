@@ -3,12 +3,7 @@ FROM golang:alpine AS builder
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 
-RUN apk add build-base curl ffmpeg make
-RUN go install github.com/nats-io/nats-server/v2@v2.9.15 && \
-  go install github.com/nats-io/natscli/nats@latest && \
-  go install github.com/nats-io/nkeys/nk@latest && \
-  go install github.com/nats-io/nsc/v2@latest && \
-  go install github.com/amacneil/dbmate@latest && \
+RUN go install github.com/amacneil/dbmate@latest && \
   go install github.com/cosmtrek/air@latest
 
 WORKDIR /app
@@ -25,7 +20,6 @@ ENTRYPOINT ["air"]
 
 FROM alpine AS final
 
-RUN apk add curl ffmpeg
 
 COPY --from=builder /go/bin/* /bin
 COPY --from=builder /app/comms /bin/comms

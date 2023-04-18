@@ -9,13 +9,6 @@ import {
 import { DISCOVERY_SERVICE_NAME } from './constants'
 import fetch from 'cross-fetch'
 
-const hasSameMajorAndMinorVersion = (version1: string, version2: string) => {
-  return (
-    semver.major(version1) === semver.major(version2) &&
-    semver.minor(version1) === semver.minor(version2)
-  )
-}
-
 const isIndexerHealthy = ({
   data,
   maxBlockDiff
@@ -82,11 +75,7 @@ export const parseApiHealthStatusReason = ({
     return { health: HealthCheckStatus.UNHEALTHY, reason: 'name' }
   }
   if (minVersion) {
-    if (
-      data.version &&
-      (!data.version.version ||
-        !hasSameMajorAndMinorVersion(data.version.version, minVersion))
-    ) {
+    if (data.version && !data.version.version) {
       return {
         health: HealthCheckStatus.UNHEALTHY,
         reason: 'version'
@@ -145,10 +134,7 @@ export const parseHealthStatusReason = ({
   }
 
   if (minVersion) {
-    if (
-      !data.version ||
-      !hasSameMajorAndMinorVersion(data.version, minVersion)
-    ) {
+    if (!data.version) {
       return {
         health: HealthCheckStatus.UNHEALTHY,
         reason: 'version'

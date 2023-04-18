@@ -111,6 +111,7 @@ user_metadata_format = {
     "collectibles": None,
     "playlist_library": None,
     "events": None,
+    "is_storage_v2": False,
     "is_deactivated": None,
     "artist_pick_track_id": None,
 }

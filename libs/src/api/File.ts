@@ -39,6 +39,28 @@ export class File extends Base {
   }
 
   /**
+   * Fetches a file from Discovery Provider with a given CID.
+   * @param cid IPFS content identifier
+   * @param responseType axios response type
+   */
+  async fetchCIDFromDiscovery(
+    cid: string,
+    responseType: ResponseType = 'json'
+  ) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    const timeoutMs = 4000
+    const response = await this.discoveryProvider.getCIDData(
+      cid,
+      responseType,
+      timeoutMs
+    )
+    if (!response) {
+      throw new Error(`Could not fetch ${cid} from discovery`)
+    }
+    return response
+  }
+
+  /**
    * Fetches a file from Content Node with a given CID.
    * @param cid IPFS content identifier
    * @param creatorNodeGateways Content Node gateways to fetch content from

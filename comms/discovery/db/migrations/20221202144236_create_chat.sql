@@ -30,7 +30,7 @@ create table if not exists chat_message (
 	message_id text primary key,
 	chat_id text not null,
 	user_id int not null,
-	created_at timestamp not null, -- jetstream_timestamp
+	created_at timestamp not null, -- relayed_at
 	ciphertext text not null,
 
 	constraint fk_chat_member

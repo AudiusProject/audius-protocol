@@ -1,6 +1,7 @@
 import logging
 
 from integration_tests.utils import populate_mock_db
+from src.models.playlists.playlist import Playlist
 from src.queries import response_name_constants
 from src.queries.get_top_users import _get_top_users
 from src.queries.query_helpers import populate_user_metadata
@@ -31,7 +32,12 @@ def test_populate_user_metadata(app):
             {"playlist_id": 2, "playlist_owner_id": 1},
             {"playlist_id": 3, "is_album": True, "playlist_owner_id": 1},
             {"playlist_id": 4, "playlist_owner_id": 2},
-            {"playlist_id": 5, "is_delete": True, "playlist_owner_id": 2},
+            {
+                "playlist_id": 5,
+                "is_delete": False,
+                "playlist_owner_id": 2,
+                "is_current": False,
+            },
             {"playlist_id": 6, "is_album": True, "playlist_owner_id": 3},
             {"playlist_id": 6, "is_private": True, "playlist_owner_id": 3},
         ],
@@ -67,6 +73,11 @@ def test_populate_user_metadata(app):
     }
 
     populate_mock_db(db, test_entities)
+    with db.scoped_session() as session:
+        playlist_to_delete = (
+            session.query(Playlist).filter(Playlist.playlist_id == 5).first()
+        )
+        playlist_to_delete.is_delete = True
 
     with db.scoped_session() as session:
         user_ids = [1, 2, 3, 4, 5]

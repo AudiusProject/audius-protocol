@@ -7,7 +7,7 @@ for val in $prod_nodes_discovery; do
   ssh $val 'bash -s' < bash_scripts/nuke_server.sh
 done
 
-for val in $prod_nodes_content; do
-  echo "$val"
-  ssh $val 'bash -s' < bash_scripts/nuke_server.sh
-done
+# for val in $prod_nodes_content; do
+#   echo "$val"
+#   ssh $val 'bash -s' < bash_scripts/nuke_server.sh
+# done

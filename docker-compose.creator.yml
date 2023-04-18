@@ -11,7 +11,7 @@ services:
     volumes:
       - ./creator-node:/usr/src/app
       - ./dev-tools:/tmp/dev-tools
-      - ./libs:/usr/src/audius-libs
+      - audius-libs:/usr/src/audius-libs
       - /usr/src/app/node_modules
       - /usr/src/app/build
     depends_on:
@@ -23,8 +23,10 @@ services:
         condition: service_healthy
       db:
         condition: service_healthy
-      # build-audius-libs:
-      #   condition: service_started
+      build-audius-libs:
+        condition: service_started
     deploy:
       mode: replicated
       replicas: "${CREATOR_NODE_REPLICAS}"
+    profiles:
+      - creator

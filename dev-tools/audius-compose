@@ -304,6 +304,7 @@ def load_env(protocol_dir, service, environment):
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
 @click.option("--storagev2", is_flag=True)
+@click.option("--storagev2only", is_flag=True)
 @click.option(
     "--no-libs", is_flag=True, help="Don't bring up container to auto-rebuild libs"
 )
@@ -315,9 +316,7 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Don't bring up discovery provider notifications container",
 )
-@click.option(
-    "--comms", is_flag=True, help="Bring up storage v2, comms, and nats containers"
-)
+@click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
 @click.option("-w", "--wait", is_flag=True, help="Wait for services to be healthy")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
@@ -330,6 +329,7 @@ def up(
     block_explorer,
     anti_abuse_oracle,
     storagev2,
+    storagev2only,
     no_libs,
     no_solana,
     no_notifs,
@@ -365,6 +365,7 @@ def up(
                 *([] if no_libs else ["--profile=libs"]),
                 *([] if no_solana else ["--profile=solana"]),
                 *([] if no_notifs else ["--profile=notifications"]),
+                *([] if storagev2only else ["--profile=creator"]),
                 *(["--profile=comms"] if comms else []),
                 "up",
                 "--build",
