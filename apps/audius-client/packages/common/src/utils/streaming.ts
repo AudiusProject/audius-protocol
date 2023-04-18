@@ -1,8 +1,10 @@
-import { PremiumContentSignature, Track } from 'models';
-import { AudiusBackend, QueryParams } from 'services/index';
-import { premiumContentSelectors } from 'store/premium-content'
-import { Nullable } from './typeUtils';
 import { select } from 'typed-redux-saga'
+
+import { PremiumContentSignature, Track } from 'models'
+import { AudiusBackend, QueryParams } from 'services/index'
+import { premiumContentSelectors } from 'store/premium-content'
+
+import { Nullable } from './typeUtils'
 
 const { getPremiumTrackSignatureMap } = premiumContentSelectors
 
@@ -14,7 +16,13 @@ export async function generateUserSignature(
   return { data, signature }
 }
 
-export async function getQueryParams({ audiusBackendInstance, premiumContentSignature }: { audiusBackendInstance: AudiusBackend, premiumContentSignature: Nullable<PremiumContentSignature> }) {
+export async function getQueryParams({
+  audiusBackendInstance,
+  premiumContentSignature
+}: {
+  audiusBackendInstance: AudiusBackend
+  premiumContentSignature: Nullable<PremiumContentSignature>
+}) {
   const { data, signature } = await generateUserSignature(audiusBackendInstance)
   const queryParams: QueryParams = {}
   queryParams.user_data = data
