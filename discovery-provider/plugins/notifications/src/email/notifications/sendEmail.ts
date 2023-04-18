@@ -5,7 +5,10 @@ import { logger } from '../../logger'
 import { getSendgrid } from '../../sendgrid'
 import { MailDataRequired } from '@sendgrid/mail'
 import { Knex } from 'knex'
-import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
+import {
+  EmailFrequency,
+  UserNotificationSettings
+} from '../../processNotifications/mappers/userNotificationSettings'
 
 // Sendgrid object
 

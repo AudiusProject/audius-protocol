@@ -1,10 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { TrendingTrackNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  TrendingTrackNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
@@ -34,7 +38,11 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
     this.timeRange = this.notification.data.time_range
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -110,15 +118,31 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
           )
         })
       )
-      await this.incrementBadgeCount(this.receiverUserId)
+      await this.incrementBadgeCount(notificationReceiverUserId)
     }
 
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(
+        notificationReceiverUserId
+      ) === 'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: notificationReceiverUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: notificationReceiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: notificationReceiverUserId,
+        email:
+          userNotificationSettings.email?.[notificationReceiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 
