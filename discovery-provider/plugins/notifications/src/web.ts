@@ -1,7 +1,7 @@
 import webpush from 'web-push'
 import { logger } from './logger'
 import { Knex } from 'knex'
-import { UserNotificationSettings, WebPush } from './processNotifications/mappers/userNotificationSettings'
+import { Browser, UserNotificationSettings, WebPush } from './processNotifications/mappers/userNotificationSettings'
 
 // setup and configuration
 let webPushIsConfigured = false
@@ -26,7 +26,7 @@ const vapidKeys = {
   }
 
 // utility functions
-const sendBrowserNotification = async (idDb: Knex, notifType: string, userId: number, title: string, message: string) => {
+const sendBrowserNotification = async (idDb: Knex, userId: number, title: string, message: string) => {
     let numSentNotifs = 0
   
     try {
@@ -35,13 +35,13 @@ const sendBrowserNotification = async (idDb: Knex, notifType: string, userId: nu
       const userBrowserSettings = await settings.getUserBrowserSettings([userId])
       const userNotificationSettings = userBrowserSettings[userId]
 
-      if (!userNotificationSettings.settings[notifType]) {
-        // setting is turned off, early out
-        return numSentNotifs
+      const isWebPush = (browser: Browser): boolean => {
+        return (browser as WebPush).p256dhKey !== undefined;
       }
 
       // if pass then web push, skip custom safari entries
-      const notificationBrowsers = userNotificationSettings.browser.filter((browser) => browser typeof WebPush) as WebPush[]
+      // safe cast when using filter
+      const notificationBrowsers = userNotificationSettings.browser.filter(isWebPush) as WebPush[]
 
       await Promise.all(
         notificationBrowsers.map(async (notificationBrowser) => {
