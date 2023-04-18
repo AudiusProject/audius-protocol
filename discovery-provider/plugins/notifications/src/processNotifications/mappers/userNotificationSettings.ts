@@ -134,12 +134,14 @@ export class UserNotificationSettings {
     return this.email?.[userId].frequency
   }
 
-  shouldSendEmail({
+  shouldSendEmailAtFrequency({
     initiatorUserId,
-    receiverUserId
+    receiverUserId,
+    frequency
   }: {
     initiatorUserId?: number
     receiverUserId: number
+    frequency: string
   }) {
     const { userIsAbusive } = this
     const isInitiatorAbusive = initiatorUserId
@@ -149,26 +151,7 @@ export class UserNotificationSettings {
       this.userIsEmailDeliverable[receiverUserId] &&
       !isInitiatorAbusive &&
       !userIsAbusive[receiverUserId] &&
-      this.email?.[receiverUserId].frequency === 'live'
-    )
-  }
-
-  shouldSendScheduledEmail({
-    initiatorUserId,
-    receiverUserId
-  }: {
-    initiatorUserId?: number
-    receiverUserId: number
-  }) {
-    const { userIsAbusive } = this
-    const isInitiatorAbusive = initiatorUserId
-      ? userIsAbusive[initiatorUserId]
-      : false
-    return (
-      this.userIsEmailDeliverable[receiverUserId] &&
-      !isInitiatorAbusive &&
-      !userIsAbusive[receiverUserId] &&
-      this.email?.[receiverUserId].frequency in ['weekly', 'daily']
+      this.email?.[receiverUserId].frequency === frequency
     )
   }
 

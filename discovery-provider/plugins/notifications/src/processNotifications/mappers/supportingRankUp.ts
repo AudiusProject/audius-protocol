@@ -107,10 +107,9 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
-        'live' &&
-      userNotificationSettings.shouldSendEmail({
-        receiverUserId: this.senderUserId
+      userNotificationSettings.shouldSendEmailAtFrequency({
+        receiverUserId: this.senderUserId,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {

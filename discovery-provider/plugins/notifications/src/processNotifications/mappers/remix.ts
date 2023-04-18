@@ -125,11 +125,10 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(this.parentTrackUserId) ===
-        'live' &&
-      userNotificationSettings.shouldSendEmail({
+      userNotificationSettings.shouldSendEmailAtFrequency({
         initiatorUserId: this.remixUserId,
-        receiverUserId: this.parentTrackUserId
+        receiverUserId: this.parentTrackUserId,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {

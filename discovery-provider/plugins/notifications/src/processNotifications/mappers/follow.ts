@@ -106,11 +106,10 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
-        'live' &&
-      userNotificationSettings.shouldSendEmail({
+      userNotificationSettings.shouldSendEmailAtFrequency({
         receiverUserId: this.receiverUserId,
-        initiatorUserId: this.followerUserId
+        initiatorUserId: this.followerUserId,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {

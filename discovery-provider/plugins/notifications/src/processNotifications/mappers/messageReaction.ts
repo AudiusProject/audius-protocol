@@ -92,9 +92,10 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.shouldSendEmail({
+      userNotificationSettings.shouldSendEmailAtFrequency({
         initiatorUserId: this.senderUserId,
-        receiverUserId: this.receiverUserId
+        receiverUserId: this.receiverUserId,
+        frequency: 'live'
       })
     ) {
       // TODO: Send out email

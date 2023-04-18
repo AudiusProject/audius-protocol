@@ -340,8 +340,9 @@ export async function processEmailNotifications(
           .map(async (userNotifications: UserEmailNotification) => {
             try {
               if (
-                !userNotificationSettings.shouldSendEmail({
-                  receiverUserId: userNotifications.user.blockchainUserId
+                !userNotificationSettings.shouldSendEmailAtFrequency({
+                  receiverUserId: userNotifications.user.blockchainUserId,
+                  frequency
                 })
               ) {
                 return {

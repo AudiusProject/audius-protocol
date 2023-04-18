@@ -117,11 +117,10 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(this.remixUserId) ===
-        'live' &&
-      userNotificationSettings.shouldSendEmail({
+      userNotificationSettings.shouldSendEmailAtFrequency({
         receiverUserId: this.remixUserId,
-        initiatorUserId: this.parentTrackUserId
+        initiatorUserId: this.parentTrackUserId,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {

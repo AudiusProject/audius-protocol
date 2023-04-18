@@ -145,11 +145,10 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     }
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
-        'live' &&
-      userNotificationSettings.shouldSendEmail({
+      userNotificationSettings.shouldSendEmailAtFrequency({
         initiatorUserId: this.saverUserId,
-        receiverUserId: this.receiverUserId
+        receiverUserId: this.receiverUserId,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {

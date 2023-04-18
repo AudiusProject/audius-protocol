@@ -111,7 +111,7 @@ describe('user notification settings', () => {
       )
       const [initiatorUserId, receiverUserId] = [1, 2]
       expect(
-        settings.shouldSendEmail({
+        settings.shouldSendEmailAtFrequency({
           receiverUserId,
           initiatorUserId
         })
@@ -129,7 +129,7 @@ describe('user notification settings', () => {
       )
       const [initiatorUserId, receiverUserId] = [1, 2]
       expect(
-        settings.shouldSendEmail({
+        settings.shouldSendEmailAtFrequency({
           receiverUserId,
           initiatorUserId
         })
@@ -142,7 +142,7 @@ describe('user notification settings', () => {
       )
       const [initiatorUserId, receiverUserId] = [1, 2]
       expect(
-        settings.shouldSendEmail({
+        settings.shouldSendEmailAtFrequency({
           receiverUserId,
           initiatorUserId
         })

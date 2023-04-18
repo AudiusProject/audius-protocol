@@ -114,11 +114,10 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     }
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(this.dethronedUserId) ===
-        'live' &&
-      userNotificationSettings.shouldSendEmail({
+      userNotificationSettings.shouldSendEmailAtFrequency({
         initiatorUserId: this.senderUserId,
-        receiverUserId: this.dethronedUserId
+        receiverUserId: this.dethronedUserId,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {
