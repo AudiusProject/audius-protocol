@@ -8,6 +8,7 @@ import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
+import { RelatedArtists } from 'components/related-artists/RelatedArtists'
 import { SupportingList } from 'components/tipping/support/SupportingList'
 import { TopSupporters } from 'components/tipping/support/TopSupporters'
 import { TipAudioButton } from 'components/tipping/tip-audio/TipAudioButton'
@@ -208,6 +209,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         <div className={styles.profileBottomSection}>
           <TopSupporters />
           <ProfileMutuals />
+          <RelatedArtists />
           {isArtist ? <ProfileTopTags /> : null}
           {showUploadChip ? (
             <UploadChip

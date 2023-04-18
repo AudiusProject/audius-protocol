@@ -78,9 +78,6 @@ import {
 import addToPlaylistReducer, {
   AddToPlaylistState
 } from './ui/add-to-playlist/reducer'
-import artistRecommendationsReducer, {
-  ArtistRecommendationsState
-} from './ui/artist-recommendations/slice'
 import buyAudioReducer from './ui/buy-audio/slice'
 import collectibleDetailsReducer, {
   CollectibleDetailsState
@@ -95,6 +92,8 @@ import modalsReducer from './ui/modals/slice'
 import { ModalsState } from './ui/modals/types'
 import nowPlayingReducer, { NowPlayingState } from './ui/now-playing/slice'
 import reactionsReducer, { ReactionsState } from './ui/reactions/slice'
+import relatedArtistsReducer from './ui/related-artists/slice'
+import { RelatedArtistsState } from './ui/related-artists/types'
 import shareModalReducer from './ui/share-modal/slice'
 import { ShareModalState } from './ui/share-modal/types'
 import shareSoundToTikTokModalReducer from './ui/share-sound-to-tiktok-modal/slice'
@@ -111,6 +110,7 @@ import followersUserListReducer from './user-list/followers/reducers'
 import followingUserListReducer from './user-list/following/reducers'
 import mutualsUserListReducer from './user-list/mutuals/reducers'
 import notificationsUserListReducer from './user-list/notifications/reducers'
+import relatedArtistsListReducer from './user-list/related-artists/reducers'
 import repostsUserListReducer from './user-list/reposts/reducers'
 import supportingUserListReducer from './user-list/supporting/reducers'
 import topSupportersUserListReducer from './user-list/top-supporters/reducers'
@@ -166,7 +166,7 @@ export const reducers = () => ({
     addToPlaylist: addToPlaylistReducer,
     buyAudio: buyAudioReducer,
 
-    artistRecommendations: artistRecommendationsReducer,
+    relatedArtists: relatedArtistsReducer,
     changePassword: changePasswordReducer,
     createPlaylistModal: createPlaylistModalReducer,
     collectibleDetails: collectibleDetailsReducer,
@@ -190,7 +190,8 @@ export const reducers = () => ({
       topSupporters: topSupportersUserListReducer,
       supporting: supportingUserListReducer,
       mutuals: mutualsUserListReducer,
-      notifications: notificationsUserListReducer
+      notifications: notificationsUserListReducer,
+      relatedArtists: relatedArtistsListReducer
     }),
     theme,
     vipDiscordModal: vipDiscordModalReducer,
@@ -278,7 +279,6 @@ export type CommonState = {
     averageColor: ReturnType<typeof averageColorReducer>
     buyAudio: ReturnType<typeof buyAudioReducer>
     addToPlaylist: AddToPlaylistState
-    artistRecommendations: ArtistRecommendationsState
     changePassword: ChangePasswordState
     createPlaylistModal: CreatePlaylistModalState
     collectibleDetails: CollectibleDetailsState
@@ -288,6 +288,7 @@ export type CommonState = {
     musicConfetti: MusicConfettiState
     nowPlaying: NowPlayingState
     reactions: ReactionsState
+    relatedArtists: RelatedArtistsState
     remixSettings: RemixSettingsState
     shareSoundToTikTokModal: ShareSoundToTikTokModalState
     searchUsersModal: SearchUsersModalState
@@ -303,6 +304,7 @@ export type CommonState = {
       favorites: ReturnType<typeof favoritesUserListReducer>
       topSupporters: ReturnType<typeof topSupportersUserListReducer>
       supporting: ReturnType<typeof supportingUserListReducer>
+      relatedArtists: ReturnType<typeof relatedArtistsListReducer>
     }
     theme: ThemeState
     vipDiscordModal: VipDiscordModalState

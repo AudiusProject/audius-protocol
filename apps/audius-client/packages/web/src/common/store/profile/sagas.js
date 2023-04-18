@@ -12,7 +12,7 @@ import {
   profilePageActions as profileActions,
   reachabilitySelectors,
   tippingActions,
-  artistRecommendationsUIActions as artistRecommendationsActions,
+  relatedArtistsUIActions as relatedArtistsActions,
   waitForAccount,
   dataURLtoFile,
   MAX_ARTIST_HOVER_TOP_SUPPORTING,
@@ -348,8 +348,8 @@ function* fetchProfileAsync(action) {
         getRemoteVar(DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_PERCENT) || 0
       if (Math.random() < showArtistRecommendationsPercent) {
         yield put(
-          artistRecommendationsActions.fetchRelatedArtists({
-            userId: user.user_id
+          relatedArtistsActions.fetchRelatedArtists({
+            artistId: user.user_id
           })
         )
       }

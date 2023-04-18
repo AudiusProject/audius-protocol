@@ -10,6 +10,7 @@ import {
   shareModalUISagas as shareModalSagas,
   vipDiscordModalSagas,
   reachabilitySagas,
+  relatedArtistsSagas,
   searchUsersModalSagas,
   solanaSagas
 } from '@audius/common'
@@ -48,7 +49,6 @@ import searchBarSagas from 'common/store/search-bar/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
-import artistRecommendationsSagas from 'common/store/ui/artist-recommendations/sagas'
 import reactionSagas from 'common/store/ui/reactions/sagas'
 import uploadSagas from 'common/store/upload/sagas'
 import favoritePageSagas from 'common/store/user-list/favorites/sagas'
@@ -156,7 +156,7 @@ export default function* rootSaga() {
 
     // Application
     ...addToPlaylistSagas(),
-    ...artistRecommendationsSagas(),
+    ...relatedArtistsSagas(),
     ...changePasswordSagas(),
     ...smartCollectionPageSagas(),
     ...overflowMenuSagas(),

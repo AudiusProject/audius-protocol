@@ -103,6 +103,7 @@ export { ReactComponent as IconUnfollow } from '../../assets/icons/iconUnfollow.
 export { ReactComponent as IconUnlocked } from '../../assets/icons/iconUnlocked.svg'
 export { ReactComponent as IconUpload } from '../../assets/icons/iconUpload.svg'
 export { ReactComponent as IconUser } from '../../assets/icons/iconUser.svg'
+export { ReactComponent as IconUserGroup } from '../../assets/icons/iconUserGroup.svg'
 export { ReactComponent as IconValidationCheck } from '../../assets/icons/iconValidationCheck.svg'
 export { ReactComponent as IconValidationX } from '../../assets/icons/iconValidationX.svg'
 export { ReactComponent as IconVerified } from '../../assets/icons/iconVerified.svg'
