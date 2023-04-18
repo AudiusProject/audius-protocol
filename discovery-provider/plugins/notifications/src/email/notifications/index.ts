@@ -11,8 +11,7 @@ import { logger } from '../../logger'
 import { sendNotificationEmail } from './sendEmail'
 import {
   buildUserNotificationSettings,
-  EmailFrequency,
-  UserNotificationSettings
+  EmailFrequency
 } from '../../processNotifications/mappers/userNotificationSettings'
 
 // blockchainUserId => email
@@ -343,8 +342,7 @@ export async function processEmailNotifications(
               const user = userNotifications.user
               const notifications = userNotifications.notifications
               // Set the timezone
-              const sendAt = getUserSendAt(
-                userNotificationSettings,
+              const sendAt = userNotificationSettings.getUserSendAt(
                 user.blockchainUserId
               )
               const sent = await sendNotificationEmail({
@@ -401,14 +399,4 @@ export async function processEmailNotifications(
     )
     logger.error(e)
   }
-}
-function getUserSendAt(
-  userNotificationSettings: UserNotificationSettings,
-  userId: number
-) {
-  const timezone = userNotificationSettings.getTimezone(userId)
-  const sendAt = moment.tz(timezone).add(1, 'day').startOf('day')
-  // sendgrid's send api expects a send_at value in
-  // unix timestamp in seconds
-  return Math.floor(sendAt.toDate().getTime() / 1000)
 }

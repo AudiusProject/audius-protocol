@@ -1,4 +1,5 @@
 import { Knex } from 'knex'
+import moment from 'moment'
 
 export type DeviceType = 'ios' | 'android'
 
@@ -123,10 +124,6 @@ export class UserNotificationSettings {
 
   getBadgeCount(userId: number) {
     return this.mobile[userId].badgeCount
-  }
-
-  getTimezone(userId: number) {
-    return this.userTimezone[userId]
   }
 
   shouldSendEmail({
@@ -427,6 +424,15 @@ export class UserNotificationSettings {
       {} as UserBrowserSettings
     )
     return userBrowserSettings
+  }
+
+  getUserSendAt(userId: number) {
+    const timezone = this.userTimezone[userId]
+    // const sendAt = moment.tz(timezone).add(1, 'day').startOf('day')
+    const sendAt = moment.tz(timezone).add(30, 'second')
+    // sendgrid's send api expects a send_at value in
+    // unix timestamp in seconds
+    return Math.floor(sendAt.toDate().getTime() / 1000)
   }
 }
 
