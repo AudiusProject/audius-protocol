@@ -113,7 +113,8 @@ describe('user notification settings', () => {
       expect(
         settings.shouldSendEmailAtFrequency({
           receiverUserId,
-          initiatorUserId
+          initiatorUserId,
+          frequency: 'frequency'
         })
       ).toBe(false)
     })
@@ -131,7 +132,8 @@ describe('user notification settings', () => {
       expect(
         settings.shouldSendEmailAtFrequency({
           receiverUserId,
-          initiatorUserId
+          initiatorUserId,
+          frequency: 'live'
         })
       ).toBe(false)
     })
@@ -144,7 +146,8 @@ describe('user notification settings', () => {
       expect(
         settings.shouldSendEmailAtFrequency({
           receiverUserId,
-          initiatorUserId
+          initiatorUserId,
+          frequency: 'live'
         })
       ).toBe(true)
     })
