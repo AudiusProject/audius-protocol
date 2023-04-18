@@ -19,10 +19,10 @@ dev-tools/startup/*.env
 !.vscode/extensions.json
 !.vscode/*.code-snippets
 
-# Local History for Visual Studio Code
+# Local History for VS Code
 .history/
 
-# Built Visual Studio Code Extensions
+# Built VS Code Extensions
 *.vsix
 
 ### GitHub Node .gitignore Template
