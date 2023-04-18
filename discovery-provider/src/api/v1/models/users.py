@@ -58,7 +58,7 @@ user_model_with_total_audio_balance = ns.clone(
     "user_with_total_audio_balance",
     user_model,
     {
-        "total_audio_balance": fields.Integer(required=False),
+        "total_audio_balance": fields.Integer(required=True),
     },
 )
 
