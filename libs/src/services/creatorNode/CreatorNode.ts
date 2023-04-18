@@ -418,6 +418,7 @@ export class CreatorNode {
     ])
 
     // Update metadata to include uploaded CIDs
+    updatedMetadata.track_segments = []
     updatedMetadata.track_cid = audioResp.results['320']
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
@@ -433,6 +434,14 @@ export class CreatorNode {
 
   async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB) {
     return await this.uploadFileV2(file, onProgress, 'img_square')
+  }
+
+  async uploadProfilePictureV2(file: File, onProgress: ProgressCB = () => {}) {
+    return await this.uploadFileV2(file, onProgress, 'img_square')
+  }
+
+  async uploadCoverPhotoV2(file: File, onProgress: ProgressCB = () => {}) {
+    return await this.uploadFileV2(file, onProgress, 'img_backdrop')
   }
 
   async uploadFileV2(

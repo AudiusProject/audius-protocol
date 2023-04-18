@@ -65,7 +65,7 @@
       }
 
       doPoll() {
-        fetch("/mediorum/uploads")
+        fetch("/uploads")
           .then((r) => r.json())
           .then((r) => {
             if (Array.isArray(r)) {
@@ -74,7 +74,7 @@
             }
           });
 
-        fetch("/mediorum/internal/health/peers")
+        fetch("/internal/health/peers")
           .then((r) => r.json())
           .then((r) => {
             for (const peer of r.peers) {
@@ -145,7 +145,7 @@
               (upload) => html`
                 <tr>
                   <td>
-                    <a href="/mediorum/uploads/${upload.id}" target="_blank">
+                    <a href="/uploads/${upload.id}" target="_blank">
                       ${upload.id}
                     </a>
                   </td>
@@ -229,7 +229,7 @@
       _show(e) {
         this.isOpen = true;
 
-        fetch("/mediorum/internal/blobs/location/" + this.key)
+        fetch("/internal/blobs/location/" + this.key)
           .then((r) => r.json())
           .then((r) => {
             this._renderDetail(r);
@@ -246,7 +246,7 @@
             ${blobs.map(
               (b) => html`<div>
                 <a
-                  href=${b.host + "/mediorum/internal/blobs/info/" + b.key}
+                  href=${b.host + "/internal/blobs/info/" + b.key}
                   target="_blank"
                   style=${hostHealthStyle(this.hostHealth[b.host])}
                 >
@@ -264,7 +264,7 @@
           @mouseenter=${this._show}
           @mouseleave=${this._hide}
         >
-          <a href=${"/mediorum/internal/blobs/" + this.key} target="_blank">
+          <a href=${"/internal/blobs/" + this.key} target="_blank">
             ${this.label}
           </a>
           ${this.isOpen ? this.detailPanel : null}
@@ -299,7 +299,7 @@
       render() {
         return html`
           <form
-            action="/mediorum/uploads?redirect=true"
+            action="/uploads?redirect=true"
             method="POST"
             enctype="multipart/form-data"
           >

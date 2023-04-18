@@ -127,6 +127,7 @@ def test_fetch_cid_metadata(app, mocker):
                 },
                 "events": {"is_mobile_user": True},
                 "is_deactivated": False,
+                "is_storage_v2": False,
                 "artist_pick_track_id": TRACK_ID_OFFSET,
             },
             "QmCreateTrack1": {

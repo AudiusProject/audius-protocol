@@ -141,7 +141,7 @@ const parameterizedAuthMiddleware = ({ shouldRespondBadRequest }) => {
     } catch (err) {
       if (shouldRespondBadRequest) {
         const errorResponse = errorResponseBadRequest(
-          '[Error]: The wallet address is not associated with a user id'
+          `[Error]: The wallet address is not associated with a user id: ${err}`
         )
         return sendResponse(req, res, errorResponse)
       }

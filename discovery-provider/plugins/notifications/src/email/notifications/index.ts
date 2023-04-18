@@ -10,9 +10,10 @@ import { DMEntityType } from './types'
 import { logger } from '../../logger'
 import { sendNotificationEmail } from './sendEmail'
 import {
-  buildUserNotificationSettings,
-  EmailFrequency
+  EmailFrequency,
+  buildUserNotificationSettings
 } from '../../processNotifications/mappers/userNotificationSettings'
+import { identity } from 'lodash'
 
 // blockchainUserId => email
 type EmailUsers = {
@@ -23,7 +24,6 @@ type UserEmailNotification = {
   user: {
     blockchainUserId: number
     email: string
-    timezone: string
   }
   notifications: EmailNotification[]
 }
@@ -305,6 +305,7 @@ export async function processEmailNotifications(
     }
     const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
+
     if (Object.keys(users).length == 0) {
       return
     }
@@ -321,7 +322,6 @@ export async function processEmailNotifications(
       Object.keys(users)
     )
     const groupedNotifications = groupNotifications(notifications, users)
-
     // TODO Validate their timezones to send at the right time!
 
     const currentUtcTime = moment.utc()
@@ -339,6 +339,17 @@ export async function processEmailNotifications(
           .slice(start, end)
           .map(async (userNotifications: UserEmailNotification) => {
             try {
+              if (
+                !userNotificationSettings.shouldSendEmail({
+                  receiverUserId: userNotifications.user.blockchainUserId
+                })
+              ) {
+                return {
+                  result: Results.SHOULD_SKIP,
+                  error: 'User turned off or is abusive'
+                }
+              }
+
               const user = userNotifications.user
               const notifications = userNotifications.notifications
               // Set the timezone

@@ -48,7 +48,7 @@ type UserMobileSettings = {
 }
 
 type UserEmailSettings = {
-  [userId: number]: EmailFrequency
+  [userId: number]: { frequency: EmailFrequency; email: string }
 }
 
 export class UserNotificationSettings {
@@ -126,6 +126,14 @@ export class UserNotificationSettings {
     return this.mobile[userId].badgeCount
   }
 
+  getUserEmail(userId: number) {
+    return this.email?.[userId].email
+  }
+
+  getUserEmailFrequency(userId: number) {
+    return this.email?.[userId].frequency
+  }
+
   shouldSendEmail({
     initiatorUserId,
     receiverUserId
@@ -170,6 +178,7 @@ export class UserNotificationSettings {
       isBlockedFromNotifications: boolean
       isBlockedFromRelay: boolean
       isEmailDeliverable: boolean
+      timezone: string
     }> = await this.identityDB
       .select(
         'Users.blockchainUserId',
@@ -299,12 +308,19 @@ export class UserNotificationSettings {
     const userNotifSettings: Array<{
       userId: number
       emailFrequency: EmailFrequency
+      email: string
     }> = await this.identityDB
       .select(
         'UserNotificationSettings.userId',
-        'UserNotificationSettings.emailFrequency'
+        'UserNotificationSettings.emailFrequency',
+        'Users.email'
       )
       .from('UserNotificationSettings')
+      .join(
+        'Users',
+        'Users.blockchainUserId',
+        'UserNotificationSettings.userId'
+      )
       .whereIn('UserNotificationSettings.userId', userIds)
       .modify((queryBuilder) => {
         if (frequency) {
@@ -313,7 +329,7 @@ export class UserNotificationSettings {
       })
     const userEmailSettings: UserEmailSettings = userNotifSettings.reduce(
       (acc, user) => {
-        acc[user.userId] = user.emailFrequency
+        acc[user.userId] = { email: user.email, frequency: user.emailFrequency }
         return acc
       },
       {} as UserEmailSettings

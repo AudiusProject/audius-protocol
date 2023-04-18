@@ -50,11 +50,24 @@ begin;
 alter table notification
 add column if not exists type_v2 varchar default null;
 
+-- Step 1: Change 'supporting_rank_up' to temporary value 'temp_rank_up'
 update notification n
-set type = 'supporter_rank_up', type_v2 = 'supporter_rank_up', group_id = 'supporter_rank_up' || substring(group_id from position(':' in group_id))
+set type = 'temp_rank_up', type_v2 = 'temp_rank_up', group_id = 'temp_rank_up' || substring(group_id from position(':' in group_id))
 where type = 'supporting_rank_up' and type_v2 is null;
 
-update notification 
+-- Step 2: Change 'supporter_rank_up' to 'supporting_rank_up'
+update notification n
 set type = 'supporting_rank_up', type_v2 = 'supporting_rank_up', group_id = 'supporting_rank_up' || substring(group_id from position(':' in group_id))
 where type = 'supporter_rank_up' and type_v2 is null;
+
+-- Step 3: Change temporary value 'temp_rank_up' to 'supporter_rank_up'
+update notification n
+set type = 'supporter_rank_up', type_v2 = 'supporter_rank_up', group_id = 'supporter_rank_up' || substring(group_id from position(':' in group_id))
+where type = 'temp_rank_up' and type_v2 = 'temp_rank_up';
+commit;
+
+-- 4/13/23: add is_storage_v2 to users table
+begin;
+    alter table users
+    add column if not exists is_storage_v2 boolean not null default false;
 commit;

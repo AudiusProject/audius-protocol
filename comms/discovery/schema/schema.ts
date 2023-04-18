@@ -140,6 +140,12 @@ export type ChatInvite = {
   invite_code: string
 }
 
+export type ValidatedChatPermissions = {
+  user_id: string
+  permits: ChatPermission
+  current_user_has_permission: boolean
+}
+
 /**
  * Defines who the user allows to message them
  */

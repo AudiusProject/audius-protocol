@@ -10,6 +10,11 @@ const getEmailNotifications = require('./fetchNotificationMetadata')
 const emailCachePath = './emailCache'
 const notificationUtils = require('./utils')
 const { notificationTypes, dayInHours, weekInHours } = require('./constants')
+const {
+  getRemoteFeatureVarEnabled,
+  NOTIFICATIONS_EMAIL_PLUGIN,
+  EmailPluginMappings
+} = require('../remoteConfig')
 
 // Sendgrid object
 let sg
@@ -66,34 +71,53 @@ async function processEmailNotifications(expressApp, audiusLibs) {
       logger.error('processEmailNotifications - Sendgrid not configured')
       return
     }
+    const optimizelyClient = expressApp.get('optimizelyClient')
 
-    const liveEmailUsers = await models.UserNotificationSettings.findAll({
-      attributes: ['userId'],
-      where: { emailFrequency: EmailFrequency.LIVE }
-    }).map((x) => x.userId)
+    const isLiveEmailDisabled = getRemoteFeatureVarEnabled(
+      optimizelyClient,
+      NOTIFICATIONS_EMAIL_PLUGIN,
+      EmailPluginMappings.Live
+    )
 
-    const dailyEmailUsers = await models.UserNotificationSettings.findAll({
-      attributes: ['userId'],
-      where: { emailFrequency: EmailFrequency.DAILY }
-    }).map((x) => x.userId)
+    const isScheduledEmailDisabled = getRemoteFeatureVarEnabled(
+      optimizelyClient,
+      NOTIFICATIONS_EMAIL_PLUGIN,
+      EmailPluginMappings.Scheduled
+    )
 
-    const weeklyEmailUsers = await models.UserNotificationSettings.findAll({
-      attributes: ['userId'],
-      where: { emailFrequency: EmailFrequency.WEEKLY }
-    }).map((x) => x.userId)
+    let liveEmailUsers = []
+    let dailyEmailUsers = []
+    let weeklyEmailUsers = []
+    if (!isLiveEmailDisabled) {
+      liveEmailUsers = await models.UserNotificationSettings.findAll({
+        attributes: ['userId'],
+        where: { emailFrequency: EmailFrequency.LIVE }
+      }).map((x) => x.userId)
+    }
+    if (!isScheduledEmailDisabled) {
+      dailyEmailUsers = await models.UserNotificationSettings.findAll({
+        attributes: ['userId'],
+        where: { emailFrequency: EmailFrequency.DAILY }
+      }).map((x) => x.userId)
+
+      weeklyEmailUsers = await models.UserNotificationSettings.findAll({
+        attributes: ['userId'],
+        where: { emailFrequency: EmailFrequency.WEEKLY }
+      }).map((x) => x.userId)
+    }
 
     logger.info(
-      { ...loggingContext, liveEmailUsers: liveEmailUsers.length },
-      `processEmailNotifications - ${liveEmailUsers.length} live users`
+      {
+        ...loggingContext,
+        liveEmailUsers: liveEmailUsers.length,
+        dailyEmailUsers: dailyEmailUsers.length,
+        weeklyEmailUsers: weeklyEmailUsers.length,
+        isLiveEmailDisabled,
+        isScheduledEmailDisabled
+      },
+      `processEmailNotifications - Fetched users`
     )
-    logger.info(
-      { ...loggingContext, dailyEmailUsers: dailyEmailUsers.length },
-      `processEmailNotifications - ${dailyEmailUsers.length} daily users`
-    )
-    logger.info(
-      { ...loggingContext, weeklyEmailUsers: weeklyEmailUsers.length },
-      `processEmailNotifications - ${weeklyEmailUsers.length} weekly users`
-    )
+
     const currentTime = moment.utc()
     const now = moment()
     const dayAgo = now.clone().subtract(1, 'days')
