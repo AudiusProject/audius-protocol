@@ -133,6 +133,7 @@ function* watchTwitterAuth() {
     function* onFailure(error: any) {
       console.error(error)
       yield put(oauthActions.setTwitterError(error))
+      Sentry.captureException(`Twitter getProfile failed with ${error}`)
     }
 
     function* onSuccess(twitterProfileRes: any) {
@@ -190,7 +191,7 @@ const getProfile = async (code: string, identityService: string) => {
     })
     const profileRespJson = await profileResp.json()
     if (!profileRespJson.username) {
-      throw new Error('Unable to fetch information')
+      throw new Error(profileRespJson.error || 'Unable to fetch information')
     }
     const igUserProfile = igUserFields.reduce((profile: any, field) => {
       profile[field] = profileRespJson[field]

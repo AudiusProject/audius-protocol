@@ -77,7 +77,9 @@ const InstagramAuth = ({
         })
         const profileRespJson = await profileResp.json()
         if (!profileRespJson.username) {
-          return onFailure(new Error('Unable to fetch information'))
+          throw new Error(
+            profileRespJson.error || 'Unable to fetch information'
+          )
         }
 
         const igUserProfile = igUserFields.reduce((profile: any, field) => {
