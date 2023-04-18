@@ -389,6 +389,7 @@ module.exports = function (app) {
       req.logger.info(
         `TrackListen userId=${userId} ip=${ip} isWhitelisted=${isWhitelisted}`
       )
+      // TODO uncomment this when we get a reliable client IP
       // if (!isWhitelisted) {
       //   // skip any client requests since
       //   // content nodes also log a listen
