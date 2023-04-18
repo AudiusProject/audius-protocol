@@ -50,7 +50,14 @@ user_model = ns.model(
         "spl_wallet": fields.String(required=True),
         "supporter_count": fields.Integer(required=True),
         "supporting_count": fields.Integer(required=True),
-        "total_audio_balance": fields.Integer(required=True),
+    },
+)
+
+user_model_with_total_audio_balance = ns.clone(
+    "user_with_total_audio_balance",
+    user_model,
+    {
+        "total_audio_balance": fields.Integer(required=False),
     },
 )
 
