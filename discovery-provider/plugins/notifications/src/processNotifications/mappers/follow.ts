@@ -8,6 +8,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type FollowNotificationRow = Omit<NotificationRow, 'data'> & {
   data: FollowNotification
@@ -104,6 +105,8 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     ) {
       // TODO: Send out email
     }
+
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, 'Follow', `${users[this.followerUserId].name} followed you`)
   }
 
   getResourcesForEmail(): ResourceIds {

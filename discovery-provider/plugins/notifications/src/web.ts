@@ -26,12 +26,11 @@ const vapidKeys = {
   }
 
 // utility functions
-const sendBrowserNotification = async (idDb: Knex, userId: number, title: string, message: string) => {
+export const sendBrowserNotification = async (settings: UserNotificationSettings, userId: number, title: string, message: string) => {
     let numSentNotifs = 0
   
     try {
       if (!webPushIsConfigured) return numSentNotifs
-      const settings = new UserNotificationSettings(idDb)
       const userBrowserSettings = await settings.getUserBrowserSettings([userId])
       const userNotificationSettings = userBrowserSettings[userId]
 
@@ -60,6 +59,7 @@ const sendBrowserNotification = async (idDb: Knex, userId: number, title: string
             numSentNotifs++
           } catch (err) {
             if (err.statusCode === 410) {
+              const idDb = settings.identityDB
               // If the send Notification response was not successful
               // delete the browser subscription as it is no longer valid
               await idDb('NotificationBrowserSubscriptions')
