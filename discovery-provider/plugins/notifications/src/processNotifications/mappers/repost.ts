@@ -9,6 +9,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type RepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostNotification
@@ -145,6 +146,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     ) {
       // TODO: Send out email
     }
+
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, 'New Repost', `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`)
   }
 
   getResourcesForEmail(): ResourceIds {
