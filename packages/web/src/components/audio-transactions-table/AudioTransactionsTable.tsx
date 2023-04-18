@@ -74,6 +74,114 @@ export const isChangePositive = (tx: TransactionDetails) => {
   )
 }
 
+// Cell Render Functions
+const renderTransactionTypeCell = (cellInfo: TransactionCell) => {
+  const { transactionType, method } = cellInfo.row.original
+  const typeText = transactionTypeLabelMap[transactionType as TransactionType]
+  const methodText =
+    transactionMethodLabelMap[method as TransactionMethod] ?? ''
+
+  const isTransferType =
+    transactionType === TransactionType.TIP ||
+    transactionType === TransactionType.TRANSFER
+  return (
+    <>
+      <div className={styles.icon}>
+        <AudioTransactionIcon type={transactionType} method={method} />
+      </div>
+      <span className={styles.typeText}>
+        {`${typeText} ${isTransferType ? methodText : ''}`.trim()}
+      </span>
+    </>
+  )
+}
+
+const renderBalanceCell = (cellInfo: TransactionCell) => {
+  const transaction = cellInfo.row.original
+  return formatAudio(transaction.balance)
+}
+
+const renderDateCell = (cellInfo: TransactionCell) => {
+  const transaction = cellInfo.row.original
+  return moment(transaction.date).format('M/D/YY')
+}
+
+const renderChangeCell = (cellInfo: TransactionCell) => {
+  const tx = cellInfo.row.original
+  const isPositive = isChangePositive(tx)
+  const { change } = tx
+  return (
+    <Tooltip text={`${formatAudio(tx.change, 2)} $AUDIO`} mount={'body'}>
+      <div
+        className={cn(
+          styles.changeCell,
+          isChangePositive(tx) ? styles.increase : styles.decrease
+        )}
+      >
+        {isPositive ? '' : '-'}
+        {formatAudio(change)}
+      </div>
+    </Tooltip>
+  )
+}
+
+const isEmptyRow = (row: any) => {
+  return Boolean(
+    !row?.original?.signature || row?.original?.kind === Kind.EMPTY
+  )
+}
+
+// Columns
+const tableColumnMap = {
+  transactionType: {
+    id: 'transactionType',
+    Header: 'Transaction Type',
+    accessor: 'type',
+    Cell: renderTransactionTypeCell,
+    width: 150,
+    disableSortBy: false,
+    align: 'left'
+  },
+  date: {
+    id: 'date',
+    Header: 'Date',
+    accessor: 'date',
+    Cell: renderDateCell,
+    disableSortBy: false,
+    align: 'right'
+  },
+  change: {
+    id: 'change',
+    Header: 'Change',
+    accessor: 'change',
+    Cell: renderChangeCell,
+    disableSortBy: true,
+    align: 'right'
+  },
+  balance: {
+    id: 'balance',
+    Header: 'Balance',
+    accessor: 'balance',
+    Cell: renderBalanceCell,
+    disableSortBy: true,
+    align: 'right'
+  },
+  spacer: {
+    id: 'spacer',
+    maxWidth: 24,
+    minWidth: 24,
+    disableSortBy: true,
+    disableResizing: true
+  },
+  spacer2: {
+    id: 'spacer2',
+    maxWidth: 24,
+    minWidth: 24,
+    disableSortBy: true,
+    disableResizing: true
+  }
+}
+
 export const AudioTransactionsTable = ({
   columns = defaultColumns,
   data,
@@ -88,125 +196,9 @@ export const AudioTransactionsTable = ({
   scrollRef,
   fetchBatchSize
 }: AudioTransactionsTableProps) => {
-  // Cell Render Functions
-  const renderTransactionTypeCell = useCallback((cellInfo: TransactionCell) => {
-    const { transactionType, method } = cellInfo.row.original
-    const typeText = transactionTypeLabelMap[transactionType as TransactionType]
-    const methodText =
-      transactionMethodLabelMap[method as TransactionMethod] ?? ''
-
-    const isTransferType =
-      transactionType === TransactionType.TIP ||
-      transactionType === TransactionType.TRANSFER
-    return (
-      <>
-        <div className={styles.icon}>
-          <AudioTransactionIcon type={transactionType} method={method} />
-        </div>
-        <span className={styles.typeText}>
-          {`${typeText} ${isTransferType ? methodText : ''}`.trim()}
-        </span>
-      </>
-    )
-  }, [])
-
-  const renderBalanceCell = useCallback((cellInfo: TransactionCell) => {
-    const transaction = cellInfo.row.original
-    return formatAudio(transaction.balance)
-  }, [])
-
-  const renderDateCell = useCallback((cellInfo: TransactionCell) => {
-    const transaction = cellInfo.row.original
-    return moment(transaction.date).format('M/D/YY')
-  }, [])
-
-  const renderChangeCell = useCallback((cellInfo: TransactionCell) => {
-    const tx = cellInfo.row.original
-    const isPositive = isChangePositive(tx)
-    const { change } = tx
-    return (
-      <Tooltip text={`${formatAudio(tx.change, 2)} $AUDIO`} mount={'body'}>
-        <div
-          className={cn(
-            styles.changeCell,
-            isChangePositive(tx) ? styles.increase : styles.decrease
-          )}
-        >
-          {isPositive ? '' : '-'}
-          {formatAudio(change)}
-        </div>
-      </Tooltip>
-    )
-  }, [])
-
-  const isEmptyRow = (row: any) => {
-    return Boolean(
-      !row?.original?.signature || row?.original?.kind === Kind.EMPTY
-    )
-  }
-
-  // Columns
-  const tableColumnMap = useMemo(
-    () => ({
-      transactionType: {
-        id: 'transactionType',
-        Header: 'Transaction Type',
-        accessor: 'type',
-        Cell: renderTransactionTypeCell,
-        width: 150,
-        disableSortBy: false,
-        align: 'left'
-      },
-      date: {
-        id: 'date',
-        Header: 'Date',
-        accessor: 'date',
-        Cell: renderDateCell,
-        disableSortBy: false,
-        align: 'right'
-      },
-      change: {
-        id: 'change',
-        Header: 'Change',
-        accessor: 'change',
-        Cell: renderChangeCell,
-        disableSortBy: true,
-        align: 'right'
-      },
-      balance: {
-        id: 'balance',
-        Header: 'Balance',
-        accessor: 'balance',
-        Cell: renderBalanceCell,
-        disableSortBy: true,
-        align: 'right'
-      },
-      spacer: {
-        id: 'spacer',
-        maxWidth: 24,
-        minWidth: 24,
-        disableSortBy: true,
-        disableResizing: true
-      },
-      spacer2: {
-        id: 'spacer2',
-        maxWidth: 24,
-        minWidth: 24,
-        disableSortBy: true,
-        disableResizing: true
-      }
-    }),
-    [
-      renderTransactionTypeCell,
-      renderDateCell,
-      renderChangeCell,
-      renderBalanceCell
-    ]
-  )
-
   const tableColumns = useMemo(
     () => columns.map((id) => tableColumnMap[id]),
-    [columns, tableColumnMap]
+    [columns]
   )
 
   const handleClickRow = useCallback(
