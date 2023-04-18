@@ -1,33 +1,32 @@
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
 import IconCrown from 'app/assets/images/iconCrown.svg'
 import IconTrending from 'app/assets/images/iconTrending.svg'
 import Text from 'app/components/text'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { useStyles as useTrackTileStyles } from './styles'
 
-type Props = {
+const useStyles = makeStyles(({ palette, spacing }) => ({
+  text: {
+    color: palette.secondary
+  },
+  icon: {
+    marginRight: spacing(1)
+  }
+}))
+
+type LineupTileRankIconProps = {
   /** Whether or not to show the crown icon */
   showCrown?: boolean
   /** Index of this item in the lineup */
   index: number
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    text: {
-      color: themeColors.secondary
-    },
-    icon: {
-      marginRight: 4
-    }
-  })
-
-export const LineupTileRankIcon = ({ showCrown, index }: Props) => {
-  const styles = useThemedStyles(createStyles)
+export const LineupTileRankIcon = (props: LineupTileRankIconProps) => {
+  const { showCrown, index } = props
+  const styles = useStyles()
   const trackTileStyles = useTrackTileStyles()
   const { secondary } = useThemeColors()
   const Icon = showCrown ? IconCrown : IconTrending

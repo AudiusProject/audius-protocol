@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 
 import { settingsPageActions, PushNotificationSetting } from '@audius/common'
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 import { useDispatch } from 'react-redux'
 
 import IconCoSign from 'app/assets/images/iconCoSign.svg'
@@ -15,8 +15,7 @@ import { Button, GradientText } from 'app/components/core'
 import { NativeDrawer } from 'app/components/drawer'
 import Text from 'app/components/text'
 import { useDrawer } from 'app/hooks/useDrawer'
-import type { ThemeColors } from 'app/hooks/useThemedStyles'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 const { togglePushNotificationSetting } = settingsPageActions
 
@@ -59,65 +58,65 @@ const actions = [
   }
 ]
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    drawer: {
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-evenly',
-      alignItems: 'center',
-      padding: 16,
-      paddingTop: 64,
-      paddingBottom: 32
-    },
+const useStyles = makeStyles(({ palette }) => ({
+  drawer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    padding: 16,
+    paddingTop: 64,
+    paddingBottom: 32
+  },
 
-    cta: {
-      marginTop: 16,
-      fontSize: 28
-    },
+  cta: {
+    marginTop: 16,
+    fontSize: 28
+  },
 
-    turnOn: {
-      color: themeColors.neutral,
-      fontSize: 24,
-      lineHeight: 29,
-      marginTop: 4
-    },
+  turnOn: {
+    color: palette.neutral,
+    fontSize: 24,
+    lineHeight: 29,
+    marginTop: 4
+  },
 
-    top: {
-      marginBottom: 32,
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center'
-    },
+  top: {
+    marginBottom: 32,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center'
+  },
 
-    actions: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'flex-start',
-      marginBottom: 32
-    },
+  actions: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    marginBottom: 32
+  },
 
-    action: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 12
-    },
+  action: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12
+  },
 
-    actionText: {
-      fontSize: 24,
-      color: themeColors.neutralLight2
-    },
+  actionText: {
+    fontSize: 24,
+    color: palette.neutralLight2
+  },
 
-    actionIcon: {
-      marginRight: 16
-    }
-  })
+  actionIcon: {
+    marginRight: 16
+  }
+}))
 
 export const EnablePushNotificationsDrawer = () => {
   const dispatch = useDispatch()
   const { onClose } = useDrawer('EnablePushNotifications')
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
+
   const {
     background,
     neutralLight2,

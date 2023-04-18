@@ -1,65 +1,63 @@
 import { useCallback } from 'react'
 
-import { Platform, StyleSheet, View } from 'react-native'
+import { Platform, View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import { NativeDrawer } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import {
   getDownloadedPercentage,
   getFileName,
   getFetchCancel
 } from 'app/store/download/selectors'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    view: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      paddingTop: 16,
-      paddingHorizontal: 24,
-      fontFamily: 'AvenirNextLTPro-Regular'
-    },
+const useStyles = makeStyles(({ palette }) => ({
+  view: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingTop: 16,
+    paddingHorizontal: 24,
+    fontFamily: 'AvenirNextLTPro-Regular'
+  },
 
-    title: {
-      fontSize: 21,
-      color: themeColors.actionSheetText,
-      marginBottom: 28
-    },
+  title: {
+    fontSize: 21,
+    color: palette.secondary,
+    marginBottom: 28
+  },
 
-    fileName: {
-      fontSize: 18,
-      lineHeight: 24,
-      color: themeColors.neutralLight4,
-      marginBottom: 12,
-      textAlign: 'center'
-    },
+  fileName: {
+    fontSize: 18,
+    lineHeight: 24,
+    color: palette.neutralLight4,
+    marginBottom: 12,
+    textAlign: 'center'
+  },
 
-    downloadContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginBottom: 32
-    },
+  downloadContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 32
+  },
 
-    loadingIcon: {
-      width: 40,
-      height: 40,
-      alignSelf: 'flex-start',
-      marginRight: 10
-    },
+  loadingIcon: {
+    width: 40,
+    height: 40,
+    alignSelf: 'flex-start',
+    marginRight: 10
+  },
 
-    downloadPercent: {
-      fontSize: 40,
-      color: themeColors.neutral,
-      lineHeight: 46
-    }
-  })
+  downloadPercent: {
+    fontSize: 40,
+    color: palette.neutral,
+    lineHeight: 46
+  }
+}))
 
 const messages = {
   title: 'Downloading'
@@ -74,8 +72,8 @@ export const DownloadTrackProgressDrawer = () => {
     fetchCancel?.()
   }, [fetchCancel])
 
-  const styles = useThemedStyles(createStyles)
-  const spinnerColor = useColor('actionSheetText')
+  const styles = useStyles()
+  const spinnerColor = useColor('secondary')
 
   return (
     <NativeDrawer drawerName='DownloadTrackProgress' onClose={handleClose}>

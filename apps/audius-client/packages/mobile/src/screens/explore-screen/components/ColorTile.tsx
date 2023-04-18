@@ -7,7 +7,7 @@ import type {
   StyleProp,
   ViewStyle
 } from 'react-native'
-import { Animated, Image, StyleSheet, View } from 'react-native'
+import { Animated, Image, View } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 import type { SvgProps } from 'react-native-svg'
 
@@ -16,10 +16,8 @@ import { Pressable } from 'app/components/core'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import type { ExploreTabScreenParamList } from 'app/screens/app-screen/ExploreTabScreen'
-import { font } from 'app/styles'
-import type { ThemeColors } from 'app/utils/theme'
+import { font, makeStyles } from 'app/styles'
 
 import type { CollectionScreen, MoodScreen } from '../collections'
 import type { SmartCollectionScreen } from '../smartCollections'
@@ -38,88 +36,87 @@ type ColorTileProps = {
   isIncentivized?: boolean
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    shadowContainer: {
-      elevation: 4,
-      shadowOffset: { height: 2, width: 0 },
-      shadowRadius: 4
-    },
+const useStyles = makeStyles(({ palette }) => ({
+  shadowContainer: {
+    elevation: 4,
+    shadowOffset: { height: 2, width: 0 },
+    shadowRadius: 4
+  },
 
-    gradientContainer: {
-      borderRadius: 8
-    },
+  gradientContainer: {
+    borderRadius: 8
+  },
 
-    colorTile: {
-      backgroundColor: 'rgba(255,255,255,0.1)',
-      borderRadius: 8,
-      height: 200,
-      overflow: 'hidden',
-      padding: 16,
-      position: 'relative'
-    },
-    hasEmoji: {
-      height: 128,
-      textAlign: 'center'
-    },
+  colorTile: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+    height: 200,
+    overflow: 'hidden',
+    padding: 16,
+    position: 'relative'
+  },
+  hasEmoji: {
+    height: 128,
+    textAlign: 'center'
+  },
 
-    title: {
-      ...font('heavy'),
-      color: themeColors.staticWhite,
-      fontSize: 20,
-      letterSpacing: 0.25,
-      lineHeight: 26,
-      textAlign: 'left',
-      textShadowColor: 'rgba(0, 0, 0, 0.25)',
-      textShadowRadius: 3,
-      textShadowOffset: { height: 2, width: 0 },
-      textTransform: 'uppercase'
-    },
-    emojiTitle: {
-      marginTop: 8,
-      textAlign: 'center',
-      textShadowRadius: 10,
-      textTransform: 'none'
-    },
+  title: {
+    ...font('heavy'),
+    color: palette.staticWhite,
+    fontSize: 20,
+    letterSpacing: 0.25,
+    lineHeight: 26,
+    textAlign: 'left',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowRadius: 3,
+    textShadowOffset: { height: 2, width: 0 },
+    textTransform: 'uppercase'
+  },
+  emojiTitle: {
+    marginTop: 8,
+    textAlign: 'center',
+    textShadowRadius: 10,
+    textTransform: 'none'
+  },
 
-    description: {
-      ...font('medium'),
-      color: themeColors.staticWhite,
-      fontSize: 16,
-      letterSpacing: 0.2,
-      lineHeight: 23,
-      textAlign: 'left',
-      textShadowColor: 'rgba(0, 0, 0, 0.25)',
-      textShadowRadius: 3,
-      textShadowOffset: { height: 2, width: 0 }
-    },
+  description: {
+    ...font('medium'),
+    color: palette.staticWhite,
+    fontSize: 16,
+    letterSpacing: 0.2,
+    lineHeight: 23,
+    textAlign: 'left',
+    textShadowColor: 'rgba(0, 0, 0, 0.25)',
+    textShadowRadius: 3,
+    textShadowOffset: { height: 2, width: 0 }
+  },
 
-    emoji: {
-      position: 'relative',
-      height: 40,
-      width: 40,
-      marginTop: -6
-    },
+  emoji: {
+    position: 'relative',
+    height: 40,
+    width: 40,
+    marginTop: -6
+  },
 
-    icon: {
-      position: 'absolute',
-      right: -60,
-      top: -45
-    },
-    iconSvg: {
-      opacity: 0.5
-    },
+  icon: {
+    position: 'absolute',
+    right: -60,
+    top: -45
+  },
+  iconSvg: {
+    opacity: 0.5
+  },
 
-    rewardsPill: {
-      bottom: 13,
-      left: 16,
-      position: 'absolute',
-      shadowColor: '#000000',
-      shadowOffset: { height: 2, width: 0 },
-      shadowOpacity: 0.1,
-      shadowRadius: 2
-    }
-  })
+  rewardsPill: {
+    bottom: 13,
+    left: 16,
+    position: 'absolute',
+    shadowColor: '#000000',
+    shadowOffset: { height: 2, width: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2
+  }
+}))
 
 export const ColorTile = ({
   style,
@@ -134,7 +131,7 @@ export const ColorTile = ({
   emoji,
   isIncentivized
 }: ColorTileProps) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const navigation = useNavigation<ExploreTabScreenParamList>()
   const {
     scale,
