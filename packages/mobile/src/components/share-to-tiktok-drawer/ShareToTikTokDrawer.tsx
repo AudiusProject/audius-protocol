@@ -6,7 +6,7 @@ import {
   ShareSoundToTiktokModalStatus,
   shareSoundToTiktokModalSelectors
 } from '@audius/common'
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 import { useSelector, useDispatch } from 'react-redux'
 
 import IconTikTok from 'app/assets/images/iconTikTok.svg'
@@ -15,9 +15,8 @@ import Button from 'app/components/button'
 import { AppDrawer, useDrawerState } from 'app/components/drawer'
 import LoadingSpinner from 'app/components/loading-spinner'
 import Text from 'app/components/text'
-import type { ThemeColors } from 'app/hooks/useThemedStyles'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useTikTokAuth } from 'app/hooks/useTikTokAuth'
+import { makeStyles } from 'app/styles'
 const { getStatus, getTrack } = shareSoundToTiktokModalSelectors
 const { authenticated, setStatus, share } = shareSoundToTiktokModalActions
 
@@ -45,46 +44,45 @@ const fileRequirementErrorMessages = {
   [FileRequirementError.MIN_LENGTH]: messages.errorMinLength
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    content: {
-      display: 'flex',
-      paddingHorizontal: 32,
-      paddingTop: 16,
-      paddingBottom: 24,
-      alignItems: 'center',
-      textAlign: 'center',
-      justifyContent: 'space-around'
-    },
-    header: {
-      margin: 16
-    },
-    titleContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'flex-end'
-    },
-    title: {
-      color: themeColors.secondaryLight1,
-      marginLeft: 8,
-      fontSize: 18
-    },
-    message: {
-      fontSize: 18,
-      textAlign: 'center',
-      lineHeight: 26,
-      marginBottom: 16
-    },
-    errorMessage: {
-      color: themeColors.accentRed
-    },
-    button: {
-      width: '100%'
-    }
-  })
+const useStyles = makeStyles(({ palette }) => ({
+  content: {
+    display: 'flex',
+    paddingHorizontal: 32,
+    paddingTop: 16,
+    paddingBottom: 24,
+    alignItems: 'center',
+    textAlign: 'center',
+    justifyContent: 'space-around'
+  },
+  header: {
+    margin: 16
+  },
+  titleContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'flex-end'
+  },
+  title: {
+    color: palette.secondaryLight1,
+    marginLeft: 8,
+    fontSize: 18
+  },
+  message: {
+    fontSize: 18,
+    textAlign: 'center',
+    lineHeight: 26,
+    marginBottom: 16
+  },
+  errorMessage: {
+    color: palette.accentRed
+  },
+  button: {
+    width: '100%'
+  }
+}))
 
 export const ShareToTikTokDrawer = () => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
 
   const { onClose } = useDrawerState(MODAL_NAME)
 

@@ -1,47 +1,45 @@
 import { useCallback } from 'react'
 
 import Clipboard from '@react-native-clipboard/clipboard'
-import { Animated, StyleSheet, View, TouchableHighlight } from 'react-native'
+import { Animated, View, TouchableHighlight } from 'react-native'
 import LinearGradient from 'react-native-linear-gradient'
 
 import IconCopy from 'app/assets/images/iconCopy.svg'
 import Text from 'app/components/text'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import { useToast } from 'app/hooks/useToast'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 const messages = {
   copyPrompt: 'Copy Invite to Clipboard',
   copyNotice: 'Referral link copied to the clipboard'
 }
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    copyPromptContainer: {
-      width: '100%'
-    },
-    borderRadius: {
-      borderRadius: 6
-    },
-    copyTextContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 12
-    },
-    copyText: {
-      fontSize: 18,
-      textAlign: 'center',
-      color: themeColors.staticWhite
-    },
-    iconCopy: {
-      color: themeColors.staticWhite,
-      lineHeight: 16,
-      marginRight: 8
-    }
-  })
+const useStyles = makeStyles(({ palette }) => ({
+  copyPromptContainer: {
+    width: '100%'
+  },
+  borderRadius: {
+    borderRadius: 6
+  },
+  copyTextContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12
+  },
+  copyText: {
+    fontSize: 18,
+    textAlign: 'center',
+    color: palette.staticWhite
+  },
+  iconCopy: {
+    color: palette.staticWhite,
+    lineHeight: 16,
+    marginRight: 8
+  }
+}))
 
 export const ReferralLinkCopyButton = ({
   inviteUrl
@@ -50,7 +48,7 @@ export const ReferralLinkCopyButton = ({
 }) => {
   const { pageHeaderGradientColor1, pageHeaderGradientColor2 } =
     useThemeColors()
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
 
   const { toast } = useToast()
   const onCopyClicked = useCallback(() => {

@@ -119,15 +119,15 @@ export const LineupTileStats = ({
 
   return (
     <View style={styles.stats}>
-      {isTrending && (
+      {isTrending ? (
         <LineupTileRankIcon showCrown={showRankIcon} index={index} />
-      )}
+      ) : null}
       {hasEngagement && !isUnlisted && (
         <View style={styles.leftStats}>
           <TouchableOpacity
             style={[
               trackTileStyles.statItem,
-              !repostCount ? styles.disabledStatItem : {}
+              !repostCount ? styles.disabledStatItem : null
             ]}
             disabled={!repostCount}
             onPress={handlePressReposts}
@@ -145,7 +145,7 @@ export const LineupTileStats = ({
           <TouchableOpacity
             style={[
               trackTileStyles.statItem,
-              !saveCount ? styles.disabledStatItem : {}
+              !saveCount ? styles.disabledStatItem : null
             ]}
             disabled={!saveCount}
             onPress={handlePressFavorites}
@@ -165,11 +165,11 @@ export const LineupTileStats = ({
           </View>
         </View>
       )}
-      {!hidePlays && (
+      {!hidePlays ? (
         <Text style={[trackTileStyles.statText, styles.listenCount]}>
           {formatPlayCount(playCount)}
         </Text>
-      )}
+      ) : null}
     </View>
   )
 }

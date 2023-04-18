@@ -1,16 +1,15 @@
 import { useCallback } from 'react'
 
 import { accountSelectors, challengesSelectors } from '@audius/common'
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import IconValidationCheck from 'app/assets/images/iconValidationCheck.svg'
 import Text from 'app/components/text'
 import { useNavigation } from 'app/hooks/useNavigation'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
 import type { ProfileTabScreenParamList } from 'app/screens/app-screen/ProfileTabScreen'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
 import Button, { ButtonType } from '../button'
 const { getCompletionStages } = challengesSelectors
@@ -27,34 +26,34 @@ const messages = {
 
   profileCompletionButton: 'Your Profile'
 }
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    columnContainer: {
-      marginBottom: 32,
-      display: 'flex',
-      flexDirection: 'row',
-      flexWrap: 'wrap'
-    },
-    checkContainer: {
-      display: 'flex',
-      flexDirection: 'row',
-      flexBasis: '50%',
-      marginBottom: 1
-    },
-    checkText: {
-      marginLeft: 8
-    },
-    checkTextDone: {
-      textDecorationLine: 'line-through'
-    },
-    checkCircle: {
-      height: 16,
-      width: 16,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: themeColors.neutralLight4
-    }
-  })
+const useStyles = makeStyles(({ palette }) => ({
+  columnContainer: {
+    marginBottom: 32,
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap'
+  },
+  checkContainer: {
+    display: 'flex',
+    flexDirection: 'row',
+    flexBasis: '50%',
+    marginBottom: 1
+  },
+  checkText: {
+    marginLeft: 8
+  },
+  checkTextDone: {
+    textDecorationLine: 'line-through'
+  },
+  checkCircle: {
+    height: 16,
+    width: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: palette.neutralLight4
+  }
+}))
+
 const renderArrowIcon = (color) => <IconArrow fill={color} />
 
 export const ProfileCompletionChecks = ({
@@ -66,8 +65,9 @@ export const ProfileCompletionChecks = ({
 }) => {
   const currentUser = useSelector(getAccountUser)
   const completionStages = useSelector(getCompletionStages)
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const navigation = useNavigation<ProfileTabScreenParamList>()
+
   const goToProfile = useCallback(() => {
     onClose()
     if (currentUser?.handle) {

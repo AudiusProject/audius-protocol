@@ -1,14 +1,12 @@
-import { StyleSheet, View } from 'react-native'
+import { View } from 'react-native'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import { flexRowCentered } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
-import type { ThemeColors } from 'app/utils/theme'
 import { useThemeColors } from 'app/utils/theme'
 
 type DetailsTileActionButtonsProps = {
@@ -26,30 +24,29 @@ type DetailsTileActionButtonsProps = {
   onPressOverflow?: GestureResponderHandler
 }
 
-const createStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    root: {
-      ...flexRowCentered(),
-      width: '100%',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      borderBottomWidth: 1,
-      borderBottomColor: themeColors.neutralLight7,
-      height: 60,
-      paddingTop: 12,
-      paddingBottom: 8
-    },
+const useStyles = makeStyles(({ palette }) => ({
+  root: {
+    ...flexRowCentered(),
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: palette.neutralLight7,
+    height: 60,
+    paddingTop: 12,
+    paddingBottom: 8
+  },
 
-    actionButton: {
-      ...flexRowCentered(),
-      width: 30,
-      height: '100%',
-      justifyContent: 'center',
-      position: 'relative',
-      bottom: 1,
-      marginHorizontal: 16
-    }
-  })
+  actionButton: {
+    ...flexRowCentered(),
+    width: 30,
+    height: '100%',
+    justifyContent: 'center',
+    position: 'relative',
+    bottom: 1,
+    marginHorizontal: 16
+  }
+}))
 
 /**
  * The action buttons on track and playlist screens
@@ -68,7 +65,7 @@ export const DetailsTileActionButtons = ({
   onPressSave,
   onPressShare
 }: DetailsTileActionButtonsProps) => {
-  const styles = useThemedStyles(createStyles)
+  const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
 
   const repostButton = (

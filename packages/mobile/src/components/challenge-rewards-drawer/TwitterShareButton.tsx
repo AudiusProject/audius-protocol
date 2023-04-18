@@ -1,30 +1,27 @@
 import React, { useCallback } from 'react'
 
 import { makeTwitterShareUrl } from '@audius/common'
-import { Linking, StyleSheet } from 'react-native'
-import type { Color } from 'react-native-svg'
+import { Linking } from 'react-native'
 
 import IconTwitterBird from 'app/assets/images/iconTwitterBird.svg'
 import Button from 'app/components/button'
-import { useThemedStyles } from 'app/hooks/useThemedStyles'
-import type { ThemeColors } from 'app/utils/theme'
+import { makeStyles } from 'app/styles'
 
-const makeStyles = (themeColors: ThemeColors) =>
-  StyleSheet.create({
-    button: {
-      padding: 12
-    },
-    container: {
-      width: '100%',
-      marginBottom: 8,
-      backgroundColor: themeColors.staticTwitterBlue
-    },
-    text: {
-      fontSize: 18
-    }
-  })
+const useStyles = makeStyles(({ palette }) => ({
+  button: {
+    padding: 12
+  },
+  container: {
+    width: '100%',
+    marginBottom: 8,
+    backgroundColor: palette.staticTwitterBlue
+  },
+  text: {
+    fontSize: 18
+  }
+}))
 
-const renderIcon = (color: Color) => (
+const renderIcon = () => (
   <IconTwitterBird fill={'white'} width={24} height={24} />
 )
 
@@ -41,7 +38,7 @@ export const TwitterShareButton = ({
   isVerified: boolean
   inviteUrl: string
 }) => {
-  const styles = useThemedStyles(makeStyles)
+  const styles = useStyles()
   const onClick = useCallback(async () => {
     const twitterShareUrl = makeTwitterShareUrl(inviteUrl, messages.twitterCopy)
     const isSupported = await Linking.canOpenURL(twitterShareUrl)
