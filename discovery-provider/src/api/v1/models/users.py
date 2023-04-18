@@ -53,6 +53,7 @@ user_model = ns.model(
     },
 )
 
+# Separate model to hide total_audio_balance from full endpoint
 user_model_with_total_audio_balance = ns.clone(
     "user_with_total_audio_balance",
     user_model,
