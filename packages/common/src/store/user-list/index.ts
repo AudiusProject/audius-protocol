@@ -37,3 +37,7 @@ export * from './followers/types'
 export * as favoritesUserListActions from './favorites/actions'
 export * as favoritesUserListSelectors from './favorites/selectors'
 export * from './favorites/types'
+
+export * as relatedArtistsUserListActions from './related-artists/actions'
+export * as relatedArtistsUserListSelectors from './related-artists/selectors'
+export * from './related-artists/types'

@@ -561,8 +561,10 @@ export class AudiusAPIClient {
     const experiment = this.remoteConfigInstance.getRemoteVar(
       StringKeys.TRENDING_EXPERIMENT
     )
-    const trendingResponse: Nullable<APIResponse<APITrack[]>> =
-      await this._getResponse(FULL_ENDPOINT_MAP.trending(experiment), params)
+    const trendingResponse = await this._getResponse<APIResponse<APITrack[]>>(
+      FULL_ENDPOINT_MAP.trending(experiment),
+      params
+    )
 
     if (!trendingResponse) return []
 
@@ -587,11 +589,10 @@ export class AudiusAPIClient {
     const experiment = this.remoteConfigInstance.getRemoteVar(
       StringKeys.UNDERGROUND_TRENDING_EXPERIMENT
     )
-    const trendingResponse: Nullable<APIResponse<APITrack[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.trendingUnderground(experiment),
-        params
-      )
+    const trendingResponse = await this._getResponse<APIResponse<APITrack[]>>(
+      FULL_ENDPOINT_MAP.trendingUnderground(experiment),
+      params
+    )
 
     if (!trendingResponse) return []
 
@@ -610,8 +611,9 @@ export class AudiusAPIClient {
     const experiment = this.remoteConfigInstance.getRemoteVar(
       StringKeys.TRENDING_EXPERIMENT
     )
-    const trendingIdsResponse: Nullable<APIResponse<TrendingIdsResponse>> =
-      await this._getResponse(FULL_ENDPOINT_MAP.trendingIds(experiment), params)
+    const trendingIdsResponse = await this._getResponse<
+      APIResponse<TrendingIdsResponse>
+    >(FULL_ENDPOINT_MAP.trendingIds(experiment), params)
     if (!trendingIdsResponse) {
       return {
         week: [],
@@ -652,8 +654,9 @@ export class AudiusAPIClient {
         exclusionList.length > 0 ? exclusionList.map(String) : undefined,
       user_id: encodedCurrentUserId || undefined
     }
-    const recommendedResponse: Nullable<APIResponse<APITrack[]>> =
-      await this._getResponse(FULL_ENDPOINT_MAP.recommended, params)
+    const recommendedResponse = await this._getResponse<
+      APIResponse<APITrack[]>
+    >(FULL_ENDPOINT_MAP.recommended, params)
 
     if (!recommendedResponse) return []
 
@@ -671,8 +674,10 @@ export class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined,
       with_users: true
     }
-    const remixablesResponse: Nullable<APIResponse<APITrack[]>> =
-      await this._getResponse(FULL_ENDPOINT_MAP.remixables, params)
+    const remixablesResponse = await this._getResponse<APIResponse<APITrack[]>>(
+      FULL_ENDPOINT_MAP.remixables,
+      params
+    )
 
     if (!remixablesResponse) return []
 
@@ -698,11 +703,10 @@ export class AudiusAPIClient {
       offset
     }
 
-    const followingResponse: Nullable<APIResponse<APIUser[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.following(encodedProfileUserId),
-        params
-      )
+    const followingResponse = await this._getResponse<APIResponse<APIUser[]>>(
+      FULL_ENDPOINT_MAP.following(encodedProfileUserId),
+      params
+    )
     if (!followingResponse) return []
     const adapted = followingResponse.data
       .map(adapter.makeUser)
@@ -725,11 +729,10 @@ export class AudiusAPIClient {
       offset
     }
 
-    const followersResponse: Nullable<APIResponse<APIUser[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.followers(encodedProfileUserId),
-        params
-      )
+    const followersResponse = await this._getResponse<APIResponse<APIUser[]>>(
+      FULL_ENDPOINT_MAP.followers(encodedProfileUserId),
+      params
+    )
 
     if (!followersResponse) return []
 
@@ -783,11 +786,10 @@ export class AudiusAPIClient {
       offset
     }
 
-    const followingResponse: Nullable<APIResponse<APIUser[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.trackFavoriteUsers(encodedTrackId),
-        params
-      )
+    const followingResponse = await this._getResponse<APIResponse<APIUser[]>>(
+      FULL_ENDPOINT_MAP.trackFavoriteUsers(encodedTrackId),
+      params
+    )
 
     if (!followingResponse) return []
 
@@ -841,11 +843,10 @@ export class AudiusAPIClient {
       offset
     }
 
-    const followingResponse: Nullable<APIResponse<APIUser[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.playlistFavoriteUsers(encodedPlaylistId),
-        params
-      )
+    const followingResponse = await this._getResponse<APIResponse<APIUser[]>>(
+      FULL_ENDPOINT_MAP.playlistFavoriteUsers(encodedPlaylistId),
+      params
+    )
 
     if (!followingResponse) return []
 
@@ -871,15 +872,14 @@ export class AudiusAPIClient {
       show_unlisted: !!unlistedArgs
     }
 
-    const trackResponse: Nullable<APIResponse<APITrack>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getTrack(encodedTrackId),
-        args,
-        retry,
-        undefined,
-        undefined,
-        abortOnUnreachable
-      )
+    const trackResponse = await this._getResponse<APIResponse<APITrack>>(
+      FULL_ENDPOINT_MAP.getTrack(encodedTrackId),
+      args,
+      retry,
+      undefined,
+      undefined,
+      abortOnUnreachable
+    )
 
     if (!trackResponse) return null
     const adapted = adapter.makeTrack(trackResponse.data)
@@ -896,8 +896,11 @@ export class AudiusAPIClient {
       limit: encodedTrackIds.length
     }
 
-    const trackResponse: Nullable<APIResponse<APITrack[]>> =
-      await this._getResponse(FULL_ENDPOINT_MAP.getTracks(), params, true)
+    const trackResponse = await this._getResponse<APIResponse<APITrack[]>>(
+      FULL_ENDPOINT_MAP.getTracks(),
+      params,
+      true
+    )
     if (!trackResponse) {
       return null
     }
@@ -920,12 +923,11 @@ export class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const trackResponse: Nullable<APIResponse<APITrack>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getTrackByHandleAndSlug,
-        params,
-        true
-      )
+    const trackResponse = await this._getResponse<APIResponse<APITrack>>(
+      FULL_ENDPOINT_MAP.getTrackByHandleAndSlug,
+      params,
+      true
+    )
     if (!trackResponse) {
       return null
     }
@@ -935,7 +937,7 @@ export class AudiusAPIClient {
   async getStems({ trackId }: GetStemsArgs): Promise<StemTrackMetadata[]> {
     this._assertInitialized()
     const encodedTrackId = this._encodeOrThrow(trackId)
-    const response: Nullable<APIResponse<APIStem[]>> = await this._getResponse(
+    const response = await this._getResponse<APIResponse<APIStem[]>>(
       FULL_ENDPOINT_MAP.getStems(encodedTrackId)
     )
 
@@ -957,11 +959,9 @@ export class AudiusAPIClient {
       offset
     }
 
-    const remixesResponse: Nullable<APIResponse<RemixesResponse>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getRemixes(encodedTrackId),
-        params
-      )
+    const remixesResponse = await this._getResponse<
+      APIResponse<RemixesResponse>
+    >(FULL_ENDPOINT_MAP.getRemixes(encodedTrackId), params)
 
     if (!remixesResponse) return { count: 0, tracks: [] }
 
@@ -986,11 +986,10 @@ export class AudiusAPIClient {
       offset
     }
 
-    const remixingResponse: Nullable<APIResponse<APITrack[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getRemixing(encodedTrackId),
-        params
-      )
+    const remixingResponse = await this._getResponse<APIResponse<APITrack[]>>(
+      FULL_ENDPOINT_MAP.getRemixing(encodedTrackId),
+      params
+    )
 
     if (!remixingResponse) return []
 
@@ -1006,7 +1005,7 @@ export class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const response: Nullable<APIResponse<APIUser[]>> = await this._getResponse(
+    const response = await this._getResponse<APIResponse<APIUser[]>>(
       FULL_ENDPOINT_MAP.getUser(encodedUserId),
       params,
       undefined,
@@ -1032,7 +1031,7 @@ export class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const response: Nullable<APIResponse<APIUser[]>> = await this._getResponse(
+    const response = await this._getResponse<APIResponse<APIUser[]>>(
       FULL_ENDPOINT_MAP.userByHandle(handle),
       params,
       retry
@@ -1070,7 +1069,7 @@ export class AudiusAPIClient {
       }
     }
 
-    const response: Nullable<APIResponse<APITrack[]>> = await this._getResponse(
+    const response = await this._getResponse<APIResponse<APITrack[]>>(
       FULL_ENDPOINT_MAP.userTracksByHandle(handle),
       params,
       true,
@@ -1120,11 +1119,10 @@ export class AudiusAPIClient {
       ...(sortDirection && { sort_direction: sortDirection })
     }
 
-    const response: Nullable<APIResponse<APIActivity[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.userFavoritedTracks(encodedProfileUserId),
-        params
-      )
+    const response = await this._getResponse<APIResponse<APIActivity[]>>(
+      FULL_ENDPOINT_MAP.userFavoritedTracks(encodedProfileUserId),
+      params
+    )
 
     if (!response) return null
 
@@ -1149,11 +1147,10 @@ export class AudiusAPIClient {
       offset
     }
 
-    const response: Nullable<APIResponse<APIActivity[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.userRepostsByHandle(handle),
-        params
-      )
+    const response = await this._getResponse<APIResponse<APIActivity[]>>(
+      FULL_ENDPOINT_MAP.userRepostsByHandle(handle),
+      params
+    )
 
     if (!response) return []
 
@@ -1172,7 +1169,7 @@ export class AudiusAPIClient {
     this._assertInitialized()
     const encodedCurrentUserId = encodeHashId(currentUserId)
     const encodedUserId = this._encodeOrThrow(userId)
-    const response: Nullable<APIResponse<APIUser[]>> = await this._getResponse(
+    const response = await this._getResponse<APIResponse<APIUser[]>>(
       FULL_ENDPOINT_MAP.getRelatedArtists(encodedUserId),
       { user_id: encodedCurrentUserId || undefined, offset, limit }
     )
@@ -1190,8 +1187,9 @@ export class AudiusAPIClient {
       offset
     }
 
-    const favoritedTrackResponse: Nullable<APIResponse<APIUser[]>> =
-      await this._getResponse(FULL_ENDPOINT_MAP.topGenreUsers, params)
+    const favoritedTrackResponse = await this._getResponse<
+      APIResponse<APIUser[]>
+    >(FULL_ENDPOINT_MAP.topGenreUsers, params)
 
     if (!favoritedTrackResponse) return []
 
@@ -1211,8 +1209,10 @@ export class AudiusAPIClient {
       user_id: encodedUserId
     }
 
-    const topArtistsResponse: Nullable<APIResponse<APIUser[]>> =
-      await this._getResponse(FULL_ENDPOINT_MAP.topArtists, params)
+    const topArtistsResponse = await this._getResponse<APIResponse<APIUser[]>>(
+      FULL_ENDPOINT_MAP.topArtists,
+      params
+    )
 
     if (!topArtistsResponse) return []
 
@@ -1254,15 +1254,14 @@ export class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const response: Nullable<APIResponse<APIPlaylist[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getPlaylist(encodedPlaylistId),
-        params,
-        undefined,
-        undefined,
-        undefined,
-        abortOnUnreachable
-      )
+    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
+      FULL_ENDPOINT_MAP.getPlaylist(encodedPlaylistId),
+      params,
+      undefined,
+      undefined,
+      undefined,
+      abortOnUnreachable
+    )
 
     if (!response) return []
 
@@ -1288,11 +1287,10 @@ export class AudiusAPIClient {
       )
     }
     const [, handle, , slug] = splitPermalink
-    const response: Nullable<APIResponse<APIPlaylist[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getPlaylistByPermalink(handle, slug),
-        params
-      )
+    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
+      FULL_ENDPOINT_MAP.getPlaylistByPermalink(handle, slug),
+      params
+    )
 
     if (!response) return []
 
@@ -1319,9 +1317,11 @@ export class AudiusAPIClient {
       limit
     }
 
-    const searchResponse: Nullable<APIResponse<APISearch>> =
-      (await this._getResponse(FULL_ENDPOINT_MAP.searchFull, params)) ??
-      emptySearchResponse
+    const searchResponse =
+      (await this._getResponse<APIResponse<APISearch>>(
+        FULL_ENDPOINT_MAP.searchFull,
+        params
+      )) ?? emptySearchResponse
 
     const adapted = adapter.adaptSearchResponse(searchResponse)
     return processSearchResults(adapted)
@@ -1344,9 +1344,11 @@ export class AudiusAPIClient {
       limit
     }
 
-    const searchResponse: Nullable<APIResponse<APISearchAutocomplete>> =
-      (await this._getResponse(FULL_ENDPOINT_MAP.searchAutocomplete, params)) ??
-      emptySearchResponse
+    const searchResponse =
+      (await this._getResponse<APIResponse<APISearchAutocomplete>>(
+        FULL_ENDPOINT_MAP.searchAutocomplete,
+        params
+      )) ?? emptySearchResponse
     const adapted = adapter.adaptSearchAutocompleteResponse(searchResponse)
     return processSearchResults({
       isAutocomplete: true,
@@ -1371,11 +1373,10 @@ export class AudiusAPIClient {
     const experiment = this.remoteConfigInstance.getRemoteVar(
       StringKeys.PLAYLIST_TRENDING_EXPERIMENT
     )
-    const response: Nullable<APIResponse<APIPlaylist[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.trendingPlaylists(experiment),
-        params
-      )
+    const response = await this._getResponse<APIResponse<APIPlaylist[]>>(
+      FULL_ENDPOINT_MAP.trendingPlaylists(experiment),
+      params
+    )
 
     if (!response) return []
     const adapted = response.data
@@ -1490,13 +1491,12 @@ export class AudiusAPIClient {
       }
     | {}
   > {
-    const response: Nullable<APIResponse<APIBlockConfirmation>> =
-      await this._getResponse(
-        ROOT_ENDPOINT_MAP.blockConfirmation,
-        { blockhash, blocknumber },
-        true,
-        PathType.RootPath
-      )
+    const response = await this._getResponse<APIResponse<APIBlockConfirmation>>(
+      ROOT_ENDPOINT_MAP.blockConfirmation,
+      { blockhash, blocknumber },
+      true,
+      PathType.RootPath
+    )
     if (!response) return {}
     return response.data
   }
@@ -1516,23 +1516,24 @@ export class AudiusAPIClient {
           'X-User-ID': current_user_id.toString()
         }
       : undefined
-    const response: Nullable<APIResponse<GetSocialFeedResponse>> =
-      await this._getResponse(
-        ROOT_ENDPOINT_MAP.feed,
-        {
-          offset,
-          limit,
-          with_users,
-          filter,
-          tracks_only,
-          followee_user_id: followee_user_ids
-            ? followee_user_ids.map((id) => id.toString())
-            : undefined
-        },
-        true,
-        PathType.RootPath,
-        headers
-      )
+    const response = await this._getResponse<
+      APIResponse<GetSocialFeedResponse>
+    >(
+      ROOT_ENDPOINT_MAP.feed,
+      {
+        offset,
+        limit,
+        with_users,
+        filter,
+        tracks_only,
+        followee_user_id: followee_user_ids
+          ? followee_user_ids.map((id) => id.toString())
+          : undefined
+      },
+      true,
+      PathType.RootPath,
+      headers
+    )
     if (!response) return null
     return response.data
   }
@@ -1554,11 +1555,10 @@ export class AudiusAPIClient {
       sort_method: sortMethod
     }
 
-    const response: Nullable<APIResponse<APIActivity[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getUserTrackHistory(encodedUserId),
-        params
-      )
+    const response = await this._getResponse<APIResponse<APIActivity[]>>(
+      FULL_ENDPOINT_MAP.getUserTrackHistory(encodedUserId),
+      params
+    )
 
     if (!response) return []
 
@@ -1582,14 +1582,10 @@ export class AudiusAPIClient {
       user_id: encodedCurrentUserId || undefined
     }
 
-    const response: Nullable<APIResponse<SupporterResponse>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getUserSupporter(
-          encodedUserId,
-          encodedSupporterUserId
-        ),
-        params
-      )
+    const response = await this._getResponse<APIResponse<SupporterResponse>>(
+      FULL_ENDPOINT_MAP.getUserSupporter(encodedUserId, encodedSupporterUserId),
+      params
+    )
     return response ? response.data : null
   }
 
@@ -1597,15 +1593,14 @@ export class AudiusAPIClient {
     const params = {
       reacted_to_ids: reactedToIds
     }
-    const response: Nullable<APIResponse<GetReactionResponse>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getReaction,
-        params,
-        false,
-        PathType.VersionFullPath,
-        {},
-        true
-      ) // Perform without retries, using 'split' approach for multiple query params
+    const response = await this._getResponse<APIResponse<GetReactionResponse>>(
+      FULL_ENDPOINT_MAP.getReaction,
+      params,
+      false,
+      PathType.VersionFullPath,
+      {},
+      true
+    ) // Perform without retries, using 'split' approach for multiple query params
 
     if (!response || !response.data.length) return null
 
@@ -1627,11 +1622,10 @@ export class AudiusAPIClient {
       offset
     }
 
-    const response: Nullable<APIResponse<SupportingResponse[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getSupporting(encodedUserId),
-        params
-      )
+    const response = await this._getResponse<APIResponse<SupportingResponse[]>>(
+      FULL_ENDPOINT_MAP.getSupporting(encodedUserId),
+      params
+    )
     return response ? response.data : null
   }
 
@@ -1643,11 +1637,10 @@ export class AudiusAPIClient {
       offset
     }
 
-    const response: Nullable<APIResponse<SupporterResponse[]>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getSupporters(encodedUserId),
-        params
-      )
+    const response = await this._getResponse<APIResponse<SupporterResponse[]>>(
+      FULL_ENDPOINT_MAP.getSupporters(encodedUserId),
+      params
+    )
     return response ? response.data : null
   }
 
@@ -1678,8 +1671,10 @@ export class AudiusAPIClient {
       tx_signatures: txSignatures
     }
 
-    const response: Nullable<APIResponse<GetTipsResponse[]>> =
-      await this._getResponse(FULL_ENDPOINT_MAP.getTips, params)
+    const response = await this._getResponse<APIResponse<GetTipsResponse[]>>(
+      FULL_ENDPOINT_MAP.getTips,
+      params
+    )
     if (response && response.data) {
       return response.data
         .map((u) => {
@@ -1735,11 +1730,9 @@ export class AudiusAPIClient {
       token_ids: tokenIdParams
     }
 
-    const response: Nullable<APIResponse<GetPremiumContentSignaturesResponse>> =
-      await this._getResponse(
-        FULL_ENDPOINT_MAP.getPremiumContentSignatures(encodedUserId),
-        params
-      )
+    const response = await this._getResponse<
+      APIResponse<GetPremiumContentSignaturesResponse>
+    >(FULL_ENDPOINT_MAP.getPremiumContentSignatures(encodedUserId), params)
     return response ? response.data : null
   }
 

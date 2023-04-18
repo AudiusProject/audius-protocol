@@ -13,8 +13,8 @@ import {
   ProfilePictureSizes,
   SquareSizes,
   User,
-  artistRecommendationsUISelectors,
-  artistRecommendationsUIActions,
+  relatedArtistsUISelectors,
+  relatedArtistsUIActions,
   usersSocialActions as socialActions,
   CommonState
 } from '@audius/common'
@@ -35,8 +35,8 @@ import { useIsMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './ArtistRecommendations.module.css'
-const { getRelatedArtists } = artistRecommendationsUISelectors
-const { fetchRelatedArtists } = artistRecommendationsUIActions
+const { selectRelatedArtistsUsers } = relatedArtistsUISelectors
+const { fetchRelatedArtists } = relatedArtistsUIActions
 
 export type ArtistRecommendationsProps = {
   ref?: MutableRefObject<HTMLDivElement>
@@ -141,13 +141,13 @@ export const ArtistRecommendations = forwardRef(
     useEffect(() => {
       dispatch(
         fetchRelatedArtists({
-          userId: artistId
+          artistId
         })
       )
     }, [dispatch, artistId])
 
     const suggestedArtists = useSelector<CommonState, User[]>((state) =>
-      getRelatedArtists(state, { id: artistId })
+      selectRelatedArtistsUsers(state, { id: artistId })
     )
 
     // Follow/Unfollow listeners

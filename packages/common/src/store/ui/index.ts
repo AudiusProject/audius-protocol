@@ -2,11 +2,12 @@ export * as addToPlaylistUISelectors from './add-to-playlist/selectors'
 export * as addToPlaylistUIActions from './add-to-playlist/actions'
 export { default as addToPlaylistUIReducer } from './add-to-playlist/reducer'
 
-export * as artistRecommendationsUISelectors from './artist-recommendations/selectors'
+export * as relatedArtistsUISelectors from './related-artists/selectors'
 export {
-  default as artistRecommendationsUIReducer,
-  actions as artistRecommendationsUIActions
-} from './artist-recommendations/slice'
+  default as relatedArtistsUIReducer,
+  actions as relatedArtistsUIActions
+} from './related-artists/slice'
+export { default as relatedArtistsSagas } from './related-artists/sagas'
 
 export * as collectibleDetailsUISelectors from './collectible-details/selectors'
 export {

@@ -20,7 +20,7 @@ import {
   profilePageActions as profileActions,
   profilePageTracksLineupActions as tracksActions,
   profilePageFeedLineupActions as feedActions,
-  artistRecommendationsUISelectors,
+  relatedArtistsUISelectors,
   OverflowSource,
   OverflowAction,
   mobileOverflowMenuUIActions,
@@ -62,7 +62,7 @@ const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { getRelatedArtists } = artistRecommendationsUISelectors
+const { selectRelatedArtistsUsers } = relatedArtistsUISelectors
 
 const {
   makeGetProfile,
@@ -976,7 +976,7 @@ function makeMapStateToProps() {
       playing: getPlaying(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
-      relatedArtists: getRelatedArtists(state, {
+      relatedArtists: selectRelatedArtistsUsers(state, {
         id: getProfileUserId(state, handleLower) ?? 0
       }),
       permissionsMap: getPermissionsMap(state),

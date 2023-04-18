@@ -1,0 +1,12 @@
+.container {
+  margin-top: var(--unit-8);
+}
+
+.userGroupIcon {
+  width: 18px;
+  height: 18px;
+}
+
+.userGroupIcon path {
+  fill: var(--neutral);
+}

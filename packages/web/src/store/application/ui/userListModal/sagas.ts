@@ -8,13 +8,15 @@ import {
   mutualsUserListActions,
   followingUserListActions as followingActions,
   followersUserListActions as followerActions,
-  favoritesUserListActions as favoritesActions
+  favoritesUserListActions as favoritesActions,
+  relatedArtistsUserListActions
 } from '@audius/common'
 import { takeEvery, put } from 'redux-saga/effects'
 
 import { setUsers } from './slice'
 import { UserListType, UserListEntityType } from './types'
 const { setMutuals } = mutualsUserListActions
+const { setRelatedArtists } = relatedArtistsUserListActions
 
 function* watchSetUsers() {
   yield takeEvery(
@@ -55,6 +57,9 @@ function* watchSetUsers() {
           yield put(
             notificationActions.setNotificationId(id as unknown as string)
           )
+          break
+        case UserListType.RELATED_ARTISTS:
+          yield put(setRelatedArtists(id))
           break
         case UserListType.SUPPORTER:
           yield put(topSupporterActions.setTopSupporters(id))
