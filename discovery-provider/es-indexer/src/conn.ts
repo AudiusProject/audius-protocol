@@ -15,7 +15,7 @@ let pool: PG | undefined = undefined
 export function dialPg(): PG {
   if (!pool) {
     let connectionString = process.env.audius_db_url
-    pool = new PG({ connectionString, application_name: 'es-indexer' })
+    pool = new PG({ connectionString, application_name: 'es-indexer', types })
   }
 
   return pool
