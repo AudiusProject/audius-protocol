@@ -82,32 +82,25 @@ export class TracksApi extends TracksApiWithoutStream {
         async () => {
           console.log('trackFile', requestParameters.trackFile)
           // Upload track file
-          const trackFileFormData = new FormData()
-          trackFileFormData.append('template', 'audio')
-          trackFileFormData.append(
+          const formData = new FormData()
+          formData.append('template', 'audio')
+          formData.append(
             'files',
             requestParameters.trackFile.buffer,
             requestParameters.trackFile.name
           )
-          const trackFileUploadResponse = await axios({
+          const response = await axios({
             method: 'post',
             // TODO: After the stack is better integrated, change to endpoint like this.creatorNodeEndpoint
-            url: 'http://audius-protocol-storage-1/storage/api/v1/file',
-            data: trackFileFormData,
+            url: 'http://audius-protocol-creator-node-1/mediorum/uploads',
+            data: formData,
             headers: {
-              'Content-Type': 'multipart/form-data'
+              'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
             },
             onUploadProgress: requestParameters.onProgress
           })
-          const trackFileUploadResponseData = trackFileUploadResponse.data
-          const { id } = trackFileUploadResponseData[0]
-          console.log(
-            `uploaded track: http://audius-protocol-storage-1/storage/search/${id}`
-          )
-          console.log(
-            'trackFileUploadResponseData',
-            JSON.stringify(trackFileUploadResponseData)
-          )
+          // const { id } = trackFileUploadResponseData[0]
+          console.log('response', response)
 
           // TODO: Upload coverArtFile (same /storage/api/v1/file endpoint)
 
