@@ -55,7 +55,8 @@ const useStyles = makeStyles(({ spacing, palette }) => ({
   subtitle: {
     color: palette.neutral
   },
-  selection: {
+  selectionContainer: {
+    marginLeft: spacing(-10),
     marginTop: spacing(2),
     padding: spacing(4),
     backgroundColor: palette.neutralLight10,
@@ -125,7 +126,7 @@ export const HiddenAvailability = ({
         </Text>
       </View>
       {selected && (
-        <View style={styles.selection}>
+        <View style={styles.selectionContainer}>
           <SwitchField
             name='field_visibility.genre'
             label={messages.showGenre}

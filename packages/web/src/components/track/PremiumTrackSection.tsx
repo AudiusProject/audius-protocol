@@ -33,13 +33,15 @@ import { ReactComponent as IconExternalLink } from 'assets/img/iconExternalLink.
 import { ReactComponent as IconVerified } from 'assets/img/iconVerified.svg'
 import { useModalState } from 'common/hooks/useModalState'
 import { showRequiresAccountModal } from 'common/store/pages/signon/actions'
+import { ArtistPopover } from 'components/artist/ArtistPopover'
 import FollowButton from 'components/follow-button/FollowButton'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
 import { IconTip } from 'components/notification/Notification/components/icons'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
+import { emptyStringGuard } from 'pages/track-page/utils'
 import { AppState } from 'store/types'
-import { SIGN_UP_PAGE } from 'utils/route'
+import { profilePage, SIGN_UP_PAGE } from 'utils/route'
 
 import styles from './GiantTrackTile.module.css'
 
@@ -64,20 +66,20 @@ const messages = {
   unlockCollectibleGatedTrack:
     'To unlock this track, you must link a wallet containing a collectible from:',
   aCollectibleFrom: 'A Collectible from ',
-  unlockingCollectibleGatedTrackSuffix: ' was found in a linked wallet.',
+  unlockingCollectibleGatedTrackSuffix: 'was found in a linked wallet.',
   unlockedCollectibleGatedTrackSuffix:
-    ' was found in a linked wallet. This track is now available.',
+    'was found in a linked wallet. This track is now available.',
   ownFollowGated: 'Users can unlock access by following your account!',
   unlockFollowGatedTrackPrefix: 'Follow',
   thankYouForFollowing: 'Thank you for following',
   unlockedFollowGatedTrackSuffix: '! This track is now available.',
   ownTipGated: 'Users can unlock access by sending you a tip!',
   unlockTipGatedTrackPrefix: 'Send',
-  unlockTipGatedTrackSuffix: ' a tip.',
+  unlockTipGatedTrackSuffix: 'a tip.',
   thankYouForSupporting: 'Thank you for supporting',
-  unlockingTipGatedTrackSuffix: ' by sending them a tip!',
+  unlockingTipGatedTrackSuffix: 'by sending them a tip!',
   unlockedTipGatedTrackSuffix:
-    ' by sending them a tip! This track is now available.'
+    'by sending them a tip! This track is now available.'
 }
 
 type PremiumTrackAccessSectionProps = {
@@ -86,6 +88,7 @@ type PremiumTrackAccessSectionProps = {
   followee: Nullable<User>
   tippedUser: Nullable<User>
   goToCollection: () => void
+  renderArtist: (entity: User) => JSX.Element
   isOwner: boolean
   className?: string
   buttonClassName?: string
@@ -97,6 +100,7 @@ const LockedPremiumTrackSection = ({
   followee,
   tippedUser,
   goToCollection,
+  renderArtist,
   className,
   buttonClassName
 }: PremiumTrackAccessSectionProps) => {
@@ -186,37 +190,27 @@ const LockedPremiumTrackSection = ({
       )
     }
 
-    if (premiumConditions.follow_user_id) {
+    if (premiumConditions.follow_user_id && followee) {
       return (
         <div className={styles.premiumContentSectionDescription}>
           <div>
             <span>{messages.unlockFollowGatedTrackPrefix}&nbsp;</span>
-            <span>{followee?.name}</span>
-            <UserBadges
-              userId={premiumConditions.follow_user_id}
-              className={styles.badgeIcon}
-              badgeSize={14}
-              useSVGTiers
-            />
+            {renderArtist(followee)}
             <span>{messages.period}</span>
           </div>
         </div>
       )
     }
 
-    if (premiumConditions.tip_user_id) {
+    if (premiumConditions.tip_user_id && tippedUser) {
       return (
         <div className={styles.premiumContentSectionDescription}>
           <div>
             <span>{messages.unlockTipGatedTrackPrefix}&nbsp;</span>
-            <span>{tippedUser?.name}</span>
-            <UserBadges
-              userId={premiumConditions.tip_user_id}
-              className={styles.badgeIcon}
-              badgeSize={14}
-              useSVGTiers
-            />
-            <span>{messages.unlockTipGatedTrackSuffix}</span>
+            {renderArtist(tippedUser)}
+            <span className={styles.suffix}>
+              {messages.unlockTipGatedTrackSuffix}
+            </span>
           </div>
         </div>
       )
@@ -226,7 +220,7 @@ const LockedPremiumTrackSection = ({
       'No entity for premium conditions... should not have reached here.'
     )
     return null
-  }, [premiumConditions, followee, tippedUser, goToCollection])
+  }, [premiumConditions, followee, tippedUser, goToCollection, renderArtist])
 
   const renderButton = useCallback(() => {
     if (premiumConditions.nft_collection) {
@@ -297,6 +291,7 @@ const UnlockingPremiumTrackSection = ({
   followee,
   tippedUser,
   goToCollection,
+  renderArtist,
   className
 }: PremiumTrackAccessSectionProps) => {
   const renderUnlockingDescription = useCallback(() => {
@@ -313,36 +308,26 @@ const UnlockingPremiumTrackSection = ({
       )
     }
 
-    if (premiumConditions.follow_user_id) {
+    if (premiumConditions.follow_user_id && followee) {
       return (
         <div>
           <LoadingSpinner className={styles.spinner} />
           <span>{messages.thankYouForFollowing}&nbsp;</span>
-          <span>{followee?.name}</span>
-          <UserBadges
-            userId={premiumConditions.follow_user_id}
-            className={styles.badgeIcon}
-            badgeSize={14}
-            useSVGTiers
-          />
+          {renderArtist(followee)}
           <span>{messages.exclamationMark}</span>
         </div>
       )
     }
 
-    if (premiumConditions.tip_user_id) {
+    if (premiumConditions.tip_user_id && tippedUser) {
       return (
         <div>
           <LoadingSpinner className={styles.spinner} />
           <span>{messages.thankYouForSupporting}&nbsp;</span>
-          <span>{tippedUser?.name}</span>
-          <UserBadges
-            userId={premiumConditions.tip_user_id}
-            className={styles.badgeIcon}
-            badgeSize={14}
-            useSVGTiers
-          />
-          <span>{messages.unlockingTipGatedTrackSuffix}</span>
+          {renderArtist(tippedUser)}
+          <span className={styles.suffix}>
+            {messages.unlockingTipGatedTrackSuffix}
+          </span>
         </div>
       )
     }
@@ -350,7 +335,7 @@ const UnlockingPremiumTrackSection = ({
       'No entity for premium conditions... should not have reached here.'
     )
     return null
-  }, [premiumConditions, followee, tippedUser, goToCollection])
+  }, [premiumConditions, followee, tippedUser, goToCollection, renderArtist])
 
   return (
     <div className={className}>
@@ -372,6 +357,7 @@ const UnlockedPremiumTrackSection = ({
   followee,
   tippedUser,
   goToCollection,
+  renderArtist,
   isOwner,
   className
 }: PremiumTrackAccessSectionProps) => {
@@ -401,7 +387,7 @@ const UnlockedPremiumTrackSection = ({
       )
     }
 
-    if (premiumConditions.follow_user_id) {
+    if (premiumConditions.follow_user_id && followee) {
       return isOwner ? (
         <div>
           <span>{messages.ownFollowGated}</span>
@@ -410,19 +396,13 @@ const UnlockedPremiumTrackSection = ({
         <div>
           <IconVerified className={styles.verifiedGreenIcon} />
           <span>{messages.thankYouForFollowing}&nbsp;</span>
-          <span>{followee?.name}</span>
-          <UserBadges
-            userId={premiumConditions.follow_user_id}
-            className={styles.badgeIcon}
-            badgeSize={14}
-            useSVGTiers
-          />
+          {renderArtist(followee)}
           <span>{messages.unlockedFollowGatedTrackSuffix}</span>
         </div>
       )
     }
 
-    if (premiumConditions.tip_user_id) {
+    if (premiumConditions.tip_user_id && tippedUser) {
       return isOwner ? (
         <div>
           <span>{messages.ownTipGated}</span>
@@ -431,14 +411,10 @@ const UnlockedPremiumTrackSection = ({
         <div>
           <IconVerified className={styles.verifiedGreenIcon} />
           <span>{messages.thankYouForSupporting}&nbsp;</span>
-          <span>{tippedUser?.name}</span>
-          <UserBadges
-            userId={premiumConditions.tip_user_id}
-            className={styles.badgeIcon}
-            badgeSize={14}
-            useSVGTiers
-          />
-          <span>{messages.unlockedTipGatedTrackSuffix}</span>
+          {renderArtist(tippedUser)}
+          <span className={styles.suffix}>
+            {messages.unlockedTipGatedTrackSuffix}
+          </span>
         </div>
       )
     }
@@ -447,7 +423,14 @@ const UnlockedPremiumTrackSection = ({
       'No entity for premium conditions... should not have reached here.'
     )
     return null
-  }, [premiumConditions, isOwner, followee, tippedUser, goToCollection])
+  }, [
+    premiumConditions,
+    isOwner,
+    followee,
+    tippedUser,
+    goToCollection,
+    renderArtist
+  ])
 
   return (
     <div className={className}>
@@ -498,6 +481,7 @@ export const PremiumTrackSection = ({
   const { isEnabled: isGatedContentEnabled } = useFlag(
     FeatureFlags.GATED_CONTENT_ENABLED
   )
+  const dispatch = useDispatch()
   const premiumTrackStatusMap = useSelector(getPremiumTrackStatusMap)
   const premiumTrackStatus = premiumTrackStatusMap[trackId] ?? null
   const { follow_user_id: followUserId, tip_user_id: tipUserId } =
@@ -534,6 +518,28 @@ export const PremiumTrackSection = ({
     }
   }, [premiumConditions])
 
+  const renderArtist = useCallback(
+    (entity: User) => (
+      <ArtistPopover handle={entity.handle} mouseEnterDelay={0.1}>
+        <h2
+          className={styles.premiumTrackOwner}
+          onClick={() =>
+            dispatch(pushRoute(profilePage(emptyStringGuard(entity.handle))))
+          }
+        >
+          {entity.name}
+          <UserBadges
+            userId={entity.user_id}
+            className={styles.badgeIcon}
+            badgeSize={14}
+            useSVGTiers
+          />
+        </h2>
+      </ArtistPopover>
+    ),
+    [dispatch]
+  )
+
   if (!isGatedContentEnabled) return null
   if (!premiumConditions) return null
   if (!shouldDisplay) return null
@@ -549,6 +555,7 @@ export const PremiumTrackSection = ({
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
+          renderArtist={renderArtist}
           isOwner={isOwner}
           className={className}
         />
@@ -567,6 +574,7 @@ export const PremiumTrackSection = ({
           followee={followee}
           tippedUser={tippedUser}
           goToCollection={handleGoToCollection}
+          renderArtist={renderArtist}
           isOwner={isOwner}
           className={className}
         />
@@ -582,6 +590,7 @@ export const PremiumTrackSection = ({
         followee={followee}
         tippedUser={tippedUser}
         goToCollection={handleGoToCollection}
+        renderArtist={renderArtist}
         isOwner={isOwner}
         className={cn(styles.premiumContentSectionLocked, className)}
         buttonClassName={buttonClassName}

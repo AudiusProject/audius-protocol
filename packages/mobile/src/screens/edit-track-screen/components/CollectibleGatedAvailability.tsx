@@ -14,7 +14,7 @@ import { Text, useLink } from 'app/components/core'
 import { HelpCallout } from 'app/components/help-callout/HelpCallout'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useSetTrackAvailabilityFields } from 'app/hooks/useSetTrackAvailabilityFields'
-import { makeStyles } from 'app/styles'
+import { flexRowCentered, makeStyles } from 'app/styles'
 import { useColor } from 'app/utils/theme'
 
 import type { TrackAvailabilitySelectionProps } from './types'
@@ -46,8 +46,7 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     width: screenWidth - spacing(22)
   },
   titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center'
+    ...flexRowCentered()
   },
   title: {
     fontSize: 22,
@@ -71,8 +70,7 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
   },
   learnMore: {
     marginTop: spacing(4),
-    flexDirection: 'row',
-    alignItems: 'center'
+    ...flexRowCentered()
   },
   learnMoreText: {
     marginRight: spacing(1),
@@ -80,7 +78,8 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     fontSize: typography.fontSize.large,
     color: palette.neutralLight4
   },
-  collectionContainer: {
+  selectionContainer: {
+    marginLeft: spacing(-10),
     marginTop: spacing(4),
     paddingVertical: spacing(4),
     paddingHorizontal: spacing(6),
@@ -89,8 +88,7 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     borderRadius: spacing(2)
   },
   pickACollection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    ...flexRowCentered(),
     justifyContent: 'space-between'
   },
   ownersOf: {
@@ -100,8 +98,7 @@ const useStyles = makeStyles(({ typography, spacing, palette }) => ({
     fontSize: typography.fontSize.small
   },
   collection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    ...flexRowCentered(),
     padding: spacing(2),
     backgroundColor: palette.neutralLight8,
     borderWidth: 1,
@@ -247,7 +244,7 @@ export const CollectibleGatedAvailability = ({
       {selected && (
         <TouchableOpacity
           onPress={handlePickACollection}
-          style={styles.collectionContainer}
+          style={styles.selectionContainer}
           disabled={disabled || disabledContent}
         >
           <View style={styles.pickACollection}>

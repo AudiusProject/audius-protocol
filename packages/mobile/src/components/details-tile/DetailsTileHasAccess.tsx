@@ -1,13 +1,7 @@
 import type { ReactNode } from 'react'
 import { useCallback } from 'react'
 
-import type {
-  Nullable,
-  PremiumConditions,
-  PremiumConditionsEthNFTCollection,
-  PremiumConditionsSolNFTCollection,
-  User
-} from '@audius/common'
+import type { PremiumConditions, User } from '@audius/common'
 import { usePremiumConditionsEntity } from '@audius/common'
 import type { ViewStyle } from 'react-native'
 import { View, Text } from 'react-native'
@@ -18,6 +12,7 @@ import IconUnlocked from 'app/assets/images/iconUnlocked.svg'
 import IconVerified from 'app/assets/images/iconVerified.svg'
 import { useLink } from 'app/components/core'
 import UserBadges from 'app/components/user-badges'
+import { useNavigation } from 'app/hooks/useNavigation'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import { useColor, useThemePalette } from 'app/utils/theme'
 
@@ -31,12 +26,12 @@ const messages = {
   ownerCollectibleGatedPrefix:
     'Users can unlock access by linking a wallet containing a collectible from ',
   unlockedFollowGatedPrefix: 'Thank you for following ',
-  unlockedFollowGatedSuffix: ' ! This track is now available.',
+  unlockedFollowGatedSuffix: '! This track is now available.',
   ownerFollowGated: 'Users can unlock access by following your account!',
   unlockedTipGatedPrefix: 'Thank you for supporting ',
   unlockedTipGatedSuffix:
-    ' by sending them a tip!  This track is now available.',
-  ownerTipGated: 'Users can unlock access by sending you a tip! '
+    ' by sending them a tip! This track is now available.',
+  ownerTipGated: 'Users can unlock access by sending you a tip!'
 }
 
 const useStyles = makeStyles(({ palette, spacing, typography }) => ({
@@ -77,7 +72,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     width: spacing(6),
     height: spacing(6)
   },
-  collectionName: {
+  name: {
     color: palette.secondary
   },
   bottomMargin: {
@@ -87,11 +82,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
 
 type HasAccessProps = {
   renderDescription: () => ReactNode
-  nftCollection?: Nullable<
-    PremiumConditionsEthNFTCollection | PremiumConditionsSolNFTCollection
-  >
-  followee?: Nullable<User>
-  tippedUser?: Nullable<User>
+  isCollectibleGated?: boolean
   style?: ViewStyle
 }
 
@@ -122,9 +113,7 @@ const DetailsTileUnlockedSection = ({
 
 const DetailsTileOwnerSection = ({
   renderDescription,
-  nftCollection,
-  followee,
-  tippedUser,
+  isCollectibleGated,
   style
 }: HasAccessProps) => {
   const styles = useStyles()
@@ -133,14 +122,15 @@ const DetailsTileOwnerSection = ({
   return (
     <View style={[styles.root, style]}>
       <View style={[styles.titleContainer, styles.bottomMargin]}>
-        {nftCollection && (
+        {isCollectibleGated ? (
           <IconCollectible fill={neutral} width={16} height={16} />
-        )}
-        {(followee || tippedUser) && (
+        ) : (
           <IconSpecialAccess fill={neutral} width={16} height={16} />
         )}
         <Text style={styles.title}>
-          {nftCollection ? messages.collectibleGated : messages.specialAccess}
+          {isCollectibleGated
+            ? messages.collectibleGated
+            : messages.specialAccess}
         </Text>
       </View>
       {renderDescription()}
@@ -160,11 +150,19 @@ export const DetailsTileHasAccess = ({
   style
 }: DetailsTileHasAccessProps) => {
   const styles = useStyles()
+  const navigation = useNavigation()
 
   const { nftCollection, collectionLink, followee, tippedUser } =
     usePremiumConditionsEntity(premiumConditions)
 
   const { onPress: handlePressCollection } = useLink(collectionLink)
+
+  const handlePressArtistName = useCallback(
+    (handle: string) => () => {
+      navigation.push('Profile', { handle })
+    },
+    [navigation]
+  )
 
   const renderOwnerDescription = useCallback(() => {
     if (nftCollection) {
@@ -176,7 +174,7 @@ export const DetailsTileHasAccess = ({
             </Text>
             <Text
               onPress={handlePressCollection}
-              style={[styles.description, styles.collectionName]}
+              style={[styles.description, styles.name]}
             >
               {nftCollection.name}
             </Text>
@@ -184,30 +182,44 @@ export const DetailsTileHasAccess = ({
         </View>
       )
     }
-    if (followee) {
-      return (
-        <View style={styles.descriptionContainer}>
-          <Text>
-            <Text style={styles.description}>{messages.ownerFollowGated}</Text>
-          </Text>
-        </View>
-      )
-    }
-    if (tippedUser) {
-      return (
-        <View style={styles.descriptionContainer}>
-          <Text>
-            <Text style={styles.description}>{messages.ownerTipGated}</Text>
-          </Text>
-        </View>
-      )
-    }
 
-    console.warn(
-      'No entity for premium conditions... should not have reached here.'
+    return (
+      <View style={styles.descriptionContainer}>
+        <Text>
+          <Text style={styles.description}>
+            {followee ? messages.ownerFollowGated : messages.ownerTipGated}
+          </Text>
+        </Text>
+      </View>
     )
-    return null
-  }, [nftCollection, followee, tippedUser, handlePressCollection, styles])
+  }, [nftCollection, followee, handlePressCollection, styles])
+
+  const renderUnlockedSpecialAccessDescription = useCallback(
+    (args: { entity: User; prefix: string; suffix: string }) => {
+      const { entity, prefix, suffix } = args
+      return (
+        <View style={styles.descriptionContainer}>
+          <Text>
+            <Text style={styles.description}>{prefix}</Text>
+            <Text
+              style={[styles.description, styles.name]}
+              onPress={handlePressArtistName(entity.handle)}
+            >
+              {entity.name}
+            </Text>
+            <UserBadges
+              badgeSize={16}
+              user={entity}
+              nameStyle={styles.description}
+              hideName
+            />
+            <Text style={styles.description}>{suffix}</Text>
+          </Text>
+        </View>
+      )
+    },
+    [styles, handlePressArtistName]
+  )
 
   const renderUnlockedDescription = useCallback(() => {
     if (nftCollection) {
@@ -218,8 +230,8 @@ export const DetailsTileHasAccess = ({
               {messages.unlockedCollectibleGatedPrefix}
             </Text>
             <Text
+              style={[styles.description, styles.name]}
               onPress={handlePressCollection}
-              style={[styles.description, styles.collectionName]}
             >
               {nftCollection.name}
             </Text>
@@ -231,61 +243,38 @@ export const DetailsTileHasAccess = ({
       )
     }
     if (followee) {
-      return (
-        <View style={styles.descriptionContainer}>
-          <Text>
-            <Text style={styles.description}>
-              {messages.unlockedFollowGatedPrefix}
-            </Text>
-            <Text style={styles.description}>{followee.name}</Text>
-            <UserBadges
-              badgeSize={16}
-              user={followee}
-              nameStyle={styles.description}
-              hideName
-            />
-            <Text style={styles.description}>
-              {messages.unlockedFollowGatedSuffix}
-            </Text>
-          </Text>
-        </View>
-      )
+      return renderUnlockedSpecialAccessDescription({
+        entity: followee,
+        prefix: messages.unlockedFollowGatedPrefix,
+        suffix: messages.unlockedFollowGatedSuffix
+      })
     }
     if (tippedUser) {
-      return (
-        <View style={styles.descriptionContainer}>
-          <Text>
-            <Text style={styles.description}>
-              {messages.unlockedTipGatedPrefix}
-            </Text>
-            <Text style={styles.description}>{tippedUser.name}</Text>
-            <UserBadges
-              badgeSize={16}
-              user={tippedUser}
-              nameStyle={styles.description}
-              hideName
-            />
-            <Text style={styles.description}>
-              {messages.unlockedTipGatedSuffix}
-            </Text>
-          </Text>
-        </View>
-      )
+      return renderUnlockedSpecialAccessDescription({
+        entity: tippedUser,
+        prefix: messages.unlockedTipGatedPrefix,
+        suffix: messages.unlockedTipGatedSuffix
+      })
     }
 
     console.warn(
       'No entity for premium conditions... should not have reached here.'
     )
     return null
-  }, [nftCollection, followee, tippedUser, handlePressCollection, styles])
+  }, [
+    nftCollection,
+    followee,
+    tippedUser,
+    handlePressCollection,
+    renderUnlockedSpecialAccessDescription,
+    styles
+  ])
 
   if (isOwner) {
     return (
       <DetailsTileOwnerSection
-        nftCollection={nftCollection}
-        followee={followee}
-        tippedUser={tippedUser}
         renderDescription={renderOwnerDescription}
+        isCollectibleGated={!!nftCollection}
         style={style}
       />
     )
