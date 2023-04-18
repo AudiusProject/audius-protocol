@@ -413,10 +413,7 @@ function* recordListenWorker() {
     const trackId = yield* select(getTrackId)
     const playCounter = yield* select(getCounter)
     const audioPlayer = yield* getContext('audioPlayer')
-    const position = (yield* call([
-      audioPlayer,
-      audioPlayer.getPosition
-    ])) as number
+    const position = audioPlayer.getPosition()
 
     const newPlay = lastSeenPlayCounter !== playCounter
 
