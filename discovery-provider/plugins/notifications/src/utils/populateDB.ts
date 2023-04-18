@@ -694,7 +694,10 @@ export async function setupTwoUsersWithDevices(
     { user_id: user1, name: user1Name, is_current: true },
     { user_id: user2, name: user2Name, is_current: true }
   ])
-  await insertMobileSettings(identityDB, [{ userId: user1 }, { userId: user2 }])
+  await insertMobileSettings(identityDB, [
+    { userId: user1, messages: true },
+    { userId: user2, messages: true }
+  ])
   const deviceType1 = enum_NotificationDeviceTokens_deviceType.ios
   const awsARN1 = 'arn:1'
   const deviceType2 = enum_NotificationDeviceTokens_deviceType.android
