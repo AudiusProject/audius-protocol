@@ -22,10 +22,9 @@ import {
   playerActions,
   playerSelectors,
   queueSelectors,
-  premiumContentSelectors,
   getContext,
   FeatureFlags,
-  Track
+  doesUserHaveTrackAccess
 } from '@audius/common'
 import { all, call, put, select, takeEvery, takeLatest } from 'typed-redux-saga'
 
@@ -46,8 +45,6 @@ const {
   getUndershot
 } = queueSelectors
 
-const { getPremiumTrackSignatureMap } = premiumContentSelectors
-
 const { getTrackId: getPlayerTrackId, getUid: getPlayerUid } = playerSelectors
 
 const { add, clear, next, pause, play, queueAutoplay, previous, remove } =
@@ -59,31 +56,6 @@ const { getCollection } = cacheCollectionsSelectors
 const getUserId = accountSelectors.getUserId
 
 const QUEUE_SUBSCRIBER_NAME = 'QUEUE'
-
-function* doesUserHaveTrackAccess(track: Nullable<Track>) {
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
-  const isGatedContentEnabled = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.GATED_CONTENT_ENABLED
-  )
-  if (!isGatedContentEnabled) {
-    return true
-  }
-
-  const premiumTrackSignatureMap = yield* select(getPremiumTrackSignatureMap)
-
-  const {
-    track_id: trackId,
-    is_premium: isPremium,
-    premium_content_signature: premiumContentSignature
-  } = track ?? {}
-
-  const hasPremiumContentSignature =
-    !!premiumContentSignature ||
-    !!(trackId && premiumTrackSignatureMap[trackId])
-
-  return !isPremium || hasPremiumContentSignature
-}
 
 export function* getToQueue(prefix: string, entry: { kind: Kind; uid: UID }) {
   if (entry.kind === Kind.COLLECTIONS) {
@@ -295,6 +267,12 @@ export function* watchPause() {
 }
 
 export function* watchNext() {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isGatedContentEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.GATED_CONTENT_ENABLED
+  )
+
   yield* takeEvery(next.type, function* (action: ReturnType<typeof next>) {
     const skip = action.payload?.skip
 
@@ -324,10 +302,9 @@ export function* watchNext() {
     const id = (yield* select(getQueueTrackId)) as ID
     const track = yield* select(getTrack, { id })
     const user = yield* select(getUser, { id: track?.owner_id })
-    const doesUserHaveAccess = yield* call(
-      doesUserHaveTrackAccess,
-      track ?? null
-    )
+    const doesUserHaveAccess =
+      !isGatedContentEnabled ||
+      (yield* call(doesUserHaveTrackAccess, track ?? null))
 
     // Skip deleted, owner deactivated, or locked premium track
     if (
@@ -394,6 +371,12 @@ export function* watchQueueAutoplay() {
 }
 
 export function* watchPrevious() {
+  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
+  const isGatedContentEnabled = yield* call(
+    getFeatureEnabled,
+    FeatureFlags.GATED_CONTENT_ENABLED
+  )
+
   yield* takeEvery(
     previous.type,
     function* (action: ReturnType<typeof previous>) {
@@ -425,10 +408,9 @@ export function* watchPrevious() {
       const track = yield* select(getTrack, { id })
       const source = yield* select(getSource)
       const user = yield* select(getUser, { id: track?.owner_id })
-      const doesUserHaveAccess = yield* call(
-        doesUserHaveTrackAccess,
-        track ?? null
-      )
+      const doesUserHaveAccess =
+        !isGatedContentEnabled ||
+        (yield* call(doesUserHaveTrackAccess, track ?? null))
 
       // If we move to a previous song that's been
       // deleted or to which the user does not have access, skip over it.

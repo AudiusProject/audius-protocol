@@ -16,7 +16,8 @@ import {
   FeatureFlags,
   premiumContentSelectors,
   QueryParams,
-  Genre
+  Genre,
+  doesUserHaveTrackAccess
 } from '@audius/common'
 import { eventChannel } from 'redux-saga'
 import {
@@ -74,6 +75,10 @@ export function* watchPlay() {
       FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
       FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
     )
+    const isGatedContentEnabled = yield* call(
+      getFeatureEnabled,
+      FeatureFlags.GATED_CONTENT_ENABLED
+    )
 
     if (trackId) {
       // Load and set end action.
@@ -94,10 +99,6 @@ export function* watchPlay() {
       }
 
       yield* waitForWrite()
-      const isGatedContentEnabled = yield* call(
-        getFeatureEnabled,
-        FeatureFlags.GATED_CONTENT_ENABLED
-      )
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
       const apiClient = yield* getContext('apiClient')
 
@@ -190,9 +191,16 @@ export function* watchPlay() {
       }
     }
 
-    // Play.
-    audioPlayer.play()
-    yield* put(playSucceeded({ uid, trackId }))
+    // Play if user has access to track.
+    const track = yield* select(getTrack, { id: trackId })
+    const doesUserHaveAccess =
+      !isGatedContentEnabled || (yield* call(doesUserHaveTrackAccess, track))
+    if (doesUserHaveAccess) {
+      audioPlayer.play()
+      yield* put(playSucceeded({ uid, trackId }))
+    } else {
+      yield* put(queueActions.next({}))
+    }
   })
 }
 

@@ -16,7 +16,10 @@ import {
   playerSelectors,
   queueSelectors,
   FeatureFlags,
-  playbackRateValueMap
+  playbackRateValueMap,
+  premiumContentSelectors,
+  cacheTracksSelectors,
+  Kind
 } from '@audius/common'
 import { Scrubber } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
@@ -58,8 +61,10 @@ const { getTheme } = themeSelectors
 const { repostTrack, undoRepostTrack, saveTrack, unsaveTrack } =
   tracksSocialActions
 const { play, pause, next, previous, repeat, shuffle } = queueActions
-const { getLineupHasTracks } = lineupSelectors
+const { getLineupEntries } = lineupSelectors
 const { getAccountUser, getUserId } = accountSelectors
+const { getPremiumTrackSignatureMap } = premiumContentSelectors
+const { getTrack } = cacheTracksSelectors
 
 const VOLUME_GRANULARITY = 100.0
 const SEEK_INTERVAL = 200
@@ -289,7 +294,7 @@ class PlayBar extends Component {
 
   playable = () =>
     !!this.props.currentQueueItem.uid ||
-    this.props.lineupHasTracks ||
+    this.props.lineupHasAccessibleTracks ||
     this.props.collectible
 
   render() {
@@ -503,22 +508,50 @@ class PlayBar extends Component {
 const makeMapStateToProps = () => {
   const getCurrentQueueItem = makeGetCurrent()
 
-  const mapStateToProps = (state, props) => ({
-    accountUser: getAccountUser(state),
-    currentQueueItem: getCurrentQueueItem(state),
-    playCounter: getCounter(state),
-    collectible: getCollectible(state),
-    isPlaying: getPlaying(state),
-    isBuffering: getBuffering(state),
-    playingUid: getPlayingUid(state),
-    playbackRate: getPlaybackRate(state),
-    lineupHasTracks: getLineupHasTracks(
+  const mapStateToProps = (state) => {
+    const premiumTrackSignatureMap = getPremiumTrackSignatureMap(state)
+    const lineupEntries = getLineupEntries(
       getLineupSelectorForRoute(state),
       state
-    ),
-    userId: getUserId(state),
-    theme: getTheme(state)
-  })
+    )
+
+    // The lineup has accessible tracks when there is at least one track
+    // the user has access to i.e. a non-gated track or an unlocked gated track.
+    // This helps us determine whether there is a playable track.
+    // For example, in the case of a gated track that the user does not have
+    // access to, the track card / tile will not be playable because the
+    // play button is disabled; however, a user can still attempt to play
+    // the track by pressing spacebar. This will prevent the track
+    // from attempting to play in that case, and consequently avoiding the
+    // infinite loading loop on the playbar.
+    const lineupHasAccessibleTracks = lineupEntries.some((entry) => {
+      if (entry.kind !== Kind.TRACKS) return false
+
+      const { id } = entry
+      const {
+        is_premium: isPremium,
+        premium_content_signature: premiumContentSignature
+      } = getTrack(state, { id }) ?? {}
+
+      const hasPremiumContentSignature =
+        !!premiumContentSignature || !!premiumTrackSignatureMap[id]
+      return !isPremium || hasPremiumContentSignature
+    })
+
+    return {
+      accountUser: getAccountUser(state),
+      currentQueueItem: getCurrentQueueItem(state),
+      playCounter: getCounter(state),
+      collectible: getCollectible(state),
+      isPlaying: getPlaying(state),
+      isBuffering: getBuffering(state),
+      playingUid: getPlayingUid(state),
+      playbackRate: getPlaybackRate(state),
+      lineupHasAccessibleTracks,
+      userId: getUserId(state),
+      theme: getTheme(state)
+    }
+  }
   return mapStateToProps
 }
 
