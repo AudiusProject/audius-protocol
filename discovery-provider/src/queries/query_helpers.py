@@ -305,6 +305,9 @@ def populate_user_metadata(
         user[response_name_constants.total_balance] = user_balance.get(
             "total_balance", "0"
         )
+        user[
+            response_name_constants.total_audio_balance
+        ] = helpers.format_total_audio_balance(user_balance.get("total_balance", "0"))
         user[response_name_constants.associated_wallets_balance] = user_balance.get(
             "associated_wallets_balance", "0"
         )

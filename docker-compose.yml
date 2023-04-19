@@ -166,6 +166,13 @@ services:
       service: storagev2
     <<: *common
 
+  mediorum:
+    extends:
+      file: docker-compose.storagev2.yml
+      service: storagev2
+    container_name: audius-protocol-mediorum
+    <<: *common
+
   # Blockchain
 
   poa-ganache:
