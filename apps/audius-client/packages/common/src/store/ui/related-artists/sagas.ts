@@ -32,10 +32,13 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
     )
 
     let showingTopArtists = false
-    let filteredArtists = relatedArtists
-      .filter((user) => !user.does_current_user_follow && !user.is_deactivated)
+    const filteredArtists = relatedArtists.filter(
+      (user) => !user.is_deactivated
+    )
+    let suggestedFollows = relatedArtists
+      .filter((user) => !user.does_current_user_follow)
       .slice(0, 5)
-    if (filteredArtists.length === 0) {
+    if (suggestedFollows.length === 0) {
       const showTopArtistRecommendationsPercent =
         remoteConfigInstance.getRemoteVar(
           DoubleKeys.SHOW_ARTIST_RECOMMENDATIONS_FALLBACK_PERCENT
@@ -43,16 +46,18 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
       const showTopArtists = Math.random() < showTopArtistRecommendationsPercent
 
       if (showTopArtists) {
-        filteredArtists = yield fetchTopArtists()
+        suggestedFollows = yield* call(fetchTopArtists)
         showingTopArtists = true
       }
     }
-    if (filteredArtists.length > 0) {
+    if (filteredArtists.length > 0 || suggestedFollows.length > 0) {
       const relatedArtistIds = yield* cacheUsers(filteredArtists)
+      const suggestedFollowIds = yield* cacheUsers(suggestedFollows)
       yield* put(
         relatedArtistsActions.fetchRelatedArtistsSucceeded({
           artistId,
           relatedArtistIds,
+          suggestedFollowIds,
           isTopArtistsRecommendation: showingTopArtists
         })
       )

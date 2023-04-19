@@ -62,7 +62,7 @@ const { setFollowers } = followersUserListActions
 const { setFollowing } = followingUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
-const { selectRelatedArtistsUsers } = relatedArtistsUISelectors
+const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
 
 const {
   makeGetProfile,
@@ -976,7 +976,7 @@ function makeMapStateToProps() {
       playing: getPlaying(state),
       buffering: getBuffering(state),
       pathname: getLocationPathname(state),
-      relatedArtists: selectRelatedArtistsUsers(state, {
+      relatedArtists: selectSuggestedFollowsUsers(state, {
         id: getProfileUserId(state, handleLower) ?? 0
       }),
       permissionsMap: getPermissionsMap(state),

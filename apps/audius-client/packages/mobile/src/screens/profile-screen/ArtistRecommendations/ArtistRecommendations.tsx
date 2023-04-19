@@ -24,7 +24,7 @@ import { EventNames } from 'app/types/analytics'
 import { useSelectProfile } from '../selectors'
 
 import { ArtistLink } from './ArtistLink'
-const { selectRelatedArtistsUsers } = relatedArtistsUISelectors
+const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
 const { fetchRelatedArtists } = relatedArtistsUIActions
 const { followUser, unfollowUser } = usersSocialActions
 
@@ -101,7 +101,7 @@ export const ArtistRecommendations = (props: ArtistRecommendationsProps) => {
   })
 
   const suggestedArtists = useSelector((state) =>
-    selectRelatedArtistsUsers(state, { id: user_id })
+    selectSuggestedFollowsUsers(state, { id: user_id })
   )
 
   const isFollowingAllArtists = suggestedArtists.every(

@@ -19,6 +19,10 @@ const selectRelatedArtistIds = (state: CommonState, props: { id: ID }) => {
   return selectRelatedArtistsById(state, props.id)?.relatedArtistIds
 }
 
+const selectSuggestedFollowsIds = (state: CommonState, props: { id: ID }) => {
+  return selectRelatedArtistsById(state, props.id)?.suggestedFollowIds
+}
+
 export const selectRelatedArtists = (state: CommonState, props: { id: ID }) => {
   return selectRelatedArtistsById(state, props.id)
 }
@@ -27,6 +31,17 @@ const emptyRelatedArtists: User[] = []
 
 export const selectRelatedArtistsUsers = createDeepEqualSelector(
   [selectRelatedArtistIds, getUsers],
+  (relatedArtistIds, users) => {
+    if (!relatedArtistIds) return emptyRelatedArtists
+    const relatedArtistsPopulated = relatedArtistIds
+      .map((id) => users[id])
+      .filter(removeNullable)
+    return relatedArtistsPopulated
+  }
+)
+
+export const selectSuggestedFollowsUsers = createDeepEqualSelector(
+  [selectSuggestedFollowsIds, getUsers],
   (relatedArtistIds, users) => {
     if (!relatedArtistIds) return emptyRelatedArtists
     const relatedArtistsPopulated = relatedArtistIds
