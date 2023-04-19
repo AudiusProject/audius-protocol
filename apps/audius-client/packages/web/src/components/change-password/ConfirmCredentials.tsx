@@ -8,6 +8,7 @@ import {
 import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops'
 
 import Input from 'components/data-entry/Input'

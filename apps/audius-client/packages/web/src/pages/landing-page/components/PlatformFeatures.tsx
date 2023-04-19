@@ -1,6 +1,7 @@
 import { ReactNode } from 'react'
 
 import cn from 'classnames'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
 import crowdImg from 'assets/img/publicSite/ImgCrowd.jpg'

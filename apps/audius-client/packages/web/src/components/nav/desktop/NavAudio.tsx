@@ -13,6 +13,7 @@ import {
 } from '@audius/common'
 import BN from 'bn.js'
 import cn from 'classnames'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, Transition } from 'react-spring/renderprops'
 
 import { ReactComponent as IconCaretRight } from 'assets/img/iconCaretRight.svg'

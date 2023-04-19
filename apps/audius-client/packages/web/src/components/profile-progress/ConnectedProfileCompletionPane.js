@@ -6,6 +6,7 @@ import {
   challengesSelectors
 } from '@audius/common'
 import { connect, useDispatch } from 'react-redux'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 
 import ProfileCompletionPanel from 'components/profile-progress/components/ProfileCompletionPanel'

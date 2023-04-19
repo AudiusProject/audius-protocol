@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 
 import { Name } from '@audius/common'
 import { useDispatch } from 'react-redux'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition } from 'react-spring'
 
 import { make } from 'common/store/analytics/actions'

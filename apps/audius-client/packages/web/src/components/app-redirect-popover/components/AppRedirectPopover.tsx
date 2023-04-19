@@ -2,6 +2,7 @@ import { Fragment, useState, useEffect } from 'react'
 
 import { Button, ButtonType } from '@audius/stems'
 import { matchPath } from 'react-router-dom'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useTransition } from 'react-spring'
 
 import AppIcon from 'assets/img/appIcon240.png'

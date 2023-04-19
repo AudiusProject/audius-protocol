@@ -4,6 +4,7 @@ import { tippingSelectors, tippingActions } from '@audius/common'
 import { Button, ButtonType, IconCheck } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Transition, animated } from 'react-spring/renderprops'
 
 import { ReactComponent as IconCaretLeft } from 'assets/img/iconCaretLeft.svg'

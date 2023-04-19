@@ -2,6 +2,7 @@ import { createContext, useCallback } from 'react'
 
 import { CommonState, toastActions } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
 import { getSafeArea, SafeAreaDirection } from 'utils/safeArea'

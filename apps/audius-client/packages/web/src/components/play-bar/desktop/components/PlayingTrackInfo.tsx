@@ -2,6 +2,7 @@ import { memo, useEffect } from 'react'
 
 import { ID, Color, ProfilePictureSizes, SquareSizes } from '@audius/common'
 import cn from 'classnames'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useSpring } from 'react-spring'
 
 import { Draggable } from 'components/dragndrop'

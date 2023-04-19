@@ -1,5 +1,6 @@
 import { ReactElement } from 'react'
 
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, Transition } from 'react-spring/renderprops'
 
 type TransitionContainerProps<T> = {

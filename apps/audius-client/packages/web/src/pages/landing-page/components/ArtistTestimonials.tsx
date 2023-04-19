@@ -1,4 +1,5 @@
 import { Parallax } from 'react-scroll-parallax'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
 import artist3lau from 'assets/img/publicSite/ImgArtist3LAU.jpg'

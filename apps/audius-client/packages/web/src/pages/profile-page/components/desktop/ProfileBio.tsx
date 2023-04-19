@@ -11,6 +11,7 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import Linkify from 'linkify-react'
 import { useDispatch } from 'react-redux'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 import useMeasure from 'react-use-measure'
 

@@ -11,7 +11,9 @@ import {
   TikTokProfile
 } from '@audius/common'
 import cn from 'classnames'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Transition } from 'react-spring/renderprops'
 
 import imageSignUp1 from 'assets/img/2-DJ-4-3.jpg'

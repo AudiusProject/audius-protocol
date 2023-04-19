@@ -2,6 +2,7 @@ import { useEffect, useCallback } from 'react'
 
 import { useInstanceVar, nowPlayingUIActions } from '@audius/common'
 import { useDispatch } from 'react-redux'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 import { useDrag } from 'react-use-gesture'
 

@@ -3,6 +3,7 @@ import { useState, useEffect, ReactNode, memo } from 'react'
 import { useInstanceVar } from '@audius/common'
 import cn from 'classnames'
 import Lottie, { EventListener } from 'react-lottie'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 
 import iconRefreshPull from 'assets/animations/iconRefreshPull.json'

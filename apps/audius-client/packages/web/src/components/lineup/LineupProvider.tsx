@@ -15,6 +15,7 @@ import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
 import InfiniteScroll from 'react-infinite-scroller'
 import { connect } from 'react-redux'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Transition } from 'react-spring/renderprops'
 import { Dispatch } from 'redux'
 

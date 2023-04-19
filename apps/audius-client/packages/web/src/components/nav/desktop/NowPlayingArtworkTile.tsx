@@ -9,9 +9,9 @@ import {
   averageColorSelectors
 } from '@audius/common'
 import { IconButton } from '@audius/stems'
+import { animated, useSpring } from '@react-spring/web'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link, useHistory } from 'react-router-dom'
-import { animated, useSpring } from 'react-spring/web'
 
 import { ReactComponent as IconVisualizer } from 'assets/img/iconVisualizer.svg'
 import { Draggable } from 'components/dragndrop'
