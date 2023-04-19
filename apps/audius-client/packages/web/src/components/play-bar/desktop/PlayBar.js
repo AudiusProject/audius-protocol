@@ -510,10 +510,8 @@ const makeMapStateToProps = () => {
 
   const mapStateToProps = (state) => {
     const premiumTrackSignatureMap = getPremiumTrackSignatureMap(state)
-    const lineupEntries = getLineupEntries(
-      getLineupSelectorForRoute(state),
-      state
-    )
+    const lineupEntries =
+      getLineupEntries(getLineupSelectorForRoute(state), state) ?? []
 
     // The lineup has accessible tracks when there is at least one track
     // the user has access to i.e. a non-gated track or an unlocked gated track.
