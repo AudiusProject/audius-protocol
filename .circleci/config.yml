@@ -133,12 +133,18 @@ workflows:
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
             packages/web/.* run-web-workflow true
-            pacakges/probers/.* run-web-workflow true
+            packages/probers/.* run-web-workflow true
+            packages/common/.* run-web-workflow true
+            packages/common/.* run-mobile-workflow true
             packages/mobile/.* run-mobile-workflow true
             packages/stems/.* run-stems-workflow true
+            packages/stems/.* run-web-workflow true
             .circleci/.* run-web-workflow true
             .circleci/.* run-mobile-workflow true
             .circleci/.* run-stems-workflow true
+            packages/eslint-config-audius/.* run-web-workflow true
+            packages/eslint-config-audius/.* run-mobile-workflow true
+            packages/eslint-config-audius/.* run-stems-workflow true
           name: trigger-relevant-workflows
           filters:
             branches:
