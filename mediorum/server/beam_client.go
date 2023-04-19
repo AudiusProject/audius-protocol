@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"math/rand"
 	"net/http"
 	"sync"
 	"time"
@@ -36,7 +37,7 @@ func (ss *MediorumServer) startBeamClient() {
 	// polling:
 	// beam cid lookup from peers on an interval
 	for {
-		time.Sleep(time.Minute)
+		time.Sleep(time.Minute + jitterSeconds(120))
 
 		// beam data to a temp table
 		// and then copy to main table
@@ -86,8 +87,12 @@ func (ss *MediorumServer) startBeamClient() {
 			log.Println("beam all done", "took", time.Since(startedAt), "added", result.RowsAffected())
 		}
 
-		time.Sleep(time.Minute * 30)
+		time.Sleep(time.Minute*10 + jitterSeconds(120))
 	}
+}
+
+func jitterSeconds(n int) time.Duration {
+	return time.Second * time.Duration(rand.Intn(n))
 }
 
 func (ss *MediorumServer) beamFromPeer(peer Peer) error {
