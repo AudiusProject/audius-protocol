@@ -1,10 +1,8 @@
 import { useEffect, useRef, useMemo } from 'react'
 
-import { ResizeObserver } from '@juggle/resize-observer'
 import cn from 'classnames'
 import { uniqueId } from 'lodash'
 import PerfectScrollbar from 'react-perfect-scrollbar'
-import useMeasure from 'react-use-measure'
 
 import styles from './Scrollbar.module.css'
 import { ScrollbarProps } from './types'
@@ -21,7 +19,6 @@ export const Scrollbar = ({
   id,
   ...props
 }: ScrollbarProps) => {
-  const [ref] = useMeasure({ polyfill: ResizeObserver })
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const elementId = useMemo(() => id || uniqueId('scrollbar-'), [id])
 
@@ -67,7 +64,7 @@ export const Scrollbar = ({
       onMouseEnter={showScrollbar}
       onMouseLeave={hideScrollbar}
     >
-      <div ref={ref}>{children}</div>
+      <div>{children}</div>
     </PerfectScrollbar>
   )
 }

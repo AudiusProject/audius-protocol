@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Status } from '@audius/common'
+import { Status, useDebouncedCallback } from '@audius/common'
 import {
   fetchSearch,
   clearSearch
@@ -16,7 +16,6 @@ import IconClose from 'app/assets/images/iconRemove.svg'
 import type { TextInputProps, TextInputRef } from 'app/components/core'
 import { IconButton, TextInput } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
-import { useDebouncedCallback } from 'app/hooks/useDebouncedCallback'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'

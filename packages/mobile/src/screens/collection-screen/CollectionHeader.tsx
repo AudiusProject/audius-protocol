@@ -2,6 +2,7 @@ import { useLayoutEffect, useState } from 'react'
 
 import type { Collection, SmartCollectionVariant } from '@audius/common'
 import {
+  useThrottledCallback,
   accountSelectors,
   reachabilitySelectors,
   collectionPageSelectors,
@@ -15,7 +16,6 @@ import { getCollectionDownloadStatus } from 'app/components/offline-downloads/Co
 import { DownloadStatusIndicator } from 'app/components/offline-downloads/DownloadStatusIndicator'
 import { useIsOfflineModeEnabled } from 'app/hooks/useIsOfflineModeEnabled'
 import { useProxySelector } from 'app/hooks/useProxySelector'
-import { useThrottledCallback } from 'app/hooks/useThrottledCallback'
 import { setVisibility } from 'app/store/drawers/slice'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'

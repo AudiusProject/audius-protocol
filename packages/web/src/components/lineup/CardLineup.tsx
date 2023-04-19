@@ -2,7 +2,7 @@ import cn from 'classnames'
 import { connect } from 'react-redux'
 
 import { EmptyCard } from 'components/card/mobile/Card'
-import Draggable from 'components/dragndrop/Draggable'
+import { Draggable } from 'components/dragndrop'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
 import { AppState } from 'store/types'
 import { isMobile } from 'utils/clientUtil'
