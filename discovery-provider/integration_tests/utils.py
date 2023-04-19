@@ -173,7 +173,7 @@ def populate_mock_db(db, entities, block_offset=None):
             session.query(Track).filter(Track.is_current == True).filter(
                 Track.track_id == track_id
             ).update({"is_current": False})
-
+            track_created_at = datetime.now()
             track = Track(
                 blockhash=hex(i + block_offset),
                 blocknumber=i + block_offset,
@@ -196,8 +196,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 tags=track_meta.get("tags", None),
                 genre=track_meta.get("genre", ""),
                 remix_of=track_meta.get("remix_of", None),
-                updated_at=track_meta.get("updated_at", datetime.now()),
-                created_at=track_meta.get("created_at", datetime.now()),
+                updated_at=track_meta.get("updated_at", track_created_at),
+                created_at=track_meta.get("created_at", track_created_at),
                 release_date=track_meta.get("release_date", None),
                 is_unlisted=track_meta.get("is_unlisted", False),
                 is_premium=track_meta.get("is_premium", False),
@@ -207,6 +207,7 @@ def populate_mock_db(db, entities, block_offset=None):
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
+            playlist_created_at = datetime.now()
             playlist = Playlist(
                 blockhash=hex(i + block_offset),
                 blocknumber=i + block_offset,
@@ -229,8 +230,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 ),
                 description=playlist_meta.get("description", f"description_{i}"),
                 upc=playlist_meta.get("upc", f"upc_{i}"),
-                updated_at=playlist_meta.get("updated_at", datetime.now()),
-                created_at=playlist_meta.get("created_at", datetime.now()),
+                updated_at=playlist_meta.get("updated_at", playlist_created_at),
+                created_at=playlist_meta.get("created_at", playlist_created_at),
             )
             session.add(playlist)
 
