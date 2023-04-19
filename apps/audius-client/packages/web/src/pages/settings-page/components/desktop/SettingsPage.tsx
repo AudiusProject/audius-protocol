@@ -34,7 +34,6 @@ import { ChangePasswordModal } from 'components/change-password/ChangePasswordMo
 import ConfirmationBox from 'components/confirmation-box/ConfirmationBox'
 import Header from 'components/header/desktop/Header'
 import Page from 'components/page/Page'
-import { SelectedServices } from 'components/service-selection'
 import Toast from 'components/toast/Toast'
 import { ComponentPlacement } from 'components/types'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -390,9 +389,6 @@ export const SettingsPage = (props: SettingsPageProps) => {
         />
         <span>{`${messages.version} ${version}`}</span>
         <span>{messages.copyright}</span>
-      </div>
-      <div className={styles.selectedServices}>
-        <SelectedServices variant='lighter' />
       </div>
       <Modal
         title={

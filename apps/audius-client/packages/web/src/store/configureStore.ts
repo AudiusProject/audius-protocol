@@ -74,12 +74,6 @@ const statePruner = (state: AppState) => {
       action: state.router.action,
       location: state.router.location
     },
-    serviceSelection: {
-      primary: state.serviceSelection.primary,
-      secondaries: state.serviceSelection.secondaries,
-      services: state.serviceSelection.services,
-      status: state.serviceSelection.status
-    },
     signOn: {
       accountReady: state.signOn.accountReady,
       email: state.signOn.email,

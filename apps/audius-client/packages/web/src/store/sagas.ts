@@ -52,7 +52,6 @@ import queueSagas from 'common/store/queue/sagas'
 import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 import remixSettingsSagas from 'common/store/remix-settings/sagas'
 import searchBarSagas from 'common/store/search-bar/sagas'
-import serviceSelectionSagas from 'common/store/service-selection/sagas'
 import smartCollectionPageSagas from 'common/store/smart-collection/sagas'
 import socialSagas from 'common/store/social/sagas'
 import tippingSagas from 'common/store/tipping/sagas'
@@ -127,7 +126,6 @@ export default function* rootSaga() {
     transactionsPageSagas(),
     savedSagas(),
     searchResultsSagas(),
-    serviceSelectionSagas(),
     settingsSagas(),
     signOnSaga(),
     socialSagas(),

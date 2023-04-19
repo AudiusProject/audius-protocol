@@ -21,7 +21,6 @@ import FirstUploadModal from 'components/first-upload-modal/FirstUploadModal'
 import { InboxSettingsModal } from 'components/inbox-settings-modal/InboxSettingsModal'
 import { LockedContentModal } from 'components/locked-content-modal/LockedContentModal'
 import PasswordResetModal from 'components/password-reset/PasswordResetModal'
-import ServiceSelectionModal from 'components/service-selection/ServiceSelectionModal'
 import { ShareModal } from 'components/share-modal/ShareModal'
 import ShareSoundToTikTokModal from 'components/share-sound-to-tiktok-modal/ShareSoundToTikTokModal'
 import { StripeOnRampModal } from 'components/stripe-on-ramp-modal'
@@ -85,7 +84,6 @@ const Modals = () => {
       {commonModals.map(([modalName, Modal]) => {
         return <AppModal key={modalName} name={modalName} modal={Modal} />
       })}
-      <ServiceSelectionModal />
       <EditTrackModal />
       <PasswordResetModal />
       <FirstUploadModal />
