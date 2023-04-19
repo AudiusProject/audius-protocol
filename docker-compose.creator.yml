@@ -28,5 +28,3 @@ services:
     deploy:
       mode: replicated
       replicas: "${CREATOR_NODE_REPLICAS}"
-    profiles:
-      - creator
