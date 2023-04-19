@@ -78,6 +78,9 @@ def get_elapsed_time_redis(redis, redis_key):
     elapsed_time_in_sec = (int(time.time()) - int(last_seen)) if last_seen else None
     return elapsed_time_in_sec
 
+def get_backfilled_cid_data(redis):
+    backfilled_cid_data = redis.get("backfilled_cid_data")
+    return backfilled_cid_data.decode() if backfilled_cid_data else False
 
 # Returns DB block state & diff
 def _get_db_block_state():
@@ -327,6 +330,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
     discovery_nodes = get_all_other_nodes.get_all_other_nodes_cached(redis)
     final_poa_block = get_final_poa_block()
+    backfilled_cid_data = get_backfilled_cid_data(redis)
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -366,6 +370,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
         "network": {"discovery_nodes": discovery_nodes},
+        "backfilled_cid_data": backfilled_cid_data,
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
