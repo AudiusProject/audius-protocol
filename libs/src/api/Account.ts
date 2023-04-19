@@ -212,6 +212,7 @@ export class Account extends Base {
     const phases = {
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      SELECT_STORAGE_NODE: 'SELECT_STORAGE_NODE',
       ADD_USER: 'ADD_USER',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES'
     }
@@ -237,6 +238,14 @@ export class Account extends Base {
           }
         }
       }
+
+      // Select a storage node to send future requests to
+      phase = phases.SELECT_STORAGE_NODE
+      const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
+        1,
+        this.web3Manager.getWalletAddress()
+      )
+      await this.creatorNode.setEndpoint(randomNodes[0]!)
 
       // Add user to chain
       phase = phases.ADD_USER
