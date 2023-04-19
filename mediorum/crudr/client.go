@@ -29,7 +29,7 @@ func NewPeerClient(host string, crudr *Crudr) *PeerClient {
 		Host:   host,
 		outbox: make(chan []byte, outboxBufferSize),
 		crudr:  crudr,
-		logger: log15.New("cruder_client", host),
+		logger: log15.New("crudr_client", host),
 	}
 }
 

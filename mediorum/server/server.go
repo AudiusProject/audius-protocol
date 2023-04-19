@@ -44,6 +44,7 @@ type MediorumConfig struct {
 	LegacyFSRoot      string `json:"-"`
 	PrivateKey        string `json:"-"`
 	ListenPort        string `envconfig:"PORT"`
+	UpstreamCN        string
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -218,11 +219,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// reverse proxy stuff
-	if config.Env == "stage" || config.Env == "prod" {
-		upstream, _ := url.Parse("http://server:4000")
-		proxy := httputil.NewSingleHostReverseProxy(upstream)
-		echoServer.Any("*", echo.WrapHandler(proxy))
-	}
+	upstream, _ := url.Parse(config.UpstreamCN)
+	proxy := httputil.NewSingleHostReverseProxy(upstream)
+	echoServer.Any("*", echo.WrapHandler(proxy))
 
 	return ss, nil
 

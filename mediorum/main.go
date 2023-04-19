@@ -52,6 +52,7 @@ func startStagingOrProd(isProd bool) {
 		Dir:               "/tmp/mediorum",
 		PostgresDSN:       os.Getenv("dbUrl"),
 		LegacyFSRoot:      getenvWithDefault("storagePath", "/file_storage"),
+		UpstreamCN:        getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
 	}
 
 	ss, err := server.New(config)
@@ -117,6 +118,7 @@ func startDevCluster() {
 	dirTemplate := getenvWithDefault("dirTemplate", "/tmp/mediorum_dev_%d")
 	dbUrlTemplate := getenvWithDefault("dbUrlTemplate", "postgres://postgres:example@localhost:5454/m%d")
 	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
+	upstreamCNTemplate := getenvWithDefault("upstreamCNTemplate", "http://audius-protocol-creator-node-container-%d:4000")
 
 	network := devNetwork(hostNameTemplate, 3)
 	wg := sync.WaitGroup{}
@@ -130,6 +132,7 @@ func startDevCluster() {
 			Dir:               fmt.Sprintf(dirTemplate, idx+1),
 			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),
 			ListenPort:        fmt.Sprintf("199%d", idx+1),
+			UpstreamCN:        fmt.Sprintf(upstreamCNTemplate, idx+1),
 		}
 
 		wg.Add(1)

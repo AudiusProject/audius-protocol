@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     environment:
       - dirTemplate=/data/mediorum_dev_%d
-      - dbUrlTemplate=postgresql://postgres:postgres@db:5432/mediorum%d
+      - dbUrlTemplate=postgresql://postgres:postgres@db:5432/creator_node_%d
       - hostNameTemplate=http://audius-protocol-creator-node-%d
     ports:
       - 1991:1991
@@ -17,5 +17,8 @@ services:
       - 1995:1995
     volumes:
       - mediorum:/data
+    depends_on:
+      db:
+        condition: service_healthy
     profiles:
       - storagev2

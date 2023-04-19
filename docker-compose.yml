@@ -12,10 +12,6 @@ x-common:
     driver: json-file
   extra_hosts:
     # Allows the containers can talk to each other via their hostnames routed through nginx
-    - "audius-protocol-storage-1:host-gateway"
-    - "audius-protocol-storage-2:host-gateway"
-    - "audius-protocol-storage-3:host-gateway"
-    - "audius-protocol-storage-4:host-gateway"
     - "audius-protocol-comms-discovery-1:host-gateway"
     - "audius-protocol-comms-discovery-2:host-gateway"
     - "audius-protocol-comms-discovery-3:host-gateway"
@@ -27,9 +23,6 @@ x-common:
     - "audius-protocol-solana-test-validator-1:host-gateway"
     - "audius-protocol-eth-ganache-1:host-gateway"
     - "audius-protocol-poa-ganache-1:host-gateway"
-    - "audius-protocol-storagev2-1:host-gateway"
-    - "audius-protocol-storagev2-2:host-gateway"
-    - "audius-protocol-storagev2-3:host-gateway"
   deploy:
     resources:
       limits:
@@ -124,7 +117,7 @@ services:
 
   # Creator node (legacy)
 
-  creator-node:
+  creator-node-container:
     extends:
       file: docker-compose.creator.yml
       service: creator-node
