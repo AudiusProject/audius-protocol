@@ -11,7 +11,6 @@ import backend from 'common/store/backend/reducer'
 import confirmer from 'common/store/confirmer/reducer'
 import signOnReducer from 'common/store/pages/signon/reducer'
 import searchBar from 'common/store/search-bar/reducer'
-import serviceSelection from 'common/store/service-selection/slice'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
 import passwordReset from 'components/password-reset/store/reducer'
@@ -56,7 +55,6 @@ const createRootReducer = (routeHistory: History) =>
 
     // Pages
     dashboard,
-    serviceSelection,
 
     // Playback
     queue,

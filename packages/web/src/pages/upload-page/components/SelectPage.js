@@ -5,7 +5,6 @@ import { Button, ButtonType, IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 
-import { SelectedServices } from 'components/service-selection'
 import { Dropzone } from 'components/upload/Dropzone'
 import InvalidFileType from 'components/upload/InvalidFileType'
 
@@ -13,23 +12,6 @@ import styles from './SelectPage.module.css'
 import TracksPreview from './TracksPreview'
 
 class SelectPage extends Component {
-  state = {
-    showSelectServices: this.props.account
-      ? !this.props.account.creator_node_endpoint
-      : false
-  }
-
-  componentDidUpdate() {
-    const { account } = this.props
-    if (
-      account &&
-      !account.creator_node_endpoint &&
-      !this.state.showSelectServices
-    ) {
-      this.setState({ showSelectServices: true })
-    }
-  }
-
   componentWillUnmount() {
     this.props.stopPreview()
   }
@@ -47,7 +29,6 @@ class SelectPage extends Component {
       error,
       uploadType
     } = this.props
-    const { showSelectServices } = this.state
 
     const textAboveIcon = tracks.length > 0 ? 'More to Upload?' : null
 
@@ -103,7 +84,6 @@ class SelectPage extends Component {
             ) : null}
           </div>
         </div>
-        {showSelectServices && <SelectedServices requiresAtLeastOne />}
       </div>
     )
   }

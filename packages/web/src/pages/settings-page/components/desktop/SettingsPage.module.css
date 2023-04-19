@@ -54,10 +54,6 @@
   line-height: 20px;
 }
 
-.selectedServices > * {
-  justify-content: center;
-}
-
 .modalBody {
   max-width: 500px;
   width: 100%;
