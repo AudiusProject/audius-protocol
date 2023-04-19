@@ -4,11 +4,10 @@ import {
   relatedArtistsUserListSelectors,
   relatedArtistsUserListActions,
   RELATED_ARTISTS_USER_LIST_TAG,
-  accountSelectors
+  accountSelectors,
+  getContext
 } from '@audius/common'
 import { call, put, select } from 'typed-redux-saga'
-
-import { apiClient } from 'services/audius-api-client'
 
 import { watchRelatedArtistsError } from './errorSagas'
 
@@ -25,14 +24,15 @@ type FetchRelatedArtistsArgs = {
   pageSize: number
 }
 
-async function fetchRelatedArtists({
+function* fetchRelatedArtists({
   artistId,
   currentUserId,
   currentPage,
   pageSize
 }: FetchRelatedArtistsArgs) {
   const offset = currentPage * pageSize
-  const response = await apiClient.getRelatedArtists({
+  const apiClient = yield* getContext('apiClient')
+  const response = yield* call([apiClient, apiClient.getRelatedArtists], {
     userId: artistId,
     currentUserId,
     limit: pageSize,

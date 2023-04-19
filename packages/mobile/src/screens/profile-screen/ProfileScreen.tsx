@@ -9,7 +9,8 @@ import {
   shareModalUIActions,
   encodeUrlName,
   modalsActions,
-  FeatureFlags
+  FeatureFlags,
+  relatedArtistsUIActions
 } from '@audius/common'
 import { PortalHost } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
@@ -30,6 +31,7 @@ import { ProfileHeader } from './ProfileHeader'
 import { ProfileScreenSkeleton } from './ProfileScreenSkeleton'
 import { ProfileTabNavigator } from './ProfileTabNavigator'
 import { getIsOwner, useSelectProfileRoot } from './selectors'
+const { fetchRelatedArtists } = relatedArtistsUIActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const {
   fetchProfile: fetchProfileAction,
@@ -73,6 +75,11 @@ export const ProfileScreen = () => {
   const fetchProfile = useCallback(() => {
     dispatch(fetchProfileAction(handleLower, id ?? null, true, true, false))
   }, [dispatch, handleLower, id])
+
+  useEffect(() => {
+    if (!profile?.user_id) return
+    dispatch(fetchRelatedArtists({ artistId: profile.user_id }))
+  }, [dispatch, profile?.user_id])
 
   useFocusEffect(setCurrentUser)
 
