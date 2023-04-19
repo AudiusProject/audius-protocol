@@ -10,6 +10,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type SaveOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveOfRepostNotification
@@ -99,6 +100,10 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
       entityName = playlist?.playlist_name
     }
 
+    const title = 'New Favorite'
+    const body = `${saveOfRepostUserName} favorited your repost of ${entityName}`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -124,8 +129,8 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
               targetARN: device.awsARN
             },
             {
-              title: 'New Favorite',
-              body: `${saveOfRepostUserName} favorited your repost of ${entityName}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

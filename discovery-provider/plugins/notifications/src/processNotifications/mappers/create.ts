@@ -12,6 +12,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type CreateNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CreateTrackNotification | CreatePlaylistNotification
@@ -126,6 +127,11 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         this.identityDB,
         [userId]
       )
+
+      const title = 'New Artist Update'
+      const body = description
+      await sendBrowserNotification(userNotificationSettings, userId, title, body)
+
       // If the user has devices to the notification to, proceed
       if (
         userNotificationSettings.shouldSendPushNotification({
@@ -145,7 +151,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                 targetARN: device.awsARN
               },
               {
-                title: 'New Artist Update',
+                title,
                 body: description,
                 data: {
                   type: 'UserSubscription',

@@ -9,6 +9,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type TastemakerNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TastemakerNotification
@@ -84,6 +85,10 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       this.receiverUserId
     )
 
+    const title = `You're a Taste Maker!`
+    const body = `${entityName} is now trending thanks to you! Great work 🙌🏽`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -101,8 +106,8 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: `You're a Taste Maker!`,
-              body: `${entityName} is now trending thanks to you! Great work 🙌🏽`,
+              title,
+              body,
               data: {}
             }
           )

@@ -8,6 +8,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type AddTrackToPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AddTrackToPlaylistNotification
@@ -82,6 +83,10 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     const trackTitle = track.title
     const playlistName = playlist.playlist_name
 
+    const title = 'Your track got on a playlist! 💿'
+    const body = `${playlistOwnerName} added ${trackTitle} to their playlist ${playlistName}`
+    await sendBrowserNotification(userNotificationSettings, track.owner_id, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -100,8 +105,8 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
               targetARN: device.awsARN
             },
             {
-              title: 'Your track got on a playlist! 💿',
-              body: `${playlistOwnerName} added ${trackTitle} to their playlist ${playlistName}`,
+              title,
+              body,
               data: {
                 type: 'AddTrackToPlaylist',
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${

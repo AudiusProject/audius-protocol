@@ -10,6 +10,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type ReactionNotificationRow = Omit<NotificationRow, 'data'> & {
   data: ReactionNotification
@@ -70,6 +71,12 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     const reactingUserName = users[this.receiverUserId]?.name
     const tipAmount = formatWei(this.tipAmount, 'sol')
 
+    const title = `${capitalize(reactingUserName)} reacted`
+    const body = `${capitalize(
+      reactingUserName
+    )} reacted to your tip of ${tipAmount} $AUDIO`
+    await sendBrowserNotification(userNotificationSettings, this.senderUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -92,10 +99,8 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: `${capitalize(reactingUserName)} reacted`,
-              body: `${capitalize(
-                reactingUserName
-              )} reacted to your tip of ${tipAmount} $AUDIO`,
+              title,
+              body,
               data: {
                 entityId: this.receiverUserId,
                 type: 'Reaction',

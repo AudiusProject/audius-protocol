@@ -9,6 +9,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type TrendingTrackNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingTrackNotification
@@ -73,6 +74,12 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
     )
     const notificationReceiverUserId = this.receiverUserId
 
+    const title = "📈 You're Trending"
+    const body = `${tracks[this.trackId]?.title} is #${
+      this.rank
+    } on Trending right now!`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -95,10 +102,8 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
               targetARN: device.awsARN
             },
             {
-              title: "📈 You're Trending",
-              body: `${tracks[this.trackId]?.title} is #${
-                this.rank
-              } on Trending right now!`,
+              title,
+              body,
               data: {
                 type: 'TrendingTrack',
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${

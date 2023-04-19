@@ -98,6 +98,9 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       entityName = playlist?.playlist_name
     }
 
+    const title = 'New Repost'
+    const body = `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -113,6 +116,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
         this.receiverUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
+
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
@@ -123,8 +127,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Repost',
-              body: `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
@@ -147,7 +151,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       // TODO: Send out email
     }
 
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, 'New Repost', `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`)
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
   }
 
   getResourcesForEmail(): ResourceIds {

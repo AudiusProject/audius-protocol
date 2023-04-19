@@ -8,6 +8,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type RemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RemixNotification
@@ -76,6 +77,10 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     const remixUserName = users[this.remixUserId]?.name
     const remixTitle = tracks[this.trackId]?.title
 
+    const title =  'New Remix Of Your Track ♻️'
+    const body = `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`
+    await sendBrowserNotification(userNotificationSettings, this.parentTrackUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -98,8 +103,8 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Remix Of Your Track ♻️',
-              body: `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

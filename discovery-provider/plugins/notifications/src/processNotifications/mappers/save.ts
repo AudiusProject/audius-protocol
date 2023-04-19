@@ -9,6 +9,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type SaveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveNotification
@@ -94,6 +95,11 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       this.identityDB,
       [this.receiverUserId, this.saverUserId]
     )
+
+    const title = 'New Favorite'
+    const body = `${saverUserName} favorited your ${entityType.toLowerCase()} ${entityName}`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -122,8 +128,8 @@ export class Save extends BaseNotification<SaveNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Favorite',
-              body: `${saverUserName} favorited your ${entityType.toLowerCase()} ${entityName}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.saverUserId],

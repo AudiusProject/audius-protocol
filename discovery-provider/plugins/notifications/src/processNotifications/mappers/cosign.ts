@@ -9,6 +9,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type CosignRemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CosignRemixNotification
@@ -72,6 +73,10 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       [this.parentTrackUserId, this.remixUserId]
     )
 
+    const title = 'New Track Co-Sign! 🔥'
+    const body = `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`
+    await sendBrowserNotification(userNotificationSettings, this.remixUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -92,8 +97,8 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Track Co-Sign! 🔥',
-              body: `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

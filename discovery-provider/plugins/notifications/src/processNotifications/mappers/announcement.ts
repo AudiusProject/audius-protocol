@@ -8,6 +8,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AnnouncementNotification
@@ -53,6 +54,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
         this.identityDB,
         [userId]
       )
+
+      const title = this.notification.data.title
+      const body = this.notification.data.short_description
+      await sendBrowserNotification(userNotificationSettings, userId, title, body)
+
       // If the user has devices to the notification to, proceed
       if (
         userNotificationSettings.shouldSendPushNotification({
@@ -71,8 +77,8 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
                 targetARN: device.awsARN
               },
               {
-                title: this.notification.data.title,
-                body: this.notification.data.short_description,
+                title,
+                body,
                 data: {
                   id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                     this.notification.group_id
