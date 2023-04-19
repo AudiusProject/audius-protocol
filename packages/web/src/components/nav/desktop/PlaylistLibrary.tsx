@@ -34,7 +34,7 @@ import { DragDropKind, selectDragnDropState } from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
 import { audioNftPlaylistPage, getPathname, playlistPage } from 'utils/route'
 
-import navColumnStyles from './NavColumn.module.css'
+import leftNavStyles from './LeftNav.module.css'
 import { PlaylistFolderNavItem } from './PlaylistFolderNavItem'
 import styles from './PlaylistLibrary.module.css'
 import { PlaylistNavItem, PlaylistNavLink } from './PlaylistNavItem'
@@ -262,8 +262,8 @@ const PlaylistLibrary = ({
         isActive={() => url === getPathname()}
         activeClassName='active'
         onClick={onClickNavLinkWithAccount}
-        className={cn(navColumnStyles.link, {
-          [navColumnStyles.disabledLink]:
+        className={cn(leftNavStyles.link, {
+          [leftNavStyles.disabledLink]:
             !account || (dragging && draggingKind !== 'library-playlist')
         })}
       >
@@ -395,7 +395,7 @@ const PlaylistLibrary = ({
         />
       ) : null}
       {isEmpty(library?.contents) && isEmpty(playlistsNotInLibrary) ? (
-        <div className={cn(navColumnStyles.link, navColumnStyles.disabled)}>
+        <div className={cn(leftNavStyles.link, leftNavStyles.disabled)}>
           Create your first playlist!
         </div>
       ) : null}

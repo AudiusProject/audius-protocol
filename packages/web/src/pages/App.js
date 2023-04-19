@@ -953,16 +953,12 @@ class App extends Component {
         <Suspense fallback={null}>
           <Modals />
         </Suspense>
-        {
-          <Suspense fallback={null}>
-            <ConnectedMusicConfetti />
-          </Suspense>
-        }
-        {
-          <Suspense fallback={null}>
-            <RewardClaimedToast />
-          </Suspense>
-        }
+        <Suspense fallback={null}>
+          <ConnectedMusicConfetti />
+        </Suspense>
+        <Suspense fallback={null}>
+          <RewardClaimedToast />
+        </Suspense>
         {/* Non-mobile */}
         {!isMobileClient ? <Konami /> : null}
         {!isMobileClient ? <Visualizer /> : null}

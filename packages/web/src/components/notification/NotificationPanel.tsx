@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, MutableRefObject } from 'react'
+import { useRef, useCallback, useEffect, RefObject } from 'react'
 
 import {
   Status,
@@ -60,7 +60,7 @@ const messages = {
 }
 
 type NotificationPanelProps = {
-  anchorRef: MutableRefObject<HTMLElement>
+  anchorRef: RefObject<HTMLDivElement>
 }
 
 // The threshold of distance from the bottom of the scroll container in the

@@ -1,57 +1,87 @@
 import { useCallback, useRef } from 'react'
 
-import { Theme, StringKeys, FeatureFlags, formatCount } from '@audius/common'
+import {
+  Theme,
+  StringKeys,
+  FeatureFlags,
+  formatCount,
+  accountSelectors,
+  notificationsSelectors,
+  Name,
+  themeSelectors
+} from '@audius/common'
 import cn from 'classnames'
-import PropTypes from 'prop-types'
+import { push } from 'connected-react-router'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as AudiusLogoHorizontal } from 'assets/img/audiusLogoHorizontal.svg'
 import { ReactComponent as IconNotification } from 'assets/img/iconNotification.svg'
-import NavButton from 'components/nav/desktop/NavButton'
+import { make, useRecord } from 'common/store/analytics/actions'
 import NavPopupMenu from 'components/nav/desktop/NavPopupMenu'
 import { NotificationPanel } from 'components/notification'
 import { useFlag, useRemoteVar } from 'hooks/useRemoteConfig'
+import { getNotificationPanelIsOpen } from 'store/application/ui/notifications/notificationsUISelectors'
+import {
+  closeNotificationPanel,
+  openNotificationPanel
+} from 'store/application/ui/notifications/notificationsUISlice'
+import { AppState } from 'store/types'
 import { HOME_PAGE, BASE_URL, stripBaseUrl } from 'utils/route'
-import { getTheme } from 'utils/theme/theme'
 
 import styles from './NavHeader.module.css'
+
+const { getAccountUser } = accountSelectors
+const { getNotificationUnviewedCount } = notificationsSelectors
+const { getTheme } = themeSelectors
 
 const messages = {
   earlyAccess: 'Early Access'
 }
 
-const NavHeader = ({
-  account,
-  notificationCount,
-  notificationPanelIsOpen,
-  toggleNotificationPanel,
-  goToRoute,
-  isElectron
-}) => {
-  const notificationPanelAnchorRef = useRef()
+export const NavHeader = () => {
+  const dispatch = useDispatch()
+  const record = useRecord()
+  const account = useSelector(getAccountUser)
+  const notificationCount = useSelector(getNotificationUnviewedCount)
+
+  const notificationPanelIsOpen = useSelector(getNotificationPanelIsOpen)
+  const notificationPanelAnchorRef = useRef<HTMLDivElement>(null)
   const logoVariant = useRemoteVar(StringKeys.AUDIUS_LOGO_VARIANT)
   const logoVariantClickTarget = useRemoteVar(
     StringKeys.AUDIUS_LOGO_VARIANT_CLICK_TARGET
   )
-  const isMatrix = getTheme() === Theme.MATRIX
 
-  const onClickLogo = useCallback(() => {
+  const isMatrix = useSelector(
+    (state: AppState) => getTheme(state) === Theme.MATRIX
+  )
+
+  const handleToggleNotificationPanel = useCallback(() => {
+    if (!notificationPanelIsOpen) {
+      dispatch(openNotificationPanel())
+      record(make(Name.NOTIFICATIONS_OPEN, { source: 'button' }))
+    } else {
+      dispatch(closeNotificationPanel())
+    }
+  }, [notificationPanelIsOpen, dispatch, record])
+
+  const handleClickLogo = useCallback(() => {
     if (logoVariantClickTarget) {
       if (logoVariantClickTarget.startsWith(BASE_URL)) {
-        goToRoute(stripBaseUrl(logoVariantClickTarget))
+        dispatch(push(stripBaseUrl(logoVariantClickTarget)))
       } else {
         const win = window.open(logoVariantClickTarget, '_blank')
         if (win) win.focus()
       }
     } else {
-      goToRoute(HOME_PAGE)
+      dispatch(push(HOME_PAGE))
     }
-  }, [logoVariantClickTarget, goToRoute])
+  }, [logoVariantClickTarget, dispatch])
 
   const { isEnabled: isEarlyAccess } = useFlag(FeatureFlags.EARLY_ACCESS)
 
   return (
     <div className={styles.header}>
-      <div className={styles.logoWrapper} onClick={onClickLogo}>
+      <div className={styles.logoWrapper} onClick={handleClickLogo}>
         {logoVariant ? (
           <img src={logoVariant} alt='' />
         ) : (
@@ -68,7 +98,7 @@ const NavHeader = ({
           <NavPopupMenu />
           <div
             ref={notificationPanelAnchorRef}
-            onClick={toggleNotificationPanel}
+            onClick={handleToggleNotificationPanel}
             className={cn(styles.headerIconWrapper, styles.iconNotification, {
               [styles.active]: notificationCount > 0,
               [styles.notificationsOpen]: notificationPanelIsOpen
@@ -87,15 +117,3 @@ const NavHeader = ({
     </div>
   )
 }
-
-NavButton.propTypes = {
-  account: PropTypes.object,
-  notificationCount: PropTypes.number,
-  notificationPanelIsOpen: PropTypes.bool,
-  toggleNotificationPanel: PropTypes.func,
-  isElectron: PropTypes.bool,
-  goToRoute: PropTypes.func,
-  pendingClaim: PropTypes.bool
-}
-
-export default NavHeader

@@ -32,7 +32,7 @@ type ConnectedBottomBarProps = ReturnType<typeof mapStateToProps> &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps<any>
 
-const ConnectedNavBar = ({
+const ConnectedBottomBar = ({
   goToRoute,
   handle,
   history,
@@ -131,5 +131,5 @@ function mapDispatchToProps(dispatch: Dispatch) {
 }
 
 export default withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(ConnectedNavBar)
+  connect(mapStateToProps, mapDispatchToProps)(ConnectedBottomBar)
 )

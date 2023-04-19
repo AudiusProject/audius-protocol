@@ -5,7 +5,7 @@ import { RouteComponentProps, withRouter } from 'react-router-dom'
 import { getClient } from 'utils/clientUtil'
 
 import styles from './Navigator.module.css'
-import NavColumn from './desktop/NavColumn'
+import LeftNav from './desktop/LeftNav'
 import ConnectedNavBar from './mobile/ConnectedNavBar'
 
 interface OwnProps {
@@ -14,6 +14,8 @@ interface OwnProps {
 
 type NavigatorProps = OwnProps & RouteComponentProps
 
+// Navigation component that renders the NavBar for mobile
+// and LeftNav for desktop
 const Navigator = ({ className }: NavigatorProps) => {
   const client = getClient()
 
@@ -22,13 +24,13 @@ const Navigator = ({ className }: NavigatorProps) => {
   return (
     <div
       className={cn(styles.navWrapper, className, {
-        [styles.navColumnWrapper]: !isMobile
+        [styles.leftNavWrapper]: !isMobile
       })}
     >
       {isMobile ? (
         <ConnectedNavBar />
       ) : (
-        <NavColumn isElectron={client === Client.ELECTRON} />
+        <LeftNav isElectron={client === Client.ELECTRON} />
       )}
     </div>
   )
