@@ -31,6 +31,7 @@ import {
   RepostsScreen,
   NotificationUsersScreen,
   MutualsScreen,
+  RelatedArtistsScreen,
   TopSupportersScreen,
   SupportingUsersScreen
 } from 'app/screens/user-list-screen'
@@ -76,6 +77,7 @@ export type AppTabScreenParamList = {
   Followers: { userId: ID }
   Following: { userId: ID }
   Mutuals: { userId: ID }
+  RelatedArtists: { userId: ID }
   Search: undefined
   SearchResults: { query: string }
   SupportingUsers: { userId: ID }
@@ -225,6 +227,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         <Stack.Screen
           name='Mutuals'
           component={MutualsScreen}
+          options={screenOptions}
+        />
+        <Stack.Screen
+          name='RelatedArtists'
+          component={RelatedArtistsScreen}
           options={screenOptions}
         />
         <Stack.Screen
