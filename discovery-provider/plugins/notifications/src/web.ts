@@ -1,6 +1,5 @@
 import webpush from 'web-push'
 import { logger } from './logger'
-import { Knex } from 'knex'
 import { Browser, UserNotificationSettings, WebPush } from './processNotifications/mappers/userNotificationSettings'
 
 // setup and configuration
@@ -19,6 +18,7 @@ const vapidKeys = {
     )
     // set config to true
     webPushIsConfigured = true
+    logger.info('Web Push is configured')
   } else {
     logger.warn(
       'Web Push is not configured. Browser Push API Notifs will NOT be sent'
