@@ -4,7 +4,7 @@ import { ID, Color, ProfilePictureSizes, SquareSizes } from '@audius/common'
 import cn from 'classnames'
 import { animated, useSpring } from 'react-spring'
 
-import Draggable from 'components/dragndrop/Draggable'
+import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'

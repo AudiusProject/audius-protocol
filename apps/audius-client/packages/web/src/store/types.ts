@@ -42,7 +42,7 @@ import { NotificationsUIState } from './application/ui/notifications/notificatio
 import { ScrollLockState } from './application/ui/scrollLock/types'
 import { SetAsArtistPickConfirmationState } from './application/ui/setAsArtistPickConfirmation/types'
 import { UserListModalState } from './application/ui/userListModal/types'
-import { DragNDropState } from './dragndrop/types'
+import { DragnDropState } from './dragndrop/slice'
 const averageColor = averageColorReducer
 
 export type AppState = CommonState & {
@@ -58,7 +58,7 @@ export type AppState = CommonState & {
   passwordReset: PasswordResetState
 
   // UI
-  dragndrop: DragNDropState
+  dragndrop: DragnDropState
 
   // Global
   application: {

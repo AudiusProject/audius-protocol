@@ -4,17 +4,16 @@ import {
   ID,
   SmartCollectionVariant,
   AccountCollection,
-  PlaylistLibraryID,
-  PlaylistLibraryKind
+  PlaylistLibraryID
 } from '@audius/common'
 import { IconKebabHorizontal, IconButton } from '@audius/stems'
 import cn from 'classnames'
 import { NavLink, NavLinkProps } from 'react-router-dom'
 
-import Draggable from 'components/dragndrop/Draggable'
-import Droppable from 'components/dragndrop/Droppable'
+import { Draggable, Droppable } from 'components/dragndrop'
 import Tooltip from 'components/tooltip/Tooltip'
 import UpdateDot from 'components/update-dot/UpdateDot'
+import { DragDropKind } from 'store/dragndrop/slice'
 import { getPathname } from 'utils/route'
 
 import navColumnStyles from './NavColumn.module.css'
@@ -29,7 +28,7 @@ type PlaylistNavLinkProps = NavLinkProps & {
   onReorder: (
     draggingId: ID | SmartCollectionVariant | string,
     droppingId: ID | SmartCollectionVariant | string,
-    draggingKind: 'library-playlist' | 'playlist' | 'playlist-folder'
+    draggingKind: DragDropKind
   ) => void
   link?: string
   isInsideFolder?: boolean
@@ -58,13 +57,10 @@ export const PlaylistNavLink = ({
       key={droppableKey}
       className={styles.droppable}
       hoverClassName={styles.droppableHover}
-      onDrop={(
-        id: PlaylistLibraryID | string,
-        draggingKind: PlaylistLibraryKind
-      ) => {
+      onDrop={(id: PlaylistLibraryID | string, draggingKind: DragDropKind) => {
         onReorder(id, playlistId, draggingKind)
       }}
-      stopPropogationOnDrop={true}
+      stopPropagationOnDrop
       acceptedKinds={
         isInsideFolder
           ? ['library-playlist']
@@ -101,7 +97,7 @@ type PlaylistNavItemProps = {
   onReorder: (
     draggingId: ID | SmartCollectionVariant | string,
     droppingId: ID | SmartCollectionVariant | string,
-    draggingKind: 'library-playlist' | 'playlist' | 'playlist-folder'
+    draggingKind: DragDropKind
   ) => void
   hasUpdate?: boolean
   dragging: boolean

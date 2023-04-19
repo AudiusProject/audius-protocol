@@ -1,11 +1,10 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
 
-import { reachabilitySelectors } from '@audius/common'
+import { reachabilitySelectors, useThrottledCallback } from '@audius/common'
 import type { SwitchProps } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { Switch } from 'app/components/core'
-import { useThrottledCallback } from 'app/hooks/useThrottledCallback'
 import { setVisibility } from 'app/store/drawers/slice'
 import { DOWNLOAD_REASON_FAVORITES } from 'app/store/offline-downloads/constants'
 import { getCollectionDownloadStatus } from 'app/store/offline-downloads/selectors'

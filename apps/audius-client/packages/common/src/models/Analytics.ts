@@ -5,6 +5,7 @@ import { TimeRange } from 'models/TimeRange'
 import { SolanaWalletAddress, StringAudio, WalletAddress } from 'models/Wallet'
 
 import { Chain } from './Chain'
+import { PlaylistLibraryKind } from './PlaylistLibrary'
 
 const ANALYTICS_TRACK_EVENT = 'ANALYTICS/TRACK_EVENT'
 
@@ -1182,7 +1183,7 @@ type PlaylistLibraryReorder = {
   eventName: Name.PLAYLIST_LIBRARY_REORDER
   // Whether or not the reorder contains newly created temp playlists
   containsTemporaryPlaylists: boolean
-  kind: 'library-playlist' | 'playlist' | 'playlist-folder'
+  kind: PlaylistLibraryKind
 }
 
 type PlaylistLibraryHasUpdate = {

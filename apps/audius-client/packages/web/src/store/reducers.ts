@@ -27,7 +27,7 @@ import notifications from 'store/application/ui/notifications/notificationsUISli
 import scrollLock from 'store/application/ui/scrollLock/reducer'
 import setAsArtistPickConfirmation from 'store/application/ui/setAsArtistPickConfirmation/reducer'
 import userListModal from 'store/application/ui/userListModal/slice'
-import dragndrop from 'store/dragndrop/reducer'
+import dragndrop from 'store/dragndrop/slice'
 import error from 'store/errors/reducers'
 
 export const commonStoreReducers = clientStoreReducers()

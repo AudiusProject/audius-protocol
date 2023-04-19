@@ -14,7 +14,7 @@ import { Link, useHistory } from 'react-router-dom'
 import { animated, useSpring } from 'react-spring/web'
 
 import { ReactComponent as IconVisualizer } from 'assets/img/iconVisualizer.svg'
-import Draggable from 'components/dragndrop/Draggable'
+import { Draggable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { useTrackCoverArt } from 'hooks/useTrackCoverArt'
 import { NO_VISUALIZER_ROUTES } from 'pages/visualizer/Visualizer'
@@ -65,7 +65,7 @@ export const NowPlayingArtworkTile = () => {
   const isOwner = useSelector((state: CommonState) => {
     const ownerId = getTrack(state, { id: trackId })?.owner_id
     const accountId = getUserId(state)
-    return ownerId && accountId && ownerId === accountId
+    return Boolean(ownerId && accountId && ownerId === accountId)
   })
 
   const permalink = useSelector((state: CommonState) => {
@@ -113,7 +113,7 @@ export const NowPlayingArtworkTile = () => {
         , 0.7)`
   })
 
-  if (!permalink) return null
+  if (!permalink || !trackId) return null
 
   return (
     <Draggable

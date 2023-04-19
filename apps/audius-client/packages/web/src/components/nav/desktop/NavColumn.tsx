@@ -35,7 +35,7 @@ import * as signOnActions from 'common/store/pages/signon/actions'
 import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
 import { PlaylistFormFields } from 'components/create-playlist/PlaylistForm'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
-import Droppable from 'components/dragndrop/Droppable'
+import { Droppable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import NavButton from 'components/nav/desktop/NavButton'
 import RouteNav from 'components/nav/desktop/RouteNav'
@@ -49,7 +49,7 @@ import {
   openNotificationPanel,
   closeNotificationPanel
 } from 'store/application/ui/notifications/notificationsUISlice'
-import { getIsDragging } from 'store/dragndrop/selectors'
+import { selectDragnDropState } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 import {
   DASHBOARD_PAGE,
@@ -476,7 +476,7 @@ const mapStateToProps = (state: AppState) => {
   return {
     account: getAccountUser(state),
     accountStatus: getAccountStatus(state),
-    dragging: getIsDragging(state),
+    dragging: selectDragnDropState(state),
     notificationCount: getNotificationUnviewedCount(state),
     notificationPanelIsOpen: getNotificationPanelIsOpen(state),
     upload: state.upload,

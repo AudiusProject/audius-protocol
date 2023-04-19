@@ -102,8 +102,8 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
   const handleCheckClickInside = useCallback(
     (target: EventTarget) => {
       if (isUserListOpen || isNotificationModalOpen) return true
-      if (target instanceof Element) {
-        return anchorRef?.current.contains(target)
+      if (target instanceof Element && anchorRef.current) {
+        return anchorRef.current.contains(target)
       }
       return false
     },
