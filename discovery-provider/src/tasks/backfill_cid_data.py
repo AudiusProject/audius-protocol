@@ -54,7 +54,7 @@ def backfill_cid_data(db: SessionManager):
                         cid_type[cid] = type
                     # Write chunk to db
                     save_cid_metadata(session, cid_metadata, cid_type)
-    redis.set("backfilled_cid_data", True)
+    redis.set("backfilled_cid_data", "true")
 
 
 # ####### CELERY TASKS ####### #
