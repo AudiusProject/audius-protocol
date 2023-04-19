@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 
 import { ID, Name, accountSelectors } from '@audius/common'
 import cn from 'classnames'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'

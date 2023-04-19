@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { UserCollectionMetadata } from '@audius/common'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 import { useAsyncFn } from 'react-use'
 

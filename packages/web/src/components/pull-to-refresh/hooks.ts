@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 
 import { useInstanceVar } from '@audius/common'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { config, useSpring } from 'react-spring'
 
 type UseHasReachedTopPointProps = {

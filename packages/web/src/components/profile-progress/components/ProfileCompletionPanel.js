@@ -1,6 +1,7 @@
 import { memo } from 'react'
 
 import PropTypes from 'prop-types'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
 import SegmentedProgressBar from 'components/segmented-progress-bar/SegmentedProgressBar'

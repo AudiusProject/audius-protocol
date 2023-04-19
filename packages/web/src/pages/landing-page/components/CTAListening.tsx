@@ -3,6 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { IconArrow } from '@audius/stems'
 import cn from 'classnames'
 import { Parallax } from 'react-scroll-parallax'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useChain, useTrail, animated } from 'react-spring'
 
 import appImg from 'assets/img/publicSite/AudiusAppAlt@2x.png'

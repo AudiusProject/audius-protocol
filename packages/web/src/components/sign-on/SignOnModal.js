@@ -2,6 +2,7 @@ import { useRef } from 'react'
 
 import cn from 'classnames'
 import PropTypes from 'prop-types'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated, config } from 'react-spring'
 
 import styles from './SignOnModal.module.css'

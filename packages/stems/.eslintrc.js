@@ -23,5 +23,18 @@ module.exports = {
         'import/no-default-export': 'off'
       }
     }
-  ]
+  ],
+  rules: {
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['react-spring*'],
+            message: 'Please use @react-spring/web instead'
+          }
+        ]
+      }
+    ]
+  }
 }

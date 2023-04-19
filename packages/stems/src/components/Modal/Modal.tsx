@@ -11,6 +11,7 @@ import {
 import cn from 'classnames'
 import uniqueId from 'lodash/uniqueId'
 import ReactDOM from 'react-dom'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useTransition } from 'react-spring'
 import { useEffectOnce } from 'react-use'
 

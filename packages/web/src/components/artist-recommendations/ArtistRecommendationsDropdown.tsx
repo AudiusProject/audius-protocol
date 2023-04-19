@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 
 import {

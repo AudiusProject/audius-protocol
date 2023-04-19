@@ -11,6 +11,7 @@ import {
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { Spring } from 'react-spring/renderprops'
 
 import { make } from 'common/store/analytics/actions'

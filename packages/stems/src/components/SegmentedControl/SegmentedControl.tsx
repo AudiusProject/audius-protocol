@@ -2,6 +2,7 @@ import { createRef, Fragment, useState, useEffect, useRef } from 'react'
 
 import cn from 'classnames'
 import { mergeRefs } from 'react-merge-refs'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useSpring, animated } from 'react-spring'
 import useMeasure, { RectReadOnly } from 'react-use-measure'
 

@@ -11,6 +11,7 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import { History } from 'history'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
 import { ReactComponent as AudiusLogo } from 'assets/img/audiusLogoHorizontal.svg'

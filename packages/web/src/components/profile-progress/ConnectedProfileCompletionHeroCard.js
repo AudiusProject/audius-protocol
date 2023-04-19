@@ -1,5 +1,6 @@
 import { challengesSelectors, profilePageActions } from '@audius/common'
 import { connect } from 'react-redux'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated } from 'react-spring'
 
 import ProfileCompletionHeroCard from 'components/profile-progress/components/ProfileCompletionHeroCard'

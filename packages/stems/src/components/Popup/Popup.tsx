@@ -10,6 +10,7 @@ import * as React from 'react'
 
 import cn from 'classnames'
 import ReactDOM from 'react-dom'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { useTransition, animated } from 'react-spring'
 
 import { IconButton } from 'components/IconButton'

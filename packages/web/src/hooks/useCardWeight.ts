@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, MutableRefObject } from 'react'
 
 import { useInstanceVar } from '@audius/common'
+// eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { InterpolationChain, useSpring } from 'react-spring'
 
 type Transform = {
