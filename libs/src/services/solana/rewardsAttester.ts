@@ -62,7 +62,7 @@ class BaseRewardsReporter {
 
 const MAX_DISBURSED_CACHE_SIZE = 100
 const SOLANA_EST_SEC_PER_SLOT = 0.5
-const POA_SEC_PER_BLOCK = 5
+const POA_SEC_PER_BLOCK = 1
 const MAX_DISCOVERY_NODE_BLOCKLIST_LEN = 10
 
 type ATTESTER_PHASE =
@@ -94,10 +94,13 @@ export class AttestationDelayCalculator {
   logger: any
   intervalHandle: NodeJS.Timer | null
 
+  private readonly blockOffset: number
+
   constructor({
     libs,
     runBehindSec,
     allowedStalenessSec,
+    blockOffset,
     solanaPollingInterval = 30,
     logger = console
   }: {
@@ -106,6 +109,7 @@ export class AttestationDelayCalculator {
     allowedStalenessSec: number
     solanaPollingInterval?: number
     logger: any
+    blockOffset: number
   }) {
     this.libs = libs
     this.solanaSecPerSlot = SOLANA_EST_SEC_PER_SLOT
@@ -116,6 +120,7 @@ export class AttestationDelayCalculator {
     this.solanaPollingInterval = solanaPollingInterval
     this.logger = logger
     this.intervalHandle = null
+    this.blockOffset = blockOffset
   }
 
   async start() {
@@ -146,9 +151,9 @@ export class AttestationDelayCalculator {
     ) {
       return this.lastPOAThreshold.threshold
     }
-    const currentBlock = await this.libs.web3Manager
-      .getWeb3()
-      .eth.getBlockNumber()
+    const currentBlock =
+      Number(await this.libs.web3Manager.getWeb3().eth.getBlockNumber()) +
+      this.blockOffset
     const threshold = currentBlock - this.runBehindSec / POA_SEC_PER_BLOCK
     this.lastPOAThreshold = {
       threshold,
@@ -205,6 +210,7 @@ type ConstructorArgs = {
   maxAggregationAttempts?: number
   updateStateCallback?: (state: AttesterState) => Promise<void>
   maxCooldownMsec?: number
+  blockOffset: number
 }
 
 type Challenge = {
@@ -338,7 +344,8 @@ export class RewardsAttester {
     feePayerOverride = null,
     maxAggregationAttempts = 20,
     updateStateCallback = async (_) => {},
-    maxCooldownMsec = 15000
+    maxCooldownMsec = 15000,
+    blockOffset
   }: ConstructorArgs) {
     this.libs = libs
     this.logger = logger
@@ -374,7 +381,8 @@ export class RewardsAttester {
       libs,
       runBehindSec,
       logger,
-      allowedStalenessSec: 5
+      allowedStalenessSec: 5,
+      blockOffset
     })
     this.isSolanaChallenge = isSolanaChallenge
 
