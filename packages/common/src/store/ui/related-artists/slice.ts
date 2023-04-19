@@ -21,6 +21,7 @@ const relatedArtistsSlice = createSlice({
       relatedArtistsAdapater.addOne(state, {
         artistId,
         relatedArtistIds: [],
+        suggestedFollowIds: [],
         isTopArtistsRecommendation: false,
         status: Status.LOADING
       })

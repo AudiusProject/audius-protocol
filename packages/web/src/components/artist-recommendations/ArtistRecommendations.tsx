@@ -35,7 +35,7 @@ import { useIsMobile } from 'utils/clientUtil'
 import { profilePage } from 'utils/route'
 
 import styles from './ArtistRecommendations.module.css'
-const { selectRelatedArtistsUsers } = relatedArtistsUISelectors
+const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
 const { fetchRelatedArtists } = relatedArtistsUIActions
 
 export type ArtistRecommendationsProps = {
@@ -147,7 +147,7 @@ export const ArtistRecommendations = forwardRef(
     }, [dispatch, artistId])
 
     const suggestedArtists = useSelector<CommonState, User[]>((state) =>
-      selectRelatedArtistsUsers(state, { id: artistId })
+      selectSuggestedFollowsUsers(state, { id: artistId })
     )
 
     // Follow/Unfollow listeners
