@@ -6,7 +6,10 @@ import {
   getDiscoveryNodeHealthCheck
 } from './healthChecks'
 import { promiseAny } from '../../utils/promiseAny'
-import { defaultDiscoveryNodeSelectorConfig } from './constants'
+import {
+  DISCOVERY_PROVIDER_TIMESTAMP,
+  defaultDiscoveryNodeSelectorConfig
+} from './constants'
 import type {
   Middleware,
   RequestContext,
@@ -26,6 +29,7 @@ import type TypedEventEmitter from 'typed-emitter'
 import EventEmitter from 'events'
 import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+import type { LocalStorageType } from '../LocalStorage'
 
 export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
@@ -42,6 +46,11 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    * Configuration passed in by consumer (with defaults)
    */
   private config: DiscoveryNodeSelectorServiceConfigInternal
+
+  /**
+   * Local storage (currently only available on web)
+   */
+  private localStorage?: LocalStorageType
 
   /**
    * Whether or not we are using a backup, meaning we were
@@ -114,6 +123,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       !this.config.blocklist?.has(this.config.initialSelectedNode)
         ? this.config.initialSelectedNode
         : null
+    this.localStorage = window ? window.localStorage : undefined
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
     this.addEventListener = this.eventEmitter.addListener.bind(
@@ -220,10 +230,14 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   }
 
   /**
-   * Selects a discovery node or returns the existing selection
+   * Selects a discovery node or returns the existing selection or override endpoint
    * @returns a discovery node endpoint
    */
   public async getSelectedEndpoint() {
+    const overrideEndpoint = await this.getOverrideEndpoint()
+    if (overrideEndpoint) {
+      return overrideEndpoint
+    }
     if (this.selectedNode !== null) {
       return this.selectedNode
     }
@@ -235,6 +249,13 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    */
   public getServices() {
     return this.services
+  }
+
+  private async getOverrideEndpoint() {
+    const override = JSON.parse(
+      (await this.localStorage?.getItem(DISCOVERY_PROVIDER_TIMESTAMP)) ?? '{}'
+    )
+    return override?.endpoint
   }
 
   /**
