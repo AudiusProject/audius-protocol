@@ -258,6 +258,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 creator_node_endpoint=user_meta.get(
                     "creator_node_endpoint", "https://cn.io"
                 ),
+                is_available=user_meta.get("is_available", True),
+                is_deactivated=user_meta.get("is_deactivated", False),
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",
