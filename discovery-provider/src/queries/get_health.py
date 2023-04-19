@@ -327,6 +327,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     )
     discovery_nodes = get_all_other_nodes.get_all_other_nodes_cached(redis)
     final_poa_block = get_final_poa_block()
+    backfilled_cid_data = redis.get("backfilled_cid_data") or False
     health_results = {
         "web": {
             "blocknumber": latest_block_num,
@@ -366,6 +367,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
         "latest_indexed_block_num": latest_indexed_block_num,
         "final_poa_block": final_poa_block,
         "network": {"discovery_nodes": discovery_nodes},
+        "backfilled_cid_data": backfilled_cid_data,
     }
 
     if os.getenv("AUDIUS_DOCKER_COMPOSE_GIT_SHA") is not None:
