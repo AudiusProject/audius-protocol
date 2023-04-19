@@ -18,6 +18,7 @@ export const BASENAME = process.env.PUBLIC_URL
 export const PRIVACY_POLICY = '/legal/privacy-policy'
 export const COOKIE_POLICY = `${BASE_URL}${PRIVACY_POLICY}`
 export const TERMS_OF_SERVICE = '/legal/terms-of-use'
+export const SERVICE_TERMS = '/legal/service-terms'
 export const DOWNLOAD_START_LINK = '/download?start_download=true'
 export const DOWNLOAD_LINK = '/download'
 export const PRESS_PAGE = '/press'
@@ -151,6 +152,7 @@ export const authenticatedRoutes = [
 export const publicSiteRoutes = [
   PRESS_PAGE,
   TERMS_OF_SERVICE,
+  SERVICE_TERMS,
   PRIVACY_POLICY,
   DOWNLOAD_LINK,
   AUTH_REDIRECT
