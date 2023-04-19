@@ -306,7 +306,9 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Bring up discovery provider notifications container",
 )
-@click.option("--no-storagev2", is_flag=True, help="Don't bring up storage v2 container")
+@click.option(
+    "--no-storagev2", is_flag=True, help="Don't bring up storage v2 container"
+)
 @click.option(
     "--no-libs", is_flag=True, help="Don't bring up container to auto-rebuild libs"
 )
