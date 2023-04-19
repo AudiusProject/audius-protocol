@@ -123,9 +123,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       !this.config.blocklist?.has(this.config.initialSelectedNode)
         ? this.config.initialSelectedNode
         : null
-    this.localStorage = window
-      ? new LocalStorage({ localStorage: window.localStorage })
-      : undefined
+    this.localStorage =
+      typeof window !== undefined
+        ? new LocalStorage({ localStorage: window.localStorage })
+        : undefined
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
     this.addEventListener = this.eventEmitter.addListener.bind(
