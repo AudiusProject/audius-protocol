@@ -50,14 +50,6 @@ user_model = ns.model(
         "spl_wallet": fields.String(required=True),
         "supporter_count": fields.Integer(required=True),
         "supporting_count": fields.Integer(required=True),
-    },
-)
-
-# Separate model to hide total_audio_balance from full endpoint
-user_model_with_total_audio_balance = ns.clone(
-    "user_with_total_audio_balance",
-    user_model,
-    {
         "total_audio_balance": fields.Integer(required=True),
     },
 )

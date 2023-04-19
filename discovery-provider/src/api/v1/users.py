@@ -54,7 +54,6 @@ from src.api.v1.models.users import (
     decoded_user_token,
     encoded_user_id,
     user_model,
-    user_model_with_total_audio_balance,
     user_model_full,
     user_replica_set,
     user_subscribers,
@@ -107,9 +106,7 @@ logger = logging.getLogger(__name__)
 ns = Namespace("users", description="User related operations")
 full_ns = Namespace("users", description="Full user operations")
 
-user_response = make_response(
-    "user_response", ns, fields.Nested(user_model_with_total_audio_balance)
-)
+user_response = make_response("user_response", ns, fields.Nested(user_model))
 full_user_response = make_full_response(
     "full_user_response", full_ns, fields.List(fields.Nested(user_model_full))
 )
