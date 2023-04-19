@@ -45,17 +45,19 @@ def main(replica):
     ).transact()
 
     try:
-      serviceProviderFactory.functions.register(
-          b"content-node",
-          f"http://audius-protocol-creator-node-{replica}",
-          200000 * (10 ** token.functions.decimals().call()),
-          delegateOwnerWallet,
-      ).transact()
+        serviceProviderFactory.functions.register(
+            b"content-node",
+            f"http://audius-protocol-creator-node-{replica}",
+            200000 * (10 ** token.functions.decimals().call()),
+            delegateOwnerWallet,
+        ).transact()
     except web3.exceptions.ContractLogicError as e:
-      if "revert ServiceProviderFactory: Endpoint already registered" in str(e):
-          print("The endpoint is already registered. This is fine and means the creator-node container is already running")
-      else:
-          raise e
+        if "revert ServiceProviderFactory: Endpoint already registered" in str(e):
+            print(
+                "The endpoint is already registered. This is fine and means the creator-node container is already running"
+            )
+        else:
+            raise e
 
 
 if __name__ == "__main__":
