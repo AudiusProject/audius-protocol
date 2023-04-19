@@ -276,11 +276,13 @@ export const Table = ({
         (header) => header.id === 'trackActions' || header.id === 'overflowMenu'
       )
 
+      const { key: headerGroupKey, ...headerGroupProps } =
+        headerGroup.getHeaderGroupProps()
       return (
         <tr
           className={styles.tableHeadRow}
-          {...headerGroup.getHeaderGroupProps()}
-          key={headerGroup.id}
+          {...headerGroupProps}
+          key={headerGroupKey}
         >
           <div className={styles.cellSection}>
             {headers.map(renderTableHeader)}
