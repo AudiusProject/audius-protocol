@@ -6,6 +6,7 @@ import (
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -117,8 +118,9 @@ func startDevCluster() {
 	dirTemplate := getenvWithDefault("dirTemplate", "/tmp/mediorum_dev_%d")
 	dbUrlTemplate := getenvWithDefault("dbUrlTemplate", "postgres://postgres:example@localhost:5454/m%d")
 	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
+	devNetworkCount, _ := strconv.Atoi(getenvWithDefault("devNetworkCount", "3"))
 
-	network := devNetwork(hostNameTemplate, 5)
+	network := devNetwork(hostNameTemplate, devNetworkCount)
 	wg := sync.WaitGroup{}
 
 	for idx, peer := range network {

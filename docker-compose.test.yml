@@ -370,6 +370,7 @@ services:
     restart: unless-stopped
     environment:
       dbUrlTemplate: "postgres://postgres:example@mediorum-db:5432/m%d"
+      devNetworkCount: "5"
     healthcheck:
       test: ["CMD", "curl", "http://localhost:1991/internal/health"]
       interval: 3s
@@ -389,6 +390,7 @@ services:
       - "/bin/mediorum-cmd"
     environment:
       hostNameTemplate: "http://mediorum:199%d"
+      devNetworkCount: "5"
     logging: *default-logging
     profiles:
       - mediorum

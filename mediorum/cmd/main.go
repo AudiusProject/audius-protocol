@@ -7,6 +7,7 @@ import (
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
+	"strconv"
 )
 
 func getenvWithDefault(key string, fallback string) string {
@@ -36,9 +37,10 @@ func initClient() *loadtest.TestClient {
 		}
 	default:
 		hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
+		devNetworkCount, _ := strconv.Atoi(getenvWithDefault("devNetworkCount", "3"))
 		registeredPeers = []server.Peer{}
 
-		for i := 1; i <= 5; i++ {
+		for i := 1; i <= devNetworkCount; i++ {
 			registeredPeers = append(registeredPeers, server.Peer{Host: fmt.Sprintf(hostNameTemplate, i)})
 		}
 

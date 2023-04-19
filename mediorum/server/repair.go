@@ -58,6 +58,7 @@ func (ss *MediorumServer) findProblemBlobs(overReplicated bool) ([]ProblemBlob, 
 	return problems, err
 }
 
+// WIP - come back to this and do counts cleanly
 func (ss *MediorumServer) findProblemBlobsCount(overReplicated bool) (int64, error) {
 
 	comparator := "<"
