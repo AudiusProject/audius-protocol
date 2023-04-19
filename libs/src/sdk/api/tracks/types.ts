@@ -1,14 +1,10 @@
 import type { TrackMetadata } from '../../../utils'
-
-export type File = {
-  buffer: Buffer
-  name: string
-}
+import { File } from '../../types/File'
 
 export type UploadTrackRequest = {
   artistId: string
   coverArtFile: File
   metadata: TrackMetadata
-  onProgress: (progress: ProgressEvent) => void
+  onProgress: (progress: number) => void
   trackFile: File
 }

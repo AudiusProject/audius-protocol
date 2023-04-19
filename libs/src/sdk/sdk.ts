@@ -25,7 +25,8 @@ import {
   WalletApiService,
   DiscoveryNodeSelectorService,
   DiscoveryNodeSelector,
-  WalletApi
+  WalletApi,
+  StorageService
 } from './services'
 
 type ServicesContainer = {
@@ -33,6 +34,12 @@ type ServicesContainer = {
    * Service used to choose discovery node
    */
   discoveryNodeSelector: DiscoveryNodeSelectorService
+
+  /**
+   * Service used to store and retrieve content
+   */
+  storage: StorageService
+
   /**
    * Helpers to faciliate requests that require signatures or encryption
    */
@@ -80,6 +87,7 @@ export const sdk = (config: SdkConfig) => {
 const initializeServices = (config: SdkConfig) => {
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
+    storage: new StorageService(),
     walletApi: new WalletApi()
   }
   return { ...defaultServices, ...config.services }
@@ -103,7 +111,8 @@ const initializeApis = ({
 
   const tracks = new TracksApi(
     generatedApiClientConfig,
-    services.discoveryNodeSelector
+    services.discoveryNodeSelector,
+    services.storage
   )
   const users = new UsersApi(generatedApiClientConfig)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
