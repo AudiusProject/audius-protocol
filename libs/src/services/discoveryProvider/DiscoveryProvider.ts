@@ -2,7 +2,8 @@ import axios, {
   AxiosError,
   AxiosRequestConfig,
   AxiosResponse,
-  Method
+  Method,
+  ResponseType
 } from 'axios'
 
 import { CollectionMetadata, Nullable, User, Utils } from '../../utils'
@@ -32,6 +33,7 @@ type RequestParams = {
   urlParams?: PathArg
   headers?: Record<string, string>
   data?: Record<string, unknown>
+  responseType?: ResponseType
 }
 
 type UserReplicaSet = {
@@ -246,7 +248,8 @@ export class DiscoveryProvider {
     idsArray: Nullable<number[]>,
     walletAddress?: Nullable<string>,
     handle?: Nullable<string>,
-    minBlockNumber?: Nullable<number>
+    minBlockNumber?: Nullable<number>,
+    includeIncomplete?: Nullable<boolean>
   ) {
     const req = Requests.getUsers(
       limit,
@@ -254,7 +257,8 @@ export class DiscoveryProvider {
       idsArray,
       walletAddress,
       handle,
-      minBlockNumber
+      minBlockNumber,
+      includeIncomplete
     )
     return await this._makeRequest<Nullable<User[]>>(req)
   }
@@ -945,6 +949,11 @@ export class DiscoveryProvider {
     return await this._makeRequest(req)
   }
 
+  async getCIDData(cid: string, responseType: ResponseType, timeout: number) {
+    const req = Requests.getCIDData(cid, responseType, timeout)
+    return await this._makeRequest(req)
+  }
+
   async getSolanaNotifications(minSlotNumber: number, timeout: number) {
     const req = Requests.getSolanaNotifications(minSlotNumber, timeout)
     return await this._makeRequest(req)
@@ -1546,6 +1555,7 @@ export class DiscoveryProvider {
       url: requestUrl,
       headers: headers,
       method: requestObj.method ?? 'get',
+      responseType: requestObj.responseType ?? 'json',
       timeout
     }
 

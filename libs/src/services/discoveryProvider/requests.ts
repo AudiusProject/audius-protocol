@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 
 import type { Nullable } from '../../utils'
+import type { ResponseType } from 'axios'
 
 export const getUsers = (
   limit = 100,
@@ -8,7 +9,8 @@ export const getUsers = (
   idsArray: Nullable<number[]>,
   walletAddress?: Nullable<string>,
   handle?: Nullable<string>,
-  minBlockNumber?: Nullable<number>
+  minBlockNumber?: Nullable<number>,
+  includeIncomplete?: Nullable<boolean>
 ) => {
   type QueryParams = {
     limit: number
@@ -17,6 +19,7 @@ export const getUsers = (
     wallet?: string
     min_block_number?: number
     id?: string[]
+    include_incomplete?: boolean
   }
 
   const queryParams: QueryParams = { limit: limit, offset: offset }
@@ -34,6 +37,9 @@ export const getUsers = (
       throw new Error('Expected integer array of user ids')
     }
     queryParams.id = idsArray as unknown as string[]
+  }
+  if (includeIncomplete != null) {
+    queryParams.include_incomplete = includeIncomplete
   }
 
   const req = { endpoint: 'users', queryParams }
@@ -698,6 +704,19 @@ export const bulkGetUserSubscribers = (
     data: {
       ids: encodedUserIds
     },
+    timeout
+  }
+}
+
+export const getCIDData = (
+  cid: string,
+  responseType: ResponseType = 'json',
+  timeout: number
+) => {
+  return {
+    endpoint: `v1/full/cid_data/${cid}`,
+    method: 'get',
+    responseType,
     timeout
   }
 }

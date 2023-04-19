@@ -1,6 +1,7 @@
 package server
 
 import (
+	"sort"
 	"time"
 
 	"comms.audius.co/discovery/db"
@@ -79,4 +80,19 @@ func ToMessageResponse(message queries.ChatMessageAndReactionsRow) schema.ChatMe
 		Reactions:    ToReactionsResponse(message.Reactions),
 	}
 	return messageData
+}
+
+func ToChatPermissionsResponse(validatedPermissions map[string]*ValidatedPermission) []schema.ValidatedChatPermissions {
+	var chatPermissions []schema.ValidatedChatPermissions
+	for encodedId, permission := range validatedPermissions {
+		chatPermissions = append(chatPermissions, schema.ValidatedChatPermissions{
+			UserID:                   encodedId,
+			Permits:                  (*permission).Permits,
+			CurrentUserHasPermission: (*permission).CurrentUserHasPermission,
+		})
+	}
+	sort.Slice(chatPermissions, func(i, j int) bool {
+		return chatPermissions[i].UserID < chatPermissions[j].UserID
+	})
+	return chatPermissions
 }

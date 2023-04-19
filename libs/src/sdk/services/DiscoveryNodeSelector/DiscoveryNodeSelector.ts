@@ -39,6 +39,11 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   private selectedNode: string | null
 
   /**
+   * Manual override endpoint
+   */
+  private overrideEndpoint: string | null
+
+  /**
    * Configuration passed in by consumer (with defaults)
    */
   private config: DiscoveryNodeSelectorServiceConfigInternal
@@ -114,6 +119,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       !this.config.blocklist?.has(this.config.initialSelectedNode)
         ? this.config.initialSelectedNode
         : null
+    this.overrideEndpoint = this.config.overrideEndpoint
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
     this.addEventListener = this.eventEmitter.addListener.bind(
@@ -220,10 +226,13 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   }
 
   /**
-   * Selects a discovery node or returns the existing selection
+   * Selects a discovery node, or returns the existing selection or override endpoint
    * @returns a discovery node endpoint
    */
   public async getSelectedEndpoint() {
+    if (this.overrideEndpoint) {
+      return this.overrideEndpoint
+    }
     if (this.selectedNode !== null) {
       return this.selectedNode
     }

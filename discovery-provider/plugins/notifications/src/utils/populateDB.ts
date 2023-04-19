@@ -1,5 +1,4 @@
 import { Knex } from 'knex'
-import { BaseNotification, EmailFrequency } from '../processNotifications/mappers/base'
 import {
   RepostRow,
   FollowRow,
@@ -30,6 +29,7 @@ import { expect, jest } from '@jest/globals'
 import { Processor } from '../main'
 import { getRedisConnection } from './redisConnection'
 import { config } from '../config'
+import { EmailFrequency } from '../processNotifications/mappers/userNotificationSettings'
 
 type SetupTestConfig = {
   mockTime?: boolean
@@ -421,10 +421,14 @@ export const insertNotifications = async (
   db: Knex,
   notifications: CreateNotificationRow[]
 ) => {
-  await db.insert(notifications.map(n => ({
-    timestamp: new Date(Date.now()),
-    ...n
-  }))).into('notification')
+  await db
+    .insert(
+      notifications.map((n) => ({
+        timestamp: new Date(Date.now()),
+        ...n
+      }))
+    )
+    .into('notification')
 }
 
 type CreateNotificationEmail = Pick<
@@ -609,6 +613,12 @@ export async function insertMobileDevices(
       }))
     )
     .into('NotificationDeviceTokens')
+  await insertAbusiveSettings(
+    db,
+    mobileDevices.map((device) =>
+      createAbusiveSettingForUser(device.userId, false, false, true)
+    )
+  )
 }
 
 type MobileSetting = Pick<UserNotificationMobileSettingRow, 'userId'> &
@@ -627,6 +637,42 @@ export async function insertMobileSettings(
       }))
     )
     .into('UserNotificationMobileSettings')
+}
+
+export function createAbusiveSettingForUser(
+  blockchainUserId,
+  isBlockedFromRelay,
+  isBlockedFromNotifications,
+  isEmailDeliverable
+) {
+  return {
+    blockchainUserId,
+    isBlockedFromRelay,
+    isBlockedFromNotifications,
+    isEmailDeliverable
+  }
+}
+
+export async function insertAbusiveSettings(
+  db: Knex,
+  abusiveSettings: {
+    blockchainUserId: number
+    isBlockedFromRelay: boolean
+    isBlockedFromNotifications: boolean
+    isEmailDeliverable: boolean
+  }[]
+) {
+  await db
+    .insert(
+      abusiveSettings.map((setting) => ({
+        email: 'fake_email@audius.co',
+        lastSeenDate: new Date(Date.now()).toISOString(),
+        createdAt: new Date(Date.now()).toISOString(),
+        updatedAt: new Date(Date.now()).toISOString(),
+        ...setting
+      }))
+    )
+    .into('Users')
 }
 
 export type UserWithDevice = {
@@ -648,7 +694,10 @@ export async function setupTwoUsersWithDevices(
     { user_id: user1, name: user1Name, is_current: true },
     { user_id: user2, name: user2Name, is_current: true }
   ])
-  await insertMobileSettings(identityDB, [{ userId: user1 }, { userId: user2 }])
+  await insertMobileSettings(identityDB, [
+    { userId: user1, messages: true },
+    { userId: user2, messages: true }
+  ])
   const deviceType1 = enum_NotificationDeviceTokens_deviceType.ios
   const awsARN1 = 'arn:1'
   const deviceType2 = enum_NotificationDeviceTokens_deviceType.android

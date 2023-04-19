@@ -1,21 +1,27 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import {
+  AppEmailNotification,
   FollowerMilestoneNotification,
   MilestoneType,
   PlaylistMilestoneNotification,
   TrackMilestoneNotification
 } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type MilestoneRow = Omit<NotificationRow, 'data'> & {
   data:
-  | FollowerMilestoneNotification
-  | TrackMilestoneNotification
-  | PlaylistMilestoneNotification
+    | FollowerMilestoneNotification
+    | TrackMilestoneNotification
+    | PlaylistMilestoneNotification
 }
 
 export class Milestone extends BaseNotification<MilestoneRow> {
@@ -48,15 +54,21 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     } else if (this.type === MilestoneType.TRACK_SAVE_COUNT) {
       return `Your track ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
     } else if (this.type === MilestoneType.PLAYLIST_REPOST_COUNT) {
-      return `Your ${isAlbum ? 'album' : 'playlist'
-        } ${entityName} has reached over ${this.threshold.toLocaleString()} reposts`
+      return `Your ${
+        isAlbum ? 'album' : 'playlist'
+      } ${entityName} has reached over ${this.threshold.toLocaleString()} reposts`
     } else if (this.type === MilestoneType.PLAYLIST_SAVE_COUNT) {
-      return `Your ${isAlbum ? 'album' : 'playlist'
-        } ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
+      return `Your ${
+        isAlbum ? 'album' : 'playlist'
+      } ${entityName} has reached over ${this.threshold.toLocaleString()} favorites`
     }
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -79,10 +91,10 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId]
     )
-
     let entityName
     let isAlbum = false
 
@@ -131,25 +143,29 @@ export class Milestone extends BaseNotification<MilestoneRow> {
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        receiverUserId: this.receiverUserId
+      })
     ) {
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.receiverUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
               targetARN: device.awsARN
             },
             {
               title: 'Congratulations! 🎉',
               body: this.getPushBodyText(entityName, isAlbum),
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 ...this.getPushData()
               }
             }
@@ -158,8 +174,27 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       )
       await this.incrementBadgeCount(this.receiverUserId)
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+
+    if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: this.receiverUserId
+      })
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 
@@ -168,15 +203,35 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       case MilestoneType.FOLLOWER_COUNT:
         return { type: 'MilestoneFollow', initiator: this.receiverUserId }
       case MilestoneType.LISTEN_COUNT:
-        return { type: 'MilestoneListen', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Track' }] }
+        return {
+          type: 'MilestoneListen',
+          entityId: this.parseIdFromGroupId(),
+          actions: [{ actionEntityType: 'Track' }]
+        }
       case MilestoneType.PLAYLIST_REPOST_COUNT:
-        return { type: 'MilestoneRepost', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Collection' }] }
+        return {
+          type: 'MilestoneRepost',
+          entityId: this.parseIdFromGroupId(),
+          actions: [{ actionEntityType: 'Collection' }]
+        }
       case MilestoneType.TRACK_REPOST_COUNT:
-        return { type: 'MilestoneRepost', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Track' }] }
+        return {
+          type: 'MilestoneRepost',
+          entityId: this.parseIdFromGroupId(),
+          actions: [{ actionEntityType: 'Track' }]
+        }
       case MilestoneType.PLAYLIST_SAVE_COUNT:
-        return { type: 'MilestoneFavorite', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Collection' }] }
+        return {
+          type: 'MilestoneFavorite',
+          entityId: this.parseIdFromGroupId(),
+          actions: [{ actionEntityType: 'Collection' }]
+        }
       case MilestoneType.TRACK_SAVE_COUNT:
-        return { type: 'MilestoneFavorite', entityId: this.parseIdFromGroupId(), actions: [{ actionEntityType: 'Track' }] }
+        return {
+          type: 'MilestoneFavorite',
+          entityId: this.parseIdFromGroupId(),
+          actions: [{ actionEntityType: 'Track' }]
+        }
     }
   }
 

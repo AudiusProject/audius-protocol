@@ -36,6 +36,7 @@ user_model = ns.model(
         "does_follow_current_user": fields.Boolean,
         "handle": fields.String(required=True),
         "id": fields.String(required=True),
+        "is_storage_v2": fields.Boolean(required=True),
         "is_verified": fields.Boolean(required=True),
         "location": fields.String,
         "name": fields.String(required=True),
@@ -49,6 +50,7 @@ user_model = ns.model(
         "spl_wallet": fields.String(required=True),
         "supporter_count": fields.Integer(required=True),
         "supporting_count": fields.Integer(required=True),
+        "total_audio_balance": fields.Integer(required=True),
     },
 )
 

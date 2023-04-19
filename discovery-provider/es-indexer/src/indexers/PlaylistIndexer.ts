@@ -1,5 +1,16 @@
 import { IndicesCreateRequest } from '@elastic/elasticsearch/lib/api/types'
-import { keyBy, merge } from 'lodash'
+import {
+  keyBy,
+  merge,
+  countBy,
+  entries,
+  flow,
+  head,
+  last,
+  maxBy,
+  partialRight,
+  compact,
+} from 'lodash'
 import { dialPg } from '../conn'
 import { splitTags } from '../helpers/splitTags'
 import { indexNames } from '../indexNames'
@@ -71,6 +82,8 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
         // reposts
         reposted_by: { type: 'keyword' },
         repost_count: { type: 'integer' },
+
+        dominant_mood: lowerKeyword,
 
         tracks: {
           properties: {
@@ -177,6 +190,15 @@ export class PlaylistIndexer extends BaseIndexer<PlaylistDoc> {
       playlist.tracks = playlist.playlist_contents.track_ids
         .map((t: any) => tracksById[t.track])
         .filter(Boolean)
+
+      // determine most common mood
+      playlist.dominant_mood = flow(
+        compact,
+        countBy,
+        entries,
+        partialRight(maxBy, last),
+        head
+      )(playlist.tracks.map((t) => t.mood)) as string
 
       playlist.total_play_count = playlist.tracks.reduce(
         (acc, s) => acc + parseInt(s.play_count),

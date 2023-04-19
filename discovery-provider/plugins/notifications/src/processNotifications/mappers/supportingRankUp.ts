@@ -1,9 +1,17 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { SupportingRankUpNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import {
+  AppEmailNotification,
+  SupportingRankUpNotification
+} from '../../types/notifications'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type SupportingRankUpNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupportingRankUpNotification
@@ -25,7 +33,11 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
     this.senderUserId = this.notification.data.sender_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -48,20 +60,24 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.senderUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.senderUserId]
     )
 
     const receivingUserName = users[this.receiverUserId]?.name
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.senderUserId]?.devices ?? []).length > 0
+      userNotificationSettings.shouldSendPushNotification({
+        // in this case, the receiver of the notification is
+        // the user who sent the tip
+        receiverUserId: this.senderUserId
+      })
     ) {
-      const userMobileSettings: NotificationSettings =
-        userNotifications.mobile?.[this.senderUserId].settings
-      const devices: Device[] =
-        userNotifications.mobile?.[this.senderUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.senderUserId
+      )
       // If the user's settings for the follow notification is set to true, proceed
       await Promise.all(
         devices.map((device) => {
@@ -69,14 +85,16 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.senderUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(this.senderUserId) + 1,
               targetARN: device.awsARN
             },
             {
               title: `#${this.rank} Top Supporter`,
               body: `You're now ${receivingUserName}'s #${this.rank} Top Supporter!`,
               data: {
-                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
                 type: 'SupportingRankUp',
                 entityId: this.receiverUserId
               }
@@ -86,10 +104,27 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
       )
       await this.incrementBadgeCount(this.senderUserId)
     }
-    //
 
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: this.senderUserId
+      })
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.senderUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.senderUserId,
+        email: userNotificationSettings.getUserEmail(this.senderUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

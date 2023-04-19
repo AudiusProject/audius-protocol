@@ -6,6 +6,7 @@ import (
 	"log"
 	"mediorum/crudr"
 	"net/http"
+	"net/http/httputil"
 	"net/url"
 	"os"
 	"os/signal"
@@ -33,12 +34,12 @@ func (p Peer) ApiPath(parts ...string) string {
 }
 
 type MediorumConfig struct {
+	Env               string
 	Self              Peer
 	Peers             []Peer
 	ReplicationFactor int
 	Dir               string `default:"/tmp/mediorum"`
 	BlobStoreDSN      string `json:"-"`
-	SqliteDSN         string `json:"-"`
 	PostgresDSN       string `json:"-"`
 	LegacyFSRoot      string `json:"-"`
 	PrivateKey        string `json:"-"`
@@ -66,10 +67,11 @@ type MediorumServer struct {
 }
 
 var (
-	apiBasePath = "/mediorum"
+	apiBasePath = ""
 )
 
 func New(config MediorumConfig) (*MediorumServer, error) {
+	config.Env = os.Getenv("MEDIORUM_ENV")
 
 	// validate host config
 	if config.Self.Host == "" {
@@ -86,10 +88,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	if config.BlobStoreDSN == "" {
 		config.BlobStoreDSN = "file://" + config.Dir + "/blobs"
-	}
-
-	if config.SqliteDSN == "" {
-		config.SqliteDSN = config.Dir + "/data.db"
 	}
 
 	if pk, err := parsePrivateKey(config.PrivateKey); err != nil {
@@ -110,17 +108,30 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		return nil, err
 	}
 
+	// logger
+	logger := log15.New("self", config.Self.Host)
+	logger.SetHandler(log15.CallerFileHandler(log15.StdoutHandler))
+
 	// db
-	db := dbMustDial(config.SqliteDSN)
+	db := dbMustDial(config.PostgresDSN)
 
 	// pg pool
-	pgPool, err := pgxpool.New(context.Background(), config.PostgresDSN)
+	// config.PostgresDSN
+	pgConfig, _ := pgxpool.ParseConfig(config.PostgresDSN)
+	pgPool, err := pgxpool.NewWithConfig(context.Background(), pgConfig)
 	if err != nil {
 		log.Println("dial postgres failed", err)
 	}
 
 	// crud
-	crud := crudr.New(config.Self.Host, db)
+	peerHosts := []string{}
+	for _, peer := range config.Peers {
+		if peer.Host == config.Self.Host {
+			continue
+		}
+		peerHosts = append(peerHosts, peer.Host)
+	}
+	crud := crudr.New(config.Self.Host, peerHosts, db)
 	dbMigrate(crud)
 
 	// echoServer server
@@ -128,8 +139,17 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.HideBanner = true
 	echoServer.Debug = true
 
-	// Middleware
+	// echoServer is the root server
+	// it mostly exists to server the catch all reverse proxy rule at the end
+	// most routes and middleware should be added to the `routes` group
+	// mostly don't add CORS middleware here as it will break reverse proxy at the end
 	echoServer.Use(middleware.Recover())
+	echoServer.Use(middleware.Logger())
+	echoServer.Pre(middleware.Rewrite(map[string]string{
+		"/mediorum":   "/",
+		"/mediorum/":  "/",
+		"/mediorum/*": "/$1",
+	}))
 
 	ss := &MediorumServer{
 		echo:      echoServer,
@@ -137,73 +157,54 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		placement: newPlacement(config),
 		crud:      crud,
 		pgPool:    pgPool,
-		logger:    log15.New("from", config.Self.Host),
+		logger:    logger,
 		quit:      make(chan os.Signal, 1),
 
 		StartedAt: time.Now().UTC(),
 		Config:    config,
 	}
 
-	// public: uis
-	// should probably use basePath
-	// and basePath should not be "/api" by default
-	// and the uis should be able to know basepath
-	// to make it easier to shim into the ol nginx
-	echoServer.GET("/", ss.serveUploadUI)
-
-	ss.logger.SetHandler(log15.CallerFileHandler(log15.StdoutHandler))
-
-	basePath := echoServer.Group(apiBasePath)
+	// routes holds all of our handled routes
+	// and related middleware like CORS
+	routes := echoServer.Group(apiBasePath)
 
 	// Middleware
-	basePath.Use(middleware.Recover())
-	basePath.Use(middleware.CORS())
-	// basePath.Use(middleware.Logger())
+	routes.Use(middleware.CORS())
 
-	// TODO: Use middleware to cache whenever content is streamed, except if it's premium content.
-	// See Johannes's previous PR for reference. From CN:
-	// If content is gated, set cache-control to no-cache.
-	// Otherwise, set the CID cache-control so that client caches the response for 30 days.
-	// The contentAccessMiddleware sets the req.contentAccess object so that we do not
-	// have to make another database round trip to get this info.
-	// if (req.shouldCache) {
-	//   res.setHeader('cache-control', 'public, max-age=2592000, immutable')
-	// } else {
-	//   res.setHeader('cache-control', 'no-cache')
-	// }
-
-	basePath.GET("", ss.serveUploadUI)
-	basePath.GET("/", ss.serveUploadUI)
+	// public: uis
+	routes.GET("", ss.serveUploadUI)
+	routes.GET("/", ss.serveUploadUI)
 
 	// public: uploads
-	basePath.GET("/uploads", ss.getUploads)
-	basePath.GET("/uploads/:id", ss.getUpload)
-	basePath.POST("/uploads", ss.postUpload)
+	routes.GET("/uploads", ss.getUploads)
+	routes.GET("/uploads/:id", ss.getUpload)
+	routes.POST("/uploads", ss.postUpload)
 
-	echoServer.GET("/ipfs/:key", ss.getBlob)
-	echoServer.GET("/content/:key", ss.getBlob)
-	echoServer.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
-	echoServer.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
+	routes.GET("/ipfs/:cid", ss.getBlob)
+	routes.GET("/content/:cid", ss.getBlob)
+	routes.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
+	routes.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
+	routes.GET("/tracks/cidstream/:cid", ss.getBlob) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
 
 	// status + debug:
-	basePath.GET("/status", ss.getStatus)
-	basePath.GET("/debug/blobs", ss.dumpBlobs)
-	basePath.GET("/debug/uploads", ss.dumpUploads)
-	basePath.GET("/debug/ls", ss.getLs)
+	routes.GET("/status", ss.getStatus)
+	routes.GET("/debug/blobs", ss.dumpBlobs)
+	routes.GET("/debug/uploads", ss.dumpUploads)
+	routes.GET("/debug/ls", ss.getLs)
 
 	// legacy:
-	basePath.GET("/cid/:cid", ss.serveLegacyCid)
-	basePath.GET("/cid/:dirCid/:fileName", ss.serveLegacyDirCid)
-	basePath.GET("/metadata", ss.serveCidMetadata)
+	routes.GET("/cid/:cid", ss.serveLegacyCid)
+	routes.GET("/cid/:dirCid/:fileName", ss.serveLegacyDirCid)
+	routes.GET("/metadata", ss.serveCidMetadata)
 
-	basePath.GET("/beam/files", ss.servePgBeam)
+	routes.GET("/beam/files", ss.servePgBeam)
 
 	// internal
-	internalApi := basePath.Group("/internal")
+	internalApi := routes.Group("/internal")
 
 	// internal: crud
-	internalApi.GET("/crud/stream", ss.getCrudStream)
-	internalApi.GET("/crud/bulk", ss.getCrudBulk)
+	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
+	internalApi.POST("/crud/push", ss.serveCrudPush)
 
 	// should health be internal or public?
 	internalApi.GET("/health", ss.getMyHealth)
@@ -211,19 +212,26 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// internal: blobs
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
-	internalApi.GET("/blobs/location/:key", ss.getBlobLocation)
-	internalApi.GET("/blobs/info/:key", ss.getBlobInfo)
-	internalApi.GET("/blobs/:key", ss.getBlob)
+	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
+	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
+	internalApi.GET("/blobs/:cid", ss.getBlob)
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
+
+	// WIP internal: metrics
+	internalApi.GET("/metrics", ss.getMetrics)
+
+	// reverse proxy stuff
+	if config.Env == "stage" || config.Env == "prod" {
+		upstream, _ := url.Parse("http://server:4000")
+		proxy := httputil.NewSingleHostReverseProxy(upstream)
+		echoServer.Any("*", echo.WrapHandler(proxy))
+	}
 
 	return ss, nil
 
 }
 
 func (ss *MediorumServer) MustStart() {
-	// start crud clients
-	// routes should match crud routes setup above
-	ss.startCrudClients("/mediorum/internal/crud/stream", "/mediorum/internal/crud/bulk")
 
 	// start server
 	go func() {
@@ -240,7 +248,14 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startRepairer()
 
-	go ss.startBeamClient()
+	ss.crud.StartClients()
+
+	// disable pg_beam in prod for now.
+	// plan is to make it more evented and enable everywhere
+	// before making mediorum "first"
+	if ss.Config.Env != "prod" {
+		go ss.startBeamClient()
+	}
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
@@ -255,8 +270,6 @@ func (ss *MediorumServer) Stop() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	ss.crud.SSEServer.Close()
 
 	if err := ss.echo.Shutdown(ctx); err != nil {
 		ss.logger.Crit("echo shutdown: " + err.Error())

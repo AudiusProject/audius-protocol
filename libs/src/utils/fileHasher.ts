@@ -14,7 +14,9 @@ import type {
   Query,
   KeyQuery
 } from 'interface-store'
-import type { CID } from 'multiformats/cid'
+import { CID } from 'multiformats/cid'
+import * as json from 'multiformats/codecs/json'
+import { sha256 } from 'multiformats/hashes/sha2'
 
 // Base functionality for only hash logic taken from https://github.com/alanshaw/ipfs-only-hash/blob/master/index.js
 
@@ -154,7 +156,7 @@ export const fileHasher = {
    * Custom fn to generate the content-hashing logic
    * @param content a buffer of the content
    * @param options options for importer
-   * @returns the CID from content addressing logic
+   * @returns the V0 CID from content addressing logic
    */
   async hashNonImages(
     content: Uint8Array,
@@ -227,7 +229,7 @@ export const fileHasher = {
   },
 
   /**
-   * Generates CID for a non-image file (track segment, track transcode, metadata)
+   * Generates CID V0 (46-char string starting with "Qm") for a non-image file (track segment, track transcode, metadata)
    * @param {Buffer|ReadStream|string} content a single Buffer, a ReadStream, or path to an existing file
    * @param {Object?} logger
    * @returns {string} only hash response cid
@@ -238,6 +240,17 @@ export const fileHasher = {
   ): Promise<string> {
     const buffer = await fileHasher.convertToBuffer(content, logger)
     return await fileHasher.hashNonImages(buffer)
+  },
+
+  /**
+   * Generates CID V1 for a JSON metadata object (NOT the string of the metadata - must be an object).
+   * CID<T, 512, SHA_256, 1> represents CID with json codec (512) and sha256 hash using CID V1.
+   * Call toString() on the result to get the CID V1 string.
+   */
+  async generateMetadataCidV1(metadata: {}): Promise<CID> {
+    const bytes = json.encode(metadata)
+    const hash = await sha256.digest(bytes)
+    return CID.create(1, json.code, hash)
   },
 
   /**

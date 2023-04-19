@@ -1,10 +1,18 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { SaveNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import {
+  AppEmailNotification,
+  SaveNotification
+} from '../../types/notifications'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type SaveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveNotification
@@ -24,7 +32,11 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     this.saverUserId = this.notification.data.user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -86,48 +98,72 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId, this.saverUserId]
     )
-
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        initiatorUserId: this.saverUserId,
+        receiverUserId: this.receiverUserId
+      }) &&
+      userNotificationSettings.isNotificationTypeEnabled(
+        this.receiverUserId,
+        'favorites'
+      )
     ) {
-      const userMobileSettings: NotificationSettings =
-        userNotifications.mobile?.[this.receiverUserId].settings
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['favorites']) {
-        const timestamp = Math.floor(Date.parse((this.notification.timestamp as any) as string) / 1000)
-        await Promise.all(
-          devices.map((device) => {
-            return sendPushNotification(
-              {
-                type: device.type,
-                badgeCount:
-                  userNotifications.mobile[this.receiverUserId].badgeCount + 1,
-                targetARN: device.awsARN
-              },
-              {
-                title: 'New Favorite',
-                body: `${saverUserName} favorited your ${entityType.toLowerCase()} ${entityName}`,
-                data: {
-                  id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
-                  userIds: [this.saverUserId],
-                  type: 'Favorite'
-                }
+      const timestamp = Math.floor(
+        Date.parse(this.notification.timestamp as any as string) / 1000
+      )
+      await Promise.all(
+        devices.map((device) => {
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount:
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: 'New Favorite',
+              body: `${saverUserName} favorited your ${entityType.toLowerCase()} ${entityName}`,
+              data: {
+                id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
+                userIds: [this.saverUserId],
+                type: 'Favorite'
               }
-            )
-          })
-        )
-        await this.incrementBadgeCount(this.receiverUserId)
-      }
+            }
+          )
+        })
+      )
+      await this.incrementBadgeCount(this.receiverUserId)
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
+      userNotificationSettings.shouldSendEmail({
+        initiatorUserId: this.saverUserId,
+        receiverUserId: this.receiverUserId
+      })
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

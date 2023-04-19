@@ -575,12 +575,12 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := map[string]*ValidatedPermission{
+		expectedData := ToChatPermissionsResponse(map[string]*ValidatedPermission{
 			encodedUser2: {
 				Permits:                  schema.Followees,
 				CurrentUserHasPermission: true,
 			},
-		}
+		})
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
 				Health: expectedHealth,
@@ -614,7 +614,7 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := map[string]*ValidatedPermission{
+		expectedData := ToChatPermissionsResponse(map[string]*ValidatedPermission{
 			encodedUser1: {
 				Permits:                  schema.All,
 				CurrentUserHasPermission: true,
@@ -627,7 +627,7 @@ func TestGetPermissions(t *testing.T) {
 				Permits:                  schema.None,
 				CurrentUserHasPermission: false,
 			},
-		}
+		})
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
 				Health: expectedHealth,
@@ -661,7 +661,7 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := map[string]*ValidatedPermission{
+		expectedData := ToChatPermissionsResponse(map[string]*ValidatedPermission{
 			encodedUser2: {
 				Permits:                  schema.Followees,
 				CurrentUserHasPermission: true,
@@ -670,7 +670,7 @@ func TestGetPermissions(t *testing.T) {
 				Permits:                  schema.Tippers,
 				CurrentUserHasPermission: false,
 			},
-		}
+		})
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
 				Health: expectedHealth,
@@ -703,7 +703,7 @@ func TestGetPermissions(t *testing.T) {
 		defer res.Body.Close()
 
 		// Assertions
-		expectedData := map[string]*ValidatedPermission{
+		expectedData := ToChatPermissionsResponse(map[string]*ValidatedPermission{
 			encodedUser3: {
 				Permits:                  schema.Tippers,
 				CurrentUserHasPermission: true,
@@ -712,7 +712,7 @@ func TestGetPermissions(t *testing.T) {
 				Permits:                  schema.Followees,
 				CurrentUserHasPermission: false,
 			},
-		}
+		})
 		expectedResponse, err := json.Marshal(
 			schema.CommsResponse{
 				Health: expectedHealth,

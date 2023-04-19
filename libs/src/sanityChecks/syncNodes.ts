@@ -24,7 +24,7 @@ export const syncNodes = async (libs: AudiusLibs) => {
   console.debug('Sanity Check - syncNodes')
   const user = libs.userStateManager?.getCurrentUser()
 
-  if (!user) return
+  if (!user || user.is_storage_v2) return
 
   const secondaries = CreatorNode.getSecondaries(user.creator_node_endpoint)
   await Promise.all(

@@ -147,7 +147,8 @@ func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
-	has, err := client.Get(apiPath(host, "internal/blobs/info", key))
+	u := apiPath(host, "internal/blobs/info", key)
+	has, err := client.Get(u)
 	if err != nil {
 		return false
 	}

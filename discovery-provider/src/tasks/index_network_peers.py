@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 LOCAL_RPC = "http://chain:8545"  # TODO: Needs nethermind locally I think
 DOUBLE_CAST_ERROR_CODE = -32603
+CONTENT_PEERS_REDIS_KEY = "content_peers"
 
 # What is a "Peer" in this context?
 # A peer represents another known entity in the network
@@ -34,6 +35,7 @@ def index_content_node_peers(self):
     # Update creator node url list in CID Metadata Client
     # This list of known nodes is used to traverse and retrieve metadata from gateways
     cid_metadata_client.update_cnode_urls(content_peers)
+    redis.set(CONTENT_PEERS_REDIS_KEY, ",".join(content_peers))
     logger.info(f"index_network_peers.py | All known content peers {content_nodes}")
 
 

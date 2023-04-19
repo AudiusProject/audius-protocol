@@ -1,10 +1,18 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { TastemakerNotification } from '../../types/notifications'
-import { BaseNotification, Device } from './base'
+import {
+  AppEmailNotification,
+  TastemakerNotification
+} from '../../types/notifications'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type TastemakerNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TastemakerNotification
@@ -23,7 +31,12 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
   ) {
     super(dnDB, identityDB, notification)
     const userIds: number[] = this.notification.user_ids!
-    const { tastemaker_item_id, tastemaker_item_owner_id, tastemaker_item_type, tastemaker_user_id } = this.notification.data
+    const {
+      tastemaker_item_id,
+      tastemaker_item_owner_id,
+      tastemaker_item_type,
+      tastemaker_user_id
+    } = this.notification.data
     this.receiverUserId = userIds[0]
     this.tastemakerItemId = tastemaker_item_id
     this.tastemakerItemOwnerId = tastemaker_item_owner_id
@@ -31,7 +44,11 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     this.tastemakerUserId = tastemaker_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -57,8 +74,9 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       return
     }
 
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId]
     )
 
     const track: { track_id: number; title: string } = await this.dnDB
@@ -70,11 +88,16 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
 
     const entityName = track.title
 
-    const devices: Device[] =
-      userNotifications.mobile?.[this.receiverUserId]?.devices
+    const devices: Device[] = userNotificationSettings.getDevices(
+      this.receiverUserId
+    )
 
     // If the user has devices to the notification to, proceed
-    if (devices && devices.length > 0) {
+    if (
+      userNotificationSettings.shouldSendPushNotification({
+        receiverUserId: this.receiverUserId
+      })
+    ) {
       // If the user's settings for the reposts notification is set to true, proceed
       await Promise.all(
         devices.map((device) => {
@@ -82,7 +105,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
             {
               type: device.type,
               badgeCount:
-                userNotifications.mobile[this.receiverUserId].badgeCount + 1,
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
               targetARN: device.awsARN
             },
             {
@@ -96,11 +119,29 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (userNotifications.browser) {
+    if (userNotificationSettings.browser) {
       // TODO: Send out browser
     }
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: this.receiverUserId
+      })
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

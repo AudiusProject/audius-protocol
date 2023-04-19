@@ -68,6 +68,12 @@ export class Users extends Base {
     this.getUserSubscribers = this.getUserSubscribers.bind(this)
     this.bulkGetUserSubscribers = this.bulkGetUserSubscribers.bind(this)
 
+    this.updateMetadataV2 = this.updateMetadataV2.bind(this)
+    this.uploadProfileImagesV2 = this.uploadProfileImagesV2.bind(this)
+    this.createEntityManagerUserV2 = this.createEntityManagerUserV2.bind(this)
+    this._waitForDiscoveryToIndexUser =
+      this._waitForDiscoveryToIndexUser.bind(this)
+
     // For adding replica set to users on sign up
     this.assignReplicaSet = this.assignReplicaSet.bind(this)
 
@@ -440,6 +446,35 @@ export class Users extends Base {
     return metadata
   }
 
+  async uploadProfileImagesV2(
+    profilePictureFile: File,
+    coverPhotoFile: File,
+    metadata: UserMetadata
+  ) {
+    let didMetadataUpdate = false
+    if (profilePictureFile) {
+      const resp = await this.creatorNode.uploadProfilePictureV2(
+        profilePictureFile
+      )
+      metadata.profile_picture_sizes = resp.id
+      didMetadataUpdate = true
+    }
+    if (coverPhotoFile) {
+      const resp = await this.creatorNode.uploadCoverPhotoV2(coverPhotoFile)
+      metadata.cover_photo_sizes = resp.id
+      didMetadataUpdate = true
+    }
+
+    if (didMetadataUpdate) {
+      await this.updateMetadataV2({
+        newMetadata: metadata,
+        userId: metadata.user_id
+      })
+    }
+
+    return metadata
+  }
+
   async createEntityManagerUser({ metadata }: { metadata: UserMetadata }) {
     this.REQUIRES(Services.CREATOR_NODE)
     const phases = {
@@ -547,6 +582,59 @@ export class Users extends Base {
       const errorMsg = `assignReplicaSet() Error -- Phase ${phase} in ${
         Date.now() - fnStartMs
       }ms: ${e}`
+      if (e instanceof Error) {
+        e.message = errorMsg
+        throw e
+      }
+      throw new Error(errorMsg)
+    }
+  }
+
+  async createEntityManagerUserV2({ metadata }: { metadata: UserMetadata }) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+
+    try {
+      // Create the user with EntityMananer
+      const userId = await this._generateUserId()
+      const manageEntityResponse =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityManagerClient.EntityType.USER,
+          userId,
+          EntityManagerClient.Action.CREATE,
+          'v2'
+        )
+      await this._waitForDiscoveryToIndexUser(
+        userId,
+        manageEntityResponse.txReceipt.blockNumber
+      )
+
+      // Ensure metadata has expected properties
+      const newMetadata = this.cleanUserMetadata({ ...metadata })
+      this._validateUserMetadata(newMetadata)
+
+      newMetadata.is_storage_v2 = true
+      newMetadata.wallet = this.web3Manager.getWalletAddress()
+      newMetadata.user_id = userId
+      this.userStateManager.setCurrentUser({
+        ...newMetadata,
+        // Initialize counts to be 0. We don't want to write this data to backends ever really
+        // (hence the cleanUserMetadata above), but we do want to make sure clients
+        // can properly "do math" on these numbers.
+        followee_count: 0,
+        follower_count: 0,
+        repost_count: 0
+      })
+
+      // Update metadata on chain to include wallet
+      const { blockHash, blockNumber } = await this.updateMetadataV2({
+        newMetadata,
+        userId
+      })
+
+      return { newMetadata, blockHash, blockNumber }
+    } catch (e) {
+      const errorMsg = `createEntityManagerUserV2() error: ${e}`
       if (e instanceof Error) {
         e.message = errorMsg
         throw e
@@ -756,7 +844,6 @@ export class Users extends Base {
         'UPDATE_CONTENT_NODE_ENDPOINT_ON_CHAIN',
       UPLOAD_METADATA: 'UPLOAD_METADATA',
       UPDATE_METADATA_ON_CHAIN: 'UPDATE_METADATA_ON_CHAIN',
-      UPDATE_USER_ON_CHAIN_OPS: 'UPDATE_USER_ON_CHAIN_OPS',
       ASSOCIATE_USER: 'ASSOCIATE_USER'
     }
     let phase = ''
@@ -866,6 +953,59 @@ export class Users extends Base {
   }
 
   /**
+   * Storage V2 version of updateAndUploadMetadata. Only posts to chain and not Content Node.
+   */
+  async updateMetadataV2({
+    newMetadata,
+    userId
+  }: {
+    newMetadata: UserMetadata
+    userId: number
+  }) {
+    this.REQUIRES(Services.DISCOVERY_PROVIDER)
+    this.IS_OBJECT(newMetadata)
+
+    const oldMetadata = this.userStateManager.getCurrentUser()
+    if (!oldMetadata) {
+      throw new Error('No current user.')
+    }
+
+    newMetadata = this.cleanUserMetadata(newMetadata)
+    this._validateUserMetadata(newMetadata)
+
+    try {
+      // Write metadata to chain
+      const cid = await Utils.fileHasher.generateMetadataCidV1(newMetadata)
+      const { txReceipt } =
+        await this.contracts.EntityManagerClient!.manageEntity(
+          userId,
+          EntityManagerClient.EntityType.USER,
+          userId,
+          EntityManagerClient.Action.UPDATE,
+          JSON.stringify({
+            cid: cid.toString(),
+            data: newMetadata
+          })
+        )
+      const blockNumber = txReceipt.blockNumber
+
+      // Update libs instance with new user metadata object
+      this.userStateManager.setCurrentUser({ ...oldMetadata, ...newMetadata })
+      return {
+        blockHash: txReceipt.blockHash,
+        blockNumber
+      }
+    } catch (e) {
+      const errorMsg = `updateMetadataV2() error: ${e}`
+      if (e instanceof Error) {
+        e.message = errorMsg
+        throw e
+      }
+      throw new Error(errorMsg)
+    }
+  }
+
+  /**
    * If a user's creator_node_endpoint is null, assign a replica set.
    * Used during the sanity check and in uploadImage() in files.js
    */
@@ -874,7 +1014,7 @@ export class Users extends Base {
 
     // If no user is logged in, or a creator node endpoint is already assigned,
     // skip this call
-    if (!user || user.creator_node_endpoint) return
+    if (!user || user.creator_node_endpoint || user.is_storage_v2) return
 
     // Generate a replica set and assign to user
     try {
@@ -921,12 +1061,12 @@ export class Users extends Base {
     timeoutMs = 60000
   ): Promise<void> {
     const asyncFn = async () => {
+      const encodedUserId = Utils.encodeHashId(userId)
       while (true) {
-        const encodedUserId = Utils.encodeHashId(userId)
         let replicaSet
         try {
           // If the discovery node has not yet indexed the blocknumber,
-          // this method will throw an error
+          // this method will throw an error (which we catch and ignore)
           // If the user replica set does not exist, it will return an empty object
           // which should lead to the method throwing an error
           replicaSet = await this.discoveryProvider.getUserReplicaSet({
@@ -956,6 +1096,44 @@ export class Users extends Base {
       asyncFn(),
       timeoutMs,
       `[User:waitForReplicaSetDiscoveryIndexing()] Timeout error after ${timeoutMs}ms`
+    )
+  }
+
+  async _waitForDiscoveryToIndexUser(
+    userId: number,
+    blockNumber: number,
+    timeoutMs = 60000
+  ): Promise<void> {
+    const asyncFn = async () => {
+      while (true) {
+        // Try to get user. Catch+ignore error if the block number isn't yet indexed
+        let user
+        try {
+          user = (
+            await this.discoveryProvider.getUsers(
+              1, // limit
+              0, // offset
+              [userId], // userIds
+              null, // walletAddress
+              null, // handle
+              blockNumber, // minBlockNumber
+              true // includeIncomplete
+            )
+          )?.[0]
+        } catch (err) {}
+
+        // All done (success) if the user was indexed and ID matches
+        if (user?.user_id === userId) {
+          break
+        }
+
+        await Utils.wait(500)
+      }
+    }
+    await Utils.racePromiseWithTimeout(
+      asyncFn(),
+      timeoutMs,
+      `[User:_waitForDiscoveryToIndexUser()] Timeout error after ${timeoutMs}ms`
     )
   }
 

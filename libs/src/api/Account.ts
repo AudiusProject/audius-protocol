@@ -5,15 +5,22 @@ import { AuthHeaders } from '../constants'
 import { getPermitDigest, sign } from '../utils/signatures'
 import { PublicKey } from '@solana/web3.js'
 import type { Users } from './Users'
+import type { ServiceProvider } from './ServiceProvider'
 import type { BN } from 'ethereumjs-util'
 
 export class Account extends Base {
   User: Users
+  ServiceProvider: ServiceProvider
 
-  constructor(userApi: Users, ...services: BaseConstructorArgs) {
+  constructor(
+    userApi: Users,
+    serviceProvider: ServiceProvider,
+    ...services: BaseConstructorArgs
+  ) {
     super(...services)
 
     this.User = userApi
+    this.ServiceProvider = serviceProvider
 
     this.getCurrentUser = this.getCurrentUser.bind(this)
     this.login = this.login.bind(this)
@@ -36,6 +43,7 @@ export class Account extends Base {
     this.sendTokensFromEthToSol = this.sendTokensFromEthToSol.bind(this)
     this.sendTokensFromSolToEth = this.sendTokensFromSolToEth.bind(this)
     this.userHasClaimedSolAccount = this.userHasClaimedSolAccount.bind(this)
+    this.signUpV2 = this.signUpV2.bind(this)
   }
 
   /**
@@ -74,11 +82,19 @@ export class Account extends Base {
     )
     if (userAccount) {
       this.userStateManager.setCurrentUser(userAccount)
-      const creatorNodeEndpoint = userAccount.creator_node_endpoint
-      if (creatorNodeEndpoint) {
-        this.creatorNode.setEndpoint(
-          CreatorNode.getPrimary(creatorNodeEndpoint)!
+      if (userAccount.is_storage_v2) {
+        const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
+          1,
+          userAccount.wallet
         )
+        await this.creatorNode.setEndpoint(randomNodes[0]!)
+      } else {
+        const creatorNodeEndpoint = userAccount.creator_node_endpoint
+        if (creatorNodeEndpoint) {
+          await this.creatorNode.setEndpoint(
+            CreatorNode.getPrimary(creatorNodeEndpoint)!
+          )
+        }
       }
       return { user: userAccount, error: false, phase }
     }
@@ -151,11 +167,96 @@ export class Account extends Base {
       }
 
       // Add user to chain
+      phase = phases.ADD_USER
       const { newMetadata, blockHash, blockNumber } =
         await this.User.createEntityManagerUser({
           metadata
         })
+      phase = phases.UPLOAD_PROFILE_IMAGES
       await this.User.uploadProfileImages(
+        profilePictureFile!,
+        coverPhotoFile!,
+        newMetadata
+      )
+      return { blockHash, blockNumber, userId: newMetadata.user_id }
+    } catch (e: any) {
+      return {
+        error: e.message,
+        phase,
+        errorStatus: e.response ? e.response.status : null
+      }
+    }
+  }
+
+  /**
+   * Signs a user up for Audius
+   * @param email
+   * @param password
+   * @param metadata
+   * @param profilePictureFile an optional file to upload as the profile picture
+   * @param coverPhotoFile an optional file to upload as the cover phtoo
+   * @param hasWallet
+   * @param host The host url used for the recovery email
+   * @param generateRecoveryLink an optional flag to skip generating recovery link for testing purposes
+   */
+  async signUpV2(
+    email: string,
+    password: string,
+    metadata: UserMetadata,
+    profilePictureFile: Nullable<File> = null,
+    coverPhotoFile: Nullable<File> = null,
+    hasWallet = false,
+    host = (typeof window !== 'undefined' && window.location.origin) || null,
+    generateRecoveryLink = true
+  ) {
+    const phases = {
+      CREATE_USER_RECORD: 'CREATE_USER_RECORD',
+      HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      SELECT_STORAGE_NODE: 'SELECT_STORAGE_NODE',
+      ADD_USER: 'ADD_USER',
+      UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES'
+    }
+    let phase = ''
+    try {
+      this.REQUIRES(Services.CREATOR_NODE, Services.IDENTITY_SERVICE)
+
+      if (this.web3Manager.web3IsExternal()) {
+        phase = phases.CREATE_USER_RECORD
+        await this.identityService.createUserRecord(
+          email,
+          this.web3Manager.getWalletAddress()
+        )
+      } else {
+        this.REQUIRES(Services.HEDGEHOG)
+        // If an owner wallet already exists, don't try to recreate it
+        if (!hasWallet) {
+          phase = phases.HEDGEHOG_SIGNUP
+          const ownerWallet = await this.hedgehog.signUp(email, password)
+          this.web3Manager.setOwnerWallet(ownerWallet)
+          if (generateRecoveryLink) {
+            await this.generateRecoveryLink({ handle: metadata.handle, host })
+          }
+        }
+      }
+
+      // Select a storage node to send future requests to
+      phase = phases.SELECT_STORAGE_NODE
+      const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
+        1,
+        this.web3Manager.getWalletAddress()
+      )
+      await this.creatorNode.setEndpoint(randomNodes[0]!)
+
+      // Add user to chain
+      phase = phases.ADD_USER
+      const { newMetadata, blockHash, blockNumber } =
+        await this.User.createEntityManagerUserV2({
+          metadata
+        })
+
+      // Upload user's profile images, if any
+      phase = phases.UPLOAD_PROFILE_IMAGES
+      await this.User.uploadProfileImagesV2(
         profilePictureFile!,
         coverPhotoFile!,
         newMetadata

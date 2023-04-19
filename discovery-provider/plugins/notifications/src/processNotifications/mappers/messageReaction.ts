@@ -1,8 +1,12 @@
 import { Knex } from 'knex'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import { BaseNotification } from './base'
 import { UserRow } from '../../types/dn'
 import { DMReactionNotification } from '../../types/notifications'
 import { sendPushNotification } from '../../sns'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 export class MessageReaction extends BaseNotification<DMReactionNotification> {
   receiverUserId: number
@@ -18,7 +22,11 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
     this.senderUserId = this.notification.sender_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -41,44 +49,54 @@ export class MessageReaction extends BaseNotification<DMReactionNotification> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId, this.senderUserId]
     )
 
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        initiatorUserId: this.senderUserId,
+        receiverUserId: this.receiverUserId
+      }) &&
+      userNotificationSettings.isNotificationTypeEnabled(
+        this.receiverUserId,
+        'messages'
+      )
     ) {
-      const userMobileSettings: NotificationSettings =
-        userNotifications.mobile?.[this.receiverUserId].settings
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
-      if (userMobileSettings['messages']) {
-        await Promise.all(
-          devices.map((device) => {
-            return sendPushNotification(
-              {
-                type: device.type,
-                badgeCount:
-                  userNotifications.mobile[this.receiverUserId].badgeCount + 1,
-                targetARN: device.awsARN
-              },
-              {
-                title: 'Reaction',
-                body: `${users[this.senderUserId].name} reacted ${
-                  this.notification.reaction
-                } to your message`,
-                data: {}
-              }
-            )
-          })
-        )
-        await this.incrementBadgeCount(this.receiverUserId)
-      }
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
+      await Promise.all(
+        devices.map((device) => {
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount:
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: 'Reaction',
+              body: `${users[this.senderUserId].name} reacted ${
+                this.notification.reaction
+              } to your message`,
+              data: {}
+            }
+          )
+        })
+      )
+      await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (userNotifications.email) {
+    if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.shouldSendEmail({
+        initiatorUserId: this.senderUserId,
+        receiverUserId: this.receiverUserId
+      })
+    ) {
       // TODO: Send out email
     }
   }

@@ -1,9 +1,17 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { FollowNotification } from '../../types/notifications'
-import { BaseNotification, Device, NotificationSettings } from './base'
+import {
+  AppEmailNotification,
+  FollowNotification
+} from '../../types/notifications'
+import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import {
+  buildUserNotificationSettings,
+  Device
+} from './userNotificationSettings'
 
 type FollowNotificationRow = Omit<NotificationRow, 'data'> & {
   data: FollowNotification
@@ -24,7 +32,11 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     this.receiverUserId = followeeUserId
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -47,48 +59,72 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     }
 
     // Get the user's notification setting from identity service
-    const userNotifications = await super.getShouldSendNotification(
-      this.receiverUserId
+    const userNotificationSettings = await buildUserNotificationSettings(
+      this.identityDB,
+      [this.receiverUserId, this.followerUserId]
     )
-
     // If the user has devices to the notification to, proceed
     if (
-      (userNotifications.mobile?.[this.receiverUserId]?.devices ?? []).length >
-      0
+      userNotificationSettings.shouldSendPushNotification({
+        initiatorUserId: this.followerUserId,
+        receiverUserId: this.receiverUserId
+      }) &&
+      userNotificationSettings.isNotificationTypeEnabled(
+        this.receiverUserId,
+        'followers'
+      )
     ) {
-      const userMobileSettings: NotificationSettings =
-        userNotifications.mobile?.[this.receiverUserId].settings
-      const devices: Device[] =
-        userNotifications.mobile?.[this.receiverUserId].devices
+      const devices: Device[] = userNotificationSettings.getDevices(
+        this.receiverUserId
+      )
       // If the user's settings for the follow notification is set to true, proceed
-      if (userMobileSettings['followers']) {
-        await Promise.all(
-          devices.map((device) => {
-            return sendPushNotification(
-              {
-                type: device.type,
-                badgeCount:
-                  userNotifications.mobile[this.receiverUserId].badgeCount + 1,
-                targetARN: device.awsARN
-              },
-              {
-                title: 'Follow',
-                body: `${users[this.followerUserId].name} followed you`,
-                data: {
-                  id: `timestamp:${this.getNotificationTimestamp()}:group_id:${this.notification.group_id}`,
-                  userIds: [this.followerUserId],
-                  type: 'Follow'
-                }
+      await Promise.all(
+        devices.map((device) => {
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount:
+                userNotificationSettings.getBadgeCount(this.receiverUserId) + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: 'Follow',
+              body: `${users[this.followerUserId].name} followed you`,
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
+                userIds: [this.followerUserId],
+                type: 'Follow'
               }
-            )
-          })
-        )
-        await this.incrementBadgeCount(this.receiverUserId)
-      }
+            }
+          )
+        })
+      )
+      await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (userNotifications.email) {
-      // TODO: Send out email
+    if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
+      userNotificationSettings.shouldSendEmail({
+        receiverUserId: this.receiverUserId,
+        initiatorUserId: this.followerUserId
+      })
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

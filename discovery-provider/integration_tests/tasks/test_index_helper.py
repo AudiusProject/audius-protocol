@@ -127,6 +127,7 @@ def test_fetch_cid_metadata(app, mocker):
                 },
                 "events": {"is_mobile_user": True},
                 "is_deactivated": False,
+                "is_storage_v2": False,
                 "artist_pick_track_id": TRACK_ID_OFFSET,
             },
             "QmCreateTrack1": {
@@ -239,6 +240,48 @@ def test_fetch_cid_metadata(app, mocker):
                             "_userId": 1,
                             "_action": "Update",
                             "_metadata": f'{{"cid": "QmUpdatePlaylist1", "data": {playlist1_json}}}',
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+            "CreateTrack2InvalidTx": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": TRACK_ID_OFFSET + 1,
+                            "_entityType": "Track",
+                            "_userId": 1,
+                            "_action": "Create",
+                            "_metadata": f'{{"cid": "QmCreateInvalidTrack", "data": "{track1_json}"}}',  # stringified value for data key
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+            "CreateTrack3InvalidTx": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": TRACK_ID_OFFSET + 2,
+                            "_entityType": "Track",
+                            "_userId": 1,
+                            "_action": "Create",
+                            "_metadata": f'{{"data": {track1_json}}}',  # missing cid key
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+            "CreateTrack4InvalidTx": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": TRACK_ID_OFFSET + 3,
+                            "_entityType": "Track",
+                            "_userId": 1,
+                            "_action": "Create",
+                            "_metadata": '{"cid": "QmCreateInvalidTrack", "data": {}}',  # no values in data json
                             "_signer": "user1wallet",
                         }
                     )
