@@ -16,7 +16,7 @@ import UpdateDot from 'components/update-dot/UpdateDot'
 import { DragDropKind } from 'store/dragndrop/slice'
 import { getPathname } from 'utils/route'
 
-import navColumnStyles from './NavColumn.module.css'
+import leftNavStyles from './LeftNav.module.css'
 import styles from './PlaylistLibrary.module.css'
 
 const messages = { recentlyUpdatedTooltip: 'Recently Updated' }
@@ -125,8 +125,8 @@ export const PlaylistNavItem = ({
   return (
     <Droppable
       key={id}
-      className={navColumnStyles.droppable}
-      hoverClassName={navColumnStyles.droppableHover}
+      className={leftNavStyles.droppable}
+      hoverClassName={leftNavStyles.droppableHover}
       onDrop={addTrack}
       acceptedKinds={['track']}
       disabled={!isOwner}
@@ -141,13 +141,13 @@ export const PlaylistNavItem = ({
         onReorder={onReorder}
         isActive={() => url === getPathname()}
         activeClassName='active'
-        className={cn(navColumnStyles.link, {
-          [navColumnStyles.droppableLink]:
+        className={cn(leftNavStyles.link, {
+          [leftNavStyles.droppableLink]:
             isOwner &&
             dragging &&
             (draggingKind === 'track' || draggingKind === 'playlist'),
-          [navColumnStyles.editable]: isOwner && onClickEdit != null,
-          [navColumnStyles.disabledLink]:
+          [leftNavStyles.editable]: isOwner && onClickEdit != null,
+          [leftNavStyles.disabledLink]:
             dragging &&
             ((draggingKind !== 'track' &&
               draggingKind !== 'playlist' &&
@@ -162,9 +162,9 @@ export const PlaylistNavItem = ({
       >
         <div className={styles.libraryLinkContentContainer}>
           {!hasUpdate ? null : (
-            <div className={navColumnStyles.updateDotContainer}>
+            <div className={leftNavStyles.updateDotContainer}>
               <Tooltip
-                className={navColumnStyles.updateDotTooltip}
+                className={leftNavStyles.updateDotTooltip}
                 shouldWrapContent={true}
                 shouldDismissOnClick={false}
                 mouseEnterDelay={0.1}

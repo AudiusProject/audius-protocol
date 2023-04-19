@@ -1,4 +1,4 @@
-.navColumn {
+.leftNav {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -9,14 +9,14 @@
   overflow: visible;
 }
 
-.navColumn :global(.ant-modal-wrap) {
+.leftNav :global(.ant-modal-wrap) {
   position: absolute;
   overflow: visible;
   height: 100vh;
   width: 100vw;
 }
 
-.navColumn .logo {
+.leftNav .logo {
   display: block;
   height: 25px;
   margin-top: 16px;
@@ -24,7 +24,7 @@
   cursor: pointer;
 }
 
-.navContent {
+.leftNavContent {
   opacity: 0;
   display: flex;
   flex-direction: column;
@@ -34,15 +34,15 @@
   flex-grow: 1;
 }
 
-.navContent.dragScrollingUp {
+.leftNavContent.dragScrollingUp {
   box-shadow: inset 0px 8px 5px -5px var(--tile-shadow-3);
 }
 
-.navContent.dragScrollingDown {
+.leftNavContent.dragScrollingDown {
   box-shadow: inset 0px -8px 5px -5px var(--tile-shadow-3);
 }
 
-.navContent.show {
+.leftNavContent.show {
   opacity: 1;
 }
 
@@ -50,16 +50,16 @@ svg.logo path {
   fill: var(--neutral-light-5);
 }
 
-.navColumn .scrollable {
+.leftNav .scrollable {
   padding-top: 24px;
 }
 
-.navColumn .userHeader {
+.leftNav .userHeader {
   margin-left: 24px;
   margin-bottom: 24px;
 }
 
-.navColumn .accountWrapper {
+.leftNav .accountWrapper {
   display: block;
   margin-bottom: 4px;
 
@@ -72,7 +72,7 @@ svg.logo path {
   color: var(--neutral);
 }
 
-.navColumn .accountWrapper .wrapperPhoto {
+.leftNav .accountWrapper .wrapperPhoto {
   position: relative;
   cursor: pointer;
 
@@ -81,7 +81,7 @@ svg.logo path {
   height: 48px;
 }
 
-.navColumn .accountWrapper .dynamicPhoto {
+.leftNav .accountWrapper .dynamicPhoto {
   height: 48px;
   border-radius: 30px;
   border: 1px solid var(--white);
@@ -94,11 +94,11 @@ svg.logo path {
   background-color: var(--default-profile-picture-background);
 }
 
-.navColumn .accountWrapper .wrapperPhotoSkeleton {
+.leftNav .accountWrapper .wrapperPhotoSkeleton {
   border-radius: 50%;
 }
 
-.navColumn .accountWrapper .photo {
+.leftNav .accountWrapper .photo {
   position: relative;
   cursor: pointer;
 
@@ -116,7 +116,7 @@ svg.logo path {
   background-color: var(--default-profile-picture-background);
 }
 
-.navColumn .accountWrapper .userInfoWrapper {
+.leftNav .accountWrapper .userInfoWrapper {
   margin-left: 16px;
   margin-right: 16px;
   text-align: left;
@@ -125,7 +125,7 @@ svg.logo path {
   overflow: hidden;
 }
 
-.navColumn .accountWrapper .userInfoWrapper .name {
+.leftNav .accountWrapper .userInfoWrapper .name {
   font-size: var(--font-s);
   line-height: 17px;
   font-weight: var(--font-demi-bold);
@@ -137,7 +137,7 @@ svg.logo path {
   display: flex;
 }
 
-.navColumn .accountWrapper .userInfoWrapper .name .nameText {
+.leftNav .accountWrapper .userInfoWrapper .name .nameText {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -148,13 +148,13 @@ svg.logo path {
   margin-left: 4px;
 }
 
-.navColumn .accountWrapper .userInfoWrapper .name:hover {
+.leftNav .accountWrapper .userInfoWrapper .name:hover {
   color: var(--primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }
 
-.navColumn .accountWrapper .userInfoWrapper .handleContainer {
+.leftNav .accountWrapper .userInfoWrapper .handleContainer {
   display: inline-flex;
   overflow: hidden;
   line-height: 14px;
@@ -163,7 +163,7 @@ svg.logo path {
   width: 100%;
 }
 
-.navColumn .accountWrapper .userInfoWrapper .handle {
+.leftNav .accountWrapper .userInfoWrapper .handle {
   font-size: var(--font-xs);
   color: var(--neutral);
   font-weight: var(--font-medium);
@@ -173,35 +173,35 @@ svg.logo path {
   text-overflow: ellipsis;
 }
 
-.navColumn .accountWrapper .userInfoWrapper .handleContainer:hover .handle {
+.leftNav .accountWrapper .userInfoWrapper .handleContainer:hover .handle {
   color: var(--primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }
 
-.navColumn .accountWrapper .userInfoWrapper .handleContainer svg {
+.leftNav .accountWrapper .userInfoWrapper .handleContainer svg {
   transition: all 0.07s ease-in-out;
 }
 
-.navColumn .accountWrapper .userInfoWrapper .handleContainer:hover g path {
+.leftNav .accountWrapper .userInfoWrapper .handleContainer:hover g path {
   fill: var(--primary);
 }
 
-.navColumn .accountWrapper .userInfoWrapper .haveAccount {
+.leftNav .accountWrapper .userInfoWrapper .haveAccount {
   color: var(--neutral);
   font-weight: var(--font-demi-bold);
   font-size: var(--font-s);
   line-height: 18px;
 }
 
-.navColumn .accountWrapper .userInfoWrapper .logIn {
+.leftNav .accountWrapper .userInfoWrapper .logIn {
   color: var(--secondary);
   font-size: var(--font-xs);
   line-height: 14px;
   cursor: pointer;
 }
 
-.navColumn .accountWrapper .userInfoWrapper .logIn:hover {
+.leftNav .accountWrapper .userInfoWrapper .logIn:hover {
   color: var(--primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
@@ -244,18 +244,18 @@ svg.logo path {
   width: 176px !important;
 }
 
-.navColumn .links {
+.leftNav .links {
   flex: 1 1 auto;
   overflow: hidden;
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.navColumn .links .linkGroup {
+.leftNav .links .linkGroup {
   margin: 0px 16px 25px;
 }
 
-.navColumn .links .groupHeader {
+.leftNav .links .groupHeader {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: var(--font-l);
@@ -270,7 +270,7 @@ svg.logo path {
   transition: color 0.07s ease-in-out;
 }
 
-.navColumn .links .link {
+.leftNav .links .link {
   font-size: var(--font-s);
   font-weight: var(--font-medium);
   position: relative;
@@ -293,12 +293,12 @@ svg.logo path {
   text-align: inherit;
 }
 
-.navColumn .links .link:hover {
+.leftNav .links .link:hover {
   cursor: pointer;
 }
 
-.navColumn .links a.link,
-.navColumn .links button.link {
+.leftNav .links a.link,
+.leftNav .links button.link {
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
@@ -306,24 +306,24 @@ svg.logo path {
   display: inline-block;
 }
 
-.navColumn .links a.link.editable,
-.navColumn .links button.link.editable {
+.leftNav .links a.link.editable,
+.leftNav .links button.link.editable {
   /** Add 12px to the width so that we can free up some space for the horizontal kebab (which only appears on hover). This won't cause
   overflow because there is already a -16px margin on nav link buttons. */
   width: calc(100% + 12px);
 }
 
-.navColumn .links a.link.disabledLink,
-.navColumn .links button.link.disabledLink {
+.leftNav .links a.link.disabledLink,
+.leftNav .links button.link.disabledLink {
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-.navColumn .links a.link.droppableLink {
+.leftNav .links a.link.droppableLink {
   color: var(--secondary);
 }
 
-.navColumn .groupHeader.droppableLink {
+.leftNav .groupHeader.droppableLink {
   color: var(--secondary);
 }
 
@@ -341,7 +341,7 @@ svg.logo path {
   border-radius: 6px;
 }
 
-.navColumn .links .droppable .link {
+.leftNav .links .droppable .link {
   margin-left: -16px;
 }
 

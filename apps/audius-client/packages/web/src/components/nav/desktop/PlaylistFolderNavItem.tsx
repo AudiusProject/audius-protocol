@@ -23,7 +23,7 @@ import { useRecord, make } from 'common/store/analytics/actions'
 import { Draggable, Droppable } from 'components/dragndrop'
 import { DragDropKind } from 'store/dragndrop/slice'
 
-import navColumnStyles from './NavColumn.module.css'
+import leftNavStyles from './LeftNav.module.css'
 import styles from './PlaylistLibrary.module.css'
 
 type PlaylistFolderNavButtonProps = ComponentPropsWithoutRef<'button'> & {
@@ -123,8 +123,8 @@ export const PlaylistFolderNavItem = ({
     <>
       {/* This is the droppable area for adding a playlist into a folder */}
       <Droppable
-        className={navColumnStyles.droppable}
-        hoverClassName={navColumnStyles.droppableHover}
+        className={leftNavStyles.droppable}
+        hoverClassName={leftNavStyles.droppableHover}
         onDrop={(playlistId: PlaylistLibraryID, kind: DragDropKind) => {
           onDropInFolder(folder, kind, playlistId)
         }}
@@ -137,9 +137,9 @@ export const PlaylistFolderNavItem = ({
           onMouseLeave={() => setIsHovering(false)}
           id={id}
           name={name}
-          className={cn(navColumnStyles.link, navColumnStyles.editable, {
-            [navColumnStyles.droppableLink]: dragging && isDroppableKind,
-            [navColumnStyles.disabledLink]: dragging && !isDroppableKind
+          className={cn(leftNavStyles.link, leftNavStyles.editable, {
+            [leftNavStyles.droppableLink]: dragging && isDroppableKind,
+            [leftNavStyles.disabledLink]: dragging && !isDroppableKind
           })}
           onClick={handleClickFolder}
         >

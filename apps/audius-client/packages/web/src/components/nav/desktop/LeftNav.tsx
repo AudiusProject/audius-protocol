@@ -9,7 +9,6 @@ import {
   Status,
   accountSelectors,
   cacheCollectionsActions,
-  notificationsSelectors,
   collectionsSocialActions,
   tracksSocialActions,
   createPlaylistModalUISelectors,
@@ -17,7 +16,6 @@ import {
   imageProfilePicEmpty,
   playlistLibraryActions,
   playlistLibraryHelpers,
-  uploadActions,
   CreateAccountOpen,
   playlistUpdatesActions
 } from '@audius/common'
@@ -37,18 +35,11 @@ import { PlaylistFormFields } from 'components/create-playlist/PlaylistForm'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import { Droppable } from 'components/dragndrop'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
-import NavButton from 'components/nav/desktop/NavButton'
-import RouteNav from 'components/nav/desktop/RouteNav'
 import Pill from 'components/pill/Pill'
 import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
 import Tooltip from 'components/tooltip/Tooltip'
 import UserBadges from 'components/user-badges/UserBadges'
 import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
-import { getNotificationPanelIsOpen } from 'store/application/ui/notifications/notificationsUISelectors'
-import {
-  openNotificationPanel,
-  closeNotificationPanel
-} from 'store/application/ui/notifications/notificationsUISlice'
 import { selectDragnDropState } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 import {
@@ -59,26 +50,25 @@ import {
   playlistPage,
   profilePage,
   SAVED_PAGE,
-  TRENDING_PAGE,
-  UPLOAD_PAGE
+  TRENDING_PAGE
 } from 'utils/route'
 import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
+import styles from './LeftNav.module.css'
 import NavAudio from './NavAudio'
-import styles from './NavColumn.module.css'
-import NavHeader from './NavHeader'
+import { NavButton } from './NavButton'
+import { NavHeader } from './NavHeader'
 import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
 import PlaylistLibrary from './PlaylistLibrary'
+import { RouteNav } from './RouteNav'
 
 const { updatedPlaylistViewed } = playlistUpdatesActions
-const { resetState: resetUploadState } = uploadActions
 const { update: updatePlaylistLibrary } = playlistLibraryActions
 const { addFolderToLibrary, constructPlaylistFolder } = playlistLibraryHelpers
 const { getHideFolderTab, getIsOpen } = createPlaylistModalUISelectors
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
 const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
-const { getNotificationUnviewedCount } = notificationsSelectors
 const { getAccountStatus, getAccountUser, getPlaylistLibrary } =
   accountSelectors
 
@@ -95,7 +85,7 @@ type NavColumnProps = OwnProps &
   ReturnType<typeof mapDispatchToProps> &
   RouteComponentProps
 
-const NavColumn = ({
+const LeftNav = ({
   account,
   showActionRequiresAccount,
   createPlaylist,
@@ -103,24 +93,17 @@ const NavColumn = ({
   openCreatePlaylistModal,
   closeCreatePlaylistModal,
   isElectron,
-  notificationCount,
-  notificationPanelIsOpen,
-  openNotificationPanel,
-  closeNotificationPanel,
   showCreatePlaylistModal,
   hideCreatePlaylistModalFolderTab,
   updatePlaylistLibrary,
   dragging: { dragging, kind, isOwner: draggingIsOwner },
   saveTrack,
   saveCollection,
-  upload,
   accountStatus,
   updatePlaylistLastViewedAt,
-  resetUploadState,
   goToRoute,
   goToSignUp: routeToSignup,
-  goToSignIn,
-  goToUpload
+  goToSignIn
 }: NavColumnProps) => {
   const record = useRecord()
   const [navBodyContainerMeasureRef, navBodyContainerBoundaries] = useMeasure({
@@ -146,30 +129,12 @@ const NavColumn = ({
   )
 
   const onClickNavProfile = useCallback(() => goToSignIn(), [goToSignIn])
-  const onClickNavButton = useCallback(
-    () => goToSignUp('nav button'),
-    [goToSignUp]
-  )
 
   const goToProfile = useCallback(() => {
     if (account?.handle) {
       goToRoute(profilePage(account.handle))
     }
   }, [account, goToRoute])
-
-  const onClickToggleNotificationPanel = useCallback(() => {
-    if (!notificationPanelIsOpen) {
-      openNotificationPanel()
-      record(make(Name.NOTIFICATIONS_OPEN, { source: 'button' }))
-    } else {
-      closeNotificationPanel()
-    }
-  }, [
-    notificationPanelIsOpen,
-    openNotificationPanel,
-    closeNotificationPanel,
-    record
-  ])
 
   const onCreatePlaylist = useCallback(
     (metadata: PlaylistFormFields) => {
@@ -233,12 +198,6 @@ const NavColumn = ({
     }
   }, [])
 
-  const onClickUpload = useCallback(() => {
-    if (!upload.uploading) resetUploadState()
-    goToUpload()
-    record(make(Name.TRACK_UPLOAD_OPEN, { source: 'nav' }))
-  }, [goToUpload, upload, resetUploadState, record])
-
   const profileCompletionMeter = (
     <div className={styles.profileCompletionContainer}>
       <ConnectedProfileCompletionPane />
@@ -257,28 +216,16 @@ const NavColumn = ({
     SquareSizes.SIZE_150_BY_150
   )
 
-  let navButtonStatus = 'signedOut'
-  if (account) navButtonStatus = 'signedIn'
-  if (upload.uploading) navButtonStatus = 'uploading'
-  if (accountStatus === Status.LOADING) navButtonStatus = 'loading'
-
   const navLoaded =
     accountStatus === Status.SUCCESS || accountStatus === Status.ERROR
 
   return (
-    <nav id='navColumn' className={styles.navColumn}>
-      {isElectron && <RouteNav />}
-      <NavHeader
-        account={account}
-        notificationCount={notificationCount}
-        notificationPanelIsOpen={notificationPanelIsOpen}
-        toggleNotificationPanel={onClickToggleNotificationPanel}
-        goToRoute={goToRoute}
-        isElectron={isElectron}
-      />
+    <nav id='leftNav' className={styles.leftNav}>
+      {isElectron ? <RouteNav /> : null}
+      <NavHeader />
       <div
         ref={navBodyContainerMeasureRef}
-        className={cn(styles.navContent, {
+        className={cn(styles.leftNavContent, {
           [styles.show]: navLoaded,
           [styles.dragScrollingUp]: dragScrollingDirection === 'up',
           [styles.dragScrollingDown]: dragScrollingDirection === 'down'
@@ -461,11 +408,7 @@ const NavColumn = ({
       </div>
       <div className={styles.navAnchor}>
         {profileCompletionMeter}
-        <NavButton
-          status={navButtonStatus}
-          onCreateAccount={onClickNavButton}
-          onUpload={onClickUpload}
-        />
+        <NavButton />
         <NowPlayingArtworkTile />
       </div>
     </nav>
@@ -477,9 +420,6 @@ const mapStateToProps = (state: AppState) => {
     account: getAccountUser(state),
     accountStatus: getAccountStatus(state),
     dragging: selectDragnDropState(state),
-    notificationCount: getNotificationUnviewedCount(state),
-    notificationPanelIsOpen: getNotificationPanelIsOpen(state),
-    upload: state.upload,
     library: getPlaylistLibrary(state),
     showCreatePlaylistModal: getIsOpen(state),
     hideCreatePlaylistModalFolderTab: getHideFolderTab(state)
@@ -487,7 +427,6 @@ const mapStateToProps = (state: AppState) => {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  resetUploadState: () => dispatch(resetUploadState()),
   createPlaylist: (tempId: number, metadata: Record<string, unknown>) =>
     dispatch(createPlaylist(tempId, metadata, CreatePlaylistSource.NAV)),
   goToRoute: (route: string) => dispatch(pushRoute(route)),
@@ -499,22 +438,19 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
     dispatch(addTrackToPlaylist(trackId, playlistId)),
   showActionRequiresAccount: () =>
     dispatch(signOnActions.showRequiresAccountModal()),
-  openNotificationPanel: () => dispatch(openNotificationPanel()),
-  closeNotificationPanel: () => dispatch(closeNotificationPanel()),
   openCreatePlaylistModal: () => dispatch(createPlaylistModalActions.open()),
   closeCreatePlaylistModal: () => dispatch(createPlaylistModalActions.close()),
   updatePlaylistLastViewedAt: (playlistId: number) =>
     dispatch(updatedPlaylistViewed({ playlistId })),
   updatePlaylistLibrary: (newLibrary: PlaylistLibraryType) =>
     dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary })),
-  goToUpload: () => dispatch(pushRoute(UPLOAD_PAGE)),
   goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
   goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true))
 })
 
-const ConnectedNavColumn = withRouter(
-  connect(mapStateToProps, mapDispatchToProps)(NavColumn)
+const ConnectedLeftNav = withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(LeftNav)
 )
 
-export default ConnectedNavColumn
+export default ConnectedLeftNav
