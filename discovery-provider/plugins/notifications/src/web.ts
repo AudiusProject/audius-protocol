@@ -2,12 +2,13 @@ import webpush from 'web-push'
 import { logger } from './logger'
 import { Browser, UserNotificationSettings, WebPush } from './processNotifications/mappers/userNotificationSettings'
 
-// setup and configuration
-let webPushIsConfigured = false
-const vapidKeys = {
-    publicKey: process.env.BROWSER_PUSH_VAPID_PUBLIC_KEY,
-    privateKey: process.env.BROWSER_PUSH_VAPID_PRIVATE_KEY
-  }
+export const configureWebPush = () => {
+  // setup and configuration
+  let webPushIsConfigured = false
+  const vapidKeys = {
+      publicKey: process.env.BROWSER_PUSH_VAPID_PUBLIC_KEY,
+      privateKey: process.env.BROWSER_PUSH_VAPID_PRIVATE_KEY
+    }
   const browserPushGCMAPIKey = process.env.BROWSER_PUSH_GCM_API_KEY
   if (vapidKeys.publicKey && vapidKeys.privateKey && browserPushGCMAPIKey) {
     webpush.setGCMAPIKey(browserPushGCMAPIKey)
@@ -24,13 +25,16 @@ const vapidKeys = {
       'Web Push is not configured. Browser Push API Notifs will NOT be sent'
     )
   }
+  globalThis.webPushIsConfigured = webPushIsConfigured
+  return webPushIsConfigured
+}
 
 // utility functions
 export const sendBrowserNotification = async (settings: UserNotificationSettings, userId: number, title: string, message: string) => {
     let numSentNotifs = 0
   
     try {
-      if (!webPushIsConfigured) return numSentNotifs
+      if (!globalThis.webPushIsConfigured) return numSentNotifs
       const userBrowserSettings = await settings.getUserBrowserSettings([userId])
       const userNotificationSettings = userBrowserSettings[userId]
 
