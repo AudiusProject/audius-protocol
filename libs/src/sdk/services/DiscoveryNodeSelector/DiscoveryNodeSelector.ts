@@ -29,7 +29,7 @@ import type TypedEventEmitter from 'typed-emitter'
 import EventEmitter from 'events'
 import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import type { LocalStorageType } from '../LocalStorage'
+import { LocalStorage } from '../LocalStorage'
 
 export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
@@ -50,7 +50,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
    * Local storage (currently only available on web)
    */
-  private localStorage?: LocalStorageType
+  private localStorage?: LocalStorage
 
   /**
    * Whether or not we are using a backup, meaning we were
@@ -123,7 +123,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       !this.config.blocklist?.has(this.config.initialSelectedNode)
         ? this.config.initialSelectedNode
         : null
-    this.localStorage = window ? window.localStorage : undefined
+    this.localStorage = window
+      ? new LocalStorage({ localStorage: window.localStorage })
+      : undefined
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
     this.addEventListener = this.eventEmitter.addListener.bind(
@@ -252,8 +254,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   }
 
   private async getOverrideEndpoint() {
-    const override = JSON.parse(
-      (await this.localStorage?.getItem(DISCOVERY_PROVIDER_TIMESTAMP)) ?? '{}'
+    const override = await this.localStorage?.getJSONItem<{ endpoint: string }>(
+      DISCOVERY_PROVIDER_TIMESTAMP
     )
     return override?.endpoint
   }

@@ -1,4 +1,6 @@
 import type { DecodedUserToken, UsersApi } from '../api/generated/default'
+import type { LocalStorageType } from '../services'
+import { LocalStorage } from '../services'
 
 export type LoginSuccessCallback = (profile: DecodedUserToken) => void
 export type LoginErrorCallback = (errorMessage: string) => void
@@ -111,6 +113,7 @@ export class OAuth {
   popupCheckInterval: NodeJS.Timer | null
   loginSuccessCallback: LoginSuccessCallback | null
   loginErrorCallback: LoginErrorCallback | null
+  localStorage: LocalStorageType
 
   constructor(private readonly config: OAuthConfig) {
     if (typeof window === 'undefined') {
@@ -123,6 +126,7 @@ export class OAuth {
     this.loginSuccessCallback = null
     this.loginErrorCallback = null
     this.popupCheckInterval = null
+    this.localStorage = new LocalStorage({ localStorage: window.localStorage })
   }
 
   init(
@@ -140,7 +144,7 @@ export class OAuth {
     )
   }
 
-  login() {
+  async login() {
     if (!this.config.appName) {
       this._surfaceError('App name not set (set with `init` method).')
       return
@@ -153,7 +157,7 @@ export class OAuth {
     }
 
     const csrfToken = generateId()
-    window.localStorage.setItem(CSRF_TOKEN_KEY, csrfToken)
+    await this.localStorage.setItem(CSRF_TOKEN_KEY, csrfToken)
     const windowOptions =
       'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=375, height=720, top=100, left=100'
     const originURISafe = encodeURIComponent(window.location.origin)
@@ -248,7 +252,9 @@ export class OAuth {
       }
       this.activePopupWindow = null
     }
-    if (window.localStorage.getItem(CSRF_TOKEN_KEY) !== event.data.state) {
+    if (
+      (await this.localStorage.getItem(CSRF_TOKEN_KEY)) !== event.data.state
+    ) {
       this._surfaceError('State mismatch.')
     }
     // Verify token and decode
