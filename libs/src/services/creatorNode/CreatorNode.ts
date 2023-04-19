@@ -988,7 +988,6 @@ export class CreatorNode {
       axiosRequestObj.baseURL = this.creatorNodeEndpoint
 
       // Axios throws for non-200 responses
-      console.log(`theo creatorNodeEndpoint: ${this.creatorNodeEndpoint}`)
       const url = new URL(`${axiosRequestObj.baseURL}${axiosRequestObj.url}`)
       const start = Date.now()
       try {

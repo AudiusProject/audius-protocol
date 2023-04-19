@@ -34,12 +34,12 @@ export const getNStorageNodes = async (
 
     if (!orderedNodes.length || (numNodes && orderedNodes.length < numNodes)) {
       logger.error(
-        `autoSelectStorageV2Nodes: Could not select ${numNodes} nodes from ${allNodes.length} nodes`
+        `getNStorageNodes: Could not select ${numNodes} nodes from ${allNodes.length} nodes`
       )
     }
     return orderedNodes.map((n) => n.endpoint)
   } catch (e) {
-    logger.error(`autoSelectStorageV2Nodes: Error selecting nodes: ${e}`)
+    logger.error(`getNStorageNodes: Error selecting nodes: ${e}`)
     return []
   }
 }
