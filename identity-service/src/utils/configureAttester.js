@@ -9,6 +9,11 @@ const config = require('../config.js')
 const REDIS_ATTEST_START_BLOCK_OVERRIDE_KEY = 'attestation-start-block-override'
 const REDIS_ATTESTER_STATE = 'attester-state'
 
+const FINAL_POA_BLOCK = {
+  production: 31_413_000,
+  staging: 32_269_859
+}
+
 const getRemoteConfig = async (optimizely) => {
   // Fetch the challengeDenyList, used to filter out
   // arbitrary challenges by their challengeId
@@ -78,6 +83,9 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
     source: 'Identity'
   })
 
+  const blockOffset = FINAL_POA_BLOCK[config.get('env')] ?? 0
+  childLogger.info(`Using block offset of ${blockOffset}`)
+
   // Init the RewardsAttester
   const attester = new RewardsAttester({
     libs,
@@ -92,6 +100,7 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
     reporter: rewardsReporter,
     endpoints,
     maxAggregationAttempts: 2,
+    blockOffset,
     isSolanaChallenge: (challengeId) => challengeId === 'listen-streak',
     runBehindSec,
     updateValues: async ({ startingBlock, offset, successCount }) => {
