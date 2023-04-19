@@ -141,7 +141,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.Debug = true
 
 	// echoServer is the root server
-	// it mostly exists to server the catch all reverse proxy rule at the end
+	// it mostly exists to serve the catch all reverse proxy rule at the end
 	// most routes and middleware should be added to the `routes` group
 	// mostly don't add CORS middleware here as it will break reverse proxy at the end
 	echoServer.Use(middleware.Recover())

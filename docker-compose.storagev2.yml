@@ -2,13 +2,16 @@ version: "3.9"
 
 services:
   storagev2:
-    container_name: audius-protocol-storagev2
     build: mediorum
     restart: unless-stopped
+    entrypoint: /bin/sh
+    command: /tmp/dev-tools/startup/storagev2.sh 3 # Change 3 to number of nodes if you want more or fewer (up to 5)
     environment:
       - dirTemplate=/data/mediorum_dev_%d
       - dbUrlTemplate=postgresql://postgres:postgres@db:5432/creator_node_%d
       - hostNameTemplate=http://audius-protocol-creator-node-%d
+      - web3EthProviderUrl=http://eth-ganache:8545 # Used only in register script
+    env_file: .env # Used in register script to get wallets
     ports:
       - 1991:1991
       - 1992:1992
@@ -17,8 +20,11 @@ services:
       - 1995:1995
     volumes:
       - mediorum:/data
+      - ./dev-tools:/tmp/dev-tools
+    profiles:
+      - storagev2
     depends_on:
       db:
         condition: service_healthy
-    profiles:
-      - storagev2
+      eth-ganache:
+        condition: service_healthy
