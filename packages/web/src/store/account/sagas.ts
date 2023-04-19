@@ -44,7 +44,7 @@ export function* showPushNotificationConfirmation() {
   setHasRequestedBrowserPermission()
   const account = yield* select(getAccountUser)
   if (!account) return
-  const browserPermission = yield* call(fetchBrowserPushNotifcationStatus)
+  const browserPermission = yield* call(fetchBrowserPushNotificationStatus)
   if (browserPermission === Permission.DEFAULT) {
     yield* put(setBrowerPushPermissionConfirmationModal)
   } else if (browserPermission === Permission.GRANTED) {
@@ -74,7 +74,7 @@ export function* showPushNotificationConfirmation() {
   }
 }
 
-export function* fetchBrowserPushNotifcationStatus() {
+export function* fetchBrowserPushNotificationStatus() {
   if (isElectron() || isMobile()) return
   if (isPushManagerAvailable) {
     const permission = yield* call(getPushManagerPermission)
@@ -85,7 +85,7 @@ export function* fetchBrowserPushNotifcationStatus() {
   }
 }
 
-export function* subscribeBrowserPushNotifcations() {
+export function* subscribeBrowserPushNotifications() {
   if (isPushManagerAvailable) {
     const pushManagerSubscription = yield* call(
       getPushManagerBrowserSubscription
@@ -132,10 +132,10 @@ export function* subscribeBrowserPushNotifcations() {
   }
 }
 
-export function* unsubscribeBrowserPushNotifcations() {
+export function* unsubscribeBrowserPushNotifications() {
   removeHasRequestedBrowserPermission()
   const browserPushSubscriptionStatus = yield* call(
-    fetchBrowserPushNotifcationStatus
+    fetchBrowserPushNotificationStatus
   )
   if (
     browserPushSubscriptionStatus === Permission.GRANTED &&
@@ -159,10 +159,10 @@ export function* unsubscribeBrowserPushNotifcations() {
   }
 }
 
-function* getBrowserPushNotifcations() {
+function* getBrowserPushNotifications() {
   yield* takeEvery(
     accountActions.fetchBrowserPushNotifications.type,
-    fetchBrowserPushNotifcationStatus
+    fetchBrowserPushNotificationStatus
   )
 }
 
@@ -176,14 +176,14 @@ function* watchShowPushNotificationConfirmation() {
 function* subscribeBrowserPushNotification() {
   yield* takeEvery(
     accountActions.subscribeBrowserPushNotifications.type,
-    subscribeBrowserPushNotifcations
+    subscribeBrowserPushNotifications
   )
 }
 
 function* unsubscribeBrowserPushNotification() {
   yield* takeEvery(
     accountActions.unsubscribeBrowserPushNotifications.type,
-    unsubscribeBrowserPushNotifcations
+    unsubscribeBrowserPushNotifications
   )
 }
 
@@ -191,7 +191,7 @@ export default function sagas() {
   return [
     ...commonAccountSagas(),
     watchShowPushNotificationConfirmation,
-    getBrowserPushNotifcations,
+    getBrowserPushNotifications,
     subscribeBrowserPushNotification,
     unsubscribeBrowserPushNotification
   ]
