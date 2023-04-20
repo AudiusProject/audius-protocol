@@ -17,7 +17,7 @@ import {
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
-import accountSagas from 'common/store/account/sagas'
+import accountSagas from 'store/account/sagas'
 import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
