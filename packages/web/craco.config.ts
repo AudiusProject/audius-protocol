@@ -30,6 +30,8 @@ const moduleResolutions = [
   'react',
   'react-dom',
   'react-redux',
+  'react-router',
+  'react-router-dom',
   // packages that are large and are highly duplicated:
   '@solana/web3.js',
   'bn.js',
