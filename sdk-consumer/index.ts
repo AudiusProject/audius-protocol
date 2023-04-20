@@ -51,7 +51,7 @@ app.post<UploadTrackRequest>(
           name: coverArtFile.originalname,
         },
         metadata: JSON.parse(req.body.metadata),
-        onProgress: (progress) => console.log("Progress:", progress.loaded),
+        onProgress: (progress) => console.log("Progress:", progress),
         trackFile: {
           buffer: trackFile?.buffer,
           name: trackFile.originalname,
