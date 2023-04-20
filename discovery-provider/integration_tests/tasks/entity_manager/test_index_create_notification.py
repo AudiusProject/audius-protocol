@@ -86,7 +86,8 @@ def test_index_create_notification(app, mocker):
         announcement_notification = notifications[0]
         assert announcement_notification.type == "announcement"
         assert announcement_notification.group_id == "announcement:blocknumber:20"
-        assert announcement_notification.user_ids == list(range(1, 121))
+        # test is modified to not return any users because it can break discprov, see .all() 
+        assert announcement_notification.user_ids == []  # list(range(1, 121))
         assert announcement_notification.data == {
             "userGroup": "all",
             "title": "Happy Halloween",

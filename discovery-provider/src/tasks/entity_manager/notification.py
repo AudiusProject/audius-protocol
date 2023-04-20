@@ -66,31 +66,12 @@ def view_notification(params: ManageEntityParameters):
     params.add_notification_seen_record(key, notification_seen)
 
 
-def get_notification_user_ids(
-    params: ManageEntityParameters, user_group: str
-) -> List[int]:
-    if user_group == "all":
-        # Get all user ids
-        users = (
-            params.session.query(User.user_id)
-            .filter(
-                User.is_current == True,
-                User.is_deactivated == False,
-                User.handle_lc != None,
-            )
-            .all()
-        )
-        user_ids = [user[0] for user in users]
-        return user_ids
-    return []
-
-
 def create_notification(params: ManageEntityParameters):
     validate_notification_tx(params)
     # Get data from cid blob
     data = json.loads(params.metadata_cid)
     # Get all user ids
-    user_ids = get_notification_user_ids(params, data["userGroup"])
+    user_ids: list[int] = []  # get_notification_user_ids(params, data["userGroup"])
     notification = Notification(
         specifier="",
         group_id=f"announcement:blocknumber:{params.block_number}",
