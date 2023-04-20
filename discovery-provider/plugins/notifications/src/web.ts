@@ -64,6 +64,7 @@ export const sendBrowserNotification = async (settings: UserNotificationSettings
             )
             numSentNotifs++
           } catch (err) {
+            logger.error(`error with webpush ${err}`)
             if (err.statusCode === 410) {
               const idDb = settings.identityDB
               // If the send Notification response was not successful
