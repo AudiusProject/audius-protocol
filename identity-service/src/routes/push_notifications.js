@@ -115,6 +115,9 @@ module.exports = function (app) {
         return successResponse()
       } catch (e) {
         req.logger.error(
+          `push_notifications.js: settings: ${JSON.stringify(settings)}`
+        )
+        req.logger.error(
           `Unable to create or update push notification settings for userId: ${userId}`,
           e
         )
