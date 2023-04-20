@@ -119,9 +119,13 @@ class SettingsPage extends PureComponent<
       // Permission is already granted, don't need to popup confirmation modal.
       this.props.setBrowserNotificationEnabled(true)
       this.props.setBrowserNotificationSettingsOn()
+      this.props.toggleNotificationSetting(notificationType, isOn)
+      this.props.subscribeBrowserPushNotifications()
     } else {
       if (isPushManagerAvailable) {
+        this.props.setBrowserNotificationEnabled(true)
         this.props.subscribeBrowserPushNotifications()
+        this.props.toggleNotificationSetting(notificationType, isOn)
       } else if (isSafariPushAvailable) {
         // NOTE: The call call request browser permission must be done directly
         // b/c safari requires the user action to trigger the premission request
