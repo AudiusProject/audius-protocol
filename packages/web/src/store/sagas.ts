@@ -17,7 +17,6 @@ import {
 } from '@audius/common'
 import { all, fork } from 'redux-saga/effects'
 
-import accountSagas from 'store/account/sagas'
 import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
@@ -73,6 +72,7 @@ import shareSoundToTikTokModalSagas from 'components/share-sound-to-tiktok-modal
 import dashboardSagas from 'pages/artist-dashboard-page/store/sagas'
 import deletedSagas from 'pages/deleted-page/store/sagas'
 import settingsSagas from 'pages/settings-page/store/sagas'
+import accountSagas from 'store/account/sagas'
 import webAnalyticsSagas from 'store/analytics/sagas'
 import buyAudioSagas from 'store/application/ui/buy-audio/sagas'
 import chatWebSagas from 'store/application/ui/chat/sagas'
