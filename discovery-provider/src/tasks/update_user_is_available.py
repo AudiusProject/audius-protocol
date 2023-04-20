@@ -119,16 +119,16 @@ def update_users_is_available_status(db: SessionManager, redis: Redis) -> None:
             )
 
     with db.scoped_session() as session:
-      currently_unavailable_users = query_unavailable_users(session)
-      for unavailable_users in currently_unavailable_users:
-          is_available = (
-              user_id_to_is_available_status[unavailable_users.user_id]
-              if unavailable_users.user_id in user_id_to_is_available_status
-              else True
-          )
-          if is_available:
-              unavailable_users.is_available = True
-              unavailable_users.is_deactivated = False
+        currently_unavailable_users = query_unavailable_users(session)
+        for unavailable_users in currently_unavailable_users:
+            is_available = (
+                user_id_to_is_available_status[unavailable_users.user_id]
+                if unavailable_users.user_id in user_id_to_is_available_status
+                else True
+            )
+            if is_available:
+                unavailable_users.is_available = True
+                unavailable_users.is_deactivated = False
 
 
 def fetch_unavailable_user_ids(node: str, session: Session) -> List[int]:
