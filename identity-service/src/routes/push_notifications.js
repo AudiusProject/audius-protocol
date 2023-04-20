@@ -67,10 +67,15 @@ module.exports = function (app) {
         return errorResponseBadRequest(`Did not pass in a valid userId`)
 
       try {
-        const [settings] =
-          await models.UserNotificationMobileSettings.findOrCreate({
-            where: { userId }
+        let settings = await models.UserNotificationMobileSettings.findOne({
+          where: { userId }
+        })
+        if (!settings) {
+          settings = await models.UserNotificationMobileSettings.create({
+            userId
           })
+        }
+
         return successResponse({ settings })
       } catch (e) {
         req.logger.error(
@@ -114,9 +119,6 @@ module.exports = function (app) {
 
         return successResponse()
       } catch (e) {
-        req.logger.error(
-          `push_notifications.js: settings: ${JSON.stringify(settings)}`
-        )
         req.logger.error(
           `Unable to create or update push notification settings for userId: ${userId}`,
           e
