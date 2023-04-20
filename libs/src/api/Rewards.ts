@@ -9,6 +9,7 @@ import { Utils } from '../utils/utils'
 import type { ServiceProvider } from './ServiceProvider'
 import type { Logger, Nullable } from '../utils'
 import type { AttestationMeta } from '../services/solana/rewards'
+import type { DiscoveryProvider } from '../services/discoveryProvider'
 
 const { decodeHashId } = Utils
 
@@ -518,7 +519,14 @@ export class Rewards extends Base {
     } = {
       logger: console
     }
-  ) {
+  ): Promise<
+    | {
+        success: Awaited<
+          ReturnType<DiscoveryProvider['getUndisbursedChallenges']>
+        >
+      }
+    | { error: string }
+  > {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     try {
       const res = await this.discoveryProvider.getUndisbursedChallenges(
@@ -527,12 +535,11 @@ export class Rewards extends Base {
         completedBlockNumber,
         encodedUserId
       )
-      return { success: res, error: null }
+      return { success: res }
     } catch (e) {
       const error = (e as Error).message
       logger.error(`Failed to get undisbursed challenges with error: ${error}`)
       return {
-        success: null,
         error
       }
     }
