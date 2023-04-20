@@ -34,6 +34,12 @@ describe('Email Notifications', () => {
     .spyOn(sendEmail, 'sendNotificationEmail')
     .mockImplementation(() => Promise.resolve(true))
 
+  const tomorrowSendAt = (timezone) => {
+    return Math.floor(
+      moment.tz(timezone).add(1, 'day').startOf('day').toDate().getTime() / 1000
+    )
+  }
+
   beforeEach(async () => {
     const testName = expect
       .getState()
@@ -67,13 +73,15 @@ describe('Email Notifications', () => {
     // Setup users and settings
     const user1 = 1
     const user2 = 2
-    const userFrequency = 'live'
+    const userFrequency = 'daily'
     const emailFrequency = 'daily'
+    const timezone = 'Asia/Calcutta'
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
     const { email: user2Email } = await setUserEmailAndSettings(
       identityDB,
       userFrequency,
-      user2
+      user2,
+      timezone
     )
 
     // User 1 sent message config.dmNotificationDelay ms ago
@@ -106,7 +114,8 @@ describe('Email Notifications', () => {
       frequency: emailFrequency,
       notifications: expectedNotifications,
       dnDb: discoveryDB,
-      identityDb: identityDB
+      identityDb: identityDB,
+      sendAt: tomorrowSendAt(timezone)
     })
   })
 
@@ -114,8 +123,9 @@ describe('Email Notifications', () => {
     // Setup users and settings
     const user1 = 1
     const user2 = 2
-    const userFrequency = 'live'
+    const userFrequency = 'daily'
     const emailFrequency = 'daily'
+    const timezone = 'Asia/Calcutta'
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
     const { email: user1Email } = await setUserEmailAndSettings(
       identityDB,
@@ -169,7 +179,8 @@ describe('Email Notifications', () => {
       frequency: emailFrequency,
       notifications: expectedNotifications,
       dnDb: discoveryDB,
-      identityDb: identityDB
+      identityDb: identityDB,
+      sendAt: tomorrowSendAt(timezone)
     })
   })
 
@@ -177,18 +188,22 @@ describe('Email Notifications', () => {
     // Setup users and settings
     const user1 = 1
     const user2 = 2
-    const userFrequency = 'live'
+    const userFrequency = 'daily'
     const emailFrequency = 'daily'
+    const timezone1 = 'America/Chicago'
+    const timezone2 = 'Asia/Calcutta'
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
     const { email: user1Email } = await setUserEmailAndSettings(
       identityDB,
       userFrequency,
-      user1
+      user1,
+      timezone1
     )
     const { email: user2Email } = await setUserEmailAndSettings(
       identityDB,
       userFrequency,
-      user2
+      user2,
+      timezone2
     )
 
     // User 1 sent two messages config.dmNotificationDelay ms ago
@@ -260,7 +275,8 @@ describe('Email Notifications', () => {
       frequency: emailFrequency,
       notifications: expectedUser2Notifications,
       dnDb: discoveryDB,
-      identityDb: identityDB
+      identityDb: identityDB,
+      sendAt: tomorrowSendAt(timezone2)
     })
     expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
       userId: user1,
@@ -268,7 +284,8 @@ describe('Email Notifications', () => {
       frequency: emailFrequency,
       notifications: expectedUser1Notifications,
       dnDb: discoveryDB,
-      identityDb: identityDB
+      identityDb: identityDB,
+      sendAt: tomorrowSendAt(timezone1)
     })
   })
 
@@ -276,7 +293,7 @@ describe('Email Notifications', () => {
     // Setup users and settings
     const user1 = 1
     const user2 = 2
-    const userFrequency = 'live'
+    const userFrequency = 'daily'
     const emailFrequency = 'daily'
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
     await setUserEmailAndSettings(identityDB, userFrequency, user1)
@@ -405,7 +422,8 @@ describe('Email Notifications', () => {
       frequency: frequency,
       notifications: expectedNotifications,
       dnDb: discoveryDB,
-      identityDb: identityDB
+      identityDb: identityDB,
+      sendAt: null
     })
   })
 
@@ -450,7 +468,8 @@ describe('Email Notifications', () => {
       frequency: frequency,
       notifications: expectedNotifications,
       dnDb: discoveryDB,
-      identityDb: identityDB
+      identityDb: identityDB,
+      sendAt: null
     })
   })
 
@@ -458,7 +477,7 @@ describe('Email Notifications', () => {
     // Setup users and settings
     const user1 = 1
     const user2 = 2
-    const userFrequency = 'live'
+    const userFrequency = 'daily'
     const emailFrequency = 'daily'
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
     await setUserEmailAndSettings(identityDB, userFrequency, user1)
@@ -483,6 +502,37 @@ describe('Email Notifications', () => {
         userId: user2
       }
     ])
+
+    // User 1 sent message config.dmNotificationDelay ms ago
+    const message = 'hi from user 1'
+    const messageId = randId().toString()
+    const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
+    const chatId = randId().toString()
+    await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
+    await insertMessage(
+      discoveryDB,
+      user1,
+      chatId,
+      messageId,
+      message,
+      messageTimestamp
+    )
+
+    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
+    expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(0)
+  })
+
+  test('Do not send emails to users that have different frequency setting', async () => {
+    // Setup users and settings
+    // User has live emails enabled, so should
+    // not receive a daily email when processing daily emails
+    const user1 = 1
+    const user2 = 2
+    const userEmailFrequency = 'live'
+    const emailFrequency = 'daily'
+    await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
+    await setUserEmailAndSettings(identityDB, userEmailFrequency, user1)
+    await setUserEmailAndSettings(identityDB, userEmailFrequency, user2)
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'

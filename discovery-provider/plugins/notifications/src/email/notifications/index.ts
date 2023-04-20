@@ -322,7 +322,6 @@ export async function processEmailNotifications(
       Object.keys(users)
     )
     const groupedNotifications = groupNotifications(notifications, users)
-    // TODO Validate their timezones to send at the right time!
 
     const currentUtcTime = moment.utc()
     const chuckSize = 20
@@ -364,7 +363,7 @@ export async function processEmailNotifications(
                 notifications,
                 dnDb,
                 identityDb,
-                sendAt
+                sendAt: frequency !== 'live' ? sendAt : null
               })
               if (!sent) {
                 // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent

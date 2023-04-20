@@ -427,8 +427,7 @@ export class UserNotificationSettings {
 
   getUserSendAt(userId: number) {
     const timezone = this.userTimezone[userId]
-    // const sendAt = moment.tz(timezone).add(1, 'day').startOf('day')
-    const sendAt = moment.tz(timezone).add(30, 'second')
+    const sendAt = moment.tz(timezone).add(1, 'day').startOf('day')
     // sendgrid's send api expects a send_at value in
     // unix timestamp in seconds
     return Math.floor(sendAt.toDate().getTime() / 1000)
