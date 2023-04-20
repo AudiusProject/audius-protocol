@@ -1,9 +1,9 @@
 -- run from project root:
--- psql -q -f ddl/test/files_trigger_test.sql
+-- psql -q -f ddl/test/cid_lookup_test.sql
 
-drop database if exists files_trigger_test;
-create database files_trigger_test;
-\c files_trigger_test
+drop database if exists cid_lookup_test;
+create database cid_lookup_test;
+\c cid_lookup_test
 
 -- subset of fields we actually use
 CREATE TABLE IF NOT EXISTS "Files" (
@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS "Files" (
 
 
 -- load code under test
-\i ddl/files_trigger.sql
+\i ddl/cid_lookup.sql
 
 
 

@@ -8,11 +8,11 @@ import (
 	_ "embed"
 )
 
-//go:embed files_trigger.sql
-var filesTrigger string
+//go:embed cid_lookup.sql
+var cidLookupDDL string
 
 func Migrate(db *sql.DB) {
-	mustExec(db, filesTrigger)
+	mustExec(db, cidLookupDDL)
 }
 
 func mustExec(db *sql.DB, ddl string) {

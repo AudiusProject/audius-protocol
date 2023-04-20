@@ -62,7 +62,7 @@ func (ss *MediorumServer) startBeamClient() {
 				if err != nil {
 					log.Println("beam failed", peer.Host, err)
 				} else {
-					log.Println("beam OK", result)
+					log.Printf("beam OK %+v \n", result)
 				}
 				wg.Done()
 			}()
@@ -79,6 +79,7 @@ func jitterSeconds(min, n int) time.Duration {
 }
 
 type beamResult struct {
+	Host         string
 	RowCount     int64
 	InsertCount  int64
 	DeleteCount  int64
@@ -147,6 +148,7 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) (*beamResult, error) {
 	conn.Exec(ctx, `drop table if exists cid_log_temp`)
 
 	r := &beamResult{
+		Host:         peer.Host,
 		RowCount:     copys.RowsAffected(),
 		InsertCount:  inserts.RowsAffected(),
 		DeleteCount:  deletes.RowsAffected(),

@@ -55,8 +55,7 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 }
 
 func TestMain(m *testing.M) {
-	// testNetwork = setupTestNetwork(5, 9)
-	testNetwork = setupTestNetwork(3, 3)
+	testNetwork = setupTestNetwork(5, 9)
 
 	exitVal := m.Run()
 	// todo: tear down testNetwork
