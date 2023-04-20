@@ -25,13 +25,29 @@ create table if not exists cid_cursor (
 
 
 -- initial backfill
---   todo: this is expensive... we only want to do this one time...
+-- this sql file runs on boot every time
+-- but this backfill is expensive
+-- and the index idx_cid_log_updated_at is created after the backfill runs
+-- so use the presence of idx_cid_log_updated_at to not re-run this.
+do $$
+declare
+  has_index bool := false;
+begin
+  select count(*) = 1 into has_index from pg_indexes where indexname = 'idx_cid_log_updated_at';
+  if not has_index then
 
--- insert into cid_log (multihash, updated_at)
---   select "multihash", "createdAt" from "Files"
---   union
---   select "dirMultihash", "createdAt" from "Files" where "dirMultihash" is not null
---   on conflict do nothing;
+    -- backfill multihash
+    insert into cid_log (multihash, updated_at)
+      select "multihash", "createdAt" from "Files"
+        on conflict do nothing;
+
+    -- backfill dirMultihash
+    insert into cid_log (multihash, updated_at)
+      select "dirMultihash", "createdAt" from "Files" where "dirMultihash" is not null
+        on conflict do nothing;
+
+  end if;
+end; $$;
 
 create index if not exists idx_cid_log_updated_at on cid_log(updated_at);
 
