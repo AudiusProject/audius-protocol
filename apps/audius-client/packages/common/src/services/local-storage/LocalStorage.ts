@@ -20,6 +20,11 @@ type LocalStorageConfig = {
   localStorage: LocalStorageType
 }
 
+export type CachedDiscoveryProviderType = {
+  endpoint: string
+  timestamp: string
+}
+
 export class LocalStorage {
   localStorage: LocalStorageType
 
@@ -108,6 +113,9 @@ export class LocalStorage {
   getCurrentUserExists = async () =>
     this.getValue(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
 
-  getCachedDiscoveryProvider = async () =>
-    this.getJSONValue(DISCOVERY_PROVIDER_TIMESTAMP)
+  async getCachedDiscoveryProvider() {
+    return await this.getJSONValue<CachedDiscoveryProviderType>(
+      DISCOVERY_PROVIDER_TIMESTAMP
+    )
+  }
 }
