@@ -124,7 +124,8 @@ const middlewares = applyMiddleware(
 const configureStore = () => {
   const composeEnhancers = composeWithDevToolsLogOnlyInProduction({
     trace: true,
-    traceLimit: 25
+    traceLimit: 25,
+    maxAge: 1000
   })
   const store = createStore(
     createRootReducer(history),
