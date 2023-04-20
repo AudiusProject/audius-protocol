@@ -6,8 +6,10 @@ import {
   ResolvePluginInstance,
   SourceMapDevToolPlugin
 } from 'webpack'
+import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 
 const isProd = process.env.NODE_ENV === 'production'
+const analyze = process.env.BUNDLE_ANALYZE === 'true'
 
 const SOURCEMAP_URL = 'https://s3.us-west-1.amazonaws.com/sourcemaps.audius.co/'
 
@@ -15,13 +17,31 @@ type ModuleScopePlugin = ResolvePluginInstance & {
   allowedPaths: string[]
 }
 
-// This ensures we can use the resolve.alias for react/react-dom
-function addReactToModuleScopePlugin(plugin: ModuleScopePlugin) {
-  const reactLibs = ['react', 'react-dom']
-  const reactPaths = reactLibs.map((reactLib) =>
-    path.resolve(__dirname, 'node_modules', reactLib)
-  )
-  plugin.allowedPaths = [...plugin.allowedPaths, ...reactPaths]
+function resolveModule(moduleName: string) {
+  return path.resolve(`./node_modules/${moduleName}`)
+}
+
+/**
+ * List of modules to resolve to a single instance, which improves performance
+ * and is a requirement for some packages that expect to be singletons.
+ */
+const moduleResolutions = [
+  // modules that require single instances:
+  'react',
+  'react-dom',
+  'react-redux',
+  // packages that are large and are highly duplicated:
+  '@solana/web3.js',
+  'bn.js',
+  'moment',
+  'lodash'
+]
+
+// These should match modules defined in resolve.alias, and need to be hotwired
+// into CRA's module-scope-plugin to take effect.
+function injectModulesToModuleScopePlugin(plugin: ModuleScopePlugin) {
+  const modulePaths = moduleResolutions.map(resolveModule)
+  plugin.allowedPaths = [...plugin.allowedPaths, ...modulePaths]
 }
 
 export default {
@@ -29,7 +49,7 @@ export default {
     configure: (config: Configuration) => {
       if (config.resolve?.plugins) {
         const [moduleScopePlugin] = config.resolve?.plugins
-        addReactToModuleScopePlugin(moduleScopePlugin as ModuleScopePlugin)
+        injectModulesToModuleScopePlugin(moduleScopePlugin as ModuleScopePlugin)
       }
 
       return {
@@ -74,7 +94,9 @@ export default {
                   filename: '[file].map'
                 })
               ]
-            : [])
+            : []),
+
+          ...(analyze ? [new BundleAnalyzerPlugin()] : [])
         ],
         experiments: {
           ...config.experiments,
@@ -100,10 +122,13 @@ export default {
           },
           alias: {
             ...config.resolve?.alias,
-            react: path.resolve('./node_modules/react'),
-            'react-dom': path.resolve('./node_modules/react-dom'),
-            'react-redux': path.resolve('./node_modules/react-redux'),
-            'react-router-dom': path.resolve('./node_modules/react-router-dom')
+            ...moduleResolutions.reduce(
+              (aliases, moduleName) => ({
+                ...aliases,
+                [moduleName]: resolveModule(moduleName)
+              }),
+              {}
+            )
           }
         },
         ignoreWarnings: [

@@ -16,6 +16,8 @@ import { isElectron, isMobile } from 'utils/clientUtil'
 
 import { env } from '../env'
 
+import { getLibs } from './getLibs'
+
 declare global {
   interface Window {
     audiusLibs: any
@@ -35,7 +37,7 @@ export const audiusBackendInstance = audiusBackend({
   ethTokenAddress: process.env.REACT_APP_ETH_TOKEN_ADDRESS,
   getFeatureEnabled,
   getHostUrl: () => window.location.origin,
-  getLibs: () => import('@audius/sdk/dist/legacy'),
+  getLibs: () => getLibs(remoteConfigInstance),
   discoveryNodeSelectorInstance,
   getWeb3Config: async (
     libs,
