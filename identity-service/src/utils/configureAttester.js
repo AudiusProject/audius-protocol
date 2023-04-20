@@ -83,7 +83,7 @@ const setupRewardsAttester = async (libs, optimizely, redisClient) => {
     source: 'Identity'
   })
 
-  const blockOffset = FINAL_POA_BLOCK[config.get('env')] ?? 0
+  const blockOffset = FINAL_POA_BLOCK[config.get('environment')] ?? 0
   childLogger.info(`Using block offset of ${blockOffset}`)
 
   // Init the RewardsAttester
