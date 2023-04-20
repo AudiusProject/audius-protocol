@@ -11,7 +11,7 @@ import { sendDMNotifications } from './tasks/dmNotifications'
 import { processEmailNotifications } from './email/notifications/index'
 import { sendAppNotifications } from './tasks/appNotifications'
 import { getRedisConnection } from './utils/redisConnection'
-import { RemoteConfig } from './remoteConfig'
+import { EmailPluginMappings, NotificationsEmailPlugin, RemoteConfig } from './remoteConfig'
 import { Server } from './server'
 
 export class Processor {
@@ -21,12 +21,14 @@ export class Processor {
   isRunning: boolean
   listener: Listener
   lastDailyEmailSent: moment.Moment | null
+  lastWeeklyEmailSent: moment.Moment | null
   remoteConfig: RemoteConfig
   server: Server
 
   constructor() {
     this.isRunning = false
     this.lastDailyEmailSent = null
+    this.lastWeeklyEmailSent = null
     this.remoteConfig = new RemoteConfig()
     this.server = new Server()
   }
@@ -69,6 +71,16 @@ export class Processor {
     this.identityDB = await getDB(identityDBConnection)
   }
 
+  getIsScheduledEmailEnabled() {
+    const isEnabled = this.remoteConfig.getFeatureVariableEnabled(
+      NotificationsEmailPlugin,
+      EmailPluginMappings.Scheduled
+    )
+    // If the feature does not exist in remote config, then it returns null
+    // In that case, set to false bc we want to explicitly set to true
+    return Boolean(isEnabled)
+  }
+
   /**
    * Starts the app push notifications
    */
@@ -92,18 +104,31 @@ export class Processor {
 
       // NOTE: Temp to test DM email notifs in staging
       // TODO run job for all email frequencies
-      // if (
-      //   !this.lastDailyEmailSent ||
-      //   this.lastDailyEmailSent < moment.utc().subtract(1, 'days')
-      // ) {
-      //   await processEmailNotifications(
-      //     this.discoveryDB,
-      //     this.identityDB,
-      //     'daily'
-      //   )
-      //   this.lastDailyEmailSent = moment.utc()
-      // }
+      if (
+        this.getIsScheduledEmailEnabled() &&
+        (!this.lastDailyEmailSent ||
+          this.lastDailyEmailSent < moment.utc().subtract(1, 'days'))
+      ) {
+        await processEmailNotifications(
+          this.discoveryDB,
+          this.identityDB,
+          'daily'
+        )
+        this.lastDailyEmailSent = moment.utc()
+      }
 
+      if (
+        this.getIsScheduledEmailEnabled() &&
+        (!this.lastWeeklyEmailSent ||
+          this.lastWeeklyEmailSent < moment.utc().subtract(7, 'days'))
+      ) {
+        await processEmailNotifications(
+          this.discoveryDB,
+          this.identityDB,
+          'weekly'
+        )
+        this.lastWeeklyEmailSent = moment.utc()
+      }
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))
     }
