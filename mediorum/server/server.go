@@ -71,7 +71,9 @@ var (
 )
 
 func New(config MediorumConfig) (*MediorumServer, error) {
-	config.Env = os.Getenv("MEDIORUM_ENV")
+	if env := os.Getenv("MEDIORUM_ENV"); env != "" {
+		config.Env = env
+	}
 
 	// validate host config
 	if config.Self.Host == "" {

@@ -28,6 +28,7 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 	for idx, peer := range network {
 		peer := peer
 		config := MediorumConfig{
+			Env:               "test",
 			Self:              peer,
 			Peers:             network,
 			ReplicationFactor: replicationFactor,

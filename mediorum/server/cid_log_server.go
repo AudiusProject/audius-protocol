@@ -2,7 +2,6 @@ package server
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -12,7 +11,7 @@ func (ss *MediorumServer) servePgBeam(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	after := time.Time{}
-	if t, err := time.Parse(time.RFC3339, c.QueryParam("after")); err == nil {
+	if t, err := time.Parse(time.RFC3339Nano, c.QueryParam("after")); err == nil {
 		after = t
 	}
 
@@ -22,10 +21,8 @@ func (ss *MediorumServer) servePgBeam(c echo.Context) error {
 		where updated_at > '%s'
 		order by updated_at
 		`,
-		after.Format(time.RFC3339))
+		after.Format(time.RFC3339Nano))
 	copySql := fmt.Sprintf("COPY (%s) TO STDOUT", query)
-
-	log.Println("COPY", after, copySql)
 
 	// pg COPY TO
 	conn, err := ss.pgPool.Acquire(ctx)
