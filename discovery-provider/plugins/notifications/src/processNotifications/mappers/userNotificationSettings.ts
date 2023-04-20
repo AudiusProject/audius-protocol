@@ -324,27 +324,17 @@ export class UserNotificationSettings {
         'UserNotificationBrowserSettings.followers',
         'UserNotificationBrowserSettings.remixes',
         'UserNotificationBrowserSettings.messages',
-        'NotificationDeviceTokens.deviceType', // Note safari switch to web push protocol last yr for safari 16+
-        'NotificationDeviceTokens.awsARN', // so these fields are no longer necessary if we don't want to support
-        'NotificationDeviceTokens.deviceToken', // legacy safari push notifs
         'NotificationBrowserSubscriptions.endpoint',
         'NotificationBrowserSubscriptions.p256dhKey',
         'NotificationBrowserSubscriptions.authKey'
       )
       .from('UserNotificationBrowserSettings')
       .leftJoin(
-        'NotificationDeviceTokens',
-        'NotificationDeviceTokens.userId',
-        'UserNotificationBrowserSettings.userId'
-      )
-      .leftJoin(
         'NotificationBrowserSubscriptions',
         'NotificationBrowserSubscriptions.userId',
         'UserNotificationBrowserSettings.userId'
       )
       .whereIn('UserNotificationBrowserSettings.userId', userIds)
-      .whereIn('NotificationDeviceTokens.deviceType', ['safari'])
-      .andWhere('NotificationDeviceTokens.enabled', true)
       .andWhere('NotificationBrowserSubscriptions.enabled', true)
 
     const userBrowserSettings = userNotifSettingsBrowser.reduce(
