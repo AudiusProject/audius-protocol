@@ -77,3 +77,19 @@ commit;
 begin;
     create index if not exists users_is_available_false_idx on users (is_available) where is_available = false;
 commit;  
+
+-- 4/19/23: mark tracks as available again for accidentally delisted users
+begin;
+  update tracks
+  set is_available = true, is_delete = false
+  from (select unnest(ARRAY[]) as id) as data_table
+  where tracks.track_id = data_table.id and tracks.is_current;
+commit;
+
+-- 4/19/23: mark accidentally delisted users as active again
+begin;
+  update users
+  set is_available = true, is_deactivated = false
+  from (select unnest(ARRAY[]) as id) as data_table
+  where users.user_id = data_table.id and users.is_current;
+commit;
