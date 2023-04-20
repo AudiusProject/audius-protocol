@@ -3,9 +3,11 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"sync"
 	"time"
 
@@ -18,7 +20,10 @@ func (ss *MediorumServer) startBeamClient() {
 	// migration: create cid_lookup table
 	ddl := `
 
-	drop table if exists cid_temp;
+	create table if not exists cid_cursor (
+		"host" text primary key,
+		"updated_at" timestamp with time zone NOT NULL
+	);
 
 	create table if not exists cid_lookup (
 		"multihash" text,
@@ -37,15 +42,8 @@ func (ss *MediorumServer) startBeamClient() {
 	// polling:
 	// beam cid lookup from peers on an interval
 	for {
-		time.Sleep(time.Minute + jitterSeconds(120))
+		time.Sleep(jitterSeconds(30, 60))
 
-		// beam data to a temp table
-		// and then copy to main table
-		// ignoring duplicates
-		_, err := ss.pgPool.Exec(ctx, `
-		create table if not exists cid_temp (like cid_lookup);
-		truncate cid_temp;
-		`)
 		if err != nil {
 			log.Println("create temp table failed", err)
 		}
@@ -68,31 +66,13 @@ func (ss *MediorumServer) startBeamClient() {
 		}
 		wg.Wait()
 
-		// copy temp to main
-		result, err := ss.pgPool.Exec(ctx, `
-		begin;
+		log.Println("beam all done", "took", time.Since(startedAt))
 
-		truncate cid_lookup;
-
-		insert into cid_lookup (select * from cid_temp)
-			on conflict do nothing;
-
-		truncate cid_temp;
-
-		commit;
-		`)
-		if err != nil {
-			log.Println("insert from cid_temp failed", err)
-		} else {
-			log.Println("beam all done", "took", time.Since(startedAt), "added", result.RowsAffected())
-		}
-
-		time.Sleep(time.Minute*10 + jitterSeconds(120))
 	}
 }
 
-func jitterSeconds(n int) time.Duration {
-	return time.Second * time.Duration(rand.Intn(n))
+func jitterSeconds(min, n int) time.Duration {
+	return time.Second * time.Duration(min+rand.Intn(n-min))
 }
 
 func (ss *MediorumServer) beamFromPeer(peer Peer) error {
@@ -101,9 +81,13 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) error {
 		Timeout: 5 * time.Minute,
 	}
 
+	var lastUpdatedAt time.Time
+	ss.pgPool.QueryRow(ctx, `select updated_at from cid_cursor where `).Scan(&lastUpdatedAt)
+
+	endpoint := fmt.Sprintf("%s?after=%s", peer.ApiPath("beam/files"), url.QueryEscape(lastUpdatedAt.Format(time.RFC3339)))
 	startedAt := time.Now()
 	logger := log15.New("beam_client", peer.Host)
-	resp, err := client.Get(peer.ApiPath("beam/files"))
+	resp, err := client.Get(endpoint)
 	if err != nil {
 		return err
 	}
@@ -121,10 +105,20 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) error {
 	}
 	defer conn.Release()
 
-	copySql := `COPY cid_temp FROM STDIN`
+	conn.Exec(ctx, `create temp table cid_log_temp (like cid_log)`)
+
+	copySql := `COPY cid_log_temp FROM STDIN`
 	result, err := conn.Conn().PgConn().CopyFrom(ctx, resp.Body, copySql)
 	if err != nil {
 		return err
+	}
+
+	conn.Exec(ctx, `insert into cid_lookup (select multihash, $1 from cid_log_temp) on conflict do nothing;`, peer.Host)
+
+	conn.QueryRow(ctx, `select max(updated_at) from cid_log_temp`).Scan(&lastUpdatedAt)
+	if !lastUpdatedAt.IsZero() {
+		_, err := conn.Exec(ctx, `insert into cid_cursor values ($1, $2) on conflict (host) do update set updated_at = $2`, peer.Host, lastUpdatedAt)
+		fmt.Println("update cid_cursor", err)
 	}
 
 	logger.Info("beamed", "count", result.RowsAffected(), "took", time.Since(startedAt))
