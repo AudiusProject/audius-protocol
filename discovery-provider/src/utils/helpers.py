@@ -154,13 +154,9 @@ def tuple_to_model_dictionary(t, model):
 
 
 log_format = {
-    "levelno": "levelno",
     "level": "levelname",
     "msg": "message",
     "timestamp": "asctime",
-    "pathname": "pathname",
-    "funcName": "funcName",
-    "lineno": "lineno",
     "service": os.getenv("audius_service", "default"),
 }
 

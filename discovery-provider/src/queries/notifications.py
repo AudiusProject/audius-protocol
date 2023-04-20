@@ -1,4 +1,3 @@
-import logging  # pylint: disable=C0302
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Dict, List, Tuple, TypedDict
@@ -35,8 +34,9 @@ from src.utils.redis_constants import (
     latest_sol_rewards_manager_slot_key,
 )
 from src.utils.spl_audio import to_wei_string
+from src.utils.structured_logger import StructuredLogger, log_duration
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 bp = Blueprint("notifications", __name__)
 
 max_block_diff = int(shared_config["discprov"]["notifications_max_block_diff"])
@@ -278,6 +278,7 @@ def get_milestone_info(
 
 
 @bp.route("/notifications", methods=("GET",))
+@log_duration(logger)
 # pylint: disable=R0915
 def notifications():
     """

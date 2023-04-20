@@ -83,7 +83,7 @@ TX_TYPE_TO_HANDLER_MAP = {
 
 BLOCKS_PER_DAY = (24 * 60 * 60) / 5
 
-logger = StructuredLogger(logging.getLogger(__name__))
+logger = StructuredLogger(__name__)
 
 
 web3 = web3_provider.get_web3()
@@ -132,6 +132,7 @@ def get_latest_block(db: SessionManager, final_poa_block: int):
         target_latest_block_number = min(
             target_latest_block_number, latest_block_number_from_chain
         )
+
         logger.info(
             f"index_nethermind.py | get_latest_block | current={current_block_number} target={target_latest_block_number}"
         )
