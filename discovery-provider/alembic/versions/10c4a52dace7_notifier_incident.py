@@ -6,12 +6,10 @@ Create Date: 2023-04-20 00:36:19.935610
 
 """
 import os
-from pathlib import Path
 
 import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects.postgresql import ARRAY
-from sqlalchemy.types import Integer, String
 
 # revision identifiers, used by Alembic.
 revision = '10c4a52dace7'
