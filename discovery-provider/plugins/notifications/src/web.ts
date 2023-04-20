@@ -46,6 +46,8 @@ export const sendBrowserNotification = async (settings: UserNotificationSettings
       // safe cast when using filter
       const notificationBrowsers = userNotificationSettings.browser.filter(isWebPush) as WebPush[]
 
+      logger.info(`Processing ${notificationBrowsers.length} web push notifications for ${userId}`)
+
       await Promise.all(
         notificationBrowsers.map(async (notificationBrowser) => {
           const pushSubscription = {
@@ -75,7 +77,7 @@ export const sendBrowserNotification = async (settings: UserNotificationSettings
         })
       )
     } catch (err) {
-      logger.error(`Error in sending Push API browser notifications`)
+      logger.error(`Error in sending Push API browser notifications ${err}`)
     }
   
     return numSentNotifs
