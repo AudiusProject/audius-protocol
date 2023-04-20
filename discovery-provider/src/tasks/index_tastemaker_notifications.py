@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import asc
+from sqlalchemy import and_, asc
 from src.models.notifications.notification import Notification
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -39,6 +39,15 @@ def index_tastemaker_notifications(
             tastemaker_notifications_to_add = dedupe_notifications_by_group_id(
                 repost_tastemaker_notifications, save_tastemaker_notifications
             )
+            # Bulk save objects does not fail silently. If a notification
+            # trying to save has a duplicate in the table already,
+            # it will crash and not save anything in the batch.
+            tastemaker_notifications_to_add = (
+                dedupe_notifications_from_existing_notifications(
+                    tastemaker_notifications_to_add=tastemaker_notifications_to_add,
+                    session=session,
+                )
+            )
             tastemaker_notifications.extend(tastemaker_notifications_to_add)
 
         session.bulk_save_objects(
@@ -57,6 +66,33 @@ def dedupe_notifications_by_group_id(repost_notifications, save_notifications):
         if save_notif.group_id not in existing_group_ids
     ]
     return deduped_notifications_by_group_id
+
+
+def dedupe_notifications_from_existing_notifications(
+    tastemaker_notifications_to_add, session
+):
+    filter_expr = and_(
+        Notification.specifier.in_(
+            [notification.specifier for notification in tastemaker_notifications_to_add]
+        ),
+        Notification.group_id.in_(
+            [notification.group_id for notification in tastemaker_notifications_to_add]
+        ),
+    )
+    matching_rows = session.query(Notification).filter(filter_expr).all()
+    existing_specifier_group_ids = [
+        (row.specifier, row.group_id) for row in matching_rows
+    ]
+    print("existing_ids: ", existing_specifier_group_ids)
+    print("taste maker notifs to make: ", tastemaker_notifications_to_add)
+    deduped_notifications = []
+    for notification in tastemaker_notifications_to_add:
+        if (
+            notification.specifier,
+            notification.group_id,
+        ) not in existing_specifier_group_ids:
+            deduped_notifications.append(notification)
+    return deduped_notifications
 
 
 def create_action_tastemaker_notifications(
@@ -108,7 +144,7 @@ def create_tastemaker_notification(
         user_ids=[action_user_id],
         type="tastemaker",
         group_id=group_id,
-        specifier=action_item_id,
+        specifier=str(action_item_id),
         data={
             "tastemaker_item_id": action_item_id,
             "tastemaker_item_type": "track",
