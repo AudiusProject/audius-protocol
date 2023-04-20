@@ -67,15 +67,9 @@ module.exports = function (app) {
         return errorResponseBadRequest(`Did not pass in a valid userId`)
 
       try {
-        let settings = await models.UserNotificationMobileSettings.findOne({
+        const settings = await models.UserNotificationMobileSettings.findOne({
           where: { userId }
         })
-        if (!settings) {
-          settings = await models.UserNotificationMobileSettings.create({
-            userId
-          })
-        }
-
         return successResponse({ settings })
       } catch (e) {
         req.logger.error(
