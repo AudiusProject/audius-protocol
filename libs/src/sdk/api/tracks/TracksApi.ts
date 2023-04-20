@@ -1,16 +1,16 @@
 import { BASE_PATH, RequiredError } from '../generated/default/runtime'
-import FormData from 'form-data'
 
-import retry from 'async-retry'
 import {
   Configuration,
   StreamTrackRequest,
   TracksApi as GeneratedTracksApi
 } from '../generated/default'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
-import axios from 'axios'
 import type { UploadTrackRequest } from './types'
-import { StorageService } from '../../services/StorageService'
+import type { StorageService } from '../../services/StorageService'
+import { isFileValid } from '../../utils/file'
+import { TRACK_REQUIRED_PROPERTIES, TRACK_REQUIRED_VALUES } from './constants'
+import { objectMissingProperties } from '../../utils/object'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -55,31 +55,57 @@ export class TracksApi extends TracksApiWithoutStream {
     return `${host}${BASE_PATH}${path}`
   }
 
+  /**
+   * Upload a track
+   */
   async uploadTrack(requestParameters: UploadTrackRequest) {
-    // TODO: Validate inputs
-    // this.REQUIRES(Services.CREATOR_NODE)
-    // this.FILE_IS_VALID(trackFile)
-    // if (coverArtFile) this.FILE_IS_VALID(coverArtFile)
-    // this.IS_OBJECT(metadata)
+    const { trackFile, coverArtFile, metadata, onProgress } = requestParameters
 
-    // TODO: Integrate with wallet api
-    // const ownerId = this.userStateManager.getCurrentUserId()
-    // if (!ownerId) {
-    //   return {
-    //     error: 'No users loaded for this wallet'
-    //   }
-    // }
+    // Validate inputs
+
+    if (!isFileValid(trackFile)) {
+      throw new Error('Track file is not valid')
+    }
+
+    if (!isFileValid(coverArtFile)) {
+      throw new Error('Cover art file is not valid')
+    }
+
+    if (typeof metadata !== 'object') {
+      throw new Error('Metadata object is not valid')
+    }
+
     requestParameters.metadata.owner_id = Number(requestParameters.artistId)
-    // this._validateTrackMetadata(metadata)
+
+    const metadataMissingProperties = objectMissingProperties(
+      requestParameters.metadata,
+      TRACK_REQUIRED_PROPERTIES
+    )
+    if (metadataMissingProperties) {
+      throw new Error(
+        `Metadata object is missing properties: ${metadataMissingProperties}`
+      )
+    }
+
+    const metadataMissingValues = objectMissingProperties(
+      requestParameters.metadata,
+      TRACK_REQUIRED_VALUES
+    )
+    if (metadataMissingValues) {
+      throw new Error(
+        `Metadata object is missing values: ${metadataMissingValues}`
+      )
+    }
 
     // Upload track audio and cover art to storage node
     const updatedMetadata = await this.storage.uploadTrackAudioAndCoverArt(
-      requestParameters.trackFile,
-      requestParameters.coverArtFile,
-      requestParameters.metadata,
-      requestParameters.onProgress
+      trackFile,
+      coverArtFile,
+      metadata,
+      onProgress
     )
 
+    // TODO: Integrate with wallet api
     // TODO: Write metadata to chain
     // const trackId = await this._generateTrackId()
     // const response = await this.contracts.EntityManagerClient!.manageEntity(

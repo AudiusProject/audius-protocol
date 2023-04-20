@@ -1,19 +1,21 @@
-import axios, { AxiosError, AxiosRequestConfig } from 'axios'
+import axios, { AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 
-import { TrackMetadata } from '../../types/types'
+import type { TrackMetadata } from '../../types/types'
 import retry from 'async-retry'
 import { wait } from '../../utils/wait'
-import { StorageServiceConfig } from './types'
+import type { StorageServiceConfig } from './types'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import { defaultStorageServiceConfig } from './constants'
-import { File } from '../../types/File'
+import {
+  defaultStorageServiceConfig,
+  MAX_IMAGE_RESIZE_TIMEOUT_MS,
+  MAX_TRACK_TRANSCODE_TIMEOUT,
+  POLL_STATUS_INTERVAL
+} from './constants'
+import type { CrossPlatformFile as File } from '../../types/File'
+import { isNodeFile } from '../../utils/file'
 
 type ProgressCB = (loaded: number, total: number) => void
-
-const MAX_TRACK_TRANSCODE_TIMEOUT = 3600000 // 1 hour
-const MAX_IMAGE_RESIZE_TIMEOUT_MS = 5 * 60_000 // 5 minutes
-const POLL_STATUS_INTERVAL = 3000 // 3s
 
 export class StorageService {
   /**
@@ -87,7 +89,8 @@ export class StorageService {
   ) {
     const formData = new FormData()
     formData.append('template', template)
-    formData.append('files', file.buffer, file.name)
+    // TODO: Test this in a browser env
+    formData.append('files', isNodeFile(file) ? file.buffer : file, file.name)
     const response = await this._makeRequest({
       method: 'post',
       url: '/mediorum/uploads',
