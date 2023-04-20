@@ -78,7 +78,7 @@ begin;
     create index if not exists users_is_available_false_idx on users (is_available) where is_available = false;
 commit;  
 
--- 4/19/23
+-- 4/20/23: notifier incident
 begin;
   update tracks
   set is_available = true, is_delete = false
@@ -86,7 +86,7 @@ begin;
   where tracks.track_id = data_table.id and tracks.is_current;
 commit;
 
--- 4/19/23
+-- 4/20/23: notifier incident
 begin;
   update users
   set is_available = true, is_deactivated = false
