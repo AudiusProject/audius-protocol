@@ -1,3 +1,4 @@
+import type { AudiusLibs } from '../../AudiusLibs'
 import { SubmitAndEvaluateError } from '../../api/Rewards'
 import type { ServiceWithEndpoint } from '../../utils'
 import { Utils } from '../../utils/utils'
@@ -224,20 +225,10 @@ type Challenge = {
 }
 
 type AttestationResult = Challenge & {
-  error?: string
-  phase?: string
-  aaoErrorCode?: number
+  error?: string | null
+  phase?: string | null
+  aaoErrorCode?: number | null
   nodesToReselect?: string[] | null
-}
-
-type DiscoveryNodeChallenge = {
-  challenge_id: string
-  user_id: string
-  specifier: string
-  amount: number
-  handle: string
-  wallet: string
-  completed_blocknumber: number
 }
 
 type AttesterState = {
@@ -287,7 +278,7 @@ export class RewardsAttester {
   private challengeIdsDenyList: Set<string>
   private discoveryNodeBlocklist: string[]
 
-  private readonly libs: any
+  private readonly libs: AudiusLibs
   private readonly logger: Console
   private readonly quorumSize: number
   private readonly reporter: BaseRewardsReporter
@@ -412,7 +403,7 @@ export class RewardsAttester {
     // This overrides any configured whitelist for the service selector.
     if (this.endpointPool.size === 0) {
       const pool =
-        await this.libs.discoveryProvider.serviceSelector.getServices()
+        await this.libs.discoveryProvider!.serviceSelector.getServices()
       this.endpointPool = new Set(pool)
     }
     await this._selectDiscoveryNodes()
@@ -550,8 +541,8 @@ export class RewardsAttester {
    */
   async _awaitFeePayerBalance() {
     const getHasBalance = async () =>
-      this.libs.solanaWeb3Manager.hasBalance({
-        publicKey: this.libs.solanaWeb3Manager.feePayerKey
+      this.libs.solanaWeb3Manager!.hasBalance({
+        publicKey: this.libs.solanaWeb3Manager!.feePayerKey
       })
     while (!(await getHasBalance())) {
       this.logger.warn('No usable balance. Waiting...')
@@ -569,12 +560,12 @@ export class RewardsAttester {
       return this.feePayerOverride
     }
     const feePayerKeypairs =
-      this.libs.solanaWeb3Manager.solanaWeb3Config.feePayerKeypairs
+      this.libs.solanaWeb3Manager!.solanaWeb3Config.feePayerKeypairs
     if (feePayerKeypairs?.length) {
       const randomFeePayerIndex = Math.floor(
         Math.random() * feePayerKeypairs.length
       )
-      return feePayerKeypairs[randomFeePayerIndex].publicKey
+      return feePayerKeypairs[randomFeePayerIndex]!.publicKey.toString()
     }
     return null
   }
@@ -728,16 +719,19 @@ export class RewardsAttester {
     )
 
     const feePayerOverride = this._getFeePayer()
-    const { error: userbankCreationError } =
-      await this.libs.solanaWeb3Manager.createUserBankIfNeeded(
-        feePayerOverride,
-        wallet
-      )
+    if (!feePayerOverride) {
+      throw Error('Unexpectedly missing feepayer override')
+    }
 
-    if (userbankCreationError) {
+    const res = await this.libs.solanaWeb3Manager!.createUserBankIfNeeded(
+      feePayerOverride,
+      wallet
+    )
+
+    if ('error' in res) {
       this.logger.error(
         `Failed to create user bank for user [${decodeHashId(userId)}]`,
-        userbankCreationError
+        res.error
       )
 
       return {
@@ -750,10 +744,16 @@ export class RewardsAttester {
         completedBlocknumber,
         error: errors.USERBANK_CREATION
       }
+    } else if (!res.didExist) {
+      this.logger.info(`Created user bank for user [${decodeHashId(userId)}]`)
+    } else {
+      this.logger.info(
+        `User bank already exists for user [${decodeHashId(userId)}]`
+      )
     }
 
     const { success, error, aaoErrorCode, phase, nodesToReselect } =
-      await this.libs.Rewards.submitAndEvaluate({
+      await this.libs.Rewards!.submitAndEvaluate({
         challengeId,
         encodedUserId: userId,
         handle,
@@ -819,17 +819,18 @@ export class RewardsAttester {
       )}`
     )
     const startTime = Date.now()
-    let endpoints: ServiceWithEndpoint[] =
-      (await this.libs.discoveryProvider.serviceSelector.findAll({
+    let endpoints = ((
+      await this.libs.discoveryProvider!.serviceSelector.findAll({
         verbose: true,
         whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
-      })) ?? []
+      })
+    ).filter(Boolean) ?? []) as ServiceWithEndpoint[]
     // Filter out blocklisted nodes
     const blockSet = new Set(this.discoveryNodeBlocklist)
     endpoints = [...endpoints].filter((e) => !blockSet.has(e.endpoint))
 
     this.endpoints =
-      await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
+      await this.libs.Rewards!.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
         quorumSize: this.quorumSize,
         discoveryNodes: endpoints
       })
@@ -855,21 +856,18 @@ export class RewardsAttester {
       }, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`
     )
     await this._updatePhase('REFILLING_QUEUE')
-    const {
-      success: disbursable,
-      error
-    }: { success: DiscoveryNodeChallenge[]; error: null } =
-      await this.libs.Rewards.getUndisbursedChallenges({
-        offset: this.offset,
-        completedBlockNumber: this.startingBlock,
-        logger: this.logger
-      })
+    const res = await this.libs.Rewards!.getUndisbursedChallenges({
+      offset: this.offset,
+      completedBlockNumber: this.startingBlock.toString(),
+      logger: this.logger
+    })
 
-    if (error) {
-      return { error }
+    if ('error' in res) {
+      return { error: res.error }
     }
 
-    if (disbursable?.length) {
+    const { success: disbursable } = res
+    if (disbursable.length) {
       this.logger.info(
         `Got challenges: ${disbursable.map(
           (
