@@ -102,6 +102,7 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
 
     const title = 'New Repost'
     const body = `${reposterUserName} reposted your repost of ${entityName}`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
 
     // If the user has devices to the notification to, proceed
     if (
@@ -157,9 +158,6 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
     ) {
       // TODO: Send out email
     }
-
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
-    
   }
 
   getResourcesForEmail(): ResourceIds {

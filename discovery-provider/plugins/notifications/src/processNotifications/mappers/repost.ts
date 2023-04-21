@@ -100,6 +100,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
 
     const title = 'New Repost'
     const body = `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
 
     // If the user has devices to the notification to, proceed
     if (
@@ -150,8 +151,6 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     ) {
       // TODO: Send out email
     }
-
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
   }
 
   getResourcesForEmail(): ResourceIds {

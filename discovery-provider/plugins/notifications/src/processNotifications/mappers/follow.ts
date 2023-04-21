@@ -57,9 +57,9 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
       [this.receiverUserId, this.followerUserId]
     )
 
-    const title = 'Follow'
+    const title = 'New Follow'
     const body = `${users[this.followerUserId].name} followed you`
-
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
 
     // If the user has devices to the notification to, proceed
     if (
@@ -110,8 +110,6 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
     ) {
       // TODO: Send out email
     }
-
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
   }
 
   getResourcesForEmail(): ResourceIds {

@@ -384,6 +384,20 @@ export class UserNotificationSettings {
     )
     return userBrowserSettings
   }
+
+  async getUserNotificationBrowsers(userId: number): Promise<WebPush[]> {
+    if (!globalThis.webPushIsConfigured) return []
+    const settings = await this.getUserBrowserSettings([userId])
+    const browsers = settings[userId].browser
+
+    const isWebPush = (browser: Browser): boolean => {
+      return (browser as WebPush).p256dhKey !== undefined;
+    }
+
+    // if pass then web push, skip custom safari entries
+    // safe cast when using filter
+    return browsers.filter(isWebPush) as WebPush[]
+  }
 }
 
 export async function buildUserNotificationSettings(

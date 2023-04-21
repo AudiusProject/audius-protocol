@@ -34,17 +34,7 @@ export const sendBrowserNotification = async (settings: UserNotificationSettings
     let numSentNotifs = 0
   
     try {
-      if (!globalThis.webPushIsConfigured) return numSentNotifs
-      const userBrowserSettings = await settings.getUserBrowserSettings([userId])
-      const userNotificationSettings = userBrowserSettings[userId]
-
-      const isWebPush = (browser: Browser): boolean => {
-        return (browser as WebPush).p256dhKey !== undefined;
-      }
-
-      // if pass then web push, skip custom safari entries
-      // safe cast when using filter
-      const notificationBrowsers = userNotificationSettings.browser.filter(isWebPush) as WebPush[]
+      const notificationBrowsers = await settings.getUserNotificationBrowsers(userId)
 
       logger.info(`Processing ${notificationBrowsers.length} web push notifications for ${userId}`)
 
