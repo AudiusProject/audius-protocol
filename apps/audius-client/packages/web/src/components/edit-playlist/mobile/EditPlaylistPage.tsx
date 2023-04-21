@@ -14,7 +14,8 @@ import {
   createPlaylistModalUIActions as createPlaylistActions,
   imageBlank as placeholderCoverArt,
   newCollectionMetadata,
-  usePremiumContentAccessMap
+  usePremiumContentAccessMap,
+  EditPlaylistValues
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -232,7 +233,17 @@ const EditPlaylistPage = g(
           )
         }
         refreshLineup()
-        editPlaylist(metadata.playlist_id, formFields)
+
+        const editPlaylistData: EditPlaylistValues = {
+          playlist_name: formFields.playlist_name,
+          description: formFields.description,
+          artwork: formFields.artwork,
+          tracks: formFields.tracks as any,
+          track_ids: formFields.playlist_contents.track_ids,
+          removedTracks: []
+        }
+
+        editPlaylist(metadata.playlist_id, editPlaylistData)
 
         close()
       } else {
@@ -458,7 +469,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(
         createPlaylist(tempId, metadata, CreatePlaylistSource.CREATE_PAGE)
       ),
-    editPlaylist: (id: ID, metadata: Collection) =>
+    editPlaylist: (id: ID, metadata: EditPlaylistValues) =>
       dispatch(editPlaylist(id, metadata)),
     orderPlaylist: (playlistId: ID, idsAndTimes: any) =>
       dispatch(orderPlaylist(playlistId, idsAndTimes)),
