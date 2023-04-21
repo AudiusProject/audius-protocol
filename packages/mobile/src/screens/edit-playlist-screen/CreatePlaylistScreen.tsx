@@ -21,7 +21,7 @@ const messages = {
   playlistCreatedToast: 'Playlist Created!'
 }
 
-type PlaylistValues = {
+type CreatePlaylistValues = {
   playlist_name: string
   description: string
   artwork: {
@@ -35,7 +35,7 @@ type PlaylistValues = {
   }
 }
 
-const CreatePlaylistForm = (props: FormikProps<PlaylistValues>) => {
+const CreatePlaylistForm = (props: FormikProps<CreatePlaylistValues>) => {
   const { handleSubmit, handleReset, errors } = props
 
   return (
@@ -57,7 +57,7 @@ const CreatePlaylistForm = (props: FormikProps<PlaylistValues>) => {
   )
 }
 
-const initialValues: PlaylistValues = {
+const initialValues: CreatePlaylistValues = {
   playlist_name: '',
   description: '',
   artwork: { url: '' }
@@ -73,7 +73,7 @@ export const CreatePlaylistScreen = () => {
   const dispatch = useDispatch()
   const navigation = useNavigation()
   const handleSubmit = useCallback(
-    (values: PlaylistValues) => {
+    (values: CreatePlaylistValues) => {
       const tempId = getTempPlaylistId()
       dispatch(
         createPlaylist(tempId, values, CreatePlaylistSource.FAVORITES_PAGE)

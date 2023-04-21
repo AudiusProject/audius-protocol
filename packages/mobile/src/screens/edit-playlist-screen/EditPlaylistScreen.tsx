@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react'
 
-import type { Collection } from '@audius/common'
+import type { EditPlaylistValues } from '@audius/common'
 import {
   SquareSizes,
   cacheCollectionsActions,
@@ -22,7 +22,6 @@ import { makeStyles } from 'app/styles'
 import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
 import { PlaylistImageInput } from './PlaylistImageInput'
 import { PlaylistNameInput } from './PlaylistNameInput'
-import type { PlaylistValues } from './types'
 const { getMetadata, getTracks } = createPlaylistModalUISelectors
 const { editPlaylist, orderPlaylist, removeTrackFromPlaylist } =
   cacheCollectionsActions
@@ -33,7 +32,7 @@ const useStyles = makeStyles(({ spacing }) => ({
   }
 }))
 
-const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
+const EditPlaylistForm = (props: FormikProps<EditPlaylistValues>) => {
   const { values, handleSubmit, handleReset, setFieldValue } = props
   const styles = useStyles()
 
@@ -49,10 +48,14 @@ const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
       reorder.splice(from, 1)
       reorder.splice(to, 0, tmp)
 
+      const reorderedTracks = data.map((id: number) =>
+        values.tracks?.find((t) => t.track_id === id)
+      )
+
       setFieldValue('track_ids', reorder)
-      setFieldValue('tracks', data)
+      setFieldValue('tracks', reorderedTracks)
     },
-    [setFieldValue, values.track_ids]
+    [setFieldValue, values.track_ids, values.tracks]
   )
 
   const handleRemove = useCallback(
@@ -60,7 +63,11 @@ const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
       if ((values.track_ids.length ?? 0) <= index) {
         return
       }
-      const { track: trackId, time } = values.track_ids[index]
+      const {
+        track: trackId,
+        metadata_time: metadataTime,
+        time
+      } = values.track_ids[index]
 
       const trackMetadata = values.tracks?.find(
         ({ track_id }) => track_id === trackId
@@ -70,7 +77,7 @@ const EditPlaylistForm = (props: FormikProps<PlaylistValues>) => {
 
       setFieldValue('removedTracks', [
         ...values.removedTracks,
-        { trackId, timestamp: time }
+        { trackId, timestamp: metadataTime ?? time }
       ])
 
       const tracks = [...(values.tracks ?? [])]
@@ -120,8 +127,9 @@ export const EditPlaylistScreen = () => {
   })
 
   const handleSubmit = useCallback(
-    (values: PlaylistValues) => {
+    (values: EditPlaylistValues) => {
       if (playlist) {
+        dispatch(editPlaylist(playlist.playlist_id, values))
         values.removedTracks.forEach(({ trackId, timestamp }) => {
           dispatch(
             removeTrackFromPlaylist(trackId, playlist.playlist_id, timestamp)
@@ -135,9 +143,6 @@ export const EditPlaylistScreen = () => {
             )
           )
         }
-        dispatch(
-          editPlaylist(playlist.playlist_id, values as unknown as Collection)
-        )
         dispatch(tracksActions.fetchLineupMetadatas())
       }
     },
@@ -146,8 +151,9 @@ export const EditPlaylistScreen = () => {
 
   if (!playlist) return null
 
-  const initialValues = {
-    ...playlist,
+  const initialValues: EditPlaylistValues = {
+    playlist_name: playlist.playlist_name,
+    description: playlist.description,
     artwork: {
       url:
         trackImage && isImageUriSource(trackImage.source)

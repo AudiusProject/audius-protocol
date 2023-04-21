@@ -560,24 +560,9 @@ function* removeTrackFromPlaylistAsync(action) {
 
   // Find the index of the track based on the track's id and timestamp
   const index = playlist.playlist_contents.track_ids.findIndex((t) => {
-    if (t.track !== action.trackId) {
-      return false
-    }
+    if (t.track !== action.trackId) return false
 
-    if (t.metadata_time) {
-      if (t.metadata_time === action.timestamp) {
-        // entity manager is enabled
-        return true
-      } else {
-        return false
-      }
-    }
-
-    if (t.time !== action.timestamp) {
-      return false
-    }
-
-    return true
+    return t.metadata_time === action.timestamp || t.time === action.timestamp
   })
   if (index === -1) {
     console.error('Could not find the index of to-be-deleted track')
