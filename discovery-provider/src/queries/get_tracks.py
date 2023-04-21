@@ -54,6 +54,20 @@ class GetTrackArgs(TypedDict):
     sort_direction: Optional[SortDirection]
 
 
+def get_featured_playlists_for_track(track_id, session):
+    playlist_tracks = (
+        session.query(Playlist)
+        .join(Playlist.playlist_tracks)
+        .filter(Playlist.is_current == True)
+        .filter(Playlist.is_delete == False)
+        .filter(PlaylistTrack.track_id == track_id)
+        .all()
+    )
+
+    playlists = [playlist.to_dictionary() for playlist in playlist_tracks]
+    return playlists
+
+
 def _get_tracks(session, args):
     # Create initial query
     base_query = session.query(TrackWithAggregates)
@@ -309,5 +323,8 @@ def get_tracks(args: GetTrackArgs):
             session, track_ids, tracks, current_user_id, track_has_aggregates=True
         )
         tracks = add_users_to_tracks(session, tracks, current_user_id)
+        featured_playlists = get_featured_playlists_for_track(track_id, session)
+        track["featured_playlists"] = featured_playlists
+
 
     return tracks
