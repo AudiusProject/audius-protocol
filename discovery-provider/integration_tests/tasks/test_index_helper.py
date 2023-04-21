@@ -245,6 +245,48 @@ def test_fetch_cid_metadata(app, mocker):
                     )
                 },
             ],
+            "CreateTrack2InvalidTx": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": TRACK_ID_OFFSET + 1,
+                            "_entityType": "Track",
+                            "_userId": 1,
+                            "_action": "Create",
+                            "_metadata": f'{{"cid": "QmCreateInvalidTrack", "data": "{track1_json}"}}',  # stringified value for data key
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+            "CreateTrack3InvalidTx": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": TRACK_ID_OFFSET + 2,
+                            "_entityType": "Track",
+                            "_userId": 1,
+                            "_action": "Create",
+                            "_metadata": f'{{"data": {track1_json}}}',  # missing cid key
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
+            "CreateTrack4InvalidTx": [
+                {
+                    "args": AttributeDict(
+                        {
+                            "_entityId": TRACK_ID_OFFSET + 3,
+                            "_entityType": "Track",
+                            "_userId": 1,
+                            "_action": "Create",
+                            "_metadata": '{"cid": "QmCreateInvalidTrack", "data": {}}',  # no values in data json
+                            "_signer": "user1wallet",
+                        }
+                    )
+                },
+            ],
         }
 
         def get_events_side_effect(_, _event_type, tx_receipt):

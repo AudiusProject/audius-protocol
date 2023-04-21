@@ -5,7 +5,6 @@ from src.models.rewards.challenge import Challenge
 from src.models.rewards.challenge_disbursement import ChallengeDisbursement
 from src.models.rewards.user_challenge import UserChallenge
 from src.models.users.user import User
-from src.models.users.user_bank import UserBankAccount
 
 
 class UndisbursedChallengeResponse(TypedDict):
@@ -21,7 +20,6 @@ class UndisbursedChallengeResponse(TypedDict):
 def to_challenge_response(
     user_challenge: UserChallenge, challenge: Challenge, handle: str, wallet: str
 ) -> UndisbursedChallengeResponse:
-
     return {
         "challenge_id": challenge.id,
         "user_id": user_challenge.user_id,
@@ -64,8 +62,6 @@ def get_undisbursed_challenges(
             Challenge.id == UserChallenge.challenge_id,
         )
         .join(User, UserChallenge.user_id == User.user_id)
-        # Join against UserBank to ensure only users with banks are disbursable
-        .join(UserBankAccount, UserBankAccount.ethereum_address == User.wallet)
         .filter(
             # Check that there is no matching challenge disburstment
             ChallengeDisbursement.challenge_id == None,

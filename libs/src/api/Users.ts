@@ -1014,7 +1014,7 @@ export class Users extends Base {
 
     // If no user is logged in, or a creator node endpoint is already assigned,
     // skip this call
-    if (!user || user.creator_node_endpoint) return
+    if (!user || user.creator_node_endpoint || user.is_storage_v2) return
 
     // Generate a replica set and assign to user
     try {

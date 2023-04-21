@@ -1,4 +1,5 @@
 const request = require('request')
+const retry = require('async-retry')
 const config = require('../config.js')
 const models = require('../models')
 const txRelay = require('../relay/txRelay')
@@ -69,29 +70,31 @@ module.exports = function (app) {
           return errorResponseBadRequest(
             `Another Audius profile has already been authenticated with Instagram user @${igUser.username}!`
           )
-        } else {
-          // Fetch the instagram full profile
-          const igProfileReqObj = {
-            method: 'get',
-            url: `${generalAdmissionAddress}/social/instagram/${igUser.username}`
-          }
+        }
+        // Fetch the instagram full profile
+        const igProfileReqObj = {
+          method: 'get',
+          url: `${generalAdmissionAddress}/social/instagram/${igUser.username}`
+        }
 
-          try {
-            const instagramProfileRes = await doRequest(igProfileReqObj)
-            const instagramProfile = JSON.parse(instagramProfileRes)
+        try {
+          const instagramProfileRes = await retry(
+            async () => doRequest(igProfileReqObj),
+            { retries: 3 }
+          )
+          const instagramProfile = JSON.parse(instagramProfileRes)
 
-            // Store the access token, user id, and current profile for user in db
-            await models.InstagramUser.upsert({
-              uuid: igUser.username,
-              profile: instagramProfile,
-              verified: instagramProfile.is_verified,
-              accessToken
-            })
+          // Store the access token, user id, and current profile for user in db
+          await models.InstagramUser.upsert({
+            uuid: igUser.username,
+            profile: instagramProfile,
+            verified: instagramProfile.is_verified,
+            accessToken
+          })
 
-            return successResponse(instagramProfile)
-          } catch (err) {
-            return errorResponseBadRequest(err)
-          }
+          return successResponse(instagramProfile)
+        } catch (err) {
+          return errorResponseBadRequest(err)
         }
       } catch (err) {
         return errorResponseBadRequest(err)

@@ -1,10 +1,14 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { RepostOfRepostNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  RepostOfRepostNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import { capitalize } from 'lodash'
 import {
   buildUserNotificationSettings,
@@ -34,7 +38,11 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
     this.repostOfRepostUserId = this.notification.data.user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -147,16 +155,27 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    // if (userNotifications.browser) {
-    //   // TODO: Send out browser
-    // }
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.repostOfRepostUserId,
         receiverUserId: this.receiverUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

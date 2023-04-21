@@ -119,7 +119,7 @@ const getPlaylistImage = (playlist: PlaylistResource) => {
   return playlistImageUrl
 }
 
-const fetchResources = async (
+export const fetchResources = async (
   dnDb: Knex,
   identityDb: Knex,
   ids: ResourceIds

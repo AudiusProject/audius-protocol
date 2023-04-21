@@ -1,5 +1,5 @@
 when:
-  equal: ['main', << pipeline.parameters.workflow >>]
+  equal: ["main", << pipeline.parameters.workflow >>]
 jobs:
   - build-gcp-image:
       context: GCP
@@ -29,6 +29,11 @@ jobs:
       context: [GCP, dockerhub]
       instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
       service: comms
+  - push-docker-image:
+      name: push-mediorum
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
+      service: mediorum
 
   - test:
       name: test-creator-node
@@ -63,6 +68,11 @@ jobs:
   - test-audius-cmd:
       context: GCP
       instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
+  - test:
+      name: test-mediorum
+      context: GCP
+      instance-name: circleci-test-mediorum-$CIRCLE_BUILD_NUM
+      service: mediorum
 
   # Release
 
@@ -182,7 +192,9 @@ jobs:
       filters:
         branches:
           only: main
-      context: open-vpn
+      context:
+        - open-vpn
+        - build-freeze
       hosts: >-
         stage-creator-5
         stage-creator-6
@@ -193,6 +205,7 @@ jobs:
         stage-creator-11
         stage-user-metadata
       service: creator-node
+      freeze: $FREEZE_BUILD
 
   - deploy:
       name: deploy-stage-discovery-provider
@@ -202,7 +215,9 @@ jobs:
       filters:
         branches:
           only: main
-      context: open-vpn
+      context:
+        - open-vpn
+        - build-freeze
       hosts: >-
         stage-discovery-4
         stage-discovery-1
@@ -210,6 +225,7 @@ jobs:
         stage-discovery-3
         stage-discovery-5
       service: discovery-provider
+      freeze: $FREEZE_BUILD
 
   - deploy:
       name: deploy-stage-identity-service
@@ -218,9 +234,12 @@ jobs:
       filters:
         branches:
           only: main
-      context: open-vpn
+      context:
+        - open-vpn
+        - build-freeze
       hosts: stage-identity
       service: identity-service
+      freeze: $FREEZE_BUILD
 
   - deploy:
       name: deploy-stage-discovery-provider-notifications
@@ -229,7 +248,10 @@ jobs:
       filters:
         branches:
           only: main
-      context: open-vpn
+      context:
+        - open-vpn
+        - build-freeze
       hosts: >-
         stage-discovery-2
       service: discovery-provider-notifications
+      freeze: $FREEZE_BUILD

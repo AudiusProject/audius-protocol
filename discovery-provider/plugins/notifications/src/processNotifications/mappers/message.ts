@@ -19,7 +19,11 @@ export class Message extends BaseNotification<DMNotification> {
     this.senderUserId = this.notification.sender_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -65,6 +69,7 @@ export class Message extends BaseNotification<DMNotification> {
         'messages'
       )
     ) {
+      console.log('asdf should send yes')
       const devices = userNotificationSettings.getDevices(this.receiverUserId)
       await Promise.all(
         devices.map((device) => {
@@ -86,12 +91,13 @@ export class Message extends BaseNotification<DMNotification> {
       await this.incrementBadgeCount(this.receiverUserId)
     }
     if (
+      isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.senderUserId,
         receiverUserId: this.receiverUserId
       })
     ) {
-      // TODO: Send out email
+      // TODO: send out email
     }
   }
 }

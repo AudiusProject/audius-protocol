@@ -1,9 +1,13 @@
 import { Knex } from 'knex'
-import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { AnnouncementNotification } from '../../types/notifications'
+import { NotificationRow, UserRow } from '../../types/dn'
+import {
+  AnnouncementNotification,
+  AppEmailNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
@@ -25,7 +29,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     this.receiverUserIds = this.notification.user_ids!
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -91,10 +99,24 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
         )
         await this.incrementBadgeCount(userId)
       }
+
       if (
+        isLiveEmailEnabled &&
+        userNotificationSettings.getUserEmailFrequency(userId) === 'live' &&
         userNotificationSettings.shouldSendEmail({ receiverUserId: userId })
       ) {
-        // TODO: Send out email
+        const notification: AppEmailNotification = {
+          receiver_user_id: userId,
+          ...this.notification
+        }
+        await sendNotificationEmail({
+          userId: userId,
+          email: userNotificationSettings.getUserEmail(userId),
+          frequency: 'live',
+          notifications: [notification],
+          dnDb: this.dnDB,
+          identityDb: this.identityDB
+        })
       }
     }
   }

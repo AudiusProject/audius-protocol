@@ -1,9 +1,13 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { AddTrackToPlaylistNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  AddTrackToPlaylistNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
@@ -30,7 +34,11 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     this.playlistId = notification.data.playlist_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const trackRes: Array<{
       track_id: number
       title: string
@@ -101,7 +109,8 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
           return sendPushNotification(
             {
               type: device.type,
-              badgeCount: userNotificationSettings.getBadgeCount(track.owner_id) + 1,
+              badgeCount:
+                userNotificationSettings.getBadgeCount(track.owner_id) + 1,
               targetARN: device.awsARN
             },
             {
@@ -121,11 +130,25 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
       await this.incrementBadgeCount(track.owner_id)
     }
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(track.owner_id) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: track.owner_id
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: track.owner_id,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: track.owner_id,
+        email: userNotificationSettings.getUserEmail(track.owner_id),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

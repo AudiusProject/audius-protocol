@@ -1,15 +1,20 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { SupporterDethronedNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SupporterDethronedNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { capitalize } from '../../email/notifications/components/utils'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { CoverPhotoFromJSONTyped } from '@audius/sdk'
 
 type SupporterDethronedNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupporterDethronedNotification
@@ -31,7 +36,11 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     this.dethronedUserId = this.notification.data.dethroned_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -88,7 +97,8 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
             {
               type: device.type,
               badgeCount:
-                userNotificationSettings.getBadgeCount(this.dethronedUserId) + 1,
+                userNotificationSettings.getBadgeCount(this.dethronedUserId) +
+                1,
               targetARN: device.awsARN
             },
             {
@@ -109,23 +119,37 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       await this.incrementBadgeCount(this.dethronedUserId)
     }
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.dethronedUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.senderUserId,
         receiverUserId: this.dethronedUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.dethronedUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.dethronedUserId,
+        email: userNotificationSettings.getUserEmail(this.dethronedUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 
   getResourcesForEmail(): ResourceIds {
     return {
-      users: new Set([this.senderUserId, this.receiverUserId])
+      users: new Set([this.senderUserId, this.dethronedUserId])
     }
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUser = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.dethronedUserId]
     return {
       type: this.notification.type,
       receiverUser: receiverUser

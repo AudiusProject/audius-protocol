@@ -316,7 +316,6 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             # to prevent playlists from including premium tracks
             cid = helpers.get_tx_arg(event, "_metadata")
             # Check if metadata blob was passed directly and use if so.
-            # TODO remove after CID metadata migration.
             try:
                 data = json.loads(cid)
                 cid = data["cid"]

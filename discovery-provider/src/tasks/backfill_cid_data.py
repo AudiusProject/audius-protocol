@@ -1,23 +1,18 @@
 import csv
 import json
 import logging
+import os
 import tempfile
 from itertools import islice
 
 import requests
 from src.tasks.celery_app import celery
 from src.tasks.index import save_cid_metadata
-from src.utils.config import shared_config
+from src.utils import redis_connection
 from src.utils.prometheus_metric import save_duration_metric
 from src.utils.session_manager import SessionManager
 
 logger = logging.getLogger(__name__)
-
-source_tsv_url = (
-    shared_config["discprov"]["backfill_cid_data_url"]
-    if "backfill_cid_data_url" in shared_config["discprov"]
-    else ""
-)
 
 # Note, because the file is several GB
 # Number of rows to insert at a time
@@ -25,7 +20,16 @@ chunk_size = 1_000
 
 
 def backfill_cid_data(db: SessionManager):
+    redis = redis_connection.get_redis()
+    env = os.getenv("audius_discprov_env")
+    if redis.get("backfilled_cid_data") or env not in ("stage", "prod"):
+        return
+
     logger.info("backfill_cid_data.py | starting backfill")
+    source_tsv_url = ""
+    if env == "stage":
+        source_tsv_url = "https://s3.us-west-1.amazonaws.com/download.staging.audius.co/stage-cid-metadata.tsv"
+
     response = requests.get(source_tsv_url, stream=True)
     with tempfile.NamedTemporaryFile() as tmp:
         for block in response.iter_content(8192):
@@ -50,6 +54,7 @@ def backfill_cid_data(db: SessionManager):
                         cid_type[cid] = type
                     # Write chunk to db
                     save_cid_metadata(session, cid_metadata, cid_type)
+    redis.set("backfilled_cid_data", "true")
 
 
 # ####### CELERY TASKS ####### #

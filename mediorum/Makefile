@@ -25,9 +25,8 @@ build::
 
 build.fast::
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o build/mediorum-linux-amd64
-	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:latest -t audius/mediorum:${GIT_HASH}
+	DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build . -f ./Dockerfile.fast -t audius/mediorum:latest
 	docker push audius/mediorum:latest
-  docker push audius/mediorum:${GIT_HASH}
 
 psql::
 	docker compose up -d --wait
@@ -41,3 +40,7 @@ pg.bounce::
 	docker compose up -d --wait
 	rm -rf /tmp/mediorum*
 	sleep 2
+	docker push audius/mediorum:${GIT_HASH}
+
+cmd.loadtest::
+	go run cmd/main.go test -num 10

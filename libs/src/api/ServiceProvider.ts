@@ -1,7 +1,8 @@
 import { sampleSize } from 'lodash'
 
-import { Base } from './base'
+import { Base, BaseConstructorArgs } from './base'
 import { timeRequests } from '../utils/network'
+import { getNStorageNodes } from '../utils/getNStorageNodes'
 import { CreatorNodeSelection } from '../services/creatorNode'
 
 import type { Nullable, ServiceWithEndpoint } from '../utils'
@@ -41,6 +42,20 @@ type AutoSelectCreatorNodesConfig = {
  * Retrieving lists of available services, etc. are found here.
  */
 export class ServiceProvider extends Base {
+  cachedStorageNodes: Array<{
+    owner: any
+    endpoint: string
+    spID: number
+    type: string
+    blockNumber: number
+    delegateOwnerWallet: string
+  }>
+
+  constructor(...services: BaseConstructorArgs) {
+    super(...services)
+    this.cachedStorageNodes = []
+  }
+
   /* ------- Content Node  ------- */
 
   async listCreatorNodes() {
@@ -124,6 +139,27 @@ export class ServiceProvider extends Base {
     const { primary, secondaries, services } =
       await creatorNodeSelection.select(performSyncCheck, log)
     return { primary, secondaries, services }
+  }
+
+  /**
+   * Selects numNodes storage nodes from the list of registered storage nodes on chain, optionally ordering them (descending) by rendezvous score.
+   * TODO: This might want to handle blocklist/allowlist, latency checks, health checks, etc... but for now it just uses all nodes.
+   *       CN selection without health checks might be a separate part of SDK anyway.
+   */
+  async autoSelectStorageV2Nodes(
+    numNodes = 0,
+    rendezvousKey = '',
+    logger = console
+  ): Promise<string[]> {
+    if (!this.cachedStorageNodes.length) {
+      this.cachedStorageNodes = await this.listCreatorNodes()
+    }
+    return await getNStorageNodes(
+      this.cachedStorageNodes,
+      numNodes,
+      rendezvousKey,
+      logger
+    )
   }
 
   /* ------- Discovery Node ------ */

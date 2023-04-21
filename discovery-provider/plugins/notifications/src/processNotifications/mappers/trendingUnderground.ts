@@ -1,6 +1,9 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { TrendingUndergroundNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  TrendingUndergroundNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
@@ -10,6 +13,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type TrendingUndergroundNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingUndergroundNotification
@@ -35,7 +39,11 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
     this.timeRange = this.notification.data.time_range
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -113,11 +121,27 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
     }
 
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(
+        notificationReceiverUserId
+      ) === 'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: notificationReceiverUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: notificationReceiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: notificationReceiverUserId,
+        email:
+          userNotificationSettings.email?.[notificationReceiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

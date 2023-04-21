@@ -47,7 +47,7 @@ func TestRecovery(t *testing.T) {
 		txhash := "0xec9daecc8269b9629baff0e53abaaa8e1bced65fb3fa48aa1950bfe8ada4f075"
 		wallet := "0xbb70390859ce84afc5d47c2eea6c89462faa6c7e"
 
-		pk, err := recoverEntityManagerPubkey(audiusChainClient, txhash, wallet)
+		pk, err := recoverEntityManagerPubkey(acdcClient, txhash, wallet)
 		assert.NoError(t, err)
 		fmt.Println(pk)
 	}

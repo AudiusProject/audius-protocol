@@ -50,6 +50,7 @@ user_model = ns.model(
         "spl_wallet": fields.String(required=True),
         "supporter_count": fields.Integer(required=True),
         "supporting_count": fields.Integer(required=True),
+        "total_audio_balance": fields.Integer(required=True),
     },
 )
 

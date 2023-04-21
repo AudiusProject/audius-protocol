@@ -69,15 +69,15 @@ describe('Announcement Notification', () => {
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
         type: 'ios',
-        targetARN: 'arn:2',
+        targetARN: 'arn:1',
         badgeCount: 1
       },
       {
         title: 'This is an announcement',
         body: 'This is some information about the announcement we need to display',
         data: {
-          "id": "timestamp:1589373217:group_id:announcement:blocknumber:1",
-          "type": "Announcement",
+          id: 'timestamp:1589373217:group_id:announcement:blocknumber:1',
+          type: 'Announcement'
         }
       }
     )

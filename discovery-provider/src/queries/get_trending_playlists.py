@@ -107,6 +107,7 @@ def get_scorable_playlist_data(session, time_range, strategy):
             Playlist.is_current == True,
             Playlist.is_delete == False,
             Playlist.is_private == False,
+            Playlist.is_album == False,
             jsonb_array_length(Playlist.playlist_contents["track_ids"]) >= mt,
             AggregateUser.following_count < zq,
         )
