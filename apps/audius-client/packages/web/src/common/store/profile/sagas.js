@@ -15,7 +15,7 @@ import {
   relatedArtistsUIActions as relatedArtistsActions,
   waitForAccount,
   dataURLtoFile,
-  MAX_ARTIST_HOVER_TOP_SUPPORTING,
+  SUPPORTING_PAGINATION_SIZE,
   MAX_PROFILE_SUPPORTING_TILES,
   MAX_PROFILE_TOP_SUPPORTERS,
   collectiblesActions,
@@ -260,10 +260,7 @@ function* fetchSupportersAndSupporting(userId) {
   const supportingLimit =
     account?.user_id === userId
       ? account.supporting_count
-      : Math.max(
-          MAX_PROFILE_SUPPORTING_TILES,
-          MAX_ARTIST_HOVER_TOP_SUPPORTING
-        ) + 1
+      : Math.max(MAX_PROFILE_SUPPORTING_TILES, SUPPORTING_PAGINATION_SIZE) + 1
   yield put(
     refreshSupport({
       senderUserId: userId,

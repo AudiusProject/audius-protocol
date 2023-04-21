@@ -24,8 +24,8 @@ import {
   GetTipsArgs,
   GetSupportingArgs,
   GetSupportersArgs,
-  MAX_ARTIST_HOVER_TOP_SUPPORTING,
   MAX_PROFILE_TOP_SUPPORTERS,
+  SUPPORTING_PAGINATION_SIZE,
   LastDismissedTip,
   LocalStorage,
   processAndCacheUsers,
@@ -394,7 +394,7 @@ function* refreshSupportAsync({
     supportingParams.limit =
       account?.user_id === senderUserId
         ? account?.supporting_count
-        : MAX_ARTIST_HOVER_TOP_SUPPORTING + 1
+        : SUPPORTING_PAGINATION_SIZE
   }
 
   const supportersParams: GetSupportersArgs = {
@@ -528,7 +528,7 @@ function* fetchSupportingForUserAsync({
   const limit =
     account?.user_id === userId
       ? account.supporting_count
-      : MAX_ARTIST_HOVER_TOP_SUPPORTING + 1
+      : SUPPORTING_PAGINATION_SIZE
   const supportingList = yield* call([apiClient, apiClient.getSupporting], {
     userId,
     limit
