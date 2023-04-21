@@ -1,4 +1,5 @@
 import { Knex } from 'knex'
+import { logger } from '../../logger'
 
 export type DeviceType = 'ios' | 'android'
 
@@ -97,6 +98,7 @@ export class UserNotificationSettings {
   }
 
   isNotificationTypeBrowserEnabled(userId: number, feature: string): boolean {
+    logger.info(`user browser ${this.browser}`)
     return this.browser?.[userId].settings[feature]
   }
 
