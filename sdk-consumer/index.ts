@@ -40,25 +40,29 @@ app.post<UploadTrackRequest>(
   "/uploadTrack",
   trackUpload as any,
   async (req, res) => {
-    const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"][0];
-    const trackFile = (req.files as MulterFiles)?.["trackFile"][0];
+    try {
+      const coverArtFile = (req.files as MulterFiles)?.["coverArtFile"][0];
+      const trackFile = (req.files as MulterFiles)?.["trackFile"][0];
 
-    if (coverArtFile && trackFile) {
-      const uploadTrackRequest: UploadTrackRequest = {
-        artistId: req.body.artistId,
-        coverArtFile: {
-          buffer: coverArtFile?.buffer,
-          name: coverArtFile.originalname,
-        },
-        metadata: JSON.parse(req.body.metadata),
-        onProgress: (progress) => console.log("Progress:", progress),
-        trackFile: {
-          buffer: trackFile?.buffer,
-          name: trackFile.originalname,
-        },
-      };
-      const result = await audiusSdk.tracks.uploadTrack(uploadTrackRequest);
-      res.send(result);
+      if (coverArtFile && trackFile) {
+        const uploadTrackRequest: UploadTrackRequest = {
+          artistId: req.body.artistId,
+          coverArtFile: {
+            buffer: coverArtFile?.buffer,
+            name: coverArtFile.originalname,
+          },
+          metadata: JSON.parse(req.body.metadata),
+          onProgress: (progress) => console.log("Progress:", progress),
+          trackFile: {
+            buffer: trackFile?.buffer,
+            name: trackFile.originalname,
+          },
+        };
+        const result = await audiusSdk.tracks.uploadTrack(uploadTrackRequest);
+        res.send(result);
+      }
+    } catch (e) {
+      res.send((e as any).message);
     }
   }
 );
