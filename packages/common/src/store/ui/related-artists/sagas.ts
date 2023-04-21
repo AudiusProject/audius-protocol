@@ -21,12 +21,10 @@ export function* fetchRelatedArtists(action: PayloadAction<{ artistId: ID }>) {
   if (relatedArtistsActions.fetchRelatedArtists.match(action)) {
     const artistId = action.payload.artistId
 
-    const currentUserId = yield* select(getUserId)
     const relatedArtists = yield* call(
       [apiClient, apiClient.getRelatedArtists],
       {
         userId: artistId,
-        currentUserId,
         limit: 50
       }
     )
