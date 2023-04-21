@@ -98,6 +98,12 @@ def get_users_route():
     current_user_id = get_current_user_id(required=False)
     args["current_user_id"] = current_user_id
     users = get_users(args)
+
+    def validate_hidden_fields(user, current_user_id):
+        if "playlist_library" in user and (not current_user_id or current_user_id != user["user_id"]):
+            del user["playlist_library"]
+
+    users = list(map(validate_hidden_fields, users))
     return api_helpers.success_response(users)
 
 
