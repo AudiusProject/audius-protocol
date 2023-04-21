@@ -47,6 +47,7 @@ export const selectSuggestedFollowsUsers = createDeepEqualSelector(
     const relatedArtistsPopulated = relatedArtistIds
       .map((id) => users[id])
       .filter(removeNullable)
+      .filter((user) => !user?.does_current_user_follow)
     return relatedArtistsPopulated
   }
 )
