@@ -98,7 +98,9 @@ export class Save extends BaseNotification<SaveNotificationRow> {
 
     const title = 'New Favorite'
     const body = `${saverUserName} favorited your ${entityType.toLowerCase()} ${entityName}`
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'favorites')) {
+      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    }
 
     // If the user has devices to the notification to, proceed
     if (

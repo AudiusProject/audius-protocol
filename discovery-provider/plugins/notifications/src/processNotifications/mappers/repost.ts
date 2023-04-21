@@ -100,7 +100,9 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
 
     const title = 'New Repost'
     const body = `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    if (userNotificationSettings.isNotificationTypeEnabled(this.receiverUserId, 'reposts')) {
+      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    }
 
     // If the user has devices to the notification to, proceed
     if (

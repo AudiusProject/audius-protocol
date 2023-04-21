@@ -96,6 +96,10 @@ export class UserNotificationSettings {
     return this.mobile?.[userId].settings[feature]
   }
 
+  isNotificationTypeBrowserEnabled(userId: number, feature: string): boolean {
+    return this.browser?.[userId].settings[feature]
+  }
+
   shouldSendPushNotification({
     initiatorUserId,
     receiverUserId

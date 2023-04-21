@@ -79,7 +79,9 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
 
     const title =  'New Remix Of Your Track ♻️'
     const body = `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`
-    await sendBrowserNotification(userNotificationSettings, this.parentTrackUserId, title, body)
+    if (userNotificationSettings.isNotificationTypeEnabled(this.parentTrackUserId, 'remixes')) {
+      await sendBrowserNotification(userNotificationSettings, this.parentTrackUserId, title, body)
+    }
 
     // If the user has devices to the notification to, proceed
     if (

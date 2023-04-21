@@ -7,6 +7,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 export class Message extends BaseNotification<DMNotification> {
   receiverUserId: number
@@ -46,6 +47,13 @@ export class Message extends BaseNotification<DMNotification> {
       [this.receiverUserId, this.senderUserId]
     )
 
+    const title = 'Message'
+    const body = `New message from ${users[this.senderUserId].name}`
+
+    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'messages')) {
+      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    }
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -68,8 +76,8 @@ export class Message extends BaseNotification<DMNotification> {
               targetARN: device.awsARN
             },
             {
-              title: 'Message',
-              body: `New message from ${users[this.senderUserId].name}`,
+              title,
+              body,
               data: {}
             }
           )
