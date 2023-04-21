@@ -1,13 +1,12 @@
 import { useCallback } from 'react'
 
 import {
-  stringWeiToBN,
+  formatCount,
   cacheUsersSelectors,
-  tippingSelectors,
-  MAX_PROFILE_SUPPORTING_TILES
+  MAX_PROFILE_SUPPORTING_TILES,
+  useRankedSupportingForUser,
+  useProxySelector
 } from '@audius/common'
-import type { ID, SupportingMapForUser, CommonState } from '@audius/common'
-import { useSelector } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
 import { Tile, TextButton } from 'app/components/core'
@@ -16,10 +15,9 @@ import { ProfilePictureList } from 'app/screens/notifications-screen/Notificatio
 import { makeStyles } from 'app/styles'
 
 import { useSelectProfile } from '../selectors'
-const { getOptimisticSupportingForUser } = tippingSelectors
 const { getUsers } = cacheUsersSelectors
 
-const MAX_PROFILE_SUPPORTING_VIEW_ALL_USERS = 5
+const MAX_PROFILE_SUPPORTING_VIEW_ALL_USERS = 6
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -43,6 +41,10 @@ const messages = {
   viewAll: 'View All'
 }
 
+const formatViewAllMessage = (count: number) => {
+  return `${messages.viewAll} ${formatCount(count)}`
+}
+
 export const ViewAllSupportingTile = () => {
   const styles = useStyles()
   const navigation = useNavigation()
@@ -51,30 +53,25 @@ export const ViewAllSupportingTile = () => {
     'user_id',
     'supporting_count'
   ])
-  const supportingForProfile: SupportingMapForUser =
-    useSelector((state: CommonState) =>
-      getOptimisticSupportingForUser(state, user_id)
-    ) || {}
-  const rankedSupportingIds = Object.keys(supportingForProfile)
-    .sort((k1, k2) => {
-      const amount1BN = stringWeiToBN(
-        supportingForProfile[k1 as unknown as ID].amount
-      )
-      const amount2BN = stringWeiToBN(
-        supportingForProfile[k2 as unknown as ID].amount
-      )
-      return amount1BN.gte(amount2BN) ? -1 : 1
-    })
-    .map((k) => supportingForProfile[k as unknown as ID])
-    .map((s) => s.receiver_id)
-  const rankedSupporting = useSelector((state) => {
-    const usersMap = getUsers(state, { ids: rankedSupportingIds })
-    return rankedSupportingIds.map((id) => usersMap[id]).filter(Boolean)
-  })
+
+  const rankedSupportingList = useRankedSupportingForUser(user_id)
+
+  const rankedSupportingUsers = useProxySelector(
+    (state) => {
+      const rankedIds = rankedSupportingList.map((s) => s.receiver_id)
+      const usersMap = getUsers(state, {
+        ids: rankedIds
+      })
+      return rankedIds.map((id) => usersMap[id]).filter(Boolean)
+    },
+    [rankedSupportingList]
+  )
 
   const handlePress = useCallback(() => {
     navigation.push('SupportingUsers', { userId: user_id })
   }, [navigation, user_id])
+
+  const viewAllString = formatViewAllMessage(supporting_count)
 
   return (
     <Tile
@@ -85,8 +82,7 @@ export const ViewAllSupportingTile = () => {
       onPress={handlePress}
     >
       <ProfilePictureList
-        users={rankedSupporting.slice(MAX_PROFILE_SUPPORTING_TILES)}
-        totalUserCount={supporting_count - MAX_PROFILE_SUPPORTING_TILES}
+        users={rankedSupportingUsers.slice(MAX_PROFILE_SUPPORTING_TILES)}
         limit={MAX_PROFILE_SUPPORTING_VIEW_ALL_USERS}
         style={styles.profilePictureList}
         navigationType='push'
@@ -98,7 +94,7 @@ export const ViewAllSupportingTile = () => {
         variant='neutralLight4'
         icon={IconArrow}
         iconPosition='right'
-        title={messages.viewAll}
+        title={viewAllString}
         TextProps={{ fontSize: 'small', weight: 'bold' }}
       />
     </Tile>

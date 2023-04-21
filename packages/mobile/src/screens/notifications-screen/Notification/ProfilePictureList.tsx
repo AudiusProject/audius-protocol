@@ -9,6 +9,7 @@ import { ProfilePicture } from './ProfilePicture'
 import { PROFILE_PICTURE_BORDER_WIDTH } from './constants'
 
 const USER_LENGTH_LIMIT = 9
+const BASE_ZINDEX = 1
 
 /**
  * Not all profile picture lists have the same profile picture size.
@@ -33,7 +34,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     alignItems: 'center'
   },
   imageExtraDim: {
-    backgroundColor: 'rgba(0,0,0,0.1)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
     position: 'absolute',
     alignItems: 'center',
     justifyContent: 'center',
@@ -50,6 +51,9 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     textShadowColor: 'rgba(0,0,0,0.25)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 1
+  },
+  imageCountSmall: {
+    fontSize: typography.fontSize.xxs
   }
 }))
 
@@ -57,6 +61,7 @@ type ProfilePictureListProps = {
   users: User[]
   totalUserCount?: number
   limit?: number
+  showOverflowCount?: boolean
   style?: StyleProp<ViewStyle>
   navigationType?: 'push' | 'navigate'
   interactive?: boolean
@@ -71,6 +76,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
     users,
     totalUserCount = users.length,
     limit = USER_LENGTH_LIMIT,
+    showOverflowCount = true,
     style,
     navigationType,
     interactive,
@@ -78,6 +84,8 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
   } = props
   const imageWidth = imageStyles?.width ?? defaultImageDimensions.width
   const imageHeight = imageStyles?.height ?? defaultImageDimensions.height
+
+  const useSmallText = imageWidth < defaultImageDimensions.width
 
   // We want the View containing the "+" count to be the size of the
   // inside content of the ProfilePicture it is sitting above.
@@ -87,7 +95,7 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
   const dimHeight = imageHeight - PROFILE_PICTURE_BORDER_WIDTH * 2
 
   const styles = useStyles()
-  const showUserListDrawer = totalUserCount > limit
+  const showUserListDrawer = showOverflowCount && totalUserCount > limit
   /**
    * We add a +1 because the remaining users count includes
    * the tile that has the +N itself.
@@ -107,11 +115,17 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
       {users
         .filter((u) => !u.is_deactivated)
         .slice(0, sliceLimit)
-        .map((user) => (
+        .map((user, idx) => (
           <ProfilePicture
             profile={user}
             key={user.user_id}
-            style={[styles.image, imageStyles]}
+            style={[
+              styles.image,
+              imageStyles,
+              !showUserListDrawer && {
+                zIndex: BASE_ZINDEX + users.length - idx
+              }
+            ]}
             navigationType={navigationType}
             interactive={interactive}
           />
@@ -135,7 +149,12 @@ export const ProfilePictureList = (props: ProfilePictureListProps) => {
               }
             ]}
           >
-            <Text style={styles.imageCount}>
+            <Text
+              style={[
+                styles.imageCount,
+                useSmallText && styles.imageCountSmall
+              ]}
+            >
               {`+${formatCount(remainingUsersCount)}`}
             </Text>
           </View>

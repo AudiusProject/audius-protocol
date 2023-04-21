@@ -1,11 +1,11 @@
 import { useCallback } from 'react'
 
 import {
-  ID,
-  stringWeiToBN,
   profilePageSelectors,
-  tippingSelectors,
-  MAX_PROFILE_SUPPORTING_TILES
+  MAX_PROFILE_SUPPORTING_TILES,
+  useRankedSupportingForUser,
+  User,
+  formatCount
 } from '@audius/common'
 import { IconArrow } from '@audius/stems'
 import { useDispatch } from 'react-redux'
@@ -24,33 +24,20 @@ import {
 
 import styles from './SupportingList.module.css'
 import { SupportingTile } from './SupportingTile'
-const { getOptimisticSupporting } = tippingSelectors
 const { getProfileUser } = profilePageSelectors
 
 const messages = {
   supporting: 'Supporting',
-  seeMorePrefix: 'See ',
-  seeMoreSuffix: ' More'
+  viewAll: 'View All'
 }
 
-export const SupportingList = () => {
+const formatViewAllMessage = (count: number) => {
+  return `${messages.viewAll} ${formatCount(count)}`
+}
+
+const SupportingListForProfile = ({ profile }: { profile: User }) => {
   const dispatch = useDispatch()
-  const profile = useSelector(getProfileUser)
-  const supportingMap = useSelector(getOptimisticSupporting)
-  const supportingForProfile = profile?.user_id
-    ? supportingMap[profile.user_id] ?? {}
-    : {}
-  const rankedSupportingList = Object.keys(supportingForProfile)
-    .sort((k1, k2) => {
-      const amount1BN = stringWeiToBN(
-        supportingForProfile[k1 as unknown as ID].amount
-      )
-      const amount2BN = stringWeiToBN(
-        supportingForProfile[k2 as unknown as ID].amount
-      )
-      return amount1BN.gte(amount2BN) ? -1 : 1
-    })
-    .map((k) => supportingForProfile[k as unknown as ID])
+  const rankedSupportingList = useRankedSupportingForUser(profile.user_id)
 
   const handleClick = useCallback(() => {
     if (profile) {
@@ -80,14 +67,15 @@ export const SupportingList = () => {
         ))}
       {profile.supporting_count > MAX_PROFILE_SUPPORTING_TILES && (
         <div className={styles.seeMore} onClick={handleClick}>
-          <span>
-            {messages.seeMorePrefix}+
-            {`${profile.supporting_count - MAX_PROFILE_SUPPORTING_TILES}`}
-            {messages.seeMoreSuffix}
-          </span>
+          <span>{formatViewAllMessage(profile.supporting_count)}</span>
           <IconArrow className={styles.arrowIcon} />
         </div>
       )}
     </div>
   ) : null
+}
+
+export const SupportingList = () => {
+  const profile = useSelector(getProfileUser)
+  return profile ? <SupportingListForProfile profile={profile} /> : null
 }
