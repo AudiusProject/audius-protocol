@@ -9,8 +9,8 @@ import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeS
 import type { UploadTrackRequest } from './types'
 import type { StorageService } from '../../services/StorageService'
 import { isFileValid } from '../../utils/file'
-import { TRACK_REQUIRED_PROPERTIES, TRACK_REQUIRED_VALUES } from './constants'
-import { objectMissingProperties } from '../../utils/object'
+import { TRACK_REQUIRED_VALUES } from './constants'
+import { objectMissingValues } from '../../utils/object'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -77,7 +77,7 @@ export class TracksApi extends TracksApiWithoutStream {
 
     requestParameters.metadata.owner_id = Number(requestParameters.artistId)
 
-    const metadataMissingValues = objectMissingProperties(
+    const metadataMissingValues = objectMissingValues(
       requestParameters.metadata,
       TRACK_REQUIRED_VALUES
     )
