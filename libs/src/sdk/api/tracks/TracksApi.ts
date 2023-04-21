@@ -77,16 +77,6 @@ export class TracksApi extends TracksApiWithoutStream {
 
     requestParameters.metadata.owner_id = Number(requestParameters.artistId)
 
-    const metadataMissingProperties = objectMissingProperties(
-      requestParameters.metadata,
-      TRACK_REQUIRED_PROPERTIES
-    )
-    if (metadataMissingProperties) {
-      throw new Error(
-        `Metadata object is missing properties: ${metadataMissingProperties}`
-      )
-    }
-
     const metadataMissingValues = objectMissingProperties(
       requestParameters.metadata,
       TRACK_REQUIRED_VALUES

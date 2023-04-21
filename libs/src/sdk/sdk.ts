@@ -36,7 +36,7 @@ type ServicesContainer = {
   discoveryNodeSelector: DiscoveryNodeSelectorService
 
   /**
-   * Service used to store and retrieve content
+   * Service used to store and retrieve content e.g. tracks and images
    */
   storage: StorageService
 
