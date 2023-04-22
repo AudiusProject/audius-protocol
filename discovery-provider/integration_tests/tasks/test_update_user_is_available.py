@@ -316,7 +316,7 @@ def test_update_user_is_available(
     update_users_is_available_status(db, redis)
 
     with db.scoped_session() as session:
-        mock_available_users = [1, 2, 3, 100]
+        mock_available_users = [1, 2, 3]
         users = (
             session.query(User.user_id, User.is_available)
             .filter(User.user_id.in_(mock_available_users), User.is_current == True)
