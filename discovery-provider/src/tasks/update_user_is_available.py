@@ -85,7 +85,7 @@ def update_users_is_available_status(db: SessionManager, redis: Redis) -> None:
                 for entry in user_ids_to_replica_set:
                     user_id = entry[0]
 
-                    # Some users are do not have primary_ids or secondary_ids
+                    # Some users do not have primary_ids or secondary_ids
                     # If these values are not null, check if user is available
                     # Else, default to user as available
                     if (
@@ -118,16 +118,17 @@ def update_users_is_available_status(db: SessionManager, redis: Redis) -> None:
                 f"update_user_is_available.py | Could not process batch {unavailable_user_ids_batch}: {e}\nContinuing..."
             )
 
-    currently_unavailable_users = query_unavailable_users(session)
-    for unavailable_users in currently_unavailable_users:
-        is_available = (
-            user_id_to_is_available_status[unavailable_users.user_id]
-            if unavailable_users.user_id in user_id_to_is_available_status
-            else True
-        )
-        if is_available:
-            unavailable_users.is_available = True
-            unavailable_users.is_deactivated = False
+    with db.scoped_session() as session:
+        currently_unavailable_users = query_unavailable_users(session)
+        for unavailable_users in currently_unavailable_users:
+            is_available = (
+                user_id_to_is_available_status[unavailable_users.user_id]
+                if unavailable_users.user_id in user_id_to_is_available_status
+                else True
+            )
+            if is_available:
+                unavailable_users.is_available = True
+                unavailable_users.is_deactivated = False
 
 
 def fetch_unavailable_user_ids(node: str, session: Session) -> List[int]:
