@@ -276,10 +276,10 @@ def populate_mock_db(db, entities, block_offset=None):
 
         for i, delegate_meta in enumerate(delegates):
             delegate = Delegate(
-                user_id = delegate_meta.get("user_id", i),
-                name = delegate_meta.get("name", str(i)),
-                address = delegate_meta.get("address", str(i)),
-                is_personal_access = delegate_meta.get("is_personal_access", False),
+                user_id=delegate_meta.get("user_id", i),
+                name=delegate_meta.get("name", str(i)),
+                address=delegate_meta.get("address", str(i)),
+                is_personal_access=delegate_meta.get("is_personal_access", False),
                 blockhash=hex(i + block_offset),
                 blocknumber=(i + block_offset),
                 txhash=delegate_meta.get("txhash", str(i + block_offset)),

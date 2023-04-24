@@ -1,14 +1,9 @@
 import json
 import logging
-from typing import Optional, TypedDict, Union
+from typing import Optional, TypedDict, Union, cast
 
 from src.models.delegates.delegate import Delegate
-from src.tasks.entity_manager.utils import (
-    USER_ID_OFFSET,
-    Action,
-    EntityType,
-    ManageEntityParameters,
-)
+from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 
@@ -23,8 +18,8 @@ class CreateDelegateMetadata(TypedDict):
 
 def get_create_delegate_metadata_from_raw(
     raw_metadata: Optional[str],
-) -> CreateDelegateMetadata:
-    metadata = {"address": None, "name": None, "is_personal_access": None}
+) -> Optional[CreateDelegateMetadata]:
+    metadata : CreateDelegateMetadata = {"address": None, "name": None, "is_personal_access": None}
     if raw_metadata:
         try:
             json_metadata = json.loads(raw_metadata)
@@ -99,9 +94,9 @@ def create_delegate(params: ManageEntityParameters):
 
     delegate_record = Delegate(
         user_id=user_id,
-        name=metadata["name"],
-        address=metadata["address"],
-        is_personal_access=metadata["is_personal_access"],
+        name=cast(str, metadata["name"]), # cast to assert non null (since we validated above)
+        address=cast(str, metadata["address"]), # cast to assert non null (since we validated above)
+        is_personal_access=(metadata["is_personal_access"] or False),
         txhash=params.txhash,
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,

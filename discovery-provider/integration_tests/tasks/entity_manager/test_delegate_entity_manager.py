@@ -2,9 +2,7 @@ from typing import List
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
-from sqlalchemy import desc
 from src.models.delegates.delegate import Delegate
-from src.models.notifications.notification import PlaylistSeen
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
@@ -12,9 +10,24 @@ from web3 import Web3
 from web3.datastructures import AttributeDict
 
 new_delegates_data = [
-    {"user_id": 1, "name": "My App", "address": "0x04c9fc3784120f50932436f84c59aebebb12e0d", "is_personal_access": False},
-    {"user_id": 1, "name": "My Other App", "address": "0x7Be50316dCD27a224E82F80bB154C1ea70D57f19", "is_personal_access": True},
-    {"user_id": 2, "name": "User 2 App", "address": "0x1A3a04F77Eca3BBae35d79FC4B48a783D382AC63", "is_personal_access": False},
+    {
+        "user_id": 1,
+        "name": "My App",
+        "address": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
+        "is_personal_access": False,
+    },
+    {
+        "user_id": 1,
+        "name": "My Other App",
+        "address": "0x7Be50316dCD27a224E82F80bB154C1ea70D57f19",
+        "is_personal_access": True,
+    },
+    {
+        "user_id": 2,
+        "name": "User 2 App",
+        "address": "0x1A3a04F77Eca3BBae35d79FC4B48a783D382AC63",
+        "is_personal_access": False,
+    },
 ]
 
 
@@ -101,7 +114,11 @@ def test_index_delegate(app, mocker):
             for user_id in range(1, 4)
         ],
         "delegates": [
-            {"user_id": 5, "name": "My App", "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4"}
+            {
+                "user_id": 5,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            }
         ],
     }
     populate_mock_db(db, entities)
@@ -120,15 +137,15 @@ def test_index_delegate(app, mocker):
         )
 
         # validate db records
-        all_delegates: List[Delegate] = (
-            session.query(Delegate)
-            .all()
-        )
+        all_delegates: List[Delegate] = session.query(Delegate).all()
         assert len(all_delegates) == 4
 
-        
         for expected_delegate in new_delegates_data:
-            found_matches = [item for item in all_delegates if item.address == expected_delegate["address"].lower()]
+            found_matches = [
+                item
+                for item in all_delegates
+                if item.address == expected_delegate["address"].lower()
+            ]
             assert len(found_matches) == 1
             res = found_matches[0]
             assert res.user_id == expected_delegate["user_id"]
@@ -189,10 +206,6 @@ def test_index_delegate(app, mocker):
             metadata={},
         )
         # validate db records
-        all_delegates: List[Delegate] = (
-            session.query(Delegate)
-            .all()
-        )
+        all_delegates: List[Delegate] = session.query(Delegate).all()
         # make sure no new rows were added
         assert len(all_delegates) == 4
-

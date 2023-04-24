@@ -321,13 +321,17 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
                 entities_to_fetch[EntityType.PLAYLIST].add(entity_id)
             if entity_type == EntityType.DELEGATE:
                 if json_metadata and isinstance(json_metadata, dict):
-                  raw_address = json_metadata.get("address", None)
-                  if (raw_address):
-                    entities_to_fetch[EntityType.DELEGATE].add(raw_address.lower())
-                  else:
-                    logger.error("tasks | entity_manager.py | Missing address in metadata required for add delegate tx")
+                    raw_address = json_metadata.get("address", None)
+                    if raw_address:
+                        entities_to_fetch[EntityType.DELEGATE].add(raw_address.lower())
+                    else:
+                        logger.error(
+                            "tasks | entity_manager.py | Missing address in metadata required for add delegate tx"
+                        )
                 else:
-                  logger.error("tasks | entity_manager.py | Missing metadata required for add delegate tx")
+                    logger.error(
+                        "tasks | entity_manager.py | Missing metadata required for add delegate tx"
+                    )
             if user_id:
                 entities_to_fetch[EntityType.USER].add(user_id)
             action = helpers.get_tx_arg(event, "_action")
@@ -513,7 +517,9 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
     if entities_to_fetch[EntityType.DELEGATE]:
         delegates: List[Delegate] = (
             session.query(Delegate)
-            .filter(func.lower(Delegate.address).in_(entities_to_fetch[EntityType.DELEGATE]))
+            .filter(
+                func.lower(Delegate.address).in_(entities_to_fetch[EntityType.DELEGATE])
+            )
             .all()
         )
         existing_entities[EntityType.DELEGATE] = {
