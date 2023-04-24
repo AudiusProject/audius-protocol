@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/inconshreveable/log15"
+	"golang.org/x/exp/slog"
 	"gorm.io/gorm/clause"
 )
 
@@ -16,7 +16,7 @@ type PeerClient struct {
 	Host   string
 	outbox chan []byte
 	crudr  *Crudr
-	logger log15.Logger
+	logger *slog.Logger
 }
 
 func NewPeerClient(host string, crudr *Crudr) *PeerClient {
@@ -29,7 +29,7 @@ func NewPeerClient(host string, crudr *Crudr) *PeerClient {
 		Host:   host,
 		outbox: make(chan []byte, outboxBufferSize),
 		crudr:  crudr,
-		logger: log15.New("crudr_client", host),
+		logger: slog.With("cruder_client", host),
 	}
 }
 

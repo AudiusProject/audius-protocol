@@ -2,6 +2,7 @@ package server
 
 import (
 	"mediorum/crudr"
+	"mediorum/ddl"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -84,5 +85,8 @@ func dbMigrate(crud *crudr.Crudr) {
 
 	// register any models to be managed by crudr
 	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{})
+
+	sqlDb, _ := crud.DB.DB()
+	ddl.Migrate(sqlDb)
 
 }

@@ -140,6 +140,9 @@ func (vtor *Validator) validateChatMessage(tx *sqlx.Tx, userId int32, rpc schema
 	}
 
 	chatMembers, err := queries.ChatMembers(q, context.Background(), params.ChatID)
+	if err != nil {
+		return err
+	}
 	// 1-1 DMs
 	if len(chatMembers) == 2 {
 		// validate chat members are not a <blocker, blockee> pair

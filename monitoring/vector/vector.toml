@@ -9,7 +9,8 @@
     "server",
     "indexer",
     "postgres",
-    "redis"
+    "redis",
+    "comms"
   ]
   exclude_containers = [
     # System containers
@@ -23,6 +24,7 @@
   type = "remap"
   inputs = ["logs"]
   source = '''
+    container_name = .container_name
     if exists(.message) {
       . = parse_json(string!(.message)) ?? .message
     }
@@ -30,6 +32,7 @@
       . = parse_json(string!(.log)) ?? .log
     }
     .node = "$node"
+    .container_name = container_name
 
     del(.otelServiceName)
     del(.otelSpanID)

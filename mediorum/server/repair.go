@@ -85,7 +85,7 @@ func (ss *MediorumServer) findProblemBlobsCount(overReplicated bool) (int64, err
 func (ss *MediorumServer) repairUnderReplicatedBlobs() error {
 	// find under-replicated content
 	ctx := context.Background()
-	logger := ss.logger.New("svc", "repair")
+	logger := ss.logger.With("svc", "repair")
 
 	problems, err := ss.findProblemBlobs(false)
 	if err != nil {

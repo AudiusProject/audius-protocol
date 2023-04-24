@@ -28,6 +28,7 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 	for idx, peer := range network {
 		peer := peer
 		config := MediorumConfig{
+			Env:               "test",
 			Self:              peer,
 			Peers:             network,
 			ReplicationFactor: replicationFactor,
@@ -55,6 +56,7 @@ func setupTestNetwork(replicationFactor, serverCount int) []*MediorumServer {
 
 func TestMain(m *testing.M) {
 	testNetwork = setupTestNetwork(5, 9)
+
 	exitVal := m.Run()
 	// todo: tear down testNetwork
 

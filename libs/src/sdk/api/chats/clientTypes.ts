@@ -97,8 +97,3 @@ export type UnfurlResponse = {
   html?: string
   favicon?: string
 }
-
-export type ChatPermissionResponse = {
-  permits: ChatPermission
-  current_user_has_permission: boolean
-}

@@ -6,9 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/inconshreveable/log15"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"golang.org/x/exp/slog"
 )
 
 var (
@@ -42,15 +42,16 @@ func Dial() error {
 		log.Fatal("invalid db string: "+dsn, "err", err)
 	}
 
-	logger := log15.New("host", dbUrl.Host, "db", dbUrl.Path)
-	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
+	logger := slog.With("host", dbUrl.Host, "db", dbUrl.Path)
 
 	Conn, err = sqlx.Open("postgres", dsn)
 	if err != nil {
-		logger.Crit("database.Dial failed " + err.Error())
+		logger.Error("database.Dial failed", err)
 		return err
 	}
 	logger.Info("database dialed")
+
+	Conn.SetMaxOpenConns(10)
 
 	return nil
 }

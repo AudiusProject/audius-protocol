@@ -3,28 +3,23 @@ package rpcz
 import (
 	"encoding/json"
 	"net"
-	"os"
 	"sync"
 
 	"comms.audius.co/discovery/schema"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
-	"github.com/inconshreveable/log15"
+	"golang.org/x/exp/slog"
 )
 
 var (
 	mu         sync.Mutex
 	websockets = []userWebsocket{}
-	logger     = log15.New()
+	logger     = slog.Default()
 )
 
 type userWebsocket struct {
 	userId int32
 	conn   net.Conn
-}
-
-func init() {
-	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
 }
 
 func RegisterWebsocket(userId int32, conn net.Conn) {
@@ -54,7 +49,7 @@ func websocketPush(userId int32, data schema.ChatWebsocketEventData) {
 
 	payload, err := json.Marshal(data)
 	if err != nil {
-		logger.Error("failed to encode json: " + err.Error())
+		logger.Error("failed to encode json: ", err)
 		return
 	}
 
