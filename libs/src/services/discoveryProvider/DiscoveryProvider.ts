@@ -1448,7 +1448,7 @@ export class DiscoveryProvider {
     const { data, url = '', ...restRequest } = axiosRequest
 
     const fetchRequestInit: RequestInit = {
-      body: JSON.stringify(data),
+      body: data ? JSON.stringify(data) : data,
       ...restRequest
     }
     let fetchParams = { url, init: fetchRequestInit }
