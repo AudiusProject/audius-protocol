@@ -37,9 +37,11 @@ function* fetchRelatedArtists({
   const users = response || []
 
   const userIds = users.map((user) => user.user_id)
-  const hasMore = userIds.length > 0 && offset + pageSize < MAX_RELATED_ARTISTS
+  const existingUserIds = yield* select((state) => getUserList(state).userIds)
+  const combinedUserIds = [...existingUserIds, ...userIds]
+  const hasMore = combinedUserIds.length < MAX_RELATED_ARTISTS
   return {
-    userIds,
+    userIds: combinedUserIds,
     hasMore
   }
 }
