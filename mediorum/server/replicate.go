@@ -12,12 +12,12 @@ import (
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
-	logger := ss.logger.New("key", fileName)
+	logger := ss.logger.With("key", fileName)
 
 	healthyHostNames := ss.findHealthyHostNames("5 minutes")
 	success := []string{}
 	for _, peer := range ss.placement.topAll(fileName) {
-		logger := logger.New("to", peer.Host)
+		logger := logger.With("to", peer.Host)
 
 		if !slices.Contains(healthyHostNames, peer.Host) {
 			logger.Debug("skipping unhealthy host", "healthy", healthyHostNames)

@@ -40,7 +40,6 @@ pg.bounce::
 	docker compose up -d --wait
 	rm -rf /tmp/mediorum*
 	sleep 2
-	docker push audius/mediorum:${GIT_HASH}
 
 cmd.loadtest::
 	go run cmd/main.go test -num 10
