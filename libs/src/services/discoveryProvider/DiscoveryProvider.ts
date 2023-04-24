@@ -1016,7 +1016,7 @@ export class DiscoveryProvider {
       completedBlockNumber,
       encodedUserId
     )
-    const res = await this._makeRequest<Array<DiscoveryNodeChallenge>>(req)
+    const res = await this._makeRequest<DiscoveryNodeChallenge[]>(req)
     if (!res) return []
     return res.map((r) => ({ ...r, amount: parseInt(r.amount) }))
   }
@@ -1447,7 +1447,10 @@ export class DiscoveryProvider {
 
     const { data, url = '', ...restRequest } = axiosRequest
 
-    const fetchRequestInit: RequestInit = { body: data, ...restRequest }
+    const fetchRequestInit: RequestInit = {
+      body: data ? JSON.stringify(data) : data,
+      ...restRequest
+    }
     let fetchParams = { url, init: fetchRequestInit }
 
     fetchParams =
