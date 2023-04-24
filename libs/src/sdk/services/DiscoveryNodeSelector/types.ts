@@ -74,10 +74,6 @@ export type DiscoveryNodeSelectorServiceConfigInternal = {
    * @example ['https://discoverynode.audius.co', 'https://disoverynode2.audius.co']
    */
   bootstrapServices: string[]
-  /**
-   * Manual override endpoint
-   */
-  overrideEndpoint: string | null
 }
 
 export type DiscoveryNodeSelectorServiceConfig =
