@@ -19,7 +19,11 @@ class CreateDelegateMetadata(TypedDict):
 def get_create_delegate_metadata_from_raw(
     raw_metadata: Optional[str],
 ) -> Optional[CreateDelegateMetadata]:
-    metadata : CreateDelegateMetadata = {"address": None, "name": None, "is_personal_access": None}
+    metadata: CreateDelegateMetadata = {
+        "address": None,
+        "name": None,
+        "is_personal_access": None,
+    }
     if raw_metadata:
         try:
             json_metadata = json.loads(raw_metadata)
@@ -94,8 +98,12 @@ def create_delegate(params: ManageEntityParameters):
 
     delegate_record = Delegate(
         user_id=user_id,
-        name=cast(str, metadata["name"]), # cast to assert non null (since we validated above)
-        address=cast(str, metadata["address"]), # cast to assert non null (since we validated above)
+        name=cast(
+            str, metadata["name"]
+        ),  # cast to assert non null (since we validated above)
+        address=cast(
+            str, metadata["address"]
+        ),  # cast to assert non null (since we validated above)
         is_personal_access=(metadata["is_personal_access"] or False),
         txhash=params.txhash,
         blockhash=params.event_blockhash,
