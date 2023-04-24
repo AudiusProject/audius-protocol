@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/inconshreveable/log15"
+	"golang.org/x/exp/slog"
 )
 
 func (ss *MediorumServer) startBeamClient() {
@@ -99,7 +99,7 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) (*beamResult, error) {
 
 	endpoint := fmt.Sprintf("%s?after=%s", peer.ApiPath("beam/files"), url.QueryEscape(cursorBefore.Format(time.RFC3339Nano)))
 	startedAt := time.Now()
-	logger := log15.New("beam_client", peer.Host)
+	logger := slog.With("beam_client", peer.Host)
 	resp, err := client.Get(endpoint)
 	if err != nil {
 		return nil, err
