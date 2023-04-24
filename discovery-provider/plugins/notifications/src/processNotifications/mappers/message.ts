@@ -61,7 +61,6 @@ export class Message extends BaseNotification<DMNotification> {
         'messages'
       )
     ) {
-      console.log('asdf should send yes')
       const devices = userNotificationSettings.getDevices(this.receiverUserId)
       await Promise.all(
         devices.map((device) => {
