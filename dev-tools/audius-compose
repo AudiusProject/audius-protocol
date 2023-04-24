@@ -311,9 +311,7 @@ def load_env(protocol_dir, service, environment):
 @click.option(
     "--no-solana", is_flag=True, help="Don't bring up solana-test-validator container"
 )
-@click.option(
-    "--no-graphql", is_flag=True, help="Don't bring up graphql container"
-)
+@click.option("--no-graphql", is_flag=True, help="Don't bring up graphql container")
 @click.option(
     "--no-notifs",
     is_flag=True,
