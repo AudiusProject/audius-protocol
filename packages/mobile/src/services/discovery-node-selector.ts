@@ -7,5 +7,5 @@ import { remoteConfigInstance } from './remote-config/remote-config-instance'
 export const discoveryNodeSelectorInstance = new DiscoveryNodeSelectorInstance({
   env,
   remoteConfigInstance,
-  discoveryNodeOverrideEndpoint: localStorage.getCachedDiscoveryProvider()
+  initialSelectedNode: localStorage.getCachedDiscoveryProvider()
 })

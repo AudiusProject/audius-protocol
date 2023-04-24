@@ -17,21 +17,21 @@ import {
 type DiscoveryNodeSelectorConfig = {
   env: Env
   remoteConfigInstance: RemoteConfigInstance
-  discoveryNodeOverrideEndpoint: Promise<CachedDiscoveryProviderType | null>
+  initialSelectedNode: Promise<CachedDiscoveryProviderType | null>
 }
 
 export class DiscoveryNodeSelectorInstance {
   private env: Env
   private remoteConfigInstance: RemoteConfigInstance
   private discoveryNodeSelectorPromise: Promise<DiscoveryNodeSelector> | null
-  private discoveryNodeOverride: Promise<CachedDiscoveryProviderType | null>
+  private initialSelectedNode: Promise<CachedDiscoveryProviderType | null>
 
   constructor(config: DiscoveryNodeSelectorConfig) {
-    const { env, remoteConfigInstance, discoveryNodeOverrideEndpoint } = config
+    const { env, remoteConfigInstance, initialSelectedNode } = config
     this.env = env
     this.remoteConfigInstance = remoteConfigInstance
     this.discoveryNodeSelectorPromise = null
-    this.discoveryNodeOverride = discoveryNodeOverrideEndpoint
+    this.initialSelectedNode = initialSelectedNode
   }
 
   private async makeDiscoveryNodeSelector() {
@@ -63,14 +63,14 @@ export class DiscoveryNodeSelectorInstance {
     const requestTimeout =
       getRemoteVar(IntKeys.DISCOVERY_PROVIDER_SELECTION_TIMEOUT_MS) ?? undefined
 
-    const discoveryNodeOverride = await this.discoveryNodeOverride
+    const initialSelectedNode = await this.initialSelectedNode
 
     return new DiscoveryNodeSelector({
       healthCheckThresholds,
       blocklist,
       requestTimeout,
       bootstrapServices: discoveryNodes,
-      overrideEndpoint: discoveryNodeOverride?.endpoint
+      initialSelectedNode: initialSelectedNode?.endpoint
     })
   }
 
