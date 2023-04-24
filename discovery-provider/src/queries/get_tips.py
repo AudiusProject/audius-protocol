@@ -144,6 +144,8 @@ def _get_tips(session: Session, args: GetTipsArgs):
     query: Query = session.query(UserTipAlias)
     has_pagination = False  # Keeps track if we already paginated
 
+    query = query.filter(UserTipAlias.receiver_user_id == 51)
+
     if args.get("tx_signatures"):
         query = query.filter(UserTipAlias.signature.in_(args["tx_signatures"]))
     if args.get("receiver_min_followers", 0) > 0:
