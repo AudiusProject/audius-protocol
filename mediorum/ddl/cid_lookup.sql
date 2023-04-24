@@ -1,3 +1,5 @@
+begin;
+
 -- cid_lookup is the main table used to determine which host has a given CID
 -- multihash column is used for both multihash and dirMultihash
 create table if not exists cid_lookup (
@@ -74,10 +76,9 @@ end;
 $$ language plpgsql;
 
 -- trigger trigger
-begin;
-  drop trigger if exists handle_cid_change on "Files";
-  create trigger handle_cid_change
-      after insert or delete on "Files"
-      for each row execute procedure handle_cid_change();
-commit;
+drop trigger if exists handle_cid_change on "Files";
+create trigger handle_cid_change
+    after insert or delete on "Files"
+    for each row execute procedure handle_cid_change();
 
+commit;
