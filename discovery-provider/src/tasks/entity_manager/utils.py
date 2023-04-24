@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.delegates.delegate import Delegate
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -60,6 +61,7 @@ class EntityType(str, Enum):
     NOTIFICATION_SEEN = "NotificationSeen"
     NOTIFICATION = "Notification"
     PLAYLIST_SEEN = "PlaylistSeen"
+    DELEGATE = "Delegate"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -86,6 +88,7 @@ class ExistingRecordDict(TypedDict):
     Save: Dict[Tuple, Save]
     Subscription: Dict[Tuple, Subscription]
     PlaylistSeen: Dict[Tuple, PlaylistSeen]
+    Delegate: Dict[str, Delegate]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -96,6 +99,7 @@ class EntitiesToFetchDict(TypedDict):
     Save: Set[Tuple]
     Subscription: Set[Tuple]
     PlaylistSeen: Set[Tuple]
+    Delegate: Set[int]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -153,6 +157,10 @@ class ManageEntityParameters:
     def add_playlist_record(self, playlist_id: int, playlist: Playlist):
         self.new_records[EntityType.PLAYLIST][playlist_id].append(playlist)  # type: ignore
         self.existing_records[EntityType.PLAYLIST][playlist_id] = playlist  # type: ignore
+
+    def add_delegate_record(self, address: int, delegate: Delegate):
+        self.new_records[EntityType.DELEGATE][address].append(delegate)  # type: ignore
+        self.existing_records[EntityType.DELEGATE][address] = delegate  # type: ignore
 
     def add_track_record(self, track_id: int, track: Track):
         self.new_records[EntityType.TRACK][track_id].append(track)  # type: ignore
