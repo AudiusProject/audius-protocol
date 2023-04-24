@@ -437,8 +437,12 @@ def configure_celery(celery, test_config=None):
         broker_url=redis_url,
     )
 
+    # Initialize Redis connection
+    redis_inst = redis.Redis.from_url(url=redis_url)
+
     # backfill cid data if url is provided
-    if "backfill_cid_data_url" in shared_config["discprov"]:
+    env = os.getenv("audius_discprov_env")
+    if env == "stage" and not redis_inst.get("backfilled_cid_data"):
         celery.send_task("backfill_cid_data")
 
     # Initialize DB object for celery task context
@@ -450,9 +454,6 @@ def configure_celery(celery, test_config=None):
         ast.literal_eval(shared_config["db"]["engine_args_literal"]),
     )
     logger.info("Database instance initialized!")
-
-    # Initialize Redis connection
-    redis_inst = redis.Redis.from_url(url=redis_url)
 
     # Initialize CIDMetadataClient for celery task context
     cid_metadata_client = CIDMetadataClient(

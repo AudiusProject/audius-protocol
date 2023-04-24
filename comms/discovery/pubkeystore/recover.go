@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"os"
 	"strings"
 
 	"comms.audius.co/discovery/config"
@@ -13,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
-	"github.com/inconshreveable/log15"
+	"golang.org/x/exp/slog"
 )
 
 var (
@@ -63,8 +62,7 @@ func Dial(discoveryConfig *config.DiscoveryConfig) error {
 func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error) {
 	var err error
 
-	logger := log15.New("module", "pubkeystore", "userId", userId)
-	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
+	logger := slog.With("module", "pubkeystore", "userId", userId)
 
 	conn := db.Conn
 

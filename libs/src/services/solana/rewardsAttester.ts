@@ -1,8 +1,30 @@
+import type { AudiusLibs } from '../../AudiusLibs'
 import { SubmitAndEvaluateError } from '../../api/Rewards'
 import type { ServiceWithEndpoint } from '../../utils'
 import { Utils } from '../../utils/utils'
 
 const { decodeHashId } = Utils
+
+const errors = {
+  ...SubmitAndEvaluateError,
+  USERBANK_CREATION: 'USERBANK_CREATION'
+}
+const AAO_ERRORS = new Set<string>([
+  errors.AAO_ATTESTATION_REJECTION,
+  errors.AAO_ATTESTATION_UNKNOWN_RESPONSE
+])
+// Account for errors from DN aggregation + Solana program
+// CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
+// safe to assume those won't work if we see them at this point.
+const NEEDS_RESELECT_ERRORS = new Set<string>([
+  errors.INSUFFICIENT_DISCOVERY_NODE_COUNT,
+  errors.CHALLENGE_INCOMPLETE,
+  errors.MISSING_CHALLENGES
+])
+const ALREADY_COMPLETE_ERRORS = new Set<string>([
+  errors.ALREADY_DISBURSED,
+  errors.ALREADY_SENT
+])
 
 // `BaseRewardsReporter` is intended to be subclassed, and provides
 // "reporting" functionality to RewardsAttester (i.e. posts to Slack if something notable happens)
@@ -41,7 +63,7 @@ class BaseRewardsReporter {
 
 const MAX_DISBURSED_CACHE_SIZE = 100
 const SOLANA_EST_SEC_PER_SLOT = 0.5
-const POA_SEC_PER_BLOCK = 5
+const POA_SEC_PER_BLOCK = 1
 const MAX_DISCOVERY_NODE_BLOCKLIST_LEN = 10
 
 type ATTESTER_PHASE =
@@ -73,10 +95,13 @@ export class AttestationDelayCalculator {
   logger: any
   intervalHandle: NodeJS.Timer | null
 
+  private readonly blockOffset: number
+
   constructor({
     libs,
     runBehindSec,
     allowedStalenessSec,
+    blockOffset,
     solanaPollingInterval = 30,
     logger = console
   }: {
@@ -85,6 +110,7 @@ export class AttestationDelayCalculator {
     allowedStalenessSec: number
     solanaPollingInterval?: number
     logger: any
+    blockOffset: number
   }) {
     this.libs = libs
     this.solanaSecPerSlot = SOLANA_EST_SEC_PER_SLOT
@@ -95,6 +121,7 @@ export class AttestationDelayCalculator {
     this.solanaPollingInterval = solanaPollingInterval
     this.logger = logger
     this.intervalHandle = null
+    this.blockOffset = blockOffset
   }
 
   async start() {
@@ -125,9 +152,9 @@ export class AttestationDelayCalculator {
     ) {
       return this.lastPOAThreshold.threshold
     }
-    const currentBlock = await this.libs.web3Manager
-      .getWeb3()
-      .eth.getBlockNumber()
+    const currentBlock =
+      Number(await this.libs.web3Manager.getWeb3().eth.getBlockNumber()) +
+      this.blockOffset
     const threshold = currentBlock - this.runBehindSec / POA_SEC_PER_BLOCK
     this.lastPOAThreshold = {
       threshold,
@@ -184,6 +211,7 @@ type ConstructorArgs = {
   maxAggregationAttempts?: number
   updateStateCallback?: (state: AttesterState) => Promise<void>
   maxCooldownMsec?: number
+  blockOffset: number
 }
 
 type Challenge = {
@@ -197,20 +225,10 @@ type Challenge = {
 }
 
 type AttestationResult = Challenge & {
-  error?: string
-  phase?: string
-  aaoErrorCode?: number
+  error?: string | null
+  phase?: string | null
+  aaoErrorCode?: number | null
   nodesToReselect?: string[] | null
-}
-
-type DiscoveryNodeChallenge = {
-  challenge_id: string
-  user_id: string
-  specifier: string
-  amount: number
-  handle: string
-  wallet: string
-  completed_blocknumber: number
 }
 
 type AttesterState = {
@@ -260,7 +278,7 @@ export class RewardsAttester {
   private challengeIdsDenyList: Set<string>
   private discoveryNodeBlocklist: string[]
 
-  private readonly libs: any
+  private readonly libs: AudiusLibs
   private readonly logger: Console
   private readonly quorumSize: number
   private readonly reporter: BaseRewardsReporter
@@ -317,7 +335,8 @@ export class RewardsAttester {
     feePayerOverride = null,
     maxAggregationAttempts = 20,
     updateStateCallback = async (_) => {},
-    maxCooldownMsec = 15000
+    maxCooldownMsec = 15000,
+    blockOffset
   }: ConstructorArgs) {
     this.libs = libs
     this.logger = logger
@@ -353,7 +372,8 @@ export class RewardsAttester {
       libs,
       runBehindSec,
       logger,
-      allowedStalenessSec: 5
+      allowedStalenessSec: 5,
+      blockOffset
     })
     this.isSolanaChallenge = isSolanaChallenge
 
@@ -383,7 +403,7 @@ export class RewardsAttester {
     // This overrides any configured whitelist for the service selector.
     if (this.endpointPool.size === 0) {
       const pool =
-        await this.libs.discoveryProvider.serviceSelector.getServices()
+        await this.libs.discoveryProvider!.serviceSelector.getServices()
       this.endpointPool = new Set(pool)
     }
     await this._selectDiscoveryNodes()
@@ -521,8 +541,8 @@ export class RewardsAttester {
    */
   async _awaitFeePayerBalance() {
     const getHasBalance = async () =>
-      this.libs.solanaWeb3Manager.hasBalance({
-        publicKey: this.libs.solanaWeb3Manager.feePayerKey
+      this.libs.solanaWeb3Manager!.hasBalance({
+        publicKey: this.libs.solanaWeb3Manager!.feePayerKey
       })
     while (!(await getHasBalance())) {
       this.logger.warn('No usable balance. Waiting...')
@@ -540,12 +560,12 @@ export class RewardsAttester {
       return this.feePayerOverride
     }
     const feePayerKeypairs =
-      this.libs.solanaWeb3Manager.solanaWeb3Config.feePayerKeypairs
+      this.libs.solanaWeb3Manager!.solanaWeb3Config.feePayerKeypairs
     if (feePayerKeypairs?.length) {
       const randomFeePayerIndex = Math.floor(
         Math.random() * feePayerKeypairs.length
       )
-      return feePayerKeypairs[randomFeePayerIndex].publicKey
+      return feePayerKeypairs[randomFeePayerIndex]!.publicKey.toString()
     }
     return null
   }
@@ -698,8 +718,42 @@ export class RewardsAttester {
       )}], challengeId: [${challengeId}], quorum size: [${this.quorumSize}]}`
     )
 
+    const feePayerOverride = this._getFeePayer()
+    if (!feePayerOverride) {
+      throw Error('Unexpectedly missing feepayer override')
+    }
+
+    const res = await this.libs.solanaWeb3Manager!.createUserBankIfNeeded(
+      feePayerOverride,
+      wallet
+    )
+
+    if ('error' in res) {
+      this.logger.error(
+        `Failed to create user bank for user [${decodeHashId(userId)}]`,
+        res.error
+      )
+
+      return {
+        challengeId,
+        userId,
+        specifier,
+        amount,
+        handle,
+        wallet,
+        completedBlocknumber,
+        error: errors.USERBANK_CREATION
+      }
+    } else if (!res.didExist) {
+      this.logger.info(`Created user bank for user [${decodeHashId(userId)}]`)
+    } else {
+      this.logger.info(
+        `User bank already exists for user [${decodeHashId(userId)}]`
+      )
+    }
+
     const { success, error, aaoErrorCode, phase, nodesToReselect } =
-      await this.libs.Rewards.submitAndEvaluate({
+      await this.libs.Rewards!.submitAndEvaluate({
         challengeId,
         encodedUserId: userId,
         handle,
@@ -711,7 +765,7 @@ export class RewardsAttester {
         AAOEndpoint: this.aaoEndpoint,
         endpoints: this.endpoints,
         logger: this.logger,
-        feePayerOverride: this._getFeePayer(),
+        feePayerOverride,
         maxAggregationAttempts: this.maxAggregationAttempts
       })
 
@@ -765,17 +819,18 @@ export class RewardsAttester {
       )}`
     )
     const startTime = Date.now()
-    let endpoints: ServiceWithEndpoint[] =
-      (await this.libs.discoveryProvider.serviceSelector.findAll({
+    let endpoints = ((
+      await this.libs.discoveryProvider!.serviceSelector.findAll({
         verbose: true,
         whitelist: this.endpointPool.size > 0 ? this.endpointPool : null
-      })) ?? []
+      })
+    ).filter(Boolean) ?? []) as ServiceWithEndpoint[]
     // Filter out blocklisted nodes
     const blockSet = new Set(this.discoveryNodeBlocklist)
     endpoints = [...endpoints].filter((e) => !blockSet.has(e.endpoint))
 
     this.endpoints =
-      await this.libs.Rewards.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
+      await this.libs.Rewards!.ServiceProvider.getUniquelyOwnedDiscoveryNodes({
         quorumSize: this.quorumSize,
         discoveryNodes: endpoints
       })
@@ -801,21 +856,18 @@ export class RewardsAttester {
       }, recently disbursed: ${JSON.stringify(this.recentlyDisbursedQueue)}`
     )
     await this._updatePhase('REFILLING_QUEUE')
-    const {
-      success: disbursable,
-      error
-    }: { success: DiscoveryNodeChallenge[]; error: null } =
-      await this.libs.Rewards.getUndisbursedChallenges({
-        offset: this.offset,
-        completedBlockNumber: this.startingBlock,
-        logger: this.logger
-      })
+    const res = await this.libs.Rewards!.getUndisbursedChallenges({
+      offset: this.offset,
+      completedBlockNumber: this.startingBlock.toString(),
+      logger: this.logger
+    })
 
-    if (error) {
-      return { error }
+    if ('error' in res) {
+      return { error: res.error }
     }
 
-    if (disbursable?.length) {
+    const { success: disbursable } = res
+    if (disbursable.length) {
       this.logger.info(
         `Got challenges: ${disbursable.map(
           (
@@ -890,26 +942,6 @@ export class RewardsAttester {
     shouldReselect: boolean
     failingNodes: string[]
   }> {
-    const errors = SubmitAndEvaluateError
-    const AAO_ERRORS = new Set([
-      errors.HCAPTCHA,
-      errors.COGNITO_FLOW,
-      errors.AAO_ATTESTATION_REJECTION,
-      errors.AAO_ATTESTATION_UNKNOWN_RESPONSE
-    ])
-    // Account for errors from DN aggregation + Solana program
-    // CHALLENGE_INCOMPLETE and MISSING_CHALLENGES are already handled in the `submitAndEvaluate` flow -
-    // safe to assume those won't work if we see them at this point.
-    const NEEDS_RESELECT_ERRORS = new Set([
-      errors.INSUFFICIENT_DISCOVERY_NODE_COUNT,
-      errors.CHALLENGE_INCOMPLETE,
-      errors.MISSING_CHALLENGES
-    ])
-    const ALREADY_COMPLETE_ERRORS = new Set([
-      errors.ALREADY_DISBURSED,
-      errors.ALREADY_SENT
-    ])
-
     const noRetry: AttestationResult[] = []
     const successful: AttestationResult[] = []
     // Filter our successful responses

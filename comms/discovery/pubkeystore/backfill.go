@@ -2,10 +2,10 @@ package pubkeystore
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"comms.audius.co/discovery/db"
+	"golang.org/x/exp/slog"
 )
 
 func StartPubkeyBackfill() {
@@ -26,17 +26,15 @@ func StartPubkeyBackfill() {
 		ids := []int{}
 		err := db.Conn.Select(&ids, sql)
 		if err != nil {
-			log.Println("pubkey backfill: select failed", err)
 			break
 		}
 		if len(ids) == 0 {
-			log.Println("pubkey backfill: done")
 			break
 		}
 		for _, id := range ids {
 			_, err := RecoverUserPublicKeyBase64(ctx, id)
 			if err != nil {
-				log.Println("pubkey backfill: failed to recover", "user_id", id, "err", err)
+				slog.Debug("pubkey backfill: failed to recover", "user_id", id, "err", err)
 			}
 		}
 

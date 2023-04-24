@@ -10,9 +10,14 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/exp/slog"
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout))
+	slog.SetDefault(logger)
+
 	preset := os.Getenv("MEDIORUM_ENV")
 
 	switch preset {

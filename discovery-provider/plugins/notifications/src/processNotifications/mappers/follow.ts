@@ -88,7 +88,7 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'Follow',
+              title: 'New Follow',
               body: `${users[this.followerUserId].name} followed you`,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${

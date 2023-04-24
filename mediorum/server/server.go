@@ -14,12 +14,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/inconshreveable/log15"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gocloud.dev/blob"
 	_ "gocloud.dev/blob/fileblob"
+	"golang.org/x/exp/slog"
 )
 
 type Peer struct {
@@ -58,7 +58,7 @@ type MediorumServer struct {
 	echo      *echo.Echo
 	bucket    *blob.Bucket
 	placement *placement
-	logger    log15.Logger
+	logger    *slog.Logger
 	crud      *crudr.Crudr
 	pgPool    *pgxpool.Pool
 	quit      chan os.Signal
@@ -72,7 +72,9 @@ var (
 )
 
 func New(config MediorumConfig) (*MediorumServer, error) {
-	config.Env = os.Getenv("MEDIORUM_ENV")
+	if env := os.Getenv("MEDIORUM_ENV"); env != "" {
+		config.Env = env
+	}
 
 	// validate host config
 	if config.Self.Host == "" {
@@ -110,8 +112,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	}
 
 	// logger
-	logger := log15.New("self", config.Self.Host)
-	logger.SetHandler(log15.CallerFileHandler(log15.StdoutHandler))
+	logger := slog.With("self", config.Self.Host)
 
 	// db
 	db := dbMustDial(config.PostgresDSN)
@@ -249,9 +250,12 @@ func (ss *MediorumServer) MustStart() {
 
 	ss.crud.StartClients()
 
-	// when enabled the "pg_beam" stuff would beam Files table between peers.
-	// Disabling for now in case it causes db too much stress.
-	// go ss.startBeamClient()
+	// disable pg_beam in prod for now.
+	// plan is to make it more evented and enable everywhere
+	// before making mediorum "first"
+	if ss.Config.Env != "prod" {
+		go ss.startBeamClient()
+	}
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
@@ -268,12 +272,12 @@ func (ss *MediorumServer) Stop() {
 	defer cancel()
 
 	if err := ss.echo.Shutdown(ctx); err != nil {
-		ss.logger.Crit("echo shutdown: " + err.Error())
+		ss.logger.Error("echo shutdown", err)
 	}
 
 	if db, err := ss.crud.DB.DB(); err == nil {
 		if err := db.Close(); err != nil {
-			ss.logger.Crit("db shutdown: " + err.Error())
+			ss.logger.Error("db shutdown", err)
 		}
 	}
 

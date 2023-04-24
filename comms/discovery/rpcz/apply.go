@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -15,6 +14,7 @@ import (
 	"comms.audius.co/discovery/misc"
 	"comms.audius.co/discovery/schema"
 	"github.com/tidwall/gjson"
+	"golang.org/x/exp/slog"
 )
 
 type RPCProcessor struct {
@@ -74,7 +74,7 @@ func (proc *RPCProcessor) ApplyAndPublish(rpcLog *schema.RpcLog) (*schema.RpcLog
 	// publish event
 	j, err := json.Marshal(rpcLog)
 	if err != nil {
-		log.Println("err: invalid json", err)
+		slog.Error("err: invalid json", err)
 	} else {
 		proc.broadcast(j)
 	}
@@ -85,8 +85,8 @@ func (proc *RPCProcessor) ApplyAndPublish(rpcLog *schema.RpcLog) (*schema.RpcLog
 // Validates + applies a NATS message
 func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 
+	logger := slog.With()
 	var err error
-	logger := logger.New()
 
 	// check for already applied
 	var exists int
@@ -125,7 +125,7 @@ func (proc *RPCProcessor) Apply(rpcLog *schema.RpcLog) error {
 		logger.Warn("wallet not found: "+err.Error(), "wallet", wallet, "sig", signatureHeader)
 		return nil
 	}
-	logger = logger.New("wallet", wallet, "userId", userId)
+	logger = logger.With("wallet", wallet, "userId", userId)
 	logger.Debug("got user", "took", takeSplit())
 
 	// parse raw rpc
@@ -312,7 +312,7 @@ func websocketNotify(rawRpc schema.RawRPC, userId int32, timestamp time.Time) {
 			var parsedParams schema.RPCPayloadParams
 			err := json.Unmarshal(rawRpc.Params, &parsedParams)
 			if err != nil {
-				logger.Error("Failed to parse params")
+				logger.Error("Failed to parse params", err)
 				return
 			}
 			payload := schema.RPCPayload{Method: schema.RPCMethod(rawRpc.Method), Params: parsedParams}

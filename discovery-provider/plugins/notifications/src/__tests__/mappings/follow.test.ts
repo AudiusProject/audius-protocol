@@ -51,7 +51,7 @@ describe('Follow Notification', () => {
         badgeCount: 1
       },
       {
-        title: 'Follow',
+        title: 'New Follow',
         body: 'user_1 followed you',
         data: {
           id: 'timestamp:1589373217:group_id:follow:2',
