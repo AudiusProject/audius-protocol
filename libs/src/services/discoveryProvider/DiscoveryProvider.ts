@@ -82,6 +82,16 @@ export type UserProfile = {
   iat: string
 }
 
+type DiscoveryNodeChallenge = {
+  challenge_id: string
+  user_id: string
+  specifier: string
+  amount: string
+  handle: string
+  wallet: string
+  completed_blocknumber: number
+}
+
 /**
  * Constructs a service class for a discovery node
  * @param whitelist whether or not to only include specified nodes in selection
@@ -1006,7 +1016,7 @@ export class DiscoveryProvider {
       completedBlockNumber,
       encodedUserId
     )
-    const res = await this._makeRequest<Array<{ amount: string }>>(req)
+    const res = await this._makeRequest<Array<DiscoveryNodeChallenge>>(req)
     if (!res) return []
     return res.map((r) => ({ ...r, amount: parseInt(r.amount) }))
   }

@@ -249,9 +249,12 @@ func (ss *MediorumServer) MustStart() {
 
 	ss.crud.StartClients()
 
-	// when enabled the "pg_beam" stuff would beam Files table between peers.
-	// Disabling for now in case it causes db too much stress.
-	// go ss.startBeamClient()
+	// disable pg_beam in prod for now.
+	// plan is to make it more evented and enable everywhere
+	// before making mediorum "first"
+	if ss.Config.Env != "prod" {
+		go ss.startBeamClient()
+	}
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

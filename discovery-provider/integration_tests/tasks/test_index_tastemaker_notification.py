@@ -179,6 +179,81 @@ def test_index_tastemaker_notification(app):
                 )
 
 
+def test_index_tastemaker_notification_duplicate_insert(app):
+    with app.app_context():
+        db = get_db()
+
+        entities = {
+            "tracks": [{"track_id": i, "owner_id": 3} for i in range(5)],
+            "reposts": [
+                {"user_id": i, "repost_item_id": 1, "repost_type": "track"}
+                for i in range(20)
+            ],
+            "notification": [
+                # a tastemaker notification from last week
+                # trending exists for the same user id and track pair
+                # which should prevent that notification from being re-inserted
+                {
+                    "specifier": "1",
+                    "type": "tastemaker",
+                    "group_id": "tastemaker_user_id:3:tastemaker_item_id:1",
+                    "timestamp": "2022-01-01",
+                },
+                # Just the group id will collide with an incoming tastemaker notif
+                # which should not prevent that new notification from
+                # being created
+                {
+                    "specifier": "2",
+                    "type": "tastemaker",
+                    "group_id": "tastemaker_user_id:2:tastemaker_item_id:1",
+                    "timestamp": "2022-01-01",
+                },
+            ],
+            "users": [{"user_id": i} for i in range(10)],
+        }
+        populate_mock_db(db, entities)
+
+        index_tastemaker_notifications(
+            db=db,
+            top_trending_tracks=entities["tracks"],
+            tastemaker_notification_threshold=4,
+        )
+        with db.scoped_session() as session:
+            notifications = (
+                session.query(Notification)
+                .filter(Notification.type == "tastemaker")
+                .order_by(asc(Notification.specifier))
+                .all()
+            )
+            # original notification before we indexed is unchanged
+            assert len(notifications) == 5
+            assert_notification(
+                notification=notifications[0],
+                user_ids=[],
+                type="tastemaker",
+                group_id="tastemaker_user_id:3:tastemaker_item_id:1",
+                specifier="1",
+                data={},
+            )
+            assert notifications[0].timestamp == datetime(2022, 1, 1, 0, 0)
+            # unique new notifications are still saved
+            for i in range(3):
+                assert_notification(
+                    notification=notifications[i + 1],
+                    user_ids=[i],
+                    type="tastemaker",
+                    group_id=f"tastemaker_user_id:{i}:tastemaker_item_id:1",
+                    specifier="1",
+                    data={
+                        "tastemaker_item_id": 1,
+                        "tastemaker_item_owner_id": 3,
+                        "tastemaker_item_type": "track",
+                        "action": "repost",
+                        "tastemaker_user_id": i,
+                    },
+                )
+
+
 def assert_notification(notification, user_ids, type, group_id, specifier, data):
     assert notification.user_ids == user_ids
     assert notification.type == type
