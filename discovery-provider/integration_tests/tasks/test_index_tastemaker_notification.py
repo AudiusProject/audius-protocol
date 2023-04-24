@@ -192,12 +192,22 @@ def test_index_tastemaker_notification_duplicate_insert(app):
             "notification": [
                 # a tastemaker notification from last week
                 # trending exists for the same user id and track pair
+                # which should prevent that notification from being re-inserted
                 {
                     "specifier": "1",
                     "type": "tastemaker",
                     "group_id": "tastemaker_user_id:3:tastemaker_item_id:1",
                     "timestamp": "2022-01-01",
-                }
+                },
+                # Just the group id will collide with an incoming tastemaker notif
+                # which should not prevent that new notification from
+                # being created
+                {
+                    "specifier": "2",
+                    "type": "tastemaker",
+                    "group_id": "tastemaker_user_id:2:tastemaker_item_id:1",
+                    "timestamp": "2022-01-01",
+                },
             ],
             "users": [{"user_id": i} for i in range(10)],
         }
@@ -216,7 +226,7 @@ def test_index_tastemaker_notification_duplicate_insert(app):
                 .all()
             )
             # original notification before we indexed is unchanged
-            assert len(notifications) == 4
+            assert len(notifications) == 5
             assert_notification(
                 notification=notifications[0],
                 user_ids=[],

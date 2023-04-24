@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import and_, asc
+from sqlalchemy import and_, asc, tuple_
 from src.models.notifications.notification import Notification
 from src.models.social.repost import Repost
 from src.models.social.save import Save
@@ -71,20 +71,19 @@ def dedupe_notifications_by_group_id(repost_notifications, save_notifications):
 def dedupe_notifications_from_existing_notifications(
     tastemaker_notifications_to_add, session
 ):
-    filter_expr = and_(
-        Notification.specifier.in_(
-            [notification.specifier for notification in tastemaker_notifications_to_add]
-        ),
-        Notification.group_id.in_(
-            [notification.group_id for notification in tastemaker_notifications_to_add]
-        ),
-    )
-    matching_rows = session.query(Notification).filter(filter_expr).all()
-    existing_specifier_group_ids = [
-        (row.specifier, row.group_id) for row in matching_rows
+    specifier_group_ids_to_add = [
+        (notification.specifier, notification.group_id)
+        for notification in tastemaker_notifications_to_add
     ]
-    print("existing_ids: ", existing_specifier_group_ids)
-    print("taste maker notifs to make: ", tastemaker_notifications_to_add)
+    existing_specifier_group_ids = (
+        session.query(Notification.specifier, Notification.group_id)
+        .filter(
+            tuple_(Notification.specifier, Notification.group_id).in_(
+                specifier_group_ids_to_add
+            )
+        )
+        .all()
+    )
     deduped_notifications = []
     for notification in tastemaker_notifications_to_add:
         if (
