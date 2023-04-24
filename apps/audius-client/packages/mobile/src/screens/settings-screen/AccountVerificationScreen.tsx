@@ -136,8 +136,8 @@ export const AccountVerificationScreen = () => {
 
   const handleField: EditableField = useSelector(getHandleField)
 
-  const name = accountUser?.name
-  const handle = accountUser?.handle
+  const accountName = accountUser?.name
+  const accountHandle = accountUser?.handle
 
   const onVerifyButtonPress = useCallback(() => {
     setStatus(Status.LOADING)
@@ -157,15 +157,16 @@ export const AccountVerificationScreen = () => {
       const handle = type === 'twitter' ? profile.screen_name : profile.username
       const verified =
         type === 'twitter' ? profile.verified : profile.is_verified
-      dispatch(signOnActions.validateHandle(handle, verified))
+
+      dispatch(signOnActions.validateHandle(accountHandle ?? handle, verified))
     },
-    [dispatch, twitterInfo, instagramInfo]
+    [accountHandle, dispatch, twitterInfo, instagramInfo]
   )
 
   const trackOAuthComplete = useCallback(
     (type: 'twitter' | 'instagram') => {
       const info = type === 'twitter' ? twitterInfo : instagramInfo
-      if (!info || !handle) return
+      if (!info || !accountHandle) return
       const { profile } = info
 
       if (type === 'twitter') {
@@ -175,7 +176,7 @@ export const AccountVerificationScreen = () => {
             eventName: EventNames.SETTINGS_COMPLETE_TWITTER_OAUTH,
             screen_name,
             is_verified,
-            handle
+            handle: accountHandle
           })
         )
       } else {
@@ -185,12 +186,12 @@ export const AccountVerificationScreen = () => {
             eventName: EventNames.SETTINGS_COMPLETE_INSTAGRAM_OAUTH,
             username,
             is_verified,
-            handle
+            handle: accountHandle
           })
         )
       }
     },
-    [twitterInfo, instagramInfo, handle]
+    [twitterInfo, instagramInfo, accountHandle]
   )
 
   useEffect(() => {
@@ -242,40 +243,40 @@ export const AccountVerificationScreen = () => {
   ])
 
   const handleTwitterPress = () => {
-    if (!handle) return
+    if (!accountHandle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setTwitterError(null))
     dispatch(oauthActions.twitterAuth())
     track(
       make({
         eventName: EventNames.SETTINGS_START_TWITTER_OAUTH,
-        handle
+        handle: accountHandle
       })
     )
   }
 
   const handleInstagramPress = () => {
-    if (!handle) return
+    if (!accountHandle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setInstagramError(null))
     dispatch(oauthActions.instagramAuth())
     track(
       make({
         eventName: EventNames.SETTINGS_START_INSTAGRAM_OAUTH,
-        handle
+        handle: accountHandle
       })
     )
   }
 
   const handleTikTokPress = () => {
-    if (!handle) return
+    if (!accountHandle) return
     onVerifyButtonPress()
     dispatch(oauthActions.setTikTokError(null))
     dispatch(oauthActions.tikTokAuth())
     track(
       make({
         eventName: EventNames.SETTINGS_START_TIKTOK_OAUTH,
-        handle
+        handle: accountHandle
       })
     )
   }
@@ -287,9 +288,9 @@ export const AccountVerificationScreen = () => {
   }, [abandoned])
 
   const goBacktoProfile = useCallback(() => {
-    if (!handle) return
-    navigation.navigate('Profile', { handle })
-  }, [handle, navigation])
+    if (!accountHandle) return
+    navigation.navigate('Profile', { handle: accountHandle })
+  }, [accountHandle, navigation])
 
   if (!accountUser) return null
 
@@ -351,10 +352,10 @@ export const AccountVerificationScreen = () => {
       <View style={styles.profileContainer}>
         <ProfilePicture profile={accountUser} style={styles.profilePicture} />
         <Text style={styles.profileName} variant='h1'>
-          {name}
+          {accountName}
           <UserBadges user={accountUser} badgeSize={12} hideName />
         </Text>
-        <Text style={styles.profileHandle}>@{handle}</Text>
+        <Text style={styles.profileHandle}>@{accountHandle}</Text>
       </View>
       <Button
         variant='commonAlt'
