@@ -2,11 +2,11 @@ package rpcz
 
 import (
 	"bytes"
-	"log"
 	"net/http"
 	"strings"
 
 	"comms.audius.co/shared/signing"
+	"golang.org/x/exp/slog"
 )
 
 // this is a crappy version of POST broadcast
@@ -37,14 +37,13 @@ func (proc *RPCProcessor) broadcast(payload []byte) {
 
 			resp, err := proc.httpClient.Do(req)
 			if err != nil {
-				log.Println("push failed", "host", peer.Host, "err", err)
+				slog.Debug("push failed", "host", peer.Host, "err", err)
+				return
 			}
 			defer resp.Body.Close()
 
 			if resp.StatusCode != 200 {
-				log.Println("push bad status", "host", peer.Host, "status", resp.StatusCode)
-			} else {
-				log.Println("push OK", "host", peer.Host)
+				slog.Debug("push bad status", "host", peer.Host, "status", resp.StatusCode)
 			}
 		}()
 	}

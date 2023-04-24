@@ -4,10 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"time"
 
@@ -23,7 +21,6 @@ import (
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
-	"github.com/inconshreveable/log15"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/exp/slog"
@@ -90,12 +87,8 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 }
 
 var (
-	logger = log15.New()
+	logger = slog.Default()
 )
-
-func init() {
-	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
-}
 
 type ChatServer struct {
 	*echo.Echo
@@ -195,12 +188,12 @@ func (s *ChatServer) debugWs(c echo.Context) error {
 		for {
 			msg, op, err := wsutil.ReadClientData(conn)
 			if err != nil {
-				log.Println("ws read err", err)
+				slog.Debug("ws read err", "err", err)
 				return
 			}
 			err = wsutil.WriteServerMessage(conn, op, msg)
 			if err != nil {
-				log.Println("ws write err", err)
+				slog.Debug("ws write err", "err", err)
 				return
 			}
 		}
@@ -223,7 +216,7 @@ func (s *ChatServer) debugSse(c echo.Context) error {
 			fmt.Fprint(w, "data:"+time.Now().String()+"\n\n")
 			w.Flush()
 		case <-c.Request().Context().Done():
-			log.Println("closing connection after ", time.Since(start))
+			slog.Debug("closing connection", "lasted", time.Since(start))
 			return nil
 		}
 	}
@@ -689,7 +682,7 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 		fmt.Println("failed to parse time", err, c.QueryParam("after"), c.QueryString())
 	}
 
-	query := `select * from rpc_log where relayed_by = $1 and relayed_at >= $2 order by relayed_at asc`
+	query := `select * from rpc_log where relayed_by = $1 and relayed_at > $2 order by relayed_at asc`
 	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after)
 	if err != nil {
 		return err
