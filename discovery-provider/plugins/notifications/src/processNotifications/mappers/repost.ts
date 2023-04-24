@@ -108,7 +108,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
 
     const title = 'New Repost'
     const body = `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`
-    if (userNotificationSettings.isNotificationTypeEnabled(this.receiverUserId, 'reposts')) {
+    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'reposts')) {
       await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
     }
 

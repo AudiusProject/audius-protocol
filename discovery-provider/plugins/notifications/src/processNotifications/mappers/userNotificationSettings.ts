@@ -98,7 +98,6 @@ export class UserNotificationSettings {
   }
 
   isNotificationTypeBrowserEnabled(userId: number, feature: string): boolean {
-    logger.info(`user browser ${this.browser}`)
     return this.browser?.[userId].settings[feature]
   }
 
