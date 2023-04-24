@@ -20,6 +20,5 @@ export const defaultDiscoveryNodeSelectorConfig: DiscoveryNodeSelectorServiceCon
       maxSlotDiffPlays: null,
       maxBlockDiff: 15
     },
-    bootstrapServices: productionConfig.discoveryNodes,
-    overrideEndpoint: null
+    bootstrapServices: productionConfig.discoveryNodes
   }
