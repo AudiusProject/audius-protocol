@@ -1,6 +1,7 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
+import * as sendEmailFns from '../../email/notifications/sendEmail'
 
 import {
   createUsers,
@@ -10,7 +11,8 @@ import {
   createTracks,
   createPlaylists,
   setupTest,
-  resetTests
+  resetTests,
+  setUserEmailAndSettings
 } from '../../utils/populateDB'
 
 import { AppEmailNotification } from '../../types/notifications'
@@ -27,6 +29,10 @@ describe('Repost Notification', () => {
     .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
 
+  const sendEmailNotificationSpy = jest
+    .spyOn(sendEmailFns, 'sendNotificationEmail')
+    .mockImplementation(() => Promise.resolve(true))
+
   beforeEach(async () => {
     const setup = await setupTest()
     processor = setup.processor
@@ -34,6 +40,25 @@ describe('Repost Notification', () => {
 
   afterEach(async () => {
     await resetTests(processor)
+  })
+
+  test('live emails should not send for daily setting on user', async () => {
+    await createUsers(processor.discoveryDB, [{ user_id: 1 }, { user_id: 2 }])
+    await createTracks(processor.discoveryDB, [{ track_id: 10, owner_id: 1 }])
+    await createReposts(processor.discoveryDB, [
+      {
+        user_id: 2,
+        repost_item_id: 10,
+        repost_type: RepostType.track
+      }
+    ])
+    await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
+    await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
+    await setUserEmailAndSettings(processor.identityDB, 'daily', 1)
+    await new Promise((resolve) => setTimeout(resolve, 10))
+    const pending = processor.listener.takePending()
+    expect(pending?.appNotifications).toHaveLength(1)
+    expect(sendEmailNotificationSpy).not.toHaveBeenCalled()
   })
 
   test('Process push notification for repost track', async () => {
@@ -48,6 +73,8 @@ describe('Repost Notification', () => {
     ])
     await insertMobileSettings(processor.identityDB, [{ userId: 1 }])
     await insertMobileDevices(processor.identityDB, [{ userId: 1 }])
+    await setUserEmailAndSettings(processor.identityDB, 'live', 1)
+
     await new Promise((resolve) => setTimeout(resolve, 10))
     const pending = processor.listener.takePending()
     expect(pending?.appNotifications).toHaveLength(1)
@@ -70,6 +97,20 @@ describe('Repost Notification', () => {
         }
       }
     )
+
+    expect(sendEmailNotificationSpy).toHaveBeenCalledWith({
+      userId: 1,
+      email: 'user_1@gmail.com',
+      frequency: 'live',
+      notifications: [
+        expect.objectContaining({
+          specifier: '2',
+          group_id: 'repost:10:type:track'
+        })
+      ],
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
   })
 
   test('Process push notification for repost playlist', async () => {

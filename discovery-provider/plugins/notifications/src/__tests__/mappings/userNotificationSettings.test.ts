@@ -9,7 +9,8 @@ import {
   setupTest,
   resetTests,
   insertAbusiveSettings,
-  createAbusiveSettingForUser
+  createAbusiveSettingForUser,
+  setUserEmailAndSettings
 } from '../../utils/populateDB'
 
 import { buildUserNotificationSettings } from '../../processNotifications/mappers/userNotificationSettings'
@@ -27,6 +28,9 @@ describe('user notification settings', () => {
       { user_id: 2 },
       { user_id: 3 }
     ])
+    await setUserEmailAndSettings(processor.identityDB, 'live', 1)
+    await setUserEmailAndSettings(processor.identityDB, 'live', 2)
+    await setUserEmailAndSettings(processor.identityDB, 'live', 3)
     await insertMobileSettings(processor.identityDB, [
       { userId: 1 },
       { userId: 2 },
