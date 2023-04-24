@@ -19,6 +19,7 @@ audius-protocol-storagev2-1 audius-protocol-storagev2-2 audius-protocol-storagev
 audius-protocol-storage-1 audius-protocol-storage-2 audius-protocol-storage-3 audius-protocol-storage-4 audius-protocol-storage-5 \
 audius-protocol-comms-discovery-1 audius-protocol-comms-discovery-2 audius-protocol-comms-discovery-3 audius-protocol-comms-discovery-4 audius-protocol-comms-discovery-5 \
 audius-protocol-discovery-provider-1 audius-protocol-discovery-provider-2 audius-protocol-discovery-provider-3 \
+audius-protocol-discovery-provider-graphql \
 audius-protocol-creator-node-1 audius-protocol-creator-node-2 audius-protocol-creator-node-3 \
 audius-protocol-identity-service-1 \
 audius-protocol-solana-test-validator-1 \
@@ -311,6 +312,9 @@ def load_env(protocol_dir, service, environment):
     "--no-solana", is_flag=True, help="Don't bring up solana-test-validator container"
 )
 @click.option(
+    "--no-graphql", is_flag=True, help="Don't bring up graphql container"
+)
+@click.option(
     "--no-notifs",
     is_flag=True,
     help="Don't bring up discovery provider notifications container",
@@ -332,6 +336,7 @@ def up(
     storagev2,
     no_libs,
     no_solana,
+    no_graphql,
     no_notifs,
     comms,
     wait,
@@ -362,6 +367,7 @@ def up(
                 *(["--profile=block-explorer"] if block_explorer else []),
                 *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
                 *(["--profile=storagev2"] if storagev2 else []),
+                *([] if no_graphql else ["--profile=graphql"]),
                 *([] if no_libs else ["--profile=libs"]),
                 *([] if no_solana else ["--profile=solana"]),
                 *([] if no_notifs else ["--profile=notifications"]),

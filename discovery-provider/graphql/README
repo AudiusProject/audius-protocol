@@ -1,0 +1,9 @@
+# Audify - Audius Apollo GraphQL Server
+
+## Run the server
+
+npm run start
+
+## Open the Apollo Sandbox
+
+Visit http://localhost:4000

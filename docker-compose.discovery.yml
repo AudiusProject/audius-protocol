@@ -42,6 +42,22 @@ services:
       - notifications
       - comms
 
+  discovery-provider-graphql:
+    container_name: audius-protocol-discovery-provider-graphql
+    build:
+      context: discovery-provider/graphql
+      args:
+        git_sha: "${GIT_COMMIT}"
+    environment:
+      DN_DB_URL: "postgresql://postgres:postgres@db:5432/audius_discovery"
+    volumes:
+      - ./discovery-provider/graphql:/usr/src/app
+    depends_on:
+      discovery-provider:
+        condition: service_healthy
+    profiles:
+      - graphql
+
   discovery-provider-elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.1.0
     environment:
