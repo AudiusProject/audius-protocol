@@ -10,11 +10,3 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
     <Router />
   </QueryClientProvider>
 )
-
-function timeDiffInMinutes(start: Date | undefined, end: Date | undefined) {
-  if (start && end && end.getTime() > start.getTime()) {
-    const diff = (end.getTime() - start.getTime()) / 1000 / 60
-    return `${diff.toFixed(0)}m`
-  }
-  return ''
-}
