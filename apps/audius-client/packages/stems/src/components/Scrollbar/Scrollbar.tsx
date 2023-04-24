@@ -3,6 +3,7 @@ import { useEffect, useRef, useMemo } from 'react'
 import cn from 'classnames'
 import { uniqueId } from 'lodash'
 import PerfectScrollbar from 'react-perfect-scrollbar'
+import useMeasure from 'react-use-measure'
 
 import styles from './Scrollbar.module.css'
 import { ScrollbarProps } from './types'
@@ -19,6 +20,10 @@ export const Scrollbar = ({
   id,
   ...props
 }: ScrollbarProps) => {
+  // Do not remove:
+  // useMeasure is required for infinite scrolling to work
+  useMeasure()
+
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const elementId = useMemo(() => id || uniqueId('scrollbar-'), [id])
 
