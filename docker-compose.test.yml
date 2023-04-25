@@ -468,3 +468,5 @@ volumes:
   solana-programs-idl:
   audius-libs:
   postgresdata:
+  mediorum:
+  legacy_creator_file_storage:
