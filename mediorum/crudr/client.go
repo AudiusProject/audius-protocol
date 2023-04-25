@@ -58,7 +58,7 @@ func (p *PeerClient) startSender() {
 		resp, err := httpClient.Post(endpoint, "application/json", bytes.NewReader(data))
 		if err != nil {
 			log.Println("push failed", "host", p.Host, "err", err)
-			return
+			continue
 		}
 
 		if resp.StatusCode != 200 {
