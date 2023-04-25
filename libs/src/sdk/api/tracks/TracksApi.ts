@@ -7,7 +7,7 @@ import {
 } from '../generated/default'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
 import type { UploadTrackRequest } from './types'
-import type { StorageService } from '../../services/StorageService'
+import type { StorageService } from '../../services/Storage'
 import { isFileValid } from '../../utils/file'
 import { TRACK_REQUIRED_VALUES } from './constants'
 import { objectMissingValues } from '../../utils/object'

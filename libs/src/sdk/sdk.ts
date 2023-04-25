@@ -26,7 +26,8 @@ import {
   DiscoveryNodeSelectorService,
   DiscoveryNodeSelector,
   WalletApi,
-  StorageService
+  StorageService,
+  Storage
 } from './services'
 
 type ServicesContainer = {
@@ -87,7 +88,7 @@ export const sdk = (config: SdkConfig) => {
 const initializeServices = (config: SdkConfig) => {
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
-    storage: new StorageService(),
+    storage: new Storage(),
     walletApi: new WalletApi()
   }
   return { ...defaultServices, ...config.services }

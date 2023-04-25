@@ -1,8 +1,12 @@
-import axios, { AxiosRequestConfig } from 'axios'
 import FormData from 'form-data'
 
 import { wait } from '../../utils/wait'
-import type { StorageServiceConfig } from './types'
+import type {
+  FileTemplate,
+  ProgressCB,
+  StorageService,
+  StorageServiceConfig
+} from './types'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import {
   defaultStorageServiceConfig,
@@ -13,11 +17,7 @@ import {
 import type { CrossPlatformFile as File } from '../../types/File'
 import { isNodeFile } from '../../utils/file'
 
-type ProgressCB = (loaded: number, total: number) => void
-
-export type FileTemplate = 'audio' | 'img_square' | 'img_backdrop'
-
-export class StorageService {
+export class Storage implements StorageService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
@@ -107,6 +107,7 @@ export class StorageService {
     const response = await fetch(
       `${this.contentNodeEndpoint}/mediorum/uploads/${id}`
     )
+    // TODO: type this
     const { data } = await response.json()
     return data
   }

@@ -1,3 +1,3 @@
 export * from './DiscoveryNodeSelector'
-export * from './StorageService'
+export * from './Storage'
 export * from './WalletApi'
