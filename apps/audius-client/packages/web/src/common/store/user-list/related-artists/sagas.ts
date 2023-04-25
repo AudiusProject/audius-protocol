@@ -30,19 +30,15 @@ function* fetchRelatedArtists({
   const apiClient = yield* getContext('apiClient')
   const response = yield* call([apiClient, apiClient.getRelatedArtists], {
     userId: artistId,
-    limit: pageSize,
+    limit: MAX_RELATED_ARTISTS,
     offset
   })
 
   const users = response || []
-
   const userIds = users.map((user) => user.user_id)
-  const existingUserIds = yield* select((state) => getUserList(state).userIds)
-  const combinedUserIds = [...existingUserIds, ...userIds]
-  const hasMore = combinedUserIds.length < MAX_RELATED_ARTISTS
   return {
-    userIds: combinedUserIds,
-    hasMore
+    userIds,
+    hasMore: false
   }
 }
 
