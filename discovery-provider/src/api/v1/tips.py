@@ -1,3 +1,4 @@
+import os
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
     abort_bad_request_param,
@@ -16,9 +17,14 @@ from src.utils.redis_metrics import record_metrics
 ns = Namespace("tips", description="Tip related operations")
 full_ns = Namespace("tips", description="Full tip related operations")
 
-TIPS_EXCLUDED_RECIPIENTS: list[int] = (
-    51  # Audius account
-)
+
+TIPS_EXCLUDED_RECIPIENTS: list[int] = []
+
+env = os.getenv("audius_discprov_env")
+if env == "stage" or env == "dev":
+    TIPS_EXCLUDED_RECIPIENTS = [12]
+else:
+    TIPS_EXCLUDED_RECIPIENTS = [51]  # Audius account
 
 
 tips_parser = pagination_with_current_user_parser.copy()
