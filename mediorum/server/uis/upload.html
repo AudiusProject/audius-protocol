@@ -61,7 +61,7 @@
       connectedCallback() {
         super.connectedCallback();
         this.doPoll();
-        setInterval(this.doPoll.bind(this), 1000);
+        setInterval(this.doPoll.bind(this), 10000);
       }
 
       doPoll() {
@@ -264,9 +264,7 @@
           @mouseenter=${this._show}
           @mouseleave=${this._hide}
         >
-          <a href=${"/internal/blobs/" + this.key} target="_blank">
-            ${this.label}
-          </a>
+          <a href=${"/content/" + this.key} target="_blank"> ${this.label} </a>
           ${this.isOpen ? this.detailPanel : null}
         </div>`;
       }

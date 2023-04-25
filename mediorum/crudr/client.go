@@ -44,6 +44,7 @@ func (p *PeerClient) Send(data []byte) bool {
 	case p.outbox <- data:
 		return true
 	default:
+		p.logger.Info("outbox full, dropping message", "msg", string(data), "len", len(p.outbox), "cap", cap(p.outbox))
 		return false
 	}
 }

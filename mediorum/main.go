@@ -12,13 +12,16 @@ import (
 	"golang.org/x/exp/slog"
 )
 
-func main() {
+func init() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout))
 	slog.SetDefault(logger)
+}
 
-	preset := os.Getenv("MEDIORUM_ENV")
+func main() {
+	mediorumEnv := os.Getenv("MEDIORUM_ENV")
+	slog.Info("starting", "MEDIORUM_ENV", mediorumEnv)
 
-	switch preset {
+	switch mediorumEnv {
 	case "prod":
 		startStagingOrProd(true)
 	case "stage":
@@ -39,6 +42,7 @@ func startStagingOrProd(isProd bool) {
 	if err != nil {
 		panic(err)
 	}
+	slog.Info("fetched peers", "count", len(peers))
 
 	creatorNodeEndpoint := mustGetenv("creatorNodeEndpoint")
 	delegateOwnerWallet := mustGetenv("delegateOwnerWallet")

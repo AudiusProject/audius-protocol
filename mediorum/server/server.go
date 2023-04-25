@@ -186,7 +186,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/content/:cid", ss.getBlob)
 	routes.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
 	routes.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
-	routes.GET("/tracks/cidstream/:cid", ss.getBlob) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
+	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
 
 	// status + debug:
 	routes.GET("/status", ss.getStatus)
@@ -216,7 +216,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
-	internalApi.GET("/blobs/:cid", ss.getBlob)
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// WIP internal: metrics
@@ -235,7 +234,6 @@ func (ss *MediorumServer) MustStart() {
 
 	// start server
 	go func() {
-
 		err := ss.echo.Start(":" + ss.Config.ListenPort)
 		if err != nil && err != http.ErrServerClosed {
 			panic(err)

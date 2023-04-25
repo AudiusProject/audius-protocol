@@ -1,7 +1,9 @@
 package server
 
 import (
+	"fmt"
 	"mediorum/server/signature"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -33,20 +35,6 @@ func (ss *MediorumServer) getBlobInfo(c echo.Context) error {
 func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
-
-	// verify signature... just print result for now
-	{
-		sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
-		if err != nil {
-			// ss.logger.Warn("invalid signautre, would reject", "err", err)
-			c.Response().Header().Set("x-signature-error", err.Error())
-		} else {
-			// todo should check that track / timestamp all match up
-			// and that signer is a discovery node
-			// ss.logger.Info("parsed signature ok", "sig", sig)
-			c.Response().Header().Set("x-signature", sig.String())
-		}
-	}
 
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
@@ -80,6 +68,39 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	return c.String(404, "blob not found")
+}
+
+func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cid := c.Param("cid")
+		sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
+		if err != nil {
+			return c.JSON(401, map[string]string{
+				"error":  "invalid signature",
+				"detail": err.Error(),
+			})
+		} else {
+			age := time.Since(time.Unix(sig.Data.Timestamp, 0))
+			if age > (time.Hour * 48) {
+				return c.JSON(401, map[string]string{
+					"error":  "signature too old",
+					"detail": age.String(),
+				})
+			}
+
+			if sig.Data.Cid != cid {
+				return c.JSON(401, map[string]string{
+					"error":  "signature contains incorrect CID",
+					"detail": fmt.Sprintf("url: %s, signature %s", cid, sig.Data.Cid),
+				})
+			}
+
+			// OK
+			c.Response().Header().Set("x-signature-debug", sig.String())
+		}
+
+		return next(c)
+	}
 }
 
 func (ss *MediorumServer) postBlob(c echo.Context) error {
