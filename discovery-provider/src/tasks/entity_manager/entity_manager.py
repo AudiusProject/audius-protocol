@@ -221,7 +221,6 @@ def entity_manager_update(
                     elif (
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.DELEGATE
-                        and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         create_delegate(params)
                 except Exception as e:

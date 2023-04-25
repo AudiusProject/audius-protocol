@@ -6,8 +6,9 @@ from src.models.delegates.delegate import Delegate
 from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
+from src.utils.structured_logger import StructuredLogger
 
-logger = logging.getLogger(__name__)
+logger = StructuredLogger(__name__)
 
 
 class CreateDelegateMetadata(TypedDict):
