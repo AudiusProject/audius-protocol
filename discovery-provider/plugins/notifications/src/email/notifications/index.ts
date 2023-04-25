@@ -384,6 +384,7 @@ export async function processEmailNotifications(
                 identityDb,
                 sendAt: frequency !== 'live' ? sendAt : null
               })
+              logger.info(`asdf was email sent? ${sent}`)
               if (!sent) {
                 // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent
                 if (sent === false) {
