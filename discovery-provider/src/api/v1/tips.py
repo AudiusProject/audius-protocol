@@ -1,4 +1,3 @@
-import os
 from flask_restx import Namespace, Resource, fields
 from src.api.v1.helpers import (
     abort_bad_request_param,
@@ -11,6 +10,7 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.tips import tip_model, tip_model_full
 from src.queries.get_tips import get_tips
+from src.utils.config import shared_config
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
@@ -19,8 +19,7 @@ full_ns = Namespace("tips", description="Full tip related operations")
 
 
 TIPS_EXCLUDED_RECIPIENTS: list[int] = []
-
-env = os.getenv("audius_discprov_env")
+env = shared_config["discprov"]["env"]
 if env == "stage" or env == "dev":
     TIPS_EXCLUDED_RECIPIENTS = [12]
 else:
