@@ -37,7 +37,9 @@ begin
 
   -- If new track, create notification
   begin
-    if new.is_unlisted = FALSE AND 
+    if new.created_at = new.updated_at AND 
+    TG_OP = 'INSERT' AND
+    new.is_unlisted = FALSE AND 
     new.is_available = True AND 
     new.is_delete = FALSE AND 
     new.is_playlist_upload = FALSE AND
@@ -73,6 +75,8 @@ begin
   -- If remix, create notification
   begin
     if new.remix_of is not null AND
+    new.created_at = new.updated_at AND 
+    TG_OP = 'INSERT' AND
     new.is_unlisted = FALSE AND
     new.is_available = true AND
     new.is_delete = FALSE AND

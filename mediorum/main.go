@@ -6,12 +6,16 @@ import (
 	"mediorum/registrar"
 	"mediorum/server"
 	"os"
-	"strings"
+	"strconv"
 	"sync"
-	"time"
+
+	"golang.org/x/exp/slog"
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout))
+	slog.SetDefault(logger)
+
 	preset := os.Getenv("MEDIORUM_ENV")
 
 	switch preset {
@@ -52,27 +56,12 @@ func startStagingOrProd(isProd bool) {
 		Dir:               "/tmp/mediorum",
 		PostgresDSN:       os.Getenv("dbUrl"),
 		LegacyFSRoot:      getenvWithDefault("storagePath", "/file_storage"),
+		UpstreamCN:        getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
 	}
 
 	ss, err := server.New(config)
 	if err != nil {
 		log.Fatal(err)
-	}
-
-	// for prod: gradual rollout to a subset of hosts
-	if isProd {
-		hostSubset := []string{"audius.co", "cultur3stake.com"}
-		shouldStart := false
-		for _, tld := range hostSubset {
-			if strings.Contains(config.Self.Host, tld) {
-				shouldStart = true
-			}
-		}
-		if !shouldStart {
-			log.Println("shouldStart = false... sleeping")
-			time.Sleep(time.Hour * 10000)
-			log.Fatal("bye")
-		}
 	}
 
 	ss.MustStart()
@@ -117,8 +106,10 @@ func startDevCluster() {
 	dirTemplate := getenvWithDefault("dirTemplate", "/tmp/mediorum_dev_%d")
 	dbUrlTemplate := getenvWithDefault("dbUrlTemplate", "postgres://postgres:example@localhost:5454/m%d")
 	hostNameTemplate := getenvWithDefault("hostNameTemplate", "http://localhost:199%d")
+	upstreamCNTemplate := getenvWithDefault("upstreamCNTemplate", "http://audius-protocol-creator-node-container-%d:4000")
+	devNetworkCount, _ := strconv.Atoi(getenvWithDefault("devNetworkCount", "3"))
 
-	network := devNetwork(hostNameTemplate, 3)
+	network := devNetwork(hostNameTemplate, devNetworkCount)
 	wg := sync.WaitGroup{}
 
 	for idx, peer := range network {
@@ -130,6 +121,7 @@ func startDevCluster() {
 			Dir:               fmt.Sprintf(dirTemplate, idx+1),
 			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),
 			ListenPort:        fmt.Sprintf("199%d", idx+1),
+			UpstreamCN:        fmt.Sprintf(upstreamCNTemplate, idx+1),
 		}
 
 		wg.Add(1)

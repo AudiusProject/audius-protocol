@@ -25,4 +25,3 @@ create database m7 WITH TEMPLATE postgres;
 create database m8 WITH TEMPLATE postgres;
 create database m9 WITH TEMPLATE postgres;
 create database mediorum_test WITH TEMPLATE postgres;
-

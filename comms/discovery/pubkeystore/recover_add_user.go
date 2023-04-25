@@ -19,6 +19,11 @@ func findAddUserTransaction(ctx context.Context, blockNumber *big.Int) (string, 
 		return "", err
 	}
 
+	chainId, err := poaClient.ChainID(ctx)
+	if err != nil {
+		return "", err
+	}
+
 	var typedData = apitypes.TypedData{
 		Types: apitypes.Types{
 			"EIP712Domain": []apitypes.Type{
@@ -53,7 +58,7 @@ func findAddUserTransaction(ctx context.Context, blockNumber *big.Int) (string, 
 		Domain: apitypes.TypedDataDomain{
 			Name:              "User Factory",
 			Version:           "1",
-			ChainId:           math.NewHexOrDecimal256(chainId),
+			ChainId:           math.NewHexOrDecimal256(chainId.Int64()),
 			VerifyingContract: verifyingContract,
 		},
 		PrimaryType: "AddUserRequest",

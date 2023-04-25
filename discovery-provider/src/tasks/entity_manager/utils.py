@@ -125,7 +125,6 @@ class ManageEntityParameters:
         self.entity_type = helpers.get_tx_arg(event, "_entityType")
         self.action = helpers.get_tx_arg(event, "_action")
         # Check if metadata blob was passed directly.
-        # TODO remove after CID metadata migration.
         try:
             data = json.loads(helpers.get_tx_arg(event, "_metadata"))
             self.metadata_cid = data["cid"]

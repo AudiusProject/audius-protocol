@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
-	"os"
 	"strings"
 
 	"comms.audius.co/discovery/config"
@@ -13,54 +12,57 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/signer/core/apitypes"
-	"github.com/inconshreveable/log15"
+	"golang.org/x/exp/slog"
 )
 
 var (
-	poaClient *ethclient.Client
+	poaClient  *ethclient.Client
+	acdcClient *ethclient.Client
 
 	// on staging, and soon prod
 	// we will need two clients:
 	// a POA client for older users
 	// an audius chain client for newer users
 	finalPoaBlock     int64 = 31413000
-	audiusChainClient *ethclient.Client
-
-	chainId           int64
 	verifyingContract string
 )
 
 func Dial(discoveryConfig *config.DiscoveryConfig) error {
 	var err error
 
-	endpoint := "http://54.241.83.13:8545"
-	chainId = 99
+	// prod settings
+	acdcEndpoint := "https://acdc-gateway.audius.co"
+	poaEndpoint := "http://54.241.83.13:8545"
 	verifyingContract = "0x981c44040cb6150a2b8a7f63fb182760505bf666"
 
+	// staging settings
 	if discoveryConfig.IsStaging {
-		endpoint = "http://54.176.124.102:8545"
-		chainId = 77
+		acdcEndpoint = "https://acdc-gateway.staging.audius.co"
+		poaEndpoint = "http://54.176.124.102:8545"
 		verifyingContract = "0x39d26a6a138ddf8b447d651d5d3883644d277251"
 
-		// should get dynamically from
+		// got from:
 		// https://identityservice.staging.audius.co/health_check/poa
 		finalPoaBlock = 30000000
-
-		audiusChainClient, err = ethclient.Dial("https://poa-gateway.staging.audius.co")
-		if err != nil {
-			return err
-		}
 	}
 
-	poaClient, err = ethclient.Dial(endpoint)
-	return err
+	poaClient, err = ethclient.Dial(poaEndpoint)
+	if err != nil {
+		return err
+	}
+
+	acdcClient, err = ethclient.Dial(acdcEndpoint)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error) {
 	var err error
 
-	logger := log15.New("module", "pubkeystore", "userId", userId)
-	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
+	logger := slog.With("module", "pubkeystore", "userId", userId)
 
 	conn := db.Conn
 
@@ -101,7 +103,7 @@ func RecoverUserPublicKeyBase64(ctx context.Context, userId int) (string, error)
 
 		if finalPoaBlock != 0 && blocknumber > finalPoaBlock {
 			// EM on Audius Chain
-			pubkeyBase64, err = recoverEntityManagerPubkey(audiusChainClient, txhash, wallet)
+			pubkeyBase64, err = recoverEntityManagerPubkey(acdcClient, txhash, wallet)
 			if err == nil {
 				break
 			}

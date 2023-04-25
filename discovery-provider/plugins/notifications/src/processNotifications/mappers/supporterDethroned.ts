@@ -13,6 +13,8 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
+import { CoverPhotoFromJSONTyped } from '@audius/sdk'
 
 type SupporterDethronedNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupporterDethronedNotification
@@ -72,6 +74,18 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     )
     const newTopSupporterHandle = users[this.tipSenderUserId]?.handle
     const supportedUserName = users[this.tipReceiverUserId]?.name
+
+    const title = "👑 You've Been Dethroned!"
+    const body = `${capitalize(
+      newTopSupporterHandle
+    )} dethroned you as ${supportedUserName}'s #1 Top Supporter! Tip to reclaim your spot?`
+    await sendBrowserNotification(
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -92,10 +106,8 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
               targetARN: device.awsARN
             },
             {
-              title: "👑 You've Been Dethroned!",
-              body: `${capitalize(
-                newTopSupporterHandle
-              )} dethroned you as ${supportedUserName}'s #1 Top Supporter! Tip to reclaim your spot?`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

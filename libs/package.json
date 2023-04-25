@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "2.0.3-beta.6",
+  "version": "2.0.3-beta.11",
   "audius": {
-    "releaseSHA": "0a1b8fee5de228d48f2aab265720fbaf45bda661"
+    "releaseSHA": "8651801e3dbe79b5698fc1bce8d80d5ab2b0f154"
   },
   "description": "",
   "main": "dist/index.cjs.js",
@@ -72,6 +72,7 @@
     "borsh": "0.4.0",
     "bs58": "4.0.1",
     "cipher-base": "1.0.4",
+    "crc-32": "1.2.2",
     "cross-fetch": "3.1.5",
     "elliptic": "6.5.4",
     "esm": "3.2.25",

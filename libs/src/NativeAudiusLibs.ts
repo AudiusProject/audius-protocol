@@ -11,7 +11,7 @@ import {
 import { Schemas, SchemaValidator } from './services/schemaValidator'
 import { UserStateManager } from './userStateManager'
 import type { Logger, Nullable } from './utils'
-import { Utils } from './utils'
+import { Utils, getNStorageNodes } from './utils'
 
 import { Keypair } from '@solana/web3.js'
 
@@ -514,10 +514,25 @@ export class AudiusLibs {
     /** Creator Node */
     if (this.creatorNodeConfig) {
       const currentUser = this.userStateManager.getCurrentUser()
-      const creatorNodeEndpoint = currentUser
+      let creatorNodeEndpoint = currentUser
         ? CreatorNode.getPrimary(currentUser.creator_node_endpoint) ??
           this.creatorNodeConfig.fallbackUrl
         : this.creatorNodeConfig.fallbackUrl
+
+      // Use rendezvous to select creatorNodeEndpoint for v2 users
+      if (currentUser?.is_storage_v2 && this.ethContracts) {
+        const storageV2Nodes =
+          await this.ethContracts.ServiceProviderFactoryClient.getServiceProviderList(
+            'content-node'
+          )
+        const randomNodes = await getNStorageNodes(
+          storageV2Nodes,
+          1,
+          currentUser.wallet,
+          this.logger
+        )
+        creatorNodeEndpoint = randomNodes[0]!
+      }
 
       this.creatorNode = new CreatorNode(
         this.web3Manager,
@@ -564,7 +579,7 @@ export class AudiusLibs {
       this.preferHigherPatchForSecondaries,
       ...services
     )
-    this.Account = new Account(this.User, ...services)
+    this.Account = new Account(this.User, this.ServiceProvider, ...services)
     this.Track = new Track(...services)
     this.Playlist = new Playlists(...services)
     this.File = new File(this.User, this.ServiceProvider, ...services)

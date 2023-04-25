@@ -181,7 +181,7 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 	ss.crud.Update(upload)
 
 	fileHash := upload.OrigFileCID
-	logger := ss.logger.New("template", upload.Template, "hash", fileHash)
+	logger := ss.logger.With("template", upload.Template, "hash", fileHash)
 
 	onError := func(err error, info ...string) error {
 		errMsg := fmt.Errorf("%s %s", err, strings.Join(info, " "))

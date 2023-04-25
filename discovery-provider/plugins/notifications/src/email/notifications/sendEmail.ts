@@ -32,6 +32,9 @@ export const sendNotificationEmail = async ({
   identityDb,
   sendAt
 }: SendNotificationEmailProps) => {
+  if (email === undefined) {
+    return
+  }
   try {
     logger.debug(`SendNotificationEmail | ${userId}, ${email}, ${frequency}`)
 

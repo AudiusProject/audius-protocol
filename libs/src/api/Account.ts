@@ -5,15 +5,22 @@ import { AuthHeaders } from '../constants'
 import { getPermitDigest, sign } from '../utils/signatures'
 import { PublicKey } from '@solana/web3.js'
 import type { Users } from './Users'
+import type { ServiceProvider } from './ServiceProvider'
 import type { BN } from 'ethereumjs-util'
 
 export class Account extends Base {
   User: Users
+  ServiceProvider: ServiceProvider
 
-  constructor(userApi: Users, ...services: BaseConstructorArgs) {
+  constructor(
+    userApi: Users,
+    serviceProvider: ServiceProvider,
+    ...services: BaseConstructorArgs
+  ) {
     super(...services)
 
     this.User = userApi
+    this.ServiceProvider = serviceProvider
 
     this.getCurrentUser = this.getCurrentUser.bind(this)
     this.login = this.login.bind(this)
@@ -75,11 +82,19 @@ export class Account extends Base {
     )
     if (userAccount) {
       this.userStateManager.setCurrentUser(userAccount)
-      const creatorNodeEndpoint = userAccount.creator_node_endpoint
-      if (creatorNodeEndpoint) {
-        this.creatorNode.setEndpoint(
-          CreatorNode.getPrimary(creatorNodeEndpoint)!
+      if (userAccount.is_storage_v2) {
+        const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
+          1,
+          userAccount.wallet
         )
+        await this.creatorNode.setEndpoint(randomNodes[0]!)
+      } else {
+        const creatorNodeEndpoint = userAccount.creator_node_endpoint
+        if (creatorNodeEndpoint) {
+          await this.creatorNode.setEndpoint(
+            CreatorNode.getPrimary(creatorNodeEndpoint)!
+          )
+        }
       }
       return { user: userAccount, error: false, phase }
     }
@@ -197,6 +212,7 @@ export class Account extends Base {
     const phases = {
       CREATE_USER_RECORD: 'CREATE_USER_RECORD',
       HEDGEHOG_SIGNUP: 'HEDGEHOG_SIGNUP',
+      SELECT_STORAGE_NODE: 'SELECT_STORAGE_NODE',
       ADD_USER: 'ADD_USER',
       UPLOAD_PROFILE_IMAGES: 'UPLOAD_PROFILE_IMAGES'
     }
@@ -222,6 +238,14 @@ export class Account extends Base {
           }
         }
       }
+
+      // Select a storage node to send future requests to
+      phase = phases.SELECT_STORAGE_NODE
+      const randomNodes = await this.ServiceProvider.autoSelectStorageV2Nodes(
+        1,
+        this.web3Manager.getWalletAddress()
+      )
+      await this.creatorNode.setEndpoint(randomNodes[0]!)
 
       // Add user to chain
       phase = phases.ADD_USER

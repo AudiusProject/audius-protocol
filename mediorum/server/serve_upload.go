@@ -120,7 +120,6 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 }
 
 func (ss *MediorumServer) getV1CIDBlob(c echo.Context) error {
-	// question for theo: why use random job ID and not orig_file_cid?
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
 	if isLegacyCID(jobID) {

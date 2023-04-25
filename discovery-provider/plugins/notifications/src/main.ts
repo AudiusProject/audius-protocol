@@ -17,6 +17,7 @@ import {
   RemoteConfig
 } from './remoteConfig'
 import { Server } from './server'
+import { configureWebPush } from './web'
 
 export class Processor {
   discoveryDB: Knex
@@ -47,8 +48,12 @@ export class Processor {
     await this.remoteConfig.init()
 
     logger.info('starting!')
+    
     // setup postgres listener
     await this.setupDB({ discoveryDBUrl, identityDBUrl })
+
+    // setup browser push
+    configureWebPush()
 
     // Comment out to prevent app notifications until complete
     this.listener = new Listener()

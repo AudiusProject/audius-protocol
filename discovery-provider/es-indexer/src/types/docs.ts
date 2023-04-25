@@ -27,6 +27,7 @@ export type PlaylistDoc = PlaylistRow & {
   reposted_by: number[]
   total_play_count: number
   user: EntityUserDoc
+  dominant_mood: string
 }
 
 export type UserDoc = UserRow & {

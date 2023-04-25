@@ -1,17 +1,22 @@
-import { Pool as PG } from 'pg'
+import { Pool as PG, types } from 'pg'
 import { Client as ES } from '@elastic/elasticsearch'
 import Cursor from 'pg-cursor'
 import _ from 'lodash'
 import { indexNames } from './indexNames'
 import { BlocknumberCheckpoint } from './types/blocknumber_checkpoint'
-import { MsearchResponseItem } from '@elastic/elasticsearch/lib/api/types'
 import { logger } from './logger'
+
+// we want numbers as floats instead of strings.
+// no worries about precision.
+// https://github.com/brianc/node-postgres/issues/811#issuecomment-1500255173
+// 20 = INT8 (64 bit int)
+types.setTypeParser(20, (value) => parseFloat(value))
 
 let pool: PG | undefined = undefined
 export function dialPg(): PG {
   if (!pool) {
     let connectionString = process.env.audius_db_url
-    pool = new PG({ connectionString, application_name: 'es-indexer' })
+    pool = new PG({ connectionString, application_name: 'es-indexer', types })
   }
 
   return pool

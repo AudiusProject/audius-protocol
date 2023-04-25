@@ -17,14 +17,12 @@
         },
         "cover_art": {
           "type": ["string", "null"],
-          "default": null,
-          "$ref": "#/definitions/CID"
+          "default": null
         },
         "cover_art_sizes": {
           "$comment": "type can be null if attached as a stem",
           "type": ["string", "null"],
-          "default": null,
-          "$ref": "#/definitions/CID"
+          "default": null
         },
         "tags": {
           "type": ["string", "null"],
@@ -73,7 +71,7 @@
         },
         "track_segments": {
           "type": "array",
-          "minItems": 1,
+          "minItems": 0,
           "items": {
             "$ref": "#/definitions/TrackSegment"
           },
@@ -202,8 +200,7 @@
       "additionalProperties": false,
       "properties": {
         "cid": {
-          "type": ["string", "null"],
-          "$ref": "#/definitions/CID"
+          "type": ["string", "null"]
         },
         "is_downloadable": {
           "type": "boolean"

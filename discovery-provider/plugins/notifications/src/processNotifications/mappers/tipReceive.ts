@@ -14,6 +14,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type TipReceiveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TipReceiveNotification
@@ -70,6 +71,12 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     const sendingUserName = users[this.senderUserId]?.name
     const tipAmount = formatWei(this.amount.toString(), 'sol')
 
+    const title = 'You Received a Tip!'
+    const body = `${capitalize(
+      sendingUserName
+    )} sent you a tip of ${tipAmount} $AUDIO`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -90,10 +97,8 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'You Received a Tip!',
-              body: `${capitalize(
-                sendingUserName
-              )} sent you a tip of ${tipAmount} $AUDIO`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

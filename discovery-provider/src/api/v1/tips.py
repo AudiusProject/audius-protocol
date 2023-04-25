@@ -10,11 +10,20 @@ from src.api.v1.helpers import (
 )
 from src.api.v1.models.tips import tip_model, tip_model_full
 from src.queries.get_tips import get_tips
+from src.utils.config import shared_config
 from src.utils.redis_cache import cache
 from src.utils.redis_metrics import record_metrics
 
 ns = Namespace("tips", description="Tip related operations")
 full_ns = Namespace("tips", description="Full tip related operations")
+
+
+TIPS_EXCLUDED_RECIPIENTS: list[int] = []
+env = shared_config["discprov"]["env"]
+if env == "stage" or env == "dev":
+    TIPS_EXCLUDED_RECIPIENTS = [12]
+else:
+    TIPS_EXCLUDED_RECIPIENTS = [51]  # Audius account
 
 
 tips_parser = pagination_with_current_user_parser.copy()
@@ -74,6 +83,7 @@ class Tips(Resource):
                 "current_user_follows. Missing user_id",
                 full_ns,
             )
+        args["exclude_recipients"] = TIPS_EXCLUDED_RECIPIENTS
 
         tips = get_tips(args)
         tips = list(map(extend_tip, tips))
@@ -126,6 +136,7 @@ class FullTips(Resource):
                 "current_user_follows. Missing user_id",
                 full_ns,
             )
+        args["exclude_recipients"] = TIPS_EXCLUDED_RECIPIENTS
 
         tips = get_tips(args)
         tips = list(map(extend_tip, tips))

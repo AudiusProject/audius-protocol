@@ -13,6 +13,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type SupporterRankUpNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupporterRankUpNotification
@@ -68,6 +69,12 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
 
     const sendingUserName = users[this.senderUserId]?.name
 
+    const title =  `#${this.rank} Top Supporter`
+    const body = `${capitalize(sendingUserName)} became your #${
+      this.rank
+    } Top Supporter!`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -89,10 +96,8 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
               targetARN: device.awsARN
             },
             {
-              title: `#${this.rank} Top Supporter`,
-              body: `${capitalize(sendingUserName)} became your #${
-                this.rank
-              } Top Supporter!`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

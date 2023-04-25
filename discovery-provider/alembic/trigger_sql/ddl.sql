@@ -71,3 +71,9 @@ begin;
     alter table users
     add column if not exists is_storage_v2 boolean not null default false;
 commit;
+
+
+-- 4/18/23: add is_available index
+begin;
+    create index if not exists users_is_available_false_idx on users (is_available) where is_available = false;
+commit;  
