@@ -10,7 +10,7 @@ import { getUser, getUsers } from 'store/cache/users/selectors'
 import { CommonState } from 'store/commonStore'
 import { Nullable } from 'utils'
 
-import { Collection, Status, Track } from '../../models'
+import { Collection, ID, Status, Track } from '../../models'
 
 import { notificationsAdapter } from './notificationsSlice'
 import {
@@ -165,4 +165,13 @@ export const getNotificationEntities = <
     return entities as EntityTypes<T>
   }
   return null as EntityTypes<T>
+}
+
+export const getNotificationTrack = (state: CommonState, trackId: ID) => {
+  const track = getTrack(state, { id: trackId })
+  if (!track) return null
+  const { owner_id } = track
+  const owner = getUser(state, { id: owner_id })
+  if (!owner) return null
+  return { ...track, user: owner }
 }
