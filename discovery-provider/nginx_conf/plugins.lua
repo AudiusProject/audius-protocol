@@ -24,26 +24,26 @@ end
 function split(str, delimiter)
     local result = {}
     for match in (str .. delimiter):gmatch("(.-)" .. delimiter) do
-        table.insert(result, match)
+        if match ~= '' then
+            table.insert(result, match)
+        end
     end
     return result
 end
 
 function _M.get_health_check()
-    local urls = split(config.registered_plugins, ",")
+    local plugins = split(config.registered_plugins, ",")
 
     local responses = {}
-    for _, url in ipairs(urls) do
-        local upstream_url = string.format("http://%s:6000", url)
+    for _, plugin in ipairs(plugins) do
+        local upstream_url = string.format("/plugins/%s/health_check", plugin)
         local resp = fetch_json(upstream_url)
         if resp then
-            for k, v in pairs(data) do
-                merged_data[k] = v
-            end
+            responses[plugin] = resp
         end
     end
 
-    local merged_json, err = cjson.encode(merged_data)
+    local merged_json, err = cjson.encode(responses)
     if err then
         ngx.log(ngx.ERR, "failed to encode JSON: ", err)
         ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
