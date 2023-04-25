@@ -11,6 +11,7 @@ import type { StorageService } from '../../services/StorageService'
 import { isFileValid } from '../../utils/file'
 import { TRACK_REQUIRED_VALUES } from './constants'
 import { objectMissingValues } from '../../utils/object'
+import { retry3 } from '../../utils/retry'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -88,12 +89,36 @@ export class TracksApi extends TracksApiWithoutStream {
     }
 
     // Upload track audio and cover art to storage node
-    const updatedMetadata = await this.storage.uploadTrackAudioAndCoverArt(
-      trackFile,
-      coverArtFile,
-      metadata,
-      onProgress
-    )
+    const [audioResp, coverArtResp] = await Promise.all([
+      retry3(
+        async () =>
+          await this.storage.uploadFile(trackFile, onProgress, 'audio'),
+        (e) => {
+          console.log('Retrying uploadTrackAudio', e)
+        }
+      ),
+      retry3(
+        async () =>
+          await this.storage.uploadFile(coverArtFile, onProgress, 'img_square'),
+        (e) => {
+          console.log('Retrying uploadTrackCoverArt', e)
+        }
+      )
+    ])
+
+    // Update metadata to include uploaded CIDs
+    const updatedMetadata = {
+      ...metadata,
+      track_segments: [],
+      track_cid: audioResp.results['320'],
+      download: metadata.download?.is_downloadable
+        ? {
+            ...metadata.download,
+            cid: metadata.track_cid
+          }
+        : metadata.download,
+      cover_art_sizes: coverArtResp.id
+    }
 
     // TODO: Integrate with wallet api
     // TODO: Write metadata to chain
