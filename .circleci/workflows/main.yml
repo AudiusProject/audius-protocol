@@ -48,7 +48,6 @@ jobs:
   - test:
       name: test-discovery-provider-notifications
       context: GCP
-      no_output_timeout: 20m
       instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
   - test:
