@@ -676,7 +676,7 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 	var rpcs []schema.RpcLog
 
 	var after time.Time
-	if t, err := time.Parse(time.RFC3339, c.QueryParam("after")); err == nil {
+	if t, err := time.Parse(time.RFC3339Nano, c.QueryParam("after")); err == nil {
 		after = t
 	} else {
 		fmt.Println("failed to parse time", err, c.QueryParam("after"), c.QueryString())
