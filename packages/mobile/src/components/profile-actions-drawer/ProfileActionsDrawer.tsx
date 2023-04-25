@@ -1,9 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 
 import {
   ShareSource,
   shareModalUIActions,
-  profilePageSelectors
+  profilePageSelectors,
+  chatSelectors,
+  chatActions
 } from '@audius/common'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -12,17 +14,26 @@ import type { AppState } from 'app/store'
 import { setVisibility } from 'app/store/drawers/slice'
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { getProfileUserId } = profilePageSelectors
+const { getBlockees } = chatSelectors
+const { fetchBlockees } = chatActions
 
 const PROFILE_ACTIONS_MODAL_NAME = 'ProfileActions'
 
 const messages = {
   shareProfile: 'Share Profile',
-  blockMessages: 'Block Messages'
+  blockMessages: 'Block Messages',
+  unblockMessages: 'Unblock Messages'
 }
 
 export const ProfileActionsDrawer = () => {
   const dispatch = useDispatch()
   const userId = useSelector((state: AppState) => getProfileUserId(state))
+  const blockeeList = useSelector(getBlockees)
+  const isBlockee = userId ? blockeeList.includes(userId) : false
+
+  useEffect(() => {
+    dispatch(fetchBlockees())
+  }, [dispatch])
 
   const handleShareProfilePress = useCallback(() => {
     dispatch(
@@ -63,9 +74,12 @@ export const ProfileActionsDrawer = () => {
   const rows = useMemo(
     () => [
       { text: messages.shareProfile, callback: handleShareProfilePress },
-      { text: messages.blockMessages, callback: handleBlockMessagesPress }
+      {
+        text: isBlockee ? messages.unblockMessages : messages.blockMessages,
+        callback: handleBlockMessagesPress
+      }
     ],
-    [handleShareProfilePress, handleBlockMessagesPress]
+    [handleShareProfilePress, handleBlockMessagesPress, isBlockee]
   )
 
   return <ActionDrawer modalName={PROFILE_ACTIONS_MODAL_NAME} rows={rows} />
