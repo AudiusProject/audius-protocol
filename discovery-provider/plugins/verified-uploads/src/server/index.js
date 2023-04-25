@@ -1,7 +1,7 @@
-import express, { Express } from "express";
+import express from "express";
 
 import { Server as HttpServer } from "http";
-import { router as healthCheckRouter } from "./routes/healthCheck";
+import { router as healthCheckRouter } from "./routes/healthCheck.js";
 
 const DEFAULT_PORT = 6000;
 

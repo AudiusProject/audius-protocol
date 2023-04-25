@@ -3,9 +3,7 @@ import dotenv from "dotenv";
 import listenOn from "./db.js";
 import tracksHandler from "./handlers/tracks.js";
 import usersHandler from "./handlers/users.js";
-import { Server } from "./server";
-
-const app = express();
+import { Server } from "./server/index.js";
 
 const main = async () => {
   const server = new Server();
