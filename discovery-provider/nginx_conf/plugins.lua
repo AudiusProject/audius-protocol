@@ -49,5 +49,6 @@ function _M.get_health_check()
         ngx.exit(ngx.HTTP_INTERNAL_SERVER_ERROR)
     end
     return merged_json
+end
 
 return _M
