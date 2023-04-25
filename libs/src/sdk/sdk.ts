@@ -25,9 +25,11 @@ import {
   WalletApiService,
   DiscoveryNodeSelectorService,
   DiscoveryNodeSelector,
+  EntityManagerService,
   WalletApi,
   StorageService,
-  Storage
+  Storage,
+  EntityManager
 } from './services'
 
 type ServicesContainer = {
@@ -35,6 +37,11 @@ type ServicesContainer = {
    * Service used to choose discovery node
    */
   discoveryNodeSelector: DiscoveryNodeSelectorService
+
+  /**
+   * Service used to write and update entities on chain
+   */
+  entityManager: EntityManagerService
 
   /**
    * Service used to store and retrieve content e.g. tracks and images
@@ -88,6 +95,7 @@ export const sdk = (config: SdkConfig) => {
 const initializeServices = (config: SdkConfig) => {
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
+    entityManager: new EntityManager(),
     storage: new Storage(),
     walletApi: new WalletApi()
   }

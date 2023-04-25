@@ -23,12 +23,8 @@ export class Storage implements StorageService {
    */
   private config: StorageServiceConfig
 
-  private contentNodeEndpoint: string
-
   constructor(config?: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
-
-    this.contentNodeEndpoint = this.config.contentNodeEndpoint
   }
 
   async uploadFile(file: File, onProgress: ProgressCB, template: FileTemplate) {
@@ -37,7 +33,7 @@ export class Storage implements StorageService {
     // TODO: Test this in a browser env
     formData.append('files', isNodeFile(file) ? file.buffer : file, file.name)
 
-    const { status, body } = await new Promise<{
+    const { body } = await new Promise<{
       status: any
       body: any
     }>((resolve, reject) => {
@@ -58,7 +54,11 @@ export class Storage implements StorageService {
         'Content-Type',
         `multipart/form-data; boundary=${formData.getBoundary()}`
       )
-      xhr.open('POST', `${this.contentNodeEndpoint}/mediorum/uploads`, true)
+      xhr.open(
+        'POST',
+        `${this.config.contentNodeEndpoint}/mediorum/uploads`,
+        true
+      )
       xhr.send(formData)
     })
 
@@ -105,7 +105,7 @@ export class Storage implements StorageService {
    */
   private async getProcessingStatus(id: string) {
     const response = await fetch(
-      `${this.contentNodeEndpoint}/mediorum/uploads/${id}`
+      `${this.config.contentNodeEndpoint}/mediorum/uploads/${id}`
     )
     // TODO: type this
     const { data } = await response.json()

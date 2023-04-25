@@ -1,3 +1,5 @@
+import type { CrossPlatformFile as File } from '../../types/File'
+
 export type StorageServiceConfig = {
   contentNodeEndpoint: string
 }
