@@ -1,6 +1,7 @@
 import { createEntityAdapter, createSlice } from '@reduxjs/toolkit'
 
 import { Status } from 'models/Status'
+import { signOut } from 'store/sign-out/slice'
 
 import {
   AddNotificationsAction,
@@ -59,6 +60,11 @@ const slice = createSlice({
         }))
       )
       state.totalUnviewed = 0
+    }
+  },
+  extraReducers: {
+    [signOut.type]: () => {
+      return initialState
     }
   }
 })
