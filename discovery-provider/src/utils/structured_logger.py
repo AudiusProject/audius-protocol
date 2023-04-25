@@ -16,7 +16,7 @@ class StructuredLogger:
             "path": self.logger.name,
             **self.context,
         }
-    
+
     def reset_context(self):
         self.context = {}
 
@@ -26,29 +26,40 @@ class StructuredLogger:
 
     def info(self, message, *args, **kwargs):
         kwargs["extra"] = self.get_context()  # Set the updated extra context
-        self.logger.info(message, *args, **kwargs)  # Call the original logger.info method
+        self.logger.info(
+            message, *args, **kwargs
+        )  # Call the original logger.info method
 
     def error(self, message, *args, **kwargs):
         kwargs["extra"] = self.get_context()  # Set the updated extra context
-        self.logger.error(message, *args, **kwargs)  # Call the original logger.info method
+        self.logger.error(
+            message, *args, **kwargs
+        )  # Call the original logger.info method
 
     def debug(self, message, *args, **kwargs):
         kwargs["extra"] = self.get_context()  # Set the updated extra context
-        self.logger.debug(message, *args, **kwargs)  # Call the original logger.info method
+        self.logger.debug(
+            message, *args, **kwargs
+        )  # Call the original logger.info method
 
     def warn(self, message, *args, **kwargs):
         kwargs["extra"] = self.get_context()  # Set the updated extra context
-        self.logger.warn(message, *args, **kwargs)  # Call the original logger.info method
+        self.logger.warn(
+            message, *args, **kwargs
+        )  # Call the original logger.info method
 
     def warning(self, message, *args, **kwargs):
         kwargs["extra"] = self.get_context()  # Set the updated extra context
-        self.logger.warning(message, *args, **kwargs)  # Call the original logger.info method
+        self.logger.warning(
+            message, *args, **kwargs
+        )  # Call the original logger.info method
 
 
 def log_duration(logger: StructuredLogger):
     """
     Decorator to log the duration of function execution.
     """
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             logger.set_context("function", func.__name__)
@@ -60,5 +71,7 @@ def log_duration(logger: StructuredLogger):
             logger.info(f"{func.__name__} completed in {duration}")
             logger.reset_context("duration")
             return result
+
         return wrapper
+
     return decorator

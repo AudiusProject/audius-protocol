@@ -78,9 +78,11 @@ def get_elapsed_time_redis(redis, redis_key):
     elapsed_time_in_sec = (int(time.time()) - int(last_seen)) if last_seen else None
     return elapsed_time_in_sec
 
+
 def get_backfilled_cid_data(redis):
     backfilled_cid_data = redis.get("backfilled_cid_data")
     return backfilled_cid_data.decode() if backfilled_cid_data else False
+
 
 # Returns DB block state & diff
 def _get_db_block_state():

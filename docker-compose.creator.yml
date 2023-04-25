@@ -11,6 +11,7 @@ services:
     volumes:
       - ./creator-node:/usr/src/app
       - ./dev-tools:/tmp/dev-tools
+      - legacy_creator_file_storage:/file_storage
       - audius-libs:/usr/src/audius-libs
       - /usr/src/app/node_modules
       - /usr/src/app/build
@@ -28,5 +29,3 @@ services:
     deploy:
       mode: replicated
       replicas: "${CREATOR_NODE_REPLICAS}"
-    profiles:
-      - creator
