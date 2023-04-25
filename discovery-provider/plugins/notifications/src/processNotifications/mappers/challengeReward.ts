@@ -14,6 +14,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type ChallengeRewardRow = Omit<NotificationRow, 'data'> & {
   data: ChallengeRewardNotification
@@ -118,6 +119,11 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
       this.identityDB,
       [this.receiverUserId]
     )
+
+    const title = this.challengeInfoMap[this.challengeId].title
+    const body = this.getPushBodyText()
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -137,8 +143,8 @@ export class ChallengeReward extends BaseNotification<ChallengeRewardRow> {
               targetARN: device.awsARN
             },
             {
-              title: this.challengeInfoMap[this.challengeId].title,
-              body: this.getPushBodyText(),
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
