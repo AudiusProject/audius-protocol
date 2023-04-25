@@ -12,6 +12,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type FollowNotificationRow = Omit<NotificationRow, 'data'> & {
   data: FollowNotification
@@ -63,6 +64,13 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
       this.identityDB,
       [this.receiverUserId, this.followerUserId]
     )
+
+    const title = 'New Follow'
+    const body = `${users[this.followerUserId].name} followed you`
+    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'followers')) {
+      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    }
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -88,8 +96,8 @@ export class Follow extends BaseNotification<FollowNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Follow',
-              body: `${users[this.followerUserId].name} followed you`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
