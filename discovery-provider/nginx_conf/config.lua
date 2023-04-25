@@ -53,6 +53,7 @@ ngx.log(ngx.NOTICE, "rate_limiting_enabled=", _M.rate_limiting_enabled)
 
 _M.update_redirect_weights_every = tonumber(update_redirect_weights_every)
 ngx.log(ngx.NOTICE, "update_redirect_weights_every=", update_redirect_weights_every)
-return _M
 
 _M.registered_plugins = registered_plugins
+
+return _M
