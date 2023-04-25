@@ -136,6 +136,7 @@ class FullTips(Resource):
                 "current_user_follows. Missing user_id",
                 full_ns,
             )
+        args["exclude_recipients"] = TIPS_EXCLUDED_RECIPIENTS
 
         tips = get_tips(args)
         tips = list(map(extend_tip, tips))
