@@ -59,7 +59,7 @@ def test_index_delegate(app, mocker):
                         "_userId": new_delegates_data[0]["user_id"],
                         "_metadata": f"""{{"name": "{new_delegates_data[0]["name"]}", "address": "{new_delegates_data[0]["address"]}", "is_personal_access": {'true' if new_delegates_data[0]["is_personal_access"] else 'false' }}}""",
                         "_action": Action.CREATE,
-                        "_signer": "0x04c9fc3784120f50932436f84c59aebebb12e0d",
+                        "_signer": "user1wallet",
                     }
                 )
             },
@@ -73,7 +73,7 @@ def test_index_delegate(app, mocker):
                         "_userId": new_delegates_data[1]["user_id"],
                         "_action": Action.CREATE,
                         "_metadata": f"""{{"name": "{new_delegates_data[1]["name"]}", "address": "{new_delegates_data[1]["address"]}", "is_personal_access": {'true' if new_delegates_data[1]["is_personal_access"] else 'false' }}}""",
-                        "_signer": "0x7Be50316dCD27a224E82F80bB154C1ea70D57f19",
+                        "_signer": "user1wallet",
                     }
                 )
             },
@@ -87,7 +87,7 @@ def test_index_delegate(app, mocker):
                         "_userId": new_delegates_data[2]["user_id"],
                         "_action": Action.CREATE,
                         "_metadata": f"""{{"name": "{new_delegates_data[2]["name"]}", "address": "{new_delegates_data[2]["address"]}", "is_personal_access": {'true' if new_delegates_data[2]["is_personal_access"] else 'false' }}}""",
-                        "_signer": "0x1A3a04F77Eca3BBae35d79FC4B48a783D382AC63",
+                        "_signer": "user2wallet",
                     }
                 )
             },
@@ -165,7 +165,7 @@ def test_index_delegate(app, mocker):
                         "_userId": 4,
                         "_action": Action.CREATE,
                         "_metadata": '{"name": "Wrong Signer", "address": "0x4D66645bC8Ac35c02a23bac8D795F9C9Fe765055", "is_personal_access": false}',
-                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                        "_signer": "0x4D66645bC8Ac35c02a23bac8D795F9C9Fe765055",
                     }
                 )
             },
@@ -180,7 +180,37 @@ def test_index_delegate(app, mocker):
                         "_userId": 2,
                         "_action": Action.CREATE,
                         "_metadata": '{"name": "Dupe address", "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4", "is_personal_access": false}',
-                        "_signer": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateDelegateInvalidTx3": [
+            {
+                # Missing user id
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATE,
+                        "_userId": 0,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"name": "Missing user id", "address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "is_personal_access": false}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "CreateDelegateInvalidTx4": [
+            {
+                # Missing name
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATE,
+                        "_userId": 0,
+                        "_action": Action.CREATE,
+                        "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "is_personal_access": false}',
+                        "_signer": "user2wallet",
                     }
                 )
             },

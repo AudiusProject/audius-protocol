@@ -68,16 +68,23 @@ def validate_delegate_tx(
             raise Exception(
                 f"Invalid Delegate Transaction, address {metadata['address']} already exists"
             )
-        if user_id and user_id not in params.existing_records[EntityType.USER]:
+        if not user_id:
+            raise Exception(
+                "Invalid Delegate Transaction, user id is required and was not provided"
+            )
+        if user_id not in params.existing_records[EntityType.USER]:
             raise Exception(
                 f"Invalid Delegate Transaction, user id {user_id} does not exist"
             )
-
-        if metadata["address"].lower() != params.signer.lower():
+        if not params.existing_records[EntityType.USER][user_id].wallet:
             raise Exception(
-                "Invalid Delegate Transaction, delegate wallet signer does not match delegate address"
+                "Programming error while indexing Delegate Transaction, user wallet missing"
             )
-
+        if (
+            params.existing_records[EntityType.USER][user_id].wallet.lower()
+            != params.signer.lower()
+        ):
+            raise Exception("Invalid Delegate Transaction, user does not match signer")
         if not isinstance(metadata["is_personal_access"], bool):
             raise Exception(
                 "Invalid Delegate Transaction, is_personal_access must be a boolean (or empty)"
