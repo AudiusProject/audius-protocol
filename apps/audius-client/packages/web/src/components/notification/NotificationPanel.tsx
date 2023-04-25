@@ -118,7 +118,9 @@ export const NotificationPanel = ({ anchorRef }: NotificationPanelProps) => {
 
   useEffect(() => {
     if (panelIsOpen && unviewedNotificationCount > 0) {
-      dispatch(markAllAsViewed())
+      return () => {
+        dispatch(markAllAsViewed())
+      }
     }
   }, [panelIsOpen, unviewedNotificationCount, dispatch])
 

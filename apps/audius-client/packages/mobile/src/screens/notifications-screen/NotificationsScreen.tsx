@@ -23,7 +23,9 @@ export const NotificationsScreen = () => {
 
   const handleMarkAsViewed = useCallback(() => {
     if (totalUnviewed > 0) {
-      dispatch(markAllAsViewed())
+      return () => {
+        dispatch(markAllAsViewed())
+      }
     }
   }, [dispatch, totalUnviewed])
 
