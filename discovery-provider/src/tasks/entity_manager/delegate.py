@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Optional, TypedDict, Union, cast
 
 from src.models.delegates.delegate import Delegate
