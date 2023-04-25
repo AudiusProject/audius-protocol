@@ -218,4 +218,5 @@ volumes:
   audius-libs:
   postgresdata:
   mediorum:
+  legacy_creator_file_storage:
 

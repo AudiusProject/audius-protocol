@@ -7,7 +7,8 @@ import pathlib
 
 import web3
 
-ETH_CONTRACTS_ABI_DIR = pathlib.Path(__file__).parent / "./eth-contracts"
+# Uses folder mounted at /tmp/eth-contracts/ABIs, assuming the path of this script is /tmp/dev-tools/startup/register.py
+ETH_CONTRACTS_ABI_DIR = pathlib.Path(__file__).parent / "../../eth-contracts/ABIs"
 
 
 def main(replica):

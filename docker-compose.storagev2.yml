@@ -20,7 +20,9 @@ services:
       - 1995:1995
     volumes:
       - mediorum:/data
+      - legacy_creator_file_storage:/file_storage
       - ./dev-tools:/tmp/dev-tools
+      - ./libs/src/eth-contracts:/tmp/eth-contracts # Used only in register script
     profiles:
       - storagev2
     depends_on:
