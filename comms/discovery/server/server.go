@@ -683,7 +683,7 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 	}
 
 	query := `select * from rpc_log where relayed_by = $1 and relayed_at > $2 order by relayed_at asc`
-	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after)
+	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after.Truncate(time.Microsecond))
 	if err != nil {
 		return err
 	}
