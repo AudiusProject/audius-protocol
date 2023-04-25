@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useMemo, useState } from 'react'
 import {
-  EnvironmentSlector,
+  EnvironmentSelector,
   useEnvironmentSelection,
-} from './components/EnvironmentSlector'
+} from './components/EnvironmentSelector'
 import { fetchUrl } from './query'
 import { SP, useServiceProviders } from './useServiceProviders'
 import { RelTime } from './misc'
@@ -16,7 +16,7 @@ export function DMs() {
 
   return (
     <div style={{ padding: 20 }}>
-      <EnvironmentSlector />
+      <EnvironmentSelector />
       <h1>DMs</h1>
       <table className="table">
         <thead>
