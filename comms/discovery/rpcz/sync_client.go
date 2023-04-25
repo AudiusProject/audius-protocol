@@ -48,12 +48,13 @@ func (c *RPCProcessor) doSweep(host, bulkEndpoint string) error {
 
 	// get cursor
 	var after time.Time
+
 	err := db.Conn.Get(&after, "SELECT relayed_at FROM rpc_cursor WHERE relayed_by=$1", host)
 	if err != nil {
 		slog.Error("backfill failed to get cursor: ", err)
 	}
 
-	endpoint := host + bulkEndpoint + "?after=" + url.QueryEscape(after.Format(time.RFC3339))
+	endpoint := host + bulkEndpoint + "?after=" + url.QueryEscape(after.Format(time.RFC3339Nano))
 	started := time.Now()
 
 	req, err := http.NewRequest("GET", endpoint, nil)
@@ -94,7 +95,7 @@ func (c *RPCProcessor) doSweep(host, bulkEndpoint string) error {
 			//  retry locally?
 			//  save to dead letter table?
 			//  periodically re-do all?
-			fmt.Println(err)
+			slog.Error("sweep error", err)
 		}
 		cursor = op.RelayedAt
 	}
