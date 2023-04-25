@@ -1,12 +1,12 @@
 import { useCallback } from 'react'
 
-import type { EntityType } from '@audius/common'
+import type { Collection, Track } from '@audius/common'
 
 import { Text } from 'app/components/core'
 import { useNavigation } from 'app/hooks/useNavigation'
 
 type EntityLinkProps = {
-  entity: EntityType
+  entity: Track | Collection
 }
 
 export const EntityLink = (props: EntityLinkProps) => {
@@ -19,7 +19,7 @@ export const EntityLink = (props: EntityLinkProps) => {
         id: entity.track_id,
         fromNotifications: true
       })
-    } else if (entity.user) {
+    } else if ('playlist_id' in entity) {
       navigation.navigate('Collection', {
         id: entity.playlist_id,
         fromNotifications: true

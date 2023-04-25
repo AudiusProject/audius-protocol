@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 
 import {
   Name,
-  Nullable,
   notificationsSelectors,
   RemixCreateNotification as RemixCreateNotificationType,
   TrackEntity
@@ -23,7 +22,7 @@ import { TwitterShareButton } from './components/TwitterShareButton'
 import { UserNameLink } from './components/UserNameLink'
 import { IconRemix } from './components/icons'
 import { getEntityLink } from './utils'
-const { getNotificationEntities, getNotificationUser } = notificationsSelectors
+const { getNotificationUser, getNotificationTrack } = notificationsSelectors
 
 const messages = {
   title: 'New remix of your track',
@@ -45,15 +44,12 @@ export const RemixCreateNotification = (
   const dispatch = useDispatch()
   const user = useSelector((state) => getNotificationUser(state, notification))
 
-  // TODO: casting from EntityType to TrackEntity here, but
-  // getNotificationEntities should be smart enough based on notif type
-  const tracks = useSelector((state) =>
-    getNotificationEntities(state, notification)
-  ) as Nullable<TrackEntity[]>
-
-  const childTrack = tracks?.find((track) => track.track_id === childTrackId)
-
-  const parentTrack = tracks?.find((track) => track.track_id === parentTrackId)
+  const childTrack = useSelector((state) =>
+    getNotificationTrack(state, childTrackId)
+  )
+  const parentTrack = useSelector((state) =>
+    getNotificationTrack(state, parentTrackId)
+  )
 
   const handleClick = useCallback(() => {
     if (childTrack) {

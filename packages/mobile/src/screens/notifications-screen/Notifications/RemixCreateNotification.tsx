@@ -1,11 +1,7 @@
 import { useCallback } from 'react'
 
-import type {
-  EntityType,
-  TrackEntity,
-  RemixCreateNotification as RemixCreateNotificationType
-} from '@audius/common'
-import { useProxySelector, notificationsSelectors } from '@audius/common'
+import type { RemixCreateNotification as RemixCreateNotificationType } from '@audius/common'
+import { cacheTracksSelectors, notificationsSelectors } from '@audius/common'
 import { useSelector } from 'react-redux'
 
 import IconRemix from 'app/assets/images/iconRemix.svg'
@@ -22,7 +18,8 @@ import {
   UserNameLink,
   NotificationTwitterButton
 } from '../Notification'
-const { getNotificationEntities, getNotificationUser } = notificationsSelectors
+const { getNotificationUser } = notificationsSelectors
+const { getTrack } = cacheTracksSelectors
 
 const messages = {
   title: 'New Remix of Your Track',
@@ -40,22 +37,18 @@ export const RemixCreateNotification = (
 ) => {
   const { notification } = props
   const { childTrackId, parentTrackId } = notification
+
   const navigation = useNotificationNavigation()
   const user = useSelector((state) => getNotificationUser(state, notification))
-  const tracks = useProxySelector(
-    (state) => getNotificationEntities(state, notification),
-    [notification]
-  ) as EntityType[]
 
-  const childTrack = tracks?.find(
-    (track): track is TrackEntity =>
-      'track_id' in track && track.track_id === childTrackId
+  const childTrack = useSelector((state) =>
+    getTrack(state, { id: childTrackId })
   )
 
-  const parentTrack = tracks?.find(
-    (track): track is TrackEntity =>
-      'track_id' in track && track.track_id === parentTrackId
+  const parentTrack = useSelector((state) =>
+    getTrack(state, { id: parentTrackId })
   )
+
   const parentTrackTitle = parentTrack?.title
 
   const handlePress = useCallback(() => {
