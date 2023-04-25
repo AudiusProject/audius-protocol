@@ -2,7 +2,7 @@ import { expect, test } from '@jest/globals'
 import { renderEmail } from '../email/notifications/renderEmail'
 import { Processor } from '../main'
 import { DMEntityType } from '../email/notifications/types'
-import { DMEmailNotification } from '../types/notifications'
+import { DMEmailNotification, FollowNotification } from '../types/notifications'
 import { createUsers, resetTests, setupTest } from '../utils/populateDB'
 
 const initDB = async (processor: Processor) => {
@@ -47,6 +47,44 @@ describe('Render email', () => {
       userId: 1,
       email: 'joey@audius.co',
       frequency: 'daily',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+    expect(notifHtml).toMatchSnapshot()
+  })
+
+  test('Render a live email', async () => {
+    const notifications: DMEmailNotification[] = [
+      {
+        type: DMEntityType.Message,
+        sender_user_id: 2,
+        receiver_user_id: 1
+      }
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'live',
+      notifications,
+      dnDb: processor.discoveryDB,
+      identityDb: processor.identityDB
+    })
+    expect(notifHtml).toMatchSnapshot()
+  })
+
+  test('Render a weekly email', async () => {
+    const notifications: DMEmailNotification[] = [
+      {
+        type: DMEntityType.Message,
+        sender_user_id: 2,
+        receiver_user_id: 1
+      }
+    ]
+    const notifHtml = await renderEmail({
+      userId: 1,
+      email: 'joey@audius.co',
+      frequency: 'weekly',
       notifications,
       dnDb: processor.discoveryDB,
       identityDb: processor.identityDB

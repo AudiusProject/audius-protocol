@@ -311,10 +311,9 @@ const getEmailSubject = (
   let subject
   if (frequency === 'live') {
     subject = liveSubjectFormat
-  }
-  if (frequency === 'daily') {
+  } else if (frequency === 'daily') {
     subject = dailySubjectFormat
-  } else {
+  } else if (frequency === 'weekly') {
     subject = weeklySubjectFormat
   }
   return subject
