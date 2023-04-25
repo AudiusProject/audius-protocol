@@ -308,7 +308,7 @@ export async function processEmailNotifications(
     const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
 
-    logger.info('asdf users length ', Object.keys(users).length)
+    logger.info(`asdf users length ${Object.keys(users).length}`)
     if (Object.keys(users).length == 0) {
       return
     }
@@ -324,7 +324,7 @@ export async function processEmailNotifications(
       startOffset,
       Object.keys(users)
     )
-    logger.info('asdf notifications ', notifications)
+    logger.info(`asdf notifications ${notifications}`)
     const groupedNotifications = groupNotifications(notifications, users)
 
     const currentUtcTime = moment.utc()
@@ -343,13 +343,14 @@ export async function processEmailNotifications(
           .map(async (userNotifications: UserEmailNotification) => {
             try {
               logger.info(
-                'asdf should send user email ',
-                !userNotificationSettings.shouldSendEmailAtFrequency({
-                  receiverUserId: userNotifications.user.blockchainUserId,
-                  frequency
-                })
+                `asdf should send user email ${!userNotificationSettings.shouldSendEmailAtFrequency(
+                  {
+                    receiverUserId: userNotifications.user.blockchainUserId,
+                    frequency
+                  }
+                )}`
               )
-              logger.info('asdf frequency is ', frequency)
+              logger.info(`asdf frequency is ${frequency}`)
               if (
                 !userNotificationSettings.shouldSendEmailAtFrequency({
                   receiverUserId: userNotifications.user.blockchainUserId,
@@ -368,11 +369,11 @@ export async function processEmailNotifications(
               const sendAt = userNotificationSettings.getUserSendAt(
                 user.blockchainUserId
               )
-              logger.info('asdf sending email to email ', user.email)
-              logger.info('asdf at frequency ', frequency)
+              logger.info(`asdf sending email to email ${user.email}`)
+              logger.info(`asdf at frequency ${frequency}`)
               logger.info(
-                'asdf at sendAt ',
-                frequency !== 'live' ? sendAt : null
+                `asdf at sendAt 
+                ${frequency !== 'live' ? sendAt : null}`
               )
               const sent = await sendNotificationEmail({
                 userId: user.blockchainUserId,

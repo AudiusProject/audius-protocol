@@ -114,8 +114,7 @@ export class Processor {
           this.lastDailyEmailSent < moment.utc().subtract(30, 'seconds'))
       ) {
         logger.info(
-          'asdf sending email, last email sent at ',
-          this.lastDailyEmailSent
+          `asdf sending email, last email sent at ${this.lastDailyEmailSent}`
         )
         await processEmailNotifications(
           this.discoveryDB,
@@ -123,6 +122,7 @@ export class Processor {
           'daily'
         )
         this.lastDailyEmailSent = moment.utc()
+        logger.info(`asdf last email sent at now ${this.lastDailyEmailSent}`)
       }
 
       // if (
