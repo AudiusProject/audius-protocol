@@ -16,6 +16,10 @@ from src.utils.redis_metrics import record_metrics
 ns = Namespace("tips", description="Tip related operations")
 full_ns = Namespace("tips", description="Full tip related operations")
 
+TIPS_EXCLUDED_RECIPIENTS: list[int] = (
+    51  # Audius account
+)
+
 
 tips_parser = pagination_with_current_user_parser.copy()
 tips_parser.add_argument(
@@ -74,6 +78,7 @@ class Tips(Resource):
                 "current_user_follows. Missing user_id",
                 full_ns,
             )
+        args["exclude_recipients"] = TIPS_EXCLUDED_RECIPIENTS
 
         tips = get_tips(args)
         tips = list(map(extend_tip, tips))

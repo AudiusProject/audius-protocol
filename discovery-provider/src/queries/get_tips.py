@@ -28,6 +28,7 @@ class GetTipsArgs(TypedDict):
     min_slot: int
     max_slot: int
     tx_signatures: List[int]
+    exclude_recipients: List[int]
 
 
 class TipResult(TypedDict):
@@ -144,7 +145,8 @@ def _get_tips(session: Session, args: GetTipsArgs):
     query: Query = session.query(UserTipAlias)
     has_pagination = False  # Keeps track if we already paginated
 
-    query = query.filter(UserTipAlias.receiver_user_id == 51)
+    if args.get("exclude_recipients"):
+        query = query.filter(UserTipAlias.receiver_user_id.notin_(args["exclude_recipients"]))
 
     if args.get("tx_signatures"):
         query = query.filter(UserTipAlias.signature.in_(args["tx_signatures"]))
