@@ -94,11 +94,19 @@ export class UserNotificationSettings {
   }
 
   isNotificationTypeEnabled(userId: number, feature: string) {
-    return this.mobile?.[userId].settings[feature]
+    const mobileSettings = this.mobile?.[userId]
+    if (mobileSettings === undefined) {
+      return true
+    }
+    return mobileSettings.settings[feature]
   }
 
   isNotificationTypeBrowserEnabled(userId: number, feature: string): boolean {
-    return this.browser?.[userId].settings[feature]
+    const browserSettings = this.browser?.[userId]
+    if (browserSettings === undefined) {
+      return true
+    }
+    return browserSettings.settings[feature]
   }
 
   shouldSendPushNotification({
@@ -128,11 +136,19 @@ export class UserNotificationSettings {
   }
 
   getUserEmail(userId: number) {
-    return this.email?.[userId].email
+    const email = this.email?.[userId]
+    if (email === undefined) {
+      return undefined
+    }
+    return email.email
   }
 
   getUserEmailFrequency(userId: number) {
-    return this.email?.[userId].frequency
+    const emailSettings = this.email?.[userId]
+    if (emailSettings === undefined) {
+      return "live"
+    }
+    return emailSettings.frequency
   }
 
   shouldSendEmail({

@@ -14,6 +14,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { logger } from '../../logger'
 
 type RepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostNotification
