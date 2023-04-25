@@ -1116,9 +1116,10 @@ class FullRelatedUsers(Resource):
     def _get(self, id):
         args = related_artist_route_parser.parse_args()
         limit = get_default_max(args.get("limit"), 10, 100)
+        offset = format_offset(args)
         current_user_id = get_current_user_id(args)
         decoded_id = decode_with_abort(id, full_ns)
-        users = get_related_artists(decoded_id, current_user_id, limit)
+        users = get_related_artists(decoded_id, current_user_id, limit, offset)
         users = list(map(extend_user, users))
         return success_response(users)
 
