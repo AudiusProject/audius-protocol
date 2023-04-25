@@ -1,8 +1,8 @@
 import useSWR from 'swr'
 import {
-  EnvironmentSlector,
+  EnvironmentSelector,
   useEnvironmentSelection,
-} from './components/EnvironmentSlector'
+} from './components/EnvironmentSelector'
 import { SP, useServiceProviders } from './useServiceProviders'
 
 const bytesToGb = (bytes: number) => Math.floor(bytes / 10 ** 9)
@@ -18,8 +18,6 @@ export function DiscoveryHealth() {
   if (!sps) return null
   return (
     <div style={{ padding: 20 }}>
-      <EnvironmentSlector />
-
       <table className="table">
         <thead>
           <tr>

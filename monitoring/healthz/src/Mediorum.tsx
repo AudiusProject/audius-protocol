@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchUrl } from './query'
 import { SP, useServiceProviders } from './useServiceProviders'
-import { useEnvironmentSelection } from './components/EnvironmentSlector'
+import { useEnvironmentSelection } from './components/EnvironmentSelector'
 import { RelTime } from './misc'
 
 export function Mediorum() {

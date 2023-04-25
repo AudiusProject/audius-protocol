@@ -1,8 +1,14 @@
 import useSWR from 'swr'
-import { SP, useDiscoveryProviders } from './useServiceProviders'
+import {
+  SP,
+  useDiscoveryProviders,
+  useServiceProviders,
+} from './useServiceProviders'
+import { useEnvironmentSelection } from './components/EnvironmentSelector'
 
 export function DiscoveryTrending(props: { trendingEndpoint: string }) {
-  const { data: sps, error } = useDiscoveryProviders()
+  const [env] = useEnvironmentSelection()
+  const { data: sps, error } = useServiceProviders(env, 'discovery-node')
   if (error) return <div>error</div>
   if (!sps) return null
   return (
@@ -11,7 +17,11 @@ export function DiscoveryTrending(props: { trendingEndpoint: string }) {
       <table className="table">
         <tbody>
           {sps.map((sp) => (
-            <TrendingRow key={sp.endpoint} sp={sp} trendingEndpoint={props.trendingEndpoint} />
+            <TrendingRow
+              key={sp.endpoint}
+              sp={sp}
+              trendingEndpoint={props.trendingEndpoint}
+            />
           ))}
         </tbody>
       </table>
@@ -21,7 +31,13 @@ export function DiscoveryTrending(props: { trendingEndpoint: string }) {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
-function TrendingRow({ sp, trendingEndpoint }: { sp: SP, trendingEndpoint: string }) {
+function TrendingRow({
+  sp,
+  trendingEndpoint,
+}: {
+  sp: SP
+  trendingEndpoint: string
+}) {
   const { data, error } = useSWR(sp.endpoint + trendingEndpoint, fetcher)
   if (!data)
     return (
