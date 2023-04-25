@@ -44,22 +44,37 @@ def test_entities():
 
 
 def test_exclude_receivers_from_query(app, test_entities):
-    with app.app_context():
+    # Add pagination variables to only retrieve first tip result
+    with app.test_request_context("?limit=1&offset=0"):
         db = get_db()
         populate_mock_db(db, test_entities)
         with db.scoped_session():
+            # Test first without filtering, should get the most recent tip
+            tips_unfiltered = get_tips(
+                GetTipsArgs(
+                    user_id=1,
+                    current_user_follows=True,
+                    unique_by="receiver",
+                )
+            )
+
+            assert len(tips_unfiltered) == 1
+            tip = tips_unfiltered[0]
+            assert tip["sender"]["user_id"] == 1
+            assert tip["receiver"]["user_id"] == 3
+
+            # Filter out recipient with most recent tip, should get the next
+            # most recent tip
             tips = get_tips(
                 GetTipsArgs(
                     user_id=1,
                     current_user_follows=True,
                     unique_by="receiver",
                     exclude_recipients=[3],
-                    limit=1,
-                    offset=0,
                 )
             )
 
             assert len(tips) == 1
             tip = tips[0]
-            assert tip["sender"] == 1
-            assert tip["receiver"] == 2
+            assert tip["sender"]["user_id"] == 1
+            assert tip["receiver"]["user_id"] == 2
