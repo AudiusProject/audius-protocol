@@ -1,4 +1,4 @@
-import { cacheUsersSelectors } from '@audius/common'
+import { cacheUsersSelectors, chatActions, chatSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -14,6 +14,8 @@ import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
 const { getUser } = cacheUsersSelectors
+const { getBlockees } = chatSelectors
+const { blockUser, unblockUser } = chatActions
 
 const BLOCK_MESSAGES_MODAL_NAME = 'BlockMessages'
 
@@ -23,6 +25,7 @@ const messages = {
   confirmText2: ' from sending messages to your inbox?',
   info: 'This will not affect their ability to view your profile or interact with your content.',
   blockUser: 'Block User',
+  unblockUser: 'Unblock User',
   cancel: 'Cancel'
 }
 
@@ -93,8 +96,16 @@ export const BlockMessagesDrawer = () => {
     getData<'BlockMessages'>(state)
   )
   const user = useSelector((state) => getUser(state, { id: userId }))
+  // Assuming blockees have already been fetched in ProfileActionsDrawer.
+  const blockeeList = useSelector(getBlockees)
+  const isBlockee = blockeeList.includes(userId)
 
   const handleConfirmPress = () => {
+    if (isBlockee) {
+      dispatch(unblockUser({ userId }))
+    } else {
+      dispatch(blockUser({ userId }))
+    }
     dispatch(
       setVisibility({
         drawer: 'BlockMessages',
@@ -134,9 +145,9 @@ export const BlockMessagesDrawer = () => {
           <Text style={styles.infoText}>{messages.info}</Text>
         </View>
         <Button
-          title={messages.blockUser}
+          title={isBlockee ? messages.unblockUser : messages.blockUser}
           onPress={handleConfirmPress}
-          variant='destructive'
+          variant={isBlockee ? 'primary' : 'destructive'}
           styles={{
             root: styles.button,
             text: styles.blockText
@@ -146,7 +157,7 @@ export const BlockMessagesDrawer = () => {
         <Button
           title={messages.cancel}
           onPress={handleCancelPress}
-          variant='primary'
+          variant={isBlockee ? 'common' : 'primary'}
           styles={{
             root: styles.button,
             text: styles.blockText
