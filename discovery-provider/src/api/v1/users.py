@@ -1098,7 +1098,6 @@ class FollowingUsers(FullFollowingUsers):
 
 
 related_artist_route_parser = pagination_with_current_user_parser.copy()
-related_artist_route_parser.remove_argument("offset")
 related_artist_response = make_response(
     "related_artist_response", ns, fields.List(fields.Nested(user_model))
 )

@@ -40,7 +40,7 @@ def get_related_artists(user_id: int, current_user_id: int, limit: int = 100, of
             and aggregate_user.track_count > 0
             and aggregate_user.follower_count >= MIN_FOLLOWER_REQUIREMENT
         ):
-            users = _get_related_artists(session, user_id, limit)
+            users = _get_related_artists(session, user_id, limit, offset)
 
         user_ids = list(map(lambda user: user["user_id"], users))
         users = populate_user_metadata(session, user_ids, users, current_user_id)
