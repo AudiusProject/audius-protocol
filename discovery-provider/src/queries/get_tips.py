@@ -28,6 +28,7 @@ class GetTipsArgs(TypedDict):
     min_slot: int
     max_slot: int
     tx_signatures: List[int]
+    exclude_recipients: List[int]
 
 
 class TipResult(TypedDict):
@@ -38,6 +39,11 @@ class TipResult(TypedDict):
     created_at: datetime
     followee_supporters: List[str]
     tx_signature: str
+
+
+class PopulatedTipResult(TipResult):
+    sender: User
+    receiver: User
 
 
 # Example of query with inputs:
@@ -143,6 +149,11 @@ def _get_tips(session: Session, args: GetTipsArgs):
     UserTipAlias = aliased(UserTip)
     query: Query = session.query(UserTipAlias)
     has_pagination = False  # Keeps track if we already paginated
+
+    if args.get("exclude_recipients"):
+        query = query.filter(
+            UserTipAlias.receiver_user_id.notin_(args["exclude_recipients"])
+        )
 
     if args.get("tx_signatures"):
         query = query.filter(UserTipAlias.signature.in_(args["tx_signatures"]))
@@ -274,7 +285,7 @@ def _get_tips(session: Session, args: GetTipsArgs):
     return tips_results
 
 
-def get_tips(args: GetTipsArgs) -> List[TipResult]:
+def get_tips(args: GetTipsArgs) -> List[PopulatedTipResult]:
     db = get_db_read_replica()
     with db.scoped_session() as session:
         results: Union[List[Tuple[UserTip, List[str]]], List[UserTip]] = _get_tips(
@@ -302,7 +313,7 @@ def get_tips(args: GetTipsArgs) -> List[TipResult]:
             users_map[user["user_id"]] = user
 
         # Not using model_to_dictionary() here because TypedDict complains about dynamic keys
-        tips: List[TipResult] = [
+        tips: List[PopulatedTipResult] = [
             {
                 "amount": result[0].amount,
                 "sender": users_map[result[0].sender_user_id],
