@@ -11,7 +11,11 @@ import { sendDMNotifications } from './tasks/dmNotifications'
 import { processEmailNotifications } from './email/notifications/index'
 import { sendAppNotifications } from './tasks/appNotifications'
 import { getRedisConnection } from './utils/redisConnection'
-import { EmailPluginMappings, NotificationsEmailPlugin, RemoteConfig } from './remoteConfig'
+import {
+  EmailPluginMappings,
+  NotificationsEmailPlugin,
+  RemoteConfig
+} from './remoteConfig'
 import { Server } from './server'
 
 export class Processor {
@@ -107,8 +111,12 @@ export class Processor {
       if (
         this.getIsScheduledEmailEnabled() &&
         (!this.lastDailyEmailSent ||
-          this.lastDailyEmailSent < moment.utc().subtract(1, 'days'))
+          this.lastDailyEmailSent < moment.utc().subtract(30, 'seconds'))
       ) {
+        logger.info(
+          'asdf sending email, last email sent at ',
+          this.lastDailyEmailSent
+        )
         await processEmailNotifications(
           this.discoveryDB,
           this.identityDB,
@@ -117,18 +125,18 @@ export class Processor {
         this.lastDailyEmailSent = moment.utc()
       }
 
-      if (
-        this.getIsScheduledEmailEnabled() &&
-        (!this.lastWeeklyEmailSent ||
-          this.lastWeeklyEmailSent < moment.utc().subtract(7, 'days'))
-      ) {
-        await processEmailNotifications(
-          this.discoveryDB,
-          this.identityDB,
-          'weekly'
-        )
-        this.lastWeeklyEmailSent = moment.utc()
-      }
+      // if (
+      //   this.getIsScheduledEmailEnabled() &&
+      //   (!this.lastWeeklyEmailSent ||
+      //     this.lastWeeklyEmailSent < moment.utc().subtract(7, 'days'))
+      // ) {
+      //   await processEmailNotifications(
+      //     this.discoveryDB,
+      //     this.identityDB,
+      //     'weekly'
+      //   )
+      //   this.lastWeeklyEmailSent = moment.utc()
+      // }
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))
     }
