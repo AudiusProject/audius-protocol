@@ -12,6 +12,7 @@ import { DiscoverySearch } from './DiscoverySearch'
 import { DiscoveryTrending } from './DiscoveryTrending'
 import { IdTranslator } from './IdTranslator'
 import { DMs } from './DMs'
+import { Mediorum } from './Mediorum'
 
 const routeList: RouteObject[] = [
   {
@@ -44,6 +45,7 @@ const routeList: RouteObject[] = [
           { path: 'search', element: <DiscoverySearch /> },
           { path: 'id', element: <IdTranslator /> },
           { path: 'dms', element: <DMs /> },
+          { path: 'mediorum', element: <Mediorum /> },
         ],
       },
 

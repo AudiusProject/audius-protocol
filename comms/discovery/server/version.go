@@ -1,9 +1,10 @@
 package server
 
 import (
-	"log"
 	"runtime/debug"
 	"time"
+
+	"golang.org/x/exp/slog"
 )
 
 var (
@@ -29,5 +30,5 @@ func init() {
 
 	bootTime = time.Now().UTC().Format(time.RFC3339)
 
-	log.Printf("build: revision=%s built_at=%s dirty=%s booted=%s", vcsRevision, vcsBuildTime, vcsDirty, bootTime)
+	slog.Info("comms", "revision", vcsRevision, "built_at", vcsBuildTime, "wip", vcsDirty, "booted", bootTime)
 }

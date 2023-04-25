@@ -6,6 +6,7 @@ import {
 } from './components/EnvironmentSlector'
 import { fetchUrl } from './query'
 import { SP, useServiceProviders } from './useServiceProviders'
+import { RelTime } from './misc'
 
 export function DMs() {
   const [env, nodeType] = useEnvironmentSelection()
@@ -14,7 +15,7 @@ export function DMs() {
   if (!sps) return null
 
   return (
-    <div style={{ padding: 50 }}>
+    <div style={{ padding: 20 }}>
       <EnvironmentSlector />
       <h1>DMs</h1>
       <table className="table">
@@ -22,7 +23,8 @@ export function DMs() {
           <tr>
             <th>Host</th>
             <th>Ver</th>
-            <th>Server</th>
+            <th>Comms Tag</th>
+            <th>Boot Time</th>
             <th>Websocket</th>
             <th>Lasted</th>
           </tr>
@@ -67,15 +69,16 @@ function DMRow({ sp }: { sp: SP }) {
   }, [])
 
   const sidecarRoute = `/comms`
-  const { data: sidecarStatus } = useQuery(
+  const { data: commsStatus } = useQuery(
     [sp.endpoint, sidecarRoute],
     async () => {
       try {
         const resp = await fetch(sp.endpoint + sidecarRoute)
-        return resp.status
+        const data = await resp.json()
+        return data
       } catch (e: any) {
         console.log(e.message)
-        return e.message
+        return { error: e.message }
       }
     }
   )
@@ -91,9 +94,27 @@ function DMRow({ sp }: { sp: SP }) {
       </td>
       <td>{health?.data && <div>{health.data.version}</div>}</td>
       <td>
-        <b style={{ color: sidecarStatus == 200 ? 'darkgreen' : 'red' }}>
-          {sidecarStatus}
-        </b>
+        {commsStatus?.error && (
+          <span style={{ color: 'red' }}>{commsStatus.error}</span>
+        )}
+        {commsStatus?.commit && (
+          <>
+            <a
+              href={`https://github.com/AudiusProject/audius-protocol/commits/${commsStatus.commit}/comms`}
+              target="_blank"
+              title={`built: ${new Date(commsStatus.built).toLocaleString()}`}
+            >
+              {commsStatus.commit.substring(0, 8)}{' '}
+            </a>
+          </>
+        )}
+      </td>
+      <td>
+        {commsStatus?.commit && (
+          <>
+            <RelTime date={commsStatus.booted} />
+          </>
+        )}
       </td>
       <td>
         <b

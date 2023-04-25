@@ -15,7 +15,8 @@ import type {
   UserChat,
   ChatMessage,
   ChatWebsocketEventData,
-  RPCPayloadRequest
+  RPCPayloadRequest,
+  ValidatedChatPermissions
 } from './serverTypes'
 import type {
   ChatBlockRequest,
@@ -28,7 +29,6 @@ import type {
   ChatGetRequest,
   ChatInviteRequest,
   ChatMessageRequest,
-  ChatPermissionResponse,
   ChatPermitRequest,
   ChatReactRequest,
   ChatReadRequest,
@@ -209,9 +209,7 @@ export class ChatsApi
       headers: {},
       query
     })
-    return (await res.json()) as TypedCommsResponse<
-      Record<string, ChatPermissionResponse>
-    >
+    return (await res.json()) as TypedCommsResponse<ValidatedChatPermissions[]>
   }
 
   public async getBlockers() {

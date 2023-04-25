@@ -7,8 +7,8 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/inconshreveable/log15"
 	"github.com/oklog/ulid/v2"
+	"golang.org/x/exp/slog"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -32,7 +32,7 @@ type Crudr struct {
 	DB *gorm.DB
 
 	host    string
-	logger  log15.Logger
+	logger  *slog.Logger
 	typeMap map[string]reflect.Type
 
 	peerClients []*PeerClient
@@ -68,7 +68,7 @@ func New(host string, peerHosts []string, db *gorm.DB) *Crudr {
 		DB: db,
 
 		host:    host,
-		logger:  log15.New("module", "crud", "from", host),
+		logger:  slog.With("module", "crud", "from", host),
 		typeMap: map[string]reflect.Type{},
 
 		peerClients: make([]*PeerClient, len(peerHosts)),
