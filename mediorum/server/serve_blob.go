@@ -79,6 +79,8 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	return c.String(404, "blob not found")
 }
 
+// checks signature from discovery node for cidstream endpoint + premium content.
+// based on: https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/middlewares/contentAccess/contentAccessMiddleware.ts
 func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cid := c.Param("cid")
@@ -91,13 +93,15 @@ func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFun
 		} else {
 			// check it was signed by a registered node
 			isRegistered := slices.ContainsFunc(s.Config.Signers, func(peer Peer) bool {
-				return peer.Wallet == sig.SignerWallet
+				return strings.EqualFold(peer.Wallet, sig.SignerWallet)
 			})
 			if !isRegistered {
-				return c.JSON(401, map[string]string{
-					"error":  "signer not in list of registered nodes",
-					"detail": "signed by: " + sig.SignerWallet,
-				})
+				// return c.JSON(401, map[string]string{
+				// 	"error":  "signer not in list of registered nodes",
+				// 	"detail": "signed by: " + sig.SignerWallet,
+				// })
+				// s.logger.Info("sig no match", "signed by", sig.SignerWallet)
+				c.Response().Header().Add("x-bad-signer", sig.SignerWallet)
 			}
 
 			// check signature not too old
