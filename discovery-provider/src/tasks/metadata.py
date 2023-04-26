@@ -41,6 +41,7 @@ class TrackMetadata(TypedDict):
     owner_id: Optional[int]
     title: Optional[str]
     route_id: Optional[str]
+    duration: int
     length: int
     cover_art: Optional[str]
     cover_art_sizes: Optional[str]
@@ -71,6 +72,7 @@ track_metadata_format: TrackMetadata = {
     "owner_id": None,
     "title": None,
     "route_id": None,
+    "duration": 0,
     "length": 0,
     "cover_art": None,
     "cover_art_sizes": None,

@@ -253,7 +253,6 @@ export class CreatorNode {
   /**
    * Switch from one creatorNodeEndpoint to another including logging out from the old node, updating the endpoint and logging into new node */
   async setEndpoint(creatorNodeEndpoint: string) {
-    console.log('theo calling setEndpoint with endpoint: ', creatorNodeEndpoint)
     // If the endpoints are the same, no-op.
     if (this.creatorNodeEndpoint === creatorNodeEndpoint) return
 
@@ -420,6 +419,7 @@ export class CreatorNode {
 
     // Update metadata to include uploaded CIDs
     updatedMetadata.track_segments = []
+    updatedMetadata.duration = parseInt(audioResp.probe.format.duration, 10)
     updatedMetadata.track_cid = audioResp.results['320']
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
