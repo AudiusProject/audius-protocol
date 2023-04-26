@@ -224,11 +224,11 @@ def extend_track(track):
 
     # TODO: This block is only for legacy tracks that have track_segments instead of duration. Remove after storage v2 uploads are rolled out
     if not track["duration"]:
-      duration = 0.0
-      for segment in track["track_segments"]:
-          # NOTE: Legacy track segments store the duration as a string
-          duration += float(segment["duration"])
-      track["duration"] = round(duration)
+        duration = 0.0
+        for segment in track["track_segments"]:
+            # NOTE: Legacy track segments store the duration as a string
+            duration += float(segment["duration"])
+        track["duration"] = round(duration)
 
     downloadable = (
         "download" in track
