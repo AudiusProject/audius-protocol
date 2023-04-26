@@ -267,7 +267,6 @@ def push(ctx, services):
 
 
 @cli.command()
-@click.argument("services", nargs=-1)
 @click.pass_context
 def pull(ctx):
     protocol_dir = ctx.obj
@@ -279,7 +278,7 @@ def pull(ctx):
             f"--project-name={protocol_dir.name}-test",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             "pull",
-            "--ignore-buildable"
+            "--ignore-buildable",
         ],
     )
 
