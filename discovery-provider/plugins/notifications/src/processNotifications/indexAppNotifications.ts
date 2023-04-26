@@ -112,7 +112,7 @@ export class AppNotificationsProcessor {
       errored: 0,
       skipped: 0
     }
-    const mappedNotifications = await mapNotifications(
+    const mappedNotifications = mapNotifications(
       notifications,
       this.dnDB,
       this.identityDB
