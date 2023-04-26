@@ -5,7 +5,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     deploy:
@@ -68,9 +68,9 @@ services:
       solanaRewardsManagerTokenPDA: "${SOLANA_REWARD_MANAGER_TOKEN_PDA_PUBLIC_KEY}"
       solanaAudiusAnchorDataProgramId: "${SOLANA_AUDIUS_DATA_PUBLIC_KEY}"
     volumes:
-      - ./identity-service:/usr/src/app
+      - ${PROJECT_ROOT}/identity-service:/usr/src/app
       - /usr/src/app/node_modules
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
       - audius-libs:/usr/src/audius-libs
     depends_on:
       db:

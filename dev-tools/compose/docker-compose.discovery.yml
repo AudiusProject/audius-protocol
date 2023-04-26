@@ -12,7 +12,7 @@ services:
       DN_DB_URL: "postgresql://postgres:postgres@db:5432/audius_discovery"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@db:5432/identity_service"
     volumes:
-      - ./discovery-provider/plugins/notifications:/notifications
+      - ${PROJECT_ROOT}/discovery-provider/plugins/notifications:/notifications
       - /notifications/node_modules
     depends_on:
       comms:
@@ -55,7 +55,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "curl --fail http://localhost:9200/_cluster/health || exit 1"
+          "curl --fail http://localhost:9200/_cluster/health || exit 1",
         ]
       interval: 10s
       timeout: 5s
@@ -96,13 +96,13 @@ services:
 
       audius_discprov_dev_mode: "true"
     volumes:
-      - ./discovery-provider/alembic:/audius-discovery-provider/alembic
-      - ./discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser
-      - ./discovery-provider/src:/audius-discovery-provider/src
+      - ${PROJECT_ROOT}/discovery-provider/alembic:/audius-discovery-provider/alembic
+      - ${PROJECT_ROOT}/discovery-provider/solana-tx-parser:/audius-discovery-provider/solana-tx-parser
+      - ${PROJECT_ROOT}/discovery-provider/src:/audius-discovery-provider/src
       - poa-contracts-abis:/audius-discovery-provider/build/contracts
       - eth-contracts-abis:/audius-discovery-provider/build/eth-contracts
       - solana-programs-idl:/audius-discovery-provider/idl
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     depends_on:
       db:
         condition: service_healthy

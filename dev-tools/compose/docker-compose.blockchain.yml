@@ -12,7 +12,7 @@ services:
     command: bash /tmp/dev-tools/startup/poa-ganache.sh
     volumes:
       - poa-contracts-abis:/usr/src/app/build/contracts
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     ports:
       - "8545:8545"
     deploy:
@@ -67,7 +67,7 @@ services:
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     ports:
       - "8546:8545"
     deploy:
