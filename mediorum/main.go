@@ -10,15 +10,19 @@ import (
 	"sync"
 
 	"golang.org/x/exp/slog"
+	"golang.org/x/sync/errgroup"
 )
 
-func main() {
+func init() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout))
 	slog.SetDefault(logger)
+}
 
-	preset := os.Getenv("MEDIORUM_ENV")
+func main() {
+	mediorumEnv := os.Getenv("MEDIORUM_ENV")
+	slog.Info("starting", "MEDIORUM_ENV", mediorumEnv)
 
-	switch preset {
+	switch mediorumEnv {
 	case "prod":
 		startStagingOrProd(true)
 	case "stage":
@@ -35,10 +39,23 @@ func startStagingOrProd(isProd bool) {
 	if isProd {
 		g = registrar.NewGraphProd()
 	}
-	peers, err := g.Peers()
-	if err != nil {
+
+	var peers, signers []server.Peer
+	var err error
+
+	eg := new(errgroup.Group)
+	eg.Go(func() error {
+		peers, err = g.Peers()
+		return err
+	})
+	eg.Go(func() error {
+		signers, err = g.Signers()
+		return err
+	})
+	if err := eg.Wait(); err != nil {
 		panic(err)
 	}
+	slog.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
 
 	creatorNodeEndpoint := mustGetenv("creatorNodeEndpoint")
 	delegateOwnerWallet := mustGetenv("delegateOwnerWallet")
@@ -51,6 +68,7 @@ func startStagingOrProd(isProd bool) {
 		},
 		ListenPort:        "1991",
 		Peers:             peers,
+		Signers:           signers,
 		ReplicationFactor: 3,
 		PrivateKey:        privateKey,
 		Dir:               "/tmp/mediorum",

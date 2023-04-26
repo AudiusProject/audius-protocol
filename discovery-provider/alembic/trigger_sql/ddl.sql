@@ -76,4 +76,10 @@ commit;
 -- 4/18/23: add is_available index
 begin;
     create index if not exists users_is_available_false_idx on users (is_available) where is_available = false;
-commit;  
+commit;
+
+-- 4/25/23: add duration to tracks table
+begin;
+    alter table tracks
+    add column if not exists duration integer default 0;
+commit;

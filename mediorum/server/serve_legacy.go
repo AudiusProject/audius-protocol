@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/georgysavva/scany/v2/pgxscan"
 	"github.com/jackc/pgx/v5"
@@ -30,6 +31,13 @@ func (ss *MediorumServer) serveLegacyCid(c echo.Context) error {
 		return ss.redirectToCid(c, cid)
 	} else if err != nil {
 		return err
+	}
+
+	// detect mime type:
+	// if this is not the cidstream route, we should block mp3 streaming
+	// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
+	if !strings.Contains(c.Path(), "cidstream") && isAudioFile(storagePath) {
+		c.Response().Header().Set("x-would-block", "true")
 	}
 
 	if err = c.File(storagePath); err != nil {

@@ -1,11 +1,15 @@
 package server
 
 import (
+	"fmt"
 	"mediorum/server/signature"
 	"net/http"
 	"net/url"
+	"strings"
+	"time"
 
 	"github.com/labstack/echo/v4"
+	"golang.org/x/exp/slices"
 )
 
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
@@ -36,20 +40,6 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
 
-	// verify signature... just print result for now
-	{
-		sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
-		if err != nil {
-			// ss.logger.Warn("invalid signautre, would reject", "err", err)
-			c.Response().Header().Set("x-signature-error", err.Error())
-		} else {
-			// todo should check that track / timestamp all match up
-			// and that signer is a discovery node
-			// ss.logger.Info("parsed signature ok", "sig", sig)
-			c.Response().Header().Set("x-signature", sig.String())
-		}
-	}
-
 	// If the client provided a filename, set it in the header to be auto-populated in download prompt
 	filenameForDownload := c.QueryParam("filename")
 	if filenameForDownload != "" {
@@ -62,7 +52,14 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return ss.serveLegacyCid(c)
 	}
 
-	if iHave, _ := ss.bucket.Exists(ctx, key); iHave {
+	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
+		// detect mime type:
+		// if this is not the cidstream route, we should block mp3 streaming
+		// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
+		if !strings.Contains(c.Path(), "cidstream") && strings.HasPrefix(attrs.ContentType, "audio") {
+			c.Response().Header().Set("x-would-block", "true")
+		}
+
 		blob, err := ss.bucket.NewReader(ctx, key, nil)
 		if err != nil {
 			return err
@@ -90,6 +87,56 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	return c.String(404, "blob not found")
+}
+
+// checks signature from discovery node for cidstream endpoint + premium content.
+// based on: https://github.com/AudiusProject/audius-protocol/blob/main/creator-node/src/middlewares/contentAccess/contentAccessMiddleware.ts
+func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cid := c.Param("cid")
+		sig, err := signature.ParseFromQueryString(c.QueryParam("signature"))
+		if err != nil {
+			return c.JSON(401, map[string]string{
+				"error":  "invalid signature",
+				"detail": err.Error(),
+			})
+		} else {
+			// check it was signed by a registered node
+			isRegistered := slices.ContainsFunc(s.Config.Signers, func(peer Peer) bool {
+				return strings.EqualFold(peer.Wallet, sig.SignerWallet)
+			})
+			if !isRegistered {
+				// return c.JSON(401, map[string]string{
+				// 	"error":  "signer not in list of registered nodes",
+				// 	"detail": "signed by: " + sig.SignerWallet,
+				// })
+				// s.logger.Info("sig no match", "signed by", sig.SignerWallet)
+				c.Response().Header().Add("x-bad-signer", sig.SignerWallet)
+			}
+
+			// check signature not too old
+			age := time.Since(time.Unix(sig.Data.Timestamp, 0))
+			if age > (time.Hour * 48) {
+				return c.JSON(401, map[string]string{
+					"error":  "signature too old",
+					"detail": age.String(),
+				})
+			}
+
+			// check it is for this cid
+			if sig.Data.Cid != cid {
+				return c.JSON(401, map[string]string{
+					"error":  "signature contains incorrect CID",
+					"detail": fmt.Sprintf("url: %s, signature %s", cid, sig.Data.Cid),
+				})
+			}
+
+			// OK
+			c.Response().Header().Set("x-signature-debug", sig.String())
+		}
+
+		return next(c)
+	}
 }
 
 func (ss *MediorumServer) postBlob(c echo.Context) error {
