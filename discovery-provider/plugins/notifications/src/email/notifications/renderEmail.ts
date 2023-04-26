@@ -238,7 +238,7 @@ const getNotificationProps = async (
     playlists: new Set()
   }
 
-  const mappedNotifications: BaseNotification<any>[] = mapNotifications(
+  const mappedNotifications: BaseNotification<any>[] = await mapNotifications(
     notifications,
     dnDB,
     identityDB
@@ -254,9 +254,13 @@ const getNotificationProps = async (
   }
   const mappedAdditionalNotifications: {
     [id: string]: BaseNotification<any>[]
-  } = Object.keys(additionalNotifications).reduce((acc, n) => {
+  } = Object.keys(additionalNotifications).reduce(async (acc, n) => {
     if (additionalNotifications[n].length > 0) {
-      acc[n] = mapNotifications(additionalNotifications[n], dnDB, identityDB)
+      acc[n] = await mapNotifications(
+        additionalNotifications[n],
+        dnDB,
+        identityDB
+      )
       for (const notification of acc[n]) {
         const resourcesToFetch = notification.getResourcesForEmail()
         Object.entries(resourcesToFetch).forEach(([key, value]) => {

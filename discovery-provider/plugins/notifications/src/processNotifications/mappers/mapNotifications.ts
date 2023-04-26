@@ -54,13 +54,17 @@ import { SaveOfRepost } from './saveOfRepost'
 import { TrendingUnderground } from './trendingUnderground'
 import { TrendingPlaylist } from './trendingPlaylist'
 
-export const mapNotifications = (
-  notifications: (NotificationRow | EmailNotification)[],
+export const mapNotifications = async (
+  notifications: number[],
   dnDb: Knex,
   identityDb: Knex
 ) => {
+  const notificationRows: NotificationRow = await dnDb
+    .from('notification')
+    .whereIn('id', notifications)
+
   return notifications
-    .map((notification) => mapNotification(notification, dnDb, identityDb))
+    .map((notification) => mapNotification(notificationRows, dnDb, identityDb))
     .filter(Boolean)
 }
 

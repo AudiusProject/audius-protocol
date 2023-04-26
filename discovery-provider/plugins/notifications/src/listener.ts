@@ -3,7 +3,7 @@ import { logger } from './logger'
 import { NotificationRow } from './types/dn'
 
 export class PendingUpdates {
-  appNotifications: Array<NotificationRow> = []
+  appNotifications: Array<number> = []
 
   isEmpty(): boolean {
     return this.appNotifications.length == 0
@@ -22,8 +22,8 @@ export class Listener {
     return p
   }
 
-  handler = (row: NotificationRow) => {
-    this.pending.appNotifications.push(row)
+  handler = (notificationId: number) => {
+    this.pending.appNotifications.push(notificationId)
   }
 
   start = async (connectionString: string) => {
