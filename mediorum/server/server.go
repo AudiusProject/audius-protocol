@@ -37,6 +37,7 @@ type MediorumConfig struct {
 	Env               string
 	Self              Peer
 	Peers             []Peer
+	Signers           []Peer
 	ReplicationFactor int
 	Dir               string `default:"/tmp/mediorum"`
 	BlobStoreDSN      string `json:"-"`

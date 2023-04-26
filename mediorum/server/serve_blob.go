@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
+	"golang.org/x/exp/slices"
 )
 
 func (ss *MediorumServer) getBlobLocation(c echo.Context) error {
@@ -88,6 +89,18 @@ func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFun
 				"detail": err.Error(),
 			})
 		} else {
+			// check it was signed by a registered node
+			isRegistered := slices.ContainsFunc(s.Config.Signers, func(peer Peer) bool {
+				return peer.Wallet == sig.SignerWallet
+			})
+			if !isRegistered {
+				return c.JSON(401, map[string]string{
+					"error":  "signer not in list of registered nodes",
+					"detail": "signed by: " + sig.SignerWallet,
+				})
+			}
+
+			// check signature not too old
 			age := time.Since(time.Unix(sig.Data.Timestamp, 0))
 			if age > (time.Hour * 48) {
 				return c.JSON(401, map[string]string{
@@ -96,6 +109,7 @@ func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFun
 				})
 			}
 
+			// check it is for this cid
 			if sig.Data.Cid != cid {
 				return c.JSON(401, map[string]string{
 					"error":  "signature contains incorrect CID",

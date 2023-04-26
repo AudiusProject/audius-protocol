@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"golang.org/x/exp/slog"
+	"golang.org/x/sync/errgroup"
 )
 
 func init() {
@@ -38,11 +39,23 @@ func startStagingOrProd(isProd bool) {
 	if isProd {
 		g = registrar.NewGraphProd()
 	}
-	peers, err := g.Peers()
-	if err != nil {
+
+	var peers, signers []server.Peer
+	var err error
+
+	eg := new(errgroup.Group)
+	eg.Go(func() error {
+		peers, err = g.Peers()
+		return err
+	})
+	eg.Go(func() error {
+		signers, err = g.Signers()
+		return err
+	})
+	if err := eg.Wait(); err != nil {
 		panic(err)
 	}
-	slog.Info("fetched peers", "count", len(peers))
+	slog.Info("fetched registered nodes", "peers", len(peers), "signers", len(signers))
 
 	creatorNodeEndpoint := mustGetenv("creatorNodeEndpoint")
 	delegateOwnerWallet := mustGetenv("delegateOwnerWallet")
@@ -55,6 +68,7 @@ func startStagingOrProd(isProd bool) {
 		},
 		ListenPort:        "1991",
 		Peers:             peers,
+		Signers:           signers,
 		ReplicationFactor: 3,
 		PrivateKey:        privateKey,
 		Dir:               "/tmp/mediorum",
