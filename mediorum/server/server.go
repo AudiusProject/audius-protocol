@@ -184,8 +184,8 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	routes.GET("/ipfs/:cid", ss.getBlob)
 	routes.GET("/content/:cid", ss.getBlob)
-	routes.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
-	routes.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
+	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
+	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
 	routes.GET("/tracks/cidstream/:cid", ss.getBlob) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
 
 	// status + debug:
