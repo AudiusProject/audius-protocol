@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 
 import type { ReactionTypes } from '@audius/common'
 import type { AnimatedLottieViewProps } from 'lottie-react-native'
@@ -66,13 +66,15 @@ export const Reaction = (props: ReactionProps) => {
     }
   }, [status, autoPlay, isVisible])
 
-  const handleLayout = () => {
+  const measureReactions = useCallback(() => {
     if (isVisible && onMeasure) {
       ref.current?.measureInWindow((x, _, width) => {
         onMeasure({ x, width, reactionType })
       })
     }
-  }
+  }, [isVisible, onMeasure, reactionType])
+
+  useEffect(() => measureReactions(), [measureReactions])
 
   useEffect(() => {
     if (previousStatus !== 'interacting' && status === 'interacting') {
@@ -120,7 +122,7 @@ export const Reaction = (props: ReactionProps) => {
         ref={(animation) => {
           animationRef.current = animation
         }}
-        onLayout={handleLayout}
+        onLayout={measureReactions}
         autoPlay={isVisible && autoPlay}
         loop
         source={source}

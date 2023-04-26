@@ -120,7 +120,11 @@ export const ReactionList = (props: ReactionListProps) => {
 
   const handleMeasure: OnMeasure = useCallback((config) => {
     const { x, width, reactionType } = config
-    positions.current = { ...positions.current, [reactionType]: { x, width } }
+    // Sometimes this function is called before the View being measured is laid out,
+    // so check that x and width are valid before updating the positions.
+    if (x > 0 && width > 0) {
+      positions.current = { ...positions.current, [reactionType]: { x, width } }
+    }
   }, [])
 
   return (
