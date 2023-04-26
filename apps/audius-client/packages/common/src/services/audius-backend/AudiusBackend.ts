@@ -577,10 +577,12 @@ export const audiusBackend = ({
     return {
       ...track,
       // TODO: This method should be renamed as it does more than images.
-      duration: track.track_segments.reduce(
-        (duration, segment) => duration + parseFloat(segment.duration),
-        0
-      ),
+      duration:
+        track.duration ||
+        track.track_segments.reduce(
+          (duration, segment) => duration + parseFloat(segment.duration),
+          0
+        ),
       _cover_art_sizes: coverArtSizes
     }
   }

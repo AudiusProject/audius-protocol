@@ -6,6 +6,7 @@ const trackMetadataSchema = {
   track_cid: null,
   owner_id: null,
   title: null,
+  duration: null,
   length: null,
   cover_art: null,
   cover_art_sizes: null,
