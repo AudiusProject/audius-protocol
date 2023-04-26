@@ -308,8 +308,15 @@ export async function processEmailNotifications(
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
 
     if (Object.keys(users).length == 0) {
+      logger.info(`processEmailNotifications | No users to process. Exiting...`)
       return
     }
+
+    logger.info(
+      `processEmailNotifications | Beginning processing ${
+        Object.keys(users).length
+      } users at ${frequency} frequency`
+    )
 
     const userNotificationSettings = await buildUserNotificationSettings(
       identityDb,
