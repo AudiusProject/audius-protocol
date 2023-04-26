@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/url"
 	"sync"
 	"time"
 
@@ -119,7 +120,14 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(200, uploads)
 }
 
-func (ss *MediorumServer) getV1CIDBlob(c echo.Context) error {
+func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
+	// If the client provided a filename, set it in the header to be auto-populated in download prompt
+	filenameForDownload := c.QueryParam("filename")
+	if filenameForDownload != "" {
+		contentDisposition := url.QueryEscape(filenameForDownload)
+		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
+	}
+
 	jobID := c.Param("jobID")
 	variant := c.Param("variant")
 	if isLegacyCID(jobID) {

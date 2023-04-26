@@ -3,6 +3,8 @@ package server
 import (
 	"fmt"
 	"mediorum/server/signature"
+	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -38,6 +40,13 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	ctx := c.Request().Context()
 	key := c.Param("cid")
 
+	// If the client provided a filename, set it in the header to be auto-populated in download prompt
+	filenameForDownload := c.QueryParam("filename")
+	if filenameForDownload != "" {
+		contentDisposition := url.QueryEscape(filenameForDownload)
+		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
+	}
+
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
 		return ss.serveLegacyCid(c)
@@ -56,7 +65,8 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return err
 		}
 		defer blob.Close()
-		return c.Stream(200, blob.ContentType(), blob)
+		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
+		return nil
 	}
 
 	// redirect to it

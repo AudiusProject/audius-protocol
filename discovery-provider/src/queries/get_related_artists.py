@@ -26,7 +26,9 @@ def _get_related_artists(session: Session, user_id: int, limit=100, offset=0):
 
 
 @time_method
-def get_related_artists(user_id: int, current_user_id: int, limit: int = 100, offset: int = 0):
+def get_related_artists(
+    user_id: int, current_user_id: int, limit: int = 100, offset: int = 0
+):
     db = get_db_read_replica()
     users = []
     with db.scoped_session() as session:
