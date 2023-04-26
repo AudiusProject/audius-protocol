@@ -1,4 +1,4 @@
-import { Client, Notification } from 'pg'
+import { Client, Notification, Pool } from 'pg'
 import { logger } from './logger'
 import { NotificationRow } from './types/dn'
 
@@ -37,10 +37,18 @@ export class Listener {
     await this.client.connect()
     logger.info('did connect')
 
+    const dbPool = new Pool({
+      connectionString,
+      application_name: 'notifications-pool'
+    })
+    logger.info('made db pool')
+    await dbPool.connect()
+    logger.info('connected db pool')
+
     this.client.on('notification', async (msg: Notification) => {
       const { notification_id }: { notification_id: number } = JSON.parse(msg.payload)
-      const notification = await getNotification(this.client, notification_id)
-      if (notification != undefined) {
+      const notification = await getNotification(dbPool, notification_id)
+      if (notification !== null) {
         this.handler(notification)
       }
     })
@@ -56,18 +64,18 @@ export class Listener {
   }
 }
 
-const getNotification = async (client: Client, notificationId: number): Promise<NotificationRow | undefined> => {
+const getNotification = async (pool: Pool, notificationId: number): Promise<NotificationRow | null> => {
   const query = 'SELECT * FROM notification WHERE id = $1 limit 1;'
   const values = [notificationId] // parameterized query
   try {
-    const res = await client.query<NotificationRow>(query, values)
+    const res = await pool.query<NotificationRow>(query, values)
     if (res.rowCount == 0) {
       logger.warn(`could not find row ${notificationId} in db`)
-      return undefined
+      return null
     }
     return res.rows[0]
   } catch (e) {
     logger.error(`could not get notification ${notificationId} ${e}`)
-    return undefined;
+    return null;
   }
 }
