@@ -4,8 +4,8 @@ import {
   ChatMessage,
   ChatMessageReaction,
   ChatMessageNullableReaction,
-  ChatPermissionResponse,
-  UnfurlResponse
+  UnfurlResponse,
+  ValidatedChatPermissions
 } from '@audius/sdk'
 import {
   Action,
@@ -42,7 +42,7 @@ type ChatState = {
   activeChatId: string | null
   blockees: ID[]
   blockers: ID[]
-  permissions: Record<ID, ChatPermissionResponse>
+  permissions: Record<ID, ValidatedChatPermissions>
   reactionsPopupMessageId: string | null
 }
 
@@ -407,7 +407,7 @@ const slice = createSlice({
     fetchPermissionsSucceeded: (
       state,
       action: PayloadAction<{
-        permissions: Record<ID, ChatPermissionResponse>
+        permissions: Record<ID, ValidatedChatPermissions>
       }>
     ) => {
       state.permissions = {

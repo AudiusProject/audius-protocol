@@ -68,17 +68,14 @@ const options = [
 ]
 
 const { fetchPermissions } = chatActions
-const { getPermissionsMap } = chatSelectors
+const { getUserChatPermissions } = chatSelectors
 const { getUserId } = accountSelectors
 
 export const InboxSettingsModal = () => {
   const dispatch = useDispatch()
-  const permissionsMap = useSelector(getPermissionsMap)
+  const permissions = useSelector(getUserChatPermissions)
   const userId = useSelector(getUserId)
-  const currentPermission = userId
-    ? // @ts-ignore temporary ignore while sdk updates types
-      permissionsMap[userId]?.permits
-    : null
+  const currentPermission = userId ? permissions[userId]?.permits : null
   const [isVisible, setIsVisible] = useModalState('InboxSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
   const [permission, setPermission] = useState<ChatPermission>(

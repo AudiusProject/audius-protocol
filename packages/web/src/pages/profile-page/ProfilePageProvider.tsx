@@ -72,7 +72,7 @@ const {
 } = profilePageSelectors
 const { getAccountUser } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
-const { getBlockees, getBlockers, getPermissionsMap } = chatSelectors
+const { getBlockees, getBlockers, getUserChatPermissions } = chatSelectors
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -825,7 +825,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const hasChatPermission =
       (this.props.profile.profile?.user_id &&
         !this.props.blockerList.includes(this.props.profile.profile.user_id) &&
-        this.props.permissionsMap[this.props.profile.profile.user_id]
+        this.props.chatPermissions[this.props.profile.profile!.user_id]
           ?.current_user_has_permission) ??
       false
 
@@ -979,7 +979,7 @@ function makeMapStateToProps() {
       relatedArtists: selectSuggestedFollowsUsers(state, {
         id: getProfileUserId(state, handleLower) ?? 0
       }),
-      permissionsMap: getPermissionsMap(state),
+      chatPermissions: getUserChatPermissions(state),
       blockeeList: getBlockees(state),
       blockerList: getBlockers(state)
     }
