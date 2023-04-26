@@ -464,7 +464,7 @@ export const setUserEmailAndSettings = async (
     handle: `user_${userId}`,
     email: `user_${userId}@gmail.com`,
     blockchainUserId: userId,
-    timezone: timezone || 'Asia/Calcutta'
+    timezone: timezone || null
   }
   await db.insert(user).into('Users')
   await db

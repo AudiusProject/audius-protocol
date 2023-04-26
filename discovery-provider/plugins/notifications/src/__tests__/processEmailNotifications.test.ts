@@ -125,7 +125,6 @@ describe('Email Notifications', () => {
     const user2 = 2
     const userFrequency = 'daily'
     const emailFrequency = 'daily'
-    const timezone = 'Asia/Calcutta'
     await createUsers(discoveryDB, [{ user_id: user1 }, { user_id: user2 }])
     const { email: user1Email } = await setUserEmailAndSettings(
       identityDB,
@@ -180,7 +179,8 @@ describe('Email Notifications', () => {
       notifications: expectedNotifications,
       dnDb: discoveryDB,
       identityDb: identityDB,
-      sendAt: tomorrowSendAt(timezone)
+      // send at uses UTC timezone when user timezone is null
+      sendAt: tomorrowSendAt('UTC')
     })
   })
 

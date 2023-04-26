@@ -13,7 +13,6 @@ import {
   EmailFrequency,
   buildUserNotificationSettings
 } from '../../processNotifications/mappers/userNotificationSettings'
-import { identity } from 'lodash'
 
 // blockchainUserId => email
 type EmailUsers = {
@@ -69,7 +68,7 @@ export const getUsersCanNotify = async (
         'Users.blockchainUserId'
       )
       .where('Users.isEmailDeliverable', true)
-      //DELETEEE LATER
+      //skiamilev - delete
       .where('Users.handle', 'sabrina78401092')
       .where(function () {
         this.where('lastEmailSentAt.timestamp', null).orWhere(
@@ -308,7 +307,6 @@ export async function processEmailNotifications(
     const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
 
-    logger.info(`asdf users length ${Object.keys(users).length}`)
     if (Object.keys(users).length == 0) {
       return
     }
@@ -324,12 +322,12 @@ export async function processEmailNotifications(
       startOffset,
       Object.keys(users)
     )
-    logger.info(`asdf notifications ${notifications}`)
     const groupedNotifications = groupNotifications(notifications, users)
 
     const currentUtcTime = moment.utc()
     const chuckSize = 20
     const results = []
+    let numEmailsSent = 0
     for (
       let chunk = 0;
       chunk * chuckSize < groupedNotifications.length;
@@ -342,15 +340,6 @@ export async function processEmailNotifications(
           .slice(start, end)
           .map(async (userNotifications: UserEmailNotification) => {
             try {
-              logger.info(
-                `asdf should send user email ${!userNotificationSettings.shouldSendEmailAtFrequency(
-                  {
-                    receiverUserId: userNotifications.user.blockchainUserId,
-                    frequency
-                  }
-                )}`
-              )
-              logger.info(`asdf frequency is ${frequency}`)
               if (
                 !userNotificationSettings.shouldSendEmailAtFrequency({
                   receiverUserId: userNotifications.user.blockchainUserId,
@@ -369,12 +358,6 @@ export async function processEmailNotifications(
               const sendAt = userNotificationSettings.getUserSendAt(
                 user.blockchainUserId
               )
-              logger.info(`asdf sending email to email ${user.email}`)
-              logger.info(`asdf at frequency ${frequency}`)
-              logger.info(
-                `asdf at sendAt 
-                ${frequency !== 'live' ? sendAt : null}`
-              )
               const sent = await sendNotificationEmail({
                 userId: user.blockchainUserId,
                 email: user.email,
@@ -384,7 +367,6 @@ export async function processEmailNotifications(
                 identityDb,
                 sendAt: frequency !== 'live' ? sendAt : null
               })
-              logger.info(`asdf was email sent? ${sent}`)
               if (!sent) {
                 // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent
                 if (sent === false) {
@@ -398,17 +380,19 @@ export async function processEmailNotifications(
                   error: 'No notifications to send in email'
                 }
               }
-              await identityDb
-                .insert([
-                  {
-                    userId: user.blockchainUserId,
-                    emailFrequency: frequency,
-                    timestamp: currentUtcTime,
-                    createdAt: currentUtcTime,
-                    updatedAt: currentUtcTime
-                  }
-                ])
-                .into('NotificationEmails')
+              numEmailsSent++
+              // skiamilev - to uncomment
+              // await identityDb
+              //   .insert([
+              //     {
+              //       userId: user.blockchainUserId,
+              //       emailFrequency: frequency,
+              //       timestamp: currentUtcTime,
+              //       createdAt: currentUtcTime,
+              //       updatedAt: currentUtcTime
+              //     }
+              //   ])
+              //   .into('NotificationEmails')
               return { result: Results.SENT }
             } catch (e) {
               return { result: Results.ERROR, error: e.toString() }
@@ -423,6 +407,12 @@ export async function processEmailNotifications(
         job: processEmailNotifications
       },
       `processEmailNotifications | finished looping over users to send notification emails`
+    )
+    logger.info(
+      {
+        job: processEmailNotifications
+      },
+      `processEmailNotifications | sent scheduled emails to ${numEmailsSent} users at ${frequency}`
     )
   } catch (e) {
     logger.error(

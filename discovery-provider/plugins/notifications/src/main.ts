@@ -48,7 +48,7 @@ export class Processor {
     await this.remoteConfig.init()
 
     logger.info('starting!')
-    
+
     // setup postgres listener
     await this.setupDB({ discoveryDBUrl, identityDBUrl })
 
@@ -116,18 +116,16 @@ export class Processor {
       if (
         this.getIsScheduledEmailEnabled() &&
         (!this.lastDailyEmailSent ||
+          // skiamilev - to delete
           this.lastDailyEmailSent < moment.utc().subtract(30, 'seconds'))
       ) {
-        logger.info(
-          `asdf sending email, last email sent at ${this.lastDailyEmailSent}`
-        )
+        logger.info('Processing daily emails...')
         await processEmailNotifications(
           this.discoveryDB,
           this.identityDB,
           'daily'
         )
         this.lastDailyEmailSent = moment.utc()
-        logger.info(`asdf last email sent at now ${this.lastDailyEmailSent}`)
       }
 
       // if (
@@ -135,6 +133,7 @@ export class Processor {
       //   (!this.lastWeeklyEmailSent ||
       //     this.lastWeeklyEmailSent < moment.utc().subtract(7, 'days'))
       // ) {
+      //   logger.info('Processing weekly emails')
       //   await processEmailNotifications(
       //     this.discoveryDB,
       //     this.identityDB,
