@@ -4,7 +4,7 @@ version: "3.9"
 services:
   discovery-provider-notifications:
     build:
-      context: discovery-provider/plugins/notifications
+      context: ${PROJECT_ROOT}/discovery-provider/plugins/notifications
       args:
         git_sha: "${GIT_COMMIT}"
     environment:
@@ -30,7 +30,7 @@ services:
 
   comms:
     build:
-      context: comms
+      context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile
     command: discovery-migrations
     environment:
@@ -68,7 +68,7 @@ services:
 
   discovery-provider:
     build:
-      context: discovery-provider
+      context: ${PROJECT_ROOT}/discovery-provider
       args:
         git_sha: "${GIT_COMMIT}"
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"

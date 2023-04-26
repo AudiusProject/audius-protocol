@@ -13,7 +13,7 @@ services:
 
   identity-service:
     build:
-      context: identity-service
+      context: ${PROJECT_ROOT}/identity-service
       args:
         git_sha: "${GIT_COMMIT}"
     command: sh -c ". /tmp/dev-tools/startup/identity-service.sh && scripts/dev-server.sh"

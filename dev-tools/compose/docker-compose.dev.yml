@@ -21,7 +21,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   build-audius-libs:
-    build: libs
+    build: ${PROJECT_ROOT}/libs
     command: sh /tmp/dev-tools/startup/build-audius-libs.sh
     volumes:
       - audius-libs:/usr/src/app
@@ -40,7 +40,7 @@ services:
       - libs
 
   audius-cmd:
-    build: dev-tools/commands
+    build: ${PROJECT_ROOT}/dev-tools/commands
     command: sleep infinity
     environment:
       ETH_TOKEN_ADDRESS: "${ETH_TOKEN_ADDRESS}"

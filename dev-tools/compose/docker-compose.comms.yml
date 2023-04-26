@@ -9,7 +9,7 @@ x-comms-environment: &comms-environment
 
 x-discovery: &discovery
   build:
-    context: comms
+    context: ${PROJECT_ROOT}/comms
     dockerfile: Dockerfile
     target: builder
     args:
@@ -58,7 +58,7 @@ services:
   comms-test:
     container_name: comms-test
     build:
-      context: comms
+      context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile
       target: builder
       args:

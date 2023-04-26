@@ -33,7 +33,7 @@ services:
 
   poa-ganache:
     build:
-      context: contracts
+      context: ${PROJECT_ROOT}/contracts
       dockerfile: Dockerfile.dev
       args:
         bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
@@ -53,7 +53,7 @@ services:
 
   eth-ganache:
     build:
-      context: eth-contracts
+      context: ${PROJECT_ROOT}/eth-contracts
       dockerfile: Dockerfile.dev
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
@@ -114,7 +114,7 @@ services:
 
   test-poa-contracts:
     build:
-      context: contracts
+      context: ${PROJECT_ROOT}/contracts
       dockerfile: Dockerfile.dev
       args:
         bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
@@ -129,7 +129,7 @@ services:
 
   test-eth-contracts:
     build:
-      context: eth-contracts
+      context: ${PROJECT_ROOT}/eth-contracts
       dockerfile: Dockerfile.dev
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
@@ -302,7 +302,7 @@ services:
 
   test-discovery-provider-notifications:
     build:
-      context: discovery-provider/plugins/notifications
+      context: ${PROJECT_ROOT}/discovery-provider/plugins/notifications
       dockerfile: Dockerfile
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run test "$$@")' -
     environment:
@@ -333,7 +333,7 @@ services:
 
   test-comms-migrations:
     build:
-      context: comms
+      context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile
     command: discovery-migrations
     environment:
@@ -364,7 +364,7 @@ services:
 
   mediorum:
     build:
-      context: mediorum
+      context: ${PROJECT_ROOT}/mediorum
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
@@ -383,7 +383,7 @@ services:
 
   test-mediorum:
     build:
-      context: mediorum
+      context: ${PROJECT_ROOT}/mediorum
       dockerfile: Dockerfile
     entrypoint:
       - "/bin/mediorum-cmd"

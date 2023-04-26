@@ -3,7 +3,7 @@ version: "3.9"
 services:
   creator-node:
     build:
-      context: creator-node
+      context: ${PROJECT_ROOT}/creator-node
       args:
         git_sha: "${GIT_COMMIT}"
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
