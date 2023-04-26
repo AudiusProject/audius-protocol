@@ -55,7 +55,7 @@ export class Listener {
 }
 
 const getNotification = async (client: Client, notificationId: number): Promise<NotificationRow | undefined> => {
-  const query = 'select * from notification where id=$1'
+  const query = 'SELECT * FROM notification WHERE id = $1 limit 1;'
   const values = [notificationId] // parameterized query
   try {
     const res = await client.query<NotificationRow>(query, values)
