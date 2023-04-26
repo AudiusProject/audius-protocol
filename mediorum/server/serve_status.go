@@ -29,3 +29,10 @@ func (ss *MediorumServer) dumpUploads(c echo.Context) error {
 	ss.crud.DB.Unscoped().Order("id").Find(&uploads)
 	return c.JSON(200, uploads)
 }
+
+func (ss *MediorumServer) debugPeers(c echo.Context) error {
+	return c.JSON(200, map[string]interface{}{
+		"peers":   ss.Config.Peers,
+		"signers": ss.Config.Signers,
+	})
+}
