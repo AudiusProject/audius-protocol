@@ -26,6 +26,7 @@ import {
 import LoadingSpinner from 'app/components/loading-spinner'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
+import { light } from 'app/haptics'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useRoute } from 'app/hooks/useRoute'
 import { setVisibility } from 'app/store/drawers/slice'
@@ -304,6 +305,7 @@ export const ChatScreen = () => {
       messageTop.current = messageY - spacing(2)
       dispatch(setReactionsPopupMessageId({ messageId: id }))
       setShouldShowPopup(true)
+      light()
     },
     [dispatch]
   )
