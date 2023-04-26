@@ -3,6 +3,7 @@ package server
 import (
 	"mediorum/server/signature"
 	"net/http"
+	"net/url"
 
 	"github.com/labstack/echo/v4"
 )
@@ -49,6 +50,13 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		}
 	}
 
+	// If the client provided a filename, set it in the header to be auto-populated in download prompt
+	filenameForDownload := c.QueryParam("filename")
+	if filenameForDownload != "" {
+		contentDisposition := url.QueryEscape(filenameForDownload)
+		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
+	}
+
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
 		return ss.serveLegacyCid(c)
@@ -61,6 +69,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		}
 		defer blob.Close()
 		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
+		return nil
 	}
 
 	// redirect to it
