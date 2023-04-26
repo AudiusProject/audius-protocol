@@ -27,6 +27,9 @@ import { getResult } from 'common/store/confirmer/selectors'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import { waitForWrite } from 'utils/sagaHelpers'
 
+import { watchAddToFolderSaga } from './watchAddToFolderSaga'
+import { watchReorderLibrarySaga } from './watchReorderLibrarySaga'
+
 const { update } = playlistLibraryActions
 const {
   containsTempPlaylist,
@@ -175,7 +178,9 @@ export function* addPlaylistsNotInLibrary() {
 export default function sagas() {
   const sagas = [
     watchUpdatePlaylistLibrary,
-    watchUpdatePlaylistLibraryWithTempPlaylist
+    watchUpdatePlaylistLibraryWithTempPlaylist,
+    watchReorderLibrarySaga,
+    watchAddToFolderSaga
   ]
   return sagas
 }

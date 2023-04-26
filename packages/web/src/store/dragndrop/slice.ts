@@ -50,5 +50,7 @@ const slice = createSlice({
 
 export const selectDragnDropState = (state: AppState) => state.dragndrop
 
+export const selectDraggingKind = (state: AppState) => state.dragndrop.kind
+
 export const { drag, drop } = slice.actions
 export default slice.reducer

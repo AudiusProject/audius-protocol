@@ -1,4 +1,11 @@
-import { useState, useRef, useEffect, ReactNode, useCallback } from 'react'
+import {
+  useState,
+  useCallback,
+  cloneElement,
+  ReactElement,
+  DragEvent,
+  ReactNode
+} from 'react'
 
 import { ID, useDebouncedCallback } from '@audius/common'
 import cn from 'classnames'
@@ -8,9 +15,11 @@ import { DragDropKind, selectDragnDropState } from 'store/dragndrop/slice'
 
 import styles from './Droppable.module.css'
 
-type DroppableProps = {
+export type DroppableProps = {
   className?: string
   hoverClassName: string
+  activeClassName?: string
+  inactiveClassName?: string
   onDrop:
     | ((id: ID, kind: DragDropKind, index: number) => void)
     | ((id: string, kind: DragDropKind, index: number) => void)
@@ -18,23 +27,30 @@ type DroppableProps = {
   disabled?: boolean
   // Allows kinds owned by currentUser to be dropped
   acceptOwner?: boolean
-  children?: ReactNode
   stopPropagationOnDrop?: boolean
-}
+} & (
+  | {
+      forward: true
+      children: ReactElement
+    }
+  | { forward?: false; children: ReactNode }
+)
 
 export const Droppable = (props: DroppableProps) => {
   const {
     className,
     hoverClassName,
+    activeClassName = '',
+    inactiveClassName = '',
     onDrop,
     acceptedKinds = ['track', 'album', 'playlist', 'library-playlist'],
     disabled,
     acceptOwner = true,
     children,
-    stopPropagationOnDrop
+    stopPropagationOnDrop,
+    forward
   } = props
   const { id, kind, index, isOwner } = useSelector(selectDragnDropState)
-  const droppableRef = useRef<HTMLDivElement | null>(null)
   const [hovered, setHovered] = useState(false)
 
   /**
@@ -44,6 +60,7 @@ export const Droppable = (props: DroppableProps) => {
    * 2.) Must not be disabled
    * 3.) Either accept owner or the dragging entity if not owned by user
    */
+
   const canDrop =
     kind &&
     acceptedKinds.includes(kind) &&
@@ -58,13 +75,10 @@ export const Droppable = (props: DroppableProps) => {
     setHovered(true)
   }, [])
 
-  const handleDragOver = useCallback(
-    (e: DragEvent) => {
-      if (!hovered) setHovered(true)
-      e.preventDefault()
-    },
-    [hovered]
-  )
+  const handleDragOver = useCallback((e: DragEvent) => {
+    setHovered(true)
+    e.preventDefault()
+  }, [])
 
   const handleDragLeave = useCallback(() => {
     setHovered(false)
@@ -72,9 +86,9 @@ export const Droppable = (props: DroppableProps) => {
 
   const handleDrop = useDebouncedCallback(
     (e: DragEvent) => {
-      if (stopPropagationOnDrop) {
-        e.stopPropagation()
-      }
+      // This is the only way event bubbling could be prevented
+      if (e.nativeEvent.defaultPrevented) return
+      e.preventDefault()
       if (id) {
         // @ts-ignore table expects index to be there
         onDrop(id, kind, index)
@@ -85,42 +99,25 @@ export const Droppable = (props: DroppableProps) => {
     [stopPropagationOnDrop, id, kind, onDrop, index]
   )
 
-  // When a new drag takes place, check if this droppable is appropriate and reattach
-  // event listeners.
-  useEffect(() => {
-    const droppableElement = droppableRef.current
+  const droppableHandlerProps = {
+    onDragEnter: handleDragEnter,
+    onDragLeave: handleDragLeave,
+    onDragOver: handleDragOver,
+    onDrop: handleDrop
+  }
 
-    if (canDrop && droppableElement) {
-      droppableElement.addEventListener('dragenter', handleDragEnter, false)
-      droppableElement.addEventListener('dragleave', handleDragLeave, false)
-      droppableElement.addEventListener('dragover', handleDragOver, false)
-      droppableElement.addEventListener('drop', handleDrop, false)
+  const droppableProps = {
+    className: cn(styles.droppable, className, {
+      [activeClassName]: canDrop,
+      [inactiveClassName]: kind && !canDrop,
+      [hoverClassName]: hovered && canDrop
+    }),
+    ...(canDrop ? droppableHandlerProps : {})
+  }
 
-      return () => {
-        droppableElement.removeEventListener(
-          'dragenter',
-          handleDragEnter,
-          false
-        )
-        droppableElement.removeEventListener(
-          'dragleave',
-          handleDragLeave,
-          false
-        )
-        droppableElement.removeEventListener('dragover', handleDragOver, false)
-        droppableElement.removeEventListener('drop', handleDrop, false)
-      }
-    }
-  }, [canDrop, handleDragEnter, handleDragLeave, handleDragOver, handleDrop])
+  if (forward) {
+    return cloneElement(children, droppableProps)
+  }
 
-  return (
-    <div
-      ref={droppableRef}
-      className={cn(styles.droppable, className, {
-        [hoverClassName]: hovered && canDrop
-      })}
-    >
-      {children}
-    </div>
-  )
+  return <div {...droppableProps}>{children}</div>
 }

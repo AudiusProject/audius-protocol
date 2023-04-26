@@ -1,0 +1,10 @@
+.root {
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+
+.root:hover,
+.root:active,
+.root:focus {
+  color: var(--nav-column-link-hover);
+}
