@@ -44,6 +44,7 @@ type MediorumConfig struct {
 	LegacyFSRoot      string `json:"-"`
 	PrivateKey        string `json:"-"`
 	ListenPort        string `envconfig:"PORT"`
+	UpstreamCN        string
 
 	// should have a basedir type of thing
 	// by default will put db + blobs there
@@ -141,7 +142,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.Debug = true
 
 	// echoServer is the root server
-	// it mostly exists to server the catch all reverse proxy rule at the end
+	// it mostly exists to serve the catch all reverse proxy rule at the end
 	// most routes and middleware should be added to the `routes` group
 	// mostly don't add CORS middleware here as it will break reverse proxy at the end
 	echoServer.Use(middleware.Recover())
@@ -222,11 +223,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/metrics", ss.getMetrics)
 
 	// reverse proxy stuff
-	if config.Env == "stage" || config.Env == "prod" {
-		upstream, _ := url.Parse("http://server:4000")
-		proxy := httputil.NewSingleHostReverseProxy(upstream)
-		echoServer.Any("*", echo.WrapHandler(proxy))
-	}
+	upstream, _ := url.Parse(config.UpstreamCN)
+	proxy := httputil.NewSingleHostReverseProxy(upstream)
+	echoServer.Any("*", echo.WrapHandler(proxy))
 
 	return ss, nil
 

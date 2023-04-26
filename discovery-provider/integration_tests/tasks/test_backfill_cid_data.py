@@ -43,4 +43,6 @@ def test_backfill_cid_data(request_get, app, mocker):
         assert len(users) == 2
         assert users[0].data == {"user_id": 2}
         assert users[1].data == {"user_id": 1}
-        assert redis_connection.get_redis().get("backfilled_cid_data").decode() == "true"
+        assert (
+            redis_connection.get_redis().get("backfilled_cid_data").decode() == "true"
+        )

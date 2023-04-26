@@ -16,6 +16,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type MilestoneRow = Omit<NotificationRow, 'data'> & {
   data:
@@ -141,6 +142,10 @@ export class Milestone extends BaseNotification<MilestoneRow> {
       isAlbum = playlist?.is_album
     }
 
+    const title = 'Congratulations! 🎉'
+    const body = this.getPushBodyText(entityName, isAlbum)
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -160,8 +165,8 @@ export class Milestone extends BaseNotification<MilestoneRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'Congratulations! 🎉',
-              body: this.getPushBodyText(entityName, isAlbum),
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

@@ -11,7 +11,7 @@ from src.utils.helpers import time_method
 MIN_FOLLOWER_REQUIREMENT = 200
 
 
-def _get_related_artists(session: Session, user_id: int, limit=100):
+def _get_related_artists(session: Session, user_id: int, limit=100, offset=0):
     related_artists = (
         session.query(User)
         .select_from(RelatedArtist)
@@ -19,13 +19,14 @@ def _get_related_artists(session: Session, user_id: int, limit=100):
         .filter(RelatedArtist.user_id == user_id, User.is_current)
         .order_by(desc(RelatedArtist.score))
         .limit(limit)
+        .offset(offset)
         .all()
     )
     return helpers.query_result_to_list(related_artists)
 
 
 @time_method
-def get_related_artists(user_id: int, current_user_id: int, limit: int = 100):
+def get_related_artists(user_id: int, current_user_id: int, limit: int = 100, offset: int = 0):
     db = get_db_read_replica()
     users = []
     with db.scoped_session() as session:
@@ -39,7 +40,7 @@ def get_related_artists(user_id: int, current_user_id: int, limit: int = 100):
             and aggregate_user.track_count > 0
             and aggregate_user.follower_count >= MIN_FOLLOWER_REQUIREMENT
         ):
-            users = _get_related_artists(session, user_id, limit)
+            users = _get_related_artists(session, user_id, limit, offset)
 
         user_ids = list(map(lambda user: user["user_id"], users))
         users = populate_user_metadata(session, user_ids, users, current_user_id)

@@ -13,6 +13,8 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
+import { logger } from '../../logger'
 
 type RepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostNotification
@@ -105,6 +107,12 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       entityName = playlist?.playlist_name
     }
 
+    const title = 'New Repost'
+    const body = `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`
+    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'reposts')) {
+      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    }
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -120,6 +128,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
         this.receiverUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
+
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
@@ -130,8 +139,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Repost',
-              body: `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

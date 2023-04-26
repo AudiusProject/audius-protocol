@@ -14,6 +14,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type RepostOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostOfRepostNotification
@@ -107,6 +108,10 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
       entityName = playlist?.playlist_name
     }
 
+    const title = 'New Repost'
+    const body = `${reposterUserName} reposted your repost of ${entityName}`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -132,8 +137,8 @@ export class RepostOfRepost extends BaseNotification<RepostOfRepostNotificationR
               targetARN: device.awsARN
             },
             {
-              title: 'New Repost',
-              body: `${reposterUserName} reposted your repost of ${entityName}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id

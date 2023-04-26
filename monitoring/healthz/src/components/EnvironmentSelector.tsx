@@ -18,7 +18,7 @@ export function useEnvironmentSelection(): [
   ]
 }
 
-export function EnvironmentSlector() {
+export function EnvironmentSelector() {
   let [searchParams, setSearchParams] = useSearchParams()
 
   const isStage = !!searchParams.get(isStageParam)
