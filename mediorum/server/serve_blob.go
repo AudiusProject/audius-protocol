@@ -1,12 +1,8 @@
 package server
 
 import (
-	"fmt"
-	"io"
 	"mediorum/server/signature"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -64,44 +60,7 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 			return err
 		}
 		defer blob.Close()
-
-		if blob.ContentType() == "audio/mpeg" {
-			fileSize := blob.Size()
-			contentRange := c.Request().Header.Get("Range")
-			if contentRange == "" {
-				contentRange = "bytes=0-"
-			}
-
-			// Calculate ranges for streaming partial content
-			rangeParts := strings.Split(contentRange, "=")[1]
-			rangeVals := strings.Split(rangeParts, "-")
-			start, _ := strconv.ParseInt(rangeVals[0], 10, 64)
-			var end int64
-			if rangeVals[1] != "" {
-				end, _ = strconv.ParseInt(rangeVals[1], 10, 64)
-			} else {
-				end = fileSize - 1
-			}
-			length := end - start + 1
-
-			if start > end || end >= fileSize {
-				return c.String(http.StatusRequestedRangeNotSatisfiable, "Invalid range")
-			}
-
-			_, err = blob.Seek(start, 0)
-			if err != nil {
-				return err
-			}
-
-			c.Response().Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", start, end, fileSize))
-			c.Response().Header().Set("Content-Length", fmt.Sprintf("%d", length))
-			c.Response().Header().Set("Accept-Ranges", "bytes")
-			c.Response().Header().Set("Content-Type", blob.ContentType())
-
-			return c.Stream(http.StatusPartialContent, blob.ContentType(), io.LimitReader(blob, length))
-		}
-
-		return c.Stream(200, blob.ContentType(), blob)
+		http.ServeContent(c.Response(), c.Request(), key, blob.ModTime(), blob)
 	}
 
 	// redirect to it
