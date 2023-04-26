@@ -45,11 +45,11 @@ begin
     new.is_playlist_upload = FALSE AND
     new.stem_of IS NULL THEN
       select array(
-        select user_id 
-          from users 
+        select subscriber_id 
+          from subscriptions 
           where is_current and 
-          not is_delete
-          limit 1002
+          not is_delete and 
+          user_id=new.owner_id
       ) into subscriber_user_ids;
 
       if array_length(subscriber_user_ids, 1)	> 0 then
