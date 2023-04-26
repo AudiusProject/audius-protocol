@@ -96,7 +96,7 @@ export class UserNotificationSettings {
   isNotificationTypeEnabled(userId: number, feature: string) {
     const mobileSettings = this.mobile?.[userId]
     if (mobileSettings === undefined) {
-      return true
+      return false
     }
     return mobileSettings.settings[feature]
   }
@@ -104,7 +104,7 @@ export class UserNotificationSettings {
   isNotificationTypeBrowserEnabled(userId: number, feature: string): boolean {
     const browserSettings = this.browser?.[userId]
     if (browserSettings === undefined) {
-      return true
+      return false
     }
     return browserSettings.settings[feature]
   }
