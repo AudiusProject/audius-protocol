@@ -3,7 +3,12 @@ import { useEffect, useCallback, useRef, useState } from 'react'
 import type { ReactionTypes } from '@audius/common'
 import type { AnimatedLottieViewProps } from 'lottie-react-native'
 import LottieView from 'lottie-react-native'
-import type { StyleProp, View, ViewProps, ViewStyle } from 'react-native'
+import type {
+  LayoutChangeEvent,
+  StyleProp,
+  ViewProps,
+  ViewStyle
+} from 'react-native'
 import { Animated } from 'react-native'
 import { usePrevious } from 'react-use'
 
@@ -50,7 +55,6 @@ export const Reaction = (props: ReactionProps) => {
   const styles = useStyles()
   const [status, setStatus] = useState(statusProp)
   const animationRef = useRef<LottieView | null>(null)
-  const ref = useRef<View | null>(null)
   const scale = useRef(new Animated.Value(1)).current
   const previousStatus = usePrevious(status)
 
@@ -66,15 +70,13 @@ export const Reaction = (props: ReactionProps) => {
     }
   }, [status, autoPlay, isVisible])
 
-  const measureReactions = useCallback(() => {
-    if (isVisible && onMeasure) {
-      ref.current?.measureInWindow((x, _, width) => {
-        onMeasure({ x, width, reactionType })
-      })
-    }
-  }, [isVisible, onMeasure, reactionType])
-
-  useEffect(() => measureReactions(), [measureReactions])
+  const handleLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { x, width } = event.nativeEvent.layout
+      onMeasure?.({ x, width, reactionType })
+    },
+    [onMeasure, reactionType]
+  )
 
   useEffect(() => {
     if (previousStatus !== 'interacting' && status === 'interacting') {
@@ -114,15 +116,14 @@ export const Reaction = (props: ReactionProps) => {
 
   return (
     <Animated.View
-      ref={ref}
       style={[styles.root, animatedStyles, style]}
+      onLayout={handleLayout}
       {...other}
     >
       <LottieView
         ref={(animation) => {
           animationRef.current = animation
         }}
-        onLayout={measureReactions}
         autoPlay={isVisible && autoPlay}
         loop
         source={source}
