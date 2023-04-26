@@ -43,6 +43,10 @@ export type PlaylistLibraryFolder = {
   contents: (PlaylistLibraryFolder | PlaylistLibraryIdentifier)[]
 }
 
+export type PlaylistLibraryItem =
+  | PlaylistLibraryIdentifier
+  | PlaylistLibraryFolder
+
 export type PlaylistLibrary = {
   contents: (PlaylistLibraryFolder | PlaylistLibraryIdentifier)[]
 }
