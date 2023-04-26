@@ -1,6 +1,5 @@
 import { PlaybackRate } from 'store/player'
 
-import { TrackSegment } from '../models'
 import { Nullable } from '../utils'
 
 export type AudioInfo = {
@@ -16,11 +15,7 @@ export enum AudioError {
 
 export type AudioPlayer = {
   audio: HTMLAudioElement
-  load: (
-    segments: TrackSegment[],
-    onEnd: () => void,
-    mp3Url: Nullable<string>
-  ) => void
+  load: (duration: number, onEnd: () => void, mp3Url: Nullable<string>) => void
   play: () => void
   pause: () => void
   stop: () => void

@@ -132,7 +132,11 @@ export function* watchPlay() {
 
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
-          track.track_segments,
+          track.duration ||
+            track.track_segments.reduce(
+              (duration, segment) => duration + parseFloat(segment.duration),
+              0
+            ),
           () => {
             if (onEnd) {
               emitter(onEnd({}))
@@ -212,7 +216,7 @@ export function* watchCollectiblePlay() {
       const audioPlayer = yield* getContext('audioPlayer')
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
-          [],
+          0,
           () => {
             if (onEnd) {
               emitter(onEnd({}))
