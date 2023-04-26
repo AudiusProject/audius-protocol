@@ -181,7 +181,7 @@ export const ReactionPopup = ({
                 handleReactionSelected(message, reaction)
               }
             }}
-            isVisible={true}
+            isVisible={shouldShowPopup}
             scale={1.6}
             style={{
               emoji: styles.emoji
