@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"mediorum/server/signature"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -41,7 +42,14 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		return ss.serveLegacyCid(c)
 	}
 
-	if iHave, _ := ss.bucket.Exists(ctx, key); iHave {
+	if attrs, err := ss.bucket.Attributes(ctx, key); err == nil && attrs != nil {
+		// detect mime type:
+		// if this is not the cidstream route, we should block mp3 streaming
+		// for now just set a header until we are ready to 401 (after client using cidstream everywhere)
+		if !strings.Contains(c.Path(), "cidstream") && strings.HasPrefix(attrs.ContentType, "audio") {
+			c.Response().Header().Set("x-would-block", "true")
+		}
+
 		blob, err := ss.bucket.NewReader(ctx, key, nil)
 		if err != nil {
 			return err
