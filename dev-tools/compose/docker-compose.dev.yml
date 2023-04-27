@@ -6,7 +6,7 @@ services:
     image: openresty/openresty:1.21.4.1-alpine-fat
     volumes:
       - ./nginx_ingress.conf:/etc/nginx/conf.d/default.conf
-      - ./comms/nginx/ingress.conf:/usr/local/openresty/nginx/conf/comms_ingress.conf
+      - ${PROJECT_ROOT}/comms/nginx/ingress.conf:/usr/local/openresty/nginx/conf/comms_ingress.conf
     ports:
       - 80:80
 
@@ -65,8 +65,8 @@ services:
       FALLBACK_CREATOR_NODE_URL: "http://creator-node:4000" # this should choose a random cn everytime this is run
     volumes:
       - audius-libs:/usr/src/app/node_modules/@audius/sdk
-      - ..//commands/src:/usr/src/app/src
-      - ..//commands/test:/usr/src/app/test
+      - ../commands/src:/usr/src/app/src
+      - ../commands/test:/usr/src/app/test
     depends_on:
       build-audius-libs:
         condition: service_started

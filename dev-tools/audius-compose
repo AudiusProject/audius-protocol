@@ -370,6 +370,7 @@ def up(
                 "docker",
                 "compose",
                 f"--project-directory={protocol_dir / 'dev-tools/compose'}",
+                f"--project-name={protocol_dir.name}",
                 f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
                 *(
                     [f"--file={AAO_DIR / 'audius-compose.yml'}"]
