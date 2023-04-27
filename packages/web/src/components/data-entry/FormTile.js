@@ -764,8 +764,15 @@ class FormTile extends Component {
     try {
       let file = selectedFiles[0]
       file = await this.props.transformArtworkFunction(file)
-      const storageV2Enabled = getFeatureEnabled(FeatureFlags.STORAGE_V2)
-      if (storageV2Enabled) file.name = selectedFiles[0].name
+      const storageV2SignupEnabled = await getFeatureEnabled(
+        FeatureFlags.STORAGE_V2_SIGNUP
+      )
+      const storageV2UploadEnabled = await getFeatureEnabled(
+        FeatureFlags.STORAGE_V2_TRACK_UPLOAD
+      )
+      if (storageV2SignupEnabled || storageV2UploadEnabled) {
+        file.name = selectedFiles[0].name
+      }
       const url = URL.createObjectURL(file)
       this.props.onChangeField('artwork', { url, file, source }, false)
       this.setState({ imageProcessingError: false })

@@ -1266,8 +1266,13 @@ export const audiusBackend = ({
     metadata: TrackMetadata,
     onProgress: (loaded: number, total: number) => void
   ) {
-    const storageV2Enabled = await getFeatureEnabled(FeatureFlags.STORAGE_V2)
-    if (storageV2Enabled) {
+    const storageV2SignupEnabled = await getFeatureEnabled(
+      FeatureFlags.STORAGE_V2_SIGNUP
+    )
+    const storageV2UploadEnabled = await getFeatureEnabled(
+      FeatureFlags.STORAGE_V2_TRACK_UPLOAD
+    )
+    if (storageV2SignupEnabled || storageV2UploadEnabled) {
       try {
         return await audiusLibs.Track.uploadTrackV2(
           trackFile,
@@ -1296,7 +1301,6 @@ export const audiusBackend = ({
     metadata: TrackMetadata,
     onProgress: (loaded: number, total: number) => void
   ) {
-    // TODO: Call storage v2 upload if USE_STORAGE_V2_FEATURE_FLAG is true
     return audiusLibs.Track.uploadTrackContentToCreatorNode(
       trackFile,
       coverArtFile,
@@ -1981,8 +1985,10 @@ export const audiusBackend = ({
       setLocalStorageItem('is-mobile-user', 'true')
     }
 
-    const storageV2Enabled = await getFeatureEnabled(FeatureFlags.STORAGE_V2)
-    if (storageV2Enabled || email?.startsWith('storage_v2_test_')) {
+    const storageV2SignupEnabled = await getFeatureEnabled(
+      FeatureFlags.STORAGE_V2_SIGNUP
+    )
+    if (storageV2SignupEnabled) {
       return await audiusLibs.Account.signUpV2(
         email,
         password,
