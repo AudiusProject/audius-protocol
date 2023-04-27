@@ -90,6 +90,6 @@ begin;
     alter table tracks
     add column if not exists ai_attribution_user_id integer;
 
-    alter table user
+    alter table users
     add column if not exists allow_ai_attribution boolean not null default false;
 commit;
