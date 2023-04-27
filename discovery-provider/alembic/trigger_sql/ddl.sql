@@ -81,7 +81,6 @@ commit;
 begin;
     alter table tracks
     add column if not exists duration integer default 0;
-commit;
 commit;  
 
 -- 4/26/23: create app delegates table
