@@ -495,8 +495,8 @@ class HandleFullAITrackList(Resource):
 
     @auth_middleware()
     @full_ns.doc(
-        id="""Get Tracks by User Handle""",
-        description="""Gets the tracks created by a user using the user's handle""",
+        id="""Get AI Attributed Tracks by User Handle""",
+        description="""Gets the AI generated tracks attributed to a user using the user's handle""",
         params={
             "handle": "A User handle",
         },
@@ -507,6 +507,22 @@ class HandleFullAITrackList(Resource):
     def get(self, handle, authed_user_id=None):
         return self._get(handle, authed_user_id)
 
+
+@ns.route(USER_AI_ATTRIBUTED_TRACKS)
+class HandleAITrackList(HandleFullAITrackList):
+    @auth_middleware()
+    @ns.doc(
+        id="""Get AI Attributed Tracks by User Handle""",
+        description="""Gets the AI generated tracks attributed to a user using the user's handle""",
+        params={
+            "handle": "A User handle",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_tracks_route_parser)
+    @ns.marshal_with(tracks_response)
+    def get(self, handle, authed_user_id):
+        return super()._get(handle, authed_user_id)
 
 
 USER_REPOSTS_ROUTE = "/<string:id>/reposts"
