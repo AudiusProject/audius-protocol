@@ -74,7 +74,6 @@ basic_entities = {
 
 
 def test_aggregate_counters(app):
-
     with app.app_context():
         db = get_db()
 
