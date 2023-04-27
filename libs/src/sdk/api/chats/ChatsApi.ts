@@ -201,6 +201,8 @@ export class ChatsApi
 
     if (requestParameters?.userIds) {
       query['id'] = requestParameters.userIds
+    } else {
+      return 'Error: id is required'
     }
 
     const res = await this.signAndSendRequest({
