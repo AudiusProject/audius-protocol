@@ -68,8 +68,6 @@ export const getUsersCanNotify = async (
         'Users.blockchainUserId'
       )
       .where('Users.isEmailDeliverable', true)
-      //skiamilev - delete
-      .where('Users.handle', 'sabrina78401092')
       .where(function () {
         this.where('lastEmailSentAt.timestamp', null).orWhere(
           'lastEmailSentAt.timestamp',
@@ -388,18 +386,17 @@ export async function processEmailNotifications(
                 }
               }
               numEmailsSent++
-              // skiamilev - to uncomment
-              // await identityDb
-              //   .insert([
-              //     {
-              //       userId: user.blockchainUserId,
-              //       emailFrequency: frequency,
-              //       timestamp: currentUtcTime,
-              //       createdAt: currentUtcTime,
-              //       updatedAt: currentUtcTime
-              //     }
-              //   ])
-              //   .into('NotificationEmails')
+              await identityDb
+                .insert([
+                  {
+                    userId: user.blockchainUserId,
+                    emailFrequency: frequency,
+                    timestamp: currentUtcTime,
+                    createdAt: currentUtcTime,
+                    updatedAt: currentUtcTime
+                  }
+                ])
+                .into('NotificationEmails')
               return { result: Results.SENT }
             } catch (e) {
               return { result: Results.ERROR, error: e.toString() }
