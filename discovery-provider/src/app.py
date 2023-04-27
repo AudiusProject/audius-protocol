@@ -413,11 +413,11 @@ def configure_celery(celery, test_config=None):
             },
             "update_track_is_available": {
                 "task": "update_track_is_available",
-                "schedule": timedelta(minutes=30),
+                "schedule": timedelta(minutes=10),
             },
             "update_user_is_available": {
                 "task": "update_user_is_available",
-                "schedule": timedelta(minutes=30),
+                "schedule": timedelta(minutes=10),
             },
             "index_profile_challenge_backfill": {
                 "task": "index_profile_challenge_backfill",
