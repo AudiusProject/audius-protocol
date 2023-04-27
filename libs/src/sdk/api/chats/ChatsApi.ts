@@ -198,12 +198,17 @@ export class ChatsApi
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-
-    if (requestParameters?.userIds) {
-      query['id'] = requestParameters.userIds
-    } else {
-      return 'Error: id is required'
-    }
+    this.assertNotNullOrUndefined(
+      requestParameters?.userIds,
+      'requestParameters.userIds',
+      'getPermissions'
+    )
+    this.assertMinLength(
+      requestParameters?.userIds!,
+      'requestParameters.userIds',
+      'getPermissions'
+    )
+    query['id'] = requestParameters?.userIds!
 
     const res = await this.signAndSendRequest({
       method: 'GET',
