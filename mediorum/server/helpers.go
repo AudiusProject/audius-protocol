@@ -1,7 +1,10 @@
 package server
 
 import (
+	"io"
+	"net/http"
 	"net/url"
+	"os"
 	"strings"
 )
 
@@ -31,4 +34,23 @@ func cleanHost(host string) string {
 
 func isLegacyCID(cid string) bool {
 	return len(cid) == 46 && strings.HasPrefix(cid, "Qm")
+}
+
+func sniffMimeType(r io.ReadSeeker) string {
+	buffer := make([]byte, 512)
+	r.Read(buffer)
+	r.Seek(0, 0)
+	return http.DetectContentType(buffer)
+}
+
+// returns true if file exists and sniffed mime type is audio.*
+// returns false if anything goes wrong (i.e. file doesn't exist).
+// if file doesn't exist we want to fall thru to redirect behavior instead of blocking.
+func isAudioFile(filePath string) bool {
+	if f, err := os.Open(filePath); err == nil {
+		mime := sniffMimeType(f)
+		f.Close()
+		return strings.HasPrefix(mime, "audio")
+	}
+	return false
 }

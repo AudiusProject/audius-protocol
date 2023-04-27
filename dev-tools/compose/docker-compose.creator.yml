@@ -3,14 +3,14 @@ version: "3.9"
 services:
   creator-node:
     build:
-      context: creator-node
+      context: ${PROJECT_ROOT}/creator-node
       args:
         git_sha: "${GIT_COMMIT}"
     command: sh -c ". /tmp/dev-tools/startup/startup.sh && scripts/start.sh"
     env_file: .env # used by the startup script
     volumes:
-      - ./creator-node:/usr/src/app
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/creator-node:/usr/src/app
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
       - legacy_creator_file_storage:/file_storage
       - audius-libs:/usr/src/audius-libs
       - /usr/src/app/node_modules

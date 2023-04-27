@@ -3,8 +3,7 @@ version: "3.9"
 # TODO: Run nethermind in a container called `chain` like https://github.com/AudiusProject/audius-docker-compose/blob/main/discovery-provider/docker-compose.yml#L247
 # This has never existed locally but seems to break discovery indexing when signing up now (was previously working)
 
-x-common:
-  &common
+x-common: &common
   logging:
     options:
       max-size: "50m"
@@ -46,12 +45,12 @@ services:
       PGUSER: "postgres"
       POSTGRES_PASSWORD: "postgres"
     volumes:
-      - ./dev-tools/startup/initdb:/docker-entrypoint-initdb.d
+      - ../startup/initdb:/docker-entrypoint-initdb.d
       - postgresdata:/var/lib/postgresql/data
     <<: *common
     healthcheck:
       # identity_service is the last db to be created in init-db.sql
-      test: [ "CMD", "pg_isready", "--dbname", "identity_service" ]
+      test: ["CMD", "pg_isready", "--dbname", "identity_service"]
       interval: 10s
       timeout: 5s
 
@@ -219,4 +218,3 @@ volumes:
   postgresdata:
   mediorum:
   legacy_creator_file_storage:
-
