@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"mediorum/server/signature"
 	"net/http"
 	"time"
 
@@ -55,7 +56,13 @@ func (p *PeerClient) startSender() {
 	}
 	for data := range p.outbox {
 		endpoint := p.Host + "/internal/crud/push" // hardcoded
-		resp, err := httpClient.Post(endpoint, "application/json", bytes.NewReader(data))
+		req := signature.SignedPost(
+			endpoint,
+			"application/json",
+			bytes.NewReader(data),
+			p.crudr.myPrivateKey)
+
+		resp, err := httpClient.Do(req)
 		if err != nil {
 			log.Println("push failed", "host", p.Host, "err", err)
 			continue
