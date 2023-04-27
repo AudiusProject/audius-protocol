@@ -156,6 +156,7 @@ def is_valid_json_field(metadata, field):
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_cid = track_metadata["track_cid"]
     track_record.title = track_metadata["title"]
+    track_record.duration = track_metadata.get("duration", 0) or 0
     track_record.length = track_metadata.get("length", 0) or 0
     track_record.cover_art = track_metadata["cover_art"]
     if track_metadata["cover_art_sizes"]:

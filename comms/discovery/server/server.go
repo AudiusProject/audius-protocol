@@ -676,14 +676,14 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 	var rpcs []schema.RpcLog
 
 	var after time.Time
-	if t, err := time.Parse(time.RFC3339, c.QueryParam("after")); err == nil {
+	if t, err := time.Parse(time.RFC3339Nano, c.QueryParam("after")); err == nil {
 		after = t
 	} else {
 		fmt.Println("failed to parse time", err, c.QueryParam("after"), c.QueryString())
 	}
 
 	query := `select * from rpc_log where relayed_by = $1 and relayed_at > $2 order by relayed_at asc`
-	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after)
+	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after.Truncate(time.Microsecond))
 	if err != nil {
 		return err
 	}

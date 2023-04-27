@@ -2,8 +2,7 @@
 
 version: "3.9"
 
-x-logging:
-  &default-logging
+x-logging: &default-logging
   options:
     max-size: "50m"
     max-file: "3"
@@ -21,9 +20,9 @@ services:
       PGUSER: "postgres"
       POSTGRES_PASSWORD: "postgres"
     volumes:
-      - ./dev-tools/startup/initdb:/docker-entrypoint-initdb.d
+      - ../startup/initdb:/docker-entrypoint-initdb.d
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     deploy:
@@ -34,7 +33,7 @@ services:
 
   poa-ganache:
     build:
-      context: contracts
+      context: ${PROJECT_ROOT}/contracts
       dockerfile: Dockerfile.dev
       args:
         bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
@@ -43,7 +42,7 @@ services:
     command: bash /tmp/dev-tools/startup/poa-ganache.sh
     volumes:
       - poa-contracts-abis:/usr/src/app/build/contracts
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     logging: *default-logging
     deploy:
       mode: global
@@ -54,7 +53,7 @@ services:
 
   eth-ganache:
     build:
-      context: eth-contracts
+      context: ${PROJECT_ROOT}/eth-contracts
       dockerfile: Dockerfile.dev
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
@@ -62,7 +61,7 @@ services:
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     logging: *default-logging
     deploy:
       mode: global
@@ -77,7 +76,7 @@ services:
     image: alpine:3.14
     command: sleep inf
     healthcheck:
-      test: [ "CMD", "true" ]
+      test: ["CMD", "true"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -115,7 +114,7 @@ services:
 
   test-poa-contracts:
     build:
-      context: contracts
+      context: ${PROJECT_ROOT}/contracts
       dockerfile: Dockerfile.dev
       args:
         bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
@@ -130,7 +129,7 @@ services:
 
   test-eth-contracts:
     build:
-      context: eth-contracts
+      context: ${PROJECT_ROOT}/eth-contracts
       dockerfile: Dockerfile.dev
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
@@ -150,7 +149,7 @@ services:
     environment:
       POSTGRES_DB: "creator_node"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -163,7 +162,7 @@ services:
   creator-node-redis:
     image: redis:6.2
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -225,7 +224,7 @@ services:
     environment:
       POSTGRES_DB: "discovery_provider"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -239,7 +238,7 @@ services:
   discovery-provider-redis:
     image: redis:7.0
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging
@@ -283,7 +282,7 @@ services:
       audius_elasticsearch_url: "http://discovery-provider-elasticsearch:9200"
       audius_elasticsearch_run_indexer: "true"
     volumes:
-      - ./discovery-provider:/audius-discovery-provider
+      - ${PROJECT_ROOT}/discovery-provider:/audius-discovery-provider
       - /audius-discovery-provider/es-indexer/node_modules
     depends_on:
       discovery-provider-elasticsearch:
@@ -303,7 +302,7 @@ services:
 
   test-discovery-provider-notifications:
     build:
-      context: discovery-provider/plugins/notifications
+      context: ${PROJECT_ROOT}/discovery-provider/plugins/notifications
       dockerfile: Dockerfile
     entrypoint: sh -c '[ ! "$$1" = "test" ] && sleep inf || (shift; npm run test "$$@")' -
     environment:
@@ -311,7 +310,7 @@ services:
       DN_DB_URL: "postgresql://postgres:postgres@discovery-provider-db:5432/discovery_provider"
       IDENTITY_DB_URL: "postgresql://postgres:postgres@identity-service-db:5432/identity_service"
     volumes:
-      - ./discovery-provider/plugins/notifications:/notifications
+      - ${PROJECT_ROOT}/discovery-provider/plugins/notifications:/notifications
       - /notifications/node_modules
     depends_on:
       test-discovery-provider-migrations:
@@ -334,7 +333,7 @@ services:
 
   test-comms-migrations:
     build:
-      context: comms
+      context: ${PROJECT_ROOT}/comms
       dockerfile: Dockerfile
     command: discovery-migrations
     environment:
@@ -354,18 +353,18 @@ services:
     environment:
       POSTGRES_PASSWORD: example
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 3s
       timeout: 3s
     logging: *default-logging
     volumes:
-      - ./mediorum/.initdb:/docker-entrypoint-initdb.d
+      - ${PROJECT_ROOT}/mediorum/.initdb:/docker-entrypoint-initdb.d
     profiles:
       - mediorum
 
   mediorum:
     build:
-      context: mediorum
+      context: ${PROJECT_ROOT}/mediorum
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
@@ -384,7 +383,7 @@ services:
 
   test-mediorum:
     build:
-      context: mediorum
+      context: ${PROJECT_ROOT}/mediorum
       dockerfile: Dockerfile
     entrypoint:
       - "/bin/mediorum-cmd"
@@ -407,7 +406,7 @@ services:
     environment:
       POSTGRES_DB: "identity_service"
     healthcheck:
-      test: [ "CMD", "pg_isready" ]
+      test: ["CMD", "pg_isready"]
       interval: 1s
       timeout: 2s
     logging: *default-logging
@@ -422,7 +421,7 @@ services:
     image: redis:7.0
     command: redis-server
     healthcheck:
-      test: [ "CMD", "redis-cli", "PING" ]
+      test: ["CMD", "redis-cli", "PING"]
       interval: 10s
       timeout: 5s
     logging: *default-logging

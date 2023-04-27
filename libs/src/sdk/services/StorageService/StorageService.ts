@@ -57,6 +57,7 @@ export class StorageService {
 
     // Update metadata to include uploaded CIDs
     updatedMetadata.track_segments = []
+    updatedMetadata.duration = parseInt(audioResp.probe.format.duration, 10)
     updatedMetadata.track_cid = audioResp.results['320']
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid

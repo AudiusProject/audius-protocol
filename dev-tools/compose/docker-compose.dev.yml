@@ -6,7 +6,7 @@ services:
     image: openresty/openresty:1.21.4.1-alpine-fat
     volumes:
       - ./nginx_ingress.conf:/etc/nginx/conf.d/default.conf
-      - ./comms/nginx/ingress.conf:/usr/local/openresty/nginx/conf/comms_ingress.conf
+      - ${PROJECT_ROOT}/comms/nginx/ingress.conf:/usr/local/openresty/nginx/conf/comms_ingress.conf
     ports:
       - 80:80
 
@@ -21,14 +21,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   build-audius-libs:
-    build: libs
+    build: ${PROJECT_ROOT}/libs
     command: sh /tmp/dev-tools/startup/build-audius-libs.sh
     volumes:
       - audius-libs:/usr/src/app
       - poa-contracts-abis:/usr/src/data-contracts/ABIs
       - eth-contracts-abis:/usr/src/eth-contracts/ABIs
-      - ./libs/src:/usr/src/app/src
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/libs/src:/usr/src/app/src
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     depends_on:
       poa-ganache:
         condition: service_started
@@ -40,7 +40,7 @@ services:
       - libs
 
   audius-cmd:
-    build: dev-tools/commands
+    build: ${PROJECT_ROOT}/dev-tools/commands
     command: sleep infinity
     environment:
       ETH_TOKEN_ADDRESS: "${ETH_TOKEN_ADDRESS}"
@@ -65,8 +65,8 @@ services:
       FALLBACK_CREATOR_NODE_URL: "http://creator-node:4000" # this should choose a random cn everytime this is run
     volumes:
       - audius-libs:/usr/src/app/node_modules/@audius/sdk
-      - ./dev-tools/commands/src:/usr/src/app/src
-      - ./dev-tools/commands/test:/usr/src/app/test
+      - ../commands/src:/usr/src/app/src
+      - ../commands/test:/usr/src/app/test
     depends_on:
       build-audius-libs:
         condition: service_started

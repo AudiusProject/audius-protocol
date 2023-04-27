@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 UPDATE_TRACK_IS_AVAILABLE_LOCK = "update_track_is_available_lock"
 
 BATCH_SIZE = 1000
-DEFAULT_LOCK_TIMEOUT_SECONDS = 30  # 30 seconds
+DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
 REQUESTS_TIMEOUT_SECONDS = 300  # 5 minutes
 
 

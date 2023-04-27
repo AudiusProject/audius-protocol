@@ -5,6 +5,7 @@ import (
 	"mediorum/ddl"
 	"time"
 
+	"golang.org/x/exp/slog"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -71,6 +72,7 @@ func dbMustDial(dbPath string) *gorm.DB {
 
 func dbMigrate(crud *crudr.Crudr) {
 	// Migrate the schema
+	slog.Info("db: gorm automigrate")
 	err := crud.DB.AutoMigrate(&Blob{}, &Upload{}, &ServerHealth{}, &LogLine{})
 	if err != nil {
 		panic(err)
@@ -78,6 +80,7 @@ func dbMigrate(crud *crudr.Crudr) {
 
 	// bonus migrations
 	// must be idempotent
+	slog.Info("db: running misc migrations that should be merged with ddl migrate")
 	crud.DB.Exec(`
 		alter table uploads drop column if exists orig_file_c_id;
 		delete from uploads where orig_file_cid is null;
@@ -87,6 +90,10 @@ func dbMigrate(crud *crudr.Crudr) {
 	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{})
 
 	sqlDb, _ := crud.DB.DB()
+
+	slog.Info("db: ddl migrate")
 	ddl.Migrate(sqlDb)
+
+	slog.Info("db: migrate done")
 
 }

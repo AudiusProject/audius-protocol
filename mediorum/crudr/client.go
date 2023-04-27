@@ -44,6 +44,7 @@ func (p *PeerClient) Send(data []byte) bool {
 	case p.outbox <- data:
 		return true
 	default:
+		p.logger.Info("outbox full, dropping message", "msg", string(data), "len", len(p.outbox), "cap", cap(p.outbox))
 		return false
 	}
 }
@@ -57,7 +58,7 @@ func (p *PeerClient) startSender() {
 		resp, err := httpClient.Post(endpoint, "application/json", bytes.NewReader(data))
 		if err != nil {
 			log.Println("push failed", "host", p.Host, "err", err)
-			return
+			continue
 		}
 
 		if resp.StatusCode != 200 {

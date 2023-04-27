@@ -1,8 +1,8 @@
 {
   "name": "audius-protocol",
-  "description": "Audius is working to create a fully decentralized community of artists, developers, and listeners collaborating to share and defend the world’s music.",
+  "description": "Giving everyone the freedom to distribute, monetize, and stream unstoppable audio",
   "dependencies": {
-    "pre-commit": "^1.2.2"
+    "pre-commit": "1.2.2"
   },
   "scripts": {
     "check-secrets": "sh ./check_secrets.sh"

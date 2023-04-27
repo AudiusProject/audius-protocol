@@ -135,6 +135,7 @@ def test_fetch_cid_metadata(app, mocker):
                 "owner_id": 1,
                 "title": "track 1",
                 "route_id": None,
+                "duration": 0,
                 "length": 0,
                 "cover_art": None,
                 "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",

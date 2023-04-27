@@ -11,6 +11,10 @@
                     "type": "string",
                     "default": null
                 },
+                "duration": {
+                  "type": "integer",
+                  "default": 0
+                },
                 "length": {
                     "type": [
                         "integer",
