@@ -1,4 +1,4 @@
-import { Client, Notification, Pool } from 'pg'
+import { Client, Notification } from 'pg'
 import { logger } from './logger'
 import { NotificationRow } from './types/dn'
 
@@ -61,10 +61,6 @@ const getNotification = async (client: Client, notificationId: number): Promise<
   const values = [notificationId] // parameterized query
   try {
     const res = await client.query<NotificationRow>(query, values)
-    if (res.rowCount == 0) {
-      logger.warn(`could not find row ${notificationId} in db`)
-      return null
-    }
     return res.rows[0]
   } catch (e) {
     logger.error(`could not get notification ${notificationId} ${e}`)
