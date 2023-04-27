@@ -452,6 +452,7 @@ export class UserNotificationSettings {
 
   getUserSendAt(userId: number) {
     const timezone = this.userTimezone[userId]
+    // note if timezone is null it defaults to UTC timezone
     const sendAt = moment.tz(timezone).add(1, 'day').startOf('day')
     // sendgrid's send api expects a send_at value in
     // unix timestamp in seconds
