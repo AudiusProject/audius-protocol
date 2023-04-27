@@ -39,7 +39,7 @@ export class Listener {
 
     this.client.on('notification', async (msg: Notification) => {
       const { notification_id }: { notification_id: number } = JSON.parse(msg.payload)
-      const notification = await getNotification(client, notification_id)
+      const notification = await getNotification(this.client, notification_id)
       if (notification !== null) {
         this.handler(notification)
       }
