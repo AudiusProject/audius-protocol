@@ -127,19 +127,19 @@ export class Processor {
         this.lastDailyEmailSent = moment.utc()
       }
 
-      // if (
-      //   this.getIsScheduledEmailEnabled() &&
-      //   (!this.lastWeeklyEmailSent ||
-      //     this.lastWeeklyEmailSent < moment.utc().subtract(7, 'days'))
-      // ) {
-      //   logger.info('Processing weekly emails')
-      //   await processEmailNotifications(
-      //     this.discoveryDB,
-      //     this.identityDB,
-      //     'weekly'
-      //   )
-      //   this.lastWeeklyEmailSent = moment.utc()
-      // }
+      if (
+        this.getIsScheduledEmailEnabled() &&
+        (!this.lastWeeklyEmailSent ||
+          this.lastWeeklyEmailSent < moment.utc().subtract(7, 'days'))
+      ) {
+        logger.info('Processing weekly emails')
+        await processEmailNotifications(
+          this.discoveryDB,
+          this.identityDB,
+          'weekly'
+        )
+        this.lastWeeklyEmailSent = moment.utc()
+      }
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))
     }
