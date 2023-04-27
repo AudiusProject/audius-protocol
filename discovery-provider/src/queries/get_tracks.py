@@ -109,9 +109,12 @@ def _get_tracks(session, args):
             raise e
 
     # Allow filtering of tracks by a certain creator
-    if "user_id" in args and args.get("user_id") is not None:
+    if args.get("user_id"):
         user_id = args.get("user_id")
-        base_query = base_query.filter(TrackWithAggregates.owner_id == user_id)
+        if args.get("ai_attributed_only"):
+            base_query = base_query.filter(TrackWithAggregates.ai_attribution_user_id == user_id)
+        else:
+            base_query = base_query.filter(TrackWithAggregates.owner_id == user_id)
 
     # Allow filtering of deletes
     if "filter_deleted" in args and args.get("filter_deleted") is not None:

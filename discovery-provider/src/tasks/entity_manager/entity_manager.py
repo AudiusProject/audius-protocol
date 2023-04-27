@@ -327,6 +327,14 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
                 for track in tracks:
                     entities_to_fetch[EntityType.TRACK].add(track["track"])
 
+                if (
+                    entity_type == EntityType.TRACK
+                    and action == Action.CREATE
+                ):
+                    user_id = metadata[cid].get("ai_attribution_user_id")
+                    if user_id:
+                        entities_to_fetch[EntityType.USER].add(user_id)
+
     return entities_to_fetch
 
 

@@ -3,228 +3,178 @@
     "$ref": "#/definitions/Track",
     "definitions": {
         "Track": {
-            "type": "object",
-            "additionalProperties": true,
-            "$comment": "Additional properties enabled because the data return by discovery providers may contain other properties like blockhash, is_current, which are not strictly part of the metadata.",
-            "properties": {
-                "title": {
-                    "type": "string",
-                    "default": null
-                },
-                "duration": {
-                  "type": "integer",
-                  "default": 0
-                },
-                "length": {
-                    "type": [
-                        "integer",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "cover_art": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "cover_art_sizes": {
-                    "$comment": "type can be null if attached as a stem",
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "tags": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "genre": {
-                    "$comment": "genre can be null if attached as a stem",
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "mood": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "credits_splits": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "create_date": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "release_date": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "file_type": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "description": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "license": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "isrc": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "iswc": {
-                    "type": [
-                        "string",
-                        "null"
-                    ],
-                    "default": null
-                },
-                "track_segments": {
-                    "type": "array",
-                    "minItems": 0,
-                    "items": {
-                        "$ref": "#/definitions/TrackSegment"
-                    },
-                    "default": [],
-                    "$comment": "default set to empty array to unblock stalling indexing. if set to null, discprov db will reject because of not-NULL constraint"
-                },
-                "is_unlisted": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_storage_v2": {
-                  "type": "boolean",
-                  "default": false
-              },
-                "field_visibility": {
-                    "type": "object",
-                    "$ref": "#/definitions/FieldVisibility",
-                    "default": {
-                        "mood": true,
-                        "tags": true,
-                        "genre": true,
-                        "share": true,
-                        "play_count": true,
-                        "remixes": true
-                    }
-                },
-                "download": {
-                    "type": [
-                        "object",
-                        "null"
-                    ],
-                    "$ref": "#/definitions/Download",
-                    "default": {
-                        "cid": null,
-                        "is_downloadable": false,
-                        "requires_follow": false
-                    }
-                },
-                "stem_of": {
-                    "type": [
-                        "object",
-                        "null"
-                    ],
-                    "$ref": "#/definitions/StemOf",
-                    "default": null
-                },
-                "remix_of": {
-                    "type": [
-                        "object",
-                        "null"
-                    ],
-                    "$ref": "#/definitions/RemixOf",
-                    "default": null
-                },
-                "is_premium": {
-                    "type": "boolean",
-                    "default": false
-                },
-                "premium_conditions": {
-                    "type": [
-                        "object",
-                        "null"
-                    ],
-                    "items": {
-                        "oneOf": [
-                            {
-                                "type": "null"
-                            },
-                            {
-                                "$ref": "#/definitions/PremiumConditionsNFTCollection"
-                            },
-                            {
-                                "$ref": "#/definitions/PremiumConditionsFollowUserId"
-                            },
-                            {
-                                "$ref": "#/definitions/PremiumConditionsTipUserId"
-                            }
-                        ]
-                    }
-                }
+          "type": "object",
+          "additionalProperties": true,
+          "$comment": "Additional properties enabled because the data return by discovery providers may contain other properties like blockhash, is_current, which are not strictly part of the metadata.",
+          "properties": {
+            "title": {
+              "type": "string",
+              "default": null
             },
-            "required": [
-                "cover_art",
-                "cover_art_sizes",
-                "create_date",
-                "credits_splits",
-                "description",
-                "download",
-                "field_visibility",
-                "file_type",
-                "genre",
-                "is_unlisted",
-                "isrc",
-                "iswc",
-                "length",
-                "license",
-                "mood",
-                "release_date",
-                "remix_of",
-                "stem_of",
-                "tags",
-                "title",
-                "track_segments",
-                "is_premium",
-                "premium_conditions"
-            ],
-            "title": "Track"
+            "duration": {
+              "type": "integer",
+              "default": 0
+            },
+            "length": {
+              "type": ["integer", "null"],
+              "default": null
+            },
+            "cover_art": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "cover_art_sizes": {
+              "$comment": "type can be null if attached as a stem",
+              "type": ["string", "null"],
+              "default": null
+            },
+            "tags": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "genre": {
+              "$comment": "genre can be null if attached as a stem",
+              "type": ["string", "null"],
+              "default": null
+            },
+            "mood": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "credits_splits": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "create_date": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "release_date": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "file_type": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "description": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "license": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "isrc": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "iswc": {
+              "type": ["string", "null"],
+              "default": null
+            },
+            "track_segments": {
+              "type": "array",
+              "minItems": 0,
+              "items": {
+                "$ref": "#/definitions/TrackSegment"
+              },
+              "default": [],
+              "$comment": "default set to empty array to unblock stalling indexing. if set to null, discprov db will reject because of not-NULL constraint"
+            },
+            "is_unlisted": {
+              "type": "boolean",
+              "default": false
+            },
+            "is_storage_v2": {
+              "type": "boolean",
+              "default": false
+            },
+            "field_visibility": {
+              "type": "object",
+              "$ref": "#/definitions/FieldVisibility",
+              "default": {
+                "mood": true,
+                "tags": true,
+                "genre": true,
+                "share": true,
+                "play_count": true,
+                "remixes": true
+              }
+            },
+            "download": {
+              "type": ["object", "null"],
+              "$ref": "#/definitions/Download",
+              "default": {
+                "cid": null,
+                "is_downloadable": false,
+                "requires_follow": false
+              }
+            },
+            "stem_of": {
+              "type": ["object", "null"],
+              "$ref": "#/definitions/StemOf",
+              "default": null
+            },
+            "remix_of": {
+              "type": ["object", "null"],
+              "$ref": "#/definitions/RemixOf",
+              "default": null
+            },
+            "is_premium": {
+              "type": "boolean",
+              "default": false
+            },
+            "premium_conditions": {
+              "type": ["object", "null"],
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/definitions/PremiumConditionsNFTCollection"
+                  },
+                  {
+                    "$ref": "#/definitions/PremiumConditionsFollowUserId"
+                  },
+                  {
+                    "$ref": "#/definitions/PremiumConditionsTipUserId"
+                  }
+                ]
+              }
+            },
+            "ai_attribution_user_id": {
+              "type": ["integer", "null"],
+              "default": null
+            }
+          },
+          "required": [
+            "cover_art",
+            "cover_art_sizes",
+            "create_date",
+            "credits_splits",
+            "description",
+            "download",
+            "field_visibility",
+            "file_type",
+            "genre",
+            "is_unlisted",
+            "isrc",
+            "iswc",
+            "length",
+            "license",
+            "mood",
+            "release_date",
+            "remix_of",
+            "stem_of",
+            "tags",
+            "title",
+            "track_segments",
+            "is_premium",
+            "premium_conditions"
+          ],
+          "title": "Track"
         },
         "RemixOf": {
             "type": [

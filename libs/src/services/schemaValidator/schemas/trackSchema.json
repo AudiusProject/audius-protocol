@@ -139,6 +139,10 @@
         "is_playlist_upload": {
           "type": "boolean",
           "default": false
+        },
+        "ai_attribution_user_id": {
+          "type": ["integer", "null"],
+          "default": null
         }
       },
       "required": [

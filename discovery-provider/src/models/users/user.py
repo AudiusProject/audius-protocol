@@ -66,6 +66,7 @@ class User(Base, RepresentableMixin):
     slot = Column(Integer)
     user_storage_account = Column(String)
     user_authority_account = Column(String)
+    allow_ai_attribution = Column(Boolean, nullable=False, server_default=text("false"))
 
     block = relationship(  # type: ignore
         "Block", primaryjoin="User.blockhash == Block.blockhash"

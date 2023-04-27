@@ -210,12 +210,16 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.route_id = helpers.create_track_route_id(
         track_metadata["title"], handle
     )
+
+    track_record.ai_attribution_user_id = track_metadata.get("ai_attribution_user_id")
+
     return track_record
 
 
 def validate_track_tx(params: ManageEntityParameters):
     user_id = params.user_id
     track_id = params.entity_id
+    track_metadata = params.metadata[params.metadata_cid]
     if user_id not in params.existing_records[EntityType.USER]:
         raise Exception(f"User {user_id} does not exist")
 
@@ -225,6 +229,12 @@ def validate_track_tx(params: ManageEntityParameters):
 
     if params.entity_type != EntityType.TRACK:
         raise Exception(f"Entity type {params.entity_type} is not a track")
+
+    ai_attribution_user_id = track_metadata.get('ai_attribution_user_id') 
+    if ai_attribution_user_id:
+        ai_attribution_user = params.existing_records[EntityType.USER][ai_attribution_user_id]
+        if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
+            raise Exception(f"Cannot AI attribute user {ai_attribution_user}")
 
     if params.action == Action.CREATE:
         if track_id in params.existing_records[EntityType.TRACK]:

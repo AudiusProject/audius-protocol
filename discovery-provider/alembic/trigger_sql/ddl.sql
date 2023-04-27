@@ -83,3 +83,13 @@ begin;
     alter table tracks
     add column if not exists duration integer default 0;
 commit;
+
+
+-- 4/26/23: add AI columns
+begin;
+    alter table tracks
+    add column if not exists ai_attribution_user_id integer;
+
+    alter table user
+    add column if not exists allow_ai_attribution boolean not null default false;
+commit;
