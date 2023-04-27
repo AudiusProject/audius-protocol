@@ -84,7 +84,7 @@ begin;
 commit;
 commit;  
 
--- 4/26/23: create delegates table
+-- 4/26/23: create app delegates table
 begin;
   create table public.app_delegates (
     address varchar primary key not null,
@@ -98,5 +98,3 @@ begin;
     txhash varchar not null
   );
 commit;
-
-
