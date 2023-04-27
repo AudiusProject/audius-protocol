@@ -134,7 +134,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		}
 		peerHosts = append(peerHosts, peer.Host)
 	}
-	crud := crudr.New(config.Self.Host, peerHosts, db)
+	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
 	dbMigrate(crud)
 
 	// echoServer server
@@ -208,7 +208,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
-	internalApi.POST("/crud/push", ss.serveCrudPush)
+	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// should health be internal or public?
 	internalApi.GET("/health", ss.getMyHealth)

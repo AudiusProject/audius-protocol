@@ -1,6 +1,7 @@
 package crudr
 
 import (
+	"crypto/ecdsa"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -29,7 +30,8 @@ var (
 )
 
 type Crudr struct {
-	DB *gorm.DB
+	DB           *gorm.DB
+	myPrivateKey *ecdsa.PrivateKey
 
 	host    string
 	logger  *slog.Logger
@@ -41,7 +43,7 @@ type Crudr struct {
 	callbacks []func(op *Op, records interface{})
 }
 
-func New(host string, peerHosts []string, db *gorm.DB) *Crudr {
+func New(host string, myPrivateKey *ecdsa.PrivateKey, peerHosts []string, db *gorm.DB) *Crudr {
 
 	opDDL := `
 	create table if not exists ops (
@@ -65,7 +67,8 @@ func New(host string, peerHosts []string, db *gorm.DB) *Crudr {
 	}
 
 	c := &Crudr{
-		DB: db,
+		DB:           db,
+		myPrivateKey: myPrivateKey,
 
 		host:    host,
 		logger:  slog.With("module", "crud", "from", host),
