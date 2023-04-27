@@ -1,5 +1,6 @@
 import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
+import fetch from 'cross-fetch'
 import {
   Configuration,
   StreamTrackRequest,
@@ -12,6 +13,9 @@ import { isFileValid } from '../../utils/file'
 import { TRACK_REQUIRED_VALUES } from './constants'
 import { objectMissingValues } from '../../utils/object'
 import { retry3 } from '../../utils/retry'
+import type { EntityManagerService, WalletApiService } from '../../services'
+import { Action, EntityType } from '../../services/EntityManager/types'
+import { decodeHashId } from '../../utils/hashId'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -29,7 +33,9 @@ export class TracksApi extends TracksApiWithoutStream {
   constructor(
     configuration: Configuration,
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
-    private readonly storage: StorageService
+    private readonly storage: StorageService,
+    private readonly entityManager: EntityManagerService,
+    private readonly walletApi: WalletApiService
   ) {
     super(configuration)
   }
@@ -63,7 +69,6 @@ export class TracksApi extends TracksApiWithoutStream {
     const { trackFile, coverArtFile, metadata, onProgress } = requestParameters
 
     // Validate inputs
-
     if (!isFileValid(trackFile)) {
       throw new Error('Track file is not valid')
     }
@@ -76,13 +81,18 @@ export class TracksApi extends TracksApiWithoutStream {
       throw new Error('Metadata object is not valid')
     }
 
-    requestParameters.metadata.owner_id = Number(requestParameters.artistId)
+    const artistId = decodeHashId(requestParameters.artistId)
+    if (artistId === null) {
+      throw new Error('artistId is not valid')
+    }
+
+    requestParameters.metadata.owner_id = artistId
 
     const metadataMissingValues = objectMissingValues(
       requestParameters.metadata,
       TRACK_REQUIRED_VALUES
     )
-    if (metadataMissingValues) {
+    if (metadataMissingValues?.length) {
       throw new Error(
         `Metadata object is missing values: ${metadataMissingValues}`
       )
@@ -117,27 +127,48 @@ export class TracksApi extends TracksApiWithoutStream {
             cid: metadata.track_cid
           }
         : metadata.download,
-      cover_art_sizes: coverArtResp.id
+      cover_art_sizes: coverArtResp.id,
+      duration: parseInt(audioResp.probe.format.duration, 10)
     }
 
-    // TODO: Integrate with wallet api
-    // TODO: Write metadata to chain
-    // const trackId = await this._generateTrackId()
-    // const response = await this.contracts.EntityManagerClient!.manageEntity(
-    //   ownerId,
-    //   EntityManagerClient.EntityType.TRACK,
-    //   trackId,
-    //   EntityManagerClient.Action.CREATE,
-    //   JSON.stringify({ cid: updatedMetadata.track_cid, data: updatedMetadata })
-    // )
-    // const txReceipt = response.txReceipt
+    // Write metadata to chain
+    const trackId = await this.generateTrackId()
+    const response = await this.entityManager.manageEntity({
+      userId: artistId,
+      entityType: EntityType.TRACK,
+      entityId: trackId,
+      action: Action.CREATE,
+      metadata: JSON.stringify({
+        cid: updatedMetadata.track_cid,
+        data: updatedMetadata
+      }),
+      walletApi: this.walletApi
+    })
+    const txReceipt = response.txReceipt
 
+    // TODO: why isn't this returning blockHash & blockNumber
     return {
-      // blockHash: txReceipt.blockHash,
-      // blockNumber: txReceipt.blockNumber,
-      // trackId,
+      blockHash: txReceipt.blockHash,
+      blockNumber: txReceipt.blockNumber,
+      trackId,
       transcodedTrackCID: updatedMetadata.track_cid,
       error: false
     }
+  }
+
+  private async generateTrackId() {
+    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
+
+    const response = await fetch(
+      `${host}/v1/tracks/unclaimed_id?noCache=${Math.floor(
+        Math.random() * 1000
+      ).toString()}`
+    )
+    const { data } = await response.json()
+    const id = decodeHashId(data)
+    if (id === null) {
+      throw new Error('Could not generate track id')
+    }
+    return id
   }
 }

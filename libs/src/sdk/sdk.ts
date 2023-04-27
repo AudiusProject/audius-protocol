@@ -121,7 +121,9 @@ const initializeApis = ({
   const tracks = new TracksApi(
     generatedApiClientConfig,
     services.discoveryNodeSelector,
-    services.storage
+    services.storage,
+    services.entityManager,
+    services.walletApi
   )
   const users = new UsersApi(generatedApiClientConfig)
   const playlists = new PlaylistsApi(generatedApiClientConfig)

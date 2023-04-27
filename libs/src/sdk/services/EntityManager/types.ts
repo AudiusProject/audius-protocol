@@ -1,4 +1,4 @@
-import { WalletApiService } from '../WalletApi'
+import type { WalletApiService } from '../WalletApi'
 import type { TransactionReceipt } from 'web3-core'
 
 export type EntityManagerConfig = {
@@ -33,12 +33,12 @@ export enum EntityType {
 }
 
 export type EntityManagerService = {
-  manageEntity(
-    userId: number,
-    entityType: EntityType,
-    entityId: number,
-    action: Action,
-    metadata: string,
+  manageEntity(options: {
+    userId: number
+    entityType: EntityType
+    entityId: number
+    action: Action
+    metadata: string
     walletApi: WalletApiService
-  ): Promise<{ txReceipt: TransactionReceipt }>
+  }): Promise<{ txReceipt: TransactionReceipt }>
 }

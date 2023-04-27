@@ -1,5 +1,7 @@
 import FormData from 'form-data'
+import axios from 'axios'
 
+import fetch from 'cross-fetch'
 import { wait } from '../../utils/wait'
 import type {
   FileTemplate,
@@ -27,43 +29,36 @@ export class Storage implements StorageService {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
   }
 
+  // TODO: update args to objects
+
+  /**
+   * Upload a file to a content node
+   * @param file
+   * @param onProgress
+   * @param template
+   * @returns
+   */
   async uploadFile(file: File, onProgress: ProgressCB, template: FileTemplate) {
-    const formData = new FormData()
+    const formData: FormData = new FormData()
     formData.append('template', template)
     // TODO: Test this in a browser env
     formData.append('files', isNodeFile(file) ? file.buffer : file, file.name)
 
-    const { body } = await new Promise<{
-      status: any
-      body: any
-    }>((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-      xhr.upload.addEventListener('progress', (e) =>
-        onProgress(e.loaded, e.total)
-      )
-      xhr.addEventListener('load', () =>
-        resolve({ status: xhr.status, body: xhr.responseText })
-      )
-      xhr.addEventListener('error', () =>
-        reject(new Error('File upload failed'))
-      )
-      xhr.addEventListener('abort', () =>
-        reject(new Error('File upload aborted'))
-      )
-      xhr.setRequestHeader(
-        'Content-Type',
-        `multipart/form-data; boundary=${formData.getBoundary()}`
-      )
-      xhr.open(
-        'POST',
-        `${this.config.contentNodeEndpoint}/mediorum/uploads`,
-        true
-      )
-      xhr.send(formData)
+    // Using axios for now because it supports upload progress,
+    // and Node doesn't support XmlHttpRequest
+    const response = await axios({
+      method: 'post',
+      url: `${this.config.contentNodeEndpoint}/mediorum/uploads`,
+      data: formData,
+      headers: {
+        'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
+      },
+      onUploadProgress: (progressEvent) =>
+        onProgress(progressEvent.loaded, progressEvent.total)
     })
 
     return await this.pollProcessingStatus(
-      body.data[0].id,
+      response.data[0].id,
       template === 'audio'
         ? MAX_TRACK_TRANSCODE_TIMEOUT
         : MAX_IMAGE_RESIZE_TIMEOUT_MS
@@ -108,7 +103,7 @@ export class Storage implements StorageService {
       `${this.config.contentNodeEndpoint}/mediorum/uploads/${id}`
     )
     // TODO: type this
-    const { data } = await response.json()
-    return data
+
+    return await response.json()
   }
 }

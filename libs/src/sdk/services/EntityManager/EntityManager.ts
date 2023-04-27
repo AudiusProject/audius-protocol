@@ -1,6 +1,7 @@
 import type { TransactionReceipt } from 'web3-core'
 import Web3 from 'web3'
 import type { AbiItem } from 'web3-utils'
+import fetch, { Headers } from 'cross-fetch'
 
 // TODO: move into sdk?
 import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
@@ -17,8 +18,8 @@ import type {
   EntityType
 } from './types'
 
-// TODO get from chain
-const CHAIN_ID = 1056800
+// TODO get from network
+const CHAIN_ID = 1000000000001
 
 export class EntityManager implements EntityManagerService {
   /**
@@ -52,14 +53,21 @@ export class EntityManager implements EntityManagerService {
    * @param {Action} action Action being performed on the entity
    * @param {string} metadata CID multihash or metadata associated with action
    */
-  async manageEntity(
-    userId: number,
-    entityType: EntityType,
-    entityId: number,
-    action: Action,
-    metadata: string,
+  async manageEntity({
+    userId,
+    entityType,
+    entityId,
+    action,
+    metadata,
+    walletApi
+  }: {
+    userId: number
+    entityType: EntityType
+    entityId: number
+    action: Action
+    metadata: string
     walletApi: WalletApiService
-  ): Promise<{ txReceipt: TransactionReceipt }> {
+  }): Promise<{ txReceipt: TransactionReceipt }> {
     const nonce = signatureSchemas.getNonce()
     const signatureData = signatureSchemas.generators.getManageEntityData(
       CHAIN_ID,
@@ -73,9 +81,9 @@ export class EntityManager implements EntityManagerService {
     )
 
     const senderAddress = await walletApi.getAddress()
-    const signature = await walletApi.sign(signatureData.toString())
+    const signature = await walletApi.sign(signatureData as any)
 
-    const method = await this.contract.methods['manageEntity'].call(
+    const method = await this.contract.methods['manageEntity'](
       userId,
       entityType,
       entityId,
@@ -91,9 +99,8 @@ export class EntityManager implements EntityManagerService {
         'Content-Type': 'application/json'
       }),
       body: JSON.stringify({
-        // TODOD: can this be removed?
-        contractRegistryKey: '',
-        conractAddress: this.config.contractAddress,
+        contractRegistryKey: 'EntityManager',
+        contractAddress: this.config.contractAddress,
         senderAddress,
         encodedABI: method.encodeABI(),
         // Gas limit not really needed with ACDC
