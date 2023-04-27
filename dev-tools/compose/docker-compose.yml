@@ -45,7 +45,7 @@ services:
       PGUSER: "postgres"
       POSTGRES_PASSWORD: "postgres"
     volumes:
-      - ..//startup/initdb:/docker-entrypoint-initdb.d
+      - ../startup/initdb:/docker-entrypoint-initdb.d
       - postgresdata:/var/lib/postgresql/data
     <<: *common
     healthcheck:
