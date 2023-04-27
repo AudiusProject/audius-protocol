@@ -18,7 +18,7 @@ const {
 
 export type OfflineCollection = Collection & { user: UserMetadata }
 
-export const downloadsRoot = path.join(dirs.DocumentDir, 'downloads')
+export const downloadsRoot = path.join(dirs.CacheDir, 'downloads')
 const IMAGE_FILENAME = '1000x1000.jpg'
 
 export const getLocalCollectionsRoot = () => {
