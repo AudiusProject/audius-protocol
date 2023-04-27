@@ -1,7 +1,7 @@
 import json
 from typing import Optional, TypedDict, Union, cast
 
-from src.models.delegates.delegate import Delegate
+from src.models.delegates.app_delegate import AppDelegate
 from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
@@ -10,16 +10,16 @@ from src.utils.structured_logger import StructuredLogger
 logger = StructuredLogger(__name__)
 
 
-class CreateDelegateMetadata(TypedDict):
+class CreateAppDelegateMetadata(TypedDict):
     address: Union[str, None]
     name: Union[str, None]
     is_personal_access: Union[bool, None]
 
 
-def get_create_delegate_metadata_from_raw(
+def get_create_app_delegate_metadata_from_raw(
     raw_metadata: Optional[str],
-) -> Optional[CreateDelegateMetadata]:
-    metadata: CreateDelegateMetadata = {
+) -> Optional[CreateAppDelegateMetadata]:
+    metadata: CreateAppDelegateMetadata = {
         "address": None,
         "name": None,
         "is_personal_access": None,
@@ -45,65 +45,70 @@ def get_create_delegate_metadata_from_raw(
     return metadata
 
 
-def validate_delegate_tx(
-    params: ManageEntityParameters, metadata: CreateDelegateMetadata
+def validate_app_delegate_tx(
+    params: ManageEntityParameters, metadata: CreateAppDelegateMetadata
 ):
     user_id = params.user_id
 
-    if params.entity_type != EntityType.DELEGATE:
+    if params.entity_type != EntityType.APP_DELEGATE:
         raise Exception(
-            f"Invalid Delegate Transaction, wrong entity type {params.entity_type}"
+            f"Invalid AppDelegate Transaction, wrong entity type {params.entity_type}"
         )
 
     if params.action == Action.CREATE:
         if not metadata["address"]:
             raise Exception(
-                "Invalid Delegate Transaction, address is required and was not provided"
+                "Invalid AppDelegate Transaction, address is required and was not provided"
             )
         if not metadata["name"]:
             raise Exception(
-                "Invalid Delegate Transaction, name is required and was not provided"
+                "Invalid AppDelegate Transaction, name is required and was not provided"
             )
-        if metadata["address"].lower() in params.existing_records[EntityType.DELEGATE]:
+        if (
+            metadata["address"].lower()
+            in params.existing_records[EntityType.APP_DELEGATE]
+        ):
             raise Exception(
-                f"Invalid Delegate Transaction, address {metadata['address']} already exists"
+                f"Invalid AppDelegate Transaction, address {metadata['address']} already exists"
             )
         if not user_id:
             raise Exception(
-                "Invalid Delegate Transaction, user id is required and was not provided"
+                "Invalid AppDelegate Transaction, user id is required and was not provided"
             )
         if user_id not in params.existing_records[EntityType.USER]:
             raise Exception(
-                f"Invalid Delegate Transaction, user id {user_id} does not exist"
+                f"Invalid AppDelegate Transaction, user id {user_id} does not exist"
             )
         if not params.existing_records[EntityType.USER][user_id].wallet:
             raise Exception(
-                "Programming error while indexing Delegate Transaction, user wallet missing"
+                "Programming error while indexing AppDelegate Transaction, user wallet missing"
             )
         if (
             params.existing_records[EntityType.USER][user_id].wallet.lower()
             != params.signer.lower()
         ):
-            raise Exception("Invalid Delegate Transaction, user does not match signer")
+            raise Exception(
+                "Invalid AppDelegate Transaction, user does not match signer"
+            )
         if not isinstance(metadata["is_personal_access"], bool):
             raise Exception(
-                "Invalid Delegate Transaction, is_personal_access must be a boolean (or empty)"
+                "Invalid AppDelegate Transaction, is_personal_access must be a boolean (or empty)"
             )
 
     else:
         raise Exception(
-            f"Invalid Delegate Transaction, action {params.action} is not valid"
+            f"Invalid AppDelegate Transaction, action {params.action} is not valid"
         )
 
 
-def create_delegate(params: ManageEntityParameters):
-    metadata = get_create_delegate_metadata_from_raw(params.metadata_cid)
+def create_app_delegate(params: ManageEntityParameters):
+    metadata = get_create_app_delegate_metadata_from_raw(params.metadata_cid)
     if not metadata:
-        raise Exception("Invalid Delegate Transaction, unable to parse metadata")
-    validate_delegate_tx(params, metadata)
+        raise Exception("Invalid AppDelegate Transaction, unable to parse metadata")
+    validate_app_delegate_tx(params, metadata)
     user_id = params.user_id
 
-    delegate_record = Delegate(
+    delegate_record = AppDelegate(
         user_id=user_id,
         name=cast(
             str, metadata["name"]
@@ -118,13 +123,13 @@ def create_delegate(params: ManageEntityParameters):
         created_at=params.block_datetime,
     )
 
-    validate_delegate_record(delegate_record)
-    params.add_delegate_record(metadata["address"], delegate_record)
+    validate_app_delegate_record(delegate_record)
+    params.add_app_delegate_record(metadata["address"], delegate_record)
     return delegate_record
 
 
-def validate_delegate_record(delegate_record):
-    if not all_required_fields_present(Delegate, delegate_record):
+def validate_app_delegate_record(delegate_record):
+    if not all_required_fields_present(AppDelegate, delegate_record):
         raise EntityMissingRequiredFieldError(
             "delegate",
             delegate_record,

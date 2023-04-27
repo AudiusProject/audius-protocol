@@ -1,11 +1,10 @@
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, text
-from sqlalchemy.dialects.postgresql import JSONB
 from src.models.base import Base
 from src.models.model_utils import RepresentableMixin
 
 
-class Delegate(Base, RepresentableMixin):
-    __tablename__ = "delegates"
+class AppDelegate(Base, RepresentableMixin):
+    __tablename__ = "app_delegates"
 
     blockhash = Column(ForeignKey("blocks.blockhash"))  # type: ignore
     blocknumber = Column(ForeignKey("blocks.number"))  # type: ignore
@@ -14,7 +13,6 @@ class Delegate(Base, RepresentableMixin):
     name = Column(String, nullable=False, index=False)
     is_personal_access = Column(Boolean, nullable=False, server_default=text("false"))
     is_revoked = Column(Boolean, nullable=False, server_default=text("false"))
-    permissions = Column(JSONB())
 
     created_at = Column(DateTime, nullable=False)
     txhash = Column(

@@ -2,7 +2,7 @@ from typing import List
 
 from integration_tests.challenges.index_helpers import UpdateTask
 from integration_tests.utils import populate_mock_db
-from src.models.delegates.delegate import Delegate
+from src.models.delegates.app_delegate import AppDelegate
 from src.tasks.entity_manager.entity_manager import entity_manager_update
 from src.tasks.entity_manager.utils import Action, EntityType
 from src.utils.db_session import get_db
@@ -43,7 +43,7 @@ def test_index_delegate(app, mocker):
     """"
     const resp = await this.manageEntity({
         userId,
-        entityType: EntityType.DELEGATE,
+        entityType: EntityType.APP_DELEGATE,
         entityId: 0,
         action: Action.CREATE,
         metadataMultihash: ''
@@ -55,7 +55,7 @@ def test_index_delegate(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATE,
+                        "_entityType": EntityType.APP_DELEGATE,
                         "_userId": new_delegates_data[0]["user_id"],
                         "_metadata": f"""{{"name": "{new_delegates_data[0]["name"]}", "address": "{new_delegates_data[0]["address"]}", "is_personal_access": {'true' if new_delegates_data[0]["is_personal_access"] else 'false' }}}""",
                         "_action": Action.CREATE,
@@ -69,7 +69,7 @@ def test_index_delegate(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATE,
+                        "_entityType": EntityType.APP_DELEGATE,
                         "_userId": new_delegates_data[1]["user_id"],
                         "_action": Action.CREATE,
                         "_metadata": f"""{{"name": "{new_delegates_data[1]["name"]}", "address": "{new_delegates_data[1]["address"]}", "is_personal_access": {'true' if new_delegates_data[1]["is_personal_access"] else 'false' }}}""",
@@ -83,7 +83,7 @@ def test_index_delegate(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATE,
+                        "_entityType": EntityType.APP_DELEGATE,
                         "_userId": new_delegates_data[2]["user_id"],
                         "_action": Action.CREATE,
                         "_metadata": f"""{{"name": "{new_delegates_data[2]["name"]}", "address": "{new_delegates_data[2]["address"]}", "is_personal_access": {'true' if new_delegates_data[2]["is_personal_access"] else 'false' }}}""",
@@ -113,7 +113,7 @@ def test_index_delegate(app, mocker):
             {"user_id": user_id, "wallet": f"user{user_id}wallet"}
             for user_id in range(1, 4)
         ],
-        "delegates": [
+        "app_delegates": [
             {
                 "user_id": 5,
                 "name": "My App",
@@ -137,7 +137,7 @@ def test_index_delegate(app, mocker):
         )
 
         # validate db records
-        all_delegates: List[Delegate] = session.query(Delegate).all()
+        all_delegates: List[AppDelegate] = session.query(AppDelegate).all()
         assert len(all_delegates) == 4
 
         for expected_delegate in new_delegates_data:
@@ -161,7 +161,7 @@ def test_index_delegate(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATE,
+                        "_entityType": EntityType.APP_DELEGATE,
                         "_userId": 4,
                         "_action": Action.CREATE,
                         "_metadata": '{"name": "Wrong Signer", "address": "0x4D66645bC8Ac35c02a23bac8D795F9C9Fe765055", "is_personal_access": false}',
@@ -176,7 +176,7 @@ def test_index_delegate(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATE,
+                        "_entityType": EntityType.APP_DELEGATE,
                         "_userId": 2,
                         "_action": Action.CREATE,
                         "_metadata": '{"name": "Dupe address", "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4", "is_personal_access": false}',
@@ -191,7 +191,7 @@ def test_index_delegate(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATE,
+                        "_entityType": EntityType.APP_DELEGATE,
                         "_userId": 0,
                         "_action": Action.CREATE,
                         "_metadata": '{"name": "Missing user id", "address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "is_personal_access": false}',
@@ -206,7 +206,7 @@ def test_index_delegate(app, mocker):
                 "args": AttributeDict(
                     {
                         "_entityId": 0,
-                        "_entityType": EntityType.DELEGATE,
+                        "_entityType": EntityType.APP_DELEGATE,
                         "_userId": 0,
                         "_action": Action.CREATE,
                         "_metadata": '{"address": "0x096F230cf5b3dF9cf90a8629689268f6564B29B5", "is_personal_access": false}',
@@ -236,6 +236,6 @@ def test_index_delegate(app, mocker):
             metadata={},
         )
         # validate db records
-        all_delegates: List[Delegate] = session.query(Delegate).all()
+        all_delegates: List[AppDelegate] = session.query(AppDelegate).all()
         # make sure no new rows were added
         assert len(all_delegates) == 4

@@ -8,7 +8,7 @@ from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
-from src.models.delegates.delegate import Delegate
+from src.models.delegates.app_delegate import AppDelegate
 from src.models.notifications.notification import PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -19,7 +19,7 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.tasks.entity_manager.delegate import create_delegate
+from src.tasks.entity_manager.app_delegate import create_app_delegate
 from src.tasks.entity_manager.notification import (
     create_notification,
     view_notification,
@@ -220,9 +220,9 @@ def entity_manager_update(
                         view_playlist(params)
                     elif (
                         params.action == Action.CREATE
-                        and params.entity_type == EntityType.DELEGATE
+                        and params.entity_type == EntityType.APP_DELEGATE
                     ):
-                        create_delegate(params)
+                        create_app_delegate(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -318,11 +318,13 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             ):
                 entities_to_fetch[EntityType.PLAYLIST_SEEN].add((user_id, entity_id))
                 entities_to_fetch[EntityType.PLAYLIST].add(entity_id)
-            if entity_type == EntityType.DELEGATE:
+            if entity_type == EntityType.APP_DELEGATE:
                 if json_metadata and isinstance(json_metadata, dict):
                     raw_address = json_metadata.get("address", None)
                     if raw_address:
-                        entities_to_fetch[EntityType.DELEGATE].add(raw_address.lower())
+                        entities_to_fetch[EntityType.APP_DELEGATE].add(
+                            raw_address.lower()
+                        )
                     else:
                         logger.error(
                             "tasks | entity_manager.py | Missing address in metadata required for add delegate tx"
@@ -513,15 +515,17 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         }
 
     # DELEGATES
-    if entities_to_fetch[EntityType.DELEGATE]:
-        delegates: List[Delegate] = (
-            session.query(Delegate)
+    if entities_to_fetch[EntityType.APP_DELEGATE]:
+        delegates: List[AppDelegate] = (
+            session.query(AppDelegate)
             .filter(
-                func.lower(Delegate.address).in_(entities_to_fetch[EntityType.DELEGATE])
+                func.lower(AppDelegate.address).in_(
+                    entities_to_fetch[EntityType.APP_DELEGATE]
+                )
             )
             .all()
         )
-        existing_entities[EntityType.DELEGATE] = {
+        existing_entities[EntityType.APP_DELEGATE] = {
             delegate.address.lower(): delegate for delegate in delegates
         }
     return existing_entities

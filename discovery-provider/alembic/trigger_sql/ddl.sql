@@ -86,7 +86,7 @@ commit;
 
 -- 4/26/23: create delegates table
 begin;
-  create table public.delegates (
+  create table public.app_delegates (
     address varchar primary key not null,
     blockhash varchar references blocks(blockhash),
     blocknumber integer references blocks(number),
@@ -94,7 +94,6 @@ begin;
     name varchar not null,
     is_personal_access boolean not null default false,
     is_revoked boolean not null default false,
-    permissions jsonb,
     created_at timestamp not null,
     txhash varchar not null
   );
