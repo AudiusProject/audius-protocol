@@ -32,7 +32,10 @@ enum MobileEventNames {
   OFFLINE_MODE_DOWNLOAD_SUCCESS = 'Offline Mode: Download Item Success',
   OFFLINE_MODE_DOWNLOAD_FAILURE = 'Offline Mode: Download Item Failure',
   OFFLINE_MODE_REMOVE_ITEM = 'Offline Mode: Remove Item',
-  OFFLINE_MODE_PLAY = 'Offline Mode: Offline Play'
+  OFFLINE_MODE_PLAY = 'Offline Mode: Offline Play',
+  OFFLINE_MODE_FILEPATH_MIGRATION_STARTED = 'Offline Mode: File path migration started',
+  OFFLINE_MODE_FILEPATH_MIGRATION_SUCCESS = 'Offline Mode: File path migration succeeded',
+  OFFLINE_MODE_FILEPATH_MIGRATION_FAILURE = 'Offline Mode: File path migration failed'
 }
 
 export const EventNames = { ...CommonEventNames, ...MobileEventNames }
@@ -139,6 +142,16 @@ type OfflineModePlay = {
   trackId: ID
 }
 
+type OfflineFilePathMigrationStarted = {
+  eventName: MobileEventNames.OFFLINE_MODE_FILEPATH_MIGRATION_STARTED
+}
+type OfflineFilePathMigrationSucceess = {
+  eventName: MobileEventNames.OFFLINE_MODE_FILEPATH_MIGRATION_SUCCESS
+}
+type OfflineFilePathMigrationFailed = {
+  eventName: MobileEventNames.OFFLINE_MODE_FILEPATH_MIGRATION_FAILURE
+}
+
 type MobileTrackingEvents =
   | NotificationsOpenPushNotification
   | AppError
@@ -158,6 +171,9 @@ type MobileTrackingEvents =
   | OfflineModeDownloadSuccess
   | OfflineModeRemoveItem
   | OfflineModePlay
+  | OfflineFilePathMigrationStarted
+  | OfflineFilePathMigrationSucceess
+  | OfflineFilePathMigrationFailed
 
 export type AllEvents = CommonTrackingEvents | MobileTrackingEvents
 
