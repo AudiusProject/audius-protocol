@@ -254,10 +254,11 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         or event_type == EntityType.USER_REPLICA_SET
                         or action
                         in [
-                            EntityType.REPOST,
-                            EntityType.SAVE,
-                            EntityType.FOLLOW,
-                            EntityType.SUBSCRIPTION,
+                            Action.REPOST,
+                            Action.SAVE,
+                            Action.FOLLOW,
+                            Action.SUBSCRIBE,
+                            Action.UNSUBSCRIBE,
                         ]
                     ):
                         continue

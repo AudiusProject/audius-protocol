@@ -28,6 +28,7 @@ type ChainInfo = {
   metadataMultihash: string
   metadataFileUUID: string
   transcodedTrackUUID: string
+  metadata?: TrackMetadata
 }
 
 const { decodeHashId } = Utils
@@ -527,7 +528,7 @@ export class Track extends Base {
         EntityManagerClient.EntityType.TRACK,
         trackId,
         EntityManagerClient.Action.CREATE,
-        metadataMultihash
+        JSON.stringify({ cid: metadataMultihash, data: metadata })
       )
       const txReceipt = response.txReceipt
 
@@ -631,7 +632,7 @@ export class Track extends Base {
     }
 
     const addedToChain: Array<
-      Omit<ChainInfo, 'metadataMultihash'> & {
+      Omit<ChainInfo, 'metadataMultihash' | 'metadata'> & {
         trackId: number
         txReceipt: TransactionReceipt
       }
@@ -640,8 +641,20 @@ export class Track extends Base {
     await Promise.all(
       trackMultihashAndUUIDList.map(async (trackInfo, i) => {
         try {
-          const { metadataMultihash, metadataFileUUID, transcodedTrackUUID } =
-            trackInfo
+          const {
+            metadataMultihash,
+            metadataFileUUID,
+            transcodedTrackUUID,
+            metadata
+          } = trackInfo
+
+          let entityManagerMetadata = metadataMultihash
+          if (metadata) {
+            entityManagerMetadata = JSON.stringify({
+              cid: metadataMultihash,
+              data: metadata
+            })
+          }
 
           // Write metadata to chain
           const trackId = await this._generateTrackId()
@@ -651,7 +664,7 @@ export class Track extends Base {
               EntityManagerClient.EntityType.TRACK,
               trackId,
               EntityManagerClient.Action.CREATE,
-              metadataMultihash
+              entityManagerMetadata
             )
           const txReceipt = response.txReceipt
           addedToChain[i] = {
@@ -731,7 +744,7 @@ export class Track extends Base {
       EntityManagerClient.EntityType.TRACK,
       trackId,
       EntityManagerClient.Action.UPDATE,
-      metadataMultihash
+      JSON.stringify({ cid: metadataMultihash, data: metadata })
     )
     const txReceipt = response.txReceipt
     // Re-associate the track id with the new metadata

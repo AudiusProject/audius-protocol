@@ -740,7 +740,7 @@ export class Users extends Base {
       EntityManagerClient.EntityType.USER,
       userId,
       EntityManagerClient.Action.UPDATE,
-      metadataMultihash
+      JSON.stringify({ cid: metadataMultihash, data: newMetadata })
     )
     const txReceipt = response.txReceipt
     const latestBlockNumber = txReceipt.blockNumber
@@ -912,7 +912,7 @@ export class Users extends Base {
         EntityManagerClient.EntityType.USER,
         userId,
         EntityManagerClient.Action.UPDATE,
-        metadataMultihash
+        JSON.stringify({ cid: metadataMultihash, data: newMetadata })
       )
       const txReceipt = response.txReceipt
       const blockNumber = txReceipt.blockNumber

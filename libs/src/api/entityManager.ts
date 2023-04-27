@@ -71,10 +71,7 @@ export class EntityManager extends Base {
   /** Social Features */
   createSocialMethod =
     (entityType: EntityType, action: Action) =>
-    async (
-      entityId: number,
-      metadata: string = ''
-    ): Promise<EntityManagerResponse> => {
+    async (entityId: number, metadata = ''): Promise<EntityManagerResponse> => {
       const responseValues: EntityManagerResponse =
         this.getDefaultEntityManagerResponseValues()
       try {
@@ -83,7 +80,7 @@ export class EntityManager extends Base {
           entityType,
           entityId,
           action,
-          metadataMultihash: metadata
+          metadata
         })
       } catch (e) {
         const error = (e as Error).message
@@ -149,7 +146,7 @@ export class EntityManager extends Base {
         entityType,
         entityId: playlist.playlist_id,
         action: createAction,
-        metadataMultihash
+        metadata: JSON.stringify({ cid: metadataMultihash, data: metadata })
       })
     } catch (e) {
       const error = (e as Error).message
@@ -172,7 +169,7 @@ export class EntityManager extends Base {
         entityType: EntityType.PLAYLIST,
         entityId: playlistId,
         action: Action.DELETE,
-        metadataMultihash: ''
+        metadata: ''
       })
     } catch (e) {
       const error = (e as Error).message
@@ -228,7 +225,7 @@ export class EntityManager extends Base {
         entityType,
         entityId: playlist.playlist_id,
         action: updateAction,
-        metadataMultihash
+        metadata: JSON.stringify({ cid: metadataMultihash, data: metadata })
       })
     } catch (e) {
       const error = (e as Error).message
@@ -246,13 +243,13 @@ export class EntityManager extends Base {
     entityType,
     entityId,
     action,
-    metadataMultihash
+    metadata
   }: {
     userId: number
     entityType: EntityType
     entityId: number
     action: Action
-    metadataMultihash?: string
+    metadata?: string
   }): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
@@ -266,7 +263,7 @@ export class EntityManager extends Base {
         entityType,
         entityId,
         action,
-        metadataMultihash ?? ''
+        metadata ?? ''
       )
       responseValues.blockHash = resp.txReceipt.blockHash
       responseValues.blockNumber = resp.txReceipt.blockNumber
