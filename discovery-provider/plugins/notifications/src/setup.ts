@@ -6,7 +6,7 @@ const functionName = `on_new_notification_row`
 const trigger = `
 create or replace function ${functionName}() returns trigger as $$
 begin
-  PERFORM pg_notify(TG_TABLE_NAME, to_json(new)::text);
+  PERFORM pg_notify(TG_TABLE_NAME, json_build_object('notification_id', new.id)::text);
   return null;
 end; 
 $$ language plpgsql;
