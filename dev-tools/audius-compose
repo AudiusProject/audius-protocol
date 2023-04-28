@@ -216,6 +216,7 @@ def build(
             f"--file={protocol_dir / 'docker-compose.yml'}",
             "--profile=*",
             "build",
+            "--no-cache",
             *args,
             *services,
         ],
