@@ -1,7 +1,6 @@
 import { logger } from './../logger'
 import { Listener } from './../listener'
 import { AppNotificationsProcessor } from './../processNotifications/indexAppNotifications'
-import { RemoteConfig } from '../remoteConfig'
 
 export async function sendAppNotifications(
   listener: Listener,

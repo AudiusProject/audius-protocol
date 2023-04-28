@@ -53,7 +53,6 @@ import { Tastemaker } from './tastemaker'
 import { SaveOfRepost } from './saveOfRepost'
 import { TrendingUnderground } from './trendingUnderground'
 import { TrendingPlaylist } from './trendingPlaylist'
-import { RemoteConfig } from '../../remoteConfig'
 
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
