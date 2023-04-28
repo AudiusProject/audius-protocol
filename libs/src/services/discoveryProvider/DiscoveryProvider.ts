@@ -82,6 +82,16 @@ export type UserProfile = {
   iat: string
 }
 
+type DiscoveryNodeChallenge = {
+  challenge_id: string
+  user_id: string
+  specifier: string
+  amount: string
+  handle: string
+  wallet: string
+  completed_blocknumber: number
+}
+
 /**
  * Constructs a service class for a discovery node
  * @param whitelist whether or not to only include specified nodes in selection
@@ -248,7 +258,8 @@ export class DiscoveryProvider {
     idsArray: Nullable<number[]>,
     walletAddress?: Nullable<string>,
     handle?: Nullable<string>,
-    minBlockNumber?: Nullable<number>
+    minBlockNumber?: Nullable<number>,
+    includeIncomplete?: Nullable<boolean>
   ) {
     const req = Requests.getUsers(
       limit,
@@ -256,7 +267,8 @@ export class DiscoveryProvider {
       idsArray,
       walletAddress,
       handle,
-      minBlockNumber
+      minBlockNumber,
+      includeIncomplete
     )
     return await this._makeRequest<Nullable<User[]>>(req)
   }
@@ -1004,7 +1016,7 @@ export class DiscoveryProvider {
       completedBlockNumber,
       encodedUserId
     )
-    const res = await this._makeRequest<Array<{ amount: string }>>(req)
+    const res = await this._makeRequest<DiscoveryNodeChallenge[]>(req)
     if (!res) return []
     return res.map((r) => ({ ...r, amount: parseInt(r.amount) }))
   }
@@ -1435,7 +1447,10 @@ export class DiscoveryProvider {
 
     const { data, url = '', ...restRequest } = axiosRequest
 
-    const fetchRequestInit: RequestInit = { body: data, ...restRequest }
+    const fetchRequestInit: RequestInit = {
+      body: data ? JSON.stringify(data) : data,
+      ...restRequest
+    }
     let fetchParams = { url, init: fetchRequestInit }
 
     fetchParams =

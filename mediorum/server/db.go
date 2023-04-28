@@ -2,9 +2,11 @@ package server
 
 import (
 	"mediorum/crudr"
+	"mediorum/ddl"
 	"time"
 
-	"gorm.io/driver/sqlite"
+	"golang.org/x/exp/slog"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
@@ -19,14 +21,14 @@ type Upload struct {
 
 	Template     JobTemplate    `json:"template"`
 	OrigFileName string         `json:"orig_filename"`
-	OrigFileCID  string         `json:"orig_file_cid"`
+	OrigFileCID  string         `json:"orig_file_cid" gorm:"column:orig_file_cid;index:idx_uploads_orig_file_cid"` //
 	FFProbe      *FFProbeResult `json:"probe" gorm:"serializer:json"`
 	Error        string         `json:"error,omitempty"`
 	Mirrors      []string       `json:"mirrors" gorm:"serializer:json"`
 	Status       string         `json:"status" gorm:"index"`
 
 	CreatedBy string    `json:"created_by" `
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at" gorm:"autoCreateTime:false"`
 
 	TranscodedBy      string    `json:"transcoded_by"`
 	TranscodeProgress float64   `json:"transcode_progress"`
@@ -53,26 +55,15 @@ type LogLine struct {
 }
 
 func dbMustDial(dbPath string) *gorm.DB {
-	db, err := gorm.Open(sqlite.Open(dbPath), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(dbPath), &gorm.Config{
 		SkipDefaultTransaction: true,
 	})
 	if err != nil {
 		panic(err)
 	}
 
-	err = db.Exec(`
-	PRAGMA busy_timeout       = 10000;
-	PRAGMA journal_mode       = WAL;
-	PRAGMA journal_size_limit = 200000000;
-	PRAGMA synchronous        = NORMAL;
-	PRAGMA foreign_keys       = TRUE;
-
-	PRAGMA optimize;
-	`).Error
-
-	if err != nil {
-		panic(err)
-	}
+	sqlDb, _ := db.DB()
+	sqlDb.SetMaxOpenConns(50)
 
 	// db = db.Debug()
 
@@ -81,12 +72,28 @@ func dbMustDial(dbPath string) *gorm.DB {
 
 func dbMigrate(crud *crudr.Crudr) {
 	// Migrate the schema
+	slog.Info("db: gorm automigrate")
 	err := crud.DB.AutoMigrate(&Blob{}, &Upload{}, &ServerHealth{}, &LogLine{})
 	if err != nil {
 		panic(err)
 	}
 
+	// bonus migrations
+	// must be idempotent
+	slog.Info("db: running misc migrations that should be merged with ddl migrate")
+	crud.DB.Exec(`
+		alter table uploads drop column if exists orig_file_c_id;
+		delete from uploads where orig_file_cid is null;
+	`)
+
 	// register any models to be managed by crudr
 	crud.RegisterModels(&LogLine{}, &Blob{}, &Upload{}, &ServerHealth{})
+
+	sqlDb, _ := crud.DB.DB()
+
+	slog.Info("db: ddl migrate")
+	ddl.Migrate(sqlDb)
+
+	slog.Info("db: migrate done")
 
 }

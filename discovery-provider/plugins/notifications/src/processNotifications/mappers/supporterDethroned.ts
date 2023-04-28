@@ -1,14 +1,20 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { SupporterDethronedNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SupporterDethronedNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { capitalize } from '../../email/notifications/components/utils'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
+import { CoverPhotoFromJSONTyped } from '@audius/sdk'
 
 type SupporterDethronedNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupporterDethronedNotification
@@ -30,7 +36,11 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     this.dethronedUserId = this.notification.data.dethroned_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -64,6 +74,13 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     )
     const newTopSupporterHandle = users[this.senderUserId]?.handle
     const supportedUserName = users[this.receiverUserId]?.name
+
+    const title =  "👑 You've Been Dethroned!"
+    const body = `${capitalize(
+      newTopSupporterHandle
+    )} dethroned you as ${supportedUserName}'s #1 Top Supporter! Tip to reclaim your spot?`
+    await sendBrowserNotification(userNotificationSettings, this.dethronedUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -80,14 +97,13 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
             {
               type: device.type,
               badgeCount:
-                userNotificationSettings.getBadgeCount(this.dethronedUserId) + 1,
+                userNotificationSettings.getBadgeCount(this.dethronedUserId) +
+                1,
               targetARN: device.awsARN
             },
             {
-              title: "👑 You've Been Dethroned!",
-              body: `${capitalize(
-                newTopSupporterHandle
-              )} dethroned you as ${supportedUserName}'s #1 Top Supporter! Tip to reclaim your spot?`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
@@ -103,23 +119,37 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       await this.incrementBadgeCount(this.dethronedUserId)
     }
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.dethronedUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.senderUserId,
         receiverUserId: this.dethronedUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.dethronedUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.dethronedUserId,
+        email: userNotificationSettings.getUserEmail(this.dethronedUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 
   getResourcesForEmail(): ResourceIds {
     return {
-      users: new Set([this.senderUserId, this.receiverUserId])
+      users: new Set([this.senderUserId, this.dethronedUserId])
     }
   }
 
   formatEmailProps(resources: Resources) {
-    const receiverUser = resources.users[this.receiverUserId]
+    const receiverUser = resources.users[this.dethronedUserId]
     return {
       type: this.notification.type,
       receiverUser: receiverUser

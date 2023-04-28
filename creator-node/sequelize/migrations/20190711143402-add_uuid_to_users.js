@@ -34,10 +34,7 @@ async function createColumns (queryInterface, Sequelize, t) {
     unique: true
   }, { transaction: t })
 
-  await queryInterface.addColumn('Files', 'fileUUID', {
-    type: Sequelize.UUID,
-    unique: true
-  }, { transaction: t })
+  await queryInterface.sequelize.query(`ALTER TABLE "Files" ADD COLUMN IF NOT EXISTS "fileUUID" UUID UNIQUE`, { transaction: t })
 
   // Run these after, order doesn't matter
 
@@ -93,29 +90,13 @@ async function createColumns (queryInterface, Sequelize, t) {
    * Files
    */
 
-  await queryInterface.addColumn('Files', 'cnodeUserUUID', {
-    type: Sequelize.UUID,
-    onDelete: 'RESTRICT',
-    references: {
-      model: 'Users',
-      key: 'cnodeUserUUID',
-      as: 'cnodeUserUUID'
-    }
-  }, { transaction: t })
-
-  await queryInterface.addColumn('Files', 'trackUUID', {
-    type: Sequelize.UUID,
-    onDelete: 'RESTRICT',
-    references: {
-      model: 'Tracks',
-      key: 'trackUUID',
-      as: 'trackUUID'
-    }
-  }, { transaction: t })
-
-  await queryInterface.addColumn('Files', 'type', {
-    type: Sequelize.STRING(16)
-  }, { transaction: t })
+  await queryInterface.sequelize.query(`ALTER TABLE "Files" ADD COLUMN IF NOT EXISTS "cnodeUserUUID" UUID`, { transaction: t });
+  // Below constraint isn't really needed, and these migrations have all run on prod and staging nodes
+  // await queryInterface.sequelize.query(`ALTER TABLE "Files" ADD CONSTRAINT "Files_cnodeUserUUID_fkey" FOREIGN KEY ("cnodeUserUUID") REFERENCES "Users" ("cnodeUserUUID") ON DELETE RESTRICT`, { transaction: t });
+  await queryInterface.sequelize.query(`ALTER TABLE "Files" ADD COLUMN IF NOT EXISTS "trackUUID" UUID`, { transaction: t });
+  // Below constraint isn't really needed, and these migrations have all run on prod and staging nodes
+  // await queryInterface.sequelize.query(`ALTER TABLE "Files" ADD CONSTRAINT "Files_trackUUID_fkey" FOREIGN KEY ("trackUUID") REFERENCES "Tracks" ("trackUUID") ON DELETE RESTRICT`, { transaction: t });
+  await queryInterface.sequelize.query(`ALTER TABLE "Files" ADD COLUMN IF NOT EXISTS "type" VARCHAR(16)`, { transaction: t });
 
   /**
    * Tracks

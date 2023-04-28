@@ -15,7 +15,8 @@ import type {
   UserChat,
   ChatMessage,
   ChatWebsocketEventData,
-  RPCPayloadRequest
+  RPCPayloadRequest,
+  ValidatedChatPermissions
 } from './serverTypes'
 import type {
   ChatBlockRequest,
@@ -28,7 +29,6 @@ import type {
   ChatGetRequest,
   ChatInviteRequest,
   ChatMessageRequest,
-  ChatPermissionResponse,
   ChatPermitRequest,
   ChatReactRequest,
   ChatReadRequest,
@@ -198,10 +198,17 @@ export class ChatsApi
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-
-    if (requestParameters?.userIds) {
-      query['id'] = requestParameters.userIds
-    }
+    this.assertNotNullOrUndefined(
+      requestParameters?.userIds,
+      'requestParameters.userIds',
+      'getPermissions'
+    )
+    this.assertMinLength(
+      requestParameters?.userIds!,
+      'requestParameters.userIds',
+      'getPermissions'
+    )
+    query['id'] = requestParameters?.userIds!
 
     const res = await this.signAndSendRequest({
       method: 'GET',
@@ -209,9 +216,7 @@ export class ChatsApi
       headers: {},
       query
     })
-    return (await res.json()) as TypedCommsResponse<
-      Record<string, ChatPermissionResponse>
-    >
+    return (await res.json()) as TypedCommsResponse<ValidatedChatPermissions[]>
   }
 
   public async getBlockers() {

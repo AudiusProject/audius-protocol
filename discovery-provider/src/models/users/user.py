@@ -33,6 +33,7 @@ class User(Base, RepresentableMixin):
     cover_photo = Column(String)
     bio = Column(String)
     location = Column(String)
+    is_storage_v2 = Column(Boolean, nullable=False, server_default=text("false"))
     metadata_multihash = Column(String)
     creator_node_endpoint = Column(String)
     blocknumber = Column(ForeignKey("blocks.number"), index=True)  # type: ignore
@@ -65,6 +66,7 @@ class User(Base, RepresentableMixin):
     slot = Column(Integer)
     user_storage_account = Column(String)
     user_authority_account = Column(String)
+    allow_ai_attribution = Column(Boolean, nullable=False, server_default=text("false"))
 
     block = relationship(  # type: ignore
         "Block", primaryjoin="User.blockhash == Block.blockhash"

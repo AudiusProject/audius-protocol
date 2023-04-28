@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
 	"time"
@@ -12,12 +13,12 @@ import (
 )
 
 func (ss *MediorumServer) replicateFile(fileName string, file io.ReadSeeker) ([]string, error) {
-	logger := ss.logger.New("key", fileName)
+	logger := ss.logger.With("key", fileName)
 
 	healthyHostNames := ss.findHealthyHostNames("5 minutes")
 	success := []string{}
 	for _, peer := range ss.placement.topAll(fileName) {
-		logger := logger.New("to", peer.Host)
+		logger := logger.With("to", peer.Host)
 
 		if !slices.Contains(healthyHostNames, peer.Host) {
 			logger.Debug("skipping unhealthy host", "healthy", healthyHostNames)
@@ -120,14 +121,11 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 		close(errChan)
 	}()
 
-	req, err := http.NewRequest("POST", peer.ApiPath("internal/blobs"), r)
-	if err != nil {
-		return err
-	}
-
-	// add header for signed nonce
-	req.Header.Add("Authorization", ss.basicAuthNonce())
-	req.Header.Add("Content-Type", m.FormDataContentType())
+	req := signature.SignedPost(
+		peer.ApiPath("internal/blobs"),
+		m.FormDataContentType(),
+		r,
+		ss.Config.privateKey)
 
 	// send it
 	resp, err := client.Do(req)
@@ -147,7 +145,8 @@ func (ss *MediorumServer) hostHasBlob(host, key string) bool {
 	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
-	has, err := client.Get(apiPath(host, "internal/blobs/info", key))
+	u := apiPath(host, "internal/blobs/info", key)
+	has, err := client.Get(u)
 	if err != nil {
 		return false
 	}

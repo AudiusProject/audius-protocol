@@ -3,7 +3,6 @@ package rpcz
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/schema"
 	"comms.audius.co/shared/signing"
+	"github.com/avast/retry-go"
 	"golang.org/x/exp/slog"
 )
 
@@ -24,11 +24,10 @@ type RpcSseMessage struct {
 func (c *RPCProcessor) StartSweepers(discoveryConfig *config.DiscoveryConfig) {
 	for _, peer := range discoveryConfig.Peers() {
 		if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
-			log.Println("skipping self", peer)
 			continue
 		}
 		if peer.Host == "" {
-			log.Println("bad peer", peer)
+			slog.Info("bad peer", "peer", peer)
 			continue
 		}
 
@@ -40,7 +39,7 @@ func (c *RPCProcessor) startSweeper(host, bulkEndpoint string) {
 	for {
 		err := c.doSweep(host, bulkEndpoint)
 		if err != nil {
-			log.Println("PULL ERR", host, err)
+			slog.Error("sweep error", err, "host", host)
 		}
 		time.Sleep(time.Minute)
 	}
@@ -50,14 +49,13 @@ func (c *RPCProcessor) doSweep(host, bulkEndpoint string) error {
 
 	// get cursor
 	var after time.Time
+
 	err := db.Conn.Get(&after, "SELECT relayed_at FROM rpc_cursor WHERE relayed_by=$1", host)
 	if err != nil {
-		log.Println("backfill failed to get cursor: ", err)
-	} else {
-		log.Println("backfill", host, "after", after)
+		slog.Error("backfill failed to get cursor: ", err)
 	}
 
-	endpoint := host + bulkEndpoint + "?after=" + url.QueryEscape(after.Format(time.RFC3339))
+	endpoint := host + bulkEndpoint + "?after=" + url.QueryEscape(after.Format(time.RFC3339Nano))
 	started := time.Now()
 
 	req, err := http.NewRequest("GET", endpoint, nil)
@@ -91,21 +89,29 @@ func (c *RPCProcessor) doSweep(host, bulkEndpoint string) error {
 
 	var cursor time.Time
 	for _, op := range ops {
-		err := c.Apply(op)
+		// if apply fails during sweep
+		// it could be because discovery indexer is behind
+		// retry locally and only advance cursor on success
+		err := retry.Do(
+			func() error {
+				return c.Apply(op)
+			},
+			retry.Delay(time.Second),
+			retry.MaxDelay(time.Second*5))
 		if err != nil {
-			// todo: what to do when op apply fails during backfill???
-			// with cursor we'll not see this row again...
-			//  retry locally?
-			//  save to dead letter table?
-			//  periodically re-do all?
-			fmt.Println(err)
+			slog.Error("sweep error", err)
+		} else {
+			cursor = op.RelayedAt
 		}
-		cursor = op.RelayedAt
 	}
 
-	slog.Info("backfill done", "host", host, "took", time.Since(started), "count", len(ops), "cursor", cursor)
+	if len(ops) > 0 {
+		slog.Info("backfill done", "host", host, "took", time.Since(started), "count", len(ops), "cursor", cursor)
 
-	q := `insert into rpc_cursor values ($1, $2) on conflict (relayed_by) do update set relayed_at = $2;`
-	_, err = db.Conn.Exec(q, host, cursor)
-	return err
+		q := `insert into rpc_cursor values ($1, $2) on conflict (relayed_by) do update set relayed_at = $2;`
+		_, err = db.Conn.Exec(q, host, cursor)
+		return err
+	}
+
+	return nil
 }

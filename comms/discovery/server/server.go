@@ -4,10 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"time"
 
@@ -23,7 +21,6 @@ import (
 	"github.com/Doist/unfurlist"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
-	"github.com/inconshreveable/log15"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/exp/slog"
@@ -70,6 +67,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 	g.GET("/chats/ws", s.chatWebsocket)
 	g.GET("/chats/:id", s.getChat)
 	g.GET("/chats/:id/messages", s.getMessages)
+	g.GET("/chats/unread", s.getUnreadChatCount)
 	g.POST("/mutate", s.mutate)
 
 	g.GET("/chats/permissions", s.getChatPermissions)
@@ -78,6 +76,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
+	g.GET("/debug/cursors", s.debugCursors)
 
 	g.GET("/rpc/bulk", s.getRpcBulk, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
 	g.POST("/rpc/receive", s.postRpcReceive, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
@@ -89,12 +88,8 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 }
 
 var (
-	logger = log15.New()
+	logger = slog.Default()
 )
-
-func init() {
-	logger.SetHandler(log15.StreamHandler(os.Stdout, log15.TerminalFormat()))
-}
 
 type ChatServer struct {
 	*echo.Echo
@@ -194,17 +189,37 @@ func (s *ChatServer) debugWs(c echo.Context) error {
 		for {
 			msg, op, err := wsutil.ReadClientData(conn)
 			if err != nil {
-				log.Println("ws read err", err)
+				slog.Debug("ws read err", "err", err)
 				return
 			}
 			err = wsutil.WriteServerMessage(conn, op, msg)
 			if err != nil {
-				log.Println("ws write err", err)
+				slog.Debug("ws write err", "err", err)
 				return
 			}
 		}
 	}()
 	return nil
+}
+
+func (s *ChatServer) debugCursors(c echo.Context) error {
+	var cursors []struct {
+		Host      string    `db:"relayed_by" json:"relayed_by"`
+		RelayedAt time.Time `db:"relayed_at" json:"relayed_at"`
+		Count     int       `db:"count" json:"count"`
+	}
+	q := `
+	select
+		relayed_by,
+		relayed_at,
+		(select count(*) from rpc_log where relayed_by = c.relayed_by) as count
+	from rpc_cursor c;
+	`
+	err := db.Conn.Select(&cursors, q)
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, cursors)
 }
 
 func (s *ChatServer) debugSse(c echo.Context) error {
@@ -222,7 +237,7 @@ func (s *ChatServer) debugSse(c echo.Context) error {
 			fmt.Fprint(w, "data:"+time.Now().String()+"\n\n")
 			w.Flush()
 		case <-c.Request().Context().Done():
-			log.Println("closing connection after ", time.Since(start))
+			slog.Debug("closing connection", "lasted", time.Since(start))
 			return nil
 		}
 	}
@@ -351,6 +366,9 @@ func (s *ChatServer) getChat(c echo.Context) error {
 	}
 	chat, err := queries.UserChat(db.Conn, ctx, queries.ChatMembershipParams{UserID: int32(userId), ChatID: c.Param("id")})
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.String(404, "chat does not exist")
+		}
 		return err
 	}
 	members, err := queries.ChatMembers(db.Conn, ctx, chat.ChatID)
@@ -423,6 +441,33 @@ func (s *ChatServer) getMessages(c echo.Context) error {
 	return c.JSON(200, response)
 }
 
+func (s *ChatServer) getUnreadChatCount(c echo.Context) error {
+	ctx := c.Request().Context()
+	_, wallet, err := signing.ReadSignedRequest(c)
+	if err != nil {
+		return c.String(400, "bad request: "+err.Error())
+	}
+
+	userId, err := queries.GetUserIDFromWallet(db.Conn, ctx, wallet)
+	if err != nil {
+		return c.String(400, "wallet not found: "+err.Error())
+	}
+
+	unreadCount, err := queries.UnreadChatCount(db.Conn, ctx, userId)
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if err == sql.ErrNoRows {
+		unreadCount = 0
+	}
+
+	response := schema.CommsResponse{
+		Health: s.getHealthStatus(),
+		Data:   unreadCount,
+	}
+	return c.JSON(200, response)
+}
+
 func (s *ChatServer) getChatPermissions(c echo.Context) error {
 	ctx := c.Request().Context()
 	_, wallet, err := signing.ReadSignedRequest(c)
@@ -469,7 +514,7 @@ func (s *ChatServer) getChatPermissions(c echo.Context) error {
 
 	response := schema.CommsResponse{
 		Health: s.getHealthStatus(),
-		Data:   validatedPermissions,
+		Data:   ToChatPermissionsResponse(validatedPermissions),
 	}
 	return c.JSON(200, response)
 }
@@ -652,14 +697,14 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 	var rpcs []schema.RpcLog
 
 	var after time.Time
-	if t, err := time.Parse(time.RFC3339, c.QueryParam("after")); err == nil {
+	if t, err := time.Parse(time.RFC3339Nano, c.QueryParam("after")); err == nil {
 		after = t
 	} else {
 		fmt.Println("failed to parse time", err, c.QueryParam("after"), c.QueryString())
 	}
 
-	query := `select * from rpc_log where relayed_by = $1 and relayed_at >= $2 order by relayed_at asc`
-	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after)
+	query := `select * from rpc_log where relayed_by = $1 and relayed_at > $2 order by relayed_at asc`
+	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after.Truncate(time.Microsecond))
 	if err != nil {
 		return err
 	}

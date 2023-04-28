@@ -1,15 +1,20 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { ReactionNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  ReactionNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { capitalize } from '../../email/notifications/components/utils'
 import { formatWei } from '../../utils/format'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type ReactionNotificationRow = Omit<NotificationRow, 'data'> & {
   data: ReactionNotification
@@ -39,7 +44,11 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     this.tipAmount = this.notification.data.tip_amount
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -70,6 +79,12 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
     const reactingUserName = users[this.receiverUserId]?.name
     const tipAmount = formatWei(this.tipAmount, 'sol')
 
+    const title = `${capitalize(reactingUserName)} reacted`
+    const body = `${capitalize(
+      reactingUserName
+    )} reacted to your tip of ${tipAmount} $AUDIO`
+    await sendBrowserNotification(userNotificationSettings, this.senderUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -92,10 +107,8 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: `${capitalize(reactingUserName)} reacted`,
-              body: `${capitalize(
-                reactingUserName
-              )} reacted to your tip of ${tipAmount} $AUDIO`,
+              title,
+              body,
               data: {
                 entityId: this.receiverUserId,
                 type: 'Reaction',
@@ -109,13 +122,28 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
       )
       await this.incrementBadgeCount(this.senderUserId)
     }
+
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.receiverUserId,
         receiverUserId: this.senderUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.senderUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.senderUserId,
+        email: userNotificationSettings.getUserEmail(this.senderUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

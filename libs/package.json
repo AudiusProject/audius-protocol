@@ -1,8 +1,8 @@
 {
   "name": "@audius/sdk",
-  "version": "2.0.3-beta.5",
+  "version": "2.0.3-beta.12",
   "audius": {
-    "releaseSHA": "29b38fb1a75d58b32ce4c98a46dc035540b43e1a"
+    "releaseSHA": "f9ef97e8604088b07296c6e774cade4739eb3742"
   },
   "description": "",
   "main": "dist/index.cjs.js",
@@ -72,6 +72,7 @@
     "borsh": "0.4.0",
     "bs58": "4.0.1",
     "cipher-base": "1.0.4",
+    "crc-32": "1.2.2",
     "cross-fetch": "3.1.5",
     "elliptic": "6.5.4",
     "esm": "3.2.25",
@@ -90,6 +91,7 @@
     "keccak256": "1.0.2",
     "lodash": "4.17.21",
     "micro-aes-gcm": "0.3.3",
+    "multiformats": "9.9.0",
     "node-abort-controller": "3.1.1",
     "node-localstorage": "1.3.1",
     "proper-url-join": "1.2.0",

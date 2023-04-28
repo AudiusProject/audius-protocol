@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 UPDATE_USER_IS_AVAILABLE_LOCK = "update_user_is_available_lock"
 
 BATCH_SIZE = 1000
-DEFAULT_LOCK_TIMEOUT_SECONDS = 30  # 30 seconds
+DEFAULT_LOCK_TIMEOUT_SECONDS = 30 * 60  # 30 minutes
 REQUESTS_TIMEOUT_SECONDS = 300  # 5 minutes
 
 
@@ -73,6 +73,7 @@ def update_users_is_available_status(db: SessionManager, redis: Redis) -> None:
         redis, ALL_UNAVAILABLE_USERS_REDIS_KEY
     )
 
+    user_id_to_is_available_status = {}
     for i in range(0, len(all_unavailable_user_ids), BATCH_SIZE):
         unavailable_user_ids_batch = all_unavailable_user_ids[i : i + BATCH_SIZE]
         try:
@@ -81,12 +82,10 @@ def update_users_is_available_status(db: SessionManager, redis: Redis) -> None:
                     session, unavailable_user_ids_batch
                 )
 
-                user_id_to_is_available_status = {}
-
                 for entry in user_ids_to_replica_set:
                     user_id = entry[0]
 
-                    # Some users are do not have primary_ids or secondary_ids
+                    # Some users do not have primary_ids or secondary_ids
                     # If these values are not null, check if user is available
                     # Else, default to user as available
                     if (
@@ -110,15 +109,26 @@ def update_users_is_available_status(db: SessionManager, redis: Redis) -> None:
                 for user in users:
                     is_available = user_id_to_is_available_status[user.user_id]
 
-                    # If user is not available, also flip 'is_delete' flag to True
+                    # If user is not available, also flip 'is_deactivated' flag to True
                     if not is_available:
                         user.is_available = False
                         user.is_deactivated = True
-
         except Exception as e:
             logger.warn(
                 f"update_user_is_available.py | Could not process batch {unavailable_user_ids_batch}: {e}\nContinuing..."
             )
+
+    with db.scoped_session() as session:
+        currently_unavailable_users = query_unavailable_users(session)
+        for unavailable_users in currently_unavailable_users:
+            is_available = (
+                user_id_to_is_available_status[unavailable_users.user_id]
+                if unavailable_users.user_id in user_id_to_is_available_status
+                else True
+            )
+            if is_available:
+                unavailable_users.is_available = True
+                unavailable_users.is_deactivated = False
 
 
 def fetch_unavailable_user_ids(node: str, session: Session) -> List[int]:
@@ -158,7 +168,7 @@ def query_replica_set_by_user_id(
     return user_ids_and_replica_sets
 
 
-def query_users_by_user_ids(session: Session, user_ids: List[int]) -> List[Any]:
+def query_users_by_user_ids(session: Session, user_ids: List[int]) -> List[User]:
     """Returns a list of User objects that has a user id in `user_ids`"""
     users = (
         session.query(User)
@@ -169,6 +179,16 @@ def query_users_by_user_ids(session: Session, user_ids: List[int]) -> List[Any]:
         .all()
     )
 
+    return users
+
+
+def query_unavailable_users(session: Session) -> List[User]:
+    """Returns a list of all users that have is_available = false"""
+    users = (
+        session.query(User)
+        .filter(User.is_current == True, User.is_available == False)
+        .all()
+    )
     return users
 
 

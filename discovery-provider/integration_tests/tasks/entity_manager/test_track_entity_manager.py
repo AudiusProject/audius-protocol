@@ -84,6 +84,7 @@ def test_index_valid_track(app, mocker):
             },
             "track_id": 77955,
             "stem_of": None,
+            "ai_attribution_user_id": 2
         },
         "QmCreateTrack2": {
             "owner_id": 1,
@@ -122,6 +123,7 @@ def test_index_valid_track(app, mocker):
             "license": "",
             "isrc": "",
             "iswc": "",
+            "is_playlist_upload": True,
         },
         "QmCreateTrack3": {
             "owner_id": 1,
@@ -160,6 +162,7 @@ def test_index_valid_track(app, mocker):
             "license": "",
             "isrc": "",
             "iswc": "",
+            "is_playlist_upload": False,
         },
         "QmUpdateTrack1": {
             "owner_id": 1,
@@ -210,6 +213,8 @@ def test_index_valid_track(app, mocker):
             },
             "track_id": 77955,
             "stem_of": None,
+            "is_playlist_upload": False,
+            "ai_attribution_user_id": 2
         },
     }
 
@@ -304,6 +309,7 @@ def test_index_valid_track(app, mocker):
     entities = {
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "user-2", "wallet": "user2wallet", "allow_ai_attribution": True},
         ]
     }
     populate_mock_db(db, entities)
@@ -331,6 +337,7 @@ def test_index_valid_track(app, mocker):
             .first()
         )
         assert track_1.description == "updated description"
+        assert track_1.ai_attribution_user_id == 2
         assert track_1.is_delete == True
 
         track_2: Track = (
@@ -396,7 +403,11 @@ def test_index_invalid_tracks(app, mocker):
         db = get_db()
         web3 = Web3()
         update_task = UpdateTask(None, web3, None)
-
+    test_metadata = {
+        "QmAIDisabled": {
+            "ai_attribution_user_id": 2
+        }
+    }
     tx_receipts = {
         # invalid create
         "CreateTrackBelowOffset": [
@@ -455,7 +466,20 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
-        # invalid updates
+        "CreateTrackAIDisabled": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "QmAIDisabled",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],        # invalid updates
         "UpdateTrackInvalidSigner": [
             {
                 "args": AttributeDict(
@@ -564,7 +588,7 @@ def test_index_invalid_tracks(app, mocker):
             block_number=0,
             block_timestamp=1585336422,
             block_hash=0,
-            metadata={},
+            metadata=test_metadata,
         )
 
         # validate db records

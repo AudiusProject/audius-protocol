@@ -13,6 +13,7 @@ import { sendAppNotifications } from './tasks/appNotifications'
 import { getRedisConnection } from './utils/redisConnection'
 import { RemoteConfig } from './remoteConfig'
 import { Server } from './server'
+import { configureWebPush } from './web'
 
 export class Processor {
   discoveryDB: Knex
@@ -41,8 +42,12 @@ export class Processor {
     await this.remoteConfig.init()
 
     logger.info('starting!')
+    
     // setup postgres listener
     await this.setupDB({ discoveryDBUrl, identityDBUrl })
+
+    // setup browser push
+    configureWebPush()
 
     // Comment out to prevent app notifications until complete
     this.listener = new Listener()
@@ -69,6 +74,9 @@ export class Processor {
     this.identityDB = await getDB(identityDBConnection)
   }
 
+  /**
+   * Starts the app push notifications
+   */
   start = async () => {
     // process events
     logger.info('processing events')
@@ -104,6 +112,25 @@ export class Processor {
       // free up event loop + batch queries to postgres
       await new Promise((r) => setTimeout(r, config.pollInterval))
     }
+  }
+
+  /**
+   * Starts the app push notifications
+   */
+  startEmailNotifications = async () => {
+    // NOTE: Temp to test DM email notifs in staging
+    // TODO run job for all email frequencies
+    // if (
+    //   !this.lastDailyEmailSent ||
+    //   this.lastDailyEmailSent < moment.utc().subtract(1, 'days')
+    // ) {
+    //   await processEmailNotifications(
+    //     this.discoveryDB,
+    //     this.identityDB,
+    //     'daily'
+    //   )
+    //   this.lastDailyEmailSent = moment.utc()
+    // }
   }
 
   stop = () => {

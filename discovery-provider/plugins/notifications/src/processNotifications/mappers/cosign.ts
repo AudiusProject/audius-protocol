@@ -1,14 +1,18 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { CosignRemixNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  CosignRemixNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
-import { logger } from '../../logger'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type CosignRemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CosignRemixNotification
@@ -32,7 +36,11 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
     this.trackId = this.notification.data.track_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -72,6 +80,10 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       [this.parentTrackUserId, this.remixUserId]
     )
 
+    const title = 'New Track Co-Sign! 🔥'
+    const body = `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`
+    await sendBrowserNotification(userNotificationSettings, this.remixUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -92,8 +104,8 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Track Co-Sign! 🔥',
-              body: `${parentTrackUserName} Co-Signed your Remix of ${remixTrackTitle}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
@@ -107,13 +119,28 @@ export class CosignRemix extends BaseNotification<CosignRemixNotificationRow> {
       )
       await this.incrementBadgeCount(this.remixUserId)
     }
+
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.remixUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: this.remixUserId,
         initiatorUserId: this.parentTrackUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.remixUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.remixUserId,
+        email: userNotificationSettings.getUserEmail(this.remixUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

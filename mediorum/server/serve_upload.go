@@ -5,9 +5,10 @@ import (
 	"crypto/rand"
 	"crypto/sha1"
 	"encoding/base32"
+	"fmt"
 	"io"
 	"mime/multipart"
-	"strings"
+	"net/url"
 	"sync"
 	"time"
 
@@ -119,20 +120,32 @@ func (ss *MediorumServer) postUpload(c echo.Context) error {
 	return c.JSON(200, uploads)
 }
 
-func (ss *MediorumServer) getV1CIDBlob(c echo.Context) error {
-	if c.Param("jobID") == "" || c.Param("variant") == "" {
-		return c.JSON(400, "Invalid request, no multihash provided")
+func (ss *MediorumServer) getBlobByJobIDAndVariant(c echo.Context) error {
+	// If the client provided a filename, set it in the header to be auto-populated in download prompt
+	filenameForDownload := c.QueryParam("filename")
+	if filenameForDownload != "" {
+		contentDisposition := url.QueryEscape(filenameForDownload)
+		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
 	}
-	if len(c.Param("jobID")) == 46 && strings.HasPrefix(c.Param("jobID"), "Qm") {
-		return c.JSON(400, "Invalid request, CID V0 provided - should've redirected to Content Node")
+
+	jobID := c.Param("jobID")
+	variant := c.Param("variant")
+	if isLegacyCID(jobID) {
+		c.SetParamNames("dirCid", "fileName")
+		c.SetParamValues(jobID, variant)
+		return ss.serveLegacyDirCid(c)
 	} else {
 		var upload *Upload
-		err := ss.crud.DB.First(&upload, "id = ?", c.Param("jobID")).Error
+		err := ss.crud.DB.First(&upload, "id = ?", jobID).Error
 		if err != nil {
 			return err
 		}
-		cid := upload.TranscodeResults[c.Param("variant")]
-		c.SetParamNames("key")
+		cid, ok := upload.TranscodeResults[variant]
+		if !ok {
+			msg := fmt.Sprintf("variant %s not found for upload %s", variant, jobID)
+			return c.String(400, msg)
+		}
+		c.SetParamNames("cid")
 		c.SetParamValues(cid)
 		return ss.getBlob(c)
 	}

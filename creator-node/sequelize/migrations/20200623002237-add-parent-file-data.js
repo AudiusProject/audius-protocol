@@ -9,24 +9,8 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     const transaction = await queryInterface.sequelize.transaction()
     try {
-      await queryInterface.addColumn(
-        'Files',
-        'fileName',
-        {
-          type: Sequelize.TEXT,
-          allowNull: true
-        },
-        { transaction }
-      )
-      await queryInterface.addColumn(
-        'Files',
-        'dirMultihash',
-        {
-          type: Sequelize.TEXT,
-          allowNull: true
-        },
-        { transaction }
-      )
+      await queryInterface.sequelize.query(`ALTER TABLE "Files" ADD COLUMN IF NOT EXISTS "fileName" TEXT`, { transaction })
+      await queryInterface.sequelize.query(`ALTER TABLE "Files" ADD COLUMN IF NOT EXISTS "dirMultihash" TEXT`, { transaction })
       await queryInterface.addIndex('Files', ['dirMultihash'], { transaction })
 
       // For reference, this is what the values of the columns should be

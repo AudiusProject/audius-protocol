@@ -10,7 +10,7 @@
     "sql-ts": "ts-node scripts/sql-ts.ts",
     "start": "pm2-runtime build/src/main.js --restart-delay=3000",
     "test:watch": "jest --watchAll",
-    "test": "jest --runInBand --forceExit",
+    "test": "tsc && jest --runInBand --forceExit",
     "test-push": "ts-node scripts/test-push-notification.ts",
     "typecheck": "tsc --noEmit"
   },
@@ -60,6 +60,7 @@
     "pm2": "5.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "redis": "4.5.1"
+    "redis": "4.5.1",
+    "web-push": "^3.5.0"
   }
 }

@@ -1,15 +1,20 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { SaveOfRepostNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SaveOfRepostNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import { capitalize } from 'lodash'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type SaveOfRepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveOfRepostNotification
@@ -33,7 +38,11 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
     this.saveOfRepostUserId = this.notification.data.user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -99,6 +108,10 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
       entityName = playlist?.playlist_name
     }
 
+    const title = 'New Favorite'
+    const body = `${saveOfRepostUserName} favorited your repost of ${entityName}`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -124,8 +137,8 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
               targetARN: device.awsARN
             },
             {
-              title: 'New Favorite',
-              body: `${saveOfRepostUserName} favorited your repost of ${entityName}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
@@ -143,12 +156,26 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
     }
 
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.saveOfRepostUserId,
         receiverUserId: this.receiverUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

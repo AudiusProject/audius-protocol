@@ -1,14 +1,19 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { SaveNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SaveNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type SaveNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SaveNotification
@@ -28,7 +33,11 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     this.saverUserId = this.notification.data.user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -94,6 +103,13 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       this.identityDB,
       [this.receiverUserId, this.saverUserId]
     )
+
+    const title = 'New Favorite'
+    const body = `${saverUserName} favorited your ${entityType.toLowerCase()} ${entityName}`
+    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'favorites')) {
+      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    }
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -122,8 +138,8 @@ export class Save extends BaseNotification<SaveNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Favorite',
-              body: `${saverUserName} favorited your ${entityType.toLowerCase()} ${entityName}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${timestamp}:group_id:${this.notification.group_id}`,
                 userIds: [this.saverUserId],
@@ -135,14 +151,27 @@ export class Save extends BaseNotification<SaveNotificationRow> {
       )
       await this.incrementBadgeCount(this.receiverUserId)
     }
-
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.saverUserId,
         receiverUserId: this.receiverUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

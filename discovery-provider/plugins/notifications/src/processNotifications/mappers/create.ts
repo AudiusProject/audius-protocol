@@ -1,6 +1,7 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import {
+  AppEmailNotification,
   CreatePlaylistNotification,
   CreateTrackNotification
 } from '../../types/notifications'
@@ -8,14 +9,34 @@ import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type CreateNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CreateTrackNotification | CreatePlaylistNotification
 }
+
+type Track = {
+  track_id: number
+  title: string
+  owner_id: number
+}
+
+type Playlist = {
+  playlist_id: number
+  playlist_name: string
+  playlist_owner_id: number
+}
+type User = {
+  user_id: number
+  name: string
+  is_deactivated: boolean
+}
+
 export class Create extends BaseNotification<CreateNotificationRow> {
   receiverUserIds: number[]
   trackId?: number
@@ -39,16 +60,18 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     }
   }
 
-  async pushNotification() {
-    let track
-    let ownerId
-    let description
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
+    let ownerId: number | undefined
+    let description: string
+    let track: Track | undefined
+    let playlist: Playlist | undefined
+
     if (this.trackId) {
-      const trackRes: Array<{
-        track_id: number
-        title: string
-        owner_id: number
-      }> = await this.dnDB
+      const trackRes: Track[] = await this.dnDB
         .select('track_id', 'title', 'owner_id')
         .from<TrackRow>('tracks')
         .where('is_current', true)
@@ -57,13 +80,8 @@ export class Create extends BaseNotification<CreateNotificationRow> {
       ownerId = track.owner_id
     }
 
-    let playlist
     if (this.playlistId) {
-      const playlistRes: Array<{
-        playlist_id: number
-        playlist_name: string
-        playlist_owner_id: number
-      }> = await this.dnDB
+      const playlistRes: Playlist[] = await this.dnDB
         .select('playlist_id', 'playlist_name', 'playlist_owner_id')
         .from<PlaylistRow>('playlists')
         .where('is_current', true)
@@ -72,23 +90,21 @@ export class Create extends BaseNotification<CreateNotificationRow> {
       ownerId = playlist.playlist_owner_id
     }
 
-    const res: Array<{
-      user_id: number
-      name: string
-      is_deactivated: boolean
-    }> = await this.dnDB
+    const usersRes: User[] = await this.dnDB
       .select('user_id', 'name', 'is_deactivated')
       .from<UserRow>('users')
       .where('is_current', true)
       .whereIn('user_id', [ownerId, ...this.receiverUserIds])
 
-    const users = res.reduce((acc, user) => {
+    const users = usersRes.reduce<
+      Record<number, { name: string; isDeactivated: boolean }>
+    >((acc, user) => {
       acc[user.user_id] = {
         name: user.name,
         isDeactivated: user.is_deactivated
       }
       return acc
-    }, {} as Record<number, { name: string; isDeactivated: boolean }>)
+    }, {})
 
     const userName = users[ownerId]?.name
     if (this.trackId) {
@@ -99,6 +115,16 @@ export class Create extends BaseNotification<CreateNotificationRow> {
       } ${playlist.playlist_name}`
     }
 
+    const entityType = this.trackId
+      ? 'track'
+      : this.playlistId && this.isAlbum
+      ? 'album'
+      : this.playlistId && !this.isAlbum
+      ? 'playlist'
+      : null
+
+    const entityId = this.trackId ?? this.playlistId
+
     const validReceiverUserIds = this.receiverUserIds.filter(
       (userId) => !(users?.[userId]?.isDeactivated ?? true)
     )
@@ -107,6 +133,11 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         this.identityDB,
         [userId]
       )
+
+      const title = 'New Artist Update'
+      const body = description
+      await sendBrowserNotification(userNotificationSettings, userId, title, body)
+
       // If the user has devices to the notification to, proceed
       if (
         userNotificationSettings.shouldSendPushNotification({
@@ -126,13 +157,16 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                 targetARN: device.awsARN
               },
               {
-                title: 'New Artist Update',
+                title,
                 body: description,
                 data: {
                   type: 'UserSubscription',
                   id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                     this.notification.group_id
-                  }`
+                  }`,
+                  entityType,
+                  entityId,
+                  entityOwnerId: ownerId
                 }
               }
             )
@@ -140,13 +174,27 @@ export class Create extends BaseNotification<CreateNotificationRow> {
         )
         await this.incrementBadgeCount(userId)
       }
+
       if (
+        isLiveEmailEnabled &&
+        userNotificationSettings.getUserEmailFrequency(userId) === 'live' &&
         userNotificationSettings.shouldSendEmail({
           initiatorUserId: ownerId,
           receiverUserId: userId
         })
       ) {
-        // TODO: Send out email
+        const notification: AppEmailNotification = {
+          receiver_user_id: userId,
+          ...this.notification
+        }
+        await sendNotificationEmail({
+          userId: userId,
+          email: userNotificationSettings.getUserEmail(userId),
+          frequency: 'live',
+          notifications: [notification],
+          dnDb: this.dnDB,
+          identityDb: this.identityDB
+        })
       }
     }
   }

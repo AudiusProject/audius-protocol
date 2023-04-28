@@ -6,15 +6,6 @@
     "node": "~14.0.0"
   },
   "scripts": {
-    "start": "nodemon --config nodemon.json src/index.ts | ./node_modules/.bin/bunyan || exit 0",
-    "test": "./scripts/run-tests.sh standalone_creator",
-    "test:debug": "./scripts/run-tests.sh -d standalone_creator",
-    "test:ci": "./scripts/run-tests.sh",
-    "test:local:teardown": "./scripts/run-tests.sh standalone_creator teardown",
-    "test:teardown": "./scripts/run-tests.sh teardown",
-    "test:unit": "./scripts/run-tests.sh unit_test",
-    "test:coverage": "nyc --reporter=lcov --reporter=text npm run test",
-    "test:coverage:ci": "nyc --reporter=lcov --reporter=text npm run test:ci && nyc report --reporter=text-lcov | coveralls",
     "lint:fix": "eslint --format table --fix --ext=js,ts src",
     "lint": "eslint --format table --ext=js,ts src",
     "build": "./node_modules/.bin/tsc --project tsconfig.build.json",
@@ -86,6 +77,7 @@
     "prom-client": "14.0.1",
     "promise.any": "2.0.2",
     "rate-limit-redis": "1.7.0",
+    "request-ip": "3.3.0",
     "sequelize": "4.44.4",
     "shortid": "2.2.16",
     "sockstat": "1.0.1",

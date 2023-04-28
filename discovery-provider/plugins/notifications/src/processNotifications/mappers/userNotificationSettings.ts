@@ -1,4 +1,5 @@
 import { Knex } from 'knex'
+import { logger } from '../../logger'
 
 export type DeviceType = 'ios' | 'android'
 
@@ -47,7 +48,7 @@ type UserMobileSettings = {
 }
 
 type UserEmailSettings = {
-  [userId: number]: EmailFrequency
+  [userId: number]: { frequency: EmailFrequency; email: string }
 }
 
 export class UserNotificationSettings {
@@ -93,7 +94,19 @@ export class UserNotificationSettings {
   }
 
   isNotificationTypeEnabled(userId: number, feature: string) {
-    return this.mobile?.[userId].settings[feature]
+    const mobileSettings = this.mobile?.[userId]
+    if (mobileSettings === undefined) {
+      return false
+    }
+    return mobileSettings.settings[feature]
+  }
+
+  isNotificationTypeBrowserEnabled(userId: number, feature: string): boolean {
+    const browserSettings = this.browser?.[userId]
+    if (browserSettings === undefined) {
+      return false
+    }
+    return browserSettings.settings[feature]
   }
 
   shouldSendPushNotification({
@@ -122,6 +135,22 @@ export class UserNotificationSettings {
     return this.mobile[userId].badgeCount
   }
 
+  getUserEmail(userId: number) {
+    const email = this.email?.[userId]
+    if (email === undefined) {
+      return undefined
+    }
+    return email.email
+  }
+
+  getUserEmailFrequency(userId: number) {
+    const emailSettings = this.email?.[userId]
+    if (emailSettings === undefined) {
+      return "live"
+    }
+    return emailSettings.frequency
+  }
+
   shouldSendEmail({
     initiatorUserId,
     receiverUserId
@@ -136,7 +165,8 @@ export class UserNotificationSettings {
     return (
       this.userIsEmailDeliverable[receiverUserId] &&
       !isInitiatorAbusive &&
-      !userIsAbusive[receiverUserId]
+      !userIsAbusive[receiverUserId] &&
+      this.email?.[receiverUserId] !== 'off'
     )
   }
 
@@ -268,12 +298,19 @@ export class UserNotificationSettings {
     const userNotifSettings: Array<{
       userId: number
       emailFrequency: EmailFrequency
+      email: string
     }> = await this.identityDB
       .select(
         'UserNotificationSettings.userId',
-        'UserNotificationSettings.emailFrequency'
+        'UserNotificationSettings.emailFrequency',
+        'Users.email'
       )
       .from('UserNotificationSettings')
+      .join(
+        'Users',
+        'Users.blockchainUserId',
+        'UserNotificationSettings.userId'
+      )
       .whereIn('UserNotificationSettings.userId', userIds)
       .modify((queryBuilder) => {
         if (frequency) {
@@ -282,7 +319,7 @@ export class UserNotificationSettings {
       })
     const userEmailSettings: UserEmailSettings = userNotifSettings.reduce(
       (acc, user) => {
-        acc[user.userId] = user.emailFrequency
+        acc[user.userId] = { email: user.email, frequency: user.emailFrequency }
         return acc
       },
       {} as UserEmailSettings
@@ -324,27 +361,17 @@ export class UserNotificationSettings {
         'UserNotificationBrowserSettings.followers',
         'UserNotificationBrowserSettings.remixes',
         'UserNotificationBrowserSettings.messages',
-        'NotificationDeviceTokens.deviceType', // Note safari switch to web push protocol last yr for safari 16+
-        'NotificationDeviceTokens.awsARN', // so these fields are no longer necessary if we don't want to support
-        'NotificationDeviceTokens.deviceToken', // legacy safari push notifs
         'NotificationBrowserSubscriptions.endpoint',
         'NotificationBrowserSubscriptions.p256dhKey',
         'NotificationBrowserSubscriptions.authKey'
       )
       .from('UserNotificationBrowserSettings')
       .leftJoin(
-        'NotificationDeviceTokens',
-        'NotificationDeviceTokens.userId',
-        'UserNotificationBrowserSettings.userId'
-      )
-      .leftJoin(
         'NotificationBrowserSubscriptions',
         'NotificationBrowserSubscriptions.userId',
         'UserNotificationBrowserSettings.userId'
       )
       .whereIn('UserNotificationBrowserSettings.userId', userIds)
-      .whereIn('NotificationDeviceTokens.deviceType', ['safari'])
-      .andWhere('NotificationDeviceTokens.enabled', true)
       .andWhere('NotificationBrowserSubscriptions.enabled', true)
 
     const userBrowserSettings = userNotifSettingsBrowser.reduce(
@@ -393,6 +420,20 @@ export class UserNotificationSettings {
       {} as UserBrowserSettings
     )
     return userBrowserSettings
+  }
+
+  async getUserNotificationBrowsers(userId: number): Promise<WebPush[]> {
+    if (!globalThis.webPushIsConfigured) return []
+    const settings = await this.getUserBrowserSettings([userId])
+    const browsers = settings[userId].browser
+
+    const isWebPush = (browser: Browser): boolean => {
+      return (browser as WebPush).p256dhKey !== undefined;
+    }
+
+    // if pass then web push, skip custom safari entries
+    // safe cast when using filter
+    return browsers.filter(isWebPush) as WebPush[]
   }
 }
 

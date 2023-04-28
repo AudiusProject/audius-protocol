@@ -1,14 +1,20 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
-import { RepostNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  RepostNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
+import { logger } from '../../logger'
 
 type RepostNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RepostNotification
@@ -32,7 +38,11 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
     this.repostUserId = this.notification.data.user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -97,6 +107,12 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       entityName = playlist?.playlist_name
     }
 
+    const title = 'New Repost'
+    const body = `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`
+    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'reposts')) {
+      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    }
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -112,6 +128,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
         this.receiverUserId
       )
       // If the user's settings for the follow notification is set to true, proceed
+
       await Promise.all(
         devices.map((device) => {
           return sendPushNotification(
@@ -122,8 +139,8 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Repost',
-              body: `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
@@ -138,12 +155,26 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
       await this.incrementBadgeCount(this.receiverUserId)
     }
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.repostUserId,
         receiverUserId: this.receiverUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

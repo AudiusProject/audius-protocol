@@ -156,6 +156,7 @@ def is_valid_json_field(metadata, field):
 def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.track_cid = track_metadata["track_cid"]
     track_record.title = track_metadata["title"]
+    track_record.duration = track_metadata.get("duration", 0) or 0
     track_record.length = track_metadata.get("length", 0) or 0
     track_record.cover_art = track_metadata["cover_art"]
     if track_metadata["cover_art_sizes"]:
@@ -176,6 +177,7 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.field_visibility = track_metadata["field_visibility"]
 
     track_record.is_premium = track_metadata["is_premium"]
+    track_record.is_playlist_upload = track_metadata["is_playlist_upload"]
     if is_valid_json_field(track_metadata, "premium_conditions"):
         track_record.premium_conditions = track_metadata["premium_conditions"]
     else:
@@ -208,6 +210,8 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.route_id = helpers.create_track_route_id(
         track_metadata["title"], handle
     )
+
+    track_record.ai_attribution_user_id = track_metadata.get("ai_attribution_user_id")
     return track_record
 
 
@@ -237,6 +241,14 @@ def validate_track_tx(params: ManageEntityParameters):
         existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
         if existing_track.owner_id != params.user_id:
             raise Exception(f"Existing track {track_id} does not match user")
+
+    if params.action != Action.DELETE:
+        track_metadata = params.metadata[params.metadata_cid]
+        ai_attribution_user_id = track_metadata.get('ai_attribution_user_id') 
+        if ai_attribution_user_id:
+            ai_attribution_user = params.existing_records[EntityType.USER][ai_attribution_user_id]
+            if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
+                raise Exception(f"Cannot AI attribute user {ai_attribution_user}")
 
     return True
 

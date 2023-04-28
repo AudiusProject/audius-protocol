@@ -260,7 +260,7 @@ export class CreatorNode {
       try {
         await this._logoutNodeUser()
       } catch (e: any) {
-        console.error(e.message)
+        console.error(`error logging out user in setEndpoint: ${e}`)
       }
     }
     this.connected = false
@@ -418,8 +418,8 @@ export class CreatorNode {
     ])
 
     // Update metadata to include uploaded CIDs
-    // TODO: Make sure discovery and elsewhere accept 0-length array. Some checks in CN currently fail if there's not at least 1 valid segment
     updatedMetadata.track_segments = []
+    updatedMetadata.duration = parseInt(audioResp.probe.format.duration, 10)
     updatedMetadata.track_cid = audioResp.results['320']
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
@@ -437,6 +437,14 @@ export class CreatorNode {
     return await this.uploadFileV2(file, onProgress, 'img_square')
   }
 
+  async uploadProfilePictureV2(file: File, onProgress: ProgressCB = () => {}) {
+    return await this.uploadFileV2(file, onProgress, 'img_square')
+  }
+
+  async uploadCoverPhotoV2(file: File, onProgress: ProgressCB = () => {}) {
+    return await this.uploadFileV2(file, onProgress, 'img_backdrop')
+  }
+
   async uploadFileV2(
     file: File,
     onProgress: ProgressCB,
@@ -447,7 +455,7 @@ export class CreatorNode {
     formData.append('files', file, file.name)
     const response = await this._makeRequestV2({
       method: 'post',
-      url: '/mediorum/uploads',
+      url: '/uploads',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: (progressEvent) =>
@@ -497,7 +505,7 @@ export class CreatorNode {
   async getProcessingStatusV2(id: string) {
     const { data } = await this._makeRequestV2({
       method: 'get',
-      url: `/mediorum/uploads/${id}`
+      url: `/uploads/${id}`
     })
     return data
   }
@@ -810,6 +818,8 @@ export class CreatorNode {
    * If successful, receive and set authToken locally.
    */
   async _loginNodeUser() {
+    if (this.userStateManager.getCurrentUser()?.is_storage_v2) return
+
     if (this.authToken) {
       return
     }
@@ -861,6 +871,8 @@ export class CreatorNode {
 
   /** Calls logout on the content node. Needs an authToken for this since logout is an authenticated endpoint */
   async _logoutNodeUser() {
+    if (this.userStateManager.getCurrentUser()?.is_storage_v2) return
+
     if (!this.authToken) {
       return
     }

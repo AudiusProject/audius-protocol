@@ -1,91 +1,107 @@
 package crudr
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"log"
+	"mediorum/server/signature"
 	"net/http"
 	"time"
 
-	"github.com/r3labs/sse/v2"
+	"golang.org/x/exp/slog"
+	"gorm.io/gorm/clause"
 )
 
-func (c *Crudr) NewClient(host, streamEndpoint, bulkEndpoint string) {
-	for {
-		err := c.newClient(host, streamEndpoint, bulkEndpoint)
+type PeerClient struct {
+	Host   string
+	outbox chan []byte
+	crudr  *Crudr
+	logger *slog.Logger
+}
+
+func NewPeerClient(host string, crudr *Crudr) *PeerClient {
+	// buffer up to N outgoing messages
+	// if full, Send will drop outgoing message
+	// which is okay because of sweep
+	outboxBufferSize := 8
+
+	return &PeerClient{
+		Host:   host,
+		outbox: make(chan []byte, outboxBufferSize),
+		crudr:  crudr,
+		logger: slog.With("cruder_client", host),
+	}
+}
+
+func (p *PeerClient) Start() {
+	// todo: should be able to stop these
+	go p.startSender()
+	go p.startSweeper()
+}
+
+func (p *PeerClient) Send(data []byte) bool {
+	select {
+	case p.outbox <- data:
+		return true
+	default:
+		p.logger.Info("outbox full, dropping message", "msg", string(data), "len", len(p.outbox), "cap", cap(p.outbox))
+		return false
+	}
+}
+
+func (p *PeerClient) startSender() {
+	httpClient := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	for data := range p.outbox {
+		endpoint := p.Host + "/internal/crud/push" // hardcoded
+		req := signature.SignedPost(
+			endpoint,
+			"application/json",
+			bytes.NewReader(data),
+			p.crudr.myPrivateKey)
+
+		resp, err := httpClient.Do(req)
 		if err != nil {
-			c.logger.Warn("sse client died", "host", host, "err", err)
+			log.Println("push failed", "host", p.Host, "err", err)
+			continue
 		}
-		time.Sleep(time.Second * 5)
+
+		if resp.StatusCode != 200 {
+			log.Println("push bad status", "host", p.Host, "status", resp.StatusCode)
+		}
+
+		resp.Body.Close()
 	}
 }
 
-func (c *Crudr) newClient(host, streamEndpoint, bulkEndpoint string) error {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	logger := c.logger.New("client_of", host)
-	logger.Debug("creating client")
-
-	endpoint := host + streamEndpoint
-	client := sse.NewClient(endpoint)
-
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.MaxConnsPerHost = 10
-	client.Connection.Transport = transport
-
-	events := make(chan *sse.Event, 64)
-	err := client.SubscribeChanWithContext(ctx, LocalStreamName, events)
-	if err != nil {
-		return fmt.Errorf("subscribe chan failed: %v", err)
-	}
-	defer client.Unsubscribe(events)
-
-	client.OnConnect(func(c *sse.Client) {
-		logger.Debug("sse connected")
-	})
-
-	client.OnDisconnect(func(c *sse.Client) {
-		logger.Warn("sse disconnected !!!!")
-	})
-
-	// resume from
-	var lastUlid string
-	row := c.DB.Table("ops").Where("host = ?", host).Select("max(ulid)").Row()
-	row.Scan(&lastUlid)
-	logger.Debug("starting backfill", "last_ulid", lastUlid)
-
-	err = c.clientBackfill(host, bulkEndpoint, lastUlid)
-	if err != nil {
-		return fmt.Errorf("backfill failed: %v", err)
-	}
-
-	logger.Debug("processing events")
+func (p *PeerClient) startSweeper() {
 	for {
-
-		select {
-		case e := <-events:
-			var op *Op
-			err := json.Unmarshal(e.Data, &op)
-			if err != nil {
-				logger.Warn("bad event json: " + string(e.Data))
-				continue
-			}
-
-			err = c.apply(op)
-			if err != nil {
-				logger.Warn("apply failed", "err", err)
-			}
-
-		case <-time.After(30 * time.Second):
-			return errors.New("health timeout")
+		err := p.doSweep()
+		if err != nil {
+			p.logger.Warn("sweep failed", "err", err)
 		}
+		time.Sleep(time.Minute)
 	}
-
 }
 
-func (c *Crudr) clientBackfill(host, bulkEndpoint, lastUlid string) error {
+func (p *PeerClient) doSweep() error {
+
+	host := p.Host
+	bulkEndpoint := "/internal/crud/sweep" // hardcoded
+
+	// get cursor
+	lastUlid := ""
+	{
+		var cursor Cursor
+		err := p.crudr.DB.Where("host = ?", host).First(&cursor).Error
+		if err != nil {
+			p.logger.Info("failed to get cursor", "err", err)
+		} else {
+			lastUlid = cursor.LastULID
+		}
+	}
 
 	endpoint := host + bulkEndpoint + "?after=" + lastUlid
 
@@ -111,13 +127,24 @@ func (c *Crudr) clientBackfill(host, bulkEndpoint, lastUlid string) error {
 	}
 
 	for _, op := range ops {
-		err := c.apply(op)
+		err := p.crudr.ApplyOp(op)
 		if err != nil {
 			fmt.Println(err)
+		} else {
+			lastUlid = op.ULID
 		}
 	}
 
-	c.logger.Debug("backfill done", "host", host, "count", len(ops))
+	// set cursor
+	{
+		upsertClause := clause.OnConflict{UpdateAll: true}
+		err := p.crudr.DB.Clauses(upsertClause).Create(&Cursor{Host: host, LastULID: lastUlid}).Error
+		if err != nil {
+			p.logger.Info("failed to set cursor", "err", err)
+		}
+	}
+
+	p.logger.Debug("backfill done", "host", host, "count", len(ops), "last_ulid", lastUlid)
 
 	return nil
 }

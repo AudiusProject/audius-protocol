@@ -1,13 +1,19 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { RemixNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  RemixNotification,
+  RepostNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type RemixNotificationRow = Omit<NotificationRow, 'data'> & {
   data: RemixNotification
@@ -31,7 +37,11 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     this.remixUserId = parseInt(this.notification.specifier)
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -76,6 +86,12 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
     const remixUserName = users[this.remixUserId]?.name
     const remixTitle = tracks[this.trackId]?.title
 
+    const title =  'New Remix Of Your Track ♻️'
+    const body = `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`
+    if (userNotificationSettings.isNotificationTypeEnabled(this.parentTrackUserId, 'remixes')) {
+      await sendBrowserNotification(userNotificationSettings, this.parentTrackUserId, title, body)
+    }
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -98,8 +114,8 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: 'New Remix Of Your Track ♻️',
-              body: `New remix of your track ${parentTrackTitle}: ${remixUserName} uploaded ${remixTitle}`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
@@ -113,13 +129,28 @@ export class Remix extends BaseNotification<RemixNotificationRow> {
       )
       await this.incrementBadgeCount(this.parentTrackUserId)
     }
+
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.parentTrackUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.remixUserId,
         receiverUserId: this.parentTrackUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.parentTrackUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.parentTrackUserId,
+        email: userNotificationSettings.getUserEmail(this.parentTrackUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

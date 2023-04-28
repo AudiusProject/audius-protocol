@@ -70,7 +70,6 @@ module.exports = function (app) {
         const settings = await models.UserNotificationMobileSettings.findOne({
           where: { userId }
         })
-
         return successResponse({ settings })
       } catch (e) {
         req.logger.error(
@@ -100,12 +99,12 @@ module.exports = function (app) {
 
       try {
         // pseudo-upsert without sequlize magic
-        try {
-          await models.UserNotificationMobileSettings.update({
-            userId,
-            ...settings
-          })
-        } catch (e) {
+        const userSettings = await models.UserNotificationMobileSettings.findOne({
+          where: { userId }
+        })
+        if (userSettings) {
+          await userSettings.update({ ...settings })
+        } else {
           await models.UserNotificationMobileSettings.create({
             userId,
             ...settings

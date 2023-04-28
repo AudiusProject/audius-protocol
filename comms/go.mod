@@ -6,7 +6,6 @@ require (
 	github.com/Doist/unfurlist v0.0.0-20230220190120-a99fd3015da0
 	github.com/ethereum/go-ethereum v1.10.26
 	github.com/gobwas/ws v1.1.0
-	github.com/inconshreveable/log15 v2.16.0+incompatible
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/labstack/echo/v4 v4.10.0
 	github.com/lib/pq v1.10.7
@@ -20,6 +19,7 @@ require (
 	github.com/artyom/autoflags v1.1.1 // indirect
 	github.com/artyom/httpflags v1.2.0 // indirect
 	github.com/artyom/oembed v1.0.2 // indirect
+	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20230124162541-5f7a7d875746 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dyatlov/go-opengraph/opengraph v0.0.0-20220524092352-606d7b1e5f8a // indirect
@@ -36,7 +36,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.0 // indirect
-	golang.org/x/term v0.5.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
 

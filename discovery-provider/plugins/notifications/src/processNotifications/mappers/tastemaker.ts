@@ -1,6 +1,9 @@
 import { Knex } from 'knex'
 import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { TastemakerNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  TastemakerNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
@@ -9,6 +12,8 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type TastemakerNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TastemakerNotification
@@ -40,7 +45,11 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     this.tastemakerUserId = tastemaker_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -84,6 +93,10 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       this.receiverUserId
     )
 
+    const title = `You're a Taste Maker!`
+    const body = `${entityName} is now trending thanks to you! Great work 🙌🏽`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -101,8 +114,8 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
               targetARN: device.awsARN
             },
             {
-              title: `You're a Taste Maker!`,
-              body: `${entityName} is now trending thanks to you! Great work 🙌🏽`,
+              title,
+              body,
               data: {}
             }
           )
@@ -110,12 +123,30 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       )
       await this.incrementBadgeCount(this.receiverUserId)
     }
+
+    if (userNotificationSettings.browser) {
+      // TODO: Send out browser
+    }
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: this.receiverUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.receiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.receiverUserId,
+        email: userNotificationSettings.getUserEmail(this.receiverUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

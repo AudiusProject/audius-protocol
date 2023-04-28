@@ -1,6 +1,9 @@
 import { Knex } from 'knex'
 import { NotificationRow, PlaylistRow, UserRow } from '../../types/dn'
-import { TrendingPlaylistNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  TrendingPlaylistNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
@@ -9,6 +12,8 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 
 type TrendingPlaylistNotificationRow = Omit<NotificationRow, 'data'> & {
   data: TrendingPlaylistNotification
@@ -35,7 +40,11 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     this.timeRange = this.notification.data.time_range
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -77,6 +86,13 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     )
 
     const notificationReceiverUserId = this.receiverUserId
+
+    const title = "📈 You're Trending"
+    const body = `${playlists[this.playlistId]?.playlist_name} is the #${
+      this.rank
+    } trending playlist on Audius right now!`
+    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -99,10 +115,8 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
               targetARN: device.awsARN
             },
             {
-              title: "📈 You're Trending",
-              body: `${playlists[this.playlistId]?.playlist_name} is the #${
-                this.rank
-              } trending playlist on Audius right now!`,
+              title,
+              body,
               data: {}
             }
           )
@@ -112,11 +126,27 @@ export class TrendingPlaylist extends BaseNotification<TrendingPlaylistNotificat
     }
 
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(
+        notificationReceiverUserId
+      ) === 'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: notificationReceiverUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: notificationReceiverUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: notificationReceiverUserId,
+        email:
+          userNotificationSettings.email?.[notificationReceiverUserId].email,
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

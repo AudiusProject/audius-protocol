@@ -34,6 +34,7 @@ class Track(Base, RepresentableMixin):
         String, index=True
     )  # todo: after backfill, add nullable=False, both here and in a db migration
     title = Column(Text)
+    duration = Column(Integer)
     length = Column(Integer)
     cover_art = Column(String)
     tags = Column(String)
@@ -70,6 +71,7 @@ class Track(Base, RepresentableMixin):
     is_premium = Column(Boolean, nullable=False, server_default=text("false"))
     premium_conditions = Column(JSONB())
     is_playlist_upload = Column(Boolean, nullable=False, server_default=text("false"))
+    ai_attribution_user_id = Column(Integer, nullable=True)
 
     block = relationship(  # type: ignore
         "Block", primaryjoin="Track.blockhash == Block.blockhash"

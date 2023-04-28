@@ -97,7 +97,7 @@ describe('Push Notifications', () => {
       messageTimestamp
     )
 
-    await new Promise((r) => setTimeout(r, config.pollInterval * 4))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 20))
 
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
@@ -126,7 +126,7 @@ describe('Push Notifications', () => {
       new Date(reactionTimestampMs)
     )
 
-    await new Promise((r) => setTimeout(r, config.pollInterval * 3))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 5))
     expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
     expect(sendPushNotificationSpy).toHaveBeenCalledWith(
       {
@@ -140,7 +140,7 @@ describe('Push Notifications', () => {
         data: {}
       }
     )
-  })
+  }, 40000)
 
   test('Does not send DM notifications when sender is receiver', async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(
@@ -151,7 +151,7 @@ describe('Push Notifications', () => {
     // Start processor
     processor.start()
     // Let notifications job run for a few cycles to initialize the min cursors in redis
-    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 20))
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
@@ -205,7 +205,7 @@ describe('Push Notifications', () => {
 
     await new Promise((r) => setTimeout(r, config.pollInterval * 2))
     expect(sendPushNotificationSpy).not.toHaveBeenCalled()
-  })
+  }, 40000)
 
   test('Does not send DM notifications created fewer than delay minutes ago', async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(

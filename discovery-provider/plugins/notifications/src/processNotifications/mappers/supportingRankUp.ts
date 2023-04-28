@@ -1,13 +1,18 @@
 import { Knex } from 'knex'
 import { NotificationRow, UserRow } from '../../types/dn'
-import { SupportingRankUpNotification } from '../../types/notifications'
+import {
+  AppEmailNotification,
+  SupportingRankUpNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 type SupportingRankUpNotificationRow = Omit<NotificationRow, 'data'> & {
   data: SupportingRankUpNotification
@@ -29,7 +34,11 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
     this.senderUserId = this.notification.data.sender_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -59,6 +68,10 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
 
     const receivingUserName = users[this.receiverUserId]?.name
 
+    const title =  `#${this.rank} Top Supporter`
+    const body = `You're now ${receivingUserName}'s #${this.rank} Top Supporter!`
+    await sendBrowserNotification(userNotificationSettings, this.senderUserId, title, body)
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -81,8 +94,8 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
               targetARN: device.awsARN
             },
             {
-              title: `#${this.rank} Top Supporter`,
-              body: `You're now ${receivingUserName}'s #${this.rank} Top Supporter!`,
+              title,
+              body,
               data: {
                 id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                   this.notification.group_id
@@ -96,14 +109,27 @@ export class SupportingRankUp extends BaseNotification<SupportingRankUpNotificat
       )
       await this.incrementBadgeCount(this.senderUserId)
     }
-    //
 
     if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
+        'live' &&
       userNotificationSettings.shouldSendEmail({
         receiverUserId: this.senderUserId
       })
     ) {
-      // TODO: Send out email
+      const notification: AppEmailNotification = {
+        receiver_user_id: this.senderUserId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: this.senderUserId,
+        email: userNotificationSettings.getUserEmail(this.senderUserId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 

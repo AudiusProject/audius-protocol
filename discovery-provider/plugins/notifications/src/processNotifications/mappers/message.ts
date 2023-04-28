@@ -7,6 +7,7 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
+import { sendBrowserNotification } from '../../web'
 
 export class Message extends BaseNotification<DMNotification> {
   receiverUserId: number
@@ -18,7 +19,11 @@ export class Message extends BaseNotification<DMNotification> {
     this.senderUserId = this.notification.sender_user_id
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res: Array<{
       user_id: number
       name: string
@@ -46,6 +51,13 @@ export class Message extends BaseNotification<DMNotification> {
       [this.receiverUserId, this.senderUserId]
     )
 
+    const title = 'Message'
+    const body = `New message from ${users[this.senderUserId].name}`
+
+    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'messages')) {
+      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    }
+
     // If the user has devices to the notification to, proceed
     if (
       userNotificationSettings.shouldSendPushNotification({
@@ -68,8 +80,8 @@ export class Message extends BaseNotification<DMNotification> {
               targetARN: device.awsARN
             },
             {
-              title: 'Message',
-              body: `New message from ${users[this.senderUserId].name}`,
+              title,
+              body,
               data: {}
             }
           )
@@ -78,12 +90,13 @@ export class Message extends BaseNotification<DMNotification> {
       await this.incrementBadgeCount(this.receiverUserId)
     }
     if (
+      isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmail({
         initiatorUserId: this.senderUserId,
         receiverUserId: this.receiverUserId
       })
     ) {
-      // TODO: Send out email
+      // TODO: send out email
     }
   }
 }

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from src.models.delegates.app_delegate import AppDelegate
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
@@ -91,7 +92,7 @@ def populate_mock_db_blocks(db, min, max):
 
 def populate_mock_db(db, entities, block_offset=None):
     """
-    Helper function to populate the mock DB with tracks, users, plays, and follows
+    Helper function to populate the mock DB with tracks, users, plays, app delegates, and follows
 
     Args:
         db - sqlalchemy db session
@@ -109,6 +110,7 @@ def populate_mock_db(db, entities, block_offset=None):
         tracks = entities.get("tracks", [])
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])
+        app_delegates = entities.get("app_delegates", [])
         follows = entities.get("follows", [])
         subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
@@ -145,6 +147,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(tracks),
             len(playlists),
             len(users),
+            len(app_delegates),
             len(follows),
             len(saves),
             len(reposts),
@@ -173,7 +176,7 @@ def populate_mock_db(db, entities, block_offset=None):
             session.query(Track).filter(Track.is_current == True).filter(
                 Track.track_id == track_id
             ).update({"is_current": False})
-
+            track_created_at = datetime.now()
             track = Track(
                 blockhash=hex(i + block_offset),
                 blocknumber=i + block_offset,
@@ -196,17 +199,19 @@ def populate_mock_db(db, entities, block_offset=None):
                 tags=track_meta.get("tags", None),
                 genre=track_meta.get("genre", ""),
                 remix_of=track_meta.get("remix_of", None),
-                updated_at=track_meta.get("updated_at", datetime.now()),
-                created_at=track_meta.get("created_at", datetime.now()),
+                updated_at=track_meta.get("updated_at", track_created_at),
+                created_at=track_meta.get("created_at", track_created_at),
                 release_date=track_meta.get("release_date", None),
                 is_unlisted=track_meta.get("is_unlisted", False),
                 is_premium=track_meta.get("is_premium", False),
                 premium_conditions=track_meta.get("premium_conditions", None),
                 is_playlist_upload=track_meta.get("is_playlist_upload", False),
                 track_cid=track_meta.get("track_cid", None),
+                ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None)
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
+            playlist_created_at = datetime.now()
             playlist = Playlist(
                 blockhash=hex(i + block_offset),
                 blocknumber=i + block_offset,
@@ -229,8 +234,8 @@ def populate_mock_db(db, entities, block_offset=None):
                 ),
                 description=playlist_meta.get("description", f"description_{i}"),
                 upc=playlist_meta.get("upc", f"upc_{i}"),
-                updated_at=playlist_meta.get("updated_at", datetime.now()),
-                created_at=playlist_meta.get("created_at", datetime.now()),
+                updated_at=playlist_meta.get("updated_at", playlist_created_at),
+                created_at=playlist_meta.get("created_at", playlist_created_at),
             )
             session.add(playlist)
 
@@ -258,6 +263,10 @@ def populate_mock_db(db, entities, block_offset=None):
                 creator_node_endpoint=user_meta.get(
                     "creator_node_endpoint", "https://cn.io"
                 ),
+                is_available=user_meta.get("is_available", True),
+                is_deactivated=user_meta.get("is_deactivated", False),
+                allow_ai_attribution=user_meta.get("allow_ai_attribution", False),
+
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",
@@ -268,6 +277,18 @@ def populate_mock_db(db, entities, block_offset=None):
             session.add(user)
             session.add(user_bank)
 
+        for i, delegate_meta in enumerate(app_delegates):
+            delegate = AppDelegate(
+                user_id=delegate_meta.get("user_id", i),
+                name=delegate_meta.get("name", str(i)),
+                address=delegate_meta.get("address", str(i)),
+                is_personal_access=delegate_meta.get("is_personal_access", False),
+                blockhash=hex(i + block_offset),
+                blocknumber=(i + block_offset),
+                txhash=delegate_meta.get("txhash", str(i + block_offset)),
+                created_at=delegate_meta.get("created_at", datetime.now()),
+            )
+            session.add(delegate)
         for i, follow_meta in enumerate(follows):
             follow = Follow(
                 blockhash=hex(i + block_offset),

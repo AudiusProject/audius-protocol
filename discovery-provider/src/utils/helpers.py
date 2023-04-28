@@ -65,7 +65,7 @@ def bytes32_to_str(bytes32input):
 
 # Regex used to verify valid FQDN
 fqdn_regex = re.compile(
-    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|(audius-protocol-creator-node-[0-9]:[0-9]+)|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
+    r"^(?:^|[ \t])((https?:\/\/)?(?:localhost|(cn[0-9]_creator-node_1:[0-9]+)|(audius-protocol-creator-node-[0-9])|[\w-]+(?:\.[\w-]+)+)(:\d+)?(\/\S*)?)$"
 )
 
 
@@ -154,13 +154,9 @@ def tuple_to_model_dictionary(t, model):
 
 
 log_format = {
-    "levelno": "levelno",
     "level": "levelname",
     "msg": "message",
     "timestamp": "asctime",
-    "pathname": "pathname",
-    "funcName": "funcName",
-    "lineno": "lineno",
     "service": os.getenv("audius_service", "default"),
 }
 
@@ -210,7 +206,6 @@ def configure_flask_app_logging(app, loglevel_str):
     # Log the request
     @app.after_request
     def log_request(response):  # pylint: disable=W0612
-
         now = time.time()
         duration = int((now - g.start) * 1000)
         ip = get_ip(request)
@@ -542,3 +537,7 @@ def get_final_poa_block() -> int:
         raise Exception("audius_final_poa_block not set")
 
     return final_poa_block
+
+
+def format_total_audio_balance(balance: str) -> str:
+    return int(int(balance) / 1e18)

@@ -9,7 +9,11 @@ import { DMEntityType } from './types'
 
 import { logger } from '../../logger'
 import { sendNotificationEmail } from './sendEmail'
-import { EmailFrequency } from '../../processNotifications/mappers/userNotificationSettings'
+import {
+  EmailFrequency,
+  buildUserNotificationSettings
+} from '../../processNotifications/mappers/userNotificationSettings'
+import { identity } from 'lodash'
 
 // blockchainUserId => email
 type EmailUsers = {
@@ -301,6 +305,12 @@ export async function processEmailNotifications(
     }
     const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
+
+    const userNotificationSettings = await buildUserNotificationSettings(
+      identityDb,
+      Object.keys(users).map(Number)
+    )
+
     if (Object.keys(users).length == 0) {
       return
     }
@@ -312,7 +322,6 @@ export async function processEmailNotifications(
       Object.keys(users)
     )
     const groupedNotifications = groupNotifications(notifications, users)
-
     // TODO Validate their timezones to send at the right time!
 
     const currentUtcTime = moment.utc()
@@ -330,12 +339,23 @@ export async function processEmailNotifications(
           .slice(start, end)
           .map(async (userNotifications: UserEmailNotification) => {
             try {
+              if (
+                !userNotificationSettings.shouldSendEmail({
+                  receiverUserId: userNotifications.user.blockchainUserId
+                })
+              ) {
+                return {
+                  result: Results.SHOULD_SKIP,
+                  error: 'User turned off or is abusive'
+                }
+              }
+
               const user = userNotifications.user
               const notifications = userNotifications.notifications
               const sent = await sendNotificationEmail({
                 userId: user.blockchainUserId,
                 email: user.email,
-                frequency,
+                frequency: frequency,
                 notifications: notifications,
                 dnDb: dnDb,
                 identityDb: identityDb

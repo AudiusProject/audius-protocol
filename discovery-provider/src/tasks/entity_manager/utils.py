@@ -4,6 +4,7 @@ from enum import Enum
 from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
+from src.models.delegates.app_delegate import AppDelegate
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -60,6 +61,7 @@ class EntityType(str, Enum):
     NOTIFICATION_SEEN = "NotificationSeen"
     NOTIFICATION = "Notification"
     PLAYLIST_SEEN = "PlaylistSeen"
+    APP_DELEGATE = "AppDelegate"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -86,6 +88,7 @@ class ExistingRecordDict(TypedDict):
     Save: Dict[Tuple, Save]
     Subscription: Dict[Tuple, Subscription]
     PlaylistSeen: Dict[Tuple, PlaylistSeen]
+    AppDelegate: Dict[str, AppDelegate]
 
 
 class EntitiesToFetchDict(TypedDict):
@@ -96,6 +99,7 @@ class EntitiesToFetchDict(TypedDict):
     Save: Set[Tuple]
     Subscription: Set[Tuple]
     PlaylistSeen: Set[Tuple]
+    AppDelegate: Set[int]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -125,7 +129,6 @@ class ManageEntityParameters:
         self.entity_type = helpers.get_tx_arg(event, "_entityType")
         self.action = helpers.get_tx_arg(event, "_action")
         # Check if metadata blob was passed directly.
-        # TODO remove after CID metadata migration.
         try:
             data = json.loads(helpers.get_tx_arg(event, "_metadata"))
             self.metadata_cid = data["cid"]
@@ -154,6 +157,10 @@ class ManageEntityParameters:
     def add_playlist_record(self, playlist_id: int, playlist: Playlist):
         self.new_records[EntityType.PLAYLIST][playlist_id].append(playlist)  # type: ignore
         self.existing_records[EntityType.PLAYLIST][playlist_id] = playlist  # type: ignore
+
+    def add_app_delegate_record(self, address: int, delegate: AppDelegate):
+        self.new_records[EntityType.APP_DELEGATE][address].append(delegate)  # type: ignore
+        self.existing_records[EntityType.APP_DELEGATE][address] = delegate  # type: ignore
 
     def add_track_record(self, track_id: int, track: Track):
         self.new_records[EntityType.TRACK][track_id].append(track)  # type: ignore

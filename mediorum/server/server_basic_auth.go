@@ -2,9 +2,7 @@ package server
 
 import (
 	"crypto/ecdsa"
-	"encoding/base64"
 	"encoding/hex"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -20,24 +18,6 @@ func parsePrivateKey(pk string) (*ecdsa.PrivateKey, error) {
 		return nil, err
 	}
 	return crypto.ToECDSA(privateBytes)
-}
-
-func (ss *MediorumServer) basicAuthNonce() string {
-	// for dev:
-	if ss.Config.privateKey == nil {
-		return "Basic " + base64.StdEncoding.EncodeToString([]byte("dev:mode"))
-	}
-
-	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
-	hash := crypto.Keccak256Hash([]byte(ts))
-	signature, err := crypto.Sign(hash.Bytes(), ss.Config.privateKey)
-	if err != nil {
-		panic(err)
-	}
-
-	basic := ts + ":" + hex.EncodeToString(signature)
-	basic2 := "Basic " + base64.StdEncoding.EncodeToString([]byte(basic))
-	return basic2
 }
 
 func (ss *MediorumServer) checkBasicAuth(user, pass string, c echo.Context) (bool, error) {

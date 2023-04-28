@@ -30,7 +30,7 @@ export abstract class BaseNotification<Type> {
       })
   }
 
-  async pushNotification() {
+  async pushNotification(params: { isLiveEmailEnabled: boolean }) {
     return
   }
 

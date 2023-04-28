@@ -37,3 +37,73 @@ commit;
 begin;
   drop table if exists blocks_copy;
 commit;
+
+-- 4/10/23: inverse supporter rank up and supporting rank up notifications
+-- context: supporter rank up and supporting rank up notifications were
+-- reversed when we first added them to the handle_supporter_rank_up.sql trigger.
+-- this migration is meant to swap those types for any notification made when this migration
+-- was first run. we indicate whether the entry is from when a migration was first run
+-- by looking at whether type_v2 is null. supporter/ing_rank_up notifications
+-- created after this migration was run should have type_v2 as not null
+-- (see handle_supporter_rank_ups.sql)
+begin;
+alter table notification
+add column if not exists type_v2 varchar default null;
+
+-- Step 1: Change 'supporting_rank_up' to temporary value 'temp_rank_up'
+update notification n
+set type = 'temp_rank_up', type_v2 = 'temp_rank_up', group_id = 'temp_rank_up' || substring(group_id from position(':' in group_id))
+where type = 'supporting_rank_up' and type_v2 is null;
+
+-- Step 2: Change 'supporter_rank_up' to 'supporting_rank_up'
+update notification n
+set type = 'supporting_rank_up', type_v2 = 'supporting_rank_up', group_id = 'supporting_rank_up' || substring(group_id from position(':' in group_id))
+where type = 'supporter_rank_up' and type_v2 is null;
+
+-- Step 3: Change temporary value 'temp_rank_up' to 'supporter_rank_up'
+update notification n
+set type = 'supporter_rank_up', type_v2 = 'supporter_rank_up', group_id = 'supporter_rank_up' || substring(group_id from position(':' in group_id))
+where type = 'temp_rank_up' and type_v2 = 'temp_rank_up';
+commit;
+
+-- 4/13/23: add is_storage_v2 to users table
+begin;
+    alter table users
+    add column if not exists is_storage_v2 boolean not null default false;
+commit;
+
+-- 4/18/23: add is_available index
+begin;
+    create index if not exists users_is_available_false_idx on users (is_available) where is_available = false;
+commit;
+
+-- 4/25/23: add duration to tracks table
+begin;
+    alter table tracks
+    add column if not exists duration integer default 0;
+commit;  
+
+-- 4/26/23: create app delegates table
+begin;
+  create table public.app_delegates (
+    address varchar primary key not null,
+    blockhash varchar references blocks(blockhash),
+    blocknumber integer references blocks(number),
+    user_id integer,
+    name varchar not null,
+    is_personal_access boolean not null default false,
+    is_revoked boolean not null default false,
+    created_at timestamp not null,
+    txhash varchar not null
+  );
+commit;
+
+
+-- 4/26/23: add AI columns
+begin;
+    alter table tracks
+    add column if not exists ai_attribution_user_id integer;
+
+    alter table users
+    add column if not exists allow_ai_attribution boolean not null default false;
+commit;

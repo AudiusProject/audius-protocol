@@ -22,8 +22,8 @@ export class Listener {
     return p
   }
 
-  handler = (row: NotificationRow) => {
-    this.pending.appNotifications.push(row)
+  handler = (notification: NotificationRow) => {
+    this.pending.appNotifications.push(notification)
   }
 
   start = async (connectionString: string) => {
@@ -37,9 +37,12 @@ export class Listener {
     await this.client.connect()
     logger.info('did connect')
 
-    this.client.on('notification', (msg: Notification) => {
-      const body = JSON.parse(msg.payload)
-      this.handler(body)
+    this.client.on('notification', async (msg: Notification) => {
+      const { notification_id }: { notification_id: number } = JSON.parse(msg.payload)
+      const notification = await getNotification(this.client, notification_id)
+      if (notification !== null) {
+        this.handler(notification)
+      }
     })
 
     const sql = 'LISTEN notification;'
@@ -50,5 +53,17 @@ export class Listener {
   close = async () => {
     await this.client?.end()
     this.client = null
+  }
+}
+
+const getNotification = async (client: Client, notificationId: number): Promise<NotificationRow | null> => {
+  const query = 'SELECT * FROM notification WHERE id = $1 limit 1;'
+  const values = [notificationId] // parameterized query
+  try {
+    const res = await client.query<NotificationRow>(query, values)
+    return res.rows[0]
+  } catch (e) {
+    logger.error(`could not get notification ${notificationId} ${e}`)
+    return null;
   }
 }

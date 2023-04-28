@@ -11,6 +11,8 @@ local rsa_public_key = os.getenv("audius_openresty_rsa_public_key") or ""
 local rsa_private_key = os.getenv("audius_openresty_rsa_private_key") or ""
 local update_redirect_weights_every = os.getenv("audius_openresty_update_redirect_weights_every") or "300"
 
+local registered_plugins = os.getenv("REGISTERED_PLUGINS") or ""
+
 if rsa_public_key == "" or rsa_private_key == "" then
     ngx.log(ngx.WARN, "audius_openresty_rsa_private_key or audius_openresty_rsa_public_key was not set; generating new key")
     rsa_public_key, rsa_private_key, err = resty_rsa:generate_rsa_keys(2048)
@@ -51,4 +53,7 @@ ngx.log(ngx.NOTICE, "rate_limiting_enabled=", _M.rate_limiting_enabled)
 
 _M.update_redirect_weights_every = tonumber(update_redirect_weights_every)
 ngx.log(ngx.NOTICE, "update_redirect_weights_every=", update_redirect_weights_every)
+
+_M.registered_plugins = registered_plugins
+
 return _M

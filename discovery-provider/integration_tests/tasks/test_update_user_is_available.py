@@ -11,6 +11,7 @@ from src.tasks.update_user_is_available import (
     fetch_unavailable_user_ids_in_network,
     get_unavailable_users_redis_key,
     query_replica_set_by_user_id,
+    query_unavailable_users,
     query_users_by_user_ids,
     update_users_is_available_status,
 )
@@ -239,6 +240,18 @@ def test_query_users_by_user_id(app):
         assert sorted_user_ids == user_ids
 
 
+def test_query_unavailable_users(app):
+    with app.app_context():
+        db = get_db()
+
+    _seed_db_with_data(db)
+
+    with db.scoped_session() as session:
+        users = query_unavailable_users(session)
+        assert len(users) == 1
+        assert users[0].user_id == 100
+
+
 @mock.patch("src.tasks.update_user_is_available.query_registered_content_node_info")
 def test_update_user_is_available(
     mock_query_registered_content_node_info,
@@ -371,6 +384,15 @@ def _seed_db_with_data(db):
                 "primary_id": 7,
                 "secondary_ids": [9, 1],
                 "is_current": False,
+            },
+            # Deactivated users
+            {
+                "user_id": 100,
+                "primary_id": 7,
+                "secondary_ids": [9, 1],
+                "is_current": True,
+                "is_available": False,
+                "is_deactivated": True,
             },
         ],
         # Created three defaulted Content Nodes

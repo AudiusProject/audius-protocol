@@ -18,8 +18,10 @@ import { TipReceive } from './mappers/tipReceive'
 import { TipSend } from './mappers/tipSend'
 import { Milestone } from './mappers/milestone'
 import {
+  EmailPluginMappings,
   MappingFeatureName,
   MappingVariable,
+  NotificationsEmailPlugin,
   RemoteConfig
 } from '../remoteConfig'
 import { Timer } from '../utils/timer'
@@ -90,7 +92,17 @@ export class AppNotificationsProcessor {
     return Boolean(featureEnabled)
   }
 
-  async process(notifications: NotificationRow[], remoteConfig: RemoteConfig) {
+  getIsLiveEmailEnabled() {
+    const isEnabled = this.remoteConfig.getFeatureVariableEnabled(
+      NotificationsEmailPlugin,
+      EmailPluginMappings.Live
+    )
+    // If the feature does not exist in remote config, then it returns null
+    // In that case, set to false bc we want to explicitly set to true
+    return Boolean(isEnabled)
+  }
+
+  async process(notifications: NotificationRow[]) {
     if (notifications.length == 0) return
     logger.info(`Processing ${notifications.length} push notifications`)
     const timer = new Timer('process app push notifications')
@@ -111,8 +123,9 @@ export class AppNotificationsProcessor {
         notification.notification.type
       )
       if (isEnabled) {
+        const isLiveEmailEnabled = this.getIsLiveEmailEnabled()
         try {
-          await notification.pushNotification()
+          await notification.pushNotification({ isLiveEmailEnabled })
           status.processed += 1
         } catch (e) {
           logger.error(

@@ -113,3 +113,15 @@ func MaxNumNewChatsSince(q db.Queryable, ctx context.Context, arg MaxNumNewChats
 	err = q.GetContext(ctx, &count, query, args...)
 	return count, err
 }
+
+const unreadChatCount = `
+SELECT COUNT(*)
+FROM chat_member
+WHERE user_id = $1 AND unread_count > 0;
+`
+
+func UnreadChatCount(q db.Queryable, ctx context.Context, userId int32) (int, error) {
+	var count int
+	err := q.GetContext(ctx, &count, unreadChatCount, userId)
+	return count, err
+}

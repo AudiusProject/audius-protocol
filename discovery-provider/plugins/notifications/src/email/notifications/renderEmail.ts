@@ -119,7 +119,7 @@ const getPlaylistImage = (playlist: PlaylistResource) => {
   return playlistImageUrl
 }
 
-const fetchResources = async (
+export const fetchResources = async (
   dnDb: Knex,
   identityDb: Knex,
   ids: ResourceIds
@@ -311,10 +311,9 @@ const getEmailSubject = (
   let subject
   if (frequency === 'live') {
     subject = liveSubjectFormat
-  }
-  if (frequency === 'daily') {
+  } else if (frequency === 'daily') {
     subject = dailySubjectFormat
-  } else {
+  } else if (frequency === 'weekly') {
     subject = weeklySubjectFormat
   }
   return subject

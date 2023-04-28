@@ -1,8 +1,9 @@
 package server
 
 import (
-	"log"
 	"runtime/debug"
+
+	"golang.org/x/exp/slog"
 )
 
 var (
@@ -25,5 +26,5 @@ func init() {
 		}
 	}
 
-	log.Printf("MEDIORUM revision=%s built_at=%s dirty=%s", vcsRevision, vcsBuildTime, vcsDirty)
+	slog.Info("MEDIORUM", "revision", vcsRevision, "built", vcsBuildTime, "wip", vcsDirty)
 }

@@ -96,12 +96,8 @@ func (vtor *Validator) validateChatCreate(tx *sqlx.Tx, userId int32, rpc schema.
 			return err
 		}
 
-		// validate receiver permits chats from sender
-		receiver := int32(user1)
-		if receiver == userId {
-			receiver = int32(user2)
-		}
-		err = validatePermissions(q, userId, receiver)
+		// validate both users permit messages from the other
+		err = validatePermissions(q, int32(user1), int32(user2))
 		if err != nil {
 			return err
 		}
@@ -144,10 +140,19 @@ func (vtor *Validator) validateChatMessage(tx *sqlx.Tx, userId int32, rpc schema
 	}
 
 	chatMembers, err := queries.ChatMembers(q, context.Background(), params.ChatID)
+	if err != nil {
+		return err
+	}
 	// 1-1 DMs
 	if len(chatMembers) == 2 {
 		// validate chat members are not a <blocker, blockee> pair
 		err = validateNotBlocked(q, chatMembers[0].UserID, chatMembers[1].UserID)
+		if err != nil {
+			return err
+		}
+
+		// validate both users permit messages from the other
+		err = validatePermissions(q, chatMembers[0].UserID, chatMembers[1].UserID)
 		if err != nil {
 			return err
 		}
@@ -373,9 +378,12 @@ func validateNotBlocked(q db.Queryable, user1 int32, user2 int32) error {
 	return nil
 }
 
-func validatePermissions(q db.Queryable, sender int32, receiver int32) error {
-	permissionFailure := errors.New("Not permitted to send messages to this user")
-	permits, err := queries.GetChatPermissions(q, context.Background(), receiver)
+// Bidirectionally validate permissions.
+// Returns true if user1 can chat with user2 according to user2's permissions
+// AND user2 can chat with user1 according to user1's permissions.
+func validatePermissions(q db.Queryable, user1 int32, user2 int32) error {
+	permissionFailure := errors.New("Not permitted to send or receive messages from this user")
+	permissions, err := queries.BulkGetChatPermissions(q, context.Background(), []int32{user1, user2})
 	if err != nil {
 		if err != sql.ErrNoRows {
 			return err
@@ -384,32 +392,41 @@ func validatePermissions(q db.Queryable, sender int32, receiver int32) error {
 		return nil
 	}
 
-	if permits == schema.None {
-		return permissionFailure
-	} else if permits == schema.Followees {
-		// Only allow messages from users that receiver follows
-		count, err := queries.CountFollows(q, context.Background(), queries.CountFollowsParams{
-			FollowerUserID: receiver,
-			FolloweeUserID: sender,
-		})
-		if err != nil {
-			return err
+	for _, permission := range permissions {
+		permitter := permission.UserID
+		user := user1
+		if permitter == user {
+			user = user2
 		}
-		if count == 0 {
+		permits := permission.Permits
+		if permits == schema.None {
 			return permissionFailure
-		}
-	} else if permits == schema.Tippers {
-		// Only allow messages from users that have tipped receiver
-		count, err := queries.CountTips(q, context.Background(), queries.CountTipsParams{
-			SenderUserID:   sender,
-			ReceiverUserID: receiver,
-		})
-		if err != nil {
-			return err
-		}
-		if count == 0 {
-			return permissionFailure
+		} else if permits == schema.Followees {
+			// Only allow messages from users that permitter follows
+			count, err := queries.CountFollows(q, context.Background(), queries.CountFollowsParams{
+				FollowerUserID: permitter,
+				FolloweeUserID: user,
+			})
+			if err != nil {
+				return err
+			}
+			if count == 0 {
+				return permissionFailure
+			}
+		} else if permits == schema.Tippers {
+			// Only allow messages from users that have tipped permitter
+			count, err := queries.CountTips(q, context.Background(), queries.CountTipsParams{
+				SenderUserID:   user,
+				ReceiverUserID: permitter,
+			})
+			if err != nil {
+				return err
+			}
+			if count == 0 {
+				return permissionFailure
+			}
 		}
 	}
+
 	return nil
 }

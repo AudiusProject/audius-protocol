@@ -1,9 +1,13 @@
 import { Knex } from 'knex'
-import { NotificationRow, TrackRow, UserRow } from '../../types/dn'
-import { AnnouncementNotification } from '../../types/notifications'
+import { NotificationRow, UserRow } from '../../types/dn'
+import {
+  AnnouncementNotification,
+  AppEmailNotification
+} from '../../types/notifications'
 import { BaseNotification } from './base'
 import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
+import { sendNotificationEmail } from '../../email/notifications/sendEmail'
 import {
   buildUserNotificationSettings,
   Device

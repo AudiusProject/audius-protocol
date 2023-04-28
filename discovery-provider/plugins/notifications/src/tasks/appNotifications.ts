@@ -10,7 +10,9 @@ export async function sendAppNotifications(
 ) {
   const pending = listener.takePending()
   if (pending) {
-    logger.info(`Processing ${pending.appNotifications.length} app notification `)
+    logger.info(
+      `Processing ${pending.appNotifications.length} app notification `
+    )
     await Promise.all([
       appNotificationsProcessor.process(pending.appNotifications, remoteConfig)
     ])

@@ -49,6 +49,7 @@ user_model = ns.model(
         "spl_wallet": fields.String(required=True),
         "supporter_count": fields.Integer(required=True),
         "supporting_count": fields.Integer(required=True),
+        "total_audio_balance": fields.Integer(required=True),
     },
 )
 
@@ -64,6 +65,7 @@ user_model_full = ns.clone(
         "blocknumber": fields.Integer(required=True),
         "wallet": fields.String(required=True),
         "created_at": fields.String(required=True),
+        "is_storage_v2": fields.Boolean(required=True),
         "creator_node_endpoint": fields.String,
         "current_user_followee_follow_count": fields.Integer(required=True),
         "does_current_user_follow": fields.Boolean(required=True),
