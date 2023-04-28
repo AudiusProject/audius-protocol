@@ -16,6 +16,7 @@ import { retry3 } from '../../utils/retry'
 import type { EntityManagerService, WalletApiService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
 import { decodeHashId } from '../../utils/hashId'
+import { generateMetadataCidV1 } from '../../utils/cid'
 
 // Subclass type masking adapted from Damir Arh's method:
 // https://www.damirscorner.com/blog/posts/20190712-ChangeMethodSignatureInTypescriptSubclass.html
@@ -102,14 +103,22 @@ export class TracksApi extends TracksApiWithoutStream {
     const [audioResp, coverArtResp] = await Promise.all([
       retry3(
         async () =>
-          await this.storage.uploadFile(trackFile, onProgress, 'audio'),
+          await this.storage.uploadFile({
+            file: trackFile,
+            onProgress,
+            template: 'audio'
+          }),
         (e) => {
           console.log('Retrying uploadTrackAudio', e)
         }
       ),
       retry3(
         async () =>
-          await this.storage.uploadFile(coverArtFile, onProgress, 'img_square'),
+          await this.storage.uploadFile({
+            file: coverArtFile,
+            onProgress,
+            template: 'img_square'
+          }),
         (e) => {
           console.log('Retrying uploadTrackCoverArt', e)
         }
@@ -132,6 +141,7 @@ export class TracksApi extends TracksApiWithoutStream {
     }
 
     // Write metadata to chain
+    const metadataCid = await generateMetadataCidV1(updatedMetadata)
     const trackId = await this.generateTrackId()
     const response = await this.entityManager.manageEntity({
       userId: artistId,
@@ -146,16 +156,16 @@ export class TracksApi extends TracksApiWithoutStream {
     })
     const txReceipt = response.txReceipt
 
-    // TODO: why isn't this returning blockHash & blockNumber
     return {
       blockHash: txReceipt.blockHash,
       blockNumber: txReceipt.blockNumber,
       trackId,
-      transcodedTrackCID: updatedMetadata.track_cid,
+      transcodedTrackCID: metadataCid.toString(),
       error: false
     }
   }
 
+  // TODO: This should be using middleware
   private async generateTrackId() {
     const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
 

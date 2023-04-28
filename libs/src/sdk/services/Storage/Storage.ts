@@ -5,6 +5,7 @@ import fetch from 'cross-fetch'
 import { wait } from '../../utils/wait'
 import type {
   FileTemplate,
+  ProcessingStatus,
   ProgressCB,
   StorageService,
   StorageServiceConfig
@@ -29,8 +30,6 @@ export class Storage implements StorageService {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)
   }
 
-  // TODO: update args to objects
-
   /**
    * Upload a file to a content node
    * @param file
@@ -38,7 +37,15 @@ export class Storage implements StorageService {
    * @param template
    * @returns
    */
-  async uploadFile(file: File, onProgress: ProgressCB, template: FileTemplate) {
+  async uploadFile({
+    file,
+    onProgress,
+    template
+  }: {
+    file: File
+    onProgress: ProgressCB
+    template: FileTemplate
+  }) {
     const formData: FormData = new FormData()
     formData.append('template', template)
     // TODO: Test this in a browser env
@@ -98,12 +105,12 @@ export class Storage implements StorageService {
    * @param id the id of the transcoding or resizing job
    * @returns the status, and the success or failed response if the job is complete
    */
-  private async getProcessingStatus(id: string) {
+  private async getProcessingStatus(
+    id: string
+  ): Promise<{ status: ProcessingStatus }> {
     const response = await fetch(
       `${this.config.contentNodeEndpoint}/mediorum/uploads/${id}`
     )
-    // TODO: type this
-
     return await response.json()
   }
 }

@@ -18,9 +18,6 @@ import type {
   EntityType
 } from './types'
 
-// TODO get from network
-const CHAIN_ID = 1000000000001
-
 export class EntityManager implements EntityManagerService {
   /**
    * Configuration passed in by consumer (with defaults)
@@ -33,6 +30,7 @@ export class EntityManager implements EntityManagerService {
   constructor(config?: EntityManagerConfig) {
     this.config = mergeConfigWithDefaults(config, defaultEntityManagerConfig)
 
+    // TODO: use window.web3, or allow web3 to be provided as an arg
     this.web3 = new Web3(
       new Web3.providers.HttpProvider(this.config.web3ProviderUrl, {
         timeout: 10000
@@ -69,8 +67,9 @@ export class EntityManager implements EntityManagerService {
     walletApi: WalletApiService
   }): Promise<{ txReceipt: TransactionReceipt }> {
     const nonce = signatureSchemas.getNonce()
+    const chainId = await this.web3.eth.net.getId()
     const signatureData = signatureSchemas.generators.getManageEntityData(
-      CHAIN_ID,
+      chainId,
       this.config.contractAddress,
       userId,
       entityType,
@@ -99,19 +98,19 @@ export class EntityManager implements EntityManagerService {
         'Content-Type': 'application/json'
       }),
       body: JSON.stringify({
-        contractRegistryKey: 'EntityManager',
         contractAddress: this.config.contractAddress,
-        senderAddress,
+        contractRegistryKey: 'EntityManager',
         encodedABI: method.encodeABI(),
         // Gas limit not really needed with ACDC
-        gasLimit: DEFAULT_GAS_LIMIT
+        gasLimit: DEFAULT_GAS_LIMIT,
+        senderAddress
       })
     })
 
-    const txReceipt: TransactionReceipt = await response.json()
+    const jsonResponse = await response.json()
 
     return {
-      txReceipt
+      txReceipt: jsonResponse.receipt
     }
   }
 }
