@@ -97,3 +97,13 @@ begin;
     txhash varchar not null
   );
 commit;
+
+
+-- 4/26/23: add AI columns
+begin;
+    alter table tracks
+    add column if not exists ai_attribution_user_id integer;
+
+    alter table users
+    add column if not exists allow_ai_attribution boolean not null default false;
+commit;

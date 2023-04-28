@@ -267,6 +267,10 @@ def update_user_metadata(
             metadata["events"],
             challenge_event_bus,
         )
+
+    if metadata.get("allow_ai_attribution"):
+        user_record.allow_ai_attribution = metadata["allow_ai_attribution"]
+
     return user_record
 
 

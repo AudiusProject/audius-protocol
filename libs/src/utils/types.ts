@@ -166,6 +166,7 @@ export type TrackMetadata = {
   duration: number
 
   is_playlist_upload?: boolean
+  ai_attribution_user_id?: ID
 }
 
 export type CollectionMetadata = {

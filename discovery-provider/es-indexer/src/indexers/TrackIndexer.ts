@@ -85,6 +85,7 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
         },
 
         'remix_of.tracks.parent_track_id': { type: 'keyword' },
+        ai_attribution_user_id: { type: 'integer' },
       },
     },
   }
@@ -167,9 +168,11 @@ export class TrackIndexer extends BaseIndexer<TrackDoc> {
     row.tag_list = splitTags(row.tags)
     row.repost_count = row.reposted_by.length
     row.favorite_count = row.saved_by.length
-    row.duration = row.duration || Math.ceil(
-      row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
-    )
+    row.duration =
+      row.duration ||
+      Math.ceil(
+        row.track_segments.reduce((acc, s) => acc + parseFloat(s.duration), 0)
+      )
     row.length = row.duration
 
     // permalink
