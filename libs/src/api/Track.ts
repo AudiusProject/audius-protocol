@@ -587,7 +587,8 @@ export class Track extends Base {
       metadataMultihash,
       metadataFileUUID,
       transcodedTrackCID,
-      transcodedTrackUUID
+      transcodedTrackUUID,
+      metadata: respMetadata
     } = await retry(
       async () => {
         return await this.creatorNode.uploadTrackContent(
@@ -615,7 +616,8 @@ export class Track extends Base {
       metadataMultihash,
       metadataFileUUID,
       transcodedTrackCID,
-      transcodedTrackUUID
+      transcodedTrackUUID,
+      metadata: respMetadata
     }
   }
 
