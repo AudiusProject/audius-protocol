@@ -3,6 +3,7 @@ import { NotificationRow, PlaylistRow, TrackRow, UserRow } from '../../types/dn'
 import {
   AppEmailNotification,
   FollowerMilestoneNotification,
+  ListenCountMilestoneNotifications,
   MilestoneType,
   PlaylistMilestoneNotification,
   TrackMilestoneNotification
@@ -144,7 +145,12 @@ export class Milestone extends BaseNotification<MilestoneRow> {
 
     const title = 'Congratulations! 🎉'
     const body = this.getPushBodyText(entityName, isAlbum)
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -255,6 +261,9 @@ export class Milestone extends BaseNotification<MilestoneRow> {
     ) {
       const data = this.notification.data as PlaylistMilestoneNotification
       playlists.add(data.playlist_id)
+    } else if (this.type === MilestoneType.LISTEN_COUNT) {
+      const data = this.notification.data as ListenCountMilestoneNotifications
+      tracks.add(data.track_id)
     }
     return {
       users: new Set([this.receiverUserId]),
