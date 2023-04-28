@@ -5,8 +5,7 @@ import { RemoteConfig } from '../remoteConfig'
 
 export async function sendAppNotifications(
   listener: Listener,
-  appNotificationsProcessor: AppNotificationsProcessor,
-  remoteConfig: RemoteConfig
+  appNotificationsProcessor: AppNotificationsProcessor
 ) {
   const pending = listener.takePending()
   if (pending) {
@@ -14,7 +13,7 @@ export async function sendAppNotifications(
       `Processing ${pending.appNotifications.length} app notification `
     )
     await Promise.all([
-      appNotificationsProcessor.process(pending.appNotifications, remoteConfig)
+      appNotificationsProcessor.process(pending.appNotifications)
     ])
     logger.info('processed new app updates')
   }

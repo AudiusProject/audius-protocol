@@ -58,19 +58,17 @@ import { RemoteConfig } from '../../remoteConfig'
 export const mapNotifications = (
   notifications: (NotificationRow | EmailNotification)[],
   dnDb: Knex,
-  identityDb: Knex,
-  remoteConfig: RemoteConfig
+  identityDb: Knex
 ) => {
   return notifications
-    .map((notification) => mapNotification(notification, dnDb, identityDb, remoteConfig))
+    .map((notification) => mapNotification(notification, dnDb, identityDb))
     .filter(Boolean)
 }
 
 const mapNotification = (
   notification: NotificationRow | EmailNotification,
   dnDb: Knex,
-  identityDb: Knex,
-  remoteConfig: RemoteConfig
+  identityDb: Knex
 ) => {
   if (notification.type == 'follow') {
     const followNotification = notification as NotificationRow & {
@@ -187,7 +185,7 @@ const mapNotification = (
     const announcementNotification = notification as NotificationRow & {
       data: AnnouncementNotification
     }
-    return new Announcement(dnDb, identityDb, announcementNotification, remoteConfig)
+    return new Announcement(dnDb, identityDb, announcementNotification)
   } else if (notification.type == 'reaction') {
     const reactionNotification = notification as NotificationRow & {
       data: ReactionNotification

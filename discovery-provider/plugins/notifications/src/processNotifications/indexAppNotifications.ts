@@ -115,8 +115,7 @@ export class AppNotificationsProcessor {
     const mappedNotifications = mapNotifications(
       notifications,
       this.dnDB,
-      this.identityDB,
-      remoteConfig
+      this.identityDB
     )
     for (const notification of mappedNotifications) {
       const isEnabled = this.getIsPushNotificationEnabled(

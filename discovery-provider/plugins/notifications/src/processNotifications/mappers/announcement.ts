@@ -12,22 +12,19 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
-import { MappingFeatureName, MappingVariable, RemoteConfig } from '../../remoteConfig'
+import { MappingFeatureName, MappingVariable } from '../../remoteConfig'
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AnnouncementNotification
 }
 export class Announcement extends BaseNotification<AnnouncementNotificationRow> {
-  remoteConfig: RemoteConfig
 
   constructor(
     dnDB: Knex,
     identityDB: Knex,
-    notification: AnnouncementNotificationRow,
-    remoteConfig: RemoteConfig
+    notification: AnnouncementNotificationRow
   ) {
     super(dnDB, identityDB, notification)
-    this.remoteConfig = remoteConfig
   }
 
   async pushNotification() {
@@ -69,10 +66,6 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
 
       offset = res[res.length - 1].user_id + 1
       const validReceiverUserIds = res.map((user) => user.user_id)
-      if (!this.remoteConfig.getFeatureVariableEnabled(MappingFeatureName, MappingVariable.PushAnnouncement)) {
-        // dry run
-        continue
-      }
       for (const userId of validReceiverUserIds) {
           const userNotificationSettings = await buildUserNotificationSettings(
             this.identityDB,

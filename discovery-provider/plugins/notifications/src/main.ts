@@ -92,7 +92,7 @@ export class Processor {
     )
     while (this.isRunning) {
       // Comment out to prevent app notifications until complete
-      await sendAppNotifications(this.listener, this.appNotificationsProcessor, this.remoteConfig)
+      await sendAppNotifications(this.listener, this.appNotificationsProcessor)
       await sendDMNotifications(this.discoveryDB, this.identityDB)
 
       // NOTE: Temp to test DM email notifs in staging
