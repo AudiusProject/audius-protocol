@@ -91,6 +91,7 @@ def test_index_valid_user(app, mocker):
             "title": "track 1 update",
         },
         "QmUpdateUser1": {
+            "allow_ai_attribution": True,
             "is_verified": False,
             "is_deactivated": False,
             "name": "raymont updated",
@@ -285,6 +286,7 @@ def test_index_valid_user(app, mocker):
         assert user_1.name == "raymont updated"
         assert user_1.handle == "rayjacobsonupdated"
         assert user_1.artist_pick_track_id == TRACK_ID_OFFSET
+        assert user_1.allow_ai_attribution == True
 
         user_2: User = (
             session.query(User)

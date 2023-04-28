@@ -60,7 +60,6 @@ export class UserIndexer extends BaseIndexer<UserDoc> {
             tags: lowerKeyword,
           },
         },
-
         allow_ai_attribution: { type: 'boolean' },
       },
     },

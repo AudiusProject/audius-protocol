@@ -84,6 +84,7 @@ def test_index_valid_track(app, mocker):
             },
             "track_id": 77955,
             "stem_of": None,
+            "ai_attribution_user_id": 2
         },
         "QmCreateTrack2": {
             "owner_id": 1,
@@ -213,6 +214,7 @@ def test_index_valid_track(app, mocker):
             "track_id": 77955,
             "stem_of": None,
             "is_playlist_upload": False,
+            "ai_attribution_user_id": 2
         },
     }
 
@@ -307,6 +309,7 @@ def test_index_valid_track(app, mocker):
     entities = {
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "user-2", "wallet": "user2wallet", "allow_ai_attribution": True},
         ]
     }
     populate_mock_db(db, entities)
@@ -334,6 +337,7 @@ def test_index_valid_track(app, mocker):
             .first()
         )
         assert track_1.description == "updated description"
+        assert track_1.ai_attribution_user_id == 2
         assert track_1.is_delete == True
 
         track_2: Track = (
@@ -391,185 +395,202 @@ def test_index_valid_track(app, mocker):
         ), "Has both of the 'new-style' routes"
 
 
-# def test_index_invalid_tracks(app, mocker):
-#     "Tests invalid batch of playlists create/update/delete actions"
+def test_index_invalid_tracks(app, mocker):
+    "Tests invalid batch of playlists create/update/delete actions"
 
-#     # setup db and mocked txs
-#     with app.app_context():
-#         db = get_db()
-#         web3 = Web3()
-#         update_task = UpdateTask(None, web3, None)
+    # setup db and mocked txs
+    with app.app_context():
+        db = get_db()
+        web3 = Web3()
+        update_task = UpdateTask(None, web3, None)
+    test_metadata = {
+        "QmAIDisabled": {
+            "ai_attribution_user_id": 2
+        }
+    }
+    tx_receipts = {
+        # invalid create
+        "CreateTrackBelowOffset": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrackUserDoesNotExist": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrackUserDoesNotMatchSigner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrackAlreadyExists": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "CreateTrackAIDisabled": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "QmAIDisabled",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],        # invalid updates
+        "UpdateTrackInvalidSigner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "UpdateTrackInvalidOwner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 2,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "User2Wallet",
+                    }
+                )
+            },
+        ],
+        # invalid deletes
+        "DeleteTrackInvalidSigner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "InvalidWallet",
+                    }
+                )
+            },
+        ],
+        "DeleteTrackDoesNotExist": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteTrackInvalidOwner": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 2,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "User2Wallet",
+                    }
+                )
+            },
+        ],
+    }
 
-#     tx_receipts = {
-#         # invalid create
-#         "CreateTrackBelowOffset": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackUserDoesNotExist": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 2,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackUserDoesNotMatchSigner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "InvalidWallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "CreateTrackAlreadyExists": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Create",
-#                         "_metadata": "",
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         # invalid updates
-#         "UpdateTrackInvalidSigner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Update",
-#                         "_metadata": "",
-#                         "_signer": "InvalidWallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "UpdateTrackInvalidOwner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 2,
-#                         "_action": "Update",
-#                         "_metadata": "",
-#                         "_signer": "User2Wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         # invalid deletes
-#         "DeleteTrackInvalidSigner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Delete",
-#                         "_metadata": "",
-#                         "_signer": "InvalidWallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "DeleteTrackDoesNotExist": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 1,
-#                         "_action": "Update",
-#                         "_metadata": "",
-#                         "_signer": "user1wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#         "DeleteTrackInvalidOwner": [
-#             {
-#                 "args": AttributeDict(
-#                     {
-#                         "_entityId": TRACK_ID_OFFSET + 1,
-#                         "_entityType": "Track",
-#                         "_userId": 2,
-#                         "_action": "Update",
-#                         "_metadata": "",
-#                         "_signer": "User2Wallet",
-#                     }
-#                 )
-#             },
-#         ],
-#     }
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
 
-#     entity_manager_txs = [
-#         AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
-#         for tx_receipt in tx_receipts
-#     ]
+    def get_events_side_effect(_, tx_receipt):
+        return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
 
-#     def get_events_side_effect(_, tx_receipt):
-#         return tx_receipts[tx_receipt.transactionHash.decode("utf-8")]
+    mocker.patch(
+        "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
+        side_effect=get_events_side_effect,
+        autospec=True,
+    )
 
-#     mocker.patch(
-#         "src.tasks.entity_manager.entity_manager.get_entity_manager_events_tx",
-#         side_effect=get_events_side_effect,
-#         autospec=True,
-#     )
+    entities = {
+        "users": [
+            {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
+            {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
+        ],
+        "tracks": [
+            {"track_id": TRACK_ID_OFFSET, "owner_id": 1},
+        ],
+    }
+    populate_mock_db(db, entities)
 
-#     entities = {
-#         "users": [
-#             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-#             {"user_id": 2, "handle": "user-1", "wallet": "User2Wallet"},
-#         ],
-#         "tracks": [
-#             {"track_id": TRACK_ID_OFFSET, "owner_id": 1},
-#         ],
-#     }
-#     populate_mock_db(db, entities)
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1585336422,
+            block_hash=0,
+            metadata=test_metadata,
+        )
 
-#     with db.scoped_session() as session:
-#         # index transactions
-#         entity_manager_update(
-#             None,
-#             update_task,
-#             session,
-#             entity_manager_txs,
-#             block_number=0,
-#             block_timestamp=1585336422,
-#             block_hash=0,
-#             metadata={},
-#         )
-
-#         # validate db records
-#         all_tracks: List[Track] = session.query(Track).all()
-#         assert len(all_tracks) == 1  # no new playlists indexed
+        # validate db records
+        all_tracks: List[Track] = session.query(Track).all()
+        assert len(all_tracks) == 1  # no new playlists indexed

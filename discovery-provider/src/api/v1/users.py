@@ -1864,5 +1864,3 @@ class GetUnclaimedUserId(Resource):
     def get(self):
         unclaimed_id = get_unclaimed_id("user")
         return success_response(unclaimed_id)
-
-
