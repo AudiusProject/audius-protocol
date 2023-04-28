@@ -4,10 +4,11 @@ import time
 from collections import defaultdict
 from typing import Any, Dict, List, Set, Tuple
 
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
+from src.models.delegates.app_delegate import AppDelegate
 from src.models.notifications.notification import PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -18,6 +19,7 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
+from src.tasks.entity_manager.app_delegate import create_app_delegate
 from src.tasks.entity_manager.notification import (
     create_notification,
     view_notification,
@@ -216,6 +218,11 @@ def entity_manager_update(
                         and ENABLE_DEVELOPMENT_FEATURES
                     ):
                         view_playlist(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.APP_DELEGATE
+                    ):
+                        create_app_delegate(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -294,6 +301,15 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             entity_type = helpers.get_tx_arg(event, "_entityType")
             action = helpers.get_tx_arg(event, "_action")
             user_id = helpers.get_tx_arg(event, "_userId")
+            cid = helpers.get_tx_arg(event, "_metadata")
+            json_metadata = None
+            # Check if metadata blob was passed directly and use if so.
+            try:
+                json_metadata = json.loads(cid)
+                cid = json_metadata["cid"]
+            except Exception:
+                pass
+
             if entity_type in entity_types_to_fetch:
                 entities_to_fetch[entity_type].add(entity_id)
             if (
@@ -302,7 +318,23 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             ):
                 entities_to_fetch[EntityType.PLAYLIST_SEEN].add((user_id, entity_id))
                 entities_to_fetch[EntityType.PLAYLIST].add(entity_id)
-            entities_to_fetch[EntityType.USER].add(user_id)
+            if entity_type == EntityType.APP_DELEGATE:
+                if json_metadata and isinstance(json_metadata, dict):
+                    raw_address = json_metadata.get("address", None)
+                    if raw_address:
+                        entities_to_fetch[EntityType.APP_DELEGATE].add(
+                            raw_address.lower()
+                        )
+                    else:
+                        logger.error(
+                            "tasks | entity_manager.py | Missing address in metadata required for add delegate tx"
+                        )
+                else:
+                    logger.error(
+                        "tasks | entity_manager.py | Missing metadata required for add delegate tx"
+                    )
+            if user_id:
+                entities_to_fetch[EntityType.USER].add(user_id)
             action = helpers.get_tx_arg(event, "_action")
 
             # Query social operations as needed
@@ -314,14 +346,6 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
 
             # Add playlist track ids in entities to fetch
             # to prevent playlists from including premium tracks
-            cid = helpers.get_tx_arg(event, "_metadata")
-            # Check if metadata blob was passed directly and use if so.
-            try:
-                data = json.loads(cid)
-                cid = data["cid"]
-            except Exception:
-                pass
-
             if cid in metadata:
                 tracks = metadata[cid].get("playlist_contents", {}).get("track_ids", [])
                 for track in tracks:
@@ -490,6 +514,20 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for playlist_seen in playlist_seens
         }
 
+    # DELEGATES
+    if entities_to_fetch[EntityType.APP_DELEGATE]:
+        delegates: List[AppDelegate] = (
+            session.query(AppDelegate)
+            .filter(
+                func.lower(AppDelegate.address).in_(
+                    entities_to_fetch[EntityType.APP_DELEGATE]
+                )
+            )
+            .all()
+        )
+        existing_entities[EntityType.APP_DELEGATE] = {
+            delegate.address.lower(): delegate for delegate in delegates
+        }
     return existing_entities
 
 

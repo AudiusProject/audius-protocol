@@ -1,5 +1,6 @@
 from datetime import datetime
 
+from src.models.delegates.app_delegate import AppDelegate
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
@@ -91,7 +92,7 @@ def populate_mock_db_blocks(db, min, max):
 
 def populate_mock_db(db, entities, block_offset=None):
     """
-    Helper function to populate the mock DB with tracks, users, plays, and follows
+    Helper function to populate the mock DB with tracks, users, plays, app delegates, and follows
 
     Args:
         db - sqlalchemy db session
@@ -109,6 +110,7 @@ def populate_mock_db(db, entities, block_offset=None):
         tracks = entities.get("tracks", [])
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])
+        app_delegates = entities.get("app_delegates", [])
         follows = entities.get("follows", [])
         subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
@@ -145,6 +147,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(tracks),
             len(playlists),
             len(users),
+            len(app_delegates),
             len(follows),
             len(saves),
             len(reposts),
@@ -271,6 +274,18 @@ def populate_mock_db(db, entities, block_offset=None):
             session.add(user)
             session.add(user_bank)
 
+        for i, delegate_meta in enumerate(app_delegates):
+            delegate = AppDelegate(
+                user_id=delegate_meta.get("user_id", i),
+                name=delegate_meta.get("name", str(i)),
+                address=delegate_meta.get("address", str(i)),
+                is_personal_access=delegate_meta.get("is_personal_access", False),
+                blockhash=hex(i + block_offset),
+                blocknumber=(i + block_offset),
+                txhash=delegate_meta.get("txhash", str(i + block_offset)),
+                created_at=delegate_meta.get("created_at", datetime.now()),
+            )
+            session.add(delegate)
         for i, follow_meta in enumerate(follows):
             follow = Follow(
                 blockhash=hex(i + block_offset),

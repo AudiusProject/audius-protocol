@@ -72,7 +72,6 @@ begin;
     add column if not exists is_storage_v2 boolean not null default false;
 commit;
 
-
 -- 4/18/23: add is_available index
 begin;
     create index if not exists users_is_available_false_idx on users (is_available) where is_available = false;
@@ -82,4 +81,19 @@ commit;
 begin;
     alter table tracks
     add column if not exists duration integer default 0;
+commit;  
+
+-- 4/26/23: create app delegates table
+begin;
+  create table public.app_delegates (
+    address varchar primary key not null,
+    blockhash varchar references blocks(blockhash),
+    blocknumber integer references blocks(number),
+    user_id integer,
+    name varchar not null,
+    is_personal_access boolean not null default false,
+    is_revoked boolean not null default false,
+    created_at timestamp not null,
+    txhash varchar not null
+  );
 commit;
