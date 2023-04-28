@@ -70,6 +70,8 @@ def create_notification(params: ManageEntityParameters):
     validate_notification_tx(params)
     # Get data from cid blob
     data = json.loads(params.metadata_cid)
+    # Get all user ids
+    user_ids: list[int] = []  # get_notification_user_ids(params, data["userGroup"])
     notification = Notification(
         specifier="",
         group_id=f"announcement:blocknumber:{params.block_number}",
@@ -77,7 +79,7 @@ def create_notification(params: ManageEntityParameters):
         blocknumber=params.block_number,
         timestamp=params.block_datetime,
         data=data,
-        user_ids=[],
+        user_ids=user_ids,
     )
     key = params.block_datetime
     params.add_notification_record(key, notification)
