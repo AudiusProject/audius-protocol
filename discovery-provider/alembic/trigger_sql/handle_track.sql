@@ -9,46 +9,47 @@ begin
   insert into aggregate_track (track_id) values (new.track_id) on conflict do nothing;
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
+  -- typical "track edits" will mark old row is_current = false and insert a new row
+  -- so find the old_row here:
+  select * into old_row from tracks where track_id = new.track_id and is_current = false order by blocknumber desc limit 1;
 
-  -- increment or decrement?
+  -- but there are some places where we do an "in place" update (like update is_available to false)
   if TG_OP = 'UPDATE' then
     old_row := OLD;
+  end if;
 
-    if (old_row.is_delete = false and new.is_delete = true) or (old_row.is_available = true and new.is_available = false) then
+  -- update aggregate_user.track_count
+  if old_row is not null then
+    -- public track was deleted: decrement
+    if new.is_unlisted = false and ((old_row.is_delete = false and new.is_delete = true) or (old_row.is_available = true and new.is_available = false)) then
       delta := -1;
     end if;
   else
-    if new.is_delete or new.is_available = false or new.stem_of is not null then
-      delta := -1;
-    else
+    -- new public track added: increment
+    if TG_OP = 'INSERT' AND new.is_delete = false AND new.is_available = true AND new.is_unlisted = false AND new.stem_of is null then
       delta := 1;
-    end if;
-
-    -- special case when unlisted
-    if new.is_unlisted then
-      delta := 0;
     end if;
   end if;
 
-  update aggregate_user 
+  update aggregate_user
     set track_count = track_count + delta
   where user_id = new.owner_id
   ;
 
   -- If new track, create notification
   begin
-    if new.created_at = new.updated_at AND 
+    if new.created_at = new.updated_at AND
     TG_OP = 'INSERT' AND
-    new.is_unlisted = FALSE AND 
-    new.is_available = True AND 
-    new.is_delete = FALSE AND 
+    new.is_unlisted = FALSE AND
+    new.is_available = True AND
+    new.is_delete = FALSE AND
     new.is_playlist_upload = FALSE AND
     new.stem_of IS NULL THEN
       select array(
-        select subscriber_id 
-          from subscriptions 
-          where is_current and 
-          not is_delete and 
+        select subscriber_id
+          from subscriptions
+          where is_current and
+          not is_delete and
           user_id=new.owner_id
       ) into subscriber_user_ids;
 
@@ -75,7 +76,7 @@ begin
   -- If remix, create notification
   begin
     if new.remix_of is not null AND
-    new.created_at = new.updated_at AND 
+    new.created_at = new.updated_at AND
     TG_OP = 'INSERT' AND
     new.is_unlisted = FALSE AND
     new.is_available = true AND
