@@ -12,7 +12,6 @@ import {
   buildUserNotificationSettings,
   Device
 } from './userNotificationSettings'
-import { MappingFeatureName, MappingVariable } from '../../remoteConfig'
 import { UserNotificationSettings } from './userNotificationSettings'
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
