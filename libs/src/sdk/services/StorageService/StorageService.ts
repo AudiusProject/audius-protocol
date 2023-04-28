@@ -94,7 +94,7 @@ export class StorageService {
     formData.append('files', isNodeFile(file) ? file.buffer : file, file.name)
     const response = await this._makeRequest({
       method: 'post',
-      url: '/mediorum/uploads',
+      url: '/uploads',
       data: formData,
       headers: {
         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
@@ -146,7 +146,7 @@ export class StorageService {
   async getProcessingStatus(id: string) {
     const { data } = await this._makeRequest({
       method: 'get',
-      url: `/mediorum/uploads/${id}`
+      url: `/uploads/${id}`
     })
     return data
   }

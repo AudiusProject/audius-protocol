@@ -43,11 +43,7 @@ async function addClockColumn (queryInterface, Sequelize, transaction) {
     unique: false,
     allowNull: true
   }, { transaction })
-  await queryInterface.addColumn('Files', 'clock', {
-    type: Sequelize.INTEGER,
-    unique: false,
-    allowNull: true
-  }, { transaction })
+  await queryInterface.sequelize.query(`ALTER TABLE "Files" ADD COLUMN IF NOT EXISTS "clock" INTEGER`, { transaction })
 }
 
 async function addCompositeUniqueConstraints (queryInterface, Sequelize, transaction) {

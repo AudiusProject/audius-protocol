@@ -148,11 +148,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// mostly don't add CORS middleware here as it will break reverse proxy at the end
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Logger())
-	echoServer.Pre(middleware.Rewrite(map[string]string{
-		"/mediorum":   "/",
-		"/mediorum/":  "/",
-		"/mediorum/*": "/$1",
-	}))
 
 	ss := &MediorumServer{
 		echo:      echoServer,
@@ -170,8 +165,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// routes holds all of our handled routes
 	// and related middleware like CORS
 	routes := echoServer.Group(apiBasePath)
-
-	// Middleware
 	routes.Use(middleware.CORS())
 
 	// public: uis
@@ -182,6 +175,10 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/uploads", ss.getUploads)
 	routes.GET("/uploads/:id", ss.getUpload)
 	routes.POST("/uploads", ss.postUpload)
+	// Workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
+	routes.OPTIONS("/uploads", func(c echo.Context) error {
+		return c.NoContent(http.StatusNoContent)
+	})
 
 	routes.GET("/ipfs/:cid", ss.getBlob)
 	routes.GET("/content/:cid", ss.getBlob)

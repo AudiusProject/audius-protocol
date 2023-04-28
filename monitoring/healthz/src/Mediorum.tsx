@@ -31,13 +31,13 @@ export function Mediorum() {
 
 export function MediorumRow({ sp }: { sp: SP }) {
   const { data: deets } = useQuery(
-    [sp.endpoint + '/mediorum/internal/health'],
+    [sp.endpoint + '/internal/health'],
     fetchUrl
   )
   return (
     <tr>
       <td>
-        <a href={sp.endpoint + '/mediorum/internal/health'} target="_blank">
+        <a href={sp.endpoint + '/internal/health'} target="_blank">
           {sp.endpoint}
         </a>
       </td>
