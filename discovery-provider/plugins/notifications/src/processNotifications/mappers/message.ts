@@ -91,9 +91,10 @@ export class Message extends BaseNotification<DMNotification> {
     }
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.shouldSendEmail({
+      userNotificationSettings.shouldSendEmailAtFrequency({
         initiatorUserId: this.senderUserId,
-        receiverUserId: this.receiverUserId
+        receiverUserId: this.receiverUserId,
+        frequency: 'live'
       })
     ) {
       // TODO: send out email

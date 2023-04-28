@@ -122,11 +122,9 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(
-        notificationReceiverUserId
-      ) === 'live' &&
-      userNotificationSettings.shouldSendEmail({
-        receiverUserId: notificationReceiverUserId
+      userNotificationSettings.shouldSendEmailAtFrequency({
+        receiverUserId: notificationReceiverUserId,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {
@@ -135,8 +133,9 @@ export class TrendingUnderground extends BaseNotification<TrendingUndergroundNot
       }
       await sendNotificationEmail({
         userId: notificationReceiverUserId,
-        email:
-          userNotificationSettings.email?.[notificationReceiverUserId].email,
+        email: userNotificationSettings.getUserEmail(
+          notificationReceiverUserId
+        ),
         frequency: 'live',
         notifications: [notification],
         dnDb: this.dnDB,

@@ -19,6 +19,7 @@ type SendNotificationEmailProps = {
   notifications: EmailNotification[]
   dnDb: Knex
   identityDb: Knex
+  sendAt?: number // unix timestamp in seconds
 }
 
 // Master function to render and send email for a given userId
@@ -28,7 +29,8 @@ export const sendNotificationEmail = async ({
   frequency,
   notifications,
   dnDb,
-  identityDb
+  identityDb,
+  sendAt
 }: SendNotificationEmailProps) => {
   if (email === undefined) {
     return
@@ -59,12 +61,18 @@ export const sendNotificationEmail = async ({
     const emailParams: MailDataRequired = {
       from: 'Audius <notify@audius.co>',
       to: `${email}`,
-      bcc: 'audius-email-test@audius.co',
+      bcc:
+        // TODO(skiamilev) - remove this once behavior confirmed working
+        'sabrina@audius.co',
       html: notifHtml,
       subject: emailSubject,
       asm: {
         groupId: 19141 // id of unsubscribe group at https://mc.sendgrid.com/unsubscribe-groups
       }
+    }
+
+    if (sendAt) {
+      emailParams.sendAt = sendAt
     }
 
     // Send email
