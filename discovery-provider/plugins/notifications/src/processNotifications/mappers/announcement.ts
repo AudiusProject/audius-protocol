@@ -28,7 +28,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     super(dnDB, identityDB, notification)
   }
 
-  async pushNotification() {
+  async pushNotification({
+    isLiveEmailEnabled
+  }: {
+    isLiveEmailEnabled: boolean
+  }) {
     const res_count = await this.dnDB('users')
       .count('user_id')
       .where('is_current', true)
@@ -140,8 +144,23 @@ const broadcastPushNotificationAnnouncements = async (notif: Announcement, userI
 
 const broadcastEmailAnnouncements = async (notif: Announcement, userId: number, userNotificationSettings: UserNotificationSettings) => {
   if (
-    userNotificationSettings.shouldSendEmail({ receiverUserId: userId })
+    //isLiveEmailEnabled &&
+    userNotificationSettings.shouldSendEmailAtFrequency({
+      receiverUserId: userId,
+      frequency: 'live'
+    })
   ) {
-    // TODO: Send out email
+    const notification: AppEmailNotification = {
+      receiver_user_id: userId,
+      ...notif.notification
+    }
+    await sendNotificationEmail({
+      userId: userId,
+      email: userNotificationSettings.getUserEmail(userId),
+      frequency: 'live',
+      notifications: [notification],
+      dnDb: notif.dnDB,
+      identityDb: notif.identityDB
+    })
   }
 }

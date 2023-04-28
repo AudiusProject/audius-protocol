@@ -1,5 +1,6 @@
 import { Knex } from 'knex'
 import { logger } from '../../logger'
+import moment from 'moment'
 
 export type DeviceType = 'ios' | 'android'
 
@@ -58,6 +59,7 @@ export class UserNotificationSettings {
   email: object
   userIsAbusive: object
   userIsEmailDeliverable: object
+  userTimezone: object
 
   constructor(identityDB: Knex) {
     this.identityDB = identityDB
@@ -66,6 +68,7 @@ export class UserNotificationSettings {
     this.email = {}
     this.userIsAbusive = {}
     this.userIsEmailDeliverable = {}
+    this.userTimezone = {}
   }
 
   /**
@@ -91,6 +94,7 @@ export class UserNotificationSettings {
     this.email = userEmailSettings
     this.userIsAbusive = userAbusiveSettings.usersAbuseMap
     this.userIsEmailDeliverable = userAbusiveSettings.usersIsEmailDeliverableMap
+    this.userTimezone = userAbusiveSettings.usersTimezoneMap
   }
 
   isNotificationTypeEnabled(userId: number, feature: string) {
@@ -146,17 +150,19 @@ export class UserNotificationSettings {
   getUserEmailFrequency(userId: number) {
     const emailSettings = this.email?.[userId]
     if (emailSettings === undefined) {
-      return "live"
+      return 'live'
     }
     return emailSettings.frequency
   }
 
-  shouldSendEmail({
+  shouldSendEmailAtFrequency({
     initiatorUserId,
-    receiverUserId
+    receiverUserId,
+    frequency
   }: {
     initiatorUserId?: number
     receiverUserId: number
+    frequency: string
   }) {
     const { userIsAbusive } = this
     const isInitiatorAbusive = initiatorUserId
@@ -166,7 +172,7 @@ export class UserNotificationSettings {
       this.userIsEmailDeliverable[receiverUserId] &&
       !isInitiatorAbusive &&
       !userIsAbusive[receiverUserId] &&
-      this.email?.[receiverUserId] !== 'off'
+      this.email?.[receiverUserId].frequency === frequency
     )
   }
 
@@ -176,18 +182,21 @@ export class UserNotificationSettings {
       isBlockedFromNotifications: boolean
       isBlockedFromRelay: boolean
       isEmailDeliverable: boolean
+      timezone: string
     }> = await this.identityDB
       .select(
         'Users.blockchainUserId',
         'Users.isBlockedFromNotifications',
         'Users.isBlockedFromRelay',
-        'Users.isEmailDeliverable'
+        'Users.isEmailDeliverable',
+        'Users.timezone'
       )
       .from('Users')
       .whereIn('Users.blockchainUserId', userIds)
 
     const usersAbuseMap = {}
     const usersIsEmailDeliverableMap = {}
+    const usersTimezoneMap = {}
     users.forEach((user) => {
       usersAbuseMap[user.blockchainUserId] =
         user.isBlockedFromRelay || user.isBlockedFromNotifications
@@ -196,9 +205,14 @@ export class UserNotificationSettings {
       usersIsEmailDeliverableMap[user.blockchainUserId] =
         user.isEmailDeliverable
     })
+    users.forEach((user) => {
+      usersTimezoneMap[user.blockchainUserId] = user.timezone
+    })
+
     return {
       usersAbuseMap,
-      usersIsEmailDeliverableMap
+      usersIsEmailDeliverableMap,
+      usersTimezoneMap
     }
   }
 
@@ -428,12 +442,21 @@ export class UserNotificationSettings {
     const browsers = settings[userId].browser
 
     const isWebPush = (browser: Browser): boolean => {
-      return (browser as WebPush).p256dhKey !== undefined;
+      return (browser as WebPush).p256dhKey !== undefined
     }
 
     // if pass then web push, skip custom safari entries
     // safe cast when using filter
     return browsers.filter(isWebPush) as WebPush[]
+  }
+
+  getUserSendAt(userId: number) {
+    const timezone = this.userTimezone[userId]
+    // note if timezone is null it defaults to UTC timezone
+    const sendAt = moment.tz(timezone).add(1, 'day').startOf('day')
+    // sendgrid's send api expects a send_at value in
+    // unix timestamp in seconds
+    return Math.floor(sendAt.toDate().getTime() / 1000)
   }
 }
 
