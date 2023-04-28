@@ -142,6 +142,9 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	echoServer.HideBanner = true
 	echoServer.Debug = true
 
+	// CORS should only be in the `routes` group, but we need it here because /mediorum is rewritten to /
+	echoServer.Use(middleware.CORS())
+
 	// echoServer is the root server
 	// it mostly exists to serve the catch all reverse proxy rule at the end
 	// most routes and middleware should be added to the `routes` group
@@ -170,9 +173,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// routes holds all of our handled routes
 	// and related middleware like CORS
 	routes := echoServer.Group(apiBasePath)
-
-	// Middleware
-	routes.Use(middleware.CORS())
 
 	// public: uis
 	routes.GET("", ss.serveUploadUI)
