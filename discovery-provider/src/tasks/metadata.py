@@ -94,6 +94,7 @@ track_metadata_format: TrackMetadata = {
     "is_premium": False,
     "premium_conditions": None,
     "is_playlist_upload": False,
+    "ai_attribution_user_id": None,
 }
 
 # Required format for user metadata retrieved from the content system
@@ -114,6 +115,7 @@ user_metadata_format = {
     "is_storage_v2": False,
     "is_deactivated": None,
     "artist_pick_track_id": None,
+    "allow_ai_attribution": False,
 }
 
 
