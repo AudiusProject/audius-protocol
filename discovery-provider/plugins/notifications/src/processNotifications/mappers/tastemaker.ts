@@ -129,10 +129,9 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
     }
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
-        'live' &&
-      userNotificationSettings.shouldSendEmail({
-        receiverUserId: this.receiverUserId
+      userNotificationSettings.shouldSendEmailAtFrequency({
+        receiverUserId: this.receiverUserId,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {

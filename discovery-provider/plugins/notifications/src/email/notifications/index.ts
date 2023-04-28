@@ -13,7 +13,6 @@ import {
   EmailFrequency,
   buildUserNotificationSettings
 } from '../../processNotifications/mappers/userNotificationSettings'
-import { identity } from 'lodash'
 
 // blockchainUserId => email
 type EmailUsers = {
@@ -306,14 +305,21 @@ export async function processEmailNotifications(
     const startOffset = now.clone().subtract(days, 'days')
     const users = await getUsersCanNotify(identityDb, frequency, startOffset)
 
+    if (Object.keys(users).length == 0) {
+      logger.info(`processEmailNotifications | No users to process. Exiting...`)
+      return
+    }
+
+    logger.info(
+      `processEmailNotifications | Beginning processing ${
+        Object.keys(users).length
+      } users at ${frequency} frequency`
+    )
+
     const userNotificationSettings = await buildUserNotificationSettings(
       identityDb,
       Object.keys(users).map(Number)
     )
-
-    if (Object.keys(users).length == 0) {
-      return
-    }
 
     const notifications = await getNotifications(
       dnDb,
@@ -322,11 +328,11 @@ export async function processEmailNotifications(
       Object.keys(users)
     )
     const groupedNotifications = groupNotifications(notifications, users)
-    // TODO Validate their timezones to send at the right time!
 
     const currentUtcTime = moment.utc()
     const chuckSize = 20
     const results = []
+    let numEmailsSent = 0
     for (
       let chunk = 0;
       chunk * chuckSize < groupedNotifications.length;
@@ -340,8 +346,9 @@ export async function processEmailNotifications(
           .map(async (userNotifications: UserEmailNotification) => {
             try {
               if (
-                !userNotificationSettings.shouldSendEmail({
-                  receiverUserId: userNotifications.user.blockchainUserId
+                !userNotificationSettings.shouldSendEmailAtFrequency({
+                  receiverUserId: userNotifications.user.blockchainUserId,
+                  frequency
                 })
               ) {
                 return {
@@ -352,13 +359,18 @@ export async function processEmailNotifications(
 
               const user = userNotifications.user
               const notifications = userNotifications.notifications
+              // Set the timezone
+              const sendAt = userNotificationSettings.getUserSendAt(
+                user.blockchainUserId
+              )
               const sent = await sendNotificationEmail({
                 userId: user.blockchainUserId,
                 email: user.email,
-                frequency: frequency,
-                notifications: notifications,
-                dnDb: dnDb,
-                identityDb: identityDb
+                frequency,
+                notifications,
+                dnDb,
+                identityDb,
+                sendAt: frequency !== 'live' ? sendAt : null
               })
               if (!sent) {
                 // sent could be undefined, in which case there was no email sending failure, rather the user had 0 email notifications to be sent
@@ -373,6 +385,7 @@ export async function processEmailNotifications(
                   error: 'No notifications to send in email'
                 }
               }
+              numEmailsSent++
               await identityDb
                 .insert([
                   {
@@ -398,6 +411,12 @@ export async function processEmailNotifications(
         job: processEmailNotifications
       },
       `processEmailNotifications | finished looping over users to send notification emails`
+    )
+    logger.info(
+      {
+        job: processEmailNotifications
+      },
+      `processEmailNotifications | sent scheduled emails to ${numEmailsSent} users at ${frequency}`
     )
   } catch (e) {
     logger.error(
