@@ -219,6 +219,7 @@ def build(
             f"--project-name={protocol_dir.name}",
             "--profile=*",
             "build",
+            "--no-cache",
             *args,
             *services,
         ],
