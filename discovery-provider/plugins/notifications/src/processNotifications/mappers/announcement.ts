@@ -13,6 +13,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { MappingFeatureName, MappingVariable } from '../../remoteConfig'
+import { UserNotificationSettings } from './userNotificationSettings'
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AnnouncementNotification
@@ -45,71 +46,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     // adds extra page to total count so we get the last page of trailing users
     while (offset < (count + page_count)) {
       // query next page
-      const res: Array<{
-        user_id: number
-        name: string
-        is_deactivated: boolean
-      }> = await this.dnDB
-        .select('user_id', 'name', 'is_deactivated')
-        .from<UserRow>('users')
-        // query by last id seen
-        .where('user_id', '>', offset)
-        .andWhere('is_current', true)
-        .andWhere('is_deactivated', false)
-        .orWhere((inner) =>
-          inner.where('user_id', '=', offset).andWhere('is_current', true)
-        )
-        .andWhere('is_deactivated', false)
-        // order by established index, this keeps perf constant
-        .orderBy(['user_id', 'is_current', 'txhash'])
-        .limit(page_count)
+      const res = await fetchUsersPage(this.dnDB, offset, page_count)
 
       offset = res[res.length - 1].user_id + 1
       const validReceiverUserIds = res.map((user) => user.user_id)
-      for (const userId of validReceiverUserIds) {
-          const userNotificationSettings = await buildUserNotificationSettings(
-            this.identityDB,
-            [userId]
-          )
-          // If the user has devices to the notification to, proceed
-          if (
-            userNotificationSettings.shouldSendPushNotification({
-              receiverUserId: userId
-            })
-          ) {
-            const devices: Device[] = userNotificationSettings.getDevices(userId)
-            // If the user's settings for the follow notification is set to true, proceed
-
-            await Promise.all(
-              devices.map((device) => {
-                // this may get rate limited by AWS
-                return sendPushNotification(
-                  {
-                    type: device.type,
-                    badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,
-                    targetARN: device.awsARN
-                  },
-                  {
-                    title: this.notification.data.title,
-                    body: this.notification.data.short_description,
-                    data: {
-                      id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
-                        this.notification.group_id
-                      }`,
-                      type: 'Announcement'
-                    }
-                  }
-                )
-              })
-            )
-            await this.incrementBadgeCount(userId)
-          }
-          if (
-            userNotificationSettings.shouldSendEmail({ receiverUserId: userId })
-          ) {
-            // TODO: Send out email
-          }
-      }
+      await broadcastAnnouncement(this, this.identityDB, validReceiverUserIds)
     }
     const total_elapsed = new Date().getTime() - total_start
     console.log(`announcement complete in ${total_elapsed} ms`)
@@ -125,5 +66,82 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       title: this.notification.data.title,
       text: this.notification.data.short_description
     }
+  }
+}
+
+/**
+ * fetches user rows based on pagination parameters, control over which page is elevated to
+ * the caller
+ * @param dnDb discovery node db
+ * @param offset the start of this "window" of user ids, user ids aren't created 
+ * in order anymore but they're still numeric and unique and thus can be paginated through
+ * in this way
+ * @param page_count how many records are returned in (default) ascending order after the offset
+ * @returns a minified version of UserRow for usage in announcements
+ */
+export const fetchUsersPage = async (dnDb: Knex, offset: number, page_count: number): Promise<{ user_id: number; name: string; is_deactivated: boolean }[]> =>
+  await dnDb
+        .select('user_id', 'name', 'is_deactivated')
+        .from<UserRow>('users')
+        // query by last id seen
+        .where('user_id', '>', offset)
+        .andWhere('is_current', true)
+        .andWhere('is_deactivated', false)
+        .orWhere((inner) =>
+          inner.where('user_id', '=', offset).andWhere('is_current', true)
+        )
+        .andWhere('is_deactivated', false)
+        // order by established index, this keeps perf constant
+        .orderBy(['user_id', 'is_current', 'txhash'])
+        .limit(page_count)
+
+const broadcastAnnouncement = async (notif: Announcement, idDb: Knex, userIds: number[]) => {
+  const userNotificationSettings = await buildUserNotificationSettings(idDb, userIds)
+  for (const userId of userIds) {
+    await broadcastPushNotificationAnnouncements(notif, userId, userNotificationSettings)
+    await broadcastEmailAnnouncements(notif, userId, userNotificationSettings)
+  }
+}
+
+const broadcastPushNotificationAnnouncements = async (notif: Announcement, userId: number, userNotificationSettings: UserNotificationSettings) => {
+  if (
+    userNotificationSettings.shouldSendPushNotification({
+      receiverUserId: userId
+    })
+  ) {
+    const devices: Device[] = userNotificationSettings.getDevices(userId)
+    // If the user's settings for the follow notification is set to true, proceed
+
+    await Promise.all(
+      devices.map((device) => {
+        // this may get rate limited by AWS
+        return sendPushNotification(
+          {
+            type: device.type,
+            badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,
+            targetARN: device.awsARN
+          },
+          {
+            title: notif.notification.data.title,
+            body: notif.notification.data.short_description,
+            data: {
+              id: `timestamp:${notif.getNotificationTimestamp()}:group_id:${
+                notif.notification.group_id
+              }`,
+              type: 'Announcement'
+            }
+          }
+        )
+      })
+    )
+    await notif.incrementBadgeCount(userId)
+  }
+}
+
+const broadcastEmailAnnouncements = async (notif: Announcement, userId: number, userNotificationSettings: UserNotificationSettings) => {
+  if (
+    userNotificationSettings.shouldSendEmail({ receiverUserId: userId })
+  ) {
+    // TODO: Send out email
   }
 }
