@@ -77,3 +77,28 @@ commit;
 begin;
     create index if not exists users_is_available_false_idx on users (is_available) where is_available = false;
 commit;  
+
+-- 4/26/23: create app delegates table
+begin;
+  create table public.app_delegates (
+    address varchar primary key not null,
+    blockhash varchar references blocks(blockhash),
+    blocknumber integer references blocks(number),
+    user_id integer,
+    name varchar not null,
+    is_personal_access boolean not null default false,
+    is_revoked boolean not null default false,
+    created_at timestamp not null,
+    txhash varchar not null
+  );
+commit;
+
+
+-- 4/26/23: add AI columns
+begin;
+    alter table tracks
+    add column if not exists ai_attribution_user_id integer;
+
+    alter table users
+    add column if not exists allow_ai_attribution boolean not null default false;
+commit;

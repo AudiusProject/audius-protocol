@@ -209,6 +209,8 @@ def populate_track_record_metadata(track_record, track_metadata, handle):
     track_record.route_id = helpers.create_track_route_id(
         track_metadata["title"], handle
     )
+
+    track_record.ai_attribution_user_id = track_metadata.get("ai_attribution_user_id")
     return track_record
 
 
@@ -238,6 +240,14 @@ def validate_track_tx(params: ManageEntityParameters):
         existing_track: Track = params.existing_records[EntityType.TRACK][track_id]
         if existing_track.owner_id != params.user_id:
             raise Exception(f"Existing track {track_id} does not match user")
+
+    if params.action != Action.DELETE:
+        track_metadata = params.metadata[params.metadata_cid]
+        ai_attribution_user_id = track_metadata.get('ai_attribution_user_id') 
+        if ai_attribution_user_id:
+            ai_attribution_user = params.existing_records[EntityType.USER][ai_attribution_user_id]
+            if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
+                raise Exception(f"Cannot AI attribute user {ai_attribution_user}")
 
     return True
 

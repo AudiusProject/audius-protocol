@@ -460,6 +460,71 @@ class HandleTrackList(HandleFullTrackList):
         return super()._get(handle, authed_user_id)
 
 
+USER_AI_ATTRIBUTED_TRACKS = USER_HANDLE_TRACKS + '/ai_attributed'
+
+
+@full_ns.route(USER_AI_ATTRIBUTED_TRACKS)
+class HandleFullAITrackList(Resource):
+    @record_metrics
+    @cache(ttl_sec=5)
+    def _get(self, handle, authed_user_id=None):
+        args = user_tracks_route_parser.parse_args()
+
+        current_user_id = get_current_user_id(args)
+
+        sort = args.get("sort", None)
+        offset = format_offset(args)
+        limit = format_limit(args)
+        filter_tracks = args.get("filter_tracks", "all")
+
+        args = {
+            "handle": handle,
+            "current_user_id": current_user_id,
+            "authed_user_id": authed_user_id,
+            "with_users": True,
+            "filter_deleted": True,
+            "sort": sort,
+            "limit": limit,
+            "offset": offset,
+            "filter_tracks": filter_tracks,
+            "ai_attributed_only": True,
+        }
+        tracks = get_tracks(args)
+        tracks = list(map(extend_track, tracks))
+        return success_response(tracks)
+
+    @auth_middleware()
+    @full_ns.doc(
+        id="""Get AI Attributed Tracks by User Handle""",
+        description="""Gets the AI generated tracks attributed to a user using the user's handle""",
+        params={
+            "handle": "A User handle",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @full_ns.expect(user_tracks_route_parser)
+    @full_ns.marshal_with(full_tracks_response)
+    def get(self, handle, authed_user_id=None):
+        return self._get(handle, authed_user_id)
+
+
+@ns.route(USER_AI_ATTRIBUTED_TRACKS)
+class HandleAITrackList(HandleFullAITrackList):
+    @auth_middleware()
+    @ns.doc(
+        id="""Get AI Attributed Tracks by User Handle""",
+        description="""Gets the AI generated tracks attributed to a user using the user's handle""",
+        params={
+            "handle": "A User handle",
+        },
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.expect(user_tracks_route_parser)
+    @ns.marshal_with(tracks_response)
+    def get(self, handle, authed_user_id):
+        return super()._get(handle, authed_user_id)
+
+
 USER_REPOSTS_ROUTE = "/<string:id>/reposts"
 
 reposts_response = make_response(
