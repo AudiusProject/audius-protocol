@@ -455,7 +455,7 @@ export class CreatorNode {
     formData.append('files', file, file.name)
     const response = await this._makeRequestV2({
       method: 'post',
-      url: '/mediorum/uploads',
+      url: '/uploads',
       data: formData,
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: (progressEvent) =>
@@ -505,7 +505,7 @@ export class CreatorNode {
   async getProcessingStatusV2(id: string) {
     const { data } = await this._makeRequestV2({
       method: 'get',
-      url: `/mediorum/uploads/${id}`
+      url: `/uploads/${id}`
     })
     return data
   }

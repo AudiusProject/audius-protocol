@@ -55,7 +55,7 @@ func (tc *TestClient) upload(data []byte, filename string) error {
 	}()
 
 	host := tc.UpPeers[rand.Intn(len(tc.UpPeers))].Host
-	url := fmt.Sprintf("%s%s", host, "/mediorum/uploads")
+	url := fmt.Sprintf("%s%s", host, "/uploads")
 
 	req, err := http.NewRequest("POST", url, r)
 	if err != nil {

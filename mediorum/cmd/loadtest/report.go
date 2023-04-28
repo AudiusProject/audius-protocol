@@ -12,7 +12,7 @@ import (
 
 func (tc *TestClient) problems(wg *sync.WaitGroup, peer *server.Peer) {
 	defer wg.Done()
-	url := fmt.Sprintf("%s%s", peer.Host, "/mediorum/internal/blobs/problems")
+	url := fmt.Sprintf("%s%s", peer.Host, "/internal/blobs/problems")
 	resp, err := tc.HttpClient.Get(url)
 	if err != nil {
 		fmt.Println(err)
