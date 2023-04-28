@@ -63,13 +63,16 @@ def build_sql(file_names):
 def load_triggers(connection):
     # first execute the ddl
     # since trigger code may depend on table structure
+    print("running ddl.sql")
     ddl = load_sql("ddl.sql")
     connection.execute(text(ddl))
 
     # then reload the triggers
+    print("loading triggers")
     trigger_dir = Path(__file__).parent.joinpath("./trigger_sql")
     file_list = [f.name for f in trigger_dir.iterdir() if f.name.startswith("handle_")]
     connection.execute(build_sql(file_list))
+    print("load_triggers done")
 
 
 def run_migrations_offline():
@@ -121,10 +124,7 @@ def run_migrations_online():
         with context.begin_transaction():
             context.run_migrations()
 
-        try:
-            load_triggers(connection)
-        except Exception as e:
-            print(e)
+        load_triggers(connection)
 
 
 @compiles(CreateIndex)
