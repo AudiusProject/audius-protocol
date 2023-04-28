@@ -177,10 +177,10 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
       if (
         isLiveEmailEnabled &&
-        userNotificationSettings.getUserEmailFrequency(userId) === 'live' &&
-        userNotificationSettings.shouldSendEmail({
+        userNotificationSettings.shouldSendEmailAtFrequency({
           initiatorUserId: ownerId,
-          receiverUserId: userId
+          receiverUserId: userId,
+          frequency: 'live'
         })
       ) {
         const notification: AppEmailNotification = {

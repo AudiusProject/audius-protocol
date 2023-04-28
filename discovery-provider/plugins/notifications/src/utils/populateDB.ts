@@ -454,7 +454,8 @@ export const insertNotificationEmails = async (
 export const setUserEmailAndSettings = async (
   db: Knex,
   frequency: EmailFrequency,
-  userId: number
+  userId: number,
+  timezone?: string
 ): Promise<IdentityUserRow> => {
   const user = {
     createdAt: new Date(Date.now()),
@@ -462,7 +463,8 @@ export const setUserEmailAndSettings = async (
     lastSeenDate: new Date(Date.now()),
     handle: `user_${userId}`,
     email: `user_${userId}@gmail.com`,
-    blockchainUserId: userId
+    blockchainUserId: userId,
+    timezone: timezone || null
   }
   await db.insert(user).into('Users')
   await db

@@ -131,10 +131,9 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
     }
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(track.owner_id) ===
-        'live' &&
-      userNotificationSettings.shouldSendEmail({
-        receiverUserId: track.owner_id
+      userNotificationSettings.shouldSendEmailAtFrequency({
+        receiverUserId: track.owner_id,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {
