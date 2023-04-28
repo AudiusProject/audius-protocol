@@ -97,6 +97,7 @@ export audius_prometheus_container=server
 if [ "$audius_db_run_migrations" != false ]; then
     echo "Running alembic migrations"
     export PYTHONPATH='.'
+    alembic upgrade head
     echo "Finished running alembic migrations"
 fi
 

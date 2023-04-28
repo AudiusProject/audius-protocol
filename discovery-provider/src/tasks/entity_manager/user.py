@@ -147,7 +147,6 @@ def update_user(params: ManageEntityParameters):
     validate_user_tx(params)
 
     user_metadata = params.metadata[params.metadata_cid]
-    logger.info(f"asdf update_user user_metadata {user_metadata}")
     user_id = params.entity_id
     existing_user = params.existing_records[EntityType.USER][user_id]
     if (
@@ -163,7 +162,6 @@ def update_user(params: ManageEntityParameters):
         params.txhash,
         params.block_datetime,
     )
-    logger.info(f"asdf update_user user_record {user_record}")
 
     validate_user_metadata(
         params.session,
@@ -179,7 +177,6 @@ def update_user(params: ManageEntityParameters):
         params.web3,
         params.challenge_bus,
     )
-    logger.info(f"asdf update_user user_record update_user_metadata {user_record}")
     user_record.metadata_multihash = params.metadata_cid
     user_record = update_legacy_user_images(user_record)
     user_record = validate_user_record(user_record)
@@ -189,7 +186,6 @@ def update_user(params: ManageEntityParameters):
         params.block_number,
         user_id,
     )
-    logger.info(f"asdf update_user final {user_record}")
 
     return user_record
 

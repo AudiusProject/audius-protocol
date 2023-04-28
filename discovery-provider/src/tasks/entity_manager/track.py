@@ -284,7 +284,7 @@ def create_track(params: ManageEntityParameters):
     track_id = params.entity_id
     owner_id = params.user_id
     track_metadata = params.metadata[params.metadata_cid]
-    logger.info(f"asdf track_metadata {track_metadata}")
+
     track_record = Track(
         track_id=track_id,
         owner_id=owner_id,
@@ -307,7 +307,6 @@ def create_track(params: ManageEntityParameters):
     dispatch_challenge_track_upload(
         params.challenge_bus, params.block_number, track_record
     )
-    logger.info(f"asdf track_record {track_record}")
 
     params.add_track_record(track_id, track_record)
 
