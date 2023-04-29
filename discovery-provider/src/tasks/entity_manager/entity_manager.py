@@ -2,7 +2,7 @@ import json
 import logging
 import time
 from collections import defaultdict
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Set, Tuple, cast
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm.session import Session
@@ -453,7 +453,7 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .all()
         )
         existing_entities[EntitySpecialFetchType.USER_BY_WALLET] = {
-            user.wallet.lower(): user for user in users_by_wallet
+            (cast(str, user.wallet)).lower(): user for user in users_by_wallet
         }
 
     # FOLLOWS
