@@ -9,6 +9,7 @@ from sqlalchemy.orm.session import Session
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.database_task import DatabaseTask
 from src.models.delegates.app_delegate import AppDelegate
+from src.models.delegates.delegation import Delegation
 from src.models.notifications.notification import PlaylistSeen
 from src.models.playlists.playlist import Playlist
 from src.models.playlists.playlist_route import PlaylistRoute
@@ -20,6 +21,7 @@ from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
 from src.tasks.entity_manager.app_delegate import create_app_delegate
+from src.tasks.entity_manager.delegation import create_delegation
 from src.tasks.entity_manager.notification import (
     create_notification,
     view_notification,
@@ -44,6 +46,7 @@ from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
     EntitiesToFetchDict,
+    EntitySpecialFetchType,
     EntityType,
     ExistingRecordDict,
     ManageEntityParameters,
@@ -223,6 +226,11 @@ def entity_manager_update(
                         and params.entity_type == EntityType.APP_DELEGATE
                     ):
                         create_app_delegate(params)
+                    elif (
+                        params.action == Action.CREATE
+                        and params.entity_type == EntityType.DELEGATION
+                    ):
+                        create_delegation(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -333,6 +341,33 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
                     logger.error(
                         "tasks | entity_manager.py | Missing metadata required for add delegate tx"
                     )
+            if entity_type == EntityType.DELEGATION:
+                if json_metadata and isinstance(json_metadata, dict):
+                    raw_shared_address = json_metadata.get("shared_address", None)
+                    if raw_shared_address:
+                        entities_to_fetch[EntityType.DELEGATION].add(
+                            raw_shared_address.lower()
+                        )
+                    else:
+                        logger.error(
+                            "tasks | entity_manager.py | Missing shared address in metadata required for add delegation tx"
+                        )
+                    raw_delegate_address = json_metadata.get("delegate_address", None)
+                    if raw_delegate_address:
+                        entities_to_fetch[EntityType.APP_DELEGATE].add(
+                            raw_delegate_address.lower()
+                        )
+                        entities_to_fetch[EntitySpecialFetchType.USER_BY_WALLET].add(
+                            raw_delegate_address.lower()
+                        )
+                    else:
+                        logger.error(
+                            "tasks | entity_manager.py | Missing delegate address in metadata required for add delegation tx"
+                        )
+                else:
+                    logger.error(
+                        "tasks | entity_manager.py | Missing metadata required for add delegation tx"
+                    )
             if user_id:
                 entities_to_fetch[EntityType.USER].add(user_id)
             action = helpers.get_tx_arg(event, "_action")
@@ -404,6 +439,22 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .all()
         )
         existing_entities[EntityType.USER] = {user.user_id: user for user in users}
+
+    # USERS BY WALLET
+    if entities_to_fetch[EntitySpecialFetchType.USER_BY_WALLET]:
+        users_by_wallet: List[User] = (
+            session.query(User)
+            .filter(
+                func.lower(User.wallet).in_(
+                    entities_to_fetch[EntitySpecialFetchType.USER_BY_WALLET]
+                ),
+                User.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntitySpecialFetchType.USER_BY_WALLET] = {
+            user.wallet.lower(): user for user in users_by_wallet
+        }
 
     # FOLLOWS
     if entities_to_fetch[EntityType.FOLLOW]:
@@ -535,6 +586,21 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         )
         existing_entities[EntityType.APP_DELEGATE] = {
             delegate.address.lower(): delegate for delegate in delegates
+        }
+
+    # DELEGATIONS
+    if entities_to_fetch[EntityType.DELEGATION]:
+        delegations: List[Delegation] = (
+            session.query(Delegation)
+            .filter(
+                func.lower(Delegation.shared_address).in_(
+                    entities_to_fetch[EntityType.DELEGATION]
+                )
+            )
+            .all()
+        )
+        existing_entities[EntityType.DELEGATION] = {
+            delegation.shared_address.lower(): delegation for delegation in delegations
         }
     return existing_entities
 

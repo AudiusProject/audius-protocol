@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from src.models.delegates.app_delegate import AppDelegate
+from src.models.delegates.delegation import Delegation
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
@@ -111,6 +112,7 @@ def populate_mock_db(db, entities, block_offset=None):
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])
         app_delegates = entities.get("app_delegates", [])
+        delegations = entities.get("delegations", [])
         follows = entities.get("follows", [])
         subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
@@ -148,6 +150,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(playlists),
             len(users),
             len(app_delegates),
+            len(delegations),
             len(follows),
             len(saves),
             len(reposts),
@@ -289,6 +292,21 @@ def populate_mock_db(db, entities, block_offset=None):
                 created_at=delegate_meta.get("created_at", datetime.now()),
             )
             session.add(delegate)
+
+        for i, delegation_meta in enumerate(delegations):
+            delegation = Delegation(
+                user_id=delegation_meta.get("user_id", i),
+                shared_address=delegation_meta.get("shared_address", str(i)),
+                delegate_address=delegation_meta.get("delegate_address", str(i)),
+                is_approved=delegation_meta.get("is_approved", False),
+                is_revoked=delegation_meta.get("is_revoked", False),
+                blockhash=hex(i + block_offset),
+                blocknumber=(i + block_offset),
+                txhash=delegation_meta.get("txhash", str(i + block_offset)),
+                created_at=delegation_meta.get("created_at", datetime.now()),
+            )
+            session.add(delegation)
+
         for i, follow_meta in enumerate(follows):
             follow = Follow(
                 blockhash=hex(i + block_offset),
