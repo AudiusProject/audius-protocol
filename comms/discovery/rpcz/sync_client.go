@@ -12,6 +12,7 @@ import (
 	"comms.audius.co/discovery/db"
 	"comms.audius.co/discovery/schema"
 	"comms.audius.co/shared/signing"
+	"github.com/avast/retry-go"
 	"golang.org/x/exp/slog"
 )
 
@@ -88,23 +89,29 @@ func (c *RPCProcessor) doSweep(host, bulkEndpoint string) error {
 
 	var cursor time.Time
 	for _, op := range ops {
-		err := c.Apply(op)
+		// if apply fails during sweep
+		// it could be because discovery indexer is behind
+		// retry locally and only advance cursor on success
+		err := retry.Do(
+			func() error {
+				return c.Apply(op)
+			},
+			retry.Delay(time.Second),
+			retry.MaxDelay(time.Second*5))
 		if err != nil {
-			// todo: what to do when op apply fails during backfill???
-			// with cursor we'll not see this row again...
-			//  retry locally?
-			//  save to dead letter table?
-			//  periodically re-do all?
 			slog.Error("sweep error", err)
+		} else {
+			cursor = op.RelayedAt
 		}
-		cursor = op.RelayedAt
 	}
 
 	if len(ops) > 0 {
 		slog.Info("backfill done", "host", host, "took", time.Since(started), "count", len(ops), "cursor", cursor)
+
+		q := `insert into rpc_cursor values ($1, $2) on conflict (relayed_by) do update set relayed_at = $2;`
+		_, err = db.Conn.Exec(q, host, cursor)
+		return err
 	}
 
-	q := `insert into rpc_cursor values ($1, $2) on conflict (relayed_by) do update set relayed_at = $2;`
-	_, err = db.Conn.Exec(q, host, cursor)
-	return err
+	return nil
 }

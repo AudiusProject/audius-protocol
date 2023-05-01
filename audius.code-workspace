@@ -25,9 +25,6 @@
       "path": "contracts"
     },
     {
-      "path": "mad-dog"
-    },
-    {
       "path": "dev-tools"
     },
     {
@@ -42,7 +39,6 @@
       "solana-programs",
       "identity-service",
       "monitoring",
-      "mad-dog",
       "discovery-provider",
       "eth-contracts",
       "comms",

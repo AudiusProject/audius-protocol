@@ -125,11 +125,10 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
 
     if (
       isLiveEmailEnabled &&
-      userNotificationSettings.getUserEmailFrequency(this.receiverUserId) ===
-        'live' &&
-      userNotificationSettings.shouldSendEmail({
+      userNotificationSettings.shouldSendEmailAtFrequency({
         initiatorUserId: this.receiverUserId,
-        receiverUserId: this.senderUserId
+        receiverUserId: this.senderUserId,
+        frequency: 'live'
       })
     ) {
       const notification: AppEmailNotification = {

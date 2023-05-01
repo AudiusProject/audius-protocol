@@ -9,7 +9,8 @@ import {
   setupTest,
   resetTests,
   insertAbusiveSettings,
-  createAbusiveSettingForUser
+  createAbusiveSettingForUser,
+  setUserEmailAndSettings
 } from '../../utils/populateDB'
 
 import { buildUserNotificationSettings } from '../../processNotifications/mappers/userNotificationSettings'
@@ -27,6 +28,9 @@ describe('user notification settings', () => {
       { user_id: 2 },
       { user_id: 3 }
     ])
+    await setUserEmailAndSettings(processor.identityDB, 'live', 1)
+    await setUserEmailAndSettings(processor.identityDB, 'live', 2)
+    await setUserEmailAndSettings(processor.identityDB, 'live', 3)
     await insertMobileSettings(processor.identityDB, [
       { userId: 1 },
       { userId: 2 },
@@ -111,9 +115,10 @@ describe('user notification settings', () => {
       )
       const [initiatorUserId, receiverUserId] = [1, 2]
       expect(
-        settings.shouldSendEmail({
+        settings.shouldSendEmailAtFrequency({
           receiverUserId,
-          initiatorUserId
+          initiatorUserId,
+          frequency: 'frequency'
         })
       ).toBe(false)
     })
@@ -129,9 +134,10 @@ describe('user notification settings', () => {
       )
       const [initiatorUserId, receiverUserId] = [1, 2]
       expect(
-        settings.shouldSendEmail({
+        settings.shouldSendEmailAtFrequency({
           receiverUserId,
-          initiatorUserId
+          initiatorUserId,
+          frequency: 'live'
         })
       ).toBe(false)
     })
@@ -142,9 +148,10 @@ describe('user notification settings', () => {
       )
       const [initiatorUserId, receiverUserId] = [1, 2]
       expect(
-        settings.shouldSendEmail({
+        settings.shouldSendEmailAtFrequency({
           receiverUserId,
-          initiatorUserId
+          initiatorUserId,
+          frequency: 'live'
         })
       ).toBe(true)
     })

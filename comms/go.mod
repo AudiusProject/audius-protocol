@@ -19,6 +19,7 @@ require (
 	github.com/artyom/autoflags v1.1.1 // indirect
 	github.com/artyom/httpflags v1.2.0 // indirect
 	github.com/artyom/oembed v1.0.2 // indirect
+	github.com/avast/retry-go v3.0.0+incompatible // indirect
 	github.com/bradfitz/gomemcache v0.0.0-20230124162541-5f7a7d875746 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/dyatlov/go-opengraph/opengraph v0.0.0-20220524092352-606d7b1e5f8a // indirect

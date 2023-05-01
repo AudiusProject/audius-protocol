@@ -24,7 +24,7 @@ func RunM(tc *TestClient) {
 
 		for i, peer := range tc.UpPeers {
 
-			resp, err := tc.HttpClient.Get(fmt.Sprintf("%s/mediorum/internal/metrics", peer.Host))
+			resp, err := tc.HttpClient.Get(fmt.Sprintf("%s/internal/metrics", peer.Host))
 			if err != nil {
 				fmt.Println(err)
 			}

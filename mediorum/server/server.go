@@ -37,6 +37,7 @@ type MediorumConfig struct {
 	Env               string
 	Self              Peer
 	Peers             []Peer
+	Signers           []Peer
 	ReplicationFactor int
 	Dir               string `default:"/tmp/mediorum"`
 	BlobStoreDSN      string `json:"-"`
@@ -133,7 +134,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 		}
 		peerHosts = append(peerHosts, peer.Host)
 	}
-	crud := crudr.New(config.Self.Host, peerHosts, db)
+	crud := crudr.New(config.Self.Host, config.privateKey, peerHosts, db)
 	dbMigrate(crud)
 
 	// echoServer server
@@ -147,11 +148,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// mostly don't add CORS middleware here as it will break reverse proxy at the end
 	echoServer.Use(middleware.Recover())
 	echoServer.Use(middleware.Logger())
-	echoServer.Pre(middleware.Rewrite(map[string]string{
-		"/mediorum":   "/",
-		"/mediorum/":  "/",
-		"/mediorum/*": "/$1",
-	}))
 
 	ss := &MediorumServer{
 		echo:      echoServer,
@@ -169,8 +165,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	// routes holds all of our handled routes
 	// and related middleware like CORS
 	routes := echoServer.Group(apiBasePath)
-
-	// Middleware
 	routes.Use(middleware.CORS())
 
 	// public: uis
@@ -181,18 +175,23 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/uploads", ss.getUploads)
 	routes.GET("/uploads/:id", ss.getUpload)
 	routes.POST("/uploads", ss.postUpload)
+	// Workaround because reverse proxy catches the browser's preflight OPTIONS request instead of letting our CORS middleware handle it
+	routes.OPTIONS("/uploads", func(c echo.Context) error {
+		return c.NoContent(http.StatusNoContent)
+	})
 
 	routes.GET("/ipfs/:cid", ss.getBlob)
 	routes.GET("/content/:cid", ss.getBlob)
-	routes.GET("/ipfs/:jobID/:variant", ss.getV1CIDBlob)
-	routes.GET("/content/:jobID/:variant", ss.getV1CIDBlob)
-	routes.GET("/tracks/cidstream/:cid", ss.getBlob) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
+	routes.GET("/ipfs/:jobID/:variant", ss.getBlobByJobIDAndVariant)
+	routes.GET("/content/:jobID/:variant", ss.getBlobByJobIDAndVariant)
+	routes.GET("/tracks/cidstream/:cid", ss.getBlob, ss.requireSignature) // TODO: Log listen, check delisted status, respect cache in payload, and use `signature` queryparam for premium content
 
 	// status + debug:
 	routes.GET("/status", ss.getStatus)
 	routes.GET("/debug/blobs", ss.dumpBlobs)
 	routes.GET("/debug/uploads", ss.dumpUploads)
 	routes.GET("/debug/ls", ss.getLs)
+	routes.GET("/debug/peers", ss.debugPeers)
 
 	// legacy:
 	routes.GET("/cid/:cid", ss.serveLegacyCid)
@@ -206,7 +205,7 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
-	internalApi.POST("/crud/push", ss.serveCrudPush)
+	internalApi.POST("/crud/push", ss.serveCrudPush, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// should health be internal or public?
 	internalApi.GET("/health", ss.getMyHealth)
@@ -216,7 +215,6 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	internalApi.GET("/blobs/problems", ss.getBlobProblems)
 	internalApi.GET("/blobs/location/:cid", ss.getBlobLocation)
 	internalApi.GET("/blobs/info/:cid", ss.getBlobInfo)
-	internalApi.GET("/blobs/:cid", ss.getBlob)
 	internalApi.POST("/blobs", ss.postBlob, middleware.BasicAuth(ss.checkBasicAuth))
 
 	// WIP internal: metrics
@@ -235,7 +233,6 @@ func (ss *MediorumServer) MustStart() {
 
 	// start server
 	go func() {
-
 		err := ss.echo.Start(":" + ss.Config.ListenPort)
 		if err != nil && err != http.ErrServerClosed {
 			panic(err)

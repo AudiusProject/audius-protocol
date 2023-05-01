@@ -1,44 +1,20 @@
 'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable('Files', {
-      id: {
-        allowNull: false,
-        autoIncrement: true,
-        primaryKey: true,
-        type: Sequelize.INTEGER
-      },
-      ownerId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        onDelete: 'RESTRICT',
-        references: {
-          model: 'Users',
-          key: 'id',
-          as: 'ownerId'
-        }
-      },
-      multihash: {
-        type: Sequelize.TEXT,
-        allowNull: false
-      },
-      sourceFile: {
-        type: Sequelize.TEXT,
-        allowNull: true // `true` as we use File entries for more than just uploaded tracks
-      },
-      storagePath: {
-        type: Sequelize.TEXT,
-        allowNull: false
-      },
-      createdAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      },
-      updatedAt: {
-        allowNull: false,
-        type: Sequelize.DATE
-      }
-    })
+    return queryInterface.sequelize.query(
+      `
+      CREATE TABLE IF NOT EXISTS "Files" (
+        "id" SERIAL PRIMARY KEY,
+        "ownerId" INTEGER NOT NULL,
+        "multihash" TEXT NOT NULL,
+        "sourceFile" TEXT,
+        "storagePath" TEXT NOT NULL,
+        "createdAt" TIMESTAMP NOT NULL,
+        "updatedAt" TIMESTAMP NOT NULL,
+        FOREIGN KEY ("ownerId") REFERENCES "Users" ("id") ON DELETE RESTRICT
+      )
+    `
+    )
   },
   down: (queryInterface, Sequelize) => {
     return queryInterface.dropTable('Files')

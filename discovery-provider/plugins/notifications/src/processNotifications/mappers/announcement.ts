@@ -102,8 +102,10 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
 
       if (
         isLiveEmailEnabled &&
-        userNotificationSettings.getUserEmailFrequency(userId) === 'live' &&
-        userNotificationSettings.shouldSendEmail({ receiverUserId: userId })
+        userNotificationSettings.shouldSendEmailAtFrequency({
+          receiverUserId: userId,
+          frequency: 'live'
+        })
       ) {
         const notification: AppEmailNotification = {
           receiver_user_id: userId,

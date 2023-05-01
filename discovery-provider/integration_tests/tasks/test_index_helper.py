@@ -129,12 +129,14 @@ def test_fetch_cid_metadata(app, mocker):
                 "is_deactivated": False,
                 "is_storage_v2": False,
                 "artist_pick_track_id": TRACK_ID_OFFSET,
+                "allow_ai_attribution": False,
             },
             "QmCreateTrack1": {
                 "track_cid": "some-track-cid",
                 "owner_id": 1,
                 "title": "track 1",
                 "route_id": None,
+                "duration": 0,
                 "length": 0,
                 "cover_art": None,
                 "cover_art_sizes": "QmdxhDiRUC3zQEKqwnqksaSsSSeHiRghjwKzwoRvm77yaZ",
@@ -174,6 +176,7 @@ def test_fetch_cid_metadata(app, mocker):
                 "is_premium": False,
                 "premium_conditions": None,
                 "is_playlist_upload": True,
+                "ai_attribution_user_id": None,
             },
             "QmUpdatePlaylist1": {
                 "playlist_id": 1,

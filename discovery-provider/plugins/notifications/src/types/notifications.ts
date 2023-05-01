@@ -188,6 +188,13 @@ export type PlaylistMilestoneNotification = {
   threshold: number
 }
 
+export type ListenCountMilestoneNotifications = {
+  type: MilestoneType.LISTEN_COUNT
+  track_id: number
+  threshold: number
+}
+
+
 export type TierChangeNotification = {
   new_tier: string
   new_tier_value: number

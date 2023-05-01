@@ -28,7 +28,8 @@ const USER_PROPS = [
   'associated_sol_wallets',
   'collectibles',
   'playlist_library',
-  'events'
+  'events',
+  'allow_ai_attribution'
 ] as Array<keyof UserMetadata>
 // User metadata fields that are required on the metadata object and only can have
 // non-null values

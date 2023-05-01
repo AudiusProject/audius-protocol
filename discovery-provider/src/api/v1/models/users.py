@@ -36,7 +36,6 @@ user_model = ns.model(
         "does_follow_current_user": fields.Boolean,
         "handle": fields.String(required=True),
         "id": fields.String(required=True),
-        "is_storage_v2": fields.Boolean(required=True),
         "is_verified": fields.Boolean(required=True),
         "location": fields.String,
         "name": fields.String(required=True),
@@ -66,6 +65,7 @@ user_model_full = ns.clone(
         "blocknumber": fields.Integer(required=True),
         "wallet": fields.String(required=True),
         "created_at": fields.String(required=True),
+        "is_storage_v2": fields.Boolean(required=True),
         "creator_node_endpoint": fields.String,
         "current_user_followee_follow_count": fields.Integer(required=True),
         "does_current_user_follow": fields.Boolean(required=True),
@@ -78,6 +78,7 @@ user_model_full = ns.clone(
         "metadata_multihash": fields.String,
         "has_collectibles": fields.Boolean(required=True),
         "playlist_library": fields.Nested(playlist_library, allow_null=True),
+        "allow_ai_attribution": fields.Boolean(required=True),
     },
 )
 

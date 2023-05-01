@@ -76,6 +76,7 @@ func NewServer(discoveryConfig *config.DiscoveryConfig, proc *rpcz.RPCProcessor)
 
 	g.GET("/debug/ws", s.debugWs)
 	g.GET("/debug/sse", s.debugSse)
+	g.GET("/debug/cursors", s.debugCursors)
 
 	g.GET("/rpc/bulk", s.getRpcBulk, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
 	g.POST("/rpc/receive", s.postRpcReceive, middleware.BasicAuth(s.checkRegisteredNodeBasicAuth))
@@ -199,6 +200,26 @@ func (s *ChatServer) debugWs(c echo.Context) error {
 		}
 	}()
 	return nil
+}
+
+func (s *ChatServer) debugCursors(c echo.Context) error {
+	var cursors []struct {
+		Host      string    `db:"relayed_by" json:"relayed_by"`
+		RelayedAt time.Time `db:"relayed_at" json:"relayed_at"`
+		Count     int       `db:"count" json:"count"`
+	}
+	q := `
+	select
+		relayed_by,
+		relayed_at,
+		(select count(*) from rpc_log where relayed_by = c.relayed_by) as count
+	from rpc_cursor c;
+	`
+	err := db.Conn.Select(&cursors, q)
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, cursors)
 }
 
 func (s *ChatServer) debugSse(c echo.Context) error {

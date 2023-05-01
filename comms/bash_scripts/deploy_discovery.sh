@@ -9,4 +9,4 @@ git pull
 audius-cli set-tag -y --comms "$1"
 
 docker compose pull comms
-docker compose up -d --force-recreate comms vector
+docker compose up -d comms

@@ -3,7 +3,7 @@ version: "3.9"
 services:
   poa-ganache:
     build:
-      context: contracts
+      context: ${PROJECT_ROOT}/contracts
       dockerfile: Dockerfile.dev
       args:
         bootstrapSPIds: ${BOOTSTRAP_SP_IDS}
@@ -12,7 +12,7 @@ services:
     command: bash /tmp/dev-tools/startup/poa-ganache.sh
     volumes:
       - poa-contracts-abis:/usr/src/app/build/contracts
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     ports:
       - "8545:8545"
     deploy:
@@ -58,7 +58,7 @@ services:
 
   eth-ganache:
     build:
-      context: eth-contracts
+      context: ${PROJECT_ROOT}/eth-contracts
       dockerfile: Dockerfile.dev
       args:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
@@ -67,7 +67,7 @@ services:
     command: bash /tmp/dev-tools/startup/eth-ganache.sh
     volumes:
       - eth-contracts-abis:/usr/src/app/build/contracts
-      - ./dev-tools:/tmp/dev-tools
+      - ${PROJECT_ROOT}/dev-tools:/tmp/dev-tools
     ports:
       - "8546:8545"
     deploy:
@@ -115,7 +115,7 @@ services:
     image: audius/solana-programs:latest # Default tag is "latest." Change tag to "m1-slow" to have very slow block times that use less CPU
     # NOTE: Building solana program can take a lot of time especially on m1 (upto 30 mins) so we used pre-built images
     # build:
-    #   context: solana-programs
+    #   context: ${PROJECT_ROOT}/solana-programs
     #   dockerfile: Dockerfile.dev
     #   args:
     #     AUDIUS_ETH_REGISTRY_PRIVATE_KEY: "${SOLANA_AUDIUS_ETH_REGISTRY_SECRET_KEY}"

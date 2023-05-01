@@ -19,7 +19,8 @@ const TRACK_PROPS = [
   'release_date',
   'file_type',
   'is_premium',
-  'premium_conditions'
+  'premium_conditions',
+  'ai_attribution_user_id'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']
 
@@ -418,13 +419,16 @@ export class Track extends Base {
       )
 
     // Write metadata to chain
+    const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
+      updatedMetadata
+    )
     const trackId = await this._generateTrackId()
     const response = await this.contracts.EntityManagerClient!.manageEntity(
       ownerId,
       EntityManagerClient.EntityType.TRACK,
       trackId,
       EntityManagerClient.Action.CREATE,
-      JSON.stringify({ cid: updatedMetadata.track_cid, data: updatedMetadata })
+      JSON.stringify({ cid: metadataCid.toString(), data: updatedMetadata })
     )
     const txReceipt = response.txReceipt
 
@@ -736,6 +740,40 @@ export class Track extends Base {
       metadataFileUUID,
       txReceipt.blockNumber
     )
+    return {
+      blockHash: txReceipt.blockHash,
+      blockNumber: txReceipt.blockNumber,
+      trackId
+    }
+  }
+
+  /**
+   * Updates an existing track given metadata using only chain and not creator node.
+   * @param metadata json of the track metadata with all fields, missing fields will error
+   */
+  async updateTrackV2(metadata: TrackMetadata) {
+    this.IS_OBJECT(metadata)
+
+    const ownerId = this.userStateManager.getCurrentUserId()
+
+    if (!ownerId) {
+      throw new Error('No users loaded for this wallet')
+    }
+    metadata.owner_id = ownerId
+    this._validateTrackMetadata(metadata)
+
+    // Write the new metadata to chain
+    const metadataCid = await Utils.fileHasher.generateMetadataCidV1(metadata)
+    const trackId: number = metadata.track_id
+    const response = await this.contracts.EntityManagerClient!.manageEntity(
+      ownerId,
+      EntityManagerClient.EntityType.TRACK,
+      trackId,
+      EntityManagerClient.Action.UPDATE,
+      JSON.stringify({ cid: metadataCid.toString(), data: metadata })
+    )
+    const txReceipt = response.txReceipt
+
     return {
       blockHash: txReceipt.blockHash,
       blockNumber: txReceipt.blockNumber,

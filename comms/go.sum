@@ -9,6 +9,8 @@ github.com/artyom/httpflags v1.2.0 h1:Eyx41cC1Z3dR/j68aHBEzpGT49cwzOOJix3hd/lk5m
 github.com/artyom/httpflags v1.2.0/go.mod h1:f85rgrdm0w+DDDVbSKJXRTQ9rBho16YUt2mwEHLb8OA=
 github.com/artyom/oembed v1.0.2 h1:ipm0WLIqIWoLaRC8N5Ho/T4Q5k5VvgLHhJFYvoKxV8A=
 github.com/artyom/oembed v1.0.2/go.mod h1:yRR16QyVNwy+/Q4Vnu8yeOaeq00Jt1QST9Xd8DbxeIg=
+github.com/avast/retry-go v3.0.0+incompatible h1:4SOWQ7Qs+oroOTQOYnAHqelpCO0biHSxpiH9JdtuBj0=
+github.com/avast/retry-go v3.0.0+incompatible/go.mod h1:XtSnn+n/sHqQIpZ10K1qAevBhOOCWBLXXy3hyiqqBrY=
 github.com/bradfitz/gomemcache v0.0.0-20230124162541-5f7a7d875746 h1:wAIE/kN63Oig1DdOzN7O+k4AbFh2cCJoKMFXrwRJtzk=
 github.com/bradfitz/gomemcache v0.0.0-20230124162541-5f7a7d875746/go.mod h1:H0wQNHz2YrLsuXOZozoeDmnHXkNCRmMW0gwFWDfEZDA=
 github.com/btcsuite/btcd/btcec/v2 v2.2.0 h1:fzn1qaOt32TuLjFlkzYSsBC35Q3KUjT1SwPxiMSCF5k=

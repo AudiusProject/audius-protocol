@@ -39,7 +39,7 @@ steps:
             . ~/.profile
             cd audius-protocol
             audius-compose build
-            docker compose pull --ignore-buildable
+            audius-compose pull
             audius-compose prune -y
   - run:
       name: Create Image

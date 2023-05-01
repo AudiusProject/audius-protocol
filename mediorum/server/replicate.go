@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"mediorum/server/signature"
 	"mime/multipart"
 	"net/http"
 	"time"
@@ -120,14 +121,11 @@ func (ss *MediorumServer) replicateFileToHost(peer Peer, fileName string, file i
 		close(errChan)
 	}()
 
-	req, err := http.NewRequest("POST", peer.ApiPath("internal/blobs"), r)
-	if err != nil {
-		return err
-	}
-
-	// add header for signed nonce
-	req.Header.Add("Authorization", ss.basicAuthNonce())
-	req.Header.Add("Content-Type", m.FormDataContentType())
+	req := signature.SignedPost(
+		peer.ApiPath("internal/blobs"),
+		m.FormDataContentType(),
+		r,
+		ss.Config.privateKey)
 
 	// send it
 	resp, err := client.Do(req)

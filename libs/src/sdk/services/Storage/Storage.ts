@@ -55,7 +55,7 @@ export class Storage implements StorageService {
     // and Node doesn't support XmlHttpRequest
     const response = await axios({
       method: 'post',
-      url: `${this.config.contentNodeEndpoint}/mediorum/uploads`,
+      url: `${this.config.contentNodeEndpoint}/uploads`,
       data: formData,
       headers: {
         'Content-Type': `multipart/form-data; boundary=${formData.getBoundary()}`
@@ -109,7 +109,7 @@ export class Storage implements StorageService {
     id: string
   ): Promise<{ status: ProcessingStatus }> {
     const response = await fetch(
-      `${this.config.contentNodeEndpoint}/mediorum/uploads/${id}`
+      `${this.config.contentNodeEndpoint}/uploads/${id}`
     )
     return await response.json()
   }

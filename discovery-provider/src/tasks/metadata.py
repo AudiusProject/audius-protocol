@@ -41,6 +41,7 @@ class TrackMetadata(TypedDict):
     owner_id: Optional[int]
     title: Optional[str]
     route_id: Optional[str]
+    duration: int
     length: int
     cover_art: Optional[str]
     cover_art_sizes: Optional[str]
@@ -71,6 +72,7 @@ track_metadata_format: TrackMetadata = {
     "owner_id": None,
     "title": None,
     "route_id": None,
+    "duration": 0,
     "length": 0,
     "cover_art": None,
     "cover_art_sizes": None,
@@ -94,6 +96,7 @@ track_metadata_format: TrackMetadata = {
     "is_premium": False,
     "premium_conditions": None,
     "is_playlist_upload": False,
+    "ai_attribution_user_id": None,
 }
 
 # Required format for user metadata retrieved from the content system
@@ -114,6 +117,7 @@ user_metadata_format = {
     "is_storage_v2": False,
     "is_deactivated": None,
     "artist_pick_track_id": None,
+    "allow_ai_attribution": False,
 }
 
 
