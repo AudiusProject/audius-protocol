@@ -177,8 +177,8 @@ describe('Create Notification', () => {
         data: {
           type: 'UserSubscription',
           id: 'timestamp:1589373217:group_id:create:playlist_id:10',
-          entityId: 10,
-          entityOwnerId: 1,
+          entityIds: [10],
+          userId: 1,
           entityType: 'Playlist'
         }
       }
@@ -265,8 +265,8 @@ describe('Create Notification', () => {
         data: {
           type: 'UserSubscription',
           id: 'timestamp:1589373217:group_id:create:playlist_id:10',
-          entityId: 10,
-          entityOwnerId: 1,
+          entityIds: [10],
+          userId: 1,
           entityType: 'Album'
         }
       }
