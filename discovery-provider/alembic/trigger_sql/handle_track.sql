@@ -13,16 +13,22 @@ begin
   -- so find the old_row here:
   select * into old_row from tracks where track_id = new.track_id and is_current = false order by blocknumber desc limit 1;
 
+
   -- but there are some places where we do an "in place" update (like update is_available to false)
   if TG_OP = 'UPDATE' then
     old_row := OLD;
   end if;
 
+
   -- update aggregate_user.track_count
-  if old_row is not null then
+  if old_row.track_id is not null then
     -- public track was deleted: decrement
     if new.is_unlisted = false and ((old_row.is_delete = false and new.is_delete = true) or (old_row.is_available = true and new.is_available = false)) then
       delta := -1;
+    end if;
+    -- list unlisted track: increment
+    if old_row.is_unlisted = true and new.is_unlisted = false then
+      delta := 1;
     end if;
   else
     -- new public track added: increment
