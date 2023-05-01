@@ -4,9 +4,9 @@ export enum DeviceType {
 }
 
 export enum EntityType {
-  Track = 'track',
-  Playlist = 'playlist',
-  Album = 'album'
+  Track = 'Track',
+  Playlist = 'Playlist',
+  Album = 'Album'
 }
 
 export enum DMEntityType {

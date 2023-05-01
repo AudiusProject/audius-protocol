@@ -340,7 +340,7 @@ export async function processEmailNotifications(
       frequency,
       startOffset,
       Object.keys(users),
-      this.remoteConfig
+      remoteConfig
     )
     const groupedNotifications = groupNotifications(notifications, users)
 
@@ -431,7 +431,7 @@ export async function processEmailNotifications(
       {
         job: processEmailNotifications
       },
-      `processEmailNotifications | sent scheduled emails to ${numEmailsSent} users at ${frequency}`
+      `processEmailNotifications | sent ${numEmailsSent} ${frequency} emails`
     )
   } catch (e) {
     logger.error(

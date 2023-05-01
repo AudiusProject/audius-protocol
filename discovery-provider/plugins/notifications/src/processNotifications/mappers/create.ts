@@ -116,11 +116,11 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     }
 
     const entityType = this.trackId
-      ? 'track'
+      ? 'Track'
       : this.playlistId && this.isAlbum
-      ? 'album'
+      ? 'Album'
       : this.playlistId && !this.isAlbum
-      ? 'playlist'
+      ? 'Playlist'
       : null
 
     const entityId = this.trackId ?? this.playlistId
@@ -136,7 +136,12 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
       const title = 'New Artist Update'
       const body = description
-      await sendBrowserNotification(userNotificationSettings, userId, title, body)
+      await sendBrowserNotification(
+        userNotificationSettings,
+        userId,
+        title,
+        body
+      )
 
       // If the user has devices to the notification to, proceed
       if (
@@ -165,8 +170,8 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                     this.notification.group_id
                   }`,
                   entityType,
-                  entityId,
-                  entityOwnerId: ownerId
+                  entityIds: [entityId],
+                  userId: ownerId
                 }
               }
             )
