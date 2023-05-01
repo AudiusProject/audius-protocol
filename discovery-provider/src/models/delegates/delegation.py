@@ -15,6 +15,7 @@ class Delegation(Base, RepresentableMixin):
     is_approved = Column(Boolean, nullable=False, server_default=text("false"))
     is_current = Column(Boolean, nullable=False)
     created_at = Column(DateTime, nullable=False)
+    updated_at = Column(DateTime, nullable=False)
     txhash = Column(
         String,
         primary_key=True,

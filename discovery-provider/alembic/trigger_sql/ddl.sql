@@ -160,6 +160,7 @@ BEGIN;
     is_revoked boolean not null default false,
     is_current boolean not null,
     is_approved boolean not null default false,
+    updated_at timestamp not null,
     created_at timestamp not null,
     txhash varchar not null
   );

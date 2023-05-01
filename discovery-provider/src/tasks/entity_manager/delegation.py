@@ -147,6 +147,7 @@ def create_delegation(params: ManageEntityParameters):
         txhash=params.txhash,
         blockhash=params.event_blockhash,
         blocknumber=params.block_number,
+        updated_at=params.block_datetime,
         created_at=params.block_datetime,
     )
 
