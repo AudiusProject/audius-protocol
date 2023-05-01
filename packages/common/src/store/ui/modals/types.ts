@@ -34,5 +34,6 @@ export type Modals =
   | 'LockedContent'
   | 'PlaybackRate'
   | 'ProfileActions'
+  | 'PublishPlaylistConfirmation'
 
 export type ModalsState = { [modal in Modals]: boolean | 'closing' }

@@ -16,6 +16,7 @@ import {
   searchUsersModalSagas,
   toastSagas,
   deletePlaylistConfirmationModalUISagas,
+  publishPlaylistConfirmationModalUISagas,
   mobileOverflowMenuUISagas,
   shareModalUISagas
 } from 'store/ui'
@@ -45,6 +46,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   shareModalUI: shareModalUISagas,
   mobileOverflowMenuUI: mobileOverflowMenuUISagas,
   deletePlaylistConfirmationModalUI: deletePlaylistConfirmationModalUISagas,
+  publishPlaylistConfirmationModalUI: publishPlaylistConfirmationModalUISagas,
   player: playerSagas,
   playbackPosition: playbackPositionSagas,
   playlistUpdates: playlistUpdatesSagas

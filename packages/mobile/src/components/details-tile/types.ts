@@ -64,6 +64,15 @@ export type DetailsTileProps = {
   /** Is the item loaded and in a playable state */
   isPlayable?: boolean
 
+  /** Is the tile being loaded for a playlist */
+  isPlaylist?: boolean
+
+  /** Is the item loaded published */
+  isPublished?: boolean
+
+  /** Function to call when the edit button is pressed */
+  onPressEdit?: GestureResponderHandler
+
   /** Function to call when the favorites count is pressed */
   onPressFavorites?: GestureResponderHandler
 
@@ -72,6 +81,9 @@ export type DetailsTileProps = {
 
   /** Function to call when play button is pressed */
   onPressPlay: GestureResponderHandler
+
+  /** Function to call when publish button is pressed */
+  onPressPublish?: GestureResponderHandler
 
   /** Function to call when repost is pressed */
   onPressRepost?: GestureResponderHandler

@@ -6,6 +6,7 @@ import {
   premiumContentSagas,
   remoteConfigSagas as remoteConfig,
   deletePlaylistConfirmationModalUISagas as deletePlaylistConfirmationModalSagas,
+  publishPlaylistConfirmationModalUISagas as publishPlaylistConfirmationModalSagas,
   mobileOverflowMenuUISagas as overflowMenuSagas,
   shareModalUISagas as shareModalSagas,
   vipDiscordModalSagas,
@@ -174,6 +175,7 @@ export default function* rootSaga() {
     ...offlineDownloadSagas(),
     ...reachabilitySagas(),
     ...searchSagas(),
+    ...publishPlaylistConfirmationModalSagas(),
 
     initKeyboardEvents,
     ...remoteConfig(),

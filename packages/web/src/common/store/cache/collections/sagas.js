@@ -14,7 +14,8 @@ import {
   cacheUsersSelectors,
   cacheActions,
   getContext,
-  audioRewardsPageActions
+  audioRewardsPageActions,
+  toastActions
 } from '@audius/common'
 import { isEqual } from 'lodash'
 import {
@@ -41,6 +42,8 @@ import {
   retrieveCollection,
   retrieveCollections
 } from './utils/retrieveCollections'
+
+const { manualClearToast, addToast } = toastActions
 const { getUser } = cacheUsersSelectors
 const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
@@ -869,10 +872,21 @@ function* publishPlaylistAsync(action) {
     ])
   )
 
-  yield call(confirmPublishPlaylist, userId, action.playlistId, playlist)
+  yield call(
+    confirmPublishPlaylist,
+    userId,
+    action.playlistId,
+    playlist,
+    action.dismissToastKey
+  )
 }
 
-function* confirmPublishPlaylist(userId, playlistId, playlist) {
+function* confirmPublishPlaylist(
+  userId,
+  playlistId,
+  playlist,
+  dismissToastKey
+) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   yield put(
     confirmerActions.requestConfirmation(
@@ -905,6 +919,10 @@ function* confirmPublishPlaylist(userId, playlistId, playlist) {
             }
           ])
         )
+        if (dismissToastKey) {
+          yield* put(manualClearToast({ key: dismissToastKey }))
+          yield* put(addToast({ content: 'Your playlist is now public!' }))
+        }
       },
       function* ({ error, timeout, message }) {
         // Fail Call

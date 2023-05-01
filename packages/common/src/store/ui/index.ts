@@ -49,6 +49,14 @@ export {
   actions as nowPlayingUIActions
 } from './now-playing/slice'
 
+export * as publishPlaylistConfirmationModalUISelectors from './publish-playlist-confirmation-modal/selectors'
+export {
+  default as publishPlaylistConfirmationModalUIReducer,
+  actions as publishPlaylistConfirmationModalUIActions
+} from './publish-playlist-confirmation-modal/slice'
+export { default as publishPlaylistConfirmationModalUISagas } from './publish-playlist-confirmation-modal/sagas'
+export * from './publish-playlist-confirmation-modal/types'
+
 export {
   default as reactionsUIReducer,
   actions as reactionsUIActions,

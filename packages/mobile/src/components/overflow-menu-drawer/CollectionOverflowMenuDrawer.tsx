@@ -2,6 +2,8 @@ import { useContext } from 'react'
 
 import type { ID, OverflowActionCallbacks } from '@audius/common'
 import {
+  FeatureFlags,
+  publishPlaylistConfirmationModalUIActions,
   FavoriteSource,
   RepostSource,
   ShareSource,
@@ -17,6 +19,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 
 import { useNavigation } from 'app/hooks/useNavigation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { setVisibility } from 'app/store/drawers/slice'
 import { getIsCollectionMarkedForDownload } from 'app/store/offline-downloads/selectors'
@@ -33,8 +36,10 @@ const {
   shareCollection
 } = collectionsSocialActions
 const { getUser } = cacheUsersSelectors
-const { getCollection } = cacheCollectionsSelectors
 const { publishPlaylist } = cacheCollectionsActions
+const { getCollection } = cacheCollectionsSelectors
+const { requestOpen: openPublishConfirmation } =
+  publishPlaylistConfirmationModalUIActions
 
 type Props = {
   render: (callbacks: OverflowActionCallbacks) => JSX.Element
@@ -42,6 +47,9 @@ type Props = {
 
 const CollectionOverflowMenuDrawer = ({ render }: Props) => {
   const dispatch = useDispatch()
+  const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
+    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+  )
   const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
   const navigation = useNavigation({ customNavigation: contextNavigation })
   const { id: modalId } = useSelector(getMobileOverflowModal)
@@ -103,8 +111,12 @@ const CollectionOverflowMenuDrawer = ({ render }: Props) => {
     },
     [OverflowAction.DELETE_PLAYLIST]: () =>
       dispatch(openDeletePlaylist({ playlistId: id })),
-    [OverflowAction.PUBLISH_PLAYLIST]: () =>
-      is_album ? () => {} : dispatch(publishPlaylist(Number(id)))
+    [OverflowAction.PUBLISH_PLAYLIST]: () => {
+      if (is_album) return () => {}
+      return isPlaylistUpdatesEnabled
+        ? dispatch(openPublishConfirmation({ playlistId: Number(id) }))
+        : dispatch(publishPlaylist(Number(id)))
+    }
   }
 
   return render(callbacks)
