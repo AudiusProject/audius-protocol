@@ -1,6 +1,5 @@
 import { BASE_PATH, RequiredError } from '../generated/default/runtime'
 
-import fetch from 'cross-fetch'
 import {
   Configuration,
   StreamTrackRequest,
@@ -149,7 +148,7 @@ export class TracksApi extends TracksApiWithoutStream {
       entityId: trackId,
       action: Action.CREATE,
       metadata: JSON.stringify({
-        cid: updatedMetadata.track_cid,
+        cid: metadataCid.toString(),
         data: updatedMetadata
       }),
       walletApi: this.walletApi
@@ -160,7 +159,7 @@ export class TracksApi extends TracksApiWithoutStream {
       blockHash: txReceipt.blockHash,
       blockNumber: txReceipt.blockNumber,
       trackId,
-      transcodedTrackCID: metadataCid.toString(),
+      transcodedTrackCID: updatedMetadata.track_cid,
       error: false
     }
   }
