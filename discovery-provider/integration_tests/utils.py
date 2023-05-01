@@ -210,7 +210,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 premium_conditions=track_meta.get("premium_conditions", None),
                 is_playlist_upload=track_meta.get("is_playlist_upload", False),
                 track_cid=track_meta.get("track_cid", None),
-                ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None)
+                ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None),
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
@@ -269,7 +269,6 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_available=user_meta.get("is_available", True),
                 is_deactivated=user_meta.get("is_deactivated", False),
                 allow_ai_attribution=user_meta.get("allow_ai_attribution", False),
-
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",
@@ -302,6 +301,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_revoked=delegation_meta.get("is_revoked", False),
                 blockhash=hex(i + block_offset),
                 blocknumber=(i + block_offset),
+                is_current=True,
                 txhash=delegation_meta.get("txhash", str(i + block_offset)),
                 created_at=delegation_meta.get("created_at", datetime.now()),
             )

@@ -13,6 +13,7 @@ class Delegation(Base, RepresentableMixin):
     user_id = Column(Integer, nullable=False)
     is_revoked = Column(Boolean, nullable=False, server_default=text("false"))
     is_approved = Column(Boolean, nullable=False, server_default=text("false"))
+    is_current = Column(Boolean, nullable=False)
     created_at = Column(DateTime, nullable=False)
     txhash = Column(
         String,

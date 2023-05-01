@@ -142,6 +142,7 @@ def create_delegation(params: ManageEntityParameters):
         delegate_address=cast(
             str, metadata["delegate_address"]
         ),  # cast to assert non null (since we validated above)
+        is_current=True,
         is_approved=False if delegate_type == "user" else True,
         txhash=params.txhash,
         blockhash=params.event_blockhash,

@@ -158,6 +158,7 @@ BEGIN;
     delegate_address varchar not null,
     user_id integer not null,
     is_revoked boolean not null default false,
+    is_current boolean not null,
     is_approved boolean not null default false,
     created_at timestamp not null,
     txhash varchar not null

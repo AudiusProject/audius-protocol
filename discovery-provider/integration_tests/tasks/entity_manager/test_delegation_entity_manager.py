@@ -162,6 +162,7 @@ def test_index_delegation(app, mocker):
             res = found_matches[0]
             assert res.user_id == expected_delegation["user_id"]
             assert res.shared_address == expected_delegation["shared_address"].lower()
+            assert res.is_current == True
             assert (
                 res.delegate_address == expected_delegation["delegate_address"].lower()
             )
