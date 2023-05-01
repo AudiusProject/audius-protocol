@@ -79,7 +79,7 @@ begin
         'milestone:' || milestone_name  || ':id:' || new.save_item_id || ':threshold:' || milestone,
         new.blocknumber,
         new.created_at,
-        json_build_object('type', milestone_name, 'threshold', milestone)
+        json_build_object('type', milestone_name, new.save_type::text || '_id', new.save_item_id, 'threshold', milestone)
       )
       on conflict do nothing;
   end if;

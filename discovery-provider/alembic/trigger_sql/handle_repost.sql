@@ -69,7 +69,7 @@ begin
         'milestone:' || milestone_name  || ':id:' || new.repost_item_id || ':threshold:' || milestone,
         new.blocknumber,
         new.created_at,
-        json_build_object('type', milestone_name, 'threshold', milestone)
+        json_build_object('type', milestone_name, new.repost_type::text || '_id', new.repost_item_id, 'threshold', milestone)
       )
       on conflict do nothing;
   end if;
