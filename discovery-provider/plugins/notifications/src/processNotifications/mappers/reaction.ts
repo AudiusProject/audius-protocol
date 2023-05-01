@@ -45,9 +45,11 @@ export class Reaction extends BaseNotification<ReactionNotificationRow> {
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
       user_id: number

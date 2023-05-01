@@ -39,9 +39,11 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
       user_id: number

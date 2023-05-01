@@ -61,9 +61,11 @@ export class Create extends BaseNotification<CreateNotificationRow> {
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     let ownerId: number | undefined
     let description: string

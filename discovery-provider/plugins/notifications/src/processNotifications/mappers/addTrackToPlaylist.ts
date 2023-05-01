@@ -35,9 +35,11 @@ export class AddTrackToPlaylist extends BaseNotification<AddTrackToPlaylistNotif
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const trackRes: Array<{
       track_id: number
