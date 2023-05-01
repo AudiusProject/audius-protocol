@@ -49,7 +49,7 @@ describe('Tastemaker Notification', () => {
       timestamp: new Date(),
       data: {
         tastemaker_item_id: 3,
-        tastemaker_item_type: 'Track',
+        tastemaker_item_type: 'track',
         tastemaker_item_owner_id: 2,
         action: 'repost',
         tastemaker_user_id: 10
@@ -107,7 +107,7 @@ describe('Tastemaker Notification', () => {
         timestamp: new Date(),
         data: {
           tastemaker_item_id: 3,
-          tastemaker_item_type: 'Track',
+          tastemaker_item_type: 'track',
           tastemaker_item_owner_id: 2,
           action: 'repost',
           tastemaker_user_id: 10
