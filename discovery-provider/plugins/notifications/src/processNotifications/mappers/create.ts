@@ -10,6 +10,7 @@ import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import { capitalize } from 'lodash'
 import {
   buildUserNotificationSettings,
   Device
@@ -169,7 +170,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                   id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                     this.notification.group_id
                   }`,
-                  entityType,
+                  entityType: capitalize(entityType),
                   entityIds: [entityId],
                   userId: ownerId
                 }
