@@ -15,11 +15,13 @@ import {
   collectionsSocialActions,
   OverflowAction,
   OverflowSource,
+  publishPlaylistConfirmationModalUIActions,
   mobileOverflowMenuUIActions,
   shareModalUIActions,
   RepostType,
   repostsUserListActions,
-  favoritesUserListActions
+  favoritesUserListActions,
+  createPlaylistModalUIActions
 } from '@audius/common'
 import type {
   Collection,
@@ -48,6 +50,7 @@ import { makeStyles } from 'app/styles'
 import { CollectionScreenDetailsTile } from './CollectionScreenDetailsTile'
 import { CollectionScreenSkeleton } from './CollectionScreenSkeleton'
 
+const { open: openEditPlaylist } = createPlaylistModalUIActions
 const { setFavorite } = favoritesUserListActions
 const { setRepost } = repostsUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
@@ -61,6 +64,8 @@ const {
 const { fetchCollection } = collectionPageActions
 const { getCollection, getUser } = collectionPageSelectors
 const getUserId = accountSelectors.getUserId
+const { requestOpen: openPublishConfirmation } =
+  publishPlaylistConfirmationModalUIActions
 
 const useStyles = makeStyles(({ spacing }) => ({
   root: {
@@ -198,6 +203,15 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
     )
   }, [dispatch, playlist_id, isOwner, is_album, is_private])
 
+  const handlePressEdit = useCallback(() => {
+    navigation?.push('EditPlaylist', { id: playlist_id })
+    dispatch(openEditPlaylist(playlist_id))
+  }, [dispatch, navigation, playlist_id])
+
+  const handlePressPublish = useCallback(() => {
+    dispatch(openPublishConfirmation({ playlistId: playlist_id }))
+  }, [dispatch, playlist_id])
+
   const handlePressSave = useCallback(() => {
     if (has_current_user_saved) {
       if (isCollectionMarkedForDownload) {
@@ -268,8 +282,10 @@ const CollectionScreenComponent = (props: CollectionScreenComponentProps) => {
             collectionId={playlist_id}
             isPrivate={is_private}
             isPublishing={_is_publishing ?? false}
+            onPressEdit={handlePressEdit}
             onPressFavorites={handlePressFavorites}
             onPressOverflow={handlePressOverflow}
+            onPressPublish={handlePressPublish}
             onPressRepost={handlePressRepost}
             onPressReposts={handlePressReposts}
             onPressSave={handlePressSave}

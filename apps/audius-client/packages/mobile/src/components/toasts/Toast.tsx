@@ -74,9 +74,11 @@ export const Toast = (props: ToastProps) => {
       toValue: 1,
       useNativeDriver: true
     }).start(() => {
-      setTimeout(() => {
-        animateOut()
-      }, timeout)
+      if (timeout !== 'MANUAL') {
+        setTimeout(() => {
+          animateOut()
+        }, timeout)
+      }
     })
   }, [animateOut, timeout])
 

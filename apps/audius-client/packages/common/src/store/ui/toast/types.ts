@@ -8,7 +8,7 @@ export type Toast = {
   content: ToastContent
   type?: ToastType
   key: string
-  timeout?: number
+  timeout?: number | 'MANUAL'
 }
 
 export type ToastState = {
@@ -22,3 +22,4 @@ export type ToastAction = PayloadAction<{
 }>
 export type AddToastAction = PayloadAction<Toast>
 export type DissmissToastAction = PayloadAction<{ key: string }>
+export type ManualClearToastAction = PayloadAction<{ key: string }>

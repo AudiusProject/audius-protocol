@@ -1,10 +1,14 @@
+import { FeatureFlags } from '@audius/common'
 import { View } from 'react-native'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
+import IconPencil from 'app/assets/images/iconPencil.svg'
+import IconRocket from 'app/assets/images/iconRocket.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton } from 'app/components/core'
 import { FavoriteButton } from 'app/components/favorite-button'
 import { RepostButton } from 'app/components/repost-button'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
@@ -13,11 +17,14 @@ type DetailsTileActionButtonsProps = {
   hasReposted: boolean
   hasSaved: boolean
   isOwner: boolean
+  isPlaylist?: boolean
   isPublished?: boolean
   hideFavorite?: boolean
   hideOverflow?: boolean
   hideRepost?: boolean
   hideShare?: boolean
+  onPressEdit?: GestureResponderHandler
+  onPressPublish?: GestureResponderHandler
   onPressRepost?: GestureResponderHandler
   onPressSave?: GestureResponderHandler
   onPressShare?: GestureResponderHandler
@@ -54,12 +61,15 @@ const useStyles = makeStyles(({ palette }) => ({
 export const DetailsTileActionButtons = ({
   hasReposted,
   hasSaved,
+  isPlaylist,
   isOwner,
-  isPublished = true,
+  isPublished,
   hideFavorite,
   hideOverflow,
   hideRepost,
   hideShare,
+  onPressEdit,
+  onPressPublish,
   onPressOverflow,
   onPressRepost,
   onPressSave,
@@ -67,6 +77,9 @@ export const DetailsTileActionButtons = ({
 }: DetailsTileActionButtonsProps) => {
   const styles = useStyles()
   const { neutralLight4 } = useThemeColors()
+  const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
+    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+  )
 
   const repostButton = (
     <RepostButton
@@ -105,11 +118,35 @@ export const DetailsTileActionButtons = ({
     />
   )
 
+  const editButton = (
+    <IconButton
+      fill={neutralLight4}
+      icon={IconPencil}
+      onPress={onPressEdit}
+      styles={{ icon: styles.actionButton }}
+    />
+  )
+
+  const publishButton = (
+    <IconButton
+      fill={neutralLight4}
+      icon={IconRocket}
+      // TODO: Add isDisabled based on if playlist is publishable logic
+      // Needs to check for hidden tracks and things like that
+      // isDisabled
+      onPress={onPressPublish}
+      styles={{ icon: styles.actionButton }}
+    />
+  )
+
+  const isPlaylistOwner = isPlaylistUpdatesEnabled && isPlaylist && isOwner
+
   return (
     <View style={styles.root}>
-      {hideRepost ? null : repostButton}
-      {hideFavorite ? null : favoriteButton}
+      {isPlaylistOwner ? editButton : hideRepost ? null : repostButton}
+      {isPlaylistOwner || hideFavorite ? null : favoriteButton}
       {hideShare ? null : shareButton}
+      {isPlaylistOwner && !isPublished ? publishButton : null}
       {hideOverflow ? null : overflowMenu}
     </View>
   )

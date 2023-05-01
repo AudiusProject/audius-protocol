@@ -22,6 +22,7 @@ import { LockedContentDrawer } from 'app/components/locked-content-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
 import { ProfileActionsDrawer } from 'app/components/profile-actions-drawer'
+import { PublishPlaylistDrawer } from 'app/components/publish-playlist-drawer'
 import { RateCtaDrawer } from 'app/components/rate-cta-drawer'
 import { ShareDrawer } from 'app/components/share-drawer'
 import { ShareToTikTokDrawer } from 'app/components/share-to-tiktok-drawer'
@@ -98,7 +99,8 @@ const commonDrawersMap: { [Modal in Modals]?: ComponentType } = {
   DeletePlaylistConfirmation: DeletePlaylistConfirmationDrawer,
   VipDiscord: VipDiscordDrawer,
   ProfileActions: ProfileActionsDrawer,
-  PlaybackRate: PlaybackRateDrawer
+  PlaybackRate: PlaybackRateDrawer,
+  PublishPlaylistConfirmation: PublishPlaylistDrawer
 }
 
 const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {

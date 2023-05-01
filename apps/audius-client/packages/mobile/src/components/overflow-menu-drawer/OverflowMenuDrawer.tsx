@@ -26,7 +26,7 @@ const overflowRowConfig: Record<OverflowAction, ActionDrawerRow> = {
     text: 'Delete Playlist',
     isDestructive: true
   },
-  [OverflowAction.PUBLISH_PLAYLIST]: { text: 'Publish Playlist' },
+  [OverflowAction.PUBLISH_PLAYLIST]: { text: 'Make Public' },
   [OverflowAction.VIEW_TRACK_PAGE]: { text: 'View Track Page' },
   [OverflowAction.VIEW_ARTIST_PAGE]: { text: 'View Artist Page' },
   [OverflowAction.VIEW_PLAYLIST_PAGE]: { text: 'View Playlist Page' },
