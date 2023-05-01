@@ -172,7 +172,7 @@ export class UserNotificationSettings {
       this.userIsEmailDeliverable[receiverUserId] &&
       !isInitiatorAbusive &&
       !userIsAbusive[receiverUserId] &&
-      this.email?.[receiverUserId].frequency === frequency
+      this.email?.[receiverUserId]?.frequency === frequency
     )
   }
 
