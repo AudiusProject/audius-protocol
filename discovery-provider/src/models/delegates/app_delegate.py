@@ -13,7 +13,6 @@ class AppDelegate(Base, RepresentableMixin):
     name = Column(String, nullable=False, index=False)
     is_personal_access = Column(Boolean, nullable=False, server_default=text("false"))
     is_revoked = Column(Boolean, nullable=False, server_default=text("false"))
-    updated_at = Column(DateTime, nullable=False)
     created_at = Column(DateTime, nullable=False)
     txhash = Column(
         String,

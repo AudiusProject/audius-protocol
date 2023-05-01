@@ -303,6 +303,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 blocknumber=(i + block_offset),
                 is_current=True,
                 txhash=delegation_meta.get("txhash", str(i + block_offset)),
+                updated_at=delegation_meta.get("updated_at", datetime.now()),
                 created_at=delegation_meta.get("created_at", datetime.now()),
             )
             session.add(delegation)
