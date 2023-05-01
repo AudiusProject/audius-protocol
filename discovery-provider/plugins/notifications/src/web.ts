@@ -30,7 +30,8 @@ export const configureWebPush = () => {
 }
 
 // utility functions
-export const sendBrowserNotification = async (settings: UserNotificationSettings, userId: number, title: string, message: string) => {
+export const sendBrowserNotification = async (shouldSendBrowserPush: boolean, settings: UserNotificationSettings, userId: number, title: string, message: string) => {
+    if (!shouldSendBrowserPush) return
     let numSentNotifs = 0
   
     try {

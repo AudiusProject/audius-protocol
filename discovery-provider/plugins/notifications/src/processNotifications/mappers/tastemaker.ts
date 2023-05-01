@@ -97,7 +97,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
 
     const title = `You're a Taste Maker!`
     const body = `${entityName} is now trending thanks to you! Great work 🙌🏽`
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
 
     // If the user has devices to the notification to, proceed
     if (

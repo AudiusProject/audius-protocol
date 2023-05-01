@@ -138,7 +138,7 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
       const title = 'New Artist Update'
       const body = description
-      await sendBrowserNotification(userNotificationSettings, userId, title, body)
+      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, userId, title, body)
 
       // If the user has devices to the notification to, proceed
       if (

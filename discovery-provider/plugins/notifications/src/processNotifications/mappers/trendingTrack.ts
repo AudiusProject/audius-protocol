@@ -88,7 +88,7 @@ export class TrendingTrack extends BaseNotification<TrendingTrackNotificationRow
     const body = `${tracks[this.trackId]?.title} is #${
       this.rank
     } on Trending right now!`
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
 
     // If the user has devices to the notification to, proceed
     if (

@@ -80,7 +80,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     const body = `${capitalize(
       newTopSupporterHandle
     )} dethroned you as ${supportedUserName}'s #1 Top Supporter! Tip to reclaim your spot?`
-    await sendBrowserNotification(
+    await sendBrowserNotification(isBrowserPushEnabled, 
       userNotificationSettings,
       this.receiverUserId,
       title,

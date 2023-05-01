@@ -57,7 +57,7 @@ export class Message extends BaseNotification<DMNotification> {
     const body = `New message from ${users[this.senderUserId].name}`
 
     if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'messages')) {
-      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
     }
 
     // If the user has devices to the notification to, proceed

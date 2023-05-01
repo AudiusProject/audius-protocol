@@ -112,7 +112,7 @@ export class SaveOfRepost extends BaseNotification<SaveOfRepostNotificationRow> 
 
     const title = 'New Favorite'
     const body = `${saveOfRepostUserName} favorited your repost of ${entityName}`
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
 
     // If the user has devices to the notification to, proceed
     if (

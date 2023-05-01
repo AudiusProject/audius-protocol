@@ -147,7 +147,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
 
     const title = 'Congratulations! 🎉'
     const body = this.getPushBodyText(entityName, isAlbum)
-    await sendBrowserNotification(
+    await sendBrowserNotification(isBrowserPushEnabled, 
       userNotificationSettings,
       this.receiverUserId,
       title,

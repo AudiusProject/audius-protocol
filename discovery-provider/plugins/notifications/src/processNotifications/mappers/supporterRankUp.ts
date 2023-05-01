@@ -75,7 +75,7 @@ export class SupporterRankUp extends BaseNotification<SupporterRankUpNotificatio
     const body = `${capitalize(sendingUserName)} became your #${
       this.rank
     } Top Supporter!`
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
 
     // If the user has devices to the notification to, proceed
     if (
