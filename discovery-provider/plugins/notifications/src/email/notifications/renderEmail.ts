@@ -19,6 +19,7 @@ type RenderEmailProps = {
   frequency: EmailFrequency
   dnDb: Knex
   identityDb: Knex
+  timezone?: string
 }
 
 export type ResourceIds = {
