@@ -295,12 +295,13 @@ const getEmailSubject = (
   timezone?: string
 ) => {
   const now = moment.tz(timezone)
+  const weekAgo = now.clone().subtract(6, 'days')
   // Note that scheduled emails are sent
   // at midnight the following day, so the current
   // day for the user will be a day ago by the time
   // they receive the email.
   const formattedDayAgo = now.format('MMMM Do YYYY')
-  const shortWeekAgoFormat = now.format('MMMM Do')
+  const shortWeekAgoFormat = weekAgo.format('MMMM Do')
   const liveSubjectFormat = `${notificationCount} unread notification${
     notificationCount > 1 ? 's' : ''
   }`
