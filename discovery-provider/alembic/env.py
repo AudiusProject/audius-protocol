@@ -124,7 +124,10 @@ def run_migrations_online():
         with context.begin_transaction():
             context.run_migrations()
 
-        load_triggers(connection)
+        try:
+            load_triggers(connection)
+        except Exception as e:
+            print(e)
 
 
 @compiles(CreateIndex)
