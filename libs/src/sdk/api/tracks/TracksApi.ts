@@ -165,15 +165,14 @@ export class TracksApi extends TracksApiWithoutStream {
     }
   }
 
-  // TODO: This should be using middleware
   private async generateTrackId() {
-    const host = await this.discoveryNodeSelectorService.getSelectedEndpoint()
+    const response = await this.request({
+      path: `/tracks/unclaimed_id`,
+      method: 'GET',
+      headers: {},
+      query: { noCache: Math.floor(Math.random() * 1000).toString() }
+    })
 
-    const response = await fetch(
-      `${host}/v1/tracks/unclaimed_id?noCache=${Math.floor(
-        Math.random() * 1000
-      ).toString()}`
-    )
     const { data } = await response.json()
     const id = decodeHashId(data)
     if (id === null) {
