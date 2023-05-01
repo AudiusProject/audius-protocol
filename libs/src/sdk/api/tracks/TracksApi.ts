@@ -1,4 +1,4 @@
-import { BASE_PATH, RequiredError } from '../generated/default/runtime'
+import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
 
 import {
   Configuration,
@@ -22,7 +22,7 @@ import { generateMetadataCidV1 } from '../../utils/cid'
 // Get the type of the generated TracksApi excluding streamTrack
 type GeneratedTracksApiWithoutStream = new (config: Configuration) => {
   [P in Exclude<keyof GeneratedTracksApi, 'streamTrack'>]: GeneratedTracksApi[P]
-}
+} & BaseAPI
 
 // Create a new "class" that masks our generated TracksApi with the new type
 const TracksApiWithoutStream: GeneratedTracksApiWithoutStream =
