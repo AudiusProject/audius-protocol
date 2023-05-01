@@ -181,11 +181,14 @@ const getNotifications = async (
   // filter for only enabled notifications in MappingFeatureName
   // on optimizely
   appNotifications = appNotifications.filter((notification) => {
-    const featureEnabled = remoteConfig.getFeatureVariableEnabled(
-      MappingFeatureName,
-      notificationTypeMapping[notification.type] || false
-    )
-    return featureEnabled
+    if (notificationTypeMapping[notification.type]) {
+      const featureEnabled = remoteConfig.getFeatureVariableEnabled(
+        MappingFeatureName,
+        notificationTypeMapping[notification.type]
+      )
+      return featureEnabled
+    }
+    return false
   })
 
   // This logic is to handle a 'live' frequency exception for message notifications so as to not spam users with
@@ -400,7 +403,7 @@ export async function processEmailNotifications(
                   error: 'No notifications to send in email'
                 }
               }
-              numEmailsSent++
+              numEmailsSent += 1
               await identityDb
                 .insert([
                   {
