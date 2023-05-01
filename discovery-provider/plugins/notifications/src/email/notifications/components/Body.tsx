@@ -3,7 +3,7 @@ import React from 'react'
 import Footer from './Footer'
 import Notification from './notifications/Notification'
 import { getNumberSuffix } from './utils'
-import { DMEntityType } from '../types'
+import { DMEntityType, EntityType } from '../types'
 
 const AudiusImage = () => {
   return (
@@ -108,7 +108,7 @@ const snippetMap = {
   ['create'](notification) {
     const [user] = notification.users
     if (
-      notification.entity.type === 'track' &&
+      notification.entity.type === EntityType.Track &&
       !isNaN(notification.entity.count) &&
       notification.entity.count > 1
     ) {
