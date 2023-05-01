@@ -14,10 +14,6 @@ begin
   if TG_OP = 'UPDATE' then
     old_row := OLD;
 
-    if (old_row.is_unlisted = true and new.is_unlisted = false)
-      delta := 1
-    end if;
-
     if (old_row.is_delete = false and new.is_delete = true) or (old_row.is_available = true and new.is_available = false) then
       delta := -1;
     end if;
@@ -43,23 +39,13 @@ begin
 
   -- If new track or newly unlisted track, create notification
   begin
-    if (new.is_available = TRUE AND 
+    if TG_OP = 'INSERT' AND
+    new.is_available = TRUE AND 
     new.is_delete = FALSE AND 
     new.is_playlist_upload = FALSE AND
     new.stem_of IS NULL AND
     new.is_unlisted = FALSE AND
-    (
-      (
-        new.created_at = new.updated_at AND
-        TG_OP = 'INSERT'
-      ) OR (
-        TG_OP = 'INSERT' AND
-        old_row.is_unlisted = TRUE
-      ) OR (
-        TG_OP = 'UPDATE' AND
-        old_row.is_unlisted = TRUE
-      )
-    ) THEN
+    (new.created_at = new.updated_at OR old_row.is_unlisted = TRUE) then
       select array(
         select subscriber_id 
           from subscriptions 
@@ -90,23 +76,13 @@ begin
 
   -- If new remix or newly unlisted remix, create notification
   begin
-    if new.remix_of is not null AND
+    if TG_OP = 'INSERT' AND
+    new.remix_of is not null AND
     new.is_available = TRUE AND
     new.is_delete = FALSE AND
     new.stem_of IS NULL AND
     new.is_unlisted = FALSE AND
-    (
-      (
-        new.created_at = new.updated_at AND 
-        TG_OP = 'INSERT'
-      ) OR (
-        TG_OP = 'INSERT' AND
-        old_row.is_unlisted = TRUE
-      ) OR (
-        TG_OP = 'UPDATE' AND
-        old_row.is_unlisted = TRUE
-      )
-    ) then
+    (new.created_at = new.updated_at OR old_row.is_unlisted = TRUE) then
       select owner_id into parent_track_owner_id from tracks where is_current and track_id = (new.remix_of->'tracks'->0->>'parent_track_id')::int limit 1;
       if parent_track_owner_id is not null then
         insert into notification
