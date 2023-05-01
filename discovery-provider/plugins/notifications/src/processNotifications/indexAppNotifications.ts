@@ -18,6 +18,8 @@ import { TipReceive } from './mappers/tipReceive'
 import { TipSend } from './mappers/tipSend'
 import { Milestone } from './mappers/milestone'
 import {
+  BrowserPluginMappings,
+  BrowserPushPlugin,
   EmailPluginMappings,
   MappingFeatureName,
   MappingVariable,
@@ -99,6 +101,14 @@ export class AppNotificationsProcessor {
     )
     // If the feature does not exist in remote config, then it returns null
     // In that case, set to false bc we want to explicitly set to true
+    return Boolean(isEnabled)
+  }
+
+  getIsBrowserPushEnabled(): boolean {
+    const isEnabled = this.remoteConfig.getFeatureVariableEnabled(
+      BrowserPushPlugin,
+      BrowserPluginMappings.Enabled
+    )
     return Boolean(isEnabled)
   }
 
