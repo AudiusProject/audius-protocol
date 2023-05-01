@@ -14,30 +14,23 @@ const port = 3000;
 
 // Test/develop sdk functionality here
 
-// Local privateKey
-const privateKey = new Uint8Array([
-  126, 19, 187, 141, 171, 78, 83, 59, 39, 220, 234, 104, 57, 28, 53, 4, 148,
-  168, 225, 58, 116, 19, 11, 93, 234, 207, 97, 114, 139, 76, 180, 134,
-]);
-
 const audiusSdk = sdk({
   appName: "sdk-consumer",
   services: {
-    // TODO: make this use local nodes
     discoveryNodeSelector: new DiscoveryNodeSelector({
-      bootstrapServices: stagingConfig.discoveryNodes,
+      initialSelectedNode: "http://audius-protocol-discovery-provider-1/",
     }),
     // TODO: update walletApi to support apiKey and apiSecret
-    // TODO: Fix types here, or maybe will be unecessary once we suppot ^
+    // TODO: Fix types here, or maybe will be unecessary once we support ^
     walletApi: {
       sign: async (data: string) => {
-        return signTypedData(privateKey as Buffer, {
+        return signTypedData(new Buffer([]), {
           data,
         }) as any;
       },
       getSharedSecret: async (publicKey: string | Uint8Array) =>
         new Uint8Array(),
-      getAddress: async () => "0x3a4105285fecb3978291e981d109e8b4d7272a98",
+      getAddress: async () => "",
     },
   },
 });
