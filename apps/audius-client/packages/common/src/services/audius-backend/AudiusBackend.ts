@@ -1335,13 +1335,26 @@ export const audiusBackend = ({
     metadata: TrackMetadata & { artwork: { file: File } }
   ) {
     const cleanedMetadata = schemas.newTrackMetadata(metadata, true)
+    const storageV2UploadEnabled = await getFeatureEnabled(
+      FeatureFlags.STORAGE_V2_TRACK_UPLOAD
+    )
 
-    if (metadata.artwork) {
-      const resp = await audiusLibs.File.uploadImage(metadata.artwork.file)
-      cleanedMetadata.cover_art_sizes = resp.dirCID
+    if (storageV2UploadEnabled) {
+      if (metadata.artwork) {
+        const resp = await audiusLibs.creatorNode.uploadTrackCoverArtV2(
+          metadata.artwork.file,
+          () => {}
+        )
+        cleanedMetadata.cover_art_sizes = resp.id
+      }
+      return await audiusLibs.Track.updateTrackV2(cleanedMetadata)
+    } else {
+      if (metadata.artwork) {
+        const resp = await audiusLibs.File.uploadImage(metadata.artwork.file)
+        cleanedMetadata.cover_art_sizes = resp.dirCID
+      }
+      return await audiusLibs.Track.updateTrack(cleanedMetadata)
     }
-
-    return await audiusLibs.Track.updateTrack(cleanedMetadata)
   }
 
   async function getCreators(ids: ID[]) {
