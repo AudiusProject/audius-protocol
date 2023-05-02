@@ -57,10 +57,7 @@ def test_get_save_notifications(app):
                 u1_notifications[1]["actions"][0]["data"]["type"]
                 == "PLAYLIST_SAVE_COUNT"
             )
-            assert (
-                u1_notifications[1]["actions"][0]["data"]["type"]
-                == "PLAYLIST_SAVE_COUNT"
-            )
+            assert u1_notifications[1]["actions"][0]["data"]["playlist_id"] == 1
             assert u1_notifications[1]["actions"][0]["data"]["threshold"] == 10
 
             assert u1_notifications[2]["group_id"] == "save:1:type:track"
