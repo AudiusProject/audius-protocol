@@ -1,6 +1,16 @@
+create or replace function track_is_public(track record) returns boolean as $$
+begin
+  return track.is_unlisted = false
+     and track.is_available = true
+     and track.is_delete = false
+     and track.stem_of is null;
+end
+$$ LANGUAGE plpgsql;
+
 create or replace function handle_track() returns trigger as $$
 declare
   old_row tracks%ROWTYPE;
+  is_new_upload boolean;
   new_val int;
   delta int := 0;
   parent_track_owner_id int;
@@ -9,48 +19,47 @@ begin
   insert into aggregate_track (track_id) values (new.track_id) on conflict do nothing;
   insert into aggregate_user (user_id) values (new.owner_id) on conflict do nothing;
 
+  -- typical "track edits" will mark old row is_current = false and insert a new row
+  -- so find the old_row here:
+  select * into old_row from tracks where track_id = new.track_id and is_current = false order by blocknumber desc limit 1;
 
-  -- increment or decrement?
+  -- but there are some places where we do an "in place" update (like update is_available to false)
   if TG_OP = 'UPDATE' then
     old_row := OLD;
-
-    if (old_row.is_delete = false and new.is_delete = true) or (old_row.is_available = true and new.is_available = false) then
-      delta := -1;
-    end if;
-  else
-    select * into old_row from tracks where track_id = new.track_id and is_current = false order by blocknumber desc limit 1;
-
-    if new.is_delete or new.is_available = false or new.stem_of is not null then
-      delta := -1;
-    else
-      delta := 1;
-    end if;
-
-    -- special case when unlisted
-    if new.is_unlisted then
-      delta := 0;
-    end if;
+  elsif new.created_at = new.updated_at AND TG_OP = 'INSERT' then
+    is_new_upload := true;
   end if;
 
-  update aggregate_user 
+
+  -- update aggregate_user.track_count
+  if old_row.track_id is not null then
+    -- making existing track private: decrement
+    if track_is_public(old_row) and not track_is_public(new) then
+      delta := -1;
+    end if;
+
+    -- making existing track public: increment
+    if not track_is_public(old_row) and track_is_public(new) then
+      delta := 1;
+    end if;
+  elsif is_new_upload and track_is_public(new) then
+    -- new public track added: increment
+    delta := 1;
+  end if;
+
+  update aggregate_user
     set track_count = track_count + delta
   where user_id = new.owner_id
   ;
 
   -- If new track or newly unlisted track, create notification
   begin
-    if TG_OP = 'INSERT' AND
-    new.is_available = TRUE AND 
-    new.is_delete = FALSE AND 
-    new.is_playlist_upload = FALSE AND
-    new.stem_of IS NULL AND
-    new.is_unlisted = FALSE AND
-    (new.created_at = new.updated_at OR old_row.is_unlisted = TRUE) then
+    if delta = 1 AND new.is_playlist_upload = FALSE THEN
       select array(
-        select subscriber_id 
-          from subscriptions 
-          where is_current and 
-          not is_delete and 
+        select subscriber_id
+          from subscriptions
+          where is_current and
+          not is_delete and
           user_id=new.owner_id
       ) into subscriber_user_ids;
 
@@ -76,13 +85,7 @@ begin
 
   -- If new remix or newly unlisted remix, create notification
   begin
-    if TG_OP = 'INSERT' AND
-    new.remix_of is not null AND
-    new.is_available = TRUE AND
-    new.is_delete = FALSE AND
-    new.stem_of IS NULL AND
-    new.is_unlisted = FALSE AND
-    (new.created_at = new.updated_at OR old_row.is_unlisted = TRUE) then
+    if delta = 1 AND new.remix_of is not null THEN
       select owner_id into parent_track_owner_id from tracks where is_current and track_id = (new.remix_of->'tracks'->0->>'parent_track_id')::int limit 1;
       if parent_track_owner_id is not null then
         insert into notification
