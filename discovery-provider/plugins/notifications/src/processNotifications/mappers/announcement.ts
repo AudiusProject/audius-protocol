@@ -110,11 +110,9 @@ export const fetchUsersPage = async (dnDb: Knex, offset: number, page_count: num
         .where('user_id', '>', offset)
         .andWhere('is_current', true)
         .andWhere('is_deactivated', false)
-        .andWhere('is_available', true)
         .orWhere((inner) =>
           inner.where('user_id', '=', offset)
             .andWhere('is_current', true)
-            .andWhere('is_available', true)
         )
         .andWhere('is_deactivated', false)
         // order by established index, this keeps perf constant
