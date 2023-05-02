@@ -36,7 +36,7 @@
   height: 100%;
   width: 100%;
   pointer-events: none;
-  z-index: 10000;
+  z-index: var(--layer-modal);
   overflow: hidden;
   top: 0;
 }
@@ -47,7 +47,7 @@
   height: 100%;
   width: 100%;
   pointer-events: none;
-  z-index: 10000;
+  z-index: var(--layer-modal);
   overflow: hidden;
   top: 0;
 }
@@ -57,7 +57,7 @@
   top: 0;
   width: 100vw;
   min-height: 100vh;
-  z-index: 10000;
+  z-index: var(--layer-modal);
   user-select: none;
   display: flex;
   justify-content: center;

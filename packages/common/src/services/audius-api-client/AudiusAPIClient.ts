@@ -82,6 +82,8 @@ const FULL_ENDPOINT_MAP = {
   getUser: (userId: OpaqueID) => `/users/${userId}`,
   userByHandle: (handle: OpaqueID) => `/users/handle/${handle}`,
   userTracksByHandle: (handle: OpaqueID) => `/users/handle/${handle}/tracks`,
+  userAiTracksByHandle: (handle: OpaqueID) =>
+    `/users/handle/${handle}/tracks/ai_attributed`,
   userFavoritedTracks: (userId: OpaqueID) =>
     `/users/${userId}/favorites/tracks`,
   userRepostsByHandle: (handle: OpaqueID) => `/users/handle/${handle}/reposts`,
@@ -242,6 +244,15 @@ type GetUserByHandleArgs = {
 }
 
 type GetUserTracksByHandleArgs = {
+  handle: string
+  currentUserId: Nullable<ID>
+  sort?: 'date' | 'plays'
+  offset?: number
+  limit?: number
+  getUnlisted: boolean
+}
+
+type GetUserAiTracksByHandleArgs = {
   handle: string
   currentUserId: Nullable<ID>
   sort?: 'date' | 'plays'
@@ -1082,6 +1093,47 @@ export class AudiusAPIClient {
     return adapted
   }
 
+  async getUserAiTracksByHandle({
+    handle,
+    currentUserId,
+    sort = 'date',
+    limit,
+    offset,
+    getUnlisted
+  }: GetUserAiTracksByHandleArgs) {
+    this._assertInitialized()
+    const encodedCurrentUserId = encodeHashId(currentUserId)
+    const params = {
+      user_id: encodedCurrentUserId || undefined,
+      sort,
+      limit,
+      offset
+    }
+
+    let headers = {}
+    if (encodedCurrentUserId && getUnlisted) {
+      const { data, signature } = await this.audiusBackendInstance.signData()
+      headers = {
+        [AuthHeaders.Message]: data,
+
+        [AuthHeaders.Signature]: signature
+      }
+    }
+
+    const response = await this._getResponse<APIResponse<APITrack[]>>(
+      FULL_ENDPOINT_MAP.userAiTracksByHandle(handle),
+      params,
+      true,
+      PathType.VersionFullPath,
+      headers
+    )
+
+    if (!response) return []
+
+    const adapted = response.data.map(adapter.makeTrack).filter(removeNullable)
+    return adapted
+  }
+
   async getFavorites({ currentUserId, limit }: GetFavoritesArgs) {
     this._assertInitialized()
     const encodedUserId = encodeHashId(currentUserId)
@@ -1816,7 +1868,7 @@ export class AudiusAPIClient {
   async _getResponse<T>(
     path: string,
     params: QueryParams = {},
-    retry = true,
+    retry = false,
     pathType: PathType = PathType.VersionFullPath,
     headers?: { [key: string]: string },
     splitArrayParams = false,

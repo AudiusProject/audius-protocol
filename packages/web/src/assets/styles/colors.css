@@ -59,6 +59,9 @@
 
   --accent-purple: #8e51cf;
 
+  --ai-primary: #1fd187;
+  --ai-secondary: #0fc578;
+
   --primary-gradient: linear-gradient(135deg, #ee00ed 0%, #c514e0 100%);
   --primary-gradient-alt-1: linear-gradient(135deg, #d63fe6 0%, #a30cb3 100%);
   --secondary-gradient: linear-gradient(315deg, #6b0fb3 0%, #7e1bcc 100%);

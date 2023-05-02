@@ -136,6 +136,7 @@ export type ModalTitleProps = HTMLAttributes<HTMLDivElement> & {
   icon?: React.ReactNode
   iconClassName?: string
   title: React.ReactNode
+  titleClassName?: string
   subtitle?: React.ReactNode
   titleId?: string
   subtitleId?: string

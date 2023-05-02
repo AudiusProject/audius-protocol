@@ -4,6 +4,7 @@ export enum Type {
   PRIMARY = 'primary',
   PRIMARY_ALT = 'primaryAlt',
   SECONDARY = 'secondary',
+  TERTIARY = 'tertiary',
   COMMON = 'common',
   COMMON_ALT = 'commonAlt',
   DISABLED = 'disabled',

@@ -10,6 +10,7 @@ import { combineReducers } from 'redux'
 import backend from 'common/store/backend/reducer'
 import confirmer from 'common/store/confirmer/reducer'
 import signOnReducer from 'common/store/pages/signon/reducer'
+import searchAiBar from 'common/store/search-ai-bar/reducer'
 import searchBar from 'common/store/search-bar/reducer'
 import embedModal from 'components/embed-modal/store/reducers'
 import firstUploadModal from 'components/first-upload-modal/store/slice'
@@ -41,6 +42,7 @@ const createRootReducer = (routeHistory: History) =>
     signOn: signOnReducer,
     confirmer,
     searchBar,
+    searchAiBar,
 
     // (End common store)
 

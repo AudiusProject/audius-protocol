@@ -34,6 +34,7 @@ import {
 
 import { DetailsProgressInfo } from './DetailsProgressInfo'
 import { DetailsTileActionButtons } from './DetailsTileActionButtons'
+import { DetailsTileAiAttribution } from './DetailsTileAiAttribution'
 import { DetailsTileHasAccess } from './DetailsTileHasAccess'
 import { DetailsTileNoAccess } from './DetailsTileNoAccess'
 import { DetailsTileStats } from './DetailsTileStats'
@@ -225,6 +226,9 @@ export const DetailsTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
+    FeatureFlags.AI_ATTRIBUTION
+  )
   const { track_id: trackId, premium_conditions: premiumConditions } =
     track ?? {}
 
@@ -239,6 +243,7 @@ export const DetailsTile = ({
   const isOwner = user?.user_id === currentUserId
   const isLongFormContent =
     track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
+  const aiAttributionUserId = track?.ai_attribution_user_id
 
   const handlePressArtistName = useCallback(() => {
     if (!user) {
@@ -397,6 +402,9 @@ export const DetailsTile = ({
               onPressPublish={onPressPublish}
             />
           </View>
+          {isAiGeneratedTracksEnabled && aiAttributionUserId ? (
+            <DetailsTileAiAttribution userId={aiAttributionUserId} />
+          ) : null}
           {isGatedContentEnabled && doesUserHaveAccess && premiumConditions && (
             <DetailsTileHasAccess
               premiumConditions={premiumConditions}

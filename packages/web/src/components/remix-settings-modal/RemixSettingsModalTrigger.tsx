@@ -1,5 +1,5 @@
 import { FeatureFlags } from '@audius/common'
-import { Button, ButtonType } from '@audius/stems'
+import { Button, ButtonSize, ButtonType, IconRemix } from '@audius/stems'
 
 import Switch from 'components/switch/Switch'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -12,6 +12,7 @@ const messages = {
 }
 
 type RemixSettingsModalTriggerProps = {
+  className?: string
   onClick: () => void
   hideRemixes: boolean
   handleToggle: () => void
@@ -27,12 +28,13 @@ export const RemixSettingsModalTrigger = (
   if (isGatedContentEnabled) {
     return (
       <Button
+        className={props.className}
         type={ButtonType.COMMON_ALT}
         name='remixSettings'
         text={messages.remixSettings}
-        className={styles.trigger}
-        textClassName={styles.triggerText}
+        size={ButtonSize.SMALL}
         onClick={props.onClick}
+        leftIcon={<IconRemix />}
       />
     )
   }

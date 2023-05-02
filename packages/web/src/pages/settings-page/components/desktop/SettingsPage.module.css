@@ -86,3 +86,9 @@
 .iconVerified path:nth-child(2) {
   fill: transparent;
 }
+
+.aiAttributionEnabled {
+  color: var(--accent-green);
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+}

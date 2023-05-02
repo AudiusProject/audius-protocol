@@ -1,26 +1,32 @@
+import { ComponentProps, ElementType } from 'react'
+
 import cn from 'classnames'
-import { Link, LinkProps } from 'react-router-dom'
 
 import styles from './Tag.module.css'
 
-export type TagProps = LinkProps & {
+const defaultElement = 'span'
+
+type TagOwnProps<TagElementType extends ElementType = ElementType> = {
   tag: string
+  as?: TagElementType
 }
 
-export const Tag = (props: TagProps) => {
-  const { tag, className, onClick, ...linkProps } = props
+export type TagProps<TagComponentType extends ElementType> =
+  TagOwnProps<TagComponentType> &
+    Omit<ComponentProps<TagComponentType>, keyof TagOwnProps>
+
+export const Tag = <TagElementType extends ElementType = typeof defaultElement>(
+  props: TagProps<TagElementType>
+) => {
+  const { tag, as: Component = defaultElement, className, ...other } = props
 
   const style = {
-    [styles.clickable]: !!onClick
+    [styles.clickable]: !!other.onClick
   }
 
   return (
-    <Link
-      className={cn(className, styles.tag, style)}
-      onClick={onClick}
-      {...linkProps}
-    >
+    <Component className={cn(className, styles.tag, style)} {...other}>
       <span className={styles.textLabel}>{tag}</span>
-    </Link>
+    </Component>
   )
 }

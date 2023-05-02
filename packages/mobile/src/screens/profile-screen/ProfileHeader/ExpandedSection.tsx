@@ -1,14 +1,16 @@
-import { accountSelectors } from '@audius/common'
+import { FeatureFlags, accountSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
 
 import IconTip from 'app/assets/images/iconTip.svg'
 import { Divider, Text } from 'app/components/core'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 import { useSelectProfile } from '../selectors'
 
+import { AiGeneratedTracksButton } from './AiGeneratedTracksButton'
 import { Bio } from './Bio'
 import { ProfileMutualsButton } from './ProfileMutualsButton'
 import { ProfileRelatedArtistsButton } from './ProfileRelatedArtistsButton'
@@ -66,12 +68,22 @@ const SupportingSectionTitle = () => {
 
 export const ExpandedSection = () => {
   const styles = useStyles()
-  const { supporting_count, user_id, current_user_followee_follow_count } =
-    useSelectProfile([
-      'supporting_count',
-      'user_id',
-      'current_user_followee_follow_count'
-    ])
+  const {
+    supporting_count,
+    user_id,
+    current_user_followee_follow_count,
+    allow_ai_attribution
+  } = useSelectProfile([
+    'supporting_count',
+    'user_id',
+    'current_user_followee_follow_count',
+    'allow_ai_attribution'
+  ])
+
+  const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
+    FeatureFlags.AI_ATTRIBUTION
+  )
+
   const accountId = useSelector(getUserId)
   const isOwner = user_id === accountId
 
@@ -81,6 +93,9 @@ export const ExpandedSection = () => {
       <ProfileTierTile interactive={false} style={styles.audioTier} />
       <SocialsAndSites />
       <View style={styles.buttonRow}>
+        {allow_ai_attribution && isAiGeneratedTracksEnabled ? (
+          <AiGeneratedTracksButton />
+        ) : null}
         {isOwner || current_user_followee_follow_count === 0 ? null : (
           <ProfileMutualsButton />
         )}

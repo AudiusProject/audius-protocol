@@ -476,7 +476,7 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       lineupContainerStyles,
       isMobile,
       showLeadingElementArtistPick = true,
-      lineup: { isMetadataLoading, page },
+      lineup: { isMetadataLoading, page, entries = [] },
       numPlaylistSkeletonRows,
       isTrending = false,
       isFeed = false,
@@ -505,13 +505,11 @@ class LineupProvider extends PureComponent<CombinedProps, LineupProviderState> {
       lineupStyle = styles.section
     }
 
-    lineup.entries = lineup.entries || []
-
     // If the lineup is supposed to display a fixed count, make sure to skip over deleted
     // tracks. E.g. if a lineup is supposed to show a count of 5, but two entries are deleted
     // show 7 instead.
-    const lineupCount = count !== undefined ? count : lineup.entries.length
-    let tiles = lineup.entries
+    const lineupCount = count !== undefined ? count : entries.length
+    let tiles = entries
       .map((entry, index) => {
         if (entry.kind === Kind.TRACKS || entry.track_id) {
           // Render a track tile if the kind tracks or there's a track id present

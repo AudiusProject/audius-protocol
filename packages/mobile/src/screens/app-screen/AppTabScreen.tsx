@@ -36,6 +36,7 @@ import {
   SupportingUsersScreen
 } from 'app/screens/user-list-screen'
 
+import { AiGeneratedTracksScreen } from '../ai-generated-tracks-screen'
 import { AppDrawerContext } from '../app-drawer-screen'
 import { AudioScreen } from '../audio-screen'
 import { EditPlaylistScreen } from '../edit-playlist-screen/EditPlaylistScreen'
@@ -77,6 +78,7 @@ export type AppTabScreenParamList = {
   Followers: { userId: ID }
   Following: { userId: ID }
   Mutuals: { userId: ID }
+  AiGeneratedTracks: { userId: ID }
   RelatedArtists: { userId: ID }
   Search: undefined
   SearchResults: { query: string }
@@ -222,6 +224,11 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         <Stack.Screen
           name='Favorited'
           component={FavoritedScreen}
+          options={screenOptions}
+        />
+        <Stack.Screen
+          name='AiGeneratedTracks'
+          component={AiGeneratedTracksScreen}
           options={screenOptions}
         />
         <Stack.Screen

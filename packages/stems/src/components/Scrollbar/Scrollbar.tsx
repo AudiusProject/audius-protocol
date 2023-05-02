@@ -19,6 +19,7 @@ export const Scrollbar = ({
   children,
   className,
   id,
+  forward,
   ...props
 }: ScrollbarProps) => {
   // Do not remove:
@@ -61,6 +62,8 @@ export const Scrollbar = ({
     }, 1400)
   }
 
+  const content = forward ? children : <div ref={ref}>{children}</div>
+
   return (
     <PerfectScrollbar
       {...props}
@@ -69,7 +72,7 @@ export const Scrollbar = ({
       onMouseEnter={showScrollbar}
       onMouseLeave={hideScrollbar}
     >
-      <div ref={ref}>{children}</div>
+      {content}
     </PerfectScrollbar>
   )
 }

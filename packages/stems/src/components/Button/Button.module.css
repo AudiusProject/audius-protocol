@@ -37,8 +37,12 @@
   padding-right: var(--unit-4);
 }
 
-.button .icon svg {
+.button.medium .icon svg {
   width: var(--unit-6);
+}
+
+.button.small .icon svg {
+  width: var(--unit-4);
 }
 
 .button .icon path {
@@ -48,6 +52,10 @@
 
 .button .icon.left {
   margin-right: var(--unit-3);
+}
+
+.button.small .icon.left {
+  margin-right: var(--unit-2);
 }
 
 .button .icon.left.noText {
@@ -183,6 +191,35 @@
   background: var(--primary-dark-2);
 }
 
+/* Tertiary Button */
+
+.tertiary {
+  background: var(--white);
+  border: 1px solid var(--neutral-light-7);
+  border-radius: 4px;
+}
+
+.tertiary .textLabel {
+  color: var(--secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+}
+
+.tertiary .icon path,
+.tertiary .icon use {
+  fill: var(--secondary);
+}
+
+.tertiary.includeHoverAnimations:hover:enabled {
+  transform: var(--grow);
+  background-color: var(--static-white);
+}
+
+.tertiary.includeHoverAnimations:active:enabled {
+  transform: perspective(1px) scale3d(0.99, 0.99, 0.99);
+}
+
 /* Common Button */
 
 .common {
@@ -254,6 +291,10 @@
   font-size: var(--font-s);
   font-weight: var(--font-bold);
   letter-spacing: 0.5px;
+}
+
+.commonAlt.small .textLabel {
+  font-size: var(--font-xs);
 }
 
 .commonAlt .icon path,

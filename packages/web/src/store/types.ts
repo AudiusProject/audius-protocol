@@ -20,6 +20,7 @@ import {
 import { RouterState } from 'connected-react-router'
 
 import signOnReducer from 'common/store/pages/signon/reducer'
+import { SearchAiBarState } from 'common/store/search-ai-bar/types'
 import { SearchBarState } from 'common/store/search-bar/types'
 import { EmbedModalState } from 'components/embed-modal/store/types'
 import { FirstUploadModalState } from 'components/first-upload-modal/store/slice'
@@ -49,7 +50,9 @@ export type AppState = CommonState & {
   // These belong in CommonState but are here until we move them to the @audius/common package:
   backend: BackendState
   confirmer: ConfirmerState
+
   searchBar: SearchBarState
+  searchAiBar: SearchAiBarState
   signOn: ReturnType<typeof signOnReducer>
 
   // Config

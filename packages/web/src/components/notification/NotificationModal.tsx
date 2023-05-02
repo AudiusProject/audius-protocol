@@ -1,6 +1,5 @@
 import { AnnouncementNotification } from '@audius/common'
-import { Modal, Scrollbar } from '@audius/stems'
-import ReactMarkdown from 'react-markdown'
+import { Modal, Scrollbar, MarkdownViewer } from '@audius/stems'
 
 import { ReactComponent as IconRemove } from 'assets/img/iconRemove.svg'
 
@@ -32,15 +31,15 @@ export const NotificationModal = (props: NotificationModalProps) => {
           <IconRemove className={styles.iconRemove} onClick={onClose} />
           <IconAnnouncement />
           <div className={styles.title}>
-            <ReactMarkdown source={notification.title} escapeHtml={false} />
+            <MarkdownViewer
+              className={styles.titleMarkdown}
+              markdown={notification.title}
+            />
           </div>
         </div>
         <Scrollbar className={styles.scrollContent}>
           <div className={styles.body}>
-            <ReactMarkdown
-              source={notification.longDescription}
-              escapeHtml={false}
-            />
+            <MarkdownViewer markdown={notification.longDescription ?? ''} />
           </div>
         </Scrollbar>
       </div>

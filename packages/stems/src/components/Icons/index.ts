@@ -141,3 +141,4 @@ export { ReactComponent as IconDashboard } from '../../assets/icons/iconDashboar
 export { ReactComponent as IconMood } from '../../assets/icons/iconMood.svg'
 export { ReactComponent as IconDesktop } from '../../assets/icons/iconDesktop.svg'
 export { ReactComponent as IconTrash } from '../../assets/icons/iconTrash.svg'
+export { ReactComponent as IconRobot } from '../../assets/icons/iconRobot.svg'

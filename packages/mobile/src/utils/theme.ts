@@ -11,6 +11,8 @@ export enum Theme {
 }
 
 export const defaultTheme = {
+  aiPrimary: '#1FD187',
+  aiSecondary: '#0FC578',
   background: '#F3F0F7',
   backgroundSecondary: '#FAFAFA',
   primary: '#CC0FE0',
@@ -67,6 +69,8 @@ export const defaultTheme = {
 }
 
 export const darkTheme = {
+  aiPrimary: '#1FD187',
+  aiSecondary: '#0FC578',
   background: '#242438',
   backgroundSecondary: '#2F3048',
   primary: '#C74BD3',
@@ -173,6 +177,8 @@ export const matrixTheme = {
 }
 
 export type ThemeColors = {
+  aiPrimary: string
+  aiSecondary: string
   background: string
   backgroundSecondary: string
   primary: string

@@ -10,6 +10,7 @@ import { Timestamped } from './Timestamped'
 
 export type UserMetadata = {
   album_count: number
+  allow_ai_attribution?: boolean
   artist_pick_track_id: Nullable<number>
   bio: Nullable<string>
   blocknumber: number

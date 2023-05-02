@@ -679,6 +679,7 @@ const ProfilePage = ({
         <ProfileWrapping
           userId={userId}
           isDeactivated={!!profile?.is_deactivated}
+          allowAiAttribution={!!profile?.allow_ai_attribution}
           loading={status === Status.LOADING}
           verified={verified}
           profilePictureSizes={profilePictureSizes}

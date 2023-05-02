@@ -9,7 +9,7 @@ export default {
 }
 
 const Template: Story<ScrubberProps> = (args) => <Scrubber {...args} />
-const baseProps: ScrubberProps = {
+const baseProps: Partial<ScrubberProps> = {
   isPlaying: false,
   mediaKey: '1',
   elapsedSeconds: 0,

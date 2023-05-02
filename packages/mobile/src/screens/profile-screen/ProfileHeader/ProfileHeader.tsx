@@ -62,7 +62,8 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     twitter_handle: twitterHandle,
     instagram_handle: instagramHandle,
     tiktok_handle: tikTokHandle,
-    supporting_count: supportingCount
+    supporting_count: supportingCount,
+    allow_ai_attribution
   } = useSelectProfile([
     'user_id',
     'does_current_user_follow',
@@ -72,7 +73,8 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     'twitter_handle',
     'instagram_handle',
     'tiktok_handle',
-    'supporting_count'
+    'supporting_count',
+    'allow_ai_attribution'
   ])
   const { tier = 'none' } = useSelectTierInfo(userId)
   const hasTier = tier !== 'none'
@@ -85,7 +87,11 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
   const isSupporting = supportingCount > 0
   // Note: we also if the profile bio is longer than 3 lines, but that's handled in the Bio component.
   const shouldExpand =
-    hasTier || hasMutuals || hasMultipleSocials || isSupporting
+    hasTier ||
+    hasMutuals ||
+    hasMultipleSocials ||
+    isSupporting ||
+    allow_ai_attribution
 
   useEffect(() => {
     if (!isExpansible && shouldExpand) {

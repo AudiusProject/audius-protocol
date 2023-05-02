@@ -17,6 +17,10 @@
   margin-right: var(--unit-2);
 }
 
+.icon.hideText {
+  margin: 0;
+}
+
 .icon path {
   fill: var(--static-white);
 }

@@ -323,7 +323,11 @@ function* watchFetchCoverPhoto() {
 
 export function* fetchUserSocials({ handle }) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
-  const user = yield call(waitForValue, getUser, { handle })
+  let user = yield select(getUser, { handle })
+  if (!user) {
+    yield call(fetchUserByHandle, handle)
+  }
+  user = yield call(waitForValue, getUser, { handle })
   const socials = yield call(
     audiusBackendInstance.getCreatorSocialHandle,
     user.handle

@@ -132,6 +132,7 @@ const TrackPage = ({
       playing={heroPlaying}
       trackTitle={defaults.title}
       trackId={defaults.trackId}
+      aiAttributionUserId={defaults.aiAttributionUserId}
       userId={user?.user_id ?? 0}
       artistName={emptyStringGuard(user?.name)}
       artistHandle={emptyStringGuard(user?.handle)}

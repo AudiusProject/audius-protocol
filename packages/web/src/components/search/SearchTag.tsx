@@ -3,6 +3,7 @@ import { useCallback, MouseEvent } from 'react'
 import { AllTrackingEvents, Name } from '@audius/common'
 import { Tag } from '@audius/stems'
 import type { TagProps } from '@audius/stems'
+import { Link } from 'react-router-dom'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { searchResultsPage } from 'utils/route'
@@ -12,7 +13,7 @@ type TagClickingEvent = Extract<
   { eventName: Name.TAG_CLICKING }
 >
 
-type TagPropsBase = Omit<TagProps, 'to'>
+type TagPropsBase = Omit<TagProps<Link>, 'to'>
 
 type SearchTagProps = TagPropsBase & {
   source: TagClickingEvent['source']
@@ -32,6 +33,11 @@ export const SearchTag = (props: SearchTagProps) => {
   )
 
   return (
-    <Tag {...props} to={searchResultsPage(`#${tag}`)} onClick={handleClick} />
+    <Tag
+      {...props}
+      as={Link}
+      to={searchResultsPage(`#${tag}`)}
+      onClick={handleClick}
+    />
   )
 }

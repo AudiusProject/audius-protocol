@@ -151,8 +151,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(function Modal(
   const titleId = `${id}-title` || ariaLabelledbyProp
   const subtitleId = `${id}-subtitle` || ariaDescribedbyProp
   const modalContextValue = useMemo(() => {
-    return { titleId, subtitleId }
-  }, [titleId, subtitleId])
+    return { titleId, subtitleId, onClose }
+  }, [titleId, subtitleId, onClose])
 
   const onTouchMove = useCallback(
     (e: any) => {

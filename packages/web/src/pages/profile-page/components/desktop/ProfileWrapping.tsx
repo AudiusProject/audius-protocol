@@ -12,6 +12,7 @@ import styles from './ProfilePage.module.css'
 type ProfileWrappingProps = {
   userId: Nullable<ID>
   isDeactivated: boolean
+  allowAiAttribution: boolean
   loading: boolean
   verified: boolean
   profilePictureSizes: Nullable<ProfilePictureSizes>
@@ -53,6 +54,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
   const {
     userId,
     isDeactivated,
+    allowAiAttribution,
     loading,
     verified,
     profilePictureSizes,
@@ -138,6 +140,7 @@ const ProfileWrapping = (props: ProfileWrappingProps) => {
             handle={handle}
             bio={bio}
             location={location}
+            allowAiAttribution={allowAiAttribution}
             twitterHandle={twitterHandle}
             instagramHandle={instagramHandle}
             tikTokHandle={tikTokHandle}
