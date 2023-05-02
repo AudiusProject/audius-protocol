@@ -16,6 +16,7 @@ import {
   Device
 } from './userNotificationSettings'
 import { sendBrowserNotification } from '../../web'
+import { logger } from '../../logger'
 
 type CreateNotificationRow = Omit<NotificationRow, 'data'> & {
   data: CreateTrackNotification | CreatePlaylistNotification
@@ -156,6 +157,18 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
         await Promise.all(
           devices.map((device) => {
+            const data = {
+              type: 'UserSubscription',
+              id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                this.notification.group_id
+              }`,
+              entityType: capitalize(entityType),
+              entityIds: [entityId],
+              userId: ownerId
+            }
+            logger.info(`data entityType ${data.entityType}`)
+            logger.info(`data entity ids ${data.entityIds}`)
+            logger.info(`data user id ${data.userId}`)
             return sendPushNotification(
               {
                 type: device.type,
