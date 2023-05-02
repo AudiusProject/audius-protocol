@@ -77,10 +77,7 @@ def get_delete_app_delegate_metadata_from_raw(
     return metadata
 
 
-def validate_app_delegate_tx(
-    params: ManageEntityParameters,
-    metadata: Union[CreateAppDelegateMetadata, RevokeAppDelegateMetadata],
-):
+def validate_app_delegate_tx(params: ManageEntityParameters, metadata):
     user_id = params.user_id
 
     if params.entity_type != EntityType.APP_DELEGATE:
