@@ -78,7 +78,8 @@ def get_delete_app_delegate_metadata_from_raw(
 
 
 def validate_app_delegate_tx(
-    params: ManageEntityParameters, metadata: CreateAppDelegateMetadata
+    params: ManageEntityParameters,
+    metadata: Union[CreateAppDelegateMetadata, RevokeAppDelegateMetadata],
 ):
     user_id = params.user_id
 
