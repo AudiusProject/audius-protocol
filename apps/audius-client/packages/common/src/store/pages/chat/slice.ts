@@ -164,11 +164,13 @@ const slice = createSlice({
         return { ...item, hasTail: hasTail(item, data[index - 1]) }
       })
       // Recalculate hasTail for latest message of new batch
-      if (state.messages[chatId].ids.length > 0) {
+      if (state.messages[chatId] && state.messages[chatId].ids.length > 0) {
         const prevEarliestMessageId =
           state.messages[chatId].ids[state.messages[chatId].ids.length - 1]
-        const prevEarliestMessage =
-          state.messages[chatId].entities[prevEarliestMessageId]
+        const prevEarliestMessage = getMessage(
+          state.messages[chatId],
+          prevEarliestMessageId
+        )
         const newLatestMessage = messagesWithTail[0]
         newLatestMessage.hasTail = hasTail(
           newLatestMessage,
@@ -306,10 +308,12 @@ const slice = createSlice({
       const { chatId, message, status } = action.payload
 
       // Recalculate hasTail of previous message
-      const prevLatestMessageId = state.messages[chatId].ids[0]
-      const prevLatestMessage =
-        state.messages[chatId].entities[prevLatestMessageId]
-      if (prevLatestMessage) {
+      if (state.messages[chatId] && state.messages[chatId].ids.length > 0) {
+        const prevLatestMessageId = state.messages[chatId].ids[0]
+        const prevLatestMessage = getMessage(
+          state.chats[chatId],
+          prevLatestMessageId
+        )!
         const prevMsgHasTail = hasTail(prevLatestMessage, message)
         chatMessagesAdapter.updateOne(state.messages[chatId], {
           id: prevLatestMessageId,
