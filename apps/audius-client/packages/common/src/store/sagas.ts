@@ -6,6 +6,7 @@
 // import recoveryEmailSagas from 'common/store/recovery-email/sagas'
 // import signOutSagas from 'common/store/sign-out/sagas'
 
+import { accountSagas } from 'store/account'
 import { sagas as castSagas } from 'store/cast/sagas'
 import { chatSagas } from 'store/pages/chat'
 import { playbackPositionSagas } from 'store/playback-position'
@@ -37,6 +38,7 @@ export const sagas = (_ctx: CommonStoreContext) => ({
   // collections: collectionsSagas,
   // tracks: tracksSagas,
   // users: usersSagas,
+  account: accountSagas,
   remoteConfig: remoteConfigSagas,
   cast: castSagas,
   premiumContent: premiumContentSagas,

@@ -14,6 +14,7 @@ const internalGetUserPlaylists = (state: CommonState) =>
   Object.values(state.account.collections)
 export const internalGetAccountUser = (state: CommonState) =>
   getUser(state, { id: getUserId(state) })
+const hasTracksInternal = (state: CommonState) => state.account.hasTracks
 
 export const getHasAccount = (state: CommonState) => !!state.account.userId
 export const getUserId = (state: CommonState) => state.account.userId
@@ -42,8 +43,11 @@ export const getAccountVerified = createSelector(
   (user) => (user ? user.is_verified : false)
 )
 export const getAccountHasTracks = createSelector(
-  [internalGetAccountUser],
-  (user) => (user ? user.track_count > 0 : false)
+  [hasTracksInternal, internalGetAccountUser],
+  (hasTracks, user) =>
+    hasTracks === null
+      ? null // still loading
+      : hasTracks || (user ? user.track_count > 0 : false)
 )
 export const getAccountCollectibles = createSelector(
   [internalGetAccountUser],
