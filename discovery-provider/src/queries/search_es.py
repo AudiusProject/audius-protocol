@@ -317,6 +317,8 @@ def base_match(search_str: str, operator="or", extra_fields=[]):
                 "operator": operator,
                 "type": "bool_prefix",
                 "fuzziness": "AUTO",
+                "fuzzy_transpositions": True,
+                "minimum_should_match": "80%",
             }
         }
     ]
