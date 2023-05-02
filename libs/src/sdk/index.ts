@@ -10,5 +10,6 @@ export {
 } from './api/generated/full'
 export * from './api/chats/clientTypes'
 export * from './api/chats/serverTypes'
+export * from './api/tracks/types'
 export * from './services'
 export * from './config'

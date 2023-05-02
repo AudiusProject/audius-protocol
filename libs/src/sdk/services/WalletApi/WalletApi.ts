@@ -9,4 +9,8 @@ export class WalletApi implements WalletApiService {
   sign: (data: string) => Promise<[Uint8Array, number]> = () => {
     throw new Error('WalletApi not initialized')
   }
+
+  getAddress: () => Promise<string> = () => {
+    throw new Error('WalletApi not initialized')
+  }
 }

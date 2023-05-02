@@ -1,3 +1,4 @@
 export * from './DiscoveryNodeSelector'
-export * from './StorageService'
+export * from './EntityManager'
+export * from './Storage'
 export * from './WalletApi'
