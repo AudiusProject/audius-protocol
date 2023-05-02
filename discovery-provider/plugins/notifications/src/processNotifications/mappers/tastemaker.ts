@@ -93,7 +93,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       this.receiverUserId
     )
 
-    const title = `You're a Taste Maker!`
+    const title = `You're a Tastemaker!`
     const body = `${entityName} is now trending thanks to you! Great work 🙌🏽`
     await sendBrowserNotification(
       userNotificationSettings,
