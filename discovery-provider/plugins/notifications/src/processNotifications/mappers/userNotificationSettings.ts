@@ -172,7 +172,7 @@ export class UserNotificationSettings {
       this.userIsEmailDeliverable[receiverUserId] &&
       !isInitiatorAbusive &&
       !userIsAbusive[receiverUserId] &&
-      this.email?.[receiverUserId].frequency === frequency
+      this.email?.[receiverUserId]?.frequency === frequency
     )
   }
 
@@ -439,7 +439,7 @@ export class UserNotificationSettings {
   async getUserNotificationBrowsers(userId: number): Promise<WebPush[]> {
     if (!globalThis.webPushIsConfigured) return []
     const settings = await this.getUserBrowserSettings([userId])
-    const browsers = settings[userId].browser
+    const browsers = settings[userId]?.browser ?? []
 
     const isWebPush = (browser: Browser): boolean => {
       return (browser as WebPush).p256dhKey !== undefined

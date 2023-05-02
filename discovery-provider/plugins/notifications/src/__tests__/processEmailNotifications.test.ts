@@ -22,6 +22,7 @@ import {
   insertNotificationEmails,
   setUserEmailAndSettings
 } from '../utils/populateDB'
+import { RemoteConfig } from '../remoteConfig'
 
 describe('Email Notifications', () => {
   let discoveryDB: Knex
@@ -39,6 +40,8 @@ describe('Email Notifications', () => {
       moment.tz(timezone).add(1, 'day').startOf('day').toDate().getTime() / 1000
     )
   }
+
+  const mockRemoteConfig = new RemoteConfig()
 
   beforeEach(async () => {
     const testName = expect
@@ -106,7 +109,12 @@ describe('Email Notifications', () => {
         receiver_user_id: user2
       }
     ]
-    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
+    await processEmailNotifications(
+      discoveryDB,
+      identityDB,
+      emailFrequency,
+      mockRemoteConfig
+    )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(1)
     expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
       userId: user2,
@@ -169,7 +177,12 @@ describe('Email Notifications', () => {
         receiver_user_id: user1
       }
     ]
-    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
+    await processEmailNotifications(
+      discoveryDB,
+      identityDB,
+      emailFrequency,
+      mockRemoteConfig
+    )
     // No message notification because user 2 read the chat
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(1)
     expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
@@ -267,7 +280,12 @@ describe('Email Notifications', () => {
         multiple: true
       }
     ]
-    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
+    await processEmailNotifications(
+      discoveryDB,
+      identityDB,
+      emailFrequency,
+      mockRemoteConfig
+    )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(2)
     expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
       userId: user2,
@@ -326,7 +344,12 @@ describe('Email Notifications', () => {
       reactionTimestamp
     )
 
-    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
+    await processEmailNotifications(
+      discoveryDB,
+      identityDB,
+      emailFrequency,
+      mockRemoteConfig
+    )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(0)
   })
 
@@ -357,7 +380,12 @@ describe('Email Notifications', () => {
       messageTimestamp
     )
 
-    await processEmailNotifications(discoveryDB, identityDB, frequency)
+    await processEmailNotifications(
+      discoveryDB,
+      identityDB,
+      frequency,
+      mockRemoteConfig
+    )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(0)
   })
 
@@ -414,7 +442,12 @@ describe('Email Notifications', () => {
         receiver_user_id: user2
       }
     ]
-    await processEmailNotifications(discoveryDB, identityDB, frequency)
+    await processEmailNotifications(
+      discoveryDB,
+      identityDB,
+      frequency,
+      mockRemoteConfig
+    )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(1)
     expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
       userId: user2,
@@ -460,7 +493,12 @@ describe('Email Notifications', () => {
         ...notificationRow
       }
     ]
-    await processEmailNotifications(discoveryDB, identityDB, frequency)
+    await processEmailNotifications(
+      discoveryDB,
+      identityDB,
+      frequency,
+      mockRemoteConfig
+    )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(1)
     expect(sendNotificationEmailSpy).toHaveBeenCalledWith({
       userId: user2,
@@ -518,7 +556,12 @@ describe('Email Notifications', () => {
       messageTimestamp
     )
 
-    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
+    await processEmailNotifications(
+      discoveryDB,
+      identityDB,
+      emailFrequency,
+      mockRemoteConfig
+    )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(0)
   })
 
@@ -549,7 +592,12 @@ describe('Email Notifications', () => {
       messageTimestamp
     )
 
-    await processEmailNotifications(discoveryDB, identityDB, emailFrequency)
+    await processEmailNotifications(
+      discoveryDB,
+      identityDB,
+      emailFrequency,
+      mockRemoteConfig
+    )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(0)
   })
 })

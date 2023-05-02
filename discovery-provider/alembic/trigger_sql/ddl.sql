@@ -1,17 +1,25 @@
 -- Add new ddl changes to the bottom of the file.
 -- Wrap your changes with begin; / commit;
 
+-- helper function to make add column if not exists faster
+CREATE OR REPLACE FUNCTION table_has_column(text, text) RETURNS boolean AS $$
+  SELECT EXISTS (SELECT column_name FROM  information_schema.columns WHERE table_name = $1 AND column_name = $2)
+$$ LANGUAGE SQL;
 
--- 3/21/23: add a comment to a table for a simple ddl demo
-begin;
-  comment on table users is 'the users table';
-commit;
+
 
 -- 3/28/23: add is_available to users table
-begin;
-    alter table users
-    add column if not exists is_available boolean not null default true;
-commit;
+BEGIN;
+  DO $$ BEGIN
+  IF NOT table_has_column('users', 'is_available') THEN
+
+      alter table users
+      add column if not exists is_available boolean not null default true;
+
+  END IF;
+  END $$;
+COMMIT;
+
 
 -- 3/29/23: define `to_timestamp_safe`
 begin;
@@ -47,30 +55,42 @@ commit;
 -- created after this migration was run should have type_v2 as not null
 -- (see handle_supporter_rank_ups.sql)
 begin;
-alter table notification
-add column if not exists type_v2 varchar default null;
 
--- Step 1: Change 'supporting_rank_up' to temporary value 'temp_rank_up'
-update notification n
-set type = 'temp_rank_up', type_v2 = 'temp_rank_up', group_id = 'temp_rank_up' || substring(group_id from position(':' in group_id))
-where type = 'supporting_rank_up' and type_v2 is null;
+    DO $$ BEGIN
+    IF NOT table_has_column('notification', 'type_v2') THEN
 
--- Step 2: Change 'supporter_rank_up' to 'supporting_rank_up'
-update notification n
-set type = 'supporting_rank_up', type_v2 = 'supporting_rank_up', group_id = 'supporting_rank_up' || substring(group_id from position(':' in group_id))
-where type = 'supporter_rank_up' and type_v2 is null;
+      alter table notification
+      add column if not exists type_v2 varchar default null;
 
--- Step 3: Change temporary value 'temp_rank_up' to 'supporter_rank_up'
-update notification n
-set type = 'supporter_rank_up', type_v2 = 'supporter_rank_up', group_id = 'supporter_rank_up' || substring(group_id from position(':' in group_id))
-where type = 'temp_rank_up' and type_v2 = 'temp_rank_up';
+    END IF;
+    END $$;
+
+    -- Step 1: Change 'supporting_rank_up' to temporary value 'temp_rank_up'
+    update notification n
+    set type = 'temp_rank_up', type_v2 = 'temp_rank_up', group_id = 'temp_rank_up' || substring(group_id from position(':' in group_id))
+    where type = 'supporting_rank_up' and type_v2 is null;
+
+    -- Step 2: Change 'supporter_rank_up' to 'supporting_rank_up'
+    update notification n
+    set type = 'supporting_rank_up', type_v2 = 'supporting_rank_up', group_id = 'supporting_rank_up' || substring(group_id from position(':' in group_id))
+    where type = 'supporter_rank_up' and type_v2 is null;
+
+    -- Step 3: Change temporary value 'temp_rank_up' to 'supporter_rank_up'
+    update notification n
+    set type = 'supporter_rank_up', type_v2 = 'supporter_rank_up', group_id = 'supporter_rank_up' || substring(group_id from position(':' in group_id))
+    where type = 'temp_rank_up' and type_v2 = 'temp_rank_up';
+
 commit;
 
 -- 4/13/23: add is_storage_v2 to users table
-begin;
-    alter table users
-    add column if not exists is_storage_v2 boolean not null default false;
-commit;
+BEGIN;
+    DO $$ BEGIN
+    IF NOT table_has_column('users', 'is_storage_v2') THEN
+        alter table users
+        add column if not exists is_storage_v2 boolean not null default false;
+    END IF;
+    END $$;
+COMMIT;
 
 -- 4/18/23: add is_available index
 begin;
@@ -78,14 +98,18 @@ begin;
 commit;
 
 -- 4/25/23: add duration to tracks table
-begin;
-    alter table tracks
-    add column if not exists duration integer default 0;
-commit;  
+BEGIN;
+    DO $$ BEGIN
+    IF NOT table_has_column('tracks', 'duration') THEN
+        alter table tracks
+        add column if not exists duration integer default 0;
+    END IF;
+    END $$;
+COMMIT;
 
 -- 4/26/23: create app delegates table
 begin;
-  create table public.app_delegates (
+  create table if not exists public.app_delegates (
     address varchar primary key not null,
     blockhash varchar references blocks(blockhash),
     blocknumber integer references blocks(number),
@@ -100,10 +124,20 @@ commit;
 
 
 -- 4/26/23: add AI columns
-begin;
-    alter table tracks
-    add column if not exists ai_attribution_user_id integer;
+BEGIN;
+    DO $$ BEGIN
+    IF NOT table_has_column('tracks', 'ai_attribution_user_id') THEN
+        alter table tracks
+        add column if not exists ai_attribution_user_id integer;
 
-    alter table users
-    add column if not exists allow_ai_attribution boolean not null default false;
-commit;
+        alter table users
+        add column if not exists allow_ai_attribution boolean not null default false;
+    END IF;
+    END $$;
+COMMIT;
+
+-- 5/1/23: add ai_attribution_user_id index
+
+BEGIN;
+    create index if not exists tracks_ai_attribution_user_id on tracks (ai_attribution_user_id, is_current) where is_current = true and ai_attribution_user_id is not null;
+COMMIT;
