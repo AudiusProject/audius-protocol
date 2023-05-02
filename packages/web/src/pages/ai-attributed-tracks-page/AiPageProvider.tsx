@@ -78,6 +78,12 @@ const AiPageProvider = ({
     }
   }, [goToRoute, user])
 
+  useEffect(() => {
+    if (user && !user.allow_ai_attribution) {
+      goToRoute(profilePage(user?.handle))
+    }
+  }, [user, goToRoute])
+
   const getLineupProps = () => {
     return {
       selfLoad: true,
