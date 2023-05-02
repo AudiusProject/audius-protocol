@@ -1,25 +1,19 @@
 /**
  * Converts a provided URL params object to a query string
  */
-export const paramsToQueryString = (
-  params: { [key: string]: string | string[] },
-  formatWithoutArray = false
-) => {
+export const paramsToQueryString = (params: {
+  [key: string]: string | string[]
+}) => {
   if (!params) return ''
-  return Object.keys(params)
-    .map((k) => {
-      if (Array.isArray(params[k])) {
-        return (params[k] as string[])
-          .map((val: string) =>
-            formatWithoutArray
-              ? `${encodeURIComponent(k)}=${encodeURIComponent(val)}`
-              : `${encodeURIComponent(k)}[]=${encodeURIComponent(val)}`
-          )
-          .join('&')
+  return Object.entries(params)
+    .filter((p) => p[1] !== undefined && p[1] !== null)
+    .map((p) => {
+      if (Array.isArray(p[1])) {
+        // Otherwise, join in the form of
+        // ?key=val1&key=val2&key=val3...
+        return p[1].map((val) => `${p[0]}=${encodeURIComponent(val)}`).join('&')
       }
-      return (
-        encodeURIComponent(k) + '=' + encodeURIComponent(params[k] as string)
-      )
+      return `${p[0]}=${encodeURIComponent(p[1]!)}`
     })
     .join('&')
 }

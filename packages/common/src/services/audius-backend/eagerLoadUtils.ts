@@ -59,20 +59,14 @@ export const makeEagerRequest = async (
   let res: any
   if (req?.method?.toLowerCase() === 'post') {
     headers['Content-Type'] = 'application/json'
-    const url = `${baseUrl}?${paramsToQueryString(
-      req.queryParams,
-      discprovEndpoint === eagerDiscprov
-    )}`
+    const url = `${baseUrl}?${paramsToQueryString(req.queryParams)}`
     res = await fetch(url, {
       method: 'POST',
       headers,
       body: JSON.stringify(req.data)
     })
   } else {
-    const url = `${baseUrl}?${paramsToQueryString(
-      req.queryParams,
-      discprovEndpoint === eagerDiscprov
-    )}`
+    const url = `${baseUrl}?${paramsToQueryString(req.queryParams)}`
     res = await fetch(url, {
       headers
     })
