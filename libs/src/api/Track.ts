@@ -247,7 +247,7 @@ export class Track extends Base {
     time: Nullable<string> = null,
     idsArray: Nullable<number[]> = null,
     limit: Nullable<number> = null,
-    offset: Nullable<number> = null,
+    offset: Nullable<number> = null
   ) {
     this.REQUIRES(Services.IDENTITY_SERVICE)
     return await this.discoveryProvider.getTrendingTracks(
