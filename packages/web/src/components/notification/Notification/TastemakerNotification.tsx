@@ -25,7 +25,7 @@ import { getEntityLink } from './utils'
 const { getNotificationEntity, getNotificationUser } = notificationsSelectors
 
 const messages = {
-  title: 'You’re a Taste Maker!',
+  title: 'You’re a Tastemaker!',
   is: 'is',
   tastemaker: 'now trending thanks to you! Great work 🙌',
   twitterShare: (trackOwnerHandle: string, trackTitle: string) => {
