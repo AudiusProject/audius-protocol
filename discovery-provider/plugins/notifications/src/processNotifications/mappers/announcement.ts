@@ -48,7 +48,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     const res_count = await this.dnDB('users')
       .count('user_id')
       .where('is_current', true)
-      .where('is_deactivated', false)
+      //.where('is_deactivated', false)
       .first()
 
     // this isn't good if the res is a string
@@ -109,7 +109,7 @@ export const fetchUsersPage = async (dnDb: Knex, offset: number, page_count: num
         // query by last id seen
         .where('user_id', '>', offset)
         .andWhere('is_current', true)
-        .andWhere('is_deactivated', false)
+        // .andWhere('is_deactivated', false)
         .orWhere((inner) =>
           inner.where('user_id', '=', offset)
             .andWhere('is_current', true)
