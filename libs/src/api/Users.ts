@@ -678,7 +678,11 @@ export class Users extends Base {
   /**
    * Updates a creator (updates their data on the creator node)
    */
-  async updateCreator(userId: number, metadata: UserMetadata) {
+  async updateCreator(
+    userId: number,
+    metadata: UserMetadata,
+    writeMetadataThroughChain = false
+  ) {
     this.REQUIRES(Services.CREATOR_NODE, Services.DISCOVERY_PROVIDER)
     this.IS_OBJECT(metadata)
     const newMetadata = this.cleanUserMetadata(metadata)
@@ -735,12 +739,15 @@ export class Users extends Base {
         updateEndpointTxBlockNumber
       )
 
+    const entityManagerMetadata = writeMetadataThroughChain
+      ? JSON.stringify({ cid: metadataMultihash, data: newMetadata })
+      : metadataMultihash
     const response = await this.contracts.EntityManagerClient!.manageEntity(
       userId,
       EntityManagerClient.EntityType.USER,
       userId,
       EntityManagerClient.Action.UPDATE,
-      JSON.stringify({ cid: metadataMultihash, data: newMetadata })
+      entityManagerMetadata
     )
     const txReceipt = response.txReceipt
     const latestBlockNumber = txReceipt.blockNumber
@@ -833,7 +840,8 @@ export class Users extends Base {
    */
   async updateAndUploadMetadata({
     newMetadata,
-    userId
+    userId,
+    writeMetadataThroughChain = false
   }: {
     newMetadata: UserMetadata
     userId: number
@@ -907,12 +915,15 @@ export class Users extends Base {
 
       // Write metadata multihash to chain
       phase = phases.UPDATE_METADATA_ON_CHAIN
+      const entityManagerMetadata = writeMetadataThroughChain
+        ? JSON.stringify({ cid: metadataMultihash, data: newMetadata })
+        : metadataMultihash
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         userId,
         EntityManagerClient.EntityType.USER,
         userId,
         EntityManagerClient.Action.UPDATE,
-        JSON.stringify({ cid: metadataMultihash, data: newMetadata })
+        entityManagerMetadata
       )
       const txReceipt = response.txReceipt
       const blockNumber = txReceipt.blockNumber

@@ -106,7 +106,8 @@ export class EntityManager extends Base {
   /** Playlist */
 
   async createPlaylist(
-    playlist: PlaylistParam
+    playlist: PlaylistParam,
+    writeMetadataThroughChain = false
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
@@ -141,12 +142,15 @@ export class EntityManager extends Base {
 
       const { metadataMultihash } =
         await this.creatorNode.uploadPlaylistMetadata(metadata)
+      const entityManagerMetadata = writeMetadataThroughChain
+        ? JSON.stringify({ cid: metadataMultihash, data: metadata })
+        : metadataMultihash
       return await this.manageEntity({
         userId: userId,
         entityType,
         entityId: playlist.playlist_id,
         action: createAction,
-        metadata: JSON.stringify({ cid: metadataMultihash, data: metadata })
+        metadata: entityManagerMetadata
       })
     } catch (e) {
       const error = (e as Error).message
@@ -179,7 +183,8 @@ export class EntityManager extends Base {
   }
 
   async updatePlaylist(
-    playlist: PlaylistParam
+    playlist: PlaylistParam,
+    writeMetadataThroughChain = false
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
@@ -220,12 +225,15 @@ export class EntityManager extends Base {
       }
       const { metadataMultihash } =
         await this.creatorNode.uploadPlaylistMetadata(metadata)
+      const entityManagerMetadata = writeMetadataThroughChain
+        ? JSON.stringify({ cid: metadataMultihash, data: metadata })
+        : metadataMultihash
       return await this.manageEntity({
         userId,
         entityType,
         entityId: playlist.playlist_id,
         action: updateAction,
-        metadata: JSON.stringify({ cid: metadataMultihash, data: metadata })
+        metadata: entityManagerMetadata
       })
     } catch (e) {
       const error = (e as Error).message
