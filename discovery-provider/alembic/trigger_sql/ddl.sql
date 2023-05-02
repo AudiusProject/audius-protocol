@@ -139,5 +139,5 @@ COMMIT;
 -- 5/1/23: add ai_attribution_user_id index
 
 BEGIN;
-    create index if not exists tracks_ai_attribution_user_id on tracks (ai_attribution_user_id, is_current) where is_current = true;
+    create index if not exists tracks_ai_attribution_user_id on tracks (ai_attribution_user_id, is_current) where is_current = true and ai_attribution_user_id is not null;
 COMMIT;
