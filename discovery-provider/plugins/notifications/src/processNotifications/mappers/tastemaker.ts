@@ -93,9 +93,14 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       this.receiverUserId
     )
 
-    const title = `You're a Taste Maker!`
+    const title = `You're a Tastemaker!`
     const body = `${entityName} is now trending thanks to you! Great work 🙌🏽`
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(
+      userNotificationSettings,
+      this.receiverUserId,
+      title,
+      body
+    )
 
     // If the user has devices to the notification to, proceed
     if (
@@ -124,9 +129,6 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
       await this.incrementBadgeCount(this.receiverUserId)
     }
 
-    if (userNotificationSettings.browser) {
-      // TODO: Send out browser
-    }
     if (
       isLiveEmailEnabled &&
       userNotificationSettings.shouldSendEmailAtFrequency({

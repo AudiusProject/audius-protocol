@@ -19,6 +19,7 @@ type RenderEmailProps = {
   frequency: EmailFrequency
   dnDb: Knex
   identityDb: Knex
+  timezone?: string
 }
 
 export type ResourceIds = {
@@ -291,12 +292,16 @@ const getEmailTitle = (frequency: EmailFrequency, userEmail: string) => {
 
 const getEmailSubject = (
   frequency: EmailFrequency,
-  notificationCount: number
+  notificationCount: number,
+  timezone?: string
 ) => {
-  const now = moment()
-  const dayAgo = now.clone().subtract(1, 'days')
-  const weekAgo = now.clone().subtract(7, 'days')
-  const formattedDayAgo = dayAgo.format('MMMM Do YYYY')
+  const now = moment.tz(timezone)
+  const weekAgo = now.clone().subtract(6, 'days')
+  // Note that scheduled emails are sent
+  // at midnight the following day, so the current
+  // day for the user will be a day ago by the time
+  // they receive the email.
+  const formattedDayAgo = now.format('MMMM Do YYYY')
   const shortWeekAgoFormat = weekAgo.format('MMMM Do')
   const liveSubjectFormat = `${notificationCount} unread notification${
     notificationCount > 1 ? 's' : ''
@@ -334,7 +339,8 @@ export const renderEmail = async ({
   frequency,
   notifications,
   dnDb,
-  identityDb
+  identityDb,
+  timezone
 }: RenderEmailProps) => {
   logger.debug(
     `renderAndSendNotificationEmail | ${userId}, ${email}, ${frequency}`
@@ -374,7 +380,7 @@ export const renderEmail = async ({
     copyrightYear: new Date().getFullYear().toString(),
     notifications: notificationProps,
     title: getEmailTitle(frequency, email),
-    subject: getEmailSubject(frequency, notificationCount)
+    subject: getEmailSubject(frequency, notificationCount, timezone)
   }
 
   const notifHtml = renderNotificationsEmail(renderProps)

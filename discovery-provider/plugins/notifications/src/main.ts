@@ -122,7 +122,8 @@ export class Processor {
         await processEmailNotifications(
           this.discoveryDB,
           this.identityDB,
-          'daily'
+          'daily',
+          this.remoteConfig
         )
         this.lastDailyEmailSent = moment.utc()
       }
@@ -136,7 +137,8 @@ export class Processor {
         await processEmailNotifications(
           this.discoveryDB,
           this.identityDB,
-          'weekly'
+          'weekly',
+          this.remoteConfig
         )
         this.lastWeeklyEmailSent = moment.utc()
       }

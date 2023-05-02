@@ -8,13 +8,18 @@ declare
   track_remix_of json;
   is_remix_cosign boolean;
   delta int;
+  entity_type text;
 begin
 
   insert into aggregate_user (user_id) values (new.user_id) on conflict do nothing;
   if new.repost_type = 'track' then
     insert into aggregate_track (track_id) values (new.repost_item_id) on conflict do nothing;
+
+    entity_type := 'track';
   else
     insert into aggregate_playlist (playlist_id, is_album) values (new.repost_item_id, new.repost_type = 'album') on conflict do nothing;
+
+    entity_type := 'playlist';
   end if;
 
   -- increment or decrement?
@@ -69,7 +74,7 @@ begin
         'milestone:' || milestone_name  || ':id:' || new.repost_item_id || ':threshold:' || milestone,
         new.blocknumber,
         new.created_at,
-        json_build_object('type', milestone_name, 'threshold', milestone)
+        json_build_object('type', milestone_name, entity_type || '_id', new.repost_item_id, 'threshold', milestone)
       )
       on conflict do nothing;
   end if;
