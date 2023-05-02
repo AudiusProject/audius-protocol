@@ -52,7 +52,7 @@ begin
   where user_id = new.owner_id
   ;
 
-  -- If new track, create notification
+  -- If new track or newly unlisted track, create notification
   begin
     if delta = 1 AND new.is_playlist_upload = FALSE THEN
       select array(
@@ -83,7 +83,7 @@ begin
 		when others then null;
 	end;
 
-  -- If remix, create notification
+  -- If new remix or newly unlisted remix, create notification
   begin
     if delta = 1 AND new.remix_of is not null THEN
       select owner_id into parent_track_owner_id from tracks where is_current and track_id = (new.remix_of->'tracks'->0->>'parent_track_id')::int limit 1;

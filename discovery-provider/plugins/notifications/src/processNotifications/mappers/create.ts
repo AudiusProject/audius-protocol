@@ -10,6 +10,7 @@ import { sendPushNotification } from '../../sns'
 import { ResourceIds, Resources } from '../../email/notifications/renderEmail'
 import { EntityType } from '../../email/notifications/types'
 import { sendNotificationEmail } from '../../email/notifications/sendEmail'
+import { capitalize } from 'lodash'
 import {
   buildUserNotificationSettings,
   Device
@@ -116,11 +117,11 @@ export class Create extends BaseNotification<CreateNotificationRow> {
     }
 
     const entityType = this.trackId
-      ? 'track'
+      ? 'Track'
       : this.playlistId && this.isAlbum
-      ? 'album'
+      ? 'Album'
       : this.playlistId && !this.isAlbum
-      ? 'playlist'
+      ? 'Playlist'
       : null
 
     const entityId = this.trackId ?? this.playlistId
@@ -136,7 +137,12 @@ export class Create extends BaseNotification<CreateNotificationRow> {
 
       const title = 'New Artist Update'
       const body = description
-      await sendBrowserNotification(userNotificationSettings, userId, title, body)
+      await sendBrowserNotification(
+        userNotificationSettings,
+        userId,
+        title,
+        body
+      )
 
       // If the user has devices to the notification to, proceed
       if (
@@ -164,9 +170,9 @@ export class Create extends BaseNotification<CreateNotificationRow> {
                   id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
                     this.notification.group_id
                   }`,
-                  entityType,
-                  entityId,
-                  entityOwnerId: ownerId
+                  entityType: capitalize(entityType),
+                  entityIds: [entityId],
+                  userId: ownerId
                 }
               }
             )

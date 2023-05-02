@@ -81,9 +81,9 @@ describe('Create Notification', () => {
         data: {
           id: 'timestamp:1589373217:group_id:create:track:user_id:1',
           type: 'UserSubscription',
-          entityId: 10,
-          entityOwnerId: 1,
-          entityType: 'track'
+          entityIds: [10],
+          userId: 1,
+          entityType: 'Track'
         }
       }
     )
@@ -177,9 +177,9 @@ describe('Create Notification', () => {
         data: {
           type: 'UserSubscription',
           id: 'timestamp:1589373217:group_id:create:playlist_id:10',
-          entityId: 10,
-          entityOwnerId: 1,
-          entityType: 'playlist'
+          entityIds: [10],
+          userId: 1,
+          entityType: 'Playlist'
         }
       }
     )
@@ -265,9 +265,9 @@ describe('Create Notification', () => {
         data: {
           type: 'UserSubscription',
           id: 'timestamp:1589373217:group_id:create:playlist_id:10',
-          entityId: 10,
-          entityOwnerId: 1,
-          entityType: 'album'
+          entityIds: [10],
+          userId: 1,
+          entityType: 'Album'
         }
       }
     )

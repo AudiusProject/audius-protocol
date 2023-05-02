@@ -20,6 +20,7 @@ type SendNotificationEmailProps = {
   dnDb: Knex
   identityDb: Knex
   sendAt?: number // unix timestamp in seconds
+  timezone?: string
 }
 
 // Master function to render and send email for a given userId
@@ -30,7 +31,8 @@ export const sendNotificationEmail = async ({
   notifications,
   dnDb,
   identityDb,
-  sendAt
+  sendAt,
+  timezone
 }: SendNotificationEmailProps) => {
   if (email === undefined) {
     return
@@ -55,7 +57,8 @@ export const sendNotificationEmail = async ({
       frequency,
       notifications,
       dnDb,
-      identityDb
+      identityDb,
+      timezone
     })
 
     const emailParams: MailDataRequired = {
