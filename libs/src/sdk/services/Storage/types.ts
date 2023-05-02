@@ -17,17 +17,20 @@ export type StorageService = {
     file: File
     onProgress: ProgressCB
     template: FileTemplate
-  }): Promise<{
-    id
-    results: {
-      '320': string
-    }
-    probe: {
-      format: {
-        duration: number
-      }
-    }
-  }>
+  }): Promise<UploadResponse>
 }
 
 export type ProcessingStatus = 'new' | 'busy' | 'done' | 'error'
+
+export type UploadResponse = {
+  id: string
+  status: ProcessingStatus
+  results: {
+    '320': string
+  }
+  probe: {
+    format: {
+      duration: string
+    }
+  }
+}

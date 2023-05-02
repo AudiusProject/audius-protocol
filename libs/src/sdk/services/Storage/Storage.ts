@@ -5,10 +5,10 @@ import fetch from 'cross-fetch'
 import { wait } from '../../utils/wait'
 import type {
   FileTemplate,
-  ProcessingStatus,
   ProgressCB,
   StorageService,
-  StorageServiceConfig
+  StorageServiceConfig,
+  UploadResponse
 } from './types'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 import {
@@ -83,7 +83,9 @@ export class Storage implements StorageService {
     while (Date.now() - start < maxPollingMs) {
       try {
         const resp = await this.getProcessingStatus(id)
-        if (resp?.status === 'done') return resp
+        if (resp?.status === 'done') {
+          return resp
+        }
         if (resp?.status === 'error') {
           throw new Error(
             `Upload failed: id=${id}, resp=${JSON.stringify(resp)}`
@@ -105,9 +107,7 @@ export class Storage implements StorageService {
    * @param id the id of the transcoding or resizing job
    * @returns the status, and the success or failed response if the job is complete
    */
-  private async getProcessingStatus(
-    id: string
-  ): Promise<{ status: ProcessingStatus }> {
+  private async getProcessingStatus(id: string): Promise<UploadResponse> {
     const response = await fetch(
       `${this.config.contentNodeEndpoint}/uploads/${id}`
     )
