@@ -32,7 +32,7 @@ new_delegates_data = [
 
 
 def test_index_delegate(app, mocker):
-    "Tests delegate create action"
+    "Tests delegate action"
 
     # setup db and mocked txs
     with app.app_context():
@@ -230,6 +230,78 @@ def test_index_delegate(app, mocker):
             update_task,
             session,
             entity_manager_txs,
+            block_number=1,
+            block_timestamp=timestamp,
+            block_hash=0,
+            metadata={},
+        )
+        # validate db records
+        all_delegates: List[AppDelegate] = session.query(AppDelegate).all()
+        # make sure no new rows were added
+        assert len(all_delegates) == 4
+
+    # # Test invalid delete delegate txs
+    tx_receipts = {
+        "DeleteDelegateInvalidTx1": [
+            {
+                # Incorrect signer
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.APP_DELEGATE,
+                        "_action": Action.DELETE,
+                        "_userId": new_delegates_data[0]["user_id"],
+                        "_metadata": f"""{{"address": "{new_delegates_data[0]["address"]}"}}""",
+                        "_signer": "incorrectwallet",
+                    }
+                )
+            },
+        ],
+        "DeleteDelegateInvalidTx2": [
+            {
+                # Delegate doesn't exist
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.APP_DELEGATE,
+                        "_userId": 2,
+                        "_action": Action.DELETE,
+                        "_metadata": '{"address": "0x3a388671bb4D6E1bbbbD79Ee191b40FB45A8F4C4"}',
+                        "_signer": "user2wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteDelegateInvalidTx3": [
+            {
+                # User id doesn't match delegate
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.APP_DELEGATE,
+                        "_userId": 1,
+                        "_action": Action.DELETE,
+                        "_metadata": f"""{{"address": "{new_delegates_data[2]["address"]}"}}""",
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    with db.scoped_session() as session:
+        # index transactions
+        timestamp = 1000000001
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
             block_number=0,
             block_timestamp=timestamp,
             block_hash=0,
@@ -239,3 +311,100 @@ def test_index_delegate(app, mocker):
         all_delegates: List[AppDelegate] = session.query(AppDelegate).all()
         # make sure no new rows were added
         assert len(all_delegates) == 4
+
+    # Test valid delete delegate txs
+    tx_receipts = {
+        "DeleteDelegateTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.APP_DELEGATE,
+                        "_action": Action.DELETE,
+                        "_userId": new_delegates_data[0]["user_id"],
+                        "_metadata": f"""{{"address": "{new_delegates_data[0]["address"]}"}}""",
+                        "_signer": f"user{new_delegates_data[0]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteDelegateTx2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.APP_DELEGATE,
+                        "_action": Action.DELETE,
+                        "_userId": new_delegates_data[1]["user_id"],
+                        "_metadata": f"""{{"address": "{new_delegates_data[1]["address"]}"}}""",
+                        "_signer": f"user{new_delegates_data[1]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteDelegateTx3": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.APP_DELEGATE,
+                        "_action": Action.DELETE,
+                        "_userId": new_delegates_data[2]["user_id"],
+                        "_metadata": f"""{{"address": "{new_delegates_data[2]["address"]}"}}""",
+                        "_signer": f"user{new_delegates_data[2]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    with db.scoped_session() as session:
+        # index transactions
+        timestamp = 1000000001
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=1,
+            block_timestamp=timestamp,
+            block_hash=0,
+            metadata={},
+        )
+        # validate db records
+        all_delegates: List[AppDelegate] = session.query(AppDelegate).all()
+        assert len(all_delegates) == 7
+
+        for expected_delegate in new_delegates_data:
+            found_matches = [
+                item
+                for item in all_delegates
+                if item.address == expected_delegate["address"].lower()
+            ]
+            assert len(found_matches) == 2
+            old = [item for item in found_matches if item.is_current == False]
+            assert len(old) == 1
+            updated = [item for item in found_matches if item.is_current == True]
+            assert len(updated) == 1
+            old = old[0]
+            updated = updated[0]
+            assert (
+                old.user_id == expected_delegate["user_id"]
+                and updated.user_id == expected_delegate["user_id"]
+            )
+            assert (
+                old.name == expected_delegate["name"]
+                and updated.name == expected_delegate["name"]
+            )
+            assert (
+                old.is_personal_access == expected_delegate["is_personal_access"]
+                and updated.is_personal_access
+                == expected_delegate["is_personal_access"]
+            )
+            assert old.is_revoked == False and updated.is_revoked == True
+            assert old.blocknumber == 0 and updated.blocknumber == 1

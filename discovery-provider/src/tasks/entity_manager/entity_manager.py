@@ -20,7 +20,10 @@ from src.models.social.subscription import Subscription
 from src.models.tracks.track import Track
 from src.models.tracks.track_route import TrackRoute
 from src.models.users.user import User
-from src.tasks.entity_manager.app_delegate import create_app_delegate
+from src.tasks.entity_manager.app_delegate import (
+    create_app_delegate,
+    delete_app_delegate,
+)
 from src.tasks.entity_manager.delegation import create_delegation
 from src.tasks.entity_manager.notification import (
     create_notification,
@@ -225,6 +228,11 @@ def entity_manager_update(
                         and params.entity_type == EntityType.APP_DELEGATE
                     ):
                         create_app_delegate(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.APP_DELEGATE
+                    ):
+                        delete_app_delegate(params)
                     elif (
                         params.action == Action.CREATE
                         and params.entity_type == EntityType.DELEGATION
