@@ -23,6 +23,14 @@ type SendNotificationEmailProps = {
   timezone?: string
 }
 
+// Set of notifications that we do NOT send out emails for
+// NOTE: This is to match parity with what identity does
+const notificationsWithoutEmail = new Set([
+  'supporter_dethroned',
+  'tier_change',
+  'tip_send'
+])
+
 // Master function to render and send email for a given userId
 export const sendNotificationEmail = async ({
   userId,
@@ -39,8 +47,10 @@ export const sendNotificationEmail = async ({
   }
   try {
     logger.debug(`SendNotificationEmail | ${userId}, ${email}, ${frequency}`)
-
-    const notificationCount = notifications.length
+    const validNotifications = notifications.filter(
+      (n) => !notificationsWithoutEmail.has(n.type)
+    )
+    const notificationCount = validNotifications.length
     const emailSubject = `${notificationCount} unread notification${
       notificationCount > 1 ? 's' : ''
     } on Audius`
@@ -48,14 +58,14 @@ export const sendNotificationEmail = async ({
       logger.debug(
         `renderAndSendNotificationEmail | 0 notifications detected for user ${userId}, bypassing email`
       )
-      return
+      return false
     }
 
     const notifHtml = await renderEmail({
       userId,
       email,
       frequency,
-      notifications,
+      notifications: validNotifications,
       dnDb,
       identityDb,
       timezone

@@ -324,14 +324,6 @@ const getEmailSubject = (
   return subject
 }
 
-// Set of notifications that we do NOT send out emails for
-// NOTE: This is to match parity with what identity does
-const notificationsWithoutEmail = new Set([
-  'supporter_dethroned',
-  'tier_change',
-  'tip_send'
-])
-
 // Master function to render and send email for a given userId
 export const renderEmail = async ({
   userId,
@@ -346,14 +338,12 @@ export const renderEmail = async ({
     `renderAndSendNotificationEmail | ${userId}, ${email}, ${frequency}`
   )
 
-  const validNotifications = notifications.filter(
-    (n) => !notificationsWithoutEmail.has(n.type)
-  )
-  const notificationCount = validNotifications.length
+  const notificationCount = notifications.length
+
   // Get first 5 distinct notifications
   const notificationsToSend: EmailNotification[] = []
   const groupedNotifications: { [id: string]: AppEmailNotification[] } = {}
-  for (const notification of validNotifications) {
+  for (const notification of notifications) {
     const isAleadyIncluded = notificationsToSend.some(
       (n) =>
         'group_id' in notification &&

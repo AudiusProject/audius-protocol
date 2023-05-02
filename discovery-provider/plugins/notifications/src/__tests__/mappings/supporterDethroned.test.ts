@@ -1,6 +1,7 @@
 import { expect, jest, test } from '@jest/globals'
 import { Processor } from '../../main'
 import * as sns from '../../sns'
+import * as sendEmailFns from '../../email/notifications/sendEmail'
 
 import {
   createUsers,
@@ -18,6 +19,10 @@ describe('Supporter Dethroned Notification', () => {
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')
     .mockImplementation(() => Promise.resolve())
+
+  const sendEmailNotificationSpy = jest
+    .spyOn(sendEmailFns, 'sendNotificationEmail')
+    .mockImplementation(() => Promise.resolve(true))
 
   beforeEach(async () => {
     const setup = await setupTest()
@@ -81,5 +86,6 @@ describe('Supporter Dethroned Notification', () => {
         }
       }
     )
+    expect(sendEmailNotificationSpy).not.toHaveBeenCalled()
   })
 })
