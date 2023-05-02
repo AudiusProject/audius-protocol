@@ -268,7 +268,8 @@ export class File extends Base {
    */
   async uploadImage(
     file: globalThis.File,
-    square: boolean, timeoutMs = null,
+    square: boolean,
+    timeoutMs = null,
     writeMetadataThroughChain = false
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
