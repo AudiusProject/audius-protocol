@@ -54,7 +54,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     // this isn't good if the res is a string
     const count = res_count.count as number
     let offset = 0 // let binding because we re-assign
-    const page_count = 100 // only pull 100 users into mem at a time
+    const page_count = 1000 // only pull 1000 users into mem at a time
 
     const total_start = new Date().getTime()
 
