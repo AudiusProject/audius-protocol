@@ -30,6 +30,7 @@ export const getTrackDefaults = (heroTrack: Track | null) => ({
   isPremium: heroTrack?.is_premium ?? false,
   premiumConditions: heroTrack?.premium_conditions ?? null,
   isPublishing: heroTrack?._is_publishing ?? false,
+  aiAttributionUserId: heroTrack?.ai_attribution_user_id ?? null,
   fieldVisibility: {
     ...defaultFieldVisibility,
     ...(heroTrack?.field_visibility ?? {})

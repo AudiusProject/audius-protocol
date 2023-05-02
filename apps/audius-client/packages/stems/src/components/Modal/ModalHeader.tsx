@@ -1,4 +1,4 @@
-import { useContext, forwardRef } from 'react'
+import { useContext, forwardRef, useCallback } from 'react'
 
 import cn from 'classnames'
 
@@ -16,7 +16,7 @@ export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
   function ModalHeader(
     {
       className,
-      onClose,
+      onClose: onCloseProp,
       dismissButtonClassName,
       showDismissButton = true,
       children,
@@ -24,6 +24,13 @@ export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
     },
     ref
   ) {
+    const { onClose } = useContext(ModalContext)
+
+    const handleClose = useCallback(() => {
+      onClose?.()
+      onCloseProp?.()
+    }, [onClose, onCloseProp])
+
     return (
       <div
         className={cn(
@@ -39,7 +46,7 @@ export const ModalHeader = forwardRef<HTMLDivElement, ModalHeaderProps>(
             aria-label='dismiss dialog'
             className={cn(styles.dismissButton, dismissButtonClassName)}
             icon={<IconRemove />}
-            onClick={onClose}
+            onClick={handleClose}
           />
         ) : null}
         {children}
@@ -58,6 +65,7 @@ export const ModalTitle = forwardRef<HTMLDivElement, ModalTitleProps>(
       icon,
       iconClassName,
       title,
+      titleClassName,
       subtitle,
       titleId: titleIdProp,
       subtitleId: subtitleIdProp,
@@ -75,7 +83,7 @@ export const ModalTitle = forwardRef<HTMLDivElement, ModalTitleProps>(
           {icon == null ? null : (
             <div className={cn(styles.icon, iconClassName)}>{icon}</div>
           )}
-          <h2 id={titleId} className={styles.title}>
+          <h2 id={titleId} className={cn(styles.title, titleClassName)}>
             {title}
           </h2>
         </div>

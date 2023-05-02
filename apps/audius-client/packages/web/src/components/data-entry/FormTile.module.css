@@ -122,13 +122,11 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  column-gap: var(--unit-6);
 }
-.release > div:first-child {
-  flex: 0 0 158px;
-  margin-right: 38px;
-}
-.release > div:last-child {
-  flex: 1 auto;
+
+.releaseButton {
+  margin-top: 18px;
 }
 
 .trackId {
@@ -184,15 +182,11 @@
   font-weight: var(--font-demi-bold);
 }
 
-.release .trackAvailabilityButton {
-  height: 35px;
-}
-
-.release .trackAvailabilityButton.error {
+.error {
   border-color: var(--accent-red) !important;
 }
 
-.release .trackAvailabilityButton.error:hover {
+.error:hover {
   border-color: var(--accent-red-dark-1) !important;
 }
 
@@ -201,7 +195,6 @@
 }
 
 .datePicker {
-  margin-right: 38px;
   flex-shrink: 0;
 }
 

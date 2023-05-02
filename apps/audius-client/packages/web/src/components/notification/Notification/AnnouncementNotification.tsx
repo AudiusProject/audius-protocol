@@ -4,7 +4,7 @@ import {
   Name,
   AnnouncementNotification as AnnouncementNotificationType
 } from '@audius/common'
-import ReactMarkdown from 'react-markdown'
+import { MarkdownViewer } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -54,11 +54,11 @@ export const AnnouncementNotification = (
     >
       <NotificationHeader icon={<IconAnnouncement />}>
         <NotificationTitle>
-          <ReactMarkdown source={title} escapeHtml={false} />
+          <MarkdownViewer className={styles.title} markdown={title} />
         </NotificationTitle>
       </NotificationHeader>
       <NotificationBody className={styles.body}>
-        <ReactMarkdown source={shortDescription} escapeHtml={false} />
+        <MarkdownViewer markdown={shortDescription} />
         {longDescription ? (
           <button
             className={styles.readMore}

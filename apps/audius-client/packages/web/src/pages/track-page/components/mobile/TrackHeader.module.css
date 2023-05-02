@@ -323,3 +323,29 @@
 .premiumTrackSectionButton {
   width: 100%;
 }
+
+.aiSection {
+  padding: 18px 0;
+}
+
+.aiSectionDescription {
+  text-align: left;
+  display: inline-block;
+}
+
+.aiSectionDescription h2 {
+  margin: 0;
+}
+
+.badgeAi {
+  background: linear-gradient(
+      180deg,
+      var(--ai-primary) 0%,
+      var(--ai-secondary) 100%
+    ),
+    var(--ai-primary);
+  margin-bottom: 16px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}

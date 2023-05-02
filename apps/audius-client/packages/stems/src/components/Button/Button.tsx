@@ -17,6 +17,7 @@ const TYPE_STYLE_MAP = {
   [Type.PRIMARY]: styles.primary,
   [Type.PRIMARY_ALT]: styles.primaryAlt,
   [Type.SECONDARY]: styles.secondary,
+  [Type.TERTIARY]: styles.tertiary,
   [Type.COMMON]: styles.common,
   [Type.COMMON_ALT]: styles.commonAlt,
   [Type.DISABLED]: styles.disabled,

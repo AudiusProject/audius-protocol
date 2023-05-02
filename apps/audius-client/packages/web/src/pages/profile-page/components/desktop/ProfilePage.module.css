@@ -275,6 +275,10 @@
   margin-top: 32px;
 }
 
+.aiGeneratedCalloutContainer {
+  margin-top: 32px;
+}
+
 .profileBottomSection {
   display: flex;
   flex-direction: column;

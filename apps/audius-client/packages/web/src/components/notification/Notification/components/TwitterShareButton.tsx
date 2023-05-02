@@ -7,6 +7,7 @@ import {
   cacheUsersActions,
   cacheUsersSelectors
 } from '@audius/common'
+import cn from 'classnames'
 import { useDispatch, useSelector } from 'react-redux'
 
 import { ReactComponent as IconTwitterBird } from 'assets/img/iconTwitterBird.svg'
@@ -30,6 +31,7 @@ type StaticTwitterProps = {
 type DynamicTwitterProps = {
   type: 'dynamic'
   handle: string
+  name?: string
   additionalHandle?: string
   shareData: (
     twitterHandle: string,
@@ -37,13 +39,14 @@ type DynamicTwitterProps = {
   ) => Nullable<{ shareText: string; analytics: TrackEvent }>
 }
 
-type TwitterShareButtonProps = { url?: string } & (
-  | StaticTwitterProps
-  | DynamicTwitterProps
-)
+type TwitterShareButtonProps = {
+  url?: string
+  className?: string
+  hideText?: boolean
+} & (StaticTwitterProps | DynamicTwitterProps)
 
 export const TwitterShareButton = (props: TwitterShareButtonProps) => {
-  const { url = null, ...other } = props
+  const { url = null, className, hideText, ...other } = props
   const record = useRecord()
   const dispatch = useDispatch()
 
@@ -105,15 +108,19 @@ export const TwitterShareButton = (props: TwitterShareButtonProps) => {
     if (twitterData) {
       const { shareText, analytics } = twitterData
       openTwitterLink(url, shareText)
-      record(analytics)
+      if (analytics) {
+        record(analytics)
+      }
       setIdle()
     }
   }
 
   return (
-    <button className={styles.root} onClick={handleClick}>
-      <IconTwitterBird className={styles.icon} />
-      {messages.share}
+    <button className={cn(styles.root, className)} onClick={handleClick}>
+      <IconTwitterBird
+        className={cn(styles.icon, { [styles.hideText]: hideText })}
+      />
+      {!hideText ? messages.share : null}
     </button>
   )
 }

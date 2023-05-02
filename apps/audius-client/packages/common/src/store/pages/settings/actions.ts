@@ -40,6 +40,8 @@ export const SET_BROWSER_NOTIFICATION_SETTINGS_ON =
 export const BROWSER_PUSH_NOTIFICATION_FAILED =
   'SETTINGS/BROWSER_PUSH_NOTIFICATION_FAILED'
 
+export const SET_AI_ATTRIBUTION = 'SETTINGS/SET_AI_ATTRIBUTION'
+
 export function getNotificationSettings() {
   return { type: GET_NOTIFICATION_SETTINGS }
 }
@@ -115,6 +117,10 @@ export function browserPushNotificationFailed(error: string) {
   return { type: BROWSER_PUSH_NOTIFICATION_FAILED, error }
 }
 
+export function setAiAttribution(enabled: boolean) {
+  return { type: SET_AI_ATTRIBUTION, allowAiAttribution: enabled }
+}
+
 export type ToggleNotificationSetting = ReturnType<
   typeof toggleNotificationSetting
 >
@@ -154,6 +160,8 @@ export type SetBrowserNotificationSettingsOn = ReturnType<
 export type BrowserPushNotificationFailed = ReturnType<
   typeof browserPushNotificationFailed
 >
+
+export type SetAiAttribution = ReturnType<typeof setAiAttribution>
 
 export type SettingActions =
   | ToggleNotificationSetting

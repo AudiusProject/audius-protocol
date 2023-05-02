@@ -1,0 +1,81 @@
+.root {
+  border-radius: 8px;
+  box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.04), 0px 4px 8px rgba(0, 0, 0, 0.06);
+  background: var(--white);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.title {
+  padding: 10px 4px;
+  display: flex;
+  background: linear-gradient(
+    180deg,
+    var(--ai-primary) 0%,
+    var(--ai-secondary) 100%
+  );
+  align-items: center;
+  color: var(--static-white);
+  font-weight: var(--font-bold);
+  font-size: var(--font-m);
+  line-height: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  border-bottom: 1px solid var(--neutral-light-7);
+}
+
+.body {
+  margin-bottom: 12px;
+}
+
+.description {
+  padding: 8px 12px 0px;
+  font-size: var(--font-s);
+  font-weight: var(--font-medium);
+  color: var(--neutral);
+  line-height: 16px;
+}
+
+.iconRobot {
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+}
+
+.iconRobot path {
+  fill: var(--static-white);
+}
+
+.button {
+  padding: 12px;
+}
+
+.buttonText {
+  font-size: var(--font-s);
+}
+
+.iconArrow {
+  width: 10px !important;
+  height: 10px !important;
+  margin-left: 4px;
+}
+
+.iconArrow path {
+  fill: var(--neutral-light-4) !important;
+}
+
+.button:hover .iconArrow path {
+  fill: var(--secondary) !important;
+}
+
+.buttonText {
+  color: var(--neutral-light-4);
+}
+
+.button:hover .buttonText {
+  color: var(--secondary);
+}

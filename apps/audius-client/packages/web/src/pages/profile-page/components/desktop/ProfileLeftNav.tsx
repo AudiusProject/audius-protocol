@@ -7,6 +7,7 @@ import { animated } from 'react-spring'
 
 import { useSelector } from 'common/hooks/useSelector'
 import { make, useRecord } from 'common/store/analytics/actions'
+import { AiGeneratedCallout } from 'components/ai-generated-button/AiGeneratedCallout'
 import Input from 'components/data-entry/Input'
 import TextArea from 'components/data-entry/TextArea'
 import { RelatedArtists } from 'components/related-artists/RelatedArtists'
@@ -43,6 +44,7 @@ type ProfileLeftNavProps = {
   editMode: boolean
   loading: boolean
   isDeactivated: boolean
+  allowAiAttribution: boolean
   goToRoute: (route: string) => void
   twitterHandle: string
   onUpdateTwitterHandle: (handle: string) => void
@@ -73,6 +75,7 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
     editMode,
     loading,
     isDeactivated,
+    allowAiAttribution,
     goToRoute,
     twitterHandle,
     onUpdateTwitterHandle,
@@ -205,6 +208,11 @@ export const ProfileLeftNav = (props: ProfileLeftNavProps) => {
         />
         {!accountUser || accountUser.user_id !== userId ? (
           <OpacityTransition render={renderTipAudioButton} />
+        ) : null}
+        {allowAiAttribution ? (
+          <div className={styles.aiGeneratedCalloutContainer}>
+            <AiGeneratedCallout handle={handle} />
+          </div>
         ) : null}
         <SupportingList />
         <div className={styles.profileBottomSection}>

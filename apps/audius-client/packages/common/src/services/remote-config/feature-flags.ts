@@ -48,7 +48,8 @@ export enum FeatureFlags {
   STORAGE_V2_TRACK_UPLOAD = 'storage_v2_track_upload',
   STORAGE_V2_SIGNUP = 'storage_v2_signup',
   PLAYLIST_UPDATES_PRE_QA = 'playlist_updates_pre_qa',
-  PLAYLIST_UPDATES_POST_QA = 'playlist_updates_post_qa'
+  PLAYLIST_UPDATES_POST_QA = 'playlist_updates_post_qa',
+  AI_ATTRIBUTION = 'ai_attribution'
 }
 
 type FlagDefaults = Record<FeatureFlags, boolean>
@@ -112,5 +113,6 @@ export const flagDefaults: FlagDefaults = {
   [FeatureFlags.STORAGE_V2_TRACK_UPLOAD]: false,
   [FeatureFlags.STORAGE_V2_SIGNUP]: false,
   [FeatureFlags.PLAYLIST_UPDATES_PRE_QA]: false,
-  [FeatureFlags.PLAYLIST_UPDATES_POST_QA]: false
+  [FeatureFlags.PLAYLIST_UPDATES_POST_QA]: false,
+  [FeatureFlags.AI_ATTRIBUTION]: false
 }

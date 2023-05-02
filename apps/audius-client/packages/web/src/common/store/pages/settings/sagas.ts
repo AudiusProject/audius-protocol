@@ -1,13 +1,17 @@
 import {
   getErrorMessage,
   settingsPageActions as actions,
-  getContext
+  getContext,
+  accountSelectors,
+  cacheActions,
+  Kind
 } from '@audius/common'
-import { call, put, takeEvery } from 'typed-redux-saga'
+import { call, put, takeEvery, select } from 'typed-redux-saga'
 
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
+const { getAccountUser } = accountSelectors
 
 function* watchGetSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
@@ -44,6 +48,41 @@ function* watchUpdateEmailFrequency() {
   )
 }
 
+function* watchSetAiAttribution() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  yield* takeEvery(
+    actions.SET_AI_ATTRIBUTION,
+    function* (action: actions.SetAiAttribution) {
+      const { allowAiAttribution } = action
+      const accountUser = yield* select(getAccountUser)
+      if (!accountUser) return
+      if (accountUser.allow_ai_attribution === allowAiAttribution) return
+
+      accountUser.allow_ai_attribution = allowAiAttribution
+
+      yield* call(
+        audiusBackendInstance.updateCreator,
+        accountUser,
+        accountUser.user_id
+      )
+
+      yield* put(
+        cacheActions.update(Kind.USERS, [
+          {
+            id: accountUser.user_id,
+            metadata: { allow_ai_attribution: allowAiAttribution }
+          }
+        ])
+      )
+    }
+  )
+}
+
 export default function sagas() {
-  return [watchGetSettings, watchUpdateEmailFrequency, errorSagas]
+  return [
+    watchGetSettings,
+    watchUpdateEmailFrequency,
+    watchSetAiAttribution,
+    errorSagas
+  ]
 }

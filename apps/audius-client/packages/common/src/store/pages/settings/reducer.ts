@@ -10,7 +10,8 @@ import {
   TOGGLE_PUSH_NOTIFICATION_SETTING,
   TogglePushNotificationSetting,
   SET_BROWSER_NOTIFICATION_PERMISSION,
-  SET_BROWSER_NOTIFICATION_ENABLED
+  SET_BROWSER_NOTIFICATION_ENABLED,
+  SET_AI_ATTRIBUTION
 } from './actions'
 import {
   SettingsPageState,
@@ -133,6 +134,9 @@ const actionsMap: ActionsMap<SettingsPageState> = {
       ...state,
       [emailFrequency]: action.frequency
     }
+  },
+  [SET_AI_ATTRIBUTION](_state, _action) {
+    return _state
   }
 }
 

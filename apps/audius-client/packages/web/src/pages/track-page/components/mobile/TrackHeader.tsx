@@ -28,6 +28,7 @@ import {
 import cn from 'classnames'
 import Linkify from 'linkify-react'
 
+import { ReactComponent as IconRobot } from 'assets/img/robot.svg'
 import { make, useRecord } from 'common/store/analytics/actions'
 import CoSign from 'components/co-sign/CoSign'
 import HoverInfo from 'components/co-sign/HoverInfo'
@@ -35,6 +36,8 @@ import { Size } from 'components/co-sign/types'
 import DownloadButtons from 'components/download-buttons/DownloadButtons'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import { SearchTag } from 'components/search/SearchTag'
+import { AiTrackSection } from 'components/track/AiTrackSection'
+import Badge from 'components/track/Badge'
 import { PremiumTrackSection } from 'components/track/PremiumTrackSection'
 import TrackBannerIcon, {
   TrackBannerIconType
@@ -57,7 +60,8 @@ const messages = {
   play: 'PLAY',
   pause: 'PAUSE',
   collectibleGated: 'COLLECTIBLE GATED',
-  specialAccess: 'SPECIAL ACCESS'
+  specialAccess: 'SPECIAL ACCESS',
+  generatedWithAi: 'Generated With AI'
 }
 
 const PlayButton = (props: { playing: boolean; onPlay: () => void }) => {
@@ -112,6 +116,7 @@ type TrackHeaderProps = {
   isRemix: boolean
   fieldVisibility: FieldVisibility
   coSign: Remix | null
+  aiAttributedUserId: Nullable<ID>
   onClickArtistName: () => void
   onClickMobileOverflow: (
     trackId: ID,
@@ -156,6 +161,7 @@ const TrackHeader = ({
   credits,
   genre,
   tags,
+  aiAttributedUserId,
   onClickArtistName,
   onPlay,
   onShare,
@@ -369,6 +375,13 @@ const TrackHeader = ({
       ) : (
         renderHeaderText()
       )}
+      {aiAttributedUserId ? (
+        <Badge
+          icon={<IconRobot />}
+          className={styles.badgeAi}
+          textLabel={messages.generatedWithAi}
+        />
+      ) : null}
       {imageElement}
       <h1 className={styles.title}>{title}</h1>
       <div className={styles.artist} onClick={onClickArtistName}>
@@ -452,6 +465,13 @@ const TrackHeader = ({
         onClickFavorites={onClickFavorites}
         onClickReposts={onClickReposts}
       />
+      {aiAttributedUserId ? (
+        <AiTrackSection
+          attributedUserId={aiAttributedUserId}
+          className={styles.aiSection}
+          descriptionClassName={styles.aiSectionDescription}
+        />
+      ) : null}
       {description ? (
         <Linkify options={{ attributes: { onClick: onExternalLinkClick } }}>
           <h3 className={styles.description}>{squashNewLines(description)}</h3>

@@ -90,7 +90,6 @@ export const StatBanner = (props: StatsBannerProps) => {
     isSubscribed,
     onToggleSubscribe
   } = props
-
   let buttons = null
   const followButtonRef = useRef<HTMLDivElement>(null)
 
@@ -105,7 +104,6 @@ export const StatBanner = (props: StatsBannerProps) => {
             size={ButtonSize.SMALL}
             type={ButtonType.COMMON}
             text={messages.share}
-            leftIcon={<IconShare />}
             onClick={onShare}
             widthToHideText={BUTTON_COLLAPSE_WIDTHS.first}
           />
@@ -200,6 +198,7 @@ export const StatBanner = (props: StatsBannerProps) => {
               onClick={onShare!}
             />
           )}
+
           <div className={styles.followContainer}>
             {onToggleSubscribe ? (
               <SubscribeButton

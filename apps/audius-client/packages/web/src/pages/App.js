@@ -45,6 +45,7 @@ import { RewardClaimedToast } from 'components/reward-claimed-toast/RewardClaime
 import DesktopRoute from 'components/routes/DesktopRoute'
 import MobileRoute from 'components/routes/MobileRoute'
 import TrendingGenreSelectionPage from 'components/trending-genre-selection/TrendingGenreSelectionPage'
+import { AiAttributedTracksPage } from 'pages/ai-attributed-tracks-page'
 import AnnouncementPage from 'pages/announcement-page/AnnoucementPage'
 import ArtistDashboardPage from 'pages/artist-dashboard-page/ArtistDashboardPage'
 import { AudioRewardsPage } from 'pages/audio-rewards-page/AudioRewardsPage'
@@ -148,7 +149,8 @@ import {
   SUPPORTING_USERS_ROUTE,
   TOP_SUPPORTERS_USERS_ROUTE,
   publicSiteRoutes,
-  CHAT_PAGE
+  CHAT_PAGE,
+  PROFILE_PAGE_AI_ATTRIBUTED_TRACKS
 } from 'utils/route'
 import { getTheme as getSystemTheme } from 'utils/theme/theme'
 
@@ -866,6 +868,11 @@ class App extends Component {
                     containerRef={this.props.mainContentRef.current}
                   />
                 )}
+              />
+              <Route
+                exact
+                path={PROFILE_PAGE_AI_ATTRIBUTED_TRACKS}
+                component={AiAttributedTracksPage}
               />
 
               <Route exact path={TRACK_PAGE} component={TrackPage} />

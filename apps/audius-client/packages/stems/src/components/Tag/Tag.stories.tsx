@@ -1,25 +1,13 @@
-import { DecoratorFn, Story } from '@storybook/react'
-import { MemoryRouter, Route, Switch } from 'react-router-dom'
+import { Story } from '@storybook/react'
 
 import { Tag, type TagProps } from './Tag'
 
-const reactRouterDecorator: DecoratorFn = (Story) => {
-  return (
-    <MemoryRouter>
-      <Switch>
-        <Route path='/*' element={<Story />} />
-      </Switch>
-    </MemoryRouter>
-  )
-}
-
 export default {
   component: Tag,
-  title: 'Components/Tag',
-  decorators: [reactRouterDecorator]
+  title: 'Components/Tag'
 }
 
-const Template: Story<TagProps> = (args) => {
+const Template: Story<TagProps<'span'>> = (args) => {
   return <Tag {...args} />
 }
 

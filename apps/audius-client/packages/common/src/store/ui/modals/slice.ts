@@ -38,7 +38,8 @@ const initialState: ModalsState = {
   LockedContent: false,
   PlaybackRate: false,
   ProfileActions: false,
-  PublishPlaylistConfirmation: false
+  PublishPlaylistConfirmation: false,
+  AiAttributionSettings: false
 }
 
 const slice = createSlice({

@@ -1,8 +1,11 @@
 import { useEffect, useContext } from 'react'
 
-import { notificationsSelectors, Notification } from '@audius/common'
+import {
+  notificationsSelectors,
+  AnnouncementNotification
+} from '@audius/common'
+import { MarkdownViewer } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
-import ReactMarkdown from 'react-markdown'
 import { connect } from 'react-redux'
 import { withRouter, RouteComponentProps } from 'react-router-dom'
 import { Dispatch } from 'redux'
@@ -17,8 +20,7 @@ import styles from './AnnouncementPage.module.css'
 const { getNotificationById } = notificationsSelectors
 
 const messages = {
-  title: 'NOTIFICATIONS',
-  header: '"What\'s new" Notifications are here!'
+  title: 'NOTIFICATIONS'
 }
 
 type OwnProps = {} & RouteComponentProps<{ notificationId: string }>
@@ -36,43 +38,34 @@ const AnnouncementPage = (props: AnnouncementPageProps) => {
     setCenter(messages.title)
   }, [setLeft, setCenter, setRight])
 
-  if (!props.notification) {
+  const notification = props.notification
+
+  if (!notification) {
     props.goToNotificationPage()
     return null
   }
 
-  const title = (
-    <span>
-      {messages.header}
-      <i className='emoji large party-popper' />
-    </span>
-  )
-
   return (
-    <MobilePageContainer backgroundClassName={styles.background} fullHeight>
-      <Header className={styles.header} title={title} />
+    <MobilePageContainer
+      containerClassName={styles.container}
+      backgroundClassName={styles.background}
+      fullHeight
+    >
+      <Header className={styles.header} title={notification.title} />
       <div className={styles.body}>
-        <ReactMarkdown
-          source={(props.notification as any).longDescription}
-          escapeHtml={false}
-        />
+        <MarkdownViewer markdown={notification.longDescription ?? ''} />
       </div>
     </MobilePageContainer>
   )
 }
 
-function mapStateToProps(
-  state: AppState,
-  ownProps: OwnProps
-): {
-  notification: Notification | undefined
-} {
+function mapStateToProps(state: AppState, ownProps: OwnProps) {
   const {
     params: { notificationId }
   } = ownProps.match
   return {
     notification: notificationId
-      ? getNotificationById(state, notificationId)
+      ? (getNotificationById(state, notificationId) as AnnouncementNotification)
       : undefined
   }
 }

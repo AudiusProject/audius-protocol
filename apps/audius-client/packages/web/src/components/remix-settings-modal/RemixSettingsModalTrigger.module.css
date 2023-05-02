@@ -1,13 +1,3 @@
-.trigger {
-  margin-top: var(--unit-3);
-  width: 156px;
-  height: 35px !important;
-}
-
-.triggerText {
-  font-size: var(--font-xs) !important;
-}
-
 .hideRemixes {
   display: inline-flex;
   align-items: center;

@@ -76,10 +76,21 @@
   align-items: center;
 }
 
-.title p span {
+.title span {
   display: inline-flex;
   height: 100%;
   align-items: center;
+}
+
+.titleMarkdown {
+  color: var(--secondary);
+  font-family: var(--font-family);
+  font-size: var(--font-l);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.5px;
+  line-height: 24px;
+  margin-right: 16px;
+  display: inline-flex;
 }
 
 .header :global(.emoji),
@@ -97,66 +108,4 @@
   font-size: 14px;
   font-weight: 500;
   line-height: 24px;
-}
-
-.body h1,
-.body h2,
-.body h3,
-.body h4,
-.body h5,
-.body h6 {
-  margin-bottom: 24px;
-  font-weight: var(--font-bold);
-}
-
-.body h1 {
-  font-size: var(--font-3xl);
-}
-
-.body h2 {
-  font-size: var(--font-2xl);
-}
-
-.body h3 {
-  font-size: var(--font-xl);
-}
-
-.body h4 {
-  font-size: var(--font-l);
-}
-
-.body h5 {
-  font-size: var(--font-m);
-}
-
-.body h6 {
-  font-size: var(--font-s);
-}
-
-.body p {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 24px;
-  margin-bottom: 24px;
-}
-
-.body strong {
-  font-weight: var(--font-bold);
-}
-
-.body em {
-  font-style: italic;
-}
-
-.body ul {
-  list-style-type: disc;
-  list-style-position: inside;
-}
-
-ul li::before {
-  color: var(--neutral);
-}
-
-.body ul li {
-  margin-bottom: 24px;
 }

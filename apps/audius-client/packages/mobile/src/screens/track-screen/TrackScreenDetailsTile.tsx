@@ -29,12 +29,14 @@ import {
   playbackPositionSelectors,
   FeatureFlags
 } from '@audius/common'
-import type { UID, Track, User, SearchTrack, SearchUser } from '@audius/common'
+import type { UID, User, SearchTrack, SearchUser, Track } from '@audius/common'
 import { Image, View } from 'react-native'
+import LinearGradient from 'react-native-linear-gradient'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconCollectible from 'app/assets/images/iconCollectible.svg'
 import IconHidden from 'app/assets/images/iconHidden.svg'
+import IconRobot from 'app/assets/images/iconRobot.svg'
 import IconSpecialAccess from 'app/assets/images/iconSpecialAccess.svg'
 import { Tag, Text } from 'app/components/core'
 import { DetailsTile } from 'app/components/details-tile'
@@ -72,7 +74,8 @@ const messages = {
   remix: 'remix',
   hiddenTrack: 'hidden track',
   collectibleGated: 'collectible gated',
-  specialAccess: 'special access'
+  specialAccess: 'special access',
+  generatedWithAi: 'Generated with AI'
 }
 
 type TrackScreenDetailsTileProps = {
@@ -130,14 +133,14 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
 
   headerContainer: {
-    ...flexRowCentered(),
+    display: 'flex',
+    flexDirection: 'column',
     justifyContent: 'center'
   },
   headerText: {
     marginTop: spacing(4),
     marginBottom: spacing(4),
     letterSpacing: 2,
-    lineHeight: 17,
     textAlign: 'center',
     textTransform: 'uppercase'
   },
@@ -160,6 +163,23 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   },
   downloadStatusIndicator: {
     marginRight: spacing(2)
+  },
+  aiAttributedHeader: {
+    marginHorizontal: spacing(6),
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing(2),
+    paddingVertical: spacing(2.5),
+    borderRadius: spacing(1.5),
+    marginBottom: spacing(4)
+  },
+  aiAttributedText: {
+    textTransform: 'uppercase',
+    fontSize: typography.fontSize.small,
+    fontFamily: typography.fontByWeight.bold,
+    lineHeight: typography.fontSize.small * 1.3,
+    letterSpacing: 0.7,
+    color: palette.white
   }
 }))
 
@@ -175,9 +195,13 @@ export const TrackScreenDetailsTile = ({
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED_FALLBACK
   )
+  const { isEnabled: isAiGeneratedTracksEnabled } = useFeatureFlag(
+    FeatureFlags.AI_ATTRIBUTION
+  )
   const styles = useStyles()
   const navigation = useNavigation()
-  const { accentOrange, accentBlue } = useThemeColors()
+  const { accentOrange, accentBlue, white, aiPrimary, aiSecondary } =
+    useThemeColors()
 
   const isOfflineEnabled = useIsOfflineModeEnabled()
   const isReachable = useSelector(getIsReachable)
@@ -406,6 +430,24 @@ export const TrackScreenDetailsTile = ({
     )
   }
 
+  const renderAiHeader = () => {
+    if (!isAiGeneratedTracksEnabled || !track.ai_attribution_user_id) {
+      return null
+    }
+
+    return (
+      <LinearGradient
+        style={styles.aiAttributedHeader}
+        colors={[aiPrimary, aiSecondary]}
+        useAngle
+        angle={180}
+      >
+        <IconRobot fill={white} />
+        <Text style={styles.aiAttributedText}>{messages.generatedWithAi}</Text>
+      </LinearGradient>
+    )
+  }
+
   const renderHeader = () => {
     return is_unlisted ? (
       <View style={styles.hiddenDetailsTileWrapper}>
@@ -420,6 +462,7 @@ export const TrackScreenDetailsTile = ({
           trackId={track_id}
         />
         {renderHeaderText()}
+        {renderAiHeader()}
       </View>
     )
   }
