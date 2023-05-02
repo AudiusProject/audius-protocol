@@ -19,8 +19,7 @@ const TRACK_PROPS = [
   'release_date',
   'file_type',
   'is_premium',
-  'premium_conditions',
-  'ai_attribution_user_id'
+  'premium_conditions'
 ]
 const TRACK_REQUIRED_PROPS = ['owner_id', 'title']
 
