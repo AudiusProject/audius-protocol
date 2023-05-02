@@ -83,7 +83,7 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
         return acc
       }, {} as Record<number, { title: string }>)
 
-      entityType = 'track'
+      entityType = EntityType.Track
       entityName = tracks[this.repostItemId]?.title
     } else {
       const res: Array<{
@@ -103,14 +103,24 @@ export class Repost extends BaseNotification<RepostNotificationRow> {
         return acc
       }, {} as Record<number, { playlist_name: string; is_album: boolean }>)
       const playlist = playlists[this.repostItemId]
-      entityType = playlist?.is_album ? 'album' : 'playlist'
+      entityType = playlist?.is_album ? EntityType.Album : EntityType.Playlist
       entityName = playlist?.playlist_name
     }
 
     const title = 'New Repost'
     const body = `${reposterUserName} reposted your ${entityType.toLowerCase()} ${entityName}`
-    if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'reposts')) {
-      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    if (
+      userNotificationSettings.isNotificationTypeBrowserEnabled(
+        this.receiverUserId,
+        'reposts'
+      )
+    ) {
+      await sendBrowserNotification(
+        userNotificationSettings,
+        this.receiverUserId,
+        title,
+        body
+      )
     }
 
     // If the user has devices to the notification to, proceed
