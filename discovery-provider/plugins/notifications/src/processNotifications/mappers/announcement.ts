@@ -72,7 +72,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       offset = res[res.length - 1].user_id + 1
       const validReceiverUserIds = res.map((user) => user.user_id)
       if (!isDryRun) {
-        await broadcastAnnouncement(this, this.identityDB, validReceiverUserIds)
+        await this.broadcastAnnouncement(validReceiverUserIds, isLiveEmailEnabled)
       }
     }
     const total_elapsed = new Date().getTime() - total_start
@@ -88,6 +88,72 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       type: this.notification.type,
       title: this.notification.data.title,
       text: this.notification.data.short_description
+    }
+  }
+
+  async broadcastAnnouncement(userIds: number[], isLiveEmailEnabled: boolean) {
+    const userNotificationSettings = await buildUserNotificationSettings(this.identityDB, userIds)
+    for (const userId of userIds) {
+      await this.broadcastPushNotificationAnnouncements(userId, userNotificationSettings)
+      await this.broadcastEmailAnnouncements(isLiveEmailEnabled, userId, userNotificationSettings)
+    }
+  }
+
+  async broadcastPushNotificationAnnouncements(userId: number, userNotificationSettings: UserNotificationSettings) {
+    if (
+      userNotificationSettings.shouldSendPushNotification({
+        receiverUserId: userId
+      })
+    ) {
+      const devices: Device[] = userNotificationSettings.getDevices(userId)
+      // If the user's settings for the follow notification is set to true, proceed
+  
+      await Promise.all(
+        devices.map((device) => {
+          // this may get rate limited by AWS
+          return sendPushNotification(
+            {
+              type: device.type,
+              badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,
+              targetARN: device.awsARN
+            },
+            {
+              title: this.notification.data.title,
+              body: this.notification.data.short_description,
+              data: {
+                id: `timestamp:${this.getNotificationTimestamp()}:group_id:${
+                  this.notification.group_id
+                }`,
+                type: 'Announcement'
+              }
+            }
+          )
+        })
+      )
+      await this.incrementBadgeCount(userId)
+    }
+  }
+
+  async broadcastEmailAnnouncements(isLiveEmailEnabled: boolean, userId: number, userNotificationSettings: UserNotificationSettings) {
+    if (
+      isLiveEmailEnabled &&
+      userNotificationSettings.shouldSendEmailAtFrequency({
+        receiverUserId: userId,
+        frequency: 'live'
+      })
+    ) {
+      const notification: AppEmailNotification = {
+        receiver_user_id: userId,
+        ...this.notification
+      }
+      await sendNotificationEmail({
+        userId: userId,
+        email: userNotificationSettings.getUserEmail(userId),
+        frequency: 'live',
+        notifications: [notification],
+        dnDb: this.dnDB,
+        identityDb: this.identityDB
+      })
     }
   }
 }
@@ -118,69 +184,3 @@ export const fetchUsersPage = async (dnDb: Knex, offset: number, page_count: num
         // order by established index, this keeps perf constant
         .orderBy(['user_id', 'is_current', 'txhash'])
         .limit(page_count)
-
-const broadcastAnnouncement = async (notif: Announcement, idDb: Knex, userIds: number[]) => {
-  const userNotificationSettings = await buildUserNotificationSettings(idDb, userIds)
-  for (const userId of userIds) {
-    await broadcastPushNotificationAnnouncements(notif, userId, userNotificationSettings)
-    await broadcastEmailAnnouncements(notif, userId, userNotificationSettings)
-  }
-}
-
-const broadcastPushNotificationAnnouncements = async (notif: Announcement, userId: number, userNotificationSettings: UserNotificationSettings) => {
-  if (
-    userNotificationSettings.shouldSendPushNotification({
-      receiverUserId: userId
-    })
-  ) {
-    const devices: Device[] = userNotificationSettings.getDevices(userId)
-    // If the user's settings for the follow notification is set to true, proceed
-
-    await Promise.all(
-      devices.map((device) => {
-        // this may get rate limited by AWS
-        return sendPushNotification(
-          {
-            type: device.type,
-            badgeCount: userNotificationSettings.getBadgeCount(userId) + 1,
-            targetARN: device.awsARN
-          },
-          {
-            title: notif.notification.data.title,
-            body: notif.notification.data.short_description,
-            data: {
-              id: `timestamp:${notif.getNotificationTimestamp()}:group_id:${
-                notif.notification.group_id
-              }`,
-              type: 'Announcement'
-            }
-          }
-        )
-      })
-    )
-    await notif.incrementBadgeCount(userId)
-  }
-}
-
-const broadcastEmailAnnouncements = async (notif: Announcement, userId: number, userNotificationSettings: UserNotificationSettings) => {
-  if (
-    //isLiveEmailEnabled &&
-    userNotificationSettings.shouldSendEmailAtFrequency({
-      receiverUserId: userId,
-      frequency: 'live'
-    })
-  ) {
-    const notification: AppEmailNotification = {
-      receiver_user_id: userId,
-      ...notif.notification
-    }
-    await sendNotificationEmail({
-      userId: userId,
-      email: userNotificationSettings.getUserEmail(userId),
-      frequency: 'live',
-      notifications: [notification],
-      dnDb: notif.dnDB,
-      identityDb: notif.identityDB
-    })
-  }
-}
