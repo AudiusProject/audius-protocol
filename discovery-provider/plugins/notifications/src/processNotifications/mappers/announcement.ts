@@ -13,6 +13,13 @@ import {
   Device
 } from './userNotificationSettings'
 import { UserNotificationSettings } from './userNotificationSettings'
+import { logger } from '../../logger'
+
+export const configureAnnouncmentDryRun = () => {
+  const dryRun: boolean = process.env.ANNOUNCEMENTS_DRY_RUN.toLowerCase() === "true"
+  logger.info(`announcements configured ${dryRun ? "" : "not"} for dry run`)
+  globalThis.announcementDryRun = dryRun
+}
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
   data: AnnouncementNotification
@@ -32,6 +39,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
   }: {
     isLiveEmailEnabled: boolean
   }) {
+    const isDryRun: boolean = globalThis.announcementDryRun
     const res_count = await this.dnDB('users')
       .count('user_id')
       .where('is_current', true)
@@ -41,22 +49,29 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     // this isn't good if the res is a string
     const count = res_count.count as number
     let offset = 0 // let binding because we re-assign
-    const page_count = 10000
+    const page_count = 100 // only pull 100 users into mem at a time
 
     const total_start = new Date().getTime()
 
     // naive but it works
     // adds extra page to total count so we get the last page of trailing users
     while (offset < (count + page_count)) {
+      const start = new Date().getTime()
       // query next page
       const res = await fetchUsersPage(this.dnDB, offset, page_count)
+      const elapsed = new Date().getTime() - start
+      logger.info(
+        `count: ${count} offset: ${offset} from: [${res[0].user_id}:${res[res.length - 1].user_id}] queried in ${elapsed} ms`
+      )
 
       offset = res[res.length - 1].user_id + 1
       const validReceiverUserIds = res.map((user) => user.user_id)
-      await broadcastAnnouncement(this, this.identityDB, validReceiverUserIds)
+      if (!isDryRun) {
+        await broadcastAnnouncement(this, this.identityDB, validReceiverUserIds)
+      }
     }
     const total_elapsed = new Date().getTime() - total_start
-    console.log(`announcement complete in ${total_elapsed} ms`)
+    logger.info(`announcement complete in ${total_elapsed} ms`)
   }
 
   getResourcesForEmail(): ResourceIds {
@@ -90,8 +105,11 @@ export const fetchUsersPage = async (dnDb: Knex, offset: number, page_count: num
         .where('user_id', '>', offset)
         .andWhere('is_current', true)
         .andWhere('is_deactivated', false)
+        .andWhere('is_available', true)
         .orWhere((inner) =>
-          inner.where('user_id', '=', offset).andWhere('is_current', true)
+          inner.where('user_id', '=', offset)
+            .andWhere('is_current', true)
+            .andWhere('is_available', true)
         )
         .andWhere('is_deactivated', false)
         // order by established index, this keeps perf constant

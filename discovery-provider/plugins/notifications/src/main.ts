@@ -18,6 +18,7 @@ import {
 } from './remoteConfig'
 import { Server } from './server'
 import { configureWebPush } from './web'
+import { configureAnnouncmentDryRun } from './processNotifications/mappers/announcement'
 
 export class Processor {
   discoveryDB: Knex
@@ -54,6 +55,9 @@ export class Processor {
 
     // setup browser push
     configureWebPush()
+
+    // setup announcements
+    configureAnnouncmentDryRun()
 
     // Comment out to prevent app notifications until complete
     this.listener = new Listener()
