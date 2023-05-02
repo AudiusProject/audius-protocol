@@ -135,3 +135,9 @@ BEGIN;
     END IF;
     END $$;
 COMMIT;
+
+-- 5/1/23: add AI attribution index
+
+BEGIN;
+    create index if not exists tracks_ai_attribution on tracks (ai_attribution, is_current);
+COMMIT;
