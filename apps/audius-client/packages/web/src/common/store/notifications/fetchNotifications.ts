@@ -22,6 +22,8 @@ export function* fetchNotifications(config: FetchNotificationsParams) {
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const remoteConfig = yield* getContext('remoteConfigInstance')
 
+  yield* call(remoteConfig.waitForRemoteConfig)
+
   const useDiscoveryNotifications = yield* call(
     getFeatureEnabled,
     FeatureFlags.DISCOVERY_NOTIFICATIONS
