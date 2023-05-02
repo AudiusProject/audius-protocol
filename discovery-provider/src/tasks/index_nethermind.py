@@ -255,8 +255,11 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         or action
                         in [
                             Action.REPOST,
+                            Action.UNREPOST,
                             Action.SAVE,
+                            Action.UNSAVE,
                             Action.FOLLOW,
+                            Action.UNFOLLOW,
                             Action.SUBSCRIBE,
                             Action.UNSUBSCRIBE,
                         ]

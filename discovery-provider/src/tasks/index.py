@@ -231,8 +231,11 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         or action
                         in [
                             Action.REPOST,
+                            Action.UNREPOST,
                             Action.SAVE,
+                            Action.UNSAVE,
                             Action.FOLLOW,
+                            Action.UNFOLLOW,
                             Action.SUBSCRIBE,
                             Action.UNSUBSCRIBE,
                         ]
@@ -257,7 +260,7 @@ def fetch_cid_metadata(db, entity_manager_txs):
                             # If metadata blob does not contain the required keys, skip
                             if "cid" not in data.keys() or "data" not in data.keys():
                                 logger.info(
-                                    f"index_nethermind.py | required keys missing in metadata {cid}"
+                                    f"index.py | required keys missing in metadata {cid}"
                                 )
                                 continue
                             cid = data["cid"]
@@ -286,11 +289,11 @@ def fetch_cid_metadata(db, entity_manager_txs):
                                 cid_metadata_from_chain[cid] = formatted_json
                         except Exception as e:
                             logger.info(
-                                f"index_nethermind.py | error deserializing metadata {cid}: {e}"
+                                f"index.py | error deserializing metadata {cid}: {e}"
                             )
                         continue
 
-                    logger.info(f"index_nethermind.py | falling back to fetching cid metadata from content nodes for metadata {cid}, event type {event_type}, action {action}, user {user_id}")
+                    logger.info(f"index.py | falling back to fetching cid metadata from content nodes for metadata {cid}, event type {event_type}, action {action}, user {user_id}")
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id
