@@ -1,5 +1,20 @@
-import { Name, accountSelectors, getContext } from '@audius/common'
-import { call, cancel, fork, put, race, select, take } from 'typed-redux-saga'
+import {
+  Name,
+  accountSelectors,
+  getContext,
+  removeNullable
+} from '@audius/common'
+import { flatMap, zip } from 'lodash'
+import {
+  all,
+  call,
+  cancel,
+  fork,
+  put,
+  race,
+  select,
+  take
+} from 'typed-redux-saga'
 
 import { make } from 'common/store/analytics/actions'
 import { waitForRead } from 'utils/sagaHelpers'
@@ -9,18 +24,50 @@ import { getSearch } from './selectors'
 
 const getUserId = accountSelectors.getUserId
 
+const searchMultiMap: {
+  [key: string]: string[]
+} = {
+  grimes: ['grimez', 'grimes']
+}
+
 export function* getSearchResults(searchText: string) {
   yield* waitForRead()
 
   const apiClient = yield* getContext('apiClient')
   const userId = yield* select(getUserId)
 
-  const results = yield* call([apiClient, 'getSearchAutocomplete'], {
-    currentUserId: userId,
-    query: searchText,
-    limit: 3,
-    offset: 0
-  })
+  let results
+  if (searchText in searchMultiMap) {
+    const searches = searchMultiMap[searchText].map((query) =>
+      call([apiClient, 'getSearchAutocomplete'], {
+        currentUserId: userId,
+        query,
+        limit: 3,
+        offset: 0
+      })
+    )
+    const allSearchResults = yield* all(searches)
+    results = allSearchResults.reduce(
+      (acc, cur) => {
+        acc.tracks = flatMap(zip(acc.tracks, cur.tracks)).filter(removeNullable)
+        acc.users = flatMap(zip(acc.users, cur.users)).filter(removeNullable)
+        acc.albums = flatMap(zip(acc.albums, cur.albums)).filter(removeNullable)
+        acc.playlists = flatMap(zip(acc.playlists, cur.playlists)).filter(
+          removeNullable
+        )
+        return acc
+      },
+      { tracks: [], albums: [], playlists: [], users: [] }
+    )
+  } else {
+    results = yield* call([apiClient, 'getSearchAutocomplete'], {
+      currentUserId: userId,
+      query: searchText,
+      limit: 3,
+      offset: 0
+    })
+  }
+
   const { tracks, albums, playlists, users } = results
   const checkedUsers = users.filter((u) => !u.is_deactivated)
   const checkedTracks = tracks.filter(

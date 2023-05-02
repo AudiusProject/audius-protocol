@@ -4,9 +4,18 @@ import {
   searchResultsPageActions as searchPageActions,
   searchResultsPageTracksLineupActions as tracksLineupActions,
   SearchKind,
-  processAndCacheUsers
+  processAndCacheUsers,
+  removeNullable
 } from '@audius/common'
-import { select, call, takeLatest, put, getContext } from 'redux-saga/effects'
+import { flatMap, zip } from 'lodash'
+import {
+  select,
+  call,
+  takeLatest,
+  put,
+  getContext,
+  all
+} from 'redux-saga/effects'
 
 import { processAndCacheCollections } from 'common/store/cache/collections/utils'
 import { processAndCacheTracks } from 'common/store/cache/tracks/utils'
@@ -88,18 +97,48 @@ export function* fetchSearchPageTags(action) {
   }
 }
 
+const searchMultiMap = {
+  grimes: ['grimez', 'grimes']
+}
+
 export function* getSearchResults(searchText, kind, limit, offset) {
   yield waitForRead()
 
   const apiClient = yield getContext('apiClient')
   const userId = yield select(getUserId)
-  const results = yield apiClient.getSearchFull({
-    currentUserId: userId,
-    query: searchText,
-    kind,
-    limit,
-    offset
-  })
+  let results
+  if (searchText in searchMultiMap) {
+    const searches = searchMultiMap[searchText].map((query) =>
+      call([apiClient, 'getSearchFull'], {
+        currentUserId: userId,
+        query,
+        kind,
+        limit,
+        offset
+      })
+    )
+    const allSearchResults = yield all(searches)
+    results = allSearchResults.reduce(
+      (acc, cur) => {
+        acc.tracks = flatMap(zip(acc.tracks, cur.tracks)).filter(removeNullable)
+        acc.users = flatMap(zip(acc.users, cur.users)).filter(removeNullable)
+        acc.albums = flatMap(zip(acc.albums, cur.albums)).filter(removeNullable)
+        acc.playlists = flatMap(zip(acc.playlists, cur.playlists)).filter(
+          removeNullable
+        )
+        return acc
+      },
+      { tracks: [], albums: [], playlists: [], users: [] }
+    )
+  } else {
+    results = yield* call([apiClient, 'getSearchFull'], {
+      currentUserId: userId,
+      query: searchText,
+      kind,
+      limit,
+      offset
+    })
+  }
   const { tracks, albums, playlists, users } = results
 
   yield call(processAndCacheUsers, users)
