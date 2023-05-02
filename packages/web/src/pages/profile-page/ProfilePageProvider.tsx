@@ -10,6 +10,7 @@ import {
   Status,
   formatCount,
   getErrorMessage,
+  accountActions,
   accountSelectors,
   profilePageSelectors,
   CollectionSortMode,
@@ -63,6 +64,7 @@ const { setFollowing } = followingUserListActions
 const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { open } = mobileOverflowMenuUIActions
 const { selectSuggestedFollowsUsers } = relatedArtistsUISelectors
+const { fetchHasTracks } = accountActions
 
 const {
   makeGetProfile,
@@ -70,7 +72,7 @@ const {
   getProfileTracksLineup,
   getProfileUserId
 } = profilePageSelectors
-const { getAccountUser } = accountSelectors
+const { getAccountUser, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
 const { getBlockees, getBlockers, getUserChatPermissions } = chatSelectors
 
@@ -168,37 +170,50 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   componentDidUpdate(prevProps: ProfilePageProps, prevState: ProfilePageState) {
-    const { pathname, profile, artistTracks, goToRoute } = this.props
+    const {
+      pathname,
+      profile,
+      artistTracks,
+      goToRoute,
+      account,
+      accountHasTracks
+    } = this.props
     const { editMode, activeTab } = this.state
+
+    if (!this.getIsOwner(prevProps) && this.getIsOwner()) {
+      this.props.fetchAccountHasTracks()
+    }
 
     if (profile && profile.status === Status.ERROR) {
       goToRoute(NOT_FOUND_PAGE)
     }
 
-    if (
-      !activeTab &&
-      profile &&
-      profile.profile &&
-      artistTracks!.status === Status.SUCCESS
-    ) {
-      if (profile.profile.track_count > 0) {
-        this.setState({
-          activeTab: ProfilePageTabs.TRACKS
-        })
-      } else {
+    const isOwnProfile = account?.user_id === profile.profile?.user_id
+    const hasTracks =
+      (profile.profile && profile.profile.track_count > 0) ||
+      (isOwnProfile && accountHasTracks)
+
+    if (!isOwnProfile || accountHasTracks !== null) {
+      if (
+        !activeTab &&
+        profile &&
+        profile.profile &&
+        artistTracks!.status === Status.SUCCESS
+      ) {
+        if (hasTracks) {
+          this.setState({
+            activeTab: ProfilePageTabs.TRACKS
+          })
+        } else {
+          this.setState({
+            activeTab: ProfilePageTabs.REPOSTS
+          })
+        }
+      } else if (!activeTab && profile && profile.profile && !hasTracks) {
         this.setState({
           activeTab: ProfilePageTabs.REPOSTS
         })
       }
-    } else if (
-      !activeTab &&
-      profile &&
-      profile.profile &&
-      !(profile.profile.track_count > 0)
-    ) {
-      this.setState({
-        activeTab: ProfilePageTabs.REPOSTS
-      })
     }
 
     // Replace the URL with the properly formatted /handle route
@@ -596,11 +611,13 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   didChangeTabsFrom = (prevLabel: string, currLabel: string) => {
     const {
       didChangeTabsFrom,
-      profile: { profile }
+      profile: { profile },
+      accountHasTracks
     } = this.props
     if (profile) {
       let tab = `/${currLabel.toLowerCase()}`
-      if (profile.track_count > 0) {
+      const isOwner = this.getIsOwner()
+      if (profile.track_count > 0 || (isOwner && accountHasTracks)) {
         // An artist, default route is tracks
         if (currLabel === ProfilePageTabs.TRACKS) {
           tab = ''
@@ -671,15 +688,22 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
   }
 
   getIsArtist = () => {
-    const { profile } = this.props.profile
-    return !!profile && profile.track_count > 0
+    const {
+      profile: { profile },
+      accountHasTracks
+    } = this.props
+    const isOwner = this.getIsOwner()
+    return !!(
+      (profile && profile.track_count > 0) ||
+      (isOwner && accountHasTracks)
+    )
   }
 
-  getIsOwner = () => {
+  getIsOwner = (overrideProps?: ProfilePageProps) => {
     const {
       profile: { profile },
       account
-    } = this.props
+    } = overrideProps || this.props
     return profile && account ? profile.user_id === account.user_id : false
   }
 
@@ -967,6 +991,12 @@ function makeMapStateToProps() {
     const params = parseUserRoute(pathname)
     const handleLower = params?.handle?.toLowerCase() as string
 
+    const profile = getProfile(state, handleLower)
+    const account = getAccountUser(state)
+    const accountHasTracks =
+      account?.user_id === profile.profile?.user_id
+        ? getAccountHasTracks(state)
+        : null
     return {
       account: getAccountUser(state),
       profile: getProfile(state, handleLower),
@@ -981,7 +1011,8 @@ function makeMapStateToProps() {
       }),
       chatPermissions: getUserChatPermissions(state),
       blockeeList: getBlockees(state),
-      blockerList: getBlockers(state)
+      blockerList: getBlockers(state),
+      accountHasTracks
     }
   }
   return mapStateToProps
@@ -1009,6 +1040,9 @@ function mapDispatchToProps(dispatch: Dispatch, props: RouteComponentProps) {
           /* deleteExistingEntry */ false
         )
       ),
+    fetchAccountHasTracks: () => {
+      dispatch(fetchHasTracks())
+    },
     updateProfile: (metadata: any) =>
       dispatch(profileActions.updateProfile(metadata)),
     goToRoute: (route: string) => dispatch(pushRoute(route)),

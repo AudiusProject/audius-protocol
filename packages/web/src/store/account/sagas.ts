@@ -2,11 +2,12 @@ import {
   accountActions,
   accountSelectors,
   settingsPageActions,
-  modalsActions
+  modalsActions,
+  accountSagas as commonAccountSagas
 } from '@audius/common'
 import { call, put, select, takeEvery } from 'typed-redux-saga'
 
-import commonAccountSagas from 'common/store/account/sagas'
+import webCommonAccountSagas from 'common/store/account/sagas'
 import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
 import {
   Permission,
@@ -190,6 +191,7 @@ function* unsubscribeBrowserPushNotification() {
 export default function sagas() {
   return [
     ...commonAccountSagas(),
+    ...webCommonAccountSagas(),
     watchShowPushNotificationConfirmation,
     getBrowserPushNotifications,
     subscribeBrowserPushNotification,

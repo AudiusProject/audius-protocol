@@ -21,6 +21,7 @@ const initialState = {
   // Array of strings that are either smart collection identifiers or user-generated collection ids
   orderedPlaylists: [] as string[],
   userId: null as number | null,
+  hasTracks: null as boolean | null,
   status: Status.IDLE,
   reason: null as Nullable<FailureReason>,
   connectivityFailure: false, // Did we fail from no internet connectivity?
@@ -123,6 +124,10 @@ const slice = createSlice({
       const { order } = action.payload
       state.orderedPlaylists = order
     },
+    fetchHasTracks: () => {},
+    setHasTracks: (state, action: PayloadAction<boolean>) => {
+      state.hasTracks = action.payload
+    },
     fetchBrowserPushNotifications: () => {},
     subscribeBrowserPushNotifications: () => {},
     unsubscribeBrowserPushNotifications: () => {},
@@ -151,6 +156,7 @@ export const {
   fetchAccountRequested,
   fetchAccountSucceeded,
   fetchBrowserPushNotifications,
+  fetchHasTracks,
   fetchLocalAccount,
   fetchSavedAlbums,
   fetchSavedAlbumsSucceeded,
@@ -160,6 +166,7 @@ export const {
   removeAccountPlaylist,
   renameAccountPlaylist,
   resetAccount,
+  setHasTracks,
   setNeedsAccountRecovery,
   setPlaylistOrder,
   setReachable,

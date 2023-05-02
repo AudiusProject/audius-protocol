@@ -4,9 +4,10 @@ import {
   getContext,
   removeNullable,
   SquareSizes,
-  WidthSizes
+  WidthSizes,
+  accountSagas
 } from '@audius/common'
-import accountSagas from 'common/store/account/sagas'
+import webAccountSagas from 'common/store/account/sagas'
 import { updateProfileAsync } from 'common/store/profile/sagas'
 import FastImage from 'react-native-fast-image'
 import { takeEvery, call } from 'typed-redux-saga'
@@ -78,7 +79,7 @@ function* watchSignedIn() {
 }
 
 const sagas = () => {
-  return [...accountSagas(), watchSignedIn]
+  return [...accountSagas(), ...webAccountSagas(), watchSignedIn]
 }
 
 export default sagas
