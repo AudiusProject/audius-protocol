@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net"
 	"sync"
+	"time"
 
 	"comms.audius.co/discovery/schema"
 	"github.com/gobwas/ws"
@@ -12,10 +13,17 @@ import (
 )
 
 var (
-	mu         sync.Mutex
-	websockets = []userWebsocket{}
-	logger     = slog.Default()
+	mu             sync.Mutex
+	websockets     = []userWebsocket{}
+	recentMessages = []*recentMessage{}
+	logger         = slog.Default()
 )
+
+type recentMessage struct {
+	userId  int32
+	sentAt  time.Time
+	payload []byte
+}
 
 type userWebsocket struct {
 	userId int32
@@ -29,6 +37,15 @@ func RegisterWebsocket(userId int32, conn net.Conn) {
 		userId,
 		conn,
 	})
+
+	for _, r := range recentMessages {
+		if time.Since(r.sentAt) < time.Second*10 && r.userId == userId {
+			err := wsutil.WriteServerMessage(conn, ws.OpText, r.payload)
+			if err != nil {
+				logger.Info("websocket push failed: " + err.Error())
+			}
+		}
+	}
 }
 
 func removeWebsocket(toRemove userWebsocket) {
@@ -52,6 +69,20 @@ func websocketPush(userId int32, data schema.ChatWebsocketEventData) {
 		logger.Error("failed to encode json: ", err)
 		return
 	}
+
+	// filter out expired messages and append new one
+	recent2 := []*recentMessage{}
+	for _, r := range recentMessages {
+		if time.Since(r.sentAt) < time.Second*10 {
+			recent2 = append(recent2, r)
+		}
+	}
+	recent2 = append(recent2, &recentMessage{
+		userId:  userId,
+		sentAt:  time.Now(),
+		payload: payload,
+	})
+	recentMessages = recent2
 
 	for _, s := range websockets {
 		if s.userId != userId {
