@@ -124,7 +124,7 @@ export class AppNotificationsProcessor {
       if (isEnabled) {
         const isLiveEmailEnabled = this.getIsLiveEmailEnabled()
         try {
-          await notification.pushNotification({ isLiveEmailEnabled })
+          notification.pushNotification({ isLiveEmailEnabled })
           status.processed += 1
         } catch (e) {
           logger.error(
