@@ -15,8 +15,13 @@ import {
 import { UserNotificationSettings } from './userNotificationSettings'
 import { logger } from '../../logger'
 
+const getDryRun = (envVar: string | undefined): boolean => {
+  if (envVar === undefined) return true
+  return envVar.toLowerCase() === "true"
+}
+
 export const configureAnnouncmentDryRun = () => {
-  const dryRun: boolean = process.env.ANNOUNCEMENTS_DRY_RUN.toLowerCase() === "true"
+  const dryRun = getDryRun(process.env.ANNOUNCEMENTS_DRY_RUN)
   logger.info(`announcements configured ${dryRun ? "" : "not"} for dry run`)
   globalThis.announcementDryRun = dryRun
 }
