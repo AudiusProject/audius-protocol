@@ -76,7 +76,7 @@ app.post<UploadTrackRequest>(
         res.send(result);
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
       res.send((e as any).message);
     }
   }
