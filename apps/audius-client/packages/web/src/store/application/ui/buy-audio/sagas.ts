@@ -27,7 +27,9 @@ import {
   ErrorLevel,
   LocalStorage,
   solanaSelectors,
-  deriveUserBankPubkey
+  deriveUserBankPubkey,
+  weiToAudio,
+  convertWeiToWAudio
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
 import type { RouteInfo } from '@jup-ag/core'
@@ -496,7 +498,6 @@ function* populateAndSaveTransactionDetails() {
   const postAUDIOBalanceWei = yield* select(
     walletSelectors.getAccountTotalBalance
   )
-  const postAUDIOBalance = formatWei(postAUDIOBalanceWei).replaceAll(',', '')
   const purchasedAUDIO = purchasedAudioWei
     ? formatWei(new BN(purchasedAudioWei ?? '0') as BNWei).replaceAll(',', '')
     : ''
@@ -527,8 +528,10 @@ function* populateAndSaveTransactionDetails() {
     transactionType: TransactionType.PURCHASE,
     method:
       PROVIDER_METHOD_MAP[localStorageState.provider ?? OnRampProvider.UNKNOWN],
-    balance: postAUDIOBalance,
-    change: purchasedAUDIO,
+    balance: convertWeiToWAudio(postAUDIOBalanceWei).toString(),
+    change: purchasedAudioWei
+      ? convertWeiToWAudio(new BN(purchasedAudioWei)).toString()
+      : '',
     metadata: transactionMetadata
   }
 
