@@ -7,8 +7,8 @@ FROM node:16-slim
 
 WORKDIR /usr/src/app
 
-COPY . .
 COPY --from=builder /node_modules ./node_modules
+COPY . .
 
 COPY package.json .
 RUN npm run postinstall
