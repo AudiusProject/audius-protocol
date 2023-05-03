@@ -3,10 +3,10 @@ import { useCallback } from 'react'
 import {
   Status,
   transactionDetailsSelectors,
-  formatNumberString,
   transactionDetailsActions,
   modalsActions,
-  buyAudioSelectors
+  buyAudioSelectors,
+  formatAudio
 } from '@audius/common'
 import { Button, ButtonSize, ButtonType, IconInfo } from '@audius/stems'
 import { useDispatch } from 'react-redux'
@@ -66,19 +66,13 @@ export const SuccessPage = () => {
           <span>
             +
             {transactionDetails.status === Status.SUCCESS
-              ? formatNumberString(
-                  transactionDetails.transactionDetails.change,
-                  { maxDecimals: 0 }
-                )
+              ? formatAudio(transactionDetails.transactionDetails.change, 0)
               : '0'}
           </span>
         </div>
         <div className={styles.newBalance}>
           {transactionDetails.status === Status.SUCCESS
-            ? formatNumberString(
-                transactionDetails.transactionDetails.balance,
-                { maxDecimals: 0 }
-              )
+            ? formatAudio(transactionDetails.transactionDetails.balance, 0)
             : '0'}
           <span className={styles.label}>{messages.audio}</span>
         </div>

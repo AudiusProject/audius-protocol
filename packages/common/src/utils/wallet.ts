@@ -129,3 +129,8 @@ export const convertWAudioToWei = (amount: BN) => {
   const decimals = WEI_DECIMALS - SPL_DECIMALS
   return amount.mul(new BN('1'.padEnd(decimals + 1, '0'))) as BNWei
 }
+
+export const convertWeiToWAudio = (amount: BN) => {
+  const decimals = WEI_DECIMALS - SPL_DECIMALS
+  return amount.div(new BN('1'.padEnd(decimals + 1, '0')))
+}
