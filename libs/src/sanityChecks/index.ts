@@ -9,9 +9,18 @@ import type { Nullable } from '../utils'
 // Checks to run at startup to ensure a user is in a good state.
 export class SanityChecks {
   libs: AudiusLibs
-  options: { skipRollover: boolean }
+  options: {
+    skipRollover: boolean
+    writeMetadataThroughChain: boolean
+  }
 
-  constructor(libsInstance: AudiusLibs, options = { skipRollover: false }) {
+  constructor(
+    libsInstance: AudiusLibs,
+    options = {
+      skipRollover: false,
+      writeMetadataThroughChain: false
+    }
+  ) {
     this.libs = libsInstance
     this.options = options
   }
@@ -23,11 +32,19 @@ export class SanityChecks {
     creatorNodeWhitelist: Nullable<Set<string>> = null,
     creatorNodeBlacklist: Nullable<Set<string>> = null
   ) {
-    await addSecondaries(this.libs)
-    await assignReplicaSetIfNecessary(this.libs)
+    await addSecondaries(this.libs, this.options.writeMetadataThroughChain)
+    await assignReplicaSetIfNecessary(
+      this.libs,
+      this.options.writeMetadataThroughChain
+    )
     await syncNodes(this.libs)
     if (!this.options.skipRollover) {
-      await rolloverNodes(this.libs, creatorNodeWhitelist, creatorNodeBlacklist)
+      await rolloverNodes(
+        this.libs,
+        creatorNodeWhitelist,
+        creatorNodeBlacklist,
+        this.options.writeMetadataThroughChain
+      )
     }
     await needsRecoveryEmail(this.libs)
   }

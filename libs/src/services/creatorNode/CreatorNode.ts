@@ -390,7 +390,7 @@ export class CreatorNode {
     // Creates new track entity on creator node, making track's metadata available
     // @returns {Object} {cid: CID of track metadata, id: id of track to be used with associate function}
     const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
-    return { ...metadataResp, ...trackContentResp }
+    return { ...metadataResp, ...trackContentResp, metadata: { ...metadata } }
   }
 
   async uploadTrackAudioAndCoverArtV2(
