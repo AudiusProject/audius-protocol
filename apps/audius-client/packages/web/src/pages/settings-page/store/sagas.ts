@@ -164,6 +164,34 @@ function* watchSetBrowserNotificationSettingsOn() {
   )
 }
 
+function* watchSetBrowserNotificationSettingsOff() {
+  const audiusBackendInstance = yield* getContext('audiusBackendInstance')
+  yield* takeEvery(
+    actions.SET_BROWSER_NOTIFICATION_SETTINGS_OFF,
+    function* (action: actions.SetBrowserNotificationSettingsOff) {
+      try {
+        const updatedSettings = {
+          [BrowserNotificationSetting.MilestonesAndAchievements]: false,
+          [BrowserNotificationSetting.Followers]: false,
+          [BrowserNotificationSetting.Reposts]: false,
+          [BrowserNotificationSetting.Favorites]: false,
+          [BrowserNotificationSetting.Remixes]: false,
+          [BrowserNotificationSetting.Messages]: false
+        }
+        yield* put(actions.setNotificationSettings(updatedSettings))
+        yield* call(
+          audiusBackendInstance.updateNotificationSettings,
+          updatedSettings
+        )
+      } catch (error) {
+        yield* put(
+          actions.browserPushNotificationFailed(getErrorMessage(error))
+        )
+      }
+    }
+  )
+}
+
 function* watchUpdateNotificationSettings() {
   const audiusBackendInstance = yield* getContext('audiusBackendInstance')
   yield* takeEvery(
@@ -201,6 +229,7 @@ export default function sagas() {
     ...commonSettingsSagas(),
     watchGetSettings,
     watchSetBrowserNotificationSettingsOn,
+    watchSetBrowserNotificationSettingsOff,
     watchToogleBrowserPushNotification,
     watchUpdateNotificationSettings
   ]

@@ -113,6 +113,7 @@ class SettingsPage extends PureComponent<
     if (!isOn) {
       // if turning off, set all settings values to false
       this.props.setBrowserNotificationEnabled(false)
+      this.props.setBrowserNotificationSettingsOff()
     } else if (
       this.props.notificationSettings.permission === Permission.GRANTED
     ) {
@@ -264,6 +265,8 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(accountActions.subscribeBrowserPushNotifications()),
     setBrowserNotificationSettingsOn: () =>
       dispatch(settingPageActions.setBrowserNotificationSettingsOn()),
+    setBrowserNotificationSettingsOff: () =>
+      dispatch(settingPageActions.setBrowserNotificationSettingsOff()),
     setNotificationSettings: (settings: object) =>
       dispatch(settingPageActions.setNotificationSettings(settings)),
     setBrowserNotificationEnabled: (enabled: boolean) =>

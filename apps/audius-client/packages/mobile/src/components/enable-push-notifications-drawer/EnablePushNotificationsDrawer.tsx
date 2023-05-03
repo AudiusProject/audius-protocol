@@ -8,6 +8,7 @@ import IconCoSign from 'app/assets/images/iconCoSign.svg'
 import IconFollow from 'app/assets/images/iconFollow.svg'
 import IconNotification from 'app/assets/images/iconGradientNotification.svg'
 import IconHeart from 'app/assets/images/iconHeart.svg'
+import IconMessage from 'app/assets/images/iconMessage.svg'
 import IconNewReleases from 'app/assets/images/iconNewReleases.svg'
 import IconRemix from 'app/assets/images/iconRemix.svg'
 import IconRepost from 'app/assets/images/iconRepost.svg'
@@ -28,6 +29,7 @@ const messages = {
   coSigns: 'Co-Signs',
   remixes: 'Remixes',
   newReleases: 'New Releases',
+  messages: 'Messages',
   enable: 'Enable Notifications'
 }
 
@@ -55,6 +57,10 @@ const actions = [
   {
     label: messages.newReleases,
     icon: IconNewReleases
+  },
+  {
+    label: messages.messages,
+    icon: IconMessage
   }
 ]
 
