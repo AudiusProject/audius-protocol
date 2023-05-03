@@ -732,6 +732,13 @@ export const audiusBackend = ({
       discoveryNodeSelector =
         await discoveryNodeSelectorInstance.getDiscoveryNodeSelector()
 
+      const initialSelectedNode =
+        await discoveryNodeSelectorInstance.initialSelectedNode
+
+      if (initialSelectedNode) {
+        discoveryProviderSelectionCallback(initialSelectedNode.endpoint, [])
+      }
+
       discoveryNodeSelector.addEventListener('change', (endpoint) => {
         discoveryProviderSelectionCallback(endpoint, [])
       })

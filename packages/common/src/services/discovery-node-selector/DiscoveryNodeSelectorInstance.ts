@@ -24,7 +24,7 @@ export class DiscoveryNodeSelectorInstance {
   private env: Env
   private remoteConfigInstance: RemoteConfigInstance
   private discoveryNodeSelectorPromise: Promise<DiscoveryNodeSelector> | null
-  private initialSelectedNode: Promise<CachedDiscoveryProviderType | null>
+  public initialSelectedNode: Promise<CachedDiscoveryProviderType | null>
 
   constructor(config: DiscoveryNodeSelectorConfig) {
     const { env, remoteConfigInstance, initialSelectedNode } = config
