@@ -13,7 +13,7 @@ class Delegation(Base, RepresentableMixin):
     user_id = Column(Integer, nullable=False)
     is_revoked = Column(Boolean, nullable=False, server_default=text("false"))
     is_approved = Column(Boolean, nullable=False, server_default=text("false"))
-    is_current = Column(Boolean, nullable=False)
+    is_current = Column(Boolean, primary_key=True, nullable=False)
     created_at = Column(DateTime, nullable=False)
     updated_at = Column(DateTime, nullable=False)
     txhash = Column(
@@ -22,3 +22,6 @@ class Delegation(Base, RepresentableMixin):
         nullable=False,
         server_default=text("''::character varying"),
     )
+
+    def get_attributes_dict(self):
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}

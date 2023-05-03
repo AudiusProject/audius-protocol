@@ -152,7 +152,7 @@ COMMIT;
 -- 5/4/23: create delegations table
 BEGIN;
   create table public.delegations (
-    shared_address varchar primary key not null,
+    shared_address varchar not null,
     blockhash varchar references blocks(blockhash),
     blocknumber integer references blocks(number),
     delegate_address varchar not null,
@@ -162,6 +162,7 @@ BEGIN;
     is_approved boolean not null default false,
     updated_at timestamp not null,
     created_at timestamp not null,
-    txhash varchar not null
+    txhash varchar not null,
+    primary key (shared_address, is_current, txhash)
   );
 COMMIT;
