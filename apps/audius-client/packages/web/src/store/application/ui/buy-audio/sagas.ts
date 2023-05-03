@@ -496,6 +496,7 @@ function* populateAndSaveTransactionDetails() {
   const postAUDIOBalanceWei = yield* select(
     walletSelectors.getAccountTotalBalance
   )
+  const postAUDIOBalance = formatWei(postAUDIOBalanceWei).replaceAll(',', '')
   const purchasedAUDIO = purchasedAudioWei
     ? formatWei(new BN(purchasedAudioWei ?? '0') as BNWei).replaceAll(',', '')
     : ''
@@ -526,8 +527,8 @@ function* populateAndSaveTransactionDetails() {
     transactionType: TransactionType.PURCHASE,
     method:
       PROVIDER_METHOD_MAP[localStorageState.provider ?? OnRampProvider.UNKNOWN],
-    balance: postAUDIOBalanceWei.toString(),
-    change: purchasedAudioWei?.toString() ?? '',
+    balance: postAUDIOBalance,
+    change: purchasedAUDIO,
     metadata: transactionMetadata
   }
 
