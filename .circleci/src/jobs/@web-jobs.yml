@@ -62,6 +62,7 @@ web-build-demo:
         at: ./
     - run:
         name: build-demo
+        no_output_timeout: 30m
         # Set the branch name as the PUBLIC_URL so that relative paths work, e.g.
         # demo.audius.co/some-branch/handle/track resolves as /handle/track would at audius.co
         command: |
