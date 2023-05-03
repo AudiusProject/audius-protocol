@@ -52,7 +52,7 @@ export const Reaction = (props: ReactionProps) => {
     if (isClicked) {
       const timeout = setTimeout(() => {
         setIsClicked(false)
-      }, 200)
+      }, 5000)
 
       return () => clearTimeout(timeout)
     }
