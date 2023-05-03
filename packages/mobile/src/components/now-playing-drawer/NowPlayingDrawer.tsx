@@ -14,12 +14,13 @@ import {
   playerSelectors,
   playerActions
 } from '@audius/common'
+import { useNavigationState } from '@react-navigation/native'
 import type {
   Animated,
   GestureResponderEvent,
   PanResponderGestureState
 } from 'react-native'
-import { Platform, View, StatusBar, Pressable } from 'react-native'
+import { Keyboard, Platform, View, StatusBar, Pressable } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import TrackPlayer from 'react-native-track-player'
 import { useDispatch, useSelector } from 'react-redux'
@@ -118,6 +119,13 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
 
   const { drawerNavigation } = useContext(AppDrawerContext)
 
+  // Don't show shadow when we're in chat screen, so that the drawer appears
+  // at same level as the chat screen textinput
+  const isInChatScreen = useNavigationState((state) => {
+    const routes = state.routes[0].state?.routes?.[0].state?.routes
+    return routes?.some((route) => route.name === 'Chat')
+  })
+
   // When audio starts playing, open the playbar to the initial offset
   useEffect(() => {
     if (isPlaying && !isPlayBarShowing) {
@@ -130,6 +138,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
   }, [onClose])
 
   const onDrawerOpen = useCallback(() => {
+    Keyboard.dismiss()
     onOpen()
   }, [onOpen])
 
@@ -281,6 +290,7 @@ export const NowPlayingDrawer = memo(function NowPlayingDrawer(
       shouldCloseToInitialOffset={isPlayBarShowing}
       animationStyle={DrawerAnimationStyle.SPRINGY}
       shouldBackgroundDim={false}
+      shouldShowShadow={!isInChatScreen}
       shouldAnimateShadow={false}
       drawerStyle={{ overflow: 'visible' }}
       onPercentOpen={onDrawerPercentOpen}

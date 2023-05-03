@@ -18,6 +18,8 @@ type KeyboardAvoidingViewProps = {
   heightOffsetRatio?: number
   keyboardShowingDuration?: number
   keyboardHidingDuration?: number
+  // Offset is subtracted from the desired height when the keyboard is showing.
+  keyboardShowingOffset?: number
   children: React.ReactNode
 }
 
@@ -35,6 +37,7 @@ export const KeyboardAvoidingView = ({
   heightOffsetRatio = 0.75,
   keyboardShowingDuration = 100,
   keyboardHidingDuration = 100,
+  keyboardShowingOffset = 0,
   children
 }: KeyboardAvoidingViewProps) => {
   const styles = useStyles()
@@ -43,13 +46,15 @@ export const KeyboardAvoidingView = ({
   const handleKeyboardWillShow = useCallback(
     (event) => {
       Animated.timing(keyboardHeight.current, {
-        toValue: -event.endCoordinates.height * heightOffsetRatio,
+        toValue:
+          -event.endCoordinates.height * heightOffsetRatio +
+          keyboardShowingOffset,
         duration: keyboardShowingDuration,
         easing: Easing.inOut(Easing.quad),
         useNativeDriver: true
       }).start()
     },
-    [heightOffsetRatio, keyboardShowingDuration]
+    [heightOffsetRatio, keyboardShowingDuration, keyboardShowingOffset]
   )
 
   const handleKeyboardWillHide = useCallback(
