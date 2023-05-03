@@ -398,24 +398,29 @@ export class CreatorNode {
     coverArtFile: File,
     metadata: TrackMetadata,
     onProgress: ProgressCB = () => {}
-  ) {
+  ): Promise<TrackMetadata> {
     const updatedMetadata = { ...metadata }
 
     // Upload audio and cover art
-    const [audioResp, coverArtResp] = await Promise.all([
+    const promises = [
       this._retry3(
         async () => await this.uploadTrackAudioV2(trackFile, onProgress),
         (e) => {
           console.log('Retrying uploadTrackAudioV2', e)
         }
-      ),
-      this._retry3(
-        async () => await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
-        (e) => {
-          console.log('Retrying uploadTrackCoverArtV2', e)
-        }
       )
-    ])
+    ]
+    if (coverArtFile) {
+      promises.push(
+        this._retry3(
+          async () => await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
+          (e) => {
+            console.log('Retrying uploadTrackCoverArtV2', e)
+          }
+        )
+      )
+    }
+    const [audioResp, coverArtResp] = await Promise.all(promises)
 
     // Update metadata to include uploaded CIDs
     updatedMetadata.track_segments = []
@@ -424,7 +429,7 @@ export class CreatorNode {
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
     }
-    updatedMetadata.cover_art_sizes = coverArtResp.id
+    if (coverArtResp) updatedMetadata.cover_art_sizes = coverArtResp.id
 
     return updatedMetadata
   }
