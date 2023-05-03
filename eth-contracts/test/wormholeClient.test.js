@@ -108,7 +108,7 @@ contract('WormholeClient', async (accounts) => {
 
   it('transfer tokens', async () => {
     const amount = 100
-    const chainId = 1 // in ganache, the chain ID the token initializes with is always 1
+    const chainId = 1337
 
     const fromAcctPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
     const fromAcct = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
@@ -129,7 +129,7 @@ contract('WormholeClient', async (accounts) => {
       {
         from: fromAcct,
         amount: amount,
-	recipientChain: 1,
+        recipientChain: 1,
         recipient,
         arbiterFee: 0
       },

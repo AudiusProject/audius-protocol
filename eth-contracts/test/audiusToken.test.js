@@ -7,10 +7,10 @@ contract('AudiusToken', async (accounts) => {
   let registry, token, governance
 
   // expected initial token values
-  const NAME = "Audius"
-  const SYMBOL = "AUDIO"
-  const DECIMALS = 18  // standard - imitates relationship between Ether and Wei
-  const INITIAL_SUPPLY = Math.pow(10,27) // 10^27 = 1 billion tokens, 18 decimal places
+  const NAME = 'Audius'
+  const SYMBOL = 'AUDIO'
+  const DECIMALS = 18 // standard - imitates relationship between Ether and Wei
+  const INITIAL_SUPPLY = Math.pow(10, 27) // 10^27 = 1 billion tokens, 18 decimal places
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
   const [, proxyAdminAddress, proxyDeployerAddress] = accounts
@@ -20,11 +20,15 @@ contract('AudiusToken', async (accounts) => {
   const votingPeriod = 10
   const executionDelay = votingPeriod
   const votingQuorumPercent = 10
-  
+
   const callValue0 = _lib.toBN(0)
 
   beforeEach(async () => {
-    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
+    registry = await _lib.deployRegistry(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress
+    )
     governance = await _lib.deployGovernance(
       artifacts,
       proxyAdminAddress,
@@ -45,7 +49,9 @@ contract('AudiusToken', async (accounts) => {
     )
 
     // Register token
-    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
+    await registry.addContract(tokenRegKey, token.address, {
+      from: proxyDeployerAddress
+    })
   })
 
   it('Initial token properties + account balances', async () => {
@@ -61,19 +67,22 @@ contract('AudiusToken', async (accounts) => {
   it('Transfers', async () => {
     const amount = 1000
     // transfer
-    await token.transfer(accounts[11], amount, {from: tokenOwnerAddress})
-    assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY - amount)
+    await token.transfer(accounts[11], amount, { from: tokenOwnerAddress })
+    assert.equal(
+      await token.balanceOf(tokenOwnerAddress),
+      INITIAL_SUPPLY - amount
+    )
     assert.equal(await token.balanceOf(accounts[11]), amount)
 
     // fail to transfer above balance
     await _lib.assertRevert(
-      token.transfer(accounts[12], 2*amount, {from: accounts[11]}),
-      'transfer amount exceeds balance' 
+      token.transfer(accounts[12], 2 * amount, { from: accounts[11] }),
+      'transfer amount exceeds balance'
     )
   })
 
   it('Burn from tokenOwner', async () => {
-    const burnAmount = Math.pow(10,3)
+    const burnAmount = Math.pow(10, 3)
 
     // Confirm token state before burn
     assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY)
@@ -83,17 +92,23 @@ contract('AudiusToken', async (accounts) => {
     await token.burn(burnAmount, { from: tokenOwnerAddress })
 
     // Confirm token state after burn
-    assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY - burnAmount)
+    assert.equal(
+      await token.balanceOf(tokenOwnerAddress),
+      INITIAL_SUPPLY - burnAmount
+    )
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY - burnAmount)
   })
 
   it('Burn from account', async () => {
-    const amount = Math.pow(10,3)
+    const amount = Math.pow(10, 3)
     const account = accounts[11]
 
     // Confirm token state before burn
-    await token.transfer(account, amount, {from: tokenOwnerAddress})
-    assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY - amount)
+    await token.transfer(account, amount, { from: tokenOwnerAddress })
+    assert.equal(
+      await token.balanceOf(tokenOwnerAddress),
+      INITIAL_SUPPLY - amount
+    )
     assert.equal(await token.balanceOf(account), amount)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY)
 
@@ -102,7 +117,10 @@ contract('AudiusToken', async (accounts) => {
     await token.burnFrom(account, amount, { from: tokenOwnerAddress })
 
     // Confirm token state after burn
-    assert.equal(await token.balanceOf(tokenOwnerAddress), INITIAL_SUPPLY - amount)
+    assert.equal(
+      await token.balanceOf(tokenOwnerAddress),
+      INITIAL_SUPPLY - amount
+    )
     assert.equal(await token.balanceOf(account), 0)
     assert.equal(await token.totalSupply(), INITIAL_SUPPLY - amount)
   })
@@ -115,7 +133,7 @@ contract('AudiusToken', async (accounts) => {
     // Confirm that mint from tokenOwnerAddress fails
     await _lib.assertRevert(
       token.mint(accounts[11], 1000, { from: tokenOwnerAddress }),
-      "MinterRole: caller does not have the Minter role"
+      'MinterRole: caller does not have the Minter role'
     )
 
     // mint tokens from governance
@@ -135,7 +153,7 @@ contract('AudiusToken', async (accounts) => {
     // Confirm that addMinter from tokenOwnerAddress fails
     await _lib.assertRevert(
       token.addMinter(accounts[12], { from: tokenOwnerAddress }),
-      "MinterRole: caller does not have the Minter role"
+      'MinterRole: caller does not have the Minter role'
     )
 
     // add new minter from governance
@@ -153,15 +171,15 @@ contract('AudiusToken', async (accounts) => {
     assert.isFalse(await token.isMinter(accounts[3]))
 
     // Confirm that new minter can mint
-    await token.mint(accounts[12], 1000, {from: accounts[12]})
+    await token.mint(accounts[12], 1000, { from: accounts[12] })
 
     // renounce minter
-    await token.renounceMinter({from: accounts[12] })
+    await token.renounceMinter({ from: accounts[12] })
 
     // fail to mint from renounced minter
     await _lib.assertRevert(
       token.mint(accounts[4], 1000, { from: accounts[12] }),
-      "MinterRole: caller does not have the Minter role"
+      'MinterRole: caller does not have the Minter role'
     )
   })
 
@@ -173,7 +191,7 @@ contract('AudiusToken', async (accounts) => {
     // Confirm that pause from tokenOwnerAddress fails
     await _lib.assertRevert(
       token.pause({ from: tokenOwnerAddress }),
-      "PauserRole: caller does not have the Pauser role"
+      'PauserRole: caller does not have the Pauser role'
     )
 
     // Pause token contract from governance
@@ -190,13 +208,13 @@ contract('AudiusToken', async (accounts) => {
 
     // Confirm that token actions fail while paused
     await _lib.assertRevert(
-      token.transfer(accounts[11], 1000, {from: tokenOwnerAddress}),
-      "Pausable: paused"
+      token.transfer(accounts[11], 1000, { from: tokenOwnerAddress }),
+      'Pausable: paused'
     )
 
     // Add new pauser from governance
     const newPauser = accounts[5]
-      await governance.guardianExecuteTransaction(
+    await governance.guardianExecuteTransaction(
       tokenRegKey,
       callValue0,
       'addPauser(address)',
@@ -210,24 +228,24 @@ contract('AudiusToken', async (accounts) => {
     assert.isTrue(await token.isPauser(newPauser))
 
     // Unpause contract from new pauser
-    await token.unpause({from: newPauser})
+    await token.unpause({ from: newPauser })
     assert.isFalse(await token.paused())
 
     // fail to pause contract from non-pauser
     await _lib.assertRevert(
-      token.pause({from: accounts[8]}),
-      "PauserRole: caller does not have the Pauser role"
+      token.pause({ from: accounts[8] }),
+      'PauserRole: caller does not have the Pauser role'
     )
 
     // Renounce pauser from new pauser
-    await token.renouncePauser({from: newPauser})
+    await token.renouncePauser({ from: newPauser })
     assert.isFalse(await token.isPauser(newPauser))
     assert.isTrue(await token.isPauser(governance.address))
 
     // fail to pause contract from renounced pauser
     await _lib.assertRevert(
       token.pause({ from: newPauser }),
-      "PauserRole: caller does not have the Pauser role"
+      'PauserRole: caller does not have the Pauser role'
     )
   })
 
@@ -240,16 +258,27 @@ contract('AudiusToken', async (accounts) => {
 
   describe('EIP-2612', async function () {
     it('Confirm typehashes match for permit function', async () => {
-      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
-      expect(await token.DOMAIN_SEPARATOR()).to.equal(_signatures.getDomainSeparator(await token.name(), token.address, chainId))
-      expect(await token.PERMIT_TYPEHASH()).to.equal(_signatures.PERMIT_TYPEHASH)
+      const chainId = 1337 // in ganache, the chain ID the token initializes with is always 1
+      expect(await token.DOMAIN_SEPARATOR()).to.equal(
+        _signatures.getDomainSeparator(
+          await token.name(),
+          token.address,
+          chainId
+        )
+      )
+      expect(await token.PERMIT_TYPEHASH()).to.equal(
+        _signatures.PERMIT_TYPEHASH
+      )
     })
-  
+
     it('Successfully permit & transfer', async function () {
       const amount = 100
-  
+
       // throwaway address for the purpose of this test
-      const approverAcctPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+      const approverAcctPrivKey = Buffer.from(
+        '76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e',
+        'hex'
+      )
       const approverAcct = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
 
       const relayerAcct = accounts[6] // account that calls permit
@@ -257,41 +286,73 @@ contract('AudiusToken', async (accounts) => {
       const receiverAcct = accounts[14] // account that receives approver's tokens
 
       const name = await token.name()
-      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
-  
+      const chainId = 1337
+
       // fund throwaway address and confirm balances of secondary addresses, and confirm allowances
-      await token.transfer(approverAcct, amount, {from: tokenOwnerAddress})
+      await token.transfer(approverAcct, amount, { from: tokenOwnerAddress })
       assert.equal(await token.balanceOf(approverAcct), amount)
       assert.equal(await token.balanceOf(receiverAcct), 0)
       assert.equal(await token.balanceOf(spenderAcct), 0)
-      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
-  
+      assert.equal(
+        (await token.allowance(approverAcct, spenderAcct)).toNumber(),
+        0
+      )
+
       // Submit permit request to give address approval, via relayer
       let nonce = (await token.nonces(approverAcct)).toNumber()
-      let deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
-      let digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverAcct, spender: spenderAcct, value: amount}, nonce, deadline)
+      let deadline =
+        (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp +
+        25 // sufficiently far in future
+      let digest = _signatures.getPermitDigest(
+        name,
+        token.address,
+        chainId,
+        { owner: approverAcct, spender: spenderAcct, value: amount },
+        nonce,
+        deadline
+      )
       let result = _signatures.sign(digest, approverAcctPrivKey)
-      await token.permit(approverAcct, spenderAcct, amount, deadline, result.v, result.r, result.s, {from: relayerAcct})
-  
+      await token.permit(
+        approverAcct,
+        spenderAcct,
+        amount,
+        deadline,
+        result.v,
+        result.r,
+        result.s,
+        { from: relayerAcct }
+      )
+
       // Confirm allowance updated, but token balances have not changed
-      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), amount)
+      assert.equal(
+        (await token.allowance(approverAcct, spenderAcct)).toNumber(),
+        amount
+      )
       assert.equal(await token.balanceOf(approverAcct), amount)
       assert.equal(await token.balanceOf(receiverAcct), 0)
       assert.equal(await token.balanceOf(spenderAcct), 0)
 
       // Transfer tokens from approved sender + confirm balances & allowances
-      await token.transferFrom(approverAcct, receiverAcct, amount, {from: spenderAcct})
+      await token.transferFrom(approverAcct, receiverAcct, amount, {
+        from: spenderAcct
+      })
       assert.equal(await token.balanceOf(approverAcct), 0)
       assert.equal(await token.balanceOf(receiverAcct), amount)
       assert.equal(await token.balanceOf(spenderAcct), 0)
-      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
+      assert.equal(
+        (await token.allowance(approverAcct, spenderAcct)).toNumber(),
+        0
+      )
     })
 
     it('Meta-transaction approve extended test', async () => {
       const amount = 100
-  
+
       // throwaway address for the purpose of this test
-      const approverAcctPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+      const approverAcctPrivKey = Buffer.from(
+        '76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e',
+        'hex'
+      )
       const approverAcct = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
 
       const relayerAcct = accounts[6] // account that calls permit
@@ -299,83 +360,190 @@ contract('AudiusToken', async (accounts) => {
       const receiverAcct = accounts[14] // account that receives approver's tokens
 
       const name = await token.name()
-      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
-  
+      const chainId = 1337
+
       // fund throwaway address and confirm balances of secondary addresses, and confirm allowances
-      await token.transfer(approverAcct, amount, {from: tokenOwnerAddress})
+      await token.transfer(approverAcct, amount, { from: tokenOwnerAddress })
       assert.equal(await token.balanceOf(approverAcct), amount)
       assert.equal(await token.balanceOf(receiverAcct), 0)
       assert.equal(await token.balanceOf(spenderAcct), 0)
-      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
-  
+      assert.equal(
+        (await token.allowance(approverAcct, spenderAcct)).toNumber(),
+        0
+      )
+
       // Submit permit request to give address approval, via relayer
       let nonce = (await token.nonces(approverAcct)).toNumber()
-      let deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
-      let digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverAcct, spender: spenderAcct, value: amount}, nonce, deadline)
+      let deadline =
+        (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp +
+        25 // sufficiently far in future
+      let digest = _signatures.getPermitDigest(
+        name,
+        token.address,
+        chainId,
+        { owner: approverAcct, spender: spenderAcct, value: amount },
+        nonce,
+        deadline
+      )
       let result = _signatures.sign(digest, approverAcctPrivKey)
-      await token.permit(approverAcct, spenderAcct, amount, deadline, result.v, result.r, result.s, {from: relayerAcct})
-  
+      await token.permit(
+        approverAcct,
+        spenderAcct,
+        amount,
+        deadline,
+        result.v,
+        result.r,
+        result.s,
+        { from: relayerAcct }
+      )
+
       // Confirm allowance updated, but token balances have not changed
-      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), amount)
+      assert.equal(
+        (await token.allowance(approverAcct, spenderAcct)).toNumber(),
+        amount
+      )
       assert.equal(await token.balanceOf(approverAcct), amount)
       assert.equal(await token.balanceOf(receiverAcct), 0)
       assert.equal(await token.balanceOf(spenderAcct), 0)
 
       // Confirm double-spend of same permit will fail
       await _lib.assertRevert(
-        token.permit(approverAcct, spenderAcct, amount, deadline, result.v, result.r, result.s, {from: relayerAcct}),
+        token.permit(
+          approverAcct,
+          spenderAcct,
+          amount,
+          deadline,
+          result.v,
+          result.r,
+          result.s,
+          { from: relayerAcct }
+        ),
         'AudiusToken: Invalid signature'
       )
 
       // Submit updated permit request, with different amount - confirm success
       const permitAmount = amount / 2
       nonce = (await token.nonces(approverAcct)).toNumber()
-      deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
-      digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverAcct, spender: spenderAcct, value: permitAmount}, nonce, deadline)
+      deadline =
+        (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp +
+        25 // sufficiently far in future
+      digest = _signatures.getPermitDigest(
+        name,
+        token.address,
+        chainId,
+        { owner: approverAcct, spender: spenderAcct, value: permitAmount },
+        nonce,
+        deadline
+      )
       result = _signatures.sign(digest, approverAcctPrivKey)
-      await token.permit(approverAcct, spenderAcct, permitAmount, deadline, result.v, result.r, result.s, {from: relayerAcct})
+      await token.permit(
+        approverAcct,
+        spenderAcct,
+        permitAmount,
+        deadline,
+        result.v,
+        result.r,
+        result.s,
+        { from: relayerAcct }
+      )
 
       // Confirm allowance updated to new permit amount
-      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), permitAmount)
-  
+      assert.equal(
+        (await token.allowance(approverAcct, spenderAcct)).toNumber(),
+        permitAmount
+      )
+
       // Transfer tokens from approved sender + confirm balances & allowances
-      await token.transferFrom(approverAcct, receiverAcct, permitAmount, {from: spenderAcct})
+      await token.transferFrom(approverAcct, receiverAcct, permitAmount, {
+        from: spenderAcct
+      })
       assert.equal(await token.balanceOf(approverAcct), amount - permitAmount)
       assert.equal(await token.balanceOf(receiverAcct), permitAmount)
       assert.equal(await token.balanceOf(spenderAcct), 0)
-      assert.equal((await token.allowance(approverAcct, spenderAcct)).toNumber(), 0)
+      assert.equal(
+        (await token.allowance(approverAcct, spenderAcct)).toNumber(),
+        0
+      )
     })
-  
-    it('Meta-transaction nonce incorrect', async() => {
+
+    it('Meta-transaction nonce incorrect', async () => {
       const amount = 100
-  
+
       // throwaway address for the purpose of this test
-      const approverPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+      const approverPrivKey = Buffer.from(
+        '76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e',
+        'hex'
+      )
       const approverPubKey = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
-  
+
       const name = await token.name()
-      const nonce = await token.nonces(approverPubKey) + 5  // this is wrong
-      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
-      const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
-      const digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverPubKey, spender: accounts[18], value: amount}, nonce, deadline)
+      const nonce = (await token.nonces(approverPubKey)) + 5 // this is wrong
+      const chainId = 1337
+      const deadline =
+        (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp +
+        25 // sufficiently far in future
+      const digest = _signatures.getPermitDigest(
+        name,
+        token.address,
+        chainId,
+        { owner: approverPubKey, spender: accounts[18], value: amount },
+        nonce,
+        deadline
+      )
       const result = _signatures.sign(digest, approverPrivKey)
-      await _lib.assertRevert(token.permit(approverPubKey, accounts[18], amount, deadline, result.v, result.r, result.s, {from: accounts[6]}), "Invalid signature")
+      await _lib.assertRevert(
+        token.permit(
+          approverPubKey,
+          accounts[18],
+          amount,
+          deadline,
+          result.v,
+          result.r,
+          result.s,
+          { from: accounts[6] }
+        ),
+        'Invalid signature'
+      )
     })
-  
-    it('Meta-transaction deadline has passed', async() => {
+
+    it('Meta-transaction deadline has passed', async () => {
       const amount = 100
-  
+
       // throwaway address for the purpose of this test
-      const approverPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+      const approverPrivKey = Buffer.from(
+        '76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e',
+        'hex'
+      )
       const approverPubKey = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
-  
+
       const name = await token.name()
       const nonce = await token.nonces(approverPubKey)
-      const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
-      const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp - 25  // now in the past and should fail
-      const digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverPubKey, spender: accounts[18], value: amount}, nonce, deadline)
+      const chainId = 1337
+      const deadline =
+        (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp -
+        25 // now in the past and should fail
+      const digest = _signatures.getPermitDigest(
+        name,
+        token.address,
+        chainId,
+        { owner: approverPubKey, spender: accounts[18], value: amount },
+        nonce,
+        deadline
+      )
       const result = _signatures.sign(digest, approverPrivKey)
-      await _lib.assertRevert(token.permit(approverPubKey, accounts[18], amount, deadline, result.v, result.r, result.s, {from: accounts[6]}), "Deadline has expired")
+      await _lib.assertRevert(
+        token.permit(
+          approverPubKey,
+          accounts[18],
+          amount,
+          deadline,
+          result.v,
+          result.r,
+          result.s,
+          { from: accounts[6] }
+        ),
+        'Deadline has expired'
+      )
     })
-  })  
+  })
 })

@@ -9,7 +9,7 @@
     "postinstall": "patch-package",
     "truffle:compile": "truffle compile",
     "truffle:migrate": "truffle migrate --reset --network development",
-    "truffle:console": "truffle console --network development",
+    "truffle:console": "truffle console --network test",
     "test": "truffle test test/audiusToken.test.js --network test",
     "test:random": "truffle test test/random/random.test.js --network development",
     "test:verbose": "truffle test test/*.test.js --network development --verbose-rpc",
