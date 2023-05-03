@@ -637,16 +637,7 @@ class FullTrending(Resource):
         }
     },
 )
-@ns.route(
-    "/trending/underground/<string:version>",
-    doc={
-        "get": {
-            "id": "Get Underground Trending Tracks With Version",
-            "description": "Gets the top 100 trending underground tracks on Audius using a given trending strategy version",
-            "params": {"version": "The strategy version of trending to user"},
-        }
-    },
-)
+@ns.route("/trending/underground/<string:version>", doc=False)
 class UndergroundTrending(Resource):
     @record_metrics
     @ns.expect(pagination_parser)

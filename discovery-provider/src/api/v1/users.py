@@ -248,7 +248,7 @@ user_track_listen_counts_response = make_response(
 )
 
 
-@ns.route("/<string:id>/listen_counts_monthly")
+@ns.route("/<string:id>/listen_counts_monthly", doc=False)
 class UserTrackListenCountsMonthly(Resource):
     @record_metrics
     @ns.doc(
@@ -443,7 +443,7 @@ class HandleFullTrackList(Resource):
         return self._get(handle, authed_user_id)
 
 
-@ns.route(USER_HANDLE_TRACKS)
+@ns.route(USER_HANDLE_TRACKS, doc=False)
 class HandleTrackList(HandleFullTrackList):
     @auth_middleware()
     @ns.doc(
@@ -460,7 +460,7 @@ class HandleTrackList(HandleFullTrackList):
         return super()._get(handle, authed_user_id)
 
 
-USER_AI_ATTRIBUTED_TRACKS = USER_HANDLE_TRACKS + '/ai_attributed'
+USER_AI_ATTRIBUTED_TRACKS = USER_HANDLE_TRACKS + "/ai_attributed"
 
 
 @full_ns.route(USER_AI_ATTRIBUTED_TRACKS)
@@ -659,7 +659,7 @@ class HandleFullRepostList(Resource):
         return self._get(handle)
 
 
-@ns.route(REPOST_LIST_ROUTE)
+@ns.route(REPOST_LIST_ROUTE, doc=False)
 class HandleRepostList(HandleFullRepostList):
     @ns.doc(
         id="""Get Reposts by Handle""",
@@ -856,7 +856,7 @@ class TrackHistoryFull(Resource):
         return self._get(id)
 
 
-@ns.route(USER_HISTORY_TRACKS_ROUTE)
+@ns.route(USER_HISTORY_TRACKS_ROUTE, doc=False)
 class TrackHistory(TrackHistoryFull):
     @ns.doc(
         id="""Get User's Track History""",
@@ -1027,7 +1027,7 @@ class FullBulkUsersSubscribers(Resource):
         return self._post()
 
 
-@ns.route(BULK_USERS_SUBSCRIBERS_ROUTE)
+@ns.route(BULK_USERS_SUBSCRIBERS_ROUTE, doc=False)
 class BulkUsersSubscribers(FullBulkUsersSubscribers):
     @ns.doc(
         id="""Bulk Get Subscribers""",
@@ -1137,7 +1137,7 @@ class FullFollowingUsers(Resource):
         return success_response(users)
 
     @full_ns.doc(
-        id="""Get Followings""",
+        id="""Get Following""",
         description="""All users that the provided user follows""",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
@@ -1151,7 +1151,7 @@ class FullFollowingUsers(Resource):
 @ns.route(FOLLOWING_USERS_ROUTE)
 class FollowingUsers(FullFollowingUsers):
     @ns.doc(
-        id="""Get Followings""",
+        id="""Get Following""",
         description="""All users that the provided user follows""",
         params={"id": "A User ID"},
         responses={200: "Success", 400: "Bad request", 500: "Server error"},
@@ -1259,7 +1259,7 @@ class FullTopGenreUsers(Resource):
         return self._get()
 
 
-@ns.route(TOP_GENRE_ROUTE)
+@ns.route(TOP_GENRE_ROUTE, doc=False)
 class TopGenreUsers(FullTopGenreUsers):
     @ns.doc(
         id="""Get Top Users In Genre""",
@@ -1304,7 +1304,7 @@ class FullTopUsers(Resource):
         return self._get()
 
 
-@ns.route(TOP_ROUTE)
+@ns.route(TOP_ROUTE, doc=False)
 class TopUsers(FullTopUsers):
     @ns.doc(
         id="""Get Top Users""",
@@ -1362,7 +1362,7 @@ user_associated_wallet_response = make_response(
 )
 
 
-@ns.route("/id")
+@ns.route("/id", doc=False)
 class UserIdByAssociatedWallet(Resource):
     @ns.doc(
         id="""Get User ID from Wallet""",
@@ -1710,7 +1710,7 @@ class FullGetSupporting(Resource):
         return self._get(id, supported_user_id)
 
 
-@ns.route(GET_SUPPORTING_ROUTE)
+@ns.route(GET_SUPPORTING_ROUTE, doc=False)
 class GetSupporting(FullGetSupporting):
     @ns.doc(
         id="""Get Supporting""",
@@ -1836,7 +1836,7 @@ class FullGetReplicaSet(Resource):
         return self._get(id)
 
 
-@ns.route(GET_REPLICA_SET)
+@ns.route(GET_REPLICA_SET, doc=False)
 class GetReplicaSet(FullGetReplicaSet):
     @ns.doc(
         id="""Get User Replica Set""",
