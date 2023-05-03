@@ -1362,7 +1362,7 @@ user_associated_wallet_response = make_response(
 )
 
 
-@ns.route("/id", doc=False)
+@ns.route("/id")
 class UserIdByAssociatedWallet(Resource):
     @ns.doc(
         id="""Get User ID from Wallet""",
