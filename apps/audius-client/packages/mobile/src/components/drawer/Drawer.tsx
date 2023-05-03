@@ -128,6 +128,11 @@ export type DrawerProps = {
    */
   shouldBackgroundDim?: boolean
   /**
+   * Whether or not to show the shadow on top of the drawer.
+   * Default to true.
+   */
+  shouldShowShadow?: boolean
+  /**
    * Whether or not to animate the shadow on top of the drawer.
    * Default to true.
    */
@@ -251,6 +256,7 @@ export const Drawer: DrawerComponent = ({
   shouldHaveRoundedBordersAtInitialOffset = false,
   zIndex = 5,
   drawerStyle,
+  shouldShowShadow = true,
   shouldAnimateShadow,
   onPercentOpen,
   onPanResponderMove,
@@ -665,9 +671,11 @@ export const Drawer: DrawerComponent = ({
           {
             elevation: zIndex,
             zIndex,
-            shadowOpacity: shouldAnimateShadow
-              ? shadowAnim.current
-              : MAX_SHADOW_OPACITY,
+            shadowOpacity: shouldShowShadow
+              ? shouldAnimateShadow
+                ? shadowAnim.current
+                : MAX_SHADOW_OPACITY
+              : 0,
             transform: [
               {
                 translateY: translationAnim

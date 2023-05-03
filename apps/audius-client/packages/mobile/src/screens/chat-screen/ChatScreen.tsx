@@ -9,6 +9,7 @@ import {
   decodeHashId,
   encodeHashId,
   Status,
+  playerSelectors,
   isEarliestUnread
 } from '@audius/common'
 import { Portal } from '@gorhom/portal'
@@ -24,6 +25,7 @@ import {
   KeyboardAvoidingView
 } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
+import { PLAY_BAR_HEIGHT } from 'app/components/now-playing-drawer'
 import { ProfilePicture } from 'app/components/user'
 import { UserBadges } from 'app/components/user-badges'
 import { light } from 'app/haptics'
@@ -53,6 +55,7 @@ const {
 const { fetchMoreMessages, markChatAsRead, setReactionsPopupMessageId } =
   chatActions
 const { getUserId } = accountSelectors
+const { getHasTrack } = playerSelectors
 
 export const REACTION_CONTAINER_HEIGHT = 70
 
@@ -169,6 +172,7 @@ export const ChatScreen = () => {
   const chatContainerTop = useRef(0)
   const chatContainerBottom = useRef(0)
 
+  const hasCurrentlyPlayingTrack = useSelector(getHasTrack)
   const userId = useSelector(getUserId)
   const userIdEncoded = encodeHashId(userId)
   const chat = useSelector((state) => getChat(state, chatId ?? ''))
@@ -411,7 +415,13 @@ export const ChatScreen = () => {
             })
           }}
         >
-          <KeyboardAvoidingView style={styles.keyboardAvoiding}>
+          <KeyboardAvoidingView
+            keyboardShowingOffset={PLAY_BAR_HEIGHT}
+            style={[
+              styles.keyboardAvoiding,
+              hasCurrentlyPlayingTrack ? { bottom: PLAY_BAR_HEIGHT } : null
+            ]}
+          >
             {!isLoading ? (
               chatMessages?.length > 0 ? (
                 <View style={styles.listContainer}>
