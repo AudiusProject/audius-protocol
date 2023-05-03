@@ -6,6 +6,7 @@ import {
   NotificationType,
   walletActions
 } from '@audius/common'
+import { Dictionary } from '@reduxjs/toolkit'
 import { call, put, select } from 'typed-redux-saga'
 
 import { NOTIFICATION_LIMIT_DEFAULT } from './constants'
@@ -13,21 +14,19 @@ import { fetchNotifications } from './fetchNotifications'
 import { parseAndProcessNotifications } from './parseAndProcessNotifications'
 
 const { updateNotifications } = notificationsActions
-const { makeGetAllNotifications } = notificationsSelectors
-const getAllNotifications = makeGetAllNotifications()
+const { selectNotificationEntities } = notificationsSelectors
 const { getBalance } = walletActions
 const { getHasAccount } = accountSelectors
 
 // Notifications have changed if some of the incoming ones have
 // different ids or changed length in unique entities/users
 const checkIfNotificationsChanged = (
-  current: Notification[],
+  current: Dictionary<Notification>,
   incoming: Notification[]
 ): boolean => {
-  return incoming.some((newNotification, index: number) => {
-    const notification = current[index]
+  return incoming.some((newNotification) => {
+    const notification = current[newNotification.id]
     if (!notification) return true
-    const isIdDifferent = notification.id !== newNotification.id
 
     const isEntitySizeDiff =
       'entityIds' in newNotification &&
@@ -36,13 +35,15 @@ const checkIfNotificationsChanged = (
       new Set(notification.entityIds).size !==
         new Set(newNotification.entityIds).size
 
+    if (isEntitySizeDiff) return true
+
     const isUsersSizeDiff =
       'userIds' in newNotification &&
       'userIds' in notification &&
       new Set(notification.userIds).size !==
         new Set(newNotification.userIds).size
 
-    return isIdDifferent || isEntitySizeDiff || isUsersSizeDiff
+    return isUsersSizeDiff
   })
 }
 
@@ -78,10 +79,10 @@ export function* checkForNewNotificationsSaga() {
   }
 
   const { notifications, totalUnviewed } = notificationsResponse
-  const currentNotifications = yield* select(getAllNotifications)
+  const currNotifs = yield* select(selectNotificationEntities)
 
   const hasNewNotifications = checkIfNotificationsChanged(
-    currentNotifications,
+    currNotifs,
     notifications
   )
 
