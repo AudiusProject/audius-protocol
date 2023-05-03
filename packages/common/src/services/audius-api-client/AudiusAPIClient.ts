@@ -1955,7 +1955,7 @@ export class AudiusAPIClient {
           if (splitArrayParams) {
             // If we split, join in the form of
             // ?key=val1,val2,val3...
-            return `${p[0]}=${[1]
+            return `${p[0]}=${p[1]
               .map((val) => encodeURIComponent(val))
               .join(',')}`
           } else {
