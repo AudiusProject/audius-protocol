@@ -1,11 +1,6 @@
-import { ChangeEvent, useCallback, useEffect, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect } from 'react'
 
-import {
-  accountSelectors,
-  chatActions,
-  chatSelectors,
-  Status
-} from '@audius/common'
+import { Status, useSetInboxPermissions } from '@audius/common'
 import { ChatPermission } from '@audius/sdk'
 import {
   Button,
@@ -16,7 +11,6 @@ import {
   ModalTitle,
   RadioButtonGroup
 } from '@audius/stems'
-import { useDispatch, useSelector } from 'react-redux'
 
 import { useModalState } from 'common/hooks/useModalState'
 import LoadingSpinner from 'components/loading-spinner/LoadingSpinner'
@@ -67,66 +61,38 @@ const options = [
   }
 ]
 
-const { fetchPermissions } = chatActions
-const { getUserChatPermissions } = chatSelectors
-const { getUserId } = accountSelectors
-
 export const InboxSettingsModal = () => {
-  const dispatch = useDispatch()
-  const permissions = useSelector(getUserChatPermissions)
-  const userId = useSelector(getUserId)
-  const currentPermission = userId ? permissions[userId]?.permits : null
   const [isVisible, setIsVisible] = useModalState('InboxSettings')
   const handleClose = useCallback(() => setIsVisible(false), [setIsVisible])
-  const [permission, setPermission] = useState<ChatPermission>(
-    currentPermission ?? ChatPermission.ALL
-  )
-  const [saveState, setSaveState] = useState<Status>(Status.IDLE)
-  const [showSpinner, setShowSpinner] = useState(false)
+
+  const {
+    localPermission,
+    setLocalPermission,
+    savePermissions,
+    doFetchPermissions,
+    permissionStatus,
+    showSpinner
+  } = useSetInboxPermissions({
+    audiusSdk
+  })
+
+  const handleSave = useCallback(() => {
+    savePermissions()
+    handleClose()
+  }, [handleClose, savePermissions])
 
   const handleChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
-      setPermission(e.target.value as ChatPermission)
+      setLocalPermission(e.target.value as ChatPermission)
     },
-    [setPermission]
+    [setLocalPermission]
   )
-
-  const handleSave = useCallback(() => {
-    if (saveState !== Status.LOADING) {
-      setSaveState(Status.LOADING)
-      setShowSpinner(false)
-      // Only show the spinner if saving takes a while
-      setTimeout(() => setShowSpinner(true), 1000)
-      const fn = async () => {
-        try {
-          const sdk = await audiusSdk()
-          await sdk.chats.permit({ permit: permission })
-          setSaveState(Status.SUCCESS)
-          handleClose()
-        } catch (e) {
-          console.error('Error saving chat permissions:', e)
-          setSaveState(Status.ERROR)
-        }
-      }
-      fn()
-    }
-  }, [saveState, permission, setSaveState, handleClose, setShowSpinner])
 
   // Fetch the latest permissions for the current user when the modal is made visible
   // Note that this will trigger the following effect as well, causing the permission state to update
   useEffect(() => {
-    if (isVisible && userId) {
-      dispatch(fetchPermissions({ userIds: [userId] }))
-    }
-  }, [dispatch, isVisible, userId])
-
-  // Since the modal is always mounted (booo!) we have to manually set the default
-  // permission every time it's made visible
-  useEffect(() => {
-    if (isVisible && currentPermission) {
-      setPermission(currentPermission)
-    }
-  }, [setPermission, isVisible, currentPermission])
+    doFetchPermissions()
+  }, [doFetchPermissions])
 
   return (
     <Modal
@@ -143,7 +109,7 @@ export const InboxSettingsModal = () => {
       <ModalContent className={styles.modalContent}>
         <RadioButtonGroup
           name={'inbox-settings'}
-          value={permission}
+          value={localPermission}
           onChange={handleChange}
         >
           {options.map((opt) => (
@@ -157,7 +123,7 @@ export const InboxSettingsModal = () => {
         </RadioButtonGroup>
         <Button
           rightIcon={
-            saveState === Status.LOADING && showSpinner ? (
+            permissionStatus === Status.LOADING && showSpinner ? (
               <LoadingSpinner className={styles.spinner} />
             ) : undefined
           }
@@ -165,7 +131,7 @@ export const InboxSettingsModal = () => {
           text={messages.save}
           onClick={handleSave}
         />
-        {saveState === Status.ERROR ? (
+        {permissionStatus === Status.ERROR ? (
           <span className={styles.error}>{messages.error}</span>
         ) : null}
       </ModalContent>

@@ -1,22 +1,28 @@
-import { View } from 'react-native'
+import { useEffect } from 'react'
+
+import { useSetInboxPermissions } from '@audius/common'
+import { ChatPermission } from '@audius/sdk'
+import { TouchableOpacity, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 
 import IconMessage from 'app/assets/images/iconMessage.svg'
 import { RadioButton, Text, Screen, ScreenContent } from 'app/components/core'
+import { audiusSdk } from 'app/services/audius-sdk'
 import { makeStyles } from 'app/styles'
 
 const messages = {
   title: 'Inbox Settings',
-  allowAllTitle: 'Allow Messages from Everyone',
-  allowAllText:
+  allTitle: 'Allow Messages from Everyone',
+  allDescription:
     'Anyone can send you a direct message, regardless of whether you follow them or not.',
-  followsTitle: 'Only Allow Messages From People You Follow',
-  followsText: 'Only users that you follow can send you direct messages.',
-  supportersTitle: 'Only Allow Messages From Your Supporters',
-  supportersText:
+  followeeTitle: 'Only Allow Messages From People You Follow',
+  followeeDescription:
+    'Only users that you follow can send you direct messages.',
+  tipperTitle: 'Only Allow Messages From Your Supporters',
+  tipperDescription:
     'Only users who have tipped you can send you direct messages.',
   noneTitle: 'No One Can Message You',
-  noneText:
+  noneDescription:
     'No one will be able to send you direct messages. Note that you will still be able to send messages to others.'
 }
 
@@ -64,8 +70,40 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   }
 }))
 
+const options = [
+  {
+    title: messages.allTitle,
+    description: messages.allDescription,
+    value: ChatPermission.ALL
+  },
+  {
+    title: messages.followeeTitle,
+    description: messages.followeeDescription,
+    value: ChatPermission.FOLLOWEES
+  },
+  {
+    title: messages.tipperTitle,
+    description: messages.tipperDescription,
+    value: ChatPermission.TIPPERS
+  },
+  {
+    title: messages.noneTitle,
+    description: messages.noneDescription,
+    value: ChatPermission.NONE
+  }
+]
+
 export const InboxSettingsScreen = () => {
   const styles = useStyles()
+  const { setAndSavePermissions, localPermission, doFetchPermissions } =
+    useSetInboxPermissions({
+      audiusSdk
+    })
+
+  useEffect(() => {
+    doFetchPermissions()
+  }, [doFetchPermissions])
+
   return (
     <Screen
       title={messages.title}
@@ -73,53 +111,32 @@ export const InboxSettingsScreen = () => {
       topbarRight={null}
       icon={IconMessage}
     >
-      <View style={styles.shadow} />
       <ScreenContent>
         <ScrollView>
-          <View style={styles.settingsRow}>
-            <View style={styles.settingsContent}>
-              <View style={styles.radioTitleRow}>
-                <RadioButton checked={false} style={styles.radio} />
-                <Text style={styles.title}>{messages.allowAllTitle}</Text>
+          {options.map((opt) => (
+            <TouchableOpacity
+              onPress={() => {
+                const newPermission = opt.value as ChatPermission
+                setAndSavePermissions(newPermission)
+              }}
+              key={opt.title}
+            >
+              <View style={styles.settingsRow}>
+                <View style={styles.settingsContent}>
+                  <View style={styles.radioTitleRow}>
+                    <RadioButton
+                      checked={localPermission === opt.value}
+                      style={styles.radio}
+                    />
+                    <Text style={styles.title}>{opt.title}</Text>
+                  </View>
+                  <View>
+                    <Text style={styles.text}>{opt.description}</Text>
+                  </View>
+                </View>
               </View>
-              <View>
-                <Text style={styles.text}>{messages.allowAllText}</Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.settingsRow}>
-            <View style={styles.settingsContent}>
-              <View style={styles.radioTitleRow}>
-                <RadioButton checked={false} style={styles.radio} />
-                <Text style={styles.title}>{messages.followsTitle}</Text>
-              </View>
-              <View>
-                <Text style={styles.text}>{messages.followsText}</Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.settingsRow}>
-            <View style={styles.settingsContent}>
-              <View style={styles.radioTitleRow}>
-                <RadioButton checked={false} style={styles.radio} />
-                <Text style={styles.title}>{messages.supportersTitle}</Text>
-              </View>
-              <View>
-                <Text style={styles.text}>{messages.supportersText}</Text>
-              </View>
-            </View>
-          </View>
-          <View style={styles.settingsRow}>
-            <View style={styles.settingsContent}>
-              <View style={styles.radioTitleRow}>
-                <RadioButton checked={false} style={styles.radio} />
-                <Text style={styles.title}>{messages.noneTitle}</Text>
-              </View>
-              <View>
-                <Text style={styles.text}>{messages.noneText}</Text>
-              </View>
-            </View>
-          </View>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
       </ScreenContent>
     </Screen>
