@@ -54,7 +54,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     // this isn't good if the res is a string
     const count = res_count.count as number
     let offset = 0 // let binding because we re-assign
-    const page_count = 1000 // only pull 1000 users into mem at a time
+    const page_count = 1000 // only pull this many users into mem at a time
 
     const total_start = new Date().getTime()
 
@@ -169,7 +169,8 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
  * @returns a minified version of UserRow for usage in announcements
  */
 export const fetchUsersPage = async (dnDb: Knex, offset: number, page_count: number): Promise<{ user_id: number; name: string; is_deactivated: boolean }[]> =>
-  await dnDb
+  {
+    return await dnDb
         .select('user_id', 'name', 'is_deactivated')
         .from<UserRow>('users')
         // query by last id seen
@@ -182,5 +183,6 @@ export const fetchUsersPage = async (dnDb: Knex, offset: number, page_count: num
         )
         .andWhere('is_deactivated', false)
         // order by established index, this keeps perf constant
-        .orderBy(['user_id', 'is_current', 'txhash'])
+        // .orderBy(['user_id', 'is_current', 'txhash'])
         .limit(page_count)
+  }
