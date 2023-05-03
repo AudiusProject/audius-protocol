@@ -45,31 +45,42 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     isLiveEmailEnabled: boolean
   }) {
     const isDryRun: boolean = globalThis.announcementDryRun
-    const res_count = await this.dnDB('users')
-      .count('user_id')
-      .where('is_current', true)
-      //.where('is_deactivated', false)
-      .first()
-
-    // this isn't good if the res is a string
-    const count = res_count.count as number
+    const totalUsers = await this.dnDB('users').count('user_id').where('is_current', true).andWhere('is_deactivated', false)
+    // convert to number
+    const totalCurrentUsers = parseInt(totalUsers[0].count as string)
     let offset = 0 // let binding because we re-assign
-    const page_count = 1000 // only pull this many users into mem at a time
+    // set initial user to very far in past
+    const pageCount = 1000 // only pull this many users into mem at a time
 
     const total_start = new Date().getTime()
 
-    // naive but it works
-    // adds extra page to total count so we get the last page of trailing users
-    while (offset < (count + page_count)) {
+    // use user_id and created_at index for perf
+    let lastUser = {
+        userId: 0,
+        // set initial to really far back
+        createdAt: '2017-04-30T05:52:55.000Z'
+      }
+    const total = totalCurrentUsers + pageCount
+
+    while (offset < total) {
       const start = new Date().getTime()
       // query next page
-      const res = await fetchUsersPage(this.dnDB, offset, page_count)
+      const res = await fetchUsersPage(this.dnDB, lastUser, pageCount)
       const elapsed = new Date().getTime() - start
       logger.info(
-        `count: ${count} offset: ${offset} from: [${res[0].user_id}:${res[res.length - 1].user_id}] queried in ${elapsed} ms`
+        `offset: ${offset} to: ${total} queried in ${elapsed} ms`
       )
+      offset = offset + pageCount
 
-      offset = res[res.length - 1].user_id + 1
+      const lastUserFromPage = res[res.length - 1]
+      if (lastUserFromPage === undefined) {
+        break
+      }
+      lastUser = {
+        userId: lastUserFromPage.user_id,
+        createdAt: lastUserFromPage.created_at
+      }
+
       const validReceiverUserIds = res.map((user) => user.user_id)
       if (!isDryRun) {
         await this.broadcastAnnouncement(validReceiverUserIds, isLiveEmailEnabled)
@@ -168,21 +179,13 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
  * @param page_count how many records are returned in (default) ascending order after the offset
  * @returns a minified version of UserRow for usage in announcements
  */
-export const fetchUsersPage = async (dnDb: Knex, offset: number, page_count: number): Promise<{ user_id: number; name: string; is_deactivated: boolean }[]> =>
-  {
-    return await dnDb
-        .select('user_id', 'name', 'is_deactivated')
-        .from<UserRow>('users')
-        // query by last id seen
-        .where('user_id', '>', offset)
-        .andWhere('is_current', true)
-        // .andWhere('is_deactivated', false)
-        .orWhere((inner) =>
-          inner.where('user_id', '=', offset)
-            .andWhere('is_current', true)
-        )
-        .andWhere('is_deactivated', false)
-        // order by established index, this keeps perf constant
-        // .orderBy(['user_id', 'is_current', 'txhash'])
-        .limit(page_count)
-  }
+export const fetchUsersPage = async (dnDb: Knex, lastUser: { userId: number, createdAt: string}, pageCount: number): Promise<{ user_id: number; name: string; is_deactivated: boolean, created_at: string }[]> =>
+    await dnDb
+      .select('name', 'is_deactivated', 'user_id', 'created_at')
+      .from<UserRow>('users')
+      .where('user_id', '>', lastUser.userId)
+      .andWhere('created_at', '>', lastUser.createdAt)
+      .andWhere('is_current', true)
+      .andWhere('is_deactivated', false)
+      .limit(pageCount)
+      .orderBy(['user_id', 'created_at'])
