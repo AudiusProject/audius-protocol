@@ -14,6 +14,9 @@ export const TOGGLE_PUSH_NOTIFICATION_SETTING =
 export const TOGGLE_PUSH_NOTIFICATION_SETTING_FAILED =
   'SETTINGS_PAGE/TOGGLE_PUSH_NOTIFICATION_SETTING_FAILED'
 
+export const REQUEST_PUSH_NOTIFICATION_PERMISSIONS =
+  'SETTINGS_PAGE/REQUEST_PUSH_NOTIFICATION_PERMISSIONS'
+
 export const UPDATE_EMAIL_FREQUENCY = 'SETTINGS_PAGE/UPDATE_EMAIL_FREQUENCY'
 
 export const GET_NOTIFICATION_SETTINGS =
@@ -36,6 +39,8 @@ export const SET_BROWSER_NOTIFICATION_ENABLED =
   'SETTINGS/SET_BROWSER_NOTIFICATION_ENABLED'
 export const SET_BROWSER_NOTIFICATION_SETTINGS_ON =
   'SETTINGS/SET_BROWSER_NOTIFICATION_SETTINGS_ON'
+export const SET_BROWSER_NOTIFICATION_SETTINGS_OFF =
+  'SETTINGS/SET_BROWSER_NOTIFICATION_SETTINGS_OFF'
 
 export const BROWSER_PUSH_NOTIFICATION_FAILED =
   'SETTINGS/BROWSER_PUSH_NOTIFICATION_FAILED'
@@ -91,6 +96,12 @@ export function togglePushNotificationSettingFailed(
   }
 }
 
+export function requestPushNotificationPermissions() {
+  return {
+    type: REQUEST_PUSH_NOTIFICATION_PERMISSIONS
+  }
+}
+
 export function updateEmailFrequency(
   frequency: EmailFrequency,
   updateServer = true
@@ -113,6 +124,10 @@ export function setBrowserNotificationSettingsOn() {
   return { type: SET_BROWSER_NOTIFICATION_SETTINGS_ON }
 }
 
+export function setBrowserNotificationSettingsOff() {
+  return { type: SET_BROWSER_NOTIFICATION_SETTINGS_OFF }
+}
+
 export function browserPushNotificationFailed(error: string) {
   return { type: BROWSER_PUSH_NOTIFICATION_FAILED, error }
 }
@@ -129,6 +144,10 @@ export type TogglePushNotificationSetting = ReturnType<
 >
 export type TogglePushNotificationSettingFailed = ReturnType<
   typeof togglePushNotificationSettingFailed
+>
+
+export type RequestPushNotificationPermissions = ReturnType<
+  typeof requestPushNotificationPermissions
 >
 
 export type UpdateEmailFrequency = ReturnType<typeof updateEmailFrequency>
@@ -157,6 +176,9 @@ export type SetBrowserNotificationEnabled = ReturnType<
 export type SetBrowserNotificationSettingsOn = ReturnType<
   typeof setBrowserNotificationSettingsOn
 >
+export type SetBrowserNotificationSettingsOff = ReturnType<
+  typeof setBrowserNotificationSettingsOff
+>
 export type BrowserPushNotificationFailed = ReturnType<
   typeof browserPushNotificationFailed
 >
@@ -164,6 +186,7 @@ export type BrowserPushNotificationFailed = ReturnType<
 export type SetAiAttribution = ReturnType<typeof setAiAttribution>
 
 export type SettingActions =
+  | RequestPushNotificationPermissions
   | ToggleNotificationSetting
   | TogglePushNotificationSetting
   | TogglePushNotificationSettingFailed
@@ -177,4 +200,5 @@ export type SettingActions =
   | SetBrowserNotificationPermission
   | SetBrowserNotificationEnabled
   | SetBrowserNotificationSettingsOn
+  | SetBrowserNotificationSettingsOff
   | BrowserPushNotificationFailed

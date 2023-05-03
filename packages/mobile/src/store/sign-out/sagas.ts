@@ -24,7 +24,7 @@ import { localStorage } from 'app/services/local-storage'
 import { resetOAuthState } from '../oauth/actions'
 import { clearOfflineDownloads } from '../offline-downloads/slice'
 import { clearHistory } from '../search/searchSlice'
-import { disablePushNotifications } from '../settings/sagas'
+import { deregisterPushNotifications } from '../settings/sagas'
 
 const { resetAccount } = accountActions
 const { resetState: resetWalletState } = tokenDashboardPageActions
@@ -47,7 +47,7 @@ function* signOut() {
   yield* put(clearOfflineDownloads())
   yield* put(resetWalletState())
 
-  yield* call(disablePushNotifications)
+  yield* call(deregisterPushNotifications)
   yield* call([localStorage, 'clearAudiusAccount'])
   yield* call([localStorage, 'clearAudiusAccountUser'])
   yield* call([audiusBackendInstance, 'signOut'])
