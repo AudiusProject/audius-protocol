@@ -7,8 +7,11 @@ FROM node:16-slim
 
 WORKDIR /usr/src/app
 
-COPY --from=builder /node_modules ./node_modules
 COPY . .
+COPY --from=builder /node_modules ./node_modules
+
+COPY package.json .
+RUN npm run postinstall
 
 ARG CONTENT_NODE_VERSION
 ARG DISCOVERY_NODE_VERSION
