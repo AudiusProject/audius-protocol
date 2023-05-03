@@ -23,27 +23,29 @@ begin
     IF tip_sender_user_id IS NOT NULL AND tip_receiver_user_id IS NOT NULL THEN
       raise NOTICE 'have ids';
 
-      INSERT INTO notification
-        (slot, user_ids, timestamp, type, specifier, group_id, data)
-      VALUES
-        (
-        new.slot,
-        ARRAY [tip_sender_user_id],
-        new.timestamp,
-        'reaction',
-        tip_receiver_user_id,
-        'reaction:' || 'reaction_to:' || new.reacted_to || ':reaction_type:' || new.reaction_type || ':reaction_value:' || new.reaction_value || ':timestamp:' || new.timestamp,
-        json_build_object(
-          'sender_wallet', new.sender_wallet,
-          'reaction_type', new.reaction_type,
-          'reacted_to', new.reacted_to,
-          'reaction_value', new.reaction_value,
-          'receiver_user_id', tip_receiver_user_id,
-          'sender_user_id', tip_sender_user_id,
-          'tip_amount', tip_amount::varchar(255)
+      if new.reaction_value != 0 then
+        INSERT INTO notification
+          (slot, user_ids, timestamp, type, specifier, group_id, data)
+        VALUES
+          (
+          new.slot,
+          ARRAY [tip_sender_user_id],
+          new.timestamp,
+          'reaction',
+          tip_receiver_user_id,
+          'reaction:' || 'reaction_to:' || new.reacted_to || ':reaction_type:' || new.reaction_type || ':reaction_value:' || new.reaction_value,
+          json_build_object(
+            'sender_wallet', new.sender_wallet,
+            'reaction_type', new.reaction_type,
+            'reacted_to', new.reacted_to,
+            'reaction_value', new.reaction_value,
+            'receiver_user_id', tip_receiver_user_id,
+            'sender_user_id', tip_sender_user_id,
+            'tip_amount', tip_amount::varchar(255)
+          )
         )
-      )
-      on conflict do nothing;
+        on conflict do nothing;
+      end if;
 
       -- find the notification for tip send - update the data to include reaction value
       UPDATE notification
