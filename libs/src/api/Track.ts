@@ -458,8 +458,8 @@ export class Track extends Base {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    writeMetadataThroughChain = false,
-    onProgress: () => void
+    onProgress: () => void,
+    writeMetadataThroughChain = false
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
