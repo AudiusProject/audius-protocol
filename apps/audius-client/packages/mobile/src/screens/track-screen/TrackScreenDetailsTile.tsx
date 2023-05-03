@@ -135,7 +135,9 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
   headerContainer: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center'
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing(4)
   },
   headerText: {
     marginTop: spacing(4),
@@ -165,8 +167,8 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginRight: spacing(2)
   },
   aiAttributedHeader: {
-    marginHorizontal: spacing(6),
     flexDirection: 'row',
+    width: '100%',
     justifyContent: 'center',
     gap: spacing(2),
     paddingVertical: spacing(2.5),
