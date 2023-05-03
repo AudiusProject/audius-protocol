@@ -723,7 +723,7 @@ export const audiusBackend = ({
     )
 
     const useSdkDiscoveryNodeSelector = await getFeatureEnabled(
-      FeatureFlags.SDK_V2
+      FeatureFlags.SDK_DISCOVERY_NODE_SELECTOR
     )
 
     let discoveryNodeSelector: Maybe<DiscoveryNodeSelector>
