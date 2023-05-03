@@ -413,7 +413,8 @@ export class CreatorNode {
     if (coverArtFile) {
       promises.push(
         this._retry3(
-          async () => await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
+          async () =>
+            await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
           (e) => {
             console.log('Retrying uploadTrackCoverArtV2', e)
           }

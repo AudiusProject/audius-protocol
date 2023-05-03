@@ -127,7 +127,11 @@ export class EntityManager extends Base {
       let dirCID
       if (playlist?.artwork?.file) {
         if (storageV2UploadEnabled) {
-          const updatedPlaylistImage = await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file, () => {})
+          const updatedPlaylistImage =
+            await this.creatorNode.uploadTrackCoverArtV2(
+              playlist.artwork.file,
+              () => {}
+            )
           dirCID = updatedPlaylistImage.id
         } else {
           const updatedPlaylistImage = await this.creatorNode.uploadImage(
@@ -150,22 +154,25 @@ export class EntityManager extends Base {
       }
 
       if (storageV2UploadEnabled) {
-        const metadataCid = await Utils.fileHasher.generateMetadataCidV1(metadata)
+        const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
+          metadata
+        )
         if (this.contracts.EntityManagerClient === undefined) {
           throw new Error('EntityManagerClient is undefined')
         }
-        const { txReceipt } = await this.contracts.EntityManagerClient.manageEntity(
-          userId,
-          EntityType.PLAYLIST,
-          playlist.playlist_id,
-          Action.CREATE,
-          JSON.stringify({ cid: metadataCid.toString(), data: metadata })
-        )
+        const { txReceipt } =
+          await this.contracts.EntityManagerClient.manageEntity(
+            userId,
+            EntityType.PLAYLIST,
+            playlist.playlist_id,
+            Action.CREATE,
+            JSON.stringify({ cid: metadataCid.toString(), data: metadata })
+          )
         responseValues.blockHash = txReceipt.blockHash
         responseValues.blockNumber = txReceipt.blockNumber
         return responseValues
       } else {
-        const { metadataMultihash } = 
+        const { metadataMultihash } =
           await this.creatorNode.uploadPlaylistMetadata(metadata)
         return await this.manageEntity({
           userId,
@@ -229,7 +236,11 @@ export class EntityManager extends Base {
       let dirCID
       if (playlist?.artwork?.file) {
         if (storageV2UploadEnabled) {
-          const updatedPlaylistImage = await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file, () => {})
+          const updatedPlaylistImage =
+            await this.creatorNode.uploadTrackCoverArtV2(
+              playlist.artwork.file,
+              () => {}
+            )
           dirCID = updatedPlaylistImage.id
         } else {
           const updatedPlaylistImage = await this.creatorNode.uploadImage(
@@ -252,17 +263,20 @@ export class EntityManager extends Base {
         is_private: playlist.is_private
       }
       if (storageV2UploadEnabled) {
-        const metadataCid = await Utils.fileHasher.generateMetadataCidV1(metadata)
+        const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
+          metadata
+        )
         if (this.contracts.EntityManagerClient === undefined) {
           throw new Error('EntityManagerClient is undefined')
         }
-        const { txReceipt } = await this.contracts.EntityManagerClient.manageEntity(
-          userId,
-          EntityType.PLAYLIST,
-          playlist.playlist_id,
-          Action.UPDATE,
-          JSON.stringify({ cid: metadataCid.toString(), data: metadata })
-        )
+        const { txReceipt } =
+          await this.contracts.EntityManagerClient.manageEntity(
+            userId,
+            EntityType.PLAYLIST,
+            playlist.playlist_id,
+            Action.UPDATE,
+            JSON.stringify({ cid: metadataCid.toString(), data: metadata })
+          )
         responseValues.blockHash = txReceipt.blockHash
         responseValues.blockNumber = txReceipt.blockNumber
         return responseValues
