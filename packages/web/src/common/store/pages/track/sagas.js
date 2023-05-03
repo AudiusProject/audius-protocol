@@ -196,20 +196,6 @@ function* watchFetchTrack() {
   })
 }
 
-function* watchFetchTrackSucceeded() {
-  yield takeEvery(trackPageActions.FETCH_TRACK_SUCCEEDED, function* (action) {
-    const { trackId } = action
-    const track = yield select(getCachedTrack, { id: trackId })
-    if (
-      track.download &&
-      track.download.is_downloadable &&
-      !track.download.cid
-    ) {
-      yield put(trackCacheActions.checkIsDownloadable(track.track_id))
-    }
-  })
-}
-
 function* watchRefetchLineup() {
   yield takeEvery(trackPageActions.REFETCH_LINEUP, function* (action) {
     const { permalink } = yield select(getTrack)
@@ -274,7 +260,6 @@ export default function sagas() {
   return [
     ...tracksSagas(),
     watchFetchTrack,
-    watchFetchTrackSucceeded,
     watchRefetchLineup,
     watchFetchTrackBadge,
     watchTrackPageMakePublic,

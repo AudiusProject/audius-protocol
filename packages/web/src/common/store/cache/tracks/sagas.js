@@ -21,8 +21,7 @@ import {
   getContext,
   put,
   select,
-  takeEvery,
-  takeLatest
+  takeEvery
 } from 'redux-saga/effects'
 
 import { make } from 'common/store/analytics/actions'
@@ -164,10 +163,6 @@ function* confirmEditTrack(
     confirmerActions.requestConfirmation(
       makeKindId(Kind.TRACKS, trackId),
       function* () {
-        if (!wasDownloadable && isNowDownloadable) {
-          yield put(trackActions.checkIsDownloadable(trackId))
-        }
-
         const { blockHash, blockNumber } = yield call(
           audiusBackendInstance.updateTrack,
           trackId,
@@ -421,60 +416,8 @@ function* watchFetchCoverArt() {
   })
 }
 
-function* watchCheckIsDownloadable() {
-  yield takeLatest(trackActions.CHECK_IS_DOWNLOADABLE, function* (action) {
-    const trackDownload = yield getContext('trackDownload')
-    const track = yield select(getTrack, { id: action.trackId })
-    if (!track) return
-
-    const user = yield select(getUser, { id: track.owner_id })
-    if (!user) return
-    if (!user.creator_node_endpoint) return
-
-    const cid = yield call(
-      [trackDownload, 'checkIfDownloadAvailable'],
-      track.track_id,
-      user.creator_node_endpoint
-    )
-
-    const updatedMetadata = {
-      ...track,
-      download: {
-        ...track.download,
-        cid
-      }
-    }
-
-    yield put(
-      cacheActions.update(Kind.TRACKS, [
-        {
-          id: track.track_id,
-          metadata: updatedMetadata
-        }
-      ])
-    )
-
-    yield waitForAccount()
-    const currentUserId = yield select(getUserId)
-    if (currentUserId === user.user_id) {
-      yield call(
-        [trackDownload, 'updateTrackDownloadCID'],
-        track.track_id,
-        track,
-        cid
-      )
-    }
-  })
-}
-
 const sagas = () => {
-  return [
-    watchAdd,
-    watchEditTrack,
-    watchDeleteTrack,
-    watchFetchCoverArt,
-    watchCheckIsDownloadable
-  ]
+  return [watchAdd, watchEditTrack, watchDeleteTrack, watchFetchCoverArt]
 }
 
 export default sagas
