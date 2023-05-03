@@ -736,7 +736,7 @@ export class Track extends Base {
    */
   async updateTrack(
     metadata: TrackMetadata,
-    writeMetadataThroughChain = false,
+    writeMetadataThroughChain = false
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.IS_OBJECT(metadata)
