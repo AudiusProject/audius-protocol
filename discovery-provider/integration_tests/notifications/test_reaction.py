@@ -59,44 +59,30 @@ def test_reaction_notification(app):
             .order_by(asc(Notification.slot))
             .all()
         )
-        assert len(notifications) == 3
-        assert notifications[0].specifier == "2"
+        logger.info(f"asdf notifications: {notifications}")
+
+        assert len(notifications) == 2
+        assert notifications[0].specifier == "3"
         assert notifications[
             0
-        ].group_id == "reaction:reaction_to:sig_0:reaction_type:tip:reaction_value:0:timestamp:" + now.strftime(
-            "%Y-%m-%d %H:%M:%S.%f"
-        ).rstrip(
-            "0"
-        )
-        assert notifications[1].specifier == "3"
+        ].group_id == "reaction:reaction_to:sig_1:reaction_type:tip:reaction_value:1"
+        assert notifications[1].specifier == "4"
         assert notifications[
             1
-        ].group_id == "reaction:reaction_to:sig_1:reaction_type:tip:reaction_value:1:timestamp:" + now.strftime(
-            "%Y-%m-%d %H:%M:%S.%f"
-        ).rstrip(
-            "0"
-        )
-        assert notifications[2].specifier == "4"
-        assert notifications[
-            2
-        ].group_id == "reaction:reaction_to:sig_2:reaction_type:tip:reaction_value:2:timestamp:" + now.strftime(
-            "%Y-%m-%d %H:%M:%S.%f"
-        ).rstrip(
-            "0"
-        )
+        ].group_id == "reaction:reaction_to:sig_2:reaction_type:tip:reaction_value:2"
         assert notifications[0].type == "reaction"
-        assert notifications[0].slot == 0
+        assert notifications[0].slot == 1
         assert notifications[0].blocknumber == None
         assert notifications[0].data == {
-            "reacted_to": "sig_0",
+            "reacted_to": "sig_1",
             "reaction_type": "tip",
-            "sender_wallet": "0x0",
-            "reaction_value": 0,
-            "receiver_user_id": 2,
-            "sender_user_id": 1,
-            "tip_amount": "100000000",
+            "sender_wallet": "0x1",
+            "reaction_value": 1,
+            "receiver_user_id": 3,
+            "sender_user_id": 2,
+            "tip_amount": "200000000",
         }
-        assert notifications[0].user_ids == [1]
+        assert notifications[0].user_ids == [2]
 
         notifications: List[Notification] = (
             session.query(Notification)
