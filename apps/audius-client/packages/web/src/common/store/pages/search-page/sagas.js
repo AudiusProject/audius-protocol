@@ -131,7 +131,7 @@ export function* getSearchResults(searchText, kind, limit, offset) {
       { tracks: [], albums: [], playlists: [], users: [] }
     )
   } else {
-    results = yield* call([apiClient, 'getSearchFull'], {
+    results = yield call([apiClient, 'getSearchFull'], {
       currentUserId: userId,
       query: searchText,
       kind,
