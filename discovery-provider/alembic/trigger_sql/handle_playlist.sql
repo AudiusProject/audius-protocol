@@ -34,9 +34,13 @@ begin
   end if;
   -- Create playlist notification
   begin
-    if new.created_at = new.updated_at AND 
-    new.is_private = FALSE AND 
-    new.is_delete = FALSE then
+    if new.is_private = FALSE AND 
+    new.is_delete = FALSE AND
+    (
+      new.created_at = new.updated_at OR
+      old_row.is_private = TRUE
+    )
+    then
       select array(
         select subscriber_id 
           from subscriptions 

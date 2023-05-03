@@ -78,7 +78,7 @@ describe('Tastemaker Notification', () => {
         badgeCount: 1
       },
       {
-        title: `You're a Taste Maker!`,
+        title: `You're a Tastemaker!`,
         body: `track_title_3 is now trending thanks to you! Great work 🙌🏽`,
         data: {}
       }

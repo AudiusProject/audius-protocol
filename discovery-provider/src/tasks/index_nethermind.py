@@ -254,10 +254,14 @@ def fetch_cid_metadata(db, entity_manager_txs):
                         or event_type == EntityType.USER_REPLICA_SET
                         or action
                         in [
-                            EntityType.REPOST,
-                            EntityType.SAVE,
-                            EntityType.FOLLOW,
-                            EntityType.SUBSCRIPTION,
+                            Action.REPOST,
+                            Action.UNREPOST,
+                            Action.SAVE,
+                            Action.UNSAVE,
+                            Action.FOLLOW,
+                            Action.UNFOLLOW,
+                            Action.SUBSCRIBE,
+                            Action.UNSUBSCRIBE,
                         ]
                     ):
                         continue
@@ -305,6 +309,8 @@ def fetch_cid_metadata(db, entity_manager_txs):
                                 f"index_nethermind.py | error deserializing metadata {cid}: {e}"
                             )
                         continue
+
+                    logger.info(f"index_nethermind.py | falling back to fetching cid metadata from content nodes for metadata {cid}, event type {event_type}, action {action}, user {user_id}")
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id

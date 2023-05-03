@@ -7,6 +7,7 @@ from src.models.tracks.aggregate_track import AggregateTrack
 from src.models.tracks.track import Track
 from src.models.users.aggregate_user import AggregateUser
 from src.utils.db_session import get_db
+from sqlalchemy.orm.session import make_transient
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,7 @@ basic_entities = {
         {"track_id": 1, "owner_id": 1},
         {"track_id": 2, "owner_id": 2},
         {"track_id": 3, "owner_id": 2},
+        {"track_id": 4, "owner_id": 2, "is_unlisted": True},
     ],
     "playlists": [
         {
@@ -146,6 +148,29 @@ def test_aggregate_counters(app):
         owner_agg: AggregateUser = session.query(AggregateUser).get(track.owner_id)
         session.refresh(owner_agg)
         assert owner_agg.track_count == 1
+
+        # change track from unlisted to public
+        # should increment agg user track count
+        # I tried to simulate update is_current -> false + insert new row
+        # but couldn't figure out how to make sqlalchemy do it
+        # so just do an in place update, since the trigger will treat it the same
+        track: Track = (
+            session.query(Track)
+            .filter(Track.track_id == 4)
+            .filter(Track.is_current == True)
+            .first()
+        )
+        assert track.is_unlisted == True
+        track.is_unlisted = False
+        session.add(track)
+        session.flush()
+        session.refresh(track)
+        assert track.is_unlisted == False
+
+        # check that agg_user track count is updated
+        owner_agg: AggregateUser = session.query(AggregateUser).get(track.owner_id)
+        session.refresh(owner_agg)
+        assert owner_agg.track_count == 2
 
         # playlists
         agg_playlists: List[AggregatePlaylist] = (

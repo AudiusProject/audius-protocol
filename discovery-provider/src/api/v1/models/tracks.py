@@ -137,7 +137,7 @@ track_full = ns.clone(
         "premium_content_signature": fields.Nested(
             premium_content_signature, allow_null=True
         ),
-        "ai_attribution_user_id": fields.Integer(required=True),
+        "ai_attribution_user_id": fields.Integer(allow_null=True),
     },
 )
 

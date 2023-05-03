@@ -31,6 +31,7 @@ type ChainInfo = {
   metadataMultihash: string
   metadataFileUUID: string
   transcodedTrackUUID: string
+  metadata?: TrackMetadata
 }
 
 const { decodeHashId } = Utils
@@ -468,7 +469,8 @@ export class Track extends Base {
     trackFile: File,
     coverArtFile: File,
     metadata: TrackMetadata,
-    onProgress: () => void
+    onProgress: () => void,
+    writeMetadataThroughChain = false
   ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.FILE_IS_VALID(trackFile)
@@ -533,12 +535,18 @@ export class Track extends Base {
 
       // Write metadata to chain
       const trackId = await this._generateTrackId()
+      const entityManagerMetadata = writeMetadataThroughChain
+        ? JSON.stringify({
+            cid: metadataMultihash,
+            data: metadata
+          })
+        : metadataMultihash
       const response = await this.contracts.EntityManagerClient!.manageEntity(
         ownerId,
         EntityManagerClient.EntityType.TRACK,
         trackId,
         EntityManagerClient.Action.CREATE,
-        metadataMultihash
+        entityManagerMetadata
       )
       const txReceipt = response.txReceipt
 
@@ -659,7 +667,8 @@ export class Track extends Base {
       metadataMultihash,
       metadataFileUUID,
       transcodedTrackCID,
-      transcodedTrackUUID
+      transcodedTrackUUID,
+      metadata: respMetadata
     } = await retry(
       async () => {
         return await this.creatorNode.uploadTrackContent(
@@ -687,7 +696,8 @@ export class Track extends Base {
       metadataMultihash,
       metadataFileUUID,
       transcodedTrackCID,
-      transcodedTrackUUID
+      transcodedTrackUUID,
+      metadata: respMetadata
     }
   }
 
@@ -696,7 +706,10 @@ export class Track extends Base {
    * Adds tracks to chain for this user
    * Associates tracks with user on creatorNode
    */
-  async addTracksToChainAndCnode(trackMultihashAndUUIDList: ChainInfo[]) {
+  async addTracksToChainAndCnode(
+    trackMultihashAndUUIDList: ChainInfo[],
+    writeMetadataThroughChain = false
+  ) {
     this.REQUIRES(Services.CREATOR_NODE)
     const ownerId = this.userStateManager.getCurrentUserId()
     if (!ownerId) {
@@ -704,7 +717,7 @@ export class Track extends Base {
     }
 
     const addedToChain: Array<
-      Omit<ChainInfo, 'metadataMultihash'> & {
+      Omit<ChainInfo, 'metadataMultihash' | 'metadata'> & {
         trackId: number
         txReceipt: TransactionReceipt
       }
@@ -713,8 +726,20 @@ export class Track extends Base {
     await Promise.all(
       trackMultihashAndUUIDList.map(async (trackInfo, i) => {
         try {
-          const { metadataMultihash, metadataFileUUID, transcodedTrackUUID } =
-            trackInfo
+          const {
+            metadataMultihash,
+            metadataFileUUID,
+            transcodedTrackUUID,
+            metadata
+          } = trackInfo
+
+          let entityManagerMetadata = metadataMultihash
+          if (writeMetadataThroughChain && metadata) {
+            entityManagerMetadata = JSON.stringify({
+              cid: metadataMultihash,
+              data: metadata
+            })
+          }
 
           // Write metadata to chain
           const trackId = await this._generateTrackId()
@@ -724,7 +749,7 @@ export class Track extends Base {
               EntityManagerClient.EntityType.TRACK,
               trackId,
               EntityManagerClient.Action.CREATE,
-              metadataMultihash
+              entityManagerMetadata
             )
           const txReceipt = response.txReceipt
           addedToChain[i] = {
@@ -782,7 +807,10 @@ export class Track extends Base {
    * such as track content, cover art are already on creator node.
    * @param metadata json of the track metadata with all fields, missing fields will error
    */
-  async updateTrack(metadata: TrackMetadata) {
+  async updateTrack(
+    metadata: TrackMetadata,
+    writeMetadataThroughChain = false
+  ) {
     this.REQUIRES(Services.CREATOR_NODE)
     this.IS_OBJECT(metadata)
 
@@ -799,12 +827,15 @@ export class Track extends Base {
       await this.creatorNode.uploadTrackMetadata(metadata)
     // Write the new metadata to chain
     const trackId: number = metadata.track_id
+    const entityManagerMetadata = writeMetadataThroughChain
+      ? JSON.stringify({ cid: metadataMultihash, data: metadata })
+      : metadataMultihash
     const response = await this.contracts.EntityManagerClient!.manageEntity(
       ownerId,
       EntityManagerClient.EntityType.TRACK,
       trackId,
       EntityManagerClient.Action.UPDATE,
-      metadataMultihash
+      entityManagerMetadata
     )
     const txReceipt = response.txReceipt
     // Re-associate the track id with the new metadata

@@ -49,7 +49,8 @@ const getNewPrimary = async (secondaries: string[], wallet: string) => {
 export const rolloverNodes = async (
   libs: AudiusLibs,
   creatorNodeWhitelist: Nullable<Set<string>>,
-  creatorNodeBlacklist: Nullable<Set<string>>
+  creatorNodeBlacklist: Nullable<Set<string>>,
+  writeMetadataThroughChain = false
 ) => {
   console.debug('Sanity Check - rolloverNodes')
   const user = libs.userStateManager?.getCurrentUser()
@@ -97,7 +98,11 @@ export const rolloverNodes = async (
     console.debug(
       `Sanity Check - rolloverNodes - new nodes ${newMetadata.creator_node_endpoint}`
     )
-    await libs.User?.updateCreator(user.user_id, newMetadata)
+    await libs.User?.updateCreator(
+      user.user_id,
+      newMetadata,
+      writeMetadataThroughChain
+    )
   } catch (e) {
     console.error(e)
   }
