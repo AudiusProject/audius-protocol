@@ -1,3 +1,5 @@
+import { useMemo } from 'react'
+
 import moment from 'moment'
 import { useSelector as reduxUseSelector, shallowEqual } from 'react-redux'
 
@@ -155,8 +157,9 @@ const getStemButtons = ({
   isLoggedIn: boolean
   stems: LabeledStem[]
   parentTrackId: ID
-  track: Track
+  track: Track | null
 }) => {
+  if (!track) return []
   return stems.map((u) => {
     const state = (() => {
       if (!isLoggedIn) return ButtonState.LOG_IN_REQUIRED
@@ -191,7 +194,7 @@ const getStemButtons = ({
   })
 }
 
-const makeDownloadOriginalButton = ({
+const useMakeDownloadOriginalButton = ({
   following,
   isLoggedIn,
   isOwner,
@@ -204,26 +207,25 @@ const makeDownloadOriginalButton = ({
   track: Track | null
   stemButtonsLength: number
 }) => {
-  if (!track?.download?.is_downloadable) {
-    return undefined
-  }
-
-  const label = messages.getDownloadTrack(stemButtonsLength)
-  const config: DownloadButtonConfig = {
-    state: ButtonState.PROCESSING,
-    label,
-    type: ButtonType.TRACK
-  }
-
-  const requiresFollow = doesRequireFollow(isOwner, following, track)
-  if (isLoggedIn && requiresFollow) {
-    return {
-      ...config,
-      state: ButtonState.REQUIRES_FOLLOW
+  return useMemo(() => {
+    if (!track?.download?.is_downloadable) {
+      return undefined
     }
-  }
 
-  if (track.download.cid) {
+    const label = messages.getDownloadTrack(stemButtonsLength)
+    const config = {
+      label,
+      type: ButtonType.TRACK
+    }
+
+    const requiresFollow = doesRequireFollow(isOwner, following, track)
+    if (isLoggedIn && requiresFollow) {
+      return {
+        ...config,
+        state: ButtonState.REQUIRES_FOLLOW
+      }
+    }
+
     return {
       ...config,
       state: isLoggedIn
@@ -236,11 +238,16 @@ const makeDownloadOriginalButton = ({
         onDownload(track.track_id)
       }
     }
-  }
-
-  return config
+  }, [
+    following,
+    isLoggedIn,
+    isOwner,
+    onDownload,
+    stemButtonsLength,
+    track,
+    onNotLoggedInClick
+  ])
 }
-
 export const useDownloadTrackButtons = ({
   following,
   isOwner,
@@ -259,7 +266,6 @@ export const useDownloadTrackButtons = ({
 
   // Get the currently uploading stems
   const { uploadingTracks } = useUploadingStems({ trackId, useSelector })
-  if (!track) return []
 
   // Combine uploaded and uploading stems
   const combinedStems = [...stemTracks, ...uploadingTracks] as Stem[]
@@ -280,7 +286,7 @@ export const useDownloadTrackButtons = ({
   })
 
   // Make download original button
-  const originalTrackButton = makeDownloadOriginalButton({
+  const originalTrackButton = useMakeDownloadOriginalButton({
     following,
     isLoggedIn,
     isOwner,
@@ -289,6 +295,8 @@ export const useDownloadTrackButtons = ({
     stemButtonsLength: stemButtons.length,
     track
   })
+
+  if (!track) return []
 
   return [...(originalTrackButton ? [originalTrackButton] : []), ...stemButtons]
 }

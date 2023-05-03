@@ -13,8 +13,6 @@ export const SET_PERMALINK = 'CACHE/TRACKS/SET_PERMALINK'
 
 export const FETCH_COVER_ART = 'CACHE/TRACKS/FETCH_COVER_ART'
 
-export const CHECK_IS_DOWNLOADABLE = 'CACHE/TRACKS/CHECK_IS_DOWNLOADABLE'
-
 export function editTrack(trackId, formFields) {
   return { type: EDIT_TRACK, trackId, formFields }
 }
@@ -46,8 +44,3 @@ export function setPermalink(permalink: string, trackId: ID) {
 export function fetchCoverArt(trackId, size) {
   return { type: FETCH_COVER_ART, trackId, size }
 }
-
-export const checkIsDownloadable = (trackId) => ({
-  type: CHECK_IS_DOWNLOADABLE,
-  trackId
-})

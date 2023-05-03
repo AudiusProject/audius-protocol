@@ -16,8 +16,9 @@ class TrackDownload extends TrackDownloadBase {
         link.target = '_blank'
         link.download = filename
         link.click()
+      } else {
+        throw new Error('No document found')
       }
-      throw new Error('No document found')
     }
     downloadURL(response.url, filename)
   }

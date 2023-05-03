@@ -5,7 +5,6 @@ import {
   formatUrlName,
   accountSelectors,
   accountActions,
-  cacheTracksActions as tracksActions,
   cacheUsersSelectors,
   cacheActions,
   waitForAccount,
@@ -1035,10 +1034,6 @@ function* uploadSingleTrack(track) {
     fieldName: 'track_count',
     delta: 1
   })
-
-  if (confirmedTrack.download && confirmedTrack.download.is_downloadable) {
-    yield put(tracksActions.checkIsDownloadable(confirmedTrack.track_id))
-  }
 
   // If the hide remixes is turned on, send analytics event
   if (
