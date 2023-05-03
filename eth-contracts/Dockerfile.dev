@@ -12,6 +12,8 @@ COPY . .
 
 COPY package.json .
 RUN npm run postinstall
+RUN ls -al ~/.config/truffle-nodejs/config.json
+RUN chown $(whoami) ~/.config/truffle-nodejs/config.json
 
 ARG CONTENT_NODE_VERSION
 ARG DISCOVERY_NODE_VERSION

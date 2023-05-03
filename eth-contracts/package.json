@@ -5,11 +5,10 @@
   "author": "AudiusProject",
   "license": "Apache-2.0",
   "scripts": {
-    "ganache": "ganache -p 8546 -h 0.0.0.0 -l 8000000 -a 500 -k istanbul",
     "postinstall": "patch-package",
     "truffle:compile": "truffle compile",
     "truffle:migrate": "truffle migrate --reset --network development",
-    "truffle:console": "truffle console --network test",
+    "truffle:console": "truffle console --network development",
     "test": "truffle test test/*.test.js --network test",
     "test:random": "truffle test test/random/random.test.js --network development",
     "test:verbose": "truffle test test/*.test.js --network development --verbose-rpc",
