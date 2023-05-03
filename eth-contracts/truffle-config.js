@@ -76,6 +76,13 @@ module.exports = {
       // recommended as a ganache performance improvement https://github.com/trufflesuite/truffle/issues/3522
       disableConfirmationListener: true
     },
+    test: {
+      host: 'eth-ganache',
+      port: 8545,
+      network_id: '*',
+      gas: 8000000,
+      disableConfirmationListener: true
+    },
     predeploy: {
       host: 'localhost',
       port: 8545,
