@@ -4,7 +4,9 @@ const { time, expectEvent } = require('@openzeppelin/test-helpers')
 
 const MockWormhole = artifacts.require('MockWormhole')
 const WormholeClient = artifacts.require('WormholeClient')
-const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require(
+  'AudiusAdminUpgradeabilityProxy'
+)
 
 const governanceKey = web3.utils.utf8ToHex('Governance')
 const tokenRegKey = web3.utils.utf8ToHex('TokenKey')
@@ -13,10 +15,16 @@ const wormholeClientProxyKey = web3.utils.utf8ToHex('WormholeClientProxy')
 const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 
 contract('WormholeClient', async (accounts) => {
-  let registry, governance, token, wormholeClient0, wormholeClientProxy, wormholeClient
+  let registry,
+    governance,
+    token,
+    wormholeClient0,
+    wormholeClientProxy,
+    wormholeClient
   let mockWormhole
 
-  const [, proxyAdminAddress, proxyDeployerAddress, staker, newUpdateAddress] = accounts
+  const [, proxyAdminAddress, proxyDeployerAddress, staker, newUpdateAddress] =
+    accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
 
@@ -25,7 +33,11 @@ contract('WormholeClient', async (accounts) => {
   const votingQuorumPercent = 10
 
   beforeEach(async () => {
-    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
+    registry = await _lib.deployRegistry(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress
+    )
     governance = await _lib.deployGovernance(
       artifacts,
       proxyAdminAddress,
@@ -46,7 +58,9 @@ contract('WormholeClient', async (accounts) => {
     )
 
     // Register token
-    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
+    await registry.addContract(tokenRegKey, token.address, {
+      from: proxyDeployerAddress
+    })
 
     mockWormhole = await MockWormhole.new()
 
@@ -65,17 +79,23 @@ contract('WormholeClient', async (accounts) => {
     wormholeClient = await WormholeClient.at(wormholeClientProxy.address)
 
     // Register claimsManagerProxy
-    await registry.addContract(wormholeClientProxyKey, wormholeClientProxy.address, { from: proxyDeployerAddress })
+    await registry.addContract(
+      wormholeClientProxyKey,
+      wormholeClientProxy.address,
+      { from: proxyDeployerAddress }
+    )
   })
 
   it('fails when token is not a contract, init test', async () => {
-    const wormholeClient1 = await WormholeClient.new({ from: proxyDeployerAddress })
+    const wormholeClient1 = await WormholeClient.new({
+      from: proxyDeployerAddress
+    })
     const invalidWormholeClientInitializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address'],
       [accounts[5], mockWormhole.address]
     )
-    await _lib.assertRevert(
+    await _lib.assertNotStored(
       AudiusAdminUpgradeabilityProxy.new(
         wormholeClient1.address,
         governance.address,
@@ -86,13 +106,15 @@ contract('WormholeClient', async (accounts) => {
   })
 
   it('fails when wormhole is not a contract, init test', async () => {
-    const wormholeClient1 = await WormholeClient.new({ from: proxyDeployerAddress })
+    const wormholeClient1 = await WormholeClient.new({
+      from: proxyDeployerAddress
+    })
     const invalidWormholeClientInitializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address'],
       [token.address, accounts[5]]
     )
-    await _lib.assertRevert(
+    await _lib.assertNotStored(
       AudiusAdminUpgradeabilityProxy.new(
         wormholeClient1.address,
         governance.address,
@@ -110,18 +132,32 @@ contract('WormholeClient', async (accounts) => {
     const amount = 100
     const chainId = 1337
 
-    const fromAcctPrivKey = Buffer.from('76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e', 'hex')
+    const fromAcctPrivKey = Buffer.from(
+      '76195632b07afded1ae36f68635b6ff86791bd4579a27ca28ec7e539fed65c0e',
+      'hex'
+    )
     const fromAcct = '0xaaa30A4bB636F15be970f571BcBe502005E9D66b'
 
     const relayerAcct = accounts[6] // account that calls transferTokens
 
-    const recipient = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
+    const recipient = Buffer.from(
+      '0000000000000000000000000000000000000000000000000000000000000000',
+      'hex'
+    )
 
     await token.transfer(fromAcct, amount, { from: tokenOwnerAddress })
-    await _lib.permit(token, fromAcct, fromAcctPrivKey, wormholeClient.address, amount, relayerAcct)
+    await _lib.permit(
+      token,
+      fromAcct,
+      fromAcctPrivKey,
+      wormholeClient.address,
+      amount,
+      relayerAcct
+    )
 
     const nonce = (await wormholeClient.nonces(fromAcct)).toNumber()
-    const deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25 // sufficiently far in future
+    const deadline =
+      (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25 // sufficiently far in future
     const digest = _signatures.getTransferTokensDigest(
       'AudiusWormholeClient',
       wormholeClient.address,
@@ -185,16 +221,21 @@ contract('WormholeClient', async (accounts) => {
       { from: relayerAcct }
     )
 
-    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensTransferred', {
-      recipientChain: '1',
-      tokenChain: '2',
-      tokenDecimals: await token.decimals(),
-      token: web3.utils.padLeft(token.address, 64).toLowerCase(),
-      sender: web3.utils.padLeft(wormholeClient.address, 64).toLowerCase(),
-      recipient: `0x${recipient.toString('hex')}`,
-      amount: amount.toString(),
-      arbiterFee: '0',
-      nonce: nonce.toString()
-    })
+    await expectEvent.inTransaction(
+      tx.tx,
+      MockWormhole,
+      'LogTokensTransferred',
+      {
+        recipientChain: '1',
+        tokenChain: '2',
+        tokenDecimals: await token.decimals(),
+        token: web3.utils.padLeft(token.address, 64).toLowerCase(),
+        sender: web3.utils.padLeft(wormholeClient.address, 64).toLowerCase(),
+        recipient: `0x${recipient.toString('hex')}`,
+        amount: amount.toString(),
+        arbiterFee: '0',
+        nonce: nonce.toString()
+      }
+    )
   })
 })
