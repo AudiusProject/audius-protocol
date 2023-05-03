@@ -28,7 +28,6 @@ import {
   LocalStorage,
   solanaSelectors,
   deriveUserBankPubkey,
-  weiToAudio,
   convertWeiToWAudio
 } from '@audius/common'
 import { TransactionHandler } from '@audius/sdk/dist/core'
