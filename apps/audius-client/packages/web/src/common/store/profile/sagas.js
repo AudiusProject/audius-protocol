@@ -20,7 +20,8 @@ import {
   MAX_PROFILE_TOP_SUPPORTERS,
   collectiblesActions,
   processAndCacheUsers,
-  chatActions
+  chatActions,
+  FeatureFlags
 } from '@audius/common'
 import { merge } from 'lodash'
 import {
@@ -274,6 +275,8 @@ function* fetchProfileAsync(action) {
   const audiusBackendInstance = yield getContext('audiusBackendInstance')
   const isNativeMobile = yield getContext('isNativeMobile')
   const { getRemoteVar } = yield getContext('remoteConfigInstance')
+  const getFeatureEnabled = yield getContext('getFeatureEnabled')
+  const isChatEnabled = yield call(getFeatureEnabled, FeatureFlags.CHAT_ENABLED)
 
   try {
     let user
@@ -319,7 +322,9 @@ function* fetchProfileAsync(action) {
     }
 
     // Get chat permissions
-    yield put(fetchPermissions({ userIds: [user.user_id] }))
+    if (isChatEnabled) {
+      yield put(fetchPermissions({ userIds: [user.user_id] }))
+    }
 
     yield fork(fetchProfileCustomizedCollectibles, user)
     yield fork(fetchOpenSeaAssets, user)
