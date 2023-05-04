@@ -55,6 +55,7 @@ class EntityType(str, Enum):
     TRACK = "Track"
     USER = "User"
     USER_REPLICA_SET = "UserReplicaSet"
+    USER_WALLET = "UserWallet"
     FOLLOW = "Follow"
     SAVE = "Save"
     REPOST = "Repost"
@@ -64,13 +65,6 @@ class EntityType(str, Enum):
     PLAYLIST_SEEN = "PlaylistSeen"
     APP_DELEGATE = "AppDelegate"
     DELEGATION = "Delegation"
-
-    def __str__(self) -> str:
-        return str.__str__(self)
-
-
-class EntitySpecialFetchType(str, Enum):
-    USER_BY_WALLET = "UserByWallet"
 
     def __str__(self) -> str:
         return str.__str__(self)

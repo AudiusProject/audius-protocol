@@ -2,12 +2,7 @@ import json
 from typing import Optional, TypedDict, Union, cast
 
 from src.models.delegates.delegation import Delegation
-from src.tasks.entity_manager.utils import (
-    Action,
-    EntitySpecialFetchType,
-    EntityType,
-    ManageEntityParameters,
-)
+from src.tasks.entity_manager.utils import Action, EntityType, ManageEntityParameters
 from src.utils.indexing_errors import EntityMissingRequiredFieldError
 from src.utils.model_nullable_validator import all_required_fields_present
 from src.utils.structured_logger import StructuredLogger
@@ -70,7 +65,7 @@ def validate_delegation_tx(
             )
         if (
             metadata["delegate_address"].lower()
-            not in params.existing_records[EntitySpecialFetchType.USER_BY_WALLET]
+            not in params.existing_records[EntityType.USER_WALLET]
             and metadata["delegate_address"].lower()
             not in params.existing_records[EntityType.APP_DELEGATE]
         ):
@@ -127,10 +122,7 @@ def create_delegation(params: ManageEntityParameters):
         raise Exception("Invalid Delegation Transaction, unable to parse metadata")
     validate_delegation_tx(params, metadata)
     user_id = params.user_id
-    if (
-        metadata["delegate_address"]
-        in params.existing_records[EntitySpecialFetchType.USER_BY_WALLET]
-    ):
+    if metadata["delegate_address"] in params.existing_records[EntityType.USER_WALLET]:
         delegate_type = "user"
     else:
         delegate_type = "app"

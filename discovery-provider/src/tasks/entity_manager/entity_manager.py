@@ -46,7 +46,6 @@ from src.tasks.entity_manager.utils import (
     MANAGE_ENTITY_EVENT_TYPE,
     Action,
     EntitiesToFetchDict,
-    EntitySpecialFetchType,
     EntityType,
     ExistingRecordDict,
     ManageEntityParameters,
@@ -357,7 +356,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
                         entities_to_fetch[EntityType.APP_DELEGATE].add(
                             raw_delegate_address.lower()
                         )
-                        entities_to_fetch[EntitySpecialFetchType.USER_BY_WALLET].add(
+                        entities_to_fetch[EntityType.USER_WALLET].add(
                             raw_delegate_address.lower()
                         )
                     else:
@@ -386,10 +385,7 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
                 for track in tracks:
                     entities_to_fetch[EntityType.TRACK].add(track["track"])
 
-                if (
-                    entity_type == EntityType.TRACK
-                    and action == Action.CREATE
-                ):
+                if entity_type == EntityType.TRACK and action == Action.CREATE:
                     user_id = metadata[cid].get("ai_attribution_user_id")
                     if user_id:
                         entities_to_fetch[EntityType.USER].add(user_id)
@@ -441,19 +437,17 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.USER] = {user.user_id: user for user in users}
 
     # USERS BY WALLET
-    if entities_to_fetch[EntitySpecialFetchType.USER_BY_WALLET]:
+    if entities_to_fetch[EntityType.USER_WALLET]:
         users_by_wallet: List[User] = (
             session.query(User)
             .filter(
-                func.lower(User.wallet).in_(
-                    entities_to_fetch[EntitySpecialFetchType.USER_BY_WALLET]
-                ),
+                func.lower(User.wallet).in_(entities_to_fetch[EntityType.USER_WALLET]),
                 User.is_current == True,
             )
             .all()
         )
-        existing_entities[EntitySpecialFetchType.USER_BY_WALLET] = {
-            (cast(str, user.wallet)).lower(): user for user in users_by_wallet
+        existing_entities[EntityType.USER_WALLET] = {
+            (cast(str, user.wallet)).lower(): user.user_id for user in users_by_wallet
         }
 
     # FOLLOWS

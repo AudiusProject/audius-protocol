@@ -40,15 +40,6 @@ def test_index_delegation(app, mocker):
         web3 = Web3()
         update_task = UpdateTask(None, web3, None)
 
-    """"
-    const resp = await this.manageEntity({
-        userId,
-        entityType: EntityType.DELEGATION,
-        entityId: 0,
-        action: Action.CREATE,
-        metadataMultihash: ''
-      })
-    """
     tx_receipts = {
         "CreateDelegationTx1": [
             {
