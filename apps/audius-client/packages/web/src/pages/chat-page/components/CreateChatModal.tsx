@@ -3,10 +3,10 @@ import { useCallback, useEffect } from 'react'
 import {
   accountSelectors,
   chatActions,
-  mutualsUserListActions,
-  mutualsUserListSelectors,
-  MUTUALS_USER_LIST_TAG,
-  userListActions
+  userListActions,
+  FOLLOWERS_USER_LIST_TAG,
+  followersUserListActions,
+  followersUserListSelectors
 } from '@audius/common'
 import { IconCompose } from '@audius/stems'
 import { useDispatch } from 'react-redux'
@@ -31,13 +31,13 @@ export const CreateChatModal = () => {
   const [isVisible] = useModalState(CREATE_CHAT_MODAL)
 
   const { userIds, loading, hasMore } = useSelector(
-    mutualsUserListSelectors.getUserList
+    followersUserListSelectors.getUserList
   )
 
   const loadMore = useCallback(() => {
     if (currentUser) {
-      dispatch(mutualsUserListActions.setMutuals(currentUser?.user_id))
-      dispatch(userListActions.loadMore(MUTUALS_USER_LIST_TAG))
+      dispatch(followersUserListActions.setFollowers(currentUser?.user_id))
+      dispatch(userListActions.loadMore(FOLLOWERS_USER_LIST_TAG))
     }
   }, [dispatch, currentUser])
 
