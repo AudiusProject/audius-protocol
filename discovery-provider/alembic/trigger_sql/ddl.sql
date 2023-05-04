@@ -146,7 +146,7 @@ COMMIT;
 -- 5/4/23: strip newline for cid
 BEGIN;
   UPDATE "tracks"
-  SET "track_cid" = regexp_replace(trim("track_cid"), E'\\s+', ' ', 'g')
+  SET "track_cid" = regexp_replace(trim("track_cid"), E'\\s+', '', 'g')
   WHERE is_current = true AND LENGTH(track_cid) = 47 AND track_cid LIKE 'Qm%';
 COMMIT;
 
