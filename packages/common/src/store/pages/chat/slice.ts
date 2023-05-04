@@ -311,7 +311,7 @@ const slice = createSlice({
       if (state.messages[chatId] && state.messages[chatId].ids.length > 0) {
         const prevLatestMessageId = state.messages[chatId].ids[0]
         const prevLatestMessage = getMessage(
-          state.chats[chatId],
+          state.messages[chatId],
           prevLatestMessageId
         )!
         const prevMsgHasTail = hasTail(prevLatestMessage, message)
