@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 import urllib.parse
 from typing import List
 from urllib.parse import urljoin
@@ -444,7 +445,6 @@ class TrackStream(Resource):
             content_nodes = (
                 redis.get(CONTENT_PEERS_REDIS_KEY).decode("utf-8").split(",")
             )
-            # TODO: Implement rendezvous to load balance instead of always using node at index 0 below
         elif info["creator_nodes"]:
             content_nodes = info["creator_nodes"].split(",")
         else:
@@ -474,7 +474,8 @@ class TrackStream(Resource):
         if filename:
             path = f"{path}&filename={filename}"
 
-        stream_url = urljoin(content_nodes[0], path)
+        content_node_idx = random.randint(0, len(content_nodes) - 1)
+        stream_url = urljoin(content_nodes[content_node_idx], path)
 
         return stream_url
 
