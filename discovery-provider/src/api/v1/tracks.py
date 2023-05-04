@@ -437,9 +437,7 @@ class TrackStream(Resource):
             )
             abort_not_found(track_id, ns)
 
-        is_storage_v2 = not (
-            len(track["track_cid"]) == 46 and track["track_cid"].startswith("Qm")
-        )
+        is_storage_v2 = not (len(track_cid) == 46 and track_cid.startswith("Qm"))
         if is_storage_v2:
             redis = redis_connection.get_redis()
             content_nodes = (
