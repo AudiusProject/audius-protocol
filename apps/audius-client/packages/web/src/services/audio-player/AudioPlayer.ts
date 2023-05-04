@@ -110,14 +110,6 @@ export class AudioPlayer {
 
     this.audio.onerror = (e) => {
       this.onError(AudioError.AUDIO, e)
-
-      // Handle audio errors by trying to nudge the playhead and re attach media.
-      // Simply nudging the media doesn't work.
-      //
-      // This kind of error only seems to manifest on chrome because, as they say
-      // "We tend to be more strict about decoding errors than other browsers.
-      // Ignoring them will lead to a/v sync issues."
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=1071899
     }
   }
 
@@ -130,9 +122,17 @@ export class AudioPlayer {
       // TODO: Test to make sure that this doesn't break anything
       this.stop()
       const prevVolume = this.audio.volume
+
+      // Remove the current audio element to fix an issue in chrome
+      // where playing tracks quickly in succession breaks
       if (this.audio) {
+        // Remove listeners first so src = '' does not throw an error
+        this.audio.removeAllListeners?.()
+
+        this.audio.src = ''
         this.audio.remove()
       }
+
       this.audio = new Audio()
 
       // Connect this.audio to the window so that 3P's can interact with it.
