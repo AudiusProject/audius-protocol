@@ -430,7 +430,9 @@ export const ChatScreen = () => {
           }}
         >
           <KeyboardAvoidingView
-            keyboardShowingOffset={PLAY_BAR_HEIGHT}
+            keyboardShowingOffset={
+              hasCurrentlyPlayingTrack ? PLAY_BAR_HEIGHT : 0
+            }
             style={[
               styles.keyboardAvoiding,
               hasCurrentlyPlayingTrack ? { bottom: PLAY_BAR_HEIGHT } : null
