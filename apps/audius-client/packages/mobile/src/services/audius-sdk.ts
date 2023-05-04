@@ -40,6 +40,12 @@ const initSdk = async () => {
             publicKey,
             true
           )
+        },
+        getAddress: async () => {
+          await waitForLibsInit()
+          return (
+            audiusLibs?.hedgehog?.getWallet()?.getAddress().toString() ?? ''
+          )
         }
       }
     }
