@@ -241,6 +241,8 @@ export function* fetchLocalAccountAsync() {
 
 function* cacheAccount(account) {
   const localStorage = yield getContext('localStorage')
+  const getFeatureEnabled = yield getContext('getFeatureEnabled')
+  const isChatEnabled = yield call(getFeatureEnabled, FeatureFlags.CHAT_ENABLED)
   const collections = account.playlists || []
 
   yield put(
@@ -260,8 +262,10 @@ function* cacheAccount(account) {
   yield put(fetchAccountSucceeded(formattedAccount))
 
   // Fetch user's chat blockee and blocker list after fetching their account
-  yield put(fetchBlockees())
-  yield put(fetchBlockers())
+  if (isChatEnabled) {
+    yield put(fetchBlockees())
+    yield put(fetchBlockers())
+  }
 }
 
 // Pull from redux cache and persist to local storage cache
