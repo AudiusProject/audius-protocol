@@ -141,3 +141,12 @@ COMMIT;
 BEGIN;
     create index if not exists tracks_ai_attribution_user_id on tracks (ai_attribution_user_id, is_current) where is_current = true and ai_attribution_user_id is not null;
 COMMIT;
+
+
+-- 5/4/23: strip newline for cid
+BEGIN;
+  UPDATE "tracks"
+  SET "track_cid" = regexp_replace(trim("track_cid"), E'\\s+', ' ', 'g')
+  WHERE is_current = true AND LENGTH(track_cid) = 47 AND track_cid LIKE 'Qm%';
+COMMIT;
+
