@@ -445,8 +445,10 @@ class TrackStream(Resource):
             content_nodes = (
                 redis.get(CONTENT_PEERS_REDIS_KEY).decode("utf-8").split(",")
             )
+            content_node = random.choice(content_nodes)
         elif info["creator_nodes"]:
             content_nodes = info["creator_nodes"].split(",")
+            content_node = content_nodes[0]
         else:
             abort_not_found(track_id, ns)
 
@@ -474,8 +476,7 @@ class TrackStream(Resource):
         if filename:
             path = f"{path}&filename={filename}"
 
-        content_node_idx = random.randint(0, len(content_nodes) - 1)
-        stream_url = urljoin(content_nodes[content_node_idx], path)
+        stream_url = urljoin(content_node, path)
 
         return stream_url
 
