@@ -55,11 +55,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     const total_start = new Date().getTime()
 
     // use user_id and created_at index for perf
-    let lastUser = {
-        userId: 0,
-        // set initial to really far back
-        createdAt: '2017-04-30T05:52:55.000Z'
-      }
+    let lastUser = 0
     const total = totalCurrentUsers + pageCount
 
     while (offset < total) {
@@ -76,10 +72,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       if (lastUserFromPage === undefined) {
         break
       }
-      lastUser = {
-        userId: lastUserFromPage.user_id,
-        createdAt: lastUserFromPage.created_at
-      }
+      lastUser = lastUserFromPage.user_id
 
       const validReceiverUserIds = res.map((user) => user.user_id)
       if (!isDryRun) {
@@ -179,13 +172,12 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
  * @param page_count how many records are returned in (default) ascending order after the offset
  * @returns a minified version of UserRow for usage in announcements
  */
-export const fetchUsersPage = async (dnDb: Knex, lastUser: { userId: number, createdAt: string}, pageCount: number): Promise<{ user_id: number; name: string; is_deactivated: boolean, created_at: string }[]> =>
+export const fetchUsersPage = async (dnDb: Knex, lastUser: number, pageCount: number): Promise<{ user_id: number; name: string; is_deactivated: boolean }[]> =>
     await dnDb
-      .select('name', 'is_deactivated', 'user_id', 'created_at')
+      .select('name', 'is_deactivated', 'user_id')
       .from<UserRow>('users')
-      .where('user_id', '>', lastUser.userId)
-      .andWhere('created_at', '>', lastUser.createdAt)
+      .where('user_id', '>', lastUser)
       .andWhere('is_current', true)
       .andWhere('is_deactivated', false)
       .limit(pageCount)
-      .orderBy(['user_id', 'created_at'])
+      .orderBy('user_id')
