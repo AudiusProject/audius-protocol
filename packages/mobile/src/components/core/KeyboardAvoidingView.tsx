@@ -79,8 +79,8 @@ export const KeyboardAvoidingView = ({
       handleKeyboardWillHide
     )
     return () => {
-      Keyboard.removeSubscription(showSubscription)
-      Keyboard.removeSubscription(hideSubscription)
+      showSubscription.remove()
+      hideSubscription.remove()
     }
   }, [handleKeyboardWillHide, handleKeyboardWillShow])
 
