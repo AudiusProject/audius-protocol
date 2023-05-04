@@ -213,7 +213,6 @@ export class AudioPlayer {
       this.stop()
       const prevVolume = this.audio.volume
       if (this.audio) {
-        this.audio.src = ''
         this.audio.remove()
       }
       this.audio = new Audio()
