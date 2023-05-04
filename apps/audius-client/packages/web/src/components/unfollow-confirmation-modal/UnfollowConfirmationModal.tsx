@@ -49,7 +49,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
         setNotificationSubscription(
           id,
           /** isSubscribed */ false,
-          /* update */ true
+          /* update */ false
         )
       )
     },

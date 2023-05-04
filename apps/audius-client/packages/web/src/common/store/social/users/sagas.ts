@@ -8,7 +8,6 @@ import {
   cacheUsersSelectors,
   getContext,
   usersSocialActions as socialActions,
-  FeatureFlags,
   profilePageActions
 } from '@audius/common'
 import { call, select, takeEvery, put } from 'typed-redux-saga'
@@ -36,7 +35,6 @@ export function* followUser(
   action: ReturnType<typeof socialActions.followUser>
 ) {
   yield* waitForWrite()
-  const getFeatureEnabled = yield* getContext('getFeatureEnabled')
 
   const accountId = yield* select(getUserId)
   if (!accountId) {
@@ -78,19 +76,13 @@ export function* followUser(
   yield* put(event)
 
   yield* call(confirmFollowUser, action.userId, accountId)
-  const shouldAutoSubscribe = yield* call(
-    getFeatureEnabled,
-    FeatureFlags.AUTO_SUBSCRIBE_ON_FOLLOW
-  )
-  if (shouldAutoSubscribe) {
-    yield* put(
-      setNotificationSubscription(
-        action.userId,
-        /* isSubscribed */ true,
-        /* update */ true
-      )
+  yield* put(
+    setNotificationSubscription(
+      action.userId,
+      /* isSubscribed */ true,
+      /* update */ false
     )
-  }
+  )
 }
 
 export function* confirmFollowUser(userId: ID, accountId: ID) {
@@ -206,7 +198,7 @@ export function* unfollowUser(
     setNotificationSubscription(
       action.userId,
       /* isSubscribed */ false,
-      /* update */ true
+      /* update */ false
     )
   )
 }

@@ -78,7 +78,7 @@ export const ArtistCard = (props: ArtistCardProps) => {
 
   const handleUnfollow = useCallback(() => {
     dispatch(unfollowUser(user_id, FollowSource.HOVER_TILE))
-    dispatch(setNotificationSubscription(user_id, false, true))
+    dispatch(setNotificationSubscription(user_id, false, false))
   }, [dispatch, user_id])
 
   return (
