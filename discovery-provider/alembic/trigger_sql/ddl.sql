@@ -122,7 +122,6 @@ begin;
   );
 commit;
 
-
 -- 4/26/23: add AI columns
 BEGIN;
     DO $$ BEGIN
@@ -150,3 +149,20 @@ BEGIN;
   WHERE is_current = true AND LENGTH(track_cid) = 47 AND track_cid LIKE 'Qm%';
 COMMIT;
 
+-- 5/4/23: create delegations table
+BEGIN;
+  create table public.delegations (
+    shared_address varchar not null,
+    blockhash varchar references blocks(blockhash),
+    blocknumber integer references blocks(number),
+    delegate_address varchar not null,
+    user_id integer not null,
+    is_revoked boolean not null default false,
+    is_current boolean not null,
+    is_approved boolean not null default false,
+    updated_at timestamp not null,
+    created_at timestamp not null,
+    txhash varchar not null,
+    primary key (shared_address, is_current, txhash)
+  );
+COMMIT;
