@@ -429,7 +429,7 @@ class TrackStream(Resource):
         if not track:
             abort_not_found(track_id, ns)
 
-        track_cid = track["track_cid"]
+        track_cid = track["track_cid"].strip()
         if not track_cid:
             logger.error(
                 f"tracks.py | stream | We should not reach here! Track with id {track_id} has no track_cid. Please investigate."
@@ -437,7 +437,7 @@ class TrackStream(Resource):
             abort_not_found(track_id, ns)
 
         is_storage_v2 = not (
-            len(track["track_cid"]) == 46 and track["track_cid"].startswith("Qm")
+            len(track_cid) == 46 and track_cid.startswith("Qm")
         )
         if is_storage_v2:
             redis = redis_connection.get_redis()
