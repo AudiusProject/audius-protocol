@@ -27,7 +27,7 @@ class RevokeAppDelegateMetadata(TypedDict):
 
 def get_app_delegate_metadata_from_raw(
     raw_metadata: Optional[str],
-) -> Optional[Union[CreateAppDelegateMetadata, RevokeAppDelegateMetadata]]:
+) -> Optional[CreateAppDelegateMetadata]:
     metadata: CreateAppDelegateMetadata = {
         "address": None,
         "name": None,
