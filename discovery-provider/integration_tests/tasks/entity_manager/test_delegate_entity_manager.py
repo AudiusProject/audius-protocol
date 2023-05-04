@@ -406,5 +406,5 @@ def test_index_delegate(app, mocker):
                 and updated.is_personal_access
                 == expected_delegate["is_personal_access"]
             )
-            assert old.is_revoked == False and updated.is_revoked == True
+            assert old.is_delete == False and updated.is_delete == True
             assert old.blocknumber == 0 and updated.blocknumber == 1

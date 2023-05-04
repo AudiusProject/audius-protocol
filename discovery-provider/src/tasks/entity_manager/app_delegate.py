@@ -25,9 +25,9 @@ class RevokeAppDelegateMetadata(TypedDict):
     address: Union[str, None]
 
 
-def get_create_app_delegate_metadata_from_raw(
+def get_app_delegate_metadata_from_raw(
     raw_metadata: Optional[str],
-) -> Optional[CreateAppDelegateMetadata]:
+) -> Optional[Union[CreateAppDelegateMetadata, RevokeAppDelegateMetadata]]:
     metadata: CreateAppDelegateMetadata = {
         "address": None,
         "name": None,
@@ -41,6 +41,8 @@ def get_create_app_delegate_metadata_from_raw(
                 metadata["address"] = raw_address.lower()
             else:
                 metadata["address"] = None
+
+            # CREATE only fields:
             metadata["name"] = json_metadata.get("name", None)
             metadata["is_personal_access"] = json_metadata.get(
                 "is_personal_access", None
@@ -48,30 +50,7 @@ def get_create_app_delegate_metadata_from_raw(
             return metadata
         except Exception as e:
             logger.error(
-                f"entity_manager | delegate.py | Unable to parse delegate metadata (create) while indexing: {e}"
-            )
-            return None
-    return metadata
-
-
-def get_delete_app_delegate_metadata_from_raw(
-    raw_metadata: Optional[str],
-) -> Optional[RevokeAppDelegateMetadata]:
-    metadata: RevokeAppDelegateMetadata = {
-        "address": None,
-    }
-    if raw_metadata:
-        try:
-            json_metadata = json.loads(raw_metadata)
-            raw_address = json_metadata.get("address", None)
-            if raw_address:
-                metadata["address"] = raw_address.lower()
-            else:
-                metadata["address"] = None
-            return metadata
-        except Exception as e:
-            logger.error(
-                f"entity_manager | delegate.py | Unable to parse delegate metadata (revoke) while indexing: {e}"
+                f"entity_manager | delegate.py | Unable to parse delegate metadata while indexing: {e}"
             )
             return None
     return metadata
@@ -84,16 +63,30 @@ def validate_app_delegate_tx(params: ManageEntityParameters, metadata):
         raise Exception(
             f"Invalid AppDelegate Transaction, wrong entity type {params.entity_type}"
         )
+    if not metadata["address"]:
+        raise Exception(
+            f"Invalid {params.action} AppDelegate Transaction, address is required and was not provided"
+        )
+    if not user_id:
+        raise Exception(
+            f"Invalid {params.action} AppDelegate Transaction, user id is required and was not provided"
+        )
+    if user_id not in params.existing_records[EntityType.USER]:
+        raise Exception(
+            f"Invalid {params.action} AppDelegate Transaction, user id {user_id} does not exist"
+        )
+    if not params.existing_records[EntityType.USER][user_id].wallet:
+        raise Exception(
+            f"Programming error while indexing {params.action} AppDelegate Transaction, user wallet missing"
+        )
+    if (
+        params.existing_records[EntityType.USER][user_id].wallet.lower()
+        != params.signer.lower()
+    ):
+        raise Exception(
+            f"Invalid {params.action} AppDelegate Transaction, user does not match signer"
+        )
     if params.action == Action.DELETE:
-        if not metadata["address"]:
-            raise Exception(
-                "Invalid Delete AppDelegate Transaction, address is required and was not provided"
-            )
-        if not user_id:
-            raise Exception(
-                "Invalid Delete AppDelegate Transaction, user id is required and was not provided"
-            )
-
         if metadata["address"] not in params.existing_records[EntityType.APP_DELEGATE]:
             raise Exception(
                 f"Invalid Delete AppDelegate Transaction, delegate with address {metadata['address']} does not exist"
@@ -105,22 +98,7 @@ def validate_app_delegate_tx(params: ManageEntityParameters, metadata):
             raise Exception(
                 f"Invalid Delete AppDelegate Transaction, user id {user_id} does not match given delegate address"
             )
-        if not params.existing_records[EntityType.USER][user_id].wallet:
-            raise Exception(
-                f"Programming error while indexing {params.action} AppDelegate Transaction, user wallet missing"
-            )
-        if (
-            params.existing_records[EntityType.USER][user_id].wallet.lower()
-            != params.signer.lower()
-        ):
-            raise Exception(
-                f"Invalid {params.action} AppDelegate Transaction, user does not match signer"
-            )
     elif params.action == Action.CREATE:
-        if not metadata["address"]:
-            raise Exception(
-                "Invalid Create AppDelegate Transaction, address is required and was not provided"
-            )
         if not metadata["name"]:
             raise Exception(
                 "Invalid Create AppDelegate Transaction, name is required and was not provided"
@@ -129,28 +107,11 @@ def validate_app_delegate_tx(params: ManageEntityParameters, metadata):
             raise Exception(
                 f"Invalid Create AppDelegate Transaction, address {metadata['address']} already exists"
             )
-        if not user_id:
-            raise Exception(
-                "Invalid Create AppDelegate Transaction, user id is required and was not provided"
-            )
-        if user_id not in params.existing_records[EntityType.USER]:
-            raise Exception(
-                f"Invalid Create AppDelegate Transaction, user id {user_id} does not exist"
-            )
-        if not isinstance(metadata["is_personal_access"], bool):
-            raise Exception(
-                "Invalid Create AppDelegate Transaction, is_personal_access must be a boolean (or empty)"
-            )
-        if not params.existing_records[EntityType.USER][user_id].wallet:
-            raise Exception(
-                f"Programming error while indexing {params.action} AppDelegate Transaction, user wallet missing"
-            )
-        if (
-            params.existing_records[EntityType.USER][user_id].wallet.lower()
-            != params.signer.lower()
+        if metadata["is_personal_access"] != None and not isinstance(
+            metadata["is_personal_access"], bool
         ):
             raise Exception(
-                f"Invalid {params.action} AppDelegate Transaction, user does not match signer"
+                "Invalid Create AppDelegate Transaction, is_personal_access must be a boolean (or empty)"
             )
     else:
         raise Exception(
@@ -159,7 +120,7 @@ def validate_app_delegate_tx(params: ManageEntityParameters, metadata):
 
 
 def create_app_delegate(params: ManageEntityParameters):
-    metadata = get_create_app_delegate_metadata_from_raw(params.metadata_cid)
+    metadata = get_app_delegate_metadata_from_raw(params.metadata_cid)
     if not metadata:
         raise Exception("Invalid AppDelegate Transaction, unable to parse metadata")
     validate_app_delegate_tx(params, metadata)
@@ -188,7 +149,7 @@ def create_app_delegate(params: ManageEntityParameters):
 
 
 def delete_app_delegate(params: ManageEntityParameters):
-    metadata = get_delete_app_delegate_metadata_from_raw(params.metadata_cid)
+    metadata = get_app_delegate_metadata_from_raw(params.metadata_cid)
     if not metadata:
         raise Exception(
             "Invalid Revoke AppDelegate Transaction, unable to parse metadata"
@@ -207,7 +168,7 @@ def delete_app_delegate(params: ManageEntityParameters):
         params.block_datetime,
     )
 
-    revoked_delegate.is_revoked = True
+    revoked_delegate.is_delete = True
 
     validate_app_delegate_record(revoked_delegate)
     params.add_app_delegate_record(address, revoked_delegate)
