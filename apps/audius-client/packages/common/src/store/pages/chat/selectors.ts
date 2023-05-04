@@ -111,6 +111,10 @@ export const getOtherChatUsers = (state: CommonState, chatId?: string) => {
   return getOtherChatUsersFromChat(state, chat)
 }
 
+export const getSingleOtherChatUser = (state: CommonState, chatId?: string) => {
+  return getOtherChatUsers(state, chatId)[0]
+}
+
 export const getChatMessageByIndex = (
   state: CommonState,
   chatId: string,

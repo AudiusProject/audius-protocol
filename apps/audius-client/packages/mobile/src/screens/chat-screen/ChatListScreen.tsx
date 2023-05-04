@@ -33,14 +33,15 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     display: 'flex',
     flexGrow: 1
   },
-  spinnerContainer: {
-    height: spacing(28),
-    padding: spacing(10)
+  loadingSpinnerContainer: {
+    display: 'flex',
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   loadingSpinner: {
-    height: spacing(20),
-    width: spacing(20),
-    alignSelf: 'center'
+    height: spacing(10),
+    width: spacing(10)
   },
   listContainer: {
     display: 'flex',
@@ -141,14 +142,14 @@ export const ChatListScreen = () => {
             <FlatList
               data={chats}
               contentContainerStyle={styles.listContainer}
-              renderItem={({ item, index }) => <ChatListItem chat={item} />}
-              keyExtractor={(item) => item.chat_id}
+              renderItem={({ item }) => <ChatListItem chatId={item.chat_id} />}
+              keyExtractor={(chat) => chat.chat_id}
               ListEmptyComponent={() => (
                 <ChatsEmpty onPress={navigateToChatUserList} />
               )}
             />
           ) : (
-            <View style={styles.spinnerContainer}>
+            <View style={styles.loadingSpinnerContainer}>
               <LoadingSpinner style={styles.loadingSpinner} />
             </View>
           )}

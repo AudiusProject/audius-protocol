@@ -9,8 +9,8 @@ import {
   decodeHashId,
   encodeHashId,
   Status,
-  playerSelectors,
-  isEarliestUnread
+  isEarliestUnread,
+  playerSelectors
 } from '@audius/common'
 import { Portal } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
@@ -68,8 +68,11 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   keyboardAvoiding: {
     justifyContent: 'space-between'
   },
+  // Weird RN bug? flex: 1 did not appear to set flexGrow: 1 as expected,
+  // so had to set manually instead.
   listContainer: {
-    flex: 1
+    flexGrow: 1,
+    flexShrink: 1
   },
   listContentContainer: {
     paddingHorizontal: spacing(6),
@@ -146,6 +149,16 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
     paddingHorizontal: spacing(2),
     paddingVertical: spacing(1),
     borderRadius: spacing(0.5)
+  },
+  loadingSpinnerContainer: {
+    display: 'flex',
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  loadingSpinner: {
+    height: spacing(10),
+    width: spacing(10)
   }
 }))
 
@@ -182,10 +195,11 @@ export const ChatScreen = () => {
   )
   const unreadCount = chat?.unread_message_count ?? 0
   const isLoading =
-    chat?.messagesStatus === Status.LOADING && chatMessages?.length === 0
+    (chat?.messagesStatus ?? Status.LOADING) === Status.LOADING &&
+    chatMessages?.length === 0
   const popupMessageId = useSelector(getReactionsPopupMessageId)
   const popupMessage = useSelector((state) =>
-    getChatMessageById(state, chatId, popupMessageId ?? '')
+    getChatMessageById(state, chatId ?? '', popupMessageId ?? '')
   )
 
   // A ref so that the unread separator doesn't disappear immediately when the chat is marked as read
@@ -422,30 +436,32 @@ export const ChatScreen = () => {
               hasCurrentlyPlayingTrack ? { bottom: PLAY_BAR_HEIGHT } : null
             ]}
           >
-            {!isLoading ? (
-              chatMessages?.length > 0 ? (
-                <View style={styles.listContainer}>
-                  <FlatList
-                    contentContainerStyle={styles.listContentContainer}
-                    data={chatMessages}
-                    keyExtractor={(message) => message.message_id}
-                    renderItem={renderItem}
-                    onEndReached={handleScrollToTop}
-                    inverted
-                    initialNumToRender={chatMessages?.length}
-                    ref={flatListRef}
-                    onScrollToIndexFailed={handleScrollToIndexFailed}
-                    refreshing={chat?.messagesStatus === Status.LOADING}
-                    maintainVisibleContentPosition={
-                      maintainVisibleContentPosition
-                    }
-                  />
-                </View>
-              ) : (
-                <EmptyChatMessages />
-              )
+            {chat?.messagesStatus === Status.SUCCESS &&
+            chatMessages?.length === 0 ? (
+              <EmptyChatMessages />
+            ) : null}
+            {isLoading ? (
+              <View style={styles.loadingSpinnerContainer}>
+                <LoadingSpinner style={styles.loadingSpinner} />
+              </View>
             ) : (
-              <LoadingSpinner />
+              <View style={styles.listContainer}>
+                <FlatList
+                  contentContainerStyle={styles.listContentContainer}
+                  data={chatMessages}
+                  keyExtractor={(message) => message.message_id}
+                  renderItem={renderItem}
+                  onEndReached={handleScrollToTop}
+                  inverted
+                  initialNumToRender={chatMessages?.length}
+                  ref={flatListRef}
+                  onScrollToIndexFailed={handleScrollToIndexFailed}
+                  refreshing={chat?.messagesStatus === Status.LOADING}
+                  maintainVisibleContentPosition={
+                    maintainVisibleContentPosition
+                  }
+                />
+              </View>
             )}
 
             <View
