@@ -14,7 +14,7 @@ import {
 } from '@audius/common'
 import { Portal } from '@gorhom/portal'
 import { useFocusEffect } from '@react-navigation/native'
-import { View, Text, Pressable, FlatList } from 'react-native'
+import { Keyboard, View, Text, Pressable, FlatList } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
 import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
@@ -292,6 +292,7 @@ export const ChatScreen = () => {
   )
 
   const handleTopRightPress = () => {
+    Keyboard.dismiss()
     dispatch(
       setVisibility({
         drawer: 'ChatActions',
