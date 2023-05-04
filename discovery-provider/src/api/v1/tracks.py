@@ -430,7 +430,7 @@ class TrackStream(Resource):
         if not track:
             abort_not_found(track_id, ns)
 
-        track_cid = track["track_cid"]
+        track_cid = track["track_cid"].strip()
         if not track_cid:
             logger.error(
                 f"tracks.py | stream | We should not reach here! Track with id {track_id} has no track_cid. Please investigate."
