@@ -59,7 +59,6 @@ def test_reaction_notification(app):
             .order_by(asc(Notification.slot))
             .all()
         )
-        logger.info(f"asdf notifications: {notifications}")
 
         assert len(notifications) == 2
         assert notifications[0].specifier == "3"
@@ -83,6 +82,20 @@ def test_reaction_notification(app):
             "tip_amount": "200000000",
         }
         assert notifications[0].user_ids == [2]
+
+        assert notifications[1].type == "reaction"
+        assert notifications[1].slot == 2
+        assert notifications[1].blocknumber == None
+        assert notifications[1].data == {
+            "reacted_to": "sig_2",
+            "reaction_type": "tip",
+            "sender_wallet": "0x2",
+            "reaction_value": 2,
+            "receiver_user_id": 4,
+            "sender_user_id": 3,
+            "tip_amount": "300000000",
+        }
+        assert notifications[1].user_ids == [3]
 
         notifications: List[Notification] = (
             session.query(Notification)
