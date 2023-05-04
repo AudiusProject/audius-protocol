@@ -148,16 +148,14 @@ export function setNotificationSubscription(
   userId: ID,
   isSubscribed: boolean,
   update = false,
-  handle?: string,
-  onFollow = true
+  handle?: string
 ) {
   return {
     type: SET_NOTIFICATION_SUBSCRIPTION,
     userId,
     isSubscribed,
     update,
-    handle,
-    onFollow
+    handle
   }
 }
 

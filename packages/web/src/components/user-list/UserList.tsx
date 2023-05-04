@@ -153,7 +153,7 @@ function mapDispatchToProps(
         dispatch(unfollowConfirmationActions.setOpen(userId))
       } else {
         dispatch(socialActions.unfollowUser(userId, FollowSource.USER_LIST))
-        dispatch(setNotificationSubscription(userId, false, true))
+        dispatch(setNotificationSubscription(userId, false, false))
       }
     },
     onClickArtistName: (handle: string) =>

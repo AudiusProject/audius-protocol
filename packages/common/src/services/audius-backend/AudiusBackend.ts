@@ -3054,93 +3054,16 @@ export const audiusBackend = ({
     const account = audiusLibs.Account.getCurrentUser()
     if (!account) return
 
-    const isreadSubscribersFromDiscoveryEnabled =
-      (await getFeatureEnabled(
-        FeatureFlags.READ_SUBSCRIBERS_FROM_DISCOVERY_ENABLED
-      )) ?? false
-
-    if (isreadSubscribersFromDiscoveryEnabled) {
-      // Read subscribers from discovery
-      try {
-        const encodedUserId = encodeHashId(userId)
-        const bulkResp: { user_id: string; subscriber_ids: string[] }[] =
-          await audiusLibs.User.bulkGetUserSubscribers([encodedUserId])
-        const encodedSubscriberIds = bulkResp[0].subscriber_ids
-        const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
-        return subscriberIds.includes(account.user_id)
-      } catch (e) {
-        console.error(getErrorMessage(e))
-        return false
-      }
-    } else {
-      // Read subscribers from identity
-      try {
-        const { data, signature } = await signData()
-        return await fetch(
-          `${identityServiceUrl}/notifications/subscription?userId=${userId}`,
-          {
-            headers: {
-              [AuthHeaders.Message]: data,
-              [AuthHeaders.Signature]: signature
-            }
-          }
-        )
-          .then((res) => res.json())
-          .then((res) =>
-            res.users && res.users[userId.toString()]
-              ? res.users[userId.toString()].isSubscribed
-              : false
-          )
-      } catch (e) {
-        console.error(e)
-      }
-    }
-  }
-
-  async function getUserSubscriptions(userIds: ID[]) {
-    await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
-    if (!account) return
     try {
-      const { data, signature } = await signData()
-      return await fetch(
-        `${identityServiceUrl}/notifications/subscription?${userIds
-          .map((id) => `userId=${id}`)
-          .join('&')}`,
-        {
-          headers: {
-            [AuthHeaders.Message]: data,
-            [AuthHeaders.Signature]: signature
-          }
-        }
-      )
-        .then((res) => res.json())
-        .then((res) => res.users)
+      const encodedUserId = encodeHashId(userId)
+      const bulkResp: { user_id: string; subscriber_ids: string[] }[] =
+        await audiusLibs.User.bulkGetUserSubscribers([encodedUserId])
+      const encodedSubscriberIds = bulkResp[0].subscriber_ids
+      const subscriberIds = encodedSubscriberIds.map((id) => decodeHashId(id))
+      return subscriberIds.includes(account.user_id)
     } catch (e) {
-      console.error(e)
-    }
-  }
-
-  async function updateUserSubscription(userId: ID, isSubscribed: boolean) {
-    await waitForLibsInit()
-    const account = audiusLibs.Account.getCurrentUser()
-    if (!account) return
-    try {
-      const { data, signature } = await signData()
-      return await fetch(`${identityServiceUrl}/notifications/subscription`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [AuthHeaders.Message]: data,
-          [AuthHeaders.Signature]: signature
-        },
-        body: JSON.stringify({
-          userId,
-          isSubscribed
-        })
-      }).then((res) => res.json())
-    } catch (e) {
-      console.error(e)
+      console.error(getErrorMessage(e))
+      return false
     }
   }
 
@@ -3748,7 +3671,6 @@ export const audiusBackend = ({
     getUserImages,
     getUserListenCountsMonthly,
     getUserSubscribed,
-    getUserSubscriptions,
     getWAudioBalance,
     getWeb3,
     handleInUse,
@@ -3805,7 +3727,6 @@ export const audiusBackend = ({
     updateUser,
     updateUserEvent,
     updateUserLocationTimezone,
-    updateUserSubscription,
     subscribeToUser,
     unsubscribeFromUser,
     uploadImage,

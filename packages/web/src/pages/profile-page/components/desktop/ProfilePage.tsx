@@ -142,7 +142,7 @@ export type ProfilePageProps = {
   setNotificationSubscription: (
     userId: ID,
     isSubscribed: boolean,
-    onFollow: boolean
+    update: boolean
   ) => void
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
   onCloseArtistRecommendations: () => void
@@ -507,7 +507,7 @@ const ProfilePage = ({
 
   const toggleNotificationSubscription = () => {
     if (!userId) return
-    setNotificationSubscription(userId, !isSubscribed, false)
+    setNotificationSubscription(userId, !isSubscribed, true)
   }
 
   const getUserProfileContent = () => {
