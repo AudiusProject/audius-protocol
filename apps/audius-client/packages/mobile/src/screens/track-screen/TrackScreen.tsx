@@ -20,6 +20,7 @@ import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
 
 import { TrackScreenMainContent } from './TrackScreenMainContent'
+import { TrackScreenSkeleton } from './TrackScreenSkeleton'
 const { fetchTrack } = trackPageActions
 const { tracksActions } = trackPageLineupActions
 const { getLineup, getRemixParentTrack, getTrack, getUser } = trackPageSelectors
@@ -89,10 +90,7 @@ export const TrackScreen = () => {
   useFocusEffect(handleFetchTrack)
 
   if (!track || !user) {
-    console.warn(
-      'Track, user, or lineup missing for TrackScreen, preventing render'
-    )
-    return null
+    return <TrackScreenSkeleton />
   }
 
   const handlePressGoToRemixes = () => {
