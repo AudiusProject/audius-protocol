@@ -147,6 +147,6 @@ COMMIT;
 BEGIN;
   UPDATE "tracks"
   SET "track_cid" = regexp_replace(trim("track_cid"), E'\\s+', ' ', 'g')
-  WHERE is_current = true AND LENGTH(track_cid) != 46;
+  WHERE is_current = true AND LENGTH(track_cid) = 47 AND track_cid LIKE 'Qm%';
 COMMIT;
 
