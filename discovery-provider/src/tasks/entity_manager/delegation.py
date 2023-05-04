@@ -20,11 +20,11 @@ class CreateDelegationMetadata(TypedDict):
     delegate_address: Union[str, None]
 
 
-class DeleteDelegationMetadata(TypedDict):
+class RevokeDelegationMetadata(TypedDict):
     shared_address: Union[str, None]
 
 
-def get_create_delegation_metadata_from_raw(
+def get_delegation_metadata_from_raw(
     raw_metadata: Optional[str],
 ) -> Optional[CreateDelegationMetadata]:
     metadata: CreateDelegationMetadata = {
@@ -39,34 +39,13 @@ def get_create_delegation_metadata_from_raw(
                 metadata["shared_address"] = raw_shared_address.lower()
             else:
                 metadata["shared_address"] = None
+
+            # CREATE only field:
             raw_delegate_address = json_metadata.get("delegate_address", None)
             if raw_delegate_address:
                 metadata["delegate_address"] = raw_delegate_address.lower()
             else:
                 metadata["delegate_address"] = None
-            return metadata
-        except Exception as e:
-            logger.error(
-                f"entity_manager | delegation.py | Unable to parse delegate metadata while indexing: {e}"
-            )
-            return None
-    return metadata
-
-
-def get_delete_delegation_metadata_from_raw(
-    raw_metadata: Optional[str],
-) -> Optional[DeleteDelegationMetadata]:
-    metadata: DeleteDelegationMetadata = {
-        "shared_address": None,
-    }
-    if raw_metadata:
-        try:
-            json_metadata = json.loads(raw_metadata)
-            raw_shared_address = json_metadata.get("shared_address", None)
-            if raw_shared_address:
-                metadata["shared_address"] = raw_shared_address.lower()
-            else:
-                metadata["shared_address"] = None
             return metadata
         except Exception as e:
             logger.error(
@@ -83,12 +62,24 @@ def validate_delegation_tx(params: ManageEntityParameters, metadata):
         raise Exception(
             f"Invalid Create Delegation transaction, wrong entity type {params.entity_type}"
         )
+    if not metadata["shared_address"]:
+        raise Exception(
+            "Invalid Create Delegation transaction, shared address is required and was not provided"
+        )
+    if not user_id:
+        raise Exception(
+            "Invalid Create Delegation transaction, user id is required and was not provided"
+        )
+    if user_id not in params.existing_records[EntityType.USER]:
+        raise Exception(
+            f"Invalid Create Delegation transaction, user id {user_id} does not exist"
+        )
+    if not params.existing_records[EntityType.USER][user_id].wallet:
+        raise Exception(
+            "Programming error while indexing Create Delegation transaction, user wallet missing"
+        )
 
     if params.action == Action.CREATE:
-        if not metadata["shared_address"]:
-            raise Exception(
-                "Invalid Create Delegation transaction, shared address is required and was not provided"
-            )
         if not metadata["delegate_address"]:
             raise Exception(
                 "Invalid Create Delegation transaction, delegate address is required and was not provided"
@@ -112,18 +103,6 @@ def validate_delegation_tx(params: ManageEntityParameters, metadata):
             raise Exception(
                 f"Invalid Create Delegation transaction, active delegation with shared address {metadata['shared_address']} already exists"
             )
-        if not user_id:
-            raise Exception(
-                "Invalid Create Delegation transaction, user id is required and was not provided"
-            )
-        if user_id not in params.existing_records[EntityType.USER]:
-            raise Exception(
-                f"Invalid Create Delegation transaction, user id {user_id} does not exist"
-            )
-        if not params.existing_records[EntityType.USER][user_id].wallet:
-            raise Exception(
-                "Programming error while indexing Create Delegation transaction, user wallet missing"
-            )
         if (
             params.existing_records[EntityType.USER][user_id].wallet.lower()
             != params.signer.lower()
@@ -132,20 +111,12 @@ def validate_delegation_tx(params: ManageEntityParameters, metadata):
                 "Invalid Create Delegation transaction, user does not match signer"
             )
     elif params.action == Action.DELETE:
-        if not metadata["shared_address"]:
-            raise Exception(
-                "Invalid Delete Delegation transaction, shared address is required and was not provided"
-            )
         if (
             metadata["shared_address"].lower()
             not in params.existing_records[EntityType.DELEGATION]
         ):
             raise Exception(
                 f"Invalid Delete Delegation transaction, delegation with shared address {metadata['shared_address']} does not exist"
-            )
-        if not user_id:
-            raise Exception(
-                "Invalid Delete Delegation transaction, user id is required and was not provided"
             )
         existing_delegation = params.existing_records[EntityType.DELEGATION][
             metadata["shared_address"]
@@ -157,10 +128,6 @@ def validate_delegation_tx(params: ManageEntityParameters, metadata):
         if user_id != existing_delegation.user_id:
             raise Exception(
                 f"Invalid Delete Delegation Transaction, user id {user_id} does not belong to delegation with given shared address"
-            )
-        if not params.existing_records[EntityType.USER][user_id].wallet:
-            raise Exception(
-                "Programming error while indexing Delete Delegation transaction, user wallet missing"
             )
         # Signer can be either the user in the delegation or the delegate.
         if (
@@ -189,7 +156,7 @@ def validate_delegation_record(delegation_record):
 
 
 def create_delegation(params: ManageEntityParameters):
-    metadata = get_create_delegation_metadata_from_raw(params.metadata_cid)
+    metadata = get_delegation_metadata_from_raw(params.metadata_cid)
     if not metadata:
         raise Exception("Invalid Delegation Transaction, unable to parse metadata")
     validate_delegation_tx(params, metadata)
@@ -220,8 +187,8 @@ def create_delegation(params: ManageEntityParameters):
     return delegation_record
 
 
-def delete_delegation(params: ManageEntityParameters):
-    metadata = get_delete_delegation_metadata_from_raw(params.metadata_cid)
+def revoke_delegation(params: ManageEntityParameters):
+    metadata = get_delegation_metadata_from_raw(params.metadata_cid)
     if not metadata:
         raise Exception(
             "Invalid Revoke Delegation Transaction, unable to parse metadata"

@@ -24,7 +24,7 @@ from src.tasks.entity_manager.app_delegate import (
     create_app_delegate,
     delete_app_delegate,
 )
-from src.tasks.entity_manager.delegation import create_delegation, delete_delegation
+from src.tasks.entity_manager.delegation import create_delegation, revoke_delegation
 from src.tasks.entity_manager.notification import (
     create_notification,
     view_notification,
@@ -242,7 +242,7 @@ def entity_manager_update(
                         params.action == Action.DELETE
                         and params.entity_type == EntityType.DELEGATION
                     ):
-                        delete_delegation(params)
+                        revoke_delegation(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
