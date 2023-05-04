@@ -364,7 +364,7 @@ describe('discoveryNodeSelector', () => {
       }
       await middleware.post!({
         fetch: fetch,
-        url: '/v1/full/tracks',
+        url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
         response: new Response(JSON.stringify(data))
       })
@@ -399,7 +399,7 @@ describe('discoveryNodeSelector', () => {
       }
       await middleware.post!({
         fetch: fetch,
-        url: '/v1/full/tracks',
+        url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
         response: new Response(JSON.stringify(data))
       })
@@ -441,7 +441,7 @@ describe('discoveryNodeSelector', () => {
 
       const actualResponse = await middleware.post!({
         fetch: fetch,
-        url: '/v1/full/tracks',
+        url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
         response: response as Response
       })
@@ -483,7 +483,7 @@ describe('discoveryNodeSelector', () => {
 
       const actualResponse = await middleware.post!({
         fetch: fetch,
-        url: '/v1/full/tracks',
+        url: `${UNHEALTHY_NODE}/v1/full/tracks`,
         init: {},
         response: response as Response
       })
@@ -515,7 +515,7 @@ describe('discoveryNodeSelector', () => {
 
       await middleware.post!({
         fetch: fetch,
-        url: '/v1/full/tracks',
+        url: `${HEALTHY_NODE}/v1/full/tracks`,
         init: {},
         response: response as Response
       })
@@ -550,7 +550,7 @@ describe('discoveryNodeSelector', () => {
       }
       await middleware.post!({
         fetch: fetch,
-        url: '/v1/full/tracks',
+        url: `${BEHIND_BLOCKDIFF_NODE}/v1/full/tracks`,
         init: {},
         response: new Response(JSON.stringify(data))
       })
