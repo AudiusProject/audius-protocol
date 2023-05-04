@@ -2,6 +2,8 @@ import { type AudiusSdk, ChatEvents } from '@audius/sdk'
 import { Middleware } from 'redux'
 
 import { Status } from 'models/Status'
+import { getUserId } from 'store/account/selectors'
+import { encodeHashId } from 'utils/hashIds'
 
 import { actions as chatActions } from './slice'
 
@@ -35,7 +37,10 @@ export const chatMiddleware =
             store.dispatch(
               addMessage({ chatId, message, status: Status.SUCCESS })
             )
-            store.dispatch(incrementUnreadCount({ chatId }))
+            const currentUserId = getUserId(store.getState())
+            if (message.sender_user_id !== encodeHashId(currentUserId)) {
+              store.dispatch(incrementUnreadCount({ chatId }))
+            }
           }
           reactionListener = ({ chatId, messageId, reaction }) => {
             store.dispatch(
