@@ -105,7 +105,7 @@ export const useNotificationNavigation = () => {
     ) => {
       const { entityType, entityId } = notification
       if (entityType === Entity.Track) {
-        navigation.navigate('Track', { id: entityId })
+        navigation.navigate('Track', { id: entityId, canBeUnlisted: false })
       } else if (
         entityType === Entity.Album ||
         entityType === Entity.Playlist
@@ -131,7 +131,7 @@ export const useNotificationNavigation = () => {
         } else {
           navigation.navigate(
             notification.entityType === Entity.Track ? 'Track' : 'Collection',
-            { id: notification.entityId }
+            { id: notification.entityId, canBeUnlisted: false }
           )
         }
       } else if (notification.type === PushNotificationType.MilestoneFollow) {
@@ -141,7 +141,7 @@ export const useNotificationNavigation = () => {
           notification.actions[0].actionEntityType === Entity.Track
             ? 'Track'
             : 'Collection',
-          { id: notification.entityId }
+          { id: notification.entityId, canBeUnlisted: false }
         )
       }
     },
@@ -215,7 +215,8 @@ export const useNotificationNavigation = () => {
           id:
             'childTrackId' in notification
               ? notification.childTrackId
-              : notification.entityId
+              : notification.entityId,
+          canBeUnlisted: false
         })
       },
       [NotificationType.RemixCreate]: (
@@ -225,7 +226,8 @@ export const useNotificationNavigation = () => {
           id:
             'childTrackId' in notification
               ? notification.childTrackId
-              : notification.entityId
+              : notification.entityId,
+          canBeUnlisted: false
         })
       },
       [PushNotificationType.RepostAlbum]: socialActionHandler,
@@ -258,7 +260,10 @@ export const useNotificationNavigation = () => {
       [NotificationType.TrendingTrack]: (
         notification: TrendingTrackNotification
       ) => {
-        navigation.navigate('Track', { id: notification.entityId })
+        navigation.navigate('Track', {
+          id: notification.entityId,
+          canBeUnlisted: false
+        })
       },
       [NotificationType.UserSubscription]: (
         notification: UserSubscriptionNotification
@@ -271,7 +276,7 @@ export const useNotificationNavigation = () => {
         } else {
           navigation.navigate(
             notification.entityType === Entity.Track ? 'Track' : 'Collection',
-            { id: notification.entityIds[0] }
+            { id: notification.entityIds[0], canBeUnlisted: false }
           )
         }
       },
