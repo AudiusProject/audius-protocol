@@ -134,8 +134,6 @@ export class AppNotificationsProcessor {
       if (isEnabled) {
         const isLiveEmailEnabled = this.getIsLiveEmailEnabled()
         const isBrowserPushEnabled = this.getIsBrowserPushEnabled()
-        logger.info(`live email ${isLiveEmailEnabled ? "is" : "is not"} enabled`)
-        logger.info(`browser push ${isBrowserPushEnabled ? "is" : "is not"} enabled`)
         try {
           await notification.pushNotification({ isLiveEmailEnabled, isBrowserPushEnabled })
           status.processed += 1
