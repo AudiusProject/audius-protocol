@@ -435,13 +435,7 @@ class App extends Component {
   }
 
   render() {
-    const {
-      theme,
-      incrementScroll,
-      decrementScroll,
-      shouldShowPopover,
-      userHandle
-    } = this.props
+    const { theme, incrementScroll, decrementScroll, userHandle } = this.props
 
     const {
       showCTABanner,
@@ -975,7 +969,7 @@ class App extends Component {
         {!isMobileClient ? <PinnedTrackConfirmation /> : null}
         {!isMobileClient ? <DevModeMananger /> : null}
         {/* Mobile-only */}
-        {isMobileClient && shouldShowPopover ? (
+        {isMobileClient ? (
           <AppRedirectPopover
             incrementScroll={incrementScroll}
             decrementScroll={decrementScroll}

@@ -37,7 +37,7 @@ describe('smoke test', () => {
     ReactDOM.render(
       <Provider store={store}>
         <ConnectedRouter history={history}>
-          <App shouldShowPopover={false} mainContentRef={mainContentRef} />
+          <App mainContentRef={mainContentRef} />
         </ConnectedRouter>
       </Provider>,
       rootNode
