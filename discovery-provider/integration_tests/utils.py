@@ -287,7 +287,9 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_personal_access=delegate_meta.get("is_personal_access", False),
                 blockhash=hex(i + block_offset),
                 blocknumber=(i + block_offset),
+                is_current=True,
                 txhash=delegate_meta.get("txhash", str(i + block_offset)),
+                updated_at=delegate_meta.get("updated_at", datetime.now()),
                 created_at=delegate_meta.get("created_at", datetime.now()),
             )
             session.add(delegate)

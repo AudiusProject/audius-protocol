@@ -166,3 +166,17 @@ BEGIN;
     primary key (shared_address, is_current, txhash)
   );
 COMMIT;
+
+-- 5/4/23: fix app_delegates table to support revokes
+BEGIN;
+    alter table app_delegates
+    add column if not exists is_current boolean not null;
+
+    alter table app_delegates
+    add column if not exists updated_at timestamp not null;
+
+    alter table app_delegates rename column is_revoked to is_delete;
+
+    alter table app_delegates drop constraint app_delegates_pkey;
+    alter table public.app_delegates add constraint app_delegates_pkey primary key (address, is_current, txhash);    
+COMMIT;
