@@ -46,9 +46,11 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
       user_id: number
@@ -95,12 +97,7 @@ export class Tastemaker extends BaseNotification<TastemakerNotificationRow> {
 
     const title = `You're a Tastemaker!`
     const body = `${entityName} is now trending thanks to you! Great work 🙌🏽`
-    await sendBrowserNotification(
-      userNotificationSettings,
-      this.receiverUserId,
-      title,
-      body
-    )
+    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
 
     // If the user has devices to the notification to, proceed
     if (

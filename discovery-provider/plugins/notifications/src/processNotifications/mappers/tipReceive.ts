@@ -37,9 +37,11 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
       user_id: number
@@ -75,7 +77,7 @@ export class TipReceive extends BaseNotification<TipReceiveNotificationRow> {
     const body = `${capitalize(
       sendingUserName
     )} sent you a tip of ${tipAmount} $AUDIO`
-    await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+    await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
 
     // If the user has devices to the notification to, proceed
     if (

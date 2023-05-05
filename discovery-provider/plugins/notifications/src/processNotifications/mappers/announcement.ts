@@ -30,9 +30,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
       user_id: number
@@ -65,7 +67,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
 
       const title = this.notification.data.title
       const body = this.notification.data.short_description
-      await sendBrowserNotification(userNotificationSettings, userId, title, body)
+      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, userId, title, body)
 
       // If the user has devices to the notification to, proceed
       if (
