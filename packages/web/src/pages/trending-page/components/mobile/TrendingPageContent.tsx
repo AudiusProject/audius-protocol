@@ -1,11 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from 'react'
 
-import {
-  Name,
-  Status,
-  TimeRange,
-  trendingPageLineupActions
-} from '@audius/common'
+import { Name, TimeRange, trendingPageLineupActions } from '@audius/common'
 import cn from 'classnames'
 
 import { ReactComponent as IconAllTime } from 'assets/img/iconAllTime.svg'
@@ -23,8 +18,6 @@ import NavContext, {
   LeftPreset,
   RightPreset
 } from 'components/nav/store/context'
-import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
-import useAsyncPoll from 'hooks/useAsyncPoll'
 import useTabs from 'hooks/useTabs/useTabs'
 import { TrendingPageContentProps } from 'pages/trending-page/types'
 import { BASE_URL, TRENDING_PAGE } from 'utils/route'
@@ -59,7 +52,6 @@ const TrendingPageMobileContent = ({
 
   trendingTimeRange,
   setTrendingTimeRange,
-  makeRefreshTrendingInView,
 
   getLineupProps,
   makePauseTrack,
@@ -69,7 +61,6 @@ const TrendingPageMobileContent = ({
   trendingMonth,
   trendingAllTime,
   makeSetInView,
-  getLineupForRange,
   trendingGenre,
   goToGenreSelection
 }: TrendingPageContentProps) => {
@@ -80,50 +71,6 @@ const TrendingPageMobileContent = ({
     setRight(RightPreset.SEARCH)
     setCenter(CenterPreset.LOGO)
   }, [setLeft, setCenter, setRight])
-
-  const getStatus = (timeRange: TimeRange) => {
-    const lineup = getLineupForRange(timeRange)
-    if (!lineup) return Status.SUCCESS
-    return lineup.lineup.status
-  }
-
-  const [weekStatus, monthStatus, allTimeStatus] = [
-    getStatus(TimeRange.WEEK),
-    getStatus(TimeRange.MONTH),
-    getStatus(TimeRange.ALL_TIME)
-  ]
-
-  // Setup pull to refresh
-  const refreshTrendingWeek = useCallback(
-    () => makeRefreshTrendingInView(TimeRange.WEEK)(true),
-    [makeRefreshTrendingInView]
-  )
-  const refreshTrendingMonth = useCallback(
-    () => makeRefreshTrendingInView(TimeRange.MONTH)(true),
-    [makeRefreshTrendingInView]
-  )
-  const refreshTrendingAllTime = useCallback(
-    () => makeRefreshTrendingInView(TimeRange.ALL_TIME)(true),
-    [makeRefreshTrendingInView]
-  )
-
-  const asyncRefresh = {
-    [TimeRange.WEEK]: useAsyncPoll({
-      call: refreshTrendingWeek,
-      variable: weekStatus,
-      value: Status.SUCCESS
-    }),
-    [TimeRange.MONTH]: useAsyncPoll({
-      call: refreshTrendingMonth,
-      variable: monthStatus,
-      value: Status.SUCCESS
-    }),
-    [TimeRange.ALL_TIME]: useAsyncPoll({
-      call: refreshTrendingAllTime,
-      variable: allTimeStatus,
-      value: Status.SUCCESS
-    })
-  }
 
   // Setup lineups
   const weekProps = useMemo(
@@ -273,11 +220,7 @@ const TrendingPageMobileContent = ({
       canonicalUrl={`${BASE_URL}${TRENDING_PAGE}`}
     >
       <div className={styles.tabsContainer}>
-        <div className={styles.tabBodyHolder}>
-          <PullToRefresh fetchContent={asyncRefresh[trendingTimeRange]}>
-            {body}
-          </PullToRefresh>
-        </div>
+        <div className={styles.tabBodyHolder}>{body}</div>
       </div>
     </MobilePageContainer>
   )

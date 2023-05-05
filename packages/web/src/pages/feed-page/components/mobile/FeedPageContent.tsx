@@ -1,9 +1,8 @@
-import { useContext, useEffect, useCallback } from 'react'
+import { useContext, useEffect } from 'react'
 
 import {
   FeedFilter,
   Name,
-  Status,
   feedPageLineupActions as feedActions
 } from '@audius/common'
 import cn from 'classnames'
@@ -15,8 +14,6 @@ import { HeaderContext } from 'components/header/mobile/HeaderContextProvider'
 import Lineup from 'components/lineup/Lineup'
 import MobilePageContainer from 'components/mobile-page-container/MobilePageContainer'
 import { useMainPageHeader } from 'components/nav/store/context'
-import PullToRefresh from 'components/pull-to-refresh/PullToRefresh'
-import useAsyncPoll from 'hooks/useAsyncPoll'
 import { FeedPageContentProps } from 'pages/feed-page/types'
 import { BASE_URL, FEED_PAGE } from 'utils/route'
 
@@ -87,16 +84,6 @@ const FeedPageMobileContent = ({
     record(make(Name.FEED_CHANGE_VIEW, { view: filter }))
   }
 
-  const refresh = useCallback(
-    () => refreshFeedInView(true),
-    [refreshFeedInView]
-  )
-  const asyncRefresh = useAsyncPoll({
-    call: refresh,
-    variable: feed.status,
-    value: Status.SUCCESS
-  })
-
   return (
     <MobilePageContainer
       title={feedTitle}
@@ -114,9 +101,7 @@ const FeedPageMobileContent = ({
           [styles.playing]: !!lineupProps.playingUid
         })}
       >
-        <PullToRefresh fetchContent={asyncRefresh}>
-          <Lineup {...lineupProps} />
-        </PullToRefresh>
+        <Lineup {...lineupProps} />
       </div>
     </MobilePageContainer>
   )
