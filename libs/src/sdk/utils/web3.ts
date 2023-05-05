@@ -1,5 +1,5 @@
 import type Web3Type from 'web3'
-import BN from 'bn.js'
+import type BN from 'bn.js'
 
 declare global {
   interface Window {
