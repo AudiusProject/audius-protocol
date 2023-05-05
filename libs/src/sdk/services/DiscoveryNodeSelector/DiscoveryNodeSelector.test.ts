@@ -213,7 +213,6 @@ describe('discoveryNodeSelector', () => {
       bootstrapServices: [
         BEHIND_BLOCKDIFF_NODE,
         BEHIND_LARGE_BLOCKDIFF_NODE,
-        BEHIND_MINOR_VERSION_NODE,
         UNHEALTHY_NODE
       ]
     })
