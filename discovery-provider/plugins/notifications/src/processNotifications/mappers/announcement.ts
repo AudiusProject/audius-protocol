@@ -15,15 +15,18 @@ import {
 import { UserNotificationSettings } from './userNotificationSettings'
 import { logger } from '../../logger'
 
-const getDryRun = (envVar: string | undefined): boolean => {
-  if (envVar === undefined) return true
+const getEnv = (envVar: string | undefined, defaultVal?: boolean): boolean => {
+  if (envVar === undefined && defaultVal === undefined) return true
+  if (envVar === undefined) return defaultVal
   return envVar.toLowerCase() === "true"
 }
 
-export const configureAnnouncmentDryRun = () => {
-  const dryRun = getDryRun(process.env.ANNOUNCEMENTS_DRY_RUN)
+export const configureAnnouncement = () => {
+  const dryRun = getEnv(process.env.ANNOUNCEMENTS_DRY_RUN)
+  const announcementEmailEnabled = getEnv(process.env.ANNOUNCEMENTS_EMAIL_ENABLED, false)
   logger.info(`announcements configured ${dryRun ? "" : "not"} for dry run`)
   globalThis.announcementDryRun = dryRun
+  globalThis.announcementEmailEnabled = announcementEmailEnabled
 }
 
 type AnnouncementNotificationRow = Omit<NotificationRow, 'data'> & {
@@ -144,7 +147,8 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       userNotificationSettings.shouldSendEmailAtFrequency({
         receiverUserId: userId,
         frequency: 'live'
-      })
+      }) &&
+      globalThis.announcementEmailEnabled
     ) {
       const notification: AppEmailNotification = {
         receiver_user_id: userId,
