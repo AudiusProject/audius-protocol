@@ -5,7 +5,10 @@ import { CreatorNode } from '../services/creatorNode'
 import { Nullable, TrackMetadata, Utils } from '../utils'
 import retry from 'async-retry'
 import type { TransactionReceipt } from 'web3-core'
-import { EntityManagerClient } from '../services/dataContracts/EntityManagerClient'
+import {
+  Action,
+  EntityManagerClient
+} from '../services/dataContracts/EntityManagerClient'
 
 const TRACK_PROPS = [
   'owner_id',
@@ -390,6 +393,36 @@ export class Track extends Base {
    * @param metadata json of the track metadata with all fields, missing fields will error
    * @param onProgress callback fired with (loaded, total) on byte upload progress
    */
+  async uploadTrackV2AndWriteToChain(
+    trackFile: File,
+    coverArtFile: File,
+    metadata: TrackMetadata,
+    onProgress: () => void
+  ) {
+    const updatedMetadata = await this.uploadTrackV2(
+      trackFile,
+      coverArtFile,
+      metadata,
+      onProgress
+    )
+    const { trackId, metadataCid, txReceipt } = await this.writeTrackToChain(
+      updatedMetadata,
+      Action.CREATE
+    )
+    return { trackId, metadataCid, updatedMetadata, txReceipt }
+  }
+
+  /**
+   * Only uploads track but does not write to chain. Do not call by itself.
+   *
+   * @dev To upload a single track, call uploadTrackV2AndWriteToChain() instead.
+   * @dev To upload multiple uploads, call this function multiple times and then call addTracksToChainV2() once.
+   *
+   * @param trackFile ReadableStream from server, or File handle on client
+   * @param coverArtFile ReadableStream from server, or File handle on client
+   * @param metadata json of the track metadata with all fields, missing fields will error
+   * @param onProgress callback fired with (loaded, total) on byte upload progress
+   */
   async uploadTrackV2(
     trackFile: File,
     coverArtFile: File,
@@ -403,10 +436,9 @@ export class Track extends Base {
     this.IS_OBJECT(metadata)
     const ownerId = this.userStateManager.getCurrentUserId()
     if (!ownerId) {
-      return {
-        error: 'No users loaded for this wallet'
-      }
+      throw new Error('No users loaded for this wallet')
     }
+
     metadata.owner_id = ownerId
     this._validateTrackMetadata(metadata)
 
@@ -418,28 +450,7 @@ export class Track extends Base {
         metadata,
         onProgress
       )
-
-    // Write metadata to chain
-    const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
-      updatedMetadata
-    )
-    const trackId = await this._generateTrackId()
-    const response = await this.contracts.EntityManagerClient!.manageEntity(
-      ownerId,
-      EntityManagerClient.EntityType.TRACK,
-      trackId,
-      EntityManagerClient.Action.CREATE,
-      JSON.stringify({ cid: metadataCid.toString(), data: updatedMetadata })
-    )
-    const txReceipt = response.txReceipt
-
-    return {
-      blockHash: txReceipt.blockHash,
-      blockNumber: txReceipt.blockNumber,
-      trackId,
-      transcodedTrackCID: updatedMetadata.track_cid,
-      error: false
-    }
+    return updatedMetadata
   }
 
   /**
@@ -560,6 +571,67 @@ export class Track extends Base {
         phase
       }
     }
+  }
+
+  /**
+   * Creates a trackId for each CID in metadataCids and adds each track to chain for this user.
+   */
+  async addTracksToChainV2(trackMetadatas: TrackMetadata[]) {
+    const ownerId = this.userStateManager.getCurrentUserId()
+    if (!ownerId) {
+      throw new Error('No users loaded for this wallet')
+    }
+
+    let trackIds: number[] = []
+    let requestFailed = false
+    await Promise.all(
+      trackMetadatas.map(async (trackMetadata) => {
+        try {
+          const { trackId } = await this.writeTrackToChain(
+            trackMetadata,
+            Action.CREATE
+          )
+          trackIds.push(trackId)
+        } catch (e) {
+          requestFailed = true
+          console.error(`Failed to add track to chain: ${e}`)
+        }
+      })
+    )
+
+    // Any failures in addding track to the blockchain will prevent further progress.
+    // The list of successful track uploads is returned for revert operations by caller
+    trackIds = trackIds.filter(Boolean)
+    const error = requestFailed || trackIds.length !== trackMetadatas.length
+    return { error, trackIds }
+  }
+
+  /**
+   * Adds the given track's metadata to chain for this user, optionally creating a trackId if one doesn't exist.
+   */
+  async writeTrackToChain(
+    trackMetadata: TrackMetadata,
+    action: Action,
+    trackId?: number
+  ) {
+    const ownerId = this.userStateManager.getCurrentUserId()
+    if (!ownerId) {
+      throw new Error('No users loaded for this wallet')
+    }
+
+    if (!trackId) trackId = await this._generateTrackId()
+    const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
+      trackMetadata
+    )
+    const { txReceipt } =
+      await this.contracts.EntityManagerClient!.manageEntity(
+        ownerId,
+        EntityManagerClient.EntityType.TRACK,
+        trackId,
+        action,
+        JSON.stringify({ cid: metadataCid.toString(), data: trackMetadata })
+      )
+    return { trackId, metadataCid, txReceipt }
   }
 
   /**
@@ -793,17 +865,12 @@ export class Track extends Base {
     metadata.owner_id = ownerId
     this._validateTrackMetadata(metadata)
 
-    // Write the new metadata to chain
-    const metadataCid = await Utils.fileHasher.generateMetadataCidV1(metadata)
-    const trackId: number = metadata.track_id
-    const response = await this.contracts.EntityManagerClient!.manageEntity(
-      ownerId,
-      EntityManagerClient.EntityType.TRACK,
-      trackId,
-      EntityManagerClient.Action.UPDATE,
-      JSON.stringify({ cid: metadataCid.toString(), data: metadata })
+    const trackId = metadata.track_id
+    const { txReceipt } = await this.writeTrackToChain(
+      metadata,
+      Action.UPDATE,
+      trackId
     )
-    const txReceipt = response.txReceipt
 
     return {
       blockHash: txReceipt.blockHash,
