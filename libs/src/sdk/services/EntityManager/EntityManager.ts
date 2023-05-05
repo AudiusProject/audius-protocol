@@ -1,5 +1,6 @@
 import type { TransactionReceipt } from 'web3-core'
-import Web3 from 'web3'
+import Web3 from '../../utils/web3'
+import type Web3Type from 'web3'
 import type { AbiItem } from 'web3-utils'
 import fetch, { Headers } from 'cross-fetch'
 
@@ -25,18 +26,15 @@ export class EntityManager implements EntityManagerService {
   private config: EntityManagerConfig
 
   private contract: Contract
-  private web3: Web3
+  private web3: Web3Type
 
   constructor(config?: EntityManagerConfig) {
     this.config = mergeConfigWithDefaults(config, defaultEntityManagerConfig)
-
-    // TODO: use window.web3, or allow web3 to be provided as an arg
     this.web3 = new Web3(
       new Web3.providers.HttpProvider(this.config.web3ProviderUrl, {
         timeout: 10000
       })
     )
-
     this.contract = new this.web3.eth.Contract(
       EntityManagerABI as AbiItem[],
       this.config.contractAddress
