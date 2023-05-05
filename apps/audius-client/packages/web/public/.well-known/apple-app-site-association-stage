@@ -6,6 +6,7 @@
         "appID": "LRFCG93S85.co.audius.audiusmusic.staging",
         "paths": [
           "NOT /oauth/auth*",
+          "NOT /legal*",
           "*"
         ]
       }
