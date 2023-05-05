@@ -33,7 +33,17 @@ program.command("create-user")
     };
 
     try {
-      const response = await audiusLibs.Account.signUp(email, password, metadata);
+      const response = await audiusLibs.Account.signUp(
+        email,
+        password,
+        metadata,
+        /* profilePictureFile */ null,
+        /* coverPhotoFile */ null,
+        /* hasWallet */ false,
+        /* host */ null,
+        /* generateRecoveryLink */ true,
+        /* writeMetadataThroughChain */ true
+      );
 
       if (response.error) {
         program.error(chalk.red(response.error));
