@@ -13,6 +13,8 @@ import {
   EmailFrequency,
   buildUserNotificationSettings
 } from '../../processNotifications/mappers/userNotificationSettings'
+import { MappingFeatureName, RemoteConfig } from '../../remoteConfig'
+import { notificationTypeMapping } from '../../processNotifications/indexAppNotifications'
 
 // blockchainUserId => email
 type EmailUsers = {
@@ -166,14 +168,28 @@ const getNotifications = async (
   dnDb: Knex,
   frequency: EmailFrequency,
   startOffset: moment.Moment,
-  userIds: string[]
+  userIds: string[],
+  remoteConfig: RemoteConfig
 ): Promise<EmailNotification[]> => {
   // NOTE: Temp while testing DM notifs on staging
   const appNotificationsResp = await dnDb.raw(appNotificationsSql, {
     start_offset: startOffset,
     user_ids: [[userIds]]
   })
-  const appNotifications: EmailNotification[] = appNotificationsResp.rows
+  let appNotifications: EmailNotification[] = appNotificationsResp.rows
+
+  // filter for only enabled notifications in MappingFeatureName
+  // on optimizely
+  appNotifications = appNotifications.filter((notification) => {
+    if (notificationTypeMapping[notification.type]) {
+      const featureEnabled = remoteConfig.getFeatureVariableEnabled(
+        MappingFeatureName,
+        notificationTypeMapping[notification.type]
+      )
+      return featureEnabled
+    }
+    return false
+  })
 
   // This logic is to handle a 'live' frequency exception for message notifications so as to not spam users with
   // live email notifications for every new message action.
@@ -294,7 +310,8 @@ const groupNotifications = (
 export async function processEmailNotifications(
   dnDb: Knex,
   identityDb: Knex,
-  frequency: EmailFrequency
+  frequency: EmailFrequency,
+  remoteConfig: RemoteConfig
 ) {
   try {
     const now = moment.utc()
@@ -325,7 +342,8 @@ export async function processEmailNotifications(
       dnDb,
       frequency,
       startOffset,
-      Object.keys(users)
+      Object.keys(users),
+      remoteConfig
     )
     const groupedNotifications = groupNotifications(notifications, users)
 
@@ -385,7 +403,7 @@ export async function processEmailNotifications(
                   error: 'No notifications to send in email'
                 }
               }
-              numEmailsSent++
+              numEmailsSent += 1
               await identityDb
                 .insert([
                   {
@@ -416,7 +434,7 @@ export async function processEmailNotifications(
       {
         job: processEmailNotifications
       },
-      `processEmailNotifications | sent scheduled emails to ${numEmailsSent} users at ${frequency}`
+      `processEmailNotifications | sent ${numEmailsSent} ${frequency} emails`
     )
   } catch (e) {
     logger.error(

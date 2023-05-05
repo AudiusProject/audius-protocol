@@ -182,7 +182,7 @@ jobs:
       hosts: prod-identity
       service: identity-service
 
-  # # Main deploy
+  # Main deploy
 
   - deploy:
       name: deploy-stage-creator-node
@@ -207,22 +207,26 @@ jobs:
       service: creator-node
       freeze: $FREEZE_BUILD
 
-  # - deploy:
-  #     name: deploy-stage-discovery-provider
-  #     requires:
-  #       - push-discovery-provider
-  #     filters:
-  #       branches:
-  #         only: main
-  #     context: open-vpn
-  #     hosts: >-
-  #       stage-discovery-4
-  #       stage-discovery-1
-  #       stage-discovery-2
-  #       stage-discovery-3
-  #       stage-discovery-5
-  #     service: discovery-provider
-  
+  - deploy:
+      name: deploy-stage-discovery-provider
+      requires:
+        - push-discovery-provider
+        - push-comms
+      filters:
+        branches:
+          only: main
+      context:
+        - open-vpn
+        - build-freeze
+      hosts: >-
+        stage-discovery-4
+        stage-discovery-1
+        stage-discovery-2
+        stage-discovery-3
+        stage-discovery-5
+      service: discovery-provider
+      freeze: $FREEZE_BUILD
+
   - deploy:
       name: deploy-stage-identity-service
       requires:

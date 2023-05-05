@@ -219,6 +219,7 @@ def build(
             f"--project-name={protocol_dir.name}",
             "--profile=*",
             "build",
+            "--no-cache",
             *args,
             *services,
         ],
@@ -511,6 +512,7 @@ def test_up(protocol_dir, service):
                 f"--project-directory={protocol_dir / 'dev-tools/compose'}",
                 "up",
                 "-d",
+                "--build",
                 f"test-{service}",
             ]
         ).returncode
@@ -579,6 +581,7 @@ def ps(protocol_dir):
             "compose",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
+            f"--project-name={protocol_dir.name}",
             *([f"--file={AAO_DIR / 'audius-compose.yml'}"] if AAO_DIR.exists() else []),
             "--profile=*",
             "ps",
@@ -663,6 +666,7 @@ def logs(protocol_dir, service):
             "compose",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
+            f"--project-name={protocol_dir.name}",
             "logs",
             service,
         ],

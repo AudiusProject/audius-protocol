@@ -5,6 +5,14 @@ import dotenv from "dotenv";
 dotenv.config();
 const { TRACKS_SLACK_CHANNEL } = process.env;
 
+export const isOldUpload = (uploadDate) => {
+  let uploadedDate = new Date(uploadDate).getTime();
+  let oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  oneWeekAgo = oneWeekAgo.getTime();
+  return oneWeekAgo > uploadedDate;
+};
+
 export default async ({ track_id }) => {
   const trackId = track_id;
   const results = await dp_db("tracks")
@@ -48,9 +56,9 @@ export default async ({ track_id }) => {
       slug,
       is_unlisted,
     } = results;
-    if (is_unlisted) {
+    if (is_unlisted || isOldUpload(release_date)) {
       console.log(
-        `received new verified track from ${handle} but it's unlisted`
+        `received new verified track from ${handle} but it's unlisted or an old upload ${release_date}`
       );
       return;
     }

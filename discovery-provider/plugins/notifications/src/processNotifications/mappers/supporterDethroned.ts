@@ -123,27 +123,6 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
       )
       await this.incrementBadgeCount(this.receiverUserId)
     }
-    if (
-      isLiveEmailEnabled &&
-      userNotificationSettings.shouldSendEmailAtFrequency({
-        initiatorUserId: this.tipSenderUserId,
-        receiverUserId: this.receiverUserId,
-        frequency: 'live'
-      })
-    ) {
-      const notification: AppEmailNotification = {
-        receiver_user_id: this.receiverUserId,
-        ...this.notification
-      }
-      await sendNotificationEmail({
-        userId: this.receiverUserId,
-        email: userNotificationSettings.getUserEmail(this.receiverUserId),
-        frequency: 'live',
-        notifications: [notification],
-        dnDb: this.dnDB,
-        identityDb: this.identityDB
-      })
-    }
   }
 
   getResourcesForEmail(): ResourceIds {

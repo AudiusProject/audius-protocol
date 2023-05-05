@@ -26,7 +26,7 @@ export const addressZero = '0x0000000000000000000000000000000000000000'
  * @param {string} arg - Raw hex-encoded string returned from contract code
  * @returns {string} utf8 converted string value
  */
- export const toStr = (arg) => {
+export const toStr = (arg) => {
   return web3New.utils.hexToUtf8(arg)
 }
 
@@ -43,7 +43,7 @@ export const parseTx = (txReceipt, multipleEvents = false) => {
   if (!txReceipt.logs.length >= 1) {
     throw new Error('Invalid txReceipt length')
   }
-  
+
   if (multipleEvents) {
     let resp = []
     for (const log of txReceipt.logs) {
@@ -51,47 +51,73 @@ export const parseTx = (txReceipt, multipleEvents = false) => {
         throw new Error('Missing event log in tx receipt')
       }
       resp.push({
-        'event': {
-          'name': log.event,
-          'args': log.args
+        event: {
+          name: log.event,
+          args: log.args
         }
       })
     }
     return resp
   } else {
-    if (!(txReceipt.logs[0].hasOwnProperty('event'))) {
+    if (!txReceipt.logs[0].hasOwnProperty('event')) {
       throw new Error('Missing event log in tx receipt')
     }
-  
+
     return {
-      'event': {
-        'name': txReceipt.logs[0].event,
-        'args': txReceipt.logs[0].args
+      event: {
+        name: txReceipt.logs[0].event,
+        args: txReceipt.logs[0].args
       }
     }
   }
 }
 
-/** TODO */
-export const assertThrows = async (blockOrPromise, expectedErrorCode, expectedReason) => {
+export const assertThrows = async (
+  blockOrPromise,
+  expectedErrorCode,
+  expectedReason
+) => {
   try {
-    (typeof blockOrPromise === 'function') ? await blockOrPromise() : await blockOrPromise
+    typeof blockOrPromise === 'function'
+      ? await blockOrPromise()
+      : await blockOrPromise
   } catch (error) {
-    assert(error.message.search(expectedErrorCode) > -1, `Expected error code "${expectedErrorCode}" but failed with "${error}" instead.`)
+    assert(
+      error.message.search(expectedErrorCode) > -1,
+      `Expected error code "${expectedErrorCode}" but failed with "${error}" instead.`
+    )
     return error
   }
   // assert.fail() for some reason does not have its error string printed 🤷
-  assert(false, `Expected "${expectedErrorCode}"${expectedReason ? ` (with reason: "${expectedReason}")` : ''} but it did not fail`)
+  assert(
+    false,
+    `Expected "${expectedErrorCode}"${expectedReason ? ` (with reason: "${expectedReason}")` : ''
+    } but it did not fail`
+  )
 }
 
-/** TODO */
 export const assertRevert = async (blockOrPromise, expectedReason) => {
   const error = await assertThrows(blockOrPromise, 'revert', expectedReason)
   if (!expectedReason) {
     return
   }
   const expectedMsgFound = error.message.indexOf(expectedReason) >= 0
-  assert.equal(expectedMsgFound, true, `Expected revert reason not found. Expected '${expectedReason}'. Found '${error.message}'`)
+  assert.equal(
+    expectedMsgFound,
+    true,
+    `Expected revert reason not found. Expected '${expectedReason}'. Found '${error.message}'`
+  )
+}
+
+export const assertNotStored = async (blockOrPromise, expectedReason) => {
+  await assertThrows(
+    blockOrPromise,
+    "The contract code couldn't be stored",
+    expectedReason
+  )
+  if (!expectedReason) {
+    return
+  }
 }
 
 export const toBN = (val) => web3New.utils.toBN(val)
@@ -130,16 +156,33 @@ export const permit = async (
   approverAcctPrivKey,
   spenderAcct,
   amount,
-  relayerAcct,
+  relayerAcct
 ) => {
   const name = await token.name()
-  const chainId = 1  // in ganache, the chain ID the token initializes with is always 1
+  const chainId = 1337
 
   let nonce = (await token.nonces(approverAcct)).toNumber()
-  let deadline = (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25  // sufficiently far in future
-  let digest = _signatures.getPermitDigest(name, token.address, chainId, {owner: approverAcct, spender: spenderAcct, value: amount}, nonce, deadline)
+  let deadline =
+    (await web3.eth.getBlock(await web3.eth.getBlockNumber())).timestamp + 25 // sufficiently far in future
+  let digest = _signatures.getPermitDigest(
+    name,
+    token.address,
+    chainId,
+    { owner: approverAcct, spender: spenderAcct, value: amount },
+    nonce,
+    deadline
+  )
   let result = _signatures.sign(digest, approverAcctPrivKey)
-  await token.permit(approverAcct, spenderAcct, amount, deadline, result.v, result.r, result.s, {from: relayerAcct})
+  await token.permit(
+    approverAcct,
+    spenderAcct,
+    amount,
+    deadline,
+    result.v,
+    result.r,
+    result.s,
+    { from: relayerAcct }
+  )
 }
 
 export const registerServiceProvider = async (
@@ -153,37 +196,48 @@ export const registerServiceProvider = async (
 ) => {
   // Approve staking transfer
   await token.approve(staking.address, amount, { from: account })
-    // register service provider
-    const tx = await serviceProviderFactory.register(
-      type,
-      endpoint,
-      amount,
-      account,
-      { from: account }
-    )
-
-    // parse and return args
-    const args = tx.logs.find(log => log.event === 'RegisteredServiceProvider').args
-    args.stakeAmount = args._stakeAmount
-    args.spID = args._spID
-    return args
-}
-
-export const deregisterServiceProvider = async (serviceProviderFactory, type, endpoint, account) => {
-  const deregTx = await serviceProviderFactory.deregister(
+  // register service provider
+  const tx = await serviceProviderFactory.register(
     type,
     endpoint,
+    amount,
+    account,
     { from: account }
   )
 
   // parse and return args
-  const args = deregTx.logs.find(log => log.event === 'DeregisteredServiceProvider').args
+  const args = tx.logs.find(
+    (log) => log.event === 'RegisteredServiceProvider'
+  ).args
+  args.stakeAmount = args._stakeAmount
+  args.spID = args._spID
+  return args
+}
+
+export const deregisterServiceProvider = async (
+  serviceProviderFactory,
+  type,
+  endpoint,
+  account
+) => {
+  const deregTx = await serviceProviderFactory.deregister(type, endpoint, {
+    from: account
+  })
+
+  // parse and return args
+  const args = deregTx.logs.find(
+    (log) => log.event === 'DeregisteredServiceProvider'
+  ).args
   args.unstakeAmount = args._unstakeAmount
   args.spID = args._spID
   return args
 }
 
-export const initiateFundingRound = async (governance, claimsManagerRegKey, guardianAddress) => {
+export const initiateFundingRound = async (
+  governance,
+  claimsManagerRegKey,
+  guardianAddress
+) => {
   const callValue0 = toBN(0)
   const signature = 'initiateRound()'
   const callData = abiEncode([], [])
@@ -205,7 +259,9 @@ export const deployToken = async (
   governanceAddress
 ) => {
   const AudiusToken = artifacts.require('AudiusToken')
-  const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+  const AudiusAdminUpgradeabilityProxy = artifacts.require(
+    'AudiusAdminUpgradeabilityProxy'
+  )
 
   const token0 = await AudiusToken.new({ from: proxyDeployerAddress })
   const tokenInitData = encodeCall(
@@ -224,9 +280,15 @@ export const deployToken = async (
   return token
 }
 
-export const deployRegistry = async (artifacts, proxyAdminAddress, proxyDeployerAddress) => {
+export const deployRegistry = async (
+  artifacts,
+  proxyAdminAddress,
+  proxyDeployerAddress
+) => {
   const Registry = artifacts.require('Registry')
-  const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+  const AudiusAdminUpgradeabilityProxy = artifacts.require(
+    'AudiusAdminUpgradeabilityProxy'
+  )
 
   const registry0 = await Registry.new({ from: proxyDeployerAddress })
   const registryInitData = encodeCall('initialize', [], [])
@@ -253,13 +315,22 @@ export const deployGovernance = async (
   maxInProgressProposals = 20
 ) => {
   const Governance = artifacts.require('Governance')
-  const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+  const AudiusAdminUpgradeabilityProxy = artifacts.require(
+    'AudiusAdminUpgradeabilityProxy'
+  )
 
   const governance0 = await Governance.new({ from: proxyDeployerAddress })
   const governanceInitializeData = encodeCall(
     'initialize',
     ['address', 'uint256', 'uint256', 'uint256', 'uint16', 'address'],
-    [registry.address, votingPeriod, executionDelay, votingQuorum, maxInProgressProposals, guardianAddress]
+    [
+      registry.address,
+      votingPeriod,
+      executionDelay,
+      votingQuorum,
+      maxInProgressProposals,
+      guardianAddress
+    ]
   )
   // Initialize proxy with zero address
   const governanceProxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -268,7 +339,9 @@ export const deployGovernance = async (
     governanceInitializeData,
     { from: proxyDeployerAddress }
   )
-  await governanceProxy.setAudiusProxyAdminAddress(governanceProxy.address, { from: proxyAdminAddress })
+  await governanceProxy.setAudiusProxyAdminAddress(governanceProxy.address, {
+    from: proxyAdminAddress
+  })
 
   const governance = await Governance.at(governanceProxy.address)
   return governance
@@ -286,7 +359,9 @@ export const deployClaimsManager = async (
 ) => {
   const governanceAddress = governance.address
   const ClaimsManager = artifacts.require('ClaimsManager')
-  const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+  const AudiusAdminUpgradeabilityProxy = artifacts.require(
+    'AudiusAdminUpgradeabilityProxy'
+  )
   const claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
   const claimsInitializeCallData = encodeCall(
     'initialize',
@@ -300,7 +375,9 @@ export const deployClaimsManager = async (
     { from: proxyDeployerAddress }
   )
   let claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
-  await registry.addContract(registryKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+  await registry.addContract(registryKey, claimsManagerProxy.address, {
+    from: proxyDeployerAddress
+  })
 
   // Update funding found block diff
   await governance.guardianExecuteTransaction(
@@ -313,7 +390,14 @@ export const deployClaimsManager = async (
   return claimsManager
 }
 
-export const addServiceType = async (serviceType, typeMin, typeMax, governance, guardianAddress, serviceTypeManagerRegKey) => {
+export const addServiceType = async (
+  serviceType,
+  typeMin,
+  typeMax,
+  governance,
+  guardianAddress,
+  serviceTypeManagerRegKey
+) => {
   const addServiceTypeSignature = 'addServiceType(bytes32,uint256,uint256)'
   const callValue0 = toBN(0)
 
@@ -330,7 +414,13 @@ export const addServiceType = async (serviceType, typeMin, typeMax, governance, 
   )
 }
 
-export const setServiceVersion = async (serviceType, serviceVersion, governance, guardianAddress, serviceTypeManagerRegKey) => {
+export const setServiceVersion = async (
+  serviceType,
+  serviceVersion,
+  governance,
+  guardianAddress,
+  serviceTypeManagerRegKey
+) => {
   const setServiceVersionSignature = 'setServiceVersion(bytes32,bytes32)'
   const callValue0 = toBN(0)
 
@@ -347,10 +437,19 @@ export const setServiceVersion = async (serviceType, serviceVersion, governance,
   )
 }
 
-export const slash = async (slashAmount, slashAccount, governance, delegateManagerRegKey, guardianAddress) => {
+export const slash = async (
+  slashAmount,
+  slashAccount,
+  governance,
+  delegateManagerRegKey,
+  guardianAddress
+) => {
   const callValue0 = toBN(0)
   const signature = 'slash(uint256,address)'
-  const callData = abiEncode(['uint256', 'address'], [slashAmount, slashAccount])
+  const callData = abiEncode(
+    ['uint256', 'address'],
+    [slashAmount, slashAccount]
+  )
 
   const txReceipt = await governance.guardianExecuteTransaction(
     delegateManagerRegKey,
@@ -373,7 +472,7 @@ export const configureGovernanceContractAddresses = async (
 ) => {
   await assertRevert(
     governance.evaluateProposalOutcome(0),
-    "stakingAddress is not set"
+    'stakingAddress is not set'
   )
   let txReceipt = await governance.guardianExecuteTransaction(
     governanceKey,
@@ -382,7 +481,11 @@ export const configureGovernanceContractAddresses = async (
     abiEncode(['address'], [stakingAddress]),
     { from: guardianAddress }
   )
-  assert.equal(stakingAddress, await governance.getStakingAddress(), 'Expect staking in governance to be set')
+  assert.equal(
+    stakingAddress,
+    await governance.getStakingAddress(),
+    'Expect staking in governance to be set'
+  )
   // Set ServiceProviderFactory address in Governance
   txReceipt = await governance.guardianExecuteTransaction(
     governanceKey,
@@ -391,7 +494,10 @@ export const configureGovernanceContractAddresses = async (
     abiEncode(['address'], [serviceProviderFactoryAddress]),
     { from: guardianAddress }
   )
-  assert.equal(await governance.getServiceProviderFactoryAddress.call(), serviceProviderFactoryAddress)
+  assert.equal(
+    await governance.getServiceProviderFactoryAddress.call(),
+    serviceProviderFactoryAddress
+  )
   // Set DelegateManager address in Governance
   txReceipt = await governance.guardianExecuteTransaction(
     governanceKey,
@@ -400,7 +506,10 @@ export const configureGovernanceContractAddresses = async (
     abiEncode(['address'], [delegateManagerAddress]),
     { from: guardianAddress }
   )
-  assert.equal(await governance.getDelegateManagerAddress.call(), delegateManagerAddress)
+  assert.equal(
+    await governance.getDelegateManagerAddress.call(),
+    delegateManagerAddress
+  )
   return parseTx(txReceipt)
 }
 
@@ -418,7 +527,7 @@ export const configureStakingContractAddresses = async (
 
   await assertRevert(
     staking.stakeFor(testWallet, 0),
-    "serviceProviderFactoryAddress is not set"
+    'serviceProviderFactoryAddress is not set'
   )
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
@@ -430,7 +539,7 @@ export const configureStakingContractAddresses = async (
 
   await assertRevert(
     staking.stakeRewards(0, testWallet),
-    "claimsManagerAddress is not set"
+    'claimsManagerAddress is not set'
   )
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
@@ -442,35 +551,53 @@ export const configureStakingContractAddresses = async (
 
   await assertRevert(
     staking.slash(0, testWallet),
-    "delegateManagerAddress is not set"
+    'delegateManagerAddress is not set'
   )
   await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),
     'setDelegateManagerAddress(address)',
     abiEncode(['address'], [delegateManagerAddress]),
-    { from: guardianAddress })
-  
-    await assertRevert(
-      governance.guardianExecuteTransaction(
-        stakingProxyKey,
-        toBN(0),
-        'setGovernanceAddress(address)',
-        abiEncode(['address'], [testWallet]),
-        { from: guardianAddress }
-      ),
-      "Governance: Transaction failed."
-    )
-    await governance.guardianExecuteTransaction(
+    { from: guardianAddress }
+  )
+
+  await assertRevert(
+    governance.guardianExecuteTransaction(
+      stakingProxyKey,
+      toBN(0),
+      'setGovernanceAddress(address)',
+      abiEncode(['address'], [testWallet]),
+      { from: guardianAddress }
+    ),
+    'Governance: Transaction failed.'
+  )
+  await governance.guardianExecuteTransaction(
     stakingProxyKey,
     toBN(0),
     'setGovernanceAddress(address)',
     abiEncode(['address'], [governance.address]),
-    { from: guardianAddress })
-  assert.equal(spAddress, await staking.getServiceProviderFactoryAddress(), 'Unexpected sp address')
-  assert.equal(claimsManagerAddress, await staking.getClaimsManagerAddress(), 'Unexpected claims address')
-  assert.equal(delegateManagerAddress, await staking.getDelegateManagerAddress(), 'Unexpected delegate manager address')
-  assert.equal(governance.address, await staking.getGovernanceAddress(), 'Unexpected gov address')
+    { from: guardianAddress }
+  )
+  assert.equal(
+    spAddress,
+    await staking.getServiceProviderFactoryAddress(),
+    'Unexpected sp address'
+  )
+  assert.equal(
+    claimsManagerAddress,
+    await staking.getClaimsManagerAddress(),
+    'Unexpected claims address'
+  )
+  assert.equal(
+    delegateManagerAddress,
+    await staking.getDelegateManagerAddress(),
+    'Unexpected delegate manager address'
+  )
+  assert.equal(
+    governance.address,
+    await staking.getGovernanceAddress(),
+    'Unexpected gov address'
+  )
 }
 
 // Test helper to set claimsManager contract addresses
@@ -487,7 +614,7 @@ export const configureClaimsManagerContractAddresses = async (
 
   await assertRevert(
     claimsManager.claimPending(testWallet),
-    "stakingAddress is not set"
+    'stakingAddress is not set'
   )
   let stakingAddressTx = await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
@@ -496,11 +623,15 @@ export const configureClaimsManagerContractAddresses = async (
     abiEncode(['address'], [stakingAddress]),
     { from: guardianAddress }
   )
-  assert.equal(stakingAddress, await claimsManager.getStakingAddress(), 'Unexpected staking address')
+  assert.equal(
+    stakingAddress,
+    await claimsManager.getStakingAddress(),
+    'Unexpected staking address'
+  )
 
   await assertRevert(
     claimsManager.claimPending(testWallet),
-    "serviceProviderFactoryAddress is not set"
+    'serviceProviderFactoryAddress is not set'
   )
   let spAddressTx = await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
@@ -509,11 +640,15 @@ export const configureClaimsManagerContractAddresses = async (
     abiEncode(['address'], [spFactoryAddress]),
     { from: guardianAddress }
   )
-  assert.equal(spFactoryAddress, await claimsManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
+  assert.equal(
+    spFactoryAddress,
+    await claimsManager.getServiceProviderFactoryAddress(),
+    'Unexpected sp address'
+  )
 
   await assertRevert(
     claimsManager.processClaim(testWallet, 0),
-    "delegateManagerAddress is not set"
+    'delegateManagerAddress is not set'
   )
   let delManAddressTx = await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
@@ -522,7 +657,11 @@ export const configureClaimsManagerContractAddresses = async (
     abiEncode(['address'], [delegateManagerAddress]),
     { from: guardianAddress }
   )
-  assert.equal(delegateManagerAddress, await claimsManager.getDelegateManagerAddress(), 'Unexpected delegate managere')
+  assert.equal(
+    delegateManagerAddress,
+    await claimsManager.getDelegateManagerAddress(),
+    'Unexpected delegate managere'
+  )
   // Update funding found block diff
   await governance.guardianExecuteTransaction(
     claimsManagerRegKey,
@@ -537,7 +676,8 @@ export const configureClaimsManagerContractAddresses = async (
     toBN(0),
     'setGovernanceAddress(address)',
     abiEncode(['address'], [governance.address]),
-    { from: guardianAddress })
+    { from: guardianAddress }
+  )
 
   return {
     stakingAddressTx,
@@ -557,16 +697,27 @@ export const configureDelegateManagerAddresses = async (
   spFactoryAddress,
   claimsManagerAddress
 ) => {
-  await assertRevert(delegateManager.claimRewards(guardianAddress), 'stakingAddress is not set')
+  await assertRevert(
+    delegateManager.claimRewards(guardianAddress),
+    'stakingAddress is not set'
+  )
   let stakingTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setStakingAddress(address)',
     abiEncode(['address'], [stakingAddress]),
-    { from: guardianAddress })
-  assert.equal(stakingAddress, await delegateManager.getStakingAddress(), 'Unexpected staking address')
+    { from: guardianAddress }
+  )
+  assert.equal(
+    stakingAddress,
+    await delegateManager.getStakingAddress(),
+    'Unexpected staking address'
+  )
 
-  await assertRevert(delegateManager.claimRewards(guardianAddress), 'serviceProviderFactoryAddress is not set')
+  await assertRevert(
+    delegateManager.claimRewards(guardianAddress),
+    'serviceProviderFactoryAddress is not set'
+  )
   let spFactoryTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -574,9 +725,16 @@ export const configureDelegateManagerAddresses = async (
     abiEncode(['address'], [spFactoryAddress]),
     { from: guardianAddress }
   )
-  assert.equal(spFactoryAddress, await delegateManager.getServiceProviderFactoryAddress(), 'Unexpected sp address')
+  assert.equal(
+    spFactoryAddress,
+    await delegateManager.getServiceProviderFactoryAddress(),
+    'Unexpected sp address'
+  )
 
-  await assertRevert(delegateManager.claimRewards(guardianAddress), 'claimsManagerAddress is not set')
+  await assertRevert(
+    delegateManager.claimRewards(guardianAddress),
+    'claimsManagerAddress is not set'
+  )
   let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
@@ -584,15 +742,24 @@ export const configureDelegateManagerAddresses = async (
     abiEncode(['address'], [claimsManagerAddress]),
     { from: guardianAddress }
   )
-  assert.equal(claimsManagerAddress, await delegateManager.getClaimsManagerAddress(), 'Unexpected claim manager addr')
-  
+  assert.equal(
+    claimsManagerAddress,
+    await delegateManager.getClaimsManagerAddress(),
+    'Unexpected claim manager addr'
+  )
+
   let governanceTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setGovernanceAddress(address)',
     abiEncode(['address'], [governance.address]),
-    { from: guardianAddress })
-  assert.equal(governance.address, await delegateManager.getGovernanceAddress(), 'Unexpected governance address')
+    { from: guardianAddress }
+  )
+  assert.equal(
+    governance.address,
+    await delegateManager.getGovernanceAddress(),
+    'Unexpected governance address'
+  )
 
   return { spFactoryTx, claimsManagerTx, stakingTx, governanceTx }
 }
@@ -611,29 +778,44 @@ export const configureServiceProviderFactoryAddresses = async (
   const testWallet = '0x918D6781D8127A47DfAC6a50429bFc380014c403'
 
   await assertRevert(
-    spFactory.deregister(web3.utils.utf8ToHex('testType'), 'http://test-endpoint/invalid.com'),
-    "stakingAddress is not set"
+    spFactory.deregister(
+      web3.utils.utf8ToHex('testType'),
+      'http://test-endpoint/invalid.com'
+    ),
+    'stakingAddress is not set'
   )
   let stakingTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setStakingAddress(address)',
     abiEncode(['address'], [stakingAddress]),
-    { from: guardianAddress })
-  assert.equal(stakingAddress, await spFactory.getStakingAddress(), 'Unexpected staking address')
-
+    { from: guardianAddress }
+  )
+  assert.equal(
+    stakingAddress,
+    await spFactory.getStakingAddress(),
+    'Unexpected staking address'
+  )
 
   await assertRevert(
-    spFactory.deregister(web3.utils.utf8ToHex('testType'), 'http://test-endpoint/invalid.com'),
-    "serviceTypeManagerAddress is not set"
+    spFactory.deregister(
+      web3.utils.utf8ToHex('testType'),
+      'http://test-endpoint/invalid.com'
+    ),
+    'serviceTypeManagerAddress is not set'
   )
   let serviceTypeTx = await governance.guardianExecuteTransaction(
     key,
     toBN(0),
     'setServiceTypeManagerAddress(address)',
     abiEncode(['address'], [serviceTypeManagerAddress]),
-    { from: guardianAddress })
-  assert.equal(serviceTypeManagerAddress, await spFactory.getServiceTypeManagerAddress(), 'Unexpected service type manager address')
+    { from: guardianAddress }
+  )
+  assert.equal(
+    serviceTypeManagerAddress,
+    await spFactory.getServiceTypeManagerAddress(),
+    'Unexpected service type manager address'
+  )
 
   let claimsManagerTx = await governance.guardianExecuteTransaction(
     key,
@@ -642,11 +824,15 @@ export const configureServiceProviderFactoryAddresses = async (
     abiEncode(['address'], [claimsManagerAddress]),
     { from: guardianAddress }
   )
-  assert.equal(claimsManagerAddress, await spFactory.getClaimsManagerAddress(), 'Unexpected claim manager addr')
+  assert.equal(
+    claimsManagerAddress,
+    await spFactory.getClaimsManagerAddress(),
+    'Unexpected claim manager addr'
+  )
 
   await assertRevert(
     spFactory.cancelDecreaseStakeRequest(testWallet),
-    "delegateManagerAddress is not set"
+    'delegateManagerAddress is not set'
   )
   let delegateManagerTx = await governance.guardianExecuteTransaction(
     key,
@@ -655,13 +841,22 @@ export const configureServiceProviderFactoryAddresses = async (
     abiEncode(['address'], [delegateManagerAddress]),
     { from: guardianAddress }
   )
-  assert.equal(delegateManagerAddress, await spFactory.getDelegateManagerAddress(), 'Unexpected delegate manager addr')
+  assert.equal(
+    delegateManagerAddress,
+    await spFactory.getDelegateManagerAddress(),
+    'Unexpected delegate manager addr'
+  )
   return { serviceTypeTx, stakingTx, claimsManagerTx, delegateManagerTx }
 }
 
-export const registerContract = async (governance, contractKey, contractAddress, guardianAddress) => {
+export const registerContract = async (
+  governance,
+  contractKey,
+  contractAddress,
+  guardianAddress
+) => {
   const txR = await governance.guardianExecuteTransaction(
-    web3New.utils.utf8ToHex("Registry"),
+    web3New.utils.utf8ToHex('Registry'),
     toBN(0),
     'addContract(bytes32,address)',
     abiEncode(['bytes32', 'address'], [contractKey, contractAddress]),

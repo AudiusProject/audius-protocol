@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from src.models.delegates.app_delegate import AppDelegate
+from src.models.delegates.delegation import Delegation
 from src.models.indexing.block import Block
 from src.models.indexing.indexing_checkpoints import IndexingCheckpoint
 from src.models.indexing.ursm_content_node import UrsmContentNode
@@ -111,6 +112,7 @@ def populate_mock_db(db, entities, block_offset=None):
         playlists = entities.get("playlists", [])
         users = entities.get("users", [])
         app_delegates = entities.get("app_delegates", [])
+        delegations = entities.get("delegations", [])
         follows = entities.get("follows", [])
         subscriptions = entities.get("subscriptions", [])
         reposts = entities.get("reposts", [])
@@ -148,6 +150,7 @@ def populate_mock_db(db, entities, block_offset=None):
             len(playlists),
             len(users),
             len(app_delegates),
+            len(delegations),
             len(follows),
             len(saves),
             len(reposts),
@@ -207,7 +210,7 @@ def populate_mock_db(db, entities, block_offset=None):
                 premium_conditions=track_meta.get("premium_conditions", None),
                 is_playlist_upload=track_meta.get("is_playlist_upload", False),
                 track_cid=track_meta.get("track_cid", None),
-                ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None)
+                ai_attribution_user_id=track_meta.get("ai_attribution_user_id", None),
             )
             session.add(track)
         for i, playlist_meta in enumerate(playlists):
@@ -266,7 +269,6 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_available=user_meta.get("is_available", True),
                 is_deactivated=user_meta.get("is_deactivated", False),
                 allow_ai_attribution=user_meta.get("allow_ai_attribution", False),
-
             )
             user_bank = UserBankAccount(
                 signature=f"0x{i}",
@@ -285,10 +287,29 @@ def populate_mock_db(db, entities, block_offset=None):
                 is_personal_access=delegate_meta.get("is_personal_access", False),
                 blockhash=hex(i + block_offset),
                 blocknumber=(i + block_offset),
+                is_current=True,
                 txhash=delegate_meta.get("txhash", str(i + block_offset)),
+                updated_at=delegate_meta.get("updated_at", datetime.now()),
                 created_at=delegate_meta.get("created_at", datetime.now()),
             )
             session.add(delegate)
+
+        for i, delegation_meta in enumerate(delegations):
+            delegation = Delegation(
+                user_id=delegation_meta.get("user_id", i),
+                shared_address=delegation_meta.get("shared_address", str(i)),
+                delegate_address=delegation_meta.get("delegate_address", str(i)),
+                is_approved=delegation_meta.get("is_approved", False),
+                is_revoked=delegation_meta.get("is_revoked", False),
+                blockhash=hex(i + block_offset),
+                blocknumber=(i + block_offset),
+                is_current=True,
+                txhash=delegation_meta.get("txhash", str(i + block_offset)),
+                updated_at=delegation_meta.get("updated_at", datetime.now()),
+                created_at=delegation_meta.get("created_at", datetime.now()),
+            )
+            session.add(delegation)
+
         for i, follow_meta in enumerate(follows):
             follow = Follow(
                 blockhash=hex(i + block_offset),

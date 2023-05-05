@@ -122,7 +122,6 @@ begin;
   );
 commit;
 
-
 -- 4/26/23: add AI columns
 BEGIN;
     DO $$ BEGIN
@@ -134,4 +133,50 @@ BEGIN;
         add column if not exists allow_ai_attribution boolean not null default false;
     END IF;
     END $$;
+COMMIT;
+
+-- 5/1/23: add ai_attribution_user_id index
+
+BEGIN;
+    create index if not exists tracks_ai_attribution_user_id on tracks (ai_attribution_user_id, is_current) where is_current = true and ai_attribution_user_id is not null;
+COMMIT;
+
+
+-- 5/4/23: strip newline for cid
+BEGIN;
+  UPDATE "tracks"
+  SET "track_cid" = regexp_replace(trim("track_cid"), E'\\s+', '', 'g')
+  WHERE is_current = true AND LENGTH(track_cid) = 47 AND track_cid LIKE 'Qm%';
+COMMIT;
+
+-- 5/4/23: create delegations table
+BEGIN;
+  create table public.delegations (
+    shared_address varchar not null,
+    blockhash varchar references blocks(blockhash),
+    blocknumber integer references blocks(number),
+    delegate_address varchar not null,
+    user_id integer not null,
+    is_revoked boolean not null default false,
+    is_current boolean not null,
+    is_approved boolean not null default false,
+    updated_at timestamp not null,
+    created_at timestamp not null,
+    txhash varchar not null,
+    primary key (shared_address, is_current, txhash)
+  );
+COMMIT;
+
+-- 5/4/23: fix app_delegates table to support revokes
+BEGIN;
+    alter table app_delegates
+    add column if not exists is_current boolean not null;
+
+    alter table app_delegates
+    add column if not exists updated_at timestamp not null;
+
+    alter table app_delegates rename column is_revoked to is_delete;
+
+    alter table app_delegates drop constraint app_delegates_pkey;
+    alter table public.app_delegates add constraint app_delegates_pkey primary key (address, is_current, txhash);    
 COMMIT;

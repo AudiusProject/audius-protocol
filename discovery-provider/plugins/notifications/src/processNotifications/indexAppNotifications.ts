@@ -44,7 +44,7 @@ export type NotificationProcessor =
   | TipReceive
   | TipSend
 
-const notificationTypeMapping = {
+export const notificationTypeMapping = {
   follow: MappingVariable.PushFollow,
   repost: MappingVariable.PushRepost,
   save: MappingVariable.PushSave,
