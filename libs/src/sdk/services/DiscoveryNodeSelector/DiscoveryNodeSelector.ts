@@ -207,11 +207,15 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             }
           })
           if (newEndpoint && newEndpoint !== endpoint) {
-            // Retry once on new endpoint
-            return await context.fetch(
-              `${newEndpoint}${context.url}`,
-              context.init
-            )
+            try {
+              // Retry once on new endpoint
+              return await context.fetch(
+                `${newEndpoint}${context.url.replace(endpoint, '')}`,
+                context.init
+              )
+            } catch (e) {
+              console.error('Retry on new node failed', newEndpoint)
+            }
           }
         }
         return response

@@ -182,7 +182,7 @@ jobs:
       hosts: prod-identity
       service: identity-service
 
-  # # Main deploy
+  # Main deploy
 
   - deploy:
       name: deploy-stage-creator-node

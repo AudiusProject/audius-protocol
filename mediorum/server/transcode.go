@@ -249,10 +249,12 @@ func (ss *MediorumServer) transcode(upload *Upload) error {
 		cmd := exec.Command("ffmpeg",
 			"-y",
 			"-i", srcPath,
-			"-b:a", "320k",
-			"-f", "mp3",
-			"-metadata", "fileName="+upload.OrigFileName,
-			"-metadata", "uuid="+upload.ID,
+			"-b:a", "320k", // set bitrate to 320k
+			"-ar", "48000", // set sample rate to 48000 Hz
+			"-f", "mp3", // force output to mp3
+			"-metadata", fmt.Sprintf(`fileName="%s"`, upload.OrigFileName),
+			"-metadata", fmt.Sprintf(`uuid="%s"`, upload.ID), // make each upload unique so artists can re-upload same file with different CID if it gets delisted
+			"-vn", // no video
 			"-progress", "pipe:2",
 			destPath)
 

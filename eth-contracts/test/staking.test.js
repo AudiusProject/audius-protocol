@@ -1,6 +1,8 @@
 import * as _lib from '../utils/lib.js'
 
-const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require(
+  'AudiusAdminUpgradeabilityProxy'
+)
 const Staking = artifacts.require('Staking')
 const MockStakingCaller = artifacts.require('MockStakingCaller')
 
@@ -13,7 +15,6 @@ const DEFAULT_AMOUNT = _lib.audToWeiBN(120)
 const VOTING_PERIOD = 10
 const EXECUTION_DELAY = VOTING_PERIOD
 const VOTING_QUORUM_PERCENT = 10
-
 
 contract('Staking test', async (accounts) => {
   let registry, governance
@@ -29,10 +30,7 @@ contract('Staking test', async (accounts) => {
     // allow Staking app to move owner tokens
     await token.approve(stakingAddress, amount, { from: staker })
     // stake tokens
-    await mockStakingCaller.stakeFor(
-      staker,
-      amount
-    )
+    await mockStakingCaller.stakeFor(staker, amount)
   }
 
   const getStakedAmountForAcct = async (acct) => {
@@ -42,15 +40,16 @@ contract('Staking test', async (accounts) => {
   }
 
   const slashAccount = async (amount, slashAddr, slasherAddress) => {
-    return mockStakingCaller.slash(
-      amount,
-      slashAddr,
-      { from: slasherAddress })
+    return mockStakingCaller.slash(amount, slashAddr, { from: slasherAddress })
   }
 
   beforeEach(async () => {
     // Deploy registry
-    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
+    registry = await _lib.deployRegistry(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress
+    )
 
     // Deploy + register governance
     governance = await _lib.deployGovernance(
@@ -73,7 +72,9 @@ contract('Staking test', async (accounts) => {
       tokenOwnerAddress,
       governance.address
     )
-    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
+    await registry.addContract(tokenRegKey, token.address, {
+      from: proxyDeployerAddress
+    })
 
     // Register mock contract as claimsManager, spFactory, delegateManager
     mockStakingCaller = await MockStakingCaller.new()
@@ -84,10 +85,7 @@ contract('Staking test', async (accounts) => {
     stakingInitializeData = _lib.encodeCall(
       'initialize',
       ['address', 'address'],
-      [
-        token.address,
-        mockGovAddress
-      ]
+      [token.address, mockGovAddress]
     )
 
     proxy = await AudiusAdminUpgradeabilityProxy.new(
@@ -98,9 +96,19 @@ contract('Staking test', async (accounts) => {
     )
 
     await mockStakingCaller.initialize(proxy.address, token.address)
-    await registry.addContract(claimsManagerProxyKey, mockStakingCaller.address, { from: proxyDeployerAddress })
-    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address, { from: proxyDeployerAddress })
-    await registry.addContract(delegateManagerKey, mockStakingCaller.address, { from: proxyDeployerAddress })
+    await registry.addContract(
+      claimsManagerProxyKey,
+      mockStakingCaller.address,
+      { from: proxyDeployerAddress }
+    )
+    await registry.addContract(
+      serviceProviderFactoryKey,
+      mockStakingCaller.address,
+      { from: proxyDeployerAddress }
+    )
+    await registry.addContract(delegateManagerKey, mockStakingCaller.address, {
+      from: proxyDeployerAddress
+    })
 
     // Configure all addresses to mockStakingCaller
     await mockStakingCaller.configurePermissions()
@@ -118,19 +126,28 @@ contract('Staking test', async (accounts) => {
   })
 
   it('has correct initial state', async () => {
-    assert.equal(await staking.token({ from: accounts[13]}), token.address, 'Token is wrong')
-    assert.equal((await staking.totalStaked()).valueOf(), 0, 'Initial total staked amount should be zero')
-    assert.equal(await staking.supportsHistory(), true, 'history support should match')
+    assert.equal(
+      await staking.token({ from: accounts[13] }),
+      token.address,
+      'Token is wrong'
+    )
+    assert.equal(
+      (await staking.totalStaked()).valueOf(),
+      0,
+      'Initial total staked amount should be zero'
+    )
+    assert.equal(
+      await staking.supportsHistory(),
+      true,
+      'history support should match'
+    )
   })
 
   it('fails staking 0 amount', async () => {
     let staker = accounts[10]
     await token.approve(stakingAddress, 1)
     await _lib.assertRevert(
-      mockStakingCaller.stakeFor(
-        staker,
-        0
-      ),
+      mockStakingCaller.stakeFor(staker, 0),
       'Zero amount not allowed'
     )
   })
@@ -138,17 +155,12 @@ contract('Staking test', async (accounts) => {
   it('fails unstaking more than staked, fails 0', async () => {
     await approveAndStake(DEFAULT_AMOUNT, proxyDeployerAddress)
     await _lib.assertRevert(
-      mockStakingCaller.unstakeFor(
-        proxyDeployerAddress,
-        DEFAULT_AMOUNT + 1
-      ),
-      "Cannot decrease greater than current balance"
+      mockStakingCaller.unstakeFor(proxyDeployerAddress, DEFAULT_AMOUNT + 1),
+      'Cannot decrease greater than current balance'
     )
     await _lib.assertRevert(
-      mockStakingCaller.unstakeFor(
-        proxyDeployerAddress,
-        0
-      ))
+      mockStakingCaller.unstakeFor(proxyDeployerAddress, 0)
+    )
   })
 
   it('fails staking with insufficient balance', async () => {
@@ -157,7 +169,11 @@ contract('Staking test', async (accounts) => {
   })
 
   it('supports history', async () => {
-    assert.equal(await staking.supportsHistory(), true, 'It should support History')
+    assert.equal(
+      await staking.supportsHistory(),
+      true,
+      'It should support History'
+    )
   })
 
   it('stake with single account', async () => {
@@ -166,23 +182,30 @@ contract('Staking test', async (accounts) => {
     await token.transfer(staker, DEFAULT_AMOUNT, { from: proxyDeployerAddress })
     await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: staker })
 
-    assert.equal(0, await staking.lastStakedFor(staker), 'No stake history expected')
+    assert.equal(
+      0,
+      await staking.lastStakedFor(staker),
+      'No stake history expected'
+    )
 
     // stake tokens
-    let tx = await mockStakingCaller.stakeFor(
-      staker,
-      DEFAULT_AMOUNT)
+    let tx = await mockStakingCaller.stakeFor(staker, DEFAULT_AMOUNT)
     assert.equal(
       _lib.fromBN(await staking.lastStakedFor(staker)),
       tx.receipt.blockNumber,
-      'Expect history update in Staking')
+      'Expect history update in Staking'
+    )
 
     assert.isTrue(
       (await staking.totalStakedAt(tx.receipt.blockNumber)).eq(DEFAULT_AMOUNT),
-      'Default amount expected')
+      'Default amount expected'
+    )
     assert.isTrue(
-      (await staking.totalStakedForAt(staker, tx.receipt.blockNumber)).eq(DEFAULT_AMOUNT),
-      'Default amount expected')
+      (await staking.totalStakedForAt(staker, tx.receipt.blockNumber)).eq(
+        DEFAULT_AMOUNT
+      ),
+      'Default amount expected'
+    )
 
     assert.isTrue(
       (await staking.totalStaked()).eq(DEFAULT_AMOUNT),
@@ -204,30 +227,54 @@ contract('Staking test', async (accounts) => {
 
     await approveAndStake(DEFAULT_AMOUNT, staker)
 
-    assert.isTrue((await token.balanceOf(staker)).eq(initialOwnerBalance.sub(DEFAULT_AMOUNT)), 'staker balance should match')
-    assert.isTrue((await token.balanceOf(stakingAddress)).eq(initialStakingBalance.add(DEFAULT_AMOUNT)), 'Staking app balance should match')
-    assert.isTrue((await staking.totalStakedFor(staker)).eq(DEFAULT_AMOUNT), 'staked value should match')
+    assert.isTrue(
+      (await token.balanceOf(staker)).eq(
+        initialOwnerBalance.sub(DEFAULT_AMOUNT)
+      ),
+      'staker balance should match'
+    )
+    assert.isTrue(
+      (await token.balanceOf(stakingAddress)).eq(
+        initialStakingBalance.add(DEFAULT_AMOUNT)
+      ),
+      'Staking app balance should match'
+    )
+    assert.isTrue(
+      (await staking.totalStakedFor(staker)).eq(DEFAULT_AMOUNT),
+      'staked value should match'
+    )
 
     // total stake
-    assert.equal((await staking.totalStaked()).toString(), DEFAULT_AMOUNT, 'Total stake should match')
+    assert.equal(
+      (await staking.totalStaked()).toString(),
+      DEFAULT_AMOUNT,
+      'Total stake should match'
+    )
 
     // Unstake default amount
-    await mockStakingCaller.unstakeFor(
-      staker,
-      DEFAULT_AMOUNT
-    )
+    await mockStakingCaller.unstakeFor(staker, DEFAULT_AMOUNT)
 
     const finalOwnerBalance = await token.balanceOf(staker)
     const finalStakingBalance = await token.balanceOf(stakingAddress)
 
-    assert.isTrue(finalOwnerBalance.eq(initialOwnerBalance), 'initial and final owner balance should match')
-    assert.isTrue(finalStakingBalance.eq(initialStakingBalance), 'initial and final staking balance should match')
+    assert.isTrue(
+      finalOwnerBalance.eq(initialOwnerBalance),
+      'initial and final owner balance should match'
+    )
+    assert.isTrue(
+      finalStakingBalance.eq(initialStakingBalance),
+      'initial and final staking balance should match'
+    )
   })
 
   it('stake with multiple accounts', async () => {
     // Transfer 1000 tokens to accounts[10], accounts[11]
-    await token.transfer(accounts[10], DEFAULT_AMOUNT, { from: proxyDeployerAddress })
-    await token.transfer(accounts[11], DEFAULT_AMOUNT, { from: proxyDeployerAddress })
+    await token.transfer(accounts[10], DEFAULT_AMOUNT, {
+      from: proxyDeployerAddress
+    })
+    await token.transfer(accounts[11], DEFAULT_AMOUNT, {
+      from: proxyDeployerAddress
+    })
 
     let initialTotalStaked = await staking.totalStaked()
 
@@ -236,11 +283,12 @@ contract('Staking test', async (accounts) => {
     await approveAndStake(DEFAULT_AMOUNT, accounts[11])
 
     let finalTotalStaked = parseInt(await staking.totalStaked())
-    let expectedFinalStake = parseInt(initialTotalStaked + (DEFAULT_AMOUNT * 2))
+    let expectedFinalStake = parseInt(initialTotalStaked + DEFAULT_AMOUNT * 2)
     assert.equal(
       finalTotalStaked,
       expectedFinalStake,
-      'Final stake amount must be 2x default stake')
+      'Final stake amount must be 2x default stake'
+    )
   })
 
   it('slash account', async () => {
@@ -248,7 +296,9 @@ contract('Staking test', async (accounts) => {
     const slashAmount = web3.utils.toBN(DEFAULT_AMOUNT / 2)
 
     // Transfer & stake
-    await token.transfer(account, DEFAULT_AMOUNT, { from: proxyDeployerAddress })
+    await token.transfer(account, DEFAULT_AMOUNT, {
+      from: proxyDeployerAddress
+    })
     await approveAndStake(DEFAULT_AMOUNT, account)
 
     // Confirm initial Staking state
@@ -281,7 +331,7 @@ contract('Staking test', async (accounts) => {
     assert.equal(
       await token.totalSupply(),
       tokenInitialSupply - slashAmount,
-      "ruh roh"
+      'ruh roh'
     )
   })
 
@@ -294,9 +344,15 @@ contract('Staking test', async (accounts) => {
 
     // TODO: Confirm that historic values for a single account can be recalculated by validating with blocknumber
     // Transfer DEFAULLT tokens to accts 1, 2, 3
-    await token.transfer(spAccount1, DEFAULT_AMOUNT, { from: proxyDeployerAddress })
-    await token.transfer(spAccount2, DEFAULT_AMOUNT, { from: proxyDeployerAddress })
-    await token.transfer(spAccount3, DEFAULT_AMOUNT, { from: proxyDeployerAddress })
+    await token.transfer(spAccount1, DEFAULT_AMOUNT, {
+      from: proxyDeployerAddress
+    })
+    await token.transfer(spAccount2, DEFAULT_AMOUNT, {
+      from: proxyDeployerAddress
+    })
+    await token.transfer(spAccount3, DEFAULT_AMOUNT, {
+      from: proxyDeployerAddress
+    })
 
     // Stake with account 1
     // Treasury - 120
@@ -311,30 +367,55 @@ contract('Staking test', async (accounts) => {
     assert.equal(
       currentTotalStake,
       expectedTotalStake,
-      'Final stake amount must be 2x default stake')
+      'Final stake amount must be 2x default stake'
+    )
 
-    assert.equal(await staking.lastClaimedFor(spAccount1), 0, 'No claim history expected')
-    assert.equal(await staking.lastClaimedFor(spAccount2), 0, 'No claim history expected')
+    assert.equal(
+      await staking.lastClaimedFor(spAccount1),
+      0,
+      'No claim history expected'
+    )
+    assert.equal(
+      await staking.lastClaimedFor(spAccount2),
+      0,
+      'No claim history expected'
+    )
 
     let FIRST_CLAIM_FUND = _lib.audToWeiBN(120)
 
     // Transfer 120AUD tokens to staking contract
-    await token.transfer(funderAccount, FIRST_CLAIM_FUND, { from: proxyDeployerAddress })
+    await token.transfer(funderAccount, FIRST_CLAIM_FUND, {
+      from: proxyDeployerAddress
+    })
 
     // allow Staking app to move owner tokens
     let sp1Rewards = FIRST_CLAIM_FUND.div(web3.utils.toBN(2))
     let sp2Rewards = sp1Rewards
-    await token.approve(mockStakingCaller.address, sp1Rewards, { from: funderAccount })
-    let tx = await mockStakingCaller.stakeRewards(sp1Rewards, spAccount1, { from: funderAccount })
+    await token.approve(mockStakingCaller.address, sp1Rewards, {
+      from: funderAccount
+    })
+    let tx = await mockStakingCaller.stakeRewards(sp1Rewards, spAccount1, {
+      from: funderAccount
+    })
     assert.isTrue(
-      (await staking.lastClaimedFor(spAccount1)).eq(_lib.toBN(tx.receipt.blockNumber)),
-      'Updated claim history expected')
+      (await staking.lastClaimedFor(spAccount1)).eq(
+        _lib.toBN(tx.receipt.blockNumber)
+      ),
+      'Updated claim history expected'
+    )
 
-    await token.approve(mockStakingCaller.address, sp2Rewards, { from: funderAccount })
-    tx = await mockStakingCaller.stakeRewards(sp2Rewards, spAccount2, { from: funderAccount })
+    await token.approve(mockStakingCaller.address, sp2Rewards, {
+      from: funderAccount
+    })
+    tx = await mockStakingCaller.stakeRewards(sp2Rewards, spAccount2, {
+      from: funderAccount
+    })
     assert.isTrue(
-      (await staking.lastClaimedFor(spAccount2)).eq(_lib.toBN(tx.receipt.blockNumber)),
-      'Updated claim history expected')
+      (await staking.lastClaimedFor(spAccount2)).eq(
+        _lib.toBN(tx.receipt.blockNumber)
+      ),
+      'Updated claim history expected'
+    )
 
     // Initial val should be first claim fund / 2
     let expectedValueAfterFirstFund = DEFAULT_AMOUNT.add(sp1Rewards)
@@ -342,47 +423,43 @@ contract('Staking test', async (accounts) => {
     // Confirm value added to account 1
     let acct1StakeAfterFund = await getStakedAmountForAcct(spAccount1)
     assert.isTrue(
-      expectedValueAfterFirstFund.eq(
-        web3.utils.toBN(acct1StakeAfterFund)),
-      'Expected stake increase for acct 1')
+      expectedValueAfterFirstFund.eq(web3.utils.toBN(acct1StakeAfterFund)),
+      'Expected stake increase for acct 1'
+    )
 
     let acct2StakeAfterFund = await getStakedAmountForAcct(spAccount2)
     assert.isTrue(
-      expectedValueAfterFirstFund.eq(
-        web3.utils.toBN(acct2StakeAfterFund)),
-      'Expected stake increase for acct 2')
+      expectedValueAfterFirstFund.eq(web3.utils.toBN(acct2StakeAfterFund)),
+      'Expected stake increase for acct 2'
+    )
 
     // Stake with account 3, after funding round
     await approveAndStake(DEFAULT_AMOUNT, spAccount3)
     // Confirm updated multiplier adjusts stake accurately
     let acct3Stake = await getStakedAmountForAcct(spAccount3)
     assert.isTrue(
-      DEFAULT_AMOUNT.eq(
-        web3.utils.toBN(acct3Stake)),
-      'Expected stake increase for acct 2')
+      DEFAULT_AMOUNT.eq(web3.utils.toBN(acct3Stake)),
+      'Expected stake increase for acct 2'
+    )
   })
 
   describe('caller restriction verification', async () => {
     it('stakeFor, unstakeFor called from invalid address, ServiceProviderFactory restrictions', async () => {
       let staker = accounts[11]
       // Transfer 1000 tokens to accounts[11]
-      await token.transfer(staker, DEFAULT_AMOUNT, { from: proxyDeployerAddress })
+      await token.transfer(staker, DEFAULT_AMOUNT, {
+        from: proxyDeployerAddress
+      })
       await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: staker })
 
       // stake tokens
       await _lib.assertRevert(
-        staking.stakeFor(
-          staker,
-          DEFAULT_AMOUNT
-        ),
+        staking.stakeFor(staker, DEFAULT_AMOUNT),
         'Only callable from ServiceProviderFactory'
       )
       // unstake tokens
       await _lib.assertRevert(
-        staking.unstakeFor(
-          staker,
-          DEFAULT_AMOUNT
-        ),
+        staking.unstakeFor(staker, DEFAULT_AMOUNT),
         'Only callable from ServiceProviderFactory'
       )
     })
@@ -411,29 +488,31 @@ contract('Staking test', async (accounts) => {
       let invalidStakingInitializeData = _lib.encodeCall(
         'initialize',
         ['address', 'address'],
-        [
-          accounts[5],
-          mockStakingCaller.address
-        ]
+        [accounts[5], mockStakingCaller.address]
       )
       let staking1 = await Staking.new({ from: proxyAdminAddress })
       // Confirm invalid token address fails on init
-      await _lib.assertRevert(
+      await _lib.assertNotStored(
         AudiusAdminUpgradeabilityProxy.new(
           staking1.address,
           mockStakingCaller.address,
           invalidStakingInitializeData,
           { from: proxyDeployerAddress }
-        ),
+        )
       )
     })
 
     it('stakeRewards called from invalid address, ClaimsManager restriction', async () => {
       let staker = accounts[11]
       // Transfer 1000 tokens to accounts[11]
-      await token.transfer(staker, DEFAULT_AMOUNT, { from: proxyDeployerAddress })
+      await token.transfer(staker, DEFAULT_AMOUNT, {
+        from: proxyDeployerAddress
+      })
       await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: staker })
-      await _lib.assertRevert(staking.stakeRewards(DEFAULT_AMOUNT, staker), 'Only callable from ClaimsManager')
+      await _lib.assertRevert(
+        staking.stakeRewards(DEFAULT_AMOUNT, staker),
+        'Only callable from ClaimsManager'
+      )
     })
 
     it('slash called from invalid address, DelegateManager restrictions', async () => {
@@ -447,7 +526,9 @@ contract('Staking test', async (accounts) => {
       let staker = accounts[11]
       let delegator = accounts[12]
       // Transfer 1000 tokens to accounts[11]
-      await token.transfer(delegator, DEFAULT_AMOUNT, { from: proxyDeployerAddress })
+      await token.transfer(delegator, DEFAULT_AMOUNT, {
+        from: proxyDeployerAddress
+      })
       await token.approve(stakingAddress, DEFAULT_AMOUNT, { from: delegator })
       await _lib.assertRevert(
         staking.delegateStakeFor(staker, delegator, DEFAULT_AMOUNT),
@@ -472,7 +553,7 @@ contract('Staking test', async (accounts) => {
           serviceProviderFactoryKey
         ]
       )
-      await _lib.assertRevert(
+      await _lib.assertNotStored(
         AudiusAdminUpgradeabilityProxy.new(
           testStaking.address,
           mockStakingCaller.address,
