@@ -1153,6 +1153,7 @@ def update_task(self):
     # Custom Task definition can be found in src/app.py
     db = update_task.db
     redis = update_task.redis
+    web3 = web3_provider.get_web3()
 
     final_poa_block = helpers.get_final_poa_block()
     # Initialize contracts and attach to the task singleton
