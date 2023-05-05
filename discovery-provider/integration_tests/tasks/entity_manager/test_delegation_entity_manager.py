@@ -50,12 +50,12 @@ def test_index_delegation(app, mocker):
                         "_userId": new_delegations_data[0]["user_id"],
                         "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}", "delegate_address": "{new_delegations_data[0]["delegate_address"]}"}}""",
                         "_action": Action.CREATE,
-                        "_signer": "user1wallet",
+                        "_signer": f"user{new_delegations_data[0]['user_id']}wallet",
                     }
                 )
             },
         ],
-        "CreateDelegateTx2": [
+        "CreateDelegationTx2": [
             {
                 "args": AttributeDict(
                     {
@@ -64,12 +64,12 @@ def test_index_delegation(app, mocker):
                         "_userId": new_delegations_data[1]["user_id"],
                         "_metadata": f"""{{"shared_address": "{new_delegations_data[1]["shared_address"]}", "delegate_address": "{new_delegations_data[1]["delegate_address"]}"}}""",
                         "_action": Action.CREATE,
-                        "_signer": "user1wallet",
+                        "_signer": f"user{new_delegations_data[1]['user_id']}wallet",
                     }
                 )
             },
         ],
-        "CreateDelegateTx3": [
+        "CreateDelegationTx3": [
             {
                 "args": AttributeDict(
                     {
@@ -78,7 +78,7 @@ def test_index_delegation(app, mocker):
                         "_userId": new_delegations_data[2]["user_id"],
                         "_metadata": f"""{{"shared_address": "{new_delegations_data[2]["shared_address"]}", "delegate_address": "{new_delegations_data[2]["delegate_address"]}"}}""",
                         "_action": Action.CREATE,
-                        "_signer": "user1wallet",
+                        "_signer": f"user{new_delegations_data[2]['user_id']}wallet",
                     }
                 )
             },
@@ -249,3 +249,261 @@ def test_index_delegation(app, mocker):
         all_delegations: List[Delegation] = session.query(Delegation).all()
         # make sure no new rows were added
         assert len(all_delegations) == 4
+
+    tx_receipts = {
+        "InvalidDeleteDelegationTx1": [
+            {
+                # Delegation doesn't exist
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATION,
+                        "_userId": 1,
+                        "_metadata": '{"shared_address": "0xaB6Ac417265Ee2B8A1f1f4cccc7CeF5Be71584b9"}',
+                        "_action": Action.DELETE,
+                        "_signer": "user1wallet",
+                    }
+                )
+            },
+        ],
+        "InvalidDeleteDelegationTx2": [
+            {
+                "args": AttributeDict(
+                    {
+                        # User id doesn't match delegation
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATION,
+                        "_userId": 3,
+                        "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}"}}""",
+                        "_action": Action.DELETE,
+                        "_signer": "user3wallet",
+                    }
+                )
+            },
+        ],
+        "InvalidDeleteDelegationTx3": [
+            {
+                "args": AttributeDict(
+                    {
+                        # Signer is incorrect
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATION,
+                        "_userId": new_delegations_data[0]["user_id"],
+                        "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}"}}""",
+                        "_action": Action.DELETE,
+                        "_signer": "badsigner",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    with db.scoped_session() as session:
+        # index transactions
+        timestamp = 1000000001
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=timestamp,
+            block_hash=0,
+            metadata={},
+        )
+        # validate db records
+        all_delegations: List[Delegation] = session.query(Delegation).all()
+        # make sure no new rows were added
+        assert len(all_delegations) == 4
+
+    # Valid deletes
+    tx_receipts = {
+        "DeleteDelegationTx1": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATION,
+                        "_userId": new_delegations_data[0]["user_id"],
+                        "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}"}}""",
+                        "_action": Action.DELETE,
+                        "_signer": f"user{new_delegations_data[0]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteDelegationTx2": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATION,
+                        "_userId": new_delegations_data[1]["user_id"],
+                        "_metadata": f"""{{"shared_address": "{new_delegations_data[1]["shared_address"]}"}}""",
+                        "_action": Action.DELETE,
+                        "_signer": f"user{new_delegations_data[1]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+        "DeleteDelegationTx3": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATION,
+                        "_userId": new_delegations_data[2]["user_id"],
+                        "_metadata": f"""{{"shared_address": "{new_delegations_data[2]["shared_address"]}"}}""",
+                        "_action": Action.DELETE,
+                        "_signer": f"user{new_delegations_data[2]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1000000000,
+            block_hash=0,
+            metadata={},
+        )
+
+        # validate db records
+        all_delegations: List[Delegation] = session.query(Delegation).all()
+        assert len(all_delegations) == 7
+
+        for expected_delegation in new_delegations_data:
+            found_matches = [
+                item
+                for item in all_delegations
+                if item.shared_address == expected_delegation["shared_address"].lower()
+                and item.is_current == True
+            ]
+            assert len(found_matches) == 1
+            res = found_matches[0]
+            assert res.user_id == expected_delegation["user_id"]
+            assert res.shared_address == expected_delegation["shared_address"].lower()
+            assert res.is_current == True
+            assert (
+                res.delegate_address == expected_delegation["delegate_address"].lower()
+            )
+            if expected_delegation["is_user_delegation"]:
+                assert res.is_approved == False
+            else:
+                assert res.is_approved == True
+            assert res.is_revoked == True
+            assert res.blocknumber == 0
+
+    # Duplicate delete - should fail
+    tx_receipts = {
+        "DeleteDelegationTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATION,
+                        "_userId": new_delegations_data[0]["user_id"],
+                        "_metadata": f"""{{"shared_address": "{new_delegations_data[0]["shared_address"]}"}}""",
+                        "_action": Action.DELETE,
+                        "_signer": f"user{new_delegations_data[0]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1000000000,
+            block_hash=0,
+            metadata={},
+        )
+
+        # validate db records
+        all_delegations: List[Delegation] = session.query(Delegation).all()
+        # No change
+        assert len(all_delegations) == 7
+
+    # Reactivate a revoked delegation
+    tx_receipts = {
+        "CreateDelegationTx4": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": 0,
+                        "_entityType": EntityType.DELEGATION,
+                        "_userId": new_delegations_data[1]["user_id"],
+                        "_metadata": f"""{{"shared_address": "{new_delegations_data[1]["shared_address"]}", "delegate_address": "{new_delegations_data[1]["delegate_address"]}"}}""",
+                        "_action": Action.CREATE,
+                        "_signer": f"user{new_delegations_data[1]['user_id']}wallet",
+                    }
+                )
+            },
+        ],
+    }
+
+    entity_manager_txs = [
+        AttributeDict({"transactionHash": update_task.web3.toBytes(text=tx_receipt)})
+        for tx_receipt in tx_receipts
+    ]
+
+    with db.scoped_session() as session:
+        # index transactions
+        entity_manager_update(
+            None,
+            update_task,
+            session,
+            entity_manager_txs,
+            block_number=0,
+            block_timestamp=1000000000,
+            block_hash=0,
+            metadata={},
+        )
+
+        # validate db records
+        all_delegations: List[Delegation] = session.query(Delegation).all()
+        assert len(all_delegations) == 8
+        expected_delegation = new_delegations_data[1]
+        found_matches = [
+            item
+            for item in all_delegations
+            if item.shared_address == expected_delegation["shared_address"].lower()
+            and item.is_current == True
+        ]
+        assert len(found_matches) == 1
+        res = found_matches[0]
+        assert res.user_id == expected_delegation["user_id"]
+        assert res.shared_address == expected_delegation["shared_address"].lower()
+        assert res.is_current == True
+        assert res.delegate_address == expected_delegation["delegate_address"].lower()
+        assert res.is_approved == True
+        assert res.is_revoked == False
+        assert res.blocknumber == 0

@@ -24,7 +24,7 @@ from src.tasks.entity_manager.app_delegate import (
     create_app_delegate,
     delete_app_delegate,
 )
-from src.tasks.entity_manager.delegation import create_delegation
+from src.tasks.entity_manager.delegation import create_delegation, revoke_delegation
 from src.tasks.entity_manager.notification import (
     create_notification,
     view_notification,
@@ -238,6 +238,11 @@ def entity_manager_update(
                         and params.entity_type == EntityType.DELEGATION
                     ):
                         create_delegation(params)
+                    elif (
+                        params.action == Action.DELETE
+                        and params.entity_type == EntityType.DELEGATION
+                    ):
+                        revoke_delegation(params)
                 except Exception as e:
                     # swallow exception to keep indexing
                     logger.info(
@@ -582,7 +587,8 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .filter(
                 func.lower(AppDelegate.address).in_(
                     entities_to_fetch[EntityType.APP_DELEGATE]
-                )
+                ),
+                AppDelegate.is_current == True,
             )
             .all()
         )
@@ -597,7 +603,8 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             .filter(
                 func.lower(Delegation.shared_address).in_(
                     entities_to_fetch[EntityType.DELEGATION]
-                )
+                ),
+                Delegation.is_current == True,
             )
             .all()
         )

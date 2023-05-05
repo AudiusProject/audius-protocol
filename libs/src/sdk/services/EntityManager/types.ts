@@ -33,12 +33,12 @@ export enum EntityType {
 }
 
 export type EntityManagerService = {
-  manageEntity(options: {
+  manageEntity: (options: {
     userId: number
     entityType: EntityType
     entityId: number
     action: Action
     metadata: string
     walletApi: WalletApiService
-  }): Promise<{ txReceipt: TransactionReceipt }>
+  }) => Promise<{ txReceipt: TransactionReceipt }>
 }

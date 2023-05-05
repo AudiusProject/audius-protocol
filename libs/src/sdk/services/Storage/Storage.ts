@@ -24,7 +24,7 @@ export class Storage implements StorageService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
-  private config: StorageServiceConfig
+  private readonly config: StorageServiceConfig
 
   constructor(config?: StorageServiceConfig) {
     this.config = mergeConfigWithDefaults(config, defaultStorageServiceConfig)

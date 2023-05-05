@@ -23,10 +23,10 @@ export class EntityManager implements EntityManagerService {
   /**
    * Configuration passed in by consumer (with defaults)
    */
-  private config: EntityManagerConfig
+  private readonly config: EntityManagerConfig
 
-  private contract: Contract
-  private web3: Web3Type
+  private readonly contract: Contract
+  private readonly web3: Web3Type
 
   constructor(config?: EntityManagerConfig) {
     this.config = mergeConfigWithDefaults(config, defaultEntityManagerConfig)
@@ -80,7 +80,7 @@ export class EntityManager implements EntityManagerService {
     const senderAddress = await walletApi.getAddress()
     const signature = await walletApi.sign(signatureData as any)
 
-    const method = await this.contract.methods['manageEntity'](
+    const method = await this.contract.methods.manageEntity(
       userId,
       entityType,
       entityId,
