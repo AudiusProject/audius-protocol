@@ -35,17 +35,10 @@ const MOBILE_WIDTH_MEDIA_QUERY = window.matchMedia(
 
 type PublicSiteProps = {
   isMobile: boolean
-  onClickAppRedirect: () => void
-  onDismissAppRedirect: () => void
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 
-const PublicSite = ({
-  isMobile,
-  onClickAppRedirect,
-  onDismissAppRedirect,
-  setRenderPublicSite
-}: PublicSiteProps) => {
+const PublicSite = ({ isMobile, setRenderPublicSite }: PublicSiteProps) => {
   const [isMobileOrNarrow, setIsMobileOrNarrow] = useState(isMobile)
   const handleMobileMediaQuery = useCallback(() => {
     if (MOBILE_WIDTH_MEDIA_QUERY.matches) setIsMobileOrNarrow(true)
@@ -163,8 +156,6 @@ const PublicSite = ({
               <LandingPage
                 isMobile={isMobileOrNarrow}
                 openNavScreen={openNavScreen}
-                onClickAppRedirect={onClickAppRedirect}
-                onDismissAppRedirect={onDismissAppRedirect}
                 setRenderPublicSite={setRenderPublicSite}
               />
             )}

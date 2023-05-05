@@ -26,8 +26,6 @@ const FANBURST_UTM_SOURCE = 'utm_source=fanburst'
 type LandingPageProps = {
   isMobile: boolean
   openNavScreen: () => void
-  onClickAppRedirect: () => void
-  onDismissAppRedirect: () => void
   setRenderPublicSite: (shouldRender: boolean) => void
 }
 

@@ -4,6 +4,7 @@ import { Button, ButtonType } from '@audius/stems'
 import { matchPath } from 'react-router-dom'
 // eslint-disable-next-line no-restricted-imports -- TODO: migrate to @react-spring/web
 import { animated, useTransition } from 'react-spring'
+import { useSessionStorage } from 'react-use'
 
 import AppIcon from 'assets/img/appIcon240.png'
 import { isMobile } from 'utils/clientUtil'
@@ -90,7 +91,10 @@ export const AppRedirectPopover = ({
   onBeforeClickApp = () => {},
   onBeforeClickDismissed = () => {}
 }: AppRedirectPopoverProps) => {
-  const [isDismissed, setIsDismissed] = useState(false)
+  const [isDismissed, setIsDismissed] = useSessionStorage(
+    'app-redirect-popover',
+    false
+  )
 
   const [animDelay, setAnimDelay] = useState(false)
   useEffect(() => {
@@ -147,7 +151,12 @@ export const AppRedirectPopover = ({
       {backgroundTransitions.map(({ item, props, key }) => {
         return (
           item && (
-            <animated.div style={props} className={styles.container} key={key}>
+            <animated.div
+              style={props}
+              className={styles.container}
+              key={key}
+              onClick={onDismiss}
+            >
               {drawerTransitions.map(({ item, props, key }) => {
                 return (
                   item && (
@@ -191,7 +200,7 @@ export const AppRedirectPopover = ({
                                 <animated.div
                                   style={props}
                                   className={styles.notNow}
-                                  onClick={() => onDismiss()}
+                                  onClick={onDismiss}
                                 >
                                   {messages.notNow}
                                 </animated.div>

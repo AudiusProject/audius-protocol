@@ -37,16 +37,12 @@ const Root = () => {
     }
   }, [])
 
-  const [shouldShowPopover, setShouldShowPopover] = useState(true)
-
   const shouldRedirectToApp = foundUser && !isPublicSiteSubRoute()
   if (renderPublicSite && !clientIsElectron && !shouldRedirectToApp) {
     return (
       <Suspense fallback={<div style={{ width: '100vw', height: '100vh' }} />}>
         <PublicSite
           isMobile={isMobileClient}
-          onClickAppRedirect={() => setShouldShowPopover(false)}
-          onDismissAppRedirect={() => setShouldShowPopover(false)}
           setRenderPublicSite={setRenderPublicSite}
         />
       </Suspense>
@@ -55,7 +51,7 @@ const Root = () => {
 
   return (
     <>
-      <Dapp shouldShowPopover={shouldShowPopover} />
+      <Dapp />
     </>
   )
 }
