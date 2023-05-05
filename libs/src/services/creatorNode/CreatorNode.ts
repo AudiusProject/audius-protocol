@@ -435,11 +435,11 @@ export class CreatorNode {
     return updatedMetadata
   }
 
-  async uploadTrackAudioV2(file: File, onProgress: ProgressCB) {
+  async uploadTrackAudioV2(file: File, onProgress: ProgressCB = () => {}) {
     return await this.uploadFileV2(file, onProgress, 'audio')
   }
 
-  async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB) {
+  async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB = () => {}) {
     return await this.uploadFileV2(file, onProgress, 'img_square')
   }
 

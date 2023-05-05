@@ -9,7 +9,7 @@ export type ProgressCB = (loaded: number, total: number) => void
 export type FileTemplate = 'audio' | 'img_square' | 'img_backdrop'
 
 export type StorageService = {
-  uploadFile({
+  uploadFile: ({
     file,
     onProgress,
     template
@@ -17,7 +17,7 @@ export type StorageService = {
     file: File
     onProgress: ProgressCB
     template: FileTemplate
-  }): Promise<UploadResponse>
+  }) => Promise<UploadResponse>
 }
 
 export type ProcessingStatus = 'new' | 'busy' | 'done' | 'error'

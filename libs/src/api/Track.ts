@@ -602,8 +602,7 @@ export class Track extends Base {
     // Any failures in addding track to the blockchain will prevent further progress.
     // The list of successful track uploads is returned for revert operations by caller
     trackIds = trackIds.filter(Boolean)
-    const error: boolean =
-      requestFailed || trackIds.length !== trackMetadatas.length
+    const error = requestFailed || trackIds.length !== trackMetadatas.length
     return { error, trackIds }
   }
 

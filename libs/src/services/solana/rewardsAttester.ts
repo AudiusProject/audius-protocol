@@ -541,7 +541,7 @@ export class RewardsAttester {
    */
   async _awaitFeePayerBalance() {
     const getHasBalance = async () =>
-      this.libs.solanaWeb3Manager!.hasBalance({
+      await this.libs.solanaWeb3Manager!.hasBalance({
         publicKey: this.libs.solanaWeb3Manager!.feePayerKey
       })
     while (!(await getHasBalance())) {

@@ -72,23 +72,23 @@ export class EntityManager extends Base {
   /** Social Features */
   createSocialMethod =
     (entityType: EntityType, action: Action) =>
-      async (entityId: number, metadata = ''): Promise<EntityManagerResponse> => {
-        const responseValues: EntityManagerResponse =
-          this.getDefaultEntityManagerResponseValues()
-        try {
-          return await this.manageEntity({
-            userId: this.getCurrentUserId(),
-            entityType,
-            entityId,
-            action,
-            metadata
-          })
-        } catch (e) {
-          const error = (e as Error).message
-          responseValues.error = error
-          return responseValues
-        }
+    async (entityId: number, metadata = ''): Promise<EntityManagerResponse> => {
+      const responseValues: EntityManagerResponse =
+        this.getDefaultEntityManagerResponseValues()
+      try {
+        return await this.manageEntity({
+          userId: this.getCurrentUserId(),
+          entityType,
+          entityId,
+          action,
+          metadata
+        })
+      } catch (e) {
+        const error = (e as Error).message
+        responseValues.error = error
+        return responseValues
       }
+    }
 
   followUser = this.createSocialMethod(EntityType.USER, Action.FOLLOW)
   unfollowUser = this.createSocialMethod(EntityType.USER, Action.UNFOLLOW)
@@ -126,10 +126,7 @@ export class EntityManager extends Base {
       if (playlist?.artwork?.file) {
         if (storageV2UploadEnabled) {
           const updatedPlaylistImage =
-            await this.creatorNode.uploadTrackCoverArtV2(
-              playlist.artwork.file,
-              () => { }
-            )
+            await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file)
           dirCID = updatedPlaylistImage.id
         } else {
           const updatedPlaylistImage = await this.creatorNode.uploadImage(
@@ -239,10 +236,7 @@ export class EntityManager extends Base {
       if (playlist?.artwork?.file) {
         if (storageV2UploadEnabled) {
           const updatedPlaylistImage =
-            await this.creatorNode.uploadTrackCoverArtV2(
-              playlist.artwork.file,
-              () => { }
-            )
+            await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file)
           dirCID = updatedPlaylistImage.id
         } else {
           const updatedPlaylistImage = await this.creatorNode.uploadImage(
