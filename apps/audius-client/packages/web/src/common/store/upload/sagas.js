@@ -273,7 +273,8 @@ function* uploadWorker(requestChan, respChan, progressChan) {
         metadataMultihash,
         metadataFileUUID,
         transcodedTrackCID,
-        transcodedTrackUUID
+        transcodedTrackUUID,
+        metadata
       })
 
       // Don't tell the progress channel we're done yet, because we need
@@ -683,7 +684,7 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
     audiusBackendInstance.uploadImage,
     collectionMetadata.artwork.file
   )
-  collectionMetadata.cover_art_sizes = coverArtResp.dirCID
+  collectionMetadata.cover_art_sizes = coverArtResp.id ?? coverArtResp.dirCID
 
   // Then upload tracks
   const tracksWithMetadata = tracks.map((track) => {
