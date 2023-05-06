@@ -36,7 +36,6 @@ steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
         - run:
-            no_output_timeout: 45m
             name: audius-cmd test
-            no_output_timeout: 15m
+            no_output_timeout: 45m
             command: . ~/.profile; sleep inf
