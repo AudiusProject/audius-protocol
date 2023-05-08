@@ -37,5 +37,5 @@ steps:
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
         - run:
             name: audius-cmd test
-            no_output_timeout: 45m
-            command: . ~/.profile; sleep inf
+            no_output_timeout: 30m
+            command: . ~/.profile; audius-compose up -w && audius-cmd test
