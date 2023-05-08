@@ -19,7 +19,8 @@ import {
   mobileOverflowMenuUISelectors,
   modalsActions,
   modalsSelectors,
-  queueSelectors
+  queueSelectors,
+  shareModalUIActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -39,11 +40,12 @@ const { makeGetCurrent } = queueSelectors
 const { setVisibility } = modalsActions
 const { getModalVisibility } = modalsSelectors
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
 const { requestOpen: openDeletePlaylist } =
   deletePlaylistConfirmationModalUIActions
 const { open: openEditPlaylist } = createPlaylistModalUIActions
 const { requestOpen: openAddToPlaylist } = addToPlaylistUIActions
-const { followUser, shareUser, unfollowUser } = usersSocialActions
+const { followUser, unfollowUser } = usersSocialActions
 const { repostTrack, saveTrack, undoRepostTrack, unsaveTrack } =
   tracksSocialActions
 const {
@@ -340,9 +342,15 @@ const mapDispatchToProps = (dispatch: Dispatch) => {
     follow: (userId: ID) => dispatch(followUser(userId, FollowSource.OVERFLOW)),
     unfollow: (userId: ID) =>
       dispatch(unfollowUser(userId, FollowSource.OVERFLOW)),
-    shareUser: (userId: ID) =>
-      dispatch(shareUser(userId, ShareSource.OVERFLOW)),
-
+    shareUser: (userId: ID) => {
+      dispatch(
+        requestOpenShareModal({
+          type: 'profile',
+          profileId: userId,
+          source: ShareSource.OVERFLOW
+        })
+      )
+    },
     // Routes
     addToPlaylist: (trackId: ID, title: string) =>
       dispatch(openAddToPlaylist(trackId, title)),
