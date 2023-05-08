@@ -2,7 +2,8 @@ import {
   ID,
   FollowSource,
   ShareSource,
-  usersSocialActions as socialActions
+  usersSocialActions as socialActions,
+  shareModalUIActions
 } from '@audius/common'
 import { PopupMenuItem } from '@audius/stems'
 import { push as pushRoute } from 'connected-react-router'
@@ -10,6 +11,8 @@ import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
 import { profilePage } from 'utils/route'
+
+const { requestOpen: requestOpenShareModal } = shareModalUIActions
 
 export type OwnProps = {
   children: (items: PopupMenuItem[]) => JSX.Element
@@ -65,8 +68,15 @@ const Menu = (props: UserMenuProps) => {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
-    shareUser: (userId: ID) =>
-      dispatch(socialActions.shareUser(userId, ShareSource.OVERFLOW)),
+    shareUser: (userId: ID) => {
+      dispatch(
+        requestOpenShareModal({
+          type: 'profile',
+          profileId: userId,
+          source: ShareSource.OVERFLOW
+        })
+      )
+    },
     followUser: (userId: ID) =>
       dispatch(socialActions.followUser(userId, FollowSource.OVERFLOW)),
     unFollowUser: (userId: ID) =>
