@@ -112,6 +112,7 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-contracts-workflow true
+            .* run-release-workflow false
           name: trigger-relevant-workflows
           filters:
             branches:
@@ -134,6 +135,7 @@ workflows:
             "run-contracts-workflow": true,
             "run-release-workflow": true,
             "run-sdk-workflow": true
+            "run-gp-cleanup-workflow": true
             }'
           pre-steps:
             - attach_workspace:
