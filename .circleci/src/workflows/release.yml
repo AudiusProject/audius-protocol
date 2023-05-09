@@ -1,0 +1,60 @@
+when:
+  equal: ["main", << pipeline.parameters.workflow >>]
+jobs:
+  - build-gcp-image:
+      context: GCP
+
+  # Release
+
+  - release-github-draft-trigger:
+      filters:
+        branches:
+          only: /^release-v.*$/
+      type: approval
+  - release-github-draft:
+      context: github
+      requires:
+        - release-github-draft-trigger
+
+  - release-github-trigger:
+      requires:
+        - release-github-draft
+      type: approval
+  - release-github:
+      context: github
+      requires:
+        - release-github-trigger
+
+  - release-governance-trigger:
+      filters:
+        branches:
+          only: /^release-v.*$/
+      type: approval
+  - release-governance:
+      context: governance
+      requires:
+        - release-governance-trigger
+
+  - release-audius-docker-compose-trigger:
+      requires:
+        - push-creator-node
+        - push-discovery-provider
+        - push-identity-service
+      filters:
+        branches:
+          only: /^release-v.*$/
+      type: approval
+  - release-audius-docker-compose:
+      context: github
+      requires:
+        - release-audius-docker-compose-trigger
+
+  - release-discord-trigger:
+      filters:
+        branches:
+          only: /^release-v.*$/
+      type: approval
+  - release-discord:
+      context: discord
+      requires:
+        - release-discord-trigger

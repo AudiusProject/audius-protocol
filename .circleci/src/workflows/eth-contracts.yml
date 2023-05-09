@@ -5,10 +5,10 @@ jobs:
       context: GCP
 
   - test:
-      name: test-audius-libs
+      name: test-eth-contracts
       context: GCP
-      instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
-      service: audius-libs
+      instance-name: circleci-test-eth-contracts-$CIRCLE_BUILD_NUM
+      service: eth-contracts
   - test-audius-cmd:
       context: GCP
       instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM

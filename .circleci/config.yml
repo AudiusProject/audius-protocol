@@ -58,7 +58,7 @@ workflows:
       - generate-config
       - path-filtering/filter:
           base-revision: main
-          config-path: .circleci/continue_config.yml
+          config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
             discovery-provider/.* run-discovery-workflow true
             creator-node/.* run-creator-workflow true
@@ -72,6 +72,7 @@ workflows:
 
             libs/.* run-creator-workflow true
             libs/.* run-identity-workflow true
+            libs/.* run-sdk-workflow true
 
             eth-contracts/.* run-eth-contracts-workflow true
             contracts/.* run-contracts-workflow true
@@ -91,22 +92,25 @@ workflows:
           workspace_path: ../workspace
 
       - continuation/continue:
-          configuration_path: .circleci/generated_config.yml
+          configuration_path: ../workspace/.circleci/continue_config.yml
           name: trigger-all-workflows
           filters:
             branches:
               only: << pipeline.parameters.run-all-workflows-branch-regex >>
           parameters: '{
-            "run-web-workflow": true,
-            "run-mobile-workflow": true,
-            "run-stems-workflow": true
+            "run-discovery-workflow": true,
+            "run-creator-workflow": true,
+            "run-identity-workflow": true,
+            "run-eth-contracts-workflow": true,
+            "run-contracts-workflow": true,
+            "run-release-workflow": true,
+            "run-sdk-workflow": true
             }'
           pre-steps:
             - attach_workspace:
                 at: ../workspace
           requires:
             - generate-config
-            - init
 
   generate-release:
     when:
@@ -114,4 +118,4 @@ workflows:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - equal: ["generate-release", << pipeline.schedule.name >>]
     jobs:
-      - generate-release
+      - release-create-branch
