@@ -33,7 +33,7 @@ program.command("create-user")
     };
 
     try {
-      const response = await audiusLibs.Account.signUp(
+      const response = await audiusLibs.Account.signUpV2(
         email,
         password,
         metadata,
@@ -41,8 +41,7 @@ program.command("create-user")
         /* coverPhotoFile */ null,
         /* hasWallet */ false,
         /* host */ null,
-        /* generateRecoveryLink */ true,
-        /* writeMetadataThroughChain */ true
+        /* generateRecoveryLink */ true
       );
 
       if (response.error) {

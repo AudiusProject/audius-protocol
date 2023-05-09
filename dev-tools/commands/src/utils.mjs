@@ -36,6 +36,7 @@ export const initializeAudiusLibs = async (handle) => {
     ),
     isServer: true,
     enableUserReplicaSetManagerContract: true,
+    isStorageV2Only: true
   });
 
   await audiusLibs.init();
