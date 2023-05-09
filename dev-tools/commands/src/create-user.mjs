@@ -54,10 +54,10 @@ program.command("create-user")
       console.log(chalk.yellow.bold("Email:    "), email);
       console.log(chalk.yellow.bold("Password: "), password);
 
-      audiusLibs.localStorage.setItem(
-        `handle-${metadata.handle}`,
-        audiusLibs.localStorage.getItem("hedgehog-entropy-key"),
-      );
+      // audiusLibs.localStorage.setItem(
+      //   `handle-${metadata.handle}`,
+      //   audiusLibs.localStorage.getItem("hedgehog-entropy-key"),
+      // );
     } catch (err) {
       program.error(err.message);
     }

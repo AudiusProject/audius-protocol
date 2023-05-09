@@ -40,12 +40,12 @@ export const initializeAudiusLibs = async (handle) => {
 
   await audiusLibs.init();
 
-  if (handle) {
-    audiusLibs.localStorage.setItem(
-      "hedgehog-entropy-key",
-      audiusLibs.localStorage.getItem(`handle-${handle}`),
-    );
-  }
+//   if (handle) {
+//     audiusLibs.localStorage.setItem(
+//       "hedgehog-entropy-key",
+//       audiusLibs.localStorage.getItem(`handle-${handle}`),
+//     );
+//   }
 
   return audiusLibs;
 };

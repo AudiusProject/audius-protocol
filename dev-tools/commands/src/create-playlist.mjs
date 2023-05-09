@@ -12,6 +12,7 @@ program.command("create-playlist")
   .option("-f, --from <from>", "The account to create playlist from")
   .action(async (name, trackIds, { album, private: isPrivate, from }) => {
     const audiusLibs = await initializeAudiusLibs(from);
+    await audiusLibs.Account.logout();
 
     try {
       const { transactionHash } = await audiusLibs.Playlist.createPlaylist(
