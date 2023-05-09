@@ -38,4 +38,4 @@ steps:
         - run:
             name: audius-cmd test
             no_output_timeout: 30m
-            command: . ~/.profile; sleep inf
+            command: . ~/.profile; audius-compose up -w && audius-cmd test

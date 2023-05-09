@@ -1,8 +1,10 @@
-import { Utils as AudiusUtils, sdk as AudiusSdk, libs as AudiusLibs } from "@audius/sdk";
-import { PublicKey } from "@solana/web3.js";
+import { Utils as AudiusUtils, sdk as AudiusSdk, libs as AudiusLibs } from "@audius/sdk"
+import { PublicKey } from "@solana/web3.js"
+import { LocalStorage } from 'node-localstorage'
 
 export const initializeAudiusLibs = async (handle) => {
-  await audiusLibs.localStorage.removeItem('hedgehog-entropy-key')
+  const localStorage = new LocalStorage('./local-storage')
+  await localStorage.removeItem('hedgehog-entropy-key')
 
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
@@ -41,7 +43,7 @@ export const initializeAudiusLibs = async (handle) => {
   });
 
   if (handle) {
-    audiusLibs.localStorage.setItem(
+    localStorage.setItem(
       "hedgehog-entropy-key",
       audiusLibs.localStorage.getItem(`handle-${handle}`),
     );
