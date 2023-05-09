@@ -375,9 +375,8 @@ def up(
                 *(["--profile=libs"]),
                 *(["--profile=solana"]),
                 "up",
-                "--build",
+                "--build", "--detach", "--wait",
                 *args,
-                "--wait",
                 *services,
             ],
         ).returncode
