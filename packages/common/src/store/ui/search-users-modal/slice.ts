@@ -38,13 +38,12 @@ const slice = createSlice({
     },
     searchUsersSucceeded: (
       state,
-      action: PayloadAction<{ userIds: number[] }>
+      action: PayloadAction<{ userIds: number[]; limit: number }>
     ) => {
-      state.userList.userIds = state.userList.userIds.concat(
-        action.payload.userIds
-      )
+      const { userIds, limit } = action.payload
+      state.userList.userIds = state.userList.userIds.concat(userIds)
       state.userList.status = Status.SUCCESS
-      state.userList.hasMore = action.payload.userIds.length > 0
+      state.userList.hasMore = userIds.length === limit
     }
   }
 })
