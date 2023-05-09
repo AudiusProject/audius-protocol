@@ -328,9 +328,6 @@ def load_env(protocol_dir, service, environment):
     is_flag=True,
     help="Bring up discovery provider notifications container",
 )
-@click.option(
-    "-s", "--solana", is_flag=True, help="Bring up solana-test-validator container"
-)
 @click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
@@ -343,7 +340,6 @@ def up(
     block_explorer,
     anti_abuse_oracle,
     notifs,
-    solana,
     comms,
     args,
     services,
@@ -374,14 +370,14 @@ def up(
                 *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
                 *(["--profile=notifications"] if notifs else []),
                 *(["--profile=creator"] if creator_node_replicas > 0 else []),
-                *(["--profile=solana"] if solana else []),
                 *(["--profile=comms"] if comms else []),
                 *(["--profile=storagev2"]),
                 *(["--profile=libs"]),
+                *(["--profile=solana"]),
                 "up",
                 "--build",
                 *args,
-                ("--wait"),
+                "--wait",
                 *services,
             ],
         ).returncode
