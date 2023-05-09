@@ -112,7 +112,7 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-contracts-workflow true
-            .* run-release-workflow false
+            ./.* run-release-workflow false
           name: trigger-relevant-workflows
           filters:
             branches:
