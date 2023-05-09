@@ -4,254 +4,254 @@ jobs:
   - build-gcp-image:
       context: GCP
 
-  - push-docker-image:
-      name: push-creator-node
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-creator-node-$CIRCLE_BUILD_NUM
-      service: creator-node
-  - push-docker-image:
-      name: push-discovery-provider
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
-      service: discovery-provider
-  - push-docker-image:
-      name: push-discovery-provider-notifications
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
-      service: discovery-provider-notifications
-  - push-docker-image:
-      name: push-identity-service
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM
-      service: identity-service
-  - push-docker-image:
-      name: push-comms
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
-      service: comms
-  - push-docker-image:
-      name: push-mediorum
-      context: [GCP, dockerhub]
-      instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
-      service: mediorum
+  # - push-docker-image:
+  #     name: push-creator-node
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-creator-node-$CIRCLE_BUILD_NUM
+  #     service: creator-node
+  # - push-docker-image:
+  #     name: push-discovery-provider
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-discovery-provider-$CIRCLE_BUILD_NUM
+  #     service: discovery-provider
+  # - push-docker-image:
+  #     name: push-discovery-provider-notifications
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
+  #     service: discovery-provider-notifications
+  # - push-docker-image:
+  #     name: push-identity-service
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM
+  #     service: identity-service
+  # - push-docker-image:
+  #     name: push-comms
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
+  #     service: comms
+  # - push-docker-image:
+  #     name: push-mediorum
+  #     context: [GCP, dockerhub]
+  #     instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
+  #     service: mediorum
 
-  - test:
-      name: test-creator-node
-      context: GCP
-      instance-name: circleci-test-creator-node-$CIRCLE_BUILD_NUM
-      service: creator-node
-  - test:
-      name: test-discovery-provider
-      context: GCP
-      instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
-      service: discovery-provider
-  - test:
-      name: test-discovery-provider-notifications
-      context: GCP
-      instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
-      service: discovery-provider-notifications
-  - test:
-      name: test-identity-service
-      context: GCP
-      instance-name: circleci-test-identity-service-$CIRCLE_BUILD_NUM
-      service: identity-service
-  - test:
-      name: test-audius-libs
-      context: GCP
-      instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
-      service: audius-libs
-  - test:
-      name: test-eth-contracts
-      context: GCP
-      instance-name: circleci-test-eth-contracts-$CIRCLE_BUILD_NUM
-      service: eth-contracts
+  # - test:
+  #     name: test-creator-node
+  #     context: GCP
+  #     instance-name: circleci-test-creator-node-$CIRCLE_BUILD_NUM
+  #     service: creator-node
+  # - test:
+  #     name: test-discovery-provider
+  #     context: GCP
+  #     instance-name: circleci-test-discovery-provider-$CIRCLE_BUILD_NUM
+  #     service: discovery-provider
+  # - test:
+  #     name: test-discovery-provider-notifications
+  #     context: GCP
+  #     instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
+  #     service: discovery-provider-notifications
+  # - test:
+  #     name: test-identity-service
+  #     context: GCP
+  #     instance-name: circleci-test-identity-service-$CIRCLE_BUILD_NUM
+  #     service: identity-service
+  # - test:
+  #     name: test-audius-libs
+  #     context: GCP
+  #     instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
+  #     service: audius-libs
+  # - test:
+  #     name: test-eth-contracts
+  #     context: GCP
+  #     instance-name: circleci-test-eth-contracts-$CIRCLE_BUILD_NUM
+  #     service: eth-contracts
   - test-audius-cmd:
       context: GCP
       instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
-  - test:
-      name: test-mediorum
-      context: GCP
-      instance-name: circleci-test-mediorum-$CIRCLE_BUILD_NUM
-      service: mediorum
+  # - test:
+  #     name: test-mediorum
+  #     context: GCP
+  #     instance-name: circleci-test-mediorum-$CIRCLE_BUILD_NUM
+  #     service: mediorum
 
-  # Release
+  # # Release
 
-  - release-github-draft-trigger:
-      filters:
-        branches:
-          only: /^release-v.*$/
-      type: approval
-  - release-github-draft:
-      context: github
-      requires:
-        - release-github-draft-trigger
+  # - release-github-draft-trigger:
+  #     filters:
+  #       branches:
+  #         only: /^release-v.*$/
+  #     type: approval
+  # - release-github-draft:
+  #     context: github
+  #     requires:
+  #       - release-github-draft-trigger
 
-  - release-github-trigger:
-      requires:
-        - release-github-draft
-      type: approval
-  - release-github:
-      context: github
-      requires:
-        - release-github-trigger
+  # - release-github-trigger:
+  #     requires:
+  #       - release-github-draft
+  #     type: approval
+  # - release-github:
+  #     context: github
+  #     requires:
+  #       - release-github-trigger
 
-  - release-governance-trigger:
-      filters:
-        branches:
-          only: /^release-v.*$/
-      type: approval
-  - release-governance:
-      context: governance
-      requires:
-        - release-governance-trigger
+  # - release-governance-trigger:
+  #     filters:
+  #       branches:
+  #         only: /^release-v.*$/
+  #     type: approval
+  # - release-governance:
+  #     context: governance
+  #     requires:
+  #       - release-governance-trigger
 
-  - release-audius-docker-compose-trigger:
-      requires:
-        - push-creator-node
-        - push-discovery-provider
-        - push-identity-service
-      filters:
-        branches:
-          only: /^release-v.*$/
-      type: approval
-  - release-audius-docker-compose:
-      context: github
-      requires:
-        - release-audius-docker-compose-trigger
+  # - release-audius-docker-compose-trigger:
+  #     requires:
+  #       - push-creator-node
+  #       - push-discovery-provider
+  #       - push-identity-service
+  #     filters:
+  #       branches:
+  #         only: /^release-v.*$/
+  #     type: approval
+  # - release-audius-docker-compose:
+  #     context: github
+  #     requires:
+  #       - release-audius-docker-compose-trigger
 
-  - release-discord-trigger:
-      filters:
-        branches:
-          only: /^release-v.*$/
-      type: approval
-  - release-discord:
-      context: discord
-      requires:
-        - release-discord-trigger
+  # - release-discord-trigger:
+  #     filters:
+  #       branches:
+  #         only: /^release-v.*$/
+  #     type: approval
+  # - release-discord:
+  #     context: discord
+  #     requires:
+  #       - release-discord-trigger
 
-  - deploy-prod-creator-node-trigger:
-      requires:
-        - push-creator-node
-      filters:
-        branches:
-          only: /^release-v.*$/
-      type: approval
-  - deploy:
-      name: deploy-prod-creator-node
-      context: open-vpn
-      requires:
-        - deploy-prod-creator-node-trigger
-      hosts: >-
-        prod-user-metadata
-        prod-creator-1
-        prod-creator-2
-        prod-creator-3
-        prod-creator-5
-      service: creator-node
+  # - deploy-prod-creator-node-trigger:
+  #     requires:
+  #       - push-creator-node
+  #     filters:
+  #       branches:
+  #         only: /^release-v.*$/
+  #     type: approval
+  # - deploy:
+  #     name: deploy-prod-creator-node
+  #     context: open-vpn
+  #     requires:
+  #       - deploy-prod-creator-node-trigger
+  #     hosts: >-
+  #       prod-user-metadata
+  #       prod-creator-1
+  #       prod-creator-2
+  #       prod-creator-3
+  #       prod-creator-5
+  #     service: creator-node
 
-  - deploy-prod-discovery-provider-trigger:
-      requires:
-        - push-discovery-provider
-      filters:
-        branches:
-          only: /^release-v.*$/
-      type: approval
-  - deploy:
-      name: deploy-prod-discovery-provider
-      context: open-vpn
-      requires:
-        - deploy-prod-discovery-provider-trigger
-      hosts: >-
-        prod-discovery-1
-        prod-discovery-2
-        prod-discovery-3
-      service: discovery-provider
+  # - deploy-prod-discovery-provider-trigger:
+  #     requires:
+  #       - push-discovery-provider
+  #     filters:
+  #       branches:
+  #         only: /^release-v.*$/
+  #     type: approval
+  # - deploy:
+  #     name: deploy-prod-discovery-provider
+  #     context: open-vpn
+  #     requires:
+  #       - deploy-prod-discovery-provider-trigger
+  #     hosts: >-
+  #       prod-discovery-1
+  #       prod-discovery-2
+  #       prod-discovery-3
+  #     service: discovery-provider
 
-  - deploy-prod-identity-service-trigger:
-      requires:
-        - push-identity-service
-      filters:
-        branches:
-          only: /^release-v.*$/
-      type: approval
-  - deploy:
-      name: deploy-prod-identity-service
-      context: open-vpn
-      requires:
-        - deploy-prod-identity-service-trigger
-      hosts: prod-identity
-      service: identity-service
+  # - deploy-prod-identity-service-trigger:
+  #     requires:
+  #       - push-identity-service
+  #     filters:
+  #       branches:
+  #         only: /^release-v.*$/
+  #     type: approval
+  # - deploy:
+  #     name: deploy-prod-identity-service
+  #     context: open-vpn
+  #     requires:
+  #       - deploy-prod-identity-service-trigger
+  #     hosts: prod-identity
+  #     service: identity-service
 
-  # Main deploy
+  # # Main deploy
 
-  - deploy:
-      name: deploy-stage-creator-node
-      requires:
-        - push-creator-node
-        - push-comms
-      filters:
-        branches:
-          only: main
-      context:
-        - open-vpn
-        - build-freeze
-      hosts: >-
-        stage-creator-5
-        stage-creator-6
-        stage-creator-7
-        stage-creator-8
-        stage-creator-9
-        stage-creator-10
-        stage-creator-11
-        stage-user-metadata
-      service: creator-node
-      freeze: $FREEZE_BUILD
+  # - deploy:
+  #     name: deploy-stage-creator-node
+  #     requires:
+  #       - push-creator-node
+  #       - push-comms
+  #     filters:
+  #       branches:
+  #         only: main
+  #     context:
+  #       - open-vpn
+  #       - build-freeze
+  #     hosts: >-
+  #       stage-creator-5
+  #       stage-creator-6
+  #       stage-creator-7
+  #       stage-creator-8
+  #       stage-creator-9
+  #       stage-creator-10
+  #       stage-creator-11
+  #       stage-user-metadata
+  #     service: creator-node
+  #     freeze: $FREEZE_BUILD
 
-  - deploy:
-      name: deploy-stage-discovery-provider
-      requires:
-        - push-discovery-provider
-        - push-comms
-      filters:
-        branches:
-          only: main
-      context:
-        - open-vpn
-        - build-freeze
-      hosts: >-
-        stage-discovery-4
-        stage-discovery-1
-        stage-discovery-2
-        stage-discovery-3
-        stage-discovery-5
-      service: discovery-provider
-      freeze: $FREEZE_BUILD
+  # - deploy:
+  #     name: deploy-stage-discovery-provider
+  #     requires:
+  #       - push-discovery-provider
+  #       - push-comms
+  #     filters:
+  #       branches:
+  #         only: main
+  #     context:
+  #       - open-vpn
+  #       - build-freeze
+  #     hosts: >-
+  #       stage-discovery-4
+  #       stage-discovery-1
+  #       stage-discovery-2
+  #       stage-discovery-3
+  #       stage-discovery-5
+  #     service: discovery-provider
+  #     freeze: $FREEZE_BUILD
 
-  - deploy:
-      name: deploy-stage-identity-service
-      requires:
-        - push-identity-service
-      filters:
-        branches:
-          only: main
-      context:
-        - open-vpn
-        - build-freeze
-      hosts: stage-identity
-      service: identity-service
-      freeze: $FREEZE_BUILD
+  # - deploy:
+  #     name: deploy-stage-identity-service
+  #     requires:
+  #       - push-identity-service
+  #     filters:
+  #       branches:
+  #         only: main
+  #     context:
+  #       - open-vpn
+  #       - build-freeze
+  #     hosts: stage-identity
+  #     service: identity-service
+  #     freeze: $FREEZE_BUILD
 
-  - deploy:
-      name: deploy-stage-discovery-provider-notifications
-      requires:
-        - push-discovery-provider-notifications
-      filters:
-        branches:
-          only: main
-      context:
-        - open-vpn
-        - build-freeze
-      hosts: >-
-        stage-discovery-2
-      service: discovery-provider-notifications
-      freeze: $FREEZE_BUILD
+  # - deploy:
+  #     name: deploy-stage-discovery-provider-notifications
+  #     requires:
+  #       - push-discovery-provider-notifications
+  #     filters:
+  #       branches:
+  #         only: main
+  #     context:
+  #       - open-vpn
+  #       - build-freeze
+  #     hosts: >-
+  #       stage-discovery-2
+  #     service: discovery-provider-notifications
+  #     freeze: $FREEZE_BUILD
