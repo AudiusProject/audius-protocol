@@ -378,7 +378,6 @@ def up(
                 "--build",
                 "--detach",
                 "--wait",
-                "--wait-timeout=120",
                 *args,
                 *services,
             ],
