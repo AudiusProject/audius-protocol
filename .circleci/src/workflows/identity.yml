@@ -1,5 +1,4 @@
-when:
-  equal: ["main", << pipeline.parameters.workflow >>]
+when: << pipeline.parameters.run-identity-workflow >>
 jobs:
   - build-gcp-image:
       context: GCP
