@@ -102,20 +102,15 @@ workflows:
             discovery-provider/.* run-discovery-workflow true
             creator-node/.* run-creator-workflow true
             identity-service/.* run-identity-workflow true
-
             comms/.* run-discovery-workflow true
             comms/.* run-creator-workflow true
-
             mediorum/.* run-discovery-workflow true
             mediorum/.* run-creator-workflow true
-
             libs/.* run-creator-workflow true
             libs/.* run-identity-workflow true
             libs/.* run-sdk-workflow true
-
             eth-contracts/.* run-eth-contracts-workflow true
             contracts/.* run-contracts-workflow true
-
             .circleci/.* run-discovery-workflow true
             .circleci/.* run-creator-workflow true
             .circleci/.* run-identity-workflow true
