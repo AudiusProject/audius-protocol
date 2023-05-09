@@ -7,46 +7,111 @@ setup: true
 
 orbs:
   continuation: circleci/continuation@0.3.1
+  path-filtering: circleci/path-filtering@0.1.1
 
 parameters:
   workflow:
     type: string
-    default: 'main'
+    default: "main"
+
+  # Run all workflows for branches that match this regex
+  run-all-workflows-branch-regex:
+    type: string
+    default: /(^main)|(^release.*)$/
 
   # release-audius-sdk params
   sdk-release-commit:
     type: string
-    default: ''
+    default: ""
   sdk-release-version:
     type: string
-    default: ''
+    default: ""
   sdk-release-preid:
     type: string
-    default: ''
+    default: ""
 
 jobs:
-  circleci-setup:
-    executor: continuation/default
-    resource_class: small
+  # Generate the CircleCI continue_config.yml from .circleci/src
+  generate-config:
+    docker:
+      - image: cimg/base:2021.04
     steps:
-      - checkout
-      # CircleCI cli distributed in continuation/default is outdated so we download
-      # manually
+      # The circleci cli exposed in the image doesn't support config packing
+      # so we install a version that does
       - run:
-          name: Download circleci cli
-          command: |
-            curl -SfL 'https://github.com/CircleCI-Public/circleci-cli/releases/download/v0.1.22924/circleci-cli_0.1.22924_linux_amd64.tar.gz' \
-              | tar xzf - -C .circleci --no-anchored --strip-components 1 circleci
+          name: Install cli
+          command: curl -fLSs https://raw.githubusercontent.com/CircleCI-Public/circleci-cli/master/install.sh | DESTDIR=~/cli bash
+      - checkout
       - run:
           name: Generate config
-          command: |
-            cd .circleci
-            rm config.yml
-            ./circleci config pack . | tee generated_config.yml
+          command: ~/cli config pack .circleci/src > .circleci/continue_config.yml
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - .circleci/continue_config.yml
+workflows:
+  setup:
+    when:
+      not:
+        equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+    jobs:
+      - generate-config
+      - path-filtering/filter:
+          base-revision: main
+          config-path: .circleci/continue_config.yml
+          mapping: |
+            discovery-provider/.* run-discovery-workflow true
+            creator-node/.* run-creator-workflow true
+            identity-service/.* run-identity-workflow true
+
+            comms/.* run-discovery-workflow true
+            comms/.* run-creator-workflow true
+
+            mediorum/.* run-discovery-workflow true
+            mediorum/.* run-creator-workflow true
+
+            libs/.* run-creator-workflow true
+            libs/.* run-identity-workflow true
+
+            eth-contracts/.* run-eth-contracts-workflow true
+            contracts/.* run-contracts-workflow true
+
+            .circleci/.* run-discovery-workflow true
+            .circleci/.* run-creator-workflow true
+            .circleci/.* run-identity-workflow true
+            .circleci/.* run-eth-contracts-workflow true
+            .circleci/.* run-contracts-workflow true
+          name: trigger-relevant-workflows
+          filters:
+            branches:
+              ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
+          requires:
+            - generate-config
+            - init
+          workspace_path: ../workspace
+
       - continuation/continue:
           configuration_path: .circleci/generated_config.yml
+          name: trigger-all-workflows
+          filters:
+            branches:
+              only: << pipeline.parameters.run-all-workflows-branch-regex >>
+          parameters: '{
+            "run-web-workflow": true,
+            "run-mobile-workflow": true,
+            "run-stems-workflow": true
+            }'
+          pre-steps:
+            - attach_workspace:
+                at: ../workspace
+          requires:
+            - generate-config
+            - init
 
-workflows:
-  circleci-setup:
+  generate-release:
+    when:
+      and:
+        - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
+        - equal: ["generate-release", << pipeline.schedule.name >>]
     jobs:
-      - circleci-setup
+      - generate-release

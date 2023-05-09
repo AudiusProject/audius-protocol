@@ -1,0 +1,23 @@
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@1.2.0
+
+# the default pipeline parameters, which will be updated according to
+# the results of the path-filtering orb in config.yml
+parameters:
+  run-identity-workflow:
+    type: boolean
+    default: false
+  run-eth-workflow:
+    type: boolean
+    default: false
+  run-discovery-workflow:
+    type: boolean
+    default: false
+  run-creator-workflow:
+    type: boolean
+    default: false
+  run-sdk-workflow:
+    type: boolean
+    default: false
