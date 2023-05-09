@@ -12,7 +12,6 @@ program.command("create-user")
   .option("-e, --email <email>", "The email for the new user (chosen randomly if not specified)")
   .action(async (handle, { password, email }) => {
     const audiusLibs = await initializeAudiusLibs();
-    await audiusLibs.Account.logout();
 
     const rand = randomBytes(2).toString("hex").padStart(4, "0").toUpperCase();
 

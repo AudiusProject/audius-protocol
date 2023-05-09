@@ -1,5 +1,5 @@
-import { Utils as AudiusUtils, sdk as AudiusSdk, libs as AudiusLibs } from "@audius/sdk";
-import { PublicKey } from "@solana/web3.js";
+import { Utils as AudiusUtils, sdk as AudiusSdk, libs as AudiusLibs } from "@audius/sdk"
+import { PublicKey } from "@solana/web3.js"
 
 export const initializeAudiusLibs = async (handle) => {
   const audiusLibs = new AudiusLibs({
@@ -39,14 +39,19 @@ export const initializeAudiusLibs = async (handle) => {
     isStorageV2Only: true
   });
 
+  // This is a bad solution
   await audiusLibs.init();
+  await audiusLibs.Account.logout();
+  await audiusLibs.localStorage.removeItem("hedgehog-entropy-key")
 
   if (handle) {
-    audiusLibs.localStorage.setItem(
+    await audiusLibs.localStorage.setItem(
       "hedgehog-entropy-key",
       audiusLibs.localStorage.getItem(`handle-${handle}`),
     );
   }
+
+  await audiusLibs.init();
 
   return audiusLibs;
 };
