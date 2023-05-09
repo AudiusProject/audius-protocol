@@ -76,7 +76,30 @@ export const chatMessagesAdapter = createEntityAdapter<ChatMessageWithExtras>({
   sortComparer: messageSortComparator
 })
 
-const { selectById: getMessage } = chatMessagesAdapter.getSelectors()
+const {
+  selectById: getMessage,
+  selectEntities: getAllMessages,
+  selectIds: getAllMessageIds
+} = chatMessagesAdapter.getSelectors()
+
+// Recalculate hasTail for the message at index + 1 (the previous message of
+// the message at index).
+const recalculatePreviousMessageHasTail = (
+  chatState: EntityState<ChatMessageWithExtras>,
+  index: number
+): void => {
+  const messageIds = getAllMessageIds(chatState)
+  const chatMessages = getAllMessages(chatState)
+  const prevMessageId = messageIds[index + 1]
+  const prevMessage = chatMessages[prevMessageId]
+  if (!prevMessage) return
+  const newMessageId = messageIds[index]
+  const newMessage = chatMessages[newMessageId]
+  chatMessagesAdapter.updateOne(chatState, {
+    id: prevMessageId,
+    changes: { hasTail: hasTail(prevMessage, newMessage) }
+  })
+}
 
 const initialState: ChatState = {
   chats: {
@@ -166,21 +189,11 @@ const slice = createSlice({
       const messagesWithTail = data.map((item, index) => {
         return { ...item, hasTail: hasTail(item, data[index - 1]) }
       })
-      // Recalculate hasTail for latest message of new batch
-      if (state.messages[chatId] && state.messages[chatId].ids.length > 0) {
-        const prevEarliestMessageId =
-          state.messages[chatId].ids[state.messages[chatId].ids.length - 1]
-        const prevEarliestMessage = getMessage(
-          state.messages[chatId],
-          prevEarliestMessageId
-        )
-        const newLatestMessage = messagesWithTail[0]
-        newLatestMessage.hasTail = hasTail(
-          newLatestMessage,
-          prevEarliestMessage
-        )
-      }
       chatMessagesAdapter.upsertMany(state.messages[chatId], messagesWithTail)
+      recalculatePreviousMessageHasTail(
+        state.messages[chatId],
+        state.messages[chatId].ids.length - 1 - data.length
+      )
     },
     fetchMoreMessagesFailed: (
       state,
@@ -309,32 +322,25 @@ const slice = createSlice({
       // triggers saga to get chat if not exists
       const { chatId, message, status } = action.payload
 
-      // Recalculate hasTail of previous message
-      if (state.messages[chatId] && state.messages[chatId].ids.length > 0) {
-        const prevLatestMessageId = state.messages[chatId].ids[0]
-        const prevLatestMessage = getMessage(
-          state.messages[chatId],
-          prevLatestMessageId
-        )!
-        const prevMsgHasTail = hasTail(prevLatestMessage, message)
-        chatMessagesAdapter.updateOne(state.messages[chatId], {
-          id: prevLatestMessageId,
-          changes: { hasTail: prevMsgHasTail }
+      const existingMessage = getMessage(
+        state.messages[chatId],
+        message.message_id
+      )
+      if (!existingMessage) {
+        chatMessagesAdapter.addOne(state.messages[chatId], {
+          ...message,
+          hasTail: true,
+          status: status ?? Status.IDLE
         })
+        chatsAdapter.updateOne(state.chats, {
+          id: chatId,
+          changes: {
+            last_message: message.message,
+            last_message_at: message.created_at
+          }
+        })
+        recalculatePreviousMessageHasTail(state.messages[chatId], 0)
       }
-
-      chatMessagesAdapter.upsertOne(state.messages[chatId], {
-        ...message,
-        hasTail: true,
-        status: status ?? Status.IDLE
-      })
-      chatsAdapter.updateOne(state.chats, {
-        id: chatId,
-        changes: {
-          last_message: message.message,
-          last_message_at: message.created_at
-        }
-      })
     },
     incrementUnreadCount: (
       state,
