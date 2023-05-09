@@ -127,7 +127,6 @@ workflows:
               ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
           requires:
             - generate-config
-            - init
           workspace_path: ../workspace
 
       - continuation/continue:
