@@ -1,9 +1,9 @@
 parameters:
   instance-name:
-    description: "Name of gcp instance to use for the test"
+    description: 'Name of gcp instance to use for pushing'
     type: string
   service:
-    description: "Service to test"
+    description: 'Service to push'
     type: string
 resource_class: small
 docker:
@@ -27,18 +27,21 @@ steps:
 
         echo "export IMAGE_FLAG='$IMAGE_FLAG'" >> "$BASH_ENV"
   - gcp-run:
-      instance-name: "<< parameters.instance-name >>"
+      instance-name: '<< parameters.instance-name >>'
       create-instance-args: >-
         $IMAGE_FLAG
         --preemptible
         --tags=circleci
         --machine-type=n2-standard-4
-        --boot-disk-size=120G
+        --boot-disk-size=160G
         --boot-disk-type=pd-ssd
+      pass-env: DOCKERHUB_PASS DOCKERHUB_USERNAME
       steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
         - run:
-            name: test run "<< parameters.service >>"
-            no_output_timeout: 20m
-            command: . ~/.profile; audius-compose test run "<< parameters.service >>"
+            name: Docker login
+            command: echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+        - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
+        - run: . ~/.profile; audius-compose build "<< parameters.service >>"
+        - run: . ~/.profile; audius-compose push "<< parameters.service >>"

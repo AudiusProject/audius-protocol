@@ -221,9 +221,31 @@ def validate_track_tx(params: ManageEntityParameters):
     if user_id not in params.existing_records[EntityType.USER]:
         raise Exception(f"User {user_id} does not exist")
 
+    # Ensure the signer is either the user or a delegate for the user
+    # TODO (nkang) - Extract to helper
     wallet = params.existing_records[EntityType.USER][user_id].wallet
-    if wallet and wallet.lower() != params.signer.lower():
-        raise Exception(f"User {user_id} does not match signer")
+    signer = params.signer.lower()
+    signer_matches_user = wallet and wallet.lower() == signer
+
+    if not signer_matches_user:
+        is_signer_delegate = (
+            signer in params.existing_records[EntityType.DELEGATION]
+            and params.existing_records[EntityType.DELEGATION][signer].user_id
+            == user_id
+        )
+        if is_signer_delegate:
+            delegation = params.existing_records[EntityType.DELEGATION][signer]
+            app_delegate = params.existing_records[EntityType.APP_DELEGATE][
+                delegation.delegate_address.lower()
+            ]
+            if (
+                (not app_delegate)
+                or (app_delegate.is_delete)
+                or (delegation.is_revoked)
+            ):
+                raise Exception(f"Signer is an invalid delegate for user {user_id}")
+        else:
+            raise Exception(f"Signer does not match user {user_id} or a valid delegate")
 
     if params.entity_type != EntityType.TRACK:
         raise Exception(f"Entity type {params.entity_type} is not a track")
@@ -244,9 +266,11 @@ def validate_track_tx(params: ManageEntityParameters):
 
     if params.action != Action.DELETE:
         track_metadata = params.metadata[params.metadata_cid]
-        ai_attribution_user_id = track_metadata.get('ai_attribution_user_id') 
+        ai_attribution_user_id = track_metadata.get("ai_attribution_user_id")
         if ai_attribution_user_id:
-            ai_attribution_user = params.existing_records[EntityType.USER][ai_attribution_user_id]
+            ai_attribution_user = params.existing_records[EntityType.USER][
+                ai_attribution_user_id
+            ]
             if not ai_attribution_user or not ai_attribution_user.allow_ai_attribution:
                 raise Exception(f"Cannot AI attribute user {ai_attribution_user}")
 

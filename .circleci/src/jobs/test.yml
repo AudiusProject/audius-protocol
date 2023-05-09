@@ -2,6 +2,9 @@ parameters:
   instance-name:
     description: "Name of gcp instance to use for the test"
     type: string
+  service:
+    description: "Service to test"
+    type: string
 resource_class: small
 docker:
   - image: google/cloud-sdk:412.0.0-slim
@@ -29,13 +32,13 @@ steps:
         $IMAGE_FLAG
         --preemptible
         --tags=circleci
-        --machine-type=n2-custom-6-24576
-        --boot-disk-size=120G
+        --machine-type=n2-standard-4
+        --boot-disk-size=160G
         --boot-disk-type=pd-ssd
       steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
         - run:
-            name: audius-cmd test
-            no_output_timeout: 15m
-            command: . ~/.profile; audius-compose up && audius-cmd test
+            name: test run "<< parameters.service >>"
+            no_output_timeout: 20m
+            command: . ~/.profile; audius-compose test run "<< parameters.service >>"

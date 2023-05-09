@@ -1,0 +1,42 @@
+version: 2.1
+
+orbs:
+  gh: circleci/github-cli@2.2.0
+  slack: circleci/slack@4.12.0
+
+# the default pipeline parameters, which will be updated according to
+# the results of the path-filtering orb in config.yml
+parameters:
+  workflow:
+    type: string
+    default: "main"
+
+  run-gcp-workflow:
+    type: boolean
+    default: true
+
+  run-integration-workflow:
+    type: boolean
+    default: true
+
+  run-identity-workflow:
+    type: boolean
+    default: false
+  run-contracts-workflow:
+    type: boolean
+    default: false
+  run-eth-contracts-workflow:
+    type: boolean
+    default: false
+  run-discovery-workflow:
+    type: boolean
+    default: false
+  run-creator-workflow:
+    type: boolean
+    default: false
+  run-sdk-workflow:
+    type: boolean
+    default: false
+  run-release-workflow:
+    type: boolean
+    default: false
