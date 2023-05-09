@@ -17,7 +17,6 @@ def block_confirmation():
     bad_request = True
     if blockhash is not None and blocknumber is not None:
         bad_request = False
-        logger.info(f"block_confirmation | ARGS: {blockhash, blocknumber}")
         try:
             response = get_block_confirmation(blockhash, blocknumber)
         except Exception as e:
