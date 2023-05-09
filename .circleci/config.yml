@@ -49,6 +49,45 @@ jobs:
           root: ./
           paths:
             - .circleci/continue_config.yml
+
+  generate-release:
+    working_directory: ~/audius-protocol
+    resource_class: small
+    docker:
+      - image: cimg/base:2023.01
+    steps:
+      - checkout
+      - add_ssh_keys:
+          fingerprints:
+            - "d0:0b:a0:19:ac:46:58:e4:6c:ac:34:99:f6:1b:31:bb" # github.com
+      - run:
+          name: Set git config
+          command: |
+            git config --global user.email "audius-infra@audius.co"
+            git config --global user.name "audius-infra"
+      - run:
+          name: Create branch
+          command: |
+            OLD_VERSION=$(jq -r .version discovery-provider/.version.json)
+            NEW_VERSION=$(echo ${OLD_VERSION} | awk -F. '{$NF = $NF + 1;} 1' | sed 's/ /./g')
+
+            git checkout main
+
+            jq --arg version "$NEW_VERSION" '.version=$version' creator-node/.version.json > /tmp/.version.json
+            mv /tmp/.version.json creator-node/.version.json
+            git add creator-node/.version.json
+
+            jq --arg version "$NEW_VERSION" '.version=$version' discovery-provider/.version.json > /tmp/.version.json
+            mv /tmp/.version.json discovery-provider/.version.json
+            git add discovery-provider/.version.json
+
+            git commit -m "Bump version to $NEW_VERSION"
+
+            git branch "release-v$NEW_VERSION"
+            git checkout "release-v$NEW_VERSION"
+
+            git push --set-upstream origin main "release-v$NEW_VERSION"
+
 workflows:
   setup:
     when:
@@ -118,4 +157,4 @@ workflows:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
         - equal: ["generate-release", << pipeline.schedule.name >>]
     jobs:
-      - release-create-branch
+      - generate-release
