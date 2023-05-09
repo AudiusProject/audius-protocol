@@ -9,8 +9,6 @@ import {
   insertMessage,
   insertReaction,
   setupTwoUsersWithDevices,
-  setupTest,
-  resetTests,
   createTestDB,
   replaceDBName,
   dropTestDB
@@ -64,148 +62,148 @@ describe('Push Notifications', () => {
     ])
   })
 
-  // test('Process DM for ios', async () => {
-  //   const { user1, user2 } = await setupTwoUsersWithDevices(
-  //     processor.discoveryDB,
-  //     processor.identityDB
-  //   )
+  test('Process DM for ios', async () => {
+    const { user1, user2 } = await setupTwoUsersWithDevices(
+      processor.discoveryDB,
+      processor.identityDB
+    )
 
-  //   // Start processor
-  //   processor.start()
-  //   // Let notifications job run for a few cycles to initialize the min cursors in redis
-  //   await new Promise((r) => setTimeout(r, config.pollInterval))
+    // Start processor
+    processor.start()
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
-  //   // User 1 sent message config.dmNotificationDelay ms ago
-  //   const message = 'hi from user 1'
-  //   const messageId = randId().toString()
-  //   const messageTimestampMs = Date.now() - config.dmNotificationDelay
-  //   const messageTimestamp = new Date(messageTimestampMs)
-  //   const chatId = randId().toString()
-  //   await createChat(
-  //     processor.discoveryDB,
-  //     user1.userId,
-  //     user2.userId,
-  //     chatId,
-  //     messageTimestamp
-  //   )
-  //   await insertMessage(
-  //     processor.discoveryDB,
-  //     user1.userId,
-  //     chatId,
-  //     messageId,
-  //     message,
-  //     messageTimestamp
-  //   )
+    // User 1 sent message config.dmNotificationDelay ms ago
+    const message = 'hi from user 1'
+    const messageId = randId().toString()
+    const messageTimestampMs = Date.now() - config.dmNotificationDelay
+    const messageTimestamp = new Date(messageTimestampMs)
+    const chatId = randId().toString()
+    await createChat(
+      processor.discoveryDB,
+      user1.userId,
+      user2.userId,
+      chatId,
+      messageTimestamp
+    )
+    await insertMessage(
+      processor.discoveryDB,
+      user1.userId,
+      chatId,
+      messageId,
+      message,
+      messageTimestamp
+    )
 
-  //   await new Promise((r) => setTimeout(r, config.pollInterval * 20))
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
-  //   expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
-  //   expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-  //     {
-  //       type: user2.deviceType,
-  //       targetARN: user2.awsARN,
-  //       badgeCount: 1
-  //     },
-  //     {
-  //       title: 'Message',
-  //       body: `New message from ${user1.name}`,
-  //       data: {}
-  //     }
-  //   )
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
+    expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      {
+        type: user2.deviceType,
+        targetARN: user2.awsARN,
+        badgeCount: 1
+      },
+      {
+        title: 'Message',
+        body: `New message from ${user1.name}`,
+        data: {}
+      }
+    )
 
-  //   jest.clearAllMocks()
+    jest.clearAllMocks()
 
-  //   // User 2 reacted to user 1's message config.dmNotificationDelay ms ago
-  //   const reaction = 'fire'
-  //   const reactionTimestampMs = Date.now() - config.dmNotificationDelay
-  //   await insertReaction(
-  //     processor.discoveryDB,
-  //     user2.userId,
-  //     messageId,
-  //     reaction,
-  //     new Date(reactionTimestampMs)
-  //   )
+    // User 2 reacted to user 1's message config.dmNotificationDelay ms ago
+    const reaction = 'fire'
+    const reactionTimestampMs = Date.now() - config.dmNotificationDelay
+    await insertReaction(
+      processor.discoveryDB,
+      user2.userId,
+      messageId,
+      reaction,
+      new Date(reactionTimestampMs)
+    )
 
-  //   await new Promise((r) => setTimeout(r, config.pollInterval * 5))
-  //   expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
-  //   expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-  //     {
-  //       type: user1.deviceType,
-  //       targetARN: user1.awsARN,
-  //       badgeCount: 1
-  //     },
-  //     {
-  //       title: 'Reaction',
-  //       body: `${user2.name} reacted ${reaction} to your message`,
-  //       data: {}
-  //     }
-  //   )
-  // }, 40000)
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
+    expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      {
+        type: user1.deviceType,
+        targetARN: user1.awsARN,
+        badgeCount: 1
+      },
+      {
+        title: 'Reaction',
+        body: `${user2.name} reacted ${reaction} to your message`,
+        data: {}
+      }
+    )
+  }, 40000)
 
-  // test('Does not send DM notifications when sender is receiver', async () => {
-  //   const { user1, user2 } = await setupTwoUsersWithDevices(
-  //     processor.discoveryDB,
-  //     processor.identityDB
-  //   )
+  test('Does not send DM notifications when sender is receiver', async () => {
+    const { user1, user2 } = await setupTwoUsersWithDevices(
+      processor.discoveryDB,
+      processor.identityDB
+    )
 
-  //   // Start processor
-  //   processor.start()
-  //   // Let notifications job run for a few cycles to initialize the min cursors in redis
-  //   await new Promise((r) => setTimeout(r, config.pollInterval * 20))
+    // Start processor
+    processor.start()
+    // Let notifications job run for a few cycles to initialize the min cursors in redis
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
 
-  //   // User 1 sent message config.dmNotificationDelay ms ago
-  //   const message = 'hi from user 1'
-  //   const messageId = randId().toString()
-  //   const messageTimestampMs = Date.now() - config.dmNotificationDelay
-  //   const messageTimestamp = new Date(messageTimestampMs)
-  //   const chatId = randId().toString()
-  //   await createChat(
-  //     processor.discoveryDB,
-  //     user1.userId,
-  //     user2.userId,
-  //     chatId,
-  //     messageTimestamp
-  //   )
-  //   await insertMessage(
-  //     processor.discoveryDB,
-  //     user1.userId,
-  //     chatId,
-  //     messageId,
-  //     message,
-  //     messageTimestamp
-  //   )
+    // User 1 sent message config.dmNotificationDelay ms ago
+    const message = 'hi from user 1'
+    const messageId = randId().toString()
+    const messageTimestampMs = Date.now() - config.dmNotificationDelay
+    const messageTimestamp = new Date(messageTimestampMs)
+    const chatId = randId().toString()
+    await createChat(
+      processor.discoveryDB,
+      user1.userId,
+      user2.userId,
+      chatId,
+      messageTimestamp
+    )
+    await insertMessage(
+      processor.discoveryDB,
+      user1.userId,
+      chatId,
+      messageId,
+      message,
+      messageTimestamp
+    )
 
-  //   await new Promise((r) => setTimeout(r, config.pollInterval * 2))
-  //   expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
-  //   expect(sendPushNotificationSpy).toHaveBeenCalledWith(
-  //     {
-  //       type: user2.deviceType,
-  //       targetARN: user2.awsARN,
-  //       badgeCount: 1
-  //     },
-  //     {
-  //       title: 'Message',
-  //       body: `New message from ${user1.name}`,
-  //       data: {}
-  //     }
-  //   )
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    expect(sendPushNotificationSpy).toHaveBeenCalledTimes(1)
+    expect(sendPushNotificationSpy).toHaveBeenCalledWith(
+      {
+        type: user2.deviceType,
+        targetARN: user2.awsARN,
+        badgeCount: 1
+      },
+      {
+        title: 'Message',
+        body: `New message from ${user1.name}`,
+        data: {}
+      }
+    )
 
-  //   jest.clearAllMocks()
+    jest.clearAllMocks()
 
-  //   // User 1 reacted to user 1's message config.dmNotificationDelay ms ago
-  //   const reaction = 'fire'
-  //   const reactionTimestampMs = Date.now() - config.dmNotificationDelay
-  //   await insertReaction(
-  //     processor.discoveryDB,
-  //     user1.userId,
-  //     messageId,
-  //     reaction,
-  //     new Date(reactionTimestampMs)
-  //   )
+    // User 1 reacted to user 1's message config.dmNotificationDelay ms ago
+    const reaction = 'fire'
+    const reactionTimestampMs = Date.now() - config.dmNotificationDelay
+    await insertReaction(
+      processor.discoveryDB,
+      user1.userId,
+      messageId,
+      reaction,
+      new Date(reactionTimestampMs)
+    )
 
-  //   await new Promise((r) => setTimeout(r, config.pollInterval * 2))
-  //   expect(sendPushNotificationSpy).not.toHaveBeenCalled()
-  // }, 40000)
+    await new Promise((r) => setTimeout(r, config.pollInterval * 2))
+    expect(sendPushNotificationSpy).not.toHaveBeenCalled()
+  }, 40000)
 
   test('Does not send DM notifications created fewer than delay minutes ago', async () => {
     const { user1, user2 } = await setupTwoUsersWithDevices(
