@@ -1,12 +1,10 @@
-import { useCallback, useEffect } from 'react'
+import { useCallback } from 'react'
 
 import {
   profilePageSelectors,
   MAX_PROFILE_RELATED_ARTISTS,
-  CommonState,
-  relatedArtistsUISelectors as relatedArtistSelectors,
-  relatedArtistsUIActions as relatedArtistsActions,
-  FeatureFlags
+  FeatureFlags,
+  useGetRelatedArtists
 } from '@audius/common'
 import { IconUserGroup } from '@audius/stems'
 import { useDispatch, useSelector } from 'react-redux'
@@ -24,9 +22,6 @@ import {
 } from 'store/application/ui/userListModal/types'
 
 import styles from './RelatedArtists.module.css'
-const { selectRelatedArtists, selectRelatedArtistsUsers } =
-  relatedArtistSelectors
-const { fetchRelatedArtists } = relatedArtistsActions
 const { getProfileUser } = profilePageSelectors
 
 const messages = {
@@ -42,25 +37,7 @@ export const RelatedArtists = () => {
 
   const artistId = profile?.user_id
 
-  const suggestedArtists = useSelector((state: CommonState) =>
-    artistId ? selectRelatedArtistsUsers(state, { id: artistId }) : null
-  )
-  const isTopArtistsSuggestion = useSelector((state: CommonState) =>
-    artistId
-      ? selectRelatedArtists(state, { id: artistId })
-          ?.isTopArtistsRecommendation
-      : null
-  )
-
-  // Start fetching the related artists
-  useEffect(() => {
-    if (!artistId) return
-    dispatch(
-      fetchRelatedArtists({
-        artistId
-      })
-    )
-  }, [dispatch, artistId])
+  const { data: relatedArtists } = useGetRelatedArtists({ artistId })
 
   const handleClick = useCallback(() => {
     if (profile) {
@@ -78,9 +55,8 @@ export const RelatedArtists = () => {
   if (
     !isRelatedArtistsEnabled ||
     !profile ||
-    !suggestedArtists ||
-    suggestedArtists.length === 0 ||
-    isTopArtistsSuggestion
+    !relatedArtists ||
+    relatedArtists.length === 0
   ) {
     return null
   }
@@ -93,8 +69,8 @@ export const RelatedArtists = () => {
       />
       <ProfilePictureListTile
         onClick={handleClick}
-        users={suggestedArtists}
-        totalUserCount={suggestedArtists.length}
+        users={relatedArtists}
+        totalUserCount={relatedArtists.length}
         limit={MAX_PROFILE_RELATED_ARTISTS}
         disableProfileClick
       />

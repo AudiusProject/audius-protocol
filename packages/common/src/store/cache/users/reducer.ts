@@ -1,9 +1,15 @@
 import { Cache } from 'models/Cache'
 import { ID } from 'models/Identifiers'
+import { Kind } from 'models/Kind'
 import { User } from 'models/User'
 import { initialCacheState } from 'store/cache/reducer'
 
-import { AddSuccededAction, ADD_SUCCEEDED } from '../actions'
+import {
+  AddEntriesAction,
+  AddSuccededAction,
+  ADD_ENTRIES,
+  ADD_SUCCEEDED
+} from '../actions'
 
 import type { UsersCacheState } from './types'
 
@@ -12,29 +18,43 @@ const initialState: UsersCacheState = {
   handles: {}
 }
 
+const addEntries = (state: UsersCacheState, entries: any[]) => {
+  const newHandles: Record<string, ID> = {}
+
+  for (const entry of entries) {
+    const { user_id, handle } = entry.metadata
+    if (handle) {
+      newHandles[handle.toLowerCase()] = user_id
+    }
+  }
+
+  return {
+    ...state,
+    handles: {
+      ...state.handles,
+      ...newHandles
+    }
+  }
+}
+
 const actionsMap = {
   [ADD_SUCCEEDED](
     state: UsersCacheState,
     action: AddSuccededAction<User>
   ): UsersCacheState {
     const { entries } = action
+    return addEntries(state, entries)
+  },
+  [ADD_ENTRIES](
+    state: UsersCacheState,
+    action: AddEntriesAction<User>,
+    kind: Kind
+  ): UsersCacheState {
+    const { entriesByKind } = action
+    const matchingEntries = entriesByKind[kind]
 
-    const newHandles: Record<string, ID> = {}
-
-    for (const entry of entries) {
-      const { user_id, handle } = entry.metadata
-      if (handle) {
-        newHandles[handle.toLowerCase()] = user_id
-      }
-    }
-
-    return {
-      ...state,
-      handles: {
-        ...state.handles,
-        ...newHandles
-      }
-    }
+    if (!matchingEntries) return state
+    return addEntries(state, matchingEntries)
   }
 }
 const reducer = (

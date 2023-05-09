@@ -1,3 +1,4 @@
+import { AudiusQueryContext } from '@audius/common'
 import { PortalProvider, PortalHost } from '@gorhom/portal'
 import * as Sentry from '@sentry/react-native'
 import { Platform, UIManager } from 'react-native'
@@ -22,6 +23,7 @@ import { useEnterForeground } from 'app/hooks/useAppState'
 import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { WalletConnectProvider } from 'app/screens/wallet-connect'
+import { apiClient } from 'app/services/audius-api-client'
 import { setLibs } from 'app/services/libs'
 import { persistor, store } from 'app/store'
 import {
@@ -77,32 +79,34 @@ const App = () => {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <FlipperAsyncStorage />
       <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <ThemeProvider>
-            <WalletConnectProvider>
-              <PortalProvider>
-                <ErrorBoundary>
-                  <PortalHost name='ChatReactionsPortal' />
-                  <NavigationContainer>
-                    <Toasts />
-                    <Airplay />
-                    <RootScreen
-                      isPendingMandatoryCodePushUpdate={
-                        isPendingMandatoryCodePushUpdate
-                      }
-                    />
-                    <Drawers />
-                    <Modals />
-                    <Audio />
-                    <OAuth />
-                    <NotificationReminder />
-                    <RateCtaReminder />
-                  </NavigationContainer>
-                </ErrorBoundary>
-              </PortalProvider>
-            </WalletConnectProvider>
-          </ThemeProvider>
-        </PersistGate>
+        <AudiusQueryContext.Provider value={{ apiClient }}>
+          <PersistGate loading={null} persistor={persistor}>
+            <ThemeProvider>
+              <WalletConnectProvider>
+                <PortalProvider>
+                  <ErrorBoundary>
+                    <PortalHost name='ChatReactionsPortal' />
+                    <NavigationContainer>
+                      <Toasts />
+                      <Airplay />
+                      <RootScreen
+                        isPendingMandatoryCodePushUpdate={
+                          isPendingMandatoryCodePushUpdate
+                        }
+                      />
+                      <Drawers />
+                      <Modals />
+                      <Audio />
+                      <OAuth />
+                      <NotificationReminder />
+                      <RateCtaReminder />
+                    </NavigationContainer>
+                  </ErrorBoundary>
+                </PortalProvider>
+              </WalletConnectProvider>
+            </ThemeProvider>
+          </PersistGate>
+        </AudiusQueryContext.Provider>
       </Provider>
     </SafeAreaProvider>
   )
