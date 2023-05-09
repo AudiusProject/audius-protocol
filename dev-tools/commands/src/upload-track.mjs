@@ -44,6 +44,7 @@ program.command("upload-track")
   .option("-p, --premium-conditions <premium conditions>", "The premium conditions object; sets track as premium")
   .action(async (track, { title, tags, description, mood, genre, license, from, premiumConditions }) => {
     const audiusLibs = await initializeAudiusLibs(from);
+    await audiusLibs.Account.logout();
 
     const rand = randomBytes(2).toString("hex").padStart(4, "0").toUpperCase();
 
