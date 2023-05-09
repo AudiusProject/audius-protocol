@@ -2,6 +2,8 @@ import { Utils as AudiusUtils, sdk as AudiusSdk, libs as AudiusLibs } from "@aud
 import { PublicKey } from "@solana/web3.js"
 
 export const initializeAudiusLibs = async (handle) => {
+  await audiusLibs.localStorage.removeItem('hedgehog-entropy-key')
+
   const audiusLibs = new AudiusLibs({
     ethWeb3Config: AudiusLibs.configEthWeb3(
       process.env.ETH_TOKEN_ADDRESS,
