@@ -38,7 +38,11 @@ export const initializeAudiusLibs = async (handle) => {
     enableUserReplicaSetManagerContract: true,
   });
 
+  // This is a bad solution
+  await audiusLibs.init();
+  await audiusLibs.Account.logout();
   await audiusLibs.localStorage.removeItem("hedgehog-entropy-key")
+
   if (handle) {
     await audiusLibs.localStorage.setItem(
       "hedgehog-entropy-key",
