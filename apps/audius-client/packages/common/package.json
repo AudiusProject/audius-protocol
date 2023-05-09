@@ -38,6 +38,7 @@
     "jsbi": "4.3.0",
     "lodash": "4.17.21",
     "moment": "2.24.0",
+    "normalizr": "^3.6.2",
     "numeral": "2.0.6",
     "proxy-memoize": "1.2.0",
     "query-string": "8.1.0",

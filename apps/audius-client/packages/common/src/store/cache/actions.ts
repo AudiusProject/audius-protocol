@@ -7,6 +7,7 @@ import { Metadata } from './types'
 
 export const ADD = 'CACHE/ADD'
 export const ADD_SUCCEEDED = 'CACHE/ADD_SUCCEEDED'
+export const ADD_ENTRIES = 'CACHE/ADD_ENTRIES'
 export const UPDATE = 'CACHE/UPDATE'
 export const INCREMENT = 'CACHE/INCREMENT'
 export const SET_STATUS = 'CACHE/SET_STATUS'
@@ -48,6 +49,27 @@ export type AddSuccededAction<EntryT extends Metadata = Metadata> = {
   persist?: boolean
 }
 
+type Entry<EntryT extends Metadata = Metadata> = {
+  id: ID
+  uid: UID
+  metadata: EntryT
+  timestamp: number
+}
+
+type EntriesByKind<EntryT extends Metadata = Metadata> = {
+  [key: Kind]: Entry<EntryT>[]
+}
+
+export type AddEntriesAction<EntryT extends Metadata = Metadata> = {
+  type: typeof ADD_ENTRIES
+  kind: Kind[]
+  entriesByKind: EntriesByKind<EntryT>
+  // replace optionally replaces the entire entry instead of joining metadata
+  replace?: boolean
+  // persist optionally persists the cache entry to indexdb
+  persist?: boolean
+}
+
 /**
  * Adds entries to the cache.
  */
@@ -60,6 +82,26 @@ export const addSucceeded = ({
   type: ADD_SUCCEEDED,
   kind,
   entries,
+  replace,
+  persist
+})
+
+/**
+ * Signals to add an entries of multiple kinds to the cache.
+ * @param {Kind} kind
+ * @param {array} entries { id, uid, metadata }
+ * @param {boolean} replace optionally replaces the entire entry instead of joining metadata
+ * @param {boolean} persist optionally persists the cache entry to indexdb
+ */
+export const addEntries = (
+  kind,
+  entriesByKind,
+  replace = false,
+  persist = true
+): AddEntriesAction => ({
+  type: ADD_ENTRIES,
+  kind,
+  entriesByKind,
   replace,
   persist
 })

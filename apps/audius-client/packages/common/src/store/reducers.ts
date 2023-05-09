@@ -1,5 +1,6 @@
 import { combineReducers } from 'redux'
 
+import apiReducer from '../api/reducer'
 import { Kind } from '../models'
 
 import account from './account/slice'
@@ -127,6 +128,8 @@ import wallet from './wallet/slice'
  */
 export const reducers = () => ({
   account,
+
+  api: apiReducer,
 
   // TODO: Move to common
   // signOn: signOnReducer,
@@ -262,6 +265,9 @@ export type CommonState = {
   collections: CollectionsCacheState
   tracks: TracksCacheState
   users: UsersCacheState
+
+  // TODO: missing types for internally managed api slice state
+  api: any
 
   // Playback
   queue: ReturnType<typeof queue>
