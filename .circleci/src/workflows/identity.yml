@@ -4,6 +4,7 @@ jobs:
   - build-gcp-image:
       context: GCP
 
+  - push-docker-image:
       name: push-identity-service
       context: [GCP, dockerhub]
       instance-name: circleci-push-identity-service-$CIRCLE_BUILD_NUM

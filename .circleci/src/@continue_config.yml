@@ -10,7 +10,10 @@ parameters:
   run-identity-workflow:
     type: boolean
     default: false
-  run-eth-workflow:
+  run-contracts-workflow:
+    type: boolean
+    default: false
+  run-eth-contracts-workflow:
     type: boolean
     default: false
   run-discovery-workflow:
