@@ -377,7 +377,7 @@ def up(
                 "up",
                 "--build",
                 "--detach",
-                "--wait",
+                # "--wait",
                 *args,
                 *services,
             ],
