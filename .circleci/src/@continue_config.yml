@@ -25,3 +25,6 @@ parameters:
   run-sdk-workflow:
     type: boolean
     default: false
+  run-gcp-cleanup-workflow:
+    type: boolean
+    default: false
