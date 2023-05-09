@@ -38,6 +38,6 @@ steps:
         - run:
             name: audius-cmd test
             no_output_timeout: 60m
-            # command: . ~/.profile; tail -f /dev/null
-            command: . ~/.profile; audius-compose up -w && sleep 2 && audius-cmd test
-        - run: docker logs audius-protocol-creator-node-container-1
+            command: . ~/.profile; tail -f /dev/null
+        #     command: . ~/.profile; audius-compose up -w && sleep 2 && audius-cmd test
+        # - run: docker logs audius-protocol-creator-node-container-1
