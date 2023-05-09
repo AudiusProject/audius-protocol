@@ -26,7 +26,9 @@ function* doSearchUsers(action: ReturnType<typeof searchUsers>) {
     })
     const users = Object.values(res.users) as User[]
     yield* call(processAndCacheUsers, users)
-    yield* put(searchUsersSucceeded({ userIds: users.map((u) => u.user_id) }))
+    yield* put(
+      searchUsersSucceeded({ userIds: users.map((u) => u.user_id), limit })
+    )
   } catch (e) {
     console.error(e)
   }

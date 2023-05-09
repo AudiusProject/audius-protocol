@@ -1,6 +1,7 @@
-import type { UserChat } from '@audius/sdk'
+import type { UserChat, ValidatedChatPermissions } from '@audius/sdk'
 import { createSelector } from 'reselect'
 
+import type { ID } from 'models/Identifiers'
 import { accountSelectors } from 'store/account'
 import { cacheUsersSelectors } from 'store/cache'
 import { CommonState } from 'store/reducers'
@@ -160,3 +161,25 @@ export const getUnfurlMetadata = (
   const message = getChatMessageById(state, chatId, messageId)
   return message?.unfurlMetadata
 }
+
+export const getCanMessageUser = createSelector(
+  [
+    getBlockers,
+    getBlockees,
+    getUserChatPermissions,
+    (_: CommonState, userId: ID) => userId
+  ],
+  (
+    blockerList,
+    blockeeList,
+    permissionsMap: Record<ID, ValidatedChatPermissions>,
+    userId
+  ) => {
+    const isBlocked = blockerList.includes(userId)
+    const doesBlock = blockeeList.includes(userId)
+    const isPermitted =
+      permissionsMap[userId]?.current_user_has_permission ?? true
+
+    return !isBlocked && !doesBlock && isPermitted
+  }
+)
