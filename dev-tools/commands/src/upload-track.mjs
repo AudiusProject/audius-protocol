@@ -90,8 +90,10 @@ program.command("upload-track")
           track_segments: [],
           is_premium: premiumConditions !== "",
           premium_conditions: premiumConditions ? JSON.parse(premiumConditions) : null,
+          ai_attribution_user_id: null
         },
         () => null,
+        /* writeMetadataThroughChain */ true
       );
 
       if (response.error) {
@@ -107,4 +109,3 @@ program.command("upload-track")
 
     process.exit(0);
   });
-  

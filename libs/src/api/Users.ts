@@ -1111,7 +1111,9 @@ export class Users extends Base {
             break
           } else {
             throw new Error(
-              `[User:waitForReplicaSetDiscoveryIndexing()] Indexed block ${blockNumber}, but did not find matching sp ids`
+              `[User:waitForReplicaSetDiscoveryIndexing()] Indexed block ${blockNumber}, but did not find matching sp ids: ${JSON.stringify(
+                replicaSet
+              )}, ${replicaSetSPIDs}`
             )
           }
         }
