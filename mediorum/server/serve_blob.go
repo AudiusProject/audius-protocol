@@ -106,12 +106,11 @@ func (s *MediorumServer) requireSignature(next echo.HandlerFunc) echo.HandlerFun
 				return strings.EqualFold(peer.Wallet, sig.SignerWallet)
 			})
 			if !isRegistered {
-				// return c.JSON(401, map[string]string{
-				// 	"error":  "signer not in list of registered nodes",
-				// 	"detail": "signed by: " + sig.SignerWallet,
-				// })
-				// s.logger.Info("sig no match", "signed by", sig.SignerWallet)
-				c.Response().Header().Add("x-bad-signer", sig.SignerWallet)
+				s.logger.Info("sig no match", "signed by", sig.SignerWallet)
+				return c.JSON(401, map[string]string{
+					"error":  "signer not in list of registered nodes",
+					"detail": "signed by: " + sig.SignerWallet,
+				})
 			}
 
 			// check signature not too old
