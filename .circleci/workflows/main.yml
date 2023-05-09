@@ -1,8 +1,8 @@
 when:
   equal: ["main", << pipeline.parameters.workflow >>]
 jobs:
-  - build-gcp-image:
-      context: GCP
+  # - build-gcp-image:
+  #     context: GCP
 
   # - push-docker-image:
   #     name: push-creator-node
