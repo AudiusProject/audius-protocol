@@ -20,6 +20,7 @@ export const signOut = async (
   await removeLocalStorageItems(localStorage)
   await localStorage.clearAudiusAccount()
   await localStorage.clearAudiusAccountUser()
+  await localStorage.clearPlaybackRate()
   removeHasRequestedBrowserPermission()
   await audiusBackendInstance.signOut()
   clearTheme()
