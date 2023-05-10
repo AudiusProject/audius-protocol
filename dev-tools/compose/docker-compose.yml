@@ -26,6 +26,8 @@ x-common: &common
     resources:
       limits:
         memory: 3G
+  profiles:
+    - ci
 
 services:
   ingress:
