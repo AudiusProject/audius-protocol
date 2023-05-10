@@ -1,5 +1,7 @@
 import { CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY } from '@audius/sdk/dist/core'
 
+import { PLAYBACK_RATE_LS_KEY } from 'store/index'
+
 import { User } from '../../models'
 import { Nullable } from '../../utils'
 
@@ -109,6 +111,8 @@ export class LocalStorage {
     this.setJSONValue(AUDIUS_ACCOUNT_USER_KEY, value)
 
   clearAudiusAccountUser = async () => this.removeItem(AUDIUS_ACCOUNT_USER_KEY)
+
+  clearPlaybackRate = async () => this.removeItem(PLAYBACK_RATE_LS_KEY)
 
   getCurrentUserExists = async () =>
     this.getValue(CURRENT_USER_EXISTS_LOCAL_STORAGE_KEY)
