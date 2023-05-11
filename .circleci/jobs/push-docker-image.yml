@@ -33,7 +33,7 @@ steps:
         --preemptible
         --tags=circleci
         --machine-type=n2-standard-4
-        --boot-disk-size=100G
+        --boot-disk-size=120G
         --boot-disk-type=pd-ssd
       pass-env: DOCKERHUB_PASS DOCKERHUB_USERNAME
       steps:
