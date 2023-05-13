@@ -1,0 +1,37 @@
+version: '3.3'
+services:
+    graphql:
+      container_name: postgraphile
+      restart: always
+      image: postgraphile
+      build:
+          context: '.'
+      env_file:
+          - ./.env
+      ports:
+          - 5433:5433
+      volumes:
+        - "${PWD}:/local"
+      command: [
+          "--connection",
+          "${DATABASE_URL}",
+          "--port",
+          "5433",
+          "--schema",
+          "public",
+          "--append-plugins",
+          "postgraphile-plugin-connection-filter",
+          "--subscriptions",
+          "--watch",
+          "--dynamic-json",
+          "--export-schema-graphql",
+          "./local/schema.graphql",
+          "--graphiql",
+          "/graphiql",
+          "--enhance-graphiql",
+          "--allow-explain",
+          "--enable-query-batching",
+          "--no-setof-functions-contain-nulls",
+          "--no-ignore-rbac",
+          "--disable-default-mutations"
+        ]
