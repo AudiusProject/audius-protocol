@@ -351,7 +351,10 @@ const slice = createSlice({
       // Ignore the unread bump to prevent flicker
       if (state.activeChatId !== chatId) {
         const existingChat = getChat(state, chatId)
-        const existingUnreadCount = existingChat?.unread_message_count ?? 0
+        const optimisticRead = state.optimisticChatRead[chatId]
+        const existingUnreadCount = optimisticRead
+          ? optimisticRead.unread_message_count
+          : existingChat?.unread_message_count ?? 0
         chatsAdapter.updateOne(state.chats, {
           id: chatId,
           changes: { unread_message_count: existingUnreadCount + 1 }
