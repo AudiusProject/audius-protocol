@@ -34,6 +34,7 @@ export function DiscoveryHealth() {
             <th>Block Hash</th>
             <th>ACDC Block</th>
             <th>Peers</th>
+            <th>Producing Blocks</th>
           </tr>
         </thead>
         <tbody>
@@ -80,6 +81,10 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     const match = str.match(/Peers: (.)/)
     return (match && match[1]) ? match[1] : "no peers found"
   }
+  const getProducing = (str: string) => {
+    return (!str.includes("The node stopped producing blocks.")).toString()
+  }
+  const chainDescription = health.chain_health?.entries["node-health"].description
 
   return (
     <tr>
@@ -131,7 +136,8 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       <td>{health.chain_health?.status}</td>
       <td>{health.chain_health?.hash}</td>
       <td>{health.chain_health?.block_number}</td>
-      <td>{getPeers(health.chain_health?.entries["node-health"].description)}</td>
+      <td>{getPeers(chainDescription)}</td>
+      <td>{getProducing(chainDescription)}</td>
     </tr>
   )
 }
