@@ -29,8 +29,6 @@ type UserEmailNotification = {
   notifications: EmailNotification[]
 }
 
-const DEFAULT_TIMEZONE = 'America/Los_Angeles'
-
 const Results = Object.freeze({
   USER_TURNED_OFF: 'USER_TURNED_OFF',
   USER_BLOCKED: 'USER_BLOCKED',
@@ -42,11 +40,33 @@ const Results = Object.freeze({
 export const getUsersCanNotify = async (
   identityDb: Knex,
   frequency: EmailFrequency,
-  startOffset: moment.Moment
-): Promise<EmailUsers> => {
+  startOffset: moment.Moment,
+  onPage: (emailUsers: EmailUsers) => Promise<void>,
+) => {
   // const validLastEmailOffset = startOffset.subtract(2, 'hours')
-  const userRows: { blockchainUserId: number; email: string }[] =
-    await identityDb
+  let lastUser: number = Number.MAX_SAFE_INTEGER; // query uses DESC, start at max
+  const pageCount = 1000;
+  const date = new Date()
+  const time = date.getTime()
+  const twelveHours = 43200000
+  const timeout = time + twelveHours
+  while (true) {
+    const currentDate = new Date()
+    const now = currentDate.getTime()
+    if (now > timeout) break
+    const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
+    if (userRows.length === 0) break // once we've reached the end of users for this query
+    lastUser = userRows[userRows.length - 1].blockchainUserId
+    const emailUsers = userRows.reduce((acc, user) => {
+      acc[user.blockchainUserId] = user.email
+      return acc
+    }, {} as EmailUsers)
+    await onPage(emailUsers)
+  }
+}
+
+const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Moment, frequency: EmailFrequency, pageCount: number, lastUser: number) => 
+  await identityDb
       .with(
         'lastEmailSentAt',
         identityDb.raw(`
@@ -99,12 +119,8 @@ export const getUsersCanNotify = async (
           )
         }
       })
-  const emailUsers = userRows.reduce((acc, user) => {
-    acc[user.blockchainUserId] = user.email
-    return acc
-  }, {} as EmailUsers)
-  return emailUsers
-}
+      .where('user_id', '<', lastUser)
+      .limit(pageCount)
 
 const appNotificationsSql = `
 WITH latest_user_seen AS (
@@ -320,20 +336,20 @@ export async function processEmailNotifications(
       days = 7
     }
     const startOffset = now.clone().subtract(days, 'days')
-    const users = await getUsersCanNotify(identityDb, frequency, startOffset)
+    await getUsersCanNotify(identityDb, frequency, startOffset, async (users) => {
+        if (Object.keys(users).length == 0) {
+          logger.info(`processEmailNotifications | No users to process. Exiting...`)
+          return
+        }
 
-    if (Object.keys(users).length == 0) {
-      logger.info(`processEmailNotifications | No users to process. Exiting...`)
-      return
-    }
+        logger.info(
+          `processEmailNotifications | Beginning processing ${
+            Object.keys(users).length
+          } users at ${frequency} frequency`
+        )
 
-    logger.info(
-      `processEmailNotifications | Beginning processing ${
-        Object.keys(users).length
-      } users at ${frequency} frequency`
-    )
-
-    await processGroupOfEmails(dnDb, identityDb, users, frequency, startOffset, remoteConfig)
+        await processGroupOfEmails(dnDb, identityDb, users, frequency, startOffset, remoteConfig)
+    })
     
   } catch (e) {
     logger.error(
