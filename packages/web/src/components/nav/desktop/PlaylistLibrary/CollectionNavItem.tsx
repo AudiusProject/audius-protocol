@@ -8,6 +8,7 @@ import {
   PlaylistLibraryKind,
   PlaylistLibraryID
 } from '@audius/common'
+import cn from 'classnames'
 import { useDispatch } from 'react-redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
@@ -53,23 +54,6 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const dispatch = useDispatch()
   const record = useRecord()
 
-  const handleDrop = useCallback(
-    (draggingId: PlaylistLibraryID, kind: DragDropKind) => {
-      if (kind === 'track') {
-        dispatch(addTrackToPlaylist(draggingId as ID, id))
-      } else {
-        dispatch(
-          reorder({
-            draggingId,
-            droppingId: id,
-            draggingKind: kind as PlaylistLibraryKind
-          })
-        )
-      }
-    },
-    [dispatch, id]
-  )
-
   const handleDragEnter = useCallback(() => {
     setIsDraggingOver(true)
   }, [])
@@ -99,6 +83,23 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     [dispatch, id, record]
   )
 
+  const handleDrop = useCallback(
+    (draggingId: PlaylistLibraryID, kind: DragDropKind) => {
+      if (kind === 'track') {
+        dispatch(addTrackToPlaylist(draggingId as ID, id))
+      } else {
+        dispatch(
+          reorder({
+            draggingId,
+            droppingId: id,
+            draggingKind: kind as PlaylistLibraryKind
+          })
+        )
+      }
+    },
+    [dispatch, id]
+  )
+
   const draggingKind = useSelector(selectDraggingKind)
 
   const isDisabled = draggingKind === 'track' && !isOwned
@@ -120,17 +121,23 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
           onDragLeave={handleDragLeave}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          className={styles.root}
         >
           {hasUpdate ? <PlaylistUpdateDot /> : null}
-          <span className={level === 1 ? styles.playlistLevel1 : undefined}>
+          <span
+            className={cn(styles.collectionName, {
+              [styles.playlistLevel1]: level === 1
+            })}
+          >
             {name}
           </span>
-          {isOwned && isHovering && !isDraggingOver ? (
-            <EditNavItemButton
-              aria-label={messages.editPlaylistLabel}
-              onClick={handleClickEdit}
-            />
-          ) : null}
+          <EditNavItemButton
+            className={cn(styles.editPlaylistButton, {
+              [styles.editable]: isOwned && isHovering && !isDraggingOver
+            })}
+            aria-label={messages.editPlaylistLabel}
+            onClick={handleClickEdit}
+          />
         </LeftNavLink>
       </Draggable>
     </LeftNavDroppable>

@@ -1,11 +1,9 @@
 import { accountSelectors } from '@audius/common'
-import cn from 'classnames'
 import { isEmpty } from 'lodash'
 
 import { useSelector } from 'utils/reducer'
 
-import leftNavStyles from '../LeftNav.module.css'
-
+import { EmptyLibraryNavLink } from './EmptyLibraryNavLink'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 import { useAddAudioNftPlaylistToLibrary } from './useAddAudioNftPlaylistToLibrary'
 const { getPlaylistLibrary } = accountSelectors
@@ -15,11 +13,7 @@ export const PlaylistLibrary = () => {
   const library = useSelector(getPlaylistLibrary)
 
   if (!library || isEmpty(library?.contents)) {
-    return (
-      <div className={cn(leftNavStyles.link, leftNavStyles.disabled)}>
-        Create your first playlist!
-      </div>
-    )
+    return <EmptyLibraryNavLink />
   }
 
   return (
