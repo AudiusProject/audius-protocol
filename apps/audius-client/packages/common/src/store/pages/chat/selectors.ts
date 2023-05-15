@@ -128,6 +128,7 @@ export const getChatMessageByIndex = (
   messageIndex: number
 ) => {
   const chatMessagesState = state.pages.chat.messages[chatId]
+  if (!chatMessagesState) return undefined
   const messageIds = getChatMessageIds(chatMessagesState)
   const messageIdAtIndex = messageIds[messageIndex]
   return selectById(chatMessagesState, messageIdAtIndex)
@@ -139,6 +140,7 @@ export const getChatMessageById = (
   messageId: string
 ) => {
   const chatMessagesState = state.pages.chat.messages[chatId]
+  if (!chatMessagesState) return undefined
   return selectById(chatMessagesState, messageId)
 }
 
