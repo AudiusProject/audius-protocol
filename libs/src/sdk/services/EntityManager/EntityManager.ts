@@ -18,6 +18,7 @@ import type {
   EntityManagerService,
   EntityType
 } from './types'
+import { encodeHashId } from '../../utils/hashId'
 
 export class EntityManager implements EntityManagerService {
   /**
@@ -78,7 +79,10 @@ export class EntityManager implements EntityManagerService {
     )
 
     const senderAddress = await walletApi.getAddress()
-    const signature = await walletApi.sign(signatureData as any)
+    const signature = await walletApi.sign(
+      signatureData as any,
+      encodeHashId(userId) ?? undefined
+    )
 
     const method = await this.contract.methods.manageEntity(
       userId,

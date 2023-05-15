@@ -29,7 +29,8 @@ import {
   WalletApi,
   StorageService,
   Storage,
-  EntityManager
+  EntityManager,
+  DelegatedWalletApi
 } from './services'
 
 type ServicesContainer = {
@@ -63,6 +64,16 @@ type SdkConfig = {
    * Services injection
    */
   services?: Partial<ServicesContainer>
+
+  /**
+   * API key, required for writes
+   */
+  apiKey?: string
+
+  /**
+   * API secret, required for writes
+   */
+  apiSecret?: string
 }
 
 /**
@@ -97,7 +108,10 @@ const initializeServices = (config: SdkConfig) => {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
     entityManager: new EntityManager(),
     storage: new Storage(),
-    walletApi: new WalletApi()
+    walletApi:
+      config.apiKey && config.apiSecret
+        ? new DelegatedWalletApi()
+        : new WalletApi()
   }
   return { ...defaultServices, ...config.services }
 }
@@ -126,6 +140,7 @@ const initializeApis = ({
     services.walletApi
   )
   const users = new UsersApi(generatedApiClientConfig)
+  ;(services.walletApi as DelegatedWalletApi).setUsersApi?.(users)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
