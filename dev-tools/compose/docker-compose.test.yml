@@ -135,10 +135,19 @@ services:
         CONTENT_NODE_VERSION: ${CONTENT_NODE_VERSION}
         DISCOVERY_NODE_VERSION: ${DISCOVERY_NODE_VERSION}
         antiAbuseOracleAddresses: "${AAO_WALLET_ADDRESSES}"
+    user: node
     entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test)' -
     logging: *default-logging
     deploy:
       mode: global
+    depends_on:
+      eth-ganache:
+        condition: service_healthy
+    profiles:
+      - eth
+    volumes:
+      - ${PROJECT_ROOT}/eth-contracts:/usr/src/app
+      - /usr/src/app/node_modules
 
   # creator-node
 

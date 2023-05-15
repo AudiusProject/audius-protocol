@@ -10,7 +10,6 @@ import { AppNotificationsProcessor } from './processNotifications/indexAppNotifi
 import { sendDMNotifications } from './tasks/dmNotifications'
 import { processEmailNotifications } from './email/notifications/index'
 import { sendAppNotifications } from './tasks/appNotifications'
-import { getRedisConnection } from './utils/redisConnection'
 import {
   EmailPluginMappings,
   NotificationsEmailPlugin,
@@ -101,22 +100,10 @@ export class Processor {
     // process events
     logger.info('processing events')
     this.isRunning = true
-    const redis = await getRedisConnection()
-    await redis.set(
-      config.lastIndexedMessageRedisKey,
-      new Date(Date.now()).toISOString()
-    )
-    await redis.set(
-      config.lastIndexedReactionRedisKey,
-      new Date(Date.now()).toISOString()
-    )
     while (this.isRunning) {
-      // Comment out to prevent app notifications until complete
       await sendAppNotifications(this.listener, this.appNotificationsProcessor)
       await sendDMNotifications(this.discoveryDB, this.identityDB)
 
-      // NOTE: Temp to test DM email notifs in staging
-      // TODO run job for all email frequencies
       if (
         this.getIsScheduledEmailEnabled() &&
         (!this.lastDailyEmailSent ||

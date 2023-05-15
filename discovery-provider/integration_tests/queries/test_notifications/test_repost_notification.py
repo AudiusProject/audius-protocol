@@ -78,8 +78,5 @@ def test_get_repost_notifications(app):
                 u1_notifications[2]["actions"][0]["data"]["type"]
                 == "PLAYLIST_REPOST_COUNT"
             )
-            assert (
-                u1_notifications[2]["actions"][0]["data"]["type"]
-                == "PLAYLIST_REPOST_COUNT"
-            )
+            assert u1_notifications[2]["actions"][0]["data"]["playlist_id"] == 1
             assert u1_notifications[2]["actions"][0]["data"]["threshold"] == 10

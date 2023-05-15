@@ -5,6 +5,7 @@ from typing import Dict, List, Set, Tuple, TypedDict, Union
 
 from src.challenges.challenge_event_bus import ChallengeEventBus
 from src.models.delegates.app_delegate import AppDelegate
+from src.models.delegates.delegation import Delegation
 from src.models.notifications.notification import (
     Notification,
     NotificationSeen,
@@ -54,6 +55,7 @@ class EntityType(str, Enum):
     TRACK = "Track"
     USER = "User"
     USER_REPLICA_SET = "UserReplicaSet"
+    USER_WALLET = "UserWallet"
     FOLLOW = "Follow"
     SAVE = "Save"
     REPOST = "Repost"
@@ -62,6 +64,7 @@ class EntityType(str, Enum):
     NOTIFICATION = "Notification"
     PLAYLIST_SEEN = "PlaylistSeen"
     APP_DELEGATE = "AppDelegate"
+    DELEGATION = "Delegation"
 
     def __str__(self) -> str:
         return str.__str__(self)
@@ -83,6 +86,7 @@ class RecordDict(TypedDict):
 class ExistingRecordDict(TypedDict):
     Playlist: Dict[int, Playlist]
     Track: Dict[int, Track]
+    UserByWallet: Dict[str, User]
     User: Dict[int, User]
     Follow: Dict[Tuple, Follow]
     Save: Dict[Tuple, Save]
@@ -99,7 +103,8 @@ class EntitiesToFetchDict(TypedDict):
     Save: Set[Tuple]
     Subscription: Set[Tuple]
     PlaylistSeen: Set[Tuple]
-    AppDelegate: Set[int]
+    AppDelegate: Set[str]
+    UserByWallet: Set[str]
 
 
 MANAGE_ENTITY_EVENT_TYPE = "ManageEntity"
@@ -158,9 +163,13 @@ class ManageEntityParameters:
         self.new_records[EntityType.PLAYLIST][playlist_id].append(playlist)  # type: ignore
         self.existing_records[EntityType.PLAYLIST][playlist_id] = playlist  # type: ignore
 
-    def add_app_delegate_record(self, address: int, delegate: AppDelegate):
+    def add_app_delegate_record(self, address: str, delegate: AppDelegate):
         self.new_records[EntityType.APP_DELEGATE][address].append(delegate)  # type: ignore
         self.existing_records[EntityType.APP_DELEGATE][address] = delegate  # type: ignore
+
+    def add_delegation_record(self, shared_address: str, delegation: Delegation):
+        self.new_records[EntityType.DELEGATION][shared_address].append(delegation)  # type: ignore
+        self.existing_records[EntityType.DELEGATION][shared_address] = delegation  # type: ignore
 
     def add_track_record(self, track_id: int, track: Track):
         self.new_records[EntityType.TRACK][track_id].append(track)  # type: ignore

@@ -6,7 +6,9 @@ const MockStakingCaller = artifacts.require('MockStakingCaller')
 const MockWormhole = artifacts.require('MockWormhole')
 const EthRewardsManager = artifacts.require('EthRewardsManager')
 const Staking = artifacts.require('Staking')
-const AudiusAdminUpgradeabilityProxy = artifacts.require('AudiusAdminUpgradeabilityProxy')
+const AudiusAdminUpgradeabilityProxy = artifacts.require(
+  'AudiusAdminUpgradeabilityProxy'
+)
 const ClaimsManager = artifacts.require('ClaimsManager')
 
 const stakingProxyKey = web3.utils.utf8ToHex('StakingProxy')
@@ -30,11 +32,26 @@ contract('EthRewardsManager', async (accounts) => {
   let mockDelegateManager, mockStakingCaller, mockWormhole
 
   // intentionally not using acct0 to make sure no TX accidentally succeeds without specifying sender
-  const [, proxyAdminAddress, proxyDeployerAddress, staker, antiAbuseOracleAddress1, antiAbuseOracleAddress2, antiAbuseOracleAddress3] = accounts
+  const [
+    ,
+    proxyAdminAddress,
+    proxyDeployerAddress,
+    staker,
+    antiAbuseOracleAddress1,
+    antiAbuseOracleAddress2,
+    antiAbuseOracleAddress3
+  ] = accounts
   const tokenOwnerAddress = proxyDeployerAddress
   const guardianAddress = proxyDeployerAddress
-  const antiAbuseOracleAddresses = [antiAbuseOracleAddress1, antiAbuseOracleAddress2, antiAbuseOracleAddress3]
-  const recipient = Buffer.from('0000000000000000000000000000000000000000000000000000000000000000', 'hex')
+  const antiAbuseOracleAddresses = [
+    antiAbuseOracleAddress1,
+    antiAbuseOracleAddress2,
+    antiAbuseOracleAddress3
+  ]
+  const recipient = Buffer.from(
+    '0000000000000000000000000000000000000000000000000000000000000000',
+    'hex'
+  )
 
   const approveTransferAndStake = async (amount, staker) => {
     // Transfer default tokens to
@@ -47,7 +64,11 @@ contract('EthRewardsManager', async (accounts) => {
 
   beforeEach(async () => {
     // Deploy registry
-    registry = await _lib.deployRegistry(artifacts, proxyAdminAddress, proxyDeployerAddress)
+    registry = await _lib.deployRegistry(
+      artifacts,
+      proxyAdminAddress,
+      proxyDeployerAddress
+    )
 
     // Deploy + register governance
     governance = await _lib.deployGovernance(
@@ -60,7 +81,9 @@ contract('EthRewardsManager', async (accounts) => {
       VOTING_QUORUM_PERCENT,
       guardianAddress
     )
-    await registry.addContract(governanceKey, governance.address, { from: proxyDeployerAddress })
+    await registry.addContract(governanceKey, governance.address, {
+      from: proxyDeployerAddress
+    })
 
     // Deploy + register token
     token = await _lib.deployToken(
@@ -70,7 +93,9 @@ contract('EthRewardsManager', async (accounts) => {
       tokenOwnerAddress,
       governance.address
     )
-    await registry.addContract(tokenRegKey, token.address, { from: proxyDeployerAddress })
+    await registry.addContract(tokenRegKey, token.address, {
+      from: proxyDeployerAddress
+    })
 
     // Deploy and register staking
     const staking0 = await Staking.new({ from: proxyDeployerAddress })
@@ -85,19 +110,27 @@ contract('EthRewardsManager', async (accounts) => {
       stakingInitializeData,
       { from: proxyDeployerAddress }
     )
-    await registry.addContract(stakingProxyKey, stakingProxy.address, { from: proxyDeployerAddress })
+    await registry.addContract(stakingProxyKey, stakingProxy.address, {
+      from: proxyDeployerAddress
+    })
     staking = await Staking.at(stakingProxy.address)
 
     // Mock SP for test
     mockStakingCaller = await MockStakingCaller.new()
     await mockStakingCaller.initialize(stakingProxy.address, token.address)
-    await registry.addContract(serviceProviderFactoryKey, mockStakingCaller.address, { from: proxyDeployerAddress })
+    await registry.addContract(
+      serviceProviderFactoryKey,
+      mockStakingCaller.address,
+      { from: proxyDeployerAddress }
+    )
 
     // Mock Wormhole for test
     mockWormhole = await MockWormhole.new()
 
     // Deploy claimsManagerProxy
-    const claimsManager0 = await ClaimsManager.new({ from: proxyDeployerAddress })
+    const claimsManager0 = await ClaimsManager.new({
+      from: proxyDeployerAddress
+    })
     const claimsInitializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address'],
@@ -112,19 +145,35 @@ contract('EthRewardsManager', async (accounts) => {
     claimsManager = await ClaimsManager.at(claimsManagerProxy.address)
 
     // Register claimsManagerProxy
-    await registry.addContract(claimsManagerProxyKey, claimsManagerProxy.address, { from: proxyDeployerAddress })
+    await registry.addContract(
+      claimsManagerProxyKey,
+      claimsManagerProxy.address,
+      { from: proxyDeployerAddress }
+    )
 
     // Deploy mock delegate manager with only function to forward processClaim call
     mockDelegateManager = await MockDelegateManager.new()
     await mockDelegateManager.initialize(claimsManagerProxy.address)
-    await registry.addContract(delegateManagerKey, mockDelegateManager.address, { from: proxyDeployerAddress })
+    await registry.addContract(
+      delegateManagerKey,
+      mockDelegateManager.address,
+      { from: proxyDeployerAddress }
+    )
 
     // Deploy ethRewardsManagerProxy
-    const ethRewardsManager0 = await EthRewardsManager.new({ from: proxyDeployerAddress })
+    const ethRewardsManager0 = await EthRewardsManager.new({
+      from: proxyDeployerAddress
+    })
     const ethRewardsManagerInitializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'address', 'bytes32', 'address[]'],
-      [token.address, governance.address, mockWormhole.address, recipient, antiAbuseOracleAddresses]
+      [
+        token.address,
+        governance.address,
+        mockWormhole.address,
+        recipient,
+        antiAbuseOracleAddresses
+      ]
     )
     const ethRewardsManagerProxy = await AudiusAdminUpgradeabilityProxy.new(
       ethRewardsManager0.address,
@@ -132,10 +181,16 @@ contract('EthRewardsManager', async (accounts) => {
       ethRewardsManagerInitializeCallData,
       { from: proxyDeployerAddress }
     )
-    ethRewardsManager = await EthRewardsManager.at(ethRewardsManagerProxy.address)
+    ethRewardsManager = await EthRewardsManager.at(
+      ethRewardsManagerProxy.address
+    )
 
     // Register ethRewardsManagerProxy
-    await registry.addContract(ethRewardsManagerProxyKey, ethRewardsManagerProxy.address, { from: proxyDeployerAddress })
+    await registry.addContract(
+      ethRewardsManagerProxyKey,
+      ethRewardsManagerProxy.address,
+      { from: proxyDeployerAddress }
+    )
 
     // Register claimsManager contract as a minter, from the same address that deployed the contract
     await governance.guardianExecuteTransaction(
@@ -199,10 +254,18 @@ contract('EthRewardsManager', async (accounts) => {
     const invalidEthRewardsManagerInitializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'address', 'bytes32', 'address[]'],
-      [accounts[5], governance.address, mockWormhole.address, recipient, antiAbuseOracleAddresses]
+      [
+        accounts[5],
+        governance.address,
+        mockWormhole.address,
+        recipient,
+        antiAbuseOracleAddresses
+      ]
     )
-    const ethRewardsManager1 = await EthRewardsManager.new({ from: proxyAdminAddress })
-    await _lib.assertRevert(
+    const ethRewardsManager1 = await EthRewardsManager.new({
+      from: proxyAdminAddress
+    })
+    await _lib.assertNotStored(
       AudiusAdminUpgradeabilityProxy.new(
         ethRewardsManager1.address,
         governance.address,
@@ -216,10 +279,18 @@ contract('EthRewardsManager', async (accounts) => {
     const invalidEthRewardsManagerInitializeCallData = _lib.encodeCall(
       'initialize',
       ['address', 'address', 'address', 'bytes32', 'address[]'],
-      [token.address, governance.address, accounts[5], recipient, antiAbuseOracleAddresses]
+      [
+        token.address,
+        governance.address,
+        accounts[5],
+        recipient,
+        antiAbuseOracleAddresses
+      ]
     )
-    const ethRewardsManager1 = await EthRewardsManager.new({ from: proxyAdminAddress })
-    await _lib.assertRevert(
+    const ethRewardsManager1 = await EthRewardsManager.new({
+      from: proxyAdminAddress
+    })
+    await _lib.assertNotStored(
       AudiusAdminUpgradeabilityProxy.new(
         ethRewardsManager1.address,
         governance.address,
@@ -242,7 +313,9 @@ contract('EthRewardsManager', async (accounts) => {
     )
 
     await _lib.assertRevert(
-      ethRewardsManager.setGovernanceAddress(newGovernance.address, { from: accounts[7] }),
+      ethRewardsManager.setGovernanceAddress(newGovernance.address, {
+        from: accounts[7]
+      }),
       'Only governance'
     )
 
@@ -265,12 +338,18 @@ contract('EthRewardsManager', async (accounts) => {
       { from: guardianAddress }
     )
 
-    assert.equal(await ethRewardsManager.getGovernanceAddress(), newGovernance.address)
+    assert.equal(
+      await ethRewardsManager.getGovernanceAddress(),
+      newGovernance.address
+    )
   })
 
   it('antiAbuseOracleAddresses', async () => {
     await _lib.assertRevert(
-      ethRewardsManager.setAntiAbuseOracleAddresses([accounts[10], accounts[11], accounts[12]], { from: accounts[7] }),
+      ethRewardsManager.setAntiAbuseOracleAddresses(
+        [accounts[10], accounts[11], accounts[12]],
+        { from: accounts[7] }
+      ),
       'Only governance'
     )
 
@@ -278,18 +357,30 @@ contract('EthRewardsManager', async (accounts) => {
       ethRewardsManagerProxyKey,
       callValue0,
       'setAntiAbuseOracleAddresses(address[])',
-      _lib.abiEncode(['address[]'], [[accounts[10], accounts[11], accounts[12]]]),
+      _lib.abiEncode(
+        ['address[]'],
+        [[accounts[10], accounts[11], accounts[12]]]
+      ),
       { from: guardianAddress }
     )
 
-    assert.deepEqual(await ethRewardsManager.getAntiAbuseOracleAddresses(), [accounts[10], accounts[11], accounts[12]])
+    assert.deepEqual(await ethRewardsManager.getAntiAbuseOracleAddresses(), [
+      accounts[10],
+      accounts[11],
+      accounts[12]
+    ])
   })
 
   it('recipient', async () => {
-    const newRecipient = Buffer.from('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff', 'hex')
+    const newRecipient = Buffer.from(
+      'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+      'hex'
+    )
 
     await _lib.assertRevert(
-      ethRewardsManager.setRecipientAddress(newRecipient, { from: accounts[7] }),
+      ethRewardsManager.setRecipientAddress(newRecipient, {
+        from: accounts[7]
+      }),
       'Only governance'
     )
 
@@ -301,30 +392,48 @@ contract('EthRewardsManager', async (accounts) => {
       { from: guardianAddress }
     )
 
-    assert.equal(await ethRewardsManager.getRecipientAddress(), `0x${newRecipient.toString('hex')}`)
+    assert.equal(
+      await ethRewardsManager.getRecipientAddress(),
+      `0x${newRecipient.toString('hex')}`
+    )
   })
 
   it('transferToSolana', async () => {
     const amount = 100
 
-    await token.transfer(ethRewardsManager.address, amount, { from: tokenOwnerAddress })
-    assert.equal((await token.balanceOf(ethRewardsManager.address)).toNumber(), amount)
+    await token.transfer(ethRewardsManager.address, amount, {
+      from: tokenOwnerAddress
+    })
+    assert.equal(
+      (await token.balanceOf(ethRewardsManager.address)).toNumber(),
+      amount
+    )
 
-    const tx = await ethRewardsManager.transferToSolana(0, 1, { from: accounts[7] })
-
-    await expectEvent.inTransaction(tx.tx, MockWormhole, 'LogTokensTransferred', {
-      recipientChain: '1',
-      tokenChain: '2',
-      tokenDecimals: await token.decimals(),
-      token: web3.utils.padLeft(token.address, 64).toLowerCase(),
-      sender: web3.utils.padLeft(ethRewardsManager.address, 64).toLowerCase(),
-      recipient: `0x${recipient.toString('hex')}`,
-      amount: amount.toString(),
-      arbiterFee: '0',
-      nonce: '1'
+    const tx = await ethRewardsManager.transferToSolana(0, 1, {
+      from: accounts[7]
     })
 
-    assert.equal((await token.balanceOf(ethRewardsManager.address)).toNumber(), 0)
+    await expectEvent.inTransaction(
+      tx.tx,
+      MockWormhole,
+      'LogTokensTransferred',
+      {
+        recipientChain: '1',
+        tokenChain: '2',
+        tokenDecimals: await token.decimals(),
+        token: web3.utils.padLeft(token.address, 64).toLowerCase(),
+        sender: web3.utils.padLeft(ethRewardsManager.address, 64).toLowerCase(),
+        recipient: `0x${recipient.toString('hex')}`,
+        amount: amount.toString(),
+        arbiterFee: '0',
+        nonce: '1'
+      }
+    )
+
+    assert.equal(
+      (await token.balanceOf(ethRewardsManager.address)).toNumber(),
+      0
+    )
     assert.equal((await token.balanceOf(mockWormhole.address)).toNumber(), 100)
   })
 
@@ -332,7 +441,10 @@ contract('EthRewardsManager', async (accounts) => {
     await approveTransferAndStake(DEFAULT_AMOUNT, staker)
     let initiateTx = await claimsManager.initiateRound({ from: staker })
 
-    assert.equal(await token.balanceOf(ethRewardsManager.address), RECURRING_COMMUNITY_FUNDING_AMOUNT)
+    assert.equal(
+      await token.balanceOf(ethRewardsManager.address),
+      RECURRING_COMMUNITY_FUNDING_AMOUNT
+    )
 
     // Confirm events
     await expectEvent.inTransaction(
@@ -353,17 +465,22 @@ contract('EthRewardsManager', async (accounts) => {
       { from: guardianAddress }
     )
 
-    await expectEvent.inTransaction(transferToSolanaTx.tx, MockWormhole, 'LogTokensTransferred', {
-      recipientChain: '1',
-      tokenChain: '2',
-      tokenDecimals: await token.decimals(),
-      token: web3.utils.padLeft(token.address, 64).toLowerCase(),
-      sender: web3.utils.padLeft(ethRewardsManager.address, 64).toLowerCase(),
-      recipient: `0x${recipient.toString('hex')}`,
-      amount: RECURRING_COMMUNITY_FUNDING_AMOUNT.toString(),
-      arbiterFee: '0',
-      nonce: '1'
-    })
+    await expectEvent.inTransaction(
+      transferToSolanaTx.tx,
+      MockWormhole,
+      'LogTokensTransferred',
+      {
+        recipientChain: '1',
+        tokenChain: '2',
+        tokenDecimals: await token.decimals(),
+        token: web3.utils.padLeft(token.address, 64).toLowerCase(),
+        sender: web3.utils.padLeft(ethRewardsManager.address, 64).toLowerCase(),
+        recipient: `0x${recipient.toString('hex')}`,
+        amount: RECURRING_COMMUNITY_FUNDING_AMOUNT.toString(),
+        arbiterFee: '0',
+        nonce: '1'
+      }
+    )
   })
 
   it('token', async () => {

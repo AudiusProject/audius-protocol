@@ -36,9 +36,11 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
       user_id: number
@@ -78,7 +80,7 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
     const body = `${capitalize(
       newTopSupporterHandle
     )} dethroned you as ${supportedUserName}'s #1 Top Supporter! Tip to reclaim your spot?`
-    await sendBrowserNotification(
+    await sendBrowserNotification(isBrowserPushEnabled, 
       userNotificationSettings,
       this.receiverUserId,
       title,
@@ -120,27 +122,6 @@ export class SupporterDethroned extends BaseNotification<SupporterDethronedNotif
         })
       )
       await this.incrementBadgeCount(this.receiverUserId)
-    }
-    if (
-      isLiveEmailEnabled &&
-      userNotificationSettings.shouldSendEmailAtFrequency({
-        initiatorUserId: this.tipSenderUserId,
-        receiverUserId: this.receiverUserId,
-        frequency: 'live'
-      })
-    ) {
-      const notification: AppEmailNotification = {
-        receiver_user_id: this.receiverUserId,
-        ...this.notification
-      }
-      await sendNotificationEmail({
-        userId: this.receiverUserId,
-        email: userNotificationSettings.getUserEmail(this.receiverUserId),
-        frequency: 'live',
-        notifications: [notification],
-        dnDb: this.dnDB,
-        identityDb: this.identityDB
-      })
     }
   }
 

@@ -18,6 +18,8 @@ import { TipReceive } from './mappers/tipReceive'
 import { TipSend } from './mappers/tipSend'
 import { Milestone } from './mappers/milestone'
 import {
+  BrowserPluginMappings,
+  BrowserPushPlugin,
   EmailPluginMappings,
   MappingFeatureName,
   MappingVariable,
@@ -102,6 +104,14 @@ export class AppNotificationsProcessor {
     return Boolean(isEnabled)
   }
 
+  getIsBrowserPushEnabled(): boolean {
+    const isEnabled = this.remoteConfig.getFeatureVariableEnabled(
+      BrowserPushPlugin,
+      BrowserPluginMappings.Enabled
+    )
+    return Boolean(isEnabled)
+  }
+
   async process(notifications: NotificationRow[]) {
     if (notifications.length == 0) return
     logger.info(`Processing ${notifications.length} push notifications`)
@@ -123,8 +133,9 @@ export class AppNotificationsProcessor {
       )
       if (isEnabled) {
         const isLiveEmailEnabled = this.getIsLiveEmailEnabled()
+        const isBrowserPushEnabled = this.getIsBrowserPushEnabled()
         try {
-          await notification.pushNotification({ isLiveEmailEnabled })
+          await notification.pushNotification({ isLiveEmailEnabled, isBrowserPushEnabled })
           status.processed += 1
         } catch (e) {
           logger.error(

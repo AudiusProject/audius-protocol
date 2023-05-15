@@ -4,6 +4,7 @@ import {
   Action,
   EntityType
 } from '../services/dataContracts/EntityManagerClient'
+import { Utils } from '../utils'
 
 export type EntityManagerSuccessResponse = {
   blockHash: string
@@ -71,10 +72,7 @@ export class EntityManager extends Base {
   /** Social Features */
   createSocialMethod =
     (entityType: EntityType, action: Action) =>
-    async (
-      entityId: number,
-      metadata: string = ''
-    ): Promise<EntityManagerResponse> => {
+    async (entityId: number, metadata = ''): Promise<EntityManagerResponse> => {
       const responseValues: EntityManagerResponse =
         this.getDefaultEntityManagerResponseValues()
       try {
@@ -83,7 +81,7 @@ export class EntityManager extends Base {
           entityType,
           entityId,
           action,
-          metadataMultihash: metadata
+          metadata
         })
       } catch (e) {
         const error = (e as Error).message
@@ -109,7 +107,9 @@ export class EntityManager extends Base {
   /** Playlist */
 
   async createPlaylist(
-    playlist: PlaylistParam
+    playlist: PlaylistParam,
+    storageV2UploadEnabled = false,
+    writeMetadataThroughChain = false
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
@@ -124,11 +124,17 @@ export class EntityManager extends Base {
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID
       if (playlist?.artwork?.file) {
-        const updatedPlaylistImage = await this.creatorNode.uploadImage(
-          playlist.artwork.file,
-          true // square
-        )
-        dirCID = updatedPlaylistImage.dirCID
+        if (storageV2UploadEnabled) {
+          const updatedPlaylistImage =
+            await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file)
+          dirCID = updatedPlaylistImage.id
+        } else {
+          const updatedPlaylistImage = await this.creatorNode.uploadImage(
+            playlist.artwork.file,
+            true // square
+          )
+          dirCID = updatedPlaylistImage.dirCID
+        }
       }
       const tracks = this.mapTimestamps(playlist.playlist_contents.track_ids)
 
@@ -142,15 +148,38 @@ export class EntityManager extends Base {
         is_private: playlist.is_private
       }
 
-      const { metadataMultihash } =
-        await this.creatorNode.uploadPlaylistMetadata(metadata)
-      return await this.manageEntity({
-        userId: userId,
-        entityType,
-        entityId: playlist.playlist_id,
-        action: createAction,
-        metadataMultihash
-      })
+      if (storageV2UploadEnabled) {
+        const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
+          metadata
+        )
+        if (this.contracts.EntityManagerClient === undefined) {
+          throw new Error('EntityManagerClient is undefined')
+        }
+        const { txReceipt } =
+          await this.contracts.EntityManagerClient.manageEntity(
+            userId,
+            EntityType.PLAYLIST,
+            playlist.playlist_id,
+            Action.CREATE,
+            JSON.stringify({ cid: metadataCid.toString(), data: metadata })
+          )
+        responseValues.blockHash = txReceipt.blockHash
+        responseValues.blockNumber = txReceipt.blockNumber
+        return responseValues
+      } else {
+        const { metadataMultihash } =
+          await this.creatorNode.uploadPlaylistMetadata(metadata)
+        const entityManagerMetadata = writeMetadataThroughChain
+          ? JSON.stringify({ cid: metadataMultihash, data: metadata })
+          : metadataMultihash
+        return await this.manageEntity({
+          userId: userId,
+          entityType,
+          entityId: playlist.playlist_id,
+          action: createAction,
+          metadata: entityManagerMetadata
+        })
+      }
     } catch (e) {
       const error = (e as Error).message
       responseValues.error = error
@@ -172,7 +201,7 @@ export class EntityManager extends Base {
         entityType: EntityType.PLAYLIST,
         entityId: playlistId,
         action: Action.DELETE,
-        metadataMultihash: ''
+        metadata: ''
       })
     } catch (e) {
       const error = (e as Error).message
@@ -182,7 +211,9 @@ export class EntityManager extends Base {
   }
 
   async updatePlaylist(
-    playlist: PlaylistParam
+    playlist: PlaylistParam,
+    storageV2UploadEnabled = false,
+    writeMetadataThroughChain = false
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
@@ -203,11 +234,17 @@ export class EntityManager extends Base {
       this.REQUIRES(Services.CREATOR_NODE)
       let dirCID
       if (playlist?.artwork?.file) {
-        const updatedPlaylistImage = await this.creatorNode.uploadImage(
-          playlist.artwork.file,
-          true // square
-        )
-        dirCID = updatedPlaylistImage.dirCID
+        if (storageV2UploadEnabled) {
+          const updatedPlaylistImage =
+            await this.creatorNode.uploadTrackCoverArtV2(playlist.artwork.file)
+          dirCID = updatedPlaylistImage.id
+        } else {
+          const updatedPlaylistImage = await this.creatorNode.uploadImage(
+            playlist.artwork.file,
+            true // square
+          )
+          dirCID = updatedPlaylistImage.dirCID
+        }
       }
 
       const trackIds = this.mapTimestamps(playlist.playlist_contents.track_ids)
@@ -221,15 +258,38 @@ export class EntityManager extends Base {
         is_album: playlist.is_album,
         is_private: playlist.is_private
       }
-      const { metadataMultihash } =
-        await this.creatorNode.uploadPlaylistMetadata(metadata)
-      return await this.manageEntity({
-        userId,
-        entityType,
-        entityId: playlist.playlist_id,
-        action: updateAction,
-        metadataMultihash
-      })
+      if (storageV2UploadEnabled) {
+        const metadataCid = await Utils.fileHasher.generateMetadataCidV1(
+          metadata
+        )
+        if (this.contracts.EntityManagerClient === undefined) {
+          throw new Error('EntityManagerClient is undefined')
+        }
+        const { txReceipt } =
+          await this.contracts.EntityManagerClient.manageEntity(
+            userId,
+            EntityType.PLAYLIST,
+            playlist.playlist_id,
+            Action.UPDATE,
+            JSON.stringify({ cid: metadataCid.toString(), data: metadata })
+          )
+        responseValues.blockHash = txReceipt.blockHash
+        responseValues.blockNumber = txReceipt.blockNumber
+        return responseValues
+      } else {
+        const { metadataMultihash } =
+          await this.creatorNode.uploadPlaylistMetadata(metadata)
+        const entityManagerMetadata = writeMetadataThroughChain
+          ? JSON.stringify({ cid: metadataMultihash, data: metadata })
+          : metadataMultihash
+        return await this.manageEntity({
+          userId,
+          entityType,
+          entityId: playlist.playlist_id,
+          action: updateAction,
+          metadata: entityManagerMetadata
+        })
+      }
     } catch (e) {
       const error = (e as Error).message
       responseValues.error = error
@@ -246,13 +306,13 @@ export class EntityManager extends Base {
     entityType,
     entityId,
     action,
-    metadataMultihash
+    metadata
   }: {
     userId: number
     entityType: EntityType
     entityId: number
     action: Action
-    metadataMultihash?: string
+    metadata?: string
   }): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
@@ -266,7 +326,7 @@ export class EntityManager extends Base {
         entityType,
         entityId,
         action,
-        metadataMultihash ?? ''
+        metadata ?? ''
       )
       responseValues.blockHash = resp.txReceipt.blockHash
       responseValues.blockNumber = resp.txReceipt.blockNumber

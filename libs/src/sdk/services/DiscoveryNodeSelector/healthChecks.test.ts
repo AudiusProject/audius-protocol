@@ -79,7 +79,7 @@ describe('health_check', () => {
       expect(reason).toBe('version')
     })
 
-    test('lower minor version marked unhealthy', () => {
+    test('lower minor version marked behind', () => {
       const { health, reason } = parseApiHealthStatusReason({
         data: {
           version: {
@@ -93,7 +93,7 @@ describe('health_check', () => {
           minVersion: '1.2.3'
         }
       })
-      expect(health).toBe(HealthCheckStatus.UNHEALTHY)
+      expect(health).toBe(HealthCheckStatus.BEHIND)
       expect(reason).toBe('version')
     })
 

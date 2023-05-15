@@ -43,9 +43,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const isDryRun: boolean = globalThis.announcementDryRun
     const totalUsers = await this.dnDB('users').count('user_id').where('is_current', true).andWhere('is_deactivated', false)

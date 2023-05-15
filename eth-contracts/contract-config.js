@@ -1,7 +1,7 @@
 // config values stored by network name. see truffle-config.json for a mapping from network
 // name to other params
 module.exports = {
-  'development': {
+  development: {
     proxyDeployerAddress: null,
     proxyAdminAddress: null,
     guardianAddress: null,
@@ -12,20 +12,20 @@ module.exports = {
     initialNotifierEndpoint: null,
     initialNotifierEmail: null
   },
-  'predeploy': {
+  predeploy: {
     proxyDeployerAddress: null,
     proxyAdminAddress: null,
     guardianAddress: null,
     wormholeAddress: null,
     antiAbuseOracleAddresses: process.env.antiAbuseOracleAddresses
-      ? process.env.antiAbuseOracleAddresses.split(",")
+      ? process.env.antiAbuseOracleAddresses.split(',')
       : null,
     solanaRecipientAddress: null,
     initialNotifierWallet: null,
     initialNotifierEndpoint: null,
     initialNotifierEmail: null
   },
-  'test_local': {
+  test: {
     proxyDeployerAddress: null,
     proxyAdminAddress: null,
     guardianAddress: null,
@@ -36,7 +36,7 @@ module.exports = {
     initialNotifierEndpoint: null,
     initialNotifierEmail: null
   },
-  'soliditycoverage': {
+  staging: {
     proxyDeployerAddress: null,
     proxyAdminAddress: null,
     guardianAddress: null,
@@ -47,29 +47,7 @@ module.exports = {
     initialNotifierEndpoint: null,
     initialNotifierEmail: null
   },
-  'audius_private': {
-    proxyDeployerAddress: null,
-    proxyAdminAddress: null,
-    guardianAddress: null,
-    wormholeAddress: null,
-    antiAbuseOracleAddresses: null,
-    solanaRecipientAddress: null,
-    initialNotifierWallet: null,
-    initialNotifierEndpoint: null,
-    initialNotifierEmail: null
-  },
-  'staging': {
-    proxyDeployerAddress: null,
-    proxyAdminAddress: null,
-    guardianAddress: null,
-    wormholeAddress: null,
-    antiAbuseOracleAddresses: null,
-    solanaRecipientAddress: null,
-    initialNotifierWallet: null,
-    initialNotifierEndpoint: null,
-    initialNotifierEmail: null
-  },
-  'production': {
+  production: {
     proxyDeployerAddress: null,
     proxyAdminAddress: null,
     guardianAddress: null,

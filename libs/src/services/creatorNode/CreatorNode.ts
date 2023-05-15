@@ -390,7 +390,7 @@ export class CreatorNode {
     // Creates new track entity on creator node, making track's metadata available
     // @returns {Object} {cid: CID of track metadata, id: id of track to be used with associate function}
     const metadataResp = await this.uploadTrackMetadata(metadata, sourceFile)
-    return { ...metadataResp, ...trackContentResp }
+    return { ...metadataResp, ...trackContentResp, metadata: { ...metadata } }
   }
 
   async uploadTrackAudioAndCoverArtV2(
@@ -398,24 +398,30 @@ export class CreatorNode {
     coverArtFile: File,
     metadata: TrackMetadata,
     onProgress: ProgressCB = () => {}
-  ) {
+  ): Promise<TrackMetadata> {
     const updatedMetadata = { ...metadata }
 
     // Upload audio and cover art
-    const [audioResp, coverArtResp] = await Promise.all([
+    const promises = [
       this._retry3(
         async () => await this.uploadTrackAudioV2(trackFile, onProgress),
         (e) => {
           console.log('Retrying uploadTrackAudioV2', e)
         }
-      ),
-      this._retry3(
-        async () => await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
-        (e) => {
-          console.log('Retrying uploadTrackCoverArtV2', e)
-        }
       )
-    ])
+    ]
+    if (coverArtFile) {
+      promises.push(
+        this._retry3(
+          async () =>
+            await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
+          (e) => {
+            console.log('Retrying uploadTrackCoverArtV2', e)
+          }
+        )
+      )
+    }
+    const [audioResp, coverArtResp] = await Promise.all(promises)
 
     // Update metadata to include uploaded CIDs
     updatedMetadata.track_segments = []
@@ -424,16 +430,16 @@ export class CreatorNode {
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
     }
-    updatedMetadata.cover_art_sizes = coverArtResp.id
+    if (coverArtResp) updatedMetadata.cover_art_sizes = coverArtResp.id
 
     return updatedMetadata
   }
 
-  async uploadTrackAudioV2(file: File, onProgress: ProgressCB) {
+  async uploadTrackAudioV2(file: File, onProgress: ProgressCB = () => {}) {
     return await this.uploadFileV2(file, onProgress, 'audio')
   }
 
-  async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB) {
+  async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB = () => {}) {
     return await this.uploadFileV2(file, onProgress, 'img_square')
   }
 

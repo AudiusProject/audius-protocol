@@ -512,6 +512,7 @@ def test_up(protocol_dir, service):
                 f"--project-directory={protocol_dir / 'dev-tools/compose'}",
                 "up",
                 "-d",
+                "--build",
                 f"test-{service}",
             ]
         ).returncode
