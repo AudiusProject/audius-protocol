@@ -57,6 +57,7 @@ from src.api.v1.models.users import (
     user_model_full,
     user_replica_set,
     user_subscribers,
+    wallet,
 )
 from src.api.v1.models.wildcard_model import WildcardModel
 from src.api.v1.playlists import get_tracks_for_playlist
@@ -89,6 +90,7 @@ from src.queries.get_user_listening_history import (
     get_user_listening_history,
 )
 from src.queries.get_user_replica_set import get_user_replica_set
+from src.queries.get_user_wallet import get_user_wallet
 from src.queries.get_user_with_wallet import get_user_with_wallet
 from src.queries.get_users import get_users
 from src.queries.get_users_cnode import ReplicaType, get_users_cnode
@@ -1400,6 +1402,29 @@ class ConnectedWallets(Resource):
         wallets = get_associated_user_wallet({"user_id": decoded_id})
         return success_response(
             {"erc_wallets": wallets["eth"], "spl_wallets": wallets["sol"]}
+        )
+
+
+wallet_response = make_response(
+    "wallet_response", ns, fields.Nested(wallet)
+)
+
+
+@ns.route("/<string:id>/wallet")
+class Wallet(Resource):
+    @ns.doc(
+        id="""Get wallet for a given user""",
+        description="""Get the User's wallet""",
+        params={"id": "A User ID"},
+        responses={200: "Success", 400: "Bad request", 500: "Server error"},
+    )
+    @ns.marshal_with(wallet_response)
+    @cache(ttl_sec=10)
+    def get(self, id):
+        decoded_id = decode_with_abort(id, full_ns)
+        wallet = get_user_wallet({"user_id": decoded_id})
+        return success_response(
+            {"wallet": wallet}
         )
 
 

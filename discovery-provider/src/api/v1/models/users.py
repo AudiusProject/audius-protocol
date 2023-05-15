@@ -90,6 +90,13 @@ connected_wallets = ns.model(
     },
 )
 
+wallet = ns.model(
+    "wallet",
+    {
+        "wallet": fields.String(required=True),
+    },
+)
+
 user_replica_set = ns.model(
     "user_replica_set",
     {
