@@ -9,13 +9,20 @@ import {
   cacheUsersSelectors,
   Status
 } from '@audius/common'
-import { View } from 'react-native'
+import { View, Image } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'react-use'
 
 import IconCompose from 'app/assets/images/iconCompose.svg'
 import IconSearch from 'app/assets/images/iconSearch.svg'
-import { Screen, FlatList, ScreenContent, TextInput } from 'app/components/core'
+import MagnifyingGlass from 'app/assets/images/leftPointingMagnifyingGlass.png'
+import {
+  Screen,
+  Text,
+  FlatList,
+  ScreenContent,
+  TextInput
+} from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
@@ -31,7 +38,10 @@ const DEBOUNCE_MS = 100
 
 const messages = {
   title: 'New Message',
-  search: 'Search Users'
+  search: 'Search Users',
+  emptyTitle: 'Search for Friends',
+  emptyDescription:
+    'Search for fellow music lovers and strike up a conversation.'
 }
 
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
@@ -78,8 +88,52 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   },
   flatListContainer: {
     minHeight: '100%'
+  },
+  emptyContainer: {
+    marginTop: spacing(6),
+    margin: spacing(2),
+    padding: spacing(6),
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing(6),
+    backgroundColor: palette.neutralLight10,
+    borderRadius: spacing(2),
+    borderColor: palette.background,
+    borderWidth: 1
+  },
+  emptyTextContainer: {
+    flexShrink: 1,
+    gap: spacing(2)
+  },
+  magnifyingGlass: {
+    height: spacing(16),
+    width: spacing(16)
+  },
+  emptyTitle: {
+    fontSize: typography.fontSize.xxl,
+    fontFamily: typography.fontByWeight.bold,
+    lineHeight: typography.fontSize.xxl * 1.3
+  },
+  emptyDescription: {
+    fontSize: typography.fontSize.large,
+    lineHeight: typography.fontSize.large * 1.3
   }
 }))
+
+const ListEmpty = () => {
+  const styles = useStyles()
+
+  return (
+    <View style={styles.emptyContainer}>
+      <Image source={MagnifyingGlass} style={styles.magnifyingGlass} />
+      <View style={styles.emptyTextContainer}>
+        <Text style={styles.emptyTitle}>{messages.emptyTitle}</Text>
+        <Text style={styles.emptyDescription}>{messages.emptyDescription}</Text>
+      </View>
+    </View>
+  )
+}
 
 type ChatUserListScreenProps = {
   debounceMs?: number
@@ -193,6 +247,7 @@ export const ChatUserListScreen = (props: ChatUserListScreenProps) => {
               renderItem={({ item }) => <ChatUserListItem user={item} />}
               keyExtractor={(user: User) => user.handle}
               contentContainerStyle={styles.flatListContainer}
+              ListEmptyComponent={<ListEmpty />}
             />
           ) : (
             <View style={styles.spinnerContainer}>
