@@ -31,9 +31,9 @@ export function DiscoveryHealth() {
             <th>DB Size</th>
             <th>Block Diff</th>
             <th>ACDC Signer</th>
-            <th>Net ID</th>
+            <th>Block Hash</th>
             <th>ACDC Block</th>
-            <th>Final POA Block</th>
+            <th>Peers</th>
           </tr>
         </thead>
         <tbody>
@@ -76,6 +76,10 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
+  const getPeers = (str: string) => {
+    const match = str.match(/Peers: (.)/)
+    return (match && match[1]) ? match[1] : "no peers found"
+  }
 
   return (
     <tr>
@@ -125,9 +129,9 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
       <td>{`${dbSize} GB`}</td>
       <td className={isBehind}>{health.block_difference}</td>
       <td>{health.chain_health?.status}</td>
-      <td>{health.chain_health?.chain_id}</td>
+      <td>{health.chain_health?.hash}</td>
       <td>{health.chain_health?.block_number}</td>
-      <td>{health.final_poa_block}</td>
+      <td>{getPeers(health.chain_health?.entries["node-health"].description)}</td>
     </tr>
   )
 }
