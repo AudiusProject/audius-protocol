@@ -217,7 +217,22 @@ def build(
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
             f"--project-name={protocol_dir.name}",
-            "--profile=*",
+            "--profile=circle_ci_push",
+            "--profile=tests",
+            "--profile=identity",
+            "--profile=creator",
+            "--profile=discovery",
+            "--profile=comms",
+            "--profile=storagev2",
+            "--profile=notifications",
+            "--profile=elasticsearch",
+            "--profile=mediorum",
+            "--profile=chain",
+            "--profile=poa",
+            "--profile=eth",
+            "--profile=libs",
+            "--profile=solana",
+            "--profile=block-explorer",
             "build",
             "--no-cache",
             *args,
@@ -317,27 +332,18 @@ def load_env(protocol_dir, service, environment):
 
 
 @cli.command()
-@click.option("-c", "--creator-node-replicas", default=3, type=int)
+@click.option("-c", "--creator-node-replicas", default=0, type=int)
 @click.option("-d", "--discovery-provider-replicas", default=1, type=int)
-@click.option("-e", "--elasticsearch-replicas", default=0, type=int)
+@click.option("-e", "--elasticsearch-replicas", default=1, type=int)
 @click.option("-b", "--block-explorer", is_flag=True)
 @click.option("-o", "--anti-abuse-oracle", is_flag=True)
 @click.option(
+    "-n",
     "--notifs",
     is_flag=True,
     help="Bring up discovery provider notifications container",
 )
-@click.option(
-    "--no-storagev2", is_flag=True, help="Don't bring up storage v2 container"
-)
-@click.option(
-    "--no-libs", is_flag=True, help="Don't bring up container to auto-rebuild libs"
-)
-@click.option(
-    "--no-solana", is_flag=True, help="Don't bring up solana-test-validator container"
-)
 @click.option("--comms", is_flag=True, help="Bring up comms/dms containers")
-@click.option("-w", "--wait", is_flag=True, help="Wait for services to be healthy")
 @click.option("-a", "--args", type=str, multiple=True)
 @click.argument("services", nargs=-1)
 @click.pass_obj
@@ -349,11 +355,7 @@ def up(
     block_explorer,
     anti_abuse_oracle,
     notifs,
-    no_storagev2,
-    no_libs,
-    no_solana,
     comms,
-    wait,
     args,
     services,
 ):
@@ -383,14 +385,15 @@ def up(
                 *(["--profile=elasticsearch"] if elasticsearch_replicas else []),
                 *(["--profile=notifications"] if notifs else []),
                 *(["--profile=creator"] if creator_node_replicas > 0 else []),
-                *([] if no_storagev2 else ["--profile=storagev2"]),
-                *([] if no_libs else ["--profile=libs"]),
-                *([] if no_solana else ["--profile=solana"]),
                 *(["--profile=comms"] if comms else []),
+                *(["--profile=storagev2"]),
+                *(["--profile=libs"]),
+                *(["--profile=solana"]),
                 "up",
                 "--build",
+                "--detach",
+                "--wait",
                 *args,
-                ("--wait" if wait else "--detach"),
                 *services,
             ],
         ).returncode
