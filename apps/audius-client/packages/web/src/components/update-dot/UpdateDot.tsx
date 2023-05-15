@@ -1,15 +1,26 @@
+import { ComponentProps, forwardRef } from 'react'
+
+import cn from 'classnames'
+
 import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './UpdateDot.module.css'
 
-const UpdateDot = () => {
+type UpdateDotProps = ComponentProps<'span'>
+
+const UpdateDot = forwardRef<HTMLSpanElement, UpdateDotProps>((props, ref) => {
+  const { className, ...other } = props
   const isMobile = useIsMobile()
 
   return isMobile ? (
-    <div className={styles.mobileUpdateDot} />
+    <span
+      {...other}
+      ref={ref}
+      className={cn(styles.mobileUpdateDot, className)}
+    />
   ) : (
-    <div className={styles.updateDot} />
+    <span {...other} ref={ref} className={cn(styles.updateDot, className)} />
   )
-}
+})
 
 export default UpdateDot

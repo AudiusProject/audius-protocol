@@ -1,6 +1,6 @@
 .root {
-  /* margin left = -(6px width + 4px margin-right on update dot element) so that list items stay aligned */
-  margin-left: -10px;
+  position: absolute;
+  left: calc(32px - 10px);
 }
 
 .tooltip :global(.ant-tooltip-arrow) {

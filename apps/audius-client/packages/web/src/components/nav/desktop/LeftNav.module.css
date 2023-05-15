@@ -50,16 +50,16 @@ svg.logo path {
   fill: var(--neutral-light-5);
 }
 
-.leftNav .scrollable {
+.scrollable {
   padding-top: 24px;
 }
 
-.leftNav .userHeader {
+.userHeader {
   margin-left: 24px;
   margin-bottom: 24px;
 }
 
-.leftNav .accountWrapper {
+.accountWrapper {
   display: block;
   margin-bottom: 4px;
 
@@ -72,7 +72,7 @@ svg.logo path {
   color: var(--neutral);
 }
 
-.leftNav .accountWrapper .wrapperPhoto {
+.wrapperPhoto {
   position: relative;
   cursor: pointer;
 
@@ -81,7 +81,7 @@ svg.logo path {
   height: 48px;
 }
 
-.leftNav .accountWrapper .dynamicPhoto {
+.dynamicPhoto {
   height: 48px;
   border-radius: 30px;
   border: 1px solid var(--white);
@@ -94,11 +94,11 @@ svg.logo path {
   background-color: var(--default-profile-picture-background);
 }
 
-.leftNav .accountWrapper .wrapperPhotoSkeleton {
+.wrapperPhotoSkeleton {
   border-radius: 50%;
 }
 
-.leftNav .accountWrapper .photo {
+.photo {
   position: relative;
   cursor: pointer;
 
@@ -116,7 +116,7 @@ svg.logo path {
   background-color: var(--default-profile-picture-background);
 }
 
-.leftNav .accountWrapper .userInfoWrapper {
+.userInfoWrapper {
   margin-left: 16px;
   margin-right: 16px;
   text-align: left;
@@ -125,7 +125,7 @@ svg.logo path {
   overflow: hidden;
 }
 
-.leftNav .accountWrapper .userInfoWrapper .name {
+.name {
   font-size: var(--font-s);
   line-height: 17px;
   font-weight: var(--font-demi-bold);
@@ -137,7 +137,7 @@ svg.logo path {
   display: flex;
 }
 
-.leftNav .accountWrapper .userInfoWrapper .name .nameText {
+.nameText {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -148,13 +148,13 @@ svg.logo path {
   margin-left: 4px;
 }
 
-.leftNav .accountWrapper .userInfoWrapper .name:hover {
+.name:hover {
   color: var(--primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }
 
-.leftNav .accountWrapper .userInfoWrapper .handleContainer {
+.handleContainer {
   display: inline-flex;
   overflow: hidden;
   line-height: 14px;
@@ -163,7 +163,7 @@ svg.logo path {
   width: 100%;
 }
 
-.leftNav .accountWrapper .userInfoWrapper .handle {
+.handle {
   font-size: var(--font-xs);
   color: var(--neutral);
   font-weight: var(--font-medium);
@@ -173,89 +173,52 @@ svg.logo path {
   text-overflow: ellipsis;
 }
 
-.leftNav .accountWrapper .userInfoWrapper .handleContainer:hover .handle {
+.handleContainer:hover .handle {
   color: var(--primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }
 
-.leftNav .accountWrapper .userInfoWrapper .handleContainer svg {
+.handleContainer svg {
   transition: all 0.07s ease-in-out;
 }
 
-.leftNav .accountWrapper .userInfoWrapper .handleContainer:hover g path {
+.handleContainer:hover g path {
   fill: var(--primary);
 }
 
-.leftNav .accountWrapper .userInfoWrapper .haveAccount {
+.haveAccount {
   color: var(--neutral);
   font-weight: var(--font-demi-bold);
   font-size: var(--font-s);
   line-height: 18px;
 }
 
-.leftNav .accountWrapper .userInfoWrapper .logIn {
+.logIn {
   color: var(--secondary);
   font-size: var(--font-xs);
   line-height: 14px;
   cursor: pointer;
 }
 
-.leftNav .accountWrapper .userInfoWrapper .logIn:hover {
+.logIn:hover {
   color: var(--primary);
   text-decoration: underline;
   text-decoration-color: var(--primary-light-2);
 }
 
-.handleMenuContainer {
-  margin-top: -2px;
-  margin-left: 1px;
-}
-
-.iconContainer {
-  display: flex;
-  padding: 5px;
-}
-
-.handleCaretIcon {
-  height: 5px;
-  width: 9px;
-}
-
-.menuItem {
-  display: flex;
-  align-items: center;
-  font-size: var(--font-s);
-}
-
-.menuIcon {
-  width: 18px;
-  height: 18px;
-  margin-right: 10px;
-}
-
-.menuDropdown:global(.ant-tooltip) {
-  padding-top: 12px;
-  z-index: 12;
-}
-
-.menuDropdown :global(.ant-menu-vertical > .ant-menu-item) {
-  height: 28px;
-  width: 176px !important;
-}
-
-.leftNav .links {
+.links {
   flex: 1 1 auto;
   overflow: hidden;
   list-style: none;
   margin: 0;
   padding: 0;
 }
-.leftNav .links .linkGroup {
+.linkGroup {
   margin: 0px 16px 25px;
 }
 
-.leftNav .links .groupHeader {
+.groupHeader {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: var(--font-l);
@@ -270,68 +233,8 @@ svg.logo path {
   transition: color 0.07s ease-in-out;
 }
 
-.leftNav .links .link {
-  font-size: var(--font-s);
-  font-weight: var(--font-medium);
-  position: relative;
-  display: table;
-  min-width: 100px;
-
-  /* negative margin so the link hover chip shows up. */
-  margin-left: -16px;
-  /* left padding is visibly (32px + -16px margin =) 16px to match the left padding of .groupHeader */
-  padding: 5px 0 5px 32px;
-  color: var(--nav-column-link);
-  transition: color 0.07s ease-in-out;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: middle;
-  border: 0;
-  background: none;
-  text-align: inherit;
-}
-
-.leftNav .links .link:hover {
-  cursor: pointer;
-}
-
-.leftNav .links a.link,
-.leftNav .links button.link {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-  width: 100%;
-  display: inline-block;
-}
-
-.leftNav .links a.link.editable,
-.leftNav .links button.link.editable {
-  /** Add 12px to the width so that we can free up some space for the horizontal kebab (which only appears on hover). This won't cause
-  overflow because there is already a -16px margin on nav link buttons. */
-  width: calc(100% + 12px);
-}
-
-.leftNav .links a.link.disabledLink,
-.leftNav .links button.link.disabledLink {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.leftNav .links a.link.droppableLink {
+.droppableLink {
   color: var(--secondary);
-}
-
-.leftNav .groupHeader.droppableLink {
-  color: var(--secondary);
-}
-
-.droppable {
-  background-color: rgba(0, 0, 0, 0);
-  transition: background 0.07s ease-in-out;
-  border-radius: 6px;
-  width: 100%;
 }
 
 .droppableGroup {
@@ -341,49 +244,8 @@ svg.logo path {
   border-radius: 6px;
 }
 
-.leftNav .links .droppable .link {
-  margin-left: -16px;
-}
-
-.droppableHover {
-  background-color: rgba(152, 73, 214, 0.15);
-}
-
 .droppableGroupHover {
   background-color: rgba(152, 73, 214, 0.15);
-}
-
-.links .link:hover:before {
-  border-right: 4px solid var(--neutral-light-4);
-}
-.links .link.disabled:hover {
-  border-right: none;
-}
-.links .link:global(.active):before {
-  border-right: 4px solid var(--primary);
-}
-.links .link:hover:before,
-.links .link:global(.active):before {
-  content: '';
-  display: block;
-  width: 20px;
-  height: 20px;
-  position: absolute;
-  top: 0;
-  left: -16px;
-  border-radius: 4px;
-}
-.links .link:hover {
-  color: var(--nav-column-link-hover);
-}
-.links .link:global(.active) {
-  color: var(--primary) !important;
-  font-weight: var(--font-medium);
-}
-.links .link.disabled,
-.links .link.disabled:hover {
-  color: var(--neutral-light-4);
-  pointer-events: none;
 }
 
 .newPlaylist {
@@ -400,13 +262,4 @@ svg.logo path {
 .profileCompletionContainer {
   display: flex;
   justify-content: center;
-}
-
-.updateDotContainer {
-  /* margin left = -(6px width + 4px margin-right on update dot element) so that list items stay aligned */
-  margin-left: -10px;
-}
-
-.updateDotTooltip :global(.ant-tooltip-arrow) {
-  left: 24px;
 }

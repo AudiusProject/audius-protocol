@@ -1,4 +1,4 @@
-import { PlaylistLibraryItem } from '@audius/common'
+import { PlaylistLibraryItem, SmartCollectionVariant } from '@audius/common'
 
 import { AudioNftPlaylistNavItem } from './AudioNftPlaylistNavItem'
 import { ExplorePlaylistNavItem } from './ExplorePlaylistNavItem'
@@ -27,10 +27,14 @@ export const PlaylistLibraryNavItem = (props: PlaylistLibraryNavItemProps) => {
       return <PlaylistFolderNavItem folder={item} level={level} />
     case 'playlist':
       return <PlaylistNavItem playlistId={item.playlist_id} level={level} />
-    case 'explore_playlist':
+    case 'explore_playlist': {
+      if (item.playlist_id === SmartCollectionVariant.AUDIO_NFT_PLAYLIST) {
+        return <AudioNftPlaylistNavItem level={level} />
+      }
       return (
         <ExplorePlaylistNavItem playlistId={item.playlist_id} level={level} />
       )
+    }
     case 'audio_nft_playlist':
       return <AudioNftPlaylistNavItem level={level} />
     default:

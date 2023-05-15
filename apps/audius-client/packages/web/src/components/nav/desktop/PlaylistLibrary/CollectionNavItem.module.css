@@ -1,3 +1,26 @@
+.root {
+  position: relative;
+  display: flex;
+  align-items: center;
+  line-height: normal;
+}
+
+.collectionName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .playlistLevel1 {
   padding-left: var(--unit-2);
+}
+
+.editPlaylistButton {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.editable {
+  visibility: visible;
+  pointer-events: all;
 }

@@ -13,6 +13,9 @@ export const ExplorePlaylistNavItem = (props: ExplorePlaylistNavItemProps) => {
   const { playlistId, level } = props
 
   const playlist = SMART_COLLECTION_MAP[playlistId]
+
+  if (!playlist) return null
+
   const { playlist_name, link } = playlist
 
   return (
