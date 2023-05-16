@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/gowebpki/jcs"
+	"github.com/storyicon/sigverify"
 )
 
 type SignatureEnvelope struct {
@@ -37,27 +39,23 @@ func ParseFromQueryString(queryStringValue string) (*RecoveredSignature, error) 
 		return nil, err
 	}
 
-	hashData := crypto.Keccak256([]byte(envelope.Data))
+	// ensure json keys are sorted
+	inner, err := jcs.Transform([]byte(envelope.Data))
+	if err != nil {
+		return nil, err
+	}
+
+	hash := crypto.Keccak256Hash(inner)
 
 	signatureBytes, err := hex.DecodeString(envelope.Signature[2:])
 	if err != nil {
 		return nil, err
 	}
 
-	// I hate etherum
-	signatureBytes[64] -= 27
-
-	recoveredSigner, err := crypto.Ecrecover(hashData, signatureBytes)
+	recoveredAddress, err := sigverify.EcRecoverEx(hash.Bytes(), signatureBytes)
 	if err != nil {
 		return nil, err
 	}
-
-	recoveredPublicKey, err := crypto.UnmarshalPubkey(recoveredSigner)
-	if err != nil {
-		return nil, err
-	}
-
-	recoveredAddress := crypto.PubkeyToAddress(*recoveredPublicKey).Hex()
 
 	var data SignatureData
 	err = json.Unmarshal([]byte(envelope.Data), &data)
@@ -67,7 +65,7 @@ func ParseFromQueryString(queryStringValue string) (*RecoveredSignature, error) 
 
 	recovered := &RecoveredSignature{
 		Data:         data,
-		SignerWallet: recoveredAddress,
+		SignerWallet: recoveredAddress.String(),
 	}
 
 	return recovered, nil
