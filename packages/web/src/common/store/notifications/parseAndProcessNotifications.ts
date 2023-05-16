@@ -148,12 +148,7 @@ export function* parseAndProcessNotifications(
 
   const [tracks] = yield* all([
     call(retrieveTracks, { trackIds: trackIdsToFetch }),
-    call(
-      retrieveCollections,
-      null, // userId
-      collectionIdsToFetch, // collection ids
-      false // fetchTracks
-    ),
+    call(retrieveCollections, collectionIdsToFetch),
     call(
       fetchUsers,
       userIdsToFetch, // userIds

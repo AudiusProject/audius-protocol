@@ -1,17 +1,26 @@
-import { ReactNode, useCallback, useEffect, useContext } from 'react'
+import {
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
 
 import {
+  CollectionWithOwner,
   ID,
-  UID,
-  Name,
   Lineup,
-  Status,
-  User,
+  Name,
+  QueueItem,
+  SavedPageCollection,
   SavedPageTabs,
   SavedPageTrack,
-  SavedPageCollection,
-  QueueItem,
-  usePremiumContentAccessMap
+  Status,
+  UID,
+  User,
+  usePremiumContentAccessMap,
+  useSavedAlbumsDetails
 } from '@audius/common'
 import { Button, ButtonType } from '@audius/stems'
 import cn from 'classnames'
@@ -30,8 +39,11 @@ import MobilePageContainer from 'components/mobile-page-container/MobilePageCont
 import { useMainPageHeader } from 'components/nav/store/context'
 import TrackList from 'components/track/mobile/TrackList'
 import { TrackItemAction } from 'components/track/mobile/TrackListItem'
+import { useGoToRoute } from 'hooks/useGoToRoute'
 import useTabs from 'hooks/useTabs/useTabs'
-import { albumPage, TRENDING_PAGE, playlistPage } from 'utils/route'
+import { TRENDING_PAGE, albumPage, playlistPage } from 'utils/route'
+
+import { formatCardSecondaryText } from '../utils'
 
 import NewPlaylistButton from './NewPlaylistButton'
 import styles from './SavedPage.module.css'
@@ -176,43 +188,78 @@ const TracksLineup = ({
   )
 }
 
-const AlbumCardLineup = ({
-  albums,
-  goToTrending,
-  onFilterChange,
-  filterText,
-  goToRoute,
-  getFilteredAlbums,
-  formatCardSecondaryText
-}: {
-  albums: SavedPageCollection[]
-  goToTrending: () => void
-  onFilterChange: (e: any) => void
-  filterText: string
-  formatCardSecondaryText: (saves: number, tracks: number) => string
-  getFilteredAlbums: (albums: SavedPageCollection[]) => SavedPageCollection[]
-  goToRoute: (route: string) => void
-}) => {
-  const filteredAlbums = getFilteredAlbums(albums || [])
+type FilterCollectionsOptions = {
+  filterText?: string
+}
+const filterCollections = (
+  collections: CollectionWithOwner[],
+  { filterText = '' }: FilterCollectionsOptions
+) => {
+  return collections.filter((item: CollectionWithOwner) => {
+    if (filterText) {
+      const matchesPlaylistName =
+        item.playlist_name.toLowerCase().indexOf(filterText.toLowerCase()) > -1
+      const matchesOwnerName =
+        item.ownerHandle.toLowerCase().indexOf(filterText.toLowerCase()) > -1
+
+      return matchesPlaylistName || matchesOwnerName
+    }
+    return true
+  })
+}
+
+type AlbumCardProps = {
+  album: CollectionWithOwner
+}
+
+const AlbumCard = ({ album }: AlbumCardProps) => {
+  const goToRoute = useGoToRoute()
+
+  const handleClick = useCallback(() => {
+    if (album.ownerHandle) {
+      goToRoute(
+        albumPage(album.ownerHandle, album.playlist_name, album.playlist_id)
+      )
+    }
+  }, [album.playlist_name, album.playlist_id, album.ownerHandle, goToRoute])
+
+  return (
+    <Card
+      key={album.playlist_id}
+      id={album.playlist_id}
+      userId={album.playlist_owner_id}
+      imageSize={album._cover_art_sizes}
+      primaryText={album.playlist_name}
+      secondaryText={formatCardSecondaryText(
+        album.save_count,
+        album.playlist_contents.track_ids.length
+      )}
+      onClick={handleClick}
+    />
+  )
+}
+
+const AlbumCardLineup = () => {
+  const goToRoute = useGoToRoute()
+  // Temporarily requesting large page size to ensure we get all albums
+  // until the list is updated to use `InfinteScroll`
+  const { data: albums } = useSavedAlbumsDetails({ pageSize: 9999 })
+  const [filterText, setFilterText] = useState('')
+  const filteredAlbums = useMemo(
+    () => filterCollections(albums, { filterText }),
+    [albums, filterText]
+  )
+
+  const handleGoToTrending = useCallback(
+    () => goToRoute(TRENDING_PAGE),
+    [goToRoute]
+  )
+  const handleFilterChange = ({
+    target: { value }
+  }: React.ChangeEvent<HTMLInputElement>) => setFilterText(value)
+
   const albumCards = filteredAlbums.map((album) => {
-    return (
-      <Card
-        key={album.playlist_id}
-        id={album.playlist_id}
-        userId={album.playlist_owner_id}
-        imageSize={album._cover_art_sizes}
-        primaryText={album.playlist_name}
-        secondaryText={formatCardSecondaryText(
-          album.save_count,
-          album.playlist_contents.track_ids.length
-        )}
-        onClick={() =>
-          goToRoute(
-            albumPage(album.ownerHandle, album.playlist_name, album.playlist_id)
-          )
-        }
-      />
-    )
+    return <AlbumCard key={album.playlist_id} album={album} />
   })
 
   const contentRefCallback = useOffsetScroll()
@@ -227,7 +274,7 @@ const AlbumCardLineup = ({
               <i className={cn('emoji', 'face-with-monocle', styles.emoji)} />
             </>
           }
-          onClick={goToTrending}
+          onClick={handleGoToTrending}
         />
       ) : (
         <div ref={contentRefCallback} className={styles.tabContainer}>
@@ -235,7 +282,7 @@ const AlbumCardLineup = ({
             <div className={styles.searchInnerContainer}>
               <input
                 placeholder={messages.filterAlbums}
-                onChange={onFilterChange}
+                onChange={handleFilterChange}
                 value={filterText}
               />
               <IconFilter className={styles.iconFilter} />
@@ -262,7 +309,6 @@ const PlaylistCardLineup = ({
   filterText,
   goToRoute,
   getFilteredPlaylists,
-  formatCardSecondaryText,
   playlistUpdates,
   updatePlaylistLastViewedAt
 }: {
@@ -270,7 +316,6 @@ const PlaylistCardLineup = ({
   goToTrending: () => void
   onFilterChange: (e: any) => void
   filterText: string
-  formatCardSecondaryText: (saves: number, tracks: number) => string
   getFilteredPlaylists: (
     playlists: SavedPageCollection[]
   ) => SavedPageCollection[]
@@ -409,7 +454,6 @@ export type SavedPageProps = {
   fetchSavedTracks: () => void
   resetSavedTracks: () => void
   updateLineupOrder: (updatedOrderIndices: UID[]) => void
-  getFilteredAlbums: (albums: SavedPageCollection[]) => SavedPageCollection[]
   getFilteredPlaylists: (
     playlists: SavedPageCollection[]
   ) => SavedPageCollection[]
@@ -437,11 +481,9 @@ const SavedPage = ({
   isQueued,
   onTogglePlay,
   getFilteredData,
-  getFilteredAlbums,
   getFilteredPlaylists,
   onFilterChange,
   filterText,
-  formatCardSecondaryText,
   onSave,
   playlistUpdates,
   updatePlaylistLastViewedAt
@@ -464,16 +506,7 @@ const SavedPage = ({
       onSave={onSave}
       onTogglePlay={onTogglePlay}
     />,
-    <AlbumCardLineup
-      key='albumLineup'
-      getFilteredAlbums={getFilteredAlbums}
-      albums={account ? account.albums : []}
-      goToTrending={goToTrending}
-      onFilterChange={onFilterChange}
-      filterText={filterText}
-      goToRoute={goToRoute}
-      formatCardSecondaryText={formatCardSecondaryText}
-    />,
+    <AlbumCardLineup key='albumLineup' />,
     <PlaylistCardLineup
       key='playlistLineup'
       getFilteredPlaylists={getFilteredPlaylists}
@@ -482,7 +515,6 @@ const SavedPage = ({
       onFilterChange={onFilterChange}
       filterText={filterText}
       goToRoute={goToRoute}
-      formatCardSecondaryText={formatCardSecondaryText}
       playlistUpdates={playlistUpdates}
       updatePlaylistLastViewedAt={updatePlaylistLastViewedAt}
     />

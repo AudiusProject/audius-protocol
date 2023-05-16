@@ -390,12 +390,10 @@ function* addTrackToPlaylistAsync(action) {
 
   // Retrieve tracks with the the collection so we confirm with the
   // most up-to-date information.
-  const { collections } = yield call(
-    retrieveCollections,
+  const { collections } = yield call(retrieveCollections, [action.playlistId], {
     userId,
-    [action.playlistId],
-    true
-  )
+    fetchTracks: true
+  })
   const playlist = collections[action.playlistId]
 
   const trackUid = makeUid(

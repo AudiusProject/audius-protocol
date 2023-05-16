@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import {
   ID,
@@ -126,7 +126,10 @@ const CollectionArtCard = g(
       SquareSizes.SIZE_480_BY_480,
       placeholderArt
     )
-    if (image && setDidLoad) setDidLoad(index)
+
+    useEffect(() => {
+      if (image && setDidLoad) setDidLoad(index)
+    }, [image, setDidLoad, index])
 
     const menu = {
       type: (is_album ? 'album' : 'playlist') as MenuType,

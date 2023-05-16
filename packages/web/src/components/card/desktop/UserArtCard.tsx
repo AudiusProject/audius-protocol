@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import {
   ID,
@@ -82,7 +82,10 @@ const UserArtCard = g(
       SquareSizes.SIZE_480_BY_480,
       placeholderArt
     )
-    if (image && setDidLoad) setDidLoad(index)
+
+    useEffect(() => {
+      if (image && setDidLoad) setDidLoad(index)
+    }, [image, setDidLoad, index])
 
     return (
       <div className={cn(styles.card, className)}>

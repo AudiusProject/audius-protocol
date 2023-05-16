@@ -47,12 +47,7 @@ function* watchFetchExplore() {
         EXPLORE_CONTENT_URL ?? STATIC_EXPLORE_CONTENT_URL
       )
       if (!isNativeMobile) {
-        yield* call(
-          retrieveCollections,
-          null,
-          exploreContent.featuredPlaylists,
-          false
-        )
+        yield* call(retrieveCollections, exploreContent.featuredPlaylists)
         yield* call(fetchUsers, exploreContent.featuredProfiles)
       }
 
@@ -67,7 +62,7 @@ function* watchFetchExplore() {
 function* watchFetchPlaylists() {
   yield* takeEvery(fetchPlaylists.type, function* fetchPlaylistsAsync() {
     const featuredPlaylistIds = yield* select(getPlaylistIds)
-    yield* call(retrieveCollections, null, featuredPlaylistIds, false)
+    yield* call(retrieveCollections, featuredPlaylistIds)
     yield* put(fetchPlaylistsSucceded())
   })
 }
