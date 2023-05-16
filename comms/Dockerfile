@@ -3,8 +3,7 @@ FROM golang:alpine AS builder
 ENV GO111MODULE=on
 ENV CGO_ENABLED=0
 
-RUN go install github.com/amacneil/dbmate@latest && \
-  go install github.com/cosmtrek/air@latest
+RUN go install github.com/amacneil/dbmate@latest
 
 WORKDIR /app
 
