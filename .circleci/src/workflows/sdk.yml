@@ -14,9 +14,8 @@ jobs:
       instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
 
   - release-audius-sdk:
-      sdk-release-commit: << pipeline.parameters.sdk-release-commit >>
-      sdk-release-version: << pipeline.parameters.sdk-release-version >>
-      sdk-release-preid: << pipeline.parameters.sdk-release-preid >>
+      sdk-release-commit: 7e1bb06c576e1675714696d9119c66fbf5bbe90c
+      sdk-release-version: 2.0.3-beta.20
       context:
         - Audius Client
         - slack-secrets
