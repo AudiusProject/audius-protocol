@@ -76,6 +76,7 @@ export const ProfileHeader = memo((props: ProfileHeaderProps) => {
     'supporting_count',
     'allow_ai_attribution'
   ])
+
   const { tier = 'none' } = useSelectTierInfo(userId)
   const hasTier = tier !== 'none'
   const isOwner = userId === accountId
