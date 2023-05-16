@@ -13,6 +13,11 @@ jobs:
       context: [GCP, dockerhub]
       instance-name: circleci-push-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
+  - push-docker-image:
+      name: push-comms
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-comms-$CIRCLE_BUILD_NUM
+      service: comms
 
   - test:
       name: test-discovery-provider

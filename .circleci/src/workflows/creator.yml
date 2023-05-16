@@ -44,7 +44,6 @@ jobs:
       name: deploy-stage-creator-node
       requires:
         - push-creator-node
-        - push-comms
       filters:
         branches:
           only: main
