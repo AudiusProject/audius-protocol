@@ -1,13 +1,15 @@
-import type { UserChat, ValidatedChatPermissions } from '@audius/sdk'
+import { ChatPermission, UserChat } from '@audius/sdk'
 import { createSelector } from 'reselect'
 
-import type { ID } from 'models/Identifiers'
+import { ID } from 'models/Identifiers'
 import { accountSelectors } from 'store/account'
 import { cacheUsersSelectors } from 'store/cache'
 import { CommonState } from 'store/reducers'
 import { decodeHashId } from 'utils/hashIds'
+import { Maybe } from 'utils/typeUtils'
 
 import { chatMessagesAdapter, chatsAdapter } from './slice'
+import { ChatPermissionAction } from './types'
 const { getUserId } = accountSelectors
 const { getUsers } = cacheUsersSelectors
 
@@ -42,8 +44,7 @@ export const getBlockees = (state: CommonState) => state.pages.chat.blockees
 
 export const getBlockers = (state: CommonState) => state.pages.chat.blockers
 
-export const getUserChatPermissions = (state: CommonState) =>
-  state.pages.chat.permissions
+const getChatPermissions = (state: CommonState) => state.pages.chat.permissions
 
 /**
  * Gets all chats and their optimistic read status
@@ -164,24 +165,73 @@ export const getUnfurlMetadata = (
   return message?.unfurlMetadata
 }
 
-export const getCanMessageUser = createSelector(
+export const getUserChatPermissions = createSelector(
+  [getChatPermissions, getUserId],
+  (permissions, userId) => {
+    return userId ? permissions[userId] : undefined
+  }
+)
+
+export const getCanChat = createSelector(
   [
-    getBlockers,
+    getUserId,
     getBlockees,
-    getUserChatPermissions,
-    (_: CommonState, userId: ID) => userId
+    getBlockers,
+    getChatPermissions,
+    (_state: CommonState, userId: Maybe<ID>) => {
+      return userId
+    }
   ],
   (
-    blockerList,
-    blockeeList,
-    permissionsMap: Record<ID, ValidatedChatPermissions>,
+    currentUserId,
+    blockees,
+    blockers,
+    chatPermissions,
     userId
-  ) => {
-    const isBlocked = blockerList.includes(userId)
-    const doesBlock = blockeeList.includes(userId)
-    const isPermitted =
-      permissionsMap[userId]?.current_user_has_permission ?? true
+  ): { canChat: boolean; callToAction: ChatPermissionAction } => {
+    if (!currentUserId) {
+      return {
+        canChat: false,
+        callToAction: ChatPermissionAction.SIGN_UP
+      }
+    }
+    if (!userId) {
+      return {
+        canChat: false,
+        callToAction: ChatPermissionAction.NONE
+      }
+    }
 
-    return !isBlocked && !doesBlock && isPermitted
+    const currentUserPermissions = chatPermissions[currentUserId]
+
+    const userPermissions = chatPermissions[userId]
+    const isBlockee = blockees.includes(userId)
+    const isBlocker = blockers.includes(userId)
+    const canChat =
+      !isBlockee &&
+      !isBlocker &&
+      (userPermissions?.current_user_has_permission ?? true)
+
+    let action = ChatPermissionAction.NOT_APPLICABLE
+    if (!canChat) {
+      if (
+        userPermissions.permits === ChatPermission.NONE ||
+        blockers.includes(userId)
+      ) {
+        action = ChatPermissionAction.NONE
+      } else if (blockees.includes(userId)) {
+        action = ChatPermissionAction.UNBLOCK
+      } else if (userPermissions.permits === ChatPermission.TIPPERS) {
+        action = ChatPermissionAction.TIP
+      } else if (currentUserPermissions?.permits === ChatPermission.FOLLOWEES) {
+        action = ChatPermissionAction.FOLLOW_OR_CHANGE_SETTINGS
+      } else if (currentUserPermissions?.permits === ChatPermission.NONE) {
+        action = ChatPermissionAction.CHANGE_SETTINGS
+      }
+    }
+    return {
+      canChat,
+      callToAction: action
+    }
   }
 )
