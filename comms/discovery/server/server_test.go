@@ -140,6 +140,7 @@ func TestGetChats(t *testing.T) {
 		ChatID:             chatId1,
 		LastMessage:        message2,
 		LastMessageAt:      message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
+		RecheckPermissions: false,
 		InviteCode:         chatId1,
 		UnreadMessageCount: float64(0),
 		ChatMembers: []schema.ChatMember{
@@ -151,6 +152,7 @@ func TestGetChats(t *testing.T) {
 		ChatID:             chatId2,
 		LastMessage:        message3,
 		LastMessageAt:      message3CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
+		RecheckPermissions: false,
 		InviteCode:         chatId2,
 		UnreadMessageCount: float64(0),
 		ChatMembers: []schema.ChatMember{
@@ -546,7 +548,7 @@ func TestGetPermissions(t *testing.T) {
 	// - user 4: followees
 	// - user 5: explicit all
 	// - user 6: none
-	_, err = tx.Exec("insert into chat_permissions (user_id, permits) values ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10)", user2Id, schema.Followees, user3Id, schema.Tippers, user4Id, schema.Followees, user5Id, schema.All, user6Id, schema.None)
+	_, err = tx.Exec("insert into chat_permissions (user_id, permits) values ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10)", user2Id, schema.Followees, user3Id, schema.TippersOrFollowees, user4Id, schema.Followees, user5Id, schema.All, user6Id, schema.None)
 
 	err = tx.Commit()
 	assert.NoError(t, err)
@@ -667,7 +669,7 @@ func TestGetPermissions(t *testing.T) {
 				CurrentUserHasPermission: true,
 			},
 			encodedUser3: {
-				Permits:                  schema.Tippers,
+				Permits:                  schema.TippersOrFollowees,
 				CurrentUserHasPermission: false,
 			},
 		})
@@ -705,7 +707,7 @@ func TestGetPermissions(t *testing.T) {
 		// Assertions
 		expectedData := ToChatPermissionsResponse(map[string]*ValidatedPermission{
 			encodedUser3: {
-				Permits:                  schema.Tippers,
+				Permits:                  schema.TippersOrFollowees,
 				CurrentUserHasPermission: true,
 			},
 			encodedUser4: {

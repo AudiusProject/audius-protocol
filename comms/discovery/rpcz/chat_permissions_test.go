@@ -25,8 +25,10 @@ func TestChatPermissions(t *testing.T) {
 	user1Id := seededRand.Int31()
 	user2Id := seededRand.Int31()
 	user3Id := seededRand.Int31()
+	user4Id := seededRand.Int31()
 	chat1Id := strconv.Itoa(seededRand.Int())
 	chat2Id := strconv.Itoa(seededRand.Int())
+	chat3Id := strconv.Itoa(seededRand.Int())
 
 	tx := db.Conn.MustBegin()
 
@@ -71,13 +73,16 @@ func TestChatPermissions(t *testing.T) {
 	// user 3 cannot message user 1 since 1 does not follow 3
 	assertPermissionValidation(tx, user3Id, user1Id, chat2Id, true)
 
-	// user 1 sets chat permissions to tippers only
-	err = chatSetPermissions(tx, int32(user1Id), schema.Tippers)
+	// user 1 sets chat permissions to tippers or followees
+	err = chatSetPermissions(tx, int32(user1Id), schema.TippersOrFollowees)
 	assert.NoError(t, err)
-	// user 2 cannot message user 1 since 2 has never tipped 1
-	assertPermissionValidation(tx, user2Id, user1Id, chat1Id, true)
+	// user 2 can message user 1 since 1 follows 2 even though 2 has never tipped 1
+	assertPermissionValidation(tx, user2Id, user1Id, chat1Id, false)
 	// user 3 can message user 1 since 3 has tipped 1
 	assertPermissionValidation(tx, user3Id, user1Id, chat2Id, false)
+	// user 4 cannot message user 1 since 1 does not follow 4 and
+	// 4 has never tipped 1
+	assertPermissionValidation(tx, user4Id, user1Id, chat3Id, true)
 
 	// user 1 changes chat permissions to none
 	err = chatSetPermissions(tx, int32(user1Id), schema.None)

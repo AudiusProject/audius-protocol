@@ -105,6 +105,7 @@ export type UserChat = {
   last_message: string
   last_message_at: string
   chat_members: Array<{ user_id: string }>
+  recheck_permissions: boolean
 
   // User specific
   invite_code: string
@@ -155,9 +156,9 @@ export enum ChatPermission {
    */
   ALL = 'all',
   /**
-   * Messages are only allowed for users that have tipped me
+   * Messages are only allowed for users that have tipped me OR users I follow
    */
-  TIPPERS = 'tippers',
+  TIPPERS_OR_FOLLOWEES = 'tippersOrFollowees',
   /**
    * Messages are only allowed for users I follow
    */

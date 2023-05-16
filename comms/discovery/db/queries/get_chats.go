@@ -20,6 +20,19 @@ type UserChatRow struct {
 	ClearedHistoryAt sql.NullTime   `db:"cleared_history_at" json:"cleared_history_at"`
 }
 
+// Get a chat's last_message_at
+const chatLastMessageAt = `
+SELECT last_message_at
+FROM chat
+WHERE chat_id = $1
+`
+
+func ChatLastMessageAt(q db.Queryable, ctx context.Context, chatId string) (time.Time, error) {
+	var lastMessageAt time.Time
+	err := q.GetContext(ctx, &lastMessageAt, chatLastMessageAt, chatId)
+	return lastMessageAt, err
+}
+
 // Get a chat with user-specific details
 const userChat = `
 SELECT
