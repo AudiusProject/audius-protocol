@@ -113,6 +113,7 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-contracts-workflow true
             ./.* run-release-workflow false
+            ./.* run-base-workflow true
           name: trigger-relevant-workflows
           filters:
             branches:
@@ -128,14 +129,15 @@ workflows:
             branches:
               only: << pipeline.parameters.run-all-workflows-branch-regex >>
           parameters: '{
+            "run-base-workflow": true,
             "run-discovery-workflow": true,
             "run-creator-workflow": true,
             "run-identity-workflow": true,
             "run-eth-contracts-workflow": true,
             "run-contracts-workflow": true,
             "run-release-workflow": true,
-            "run-sdk-workflow": true
-            "run-gp-cleanup-workflow": true
+            "run-sdk-workflow": true,
+            "run-gcp-cleanup-workflow": true
             }'
           pre-steps:
             - attach_workspace:
