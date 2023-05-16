@@ -84,7 +84,7 @@ def test_index_valid_track(app, mocker):
             },
             "track_id": 77955,
             "stem_of": None,
-            "ai_attribution_user_id": 2
+            "ai_attribution_user_id": 2,
         },
         "QmCreateTrack2": {
             "owner_id": 1,
@@ -129,6 +129,45 @@ def test_index_valid_track(app, mocker):
             "owner_id": 1,
             "track_cid": "some-track-cid-3",
             "title": "track 3",
+            "length": None,
+            "cover_art": None,
+            "cover_art_sizes": "QmQKXkVxGBbCFjcnhgxftzYDhph1CT8PJCuPEsRpffjjGC",
+            "tags": None,
+            "genre": "Rock",
+            "mood": None,
+            "credits_splits": None,
+            "created_at": None,
+            "create_date": None,
+            "updated_at": None,
+            "release_date": None,
+            "file_type": None,
+            "track_segments": [],
+            "has_current_user_reposted": False,
+            "is_current": True,
+            "is_unlisted": False,
+            "is_premium": False,
+            "premium_conditions": None,
+            "field_visibility": {
+                "genre": True,
+                "mood": True,
+                "tags": True,
+                "share": True,
+                "play_count": True,
+                "remixes": True,
+            },
+            "remix_of": None,
+            "repost_count": 0,
+            "save_count": 0,
+            "description": "",
+            "license": "",
+            "isrc": "",
+            "iswc": "",
+            "is_playlist_upload": False,
+        },
+        "QmCreateTrack4": {
+            "owner_id": 2,
+            "track_cid": "some-track-cid-4",
+            "title": "track 4",
             "length": None,
             "cover_art": None,
             "cover_art_sizes": "QmQKXkVxGBbCFjcnhgxftzYDhph1CT8PJCuPEsRpffjjGC",
@@ -214,11 +253,12 @@ def test_index_valid_track(app, mocker):
             "track_id": 77955,
             "stem_of": None,
             "is_playlist_upload": False,
-            "ai_attribution_user_id": 2
+            "ai_attribution_user_id": 2,
         },
     }
 
     track3_json = json.dumps(test_metadata["QmCreateTrack3"])
+    track4_json = json.dumps(test_metadata["QmCreateTrack4"])
     tx_receipts = {
         "CreateTrack1Tx": [
             {
@@ -290,6 +330,21 @@ def test_index_valid_track(app, mocker):
                 )
             },
         ],
+        # Delegated track write
+        "CreateTrack4Tx": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 3,
+                        "_entityType": "Track",
+                        "_userId": 2,
+                        "_action": "Create",
+                        "_metadata": f'{{"cid": "QmCreateTrack4", "data": {track4_json}}}',
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -309,8 +364,27 @@ def test_index_valid_track(app, mocker):
     entities = {
         "users": [
             {"user_id": 1, "handle": "user-1", "wallet": "user1wallet"},
-            {"user_id": 2, "handle": "user-2", "wallet": "user2wallet", "allow_ai_attribution": True},
-        ]
+            {
+                "user_id": 2,
+                "handle": "user-2",
+                "wallet": "user2wallet",
+                "allow_ai_attribution": True,
+            },
+        ],
+        "app_delegates": [
+            {
+                "user_id": 1,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            },
+        ],
+        "delegations": [
+            {
+                "user_id": 2,
+                "shared_address": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                "delegate_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            }
+        ],
     }
     populate_mock_db(db, entities)
 
@@ -329,7 +403,7 @@ def test_index_valid_track(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
-        assert len(all_tracks) == 5
+        assert len(all_tracks) == 6
 
         track_1: Track = (
             session.query(Track)
@@ -361,6 +435,17 @@ def test_index_valid_track(app, mocker):
         )
         assert track_3.title == "track 3"
         assert track_3.is_delete == False
+
+        track_4: Track = (
+            session.query(Track)
+            .filter(
+                Track.is_current == True,
+                Track.track_id == TRACK_ID_OFFSET + 3,
+            )
+            .first()
+        )
+        assert track_4.title == "track 4"
+        assert track_4.is_delete == False
 
         # Check that track routes are updated appropriately
         track_routes = (
@@ -403,11 +488,7 @@ def test_index_invalid_tracks(app, mocker):
         db = get_db()
         web3 = Web3()
         update_task = UpdateTask(None, web3, None)
-    test_metadata = {
-        "QmAIDisabled": {
-            "ai_attribution_user_id": 2
-        }
-    }
+    test_metadata = {"QmAIDisabled": {"ai_attribution_user_id": 2}}
     tx_receipts = {
         # invalid create
         "CreateTrackBelowOffset": [
@@ -479,7 +560,50 @@ def test_index_invalid_tracks(app, mocker):
                     }
                 )
             },
-        ],        # invalid updates
+        ],
+        "CreateTrackInvalidDeletedDelegate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                    }
+                )
+            },
+        ],
+        "CreateTrackInvalidRevokedDelegation": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
+                    }
+                )
+            },
+        ],
+        "CreateTrackInvalidWrongUserDelegation": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET + 1,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Create",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
+                    }
+                )
+            },
+        ],
+        # invalid updates
         "UpdateTrackInvalidSigner": [
             {
                 "args": AttributeDict(
@@ -504,6 +628,48 @@ def test_index_invalid_tracks(app, mocker):
                         "_action": "Update",
                         "_metadata": "",
                         "_signer": "User2Wallet",
+                    }
+                )
+            },
+        ],
+        "UpdateTrackInvalidDeletedDelegate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                    }
+                )
+            },
+        ],
+        "UpdateTrackInvalidRevokedDelegation": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
+                    }
+                )
+            },
+        ],
+        "UpdateTrackInvalidWrongUserDelegation": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Update",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
                     }
                 )
             },
@@ -551,6 +717,48 @@ def test_index_invalid_tracks(app, mocker):
                 )
             },
         ],
+        "DeleteTrackInvalidDeletedDelegate": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                    }
+                )
+            },
+        ],
+        "DeleteTrackInvalidRevokedDelegation": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
+                    }
+                )
+            },
+        ],
+        "DeleteTrackInvalidWrongUserDelegation": [
+            {
+                "args": AttributeDict(
+                    {
+                        "_entityId": TRACK_ID_OFFSET,
+                        "_entityType": "Track",
+                        "_userId": 1,
+                        "_action": "Delete",
+                        "_metadata": "",
+                        "_signer": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
+                    }
+                )
+            },
+        ],
     }
 
     entity_manager_txs = [
@@ -575,6 +783,37 @@ def test_index_invalid_tracks(app, mocker):
         "tracks": [
             {"track_id": TRACK_ID_OFFSET, "owner_id": 1},
         ],
+        "app_delegates": [
+            {
+                "user_id": 2,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+                "is_delete": True,
+            },
+            {
+                "user_id": 2,
+                "name": "My App",
+                "address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+            },
+        ],
+        "delegations": [
+            {
+                "user_id": 1,
+                "shared_address": "0xdB384D555480214632D08609848BbFB54CCeb76c",
+                "delegate_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4C4",
+            },
+            {
+                "user_id": 1,
+                "shared_address": "0xdB384D555480214632D08609848BbFB54CCeb7AA",
+                "delegate_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+                "is_revoked": True,
+            },
+            {
+                "user_id": 2,
+                "shared_address": "0xdB384D555480214632D08609848BbFB54CCeb7CC",
+                "delegate_address": "0x3a388671bb4D6E1Ea08D79Ee191b40FB45A8F4ZZ",
+            },
+        ],
     }
     populate_mock_db(db, entities)
 
@@ -593,4 +832,4 @@ def test_index_invalid_tracks(app, mocker):
 
         # validate db records
         all_tracks: List[Track] = session.query(Track).all()
-        assert len(all_tracks) == 1  # no new playlists indexed
+        assert len(all_tracks) == 1  # no new tracks indexed
