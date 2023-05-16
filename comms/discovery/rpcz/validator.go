@@ -158,8 +158,7 @@ func (vtor *Validator) validateChatMessage(tx *sqlx.Tx, userId int32, rpc schema
 		}
 
 		// re-validate permissions if a member of the chat has recently cleared their
-		// chat history, in case their permissions
-		// have changed.
+		// chat history, in case their permissions have changed
 		lastMessageAt, err := queries.ChatLastMessageAt(q, context.Background(), params.ChatID)
 		if err != nil {
 			return err
@@ -397,7 +396,7 @@ func validateNotBlocked(q db.Queryable, user1 int32, user2 int32) error {
 }
 
 // Recheck chat permissions before sending further messages if a member of the chat
-// has cleared their chat history.
+// has cleared their chat history
 func RecheckPermissionsRequired(lastMessageAt time.Time, members []db.ChatMember) bool {
 	for _, member := range members {
 		if member.ClearedHistoryAt.Valid && member.ClearedHistoryAt.Time.After(lastMessageAt) {
@@ -423,6 +422,7 @@ func validateFollow(q db.Queryable, sender int32, receiver int32) (bool, error) 
 	return true, nil
 }
 
+// Validate sender has tipped receiver
 func validateTipper(q db.Queryable, sender int32, receiver int32) (bool, error) {
 	count, err := queries.CountTips(q, context.Background(), queries.CountTipsParams{
 		SenderUserID:   sender,
