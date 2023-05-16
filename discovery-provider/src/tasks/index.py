@@ -293,7 +293,9 @@ def fetch_cid_metadata(db, entity_manager_txs):
                             )
                         continue
 
-                    logger.info(f"index.py | falling back to fetching cid metadata from content nodes for metadata {cid}, event type {event_type}, action {action}, user {user_id}")
+                    logger.info(
+                        f"index.py | falling back to fetching cid metadata from content nodes for metadata {cid}, event type {event_type}, action {action}, user {user_id}"
+                    )
 
                     cids_txhash_set.add((cid, txhash))
                     cid_to_user_id[cid] = user_id

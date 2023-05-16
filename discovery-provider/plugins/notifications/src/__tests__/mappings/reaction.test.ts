@@ -73,7 +73,7 @@ describe('Reaction Notification', () => {
         body: `User_1 reacted to your tip of 5 $AUDIO`,
         data: {
           entityId: 1,
-          id: 'timestamp:1589373217:group_id:reaction:reaction_to:sig_2_1:reaction_type:tip:reaction_value:2:timestamp:2020-05-13 12:33:37',
+          id: 'timestamp:1589373217:group_id:reaction:reaction_to:sig_2_1:reaction_type:tip:reaction_value:2',
           type: 'Reaction'
         }
       }
@@ -110,8 +110,7 @@ describe('Reaction Notification', () => {
         type: 'reaction',
         timestamp: new Date(),
         specifier: '1',
-        group_id:
-          'reaction:reaction_to:0x1:reaction_type:tip:reaction_value:1:timestamp:2022-08-10 19:59:45.743',
+        group_id: 'reaction:reaction_to:0x1:reaction_type:tip:reaction_value:1',
         data,
         user_ids: [2],
         receiver_user_id: 2

@@ -34,9 +34,11 @@ export class Save extends BaseNotification<SaveNotificationRow> {
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
       user_id: number
@@ -107,7 +109,7 @@ export class Save extends BaseNotification<SaveNotificationRow> {
     const title = 'New Favorite'
     const body = `${saverUserName} favorited your ${entityType.toLowerCase()} ${entityName}`
     if (userNotificationSettings.isNotificationTypeBrowserEnabled(this.receiverUserId, 'favorites')) {
-      await sendBrowserNotification(userNotificationSettings, this.receiverUserId, title, body)
+      await sendBrowserNotification(isBrowserPushEnabled, userNotificationSettings, this.receiverUserId, title, body)
     }
 
     // If the user has devices to the notification to, proceed

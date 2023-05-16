@@ -5,7 +5,6 @@ export class Playlists extends Base {
     this.getPlaylists = this.getPlaylists.bind(this)
     this.getSavedPlaylists = this.getSavedPlaylists.bind(this)
     this.getSavedAlbums = this.getSavedAlbums.bind(this)
-    this.uploadPlaylistCoverPhoto = this.uploadPlaylistCoverPhoto.bind(this)
   }
   /* ------- GETTERS ------- */
 
@@ -66,22 +65,5 @@ export class Playlists extends Base {
   async getSavedAlbums(limit = 100, offset = 0, withUsers = false) {
     this.REQUIRES(Services.DISCOVERY_PROVIDER)
     return await this.discoveryProvider.getSavedAlbums(limit, offset, withUsers)
-  }
-
-  /* ------- SETTERS ------- */
-
-  /**
-   * Uploads a cover photo for a playlist without updating the actual playlist
-   * @param coverPhotoFile the file to upload as the cover photo
-   * @return CID of the uploaded cover photo
-   */
-  async uploadPlaylistCoverPhoto(coverPhotoFile: File) {
-    this.REQUIRES(Services.CREATOR_NODE)
-
-    const updatedPlaylistImage = await this.creatorNode.uploadImage(
-      coverPhotoFile,
-      true // square
-    )
-    return updatedPlaylistImage.dirCID
   }
 }

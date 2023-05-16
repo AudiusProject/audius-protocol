@@ -67,6 +67,7 @@ export type CreatorNodeConfig = {
   // whether or not to enforce waiting for replication to 2/3 nodes when writing data
   writeQuorumEnabled: boolean
   fallbackUrl: string
+  isStorageV2Only: boolean
 }
 
 // Currently only supports a single logged-in audius user
@@ -179,6 +180,7 @@ export class CreatorNode {
   connecting: boolean
   authToken: null
   maxBlockNumber: number
+  isStorageV2Only: boolean
 
   /**
    * Constructs a service class for a creator node
@@ -193,7 +195,8 @@ export class CreatorNode {
     passList: Set<string> | null = null,
     blockList: Set<string> | null = null,
     monitoringCallbacks: MonitoringCallbacks = {},
-    writeQuorumEnabled = false
+    writeQuorumEnabled = false,
+    isStorageV2Only = false
   ) {
     this.web3Manager = web3Manager
     // This is just 1 endpoint (primary), unlike the creator_node_endpoint field in user metadata
@@ -212,6 +215,7 @@ export class CreatorNode {
     this.blockList = blockList
     this.monitoringCallbacks = monitoringCallbacks
     this.writeQuorumEnabled = writeQuorumEnabled
+    this.isStorageV2Only = isStorageV2Only
   }
 
   async init() {
@@ -223,6 +227,7 @@ export class CreatorNode {
 
   /** Establishes a connection to a content node endpoint */
   async connect() {
+    if (this.isStorageV2Only) return
     this.connecting = true
     await this._signupNodeUser(this.web3Manager?.getWalletAddress())
     await this._loginNodeUser()
@@ -398,24 +403,30 @@ export class CreatorNode {
     coverArtFile: File,
     metadata: TrackMetadata,
     onProgress: ProgressCB = () => {}
-  ) {
+  ): Promise<TrackMetadata> {
     const updatedMetadata = { ...metadata }
 
     // Upload audio and cover art
-    const [audioResp, coverArtResp] = await Promise.all([
+    const promises = [
       this._retry3(
         async () => await this.uploadTrackAudioV2(trackFile, onProgress),
         (e) => {
           console.log('Retrying uploadTrackAudioV2', e)
         }
-      ),
-      this._retry3(
-        async () => await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
-        (e) => {
-          console.log('Retrying uploadTrackCoverArtV2', e)
-        }
       )
-    ])
+    ]
+    if (coverArtFile) {
+      promises.push(
+        this._retry3(
+          async () =>
+            await this.uploadTrackCoverArtV2(coverArtFile, onProgress),
+          (e) => {
+            console.log('Retrying uploadTrackCoverArtV2', e)
+          }
+        )
+      )
+    }
+    const [audioResp, coverArtResp] = await Promise.all(promises)
 
     // Update metadata to include uploaded CIDs
     updatedMetadata.track_segments = []
@@ -424,16 +435,16 @@ export class CreatorNode {
     if (updatedMetadata.download?.is_downloadable) {
       updatedMetadata.download.cid = updatedMetadata.track_cid
     }
-    updatedMetadata.cover_art_sizes = coverArtResp.id
+    if (coverArtResp) updatedMetadata.cover_art_sizes = coverArtResp.id
 
     return updatedMetadata
   }
 
-  async uploadTrackAudioV2(file: File, onProgress: ProgressCB) {
+  async uploadTrackAudioV2(file: File, onProgress: ProgressCB = () => {}) {
     return await this.uploadFileV2(file, onProgress, 'audio')
   }
 
-  async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB) {
+  async uploadTrackCoverArtV2(file: File, onProgress: ProgressCB = () => {}) {
     return await this.uploadFileV2(file, onProgress, 'img_square')
   }
 
@@ -450,14 +461,15 @@ export class CreatorNode {
     onProgress: ProgressCB,
     template: 'audio' | 'img_square' | 'img_backdrop'
   ) {
-    const formData = new FormData()
-    formData.append('template', template)
-    formData.append('files', file, file.name)
+    const { headers, formData } = this.createFormDataAndUploadHeadersV2(
+      file,
+      { template }
+    )
     const response = await this._makeRequestV2({
       method: 'post',
       url: '/uploads',
       data: formData,
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers,
       onUploadProgress: (progressEvent) =>
         onProgress(progressEvent.loaded, progressEvent.total)
     })
@@ -794,7 +806,14 @@ export class CreatorNode {
     // TODO: This might want to have other error handling, request UUIDs, etc...
     //       But I didn't want to pull in all the chaos and incompatiblity of the old _makeRequest
     axiosRequestObj.baseURL = this.creatorNodeEndpoint
-    return await axios(axiosRequestObj)
+    try {
+      return await axios(axiosRequestObj)
+    } catch (e: any) {
+      const requestId = axiosRequestObj.headers['X-Request-ID']
+      const msg = `Error sending storagev2 request for X-Request-ID=${requestId}: ${e}`
+      console.error(msg)
+      throw new Error(msg)
+    }
   }
 
   /**
@@ -1097,6 +1116,40 @@ export class CreatorNode {
       // TODO change to X-User-Wallet-Address and X-User-Id per convention
       headers['User-Wallet-Addr'] = user.wallet
       headers['User-Id'] = user.user_id as unknown as string
+    }
+
+    return { headers, formData }
+  }
+
+  /**
+   * Create headers and formData for file upload
+   * @param file the file to upload
+   * @returns headers and formData in an object
+   */
+  createFormDataAndUploadHeadersV2(
+    file: File,
+    extraFormDataOptions: Record<string, unknown> = {}
+  ) {
+    // form data is from browser, not imported npm module
+    const formData = new FormData()
+    formData.append('files', file, file.name)
+    Object.keys(extraFormDataOptions).forEach((key) => {
+      formData.append(key, `${extraFormDataOptions[key]}`)
+    })
+
+    let headers: Record<string, string | null> = {}
+    if (this.isServer) {
+      headers = formData.getHeaders()
+    }
+    headers['X-Session-ID'] = this.authToken
+
+    const requestId = uuid()
+    headers['X-Request-ID'] = requestId
+
+    const user = this.userStateManager.getCurrentUser()
+    if (user?.wallet && user.user_id) {
+      headers['X-User-Wallet-Addr'] = user.wallet
+      headers['X-User-Id'] = user.user_id as unknown as string
     }
 
     return { headers, formData }

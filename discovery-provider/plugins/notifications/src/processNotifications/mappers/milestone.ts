@@ -67,9 +67,11 @@ export class Milestone extends BaseNotification<MilestoneRow> {
   }
 
   async pushNotification({
-    isLiveEmailEnabled
+    isLiveEmailEnabled,
+    isBrowserPushEnabled
   }: {
-    isLiveEmailEnabled: boolean
+    isLiveEmailEnabled: boolean,
+    isBrowserPushEnabled: boolean
   }) {
     const res: Array<{
       user_id: number
@@ -145,7 +147,7 @@ export class Milestone extends BaseNotification<MilestoneRow> {
 
     const title = 'Congratulations! 🎉'
     const body = this.getPushBodyText(entityName, isAlbum)
-    await sendBrowserNotification(
+    await sendBrowserNotification(isBrowserPushEnabled, 
       userNotificationSettings,
       this.receiverUserId,
       title,

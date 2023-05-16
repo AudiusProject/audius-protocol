@@ -29,11 +29,13 @@ export function DiscoveryHealth() {
             {isContent && <th>selectedDiscoveryProvider</th>}
             <th>Storage</th>
             <th>DB Size</th>
-            <th>Block Diff</th>
-            <th>ACDC Signer</th>
-            <th>Net ID</th>
+            <th>ACDC Signer Health</th>
+            <th>Is Signer</th>
+            <th>Peers</th>
+            <th>Producing</th>
             <th>ACDC Block</th>
-            <th>Final POA Block</th>
+            <th>Block Diff</th>
+            <th>ACDC Block Hash</th>
           </tr>
         </thead>
         <tbody>
@@ -76,6 +78,18 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
+  const getPeers = (str: string | undefined) => {
+    if (str === undefined) return "chain health undefined"
+    const match = str.match(/Peers: (.)/)
+    return (match && match[1]) ? match[1] : "no peers found"
+  }
+  const getProducing = (str: string | undefined) => {
+    if (str === undefined) return "chain health undefined"
+    return (!str.includes("The node stopped producing blocks.")).toString()
+  }
+  // currently discprov does not expose the address of its internal chain instance
+  const isSigner = (str: string | undefined) => getProducing(str)
+  const chainDescription: string = health.chain_health?.entries["node-health"].description
 
   return (
     <tr>
@@ -123,11 +137,13 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
         </span>
       </td>
       <td>{`${dbSize} GB`}</td>
-      <td className={isBehind}>{health.block_difference}</td>
       <td>{health.chain_health?.status}</td>
-      <td>{health.chain_health?.chain_id}</td>
+      <td>{isSigner(chainDescription)}</td>
+      <td>{getPeers(chainDescription)}</td>
+      <td>{getProducing(chainDescription)}</td>
       <td>{health.chain_health?.block_number}</td>
-      <td>{health.final_poa_block}</td>
+      <td className={isBehind}>{health.block_difference}</td>
+      <td>{health.chain_health?.hash}</td>
     </tr>
   )
 }

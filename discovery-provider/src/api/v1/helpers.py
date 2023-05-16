@@ -223,7 +223,8 @@ def extend_track(track):
     )
 
     # TODO: This block is only for legacy tracks that have track_segments instead of duration
-    if not track["duration"]:
+    duration = track.get("duration")
+    if not duration:
         duration = 0.0
         for segment in track["track_segments"]:
             # NOTE: Legacy track segments store the duration as a string
