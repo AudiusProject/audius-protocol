@@ -14,7 +14,7 @@ jobs:
       instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
 
   - release-audius-sdk:
-      sdk-release-commit: 7e1bb06c576e1675714696d9119c66fbf5bbe90c
+      sdk-release-commit: 0f0bd34445752f44bc2100e9b7f70961b584ae8b
       sdk-release-version: 2.0.3-beta.20
       context:
         - Audius Client
