@@ -194,6 +194,19 @@ export class ChatsApi
     }
   }
 
+  public async getUnreadCount() {
+    const query: HTTPQuery = {
+      timestamp: new Date().getTime()
+    }
+    const res = await this.signAndSendRequest({
+      method: 'GET',
+      path: `/comms/chats/unread`,
+      headers: {},
+      query
+    })
+    return (await res.json()) as TypedCommsResponse<number>
+  }
+
   public async getPermissions(requestParameters?: ChatGetPermissionRequest) {
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
