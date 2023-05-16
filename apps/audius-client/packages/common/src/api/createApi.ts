@@ -74,10 +74,9 @@ const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
     ) => {
       const { fetchArgs } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
-      if (!state[endpointName][key]) {
-        state[endpointName][key] = initState
-      }
-      state[endpointName][key].status = Status.LOADING
+      const scopedState = { ...state[endpointName][key] } ?? initState
+      scopedState.status = Status.LOADING
+      state[endpointName][key] = scopedState
     },
     [`fetch${capitalize(endpointName)}Error`]: (
       state: ApiState,
@@ -85,11 +84,10 @@ const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
     ) => {
       const { fetchArgs, errorMessage } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
-      if (!state[endpointName][key]) {
-        state[endpointName][key] = initState
-      }
-      state[endpointName][key].status = Status.ERROR
-      state[endpointName][key].errorMessage = errorMessage
+      const scopedState = { ...state[endpointName][key] } ?? initState
+      scopedState.status = Status.ERROR
+      scopedState.errorMessage = errorMessage
+      state[endpointName][key] = scopedState
     },
     [`fetch${capitalize(endpointName)}Succeeded`]: (
       state: ApiState,
@@ -97,12 +95,11 @@ const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
     ) => {
       const { fetchArgs, nonNormalizedData, strippedEntityMap } = action.payload
       const key = getKeyFromFetchArgs(fetchArgs)
-      if (!state[endpointName][key]) {
-        state[endpointName][key] = initState
-      }
-      state[endpointName][key].status = Status.SUCCESS
-      state[endpointName][key].nonNormalizedData = nonNormalizedData
-      state[endpointName][key].strippedEntityMap = strippedEntityMap
+      const scopedState = { ...state[endpointName][key] } ?? initState
+      scopedState.status = Status.SUCCESS
+      scopedState.nonNormalizedData = nonNormalizedData
+      scopedState.strippedEntityMap = strippedEntityMap
+      state[endpointName][key] = scopedState
     }
   }
 }
