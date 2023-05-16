@@ -3,7 +3,8 @@ import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
 import {
   Configuration,
   StreamTrackRequest,
-  TracksApi as GeneratedTracksApi
+  TracksApi as GeneratedTracksApi,
+  UsersApi
 } from '../generated/default'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
 import type { UploadTrackRequest } from './types'
@@ -35,7 +36,8 @@ export class TracksApi extends TracksApiWithoutStream {
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly walletApi: WalletApiService
+    private readonly walletApi: WalletApiService,
+    private readonly usersApi: UsersApi
   ) {
     super(configuration)
   }
@@ -151,7 +153,8 @@ export class TracksApi extends TracksApiWithoutStream {
         cid: metadataCid.toString(),
         data: updatedMetadata
       }),
-      walletApi: this.walletApi
+      walletApi: this.walletApi,
+      usersApi: this.usersApi
     })
     const txReceipt = response.txReceipt
 

@@ -19,6 +19,7 @@ import type {
   EntityType
 } from './types'
 import { encodeHashId } from '../../utils/hashId'
+import type { UsersApi } from '../../api/generated/default'
 
 export class EntityManager implements EntityManagerService {
   /**
@@ -56,7 +57,8 @@ export class EntityManager implements EntityManagerService {
     entityId,
     action,
     metadata,
-    walletApi
+    walletApi,
+    usersApi
   }: {
     userId: number
     entityType: EntityType
@@ -64,6 +66,7 @@ export class EntityManager implements EntityManagerService {
     action: Action
     metadata: string
     walletApi: WalletApiService
+    usersApi: UsersApi
   }): Promise<{ txReceipt: TransactionReceipt }> {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
@@ -79,10 +82,16 @@ export class EntityManager implements EntityManagerService {
     )
 
     const senderAddress = await walletApi.getAddress()
-    const signature = await walletApi.sign(
-      signatureData as any,
-      encodeHashId(userId) ?? undefined
-    )
+    const userIdHashed = encodeHashId(userId) ?? undefined
+
+    if (!userIdHashed) {
+      throw new Error(`Invalid userId: ${userId}`)
+    }
+
+    const user = await usersApi.getUser({ id: userIdHashed })
+    const userPublicKey = user.data?.ercWallet
+
+    const signature = walletApi.signTransaction(signatureData, userPublicKey)
 
     const method = await this.contract.methods.manageEntity(
       userId,

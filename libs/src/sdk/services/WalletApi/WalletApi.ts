@@ -1,4 +1,4 @@
-import type { WalletApiService } from './types'
+import type { TransactionData, WalletApiService } from './types'
 
 export class WalletApi implements WalletApiService {
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array> =
@@ -7,6 +7,10 @@ export class WalletApi implements WalletApiService {
     }
 
   sign: (data: string) => Promise<[Uint8Array, number]> = () => {
+    throw new Error('WalletApi not initialized')
+  }
+
+  signTransaction: (data: TransactionData) => string = () => {
     throw new Error('WalletApi not initialized')
   }
 

@@ -110,7 +110,7 @@ const initializeServices = (config: SdkConfig) => {
     storage: new Storage(),
     walletApi:
       config.apiKey && config.apiSecret
-        ? new DelegatedWalletApi()
+        ? new DelegatedWalletApi(config.apiKey, config.apiSecret)
         : new WalletApi()
   }
   return { ...defaultServices, ...config.services }
@@ -132,15 +132,15 @@ const initializeApis = ({
     middleware
   })
 
+  const users = new UsersApi(generatedApiClientConfig)
   const tracks = new TracksApi(
     generatedApiClientConfig,
     services.discoveryNodeSelector,
     services.storage,
     services.entityManager,
-    services.walletApi
+    services.walletApi,
+    users
   )
-  const users = new UsersApi(generatedApiClientConfig)
-  ;(services.walletApi as DelegatedWalletApi).setUsersApi?.(users)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
