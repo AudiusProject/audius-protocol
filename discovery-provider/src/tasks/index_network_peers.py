@@ -9,7 +9,7 @@ from src.utils.prometheus_metric import save_duration_metric
 
 logger = logging.getLogger(__name__)
 
-LOCAL_RPC = "http://chain:8545"  # TODO: Needs nethermind locally I think
+LOCAL_RPC = "http://chain:8545"
 DOUBLE_CAST_ERROR_CODE = -32603
 CONTENT_PEERS_REDIS_KEY = "content_peers"
 
