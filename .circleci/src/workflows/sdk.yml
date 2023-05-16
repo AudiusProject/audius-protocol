@@ -8,6 +8,15 @@ jobs:
       context: GCP
       instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
       service: audius-libs
+
   - test-audius-cmd:
       context: GCP
       instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
+
+  - release-audius-sdk:
+      sdk-release-commit: << pipeline.parameters.sdk-release-commit >>
+      sdk-release-version: << pipeline.parameters.sdk-release-version >>
+      sdk-release-preid: << pipeline.parameters.sdk-release-preid >>
+      context:
+        - Audius Client
+        - slack-secrets

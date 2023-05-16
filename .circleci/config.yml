@@ -15,6 +15,17 @@ parameters:
     type: string
     default: /(^main)|(^release.*)$/
 
+  # release-audius-sdk params
+  sdk-release-commit:
+    type: string
+    default: ""
+  sdk-release-version:
+    type: string
+    default: ""
+  sdk-release-preid:
+    type: string
+    default: ""
+
 jobs:
   # Generate the CircleCI continue_config.yml from .circleci/src
   generate-config:
