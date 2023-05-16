@@ -99,8 +99,6 @@ workflows:
             creator-node/.* run-creator-workflow true
             identity-service/.* run-identity-workflow true
             comms/.* run-discovery-workflow true
-            comms/.* run-creator-workflow true
-            mediorum/.* run-discovery-workflow true
             mediorum/.* run-creator-workflow true
             libs/.* run-creator-workflow true
             libs/.* run-identity-workflow true
@@ -112,8 +110,9 @@ workflows:
             .circleci/.* run-identity-workflow true
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-contracts-workflow true
-            ./.* run-release-workflow false
-            ./.* run-base-workflow true
+            .circleci/.* run-sdk-workflow true
+            .* run-release-workflow false
+            .* run-base-workflow true
           name: trigger-relevant-workflows
           filters:
             branches:
