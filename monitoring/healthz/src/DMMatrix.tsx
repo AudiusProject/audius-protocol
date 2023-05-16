@@ -15,7 +15,6 @@ export function DMMatrix() {
   }, [env])
 
   useEffect(() => {
-    console.log('fetch sps', sps)
     sps?.map(async (sp) => {
       const resp = await fetch(sp.endpoint + `/comms/debug/cursors`)
       const data = await resp.json()
