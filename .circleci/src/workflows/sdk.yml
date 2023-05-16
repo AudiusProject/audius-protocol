@@ -16,6 +16,7 @@ jobs:
   - release-audius-sdk:
       sdk-release-commit: 0f0bd34445752f44bc2100e9b7f70961b584ae8b
       sdk-release-version: 2.0.3-beta.20
+      sdk-release-preid: ""
       context:
         - Audius Client
         - slack-secrets
