@@ -42,7 +42,7 @@ def test_search_user_tags(app):
         capture_output=True,
         text=True,
         cwd="es-indexer",
-        timeout=10,
+        timeout=30,
     )
 
     result = search_tags_es("pop", kind="users")
