@@ -23,14 +23,18 @@ def get_web3(web3endpoint=None):
     global web3
     if not web3endpoint:
         # attempt local rpc, check if healthy
-        r = requests.get(LOCAL_RPC + "/health")
-        if r.status_code == 200:
-            web3endpoint = LOCAL_RPC
-            logger.info("web3_provider.py | using local RPC")
-        else:
-            # if local rpc isn't healthy fall back to gateway
+        try:
+            r = requests.get(LOCAL_RPC + "/health")
+            if r.status_code == 200:
+                web3endpoint = LOCAL_RPC
+                logger.info("web3_provider.py | using local RPC")
+            else:
+                # if local rpc isn't healthy fall back to gateway
+                web3endpoint = os.getenv("audius_web3_host")
+                logger.warn("web3_provider.py | falling back to gateway RPC")
+        except:
             web3endpoint = os.getenv("audius_web3_host")
-            logger.warn("web3_provider.py | falling back to gateway RPC")
+            logger.warn("web3_provider.py | exception, falling back to gateway RPC")
     web3 = Web3(HTTPProvider(web3endpoint))
 
     # required middleware for POA
