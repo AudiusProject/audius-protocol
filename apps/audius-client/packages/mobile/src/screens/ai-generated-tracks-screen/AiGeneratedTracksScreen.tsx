@@ -16,6 +16,7 @@ import UserBadges from 'app/components/user-badges'
 import { useNavigation } from 'app/hooks/useNavigation'
 import { useProfileRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
+import { spacing } from 'app/styles/spacing'
 
 import { ShareAiTracksTile } from './ShareAiTracksTile'
 
@@ -30,16 +31,20 @@ const messages = {
   headerText: 'Tracks generated with AI trained on music by '
 }
 
+const iconSize = { height: spacing(6), width: spacing(6) }
+
 const useStyles = makeStyles(({ spacing, palette, typography }) => ({
-  headerTextContainer: {
-    alignItems: 'center',
+  header: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: spacing(7),
     paddingVertical: spacing(3),
     backgroundColor: palette.white
   },
   headerText: {
     fontSize: typography.fontSize.medium,
-    lineHeight: typography.fontSize.medium * 1.3
+    lineHeight: typography.fontSize.medium * 1.3,
+    textAlign: 'left'
   },
   userBadgeTitle: {
     fontSize: typography.fontSize.medium,
@@ -94,12 +99,16 @@ export const AiGeneratedTracksScreen = () => {
 
   return (
     <Screen>
-      <ScreenHeader text={messages.header} icon={IconRobot} />
+      <ScreenHeader
+        text={messages.header}
+        icon={IconRobot}
+        iconProps={iconSize}
+      />
       <ScreenContent>
         <Lineup
           header={
             user ? (
-              <View style={styles.headerTextContainer}>
+              <View style={styles.header}>
                 <Text>{messages.headerText}</Text>
                 <TouchableOpacity onPress={handleGoToProfile}>
                   <UserBadges user={user} nameStyle={styles.userBadgeTitle} />
