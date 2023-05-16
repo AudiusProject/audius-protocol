@@ -15,6 +15,7 @@ import { IdTranslator } from './IdTranslator'
 import { DMs } from './DMs'
 import { Mediorum } from './Mediorum'
 import { EnvironmentSelector } from './components/EnvironmentSelector'
+import { DMMatrix } from './DMMatrix'
 
 const routeList: RouteObject[] = [
   {
@@ -47,6 +48,7 @@ const routeList: RouteObject[] = [
           { path: 'search', element: <DiscoverySearch /> },
           { path: 'id', element: <IdTranslator /> },
           { path: 'dms', element: <DMs /> },
+          { path: 'dm_matrix', element: <DMMatrix /> },
           { path: 'mediorum', element: <Mediorum /> },
           { path: 'plugins', element: <DiscoveryPlugins /> },
         ],
