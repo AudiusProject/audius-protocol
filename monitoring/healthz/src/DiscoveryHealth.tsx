@@ -78,16 +78,18 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     bytesToGb(health.database_size) || bytesToGb(health.databaseSize)
   const autoUpgradeEnabled =
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
-  const getPeers = (str: string) => {
+  const getPeers = (str: string | undefined) => {
+    if (str === undefined) return "chain health undefined"
     const match = str.match(/Peers: (.)/)
     return (match && match[1]) ? match[1] : "no peers found"
   }
-  const getProducing = (str: string) => {
+  const getProducing = (str: string | undefined) => {
+    if (str === undefined) return "chain health undefined"
     return (!str.includes("The node stopped producing blocks.")).toString()
   }
   // currently discprov does not expose the address of its internal chain instance
-  const isSigner = (str: string) => getProducing(str)
-  const chainDescription = health.chain_health?.entries["node-health"].description
+  const isSigner = (str: string | undefined) => getProducing(str)
+  const chainDescription: string = health.chain_health?.entries["node-health"].description
 
   return (
     <tr>
