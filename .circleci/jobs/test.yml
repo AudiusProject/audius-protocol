@@ -1,9 +1,9 @@
 parameters:
   instance-name:
-    description: 'Name of gcp instance to use for the test'
+    description: "Name of gcp instance to use for the test"
     type: string
   service:
-    description: 'Service to test'
+    description: "Service to test"
     type: string
 resource_class: small
 docker:
@@ -27,7 +27,7 @@ steps:
 
         echo "export IMAGE_FLAG='$IMAGE_FLAG'" >> "$BASH_ENV"
   - gcp-run:
-      instance-name: '<< parameters.instance-name >>'
+      instance-name: "<< parameters.instance-name >>"
       create-instance-args: >-
         $IMAGE_FLAG
         --preemptible
@@ -38,7 +38,7 @@ steps:
       steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-        - run: 
+        - run:
             name: test run "<< parameters.service >>"
             no_output_timeout: 20m
             command: . ~/.profile; audius-compose test run "<< parameters.service >>"
