@@ -1,8 +1,5 @@
 when: << pipeline.parameters.run-sdk-workflow >>
 jobs:
-  - build-gcp-image:
-      context: GCP
-
   - test:
       name: test-audius-libs
       context: GCP

@@ -1,8 +1,5 @@
 when: << pipeline.parameters.run-discovery-workflow >>
 jobs:
-  - build-gcp-image:
-      context: GCP
-
   - push-docker-image:
       name: push-discovery-provider
       context: [GCP, dockerhub]

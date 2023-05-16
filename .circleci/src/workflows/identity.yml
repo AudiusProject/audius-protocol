@@ -1,8 +1,5 @@
 when: << pipeline.parameters.run-identity-workflow >>
 jobs:
-  - build-gcp-image:
-      context: GCP
-
   - push-docker-image:
       name: push-identity-service
       context: [GCP, dockerhub]

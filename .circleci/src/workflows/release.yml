@@ -1,10 +1,5 @@
 when: << pipeline.parameters.run-release-workflow >>
 jobs:
-  - build-gcp-image:
-      context: GCP
-
-  # Release
-
   - release-github-draft-trigger:
       filters:
         branches:

@@ -1,8 +1,5 @@
 when: << pipeline.parameters.run-eth-contracts-workflow >>
 jobs:
-  - build-gcp-image:
-      context: GCP
-
   - test:
       name: test-eth-contracts
       context: GCP

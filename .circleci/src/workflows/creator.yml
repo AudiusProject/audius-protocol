@@ -1,8 +1,5 @@
 when: << pipeline.parameters.run-creator-workflow >>
 jobs:
-  - build-gcp-image:
-      context: GCP
-
   - push-docker-image:
       name: push-creator-node
       context: [GCP, dockerhub]

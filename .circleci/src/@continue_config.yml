@@ -7,6 +7,9 @@ orbs:
 # the default pipeline parameters, which will be updated according to
 # the results of the path-filtering orb in config.yml
 parameters:
+  run-base-workflow:
+    type: boolean
+    default: true
   run-identity-workflow:
     type: boolean
     default: false
