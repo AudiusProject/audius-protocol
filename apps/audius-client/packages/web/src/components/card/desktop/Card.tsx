@@ -33,6 +33,8 @@ import { isDescendantElementOf } from 'utils/domUtils'
 
 import styles from './Card.module.css'
 
+const ARTWORK_LOAD_TIMEOUT_MS = 500
+
 const cardSizeStyles = {
   small: {
     cardContainer: styles.smallContainer,
@@ -54,7 +56,7 @@ const cardSizeStyles = {
   }
 }
 
-type CardProps = {
+export type CardProps = {
   className?: string
   id: ID
   userId?: ID
@@ -92,12 +94,15 @@ const UserImage = (props: {
   isLoading?: boolean
   callback?: () => void
 }) => {
+  const { callback } = props
   const image = useUserProfilePicture(
     props.id,
     props.imageSize,
     SquareSizes.SIZE_480_BY_480
   )
-  if (image && props.callback) props.callback()
+  useEffect(() => {
+    if (image && callback) callback()
+  }, [image, callback])
 
   return (
     <DynamicImage
@@ -113,6 +118,7 @@ const CollectionImage = (props: {
   isLoading?: boolean
   callback?: () => void
 }) => {
+  const { callback } = props
   const image = useCollectionCoverArt(
     props.id,
     props.imageSize,
@@ -120,7 +126,9 @@ const CollectionImage = (props: {
     placeholderArt
   )
 
-  if (image && props.callback) props.callback()
+  useEffect(() => {
+    if (image && callback) callback()
+  }, [image, callback])
 
   return (
     <DynamicImage
@@ -174,9 +182,20 @@ const Card = ({
 
   useEffect(() => {
     if (artworkLoaded && setDidLoad) {
-      setDidLoad(index!)
+      setTimeout(() => setDidLoad(index!))
     }
-  }, [artworkLoaded, setDidLoad, index, isLoading])
+  }, [artworkLoaded, setDidLoad, index])
+
+  useEffect(() => {
+    // Force a transition if we take too long to signal
+    if (!artworkLoaded) {
+      const timerId = setTimeout(
+        () => setArtworkLoaded(true),
+        ARTWORK_LOAD_TIMEOUT_MS
+      )
+      return () => clearTimeout(timerId)
+    }
+  }, [artworkLoaded, setArtworkLoaded])
 
   const artworkCallback = useCallback(() => {
     setArtworkLoaded(true)
@@ -246,7 +265,7 @@ const Card = ({
         ) : (
           <CollectionImage
             isLoading={isLoading}
-            callback={() => setArtworkLoaded(true)}
+            callback={artworkCallback}
             id={id}
             imageSize={imageSize as CoverArtSizes}
           />

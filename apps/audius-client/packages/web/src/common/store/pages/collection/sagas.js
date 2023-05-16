@@ -36,13 +36,7 @@ function* watchFetchCollection() {
         /* requiresAllTracks */ true
       )
     } else {
-      retrievedCollections = yield call(
-        retrieveCollections,
-        null,
-        [collectionId],
-        /* fetchTracks */ false,
-        /* requiresAllTracks */ true
-      )
+      retrievedCollections = yield call(retrieveCollections, [collectionId])
     }
 
     const { collections, uids: collectionUids } = retrievedCollections

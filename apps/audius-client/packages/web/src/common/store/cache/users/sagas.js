@@ -118,7 +118,9 @@ export function* fetchUserCollections(userId) {
       ])
     )
   }
-  const { collections } = yield call(retrieveCollections, userId, playlistIds)
+  const { collections } = yield call(retrieveCollections, playlistIds, {
+    userId
+  })
   const cachedCollectionIds = Object.values(collections).map(
     (c) => c.playlist_id
   )

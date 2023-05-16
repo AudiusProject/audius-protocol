@@ -28,6 +28,11 @@ const { getCollections } = cacheCollectionsSelectors
 const { setPermalink } = cacheCollectionsActions
 const getUserId = accountSelectors.getUserId
 
+// Attempting to fetch more than this amount at once could result in a 400
+// due to the URL being too long.
+const COLLECTIONS_BATCH_LIMIT = 50
+const TRACKS_BATCH_LIMIT = 200
+
 function* markCollectionDeleted(
   collectionMetadatas: CollectionMetadata[]
 ): Generator<any, CollectionMetadata[], any> {
@@ -55,7 +60,7 @@ export function* retrieveTracksForCollections(
     ...new Set(allTrackIds.filter((id) => !excludedTrackIdSet.has(id)))
   ]
   const chunkedTracks = yield* all(
-    chunk(filteredTrackIds, 200).map((chunkedTrackIds) =>
+    chunk(filteredTrackIds, TRACKS_BATCH_LIMIT).map((chunkedTrackIds) =>
       call(retrieveTracks, {
         trackIds: chunkedTrackIds
       })
@@ -182,10 +187,7 @@ export function* retrieveCollectionByPermalink(
       })
 
       // Process any local deletions on the client
-      const metadatasWithDeleted = yield* call(
-        markCollectionDeleted,
-        metadatas!
-      )
+      const metadatasWithDeleted = yield* call(markCollectionDeleted, metadatas)
 
       return metadatasWithDeleted
     },
@@ -221,21 +223,29 @@ export function* retrieveCollectionByPermalink(
   return { collections: entries, uids }
 }
 
-/**
- * Retrieves collections from the cache or from source
- */
-export function* retrieveCollections(
+export type RetrieveCollectionsConfig = {
+  // whether or not to fetch the tracks inside eachn collection
+  fetchTracks?: boolean
   // optional owner of collections to fetch (TODO: to be removed)
-  userId: ID | null,
-  // ids to retrieve
-  collectionIds: ID[],
-  // whether or not to fetch the tracks inside the playlist
-  fetchTracks = false,
+  userId?: ID | null
   /**  whether or not fetching this collection requires it to have all its tracks.
    * In the case where a collection is already cached with partial tracks, use this flag to refetch from source.
    */
-  requiresAllTracks = false
+  requiresAllTracks?: boolean
+}
+/**
+ * Retrieves collections from the cache or from source. If requesting more than
+ * `COLLECTIONS_BATCH_LIMIT`, will break API requests up into chunks.
+ */
+export function* retrieveCollections(
+  collectionIds: ID[],
+  config?: RetrieveCollectionsConfig
 ) {
+  const {
+    userId = null,
+    fetchTracks = false,
+    requiresAllTracks = false
+  } = config ?? {}
   // @ts-ignore retrieve should be refactored to ts first
   const { entries, uids } = yield* call(retrieve, {
     ids: collectionIds,
@@ -259,20 +269,27 @@ export function* retrieveCollections(
     getEntriesTimestamp: selectEntriesTimestamp,
     retrieveFromSource: function* (ids: ID[]) {
       const audiusBackendInstance = yield* getContext('audiusBackendInstance')
-      let metadatas
+      let metadatas: CollectionMetadata[]
 
       if (ids.length === 1) {
         metadatas = yield* call(retrieveCollection, { playlistId: ids[0] })
       } else {
         // TODO: Remove this branch when we have batched endpoints in new V1 api.
-        metadatas = yield* call(audiusBackendInstance.getPlaylists, userId, ids)
+        // Request ids in chunks if we're asked for too many
+        const chunks = yield* all(
+          chunk(ids, COLLECTIONS_BATCH_LIMIT).map((chunkedCollectionIds) =>
+            call(
+              audiusBackendInstance.getPlaylists,
+              userId,
+              chunkedCollectionIds
+            )
+          )
+        )
+        metadatas = chunks.flat()
       }
 
       // Process any local deletions on the client
-      const metadatasWithDeleted = yield* call(
-        markCollectionDeleted,
-        metadatas!
-      )
+      const metadatasWithDeleted = yield* call(markCollectionDeleted, metadatas)
 
       return metadatasWithDeleted
     },

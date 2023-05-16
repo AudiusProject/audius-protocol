@@ -68,6 +68,7 @@ import { recoveryEmailReducer, RecoveryEmailState } from './recovery-email'
 import remixSettingsReducer, {
   RemixSettingsState
 } from './remix-settings/slice'
+import savedCollectionsReducer from './saved-collections/slice'
 import solanaReducer from './solana/slice'
 import stemsUpload from './stems-upload/slice'
 import tippingReducer from './tipping/slice'
@@ -148,6 +149,8 @@ export const reducers = () => ({
   // TODO: Fix type error
   // @ts-ignore
   users: asCache(usersReducer, Kind.USERS),
+
+  savedCollections: savedCollectionsReducer,
 
   // Playback
   queue,
@@ -268,6 +271,7 @@ export type CommonState = {
 
   // TODO: missing types for internally managed api slice state
   api: any
+  savedCollections: ReturnType<typeof savedCollectionsReducer>
 
   // Playback
   queue: ReturnType<typeof queue>

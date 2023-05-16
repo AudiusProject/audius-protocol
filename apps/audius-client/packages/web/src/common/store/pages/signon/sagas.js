@@ -1,21 +1,21 @@
 import {
-  FavoriteSource,
-  Name,
-  FeatureFlags,
   ELECTRONIC_SUBGENRES,
+  FavoriteSource,
+  FeatureFlags,
   Genre,
-  accountSelectors,
+  MAX_HANDLE_LENGTH,
+  Name,
+  PushNotificationSetting,
   accountActions,
+  accountSelectors,
   cacheUsersSelectors,
   collectionsSocialActions,
-  solanaSelectors,
-  usersSocialActions as socialActions,
-  getContext,
-  settingsPageActions,
-  MAX_HANDLE_LENGTH,
-  PushNotificationSetting,
   getCityAndRegion,
+  getContext,
   processAndCacheUsers,
+  settingsPageActions,
+  usersSocialActions as socialActions,
+  solanaSelectors,
   toastActions
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
@@ -591,7 +591,7 @@ function* signIn(action) {
 function* followCollections(collectionIds, favoriteSource) {
   yield call(waitForWrite)
   try {
-    const result = yield retrieveCollections(null, collectionIds)
+    const result = yield* call(retrieveCollections, collectionIds)
 
     for (let i = 0; i < collectionIds.length; i++) {
       const id = collectionIds[i]
