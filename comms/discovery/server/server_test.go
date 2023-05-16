@@ -548,7 +548,7 @@ func TestGetPermissions(t *testing.T) {
 	// - user 4: followees
 	// - user 5: explicit all
 	// - user 6: none
-	_, err = tx.Exec("insert into chat_permissions (user_id, permits) values ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10)", user2Id, schema.Followees, user3Id, schema.TippersOrFollowees, user4Id, schema.Followees, user5Id, schema.All, user6Id, schema.None)
+	_, err = tx.Exec("insert into chat_permissions (user_id, permits) values ($1, $2), ($3, $4), ($5, $6), ($7, $8), ($9, $10)", user2Id, schema.Followees, user3Id, schema.Tippers, user4Id, schema.Followees, user5Id, schema.All, user6Id, schema.None)
 
 	err = tx.Commit()
 	assert.NoError(t, err)
@@ -669,7 +669,7 @@ func TestGetPermissions(t *testing.T) {
 				CurrentUserHasPermission: true,
 			},
 			encodedUser3: {
-				Permits:                  schema.TippersOrFollowees,
+				Permits:                  schema.Tippers,
 				CurrentUserHasPermission: false,
 			},
 		})
@@ -707,7 +707,7 @@ func TestGetPermissions(t *testing.T) {
 		// Assertions
 		expectedData := ToChatPermissionsResponse(map[string]*ValidatedPermission{
 			encodedUser3: {
-				Permits:                  schema.TippersOrFollowees,
+				Permits:                  schema.Tippers,
 				CurrentUserHasPermission: true,
 			},
 			encodedUser4: {

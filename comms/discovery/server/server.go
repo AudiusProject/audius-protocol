@@ -601,66 +601,45 @@ func getValidatedPermission(userId int32, validatedPermissions map[string]*Valid
 	return validatedPermission, nil
 }
 
-func validateFolloweePermissions(c echo.Context, userIds []int32, currentUserId int32, validatedPermissions map[string]*ValidatedPermission) ([]int32, error) {
-	usersWithPermission := []int32{}
+func validateFolloweePermissions(c echo.Context, userIds []int32, currentUserId int32, validatedPermissions map[string]*ValidatedPermission) error {
 	// Query follows table to validate <sender, receiver> pair against users with followees only permissions
 	follows, err := queries.BulkGetFollowers(db.Conn, c.Request().Context(), queries.BulkGetFollowersParams{
 		FollowerUserIDs: userIds,
 		FolloweeUserID:  currentUserId,
 	})
 	if err != nil && err != sql.ErrNoRows {
-		return usersWithPermission, err
+		return err
 	}
 	if err != sql.ErrNoRows {
 		// Update response map if current follow record exists
 		for _, follow := range follows {
 			validatedPermission, err := getValidatedPermission(follow.FollowerUserID, validatedPermissions)
 			if err != nil {
-				return usersWithPermission, err
+				return err
 			}
 			(*validatedPermission).CurrentUserHasPermission = true
-			usersWithPermission = append(usersWithPermission, follow.FollowerUserID)
 		}
 	}
-	return usersWithPermission, nil
+	return nil
 }
 
 func validateTipperPermissions(c echo.Context, userIds []int32, currentUserId int32, validatedPermissions map[string]*ValidatedPermission) error {
-	// Query follows and tips tables to validate <sender, receiver> pair against users with tippers or followees only permissions
-	usersWithPermission, err := validateFolloweePermissions(c, userIds, currentUserId, validatedPermissions)
+	// Query tips table to validate <sender, receiver> pair against users with tippers only permissions
+	tips, err := queries.BulkGetTipReceivers(db.Conn, c.Request().Context(), queries.BulkGetTipReceiversParams{
+		SenderUserID:    currentUserId,
+		ReceiverUserIDs: userIds,
+	})
 	if err != nil && err != sql.ErrNoRows {
 		return err
 	}
-
-	// Query tips table for remaining userIds without successfully validated permission
-	usersWithoutPermission := []int32{}
-	usersWithPermissionSet := make(map[int32]bool)
-	for _, id := range usersWithPermission {
-		usersWithPermissionSet[id] = true
-	}
-
-	for _, id := range userIds {
-		if _, ok := usersWithPermissionSet[id]; !ok {
-			usersWithoutPermission = append(usersWithoutPermission, id)
-		}
-	}
-	if len(usersWithoutPermission) > 0 {
-		tips, err := queries.BulkGetTipReceivers(db.Conn, c.Request().Context(), queries.BulkGetTipReceiversParams{
-			SenderUserID:    currentUserId,
-			ReceiverUserIDs: usersWithoutPermission,
-		})
-		if err != nil && err != sql.ErrNoRows {
-			return err
-		}
-		if err != sql.ErrNoRows {
-			// Update response map if aggregate tip record exists
-			for _, tip := range tips {
-				validatedPermission, err := getValidatedPermission(tip.ReceiverUserID, validatedPermissions)
-				if err != nil {
-					return err
-				}
-				(*validatedPermission).CurrentUserHasPermission = true
+	if err != sql.ErrNoRows {
+		// Update response map if aggregate tip record exists
+		for _, tip := range tips {
+			validatedPermission, err := getValidatedPermission(tip.ReceiverUserID, validatedPermissions)
+			if err != nil {
+				return err
 			}
+			(*validatedPermission).CurrentUserHasPermission = true
 		}
 	}
 
@@ -678,7 +657,7 @@ func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRo
 		if userPermission.UserID != currentUserId {
 			if userPermission.Permits == schema.Followees {
 				followeePermissions = append(followeePermissions, userPermission.UserID)
-			} else if userPermission.Permits == schema.TippersOrFollowees {
+			} else if userPermission.Permits == schema.Tippers {
 				tipperPermissions = append(tipperPermissions, userPermission.UserID)
 			}
 		}
@@ -698,7 +677,7 @@ func validatePermissions(c echo.Context, permissions []queries.ChatPermissionsRo
 	}
 
 	if len(followeePermissions) > 0 {
-		_, err := validateFolloweePermissions(c, followeePermissions, currentUserId, validatedPermissions)
+		err := validateFolloweePermissions(c, followeePermissions, currentUserId, validatedPermissions)
 		if err != nil {
 			return err
 		}

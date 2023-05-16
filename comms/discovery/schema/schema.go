@@ -289,7 +289,7 @@ const (
 	All ChatPermission = "all"
 	Followees ChatPermission = "followees"
 	None ChatPermission = "none"
-	TippersOrFollowees ChatPermission = "tippersOrFollowees"
+	Tippers ChatPermission = "tippers"
 )
 
 type RPCMethod string

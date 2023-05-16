@@ -156,9 +156,9 @@ export enum ChatPermission {
    */
   ALL = 'all',
   /**
-   * Messages are only allowed for users that have tipped me OR users I follow
+   * Messages are only allowed for users that have tipped me
    */
-  TIPPERS_OR_FOLLOWEES = 'tippersOrFollowees',
+  TIPPERS = 'tippers',
   /**
    * Messages are only allowed for users I follow
    */

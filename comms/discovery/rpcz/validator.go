@@ -460,20 +460,14 @@ func validatePermissions(q db.Queryable, sender int32, receiver int32) error {
 		if !follows {
 			return permissionFailure
 		}
-	} else if permits == schema.TippersOrFollowees {
-		// Only allow messages from users that have tipped the receiver OR users that the receiver follows
-		follows, err := validateFollow(q, sender, receiver)
+	} else if permits == schema.Tippers {
+		// Only allow messages from users that have tipped the receiver
+		tipper, err := validateTipper(q, sender, receiver)
 		if err != nil {
 			return err
 		}
-		if !follows {
-			tipper, err := validateTipper(q, sender, receiver)
-			if err != nil {
-				return err
-			}
-			if !tipper {
-				return permissionFailure
-			}
+		if !tipper {
+			return permissionFailure
 		}
 	}
 
