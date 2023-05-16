@@ -21,8 +21,9 @@ import {
 } from '@audius/stems'
 import cn from 'classnames'
 import { push as pushRoute } from 'connected-react-router'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
+import { useSelector } from 'common/hooks/useSelector'
 import ArtistChip from 'components/artist/ArtistChip'
 import { profilePage } from 'utils/route'
 import zIndex from 'utils/zIndex'
@@ -48,7 +49,7 @@ const { getOptimisticSupporters, getOptimisticSupporting } = tippingSelectors
 
 const { fetchSupportersForUser } = tippingActions
 const { createChat, blockUser, unblockUser, fetchPermissions } = chatActions
-const { getBlockees, getBlockers, getUserChatPermissions } = chatSelectors
+const { getBlockees, getCanChat } = chatSelectors
 
 const renderTrigger = (
   anchorRef: React.MutableRefObject<any>,
@@ -69,13 +70,9 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   const supportingMap = useSelector(getOptimisticSupporting)
   const supportersMap = useSelector(getOptimisticSupporters)
   const blockeeList = useSelector(getBlockees)
-  const blockerList = useSelector(getBlockers)
   const isBlockee = blockeeList.includes(user.user_id)
-  const isBlocker = blockerList.includes(user.user_id)
-  const permissions = useSelector(getUserChatPermissions)
-  const isPermitted =
-    !(isBlocker || isBlockee) &&
-    (permissions[user.user_id]?.current_user_has_permission ?? true)
+
+  const { canChat } = useSelector((state) => getCanChat(state, user.user_id))
 
   const handleComposeClicked = useCallback(() => {
     dispatch(createChat({ userIds: [user.user_id] }))
@@ -95,7 +92,7 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   }, [dispatch, user])
 
   const items = [
-    isPermitted
+    canChat
       ? {
           icon: <IconMessage />,
           text: messages.message,
@@ -133,7 +130,7 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
   return (
     <div
       className={cn(styles.root, {
-        [styles.disabled]: !isPermitted
+        [styles.disabled]: !canChat
       })}
     >
       <ArtistChip
@@ -142,7 +139,7 @@ export const MessageUserSearchResult = (props: UserResultComposeProps) => {
         showPopover={false}
         showSupportFor={currentUserId ?? undefined}
         customChips={
-          isPermitted ? null : (
+          canChat ? null : (
             <div className={styles.notPermitted}>{messages.notPermitted}</div>
           )
         }

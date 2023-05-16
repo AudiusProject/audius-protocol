@@ -2,8 +2,9 @@ import { useCallback } from 'react'
 
 import { chatActions, chatSelectors } from '@audius/common'
 import type { User } from '@audius/common'
+import { useSelector } from 'audius-client/src/common/hooks/useSelector'
 import { Text, View, TouchableOpacity } from 'react-native'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 import IconUser from 'app/assets/images/iconUser.svg'
 import { ProfilePicture } from 'app/components/user'
@@ -12,7 +13,7 @@ import { makeStyles } from 'app/styles'
 import { useThemeColors } from 'app/utils/theme'
 
 const { createChat } = chatActions
-const { getCanMessageUser } = chatSelectors
+const { getCanChat } = chatSelectors
 
 const messages = {
   followsYou: 'Follows You',
@@ -106,9 +107,7 @@ export const ChatUserListItem = ({ user }: ChatUserListItemProps) => {
   const styles = useStyles()
   const palette = useThemeColors()
   const dispatch = useDispatch()
-  const canMessageUser = useSelector((state) =>
-    getCanMessageUser(state, user.user_id)
-  )
+  const { canChat } = useSelector((state) => getCanChat(state, user.user_id))
 
   const handlePress = useCallback(
     (user) => {
@@ -118,21 +117,16 @@ export const ChatUserListItem = ({ user }: ChatUserListItemProps) => {
   )
 
   return (
-    <TouchableOpacity
-      onPress={() => handlePress(user)}
-      disabled={!canMessageUser}
-    >
+    <TouchableOpacity onPress={() => handlePress(user)} disabled={!canChat}>
       <View style={styles.border}>
-        <View
-          style={[styles.userContainer, !canMessageUser ? styles.dim : null]}
-        >
+        <View style={[styles.userContainer, !canChat ? styles.dim : null]}>
           <ProfilePicture profile={user} style={styles.profilePicture} />
           <View style={styles.userNameContainer}>
             <UserBadges user={user} nameStyle={styles.userName} />
             <Text style={styles.handle}>@{user.handle}</Text>
             <View style={styles.followContainer}>
               <View style={styles.followersContainer}>
-                {canMessageUser ? (
+                {canChat ? (
                   <>
                     <IconUser
                       fill={palette.neutralLight4}
@@ -148,7 +142,7 @@ export const ChatUserListItem = ({ user }: ChatUserListItemProps) => {
                   <Text style={styles.userName}>{messages.cannotMessage}</Text>
                 )}
               </View>
-              {user.does_follow_current_user && canMessageUser ? (
+              {user.does_follow_current_user && canChat ? (
                 <Text style={styles.followsYouTag}>{messages.followsYou}</Text>
               ) : null}
             </View>
