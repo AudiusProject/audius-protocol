@@ -198,14 +198,13 @@ export class ChatsApi
     const query: HTTPQuery = {
       timestamp: new Date().getTime()
     }
-    const response = await this.signAndSendRequest({
+    const res = await this.signAndSendRequest({
       method: 'GET',
       path: `/comms/chats/unread`,
       headers: {},
       query
     })
-    const json = await response.json()
-    return { data: json.data }
+    return (await res.json()) as TypedCommsResponse<number>
   }
 
   public async getPermissions(requestParameters?: ChatGetPermissionRequest) {
