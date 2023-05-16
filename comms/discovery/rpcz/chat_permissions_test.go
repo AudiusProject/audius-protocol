@@ -71,7 +71,7 @@ func TestChatPermissions(t *testing.T) {
 	// user 3 cannot message user 1 since 1 does not follow 3
 	assertPermissionValidation(tx, user3Id, user1Id, chat2Id, true)
 
-	// user 1 sets chat permissions to tippers or followees
+	// user 1 sets chat permissions to tippers only
 	err = chatSetPermissions(tx, int32(user1Id), schema.Tippers)
 	assert.NoError(t, err)
 	// user 2 cannot message user 1 since 2 has never tipped 1

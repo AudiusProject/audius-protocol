@@ -642,7 +642,6 @@ func validateTipperPermissions(c echo.Context, userIds []int32, currentUserId in
 			(*validatedPermission).CurrentUserHasPermission = true
 		}
 	}
-
 	return nil
 }
 
