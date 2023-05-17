@@ -86,7 +86,7 @@ def test_get_feed_es(app):
         capture_output=True,
         text=True,
         cwd="es-indexer",
-        timeout=30,
+        timeout=10,
     )
     esclient.indices.refresh(index="*")
     search_res = esclient.search(index="*", query={"match_all": {}})["hits"]["hits"]

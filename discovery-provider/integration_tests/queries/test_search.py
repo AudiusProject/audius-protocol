@@ -245,7 +245,7 @@ def setup_search(app_module):
         capture_output=True,
         text=True,
         cwd="es-indexer",
-        timeout=30,
+        timeout=10,
     )
 
 
