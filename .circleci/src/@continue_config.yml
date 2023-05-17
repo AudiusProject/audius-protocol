@@ -7,6 +7,10 @@ orbs:
 # the default pipeline parameters, which will be updated according to
 # the results of the path-filtering orb in config.yml
 parameters:
+  workflow:
+    type: string
+    default: "main"
+
   run-gcp-workflow:
     type: boolean
     default: true
