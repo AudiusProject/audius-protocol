@@ -80,7 +80,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const getPeers = (str: string | undefined) => {
     if (str === undefined) return "chain health undefined"
-    const match = str.match(/Peers: (.)/)
+    const match = str.match(/Peers: (\d+)\./)
     return (match && match[1]) ? match[1] : "no peers found"
   }
   const getProducing = (str: string | undefined) => {
