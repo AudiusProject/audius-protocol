@@ -76,3 +76,7 @@ export type CreateApiConfig = {
   reducerPath: string
   endpoints: { [name: string]: EndpointConfig }
 }
+
+export type HookOptions = {
+  disabled?: boolean
+}
