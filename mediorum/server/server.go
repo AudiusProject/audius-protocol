@@ -198,10 +198,11 @@ func New(config MediorumConfig) (*MediorumServer, error) {
 	routes.GET("/cid/:dirCid/:fileName", ss.serveLegacyDirCid)
 	routes.GET("/metadata", ss.serveCidMetadata)
 
-	routes.GET("/beam/files", ss.servePgBeam)
-
+	// -------------------
 	// internal
 	internalApi := routes.Group("/internal")
+
+	internalApi.GET("/beam/files", ss.servePgBeam)
 
 	// internal: crud
 	internalApi.GET("/crud/sweep", ss.serveCrudSweep)
@@ -247,12 +248,7 @@ func (ss *MediorumServer) MustStart() {
 
 	ss.crud.StartClients()
 
-	// disable pg_beam in prod for now.
-	// plan is to make it more evented and enable everywhere
-	// before making mediorum "first"
-	if ss.Config.Env != "prod" {
-		go ss.startBeamClient()
-	}
+	go ss.startBeamClient()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
