@@ -10,7 +10,32 @@ jobs:
       context: GCP
       instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
 
+  # Prepatch from main
   - release-audius-sdk:
+      requires:
+        - release-audius-sdk-trigger
+      filters:
+        branches:
+          only: /^main$/
+      sdk-release-commit: 0f0bd34445752f44bc2100e9b7f70961b584ae8b
+      sdk-release-version: 2.0.3-beta.20
+      sdk-release-preid: ""
+      context:
+        - Audius Client
+        - slack-secrets
+
+  # Patch via trigger
+  - release-audius-sdk--trigger:
+      requires:
+        - test-audius-libs
+        - test-audius-cmd
+      filters:
+        branches:
+          only: /(^main)|(^release.*)$/
+      type: approval
+  - release-audius-sdk:
+      requires:
+        - release-audius-sdk-trigger
       sdk-release-commit: 0f0bd34445752f44bc2100e9b7f70961b584ae8b
       sdk-release-version: 2.0.3-beta.20
       sdk-release-preid: ""

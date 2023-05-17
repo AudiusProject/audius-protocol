@@ -3,7 +3,7 @@ jobs:
   - release-github-draft-trigger:
       filters:
         branches:
-          only: /^release-v.*$/
+          only: /^release.*$/
       type: approval
   - release-github-draft:
       context: github
@@ -22,7 +22,7 @@ jobs:
   - release-governance-trigger:
       filters:
         branches:
-          only: /^release-v.*$/
+          only: /^release.*$/
       type: approval
   - release-governance:
       context: governance
@@ -36,7 +36,7 @@ jobs:
         - push-identity-service
       filters:
         branches:
-          only: /^release-v.*$/
+          only: /^release.*$/
       type: approval
   - release-audius-docker-compose:
       context: github
@@ -46,7 +46,7 @@ jobs:
   - release-discord-trigger:
       filters:
         branches:
-          only: /^release-v.*$/
+          only: /^release.*$/
       type: approval
   - release-discord:
       context: discord

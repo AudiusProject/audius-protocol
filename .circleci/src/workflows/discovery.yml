@@ -36,7 +36,7 @@ jobs:
         - push-discovery-provider
       filters:
         branches:
-          only: /^release-v.*$/
+          only: /^release.*$/
       type: approval
   - deploy:
       name: deploy-prod-discovery-provider
