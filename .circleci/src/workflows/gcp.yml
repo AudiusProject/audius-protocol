@@ -1,10 +1,4 @@
 when: << pipeline.parameters.run-gcp-workflow >>
 jobs:
-  - build-image:
-      context: GCP
-
-  - cleanup:
-      filters:
-        branches:
-          only: /(^main)|(^release.*)$/
+  - build-gcp-image:
       context: GCP
