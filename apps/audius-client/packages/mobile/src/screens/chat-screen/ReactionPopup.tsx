@@ -16,7 +16,10 @@ import { spacing } from 'app/styles/spacing'
 import { ReactionList } from '../notifications-screen/Reaction'
 
 import { ChatMessageListItem } from './ChatMessageListItem'
-import { REACTION_CONTAINER_HEIGHT } from './constants'
+import {
+  REACTION_CONTAINER_HEIGHT,
+  REACTION_CONTAINER_TOP_OFFSET
+} from './constants'
 
 const { getUserId } = accountSelectors
 const { setMessageReaction } = chatActions
@@ -69,6 +72,7 @@ const useStyles = makeStyles(({ spacing, palette, typography }) => ({
 type ReactionPopupProps = {
   chatId: string
   messageTop: number
+  containerTop: number
   containerBottom: number
   isAuthor: boolean
   message: ChatMessageWithExtras
@@ -79,6 +83,7 @@ type ReactionPopupProps = {
 export const ReactionPopup = ({
   chatId,
   messageTop,
+  containerTop,
   containerBottom,
   isAuthor,
   message,
@@ -136,7 +141,8 @@ export const ReactionPopup = ({
         style={[
           styles.popupContainer,
           {
-            height: containerBottom
+            height: containerBottom - containerTop,
+            top: containerTop
           }
         ]}
       >
@@ -152,7 +158,7 @@ export const ReactionPopup = ({
             style={[
               styles.popupChatMessage,
               {
-                top: messageTop,
+                top: messageTop - containerTop,
                 alignSelf: isAuthor ? 'flex-end' : 'flex-start',
                 right: isAuthor ? spacing(6) : undefined,
                 left: !isAuthor ? spacing(6) : undefined
@@ -164,7 +170,12 @@ export const ReactionPopup = ({
           style={[
             styles.reactionsContainer,
             {
-              top: messageTop - REACTION_CONTAINER_HEIGHT,
+              top: Math.max(
+                messageTop - containerTop - REACTION_CONTAINER_HEIGHT,
+                containerTop -
+                  REACTION_CONTAINER_HEIGHT -
+                  REACTION_CONTAINER_TOP_OFFSET
+              ),
               opacity: otherOpacityAnim.current,
               transform: [
                 {

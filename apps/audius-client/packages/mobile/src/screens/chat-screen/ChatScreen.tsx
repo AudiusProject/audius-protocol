@@ -429,6 +429,7 @@ export const ChatScreen = () => {
             <ReactionPopup
               chatId={chatId}
               messageTop={messageTop.current}
+              containerTop={chatContainerTop.current}
               containerBottom={chatContainerBottom.current}
               isAuthor={decodeHashId(popupMessage?.sender_user_id) === userId}
               message={popupMessage}
