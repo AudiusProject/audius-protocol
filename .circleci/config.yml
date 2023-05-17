@@ -96,10 +96,10 @@ workflows:
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
             discovery-provider/.* run-discovery-workflow true
-            creator-node/.* run-creator-workflow true
-            identity-service/.* run-identity-workflow true
             comms/.* run-discovery-workflow true
+            creator-node/.* run-creator-workflow true
             mediorum/.* run-creator-workflow true
+            identity-service/.* run-identity-workflow true
             libs/.* run-creator-workflow true
             libs/.* run-identity-workflow true
             libs/.* run-sdk-workflow true
@@ -112,7 +112,7 @@ workflows:
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
             .* run-release-workflow false
-            .* run-base-workflow true
+            .* run-gcp-workflow true
             .* run-integration-workflow true
           name: trigger-relevant-workflows
           filters:
@@ -129,7 +129,7 @@ workflows:
             branches:
               only: << pipeline.parameters.run-all-workflows-branch-regex >>
           parameters: '{
-            "run-base-workflow": true,
+            "run-gcp-workflow": true,
             "run-integration-workflow": true,
             "run-discovery-workflow": true,
             "run-creator-workflow": true,
@@ -137,8 +137,7 @@ workflows:
             "run-eth-contracts-workflow": true,
             "run-contracts-workflow": true,
             "run-release-workflow": true,
-            "run-sdk-workflow": true,
-            "run-gcp-cleanup-workflow": true
+            "run-sdk-workflow": true
             }'
           pre-steps:
             - attach_workspace:

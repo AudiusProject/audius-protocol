@@ -1,4 +1,0 @@
-when: << pipeline.parameters.run-gcp-cleanup-workflow >>
-jobs:
-  - gcp-cleanup:
-      context: GCP
