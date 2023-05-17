@@ -111,9 +111,9 @@ workflows:
             .circleci/.* run-eth-contracts-workflow true
             .circleci/.* run-contracts-workflow true
             .circleci/.* run-sdk-workflow true
-            * run-release-workflow false
-            * run-base-workflow true
-            * run-integration-workflow true
+            .* run-release-workflow false
+            .* run-base-workflow true
+            .* run-integration-workflow true
           name: trigger-relevant-workflows
           filters:
             branches:
