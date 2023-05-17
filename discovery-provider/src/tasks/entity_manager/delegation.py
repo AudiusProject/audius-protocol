@@ -94,6 +94,16 @@ def validate_delegation_tx(params: ManageEntityParameters, metadata):
                 f"Invalid Create Delegation transaction, delegate address {metadata['delegate_address']} does not exist"
             )
         if (
+            metadata["delegate_address"].lower()
+            in params.existing_records[EntityType.APP_DELEGATE]
+            and params.existing_records[EntityType.APP_DELEGATE][
+                metadata["delegate_address"].lower()
+            ].is_delete
+        ):
+            raise Exception(
+                f"Invalid Delegation transaction, delegate address {metadata['delegate_address']} is invalid"
+            )
+        if (
             metadata["shared_address"].lower()
             in params.existing_records[EntityType.DELEGATION]
             and not params.existing_records[EntityType.DELEGATION][
