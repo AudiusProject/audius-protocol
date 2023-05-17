@@ -10,6 +10,10 @@ orbs:
   path-filtering: circleci/path-filtering@0.1.1
 
 parameters:
+  workflow:
+    type: string
+    default: "main"
+
   # Run all workflows for branches that match this regex
   run-all-workflows-branch-regex:
     type: string

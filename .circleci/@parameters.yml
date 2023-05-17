@@ -1,4 +1,0 @@
-parameters:
-  workflow:
-    type: string
-    default: "main"
