@@ -1,8 +1,7 @@
-import { DiscoveryNodeSelector, sdk, stagingConfig } from "@audius/sdk";
+import { DiscoveryNodeSelector, sdk } from "@audius/sdk";
 import { UploadTrackRequest } from "@audius/sdk";
 import express from "express";
 import multer from "multer";
-import { signTypedData } from "eth-sig-util";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -18,21 +17,11 @@ const audiusSdk = sdk({
   appName: "sdk-consumer",
   services: {
     discoveryNodeSelector: new DiscoveryNodeSelector({
-      initialSelectedNode: "http://audius-protocol-discovery-provider-1/",
+      initialSelectedNode: "http://audius-protocol-discovery-provider-1",
     }),
-    // TODO: update walletApi to support apiKey and apiSecret
-    // TODO: Fix types here, or maybe will be unecessary once we support ^
-    walletApi: {
-      sign: async (data: string) => {
-        return signTypedData(new Buffer([]), {
-          data,
-        }) as any;
-      },
-      getSharedSecret: async (publicKey: string | Uint8Array) =>
-        new Uint8Array(),
-      getAddress: async () => "",
-    },
   },
+  apiKey: "",
+  apiSecret: "",
 });
 
 app.listen(port, () => {

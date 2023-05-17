@@ -10,7 +10,7 @@ export class WalletApi implements WalletApiService {
     throw new Error('WalletApi not initialized')
   }
 
-  signTransaction: (data: TransactionData) => string = () => {
+  signTransaction: (data: TransactionData) => Promise<string> = () => {
     throw new Error('WalletApi not initialized')
   }
 

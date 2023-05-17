@@ -15,7 +15,7 @@ import { objectMissingValues } from '../../utils/object'
 import { retry3 } from '../../utils/retry'
 import type { EntityManagerService, WalletApiService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
-import { decodeHashId } from '../../utils/hashId'
+import { decodeHashId, encodeHashId } from '../../utils/hashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
 
 // Subclass type masking adapted from Damir Arh's method:
@@ -68,7 +68,8 @@ export class TracksApi extends TracksApiWithoutStream {
    * Upload a track
    */
   async uploadTrack(requestParameters: UploadTrackRequest) {
-    const { trackFile, coverArtFile, metadata, onProgress } = requestParameters
+    const { trackFile, coverArtFile, metadata, onProgress, artistPublicKey } =
+      requestParameters
 
     // Validate inputs
     if (!isFileValid(trackFile)) {
@@ -142,10 +143,14 @@ export class TracksApi extends TracksApiWithoutStream {
     }
 
     // Write metadata to chain
+
+    const userPublicKey =
+      artistPublicKey ?? (await this.getArtistPublicKey(artistId))
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
     const trackId = await this.generateTrackId()
     const response = await this.entityManager.manageEntity({
       userId: artistId,
+      userPublicKey,
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.CREATE,
@@ -181,5 +186,19 @@ export class TracksApi extends TracksApiWithoutStream {
       throw new Error('Could not generate track id')
     }
     return id
+  }
+
+  private async getArtistPublicKey(artistId: number) {
+    const artistIdHashed = encodeHashId(artistId) ?? undefined
+
+    if (!artistIdHashed) {
+      throw new Error(`Invalid artistId: ${artistId}`)
+    }
+    const user = await this.usersApi.getUser({ id: artistIdHashed })
+    const userPublicKey = user.data?.ercWallet
+    if (!userPublicKey) {
+      throw new Error(`User public key not found`)
+    }
+    return userPublicKey
   }
 }

@@ -12,15 +12,16 @@ export class DelegatedWalletApi implements WalletApiService {
   }
 
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array> =
-    () => {
-      throw new Error('DelegatedWalletApi does not support getSharedSecret')
+    async (publicKey) => {
+      console.log('publicKey', publicKey)
+      return secp.getSharedSecret(this.apiSecret, publicKey, true)
     }
 
   sign: (data: string) => Promise<[Uint8Array, number]> = () => {
     throw new Error('DelegatedWalletApi does not support sign')
   }
 
-  signTransaction = (
+  signTransaction = async (
     data: MessageData<EIP712TypedData>['data'],
     userPublicKey?: string
   ) => {
@@ -28,13 +29,9 @@ export class DelegatedWalletApi implements WalletApiService {
       throw new Error('No userPublicKey provided for delegated write')
     }
 
-    const sharedSecret = secp.getSharedSecret(
-      this.apiSecret,
-      userPublicKey,
-      true
-    )
+    const sharedSecret = (await this.getSharedSecret(userPublicKey)) as Buffer
 
-    return signTypedData(sharedSecret as Buffer, {
+    return signTypedData(sharedSecret, {
       data
     })
   }

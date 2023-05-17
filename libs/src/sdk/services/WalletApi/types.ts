@@ -13,8 +13,12 @@ export type WalletApiService = {
   sign: (data: string) => Promise<[Uint8Array, number]>
   /**
    * Sign an ethereum transaction, used for EntityManager writes
+   * NOTE: audius-client can stub out until we use sdk for writes in the client
    */
-  signTransaction: (data: TransactionData, userPublicKey?: string) => string
+  signTransaction: (
+    data: TransactionData,
+    userPublicKey?: string
+  ) => Promise<string>
   /**
    * Get the sender address, used for EntityManager writes
    */

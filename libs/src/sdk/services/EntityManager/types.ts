@@ -36,6 +36,7 @@ export enum EntityType {
 export type EntityManagerService = {
   manageEntity: (options: {
     userId: number
+    userPublicKey: string
     entityType: EntityType
     entityId: number
     action: Action
