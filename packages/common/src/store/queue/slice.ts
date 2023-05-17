@@ -144,11 +144,9 @@ const slice = createSlice({
           state.index = 0
           return
         }
-        if (!state.queueAutoplay) {
-          // Reset to last track
-          state.overshot = true
-          return
-        }
+        // Reset to last track
+        state.overshot = true
+        return
       }
 
       state.index = state.index + 1

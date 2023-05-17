@@ -117,17 +117,12 @@ function* handleQueueAutoplay({
   const length = yield* select(getLength)
   const shuffle = yield* select(getShuffle)
   const repeatMode = yield* select(getRepeat)
-  const isCloseToEndOfQueue = index + 1 >= length
-  const isOnlySongInQueue = index === 0 && length === 1
+  const isCloseToEndOfQueue = index + 9 >= length
   const isNotRepeating =
     repeatMode === RepeatMode.OFF ||
     (repeatMode === RepeatMode.SINGLE && (skip || ignoreSkip))
 
-  if (
-    !shuffle &&
-    isNotRepeating &&
-    (isCloseToEndOfQueue || isOnlySongInQueue)
-  ) {
+  if (!shuffle && isNotRepeating && isCloseToEndOfQueue) {
     yield* waitForAccount()
     const userId = yield* select(getUserId)
     yield* put(
