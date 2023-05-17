@@ -37,7 +37,7 @@ const { fetchMoreMessages, markChatAsRead, setActiveChat } = chatActions
 const { getChatMessages, getChat } = chatSelectors
 
 const messages = {
-  newMessages: 'New Messages'
+  newMessages: (count: number) => `${count} New Message${count > 1 ? 's' : ''}`
 }
 
 type ChatMessageListProps = ComponentPropsWithoutRef<'div'> & {
@@ -146,6 +146,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
       }
     }, [dispatch, chatId, chat, chatMessages])
 
+    const unreadMessageCount = chatFrozenRef.current?.unread_message_count ?? 0
     return (
       <StickyScrollList
         ref={mergeRefs([forwardedRef, ref])}
@@ -169,12 +170,12 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                   message={message}
                   hasTail={hasTail(message, chatMessages[i - 1])}
                 />
-                {/* 
-                  The separator has to come after the message to appear above it, 
+                {/*
+                  The separator has to come after the message to appear above it,
                   since the message list order is reversed in CSS
                 */}
                 {isEarliestUnread({
-                  unreadCount: chatFrozenRef.current?.unread_message_count ?? 0,
+                  unreadCount: unreadMessageCount,
                   lastReadAt: chatFrozenRef.current?.last_read_at,
                   currentMessageIndex: i,
                   messages: chatMessages,
@@ -182,8 +183,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
                 }) ? (
                   <div ref={scrollIntoViewOnMount} className={styles.separator}>
                     <span className={styles.tag}>
-                      {chatFrozenRef.current?.unread_message_count}{' '}
-                      {messages.newMessages}
+                      {messages.newMessages(unreadMessageCount)}
                     </span>
                   </div>
                 ) : null}
