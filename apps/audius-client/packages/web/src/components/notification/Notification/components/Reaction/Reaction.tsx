@@ -47,10 +47,12 @@ export const Reaction = (props: ReactionProps) => {
 
   const handleClick: MouseEventHandler = useCallback(
     (event) => {
-      onClick?.(event)
+      if (!isClicked) {
+        onClick?.(event)
+      }
       setIsClicked(true)
     },
-    [onClick]
+    [onClick, isClicked]
   )
 
   const handleMouseEnter = useCallback(() => {
