@@ -218,40 +218,6 @@ svg.logo path {
   margin: 0px 16px 25px;
 }
 
-.groupHeader {
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: var(--font-l);
-  font-weight: var(--font-heavy);
-  line-height: 22px;
-  padding-bottom: 2px;
-  padding-left: 16px;
-  color: var(--nav-column-group-header);
-
-  display: flex;
-  align-items: center;
-  transition: color 0.07s ease-in-out;
-}
-
-.droppableLink {
-  color: var(--secondary);
-}
-
-.droppableGroup {
-  padding-top: 10px;
-  margin-top: -10px;
-  transition: background 0.07s ease-in-out;
-  border-radius: 6px;
-}
-
-.droppableGroupHover {
-  background-color: rgba(152, 73, 214, 0.15);
-}
-
-.newPlaylist {
-  margin-left: 24px;
-}
-
 .navAnchor {
   padding-top: 17px;
   border-top: 1px solid var(--neutral-light-8);

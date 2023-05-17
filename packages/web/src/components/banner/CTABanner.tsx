@@ -23,6 +23,7 @@ const CTABanner = (props: CTABannerProps) => {
             textClassName={styles.pillText}
             showIcon={false}
             clickable={false}
+            text='New'
           />
           <div className={styles.contentSelection}>
             <span className={styles.celebration}>

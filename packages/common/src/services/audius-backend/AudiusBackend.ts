@@ -1,4 +1,7 @@
-import type { DiscoveryNodeSelector } from '@audius/sdk'
+import type {
+  AudiusLibs as AudiusLibsType,
+  DiscoveryNodeSelector
+} from '@audius/sdk'
 import { DiscoveryAPI } from '@audius/sdk/dist/core'
 import type { HedgehogConfig } from '@audius/sdk/dist/services/hedgehog'
 import type { LocalStorage } from '@audius/sdk/dist/utils/localStorage'
@@ -3771,7 +3774,7 @@ export const audiusBackend = ({
   return {
     addDiscoveryProviderSelectionListener,
     addPlaylistTrack,
-    audiusLibs,
+    audiusLibs: audiusLibs as AudiusLibsType,
     associateAudiusUserForAuth,
     associateInstagramAccount,
     associateTwitterAccount,

@@ -1,0 +1,14 @@
+.root {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: var(--font-l);
+  font-weight: var(--font-heavy);
+  line-height: 22px;
+  padding-bottom: 2px;
+  padding-left: 16px;
+  color: var(--nav-column-group-header);
+
+  display: flex;
+  align-items: center;
+  transition: color 0.07s ease-in-out;
+}

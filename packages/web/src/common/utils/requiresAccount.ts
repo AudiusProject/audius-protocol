@@ -8,6 +8,7 @@ import {
 } from 'common/store/pages/signon/actions'
 
 import { SIGN_UP_PAGE } from '../../utils/route'
+
 const { getAccountUser } = accountSelectors
 
 /**
