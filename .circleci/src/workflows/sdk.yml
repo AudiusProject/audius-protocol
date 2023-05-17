@@ -25,7 +25,7 @@ jobs:
         - slack-secrets
 
   # Patch via trigger
-  - release-audius-sdk--trigger:
+  - release-audius-sdk-trigger:
       requires:
         - test-audius-libs
         - test-audius-cmd
