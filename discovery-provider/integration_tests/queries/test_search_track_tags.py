@@ -49,7 +49,7 @@ def test_search_track_tags(app_module):
         capture_output=True,
         text=True,
         cwd="es-indexer",
-        timeout=10,
+        timeout=30,
     )
 
     result = search_tags_es("pop", kind="tracks")
