@@ -33,7 +33,7 @@ const transactionRateLimiter = {
 
 setInterval(() => {
   transactionRateLimiter.updateReplicaSetReconfiguration = 0
-}, 10000)
+}, 30000)
 
 async function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms))
