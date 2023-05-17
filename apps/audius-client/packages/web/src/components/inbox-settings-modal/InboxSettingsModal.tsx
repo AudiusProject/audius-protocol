@@ -7,6 +7,7 @@ import {
   IconMessage,
   Modal,
   ModalContent,
+  ModalFooter,
   ModalHeader,
   ModalTitle,
   RadioButtonGroup
@@ -29,13 +30,13 @@ const messages = {
     'Anyone can send you a direct message, regardless of whether you follow them or not.',
   followeeTitle: 'Only Allow Messages From People You Follow',
   followeeDescription:
-    'Only users that you follow can send you direct messages.',
+    'Only users that you follow can initiate direct messages with you. You can still send messages to anyone.',
   tipperTitle: 'Only Allow Messages From Your Supporters',
   tipperDescription:
-    'Only users who have tipped you can send you direct messages.',
+    'Only users who have tipped you can initiate direct messages with you. You can still send messages to anyone.',
   noneTitle: 'No One Can Message You',
   noneDescription:
-    'No one will be able to send you direct messages. Note that you will still be able to send messages to others.'
+    'Disable incoming direct messages entirely. You will no longer receive direct messages, but can still send messages to others.'
 }
 
 const options = [
@@ -121,6 +122,8 @@ export const InboxSettingsModal = () => {
             />
           ))}
         </RadioButtonGroup>
+      </ModalContent>
+      <ModalFooter>
         <Button
           rightIcon={
             permissionStatus === Status.LOADING && showSpinner ? (
@@ -134,7 +137,7 @@ export const InboxSettingsModal = () => {
         {permissionStatus === Status.ERROR ? (
           <span className={styles.error}>{messages.error}</span>
         ) : null}
-      </ModalContent>
+      </ModalFooter>
     </Modal>
   )
 }
