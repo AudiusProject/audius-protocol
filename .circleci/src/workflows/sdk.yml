@@ -13,8 +13,8 @@ jobs:
       filters:
         branches:
           only: /^main$/
-      sdk-release-commit: 0f0bd34445752f44bc2100e9b7f70961b584ae8b
-      sdk-release-version: 2.0.3-beta.20
+      sdk-release-commit: $CIRCLE_SHA1
+      sdk-release-version: prerelease
       sdk-release-preid: ""
       context:
         - Audius Client
@@ -31,8 +31,8 @@ jobs:
   - release-audius-sdk:
       requires:
         - release-audius-sdk-trigger
-      sdk-release-commit: 0f0bd34445752f44bc2100e9b7f70961b584ae8b
-      sdk-release-version: 2.0.3-beta.20
+      sdk-release-commit: $CIRCLE_SHA1
+      sdk-release-version: patch
       sdk-release-preid: ""
       context:
         - Audius Client
