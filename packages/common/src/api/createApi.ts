@@ -22,6 +22,7 @@ import {
   FetchErrorAction,
   FetchLoadingAction,
   FetchSucceededAction,
+  HookOptions,
   PerEndpointState,
   PerKeyState,
   SliceConfig
@@ -112,7 +113,7 @@ const buildEndpointHooks = (
   reducerPath: string
 ) => {
   // Hook to be returned as use<EndpointName>
-  const useQuery = (fetchArgs: any) => {
+  const useQuery = (fetchArgs: any, hookOptions?: HookOptions) => {
     const dispatch = useDispatch()
     const key = getKeyFromFetchArgs(fetchArgs)
     const queryState = useSelector((state: any) => {
@@ -194,6 +195,8 @@ const buildEndpointHooks = (
       const fetchWrapped = async () => {
         if (cachedData || !context) return
         if (status === Status.LOADING) return
+        if (hookOptions?.disabled) return
+
         try {
           dispatch(
             // @ts-ignore
@@ -237,7 +240,8 @@ const buildEndpointHooks = (
       isInitialValue,
       nonNormalizedData,
       strippedEntityMap,
-      context
+      context,
+      hookOptions?.disabled
     ])
 
     if (endpoint.options?.schemaKey) {
