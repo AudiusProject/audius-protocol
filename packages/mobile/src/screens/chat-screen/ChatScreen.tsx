@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback, useRef, useMemo } from 'react'
 
 import type { ChatMessageWithExtras } from '@audius/common'
 import {
+  chatCanFetchMoreMessages,
   chatActions,
   accountSelectors,
   chatSelectors,
@@ -279,18 +280,18 @@ export const ChatScreen = () => {
     }, 10)
   }, [])
 
-  const shouldFetchMoreMessages =
-    chatId &&
-    chat?.messagesStatus !== Status.LOADING &&
-    chat?.messagesSummary &&
-    chat?.messagesSummary.prev_count > 0
-
   const handleScrollToTop = useCallback(() => {
-    if (shouldFetchMoreMessages) {
+    if (
+      chatId &&
+      chatCanFetchMoreMessages(
+        chat?.messagesStatus,
+        chat?.messagesSummary?.prev_count
+      )
+    ) {
       // Fetch more messages when user reaches the top
       dispatch(fetchMoreMessages({ chatId }))
     }
-  }, [chatId, dispatch, shouldFetchMoreMessages])
+  }, [chat?.messagesStatus, chat?.messagesSummary, chatId, dispatch])
 
   // Mark chat as read when user navigates away from screen
   useFocusEffect(

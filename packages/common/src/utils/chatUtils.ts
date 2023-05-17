@@ -1,6 +1,8 @@
 import type { ChatMessage } from '@audius/sdk'
 import dayjs from 'dayjs'
 
+import { Status } from 'models/Status'
+
 import { MESSAGE_GROUP_THRESHOLD_MINUTES } from './constants'
 
 /**
@@ -44,4 +46,15 @@ export const isEarliestUnread = ({
     (!lastReadAt || dayjs(prevMessage.created_at).isAfter(lastReadAt))
   const isAuthor = message.sender_user_id === currentUserId
   return isUnread && !isPreviousMessageUnread && !isAuthor
+}
+
+/**
+ * Can only fetch more messages if it's not in a loading state and
+ * there are previous messages to fetch
+ */
+export const chatCanFetchMoreMessages = (
+  messagesStatus?: Status,
+  prevCount?: number
+) => {
+  return !!messagesStatus && messagesStatus !== Status.LOADING && !!prevCount
 }
