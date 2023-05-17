@@ -47,7 +47,7 @@ func TestChatPermissions(t *testing.T) {
 		}
 		err = testValidator.validateChatCreate(tx, sender, exampleRpc)
 		if errorExpected {
-			assert.ErrorContains(t, err, "Not permitted to send or receive messages from this user")
+			assert.ErrorContains(t, err, "Not permitted to send messages to this user")
 		} else {
 			assert.NoError(t, err)
 		}

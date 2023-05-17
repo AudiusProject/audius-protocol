@@ -86,6 +86,7 @@ type AudiusLibsConfig = {
   preferHigherPatchForPrimary: boolean
   preferHigherPatchForSecondaries: boolean
   localStorage: LocalStorage
+  isStorageV2Only: boolean
 }
 
 export class AudiusLibs {
@@ -338,6 +339,7 @@ export class AudiusLibs {
   preferHigherPatchForPrimary: boolean
   preferHigherPatchForSecondaries: boolean
   localStorage: LocalStorage
+  isStorageV2Only: boolean
 
   /**
    * Constructs an Audius Libs instance with configs.
@@ -364,7 +366,8 @@ export class AudiusLibs {
     isDebug = false,
     preferHigherPatchForPrimary = true,
     preferHigherPatchForSecondaries = true,
-    localStorage = getPlatformLocalStorage()
+    localStorage = getPlatformLocalStorage(),
+    isStorageV2Only = false
   }: AudiusLibsConfig) {
     // set version
 
@@ -415,6 +418,7 @@ export class AudiusLibs {
     this.preferHigherPatchForPrimary = preferHigherPatchForPrimary
     this.preferHigherPatchForSecondaries = preferHigherPatchForSecondaries
     this.localStorage = localStorage
+    this.isStorageV2Only = isStorageV2Only
 
     // Schemas
     const schemaValidator = new SchemaValidator()
@@ -577,7 +581,8 @@ export class AudiusLibs {
         this.creatorNodeConfig.passList,
         this.creatorNodeConfig.blockList,
         this.creatorNodeConfig.monitoringCallbacks,
-        this.creatorNodeConfig.writeQuorumEnabled
+        this.creatorNodeConfig.writeQuorumEnabled,
+        this.isStorageV2Only
       )
       await this.creatorNode.init()
     }

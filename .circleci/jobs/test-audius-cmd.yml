@@ -30,12 +30,12 @@ steps:
         --preemptible
         --tags=circleci
         --machine-type=n2-custom-6-24576
-        --boot-disk-size=100G
+        --boot-disk-size=160G
         --boot-disk-type=pd-ssd
       steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
         - run:
             name: audius-cmd test
-            no_output_timeout: 30m
-            command: . ~/.profile; audius-compose up -w && sleep 60 && audius-cmd test
+            no_output_timeout: 15m
+            command: . ~/.profile; audius-compose up && audius-cmd test

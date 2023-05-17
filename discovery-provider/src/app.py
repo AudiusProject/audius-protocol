@@ -341,7 +341,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_network_peers": {
                 "task": "update_network_peers",
-                "schedule": timedelta(seconds=30),
+                "schedule": timedelta(seconds=10),
             },
             "index_trending": {
                 "task": "index_trending",

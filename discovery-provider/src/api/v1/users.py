@@ -1600,7 +1600,7 @@ class FullGetSupporter(Resource):
         return self._get(id, supporter_user_id)
 
 
-@ns.route(SUPPORTER_USER_ROUTE)
+@ns.route(SUPPORTER_USER_ROUTE, doc=False)
 class GetSupporter(FullGetSupporter):
     @ns.doc(
         id="""Get Supporter""",

@@ -11,7 +11,7 @@ COPY . .
 RUN go build
 RUN go build -o mediorum-cmd cmd/main.go
 
-FROM alpine AS final
+FROM alpine:3.17 AS final
 
 RUN apk add curl ffmpeg
 

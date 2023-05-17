@@ -140,6 +140,7 @@ func TestGetChats(t *testing.T) {
 		ChatID:             chatId1,
 		LastMessage:        message2,
 		LastMessageAt:      message2CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
+		RecheckPermissions: false,
 		InviteCode:         chatId1,
 		UnreadMessageCount: float64(0),
 		ChatMembers: []schema.ChatMember{
@@ -151,6 +152,7 @@ func TestGetChats(t *testing.T) {
 		ChatID:             chatId2,
 		LastMessage:        message3,
 		LastMessageAt:      message3CreatedAt.Round(time.Microsecond).Format(time.RFC3339Nano),
+		RecheckPermissions: false,
 		InviteCode:         chatId2,
 		UnreadMessageCount: float64(0),
 		ChatMembers: []schema.ChatMember{
