@@ -10,6 +10,9 @@ parameters:
   run-base-workflow:
     type: boolean
     default: true
+  run-integration-workflow:
+    type: boolean
+    default: true
   run-identity-workflow:
     type: boolean
     default: false

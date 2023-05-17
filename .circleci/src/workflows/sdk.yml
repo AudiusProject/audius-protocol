@@ -6,10 +6,6 @@ jobs:
       instance-name: circleci-test-audius-libs-$CIRCLE_BUILD_NUM
       service: audius-libs
 
-  - test-audius-cmd:
-      context: GCP
-      instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
-
   # Prepatch from main
   - release-audius-sdk:
       requires:
@@ -28,7 +24,6 @@ jobs:
   - release-audius-sdk-trigger:
       requires:
         - test-audius-libs
-        - test-audius-cmd
       filters:
         branches:
           only: /(^main)|(^release.*)$/

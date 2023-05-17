@@ -26,9 +26,6 @@ jobs:
       context: GCP
       instance-name: circleci-test-discovery-provider-notifications-$CIRCLE_BUILD_NUM
       service: discovery-provider-notifications
-  - test-audius-cmd:
-      context: GCP
-      instance-name: circleci-test-audius-cmd-$CIRCLE_BUILD_NUM
 
   # Release
   - deploy-prod-discovery-provider-trigger:
