@@ -144,7 +144,7 @@ func (vtor *Validator) validateChatMessage(tx *sqlx.Tx, userId int32, rpc schema
 	}
 
 	// validate not blocked and can chat according to receiver's inbox permission settings
-	err = validateCanChat(q, userId, params.ChatID)
+	err = validateCanSendMessage(q, userId, params.ChatID)
 	if err != nil {
 		return err
 	}
@@ -184,7 +184,7 @@ func (vtor *Validator) validateChatReact(tx *sqlx.Tx, userId int32, rpc schema.R
 	}
 
 	// validate not blocked and can chat according to receiver's inbox permission settings
-	err = validateCanChat(q, userId, params.ChatID)
+	err = validateCanSendMessage(q, userId, params.ChatID)
 	if err != nil {
 		return err
 	}
@@ -454,7 +454,7 @@ func validatePermissions(q db.Queryable, sender int32, receiver int32) error {
 	return nil
 }
 
-func validateCanChat(q db.Queryable, userId int32, chatId string) error {
+func validateCanSendMessage(q db.Queryable, userId int32, chatId string) error {
 	chatMembers, err := queries.ChatMembers(q, context.Background(), chatId)
 	if err != nil {
 		return err
