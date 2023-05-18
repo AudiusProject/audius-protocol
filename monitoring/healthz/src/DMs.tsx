@@ -110,7 +110,7 @@ function DMRow({ sp }: { sp: SP }) {
         )}
       </td>
       <td>
-        {commsStatus?.commit && (
+        {commsStatus?.booted && (
           <>
             <RelTime date={commsStatus.booted} />
           </>
