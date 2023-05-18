@@ -3,6 +3,7 @@ import { Animated, TouchableOpacity, View } from 'react-native'
 import type { SvgProps } from 'react-native-svg'
 
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
+import { useToast } from 'app/hooks/useToast'
 import type { StylesProps } from 'app/styles'
 import { makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
@@ -16,6 +17,7 @@ export type IconButtonProps = {
     }
   >
   isDisabled?: boolean
+  disabledPressToastContent?: string | JSX.Element
   onPress?: GestureResponderHandler
   fullWidth?: boolean
   hitSlop?: Insets
@@ -44,6 +46,7 @@ export const IconButton = ({
   fullWidth = true,
   icon: Icon,
   isDisabled,
+  disabledPressToastContent,
   onPress,
   style,
   styles: stylesProp,
@@ -52,6 +55,13 @@ export const IconButton = ({
   const styles = useStyles()
   const { scale, handlePressIn, handlePressOut } = usePressScaleAnimation(0.9)
   const { neutral } = useThemeColors()
+  const { toast } = useToast()
+
+  const onDisabledPress = () => {
+    if (disabledPressToastContent) {
+      toast({ content: disabledPressToastContent })
+    }
+  }
 
   const fill = inputFill ?? neutral
 
@@ -60,10 +70,10 @@ export const IconButton = ({
       style={[{ transform: [{ scale }] }, stylesProp?.root, style]}
     >
       <TouchableOpacity
-        onPress={onPress}
+        onPress={isDisabled ? onDisabledPress : onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        disabled={isDisabled}
+        disabled={isDisabled && !disabledPressToastContent}
         activeOpacity={0.95}
         hitSlop={{ ...defaultHitSlop, ...hitSlop }}
       >

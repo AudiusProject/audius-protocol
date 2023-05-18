@@ -9,10 +9,12 @@ import type {
   SearchPlaylist,
   SearchTrack
 } from '@audius/common'
+import { FeatureFlags } from '@audius/common'
 import type { EventArg, NavigationState } from '@react-navigation/native'
 import type { createNativeStackNavigator } from '@react-navigation/native-stack'
 
 import { useDrawer } from 'app/hooks/useDrawer'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { ChatListScreen } from 'app/screens/chat-screen/ChatListScreen'
 import { ChatScreen } from 'app/screens/chat-screen/ChatScreen'
 import { ChatUserListScreen } from 'app/screens/chat-screen/ChatUserListScreen'
@@ -138,6 +140,9 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
   const screenOptions = useAppScreenOptions()
   const { drawerNavigation } = useContext(AppDrawerContext)
   const { isOpen: isNowPlayingDrawerOpen } = useDrawer('NowPlaying')
+  const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
+    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+  )
 
   const handleChangeState = useCallback(
     (event: NavigationStateEvent) => {
@@ -180,11 +185,13 @@ export const AppTabScreen = ({ baseScreen, Stack }: AppTabScreenProps) => {
         component={CollectionScreen}
         options={screenOptions}
       />
-      <Stack.Screen
-        name='EditPlaylist'
-        component={EditPlaylistScreen}
-        options={screenOptions}
-      />
+      {!isPlaylistUpdatesEnabled ? (
+        <Stack.Screen
+          name='EditPlaylist'
+          component={EditPlaylistScreen}
+          options={screenOptions}
+        />
+      ) : null}
       <Stack.Screen
         name='Profile'
         component={ProfileScreen}

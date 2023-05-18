@@ -6,7 +6,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useDispatch } from 'react-redux'
 
 import IconArrow from 'app/assets/images/iconArrow.svg'
-import IconCaretRight from 'app/assets/images/iconCaretRight.svg'
+import IconCaretLeft from 'app/assets/images/iconCaretLeft.svg'
 import IconUpload from 'app/assets/images/iconUpload.svg'
 import { Button, Tile } from 'app/components/core'
 import { InputErrorMessage } from 'app/components/core/InputErrorMessage'
@@ -105,7 +105,7 @@ export const EditTrackForm = (props: EditTrackFormProps) => {
       icon={IconUpload}
       topbarLeft={
         <TopBarIconButton
-          icon={IconCaretRight}
+          icon={IconCaretLeft}
           style={styles.backButton}
           onPress={handlePressBack}
         />

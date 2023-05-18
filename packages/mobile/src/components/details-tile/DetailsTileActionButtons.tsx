@@ -13,6 +13,11 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 import type { GestureResponderHandler } from 'app/types/gesture'
 import { useThemeColors } from 'app/utils/theme'
 
+// const messages = {
+//   publishButtonDisabledContent: 'You must add at least 1 track.',
+//   shareButtonDisabledContent: 'You can’t share an empty playlist.'
+// }
+
 type DetailsTileActionButtonsProps = {
   hasReposted: boolean
   hasSaved: boolean
@@ -104,6 +109,9 @@ export const DetailsTileActionButtons = ({
       fill={neutralLight4}
       icon={IconShare}
       isDisabled={!isPublished}
+      // TODO: Add isDisabled based on if playlist is publishable logic
+      // Needs to check for hidden tracks and things like that
+      // disabledPressToastContent={messages.shareButtonDisabledContent}
       onPress={onPressShare}
       styles={{ icon: [styles.actionButton, { height: 24, width: 24 }] }}
     />
@@ -134,6 +142,7 @@ export const DetailsTileActionButtons = ({
       // TODO: Add isDisabled based on if playlist is publishable logic
       // Needs to check for hidden tracks and things like that
       // isDisabled
+      // disabledPressToastContent={messages.publishButtonDisabledContent}
       onPress={onPressPublish}
       styles={{ icon: styles.actionButton }}
     />

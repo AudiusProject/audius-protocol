@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 
+import { FeatureFlags } from '@audius/common'
 import { useField } from 'formik'
 import type { ImageStyle, ViewStyle } from 'react-native'
 import { Animated, Pressable, View } from 'react-native'
@@ -9,15 +10,22 @@ import IconUpload from 'app/assets/images/iconUpload.svg'
 import { DynamicImage } from 'app/components/core'
 import LoadingSpinner from 'app/components/loading-spinner'
 import { usePressScaleAnimation } from 'app/hooks/usePressScaleAnimation'
+import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import type { StylesProps } from 'app/styles'
 import { makeStyles } from 'app/styles'
 import type { Image } from 'app/types/image'
 import { launchSelectImageActionSheet } from 'app/utils/launchSelectImageActionSheet'
 
 const useStyles = makeStyles(({ palette }) => ({
-  imageContainer: {
+  legacyImageContainer: {
     height: 216,
     width: 216,
+    borderRadius: 4,
+    overflow: 'hidden'
+  },
+  imageContainer: {
+    height: 320,
+    width: 320,
     borderRadius: 4,
     overflow: 'hidden'
   },
@@ -66,6 +74,9 @@ export const FormImageInput = ({
   const styles = useStyles()
   const [isLoading, setIsLoading] = useState(false)
   const [{ value }, , { setValue }] = useField(name)
+  const { isEnabled: isPlaylistUpdatesEnabled } = useFeatureFlag(
+    FeatureFlags.PLAYLIST_UPDATES_PRE_QA
+  )
 
   const { url } = value
 
@@ -104,7 +115,12 @@ export const FormImageInput = ({
       <DynamicImage
         source={source}
         styles={{
-          root: [styles.imageContainer, stylesProp?.imageContainer],
+          root: [
+            isPlaylistUpdatesEnabled
+              ? styles.imageContainer
+              : styles.legacyImageContainer,
+            stylesProp?.imageContainer
+          ],
           image: [styles.image, stylesProp?.image]
         }}
         onLoad={() => setIsLoading(false)}

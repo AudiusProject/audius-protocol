@@ -104,7 +104,7 @@ const useStyles = makeStyles(({ palette, spacing, typography }) => ({
     marginRight: spacing(4)
   },
   dragIcon: {
-    marginRight: spacing(6)
+    marginRight: spacing(4)
   },
   divider: {
     borderBottomColor: palette.neutralLight7,
@@ -359,7 +359,14 @@ const TrackListItemComponent = (props: TrackListItemComponentProps) => {
               />
             </View>
           ) : null}
-          {isReorderable && <IconDrag style={styles.dragIcon} />}
+          {isReorderable ? (
+            <IconDrag
+              fill={themeColors.neutralLight4}
+              height={20}
+              width={20}
+              style={styles.dragIcon}
+            />
+          ) : null}
           <View
             style={[
               styles.nameArtistContainer,
