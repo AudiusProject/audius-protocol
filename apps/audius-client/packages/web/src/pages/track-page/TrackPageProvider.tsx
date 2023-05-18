@@ -126,7 +126,8 @@ class TrackPageProvider extends Component<
     // Go to 404 if the track id isn't parsed correctly or if should redirect
     if (!params || (params.trackId && shouldRedirectTrack(params.trackId))) {
       console.log('not found 1')
-      this.props.goToRoute(NOT_FOUND_PAGE)
+      if (this.props.pathname !== '/signup')
+        this.props.goToRoute(NOT_FOUND_PAGE)
       return
     }
 
