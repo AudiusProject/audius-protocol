@@ -1,8 +1,8 @@
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
 import * as secp from '@noble/secp256k1'
-import type { WalletApiService } from './types'
+import type { AuthService } from './types'
 
-export class DelegatedWalletApi implements WalletApiService {
+export class AppAuth implements AuthService {
   private apiKey: string
   private apiSecret: string
 

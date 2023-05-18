@@ -2,7 +2,7 @@ import type { EIP712TypedData, MessageData } from 'eth-sig-util'
 
 export type TransactionData = MessageData<EIP712TypedData>['data']
 
-export type WalletApiService = {
+export type AuthService = {
   /**
    * Get a shared secret, used for Chats
    */

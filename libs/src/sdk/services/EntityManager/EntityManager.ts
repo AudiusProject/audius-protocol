@@ -9,7 +9,7 @@ import * as signatureSchemas from '../../../data-contracts/signatureSchemas'
 import { abi as EntityManagerABI } from '../../../data-contracts/ABIs/EntityManager.json'
 
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
-import type { WalletApiService } from '../WalletApi'
+import type { AuthService } from '../Auth'
 import type { Contract } from 'web3-eth-contract'
 import { defaultEntityManagerConfig, DEFAULT_GAS_LIMIT } from './constants'
 import type {
@@ -55,14 +55,14 @@ export class EntityManager implements EntityManagerService {
     entityId,
     action,
     metadata,
-    walletApi
+    auth
   }: {
     userId: number
     entityType: EntityType
     entityId: number
     action: Action
     metadata: string
-    walletApi: WalletApiService
+    auth: AuthService
   }): Promise<{ txReceipt: TransactionReceipt }> {
     const nonce = signatureSchemas.getNonce()
     const chainId = await this.web3.eth.net.getId()
@@ -77,8 +77,8 @@ export class EntityManager implements EntityManagerService {
       nonce
     )
 
-    const senderAddress = await walletApi.getAddress()
-    const signature = await walletApi.signTransaction(signatureData)
+    const senderAddress = await auth.getAddress()
+    const signature = await auth.signTransaction(signatureData)
 
     const method = await this.contract.methods.manageEntity(
       userId,

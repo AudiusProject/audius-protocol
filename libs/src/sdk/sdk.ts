@@ -23,15 +23,15 @@ import fetch from 'cross-fetch'
 
 import { addAppNameMiddleware } from './middleware'
 import {
-  WalletApiService,
+  AuthService,
   DiscoveryNodeSelectorService,
   DiscoveryNodeSelector,
   EntityManagerService,
-  WalletApi,
+  Auth,
   StorageService,
   Storage,
   EntityManager,
-  DelegatedWalletApi
+  AppAuth
 } from './services'
 
 type ServicesContainer = {
@@ -53,7 +53,7 @@ type ServicesContainer = {
   /**
    * Helpers to faciliate requests that require signatures or encryption
    */
-  walletApi: WalletApiService
+  auth: AuthService
 }
 
 type SdkConfig = {
@@ -109,10 +109,10 @@ const initializeServices = (config: SdkConfig) => {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
     entityManager: new EntityManager(),
     storage: new Storage(),
-    walletApi:
+    auth:
       config.apiKey && config.apiSecret
-        ? new DelegatedWalletApi(config.apiKey, config.apiSecret)
-        : new WalletApi()
+        ? new AppAuth(config.apiKey, config.apiSecret)
+        : new Auth()
   }
   return { ...defaultServices, ...config.services }
 }
@@ -138,7 +138,7 @@ const initializeApis = ({
     services.discoveryNodeSelector,
     services.storage,
     services.entityManager,
-    services.walletApi
+    services.auth
   )
   const users = new UsersApi(generatedApiClientConfig)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
@@ -150,7 +150,7 @@ const initializeApis = ({
       basePath: '',
       middleware
     }),
-    services.walletApi,
+    services.auth,
     services.discoveryNodeSelector
   )
 

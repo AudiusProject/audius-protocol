@@ -1,6 +1,9 @@
-import type { TransactionData, WalletApiService } from './types'
+import type { TransactionData, AuthService } from './types'
 
-export class WalletApi implements WalletApiService {
+/**
+ * AuthService for Developer Apps wishing to write on a user's behalf
+ */
+export class Auth implements AuthService {
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array> =
     () => {
       throw new Error('WalletApi not initialized')
