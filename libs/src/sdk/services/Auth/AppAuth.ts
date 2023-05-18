@@ -1,7 +1,9 @@
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
-import * as secp from '@noble/secp256k1'
 import type { AuthService } from './types'
 
+/**
+ * AuthService for Developer Apps wishing to write on a user's behalf
+ */
 export class AppAuth implements AuthService {
   private apiKey: string
   private apiSecret: string
@@ -12,12 +14,12 @@ export class AppAuth implements AuthService {
   }
 
   getSharedSecret: (publicKey: string | Uint8Array) => Promise<Uint8Array> =
-    async (publicKey) => {
-      return secp.getSharedSecret(this.apiSecret, publicKey, true)
+    async () => {
+      throw new Error('AppAuth does not support getSharedSecret')
     }
 
   sign: (data: string) => Promise<[Uint8Array, number]> = () => {
-    throw new Error('DelegatedWalletApi does not support sign')
+    throw new Error('AppAuth does not support sign')
   }
 
   signTransaction = async (data: MessageData<EIP712TypedData>['data']) => {
