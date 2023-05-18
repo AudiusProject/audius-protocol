@@ -122,10 +122,6 @@ const AnimatedButton = ({
     >
       <div className={cn(wrapperClassName)}>
         <Lottie
-          // We construct a unique here with a suffix that changes each time
-          // isActive is changed to false. This allows the parent of this component
-          // to reset the state of other animated buttons.
-          key={`${uniqueKey}-${keySuffix}`}
           options={animationOptions}
           isPaused={isPaused}
           isClickToPauseDisabled
