@@ -1,5 +1,6 @@
 import {
   accountSelectors,
+  chatSelectors,
   useAccountHasClaimableRewards,
   StringKeys
 } from '@audius/common'
@@ -13,7 +14,9 @@ import { useSelector } from 'react-redux'
 import { ProfilePicture } from 'app/components/user'
 import { useRemoteVar } from 'app/hooks/useRemoteConfig'
 import { makeStyles } from 'app/styles'
+
 const { getAccountUser } = accountSelectors
+const { getHasUnreadMessages } = chatSelectors
 
 const useStyles = makeStyles(({ spacing, palette }) => ({
   root: {
@@ -50,6 +53,8 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
   const accountUser = useSelector(getAccountUser)
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
+  const hasUnreadMessages = useSelector(getHasUnreadMessages)
+  const showNotificationBubble = hasClaimableRewards || hasUnreadMessages
 
   const opacity = Animated.interpolateNode(
     drawerProgress as Adaptable<number>,
@@ -67,7 +72,7 @@ export const AccountPictureHeader = (props: AccountPictureHeaderProps) => {
           style={styles.root}
           priority='high'
         />
-        {hasClaimableRewards ? (
+        {showNotificationBubble ? (
           <View style={styles.notificationBubbleRoot}>
             <View style={styles.notificationBubble} />
           </View>

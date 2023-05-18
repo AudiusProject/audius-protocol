@@ -3,7 +3,8 @@ import {
   FeatureFlags,
   StringKeys,
   accountSelectors,
-  useAccountHasClaimableRewards
+  useAccountHasClaimableRewards,
+  chatSelectors
 } from '@audius/common'
 import type { DrawerContentComponentProps } from '@react-navigation/drawer'
 import { DrawerContentScrollView } from '@react-navigation/drawer'
@@ -25,7 +26,9 @@ import { AppDrawerContextProvider } from '../AppDrawerContext'
 import { AccountDetails } from './AccountDetails'
 import { LeftNavLink } from './LeftNavLink'
 import { VanityMetrics } from './VanityMetrics'
+
 const { getAccountUser } = accountSelectors
+const { getHasUnreadMessages } = chatSelectors
 
 const messages = {
   profile: 'Profile',
@@ -66,6 +69,7 @@ const WrappedLeftNavDrawer = () => {
   const styles = useStyles()
   const challengeRewardIds = useRemoteVar(StringKeys.CHALLENGE_REWARD_IDS)
   const hasClaimableRewards = useAccountHasClaimableRewards(challengeRewardIds)
+  const hasUnreadMessages = useSelector(getHasUnreadMessages)
   const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
 
   return (
@@ -84,7 +88,11 @@ const WrappedLeftNavDrawer = () => {
           label={'Messages'}
           to='ChatList'
           params={{}}
-        />
+        >
+          {hasUnreadMessages ? (
+            <View style={styles.notificationBubble} />
+          ) : null}
+        </LeftNavLink>
       ) : null}
       <LeftNavLink
         icon={IconCrown}

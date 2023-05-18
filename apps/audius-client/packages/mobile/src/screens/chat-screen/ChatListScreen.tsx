@@ -18,7 +18,9 @@ import { useThemePalette, useColor } from 'app/utils/theme'
 import { ChatListItem } from './ChatListItem'
 
 const { getChats, getChatsStatus } = chatSelectors
-const { fetchMoreChats, connect, disconnect } = chatActions
+const { fetchMoreMessages } = chatActions
+
+const CHATS_MESSAGES_PREFETCH_LIMIT = 10
 
 const messages = {
   title: 'Messages',
@@ -109,23 +111,26 @@ export const ChatListScreen = () => {
   const chats = useSelector(getChats)
   const chatsStatus = useSelector(getChatsStatus)
 
-  useEffect(() => {
-    dispatch(fetchMoreChats())
-  }, [dispatch])
-
-  useEffect(() => {
-    dispatch(connect())
-    return () => {
-      dispatch(disconnect())
-    }
-  }, [dispatch])
-
   const navigateToChatUserList = () => navigation.navigate('ChatUserList')
   const iconCompose = (
     <TouchableWithoutFeedback onPress={navigateToChatUserList}>
       <IconCompose fill={palette.neutralLight4} />
     </TouchableWithoutFeedback>
   )
+
+  // Prefetch messages for initial loaded chats
+  useEffect(() => {
+    if (
+      chats.length > 0 &&
+      chats.every(
+        (chat) => !chat.messagesStatus || chat.messagesStatus === Status.IDLE
+      )
+    ) {
+      chats.slice(0, CHATS_MESSAGES_PREFETCH_LIMIT).forEach((chat) => {
+        dispatch(fetchMoreMessages({ chatId: chat.chat_id }))
+      })
+    }
+  }, [chats, dispatch])
 
   return (
     <Screen

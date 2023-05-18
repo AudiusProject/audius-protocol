@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import { accountSelectors, Status } from '@audius/common'
+import { accountSelectors, chatActions, Status } from '@audius/common'
 import type { NavigatorScreenParams } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { getHasCompletedAccount } from 'common/store/pages/signon/selectors'
@@ -22,6 +22,8 @@ import { AppDrawerScreen } from '../app-drawer-screen'
 import { StatusBar } from './StatusBar'
 
 const { getAccountStatus } = accountSelectors
+const { fetchMoreChats, fetchUnreadMessagesCount, connect, disconnect } =
+  chatActions
 
 export type RootScreenParamList = {
   HomeStack: NavigatorScreenParams<{
@@ -62,6 +64,18 @@ export const RootScreen = ({
       setIsLoaded(true)
     }
   }, [accountStatus, setIsLoaded, isLoaded])
+
+  // Connect to chats websockets and prefetch chats
+  useEffect(() => {
+    if (isLoaded && accountStatus === Status.SUCCESS) {
+      dispatch(connect())
+      dispatch(fetchMoreChats())
+      dispatch(fetchUnreadMessagesCount())
+    }
+    return () => {
+      dispatch(disconnect())
+    }
+  }, [dispatch, isLoaded, accountStatus])
 
   const handleSplashScreenDismissed = useCallback(() => {
     setIsSplashScreenDismissed(true)

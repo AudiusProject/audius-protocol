@@ -22,6 +22,9 @@ import { actions as chatActions } from './slice'
 const {
   createChat,
   createChatSucceeded,
+  fetchUnreadMessagesCount,
+  fetchUnreadMessagesCountSucceeded,
+  fetchUnreadMessagesCountFailed,
   goToChat,
   fetchMoreChats,
   fetchMoreChatsSucceeded,
@@ -51,6 +54,20 @@ const {
   fetchLinkUnfurlSucceeded
 } = chatActions
 const { getChatsSummary, getChat, getUnfurlMetadata } = chatSelectors
+
+function* doFetchUnreadMessagesCount() {
+  try {
+    const audiusSdk = yield* getContext('audiusSdk')
+    const sdk = yield* call(audiusSdk)
+    const response = yield* call([sdk.chats, sdk.chats.getUnreadCount])
+    yield* put(
+      fetchUnreadMessagesCountSucceeded({ unreadMessagesCount: response.data })
+    )
+  } catch (e) {
+    console.error('fetchUnreadMessagesCountFailed', e)
+    yield* put(fetchUnreadMessagesCountFailed())
+  }
+}
 
 function* doFetchMoreChats() {
   try {
@@ -379,6 +396,10 @@ function* doFetchLinkUnfurlMetadata(
   }
 }
 
+function* watchFetchUnreadMessagesCount() {
+  yield takeLatest(fetchUnreadMessagesCount, () => doFetchUnreadMessagesCount())
+}
+
 function* watchAddMessage() {
   yield takeEvery(addMessage, ({ payload }) => fetchChatIfNecessary(payload))
 }
@@ -392,7 +413,7 @@ function* watchFetchChats() {
 }
 
 function* watchFetchChatMessages() {
-  yield takeLatest(fetchMoreMessages, doFetchMoreMessages)
+  yield takeEvery(fetchMoreMessages, doFetchMoreMessages)
 }
 
 function* watchSetMessageReaction() {
@@ -433,6 +454,7 @@ function* watchFetchLinkUnfurlMetadata() {
 
 export const sagas = () => {
   return [
+    watchFetchUnreadMessagesCount,
     watchFetchChats,
     watchFetchChatMessages,
     watchSetMessageReaction,
