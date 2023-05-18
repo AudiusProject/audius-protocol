@@ -24,6 +24,8 @@ import { incrementSessionCount } from 'app/hooks/useSessionCount'
 import { RootScreen } from 'app/screens/root-screen'
 import { WalletConnectProvider } from 'app/screens/wallet-connect'
 import { apiClient } from 'app/services/audius-api-client'
+import { audiusBackendInstance } from 'app/services/audius-backend-instance'
+import { audiusSdk } from 'app/services/audius-sdk'
 import { setLibs } from 'app/services/libs'
 import { persistor, store } from 'app/store'
 import {
@@ -79,7 +81,9 @@ const App = () => {
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <FlipperAsyncStorage />
       <Provider store={store}>
-        <AudiusQueryContext.Provider value={{ apiClient }}>
+        <AudiusQueryContext.Provider
+          value={{ apiClient, audiusSdk, audiusBackend: audiusBackendInstance }}
+        >
           <PersistGate loading={null} persistor={persistor}>
             <ThemeProvider>
               <WalletConnectProvider>

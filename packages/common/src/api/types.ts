@@ -77,6 +77,12 @@ export type CreateApiConfig = {
   endpoints: { [name: string]: EndpointConfig }
 }
 
-export type HookOptions = {
+export type QueryHookOptions = {
   disabled?: boolean
+}
+
+export type QueryHookResults<Data> = {
+  data: Data
+  status: Status
+  errorMessage: string
 }
