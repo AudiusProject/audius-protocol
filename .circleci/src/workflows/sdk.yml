@@ -14,7 +14,7 @@ jobs:
           only: /^main$/
       sdk-release-commit: $CIRCLE_SHA1
       sdk-release-version: prerelease
-      sdk-release-preid: ""
+      sdk-release-preid: beta
       context:
         - Audius Client
         - slack-secrets

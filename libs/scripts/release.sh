@@ -120,7 +120,11 @@ function merge-bump () {
 
 # publish to npm
 function publish () {
-    npm publish . --access public
+    if [[ -z $PREID ]]; then
+        npm publish . --access public
+    else
+        npm publish . --access public --tag ${PREID}
+    fi
 }
 
 # informative links
