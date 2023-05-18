@@ -97,7 +97,7 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) (*beamResult, error) {
 	var cursorBefore time.Time
 	ss.pgPool.QueryRow(ctx, `select updated_at from cid_cursor where host = $1`, peer.Host).Scan(&cursorBefore)
 
-	endpoint := fmt.Sprintf("%s?after=%s", peer.ApiPath("beam/files"), url.QueryEscape(cursorBefore.Format(time.RFC3339Nano)))
+	endpoint := fmt.Sprintf("%s?after=%s", peer.ApiPath("internal/beam/files"), url.QueryEscape(cursorBefore.Format(time.RFC3339Nano)))
 	startedAt := time.Now()
 	logger := slog.With("beam_client", peer.Host)
 	resp, err := client.Get(endpoint)

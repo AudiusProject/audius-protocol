@@ -59,7 +59,7 @@ func DiscoveryMain() {
 		}
 
 		// start sweepers
-		proc.StartSweepers(discoveryConfig)
+		proc.StartPeerClients()
 
 		err = pubkeystore.Dial(discoveryConfig)
 		if err != nil {

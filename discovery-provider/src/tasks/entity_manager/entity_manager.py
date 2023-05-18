@@ -322,6 +322,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
             action = helpers.get_tx_arg(event, "_action")
             user_id = helpers.get_tx_arg(event, "_userId")
             cid = helpers.get_tx_arg(event, "_metadata")
+            signer = helpers.get_tx_arg(event, "_signer")
+
             json_metadata = None
             # Check if metadata blob was passed directly and use if so.
             try:
@@ -382,6 +384,8 @@ def collect_entities_to_fetch(update_task, entity_manager_txs, metadata):
                     )
             if user_id:
                 entities_to_fetch[EntityType.USER].add(user_id)
+            if signer:
+                entities_to_fetch[EntityType.DELEGATION].add(signer.lower())
             action = helpers.get_tx_arg(event, "_action")
 
             # Query social operations as needed
@@ -580,22 +584,6 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
             for playlist_seen in playlist_seens
         }
 
-    # DELEGATES
-    if entities_to_fetch[EntityType.APP_DELEGATE]:
-        delegates: List[AppDelegate] = (
-            session.query(AppDelegate)
-            .filter(
-                func.lower(AppDelegate.address).in_(
-                    entities_to_fetch[EntityType.APP_DELEGATE]
-                ),
-                AppDelegate.is_current == True,
-            )
-            .all()
-        )
-        existing_entities[EntityType.APP_DELEGATE] = {
-            delegate.address.lower(): delegate for delegate in delegates
-        }
-
     # DELEGATIONS
     if entities_to_fetch[EntityType.DELEGATION]:
         delegations: List[Delegation] = (
@@ -611,6 +599,27 @@ def fetch_existing_entities(session: Session, entities_to_fetch: EntitiesToFetch
         existing_entities[EntityType.DELEGATION] = {
             delegation.shared_address.lower(): delegation for delegation in delegations
         }
+        for delegation in delegations:
+            entities_to_fetch[EntityType.APP_DELEGATE].add(
+                delegation.delegate_address.lower()
+            )
+
+    # APP DELEGATES
+    if entities_to_fetch[EntityType.APP_DELEGATE]:
+        delegates: List[AppDelegate] = (
+            session.query(AppDelegate)
+            .filter(
+                func.lower(AppDelegate.address).in_(
+                    entities_to_fetch[EntityType.APP_DELEGATE]
+                ),
+                AppDelegate.is_current == True,
+            )
+            .all()
+        )
+        existing_entities[EntityType.APP_DELEGATE] = {
+            delegate.address.lower(): delegate for delegate in delegates
+        }
+
     return existing_entities
 
 

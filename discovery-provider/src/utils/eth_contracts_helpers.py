@@ -1,6 +1,7 @@
 import concurrent.futures
 import logging
 
+import requests
 from src.utils.helpers import is_fqdn
 from src.utils.redis_cache import (
     get_cn_sp_id_key,
@@ -70,7 +71,7 @@ def fetch_all_registered_content_nodes(
 
                 valid_endpoint = is_fqdn(eth_sp_endpoint)
                 # Only valid FQDN strings are worth validating
-                if valid_endpoint:
+                if valid_endpoint and isCNodeHealthy(eth_sp_endpoint):
                     if include_spID:
                         eth_cn_endpoints_set.add((eth_sp_endpoint, cn_spID))
                     else:
@@ -80,3 +81,12 @@ def fetch_all_registered_content_nodes(
                     f"eth_contract_helpers.py | ERROR in fetch_cnode_futures {cn_spID} generated {exc}"
                 )
     return eth_cn_endpoints_set
+
+
+def isCNodeHealthy(endpoint: str) -> bool:
+    try:
+        response = requests.get(f"{endpoint}/status", timeout=5)
+        return response.status_code == 200
+    except Exception as e:
+        logger.warning(f"Failed to check health for content node '{endpoint}': {e}")
+        return False

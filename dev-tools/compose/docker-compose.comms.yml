@@ -35,7 +35,7 @@ services:
     environment:
       <<: *comms-environment
       audius_db_url: "postgresql://postgres:postgres@db:5432/com1?sslmode=disable"
-      AUDIUS_DELEGATE_PRIVATE_KEY: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" # Public key: "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e"
+      audius_delegate_private_key: "c82ad757622db5a148089e0a8fc1741cefa8677ab56a2ac9e38dac905c5ad7c7" # Public key: "0x123d0813710D55A9C38A2D7BC502Ff00A1a0279e"
 
   comms-discovery-2:
     container_name: audius-protocol-comms-discovery-2
@@ -43,7 +43,7 @@ services:
     environment:
       <<: *comms-environment
       audius_db_url: "postgresql://postgres:postgres@db:5432/com1?sslmode=disable"
-      AUDIUS_DELEGATE_PRIVATE_KEY: "d2b12371a062b73ce665288f894844ab75760d0ed0c580ff19d21b54d260ceb2" # Public key: "0x9262c9A1b172fF2A9C027B55862389d00b68A26a"
+      audius_delegate_private_key: "d2b12371a062b73ce665288f894844ab75760d0ed0c580ff19d21b54d260ceb2" # Public key: "0x9262c9A1b172fF2A9C027B55862389d00b68A26a"
 
   comms-discovery-3:
     container_name: audius-protocol-comms-discovery-3
@@ -51,7 +51,7 @@ services:
     environment:
       <<: *comms-environment
       audius_db_url: "postgresql://postgres:postgres@db:5432/com1?sslmode=disable"
-      AUDIUS_DELEGATE_PRIVATE_KEY: "6569932dff9fbe7c04382f87ac7098f90e7aa5cb0fe636b4e5c3cb4e30668812" # Public key: "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4"
+      audius_delegate_private_key: "6569932dff9fbe7c04382f87ac7098f90e7aa5cb0fe636b4e5c3cb4e30668812" # Public key: "0xBc2550Ae74fbbDF4eC30A8E65dd845a5a8510eb4"
 
   # TEST
 
@@ -65,7 +65,7 @@ services:
         GOARCH: arm64
     environment:
       <<: *comms-environment
-      AUDIUS_DELEGATE_PRIVATE_KEY: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
+      audius_delegate_private_key: "293589cdf207ed2f2253bb72b17bb7f2cfe399cdc34712b1d32908d969682238" # Public key: "0x1c185053c2259f72fd023ED89B9b3EBbD841DA0F"
       AUDIUS_TEST_HOST: "audius-protocol-nats-storage-1"
       audius_db_url: "postgresql://postgres:postgres@db:5432/comms_test?sslmode=disable"
     command: -c .air.test.toml
