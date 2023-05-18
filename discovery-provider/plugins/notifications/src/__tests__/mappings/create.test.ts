@@ -10,8 +10,7 @@ import {
   createPlaylists,
   createSubscription,
   setupTest,
-  resetTests,
-  dropTestDB
+  resetTests
 } from '../../utils/populateDB'
 import { renderEmail } from '../../email/notifications/renderEmail'
 import {
@@ -36,16 +35,6 @@ describe('Create Notification', () => {
 
   afterEach(async () => {
     await resetTests(processor)
-    jest.clearAllMocks()
-    await processor?.close()
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      dropTestDB(process.env.DN_DB_URL, testName),
-      dropTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
   })
 
   test('Process push notification for create track', async () => {
