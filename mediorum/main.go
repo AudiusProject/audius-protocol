@@ -60,6 +60,10 @@ func startStagingOrProd(isProd bool) {
 	creatorNodeEndpoint := mustGetenv("creatorNodeEndpoint")
 	delegateOwnerWallet := mustGetenv("delegateOwnerWallet")
 	privateKey := mustGetenv("delegatePrivateKey")
+	trustedNotifierID, err := strconv.Atoi(getenvWithDefault("trustedNotifierID", "1"))
+	if err != nil {
+		slog.Warn("failed to parse trustedNotifierID", "err", err)
+	}
 
 	config := server.MediorumConfig{
 		Self: server.Peer{
@@ -75,6 +79,7 @@ func startStagingOrProd(isProd bool) {
 		PostgresDSN:       os.Getenv("dbUrl"),
 		LegacyFSRoot:      getenvWithDefault("storagePath", "/file_storage"),
 		UpstreamCN:        getenvWithDefault("upstreamCreatorNode", "http://server:4000"),
+		TrustedNotifierID: trustedNotifierID,
 	}
 
 	ss, err := server.New(config)

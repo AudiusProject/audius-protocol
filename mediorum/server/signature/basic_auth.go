@@ -31,6 +31,17 @@ func basicAuthNonce(privateKey *ecdsa.PrivateKey) string {
 	return basic2
 }
 
+func SignedGet(endpoint string, privateKey *ecdsa.PrivateKey) (*http.Request, error) {
+	req, err := http.NewRequest("GET", endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Authorization", basicAuthNonce(privateKey))
+
+	return req, nil
+}
+
 func SignedPost(endpoint string, contentType string, r io.Reader, privateKey *ecdsa.PrivateKey) *http.Request {
 	req, err := http.NewRequest("POST", endpoint, r)
 	if err != nil {
