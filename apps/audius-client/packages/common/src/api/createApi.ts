@@ -22,7 +22,7 @@ import {
   FetchErrorAction,
   FetchLoadingAction,
   FetchSucceededAction,
-  HookOptions,
+  QueryHookOptions,
   PerEndpointState,
   PerKeyState,
   SliceConfig
@@ -113,10 +113,15 @@ const buildEndpointHooks = (
   reducerPath: string
 ) => {
   // Hook to be returned as use<EndpointName>
-  const useQuery = (fetchArgs: any, hookOptions?: HookOptions) => {
+  const useQuery = (fetchArgs: any, hookOptions?: QueryHookOptions) => {
     const dispatch = useDispatch()
     const key = getKeyFromFetchArgs(fetchArgs)
     const queryState = useSelector((state: any) => {
+      if (!state.api[reducerPath]) {
+        throw new Error(
+          `State for ${reducerPath} is undefined - did you forget to register the reducer in @audius/common/src/api/reducers.ts?`
+        )
+      }
       const endpointState: PerEndpointState =
         state.api[reducerPath][endpointName]
 

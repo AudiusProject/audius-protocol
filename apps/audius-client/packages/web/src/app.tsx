@@ -14,6 +14,8 @@ import { MainContentContext } from 'pages/MainContentContext'
 import { OAuthLoginPage } from 'pages/oauth-login-page/OAuthLoginPage'
 import { SomethingWrong } from 'pages/something-wrong/SomethingWrong'
 import { apiClient } from 'services/audius-api-client'
+import { audiusBackendInstance } from 'services/audius-backend/audius-backend-instance'
+import { audiusSdk } from 'services/audius-sdk/audiusSdk'
 import history from 'utils/history'
 
 import { store } from './store/configureStore'
@@ -24,7 +26,9 @@ import './index.css'
 const AudiusApp = () => {
   return (
     <Provider store={store}>
-      <AudiusQueryContext.Provider value={{ apiClient }}>
+      <AudiusQueryContext.Provider
+        value={{ apiClient, audiusBackend: audiusBackendInstance, audiusSdk }}
+      >
         <ConnectedRouter history={history}>
           <LastLocationProvider>
             <AppContext>
