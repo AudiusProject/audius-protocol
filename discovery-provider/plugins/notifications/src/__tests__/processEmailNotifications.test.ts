@@ -12,7 +12,6 @@ import {
   createTestDB,
   dropTestDB,
   replaceDBName,
-  randId,
   createUsers,
   createChat,
   readChat,
@@ -89,9 +88,9 @@ describe('Email Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(
       discoveryDB,
@@ -143,9 +142,9 @@ describe('Email Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(
       discoveryDB,
@@ -221,9 +220,9 @@ describe('Email Notifications', () => {
 
     // User 1 sent two messages config.dmNotificationDelay ms ago
     const message1 = 'hi from user 1'
-    const message1Id = randId().toString()
+    const message1Id = '1'
     const message1Timestamp = new Date(Date.now() - config.dmNotificationDelay)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(discoveryDB, user1, user2, chatId, message1Timestamp)
     await insertMessage(
       discoveryDB,
@@ -234,7 +233,7 @@ describe('Email Notifications', () => {
       message1Timestamp
     )
     const message2 = 'hello again'
-    const message2Id = randId().toString()
+    const message2Id = '2'
     const message2Timestamp = new Date(Date.now() - config.dmNotificationDelay)
     await insertMessage(
       discoveryDB,
@@ -319,9 +318,9 @@ describe('Email Notifications', () => {
 
     // User 1 sends message now
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now())
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(
       discoveryDB,
@@ -367,9 +366,9 @@ describe('Email Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(
       discoveryDB,
@@ -403,9 +402,9 @@ describe('Email Notifications', () => {
 
     // User 1 sent message to user 2 config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(
       discoveryDB,
@@ -418,7 +417,7 @@ describe('Email Notifications', () => {
 
     // User 1 saves user 2's track
     const notificationRow = {
-      id: randId(),
+      id: 1,
       specifier: user1.toString(),
       group_id: `save:100:type:track`,
       type: 'save',
@@ -474,7 +473,7 @@ describe('Email Notifications', () => {
 
     // User 1 follows user 2
     const notificationRow = {
-      id: randId(),
+      id: 1,
       specifier: user1.toString(),
       group_id: `follow:${user2}`,
       type: 'follow',
@@ -543,9 +542,9 @@ describe('Email Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(
       discoveryDB,
@@ -579,9 +578,9 @@ describe('Email Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now() - config.dmNotificationDelay)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(discoveryDB, user1, user2, chatId, messageTimestamp)
     await insertMessage(
       discoveryDB,

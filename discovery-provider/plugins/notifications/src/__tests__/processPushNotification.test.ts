@@ -3,7 +3,6 @@ import { Processor } from '../main'
 import * as sns from '../sns'
 import { config } from './../config'
 import {
-  randId,
   createChat,
   readChat,
   insertMessage,
@@ -41,10 +40,10 @@ describe('Push Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestampMs = Date.now() - config.dmNotificationDelay
     const messageTimestamp = new Date(messageTimestampMs)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,
@@ -119,10 +118,10 @@ describe('Push Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestampMs = Date.now() - config.dmNotificationDelay
     const messageTimestamp = new Date(messageTimestampMs)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,
@@ -184,9 +183,9 @@ describe('Push Notifications', () => {
 
     // User 1 sends message now
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now())
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,
@@ -215,9 +214,9 @@ describe('Push Notifications', () => {
 
     // Set up chat and message
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now())
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,
@@ -266,10 +265,10 @@ describe('Push Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestampMs = Date.now() - config.dmNotificationDelay
     const messageTimestamp = new Date(messageTimestampMs)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,
