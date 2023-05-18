@@ -3,8 +3,7 @@ import { BaseAPI, BASE_PATH, RequiredError } from '../generated/default/runtime'
 import {
   Configuration,
   StreamTrackRequest,
-  TracksApi as GeneratedTracksApi,
-  UsersApi
+  TracksApi as GeneratedTracksApi
 } from '../generated/default'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector'
 import type { UploadTrackRequest } from './types'
@@ -15,7 +14,7 @@ import { objectMissingValues } from '../../utils/object'
 import { retry3 } from '../../utils/retry'
 import type { EntityManagerService, WalletApiService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
-import { decodeHashId, encodeHashId } from '../../utils/hashId'
+import { decodeHashId } from '../../utils/hashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
 
 // Subclass type masking adapted from Damir Arh's method:
@@ -36,8 +35,7 @@ export class TracksApi extends TracksApiWithoutStream {
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly walletApi: WalletApiService,
-    private readonly usersApi: UsersApi
+    private readonly walletApi: WalletApiService
   ) {
     super(configuration)
   }
@@ -68,8 +66,7 @@ export class TracksApi extends TracksApiWithoutStream {
    * Upload a track
    */
   async uploadTrack(requestParameters: UploadTrackRequest) {
-    const { trackFile, coverArtFile, metadata, onProgress, artistPublicKey } =
-      requestParameters
+    const { trackFile, coverArtFile, metadata, onProgress } = requestParameters
 
     // Validate inputs
     if (!isFileValid(trackFile)) {
@@ -144,13 +141,10 @@ export class TracksApi extends TracksApiWithoutStream {
 
     // Write metadata to chain
 
-    const userPublicKey =
-      artistPublicKey ?? (await this.getArtistPublicKey(artistId))
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
     const trackId = await this.generateTrackId()
     const response = await this.entityManager.manageEntity({
       userId: artistId,
-      userPublicKey,
       entityType: EntityType.TRACK,
       entityId: trackId,
       action: Action.CREATE,
@@ -158,8 +152,7 @@ export class TracksApi extends TracksApiWithoutStream {
         cid: metadataCid.toString(),
         data: updatedMetadata
       }),
-      walletApi: this.walletApi,
-      usersApi: this.usersApi
+      walletApi: this.walletApi
     })
     const txReceipt = response.txReceipt
 
@@ -186,19 +179,5 @@ export class TracksApi extends TracksApiWithoutStream {
       throw new Error('Could not generate track id')
     }
     return id
-  }
-
-  private async getArtistPublicKey(artistId: number) {
-    const artistIdHashed = encodeHashId(artistId) ?? undefined
-
-    if (!artistIdHashed) {
-      throw new Error(`Invalid artistId: ${artistId}`)
-    }
-    const user = await this.usersApi.getUser({ id: artistIdHashed })
-    const userPublicKey = user.data?.ercWallet
-    if (!userPublicKey) {
-      throw new Error(`User public key not found`)
-    }
-    return userPublicKey
   }
 }

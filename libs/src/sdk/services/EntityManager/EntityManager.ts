@@ -51,7 +51,6 @@ export class EntityManager implements EntityManagerService {
    */
   async manageEntity({
     userId,
-    userPublicKey,
     entityType,
     entityId,
     action,
@@ -59,7 +58,6 @@ export class EntityManager implements EntityManagerService {
     walletApi
   }: {
     userId: number
-    userPublicKey: string
     entityType: EntityType
     entityId: number
     action: Action
@@ -80,10 +78,7 @@ export class EntityManager implements EntityManagerService {
     )
 
     const senderAddress = await walletApi.getAddress()
-    const signature = await walletApi.signTransaction(
-      signatureData,
-      userPublicKey
-    )
+    const signature = await walletApi.signTransaction(signatureData)
 
     const method = await this.contract.methods.manageEntity(
       userId,

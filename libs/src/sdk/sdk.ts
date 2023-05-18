@@ -133,15 +133,14 @@ const initializeApis = ({
     middleware
   })
 
-  const users = new UsersApi(generatedApiClientConfig)
   const tracks = new TracksApi(
     generatedApiClientConfig,
     services.discoveryNodeSelector,
     services.storage,
     services.entityManager,
-    services.walletApi,
-    users
+    services.walletApi
   )
+  const users = new UsersApi(generatedApiClientConfig)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
   const tips = new TipsApi(generatedApiClientConfig)
   const { resolve } = new ResolveApi(generatedApiClientConfig)
