@@ -11,7 +11,7 @@ jobs:
       name: release-audius-sdk-prerelease
       filters:
         branches:
-          only: /^rj-move-ci-jobs$/
+          only: /^main$/
       sdk-release-commit: $CIRCLE_SHA1
       sdk-release-version: prerelease
       sdk-release-preid: ""
