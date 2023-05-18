@@ -2,7 +2,6 @@ import { OAuth } from './oauth'
 import { TracksApi } from './api/tracks/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
 import { ChatsApi } from './api/chats/ChatsApi'
-
 import {
   Configuration,
   PlaylistsApi,
@@ -20,7 +19,6 @@ import {
   TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
 import fetch from 'cross-fetch'
-
 import { addAppNameMiddleware } from './middleware'
 import {
   AuthService,

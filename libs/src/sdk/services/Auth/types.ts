@@ -15,10 +15,7 @@ export type AuthService = {
    * Sign an ethereum transaction, used for EntityManager writes
    * NOTE: audius-client can stub out until we use sdk for writes in the client
    */
-  signTransaction: (
-    data: TransactionData,
-    userPublicKey?: string
-  ) => Promise<string>
+  signTransaction: (data: TransactionData) => Promise<string>
   /**
    * Get the sender address, used for EntityManager writes
    */

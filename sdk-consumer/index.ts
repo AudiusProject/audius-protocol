@@ -20,8 +20,8 @@ const audiusSdk = sdk({
       initialSelectedNode: "http://audius-protocol-discovery-provider-1",
     }),
   },
-  apiKey: "",
-  apiSecret: "",
+  apiKey: "1de659ceb83fcaf9b9105e2f624d5230449046e9",
+  apiSecret: "f900d387e6b760dd96ad56b71bb9a7bc7da9b840403fede33a2e4db407b82912",
 });
 
 app.listen(port, () => {
