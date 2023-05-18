@@ -209,6 +209,38 @@ func (vtor *Validator) validateChatReact(tx *sqlx.Tx, userId int32, rpc schema.R
 		return err
 	}
 
+	chatMembers, err := queries.ChatMembers(q, context.Background(), params.ChatID)
+	if err != nil {
+		return err
+	}
+	// 1-1 DMs
+	if len(chatMembers) == 2 {
+		user1 := chatMembers[0].UserID
+		user2 := chatMembers[1].UserID
+		// validate chat members are not a <blocker, blockee> pair
+		err = validateNotBlocked(q, user1, user2)
+		if err != nil {
+			return err
+		}
+
+		// re-validate permissions if a member of the chat has recently cleared their
+		// chat history, in case their permissions have changed
+		lastMessageAt, err := queries.ChatLastMessageAt(q, context.Background(), params.ChatID)
+		if err != nil {
+			return err
+		}
+		if RecheckPermissionsRequired(lastMessageAt, chatMembers) {
+			receiver := int32(user1)
+			if receiver == userId {
+				receiver = int32(user2)
+			}
+			err = validatePermissions(q, userId, receiver)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
