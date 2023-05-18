@@ -3,7 +3,7 @@ module.exports = (sequelize, DataTypes) => {
   const Transaction = sequelize.define(
     'Transaction',
     {
-      encodedNonceAndSig: {
+      encodedNonceAndSignature: {
         type: DataTypes.TEXT,
         allowNull: false,
         primaryKey: true

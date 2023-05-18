@@ -5,14 +5,14 @@ module.exports = {
     return queryInterface.renameColumn(
       'Transactions',
       'encodedABI',
-      'encodedNonceAndSig'
+      'encodedNonceAndSignature'
     )
   },
 
   down: (queryInterface, Sequelize) => {
     return queryInterface.renameColumn(
       'Transactions',
-      'encodedNonceAndSig',
+      'encodedNonceAndSignature',
       'encodedABI'
     )
   }
