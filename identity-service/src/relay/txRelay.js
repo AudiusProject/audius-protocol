@@ -150,7 +150,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   const existingTx = await models.Transaction.findOne({
     where: {
-      encodedABI: hashedData // this should always be unique
+      encodedNonceAndSignature: hashedData // this should always be unique
     }
   })
 
@@ -382,7 +382,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     contractFn: decodedABI.name,
     contractAddress: contractAddress,
     senderAddress: senderAddress,
-    encodedABI: hashedData,
+    encodedNonceAndSignature: hashedData,
     decodedABI: decodedABI,
     receipt: txReceipt
   })
