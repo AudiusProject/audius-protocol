@@ -93,6 +93,16 @@ export const getChatMessages = createSelector(
   }
 )
 
+export const getUnreadMessagesCount = (state: CommonState) => {
+  if (state.pages.chat.optimisticUnreadMessagesCount) {
+    return state.pages.chat.optimisticUnreadMessagesCount
+  }
+  return state.pages.chat.unreadMessagesCount
+}
+
+export const getHasUnreadMessages = (state: CommonState) =>
+  getUnreadMessagesCount(state) > 0
+
 export const getOtherChatUsersFromChat = (
   state: CommonState,
   chat?: UserChat

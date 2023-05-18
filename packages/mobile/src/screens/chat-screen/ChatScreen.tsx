@@ -218,12 +218,16 @@ export const ChatScreen = () => {
   // The chat/chatId selectors will trigger the rerenders necessary.
   const chatFrozenRef = useRef(chat)
 
+  // Initial fetch, but only if messages weren't fetched on app load
   useEffect(() => {
-    if (chatId && (chat?.messagesStatus ?? Status.IDLE) === Status.IDLE) {
-      // Initial fetch
+    if (
+      chatId &&
+      (chat?.messagesStatus ?? Status.IDLE) === Status.IDLE &&
+      chatMessages.length === 0
+    ) {
       dispatch(fetchMoreMessages({ chatId }))
     }
-  }, [dispatch, chatId, chat])
+  }, [dispatch, chatId, chat, chatMessages.length])
 
   useEffect(() => {
     // Update chatFrozenRef when entering a new chat screen.
