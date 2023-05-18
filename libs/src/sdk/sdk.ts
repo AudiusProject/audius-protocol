@@ -2,7 +2,6 @@ import { OAuth } from './oauth'
 import { TracksApi } from './api/tracks/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
 import { ChatsApi } from './api/chats/ChatsApi'
-import { isBrowser } from 'browser-or-node'
 
 import {
   Configuration,
@@ -106,12 +105,6 @@ export const sdk = (config: SdkConfig) => {
 }
 
 const initializeServices = (config: SdkConfig) => {
-  if (config.apiSecret && isBrowser) {
-    throw new Error(
-      "apiSecret should only be provided server side so that it isn't exposed"
-    )
-  }
-
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
     entityManager: new EntityManager(),
