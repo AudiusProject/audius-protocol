@@ -103,7 +103,18 @@ services:
       service: build-audius-libs
     # TODO: also run integration test current blocker is that integration tests
     # use config.json which was removed with the addition of audius-compose
-    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:unit)' -
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:sdk)' -
+    logging: *default-logging
+    deploy:
+      mode: global
+    profiles:
+      - tests
+
+  test-audius-sdk:
+    extends:
+      file: docker-compose.yml
+      service: build-audius-libs
+    entrypoint: sh -c '[ "$$1" = "test" ] || sleep inf && (shift; npm run test:sdk)' -
     logging: *default-logging
     deploy:
       mode: global

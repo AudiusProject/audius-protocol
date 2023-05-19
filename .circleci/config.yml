@@ -96,6 +96,10 @@ workflows:
     jobs:
       - generate-config
       - path-filtering/filter:
+          name: trigger-relevant-workflows
+          filters:
+            branches:
+              ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
@@ -118,36 +122,30 @@ workflows:
             .* run-release-workflow false
             .* run-gcp-workflow true
             .* run-integration-workflow true
-          name: trigger-relevant-workflows
-          filters:
-            branches:
-              ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
           requires:
             - generate-config
           workspace_path: ../workspace
 
-      - continuation/continue:
-          configuration_path: ../workspace/.circleci/continue_config.yml
-          name: trigger-all-workflows
+      - path-filtering/filter:
+          name: trigger-main-workflows
           filters:
             branches:
               only: << pipeline.parameters.run-all-workflows-branch-regex >>
-          parameters: '{
-            "run-gcp-workflow": true,
-            "run-integration-workflow": true,
-            "run-discovery-workflow": true,
-            "run-creator-workflow": true,
-            "run-identity-workflow": true,
-            "run-eth-contracts-workflow": true,
-            "run-contracts-workflow": true,
-            "run-release-workflow": true,
-            "run-sdk-workflow": true
-            }'
-          pre-steps:
-            - attach_workspace:
-                at: ../workspace
+          base-revision: main~1
+          config-path: ../workspace/.circleci/continue_config.yml
+          mapping: |
+            .* run-gcp-workflow true
+            .* run-integration-workflow true
+            .* run-discovery-workflow true
+            .* run-creator-workflow true
+            .* run-identity-workflow true
+            .* run-eth-contracts-workflow true
+            .* run-contracts-workflow true
+            .* run-release-workflow true
+            libs/.* run-sdk-workflow true
           requires:
             - generate-config
+          workspace_path: ../workspace
 
   generate-release:
     when:

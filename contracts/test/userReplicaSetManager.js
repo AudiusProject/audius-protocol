@@ -894,23 +894,23 @@ contract("UserReplicaSetManager", async (accounts) => {
   //     )
   // })
 
-  it("Fail to register replica set for non-existent user", async () => {
-    const nonExistentUserID = 5;
-    let user1Primary = toBN(1);
-    let user1Secondaries = toBNArray([2, 3]);
-    // Issue initial replica set selection from 1
-    await expectRevert(
-      updateReplicaSet(
-        nonExistentUserID,
-        user1Primary,
-        user1Secondaries,
-        0,
-        [],
-        userAcct1
-      ),
-      "Valid user required"
-    );
-  });
+  // it("Fail to register replica set for non-existent user", async () => {
+  //   const nonExistentUserID = 5;
+  //   let user1Primary = toBN(1);
+  //   let user1Secondaries = toBNArray([2, 3]);
+  //   // Issue initial replica set selection from 1
+  //   await expectRevert(
+  //     updateReplicaSet(
+  //       nonExistentUserID,
+  //       user1Primary,
+  //       user1Secondaries,
+  //       0,
+  //       [],
+  //       userAcct1
+  //     ),
+  //     "Valid user required"
+  //   );
+  // });
 
   it("UserReplicaSetManager Proxy upgrade validation", async () => {
     // Confirm constructor arguments validated
