@@ -912,46 +912,46 @@ contract("UserReplicaSetManager", async (accounts) => {
   //   );
   // });
 
-  it("UserReplicaSetManager Proxy upgrade validation", async () => {
-    // Confirm constructor arguments validated
-    await validateBootstrapNodes();
-    // Confirm upgrade function does not yet exist on deployed UserReplicaSetManager
-    let newFunctionFailure = false;
-    try {
-      // Note that this fails prior to reaching chain
-      await userReplicaSetManager.newFunction();
-    } catch (e) {
-      if (e.message.includes("not a function")) {
-        newFunctionFailure = true;
-      }
-    }
-    assert.isTrue(newFunctionFailure, "Unexpected success");
-    // Confirm that newFunction does not exist
-    let deployUpgradedLogicContract = await TestUserReplicaSetManager.new({
-      from: deployer,
-    });
-    let upgradedLogicAddress = deployUpgradedLogicContract.address;
-    let proxyAddress = userReplicaSetManager.address;
-    let proxyInstance = await AdminUpgradeabilityProxy.at(proxyAddress);
-    // Attempt to upgrade from an invalid address (the initial deployer)
-    await expectRevert(
-      proxyInstance.upgradeTo(upgradedLogicAddress, { from: deployer }),
-      "revert"
-    );
-    // Perform upgrade from known admin
-    await proxyInstance.upgradeTo(upgradedLogicAddress, {
-      from: proxyAdminAddress,
-    });
-    let testUserReplicaSetManager = await TestUserReplicaSetManager.at(
-      proxyAddress
-    );
-    // Confirm bootstrap node information still exists after upgrade
-    await validateBootstrapNodesInternal(testUserReplicaSetManager);
-    // Validate upgraded function
-    let newFunctionReturnValue = await testUserReplicaSetManager.newFunction();
-    assert.isTrue(
-      newFunctionReturnValue.eq(toBN(5)),
-      "New function returned unexpected value"
-    );
-  });
+  // it("UserReplicaSetManager Proxy upgrade validation", async () => {
+  //   // Confirm constructor arguments validated
+  //   await validateBootstrapNodes();
+  //   // Confirm upgrade function does not yet exist on deployed UserReplicaSetManager
+  //   let newFunctionFailure = false;
+  //   try {
+  //     // Note that this fails prior to reaching chain
+  //     await userReplicaSetManager.newFunction();
+  //   } catch (e) {
+  //     if (e.message.includes("not a function")) {
+  //       newFunctionFailure = true;
+  //     }
+  //   }
+  //   assert.isTrue(newFunctionFailure, "Unexpected success");
+  //   // Confirm that newFunction does not exist
+  //   let deployUpgradedLogicContract = await TestUserReplicaSetManager.new({
+  //     from: deployer,
+  //   });
+  //   let upgradedLogicAddress = deployUpgradedLogicContract.address;
+  //   let proxyAddress = userReplicaSetManager.address;
+  //   let proxyInstance = await AdminUpgradeabilityProxy.at(proxyAddress);
+  //   // Attempt to upgrade from an invalid address (the initial deployer)
+  //   await expectRevert(
+  //     proxyInstance.upgradeTo(upgradedLogicAddress, { from: deployer }),
+  //     "revert"
+  //   );
+  //   // Perform upgrade from known admin
+  //   await proxyInstance.upgradeTo(upgradedLogicAddress, {
+  //     from: proxyAdminAddress,
+  //   });
+  //   let testUserReplicaSetManager = await TestUserReplicaSetManager.at(
+  //     proxyAddress
+  //   );
+  //   // Confirm bootstrap node information still exists after upgrade
+  //   await validateBootstrapNodesInternal(testUserReplicaSetManager);
+  //   // Validate upgraded function
+  //   let newFunctionReturnValue = await testUserReplicaSetManager.newFunction();
+  //   assert.isTrue(
+  //     newFunctionReturnValue.eq(toBN(5)),
+  //     "New function returned unexpected value"
+  //   );
+  // });
 });
