@@ -20,8 +20,6 @@ import { EntityType } from '../../email/notifications/types'
 
 describe('Multiple Mappings Notification', () => {
   let processor: Processor
-  // Mock current date for test result consistency
-  Date.now = jest.fn(() => new Date('2020-05-13T12:33:37.000Z').getTime())
 
   const sendPushNotificationSpy = jest
     .spyOn(sns, 'sendPushNotification')

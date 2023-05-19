@@ -19,7 +19,7 @@ import {
   insertReaction,
   insertNotifications,
   insertNotificationEmails,
-  setUserEmailAndSettings
+  setUserEmailAndSettings,
 } from '../utils/populateDB'
 import { RemoteConfig } from '../remoteConfig'
 
@@ -69,6 +69,10 @@ describe('Email Notifications', () => {
       dropTestDB(process.env.DN_DB_URL, testName),
       dropTestDB(process.env.IDENTITY_DB_URL, testName)
     ])
+  })
+
+  afterAll(() => {
+    mockRemoteConfig.close()
   })
 
   test('Process unread message', async () => {
