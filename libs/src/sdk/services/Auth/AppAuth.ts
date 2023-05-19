@@ -1,4 +1,5 @@
 import { EIP712TypedData, MessageData, signTypedData } from 'eth-sig-util'
+import { keccak_256 } from '@noble/hashes/sha3'
 import type { AuthService } from './types'
 
 /**
@@ -29,6 +30,7 @@ export class AppAuth implements AuthService {
   }
 
   getAddress: () => Promise<string> = async () => {
-    return this.apiKey
+    const hash = keccak_256(Buffer.from(this.apiKey, 'hex'))
+    return `0x${Buffer.from(hash.slice(-20)).toString('hex')}`
   }
 }
