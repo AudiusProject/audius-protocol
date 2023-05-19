@@ -656,7 +656,7 @@ def prune(protocol_dir, yes):
 
     if yes or click.confirm("Are you sure you want to continue?"):
         subprocess.run(["docker", "image", "prune", "-f"])
-        subprocess.run(["docker", "buildx", "prune", "-f", "--keep-storage=30G"])
+        subprocess.run(["docker", "builder", "prune", "-f", "--keep-storage=30G"])
 
 
 @cli.command()

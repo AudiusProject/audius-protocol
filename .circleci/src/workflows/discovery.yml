@@ -30,7 +30,9 @@ jobs:
   # Release
   - deploy-prod-discovery-provider-trigger:
       requires:
+        - test-discovery-provider
         - push-discovery-provider
+        - push-comms
       filters:
         branches:
           only: /^release.*$/
@@ -50,6 +52,7 @@ jobs:
   - deploy:
       name: deploy-stage-discovery-provider
       requires:
+        - test-discovery-provider
         - push-discovery-provider
         - push-comms
       filters:
@@ -70,6 +73,7 @@ jobs:
   - deploy:
       name: deploy-stage-discovery-provider-notifications
       requires:
+        - test-discovery-provider-notifications
         - push-discovery-provider-notifications
       filters:
         branches:

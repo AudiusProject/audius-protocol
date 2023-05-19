@@ -24,6 +24,7 @@ jobs:
   # Release
   - deploy-prod-creator-node-trigger:
       requires:
+        - test-creator-node
         - push-creator-node
       filters:
         branches:
@@ -47,6 +48,7 @@ jobs:
   - deploy:
       name: deploy-stage-creator-node
       requires:
+        - test-creator-node
         - push-creator-node
       filters:
         branches:

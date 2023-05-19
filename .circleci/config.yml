@@ -14,11 +14,6 @@ parameters:
     type: string
     default: "main"
 
-  # Run all workflows for branches that match this regex
-  run-all-workflows-branch-regex:
-    type: string
-    default: /(^main)|(^release.*)$/
-
   # release-audius-sdk params
   sdk-release-commit:
     type: string
@@ -99,7 +94,9 @@ workflows:
           name: trigger-relevant-workflows
           filters:
             branches:
-              ignore: << pipeline.parameters.run-all-workflows-branch-regex >>
+              ignore:
+                - main
+                - /^release.*$/
           base-revision: main
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
@@ -130,7 +127,7 @@ workflows:
           name: trigger-main-workflows
           filters:
             branches:
-              only: << pipeline.parameters.run-all-workflows-branch-regex >>
+              only: /^main$/
           base-revision: main~1
           config-path: ../workspace/.circleci/continue_config.yml
           mapping: |
@@ -143,6 +140,27 @@ workflows:
             .* run-contracts-workflow true
             .* run-release-workflow true
             libs/.* run-sdk-workflow true
+          requires:
+            - generate-config
+          workspace_path: ../workspace
+
+      - path-filtering/filter:
+          name: trigger-release-workflows
+          filters:
+            branches:
+              only: /^release.*$/
+          base-revision: main
+          config-path: ../workspace/.circleci/continue_config.yml
+          mapping: |
+            .* run-gcp-workflow true
+            .* run-integration-workflow true
+            .* run-discovery-workflow true
+            .* run-creator-workflow true
+            .* run-identity-workflow true
+            .* run-eth-contracts-workflow true
+            .* run-contracts-workflow true
+            .* run-release-workflow true
+            .* run-sdk-workflow true
           requires:
             - generate-config
           workspace_path: ../workspace
