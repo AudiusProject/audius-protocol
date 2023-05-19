@@ -13,7 +13,6 @@ export type SharedData = {
 }
 
 const main = async () => {
-
     await new App<SharedData>({
         userUpdateCount: 0,
         trackUpdateCount: 0,
