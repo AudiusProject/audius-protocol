@@ -18,7 +18,6 @@
     "test:sdk": "./node_modules/.bin/jest",
     "test:sdk:browser": "./node_modules/.bin/jest --env jsdom",
     "test": "./scripts/test.sh",
-    "test-circle-ci": "./scripts/circleci-test.sh",
     "test:unit": "ts-mocha 'src/**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --exit",
     "test:unit:watch": "ts-mocha 'src/[!sdk]**/*.test.{js,ts}' --ignore 'src/sdk/**/*.test.{js,ts}' --watch",
     "test:integration": "ts-mocha tests/index.js",
