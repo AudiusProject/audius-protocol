@@ -15,6 +15,7 @@ jobs:
   # Release
   - deploy-prod-identity-service-trigger:
       requires:
+        - test-identity-service
         - push-identity-service
       filters:
         branches:
@@ -32,6 +33,7 @@ jobs:
   - deploy:
       name: deploy-stage-identity-service
       requires:
+        - test-identity-service
         - push-identity-service
       filters:
         branches:

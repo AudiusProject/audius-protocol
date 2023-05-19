@@ -35,12 +35,13 @@ steps:
       steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
-        - run: |
-            . ~/.profile
-            cd audius-protocol
-            audius-compose build
-            audius-compose pull
-            audius-compose prune -y
+        - run:
+            command: |
+              . ~/.profile
+              cd audius-protocol
+              audius-compose build
+              audius-compose pull
+              audius-compose prune -y
   - run:
       name: Create Image
       command: |
