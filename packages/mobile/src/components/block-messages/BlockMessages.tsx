@@ -14,15 +14,27 @@ import { spacing } from 'app/styles/spacing'
 import { useColor } from 'app/utils/theme'
 
 const { getUser } = cacheUsersSelectors
-const { getBlockees } = chatSelectors
+const { getDoesBlockUser } = chatSelectors
 const { blockUser, unblockUser } = chatActions
 
 const BLOCK_MESSAGES_MODAL_NAME = 'BlockMessages'
 
 const messages = {
   title: 'Are you sure?',
-  confirmText1: 'Are you sure you want to block ',
-  confirmText2: ' from sending messages to your inbox?',
+  confirmBlock: (userName?: string) => (
+    <>
+      {'Are you sure you want to block '}
+      {userName}
+      {' from sending messages to your inbox?  '}
+    </>
+  ),
+  confirmUnblock: (userName?: string) => (
+    <>
+      {'Are you sure you want to unblock '}
+      {userName}
+      {' and allow them to send messages to your inbox?'}
+    </>
+  ),
   info: 'This will not affect their ability to view your profile or interact with your content.',
   blockUser: 'Block User',
   unblockUser: 'Unblock User',
@@ -97,11 +109,10 @@ export const BlockMessagesDrawer = () => {
   )
   const user = useSelector((state) => getUser(state, { id: userId }))
   // Assuming blockees have already been fetched in ProfileActionsDrawer.
-  const blockeeList = useSelector(getBlockees)
-  const isBlockee = blockeeList.includes(userId)
+  const doesBlockUser = useSelector((state) => getDoesBlockUser(state, userId))
 
   const handleConfirmPress = () => {
-    if (isBlockee) {
+    if (doesBlockUser) {
       dispatch(unblockUser({ userId }))
     } else {
       dispatch(blockUser({ userId }))
@@ -131,23 +142,25 @@ export const BlockMessagesDrawer = () => {
           <Text style={styles.title}>{messages.title}</Text>
         </View>
         <Text style={styles.confirm}>
-          {messages.confirmText1}
-          {user?.name}
-          {messages.confirmText2}
+          {doesBlockUser
+            ? messages.confirmUnblock(user?.name)
+            : messages.confirmBlock(user?.name)}
         </Text>
-        <View style={styles.infoContainer}>
-          <IconInfo
-            style={styles.infoIcon}
-            fill={neutral}
-            height={spacing(5)}
-            width={spacing(5)}
-          />
-          <Text style={styles.infoText}>{messages.info}</Text>
-        </View>
+        {doesBlockUser ? null : (
+          <View style={styles.infoContainer}>
+            <IconInfo
+              style={styles.infoIcon}
+              fill={neutral}
+              height={spacing(5)}
+              width={spacing(5)}
+            />
+            <Text style={styles.infoText}>{messages.info}</Text>
+          </View>
+        )}
         <Button
-          title={isBlockee ? messages.unblockUser : messages.blockUser}
+          title={doesBlockUser ? messages.unblockUser : messages.blockUser}
           onPress={handleConfirmPress}
-          variant={isBlockee ? 'primary' : 'destructive'}
+          variant={doesBlockUser ? 'primary' : 'destructive'}
           styles={{
             root: styles.button,
             text: styles.blockText
@@ -157,7 +170,7 @@ export const BlockMessagesDrawer = () => {
         <Button
           title={messages.cancel}
           onPress={handleCancelPress}
-          variant={isBlockee ? 'common' : 'primary'}
+          variant={doesBlockUser ? 'common' : 'primary'}
           styles={{
             root: styles.button,
             text: styles.blockText
