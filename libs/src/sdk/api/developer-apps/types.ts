@@ -1,4 +1,4 @@
-export type CreateDeveloperAppParameters = {
+export type CreateDeveloperAppRequest = {
   userId: string
   name: string
   // description: string
@@ -6,7 +6,7 @@ export type CreateDeveloperAppParameters = {
   isPersonalAccess?: boolean
 }
 
-export type DeleteDeveloperAppParameters = {
+export type DeleteDeveloperAppRequest = {
   userId: string
   appApiKey: string
 }

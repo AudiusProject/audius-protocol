@@ -7,7 +7,7 @@ import { Action, EntityType } from '../../services/EntityManager/types'
 import { decodeHashId } from '../../utils/hashId'
 import { objectMissingValues } from '../../utils/object'
 import { GRANT_REQUIRED_VALUES } from './constants'
-import type { CreateGrantParameters, RevokeGrantParameters } from './types'
+import type { CreateGrantRequest, RevokeGrantRequest } from './types'
 
 // Note (nkang): Eventually this will extend the generated GrantsAPI
 export class GrantsAPI {
@@ -20,7 +20,7 @@ export class GrantsAPI {
   /**
    * When user authorizes app to perform actions on their behalf
    */
-  async createGrant(requestParameters: CreateGrantParameters) {
+  async createGrant(requestParameters: CreateGrantRequest) {
     const { appApiKey, userId } = requestParameters
     const metadataMissingValues = objectMissingValues(
       requestParameters,
@@ -61,7 +61,7 @@ export class GrantsAPI {
   /**
    * When user revokes an app's authorization to perform actions on their behalf
    */
-  async revokeGrant(requestParameters: RevokeGrantParameters) {
+  async revokeGrant(requestParameters: RevokeGrantRequest) {
     const { appApiKey, userId } = requestParameters
     const metadataMissingValues = objectMissingValues(
       requestParameters,

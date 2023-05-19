@@ -12,8 +12,8 @@ import {
   DELETE_DEVELOPER_APP_REQUIRED_VALUES
 } from './constants'
 import type {
-  CreateDeveloperAppParameters,
-  DeleteDeveloperAppParameters
+  CreateDeveloperAppRequest,
+  DeleteDeveloperAppRequest
 } from './types'
 
 // Note (nkang): Eventually this will extend the generated DeveloperAppsAPI
@@ -27,7 +27,7 @@ export class DeveloperAppsAPI {
   /**
    * Create a developer app
    */
-  async createDeveloperApp(requestParameters: CreateDeveloperAppParameters) {
+  async createDeveloperApp(requestParameters: CreateDeveloperAppRequest) {
     const { name, userId, isPersonalAccess } = requestParameters
     const metadataMissingValues = objectMissingValues(
       requestParameters,
@@ -73,7 +73,7 @@ export class DeveloperAppsAPI {
   /**
    * Delete a developer app
    */
-  async deleteDeveloperApp(requestParameters: DeleteDeveloperAppParameters) {
+  async deleteDeveloperApp(requestParameters: DeleteDeveloperAppRequest) {
     const { userId, appApiKey } = requestParameters
     const metadataMissingValues = objectMissingValues(
       requestParameters,
