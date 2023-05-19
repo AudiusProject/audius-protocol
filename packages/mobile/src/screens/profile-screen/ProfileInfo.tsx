@@ -1,11 +1,16 @@
+import { useEffect } from 'react'
+
 import {
   accountSelectors,
+  chatSelectors,
+  chatActions,
+  profilePageSelectors,
   FollowSource,
   reachabilitySelectors,
   FeatureFlags
 } from '@audius/common'
 import { View, Text } from 'react-native'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { FollowButton, FollowsYouChip } from 'app/components/user'
 import UserBadges from 'app/components/user-badges'
@@ -15,10 +20,14 @@ import { flexRowCentered, makeStyles } from 'app/styles'
 
 import { EditProfileButton } from './EditProfileButton'
 import { MessageButton } from './MessageButton'
+import { MessageLockedButton } from './MessageLockedButton'
 import { SubscribeButton } from './SubscribeButton'
 import { useSelectProfile } from './selectors'
 
 const { getUserHandle } = accountSelectors
+const { getCanChat } = chatSelectors
+const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
+const { getProfileUserId } = profilePageSelectors
 
 const useStyles = makeStyles(({ typography, palette, spacing }) => ({
   name: {
@@ -98,7 +107,24 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const isReachable = useSelector(getIsReachable)
   const accountHandle = useSelector(getUserHandle)
   const styles = useStyles()
+  const dispatch = useDispatch()
   const { isEnabled: isChatEnabled } = useFeatureFlag(FeatureFlags.CHAT_ENABLED)
+
+  const profileUserId = useSelector((state) =>
+    getProfileUserId(state, params.handle)
+  )
+  const { canChat } = useSelector((state) => getCanChat(state, profileUserId))
+
+  useEffect(() => {
+    dispatch(fetchBlockees())
+    dispatch(fetchBlockers())
+  }, [dispatch, params, profileUserId])
+
+  useEffect(() => {
+    if (profileUserId) {
+      dispatch(fetchPermissions({ userIds: [profileUserId] }))
+    }
+  }, [dispatch, profileUserId])
 
   const profile = useSelectProfile([
     'user_id',
@@ -122,7 +148,13 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
       <EditProfileButton style={styles.followButton} />
     ) : (
       <>
-        {isChatEnabled && !isOwner ? <MessageButton profile={profile} /> : null}
+        {isChatEnabled && !isOwner ? (
+          canChat ? (
+            <MessageButton profile={profile} />
+          ) : (
+            <MessageLockedButton profile={profile} />
+          )
+        ) : null}
         {does_current_user_follow ? (
           <SubscribeButton profile={profile} />
         ) : null}

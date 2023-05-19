@@ -18,6 +18,7 @@ import { EnablePushNotificationsDrawer } from 'app/components/enable-push-notifi
 import { FeedFilterDrawer } from 'app/components/feed-filter-drawer'
 import { ForgotPasswordDrawer } from 'app/components/forgot-password-drawer'
 import { GatedContentUploadPromptDrawer } from 'app/components/gated-content-upload-prompt-drawer/GatedContentUploadPromptDrawer'
+import { InboxUnavailableDrawer } from 'app/components/inbox-unavailable-drawer/InboxUnavailableDrawer'
 import { LockedContentDrawer } from 'app/components/locked-content-drawer'
 import { OverflowMenuDrawer } from 'app/components/overflow-menu-drawer'
 import { PlaybackRateDrawer } from 'app/components/playback-rate-drawer'
@@ -118,7 +119,8 @@ const nativeDrawersMap: { [DrawerName in Drawer]?: ComponentType } = {
   GatedContentUploadPrompt: GatedContentUploadPromptDrawer,
   ChatActions: ChatActionsDrawer,
   BlockMessages: BlockMessagesDrawer,
-  SupportersInfo: SupportersInfoDrawer
+  SupportersInfo: SupportersInfoDrawer,
+  InboxUnavailable: InboxUnavailableDrawer
 }
 
 const commonDrawers = Object.entries(commonDrawersMap) as [
