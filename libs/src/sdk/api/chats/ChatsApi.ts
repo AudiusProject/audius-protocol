@@ -39,7 +39,7 @@ import WebSocket from 'isomorphic-ws'
 import EventEmitter from 'events'
 import type TypedEmitter from 'typed-emitter'
 import type { DiscoveryNodeSelectorService } from '../../services/DiscoveryNodeSelector/types'
-import type { WalletApiService } from '../../services/WalletApi'
+import type { AuthService } from '../../services/Auth'
 import type { EventEmitterTarget } from '../../utils/EventEmitterTarget'
 
 export class ChatsApi
@@ -61,7 +61,7 @@ export class ChatsApi
 
   constructor(
     config: Configuration,
-    private readonly walletService: WalletApiService,
+    private readonly auth: AuthService,
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService
   ) {
     super(config)
@@ -550,9 +550,7 @@ export class ChatsApi
     inviteePublicKey: Uint8Array,
     chatSecret: Uint8Array
   ) {
-    const sharedSecret = await this.walletService.getSharedSecret(
-      inviteePublicKey
-    )
+    const sharedSecret = await this.auth.getSharedSecret(inviteePublicKey)
     const encryptedChatSecret = await this.encrypt(sharedSecret, chatSecret)
     const inviteCode = new Uint8Array(65 + encryptedChatSecret.length)
     inviteCode.set(userPublicKey)
@@ -563,9 +561,7 @@ export class ChatsApi
   private async readInviteCode(inviteCode: Uint8Array) {
     const friendPublicKey = inviteCode.slice(0, 65)
     const chatSecretEncrypted = inviteCode.slice(65)
-    const sharedSecret = await this.walletService.getSharedSecret(
-      friendPublicKey
-    )
+    const sharedSecret = await this.auth.getSharedSecret(friendPublicKey)
     return await this.decrypt(sharedSecret, chatSecretEncrypted)
   }
 
@@ -647,9 +643,7 @@ export class ChatsApi
   }
 
   private async getSignatureHeader(payload: string) {
-    const [allSignatureBytes, recoveryByte] = await this.walletService.sign(
-      payload
-    )
+    const [allSignatureBytes, recoveryByte] = await this.auth.sign(payload)
     const signatureBytes = new Uint8Array(65)
     signatureBytes.set(allSignatureBytes, 0)
     signatureBytes[64] = recoveryByte
