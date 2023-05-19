@@ -122,27 +122,29 @@ const TracksLineup = ({
 }) => {
   const [trackEntries] = getFilteredData(tracks.entries)
   const trackAccessMap = usePremiumContentAccessMap(trackEntries)
-  const trackList = trackEntries.map((entry) => {
-    const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
-      entry.track_id
-    ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
-    const isLocked = !isUserAccessTBD && !doesUserHaveAccess
-    return {
-      isLoading: false,
-      isPremium: entry.is_premium,
-      isSaved: entry.has_current_user_saved,
-      isReposted: entry.has_current_user_reposted,
-      isActive: playingUid === entry.uid,
-      isPlaying: queuedAndPlaying && playingUid === entry.uid,
-      artistName: entry.user.name,
-      artistHandle: entry.user.handle,
-      trackTitle: entry.title,
-      trackId: entry.track_id,
-      uid: entry.uid,
-      isDeleted: entry.is_delete || !!entry.user.is_deactivated,
-      isLocked
-    }
-  })
+  const trackList = trackEntries
+    .filter((t) => t.track_id)
+    .map((entry) => {
+      const { isUserAccessTBD, doesUserHaveAccess } = trackAccessMap[
+        entry.track_id
+      ] ?? { isUserAccessTBD: false, doesUserHaveAccess: true }
+      const isLocked = !isUserAccessTBD && !doesUserHaveAccess
+      return {
+        isLoading: false,
+        isPremium: entry.is_premium,
+        isSaved: entry.has_current_user_saved,
+        isReposted: entry.has_current_user_reposted,
+        isActive: playingUid === entry.uid,
+        isPlaying: queuedAndPlaying && playingUid === entry.uid,
+        artistName: entry.user.name,
+        artistHandle: entry.user.handle,
+        trackTitle: entry.title,
+        trackId: entry.track_id,
+        uid: entry.uid,
+        isDeleted: entry.is_delete || !!entry.user.is_deactivated,
+        isLocked
+      }
+    })
   const contentRefCallback = useOffsetScroll()
   return (
     <div className={styles.tracksLineupContainer}>
@@ -290,10 +292,7 @@ const AlbumCardLineup = () => {
           </div>
           {filteredAlbums.length > 0 && (
             <div className={styles.cardsContainer}>
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={albumCards}
-              />
+              <CardLineup cards={albumCards} />
             </div>
           )}
         </div>
@@ -392,10 +391,7 @@ const PlaylistCardLineup = ({
           <NewPlaylistButton />
           {filteredPlaylists.length > 0 && (
             <div className={styles.cardsContainer}>
-              <CardLineup
-                cardsClassName={styles.cardLineup}
-                cards={playlistCards}
-              />
+              <CardLineup cards={playlistCards} />
             </div>
           )}
         </div>
