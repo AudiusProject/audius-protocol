@@ -3,13 +3,13 @@ import App from './app'
 import { Table } from './models'
 import { Users } from './models'
 
-const server = async (self: App) => {
+export const server = async (self: App) => {
     const port = 3000
     const app = express()
 
     app.get('/health', async (_req, res) => {
         const db = self.getDnDb()
-        const user = await db<Users>(Table.Users).where('user_id', '=', 1).andWhere('is_current', '=', true).first();
+        const user = await db<Users>(Table.Users).where('user_id', '=', 1).andWhere('is_current', '=', true).first().catch(console.error);
         const db_status = !(user === undefined);
         res.json({
             health: 'amped 🎸',

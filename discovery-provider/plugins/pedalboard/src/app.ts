@@ -19,7 +19,7 @@ export default class App {
     constructor(idDb?: string) {
         this.dnDb = knex({
             client: "pg",
-            connection: { connectionString: process.env.DISCPROV_DB_CONN_STRING }
+            connection: { connectionString: 'postgresql://postgres:postgres@localhost:5432/audius_discovery' }
         })
         this.idDb = knex({
             client: "pg",
@@ -98,19 +98,18 @@ export default class App {
         const listeners = []
         const db = this.dnDb
         for (const [topic, handlers] of this.listeners) {
-            const conn = db.client.acquireConnection().catch(console.error)
-            const sql = `LISTEN ${topic}`
-
             // package into async fn
             const func = async () => {
+                const conn = await db.client.acquireConnection().catch(console.error)
+                const sql = `LISTEN ${topic}`
                 conn.on("notification", async (msg: any) => {
                     for (const handler of handlers) {
                         await handler(this, JSON.parse(msg.payload)).catch(console.error)
                     }
                 })
+                await conn.query(sql).catch(console.error);
+                console.log(`listening on topic ${topic}`);
             }
-            await conn.query(sql).catch(console.error);
-            console.log(`listening on topic ${topic}`);
             listeners.push(func)
         }
         return listeners
