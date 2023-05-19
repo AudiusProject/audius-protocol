@@ -2,21 +2,23 @@ import { Knex, knex } from "knex"
 import { setIntervalAsync } from "set-interval-async"
 import { Table } from "./models"
 
-export default class App {
+export default class App<AppData> {
     // database connections
     private dnDb: Knex
     private idDb?: Knex
 
     // pg notify handlers
-    private listeners: Map<string, ((self: App, msg: any) => Promise<void>)[]>
+    private listeners: Map<string, ((self: App<AppData>, msg: any) => Promise<void>)[]>
     // table scans
-    private scans: Map<string, ((self: App, msg: any) => Promise<void>)[]>
+    private scans: Map<string, ((self: App<AppData>, msg: any) => Promise<void>)[]>
     // functions that execute on an interval
-    private repeaters: ([number, (self: App) => Promise<void>])[]
+    private repeaters: ([number, (self: App<AppData>) => Promise<void>])[]
     // async operations that are evaluated immediately
-    private spawns: ((self: App) => Promise<void>)[]
+    private spawns: ((self: App<AppData>) => Promise<void>)[]
 
-    constructor(idDb?: string) {
+    private appData: AppData
+
+    constructor(appData: AppData) {
         this.dnDb = knex({
             client: "pg",
             connection: { connectionString: 'postgresql://postgres:postgres@localhost:5432/audius_discovery' }
@@ -30,11 +32,12 @@ export default class App {
         this.scans = new Map()
         this.repeaters = []
         this.spawns = []
+        this.appData = appData
     }
 
     /* External Builder Methods */
 
-    listen<T>(topic: string, callback: (self: App, msg: T) => Promise<void>): App {
+    listen<T>(topic: string, callback: (self: App<AppData>, msg: T) => Promise<void>): App<AppData> {
         const listener = this.listeners.get(topic)
         if (listener === undefined) this.listeners.set(topic, [callback])
         else {
@@ -45,7 +48,7 @@ export default class App {
         return this;
     }
 
-    scan<T>(table: Table, callback: (self: App, row: T) => Promise<void>): App {
+    scan<T>(table: Table, callback: (self: App<AppData>, row: T) => Promise<void>): App<AppData> {
         const scanner = this.scans.get(table)
         if (scanner === undefined) this.scans.set(table, [callback])
         else {
@@ -56,12 +59,12 @@ export default class App {
         return this;
     }
 
-    repeat(intervalMs: number, callback: (self: App) => Promise<void>): App {
+    repeat(intervalMs: number, callback: (self: App<AppData>) => Promise<void>): App<AppData> {
         this.repeaters.push([intervalMs, callback])
         return this;
     }
 
-    spawn(func: (self: App) => Promise<void>): App {
+    spawn(func: (self: App<AppData>) => Promise<void>): App<AppData> {
         this.spawns.push(func)
         return this;
     }
@@ -90,6 +93,15 @@ export default class App {
     getIdDb(): Knex {
         if (this.idDb === undefined) throw new Error("identity connection not established")
         return this.idDb
+    }
+
+    updateAppData(func: (data: AppData) => AppData) {
+        const newAppData = func(this.appData)
+        this.appData = newAppData
+    }
+
+    viewAppData(): Readonly<AppData> {
+        return this.appData
     }
 
     /* Internal Builder Methods */
