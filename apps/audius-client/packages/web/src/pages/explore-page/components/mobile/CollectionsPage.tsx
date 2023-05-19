@@ -74,7 +74,6 @@ const ExplorePage = ({
   const cards = (
     <CardLineup
       containerClassName={styles.lineupContainer}
-      cardsClassName={styles.cardLineup}
       cards={playlistCards}
     />
   )
@@ -83,7 +82,7 @@ const ExplorePage = ({
   useEffect(() => {
     setHeader(
       <>
-        <Header className={styles.header} title={title} />
+        <Header title={title} />
       </>
     )
   }, [setHeader, title])

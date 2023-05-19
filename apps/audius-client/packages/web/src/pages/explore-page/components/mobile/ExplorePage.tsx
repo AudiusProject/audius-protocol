@@ -97,7 +97,7 @@ const TabBodyHeader = ({
         <h2 className={styles.title}>{title}</h2>
         {description && <p className={styles.description}>{description}</p>}
       </div>
-      {children && <div className={styles.children}>{children}</div>}
+      {children && <div>{children}</div>}
     </div>
   )
 }
@@ -273,7 +273,6 @@ const ExplorePage = ({
         ) : (
           <CardLineup
             containerClassName={styles.lineupContainer}
-            cardsClassName={styles.cardLineup}
             cards={playlistCards}
           />
         )}
@@ -284,7 +283,6 @@ const ExplorePage = ({
         ) : (
           <CardLineup
             containerClassName={styles.lineupContainer}
-            cardsClassName={styles.cardLineup}
             cards={profileCards}
           />
         )}

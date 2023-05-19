@@ -124,7 +124,7 @@ const AddToPlaylist = g(
         <div className={styles.bodyContainer}>
           <NewPlaylistButton onClick={addToNewPlaylist} />
           <div className={styles.cardsContainer}>
-            <CardLineup cardsClassName={styles.cardLineup} cards={cards} />
+            <CardLineup cards={cards} />
           </div>
         </div>
       </MobilePageContainer>
