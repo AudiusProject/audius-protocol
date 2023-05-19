@@ -16,8 +16,6 @@ export function DiscoveryHealth() {
 
   if (error) return <div>error</div>
   if (!sps) return null
-
-  console.log(sps)
   return (
     <div style={{ padding: 20 }}>
       <table className="table">
