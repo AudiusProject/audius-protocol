@@ -36,11 +36,9 @@ steps:
         - gcp-checkout
         - run: AUDIUS_DEV=false bash ~/audius-protocol/dev-tools/setup.sh
         - run:
-            no_output_timeout: 60m
             command: |
               . ~/.profile
               cd audius-protocol
-              docker system prune --all -f
               audius-compose build
               audius-compose pull
               audius-compose prune -y
