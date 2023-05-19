@@ -15,3 +15,11 @@ knex: query builder for ts and js
 …
 
 more as pedalboard gets built out
+
+# Running against containerized DBs
+
+open an ssh tunnel in a terminal and hold it open
+```
+ssh -L 5432:localhost:5432 ubuntu@{EXTERNAL_IP_OF_MACHINE}
+```
+in another terminal run a `new App()` or `scripts/sandbox.ts` while connecting to `postgresql://postgres:postgres@localhost:5432/audius_discovery`
