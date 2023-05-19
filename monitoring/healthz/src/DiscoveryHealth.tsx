@@ -16,12 +16,15 @@ export function DiscoveryHealth() {
 
   if (error) return <div>error</div>
   if (!sps) return null
+
+  console.log(sps)
   return (
     <div style={{ padding: 20 }}>
       <table className="table">
         <thead>
           <tr>
             <th>Host</th>
+            <th>Registered</th>
             <th>Ver</th>
             <th>Git SHA</th>
             <th>Compose</th>
@@ -98,6 +101,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
+      <td>{sp.isRegistered.toString()}</td>
       <td>{health.version}</td>
       <td>
         <a
