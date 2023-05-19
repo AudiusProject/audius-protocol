@@ -5,6 +5,11 @@ jobs:
       context: [GCP, dockerhub]
       instance-name: circleci-push-creator-node-$CIRCLE_BUILD_NUM
       service: creator-node
+  - push-docker-image:
+      name: push-mediorum
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
+      service: mediorum
   - test:
       name: test-creator-node
       context: GCP
