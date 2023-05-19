@@ -50,6 +50,10 @@
   fill: var(--neutral);
 }
 
+.iconButton.disabled path {
+  fill: var(--neutral-light-4);
+}
+
 .iconButton:hover path {
   fill: var(--static-white);
 }

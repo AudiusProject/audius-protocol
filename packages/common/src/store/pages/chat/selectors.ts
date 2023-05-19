@@ -212,19 +212,19 @@ export const getCanChat = createSelector(
       }
     }
 
-    const currentUserPermissions = chatPermissions[currentUserId]
-
     const userPermissions = chatPermissions[userId]
     const isBlockee = blockees.includes(userId)
     const isBlocker = blockers.includes(userId)
     const canChat =
       !isBlockee &&
       !isBlocker &&
-      (userPermissions?.current_user_has_permission ?? true)
+      (userPermissions?.current_user_has_permission ?? false)
 
     let action = ChatPermissionAction.NOT_APPLICABLE
     if (!canChat) {
-      if (
+      if (!userPermissions) {
+        action = ChatPermissionAction.WAIT
+      } else if (
         userPermissions.permits === ChatPermission.NONE ||
         blockers.includes(userId)
       ) {
@@ -233,10 +233,6 @@ export const getCanChat = createSelector(
         action = ChatPermissionAction.UNBLOCK
       } else if (userPermissions.permits === ChatPermission.TIPPERS) {
         action = ChatPermissionAction.TIP
-      } else if (currentUserPermissions?.permits === ChatPermission.FOLLOWEES) {
-        action = ChatPermissionAction.FOLLOW_OR_CHANGE_SETTINGS
-      } else if (currentUserPermissions?.permits === ChatPermission.NONE) {
-        action = ChatPermissionAction.CHANGE_SETTINGS
       }
     }
     return {

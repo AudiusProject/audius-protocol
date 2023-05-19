@@ -1315,6 +1315,7 @@ export type TipSource =
   | 'trackPage'
   | 'howToUnlockTrackPage'
   | 'howToUnlockModal'
+  | 'inboxUnavailableModal'
 
 type TipAudioRequest = {
   eventName: Name.TIP_AUDIO_REQUEST
