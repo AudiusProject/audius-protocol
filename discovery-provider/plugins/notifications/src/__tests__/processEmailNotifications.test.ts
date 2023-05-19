@@ -19,7 +19,7 @@ import {
   insertReaction,
   insertNotifications,
   insertNotificationEmails,
-  setUserEmailAndSettings,
+  setUserEmailAndSettings
 } from '../utils/populateDB'
 import { RemoteConfig } from '../remoteConfig'
 
