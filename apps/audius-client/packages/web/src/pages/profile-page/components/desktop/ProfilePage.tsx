@@ -26,6 +26,7 @@ import { make, useRecord } from 'common/store/analytics/actions'
 import Card from 'components/card/desktop/Card'
 import CollectiblesPage from 'components/collectibles/components/CollectiblesPage'
 import CoverPhoto from 'components/cover-photo/CoverPhoto'
+import { InboxUnavailableModal } from 'components/inbox-unavailable-modal/InboxUnavailableModal'
 import CardLineup from 'components/lineup/CardLineup'
 import Lineup from 'components/lineup/Lineup'
 import Mask from 'components/mask/Mask'
@@ -89,6 +90,8 @@ export type ProfilePageProps = {
   mode: ProfileMode
   stats: StatProps[]
   isBlocked: boolean
+  canChat: boolean
+  showInboxUnavailableModal: boolean
 
   profile: ProfileUser | null
   albums: Collection[] | null
@@ -146,9 +149,10 @@ export type ProfilePageProps = {
   ) => void
   didChangeTabsFrom: (prevLabel: string, currentLabel: string) => void
   onCloseArtistRecommendations: () => void
-  onMessage?: () => void
+  onMessage: () => void
   onBlock: () => void
   onUnblock: () => void
+  onCloseInboxUnavailableModal: () => void
 }
 
 const ProfilePage = ({
@@ -201,10 +205,14 @@ const ProfilePage = ({
   editMode,
   areArtistRecommendationsVisible,
   onCloseArtistRecommendations,
+  canChat,
   onMessage,
   onBlock,
   onUnblock,
   isBlocked,
+
+  showInboxUnavailableModal,
+  onCloseInboxUnavailableModal,
 
   accountUserId,
   userId,
@@ -742,6 +750,7 @@ const ProfilePage = ({
             onToggleSubscribe={toggleNotificationSubscription}
             onFollow={onFollow}
             onUnfollow={onUnfollow}
+            canChat={canChat}
             onMessage={onMessage}
             isBlocked={isBlocked}
             onBlock={onBlock}
@@ -769,6 +778,13 @@ const ProfilePage = ({
           </div>
         </Mask>
       </div>
+      {profile ? (
+        <InboxUnavailableModal
+          user={profile}
+          isVisible={showInboxUnavailableModal}
+          onClose={onCloseInboxUnavailableModal}
+        />
+      ) : null}
     </Page>
   )
 }

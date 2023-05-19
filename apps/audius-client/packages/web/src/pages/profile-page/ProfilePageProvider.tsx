@@ -117,6 +117,7 @@ type ProfilePageState = {
   updatedDonation: string | null
   tracksLineupOrder: TracksSortMode
   areArtistRecommendationsVisible: boolean
+  showInboxUnavailableModal: boolean
 }
 
 export const MIN_COLLECTIBLES_TIER: BadgeTier = 'silver'
@@ -130,6 +131,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     shouldMaskContent: false,
     tracksLineupOrder: TracksSortMode.RECENT,
     areArtistRecommendationsVisible: false,
+    showInboxUnavailableModal: false,
     ...INITIAL_UPDATE_FIELDS
   }
 
@@ -265,6 +267,10 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
 
   onCloseArtistRecommendations = () => {
     this.setState({ areArtistRecommendationsVisible: false })
+  }
+
+  onCloseInboxUnavailableModal = () => {
+    this.setState({ showInboxUnavailableModal: false })
   }
 
   fetchProfile = (
@@ -711,7 +717,11 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const {
       profile: { profile }
     } = this.props
-    return this.props.onMessage(profile!.user_id)
+    if (this.props.chatPermissions?.canChat) {
+      return this.props.onMessage(profile!.user_id)
+    } else {
+      this.setState({ showInboxUnavailableModal: true })
+    }
   }
 
   onBlock = () => {
@@ -961,7 +971,10 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       updateProfile: this.props.updateProfile,
       isBlocked: this.props.profile.profile
         ? this.props.blockeeList.includes(this.props.profile.profile.user_id)
-        : false
+        : false,
+      canChat: this.props.chatPermissions.canChat,
+      showInboxUnavailableModal: this.state.showInboxUnavailableModal,
+      onCloseInboxUnavailableModal: this.onCloseInboxUnavailableModal
     }
 
     return (
