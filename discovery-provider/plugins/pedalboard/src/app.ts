@@ -1,5 +1,6 @@
 import { Knex, knex } from "knex"
 import { setIntervalAsync } from "set-interval-async"
+import { Table } from "./models"
 
 export default class App {
     // database connections
@@ -44,7 +45,7 @@ export default class App {
         return this;
     }
 
-    scan<T>(table: string, callback: (self: App, row: T) => Promise<void>): App {
+    scan<T>(table: Table, callback: (self: App, row: T) => Promise<void>): App {
         const scanner = this.scans.get(table)
         if (scanner === undefined) this.scans.set(table, [callback])
         else {
