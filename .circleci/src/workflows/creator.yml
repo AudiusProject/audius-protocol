@@ -15,6 +15,11 @@ jobs:
       context: GCP
       instance-name: circleci-test-creator-node-$CIRCLE_BUILD_NUM
       service: creator-node
+  - test:
+      name: test-mediorum
+      context: GCP
+      instance-name: circleci-test-mediorum-$CIRCLE_BUILD_NUM
+      service: mediorum
 
   # Release
   - deploy-prod-creator-node-trigger:
