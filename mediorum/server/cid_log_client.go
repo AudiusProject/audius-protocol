@@ -8,74 +8,32 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"sync"
 	"time"
 
 	"golang.org/x/exp/slog"
 )
 
-func (ss *MediorumServer) startBeamClient() {
-	ctx := context.Background()
-
-	// migration: create cid_lookup table
-	// todo: move this to ddl zone
-	ddl := `
-
-	create table if not exists cid_cursor (
-		"host" text primary key,
-		"updated_at" timestamp with time zone NOT NULL
-	);
-
-	create table if not exists cid_lookup (
-		"multihash" text,
-		"host" text
-	);
-
-	create unique index if not exists "idx_multihash" on cid_lookup("multihash", "host");
-	`
-
-	_, err := ss.pgPool.Exec(ctx, ddl)
-	if err != nil {
-		log.Println("ddl failed", err)
-		return
-	}
-
-	// polling:
-	// beam cid lookup from peers on an interval
-	for {
-		time.Sleep(jitterSeconds(20, 40))
-
-		if err != nil {
-			log.Println("create temp table failed", err)
+func (ss *MediorumServer) startBeamClients() {
+	for _, peer := range ss.Config.Peers {
+		if peer.Host == ss.Config.Self.Host {
+			continue
 		}
-
-		startedAt := time.Now()
-		wg := &sync.WaitGroup{}
-		for _, peer := range ss.Config.Peers {
-			if peer.Host == ss.Config.Self.Host {
-				continue
-			}
-			peer := peer
-			wg.Add(1)
-			go func() {
-				result, err := ss.beamFromPeer(peer)
-				if err != nil {
-					log.Println("beam failed", peer.Host, err)
-				} else {
-					log.Printf("beam OK %+v \n", result)
-				}
-				wg.Done()
-			}()
-		}
-		wg.Wait()
-
-		log.Println("beam all done", "took", time.Since(startedAt))
-
+		go ss.startBeamClientForPeer(peer)
 	}
 }
 
-func jitterSeconds(min, n int) time.Duration {
-	return time.Second * time.Duration(min+rand.Intn(n-min))
+func (ss *MediorumServer) startBeamClientForPeer(peer Peer) {
+	for {
+		time.Sleep(jitterSeconds(10, 20))
+
+		result, err := ss.beamFromPeer(peer)
+		if err != nil {
+			log.Println("beam failed", peer.Host, err)
+			time.Sleep(time.Minute * 10)
+		} else if result.RowCount > 0 {
+			log.Printf("beam OK %+v \n", result)
+		}
+	}
 }
 
 type beamResult struct {
@@ -157,4 +115,8 @@ func (ss *MediorumServer) beamFromPeer(peer Peer) (*beamResult, error) {
 		Took:         time.Since(startedAt),
 	}
 	return r, nil
+}
+
+func jitterSeconds(min, n int) time.Duration {
+	return time.Second * time.Duration(min+rand.Intn(n-min))
 }

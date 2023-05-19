@@ -248,7 +248,7 @@ func (ss *MediorumServer) MustStart() {
 
 	ss.crud.StartClients()
 
-	go ss.startBeamClient()
+	ss.startBeamClients()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
