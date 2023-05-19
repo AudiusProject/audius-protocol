@@ -5,7 +5,10 @@ import { isEqual } from 'lodash'
 import { denormalize, normalize } from 'normalizr'
 import { useDispatch, useSelector } from 'react-redux'
 
+import { Kind } from 'models/Kind'
 import { Status } from 'models/Status'
+import { getCollection } from 'store/cache/collections/selectors'
+import { getTrack } from 'store/cache/tracks/selectors'
 import { CommonState } from 'store/reducers'
 import { getErrorMessage } from 'utils/error'
 
@@ -128,26 +131,45 @@ const buildEndpointHooks = (
       // Retrieve data from cache if lookup args provided
       if (!endpointState[key]) {
         if (
-          !endpoint.options?.idArgKey ||
+          !(endpoint.options?.idArgKey || endpoint.options?.permalinkArgKey) ||
           !endpoint.options?.kind ||
           !endpoint.options?.schemaKey
         )
           return null
-        const { kind, idArgKey, schemaKey } = endpoint.options
-        if (!fetchArgs[idArgKey]) return null
-        const idAsNumber =
-          typeof fetchArgs[idArgKey] === 'number'
+        const { kind, idArgKey, permalinkArgKey, schemaKey } = endpoint.options
+        if (idArgKey && !fetchArgs[idArgKey]) return null
+        if (permalinkArgKey && !fetchArgs[permalinkArgKey]) return null
+
+        const idAsNumber = idArgKey
+          ? typeof fetchArgs[idArgKey] === 'number'
             ? parseInt(fetchArgs[idArgKey])
             : fetchArgs[idArgKey]
-        const initialCachedEntity = cacheSelectors.getEntry(state, {
-          kind,
-          id: idAsNumber
-        })
+          : null
+        const idCachedEntity = idAsNumber
+          ? cacheSelectors.getEntry(state, {
+              kind,
+              id: idAsNumber
+            })
+          : null
+
+        let permalinkCachedEntity = null
+        if (kind === Kind.TRACKS && permalinkArgKey) {
+          permalinkCachedEntity = getTrack(state, {
+            permalink: fetchArgs[permalinkArgKey]
+          })
+        }
+        if (kind === Kind.COLLECTIONS && permalinkArgKey) {
+          permalinkCachedEntity = getCollection(state, {
+            permalink: fetchArgs[permalinkArgKey]
+          })
+        }
+
+        const cachedEntity = idCachedEntity || permalinkCachedEntity
 
         // cache hit
-        if (initialCachedEntity) {
+        if (cachedEntity) {
           const { result, entities } = normalize(
-            { [schemaKey]: initialCachedEntity },
+            { [schemaKey]: cachedEntity },
             apiResponseSchema
           )
           return {
@@ -198,8 +220,9 @@ const buildEndpointHooks = (
       }
 
       const fetchWrapped = async () => {
-        if (cachedData || !context) return
-        if (status === Status.LOADING) return
+        if (!context) return
+        if ([Status.LOADING, Status.ERROR, Status.SUCCESS].includes(status))
+          return
         if (hookOptions?.disabled) return
 
         try {
