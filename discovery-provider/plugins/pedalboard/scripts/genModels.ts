@@ -3,7 +3,7 @@ import { updateTypes } from "knex-types";
 
 const db = knex({
     client: "pg",
-    connection: ""
+    connection: "postgresql://postgres:postgres@localhost:5432/audius_discovery"
 });
 
 updateTypes(db, { output: "./src/models.ts" }).catch((err) => {

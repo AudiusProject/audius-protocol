@@ -5,8 +5,6 @@
 import App from "../src/app"
 import { Table } from "../src/models"
 
-type Track = {}
-
 const main = async () => {
     await new App()
         .repeat(3000, async (app) => console.log(`Repeat one: ${new Date().getTime()}`))

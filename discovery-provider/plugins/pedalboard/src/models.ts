@@ -74,6 +74,7 @@ export enum Table {
   Playlists = "playlists",
   PlaylistSeen = "playlist_seen",
   Plays = "plays",
+  Pubkeys = "pubkeys",
   Reactions = "reactions",
   RelatedArtists = "related_artists",
   Remixes = "remixes",
@@ -82,9 +83,11 @@ export enum Table {
   RewardsManagerBackfillTxs = "rewards_manager_backfill_txs",
   RouteMetrics = "route_metrics",
   RpcCursor = "rpc_cursor",
+  Rpclog = "rpclog",
   RpcLog = "rpc_log",
   Saves = "saves",
   SchemaMigrations = "schema_migrations",
+  SequelizeMeta = "SequelizeMeta",
   SkippedTransactions = "skipped_transactions",
   SplTokenBackfillTxs = "spl_token_backfill_txs",
   SplTokenTx = "spl_token_tx",
@@ -153,6 +156,7 @@ export type Tables = {
   "playlists": Playlists,
   "playlist_seen": PlaylistSeen,
   "plays": Plays,
+  "pubkeys": Pubkeys,
   "reactions": Reactions,
   "related_artists": RelatedArtists,
   "remixes": Remixes,
@@ -161,9 +165,11 @@ export type Tables = {
   "rewards_manager_backfill_txs": RewardsManagerBackfillTxs,
   "route_metrics": RouteMetrics,
   "rpc_cursor": RpcCursor,
+  "rpclog": Rpclog,
   "rpc_log": RpcLog,
   "saves": Saves,
   "schema_migrations": SchemaMigrations,
+  "SequelizeMeta": SequelizeMeta,
   "skipped_transactions": SkippedTransactions,
   "spl_token_backfill_txs": SplTokenBackfillTxs,
   "spl_token_tx": SplTokenTx,
@@ -294,11 +300,9 @@ export type AppDelegates = {
   user_id: number | null;
   name: string;
   is_personal_access: boolean;
-  is_delete: boolean;
+  is_revoked: boolean;
   created_at: Date;
   txhash: string;
-  is_current: boolean;
-  updated_at: Date;
 };
 
 export type AppNameMetrics = {
@@ -591,6 +595,11 @@ export type Plays = {
   country: string | null;
 };
 
+export type Pubkeys = {
+  wallet: string;
+  pubkey: string | null;
+};
+
 export type Reactions = {
   id: number;
   slot: number;
@@ -657,6 +666,14 @@ export type RpcCursor = {
   relayed_at: Date;
 };
 
+export type Rpclog = {
+  cuid: string;
+  wallet: string | null;
+  method: string | null;
+  params: unknown | null;
+  jetstream_seq: number | null;
+};
+
 export type RpcLog = {
   relayed_at: Date;
   from_wallet: string;
@@ -684,6 +701,10 @@ export type SchemaMigrations = {
   version: string;
 };
 
+export type SequelizeMeta = {
+  name: string;
+};
+
 export type SkippedTransactions = {
   id: number;
   blocknumber: number;
@@ -691,7 +712,7 @@ export type SkippedTransactions = {
   txhash: string;
   created_at: Date;
   updated_at: Date;
-  level: Skippedtransactionlevel;
+  level: Skippedtransactionlevel | null;
 };
 
 export type SplTokenBackfillTxs = {
