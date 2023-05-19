@@ -138,7 +138,7 @@ workflows:
             .* run-identity-workflow true
             .* run-eth-contracts-workflow true
             .* run-contracts-workflow true
-            .* run-release-workflow true
+            .* run-release-workflow false
             libs/.* run-sdk-workflow true
           requires:
             - generate-config
