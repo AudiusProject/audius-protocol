@@ -5,7 +5,7 @@ parameters:
     type: string
   sdk-release-preid:
     type: string
-resource_class: small
+resource_class: large
 docker:
   - image: cimg/node:14.16
 steps:
