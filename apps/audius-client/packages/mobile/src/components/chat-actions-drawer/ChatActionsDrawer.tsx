@@ -1,3 +1,4 @@
+import { chatSelectors } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 
@@ -9,11 +10,14 @@ import { getData } from 'app/store/drawers/selectors'
 import { setVisibility } from 'app/store/drawers/slice'
 import { makeStyles } from 'app/styles'
 
+const { getDoesBlockUser } = chatSelectors
+
 const CHAT_ACTIONS_MODAL_NAME = 'ChatActions'
 
 const messages = {
   visitProfile: 'Visit Profile',
-  blockMessages: 'Block Messages'
+  blockMessages: 'Block Messages',
+  unblockMessages: 'Unblock Messages'
 }
 
 const useStyles = makeStyles(({ spacing, typography, palette }) => ({
@@ -39,6 +43,9 @@ export const ChatActionsDrawer = () => {
   const navigation = useNavigation()
   const { userId } = useSelector((state: AppState) =>
     getData<'ChatActions'>(state)
+  )
+  const doesBlockUser = useSelector((state: AppState) =>
+    getDoesBlockUser(state, userId)
   )
 
   const handleVisitProfilePress = () => {
@@ -74,7 +81,7 @@ export const ChatActionsDrawer = () => {
           {messages.visitProfile}
         </Text>
         <Text style={styles.text} onPress={handleBlockMessagesPress}>
-          {messages.blockMessages}
+          {doesBlockUser ? messages.unblockMessages : messages.blockMessages}
         </Text>
       </View>
     </NativeDrawer>

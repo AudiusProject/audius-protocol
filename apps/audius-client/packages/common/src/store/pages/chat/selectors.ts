@@ -182,6 +182,11 @@ export const getUserChatPermissions = createSelector(
   }
 )
 
+export const getDoesBlockUser = createSelector(
+  [getBlockees, (_state: CommonState, userId: ID) => userId],
+  (blockees, userId) => blockees.includes(userId)
+)
+
 export const getCanChat = createSelector(
   [
     getUserId,
