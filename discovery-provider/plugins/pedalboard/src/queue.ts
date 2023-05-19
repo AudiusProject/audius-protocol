@@ -1,3 +1,0 @@
-class MessageQueue { }
-
-class DeadLetterQueue { }

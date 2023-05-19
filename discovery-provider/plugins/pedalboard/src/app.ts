@@ -4,16 +4,18 @@ import { setIntervalAsync } from "set-interval-async"
 export default class App {
     // database connections
     private dnDb: Knex
-    private idDb: Knex
+    private idDb?: Knex
 
     // pg notify handlers
     private listeners: Map<string, ((self: App, msg: any) => Promise<void>)[]>
+    // table scans
+    private scans: Map<string, ((self: App, msg: any) => Promise<void>)[]>
     // functions that execute on an interval
     private repeaters: ([number, (self: App) => Promise<void>])[]
     // async operations that are evaluated immediately
     private spawns: ((self: App) => Promise<void>)[]
 
-    constructor() {
+    constructor(idDb?: string) {
         this.dnDb = knex({
             client: "pg",
             connection: { connectionString: process.env.DISCPROV_DB_CONN_STRING }
@@ -24,6 +26,7 @@ export default class App {
         })
 
         this.listeners = new Map()
+        this.scans = new Map()
         this.repeaters = []
         this.spawns = []
     }
@@ -41,6 +44,17 @@ export default class App {
         return this;
     }
 
+    scan<T>(table: string, callback: (self: App, row: T) => Promise<void>): App {
+        const scanner = this.scans.get(table)
+        if (scanner === undefined) this.scans.set(table, [callback])
+        else {
+            // push then re-insert
+            scanner.push(callback)
+            this.scans.set(table, scanner)
+        }
+        return this;
+    }
+
     repeat(intervalMs: number, callback: (self: App) => Promise<void>): App {
         this.repeaters.push([intervalMs, callback])
         return this;
@@ -52,14 +66,11 @@ export default class App {
     }
 
     async run(): Promise<void> {
-        /**
-         * Establish PG notify and DB connections here
-         */
-
         // setup all handlers
         const listeners = await this.initListenHandlers()
         const repeaters = this.initRepeatHandlers()
         const spawned = this.initSpawnHandlers()
+        // const scanners = this.initScanHandlers()
 
         // run all processes concurrently
         const processes = [...listeners, ...repeaters, ...spawned]
@@ -76,6 +87,7 @@ export default class App {
     }
 
     getIdDb(): Knex {
+        if (this.idDb === undefined) throw new Error("identity connection not established")
         return this.idDb
     }
 
