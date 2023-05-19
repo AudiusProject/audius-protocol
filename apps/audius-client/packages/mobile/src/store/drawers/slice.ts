@@ -26,6 +26,7 @@ export type Drawer =
   | 'ProfileActions'
   | 'BlockMessages'
   | 'SupportersInfo'
+  | 'InboxUnavailable'
 
 export type DrawerData = {
   EnablePushNotifications: undefined
@@ -54,6 +55,7 @@ export type DrawerData = {
   ProfileActions: undefined
   BlockMessages: { userId: number }
   SupportersInfo: undefined
+  InboxUnavailable: { userId: number }
 }
 
 export type DrawersState = { [drawer in Drawer]: boolean | 'closing' } & {
@@ -82,6 +84,7 @@ const initialState: DrawersState = {
   ProfileActions: false,
   BlockMessages: false,
   SupportersInfo: false,
+  InboxUnavailable: false,
   data: null
 }
 
