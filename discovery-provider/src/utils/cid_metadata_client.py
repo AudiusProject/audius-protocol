@@ -28,6 +28,15 @@ def get_metadata_from_json(default_metadata_fields, resp_json):
     return metadata
 
 
+def sanitize_json(json_resp):
+    sanitized_data = (
+        json.dumps(json_resp, ensure_ascii=False)
+        .encode("utf-8", "ignore")
+        .decode("utf-8", "ignore")
+    )
+    return json.loads(sanitized_data)
+
+
 class CIDMetadataClient:
     """Helper class for Audius Discovery Provider + CID Metadata interaction"""
 
@@ -80,12 +89,8 @@ class CIDMetadataClient:
             ) as resp:
                 if resp.status == 200:
                     json_resp = await resp.json(content_type=None)
-                    sanitized_data = (
-                        json.dumps(json_resp, ensure_ascii=False)
-                        .encode("utf-8", "ignore")
-                        .decode("utf-8", "ignore")
-                    )
-                    return (multihash, json.loads(sanitized_data))
+                    metadata = sanitize_json(json_resp)
+                    return (multihash, metadata)
         except asyncio.TimeoutError:
             logger.info(
                 f"CIDMetadataClient | _get_metadata_async TimeoutError fetching gateway address - {url}"
