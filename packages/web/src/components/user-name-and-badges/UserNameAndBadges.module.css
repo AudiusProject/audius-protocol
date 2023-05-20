@@ -1,0 +1,5 @@
+.nameAndBadge {
+  display: inline-flex;
+  gap: var(--unit-1);
+  cursor: pointer;
+}

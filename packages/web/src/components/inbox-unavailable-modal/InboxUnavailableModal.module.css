@@ -6,12 +6,6 @@
   fill: var(--neutral);
 }
 
-.nameAndBadge {
-  display: inline-flex;
-  gap: var(--unit-1);
-  cursor: pointer;
-}
-
 .content {
   line-height: 130%;
   font-size: var(--font-l);

@@ -25,7 +25,7 @@ import { useColor } from 'app/utils/theme'
 import { UserBadges } from '../user-badges'
 
 const { unblockUser } = chatActions
-const { getCanChat } = chatSelectors
+const { getCanCreateChat } = chatSelectors
 const { getUser } = cacheUsersSelectors
 const { beginTip } = tippingActions
 
@@ -153,7 +153,9 @@ export const InboxUnavailableDrawer = () => {
 
   const { userId } = useSelector((state) => getData<'InboxUnavailable'>(state))
   const user = useSelector((state) => getUser(state, { id: userId }))
-  const { callToAction } = useSelector((state) => getCanChat(state, userId))
+  const { callToAction } = useSelector((state) =>
+    getCanCreateChat(state, { userId })
+  )
 
   const closeDrawer = useCallback(() => {
     dispatch(

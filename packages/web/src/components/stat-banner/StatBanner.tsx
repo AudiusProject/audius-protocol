@@ -59,7 +59,7 @@ type StatsBannerProps = {
   following?: boolean
   isSubscribed?: boolean
   onToggleSubscribe?: () => void
-  canChat?: boolean
+  canCreateChat?: boolean
   onMessage?: () => void
   onBlock?: () => void
   onUnblock?: () => void
@@ -85,7 +85,7 @@ export const StatBanner = (props: StatsBannerProps) => {
     onFollow,
     onUnfollow,
     following,
-    canChat,
+    canCreateChat,
     onMessage,
     onBlock,
     onUnblock,
@@ -185,10 +185,10 @@ export const StatBanner = (props: StatsBannerProps) => {
                   type={ButtonType.COMMON}
                   size={ButtonSize.SMALL}
                   className={cn(styles.iconButton, styles.statButton, {
-                    [styles.disabled]: !canChat
+                    [styles.disabled]: !canCreateChat
                   })}
                   aria-label={messages.message}
-                  text={canChat ? <IconMessage /> : <IconMessageLocked />}
+                  text={canCreateChat ? <IconMessage /> : <IconMessageLocked />}
                   onClick={onMessage}
                 />
               ) : null}

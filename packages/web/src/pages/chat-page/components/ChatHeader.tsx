@@ -38,7 +38,7 @@ const messages = {
 }
 
 const { getOtherChatUsers, getBlockees } = chatSelectors
-const { blockUser, unblockUser } = chatActions
+const { blockUser, unblockUser, deleteChat } = chatActions
 
 type ChatHeaderProps = { currentChatId?: string }
 
@@ -75,6 +75,12 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
       dispatch(pushRoute(profilePage(user.handle)))
     }, [dispatch, user])
 
+    const handleDeleteClicked = useCallback(() => {
+      if (currentChatId) {
+        dispatch(deleteChat({ chatId: currentChatId }))
+      }
+    }, [dispatch, currentChatId])
+
     const overflowItems = [
       isBlocked
         ? {
@@ -90,9 +96,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
       {
         text: messages.delete,
         icon: <IconTrash />,
-        onClick: () => {
-          // TODO: Store changes for chat deletion
-        }
+        onClick: handleDeleteClicked
       },
       {
         text: messages.visit,

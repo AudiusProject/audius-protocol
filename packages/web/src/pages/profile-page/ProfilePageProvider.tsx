@@ -74,7 +74,7 @@ const {
 } = profilePageSelectors
 const { getAccountUser, getAccountHasTracks } = accountSelectors
 const { createChat, blockUser, unblockUser } = chatActions
-const { getBlockees, getBlockers, getCanChat } = chatSelectors
+const { getBlockees, getBlockers, getCanCreateChat } = chatSelectors
 
 const INITIAL_UPDATE_FIELDS = {
   updatedName: null,
@@ -717,7 +717,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
     const {
       profile: { profile }
     } = this.props
-    if (this.props.chatPermissions?.canChat) {
+    if (this.props.chatPermissions?.canCreateChat) {
       return this.props.onMessage(profile!.user_id)
     } else {
       this.setState({ showInboxUnavailableModal: true })
@@ -972,7 +972,7 @@ class ProfilePage extends PureComponent<ProfilePageProps, ProfilePageState> {
       isBlocked: this.props.profile.profile
         ? this.props.blockeeList.includes(this.props.profile.profile.user_id)
         : false,
-      canChat: this.props.chatPermissions.canChat,
+      canCreateChat: this.props.chatPermissions.canCreateChat,
       showInboxUnavailableModal: this.state.showInboxUnavailableModal,
       onCloseInboxUnavailableModal: this.onCloseInboxUnavailableModal
     }
@@ -1016,7 +1016,9 @@ function makeMapStateToProps() {
       relatedArtists: selectSuggestedFollowsUsers(state, {
         id: getProfileUserId(state, handleLower) ?? 0
       }),
-      chatPermissions: getCanChat(state, profile.profile?.user_id),
+      chatPermissions: getCanCreateChat(state, {
+        userId: profile.profile?.user_id
+      }),
       blockeeList: getBlockees(state),
       blockerList: getBlockers(state),
       accountHasTracks

@@ -187,15 +187,13 @@ export const getDoesBlockUser = createSelector(
   (blockees, userId) => blockees.includes(userId)
 )
 
-export const getCanChat = createSelector(
+export const getCanCreateChat = createSelector(
   [
     getUserId,
     getBlockees,
     getBlockers,
     getChatPermissions,
-    (_state: CommonState, userId: Maybe<ID>) => {
-      return userId
-    }
+    (_: CommonState, { userId }: { userId: Maybe<ID> }) => userId
   ],
   (
     currentUserId,
@@ -203,16 +201,16 @@ export const getCanChat = createSelector(
     blockers,
     chatPermissions,
     userId
-  ): { canChat: boolean; callToAction: ChatPermissionAction } => {
+  ): { canCreateChat: boolean; callToAction: ChatPermissionAction } => {
     if (!currentUserId) {
       return {
-        canChat: false,
+        canCreateChat: false,
         callToAction: ChatPermissionAction.SIGN_UP
       }
     }
     if (!userId) {
       return {
-        canChat: false,
+        canCreateChat: false,
         callToAction: ChatPermissionAction.NONE
       }
     }
@@ -220,13 +218,13 @@ export const getCanChat = createSelector(
     const userPermissions = chatPermissions[userId]
     const isBlockee = blockees.includes(userId)
     const isBlocker = blockers.includes(userId)
-    const canChat =
+    const canCreateChat =
       !isBlockee &&
       !isBlocker &&
       (userPermissions?.current_user_has_permission ?? false)
 
     let action = ChatPermissionAction.NOT_APPLICABLE
-    if (!canChat) {
+    if (!canCreateChat) {
       if (!userPermissions) {
         action = ChatPermissionAction.WAIT
       } else if (
@@ -241,8 +239,57 @@ export const getCanChat = createSelector(
       }
     }
     return {
-      canChat,
+      canCreateChat,
       callToAction: action
+    }
+  }
+)
+
+export const getCanSendMessage = createSelector(
+  [
+    getBlockees,
+    getBlockers,
+    getCanCreateChat,
+    (_state: CommonState, { userId }: { userId: Maybe<ID> }) => userId,
+    (state: CommonState, { chatId }: { chatId: Maybe<string> }) =>
+      chatId ? getChat(state, chatId)?.recheck_permissions : false
+  ],
+  (
+    blockees,
+    blockers,
+    { canCreateChat, callToAction: createChatCallToAction },
+    userId,
+    recheckPermissions
+  ) => {
+    if (!userId) {
+      return {
+        canSendMessage: false,
+        callToAction: ChatPermissionAction.NONE
+      }
+    }
+    const isBlockee = blockees.includes(userId)
+    const isBlocker = blockers.includes(userId)
+    if (isBlocker) {
+      return {
+        canSendMessage: false,
+        callToAction: ChatPermissionAction.NONE
+      }
+    }
+    if (isBlockee) {
+      return {
+        canSendMessage: false,
+        callToAction: ChatPermissionAction.UNBLOCK
+      }
+    }
+    if (recheckPermissions && !canCreateChat) {
+      return {
+        canSendMessage: false,
+        callToAction: createChatCallToAction
+      }
+    }
+    return {
+      canSendMessage: true,
+      callToAction: ChatPermissionAction.NOT_APPLICABLE
     }
   }
 )

@@ -69,7 +69,7 @@ export const ChatMessageList = forwardRef<HTMLDivElement, ChatMessageListProps>(
     )
     const chat = useSelector((state) => getChat(state, chatId ?? ''))
     const userId = useSelector(accountSelectors.getUserId)
-    const currentUserId = encodeHashId(userId)
+    const currentUserId = userId ? encodeHashId(userId) : null
     const [unreadIndicatorEl, setUnreadIndicatorEl] =
       useState<HTMLDivElement | null>(null)
     const [, setLastScrolledChatId] = useState<string>()

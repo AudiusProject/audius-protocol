@@ -144,7 +144,7 @@ const slice = createSlice({
       delete state.optimisticUnreadMessagesCount
     },
     fetchUnreadMessagesCountFailed: (_state) => {},
-    goToChat: (_state, _action: PayloadAction<{ chatId: string }>) => {
+    goToChat: (_state, _action: PayloadAction<{ chatId?: string }>) => {
       // triggers saga
     },
     fetchMoreChats: (state) => {
@@ -295,6 +295,9 @@ const slice = createSlice({
     },
     fetchChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
       const { chat } = action.payload
+      if (dayjs(chat.cleared_history_at).isAfter(chat.last_message_at)) {
+        chat.last_message = ''
+      }
       chatsAdapter.upsertOne(state.chats, chat)
     },
     markChatAsRead: (state, action: PayloadAction<{ chatId: string }>) => {
@@ -374,7 +377,9 @@ const slice = createSlice({
           id: chatId,
           changes: {
             last_message: message.message,
-            last_message_at: message.created_at
+            last_message_at: message.created_at,
+            // If a new message comes through, we don't need to recheck permissions anymore
+            recheck_permissions: false
           }
         })
         recalculatePreviousMessageHasTail(state.messages[chatId], 0)
@@ -506,6 +511,14 @@ const slice = createSlice({
         id: messageId,
         changes: { unfurlMetadata }
       })
+    },
+    deleteChat: (_state, _action: PayloadAction<{ chatId: string }>) => {
+      // triggers saga
+    },
+    deleteChatSucceeded: (state, action: PayloadAction<{ chatId: string }>) => {
+      const { chatId } = action.payload
+      chatsAdapter.removeOne(state.chats, chatId)
+      chatMessagesAdapter.removeAll(state.messages[chatId])
     }
   }
 })
