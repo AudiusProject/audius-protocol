@@ -3,7 +3,7 @@ import { push as pushRoute } from 'connected-react-router'
 import { takeLatest } from 'redux-saga/effects'
 import { put } from 'typed-redux-saga'
 
-import { chatPage } from 'utils/route'
+import { CHATS_PAGE, chatPage } from 'utils/route'
 
 const { goToChat } = chatActions
 
@@ -12,7 +12,11 @@ function* watchGoToChat() {
     const {
       payload: { chatId }
     } = action
-    yield* put(pushRoute(chatPage(chatId)))
+    if (!chatId) {
+      yield* put(pushRoute(CHATS_PAGE))
+    } else {
+      yield* put(pushRoute(chatPage(chatId)))
+    }
   })
 }
 

@@ -25,7 +25,7 @@ import { SubscribeButton } from './SubscribeButton'
 import { useSelectProfile } from './selectors'
 
 const { getUserHandle } = accountSelectors
-const { getCanChat } = chatSelectors
+const { getCanCreateChat } = chatSelectors
 const { fetchBlockees, fetchBlockers, fetchPermissions } = chatActions
 const { getProfileUserId } = profilePageSelectors
 
@@ -113,7 +113,9 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
   const profileUserId = useSelector((state) =>
     getProfileUserId(state, params.handle)
   )
-  const { canChat } = useSelector((state) => getCanChat(state, profileUserId))
+  const { canCreateChat } = useSelector((state) =>
+    getCanCreateChat(state, { userId: profileUserId })
+  )
 
   useEffect(() => {
     dispatch(fetchBlockees())
@@ -149,7 +151,7 @@ export const ProfileInfo = (props: ProfileInfoProps) => {
     ) : (
       <>
         {isChatEnabled && !isOwner ? (
-          canChat ? (
+          canCreateChat ? (
             <MessageButton profile={profile} />
           ) : (
             <MessageLockedButton profile={profile} />

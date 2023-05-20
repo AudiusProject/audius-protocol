@@ -90,7 +90,7 @@ export type ProfilePageProps = {
   mode: ProfileMode
   stats: StatProps[]
   isBlocked: boolean
-  canChat: boolean
+  canCreateChat: boolean
   showInboxUnavailableModal: boolean
 
   profile: ProfileUser | null
@@ -205,7 +205,7 @@ const ProfilePage = ({
   editMode,
   areArtistRecommendationsVisible,
   onCloseArtistRecommendations,
-  canChat,
+  canCreateChat,
   onMessage,
   onBlock,
   onUnblock,
@@ -750,7 +750,7 @@ const ProfilePage = ({
             onToggleSubscribe={toggleNotificationSubscription}
             onFollow={onFollow}
             onUnfollow={onUnfollow}
-            canChat={canChat}
+            canCreateChat={canCreateChat}
             onMessage={onMessage}
             isBlocked={isBlocked}
             onBlock={onBlock}

@@ -21,11 +21,8 @@ import {
 } from '@audius/stems'
 import { useDispatch } from 'react-redux'
 
-import { ArtistPopover } from 'components/artist/ArtistPopover'
-import UserBadges from 'components/user-badges/UserBadges'
-import { useGoToRoute } from 'hooks/useGoToRoute'
+import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useSelector } from 'utils/reducer'
-import { profilePage } from 'utils/route'
 
 import styles from './InboxUnavailableModal.module.css'
 
@@ -62,7 +59,7 @@ const actionToContent = (
     case ChatPermissionAction.TIP:
       return {
         content: messages.tipContent(
-          <UserNameAndBadges user={user} onClickArtistName={onClose} />
+          <UserNameAndBadges user={user} onNavigateAway={onClose} />
         ),
         buttonText: messages.tipButton,
         buttonIcon: <IconTipping />
@@ -83,38 +80,7 @@ const actionToContent = (
 }
 
 const { beginTip } = tippingActions
-const { getCanChat } = chatSelectors
-
-const UserNameAndBadges = ({
-  user,
-  onClickArtistName
-}: {
-  user: User
-  onClickArtistName?: () => void
-}) => {
-  const goToRoute = useGoToRoute()
-  const goToProfile = useCallback(() => {
-    goToRoute(profilePage(user.handle))
-    onClickArtistName?.()
-  }, [goToRoute, onClickArtistName, user])
-  return (
-    <ArtistPopover
-      handle={user.handle}
-      component='span'
-      onNavigateAway={onClickArtistName}
-    >
-      <div className={styles.nameAndBadge} onClick={goToProfile}>
-        <span>{user.name}</span>
-        <UserBadges
-          userId={user.user_id}
-          className={styles.badges}
-          badgeSize={14}
-          inline
-        />
-      </div>
-    </ArtistPopover>
-  )
-}
+const { getCanCreateChat } = chatSelectors
 
 export const InboxUnavailableModal = ({
   isVisible,
@@ -127,7 +93,7 @@ export const InboxUnavailableModal = ({
 }) => {
   const dispatch = useDispatch()
   const { callToAction } = useSelector((state) =>
-    getCanChat(state, user.user_id)
+    getCanCreateChat(state, { userId: user.user_id })
   )
   const hasAction =
     callToAction === ChatPermissionAction.TIP ||
