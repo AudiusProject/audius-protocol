@@ -1,4 +1,4 @@
-import { ID, UID, SquareSizes } from '../../../models'
+import { ID, UID, SquareSizes, Collection } from '../../../models'
 
 import { EditPlaylistValues } from './types'
 
@@ -36,16 +36,19 @@ export const FETCH_COVER_ART = 'TRACKS/FETCH_COVER_ART'
  * @param initTrackId optional track id to pull artwork from.
  */
 export function createPlaylist(
-  playlistId: number,
-  formFields: Record<string, unknown>,
+  formFields: Partial<Collection>,
   source: string,
-  initTrackId?: number | null
+  initTrackId?: number | null,
+  noticeType: 'route' | 'toast' = 'route'
 ) {
-  return { type: CREATE_PLAYLIST, playlistId, formFields, source, initTrackId }
+  return { type: CREATE_PLAYLIST, formFields, source, initTrackId, noticeType }
 }
 
-export function createPlaylistRequested() {
-  return { type: CREATE_PLAYLIST_REQUESTED }
+export function createPlaylistRequested(
+  playlistId: ID,
+  noticeType: 'route' | 'toast'
+) {
+  return { type: CREATE_PLAYLIST_REQUESTED, playlistId, noticeType }
 }
 
 export function createPlaylistSucceeded() {

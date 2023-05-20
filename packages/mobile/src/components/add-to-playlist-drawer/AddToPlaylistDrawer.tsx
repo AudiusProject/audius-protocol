@@ -5,12 +5,10 @@ import {
   CreatePlaylistSource,
   accountSelectors,
   cacheCollectionsActions,
-  addToPlaylistUISelectors,
-  newCollectionMetadata
+  addToPlaylistUISelectors
 } from '@audius/common'
 import { View } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
-import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import Button, { ButtonType } from 'app/components/button'
 import { Card } from 'app/components/card'
@@ -74,15 +72,8 @@ export const AddToPlaylistDrawer = () => {
   const userPlaylists = user.playlists ?? []
 
   const addToNewPlaylist = () => {
-    const metadata = newCollectionMetadata({
-      playlist_name: trackTitle,
-      is_private: false
-    })
-    const tempId = getTempPlaylistId()
-    dispatch(
-      createPlaylist(tempId, metadata, CreatePlaylistSource.FROM_TRACK, trackId)
-    )
-    dispatch(addTrackToPlaylist(trackId!, tempId))
+    const metadata = { playlist_name: trackTitle }
+    dispatch(createPlaylist(metadata, CreatePlaylistSource.FROM_TRACK, trackId))
     toast({ content: messages.createdToast })
     onClose()
   }

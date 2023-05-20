@@ -10,7 +10,6 @@ import {
   cacheCollectionsSelectors,
   cacheCollectionsActions as collectionActions,
   PlaylistOperations,
-  cacheTracksSelectors,
   cacheUsersSelectors,
   cacheActions,
   getContext,
@@ -34,9 +33,9 @@ import { fetchUsers } from 'common/store/cache/users/sagas'
 import * as confirmerActions from 'common/store/confirmer/actions'
 import { confirmTransaction } from 'common/store/confirmer/sagas'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { waitForWrite } from 'utils/sagaHelpers'
 
+import { createPlaylistSaga } from './createPlaylistSaga'
 import { reformat } from './utils'
 import {
   retrieveCollection,
@@ -45,7 +44,6 @@ import {
 
 const { manualClearToast, addToast } = toastActions
 const { getUser } = cacheUsersSelectors
-const { getTrack } = cacheTracksSelectors
 const { getCollection } = cacheCollectionsSelectors
 const { getAccountUser, getUserId } = accountSelectors
 const { setOptimisticChallengeCompleted } = audioRewardsPageActions
@@ -58,213 +56,6 @@ const countTrackIds = (playlistContents, trackId) => {
       if (t === trackId) acc += 1
       return acc
     }, 0)
-}
-
-/** CREATE PLAYLIST */
-
-function* watchCreatePlaylist() {
-  yield takeLatest(collectionActions.CREATE_PLAYLIST, createPlaylistAsync)
-}
-
-function* createPlaylistAsync(action) {
-  yield waitForWrite()
-  // Potentially grab artwork from the initializing track.
-  if (action.initTrackId) {
-    const track = yield select(getTrack, { id: action.initTrackId })
-    action.formFields._cover_art_sizes = track._cover_art_sizes
-    action.formFields.cover_art_sizes = track.cover_art_sizes
-  }
-
-  const userId = yield select(getUserId)
-  const uid = action.playlistId
-  if (!userId) {
-    yield put(signOnActions.openSignOn(false))
-    return
-  }
-  yield put(collectionActions.createPlaylistRequested())
-
-  const playlist = { playlist_id: uid, ...action.formFields }
-
-  const event = make(Name.PLAYLIST_START_CREATE, {
-    source: action.source,
-    artworkSource: playlist.artwork ? playlist.artwork.source : ''
-  })
-  yield put(event)
-
-  yield call(
-    confirmCreatePlaylist,
-    uid,
-    userId,
-    action.formFields,
-    action.source
-  )
-  playlist.playlist_id = uid
-  playlist.playlist_owner_id = userId
-  playlist.is_private = true
-  playlist.playlist_contents = { track_ids: [] }
-  if (playlist.artwork) {
-    playlist._cover_art_sizes = {
-      ...playlist._cover_art_sizes,
-      [DefaultSizes.OVERRIDE]: playlist.artwork.url
-    }
-  }
-  playlist._temp = false
-
-  const subscribedUid = yield makeUid(Kind.COLLECTIONS, uid, 'account')
-  yield put(
-    cacheActions.add(
-      Kind.COLLECTIONS,
-      [
-        {
-          id: playlist.playlist_id,
-          uid: subscribedUid,
-          metadata: { ...playlist, is_album: false }
-        }
-      ],
-      /* replace= */ true, // forces cache update
-      /* persistent cache */ false // Do not persistent cache since it's missing data
-    )
-  )
-  const user = yield select(getUser, { id: userId })
-  yield put(
-    accountActions.addAccountPlaylist({
-      id: playlist.playlist_id,
-      name: playlist.playlist_name,
-      isAlbum: playlist.is_album,
-      user: { id: userId, handle: user.handle }
-    })
-  )
-  yield put(collectionActions.createPlaylistSucceeded())
-
-  const collectionIds = (user._collectionIds || [])
-    .filter((c) => c.uid !== uid)
-    .concat(uid)
-  yield put(
-    cacheActions.update(Kind.USERS, [
-      {
-        id: userId,
-        metadata: { _collectionIds: collectionIds }
-      }
-    ])
-  )
-}
-
-function* confirmCreatePlaylist(uid, userId, formFields, source) {
-  const audiusBackendInstance = yield getContext('audiusBackendInstance')
-
-  yield put(
-    confirmerActions.requestConfirmation(
-      makeKindId(Kind.COLLECTIONS, uid),
-      function* () {
-        const { blockHash, blockNumber, playlistId, error } = yield call(
-          audiusBackendInstance.createPlaylist,
-          uid,
-          formFields
-        )
-
-        if (error || !playlistId) throw new Error('Unable to create playlist')
-
-        const confirmed = yield call(confirmTransaction, blockHash, blockNumber)
-        if (!confirmed) {
-          throw new Error(
-            `Could not confirm playlist creation for playlist id ${playlistId}`
-          )
-        }
-
-        const confirmedPlaylist = (yield call(
-          audiusBackendInstance.getPlaylists,
-          userId,
-          [playlistId]
-        ))[0]
-
-        // Immediately after confirming the playlist,
-        // create a new playlist reference and mark the temporary one as moved.
-        // This will trigger the page to refresh, etc. with the new ID url.
-        // Even if there are other actions confirming for this particular
-        // playlist, those will just file in afterwards.
-
-        const subscribedUid = makeUid(
-          Kind.COLLECTIONS,
-          confirmedPlaylist.playlist_id,
-          'account'
-        )
-        const movedCollection = yield select(getCollection, { id: uid })
-
-        // The reformatted playlist is the combination of the results we get back
-        // from the confirmation, plus any writes that may be in the confirmer still.
-        const reformattedPlaylist = {
-          ...reformat(confirmedPlaylist, audiusBackendInstance),
-          ...movedCollection,
-          playlist_id: confirmedPlaylist.playlist_id,
-          _temp: false
-        }
-
-        // On playlist creation, copy over all fields from the temp collection
-        // to retain optimistically set fields.
-        yield put(
-          cacheActions.add(Kind.COLLECTIONS, [
-            {
-              id: confirmedPlaylist.playlist_id,
-              uid: subscribedUid,
-              metadata: reformattedPlaylist
-            }
-          ])
-        )
-        const user = yield select(getUser, { id: userId })
-        yield put(
-          cacheActions.update(Kind.USERS, [
-            {
-              id: userId,
-              metadata: {
-                _collectionIds: (user._collectionIds || [])
-                  .filter((cId) => cId !== uid && confirmedPlaylist.playlist_id)
-                  .concat(confirmedPlaylist.playlist_id)
-              }
-            }
-          ])
-        )
-        yield put(accountActions.removeAccountPlaylist({ collectionId: uid }))
-        yield put(
-          accountActions.addAccountPlaylist({
-            id: confirmedPlaylist.playlist_id,
-            // Take playlist name from the "local" state because the user
-            // may have edited the name before we got the confirmed result back.
-            name: reformattedPlaylist.playlist_name,
-            isAlbum: confirmedPlaylist.is_album,
-            user: {
-              id: user.user_id,
-              handle: user.handle
-            }
-          })
-        )
-
-        // Write out the new playlist to the playlist library
-        yield call(addPlaylistsNotInLibrary)
-
-        const event = make(Name.PLAYLIST_COMPLETE_CREATE, {
-          source,
-          status: 'success'
-        })
-        yield put(event)
-        return confirmedPlaylist
-      },
-      function* () {},
-      function* ({ error, timeout, message }) {
-        const event = make(Name.PLAYLIST_COMPLETE_CREATE, {
-          source,
-          status: 'failure'
-        })
-        yield put(event)
-        yield put(
-          collectionActions.createPlaylistFailed(
-            message,
-            { userId, formFields, source },
-            { error, timeout }
-          )
-        )
-      }
-    )
-  )
 }
 
 /** EDIT PLAYLIST */
@@ -1281,7 +1072,7 @@ function* watchFetchCoverArt() {
 export default function sagas() {
   return [
     watchAdd,
-    watchCreatePlaylist,
+    createPlaylistSaga,
     watchEditPlaylist,
     watchAddTrackToPlaylist,
     watchRemoveTrackFromPlaylist,

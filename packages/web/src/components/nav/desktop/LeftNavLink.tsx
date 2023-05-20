@@ -10,7 +10,7 @@ import { useSelector } from 'utils/reducer'
 
 import styles from './LeftNavLink.module.css'
 
-type LeftNavLinkProps =
+export type LeftNavLinkProps =
   | { disabled?: boolean } & (
       | Omit<NavLinkProps, 'onDrop'>
       | Omit<ComponentProps<'div'>, 'onDrop'>

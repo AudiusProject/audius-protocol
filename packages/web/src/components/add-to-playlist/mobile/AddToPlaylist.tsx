@@ -7,8 +7,7 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   addToPlaylistUIActions,
-  addToPlaylistUISelectors,
-  newCollectionMetadata
+  addToPlaylistUISelectors
 } from '@audius/common'
 import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
@@ -23,8 +22,6 @@ import { ToastContext } from 'components/toast/ToastContext'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import NewPlaylistButton from 'pages/saved-page/components/mobile/NewPlaylistButton'
 import { AppState } from 'store/types'
-import { playlistPage } from 'utils/route'
-import { getTempPlaylistId } from 'utils/tempPlaylistId'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './AddToPlaylist.module.css'
@@ -98,26 +95,11 @@ const AddToPlaylist = g(
     })
 
     const addToNewPlaylist = useCallback(() => {
-      const metadata = newCollectionMetadata({
-        playlist_name: trackTitle,
-        is_private: false
-      })
-      const tempId = getTempPlaylistId()
-      createPlaylist(tempId, metadata, trackId!)
-      addTrackToPlaylist(trackId!, tempId)
+      const metadata = { playlist_name: trackTitle }
+      createPlaylist(metadata, trackId!)
       toast(messages.createdToast)
-      goToRoute(playlistPage(account.handle, trackTitle, tempId))
       close()
-    }, [
-      account,
-      trackId,
-      trackTitle,
-      createPlaylist,
-      addTrackToPlaylist,
-      goToRoute,
-      close,
-      toast
-    ])
+    }, [trackId, trackTitle, createPlaylist, close, toast])
 
     return (
       <MobilePageContainer>
@@ -145,14 +127,9 @@ function mapDispatchToProps(dispatch: Dispatch) {
     goToRoute: (route: string) => dispatch(pushRoute(route)),
     addTrackToPlaylist: (trackId: ID, playlistId: ID | string) =>
       dispatch(addTrackToPlaylist(trackId, playlistId)),
-    createPlaylist: (tempId: number, metadata: Collection, trackId: ID) =>
+    createPlaylist: (metadata: Partial<Collection>, trackId: ID) =>
       dispatch(
-        createPlaylist(
-          tempId,
-          metadata,
-          CreatePlaylistSource.FROM_TRACK,
-          trackId
-        )
+        createPlaylist(metadata, CreatePlaylistSource.FROM_TRACK, trackId)
       ),
     close: () => dispatch(close())
   }

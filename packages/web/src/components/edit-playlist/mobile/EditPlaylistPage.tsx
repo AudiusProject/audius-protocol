@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useContext } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 
 import {
   ID,
@@ -17,7 +17,6 @@ import {
   usePremiumContentAccessMap,
   EditPlaylistValues
 } from '@audius/common'
-import { push as pushRoute } from 'connected-react-router'
 import { connect } from 'react-redux'
 import { Dispatch } from 'redux'
 
@@ -28,15 +27,12 @@ import GroupableList from 'components/groupable-list/GroupableList'
 import Grouping from 'components/groupable-list/Grouping'
 import TextElement, { Type } from 'components/nav/mobile/TextElement'
 import { useTemporaryNavContext } from 'components/nav/store/context'
-import { ToastContext } from 'components/toast/ToastContext'
 import TrackList from 'components/track/mobile/TrackList'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import useHasChangedRoute from 'hooks/useHasChangedRoute'
 import UploadStub from 'pages/profile-page/components/mobile/UploadStub'
 import { AppState } from 'store/types'
 import { resizeImage } from 'utils/imageProcessingUtil'
-import { playlistPage } from 'utils/route'
-import { getTempPlaylistId } from 'utils/tempPlaylistId'
 import { withNullGuard } from 'utils/withNullGuard'
 
 import styles from './EditPlaylistPage.module.css'
@@ -51,8 +47,7 @@ const messages = {
   editPlaylist: 'Edit Playlist',
   randomPhoto: 'Get Random Artwork',
   placeholderName: 'My Playlist',
-  placeholderDescription: 'Give your playlist a description',
-  toast: 'Playlist Created!'
+  placeholderDescription: 'Give your playlist a description'
 }
 
 const initialFormFields = {
@@ -71,8 +66,6 @@ const g = withNullGuard((props: EditPlaylistPageProps) => {
 const EditPlaylistPage = g(
   ({
     close,
-    goToRoute,
-    account,
     createPlaylist,
     metadata,
     tracks,
@@ -88,7 +81,6 @@ const EditPlaylistPage = g(
       artwork: { url: '' }
     }
 
-    const { toast } = useContext(ToastContext)
     const [formFields, setFormFields] = useState(
       initialMetadata || initialFormFields
     )
@@ -248,27 +240,19 @@ const EditPlaylistPage = g(
         close()
       } else {
         // Create new playlist
-        const tempId = getTempPlaylistId()
-        createPlaylist(tempId, formFields)
-        toast(messages.toast)
+        createPlaylist(formFields)
         close()
-        goToRoute(
-          playlistPage(account.handle, formFields.playlist_name, tempId)
-        )
       }
     }, [
       formFields,
       createPlaylist,
       close,
-      account,
-      goToRoute,
       metadata,
       editPlaylist,
       hasReordered,
       reorderedTracks,
       orderPlaylist,
       refreshLineup,
-      toast,
       removeTrack,
       removedTracks
     ])
@@ -465,9 +449,14 @@ function mapStateToProps(state: AppState) {
 function mapDispatchToProps(dispatch: Dispatch) {
   return {
     close: () => dispatch(createPlaylistActions.close()),
-    createPlaylist: (tempId: number, metadata: Collection) =>
+    createPlaylist: (metadata: Collection) =>
       dispatch(
-        createPlaylist(tempId, metadata, CreatePlaylistSource.CREATE_PAGE)
+        createPlaylist(
+          metadata,
+          CreatePlaylistSource.CREATE_PAGE,
+          undefined,
+          'toast'
+        )
       ),
     editPlaylist: (id: ID, metadata: EditPlaylistValues) =>
       dispatch(editPlaylist(id, metadata)),
@@ -475,8 +464,7 @@ function mapDispatchToProps(dispatch: Dispatch) {
       dispatch(orderPlaylist(playlistId, idsAndTimes)),
     removeTrack: (trackId: ID, playlistId: ID, timestamp: number) =>
       dispatch(removeTrackFromPlaylist(trackId, playlistId, timestamp)),
-    refreshLineup: () => dispatch(tracksActions.fetchLineupMetadatas()),
-    goToRoute: (route: string) => dispatch(pushRoute(route))
+    refreshLineup: () => dispatch(tracksActions.fetchLineupMetadatas())
   }
 }
 

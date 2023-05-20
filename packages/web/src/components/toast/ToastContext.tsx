@@ -38,6 +38,8 @@ type ToastContextProps = {
 type ToastType = {
   content: string | JSX.Element
   key: string
+  link?: string
+  linkText?: string
 }
 
 export const ToastContext = createContext<ToastContextProps>({
@@ -88,7 +90,13 @@ export const ToastContextProvider = (props: { children: JSX.Element }) => {
             opacity: props.opacity
           }}
         >
-          <Toast content={item.content} isControlled isOpen />
+          <Toast
+            content={item.content}
+            link={item.link}
+            linkText={item.linkText}
+            isControlled
+            isOpen
+          />
         </animated.div>
       ))}
       {props.children}

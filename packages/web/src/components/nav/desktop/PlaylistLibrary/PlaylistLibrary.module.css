@@ -9,10 +9,10 @@
   background-color: rgba(152, 73, 214, 0.15);
 }
 
-.droppableLink {
-  color: var(--secondary);
+.header {
+  gap: var(--unit-2);
 }
 
-.newPlaylist {
-  margin-left: var(--unit-6);
+.droppableLink {
+  color: var(--secondary);
 }

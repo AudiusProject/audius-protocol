@@ -43,12 +43,10 @@ import {
   EXPLORE_PAGE,
   FEED_PAGE,
   HISTORY_PAGE,
-  playlistPage,
   profilePage,
   SAVED_PAGE,
   TRENDING_PAGE
 } from 'utils/route'
-import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import { GroupHeader } from './GroupHeader'
 import styles from './LeftNav.module.css'
@@ -134,14 +132,10 @@ const LeftNav = ({
 
   const onCreatePlaylist = useCallback(
     (metadata: PlaylistFormFields) => {
-      const tempId = getTempPlaylistId()
-      createPlaylist(tempId, metadata)
+      createPlaylist(metadata)
       closeCreatePlaylistModal()
-      if (account) {
-        goToRoute(playlistPage(account.handle, metadata.playlist_name, tempId))
-      }
     },
-    [account, createPlaylist, closeCreatePlaylistModal, goToRoute]
+    [createPlaylist, closeCreatePlaylistModal]
   )
 
   const onCreateFolder = useCallback(
@@ -338,8 +332,8 @@ const mapStateToProps = (state: AppState) => {
 }
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  createPlaylist: (tempId: number, metadata: Record<string, unknown>) =>
-    dispatch(createPlaylist(tempId, metadata, CreatePlaylistSource.NAV)),
+  createPlaylist: (metadata: PlaylistFormFields) =>
+    dispatch(createPlaylist(metadata, CreatePlaylistSource.NAV)),
   goToRoute: (route: string) => dispatch(pushRoute(route)),
   saveTrack: (trackId: number) =>
     dispatch(saveTrack(trackId, FavoriteSource.NAVIGATOR)),

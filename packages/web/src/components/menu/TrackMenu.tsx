@@ -6,7 +6,6 @@ import {
   FavoriteSource,
   RepostSource,
   ShareSource,
-  CreatePlaylistSource,
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
@@ -14,7 +13,6 @@ import {
   playbackPositionSelectors,
   tracksSocialActions,
   addToPlaylistUIActions,
-  newCollectionMetadata,
   Genre,
   FeatureFlags
 } from '@audius/common'
@@ -34,7 +32,7 @@ const { requestOpen: openAddToPlaylist } = addToPlaylistUIActions
 const { saveTrack, unsaveTrack, repostTrack, undoRepostTrack, shareTrack } =
   tracksSocialActions
 const { getCollectionId } = collectionPageSelectors
-const { createPlaylist, addTrackToPlaylist } = cacheCollectionsActions
+const { addTrackToPlaylist } = cacheCollectionsActions
 const { getAccountOwnedPlaylists } = accountSelectors
 const { clearTrackPosition, setTrackPosition } = playbackPositionActions
 const { getTrackPositions } = playbackPositionSelectors
@@ -309,15 +307,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     setArtistPick: (trackId: ID) =>
       dispatch(showSetAsArtistPickConfirmation(trackId)),
     unsetArtistPick: () => dispatch(showSetAsArtistPickConfirmation()),
-    createEmptyPlaylist: (tempId: ID, name: string, trackId: ID) =>
-      dispatch(
-        createPlaylist(
-          tempId,
-          newCollectionMetadata({ playlist_name: name }),
-          CreatePlaylistSource.FROM_TRACK,
-          trackId
-        )
-      ),
     openAddToPlaylistModal: (trackId: ID, title: string) =>
       dispatch(openAddToPlaylist(trackId, title)),
     openEditTrackModal: (trackId: ID) =>

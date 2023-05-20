@@ -3,9 +3,10 @@ import {
   getEntry,
   getEntryTimestamp
 } from 'store/cache/selectors'
-import { CommonState } from 'store/commonStore'
+import type { CommonState } from 'store/commonStore'
 
-import { ID, Kind, UID, User } from '../../../models'
+import { Kind } from '../../../models'
+import type { ID, UID, User } from '../../../models'
 
 export const getUser = (
   state: CommonState,

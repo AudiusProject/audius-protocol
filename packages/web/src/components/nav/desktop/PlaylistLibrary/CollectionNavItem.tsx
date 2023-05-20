@@ -14,7 +14,11 @@ import { useDispatch } from 'react-redux'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Draggable } from 'components/dragndrop'
 import { open as openEditPlaylistModal } from 'store/application/ui/editPlaylistModal/slice'
-import { DragDropKind, selectDraggingKind } from 'store/dragndrop/slice'
+import {
+  DragDropKind,
+  selectDraggingKind,
+  selectDraggingId
+} from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
 
 import { LeftNavDroppable, LeftNavLink } from '../LeftNavLink'
@@ -101,8 +105,9 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   )
 
   const draggingKind = useSelector(selectDraggingKind)
+  const draggingId = useSelector(selectDraggingId)
 
-  const isDisabled = draggingKind === 'track' && !isOwned
+  const isDisabled = (draggingKind === 'track' && !isOwned) || draggingId === id
 
   if (!name || !url) return null
 

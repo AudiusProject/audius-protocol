@@ -7,8 +7,7 @@ import {
   accountSelectors,
   cacheCollectionsActions,
   collectionPageSelectors,
-  addToPlaylistUISelectors,
-  newCollectionMetadata
+  addToPlaylistUISelectors
 } from '@audius/common'
 import { Modal, Scrollbar } from '@audius/stems'
 import cn from 'classnames'
@@ -23,7 +22,6 @@ import ToastLinkContent from 'components/toast/mobile/ToastLinkContent'
 import { useCollectionCoverArt } from 'hooks/useCollectionCoverArt'
 import { AppState } from 'store/types'
 import { playlistPage } from 'utils/route'
-import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import styles from './AddToPlaylistModal.module.css'
 const { getTrackId, getTrackTitle } = addToPlaylistUISelectors
@@ -51,7 +49,6 @@ const AddToPlaylistModal = () => {
   const account = useSelector((state: AppState) =>
     getAccountWithOwnPlaylists(state)
   )
-
   const [searchValue, setSearchValue] = useState('')
 
   const filteredPlaylists = useMemo(() => {
@@ -82,24 +79,16 @@ const AddToPlaylistModal = () => {
   }
 
   const handleCreatePlaylist = () => {
-    const metadata = newCollectionMetadata({
-      playlist_name: trackTitle,
-      is_private: false
-    })
-    const tempId = getTempPlaylistId()
+    if (!trackTitle) return
+    const metadata = { playlist_name: trackTitle }
     dispatch(
-      createPlaylist(tempId, metadata, CreatePlaylistSource.FROM_TRACK, trackId)
-    )
-    dispatch(addTrackToPlaylist(trackId, tempId))
-    if (account && trackTitle) {
-      toast(
-        <ToastLinkContent
-          text={messages.createdToast}
-          linkText={messages.view}
-          link={playlistPage(account.handle, trackTitle, tempId)}
-        />
+      createPlaylist(
+        metadata,
+        CreatePlaylistSource.FROM_TRACK,
+        trackId,
+        'toast'
       )
-    }
+    )
     setIsOpen(false)
   }
 

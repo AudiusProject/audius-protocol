@@ -6,6 +6,8 @@ export type ToastType = 'info' | 'error'
 
 export type Toast = {
   content: ToastContent
+  link?: string
+  linkText?: string
   type?: ToastType
   key: string
   timeout?: number | 'MANUAL'
@@ -17,6 +19,8 @@ export type ToastState = {
 
 export type ToastAction = PayloadAction<{
   content: ToastContent
+  link?: string
+  linkText?: string
   type?: ToastType
   timeout?: number
 }>
