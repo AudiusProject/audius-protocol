@@ -35,6 +35,12 @@ web-init:
           cd packages/web
           npm run lint
 
+    - run:
+        name: stylelint
+        command: |
+          cd packages/web
+          npm run stylelint
+
     - persist_to_workspace:
         root: ./
         paths:
