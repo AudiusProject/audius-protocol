@@ -18,7 +18,6 @@ import {
 import addToPlaylistSagas from 'common/store/add-to-playlist/sagas'
 import analyticsSagas from 'common/store/analytics/sagas'
 import backendSagas from 'common/store/backend/sagas'
-import collectionsSagas from 'common/store/cache/collections/sagas'
 import coreCacheSagas from 'common/store/cache/sagas'
 import tracksSagas from 'common/store/cache/tracks/sagas'
 import usersSagas from 'common/store/cache/users/sagas'
@@ -64,6 +63,8 @@ import supportingPageSagas from 'common/store/user-list/supporting/sagas'
 import topSupportersPageSagas from 'common/store/user-list/top-supporters/sagas'
 import walletSagas from 'common/store/wallet/sagas'
 import { all, fork } from 'typed-redux-saga'
+
+import collectionsSagas from 'app/store/cache/collections/sagas'
 
 import accountSagas from './account/sagas'
 import mobileChatSagas from './chat/sagas'

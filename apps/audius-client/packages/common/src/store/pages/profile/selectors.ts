@@ -2,7 +2,7 @@ import moment from 'moment'
 
 import { getCollections } from 'store/cache/collections/selectors'
 import { getUser, getUsers } from 'store/cache/users/selectors'
-import { CommonState } from 'store/commonStore'
+import type { CommonState } from 'store/commonStore'
 import { removeNullable, createDeepEqualSelector } from 'utils'
 
 import { Status } from '../../../models'

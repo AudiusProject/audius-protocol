@@ -32,7 +32,8 @@ const { saveCollection } = collectionsSocialActions
 
 const messages = {
   header: 'Playlists',
-  newPlaylist: 'New',
+  new: 'New',
+  newPlaylist: 'New Playlist',
   newPlaylistOrFolderTooltip: 'New Playlist or Folder'
 }
 
@@ -76,10 +77,6 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
     [scrollbarRef]
   )
 
-  if (!library || isEmpty(library?.contents)) {
-    return <EmptyLibraryNavLink />
-  }
-
   return (
     <Droppable
       className={styles.droppable}
@@ -88,7 +85,7 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
       acceptedKinds={acceptedKinds}
     >
       <GroupHeader
-        className={cn({
+        className={cn(styles.header, {
           [styles.droppableLink]: draggingKind === 'playlist'
         })}
       >
@@ -98,20 +95,23 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
           getPopupContainer={getTooltipPopupContainer}
         >
           <Pill
-            className={styles.newPlaylist}
-            text={messages.newPlaylist}
+            text={messages.new}
             icon='save'
             onClick={handleCreatePlaylist}
           />
         </Tooltip>
       </GroupHeader>
-      {library.contents.map((content) => (
-        <PlaylistLibraryNavItem
-          key={keyExtractor(content)}
-          item={content}
-          level={0}
-        />
-      ))}
+      {!library || isEmpty(library?.contents) ? (
+        <EmptyLibraryNavLink onClick={handleCreatePlaylist} />
+      ) : (
+        library.contents.map((content) => (
+          <PlaylistLibraryNavItem
+            key={keyExtractor(content)}
+            item={content}
+            level={0}
+          />
+        ))
+      )}
     </Droppable>
   )
 }

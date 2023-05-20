@@ -3,11 +3,14 @@ import { ReactNode } from 'react'
 import cn from 'classnames'
 
 import styles from './Toast.module.css'
+import ToastLinkContent from './ToastLinkContent'
 
 // TODO: SK - Move this into Stems
 interface ToastProps {
   children?: JSX.Element
   content: ReactNode
+  link?: string
+  linkText?: string
   disabled?: boolean
   top?: number
   delay?: number
@@ -18,11 +21,26 @@ interface ToastProps {
   isOpen?: boolean
 }
 
-export const Toast = ({
-  children,
-  content,
-  containerClassName
-}: ToastProps) => {
+export const Toast = (props: ToastProps) => {
+  const {
+    children,
+    content: contentProp,
+    containerClassName,
+    link,
+    linkText
+  } = props
+
+  const content =
+    link && linkText ? (
+      <ToastLinkContent
+        link={link}
+        linkText={linkText}
+        text={contentProp as string}
+      />
+    ) : (
+      contentProp
+    )
+
   return (
     <>
       <div

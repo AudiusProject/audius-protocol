@@ -1,5 +1,5 @@
-import { ID, UID, LineupState, Status, User } from '../../../models'
-import { Nullable } from '../../../utils/typeUtils'
+import type { ID, UID, LineupState, Status, User } from '../../../models'
+import type { Nullable } from '../../../utils/typeUtils'
 
 export enum FollowType {
   FOLLOWERS = 'followers',

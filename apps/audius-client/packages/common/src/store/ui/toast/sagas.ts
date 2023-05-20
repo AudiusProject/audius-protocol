@@ -8,8 +8,8 @@ import { ToastAction } from './types'
 const TOAST_TIMEOUT = 10000
 
 function* handleToast(action: ToastAction) {
-  const { content, timeout = TOAST_TIMEOUT } = action.payload
-  const toast = { content, key: uuid() }
+  const { timeout = TOAST_TIMEOUT, ...toastConfig } = action.payload
+  const toast = { ...toastConfig, key: uuid() }
   yield* put(addToast(toast))
   yield delay(timeout)
   yield* put(dismissToast({ key: toast.key }))

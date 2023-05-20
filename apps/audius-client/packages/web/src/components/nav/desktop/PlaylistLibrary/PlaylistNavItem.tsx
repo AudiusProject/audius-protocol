@@ -43,9 +43,11 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
     (state) => !!selectPlaylistUpdateById(state, playlistId)
   )
 
-  const handleUpdateLastViewedAt = useCallback(() => {
-    dispatch(updatedPlaylistViewed({ playlistId }))
-  }, [dispatch, playlistId])
+  const handleClick = useCallback(() => {
+    if (hasPlaylistUpdate) {
+      dispatch(updatedPlaylistViewed({ playlistId }))
+    }
+  }, [hasPlaylistUpdate, dispatch, playlistId])
 
   if (!playlistName || !playlistUrl) return null
 
@@ -57,7 +59,7 @@ export const PlaylistNavItem = (props: PlaylistNavItemProps) => {
       isOwned={isOwnedByCurrentUser}
       level={level}
       hasUpdate={hasPlaylistUpdate}
-      onClick={handleUpdateLastViewedAt}
+      onClick={handleClick}
     />
   )
 }

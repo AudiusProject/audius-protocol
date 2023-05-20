@@ -1,14 +1,13 @@
 import { useCallback } from 'react'
 
+import type { Collection } from '@audius/common'
 import { CreatePlaylistSource, cacheCollectionsActions } from '@audius/common'
 import type { FormikProps } from 'formik'
 import { Formik } from 'formik'
 import { Keyboard, TouchableWithoutFeedback, View } from 'react-native'
 import { useDispatch } from 'react-redux'
-import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import { FormScreen } from 'app/components/form-screen'
-import { useNavigation } from 'app/hooks/useNavigation'
 import { useToast } from 'app/hooks/useToast'
 
 import { PlaylistDescriptionInput } from './PlaylistDescriptionInput'
@@ -21,19 +20,7 @@ const messages = {
   playlistCreatedToast: 'Playlist Created!'
 }
 
-type CreatePlaylistValues = {
-  playlist_name: string
-  description: string
-  artwork: {
-    url: string
-    file?: {
-      uri: string
-      name: string
-      type: string
-    }
-    source?: 'unsplash' | 'original'
-  }
-}
+type CreatePlaylistValues = Partial<Collection>
 
 const CreatePlaylistForm = (props: FormikProps<CreatePlaylistValues>) => {
   const { handleSubmit, handleReset, errors } = props
@@ -71,17 +58,12 @@ export const CreatePlaylistScreen = () => {
   const { toast } = useToast()
 
   const dispatch = useDispatch()
-  const navigation = useNavigation()
   const handleSubmit = useCallback(
     (values: CreatePlaylistValues) => {
-      const tempId = getTempPlaylistId()
-      dispatch(
-        createPlaylist(tempId, values, CreatePlaylistSource.FAVORITES_PAGE)
-      )
-      navigation.replace('Collection', { id: parseInt(tempId.toString(), 10) })
+      dispatch(createPlaylist(values, CreatePlaylistSource.FAVORITES_PAGE))
       toast({ content: messages.playlistCreatedToast })
     },
-    [dispatch, navigation, toast]
+    [dispatch, toast]
   )
 
   return (

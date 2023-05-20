@@ -38,7 +38,6 @@ import { addPlaylistsNotInLibrary } from 'common/store/playlist-library/sagas'
 import { updateAndFlattenStems } from 'pages/upload-page/store/utils/stems'
 import { ERROR_PAGE } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
-import { getTempPlaylistId } from 'utils/tempPlaylistId'
 
 import { processAndCacheTracks } from '../cache/tracks/utils'
 import { adjustUserField } from '../cache/users/sagas'
@@ -714,10 +713,8 @@ function* uploadCollection(tracks, userId, collectionMetadata, isAlbum) {
         console.debug('Creating playlist')
         // Uploaded collections are always public
         const isPrivate = false
-        const tempPlaylistId = getTempPlaylistId()
         const { blockHash, blockNumber, playlistId, error } = yield call(
           audiusBackendInstance.createPlaylist,
-          tempPlaylistId,
           collectionMetadata,
           isAlbum,
           trackIds,
