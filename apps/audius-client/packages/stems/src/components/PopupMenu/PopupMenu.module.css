@@ -1,3 +1,7 @@
+.menu {
+  all: unset;
+}
+
 .item {
   display: flex;
   align-items: center;

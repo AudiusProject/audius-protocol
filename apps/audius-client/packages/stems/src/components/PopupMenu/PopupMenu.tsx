@@ -12,8 +12,8 @@ import { PopupMenuItem, PopupMenuProps } from './types'
  * A menu that shows on top of the UI. Ideal for overflow menus, dropdowns, etc
  */
 export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
-  function PopupMenu(
-    {
+  function PopupMenu(props, ref) {
+    const {
       items,
       onClose,
       position,
@@ -24,12 +24,11 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
       zIndex,
       containerRef,
       anchorOrigin,
-      transformOrigin
-    },
-    ref
-  ) {
+      transformOrigin,
+      id
+    } = props
     const clickInsideRef = useRef<any>()
-    const anchorRef = useRef<HTMLElement | null>(null)
+    const anchorRef = useRef<HTMLElement>(null)
 
     const [isPopupVisible, setIsPopupVisible] = useState<boolean>(false)
 
@@ -52,9 +51,18 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
       [handlePopupClose]
     )
 
+    const triggerId = id ? `${id}-trigger` : undefined
+
+    const triggerProps = {
+      'aria-controls': isPopupVisible ? id : undefined,
+      'aria-haspopup': true,
+      'aria-expanded': isPopupVisible ? ('true' as const) : undefined,
+      id: triggerId
+    }
+
     return (
       <div ref={clickInsideRef}>
-        {renderTrigger(anchorRef, triggerPopup)}
+        {renderTrigger(anchorRef, triggerPopup, triggerProps)}
         <Popup
           anchorRef={anchorRef}
           checkIfClickInside={(target: EventTarget) => {
@@ -76,12 +84,19 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           transformOrigin={transformOrigin}
           anchorOrigin={anchorOrigin}
         >
-          <div className={styles.menu}>
+          <ul
+            className={styles.menu}
+            role='menu'
+            aria-labelledby={triggerId}
+            tabIndex={-1}
+          >
             {items.map((item, i) => (
-              <div
-                key={typeof item.text === 'string' ? `${item.text}_${i}` : i}
+              <li
+                key={typeof item.text === 'string' ? item.text : i}
+                role='menuitem'
                 className={cn(styles.item, item.className)}
                 onClick={handleMenuItemClick(item)}
+                tabIndex={i === 0 ? 0 : -1}
               >
                 {item.icon && (
                   <div className={cn(styles.icon, item.iconClassName)}>
@@ -89,9 +104,9 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
                   </div>
                 )}
                 {item.text}
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </Popup>
       </div>
     )

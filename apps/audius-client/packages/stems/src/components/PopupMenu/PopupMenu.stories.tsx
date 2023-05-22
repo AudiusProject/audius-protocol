@@ -1,5 +1,3 @@
-import * as React from 'react'
-
 import { Story } from '@storybook/react'
 
 import { Button } from 'components/Button'
@@ -15,19 +13,20 @@ export default {
 
 const Template: Story<PopupMenuProps> = (args) => {
   return (
-    <>
-      <PopupMenu
-        {...args}
-        renderTrigger={(
-          anchorRef: React.MutableRefObject<any>,
-          triggerPopup: () => void
-        ) => {
-          return (
-            <Button text='Click me' ref={anchorRef} onClick={triggerPopup} />
-          )
-        }}
-      />
-    </>
+    <PopupMenu
+      {...args}
+      renderTrigger={(anchorRef, triggerPopup, triggerProps) => {
+        return (
+          <Button
+            text='Click me'
+            // @ts-ignore
+            ref={anchorRef}
+            onClick={triggerPopup}
+            {...triggerProps}
+          />
+        )
+      }}
+    />
   )
 }
 
@@ -47,7 +46,8 @@ const primaryProps: Omit<PopupMenuProps, 'renderTrigger'> = {
       text: 'Item 3',
       onClick: () => {}
     }
-  ]
+  ],
+  id: 'primary'
 }
 
 Primary.args = primaryProps
@@ -76,7 +76,8 @@ const withIconsProps: Omit<PopupMenuProps, 'renderTrigger'> = {
       icon: <IconLock />,
       onClick: () => {}
     }
-  ]
+  ],
+  id: 'with-icons'
 }
 
 WithIcons.args = withIconsProps
