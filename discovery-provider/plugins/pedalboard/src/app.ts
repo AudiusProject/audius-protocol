@@ -119,7 +119,6 @@ export default class App<AppData> {
     /* Internal Builder Methods */
 
     private async initListenHandlers(): Promise<(() => Promise<void>)[]> {
-        const listeners = []
         const db = this.discoveryDb
         const func = async () => {
             const conn = await db.client.acquireConnection().catch(console.error)
