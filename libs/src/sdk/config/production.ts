@@ -5,7 +5,7 @@
 /* eslint-disable prettier/prettier */
 import type { BootstrapConfig } from './types'
 export const bootstrapConfig: BootstrapConfig = {
-  "minVersion": "0.3.72",
+  "minVersion": "0.3.85",
   "discoveryNodes": [
     "https://audius-metadata-1.figment.io",
     "https://audius-metadata-2.figment.io",
@@ -61,6 +61,14 @@ export const bootstrapConfig: BootstrapConfig = {
     "https://audius-discovery-2.cultur3stake.com",
     "https://blockdaemon-audius-discovery-08.bdnodes.net",
     "https://audius-metadata-5.figment.io",
-    "https://audius-metadata-1.decentralizeaudio.xyz"
-  ]
+    "https://audius-metadata-1.decentralizeaudio.xyz",
+    "https://dn1.stuffisup.com",
+    "https://audius-discovery-1.theblueprint.xyz",
+    "https://audius-discovery-2.theblueprint.xyz",
+    "https://audius-discovery-3.theblueprint.xyz",
+    "https://audius-discovery-4.theblueprint.xyz"
+  ],
+  "web3ProviderUrl": "https://poa-gateway.audius.co",
+  "entityManagerContractAddress": "0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64",
+  "identityServiceEndpoint": "https://identityservice.audius.co"
 }

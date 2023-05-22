@@ -13,6 +13,8 @@ type EnvironmentConfig = {
   ETH_TOKEN_ADDRESS: string
   IDENTITY_SERVICE_ENDPOINT: string
   WORMHOLE_ADDRESS: string
+  ENTITY_MANAGER_CONTRACT_ADDRESS: string
+  WEB3_PROVIDER_URL: string
 }
 
 const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
@@ -24,7 +26,10 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
     ETH_REGISTRY_ADDRESS: '0xd976d3b4f4e22a238c1A736b6612D22f17b6f64C',
     ETH_TOKEN_ADDRESS: '0x18aAA7115705e8be94bfFEBDE57Af9BFc265B998',
     IDENTITY_SERVICE_ENDPOINT: 'https://identityservice.audius.co',
-    WORMHOLE_ADDRESS: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095'
+    WORMHOLE_ADDRESS: '0x6E7a1F7339bbB62b23D44797b63e4258d283E095',
+    WEB3_PROVIDER_URL: 'https://poa-gateway.audius.co',
+    ENTITY_MANAGER_CONTRACT_ADDRESS:
+      '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
   },
   staging: {
     CLAIM_DISTRIBUTION_CONTRACT_ADDRESS:
@@ -34,11 +39,24 @@ const envConfigs: Record<'staging' | 'production', EnvironmentConfig> = {
     ETH_REGISTRY_ADDRESS: '0xF27A9c44d7d5DDdA29bC1eeaD94718EeAC1775e3',
     ETH_TOKEN_ADDRESS: '0x5375BE4c52fA29b26077B0F15ee5254D779676A6',
     IDENTITY_SERVICE_ENDPOINT: 'https://identityservice.staging.audius.co',
-    WORMHOLE_ADDRESS: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7'
+    WORMHOLE_ADDRESS: '0xf6f45e4d836da1d4ecd43bb1074620bfb0b7e0d7',
+    WEB3_PROVIDER_URL: 'https://poa-gateway.staging.audius.co',
+    ENTITY_MANAGER_CONTRACT_ADDRESS:
+      '0x1Cd8a543596D499B9b6E7a6eC15ECd2B7857Fd64'
   }
 }
 
-const generateBootstrapConfig = async (config: EnvironmentConfig) => {
+const devBootstrapConfig: BootstrapConfig = {
+  minVersion: '0.0.0',
+  discoveryNodes: ['http://audius-protocol-discovery-provider-1'],
+  entityManagerContractAddress: '0x5b9b42d6e4B2e4Bf8d42Eba32D46918e10899B66',
+  web3ProviderUrl: 'http://audius-protocol-poa-ganache-1',
+  identityServiceEndpoint: 'http://audius-protocol-identity-service-1'
+}
+
+const generateBootstrapConfig = async (
+  config: EnvironmentConfig
+): Promise<BootstrapConfig> => {
   const contracts = new EthContracts({
     ethWeb3Manager: new EthWeb3Manager({
       identityService: new IdentityService({
@@ -71,17 +89,17 @@ const generateBootstrapConfig = async (config: EnvironmentConfig) => {
   const minVersion = await contracts.getCurrentVersion('discovery-node')
   return {
     minVersion,
-    discoveryNodes: discoveryNodes.map((node) => node.endpoint)
+    discoveryNodes: discoveryNodes.map((node) => node.endpoint),
+    web3ProviderUrl: config.WEB3_PROVIDER_URL,
+    entityManagerContractAddress: config.ENTITY_MANAGER_CONTRACT_ADDRESS,
+    identityServiceEndpoint: config.IDENTITY_SERVICE_ENDPOINT
   }
 }
 
 const writeBootstrapConfig = async () => {
   const production = await generateBootstrapConfig(envConfigs.production)
   const staging = await generateBootstrapConfig(envConfigs.staging)
-  const development = {
-    minVersion: '0.0.0',
-    discoveryNodes: ['http://audius-protocol-discovery-provider-1']
-  }
+  const development = devBootstrapConfig
   const config: Record<string, BootstrapConfig> = {
     development,
     staging,
