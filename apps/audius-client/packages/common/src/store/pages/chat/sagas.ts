@@ -1,6 +1,7 @@
 import {
   ChatMessage,
   TypedCommsResponse,
+  UserChat,
   ValidatedChatPermissions
 } from '@audius/sdk'
 import dayjs from 'dayjs'
@@ -64,6 +65,23 @@ const {
 } = chatActions
 const { getChatsSummary, getChat, getUnfurlMetadata } = chatSelectors
 
+/**
+ * Helper to dispatch actions for fetching chat users
+ */
+function* fetchUsersForChats(chats: UserChat[]) {
+  const userIds = new Set<number>([])
+  for (const chat of chats) {
+    for (const member of chat.chat_members) {
+      userIds.add(decodeHashId(member.user_id)!)
+    }
+  }
+  yield* put(
+    cacheUsersActions.fetchUsers({
+      userIds: Array.from(userIds.values())
+    })
+  )
+}
+
 function* doFetchUnreadMessagesCount() {
   try {
     const audiusSdk = yield* getContext('audiusSdk')
@@ -88,17 +106,7 @@ function* doFetchMoreChats() {
       before,
       limit: 30
     })
-    const userIds = new Set<number>([])
-    for (const chat of response.data) {
-      for (const member of chat.chat_members) {
-        userIds.add(decodeHashId(member.user_id)!)
-      }
-    }
-    yield* put(
-      cacheUsersActions.fetchUsers({
-        userIds: Array.from(userIds.values())
-      })
-    )
+    yield* fetchUsersForChats(response.data)
     yield* put(fetchMoreChatsSucceeded(response))
   } catch (e) {
     console.error('fetchMoreChatsFailed', e)
@@ -293,6 +301,7 @@ function* fetchChatIfNecessary(args: { chatId: string }) {
     const sdk = yield* call(audiusSdk)
     const { data: chat } = yield* call([sdk.chats, sdk.chats.get], { chatId })
     if (chat) {
+      yield* fetchUsersForChats([chat])
       yield* put(fetchChatSucceeded({ chat }))
     }
   }
