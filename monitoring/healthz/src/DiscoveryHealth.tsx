@@ -22,6 +22,7 @@ export function DiscoveryHealth() {
         <thead>
           <tr>
             <th>Host</th>
+            <th>Registered</th>
             <th>Ver</th>
             <th>Git SHA</th>
             <th>Compose</th>
@@ -80,7 +81,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
     health.auto_upgrade_enabled || health.autoUpgradeEnabled
   const getPeers = (str: string | undefined) => {
     if (str === undefined) return "chain health undefined"
-    const match = str.match(/Peers: (.)/)
+    const match = str.match(/Peers: (\d+)\./)
     return (match && match[1]) ? match[1] : "no peers found"
   }
   const getProducing = (str: string | undefined) => {
@@ -98,6 +99,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
+      <td>{sp.isRegistered.toString()}</td>
       <td>{health.version}</td>
       <td>
         <a
