@@ -394,6 +394,13 @@ stream_parser.add_argument(
         This is needed by the CN in order to set the Content-Disposition response header.""",
     type=str,
 )
+stream_parser.add_argument(
+    "skip_play_count",
+    description="""Optional - boolean that disables tracking of play counts.""",
+    type=bool,
+    required=False,
+    default=False,
+)
 
 
 def tranform_stream_cache(stream_url):
@@ -466,14 +473,17 @@ class TrackStream(Resource):
         if not signature:
             abort_not_found(track_id, ns)
 
-        signature_param = urllib.parse.quote(json.dumps(signature))
-        path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
-
-        # Grab filename in case the user is requesting track download
+        params = {signature: urllib.parse.quote(json.dumps(signature))}
+        skip_play_count = request_args.get("skip_play_count", False)
+        if skip_play_count:
+            params["skip_play_count"] = skip_play_count
         filename = request_args.get("filename", None)
         if filename:
-            path = f"{path}&filename={filename}"
+            params["filename"] = filename
 
+        base_path = f"tracks/cidstream/{track_cid}"
+        query_string = urllib.parse.urlencode(params)
+        path = f"{base_path}{query_string}"
         stream_url = urljoin(content_node, path)
 
         return stream_url
