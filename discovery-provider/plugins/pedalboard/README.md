@@ -16,7 +16,7 @@ knex: query builder for ts and js
 
 more as pedalboard gets built out
 
-# Running against containerized DBs
+# Running against remote DBs
 
 open an ssh tunnel in a terminal and hold it open
 ```

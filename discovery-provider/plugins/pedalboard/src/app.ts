@@ -1,6 +1,6 @@
 import { Knex, knex } from "knex"
 import { setIntervalAsync } from "set-interval-async"
-import { Table } from "./models"
+import { Table } from "src/models"
 
 export default class App<AppData> {
     // database connections

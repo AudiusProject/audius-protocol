@@ -2,8 +2,8 @@
  * Sandbox file you can use to just test run an app!
  */
 
-import App from "../src/app"
-import { Table, Tracks, Users } from "../src/models"
+import App from "src/app"
+import { Table, Tracks, Users } from "src/models"
 import { server } from "./server"
 
 export type SharedData = {
