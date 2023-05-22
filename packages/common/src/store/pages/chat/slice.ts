@@ -25,13 +25,15 @@ type UserChatWithMessagesStatus = UserChat & {
   messagesSummary?: TypedCommsResponse<ChatMessage>['summary']
 }
 
+type ChatID = string
+
 type ChatState = {
   chats: EntityState<UserChatWithMessagesStatus> & {
     status: Status
     summary?: TypedCommsResponse<UserChat>['summary']
   }
   messages: Record<
-    string,
+    ChatID,
     EntityState<ChatMessageWithExtras> & {
       status?: Status
       summary?: TypedCommsResponse<ChatMessage>['summary']
@@ -362,6 +364,13 @@ const slice = createSlice({
     ) => {
       // triggers saga to get chat if not exists
       const { chatId, message, status } = action.payload
+
+      // If no chatId, don't add the message
+      // and abort early, relying on the saga
+      // to fetch the chat
+      if (!(chatId in state.messages)) {
+        return
+      }
 
       const existingMessage = getMessage(
         state.messages[chatId],
