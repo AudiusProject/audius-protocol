@@ -22,6 +22,7 @@ export function DiscoveryHealth() {
         <thead>
           <tr>
             <th>Host</th>
+            <th>Registered</th>
             <th>Ver</th>
             <th>Git SHA</th>
             <th>Compose</th>
@@ -98,6 +99,7 @@ function HealthRow({ isContent, sp }: { isContent: boolean; sp: SP }) {
           {sp.endpoint.replace('https://', '')}
         </a>
       </td>
+      <td>{sp.isRegistered.toString()}</td>
       <td>{health.version}</td>
       <td>
         <a
