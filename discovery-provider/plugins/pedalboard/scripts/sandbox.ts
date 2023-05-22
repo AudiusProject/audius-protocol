@@ -45,7 +45,7 @@ const main = async () => {
             })
         })
         .scan(Table.Tracks, async (app, row) => { })
-        .spawn(server)
+        .task(server)
         .run()
 }
 

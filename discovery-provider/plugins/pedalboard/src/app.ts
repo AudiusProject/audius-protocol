@@ -14,7 +14,7 @@ export default class App<AppData> {
     // functions that execute on an interval
     private repeaters: ([number, (self: App<AppData>) => Promise<void>])[]
     // async operations that are evaluated immediately
-    private spawns: ((self: App<AppData>) => Promise<void>)[]
+    private tasks: ((self: App<AppData>) => Promise<void>)[]
 
     private appData: AppData
 
@@ -31,7 +31,7 @@ export default class App<AppData> {
         this.listeners = new Map()
         this.scans = new Map()
         this.repeaters = []
-        this.spawns = []
+        this.tasks = []
         this.appData = appData
     }
 
@@ -59,13 +59,15 @@ export default class App<AppData> {
         return this;
     }
 
+    // Maybe rename to "cron"?
     repeat(intervalMs: number, callback: (self: App<AppData>) => Promise<void>): App<AppData> {
         this.repeaters.push([intervalMs, callback])
         return this;
     }
 
-    spawn(func: (self: App<AppData>) => Promise<void>): App<AppData> {
-        this.spawns.push(func)
+    // Maybe rename to "task"?
+    task(func: (self: App<AppData>) => Promise<void>): App<AppData> {
+        this.tasks.push(func)
         return this;
     }
 
@@ -73,7 +75,7 @@ export default class App<AppData> {
         // setup all handlers
         const listeners = await this.initListenHandlers()
         const repeaters = this.initRepeatHandlers()
-        const spawned = this.initSpawnHandlers()
+        const spawned = this.initTaskHandlers()
         // const scanners = this.initScanHandlers()
 
         // run all processes concurrently
@@ -128,7 +130,6 @@ export default class App<AppData> {
     }
 
     private initRepeatHandlers(): (() => Promise<void>)[] {
-        console.log('init repeaters')
         const repeaters = []
         for (const [interval, callback] of this.repeaters) {
             console.log(`init repeater on ${interval}`)
@@ -142,13 +143,12 @@ export default class App<AppData> {
         return repeaters
     }
 
-    private initSpawnHandlers(): (() => Promise<void>)[] {
+    private initTaskHandlers(): (() => Promise<void>)[] {
         console.log('init spawns')
         const spawned = []
-        for (const spawn of this.spawns) {
-            console.log('assembling a spawn')
+        for (const task of this.tasks) {
             const func = async () => {
-                await spawn(this).catch(console.error)
+                await task(this).catch(console.error)
             }
             spawned.push(func)
         }
