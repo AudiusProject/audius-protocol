@@ -63,8 +63,13 @@ module.exports = {
     'jest/expect-expect': 'off',
 
     'react-hooks/rules-of-hooks': 'error',
-    'react-hooks/exhaustive-deps': 'warn',
-
+    'react-hooks/exhaustive-deps': [
+      'warn',
+      {
+        additionalHooks:
+          '(useThrottledCallback|useDebouncedCallback|useAuthenticatedCallback)'
+      }
+    ],
     'react/display-name': 'off',
     'react/prop-types': 'off',
     'react/jsx-uses-react': 'off',

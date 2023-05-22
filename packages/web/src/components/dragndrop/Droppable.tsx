@@ -27,7 +27,6 @@ export type DroppableProps = {
   disabled?: boolean
   // Allows kinds owned by currentUser to be dropped
   acceptOwner?: boolean
-  stopPropagationOnDrop?: boolean
 } & (
   | {
       forward: true
@@ -47,7 +46,6 @@ export const Droppable = (props: DroppableProps) => {
     disabled,
     acceptOwner = true,
     children,
-    stopPropagationOnDrop,
     forward
   } = props
   const { id, kind, index, isOwner } = useSelector(selectDragnDropState)
@@ -95,8 +93,8 @@ export const Droppable = (props: DroppableProps) => {
       }
       setHovered(false)
     },
-    150,
-    [stopPropagationOnDrop, id, kind, onDrop, index]
+    [id, kind, onDrop, index],
+    150
   )
 
   const droppableHandlerProps = {

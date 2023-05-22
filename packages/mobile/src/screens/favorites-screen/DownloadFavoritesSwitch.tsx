@@ -50,8 +50,8 @@ export const DownloadFavoritesSwitch = (
         )
       }
     },
-    800,
-    [dispatch, onValueChange]
+    [dispatch, onValueChange],
+    800
   )
 
   // When user confirms removal, turn switch off

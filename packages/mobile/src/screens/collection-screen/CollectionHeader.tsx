@@ -191,8 +191,8 @@ const OfflineCollectionHeader = (props: OfflineCollectionHeaderProps) => {
         )
       }
     },
-    800,
-    [dispatch, playlist_id]
+    [dispatch, playlist_id],
+    800
   )
 
   const getTextColor = () => {

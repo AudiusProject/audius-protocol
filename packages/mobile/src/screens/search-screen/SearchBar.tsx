@@ -53,8 +53,8 @@ export const SearchBar = (props: SearchBarProps) => {
         dispatch(fetchSearch(text))
       }
     },
-    250,
-    [dispatch]
+    [dispatch],
+    250
   )
   const handleChangeText = useCallback(
     (text: string) => {
