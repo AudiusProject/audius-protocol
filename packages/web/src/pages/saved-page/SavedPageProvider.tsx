@@ -443,7 +443,6 @@ class SavedPage extends PureComponent<SavedPageProps, SavedPageState> {
       fetchSavedTracks: this.props.fetchSavedTracks,
       resetSavedTracks: this.props.resetSavedTracks,
       updateLineupOrder: this.props.updateLineupOrder,
-      fetchSavedAlbums: this.props.fetchSavedAlbums,
       goToRoute: this.props.goToRoute,
       play: this.props.play,
       pause: this.props.pause,
@@ -559,7 +558,6 @@ function mapDispatchToProps(dispatch: Dispatch) {
     resetSavedTracks: () => dispatch(tracksActions.reset()),
     updateLineupOrder: (updatedOrderIndices: UID[]) =>
       dispatch(tracksActions.updateLineupOrder(updatedOrderIndices)),
-    fetchSavedAlbums: () => dispatch(accountActions.fetchSavedAlbums()),
     fetchSavedPlaylists: () => dispatch(accountActions.fetchSavedPlaylists()),
     updatePlaylistLastViewedAt: (playlistId: number) =>
       dispatch(updatedPlaylistViewed({ playlistId })),
