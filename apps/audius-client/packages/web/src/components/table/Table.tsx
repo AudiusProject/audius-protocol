@@ -432,7 +432,6 @@ export const Table = ({
           onDrop={(id: ID | string, draggingKind: string, index: number) => {
             onDragEnd({ source: index, destination: row.index })
           }}
-          stopPropagationOnDrop
           acceptedKinds={['track', 'table-row']}
         >
           <Draggable

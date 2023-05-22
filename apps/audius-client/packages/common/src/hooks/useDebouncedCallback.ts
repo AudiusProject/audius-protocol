@@ -5,8 +5,8 @@ import { debounce } from 'lodash'
 
 export const useDebouncedCallback = <T extends (...args: any) => any>(
   callback: T,
-  wait: number,
-  deps: DependencyList
+  deps: DependencyList,
+  wait: number
 ) => {
   return useMemo(
     () => debounce(callback, wait),
