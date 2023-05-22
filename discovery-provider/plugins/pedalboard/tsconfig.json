@@ -1,19 +1,5 @@
 {
   "compilerOptions": {// This is used by `ts language service` and testing, so it needs to include the test folder
-    "extends": "./tsconfig.base.json",
-    "compilerOptions": {
-      "outDir": "./build_test",
-      "types": ["node", "mocha"]
-    },
-    "include": [
-      "src",
-      "test",
-      "sequelize"
-    ],
-    "exclude": [
-      "node_modules",
-      "build"
-    ],
     "target": "es2016",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
     // "lib": [],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
     // "jsx": "preserve",                                /* Specify what JSX code is generated. */

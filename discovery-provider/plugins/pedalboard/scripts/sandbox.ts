@@ -36,7 +36,7 @@ const main = async () => {
                 }
             })
         })
-        .repeat(10000, async (app) => {
+        .cron({ seconds: 5 }, async (app) => {
             app.updateAppData((data) => {
                 return {
                     ...data,

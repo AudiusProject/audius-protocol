@@ -1,11 +1,15 @@
+import dayjs from "dayjs"
+import duration from "dayjs/plugin/duration"
 import { Knex, knex } from "knex"
 import { setIntervalAsync } from "set-interval-async"
 import { Table } from "src/models"
 
+dayjs.extend(duration)
+
 export default class App<AppData> {
     // database connections
-    private dnDb: Knex
-    private idDb?: Knex
+    private discoveryDb: Knex
+    private identityDb?: Knex
 
     // pg notify handlers
     private listeners: Map<string, ((self: App<AppData>, msg: any) => Promise<void>)[]>
@@ -19,15 +23,10 @@ export default class App<AppData> {
     private appData: AppData
 
     constructor(appData: AppData) {
-        this.dnDb = knex({
+        this.discoveryDb = knex({
             client: "pg",
             connection: { connectionString: 'postgresql://postgres:postgres@localhost:5432/audius_discovery' }
         })
-        this.idDb = knex({
-            client: "pg",
-            connection: { connectionString: process.env.IDENTITY_DB_CONN_STRING }
-        })
-
         this.listeners = new Map()
         this.scans = new Map()
         this.repeaters = []
@@ -60,7 +59,17 @@ export default class App<AppData> {
     }
 
     // Maybe rename to "cron"?
-    repeat(intervalMs: number, callback: (self: App<AppData>) => Promise<void>): App<AppData> {
+    cron(interval: Partial<{
+        milliseconds: number;
+        seconds: number;
+        minutes: number;
+        hours: number;
+        days: number;
+        months: number;
+        years: number;
+        weeks: number;
+    }>, callback: (self: App<AppData>) => Promise<void>): App<AppData> {
+        const intervalMs = dayjs.duration(interval).asMilliseconds()
         this.repeaters.push([intervalMs, callback])
         return this;
     }
@@ -89,12 +98,12 @@ export default class App<AppData> {
     /* External Usage Methods */
 
     getDnDb(): Knex {
-        return this.dnDb
+        return this.discoveryDb
     }
 
     getIdDb(): Knex {
-        if (this.idDb === undefined) throw new Error("identity connection not established")
-        return this.idDb
+        if (this.identityDb === undefined) throw new Error("identity connection not established")
+        return this.identityDb
     }
 
     updateAppData(func: (data: AppData) => AppData) {
@@ -110,7 +119,7 @@ export default class App<AppData> {
 
     private async initListenHandlers(): Promise<(() => Promise<void>)[]> {
         const listeners = []
-        const db = this.dnDb
+        const db = this.discoveryDb
         for (const [topic, handlers] of this.listeners) {
             // package into async fn
             const func = async () => {
