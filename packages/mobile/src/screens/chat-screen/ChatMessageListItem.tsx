@@ -265,7 +265,9 @@ export const ChatMessageListItem = memo(function ChatMessageListItem(
             {!isPopup ? (
               <View style={styles.dateContainer}>
                 <Text style={styles.date}>
-                  {formatMessageDate(message.created_at)}
+                  {isUnderneathPopup
+                    ? ' '
+                    : formatMessageDate(message.created_at)}
                 </Text>
               </View>
             ) : null}
