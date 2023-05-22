@@ -2,7 +2,7 @@
   "name": "pedalboard",
   "version": "0.1.0",
   "description": "plugin utilities for discovery nodes",
-  "main": "src/app.js",
+  "main": "./src/app.ts",
   "scripts": {
     "sandbox": "npx ts-node scripts/sandbox.ts",
     "lint": "npx eslint .",

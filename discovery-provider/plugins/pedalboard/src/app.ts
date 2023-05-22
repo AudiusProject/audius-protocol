@@ -1,5 +1,6 @@
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
+import { channel } from "diagnostics_channel"
 import { Knex, knex } from "knex"
 import { setIntervalAsync } from "set-interval-async"
 import { Table } from "src/models"
@@ -120,28 +121,24 @@ export default class App<AppData> {
     private async initListenHandlers(): Promise<(() => Promise<void>)[]> {
         const listeners = []
         const db = this.discoveryDb
-        for (const [topic, handlers] of this.listeners) {
-            // package into async fn
-            const func = async () => {
-                const conn = await db.client.acquireConnection().catch(console.error)
-                const sql = `LISTEN ${topic}`
-                conn.on("notification", async (msg: any) => {
-                    for (const handler of handlers) {
-                        await handler(this, JSON.parse(msg.payload)).catch(console.error)
-                    }
-                })
-                await conn.query(sql).catch(console.error);
-                console.log(`listening on topic ${topic}`);
-            }
-            listeners.push(func)
+        const func = async () => {
+            const conn = await db.client.acquireConnection().catch(console.error)
+            conn.on("notification", async (msg: any) => {
+                console.log(JSON.stringify(msg))
+                const { channel, payload } = msg
+                const handlers = this.listeners.get(channel)
+                if (handlers !== undefined) {
+                    await Promise.allSettled(handlers.map((handler) => handler(this, JSON.parse(payload)))).catch(console.error)
+                }
+            })
+            await Promise.allSettled(Array.from(this.listeners).map(([key, _val]) => conn.query(`LISTEN ${key}`))).catch(console.error)
         }
-        return listeners
+        return [func]
     }
 
     private initRepeatHandlers(): (() => Promise<void>)[] {
         const repeaters = []
         for (const [interval, callback] of this.repeaters) {
-            console.log(`init repeater on ${interval}`)
             const func = async () => {
                 setIntervalAsync(async () => {
                     await callback(this).catch(console.error)
@@ -153,7 +150,6 @@ export default class App<AppData> {
     }
 
     private initTaskHandlers(): (() => Promise<void>)[] {
-        console.log('init spawns')
         const spawned = []
         for (const task of this.tasks) {
             const func = async () => {

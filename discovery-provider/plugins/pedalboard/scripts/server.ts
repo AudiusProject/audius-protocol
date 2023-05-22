@@ -1,7 +1,7 @@
 import express from 'express'
-import App from 'src/app'
-import { Table } from 'src/models'
-import { Users } from 'src/models'
+import App from '../src/app'
+import { Table } from '../src/models'
+import { Users } from '../src/models'
 import { SharedData } from 'scripts/sandbox'
 
 export const server = async (app: App<SharedData>) => {
