@@ -1,15 +1,15 @@
+import React from 'react'
+
 import cn from 'classnames'
-import { connect } from 'react-redux'
 
 import { EmptyCard } from 'components/card/mobile/Card'
 import { Draggable } from 'components/dragndrop'
 import CategoryHeader from 'components/header/desktop/CategoryHeader'
-import { AppState } from 'store/types'
-import { isMobile } from 'utils/clientUtil'
+import { useIsMobile } from 'utils/clientUtil'
 
 import styles from './CardLineup.module.css'
 
-type OwnProps = {
+export type CardLineupProps = {
   categoryName?: string
   cards: JSX.Element[]
   containerClassName?: string
@@ -23,7 +23,7 @@ const DesktopCardContainer = ({
   containerClassName,
   cardsClassName,
   onMore
-}: OwnProps) => {
+}: CardLineupProps) => {
   return (
     <div className={cn(containerClassName)}>
       {categoryName && (
@@ -74,7 +74,10 @@ const renderEmptyCards = (cardsLength: number) => {
   return null
 }
 
-const MobileCardContainer = ({ cards, containerClassName }: OwnProps) => {
+const MobileCardContainer = ({
+  cards,
+  containerClassName
+}: CardLineupProps) => {
   return (
     <div className={cn(styles.mobileContainer, containerClassName)}>
       {cards.map((card, index) => (
@@ -87,19 +90,11 @@ const MobileCardContainer = ({ cards, containerClassName }: OwnProps) => {
   )
 }
 
-type CardLineupProps = OwnProps & ReturnType<typeof mapStateToProps>
-
 const CardLineup = (props: CardLineupProps) => {
-  const { isMobile, ...containerProps } = props
+  const isMobile = useIsMobile()
   const Container = isMobile ? MobileCardContainer : DesktopCardContainer
 
-  return <Container {...containerProps} />
+  return React.createElement(Container, props)
 }
 
-function mapStateToProps(state: AppState) {
-  return {
-    isMobile: isMobile()
-  }
-}
-
-export default connect(mapStateToProps)(CardLineup)
+export default CardLineup

@@ -112,6 +112,7 @@
 }
 
 .cardsContainer {
+  gap: var(--unit-6) var(--unit-4);
   margin-top: 16px;
   padding: 0px 11px;
 }
