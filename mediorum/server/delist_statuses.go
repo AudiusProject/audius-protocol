@@ -24,12 +24,19 @@ const DelistBatchSize = 5000
 
 type (
 	TrackDelistStatus struct {
-		CreatedAt time.Time `json:"createdAt"`
+		CreatedAt time.Time `json:"-"`
 		TrackID   int       `json:"trackId"`
 		OwnerID   int       `json:"ownerId"`
 		TrackCID  string    `json:"trackCid"`
 		Delisted  bool      `json:"delisted"`
 		Reason    string    `json:"reason"`
+	}
+
+	aliasTrackDelistStatus TrackDelistStatus
+
+	jsonTrackDelistStatus struct {
+		*aliasTrackDelistStatus
+		CreatedAt string `json:"createdAt"`
 	}
 
 	UserDelistStatus struct {
@@ -38,7 +45,44 @@ type (
 		Delisted  bool      `json:"delisted"`
 		Reason    string    `json:"reason"`
 	}
+
+	aliasUserDelistStatus UserDelistStatus
+
+	jsonUserDelistStatus struct {
+		*aliasUserDelistStatus
+		CreatedAt string `json:"createdAt"`
+	}
 )
+
+func (t *TrackDelistStatus) UnmarshalJSON(data []byte) error {
+	temp := &jsonTrackDelistStatus{
+		aliasTrackDelistStatus: (*aliasTrackDelistStatus)(t),
+	}
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+	var err error
+	t.CreatedAt, err = time.Parse("2006-01-02 15:04:05.999999-07", temp.CreatedAt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (u *UserDelistStatus) UnmarshalJSON(data []byte) error {
+	temp := &jsonUserDelistStatus{
+		aliasUserDelistStatus: (*aliasUserDelistStatus)(u),
+	}
+	if err := json.Unmarshal(data, &temp); err != nil {
+		return err
+	}
+	var err error
+	u.CreatedAt, err = time.Parse("2006-01-02 15:04:05.999999-07", temp.CreatedAt)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 func (ss *MediorumServer) startPollingDelistStatuses() {
 	// Read trusted notifier endpoint and wallet from chain
@@ -49,22 +93,25 @@ func (ss *MediorumServer) startPollingDelistStatuses() {
 	}
 	trustedNotifier, err := ethcontracts.GetNotifierForID(strconv.Itoa(trustedNotifierID))
 	if err != nil {
-		slog.Error("failed to get trusted notifier, not polling delist statuses", err)
+		slog.Error("failed to get trusted notifier from chain, not polling delist statuses", err)
 		return
 	}
-	slog.Info("got trusted notifier", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
+	slog.Info("got trusted notifier from chain", "endpoint", trustedNotifier.Endpoint, "wallet", trustedNotifier.Wallet)
 
 	// Poll trusted notifier endpoint for delist statuses periodically. We only care about tracks for now.
 	ticker := time.NewTicker(DelistStatusPollingInterval)
 	for {
 		<-ticker.C
 
-		startedAt := time.Now()
-		err := ss.pollDelistStatuses("tracks", trustedNotifier.Endpoint, trustedNotifier.Wallet)
-		if err == nil {
-			slog.Info("finished polling track delist statuses", "took", time.Since(startedAt))
-		} else {
-			slog.Warn("polling track delist statuses failed", "err", err, "took", time.Since(startedAt))
+		for _, tracksOrUsers := range []string{"tracks", "users"} {
+			startedAt := time.Now()
+			err := ss.pollDelistStatuses(tracksOrUsers, trustedNotifier.Endpoint, trustedNotifier.Wallet)
+			pollingMsg := fmt.Sprintf("finished polling delist statuses for %s", tracksOrUsers)
+			if err == nil {
+				slog.Info(pollingMsg, "took", time.Since(startedAt))
+			} else {
+				slog.Warn(pollingMsg, "err", err, "took", time.Since(startedAt))
+			}
 		}
 	}
 }
@@ -73,7 +120,7 @@ func (ss *MediorumServer) pollDelistStatuses(tracksOrUsers, endpoint, wallet str
 	ctx := context.Background()
 
 	var cursorBefore time.Time
-	ss.pgPool.QueryRow(ctx, `SELECT created_at FROM delist_status_cursor WHERE host = $1 AND type = $2`, endpoint, tracksOrUsers).Scan(&cursorBefore)
+	ss.pgPool.QueryRow(ctx, `SELECT created_at FROM delist_status_cursor WHERE host = $1 AND tracks_or_users = $2`, endpoint, tracksOrUsers).Scan(&cursorBefore)
 
 	pollMoreEndpoint := fmt.Sprintf("%s/statuses/%s?cursor=%s&batchSize=%d", endpoint, tracksOrUsers, url.QueryEscape(cursorBefore.Format(time.RFC3339Nano)), DelistBatchSize)
 	req, err := signature.SignedGet(pollMoreEndpoint, ss.Config.privateKey)
@@ -89,7 +136,7 @@ func (ss *MediorumServer) pollDelistStatuses(tracksOrUsers, endpoint, wallet str
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		slog.Warn("error fetching from trusted notifier", "status", resp.StatusCode)
+		slog.Warn("error fetching from trusted notifier", "status", resp.StatusCode, "endpoint", pollMoreEndpoint)
 		return errors.New(resp.Status)
 	}
 
@@ -128,11 +175,11 @@ func (ss *MediorumServer) processTrackDelistStatuses(body io.ReadCloser, ctx con
 		_, err = ss.pgPool.Exec(
 			ctx,
 			`
-			INSERT INTO delist_status_cursor 
-			(created_at, host, tracks_or_users) 
+			INSERT INTO delist_status_cursor
+			(created_at, host, tracks_or_users)
 			VALUES ($1, $2, $3)
-			ON CONFLICT (host, tracks_or_users) 
-			DO UPDATE SET 
+			ON CONFLICT (host, tracks_or_users)
+			DO UPDATE SET
 				created_at = EXCLUDED.created_at
 			`,
 			cursorAfter, endpoint, "tracks",

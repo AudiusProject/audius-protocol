@@ -9,8 +9,24 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/crypto"
 )
+
+// From https://github.com/AudiusProject/sig/blob/main/go/index.go
+func sign(input string, privateKey *ecdsa.PrivateKey) ([]byte, error) {
+	// hash the input
+	hash := crypto.Keccak256Hash([]byte(input))
+	// TextHash will prepend Ethereum signed message prefix to the hash
+	// and hash that again
+	hash2 := accounts.TextHash(hash.Bytes())
+
+	signature, err := crypto.Sign(hash2, privateKey)
+	if err != nil {
+		return nil, err
+	}
+	return signature, nil
+}
 
 // between mediorum servers, authenticate requests a basic auth
 func basicAuthNonce(privateKey *ecdsa.PrivateKey) string {
@@ -20,15 +36,14 @@ func basicAuthNonce(privateKey *ecdsa.PrivateKey) string {
 	}
 
 	ts := fmt.Sprintf("%d", time.Now().UnixMilli())
-	hash := crypto.Keccak256Hash([]byte(ts))
-	signature, err := crypto.Sign(hash.Bytes(), privateKey)
+	signature, err := sign(ts, privateKey)
 	if err != nil {
 		panic(err)
 	}
+	signatureHex := fmt.Sprintf("0x%s", hex.EncodeToString(signature))
 
-	basic := ts + ":" + hex.EncodeToString(signature)
-	basic2 := "Basic " + base64.StdEncoding.EncodeToString([]byte(basic))
-	return basic2
+	basic := ts + ":" + signatureHex
+	return "Basic " + base64.StdEncoding.EncodeToString([]byte(basic))
 }
 
 func SignedGet(endpoint string, privateKey *ecdsa.PrivateKey) (*http.Request, error) {
