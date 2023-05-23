@@ -41,6 +41,8 @@ def backfill_cid_data(db: SessionManager):
         with db.scoped_session() as session:
             # Load cid data from csv in chunks...
             with open(tmp.name, "r") as file:
+                # Set 370KB limit for csv fields
+                csv.field_size_limit(370_000)
                 while True:
                     csv_reader = csv.reader(file, delimiter="\t")
                     lines = list(islice(csv_reader, chunk_size))
