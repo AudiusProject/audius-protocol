@@ -246,9 +246,13 @@ function* doMarkChatAsRead(action: ReturnType<typeof markChatAsRead>) {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const chat = yield* select((state) => getChat(state, chatId))
-    if (!chat || !dayjs(chat?.last_read_at).isAfter(chat?.last_message_at)) {
+    if (!chat || dayjs(chat?.last_read_at).isBefore(chat?.last_message_at)) {
       yield* call([sdk.chats, sdk.chats.read], { chatId })
       yield* put(markChatAsReadSucceeded({ chatId }))
+    } else {
+      // Mark the write as 'failed' in this case (just means we already marked this as read somehow)
+      // to delete the optimistic read status
+      yield* put(markChatAsReadFailed({ chatId }))
     }
   } catch (e) {
     console.error('markChatAsReadFailed', e)
@@ -279,7 +283,8 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
           reactions: [],
           created_at: dayjs().toISOString()
         },
-        status: Status.LOADING
+        status: Status.LOADING,
+        isSelfMessage: true
       })
     )
 

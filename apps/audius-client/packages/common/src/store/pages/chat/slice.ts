@@ -365,11 +365,12 @@ const slice = createSlice({
       action: PayloadAction<{
         chatId: string
         message: ChatMessage
+        isSelfMessage: boolean
         status?: Status
       }>
     ) => {
       // triggers saga to get chat if not exists
-      const { chatId, message, status } = action.payload
+      const { chatId, message, status, isSelfMessage } = action.payload
 
       // If no chatId, don't add the message
       // and abort early, relying on the saga
@@ -378,50 +379,51 @@ const slice = createSlice({
         return
       }
 
+      // Return early if we've seen this message
       const existingMessage = getMessage(
         state.messages[chatId],
         message.message_id
       )
-      if (!existingMessage) {
-        chatMessagesAdapter.addOne(state.messages[chatId], {
-          ...message,
-          hasTail: true,
-          status: status ?? Status.IDLE
-        })
-        chatsAdapter.updateOne(state.chats, {
-          id: chatId,
-          changes: {
-            last_message: message.message,
-            last_message_at: message.created_at,
-            // If a new message comes through, we don't need to recheck permissions anymore
-            recheck_permissions: false
-          }
-        })
-        recalculatePreviousMessageHasTail(state.messages[chatId], 0)
-      }
-    },
-    incrementUnreadCount: (
-      state,
-      action: PayloadAction<{ chatId: string }>
-    ) => {
-      const { chatId } = action.payload
-      // If we're actively reading, this will immediately get marked as read.
-      // Ignore the unread bump to prevent flicker
-      if (state.activeChatId !== chatId) {
-        const existingChat = getChat(state, chatId)
-        const optimisticRead = state.optimisticChatRead[chatId]
-        const existingUnreadCount = optimisticRead
-          ? optimisticRead.unread_message_count
-          : existingChat?.unread_message_count ?? 0
-        chatsAdapter.updateOne(state.chats, {
-          id: chatId,
-          changes: { unread_message_count: existingUnreadCount + 1 }
-        })
-      }
-      if (state.optimisticUnreadMessagesCount) {
-        state.optimisticUnreadMessagesCount += 1
-      } else {
-        state.optimisticUnreadMessagesCount = state.unreadMessagesCount + 1
+      if (existingMessage) return
+
+      // Add the message
+      chatMessagesAdapter.addOne(state.messages[chatId], {
+        ...message,
+        hasTail: true,
+        status: status ?? Status.IDLE
+      })
+      chatsAdapter.updateOne(state.chats, {
+        id: chatId,
+        changes: {
+          last_message: message.message,
+          last_message_at: message.created_at,
+          // If a new message comes through, we don't need to recheck permissions anymore
+          recheck_permissions: false
+        }
+      })
+
+      // Recalculate tails
+      recalculatePreviousMessageHasTail(state.messages[chatId], 0)
+
+      // Handle unread counts
+      if (!isSelfMessage) {
+        // If we're actively reading, this will immediately get marked as read.
+        // Ignore the unread bump to prevent flicker
+        if (state.activeChatId !== chatId) {
+          const existingChat = getChat(state, chatId)
+          const optimisticRead = state.optimisticChatRead[chatId]
+          const existingUnreadCount = optimisticRead
+            ? optimisticRead.unread_message_count
+            : existingChat?.unread_message_count ?? 0
+          chatsAdapter.updateOne(state.chats, {
+            id: chatId,
+            changes: { unread_message_count: existingUnreadCount + 1 }
+          })
+        }
+
+        // Web or mobile: update optimistic unread count
+        state.optimisticUnreadMessagesCount =
+          (state.optimisticUnreadMessagesCount ?? state.unreadMessagesCount) + 1
       }
     },
     /**
