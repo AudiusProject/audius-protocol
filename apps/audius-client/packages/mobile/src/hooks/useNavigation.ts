@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react'
+import { useCallback, useMemo } from 'react'
 
 import type {
   ParamListBase,
@@ -8,6 +8,7 @@ import { useNavigation as useNativeNavigation } from '@react-navigation/native'
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { isEqual } from 'lodash'
 
+import { lastNavAction, setLastNavAction } from 'app/screens/app-screen'
 import { getNearestStackNavigator } from 'app/utils/navigation'
 
 export type ContextualParams = {
@@ -41,8 +42,6 @@ export function useNavigation<
 >(options?: UseNavigationOptions<NavigationProp>): NavigationProp {
   const defaultNavigation = useNativeNavigation<NavigationProp>()
 
-  const lastNavAction = useRef<PerformNavigationConfig<ParamList>>()
-
   const navigation: NavigationProp =
     options?.customNavigation ?? defaultNavigation
 
@@ -50,25 +49,18 @@ export function useNavigation<
   // navigation actions
   const performCustomPush = useCallback(
     (...config: PerformNavigationConfig<ParamList>) => {
-      if (!isEqual(lastNavAction.current, config)) {
+      if (!isEqual(lastNavAction, config)) {
         const stackNavigator = getNearestStackNavigator(navigation)
 
         if (stackNavigator) {
-          // Reset lastNavAction when the transition ends
-          const unsubscribe = stackNavigator.addListener(
-            'transitionEnd',
-            (e) => {
-              lastNavAction.current = undefined
-              unsubscribe()
-            }
-          )
-
           stackNavigator.push(...config)
-          lastNavAction.current = config
+
+          // Set lastNavAction, it will be reset via an event handler in AppTabScreen
+          setLastNavAction(config)
         }
       }
     },
-    [navigation, lastNavAction]
+    [navigation]
   )
 
   return useMemo(

@@ -21,7 +21,6 @@ import IconKebabHorizontal from 'app/assets/images/iconKebabHorizontal.svg'
 import IconShare from 'app/assets/images/iconShare.svg'
 import { IconButton, Screen, ScreenContent } from 'app/components/core'
 import { OfflinePlaceholder } from 'app/components/offline-placeholder'
-import { useAppTabScreen } from 'app/hooks/useAppTabScreen'
 import { useFeatureFlag } from 'app/hooks/useRemoteConfig'
 import { useRoute } from 'app/hooks/useRoute'
 import { makeStyles } from 'app/styles'
@@ -48,7 +47,6 @@ const useStyles = makeStyles(() => ({
 }))
 
 export const ProfileScreen = () => {
-  useAppTabScreen()
   const styles = useStyles()
   const { params } = useRoute<'Profile'>()
   const { handle: userHandle, id } = params
