@@ -9,11 +9,26 @@ import { Kind, Status } from 'models'
 
 import { AudiusQueryContextType } from './AudiusQueryContext'
 
-export type Api = {
+export type DefaultEndpointDefinitions = {
+  [key: string]: EndpointConfig<any, any>
+}
+
+export type Api<EndpointDefinitions extends DefaultEndpointDefinitions> = {
   reducer: Reducer<any, Action>
   hooks: {
-    [key: string]: (...fetchArgs: any[]) => any
+    [Property in keyof EndpointDefinitions as `use${Capitalize<
+      string & Property
+    >}`]: (
+      fetchArgs: Parameters<EndpointDefinitions[Property]['fetch']>[0]
+    ) => QueryHookResults<
+      Awaited<ReturnType<EndpointDefinitions[Property]['fetch']>>
+    >
   }
+}
+
+export type CreateApiConfig = {
+  reducerPath: string
+  endpoints: { [name: string]: EndpointConfig<any, any> }
 }
 
 export type SliceConfig = CreateSliceOptions<any, any, any>
@@ -21,13 +36,13 @@ export type SliceConfig = CreateSliceOptions<any, any, any>
 type EndpointOptions = {
   idArgKey?: string
   permalinkArgKey?: string
-  schemaKey?: string
+  schemaKey: string
   kind?: Kind
 }
 
-export type EndpointConfig = {
-  fetch: (fetchArgs: any, context: AudiusQueryContextType) => Promise<any>
-  options?: EndpointOptions
+export type EndpointConfig<Args, Data> = {
+  fetch: (fetchArgs: Args, context: AudiusQueryContextType) => Promise<Data>
+  options: EndpointOptions
 }
 
 export type EntityMap = {
@@ -42,7 +57,7 @@ export type StrippedEntityMap = {
 }
 
 type FetchBaseAction = {
-  fetchArgs: any[]
+  fetchArgs: any
 }
 export type FetchLoadingAction = PayloadAction<FetchBaseAction & {}>
 export type FetchErrorAction = PayloadAction<
@@ -52,30 +67,22 @@ export type FetchErrorAction = PayloadAction<
 >
 export type FetchSucceededAction = PayloadAction<
   FetchBaseAction & {
-    id: any
     nonNormalizedData: any
     strippedEntityMap: StrippedEntityMap
   }
 >
 
-export type PerKeyState = {
+export type ApiState = {
+  [key: string]: PerEndpointState<any>
+}
+export type PerEndpointState<NormalizedData> = {
+  [key: string]: PerKeyState<NormalizedData>
+}
+export type PerKeyState<NormalizedData> = {
   status: Status
-  nonNormalizedData?: any
+  nonNormalizedData?: NormalizedData
   strippedEntityMap?: StrippedEntityMap
   errorMessage?: string
-}
-
-export type PerEndpointState = {
-  [key: string]: PerKeyState
-}
-
-export type ApiState = {
-  [key: string]: PerEndpointState
-}
-
-export type CreateApiConfig = {
-  reducerPath: string
-  endpoints: { [name: string]: EndpointConfig }
 }
 
 export type QueryHookOptions = {
@@ -85,5 +92,5 @@ export type QueryHookOptions = {
 export type QueryHookResults<Data> = {
   data: Data
   status: Status
-  errorMessage: string
+  errorMessage?: string
 }

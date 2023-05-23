@@ -2,6 +2,8 @@ import { schema } from 'normalizr'
 
 import { Kind } from 'models/Kind'
 
+export type SchemaKey = 'user' | 'users' | 'track' | 'tracks'
+
 export const userSchema = new schema.Entity(
   Kind.USERS,
   {},

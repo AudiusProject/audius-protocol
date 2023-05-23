@@ -7,14 +7,12 @@ const collectionApi = createApi({
   endpoints: {
     getPlaylistByPermalink: {
       fetch: async ({ permalink, currentUserId }, { apiClient }) => {
-        return {
-          collection: (
-            await apiClient.getPlaylistByPermalink({
-              permalink,
-              currentUserId
-            })
-          )[0]
-        }
+        return (
+          await apiClient.getPlaylistByPermalink({
+            permalink,
+            currentUserId
+          })
+        )[0]
       },
       options: {
         permalinkArgKey: 'permalink',

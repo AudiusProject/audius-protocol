@@ -4,12 +4,11 @@ const relatedArtistsApi = createApi({
   reducerPath: 'relatedArtistsApi',
   endpoints: {
     getRelatedArtists: {
-      fetch: async ({ artistId }, { apiClient }) => ({
-        users: await apiClient.getRelatedArtists({
+      fetch: async ({ artistId }, { apiClient }) =>
+        await apiClient.getRelatedArtists({
           userId: artistId,
           limit: 50
-        })
-      }),
+        }),
       options: {
         schemaKey: 'users'
       }
