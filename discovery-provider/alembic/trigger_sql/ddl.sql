@@ -151,7 +151,7 @@ COMMIT;
 
 -- 5/4/23: create delegations table
 BEGIN;
-  create table public.delegations (
+  create table if not exists public.delegations (
     shared_address varchar not null,
     blockhash varchar references blocks(blockhash),
     blocknumber integer references blocks(number),
