@@ -13,7 +13,6 @@ import {
   cacheCollectionsActions,
   cacheCollectionsSelectors,
   cacheTracksSelectors,
-  decodeHashId,
   getContext,
   makeKindId,
   newCollectionMetadata
@@ -30,6 +29,7 @@ import { playlistPage } from 'utils/route'
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import { reformat } from './utils'
+import { getUnclaimedPlaylistId } from './utils/getUnclaimedPlaylistId'
 
 const { getAccountUser } = accountSelectors
 const { getTrack } = cacheTracksSelectors
@@ -71,19 +71,6 @@ function* createPlaylistWorker(
     initTrack,
     source
   )
-}
-
-function* getUnclaimedPlaylistId() {
-  const { getAudiusLibsTyped } = yield* getContext('audiusBackendInstance')
-  const audiusLibs = yield* call(getAudiusLibsTyped)
-  if (!audiusLibs.discoveryProvider) return
-
-  const unclaimedId = yield* call(
-    [audiusLibs.discoveryProvider, audiusLibs.discoveryProvider.getUnclaimedId],
-    'playlists'
-  )
-  if (!unclaimedId) return
-  return decodeHashId(unclaimedId)
 }
 
 function* optimisticalySavePlaylist(
