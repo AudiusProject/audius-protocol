@@ -246,9 +246,12 @@ func (ss *MediorumServer) MustStart() {
 
 	go ss.startRepairer()
 
-	ss.crud.StartClients()
+	// todo: remove me
+	if env := os.Getenv("MEDIORUM_ENV"); env != "prod" {
+		ss.crud.StartClients()
 
-	ss.startBeamClients()
+		ss.startBeamClients()
+	}
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)
