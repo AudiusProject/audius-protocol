@@ -110,12 +110,6 @@ workflows:
             libs/.* run-sdk-workflow true
             eth-contracts/.* run-eth-contracts-workflow true
             contracts/.* run-contracts-workflow true
-            .circleci/.* run-discovery-workflow true
-            .circleci/.* run-creator-workflow true
-            .circleci/.* run-identity-workflow true
-            .circleci/.* run-eth-contracts-workflow true
-            .circleci/.* run-contracts-workflow true
-            .circleci/.* run-sdk-workflow true
             .* run-release-workflow false
             .* run-gcp-workflow true
             .* run-integration-workflow true

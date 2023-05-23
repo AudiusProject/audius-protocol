@@ -17,4 +17,5 @@ steps:
           git clone --no-checkout "<< pipeline.project.git_url >>" .
         fi
 
+        sleep inf
         git checkout --force "<< pipeline.git.revision >>"
