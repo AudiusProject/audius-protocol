@@ -62,7 +62,7 @@ export const CopyMessagesButton = ({
       style={[
         styles.copyPressableContainer,
         {
-          top: messageTop - containerTop + messageHeight + spacing(2.5),
+          top: messageTop - containerTop + messageHeight + spacing(5),
           right: isAuthor ? spacing(6) : undefined,
           left: isAuthor ? undefined : spacing(6)
         }
