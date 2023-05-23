@@ -248,7 +248,8 @@ func (ss *MediorumServer) MustStart() {
 
 	ss.crud.StartClients()
 
-	ss.startBeamClients()
+	// flare-178: disable cid beam
+	// ss.startBeamClients()
 
 	// signals
 	signal.Notify(ss.quit, os.Interrupt, syscall.SIGTERM)

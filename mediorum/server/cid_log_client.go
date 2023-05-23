@@ -24,7 +24,7 @@ func (ss *MediorumServer) startBeamClients() {
 
 func (ss *MediorumServer) startBeamClientForPeer(peer Peer) {
 	for {
-		time.Sleep(jitterSeconds(10, 20))
+		time.Sleep(jitterSeconds(60, 90))
 
 		result, err := ss.beamFromPeer(peer)
 		if err != nil {

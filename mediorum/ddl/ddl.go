@@ -13,6 +13,16 @@ var cidLookupDDL string
 
 func Migrate(db *sql.DB) {
 	mustExec(db, cidLookupDDL)
+
+	// flare-178: disable cid beam
+	// clear out existing data
+	db.Exec(`
+	drop trigger if exists handle_cid_change on "Files";
+	truncate table cid_cursor cascade;
+	truncate table cid_log cascade;
+	truncate table cid_lookup cascade;
+	drop table if exists cid_temp;
+	`)
 }
 
 func mustExec(db *sql.DB, ddl string) {
