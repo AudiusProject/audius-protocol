@@ -34,6 +34,7 @@ const {
   fetchUnreadMessagesCountSucceeded,
   fetchUnreadMessagesCountFailed,
   goToChat,
+  fetchChatIfNecessary,
   fetchMoreChats,
   fetchMoreChatsSucceeded,
   fetchMoreChatsFailed,
@@ -121,7 +122,7 @@ function* doFetchMoreMessages(action: ReturnType<typeof fetchMoreMessages>) {
     const sdk = yield* call(audiusSdk)
 
     // Ensure we get a chat so we can check the unread count
-    yield* call(fetchChatIfNecessary, { chatId })
+    yield* call(doFetchChatIfNecessary, { chatId })
     const chat = yield* select((state) => getChat(state, chatId))
 
     // Paginate through messages until we get to the unread indicator
@@ -211,7 +212,7 @@ function* doCreateChat(action: ReturnType<typeof createChat>) {
       .sort()
       .join(':')
     try {
-      yield* call(fetchChatIfNecessary, { chatId })
+      yield* call(doFetchChatIfNecessary, { chatId })
     } catch {}
     const existingChat = yield* select((state) => getChat(state, chatId))
     if (existingChat) {
@@ -293,10 +294,13 @@ function* doSendMessage(action: ReturnType<typeof sendMessage>) {
   }
 }
 
-function* fetchChatIfNecessary(args: { chatId: string }) {
-  const { chatId } = args
+function* doFetchChatIfNecessary(args: {
+  chatId: string
+  bustCache?: boolean
+}) {
+  const { chatId, bustCache = false } = args
   const existingChat = yield* select((state) => getChat(state, chatId))
-  if (!existingChat) {
+  if (!existingChat || bustCache) {
     const audiusSdk = yield* getContext('audiusSdk')
     const sdk = yield* call(audiusSdk)
     const { data: chat } = yield* call([sdk.chats, sdk.chats.get], { chatId })
@@ -441,6 +445,12 @@ function* watchAddMessage() {
   yield takeEvery(addMessage, ({ payload }) => fetchChatIfNecessary(payload))
 }
 
+function* watchFetchChatIfNecessary() {
+  yield takeEvery(fetchChatIfNecessary, ({ payload }) =>
+    doFetchChatIfNecessary(payload)
+  )
+}
+
 function* watchSendMessage() {
   yield takeEvery(sendMessage, doSendMessage)
 }
@@ -496,6 +506,7 @@ function* watchDeleteChat() {
 export const sagas = () => {
   return [
     watchFetchUnreadMessagesCount,
+    watchFetchChatIfNecessary,
     watchFetchChats,
     watchFetchChatMessages,
     watchSetMessageReaction,

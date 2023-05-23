@@ -295,6 +295,12 @@ const slice = createSlice({
       const { messageId } = action.payload
       delete state.optimisticReactions[messageId]
     },
+    fetchChatIfNecessary: (
+      _state,
+      _action: PayloadAction<{ chatId: string; bustCache?: boolean }>
+    ) => {
+      // triggers saga
+    },
     fetchChatSucceeded: (state, action: PayloadAction<{ chat: UserChat }>) => {
       const { chat } = action.payload
       if (dayjs(chat.cleared_history_at).isAfter(chat.last_message_at)) {
