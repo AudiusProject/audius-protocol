@@ -2,7 +2,7 @@ begin;
 
 -- Define enums
 DO $$ BEGIN
-    CREATE TYPE tracks_users AS ENUM ('tracks', 'users');
+    CREATE TYPE delist_entity AS ENUM ('tracks', 'users');
 EXCEPTION
     WHEN duplicate_object THEN null;
 END $$;
@@ -22,12 +22,12 @@ END $$;
 -- Create table to maintain a cursor to the most recent delist status pulled from the host (the only host is trusted notifier)
 CREATE TABLE IF NOT EXISTS delist_status_cursor (
 		"host" text,
-		"tracks_or_users" tracks_users NOT NULL,
+		"entity" delist_entity NOT NULL,
 		"created_at" timestamp with time zone NOT NULL
 );
-ALTER TABLE delist_status_cursor DROP CONSTRAINT IF EXISTS unique_host_type;
+ALTER TABLE delist_status_cursor DROP CONSTRAINT IF EXISTS unique_host_entity;
 ALTER TABLE delist_status_cursor
-ADD CONSTRAINT unique_host_type UNIQUE (host, tracks_or_users);
+ADD CONSTRAINT unique_host_entity UNIQUE (host, entity);
 
 -- Create table to store delist statuses for tracks
 CREATE TABLE IF NOT EXISTS track_delist_statuses (

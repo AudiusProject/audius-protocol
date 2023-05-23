@@ -32,13 +32,6 @@ type (
 		Reason    string    `json:"reason"`
 	}
 
-	aliasTrackDelistStatus TrackDelistStatus
-
-	jsonTrackDelistStatus struct {
-		*aliasTrackDelistStatus
-		CreatedAt string `json:"createdAt"`
-	}
-
 	UserDelistStatus struct {
 		CreatedAt time.Time `json:"createdAt"`
 		UserID    int       `json:"userId"`
@@ -46,8 +39,15 @@ type (
 		Reason    string    `json:"reason"`
 	}
 
-	aliasUserDelistStatus UserDelistStatus
+	// Types to avoid infinite recursion when calling json.Unmarshal
+	aliasTrackDelistStatus TrackDelistStatus
+	aliasUserDelistStatus  UserDelistStatus
 
+	// Types to unmarshal timestamps in the format returned by the trusted notifier
+	jsonTrackDelistStatus struct {
+		*aliasTrackDelistStatus
+		CreatedAt string `json:"createdAt"`
+	}
 	jsonUserDelistStatus struct {
 		*aliasUserDelistStatus
 		CreatedAt string `json:"createdAt"`
@@ -103,10 +103,10 @@ func (ss *MediorumServer) startPollingDelistStatuses() {
 	for {
 		<-ticker.C
 
-		for _, tracksOrUsers := range []string{"tracks", "users"} {
+		for _, entity := range []string{"tracks", "users"} {
 			startedAt := time.Now()
-			err := ss.pollDelistStatuses(tracksOrUsers, trustedNotifier.Endpoint, trustedNotifier.Wallet)
-			pollingMsg := fmt.Sprintf("finished polling delist statuses for %s", tracksOrUsers)
+			err := ss.pollDelistStatuses(entity, trustedNotifier.Endpoint, trustedNotifier.Wallet)
+			pollingMsg := fmt.Sprintf("finished polling delist statuses for %s", entity)
 			if err == nil {
 				slog.Info(pollingMsg, "took", time.Since(startedAt))
 			} else {
@@ -116,13 +116,13 @@ func (ss *MediorumServer) startPollingDelistStatuses() {
 	}
 }
 
-func (ss *MediorumServer) pollDelistStatuses(tracksOrUsers, endpoint, wallet string) error {
+func (ss *MediorumServer) pollDelistStatuses(entity, endpoint, wallet string) error {
 	ctx := context.Background()
 
 	var cursorBefore time.Time
-	ss.pgPool.QueryRow(ctx, `SELECT created_at FROM delist_status_cursor WHERE host = $1 AND tracks_or_users = $2`, endpoint, tracksOrUsers).Scan(&cursorBefore)
+	ss.pgPool.QueryRow(ctx, `SELECT created_at FROM delist_status_cursor WHERE host = $1 AND entity = $2`, endpoint, entity).Scan(&cursorBefore)
 
-	pollMoreEndpoint := fmt.Sprintf("%s/statuses/%s?cursor=%s&batchSize=%d", endpoint, tracksOrUsers, url.QueryEscape(cursorBefore.Format(time.RFC3339Nano)), DelistBatchSize)
+	pollMoreEndpoint := fmt.Sprintf("%s/statuses/%s?cursor=%s&batchSize=%d", endpoint, entity, url.QueryEscape(cursorBefore.Format(time.RFC3339Nano)), DelistBatchSize)
 	req, err := signature.SignedGet(pollMoreEndpoint, ss.Config.privateKey)
 	if err != nil {
 		return err
@@ -140,7 +140,7 @@ func (ss *MediorumServer) pollDelistStatuses(tracksOrUsers, endpoint, wallet str
 		return errors.New(resp.Status)
 	}
 
-	if tracksOrUsers == "users" {
+	if entity == "users" {
 		return ss.processUserDelistStatuses(resp.Body, ctx, endpoint)
 	}
 	return ss.processTrackDelistStatuses(resp.Body, ctx, endpoint)
@@ -176,9 +176,9 @@ func (ss *MediorumServer) processTrackDelistStatuses(body io.ReadCloser, ctx con
 			ctx,
 			`
 			INSERT INTO delist_status_cursor
-			(created_at, host, tracks_or_users)
+			(created_at, host, entity)
 			VALUES ($1, $2, $3)
-			ON CONFLICT (host, tracks_or_users)
+			ON CONFLICT (host, entity)
 			DO UPDATE SET
 				created_at = EXCLUDED.created_at
 			`,
@@ -240,9 +240,9 @@ func (ss *MediorumServer) processUserDelistStatuses(body io.ReadCloser, ctx cont
 			ctx,
 			`
 			INSERT INTO delist_status_cursor 
-			(created_at, host, tracks_or_users) 
+			(created_at, host, entity) 
 			VALUES ($1, $2, $3)
-			ON CONFLICT (host, tracks_or_users) 
+			ON CONFLICT (host, entity) 
 			DO UPDATE SET 
 				created_at = EXCLUDED.created_at
 			`,
