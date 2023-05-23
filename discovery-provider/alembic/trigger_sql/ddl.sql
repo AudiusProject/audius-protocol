@@ -1,5 +1,6 @@
 -- Add new ddl changes to the bottom of the file.
 -- Wrap your changes with begin; / commit;
+-- Every change needs to be idempotent!
 
 -- helper function to make add column if not exists faster
 CREATE OR REPLACE FUNCTION table_has_column(text, text) RETURNS boolean AS $$
