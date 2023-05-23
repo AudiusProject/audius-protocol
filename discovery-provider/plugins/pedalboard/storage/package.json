@@ -1,0 +1,11 @@
+{
+  "name": "storage",
+  "version": "0.1.0",
+  "description": "persistence layer for plugins",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "alec@audius.co",
+  "license": "ISC"
+}
