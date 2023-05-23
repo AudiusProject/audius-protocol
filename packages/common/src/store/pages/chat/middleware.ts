@@ -7,13 +7,8 @@ import { encodeHashId } from 'utils/hashIds'
 
 import { actions as chatActions } from './slice'
 
-const {
-  connect,
-  disconnect,
-  addMessage,
-  incrementUnreadCount,
-  setMessageReactionSucceeded
-} = chatActions
+const { connect, disconnect, addMessage, setMessageReactionSucceeded } =
+  chatActions
 
 export const chatMiddleware =
   (audiusSdk: () => Promise<AudiusSdk>): Middleware =>
@@ -34,13 +29,17 @@ export const chatMiddleware =
             console.debug('[chats] WebSocket opened. Listening for chats...')
           }
           messageListener = ({ chatId, message }) => {
-            store.dispatch(
-              addMessage({ chatId, message, status: Status.SUCCESS })
-            )
             const currentUserId = getUserId(store.getState())
-            if (message.sender_user_id !== encodeHashId(currentUserId)) {
-              store.dispatch(incrementUnreadCount({ chatId }))
-            }
+            const isSelfMessage =
+              message.sender_user_id === encodeHashId(currentUserId)
+            store.dispatch(
+              addMessage({
+                chatId,
+                message,
+                status: Status.SUCCESS,
+                isSelfMessage
+              })
+            )
           }
           reactionListener = ({ chatId, messageId, reaction }) => {
             store.dispatch(
