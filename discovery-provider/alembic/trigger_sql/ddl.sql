@@ -1,12 +1,16 @@
 -- Add new ddl changes to the bottom of the file.
 -- Wrap your changes with begin; / commit;
+-- Every change needs to be idempotent!
 
 -- helper function to make add column if not exists faster
 CREATE OR REPLACE FUNCTION table_has_column(text, text) RETURNS boolean AS $$
-  SELECT EXISTS (SELECT column_name FROM  information_schema.columns WHERE table_name = $1 AND column_name = $2)
+  SELECT EXISTS (SELECT column_name FROM information_schema.columns WHERE table_name = $1 AND column_name = $2)
 $$ LANGUAGE SQL;
 
-
+-- helper function to make add constraint if not exists easier
+CREATE OR REPLACE FUNCTION table_has_constraint(text, text) RETURNS boolean AS $$
+  SELECT EXISTS (SELECT 1 FROM pg_constraint WHERE conrelid = $1::regclass AND conname = $2)
+$$ LANGUAGE SQL;
 
 -- 3/28/23: add is_available to users table
 BEGIN;
@@ -151,7 +155,7 @@ COMMIT;
 
 -- 5/4/23: create delegations table
 BEGIN;
-  create table public.delegations (
+  create table if not exists public.delegations (
     shared_address varchar not null,
     blockhash varchar references blocks(blockhash),
     blocknumber integer references blocks(number),
@@ -175,10 +179,21 @@ BEGIN;
     alter table app_delegates
     add column if not exists updated_at timestamp not null;
 
-    alter table app_delegates rename column is_revoked to is_delete;
-
-    alter table app_delegates drop constraint app_delegates_pkey;
-    alter table public.app_delegates add constraint app_delegates_pkey primary key (address, is_current, txhash);    
+    DO $$ BEGIN
+    IF NOT table_has_column('app_delegates', 'is_delete') THEN
+      alter table app_delegates rename column is_revoked to is_delete;
+    END IF;
+    END $$;
+    
+    DO $$ BEGIN
+    IF
+      table_has_constraint('app_delegates', 'app_delegates_pkey') AND
+      NOT table_has_constraint('app_delegates', 'app_delegates_primary_key')
+    THEN
+      alter table app_delegates drop constraint app_delegates_pkey;
+      alter table app_delegates add constraint app_delegates_primary_key primary key (address, is_current, txhash);    
+    END IF;
+    END $$;
 COMMIT;
 
 -- 5/23/23: Fix skreamizm
