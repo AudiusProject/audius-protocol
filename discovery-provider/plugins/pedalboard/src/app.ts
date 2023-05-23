@@ -1,9 +1,8 @@
 import dayjs from "dayjs"
 import duration from "dayjs/plugin/duration"
-import { channel } from "diagnostics_channel"
 import { Knex, knex } from "knex"
 import { setIntervalAsync } from "set-interval-async"
-import { Table } from "src/models"
+import { Table } from "models"
 
 dayjs.extend(duration)
 
