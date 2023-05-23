@@ -473,7 +473,7 @@ class TrackStream(Resource):
         if not signature:
             abort_not_found(track_id, ns)
 
-        params = {signature: urllib.parse.quote(json.dumps(signature))}
+        params = {"signature": json.dumps(signature)}
         skip_play_count = request_args.get("skip_play_count", False)
         if skip_play_count:
             params["skip_play_count"] = skip_play_count
@@ -483,7 +483,7 @@ class TrackStream(Resource):
 
         base_path = f"tracks/cidstream/{track_cid}"
         query_string = urllib.parse.urlencode(params)
-        path = f"{base_path}{query_string}"
+        path = f"{base_path}?{query_string}"
         stream_url = urljoin(content_node, path)
 
         return stream_url

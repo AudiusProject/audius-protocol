@@ -112,7 +112,9 @@ def _get_tracks(session, args):
     if args.get("user_id"):
         user_id = args.get("user_id")
         if args.get("ai_attributed_only"):
-            base_query = base_query.filter(TrackWithAggregates.ai_attribution_user_id == args.get("user_id"))
+            base_query = base_query.filter(
+                TrackWithAggregates.ai_attribution_user_id == args.get("user_id")
+            )
         else:
             base_query = base_query.filter(TrackWithAggregates.owner_id == user_id)
 

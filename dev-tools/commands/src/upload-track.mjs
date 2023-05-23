@@ -41,7 +41,7 @@ program.command("upload-track")
   .option("-g, --genre <genre>", "Genre of track (chosen randomly if not specified)")
   .option("-l, --license <license>", "License of track", null)
   .option("-f, --from <from>", "The account to upload track from")
-  .option("-p, --premium-conditions <premium conditions>", "The premium conditions object; sets track as premium")
+  .option("-p, --premium-conditions <premium conditions>", "The premium conditions object; sets track as premium", "")
   .action(async (track, { title, tags, description, mood, genre, license, from, premiumConditions }) => {
     const audiusLibs = await initializeAudiusLibs(from);
 
