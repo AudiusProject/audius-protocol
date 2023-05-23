@@ -971,6 +971,7 @@ router.get(
 
     const trackId = req.trackId
     const CID = req.params.CID
+    const skipPlayCount = req.query.skip_play_count
 
     if (!trackId) {
       return sendResponse(
@@ -981,7 +982,7 @@ router.get(
     }
 
     const isFirstByte = isFirstByteRequest(req)
-    if (libs.identityService && isFirstByte) {
+    if (libs.identityService && isFirstByte && !skipPlayCount) {
       req.logger.info(
         `Logging listen for track ${trackId} by ${delegateOwnerWallet}`
       )
