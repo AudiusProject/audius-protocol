@@ -82,8 +82,8 @@ func (p *PeerClient) startSender() {
 
 // sweeper goroutine will pull messages on interval
 func (c *PeerClient) startSweeper() {
-	for {
-		err := c.doSweep()
+	for i := 0; ; i++ {
+		err := c.doSweep(i)
 		if err != nil {
 			c.logger.Error("sweep error", err, "host")
 		}
@@ -91,16 +91,22 @@ func (c *PeerClient) startSweeper() {
 	}
 }
 
-func (c *PeerClient) doSweep() error {
+func (c *PeerClient) doSweep(i int) error {
 	host := c.Host
 	bulkEndpoint := "/comms/rpc/bulk"
 
 	// get cursor
+
 	var after time.Time
 
-	err := db.Conn.Get(&after, "SELECT relayed_at FROM rpc_cursor WHERE relayed_by=$1", host)
-	if err != nil {
-		slog.Error("backfill failed to get cursor: ", err)
+	// first time: get everything from beginning
+	// this is temporary to recover old messages after code changes fix things
+	// todo: remove the `i` counter and simply resume from cursor
+	if i > 0 {
+		err := db.Conn.Get(&after, "SELECT relayed_at FROM rpc_cursor WHERE relayed_by=$1", host)
+		if err != nil {
+			slog.Error("backfill failed to get cursor: ", err)
+		}
 	}
 
 	endpoint := host + bulkEndpoint + "?after=" + url.QueryEscape(after.Format(time.RFC3339Nano))
