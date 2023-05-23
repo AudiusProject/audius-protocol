@@ -185,9 +185,12 @@ BEGIN;
     END $$;
     
     DO $$ BEGIN
-    IF table_has_constraint('app_delegates', 'app_delegates_pkey') THEN
+    IF
+      table_has_constraint('app_delegates', 'app_delegates_pkey') AND
+      NOT table_has_constraint('app_delegates', 'app_delegates_primary_key')
+    THEN
       alter table app_delegates drop constraint app_delegates_pkey;
-      alter table app_delegates add constraint app_delegates_pkey primary key (address, is_current, txhash);    
+      alter table app_delegates add constraint app_delegates_primary_key primary key (address, is_current, txhash);    
     END IF;
     END $$;
 COMMIT;
