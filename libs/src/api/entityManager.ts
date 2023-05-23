@@ -108,8 +108,7 @@ export class EntityManager extends Base {
 
   async createPlaylist(
     playlist: PlaylistParam,
-    storageV2UploadEnabled = false,
-    writeMetadataThroughChain = false
+    storageV2UploadEnabled = false
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
@@ -193,8 +192,7 @@ export class EntityManager extends Base {
 
   async updatePlaylist(
     playlist: PlaylistParam,
-    storageV2UploadEnabled = false,
-    writeMetadataThroughChain = false
+    storageV2UploadEnabled = false
   ): Promise<EntityManagerResponse> {
     const responseValues: EntityManagerResponse =
       this.getDefaultEntityManagerResponseValues()
