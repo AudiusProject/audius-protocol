@@ -205,6 +205,10 @@ export class CreatorNode {
     }
   }
 
+  validatePlaylistSchema(metadata: PlaylistMetadata) {
+    this.schemas?.[playlistSchemaType].validate?.(metadata)
+  }
+
   /** Establishes a connection to a content node endpoint */
   async connect() {
     if (this.isStorageV2Only) return
@@ -539,9 +543,10 @@ export class CreatorNode {
   async uploadPlaylistMetadata(metadata: PlaylistMetadata) {
     // Validate object before sending
     try {
-      this.schemas?.[playlistSchemaType].validate?.(metadata)
+      this.validatePlaylistSchema(metadata)
     } catch (e) {
       console.error('Error validating playlist metadata', e)
+      throw e
     }
 
     const { data: body } = await this._makeRequest(
