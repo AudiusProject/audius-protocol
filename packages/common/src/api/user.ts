@@ -8,9 +8,7 @@ const userApi = createApi({
     getUserById: {
       fetch: async ({ id, currentUserId }, { apiClient }) => {
         const apiUser = await apiClient.getUser({ userId: id, currentUserId })
-        return {
-          user: apiUser?.[0]
-        }
+        return apiUser?.[0]
       },
       options: {
         idArgKey: 'id',

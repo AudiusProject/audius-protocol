@@ -7,10 +7,8 @@ const trackApi = createApi({
   reducerPath: 'trackApi',
   endpoints: {
     getTrackById: {
-      fetch: async ({ id }, { apiClient }) => {
-        return {
-          track: await apiClient.getTrack({ id })
-        }
+      fetch: async ({ id }: { id: number }, { apiClient }) => {
+        return await apiClient.getTrack({ id })
       },
       options: {
         idArgKey: 'id',
@@ -21,13 +19,11 @@ const trackApi = createApi({
     getTrackByPermalink: {
       fetch: async ({ permalink, currentUserId }, { apiClient }) => {
         const { handle, slug } = parseTrackRouteFromPermalink(permalink)
-        return {
-          track: await apiClient.getTrackByHandleAndSlug({
-            handle,
-            slug,
-            currentUserId
-          })
-        }
+        return await apiClient.getTrackByHandleAndSlug({
+          handle,
+          slug,
+          currentUserId
+        })
       },
       options: {
         permalinkArgKey: 'permalink',

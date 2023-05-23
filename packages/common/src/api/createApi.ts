@@ -20,7 +20,7 @@ import { apiResponseSchema } from './schema'
 import {
   Api,
   ApiState,
-  CreateApiConfig,
+  DefaultEndpointDefinitions,
   EndpointConfig,
   FetchErrorAction,
   FetchLoadingAction,
@@ -28,7 +28,8 @@ import {
   QueryHookOptions,
   PerEndpointState,
   PerKeyState,
-  SliceConfig
+  SliceConfig,
+  QueryHookResults
 } from './types'
 import {
   capitalize,
@@ -38,11 +39,19 @@ import {
 } from './utils'
 const { addEntries } = cacheActions
 
-export const createApi = ({ reducerPath, endpoints }: CreateApiConfig) => {
+export const createApi = <
+  EndpointDefinitions extends DefaultEndpointDefinitions
+>({
+  reducerPath,
+  endpoints
+}: {
+  reducerPath: string
+  endpoints: EndpointDefinitions
+}) => {
   const api = {
     reducerPath,
     hooks: {}
-  } as unknown as Api
+  } as unknown as Api<EndpointDefinitions>
 
   const sliceConfig: SliceConfig = {
     name: reducerPath,
@@ -65,8 +74,11 @@ export const createApi = ({ reducerPath, endpoints }: CreateApiConfig) => {
   return api
 }
 
-const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
-  const initState: PerKeyState = {
+const addEndpointToSlice = <NormalizedData>(
+  sliceConfig: SliceConfig,
+  endpointName: string
+) => {
+  const initState: PerKeyState<NormalizedData> = {
     status: Status.IDLE
   }
   sliceConfig.initialState[endpointName] = {}
@@ -108,24 +120,31 @@ const addEndpointToSlice = (sliceConfig: SliceConfig, endpointName: string) => {
   }
 }
 
-const buildEndpointHooks = (
-  api: Api,
+const buildEndpointHooks = <
+  EndpointDefinitions extends DefaultEndpointDefinitions,
+  Args,
+  Data
+>(
+  api: Api<EndpointDefinitions>,
   endpointName: string,
-  endpoint: EndpointConfig,
+  endpoint: EndpointConfig<Args, Data>,
   actions: CaseReducerActions<any>,
   reducerPath: string
 ) => {
   // Hook to be returned as use<EndpointName>
-  const useQuery = (fetchArgs: any, hookOptions?: QueryHookOptions) => {
+  const useQuery = (
+    fetchArgs: Args,
+    hookOptions?: QueryHookOptions
+  ): QueryHookResults<Data> => {
     const dispatch = useDispatch()
     const key = getKeyFromFetchArgs(fetchArgs)
-    const queryState = useSelector((state: any) => {
+    const queryState = useSelector((state: CommonState) => {
       if (!state.api[reducerPath]) {
         throw new Error(
           `State for ${reducerPath} is undefined - did you forget to register the reducer in @audius/common/src/api/reducers.ts?`
         )
       }
-      const endpointState: PerEndpointState =
+      const endpointState: PerEndpointState<any> =
         state.api[reducerPath][endpointName]
 
       // Retrieve data from cache if lookup args provided
@@ -193,12 +212,11 @@ const buildEndpointHooks = (
       isInitialValue
     } = queryState ?? {
       nonNormalizedData: null,
-      status: Status.IDLE,
-      errorMessage: null
+      status: Status.IDLE
     }
 
     // Rehydrate local nonNormalizedData using entities from global normalized cache
-    let cachedData = useSelector((state: CommonState) => {
+    let cachedData: Data = useSelector((state: CommonState) => {
       const rehydratedEntityMap =
         strippedEntityMap && selectRehydrateEntityMap(state, strippedEntityMap)
       return rehydratedEntityMap
@@ -237,7 +255,10 @@ const buildEndpointHooks = (
             throw new Error('Remote data not found')
           }
 
-          const { entities, result } = normalize(apiData, apiResponseSchema)
+          const { entities, result } = normalize(
+            { [endpoint.options.schemaKey]: apiData },
+            apiResponseSchema
+          )
           dispatch(addEntries(Object.keys(entities), entities))
           const strippedEntityMap = stripEntityMap(entities)
 
