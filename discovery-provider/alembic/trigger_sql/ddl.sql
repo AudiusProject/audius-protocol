@@ -180,3 +180,40 @@ BEGIN;
     alter table app_delegates drop constraint app_delegates_pkey;
     alter table public.app_delegates add constraint app_delegates_pkey primary key (address, is_current, txhash);    
 COMMIT;
+
+-- 5/23/23: Fix skreamizm
+BEGIN;
+  DO $$ BEGIN
+  -- Gate for only prod
+  IF EXISTS (SELECT * FROM "blocks" WHERE "blockhash" = '0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01') THEN
+    INSERT INTO users
+    (blockhash, user_id, is_current, handle, wallet, name, bio, location, metadata_multihash, creator_node_endpoint, blocknumber, is_verified, created_at, updated_at, handle_lc, cover_photo_sizes, profile_picture_sizes, primary_id, secondary_ids, txhash)
+    VALUES
+    ('0x8d5e6984014505e1e11bcbb1ca1a13bcc6ae85ac74014710a73271d82ca49f01', 433967780, true, 'skreamizm', '0x6ec71440333d343969b4d39ffeb4a414cdc685ca', 'Skream', 'Skream.', 'Croydon', 'QmQDwnKmBEScRv4Y1dwJWarLcMqB6LQSPzcAt6CvgJVZiE', 'https://creatornode2.audius.co,https://blockdaemon-audius-content-05.bdnodes.net,https://cn3.mainnet.audiusindex.org', 31420186, true, '2023-03-15 17:07:37', '2023-03-15 17:07:37', 'skreamizm', null, 'QmaAzdXCrHA6C4Uo8vXEpPRbhbhD8vqgrTATC7hyMj3c4A', 2, ARRAY [47,70], '0xa25516594adc42562e498b2c9f4e4365c9cbfea223a4e55624ae0ac316708a62') ON CONFLICT DO NOTHING;
+    INSERT INTO follows
+    (blockhash, blocknumber, follower_user_id, followee_user_id, is_current, is_delete, created_at, txhash)
+    VALUES
+    ('0xc26c84a6e595c106f9f73b7657e4968a984dd4b6b72d9b62caaf7d2bac870f1d', 31420284, 433967780, 90136, true, false, '2023-03-15 17:07:37', '0xdb4e0fb0cea20175fd72ddd16db77cbbcdb59fd2cd0f3c2c2576669a0a577832') ON CONFLICT DO NOTHING;
+    INSERT INTO follows
+    (blockhash, blocknumber, follower_user_id, followee_user_id, is_current, is_delete, created_at, txhash)
+    VALUES
+    ('0xc26c84a6e595c106f9f73b7657e4968a984dd4b6b72d9b62caaf7d2bac870f1d', 31420284, 433967780, 117827, true, false, '2023-03-15 17:07:37', '0x9a53ad76f1620f4d29037fe8fe5198f64e25cd1ec748f834742ad941fdcca035') ON CONFLICT DO NOTHING;
+    INSERT INTO follows
+    (blockhash, blocknumber, follower_user_id, followee_user_id, is_current, is_delete, created_at, txhash)
+    VALUES
+    ('0xc26c84a6e595c106f9f73b7657e4968a984dd4b6b72d9b62caaf7d2bac870f1d', 31420284, 433967780, 67658, true, false, '2023-03-15 17:07:37', '0xcd8555cf9d6af4b453514d2ea499ce70a5a8252fb6c26ef6280aba49e874aafd') ON CONFLICT DO NOTHING;
+    INSERT INTO follows
+    (blockhash, blocknumber, follower_user_id, followee_user_id, is_current, is_delete, created_at, txhash)
+    VALUES
+    ('0xc26c84a6e595c106f9f73b7657e4968a984dd4b6b72d9b62caaf7d2bac870f1d', 31420284, 433967780, 395602, true, false, '2023-03-15 17:07:37', '0x20b59b2981b01e53892fb49c4bf4fee98d92332db72bbd017b8084c6f23e5593') ON CONFLICT DO NOTHING;
+    INSERT INTO follows
+    (blockhash, blocknumber, follower_user_id, followee_user_id, is_current, is_delete, created_at, txhash)
+    VALUES
+    ('0xc26c84a6e595c106f9f73b7657e4968a984dd4b6b72d9b62caaf7d2bac870f1d', 31420284, 433967780, 51, true, false, '2023-03-15 17:07:37', '0x0f7be324622bb0048afcc8d960386f827ae8a15f81bed4b2e51e47e080ed6f5a') ON CONFLICT DO NOTHING;
+    INSERT INTO follows
+    (blockhash, blocknumber, follower_user_id, followee_user_id, is_current, is_delete, created_at, txhash)
+    VALUES
+    ('0xc26c84a6e595c106f9f73b7657e4968a984dd4b6b72d9b62caaf7d2bac870f1d', 31420284, 433967780, 53770, true, false, '2023-03-15 17:07:37', '0xd2c9f10ec4fd12ad9993fec399c08ff926a6fb4cd56a692b883390ede29f51a0') ON CONFLICT DO NOTHING;
+  END IF;
+  END $$;
+COMMIT;

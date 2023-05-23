@@ -94,6 +94,11 @@ export class RemoteConfig {
     await optimizelyPromise
   }
 
+  close = () => {
+    this.isInit = false
+    this.optimizelyClient.close()
+  }
+
   getFeatureVariableEnabled(featureName: string, variable: string): boolean {
     const optimizelyValue = this.optimizelyClient.getFeatureVariableBoolean(
       featureName,

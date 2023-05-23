@@ -1,0 +1,73 @@
+when: << pipeline.parameters.run-creator-workflow >>
+jobs:
+  - push-docker-image:
+      name: push-creator-node
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-creator-node-$CIRCLE_BUILD_NUM
+      service: creator-node
+  - push-docker-image:
+      name: push-mediorum
+      context: [GCP, dockerhub]
+      instance-name: circleci-push-mediorum-$CIRCLE_BUILD_NUM
+      service: mediorum
+  - test:
+      name: test-creator-node
+      context: GCP
+      instance-name: circleci-test-creator-node-$CIRCLE_BUILD_NUM
+      service: creator-node
+  - test:
+      name: test-mediorum
+      context: GCP
+      instance-name: circleci-test-mediorum-$CIRCLE_BUILD_NUM
+      service: mediorum
+
+  # Release
+  - deploy-prod-creator-node-trigger:
+      requires:
+        - test-creator-node
+        - test-mediorum
+        - push-creator-node
+        - push-mediorum
+      filters:
+        branches:
+          only: /^release.*$/
+      type: approval
+  - deploy:
+      name: deploy-prod-creator-node
+      context: open-vpn
+      requires:
+        - deploy-prod-creator-node-trigger
+      hosts: >-
+        prod-user-metadata
+        prod-creator-1
+        prod-creator-2
+        prod-creator-3
+        prod-creator-5
+      service: creator-node
+
+  # Main deploy
+
+  - deploy:
+      name: deploy-stage-creator-node
+      requires:
+        - test-creator-node
+        - test-mediorum
+        - push-creator-node
+        - push-mediorum
+      filters:
+        branches:
+          only: main
+      context:
+        - open-vpn
+        - build-freeze
+      hosts: >-
+        stage-creator-5
+        stage-creator-6
+        stage-creator-7
+        stage-creator-8
+        stage-creator-9
+        stage-creator-10
+        stage-creator-11
+        stage-user-metadata
+      service: creator-node
+      freeze: $FREEZE_BUILD

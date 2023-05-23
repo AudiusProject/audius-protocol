@@ -291,8 +291,8 @@ def pull(ctx):
         [
             "docker",
             "compose",
-            f"--file={protocol_dir / 'dev-tools/compose/docker-compose.test.yml'}",
-            f"--project-name={protocol_dir.name}-test",
+            f"--file={protocol_dir / 'dev-tools/compose/docker-compose.yml'}",
+            f"--project-name={protocol_dir.name}",
             f"--project-directory={protocol_dir / 'dev-tools/compose'}",
             "pull",
             "--ignore-buildable",
@@ -656,7 +656,7 @@ def prune(protocol_dir, yes):
 
     if yes or click.confirm("Are you sure you want to continue?"):
         subprocess.run(["docker", "image", "prune", "-f"])
-        subprocess.run(["docker", "buildx", "prune", "-f", "--keep-storage=30G"])
+        subprocess.run(["docker", "builder", "prune", "-f", "--keep-storage=30G"])
 
 
 @cli.command()

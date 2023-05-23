@@ -193,6 +193,8 @@ def test_fetch_cid_metadata(app, mocker):
         user1_tx_metadata = expected_metadata["QmUpdateUser1"].copy()
         user1_tx_metadata.pop("collectibles")
         user1_tx_metadata["incorrect_key"] = True
+        # Add invalid unicode to verify fetch_cid_metadata sanitizes metadata
+        user1_tx_metadata["name"] += "\ud835"
         user1_json = json.dumps(user1_tx_metadata)
 
         track1_tx_metadata = expected_metadata["QmCreateTrack1"].copy()

@@ -250,7 +250,8 @@ func (ss *MediorumServer) MustStart() {
 
 	ss.crud.StartClients()
 
-	go ss.startBeamClient()
+	// flare-178: disable cid beam
+	// ss.startBeamClients()
 
 	go ss.startPollingDelistStatuses()
 
