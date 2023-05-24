@@ -11,13 +11,15 @@ import { makeStyles } from 'app/styles'
 
 import type { AppTabScreenParamList } from '../app-screen'
 
+import { ChatListItemSkeleton } from './ChatListItemSkeleton'
+
 const { getSingleOtherChatUser, getChat } = chatSelectors
 
 const messages = {
   new: 'new'
 }
 
-const useStyles = makeStyles(({ spacing, palette, typography }) => ({
+export const useStyles = makeStyles(({ spacing, palette, typography }) => ({
   root: {
     paddingVertical: spacing(4),
     paddingHorizontal: spacing(6),
@@ -103,38 +105,38 @@ export const ChatListItem = ({ chatId }: { chatId: string }) => {
 
   return (
     <TouchableHighlight onPress={handlePress}>
-      <View style={styles.root}>
-        {otherUser ? (
-          <>
-            <View style={styles.contentRoot}>
-              <View style={styles.userContainer}>
-                <ProfilePicture
-                  profile={otherUser}
-                  style={styles.profilePicture}
-                />
-                <View style={styles.userTextContainer}>
-                  <View style={styles.userNameContainer}>
-                    <Text style={styles.userName}>{otherUser.name}</Text>
-                    <UserBadges user={otherUser} hideName />
-                  </View>
-                  <Text style={styles.handle}>@{otherUser.handle}</Text>
+      {otherUser ? (
+        <View style={styles.root}>
+          <View style={styles.contentRoot}>
+            <View style={styles.userContainer}>
+              <ProfilePicture
+                profile={otherUser}
+                style={styles.profilePicture}
+              />
+              <View style={styles.userTextContainer}>
+                <View style={styles.userNameContainer}>
+                  <Text style={styles.userName}>{otherUser.name}</Text>
+                  <UserBadges user={otherUser} hideName />
+                </View>
+                <Text style={styles.handle}>@{otherUser.handle}</Text>
+              </View>
+            </View>
+            {chat?.unread_message_count && chat?.unread_message_count > 0 ? (
+              <View>
+                <View style={styles.unreadCountContainer}>
+                  <Text style={styles.unreadCount}>
+                    {clipMessageCount(chat?.unread_message_count ?? 0)}{' '}
+                    {messages.new}
+                  </Text>
                 </View>
               </View>
-              {chat?.unread_message_count && chat?.unread_message_count > 0 ? (
-                <View>
-                  <View style={styles.unreadCountContainer}>
-                    <Text style={styles.unreadCount}>
-                      {clipMessageCount(chat?.unread_message_count ?? 0)}{' '}
-                      {messages.new}
-                    </Text>
-                  </View>
-                </View>
-              ) : null}
-            </View>
-            <Text numberOfLines={1}>{lastMessage}</Text>
-          </>
-        ) : null}
-      </View>
+            ) : null}
+          </View>
+          <Text numberOfLines={1}>{lastMessage}</Text>
+        </View>
+      ) : (
+        <ChatListItemSkeleton />
+      )}
     </TouchableHighlight>
   )
 }
