@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import os
 from contextlib import contextmanager
+import subprocess
 
 import alembic
 import alembic.config
@@ -20,6 +21,10 @@ DB_URL = os.getenv(
     "audius_db_url",
     "postgresql+psycopg2://postgres:postgres@localhost:5432/audius_discovery",
 )
+
+# set DB_URL in environ for sake of pg_migrate.sh
+os.environ["DB_URL"] = DB_URL
+
 TEST_BROKER_URL = os.getenv("audius_redis_url", "redis://localhost:5379/0")
 ENGINE_ARGS_LITERAL = '{ \
     "pool_size": 10, \
@@ -39,6 +44,16 @@ TEST_CONFIG_OVERRIDE = {
 }
 
 
+def pg_migrate_sh():
+    subprocess.run(
+        "./pg_migrate.sh",
+        shell=True,
+        cwd=os.getcwd() + "/ddl",
+        env=os.environ,
+        check=True,
+    )
+
+
 @contextmanager
 def app_impl():
     # Drop DB, ensuring migration performed at start
@@ -55,12 +70,7 @@ def app_impl():
     helpers.reset_logging()
 
     # Run db migrations because the db gets dropped at the start of the tests
-    alembic_dir = os.getcwd()
-    alembic_config = alembic.config.Config(f"{alembic_dir}/alembic.ini")
-    alembic_config.set_main_option("sqlalchemy.url", str(DB_URL))
-    alembic_config.set_main_option("mode", "test")
-    with helpers.cd(alembic_dir):
-        alembic.command.upgrade(alembic_config, "head")
+    pg_migrate_sh()
 
     # Create application for testing
     discovery_provider_app = create_app(TEST_CONFIG_OVERRIDE)
@@ -123,12 +133,7 @@ def celery_app():
     helpers.reset_logging()
 
     # Run db migrations because the db gets dropped at the start of the tests
-    alembic_dir = os.getcwd()
-    alembic_config = alembic.config.Config(f"{alembic_dir}/alembic.ini")
-    alembic_config.set_main_option("sqlalchemy.url", str(DB_URL))
-    alembic_config.set_main_option("mode", "test")
-    with helpers.cd(alembic_dir):
-        alembic.command.upgrade(alembic_config, "head")
+    pg_migrate_sh()
 
     # Call to create_celery returns an object containing the following:
     # 'Celery' - base Celery application
