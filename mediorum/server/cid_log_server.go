@@ -20,6 +20,7 @@ func (ss *MediorumServer) servePgBeam(c echo.Context) error {
 		from cid_log
 		where updated_at > '%s'
 		order by updated_at
+		limit 100000
 		`,
 		after.Format(time.RFC3339Nano))
 	copySql := fmt.Sprintf("COPY (%s) TO STDOUT", query)

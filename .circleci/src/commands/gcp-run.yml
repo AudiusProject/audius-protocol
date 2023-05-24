@@ -54,7 +54,7 @@ steps:
       shell: /tmp/bash.real
       command: touch /tmp/success
   - run:
-      name: Delete GCP resoruces
+      name: Delete GCP resources
       when: always
       shell: /tmp/bash.real
       command: |

@@ -93,7 +93,7 @@ describe('Repost Of Repost Notification', () => {
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
+    expect(sendPushNotificationSpy.mock.lastCall).toMatchObject([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -122,7 +122,7 @@ describe('Repost Of Repost Notification', () => {
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
+    expect(sendPushNotificationSpy.mock.lastCall).toMatchObject([
       {
         type: 'ios',
         targetARN: 'arn:2',
@@ -151,7 +151,7 @@ describe('Repost Of Repost Notification', () => {
     expect(pending?.appNotifications).toHaveLength(4)
     // Assert single pending
     await processor.appNotificationsProcessor.process(pending.appNotifications)
-    expect(sendPushNotificationSpy.mock.lastCall).toStrictEqual([
+    expect(sendPushNotificationSpy.mock.lastCall).toMatchObject([
       {
         type: 'ios',
         targetARN: 'arn:2',

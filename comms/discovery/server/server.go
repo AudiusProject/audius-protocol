@@ -703,7 +703,7 @@ func (ss *ChatServer) getRpcBulk(c echo.Context) error {
 		fmt.Println("failed to parse time", err, c.QueryParam("after"), c.QueryString())
 	}
 
-	query := `select * from rpc_log where relayed_by = $1 and relayed_at > $2 order by relayed_at asc`
+	query := `select * from rpc_log where relayed_by = $1 and relayed_at > $2 order by relayed_at asc limit 10000`
 	err := db.Conn.Select(&rpcs, query, ss.config.MyHost, after.Truncate(time.Microsecond))
 	if err != nil {
 		return err

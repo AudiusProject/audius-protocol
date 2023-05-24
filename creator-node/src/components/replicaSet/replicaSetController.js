@@ -217,6 +217,11 @@ const syncRouteController = instrumentTracing({
  */
 const mergePrimaryAndSecondaryController = async (req, _res) => {
   const serviceRegistry = req.app.get('serviceRegistry')
+  if (_.isEmpty(serviceRegistry?.recurringSyncQueue)) {
+    return errorResponseServerError(
+      'Recurring Sync Queue is not up and running yet'
+    )
+  }
   const { recurringSyncQueue, nodeConfig: config } = serviceRegistry
 
   const selfEndpoint = config.get('creatorNodeEndpoint')

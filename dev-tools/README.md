@@ -56,16 +56,6 @@ To use the client from a mac, we need to route hostnames to the audius-compose n
 audius-compose connect
 ```
 
-The elasticsearch container is required to perform some client interactions such as search and signup:
-```
-audius-compose up -e 1
-```
-
-You can also omit some services to conserve resources:
-```
-audius-compose up --no-libs --no-solana
-```
-
 ### Perform actions with `audius-cmd`
 
 You can confirm that things are wired up correctly by running `audius-cmd create-user`.

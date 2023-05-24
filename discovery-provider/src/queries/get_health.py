@@ -383,9 +383,7 @@ def get_health(args: GetHealthArgs, use_redis_cache: bool = True) -> Tuple[Dict,
     if latest_block_num is not None and latest_indexed_block_num is not None:
         # adjust latest block if web3 is pointed to ACDC
         # indicating POA has finished indexing
-        if final_poa_block and web3.provider.endpoint_uri == os.getenv(
-            "audius_web3_nethermind_rpc"
-        ):
+        if final_poa_block:
             latest_block_num += final_poa_block
         block_difference = abs(
             latest_block_num - latest_indexed_block_num

@@ -772,7 +772,7 @@ class UserFavoritedTracksFull(Resource):
         return self._get(id)
 
 
-@ns.route("/<string:id>/favorites/albums")
+@ns.route("/<string:id>/favorites/albums", doc=False)
 class FavoritedAlbums(Resource):
     @record_metrics
     @ns.doc(
@@ -790,7 +790,7 @@ class FavoritedAlbums(Resource):
         return success_response(favorites)
 
 
-@ns.route("/<string:id>/favorites/playlists")
+@ns.route("/<string:id>/favorites/playlists", doc=False)
 class FavoritedPlaylists(Resource):
     @record_metrics
     @ns.doc(
@@ -1600,7 +1600,7 @@ class FullGetSupporter(Resource):
         return self._get(id, supporter_user_id)
 
 
-@ns.route(SUPPORTER_USER_ROUTE)
+@ns.route(SUPPORTER_USER_ROUTE, doc=False)
 class GetSupporter(FullGetSupporter):
     @ns.doc(
         id="""Get Supporter""",

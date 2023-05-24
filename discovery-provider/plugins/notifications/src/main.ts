@@ -144,6 +144,7 @@ export class Processor {
   }
 
   close = async () => {
+    this.remoteConfig.close()
     await this.listener?.close()
     await this.discoveryDB?.destroy()
     await this.identityDB?.destroy()

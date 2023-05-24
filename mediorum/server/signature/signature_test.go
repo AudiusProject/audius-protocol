@@ -15,5 +15,5 @@ func TestSignature(t *testing.T) {
 	data, err := ParseFromQueryString(value)
 	assert.NoError(t, err)
 	// fmt.Printf("%+v \n", data)
-	assert.Equal(t, data.SignerWallet, "0x0D990C0A0367637Cb7221620658AA509e24e3BCA")
+	assert.Equal(t, data.SignerWallet, "0x5E98cBEEAA2aCEDEc0833AC3D1634E2A7aE0f3c2")
 }

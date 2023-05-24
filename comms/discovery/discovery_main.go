@@ -11,6 +11,7 @@ import (
 	"comms.audius.co/discovery/rpcz"
 	"comms.audius.co/discovery/server"
 	"comms.audius.co/discovery/the_graph"
+	"golang.org/x/exp/slog"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -39,13 +40,26 @@ func DiscoveryMain() {
 				return err
 			}
 
-			// hack: fill in hostname if missing
-			if discoveryConfig.MyHost == "" {
-				for _, peer := range peers {
-					if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+			// find self in peer list
+			// correct hostname if configured incorrectly
+			for _, peer := range peers {
+				if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+					if discoveryConfig.MyHost != peer.Host {
+						slog.Warn("incorrect hostname", "incorrect", discoveryConfig.MyHost, "correct", peer.Host)
 						discoveryConfig.MyHost = peer.Host
-						break
 					}
+					break
+				}
+			}
+
+			// update any relayed_by records that have (incorrect) trailing slash
+			{
+				r, err := db.Conn.Exec(`update rpc_log set relayed_by = substr(relayed_by, 1, length(relayed_by)-1) from rpc_log where relayed_by like '%/';`)
+				if err != nil {
+					slog.Error("fix rpc_log relayed_by failed", err)
+				} else {
+					numCorrected, _ := r.RowsAffected()
+					slog.Warn("removed trailing slashes", "num_corrected", numCorrected)
 				}
 			}
 
@@ -59,7 +73,7 @@ func DiscoveryMain() {
 		}
 
 		// start sweepers
-		proc.StartSweepers(discoveryConfig)
+		proc.StartPeerClients()
 
 		err = pubkeystore.Dial(discoveryConfig)
 		if err != nil {

@@ -4,7 +4,7 @@ comms-linux
 wip
 .vscode
 *.md
-.git
+# .git
 .gitignore
 .editorconfig
 tmp

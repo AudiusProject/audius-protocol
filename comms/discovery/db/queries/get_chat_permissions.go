@@ -8,6 +8,16 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+const getChatPermissions = `
+select permits from chat_permissions where user_id = $1
+`
+
+func GetChatPermissions(q db.Queryable, ctx context.Context, userId int32) (schema.ChatPermission, error) {
+	var permits schema.ChatPermission
+	err := q.GetContext(ctx, &permits, getChatPermissions, userId)
+	return permits, err
+}
+
 type ChatPermissionsRow struct {
 	UserID  int32                 `db:"user_id" json:"user_id"`
 	Permits schema.ChatPermission `json:"permits"`

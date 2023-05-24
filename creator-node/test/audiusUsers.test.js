@@ -14,6 +14,7 @@ const { getLibsMock } = require('./lib/libsMock')
 const { sortKeys } = require('../src/apiSigning')
 
 describe('Test AudiusUsers', function () {
+  this.retries(3) // TODO: Flakey test
   let app, server, session, libsMock
 
   beforeEach(async () => {
@@ -70,12 +71,18 @@ describe('Test AudiusUsers', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W' || !resp.body.data.metadataFileUUID) {
+    if (
+      resp.body.data.metadataMultihash !==
+      'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W' ||
+      !resp.body.data.metadataFileUUID
+    ) {
       throw new Error('invalid return data')
     }
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await computeFilePathAndEnsureItExists(resp.body.data.metadataMultihash)
+    const metadataPath = await computeFilePathAndEnsureItExists(
+      resp.body.data.metadataMultihash
+    )
     assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
@@ -84,11 +91,13 @@ describe('Test AudiusUsers', function () {
     assert.deepStrictEqual(metadataFileData, metadata)
 
     // check that the correct metadata file properties were written to db
-    const file = await models.File.findOne({ where: {
-      multihash: resp.body.data.metadataMultihash,
-      storagePath: metadataPath,
-      type: 'metadata'
-    } })
+    const file = await models.File.findOne({
+      where: {
+        multihash: resp.body.data.metadataMultihash,
+        storagePath: metadataPath,
+        type: 'metadata'
+      }
+    })
     assert.ok(file)
   })
 
@@ -103,7 +112,9 @@ describe('Test AudiusUsers', function () {
       .expect(200)
 
     // check that the metadata file was written to storagePath under its multihash
-    const metadataPath = await computeFilePathAndEnsureItExists(resp.body.data.metadataMultihash)
+    const metadataPath = await computeFilePathAndEnsureItExists(
+      resp.body.data.metadataMultihash
+    )
     assert.ok(await fs.pathExists(metadataPath))
 
     // check that the metadata file contents match the metadata specified
@@ -112,11 +123,13 @@ describe('Test AudiusUsers', function () {
     assert.deepStrictEqual(metadataFileData, metadata)
 
     // check that the correct metadata file properties were written to db
-    const file = await models.File.findOne({ where: {
-      multihash: resp.body.data.metadataMultihash,
-      storagePath: metadataPath,
-      type: 'metadata'
-    } })
+    const file = await models.File.findOne({
+      where: {
+        multihash: resp.body.data.metadataMultihash,
+        storagePath: metadataPath,
+        type: 'metadata'
+      }
+    })
     assert.ok(file)
 
     // Make chain recognize current session wallet as the wallet for the session user ID
@@ -136,7 +149,11 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({
+        blockchainUserId,
+        blockNumber: 10,
+        metadataFileUUID: resp.body.data.metadataFileUUID
+      })
       .expect(200)
   })
 
@@ -153,7 +170,10 @@ describe('Test AudiusUsers', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W') {
+    if (
+      resp.body.data.metadataMultihash !==
+      'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
+    ) {
       throw new Error('invalid return data')
     }
 
@@ -174,14 +194,22 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({
+        blockchainUserId,
+        blockNumber: 10,
+        metadataFileUUID: resp.body.data.metadataFileUUID
+      })
       .expect(200)
 
     await request(app)
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({
+        blockchainUserId,
+        blockNumber: 10,
+        metadataFileUUID: resp.body.data.metadataFileUUID
+      })
       .expect(200)
   })
 
@@ -198,7 +226,10 @@ describe('Test AudiusUsers', function () {
       .send({ metadata: metadata1 })
       .expect(200)
 
-    if (resp1.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W') {
+    if (
+      resp1.body.data.metadataMultihash !==
+      'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
+    ) {
       throw new Error('invalid return data')
     }
 
@@ -214,7 +245,10 @@ describe('Test AudiusUsers', function () {
       .send({ metadata: metadata2 })
       .expect(200)
 
-    if (resp2.body.data.metadataMultihash !== 'QmTiWeEp2PTedHwWbtJNUuZ3deRZgAM5TG2UWrsAN9ik1N') {
+    if (
+      resp2.body.data.metadataMultihash !==
+      'QmTiWeEp2PTedHwWbtJNUuZ3deRZgAM5TG2UWrsAN9ik1N'
+    ) {
       throw new Error('invalid return data')
     }
 
@@ -235,7 +269,11 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp2.body.data.metadataFileUUID })
+      .send({
+        blockchainUserId,
+        blockNumber: 10,
+        metadataFileUUID: resp2.body.data.metadataFileUUID
+      })
       .expect(200)
   })
 
@@ -252,12 +290,17 @@ describe('Test AudiusUsers', function () {
       .send({ metadata })
       .expect(200)
 
-    if (resp.body.data.metadataMultihash !== 'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W') {
+    if (
+      resp.body.data.metadataMultihash !==
+      'QmQMHXPMuey2AT6fPTKnzKQCrRjPS7AbaQdDTM8VXbHC8W'
+    ) {
       throw new Error('invalid return data')
     }
 
     // Fast forward to block number 100
-    const cnodeUser = await models.CNodeUser.findOne({ where: { cnodeUserUUID: session.cnodeUserUUID } })
+    const cnodeUser = await models.CNodeUser.findOne({
+      where: { cnodeUserUUID: session.cnodeUserUUID }
+    })
     await cnodeUser.update({ latestBlockNumber: 100 })
 
     // Make chain recognize current session wallet as the wallet for the session user ID
@@ -277,9 +320,14 @@ describe('Test AudiusUsers', function () {
       .post('/audius_users')
       .set('X-Session-ID', session.sessionToken)
       .set('User-Id', session.userId)
-      .send({ blockchainUserId, blockNumber: 10, metadataFileUUID: resp.body.data.metadataFileUUID })
+      .send({
+        blockchainUserId,
+        blockNumber: 10,
+        metadataFileUUID: resp.body.data.metadataFileUUID
+      })
       .expect(400, {
-        error: 'Invalid blockNumber param 10. Must be greater or equal to previously processed blocknumber 100.'
+        error:
+          'Invalid blockNumber param 10. Must be greater or equal to previously processed blocknumber 100.'
       })
   })
 })

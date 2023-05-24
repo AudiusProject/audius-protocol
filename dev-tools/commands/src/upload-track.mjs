@@ -41,7 +41,7 @@ program.command("upload-track")
   .option("-g, --genre <genre>", "Genre of track (chosen randomly if not specified)")
   .option("-l, --license <license>", "License of track", null)
   .option("-f, --from <from>", "The account to upload track from")
-  .option("-p, --premium-conditions <premium conditions>", "The premium conditions object; sets track as premium")
+  .option("-p, --premium-conditions <premium conditions>", "The premium conditions object; sets track as premium", "")
   .action(async (track, { title, tags, description, mood, genre, license, from, premiumConditions }) => {
     const audiusLibs = await initializeAudiusLibs(from);
 
@@ -67,7 +67,7 @@ program.command("upload-track")
         throw new Error(`Failed to parse track "${track}"`);
       }
 
-      const response = await audiusLibs.Track.uploadTrack(
+      const response = await audiusLibs.Track.uploadTrackV2AndWriteToChain(
         trackStream,
         null,
         {
@@ -75,6 +75,7 @@ program.command("upload-track")
           cover_art: null,
           cover_art_sizes: null,
           length: 0,
+          duration: 60, // TODO: get duration from track file locally
           title: title || `title ${rand}`,
           tags: tags,
           genre: genre || `genre ${rand}`,
@@ -92,8 +93,7 @@ program.command("upload-track")
           premium_conditions: premiumConditions ? JSON.parse(premiumConditions) : null,
           ai_attribution_user_id: null
         },
-        () => null,
-        /* writeMetadataThroughChain */ true
+        () => null
       );
 
       if (response.error) {

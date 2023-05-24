@@ -29,6 +29,8 @@ def backfill_cid_data(db: SessionManager):
     source_tsv_url = ""
     if env == "stage":
         source_tsv_url = "https://s3.us-west-1.amazonaws.com/download.staging.audius.co/stage-cid-metadata.tsv"
+    elif env == "prod":
+        source_tsv_url = "https://s3.us-west-1.amazonaws.com/download.audius.co/prod-cid-metadata.tsv"
 
     response = requests.get(source_tsv_url, stream=True)
     with tempfile.NamedTemporaryFile() as tmp:
@@ -39,6 +41,8 @@ def backfill_cid_data(db: SessionManager):
         with db.scoped_session() as session:
             # Load cid data from csv in chunks...
             with open(tmp.name, "r") as file:
+                # Set 370KB limit for csv fields
+                csv.field_size_limit(370_000)
                 while True:
                     csv_reader = csv.reader(file, delimiter="\t")
                     lines = list(islice(csv_reader, chunk_size))

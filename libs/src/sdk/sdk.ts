@@ -1,3 +1,4 @@
+import { isBrowser } from 'browser-or-node'
 import { OAuth } from './oauth'
 import { TracksApi } from './api/tracks/TracksApi'
 import { ResolveApi } from './api/ResolveApi'
@@ -19,17 +20,17 @@ import {
   TransactionsApi as TransactionsApiFull
 } from './api/generated/full'
 import fetch from 'cross-fetch'
-
 import { addAppNameMiddleware } from './middleware'
 import {
-  WalletApiService,
+  AuthService,
   DiscoveryNodeSelectorService,
   DiscoveryNodeSelector,
   EntityManagerService,
-  WalletApi,
+  Auth,
   StorageService,
   Storage,
-  EntityManager
+  EntityManager,
+  AppAuth
 } from './services'
 
 type ServicesContainer = {
@@ -51,7 +52,7 @@ type ServicesContainer = {
   /**
    * Helpers to faciliate requests that require signatures or encryption
    */
-  walletApi: WalletApiService
+  auth: AuthService
 }
 
 type SdkConfig = {
@@ -63,6 +64,16 @@ type SdkConfig = {
    * Services injection
    */
   services?: Partial<ServicesContainer>
+
+  /**
+   * API key, required for writes
+   */
+  apiKey?: string
+
+  /**
+   * API secret, required for writes
+   */
+  apiSecret?: string
 }
 
 /**
@@ -93,11 +104,20 @@ export const sdk = (config: SdkConfig) => {
 }
 
 const initializeServices = (config: SdkConfig) => {
+  if (config.apiSecret && isBrowser) {
+    console.warn(
+      "apiSecret should only be provided server side so that it isn't exposed"
+    )
+  }
+
   const defaultServices: ServicesContainer = {
     discoveryNodeSelector: new DiscoveryNodeSelector(),
     entityManager: new EntityManager(),
     storage: new Storage(),
-    walletApi: new WalletApi()
+    auth:
+      config.apiKey && config.apiSecret
+        ? new AppAuth(config.apiKey, config.apiSecret)
+        : new Auth()
   }
   return { ...defaultServices, ...config.services }
 }
@@ -123,7 +143,7 @@ const initializeApis = ({
     services.discoveryNodeSelector,
     services.storage,
     services.entityManager,
-    services.walletApi
+    services.auth
   )
   const users = new UsersApi(generatedApiClientConfig)
   const playlists = new PlaylistsApi(generatedApiClientConfig)
@@ -135,7 +155,7 @@ const initializeApis = ({
       basePath: '',
       middleware
     }),
-    services.walletApi,
+    services.auth,
     services.discoveryNodeSelector
   )
 
