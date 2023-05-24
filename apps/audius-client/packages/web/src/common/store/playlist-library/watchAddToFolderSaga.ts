@@ -4,7 +4,10 @@ import {
   playlistLibraryActions,
   playlistLibraryHelpers,
   AddToFolderAction,
-  toastActions
+  toastActions,
+  CommonState,
+  collectionsSocialActions,
+  FavoriteSource
 } from '@audius/common'
 import { takeEvery, select, put } from 'typed-redux-saga'
 
@@ -14,6 +17,7 @@ const { toast } = toastActions
 const { getPlaylistLibrary } = accountSelectors
 const { addPlaylistToFolder, findInPlaylistLibrary } = playlistLibraryHelpers
 const { update, addToFolder } = playlistLibraryActions
+const { saveCollection } = collectionsSocialActions
 
 const messages = {
   playlistMovedToFolderToast: (folderName: string) =>
@@ -35,6 +39,13 @@ function* addToFolderWorker(action: AddToFolderAction) {
     draggingId,
     folder.id
   )
+
+  const isNewAddition = yield* select(
+    (state: CommonState) => !!state.account.collections[draggingId as number]
+  )
+  if (!isNewAddition) {
+    yield* put(saveCollection(draggingId as number, FavoriteSource.NAVIGATOR))
+  }
 
   // Show a toast if playlist dragged from outside of library was already in the library so it simply got moved to the target folder.
   if (

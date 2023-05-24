@@ -1,7 +1,10 @@
 import {
+  CommonState,
+  FavoriteSource,
   Name,
   ReorderAction,
   accountSelectors,
+  collectionsSocialActions,
   playlistLibraryActions,
   playlistLibraryHelpers
 } from '@audius/common'
@@ -12,6 +15,7 @@ import { make } from '../analytics/actions'
 const { getPlaylistLibrary } = accountSelectors
 const { reorderPlaylistLibrary, isInsideFolder } = playlistLibraryHelpers
 const { update, reorder } = playlistLibraryActions
+const { saveCollection } = collectionsSocialActions
 
 export function* watchReorderLibrarySaga() {
   yield* takeEvery(reorder.type, reorderLibrarySagaWorker)
@@ -37,6 +41,13 @@ function* reorderLibrarySagaWorker(action: ReorderAction) {
       kind: draggingKind
     })
   )
+
+  const isNewAddition = yield* select(
+    (state: CommonState) => !!state.account.collections[draggingId as number]
+  )
+  if (!isNewAddition) {
+    yield* put(saveCollection(draggingId as number, FavoriteSource.NAVIGATOR))
+  }
 
   const isDroppingIntoFolder = isInsideFolder(playlistLibrary, droppingId)
   const isIdInFolderBeforeReorder = isInsideFolder(playlistLibrary, draggingId)
