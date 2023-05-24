@@ -719,3 +719,33 @@ export async function setupTwoUsersWithDevices(
     }
   }
 }
+
+type TestUserEmailArgs = {
+  amount: number,
+  offset: moment.Moment
+}
+
+type TestUsersEmailArgs = {
+  liveUsers?: TestUserEmailArgs,
+  dailyUsers?: TestUserEmailArgs,
+  weeklyUsers?: TestUserEmailArgs,
+  offUsers?: TestUserEmailArgs
+}
+
+// TODO: return inserted users to assert on
+export async function populateAssortedUsersToBeNotified(
+  identityDb: Knex,
+  users: TestUsersEmailArgs
+): Promise<void> {
+  if (users === undefined) return
+
+  const { liveUsers, dailyUsers, weeklyUsers, offUsers } = users
+
+  const insertIdUsers = async (idDb: Knex, users?: TestUserEmailArgs, freq: EmailFrequency): Promise<void> => {
+    // preconditions
+    if (users === undefined) return
+
+    const randId = () => Math.floor(Math.random() * 1000)
+    await setUserEmailAndSettings(idDb, freq, randId())
+  }
+}

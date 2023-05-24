@@ -17,7 +17,7 @@ import { MappingFeatureName, RemoteConfig } from '../../remoteConfig'
 import { notificationTypeMapping } from '../../processNotifications/indexAppNotifications'
 
 // blockchainUserId => email
-type EmailUsers = {
+export type EmailUsers = {
   [blockchainUserId: number]: string
 }
 
@@ -41,6 +41,7 @@ export const getUsersCanNotify = async (
   identityDb: Knex,
   frequency: EmailFrequency,
   startOffset: moment.Moment,
+  pageCount: number,
   onPage: (emailUsers: EmailUsers) => Promise<void>,
 ) => {
   let lastUser: number = 0;
@@ -50,7 +51,7 @@ export const getUsersCanNotify = async (
   while (true) {
     const now = Date.now()
     if (now > timeout) break
-    const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, lastUser)
+    const userRows: { blockchainUserId: number; email: string }[] = await getUsersCanNotifyQuery(identityDb, startOffset, frequency, pageCount, lastUser)
     if (userRows.length === 0) break // once we've reached the end of users for this query
     lastUser = userRows[userRows.length - 1].blockchainUserId
     const emailUsers = userRows.reduce((acc, user) => {
@@ -61,7 +62,7 @@ export const getUsersCanNotify = async (
   }
 }
 
-const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Moment, frequency: EmailFrequency, lastUser: number) => 
+export const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Moment, frequency: EmailFrequency, pageCount: number, lastUser: number) => 
   await identityDb
       .with(
         'lastEmailSentAt',
@@ -116,7 +117,7 @@ const getUsersCanNotifyQuery = async (identityDb: Knex, startOffset: moment.Mome
         }
       })
       .where('user_id', '>', lastUser)
-      .limit(1000)
+      .limit(pageCount)
       .orderBy('user_id')
 
 const appNotificationsSql = `
@@ -333,7 +334,8 @@ export async function processEmailNotifications(
       days = 7
     }
     const startOffset = now.clone().subtract(days, 'days')
-    await getUsersCanNotify(identityDb, frequency, startOffset, async (users) => {
+    const pageCount = 1000
+    await getUsersCanNotify(identityDb, frequency, startOffset, pageCount, async (users) => {
         if (Object.keys(users).length == 0) {
           logger.info(`processEmailNotifications | No users to process. Exiting...`)
           return

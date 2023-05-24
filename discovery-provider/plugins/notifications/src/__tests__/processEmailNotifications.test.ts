@@ -7,7 +7,7 @@ import { enum_NotificationEmails_emailFrequency } from '../types/identity'
 import { config } from '../config'
 import { getDB } from '../conn'
 import * as sendEmail from '../email/notifications/sendEmail'
-import { processEmailNotifications } from '../email/notifications/index'
+import { EmailUsers, getUsersCanNotify, processEmailNotifications } from '../email/notifications/index'
 import {
   createTestDB,
   dropTestDB,
@@ -602,5 +602,19 @@ describe('Email Notifications', () => {
       mockRemoteConfig
     )
     expect(sendNotificationEmailSpy).toHaveBeenCalledTimes(0)
+  })
+
+  test('Paginate through different scheduled emails', async () => {
+    // populate db here with specific info
+
+    // query using actual internal query func
+    const pages: EmailUsers[] = []
+
+    const startOffset = moment().startOf('hour'); // hour ago
+    // collect pages
+    await getUsersCanNotify(identityDB, "live", startOffset, 10, async (users) => {pages.push(users)})
+
+
+    // assert responses are expected
   })
 })
