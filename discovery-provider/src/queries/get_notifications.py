@@ -49,7 +49,7 @@ FROM
 LEFT JOIN user_seen on
   user_seen.seen_at >= n.timestamp and user_seen.prev_seen_at < n.timestamp
 WHERE
-  ARRAY[:user_id] && n.user_ids AND
+  (ARRAY[:user_id] && n.user_ids OR n.type = 'announcement') AND
   (:valid_types is NOT NULL AND n.type in :valid_types) AND
   (
     (:timestamp_offset is NULL AND :group_id_offset is NULL) OR
@@ -83,7 +83,7 @@ FROM (
    from
        notification n
   WHERE
-    ARRAY[:user_id] && n.user_ids AND
+    (ARRAY[:user_id] && n.user_ids OR n.type = 'announcement') AND
     (:valid_types is NOT NULL AND n.type in :valid_types) AND
     n.timestamp > COALESCE((
         SELECT
