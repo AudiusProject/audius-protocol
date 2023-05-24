@@ -1,4 +1,4 @@
-import { ComponentProps } from 'react'
+import { ComponentProps, MouseEvent } from 'react'
 
 import { PopupProps } from '../Popup'
 
@@ -60,7 +60,7 @@ export type PopupMenuItem = {
   /**
    * A function triggered when the menu item is clicked
    */
-  onClick: () => void
+  onClick: (event: MouseEvent<HTMLLIElement>) => void
 
   /**
    * The text of the menu item

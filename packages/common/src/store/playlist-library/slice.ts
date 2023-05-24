@@ -7,7 +7,7 @@ import {
   PlaylistLibraryKind
 } from '../../models'
 
-export type PlaylistLibraryState = {}
+export type PlaylistLibraryState = Partial<PlaylistLibrary>
 
 const initialState: PlaylistLibraryState = {}
 

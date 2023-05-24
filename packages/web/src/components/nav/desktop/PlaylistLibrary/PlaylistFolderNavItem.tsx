@@ -1,4 +1,4 @@
-import { useCallback, useState, MouseEvent, useEffect } from 'react'
+import { useCallback, useState, MouseEvent, useEffect, useMemo } from 'react'
 
 import {
   PlaylistLibraryFolder,
@@ -8,7 +8,12 @@ import {
   playlistLibraryActions,
   PlaylistLibraryKind
 } from '@audius/common'
-import { IconFolder, IconFolderOutline, IconCaretRight } from '@audius/stems'
+import {
+  IconFolder,
+  IconFolderOutline,
+  IconCaretRight,
+  PopupMenuItem
+} from '@audius/stems'
 import cn from 'classnames'
 import { isEmpty } from 'lodash'
 import { useDispatch } from 'react-redux'
@@ -21,7 +26,8 @@ import { DragDropKind } from 'store/dragndrop/slice'
 
 import { LeftNavLink } from '../LeftNavLink'
 
-import { EditNavItemButton } from './EditNavItemButton'
+import { DeleteFolderConfirmationModal } from './DeleteFolderConfirmationModal'
+import { NavItemKebabButton } from './NavItemKebabButton'
 import styles from './PlaylistFolderNavItem.module.css'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 const { setVisibility } = modalsActions
@@ -37,7 +43,9 @@ const longDragTimeoutMs = 1000
 const acceptedKinds: DragDropKind[] = ['playlist', 'library-playlist']
 
 const messages = {
-  editFolderLabel: 'More folder actions'
+  editFolderLabel: 'More folder actions',
+  edit: 'Edit',
+  delete: 'Delete'
 }
 
 export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
@@ -50,6 +58,8 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const isEmptyFolder = isEmpty(contents)
   const dispatch = useDispatch()
   const record = useRecord()
+  const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
+    useToggle(false)
 
   const handleDrop = useCallback(
     (id: PlaylistLibraryID, kind: DragDropKind) => {
@@ -82,7 +92,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   }, [])
 
   const handleClickEdit = useCallback(
-    (event: MouseEvent<HTMLButtonElement>) => {
+    (event: MouseEvent<HTMLElement>) => {
       event.preventDefault()
       event.stopPropagation()
       dispatch(setEditFolderModalFolderId(id))
@@ -90,6 +100,14 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
       record(make(Name.FOLDER_OPEN_EDIT, {}))
     },
     [dispatch, id, record]
+  )
+
+  const kebabItems: PopupMenuItem[] = useMemo(
+    () => [
+      { text: messages.edit, onClick: handleClickEdit },
+      { text: messages.delete, onClick: toggleDeleteConfirmationOpen }
+    ],
+    [handleClickEdit, toggleDeleteConfirmationOpen]
   )
 
   useEffect(() => {
@@ -140,11 +158,17 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
             })}
           />
           {isHovering && !isDraggingOver ? (
-            <EditNavItemButton
+            <NavItemKebabButton
               aria-label={messages.editFolderLabel}
               onClick={handleClickEdit}
+              items={kebabItems}
             />
           ) : null}
+          <DeleteFolderConfirmationModal
+            folderId={id}
+            isOpen={isDeleteConfirmationOpen}
+            onClose={toggleDeleteConfirmationOpen}
+          />
         </LeftNavLink>
         {isExpanded ? (
           <ul>
