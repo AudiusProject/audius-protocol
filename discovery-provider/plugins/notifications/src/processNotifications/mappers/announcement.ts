@@ -72,7 +72,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       const res = await fetchUsersPage(this.dnDB, lastUser, pageCount)
       const elapsed = new Date().getTime() - start
       logger.info(
-        `offset: ${offset} to: ${maxUserId} queried in ${elapsed} ms`
+        `offset: ${offset} last user: ${lastUser} to: ${maxUserId} queried in ${elapsed} ms`
       )
       offset = offset + pageCount
 
