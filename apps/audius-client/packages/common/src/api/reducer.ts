@@ -1,13 +1,13 @@
 import { combineReducers } from 'redux'
 
-import collectionApi from './collection'
-import relatedArtistsApi from './relatedArtists'
-import trackApi from './track'
-import userApi from './user'
+import { collectionApiReducer } from './collection'
+import { relatedArtistsApiReducer } from './relatedArtists'
+import { trackApiReducer } from './track'
+import { userApiReducer } from './user'
 
 export default combineReducers({
-  relatedArtistsApi,
-  trackApi,
-  collectionApi,
-  userApi
+  collectionApi: collectionApiReducer,
+  relatedArtistsApi: relatedArtistsApiReducer,
+  trackApi: trackApiReducer,
+  userApi: userApiReducer
 })

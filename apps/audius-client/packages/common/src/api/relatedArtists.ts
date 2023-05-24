@@ -1,4 +1,4 @@
-import { createApi } from './createApi'
+import { createApi } from 'src/audius-query/createApi'
 
 const relatedArtistsApi = createApi({
   reducerPath: 'relatedArtistsApi',
@@ -17,4 +17,4 @@ const relatedArtistsApi = createApi({
 })
 
 export const { useGetRelatedArtists } = relatedArtistsApi.hooks
-export default relatedArtistsApi.reducer
+export const relatedArtistsApiReducer = relatedArtistsApi.reducer

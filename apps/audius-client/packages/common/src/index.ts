@@ -1,4 +1,5 @@
 export * from './api'
+export * from './audius-query'
 export * from './models'
 export * from './utils'
 export * from './services'
