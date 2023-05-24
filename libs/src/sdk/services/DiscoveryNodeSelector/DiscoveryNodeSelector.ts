@@ -97,6 +97,8 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    */
   private backupCleanupTimeout: NodeJS.Timeout | null = null
 
+  private reselectLock: boolean = false
+
   /**
    * Composed EventEmitter for alerting listeners of reselections
    */
@@ -120,13 +122,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this._isBehind = false
     this.unhealthyServices = new Set([])
     this.backupServices = {}
-    this.selectedNode =
-      this.config.initialSelectedNode &&
-      (!this.config.allowlist ||
-        this.config.allowlist?.has(this.config.initialSelectedNode)) &&
-      !this.config.blocklist?.has(this.config.initialSelectedNode)
-        ? this.config.initialSelectedNode
-        : null
+    this.selectedNode = this.config.initialSelectedNode
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
     this.addEventListener = this.eventEmitter.addListener.bind(
@@ -244,119 +240,140 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    * @returns a healthy discovery node endpoint
    */
   private async select() {
-    this.debug('Selecting new discovery node...')
-    const decisionTree: Decision[] = []
-
-    // Get all the services we have
-    let services = [...this.services]
-    decisionTree.push({
-      stage: DECISION_TREE_STATE.GET_ALL_SERVICES,
-      val: services
-    })
-
-    // If a whitelist is provided, filter down to it
-    if (this.config.allowlist) {
-      services = services.filter((s) => this.config.allowlist?.has(s))
-      decisionTree.push({
-        stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST,
-        val: services
-      })
-    }
-
-    // if a blacklist is provided, filter out services in the list
-    if (this.config.blocklist) {
-      services = services.filter((s) => !this.config.blocklist?.has(s))
-      decisionTree.push({
-        stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST,
-        val: services
-      })
-    }
-
-    let selectedService: string | null = null
-    let attemptedServicesCount: number = 0
-
-    // Loop until a healthy node is found, batching health_check requests by maxConcurrentRequests
-    while (selectedService === null) {
-      // Filter out anything we know is already unhealthy
-      const filteredServices = services.filter(
-        (s) => !this.unhealthyServices.has(s)
-      )
-      decisionTree.push({
-        stage: DECISION_TREE_STATE.FILTER_OUT_KNOWN_UNHEALTHY,
-        val: filteredServices
-      })
-
-      // If there are no services left to try, either pick a backup or return null
-      if (filteredServices.length === 0) {
-        decisionTree.push({
-          stage: DECISION_TREE_STATE.NO_SERVICES_LEFT_TO_TRY
+    if (this.reselectLock) {
+      const prevNode = (' ' + this.selectedNode).slice(1) // Force make a copy of the string
+      await new Promise<void>((resolve) => {
+        this.eventEmitter.once('reselectAttemptComplete', () => {
+          resolve()
         })
-        if (Object.keys(this.backupServices).length > 0) {
-          // Some backup exists
-          const backup = await this.selectFromBackups()
+      })
+      console.log(
+        `'waited. prevnode and new node ${prevNode}, ${this.selectedNode}`
+      )
+      if (prevNode !== this.selectedNode && this.selectedNode != null) {
+        return this.selectedNode
+      }
+    }
+    this.reselectLock = true
+
+    try {
+      this.debug('Selecting new discovery node...')
+      const decisionTree: Decision[] = []
+
+      // Get all the services we have
+      let services = [...this.services]
+      decisionTree.push({
+        stage: DECISION_TREE_STATE.GET_ALL_SERVICES,
+        val: services
+      })
+
+      // If a whitelist is provided, filter down to it
+      if (this.config.allowlist) {
+        services = services.filter((s) => this.config.allowlist?.has(s))
+        decisionTree.push({
+          stage: DECISION_TREE_STATE.FILTER_TO_WHITELIST,
+          val: services
+        })
+      }
+
+      // if a blacklist is provided, filter out services in the list
+      if (this.config.blocklist) {
+        services = services.filter((s) => !this.config.blocklist?.has(s))
+        decisionTree.push({
+          stage: DECISION_TREE_STATE.FILTER_FROM_BLACKLIST,
+          val: services
+        })
+      }
+
+      let selectedService: string | null = null
+      let attemptedServicesCount: number = 0
+
+      // Loop until a healthy node is found, batching health_check requests by maxConcurrentRequests
+      while (selectedService === null) {
+        // Filter out anything we know is already unhealthy
+        const filteredServices = services.filter(
+          (s) => !this.unhealthyServices.has(s)
+        )
+        decisionTree.push({
+          stage: DECISION_TREE_STATE.FILTER_OUT_KNOWN_UNHEALTHY,
+          val: filteredServices
+        })
+
+        // If there are no services left to try, either pick a backup or return null
+        if (filteredServices.length === 0) {
           decisionTree.push({
-            stage: DECISION_TREE_STATE.SELECTED_FROM_BACKUP,
-            val: backup
+            stage: DECISION_TREE_STATE.NO_SERVICES_LEFT_TO_TRY
           })
-          this.selectedNode = backup
-          this.isBehind = true
-          return backup
-        } else {
-          // Nothing could be found that was healthy.
-          // Reset everything we know so that we might try again.
-          this.unhealthyServices = new Set([])
-          this.backupServices = {}
+          if (Object.keys(this.backupServices).length > 0) {
+            // Some backup exists
+            const backup = await this.selectFromBackups()
+            decisionTree.push({
+              stage: DECISION_TREE_STATE.SELECTED_FROM_BACKUP,
+              val: backup
+            })
+            this.selectedNode = backup
+            this.isBehind = true
+            return backup
+          } else {
+            // Nothing could be found that was healthy.
+            // Reset everything we know so that we might try again.
+            this.unhealthyServices = new Set([])
+            this.backupServices = {}
+            decisionTree.push({
+              stage: DECISION_TREE_STATE.FAILED_AND_RESETTING
+            })
+            this.error('Failed to select discovery node', decisionTree)
+            return null
+          }
+        }
+
+        // Randomly sample a "round" to test
+        const round = sampleSize(
+          filteredServices,
+          this.config.maxConcurrentRequests
+        )
+        decisionTree.push({
+          stage: DECISION_TREE_STATE.GET_SELECTION_ROUND,
+          val: round
+        })
+
+        // Race this "round" of services to find the quickest healthy node
+        selectedService = await this.anyHealthyEndpoint(round)
+        attemptedServicesCount += round.length
+
+        // Retry if none were found
+        if (!selectedService) {
           decisionTree.push({
-            stage: DECISION_TREE_STATE.FAILED_AND_RESETTING
+            stage: DECISION_TREE_STATE.ROUND_FAILED_RETRY
           })
-          this.error('Failed to select discovery node', decisionTree)
-          return null
+          this.debug('No healthy services found. Attempting another round...', {
+            attemptedServicesCount
+          })
         }
       }
 
-      // Randomly sample a "round" to test
-      const round = sampleSize(
-        filteredServices,
-        this.config.maxConcurrentRequests
-      )
+      // Trigger a cleanup event for all of the unhealthy and backup services,
+      // so they can get retried in the future
+      this.triggerCleanup()
+
       decisionTree.push({
-        stage: DECISION_TREE_STATE.GET_SELECTION_ROUND,
-        val: round
+        stage: DECISION_TREE_STATE.MADE_A_SELECTION,
+        val: selectedService
       })
-
-      // Race this "round" of services to find the quickest healthy node
-      selectedService = await this.anyHealthyEndpoint(round)
-      attemptedServicesCount += round.length
-
-      // Retry if none were found
-      if (!selectedService) {
-        decisionTree.push({
-          stage: DECISION_TREE_STATE.ROUND_FAILED_RETRY
-        })
-        this.debug('No healthy services found. Attempting another round...', {
-          attemptedServicesCount
-        })
+      // If we made it this far, we found the best service! (of the rounds we tried)
+      if (selectedService) {
+        this.selectedNode = selectedService
+        this.eventEmitter.emit('change', selectedService)
       }
+      this.info(`Selected discprov ${selectedService}`, decisionTree, {
+        attemptedServicesCount
+      })
+      this.isBehind = false
+    } finally {
+      this.reselectLock = false
+      this.eventEmitter.emit('reselectAttemptComplete')
+      return this.selectedNode
     }
-
-    // Trigger a cleanup event for all of the unhealthy and backup services,
-    // so they can get retried in the future
-    this.triggerCleanup()
-
-    decisionTree.push({
-      stage: DECISION_TREE_STATE.MADE_A_SELECTION,
-      val: selectedService
-    })
-    // If we made it this far, we found the best service! (of the rounds we tried)
-    if (selectedService) {
-      this.selectedNode = selectedService
-      this.eventEmitter.emit('change', selectedService)
-    }
-    this.info(`Selected discprov ${selectedService}`, decisionTree, {
-      attemptedServicesCount
-    })
-    this.isBehind = false
-    return selectedService
   }
 
   /**
