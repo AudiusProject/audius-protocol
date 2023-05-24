@@ -51,8 +51,11 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
   }) {
     const isDryRun: boolean = globalThis.announcementDryRun
     const totalUsers = await this.dnDB('users').max('user_id').where('is_current', true).andWhere('is_deactivated', false)
+
     // convert to number
-    const totalCurrentUsers = parseInt(totalUsers[0].count as string)
+    const totalCurrentUsers = parseInt(totalUsers[0].max as string)
+
+    logger.info(`total users ${totalUsers}`)
     let offset = 0 // let binding because we re-assign
     // set initial user to very far in past
     const pageCount = 1000 // only pull this many users into mem at a time
