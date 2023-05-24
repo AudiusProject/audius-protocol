@@ -6,7 +6,8 @@ import {
   modalsActions,
   PlaylistLibraryID,
   playlistLibraryActions,
-  PlaylistLibraryKind
+  PlaylistLibraryKind,
+  playlistUpdatesSelectors
 } from '@audius/common'
 import {
   IconFolder,
@@ -22,7 +23,8 @@ import { useToggle } from 'react-use'
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Draggable, Droppable } from 'components/dragndrop'
 import { setFolderId as setEditFolderModalFolderId } from 'store/application/ui/editFolderModal/slice'
-import { DragDropKind } from 'store/dragndrop/slice'
+import { DragDropKind, selectDraggingKind } from 'store/dragndrop/slice'
+import { useSelector } from 'utils/reducer'
 
 import { LeftNavLink } from '../LeftNavLink'
 
@@ -32,6 +34,7 @@ import styles from './PlaylistFolderNavItem.module.css'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
 const { setVisibility } = modalsActions
 const { addToFolder } = playlistLibraryActions
+const { selectPlaylistUpdateById } = playlistUpdatesSelectors
 
 type PlaylistFolderNavItemProps = {
   folder: PlaylistLibraryFolder
@@ -51,7 +54,14 @@ const messages = {
 export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const { folder, level } = props
   const { name, contents, id } = folder
-  const hasUpdate = false
+  const folderHasUpdate = useSelector((state) => {
+    return folder.contents.some(
+      (content) =>
+        content.type === 'playlist' &&
+        selectPlaylistUpdateById(state, content.playlist_id)
+    )
+  })
+  const draggingKind = useSelector(selectDraggingKind)
   const [isExpanded, toggleIsExpanded] = useToggle(false)
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [isHovering, setIsHovering] = useState(false)
@@ -60,6 +70,8 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   const record = useRecord()
   const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
     useToggle(false)
+
+  const isDisabled = draggingKind && !acceptedKinds.includes(draggingKind)
 
   const handleDrop = useCallback(
     (id: PlaylistLibraryID, kind: DragDropKind) => {
@@ -75,8 +87,10 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
   )
 
   const handleDragEnter = useCallback(() => {
-    setIsDraggingOver(true)
-  }, [])
+    if (!isDisabled) {
+      setIsDraggingOver(true)
+    }
+  }, [isDisabled])
 
   const handleDragLeave = useCallback(() => {
     setIsDraggingOver(false)
@@ -121,7 +135,9 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
     <Droppable
       acceptedKinds={acceptedKinds}
       onDrop={handleDrop}
+      className={styles.droppable}
       hoverClassName={styles.droppableHover}
+      disabled={isDisabled}
     >
       <Draggable id={id} text={name} kind='playlist-folder'>
         <LeftNavLink
@@ -131,6 +147,7 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
           onDragLeave={handleDragLeave}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
+          disabled={isDisabled}
         >
           {isEmptyFolder ? (
             <IconFolderOutline
@@ -143,13 +160,11 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
               width={12}
               height={12}
               className={cn(styles.iconFolder, {
-                [styles.iconFolderUpdated]: hasUpdate
+                [styles.iconFolderUpdated]: folderHasUpdate
               })}
             />
           )}
-          <div className={styles.libraryLinkTextContainer}>
-            <span>{name}</span>
-          </div>
+          <span className={styles.folderName}>{name}</span>
           <IconCaretRight
             height={11}
             width={11}
@@ -157,13 +172,12 @@ export const PlaylistFolderNavItem = (props: PlaylistFolderNavItemProps) => {
               [styles.iconCaretDown]: isExpanded
             })}
           />
-          {isHovering && !isDraggingOver ? (
-            <NavItemKebabButton
-              aria-label={messages.editFolderLabel}
-              onClick={handleClickEdit}
-              items={kebabItems}
-            />
-          ) : null}
+          <NavItemKebabButton
+            visible={isHovering && !isDraggingOver}
+            aria-label={messages.editFolderLabel}
+            onClick={handleClickEdit}
+            items={kebabItems}
+          />
           <DeleteFolderConfirmationModal
             folderId={id}
             isOpen={isDeleteConfirmationOpen}

@@ -1,5 +1,5 @@
 .root {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   line-height: normal;
 }
@@ -13,6 +13,12 @@
   color: var(--secondary);
 }
 
+.folderName {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .iconCaret {
   flex-shrink: 0;
   margin-left: 10px;
@@ -24,6 +30,11 @@
 
 .iconCaretDown {
   transform: rotate(90deg);
+}
+
+.droppable {
+  transition: background 0.07s ease-in-out;
+  border-radius: 6px;
 }
 
 .droppableHover {
