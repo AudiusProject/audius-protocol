@@ -12,7 +12,7 @@ import { isFileValid } from '../../utils/file'
 import { TRACK_REQUIRED_VALUES } from './constants'
 import { objectMissingValues } from '../../utils/object'
 import { retry3 } from '../../utils/retry'
-import type { EntityManagerService, WalletApiService } from '../../services'
+import type { EntityManagerService, AuthService } from '../../services'
 import { Action, EntityType } from '../../services/EntityManager/types'
 import { decodeHashId } from '../../utils/hashId'
 import { generateMetadataCidV1 } from '../../utils/cid'
@@ -35,7 +35,7 @@ export class TracksApi extends TracksApiWithoutStream {
     private readonly discoveryNodeSelectorService: DiscoveryNodeSelectorService,
     private readonly storage: StorageService,
     private readonly entityManager: EntityManagerService,
-    private readonly walletApi: WalletApiService
+    private readonly auth: AuthService
   ) {
     super(configuration)
   }
@@ -140,6 +140,7 @@ export class TracksApi extends TracksApiWithoutStream {
     }
 
     // Write metadata to chain
+
     const metadataCid = await generateMetadataCidV1(updatedMetadata)
     const trackId = await this.generateTrackId()
     const response = await this.entityManager.manageEntity({
@@ -151,7 +152,7 @@ export class TracksApi extends TracksApiWithoutStream {
         cid: metadataCid.toString(),
         data: updatedMetadata
       }),
-      walletApi: this.walletApi
+      auth: this.auth
     })
     const txReceipt = response.txReceipt
 

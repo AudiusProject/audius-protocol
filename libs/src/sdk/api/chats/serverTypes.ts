@@ -105,6 +105,7 @@ export type UserChat = {
   last_message: string
   last_message_at: string
   chat_members: Array<{ user_id: string }>
+  recheck_permissions: boolean
 
   // User specific
   invite_code: string

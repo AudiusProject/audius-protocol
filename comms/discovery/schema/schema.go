@@ -137,6 +137,7 @@ type UserChat struct {
 	LastMessage        string       `json:"last_message"`
 	LastMessageAt      string       `json:"last_message_at"`
 	LastReadAt         string       `json:"last_read_at"`
+	RecheckPermissions bool         `json:"recheck_permissions"`
 	UnreadMessageCount float64      `json:"unread_message_count"`
 }
 

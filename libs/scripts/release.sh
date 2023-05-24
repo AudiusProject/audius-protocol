@@ -35,7 +35,7 @@ function git-changelog () {
 
 # formats a commit message using the bumped ${VERSION} and ${CHANGE_LOG}
 function commit-message () {
-    echo "Bump ${STUB} to ${VERSION}
+    echo "${STUB}: ${VERSION}
 
 ## Changelog
 
@@ -89,7 +89,7 @@ function bump-version () {
         # Commit to a new branch
         git checkout -b ${STUB}-${VERSION}
         git add .
-        git commit -m "$(commit-message)"
+        git commit -m "$(commit-message)" -m "[skip ci]"
 
         # Push branch to remote
         git push -u origin ${STUB}-${VERSION}
@@ -106,7 +106,7 @@ function merge-bump () {
 
         # squash branch commit
         git merge --squash ${STUB}-${VERSION} || exit 1
-        git commit -m "$(commit-message)" || exit 1
+        git commit -m "$(commit-message)" -m "[skip ci]" || exit 1
 
         # tag release
         git tag -a @audius/${STUB}@${VERSION} -m "$(commit-message)" || exit 1
@@ -120,7 +120,11 @@ function merge-bump () {
 
 # publish to npm
 function publish () {
-    npm publish . --access public
+    if [[ -z $PREID ]]; then
+        npm publish . --access public
+    else
+        npm publish . --access public --tag ${PREID}
+    fi
 }
 
 # informative links
@@ -139,7 +143,7 @@ function cleanup () {
 }
 
 # configuration
-STUB=sdk
+STUB=@audius/sdk
 cd ${PROTOCOL_DIR}/libs
 
 # pull in main

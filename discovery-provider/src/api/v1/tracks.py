@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 import urllib.parse
 from typing import List
 from urllib.parse import urljoin
@@ -393,6 +394,13 @@ stream_parser.add_argument(
         This is needed by the CN in order to set the Content-Disposition response header.""",
     type=str,
 )
+stream_parser.add_argument(
+    "skip_play_count",
+    description="""Optional - boolean that disables tracking of play counts.""",
+    type=bool,
+    required=False,
+    default=False,
+)
 
 
 def tranform_stream_cache(stream_url):
@@ -436,17 +444,16 @@ class TrackStream(Resource):
             )
             abort_not_found(track_id, ns)
 
-        is_storage_v2 = not (
-            len(track_cid) == 46 and track_cid.startswith("Qm")
-        )
+        is_storage_v2 = not (len(track_cid) == 46 and track_cid.startswith("Qm"))
         if is_storage_v2:
             redis = redis_connection.get_redis()
             content_nodes = (
                 redis.get(CONTENT_PEERS_REDIS_KEY).decode("utf-8").split(",")
             )
-            # TODO: Implement rendezvous to load balance instead of always using node at index 0 below
+            content_node = random.choice(content_nodes)
         elif info["creator_nodes"]:
             content_nodes = info["creator_nodes"].split(",")
+            content_node = content_nodes[0]
         else:
             abort_not_found(track_id, ns)
 
@@ -466,15 +473,18 @@ class TrackStream(Resource):
         if not signature:
             abort_not_found(track_id, ns)
 
-        signature_param = urllib.parse.quote(json.dumps(signature))
-        path = f"tracks/cidstream/{track_cid}?signature={signature_param}"
-
-        # Grab filename in case the user is requesting track download
+        params = {"signature": json.dumps(signature)}
+        skip_play_count = request_args.get("skip_play_count", False)
+        if skip_play_count:
+            params["skip_play_count"] = skip_play_count
         filename = request_args.get("filename", None)
         if filename:
-            path = f"{path}&filename={filename}"
+            params["filename"] = filename
 
-        stream_url = urljoin(content_nodes[0], path)
+        base_path = f"tracks/cidstream/{track_cid}"
+        query_string = urllib.parse.urlencode(params)
+        path = f"{base_path}?{query_string}"
+        stream_url = urljoin(content_node, path)
 
         return stream_url
 

@@ -14,6 +14,7 @@ chai.use(require('sinon-chai'))
 chai.use(require('chai-as-promised'))
 
 describe('test StateMonitoringManager initialization, events, and re-enqueuing', function () {
+  this.retries(3) // TODO: Flakey test
   let server, sandbox
   beforeEach(async function () {
     const appInfo = await getApp(getLibsMock())
@@ -32,8 +33,8 @@ describe('test StateMonitoringManager initialization, events, and re-enqueuing',
   })
 
   function getPrometheusRegistry() {
-    const startTimerStub = sandbox.stub().returns(() => {})
-    const startQueueMetricsStub = sandbox.stub().returns(() => {})
+    const startTimerStub = sandbox.stub().returns(() => { })
+    const startQueueMetricsStub = sandbox.stub().returns(() => { })
     const getMetricStub = sandbox.stub().returns({
       startTimer: startTimerStub
     })

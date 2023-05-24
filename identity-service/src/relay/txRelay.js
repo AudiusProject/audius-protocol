@@ -150,7 +150,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
 
   const existingTx = await models.Transaction.findOne({
     where: {
-      encodedABI: hashedData // this should always be unique
+      encodedNonceAndSignature: hashedData // this should always be unique
     }
   })
 
@@ -186,11 +186,6 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
   req.logger.info(
     `L2 - txRelay - selected wallet ${wallet.publicKey} for sender ${senderAddress}`
   )
-
-  // send to POA
-  // PROD doesn't have sendToNethermindOnly and should default to POA
-  // STAGE defaults to nethermind but can send to POA when it has both addresses
-  const relayPromises = []
 
   // relay stats object that gets filled out as relay occurs
   const relayStats = {
@@ -251,6 +246,8 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     const end = new Date().getTime()
     const totalTransactionLatency = end - startTransactionLatency
 
+    logger.info(`L2 - txRelay - relays settled ${JSON.stringify(relayTxs)}`)
+
     if (relayTxs.length === 1) {
       txParams = relayTxs[0].value.txParams
       txReceipt = relayTxs[0].value.receipt
@@ -281,7 +278,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
       }
     } else if (relayTxs.length === 2) {
       const [poaTx, nethermindTx] = relayTxs.map((result) => result?.value)
-      console.log(
+      logger.info(
         `txRelay - poaTx: ${JSON.stringify(
           poaTx?.txParams
         )} | nethermindTx: ${JSON.stringify(nethermindTx?.txParams)}`
@@ -385,7 +382,7 @@ const sendTransactionInternal = async (req, web3, txProps, reqBodySHA) => {
     contractFn: decodedABI.name,
     contractAddress: contractAddress,
     senderAddress: senderAddress,
-    encodedABI: hashedData,
+    encodedNonceAndSignature: hashedData,
     decodedABI: decodedABI,
     receipt: txReceipt
   })
@@ -560,7 +557,7 @@ const createAndSendTransaction = async (
   const tx = new EthereumTx(txParams)
   tx.sign(privateKeyBuffer)
   const signedTx = '0x' + tx.serialize().toString('hex')
-  console.log(
+  logger.info(
     `txRelay - sending a transaction for sender ${
       sender.publicKey
     } to ${receiverAddress}, gasPrice ${parseInt(
@@ -599,7 +596,7 @@ async function relayToNethermindWithTimeout(
 let inFlight = 0
 
 async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
-  console.log(
+  logger.info(
     `txRelay - relayToNethermind input params: ${encodedABI} ${contractAddress} ${gasLimit}`
   )
 
@@ -643,7 +640,7 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
       signedTx.rawTransaction
     )
 
-    console.log(
+    logger.info(
       `txRelay - relayToNethermind receipt: ${JSON.stringify(receipt)}`
     )
     receipt.blockNumber += config.get('finalPOABlock')
@@ -660,7 +657,7 @@ async function relayToNethermind(encodedABI, contractAddress, gasLimit) {
       timeToComplete: took
     }
   } catch (err) {
-    console.log('relayToNethermind error:', err.toString())
+    logger.info('relayToNethermind error:', err.toString())
   }
 }
 

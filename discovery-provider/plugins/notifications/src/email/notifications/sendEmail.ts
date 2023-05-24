@@ -74,9 +74,7 @@ export const sendNotificationEmail = async ({
     const emailParams: MailDataRequired = {
       from: 'Audius <notify@audius.co>',
       to: `${email}`,
-      bcc:
-        // TODO(skiamilev) - remove this once behavior confirmed working
-        'sabrina@audius.co',
+      bcc: 'audius-email-test@audius.co',
       html: notifHtml,
       subject: emailSubject,
       asm: {

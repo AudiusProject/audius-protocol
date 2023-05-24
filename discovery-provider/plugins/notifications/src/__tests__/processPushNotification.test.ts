@@ -3,17 +3,14 @@ import { Processor } from '../main'
 import * as sns from '../sns'
 import { config } from './../config'
 import {
-  randId,
   createChat,
   readChat,
   insertMessage,
   insertReaction,
   setupTwoUsersWithDevices,
-  createTestDB,
-  replaceDBName,
-  dropTestDB
+  setupTest,
+  resetTests
 } from '../utils/populateDB'
-import { getRedisConnection } from '../utils/redisConnection'
 
 describe('Push Notifications', () => {
   let processor: Processor
@@ -22,44 +19,12 @@ describe('Push Notifications', () => {
     .mockImplementation(() => Promise.resolve())
 
   beforeEach(async () => {
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      createTestDB(process.env.DN_DB_URL, testName),
-      createTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
-
-    const redis = await getRedisConnection()
-    redis.del(config.lastIndexedMessageRedisKey)
-    redis.del(config.lastIndexedReactionRedisKey)
-    processor = new Processor()
-
-    // eslint-disable-next-line
-    // @ts-ignore
-    processor.server.app.listen = jest.fn((port: number, cb: () => void) =>
-      cb()
-    )
-
-    await processor.init({
-      identityDBUrl: replaceDBName(process.env.IDENTITY_DB_URL, testName),
-      discoveryDBUrl: replaceDBName(process.env.DN_DB_URL, testName)
-    })
+    const setup = await setupTest({ mockTime: false })
+    processor = setup.processor
   })
 
   afterEach(async () => {
-    jest.clearAllMocks()
-    processor.stop()
-    await processor?.close()
-    const testName = expect
-      .getState()
-      .currentTestName.replace(/\s/g, '_')
-      .toLocaleLowerCase()
-    await Promise.all([
-      dropTestDB(process.env.DN_DB_URL, testName),
-      dropTestDB(process.env.IDENTITY_DB_URL, testName)
-    ])
+    await resetTests(processor)
   })
 
   test('Process DM for ios', async () => {
@@ -75,10 +40,10 @@ describe('Push Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestampMs = Date.now() - config.dmNotificationDelay
     const messageTimestamp = new Date(messageTimestampMs)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,
@@ -153,10 +118,10 @@ describe('Push Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestampMs = Date.now() - config.dmNotificationDelay
     const messageTimestamp = new Date(messageTimestampMs)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,
@@ -218,9 +183,9 @@ describe('Push Notifications', () => {
 
     // User 1 sends message now
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now())
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,
@@ -249,9 +214,9 @@ describe('Push Notifications', () => {
 
     // Set up chat and message
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestamp = new Date(Date.now())
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,
@@ -300,10 +265,10 @@ describe('Push Notifications', () => {
 
     // User 1 sent message config.dmNotificationDelay ms ago
     const message = 'hi from user 1'
-    const messageId = randId().toString()
+    const messageId = '1'
     const messageTimestampMs = Date.now() - config.dmNotificationDelay
     const messageTimestamp = new Date(messageTimestampMs)
-    const chatId = randId().toString()
+    const chatId = '1'
     await createChat(
       processor.discoveryDB,
       user1.userId,

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,6 +21,8 @@ import (
 type RPCProcessor struct {
 	sync.Mutex
 	validator *Validator
+
+	peerClients []*PeerClient
 
 	discoveryConfig *config.DiscoveryConfig
 	httpClient      http.Client
@@ -40,12 +43,31 @@ func NewProcessor(discoveryConfig *config.DiscoveryConfig) (*RPCProcessor, error
 	proc := &RPCProcessor{
 		validator:       validator,
 		discoveryConfig: discoveryConfig,
+		peerClients:     []*PeerClient{},
 		httpClient: http.Client{
 			Timeout: 5 * time.Second,
 		},
 	}
 
+	// setup peer clients
+	for _, peer := range discoveryConfig.Peers() {
+		if strings.EqualFold(peer.Wallet, discoveryConfig.MyWallet) {
+			continue
+		}
+		if peer.Host == "" {
+			slog.Info("bad peer", "peer", peer)
+			continue
+		}
+		proc.peerClients = append(proc.peerClients, NewPeerClient(peer.Host, proc))
+	}
+
 	return proc, nil
+}
+
+func (proc *RPCProcessor) StartPeerClients() {
+	for _, p := range proc.peerClients {
+		p.Start()
+	}
 }
 
 func (proc *RPCProcessor) Validate(userId int32, rawRpc schema.RawRPC) error {

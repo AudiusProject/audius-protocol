@@ -341,7 +341,7 @@ def configure_celery(celery, test_config=None):
             },
             "update_network_peers": {
                 "task": "update_network_peers",
-                "schedule": timedelta(seconds=30),
+                "schedule": timedelta(seconds=10),
             },
             "index_trending": {
                 "task": "index_trending",
@@ -442,7 +442,7 @@ def configure_celery(celery, test_config=None):
 
     # backfill cid data if url is provided
     env = os.getenv("audius_discprov_env")
-    if env == "stage" and not redis_inst.get("backfilled_cid_data"):
+    if env in ("stage", "prod") and not redis_inst.get("backfilled_cid_data"):
         celery.send_task("backfill_cid_data")
 
     # Initialize DB object for celery task context
