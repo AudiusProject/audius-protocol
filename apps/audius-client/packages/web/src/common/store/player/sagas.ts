@@ -1,6 +1,7 @@
 import {
   Kind,
   encodeHashId,
+  accountSelectors,
   cacheTracksSelectors,
   cacheActions,
   queueActions,
@@ -34,6 +35,8 @@ import {
 import { waitForWrite } from 'utils/sagaHelpers'
 
 import errorSagas from './errorSagas'
+
+const { getUserId } = accountSelectors
 const { setTrackPosition } = playbackPositionActions
 const { getTrackPosition } = playbackPositionSelectors
 
@@ -124,6 +127,7 @@ export function* watchPlay() {
       const isLongFormContent =
         track.genre === Genre.PODCASTS || track.genre === Genre.AUDIOBOOKS
 
+      const currentUserId = yield* select(getUserId)
       const endChannel = eventChannel((emitter) => {
         audioPlayer.load(
           track.duration ||
@@ -138,6 +142,7 @@ export function* watchPlay() {
             if (isNewPodcastControlsEnabled && isLongFormContent) {
               emitter(
                 setTrackPosition({
+                  userId: currentUserId,
                   trackId,
                   positionInfo: {
                     status: 'COMPLETED',
@@ -165,10 +170,15 @@ export function* watchPlay() {
 
         if (isNewPodcastControlsEnabled) {
           // Set playback position for track to in progress if not already tracked
-          const trackPlaybackInfo = yield* select(getTrackPosition, { trackId })
+          const currentUserId = yield* select(getUserId)
+          const trackPlaybackInfo = yield* select(getTrackPosition, {
+            trackId,
+            userId: currentUserId
+          })
           if (trackPlaybackInfo?.status !== 'IN_PROGRESS') {
             yield* put(
               setTrackPosition({
+                userId: currentUserId,
                 trackId,
                 positionInfo: {
                   status: 'IN_PROGRESS',
@@ -294,6 +304,7 @@ export function* watchSeek() {
 
     if (isNewPodcastControlsEnabled && trackId) {
       const track = yield* select(getTrack, { id: trackId })
+      const currentUserId = yield* select(getUserId)
       const isLongFormContent =
         track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
 
@@ -301,6 +312,7 @@ export function* watchSeek() {
         yield* put(
           setTrackPosition({
             trackId,
+            userId: currentUserId,
             positionInfo: {
               status: 'IN_PROGRESS',
               playbackPosition: seconds

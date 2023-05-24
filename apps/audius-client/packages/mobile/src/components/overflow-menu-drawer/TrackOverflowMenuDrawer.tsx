@@ -7,6 +7,7 @@ import {
   FollowSource,
   RepostSource,
   ShareSource,
+  accountSelectors,
   cacheTracksSelectors,
   cacheUsersSelectors,
   tracksSocialActions,
@@ -23,6 +24,7 @@ import { useToast } from 'app/hooks/useToast'
 import { AppTabNavigationContext } from 'app/screens/app-screen'
 import { setVisibility } from 'app/store/drawers/slice'
 
+const { getUserId } = accountSelectors
 const { getMobileOverflowModal } = mobileOverflowMenuUISelectors
 const { requestOpen: openAddToPlaylistModal } = addToPlaylistUIActions
 const { followUser, unfollowUser } = usersSocialActions
@@ -44,6 +46,7 @@ const messages = {
 const TrackOverflowMenuDrawer = ({ render }: Props) => {
   const { onClose: closeNowPlayingDrawer } = useDrawer('NowPlaying')
   const { navigation: contextNavigation } = useContext(AppTabNavigationContext)
+  const currentUserId = useSelector(getUserId)
   const navigation = useNavigation({ customNavigation: contextNavigation })
   const dispatch = useDispatch()
   const { toast } = useToast()
@@ -110,6 +113,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
     [OverflowAction.MARK_AS_PLAYED]: () => {
       dispatch(
         setTrackPosition({
+          userId: currentUserId,
           trackId: id,
           positionInfo: { status: 'COMPLETED', playbackPosition: 0 }
         })
@@ -117,7 +121,7 @@ const TrackOverflowMenuDrawer = ({ render }: Props) => {
       toast({ content: messages.markedAsPlayed })
     },
     [OverflowAction.MARK_AS_UNPLAYED]: () => {
-      dispatch(clearTrackPosition({ trackId: id }))
+      dispatch(clearTrackPosition({ trackId: id, userId: currentUserId }))
       toast({ content: messages.markedAsUnplayed })
     }
   }

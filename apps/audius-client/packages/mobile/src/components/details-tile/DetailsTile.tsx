@@ -310,7 +310,7 @@ export const DetailsTile = ({
   )
 
   const playbackPositionInfo = useSelector((state) =>
-    getTrackPosition(state, { trackId })
+    getTrackPosition(state, { trackId, userId: currentUserId })
   )
 
   const playText =

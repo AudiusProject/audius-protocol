@@ -2,6 +2,7 @@ import { call, delay, put, select, takeEvery } from 'typed-redux-saga'
 
 import { AudioPlayer } from 'services/audio-player'
 import { FeatureFlags } from 'services/remote-config'
+import { getUserId } from 'store/account/selectors'
 import { getTrack } from 'store/cache/tracks/selectors'
 import { getContext } from 'store/effects'
 import { getPlaying, getTrackId } from 'store/player/selectors'
@@ -13,7 +14,11 @@ import {
   initializePlaybackPositionState,
   setTrackPosition
 } from './slice'
-import { PlaybackPositionState, PLAYBACK_POSITION_LS_KEY } from './types'
+import {
+  LEGACY_PLAYBACK_POSITION_LS_KEY,
+  PlaybackPositionState,
+  PLAYBACK_POSITION_LS_KEY
+} from './types'
 
 const RECORD_PLAYBACK_POSITION_INTERVAL = 1000
 
@@ -25,6 +30,8 @@ function* setInitialPlaybackPositionState() {
   yield* call(remoteConfigInstance.waitForRemoteConfig)
   const getFeatureEnabled = yield* getContext('getFeatureEnabled')
   const getLocalStorageItem = yield* getContext('getLocalStorageItem')
+  const setLocalStorageItem = yield* getContext('setLocalStorageItem')
+  const removeLocalStorageItem = yield* getContext('removeLocalStorageItem')
   const isNewPodcastControlsEnabled = yield* call(
     getFeatureEnabled,
     FeatureFlags.PODCAST_CONTROL_UPDATES_ENABLED,
@@ -36,11 +43,36 @@ function* setInitialPlaybackPositionState() {
     getLocalStorageItem,
     PLAYBACK_POSITION_LS_KEY
   )
-  if (localStorageState === null) return
+  const legacyLocalStorageState = yield* call(
+    getLocalStorageItem,
+    LEGACY_PLAYBACK_POSITION_LS_KEY
+  )
 
-  const playbackPositionState: PlaybackPositionState =
-    JSON.parse(localStorageState)
-  yield* put(initializePlaybackPositionState({ playbackPositionState }))
+  if (localStorageState !== null) {
+    const playbackPositionState: PlaybackPositionState =
+      JSON.parse(localStorageState)
+    yield* put(initializePlaybackPositionState({ playbackPositionState }))
+  } else if (legacyLocalStorageState !== null) {
+    // NOTE: Check for legacy playback position state in local storage and update to new format
+    const userId = yield* select(getUserId)
+    if (!userId) return
+
+    const legacyPlaybackPositionState: PlaybackPositionState[number] =
+      JSON.parse(legacyLocalStorageState)
+    const convertedLegacyState: PlaybackPositionState = {
+      [userId]: legacyPlaybackPositionState
+    }
+    yield* put(
+      initializePlaybackPositionState({
+        playbackPositionState: convertedLegacyState
+      })
+    )
+    setLocalStorageItem(
+      PLAYBACK_POSITION_LS_KEY,
+      JSON.stringify(convertedLegacyState)
+    )
+    removeLocalStorageItem(LEGACY_PLAYBACK_POSITION_LS_KEY)
+  }
 }
 
 function* watchTrackPositionUpdate() {
@@ -84,15 +116,17 @@ function* savePlaybackPositionWorker() {
   // eslint-disable-next-line no-unmodified-loop-condition
   while (isNewPodcastControlsEnabled) {
     const trackId = yield* select(getTrackId)
+    const userId = yield* select(getUserId)
     const track = yield* select(getTrack, { id: trackId })
     const playing = yield* select(getPlaying)
     const isLongFormContent =
       track?.genre === Genre.PODCASTS || track?.genre === Genre.AUDIOBOOKS
 
-    if (trackId && isLongFormContent && playing) {
+    if (userId && trackId && isLongFormContent && playing) {
       const { position } = yield* call(getPlayerSeekInfo, audioPlayer)
       yield* put(
         setTrackPosition({
+          userId,
           trackId,
           positionInfo: {
             status: 'IN_PROGRESS',
