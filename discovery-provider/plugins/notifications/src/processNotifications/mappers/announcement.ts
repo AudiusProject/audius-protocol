@@ -50,7 +50,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
     isBrowserPushEnabled: boolean
   }) {
     const isDryRun: boolean = globalThis.announcementDryRun
-    const totalUsers = await this.dnDB('users').count('user_id').where('is_current', true).andWhere('is_deactivated', false)
+    const totalUsers = await this.dnDB('users').max('user_id').where('is_current', true).andWhere('is_deactivated', false)
     // convert to number
     const totalCurrentUsers = parseInt(totalUsers[0].count as string)
     let offset = 0 // let binding because we re-assign
@@ -61,27 +61,34 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
 
     // use user_id and created_at index for perf
     let lastUser = 0
-    const total = totalCurrentUsers + pageCount
+    const maxUserId = totalCurrentUsers + pageCount
 
-    while (offset < total) {
+    while (offset < maxUserId) {
       const start = new Date().getTime()
       // query next page
       const res = await fetchUsersPage(this.dnDB, lastUser, pageCount)
       const elapsed = new Date().getTime() - start
       logger.info(
-        `offset: ${offset} to: ${total} queried in ${elapsed} ms`
+        `offset: ${offset} to: ${maxUserId} queried in ${elapsed} ms`
       )
       offset = offset + pageCount
 
       const lastUserFromPage = res[res.length - 1]
       if (lastUserFromPage === undefined) {
+        logger.info("no last user found")
         break
       }
       lastUser = lastUserFromPage.user_id
 
       const validReceiverUserIds = res.map((user) => user.user_id)
+
       if (!isDryRun) {
         await this.broadcastAnnouncement(validReceiverUserIds, isLiveEmailEnabled)
+      }
+
+      if (validReceiverUserIds.includes(maxUserId)) {
+        logger.info(`reached highest user id ${maxUserId}`)
+        break
       }
     }
     const total_elapsed = new Date().getTime() - total_start
