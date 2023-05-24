@@ -157,6 +157,7 @@ func startDevCluster() {
 			Peers:             network,
 			Signers:           signers,
 			ReplicationFactor: 3,
+			PrivateKey:        mustGetenv(fmt.Sprintf("CN%d_SP_OWNER_PRIVATE_KEY", idx+1)),
 			Dir:               fmt.Sprintf(dirTemplate, idx+1),
 			PostgresDSN:       fmt.Sprintf(dbUrlTemplate, idx+1),
 			ListenPort:        fmt.Sprintf("199%d", idx+1),
@@ -183,7 +184,7 @@ func devNetwork(hostNameTemplate string, n int) []server.Peer {
 	for i := 1; i <= n; i++ {
 		network = append(network, server.Peer{
 			Host:   fmt.Sprintf(hostNameTemplate, i),
-			Wallet: fmt.Sprintf("0xWallet%d", i), // todo keypair stuff
+			Wallet: mustGetenv(fmt.Sprintf("CN%d_SP_OWNER_ADDRESS", i)),
 		})
 	}
 	return network

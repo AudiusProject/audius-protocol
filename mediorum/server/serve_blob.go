@@ -1,7 +1,10 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io"
 	"mediorum/server/signature"
 	"net/http"
 	"net/url"
@@ -47,6 +50,9 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 		c.Response().Header().Set("Content-Disposition", "attachment; filename="+contentDisposition)
 	}
 
+	// v1 feature parity
+	go ss.logTrackListen(c)
+
 	if isLegacyCID(key) {
 		ss.logger.Debug("serving legacy cid", "cid", key)
 		return ss.serveLegacyCid(c)
@@ -87,6 +93,59 @@ func (ss *MediorumServer) getBlob(c echo.Context) error {
 	}
 
 	return c.String(404, "blob not found")
+}
+
+func (ss *MediorumServer) logTrackListen(c echo.Context) {
+
+	httpClient := http.Client{
+		Timeout: 2 * time.Second,
+	}
+
+	sig, _ := signature.ParseFromQueryString(c.QueryParam("signature"))
+	trackId := sig.Data.TrackId
+
+	endpoint := fmt.Sprintf("http://audius-protocol-identity-service-1/tracks/%d/listen", trackId)
+	signatureData, err := signature.GenerateListenTimestampAndSignature(ss.Config.privateKey)
+	if err != nil {
+		ss.logger.Error("logTrackListen: unable to build request", err)
+		return
+	}
+
+	body := map[string]interface{}{
+		// "no-record-play": true, 	 		   // tbd: omit TN
+		"userId":       ss.Config.Self.Wallet, // as per CN `userId: req.userId ?? delegateOwnerWallet`
+		"solanaListen": false,
+		"timestamp":    signatureData.Timestamp,
+		"signature":    signatureData.Signature,
+	}
+
+	buf, err := json.Marshal(body)
+	if err != nil {
+		ss.logger.Error("logTrackListen: unable to build request", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(buf))
+	if err != nil {
+		ss.logger.Error("logTrackListen: unable to build request", err)
+		return
+	}
+	req.Header.Set("content-type", "application/json")
+	req.Header.Add("x-forwarded-for", c.RealIP())
+
+	res, err := httpClient.Do(req)
+	if err != nil {
+		ss.logger.Error("logTrackListen: unable to POST to identity service", err)
+		return
+	}
+
+	if res.StatusCode != 200 {
+		defer res.Body.Close()
+		resBody, _ := io.ReadAll(res.Body)
+		ss.logger.Warn(fmt.Sprintf("logTrackListen: unsuccessful POST [%d] %s", res.StatusCode, resBody))
+	}
+
+	return
 }
 
 // checks signature from discovery node for cidstream endpoint + premium content.
