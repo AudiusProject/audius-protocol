@@ -30,12 +30,3 @@ export const apiResponseSchema = new schema.Object({
   tracks: new schema.Array(trackSchema),
   collections: new schema.Array(collectionSchema)
 })
-
-export const apiResponseKeyToKind: Record<string, Kind> = {
-  user: Kind.USERS,
-  users: Kind.USERS,
-  collection: Kind.COLLECTIONS,
-  collections: Kind.COLLECTIONS,
-  track: Kind.TRACKS,
-  tracks: Kind.TRACKS
-}
