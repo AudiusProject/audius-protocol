@@ -76,14 +76,15 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
       )
       offset = offset + pageCount
 
+      const validReceiverUserIds = res.map((user) => user.user_id)
+      logger.info(`received until user ${validReceiverUserIds[validReceiverUserIds.length - 1]}`)
+
       const lastUserFromPage = res[res.length - 1]
       if (lastUserFromPage === undefined) {
         logger.info("no last user found")
         break
       }
       lastUser = lastUserFromPage.user_id
-
-      const validReceiverUserIds = res.map((user) => user.user_id)
 
       if (!isDryRun) {
         await this.broadcastAnnouncement(validReceiverUserIds, isLiveEmailEnabled)
