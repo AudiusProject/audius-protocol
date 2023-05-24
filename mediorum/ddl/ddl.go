@@ -11,8 +11,12 @@ import (
 //go:embed cid_lookup.sql
 var cidLookupDDL string
 
+//go:embed delist_statuses.sql
+var delistStatusesDDL string
+
 func Migrate(db *sql.DB) {
 	mustExec(db, cidLookupDDL)
+	mustExec(db, delistStatusesDDL)
 
 	// flare-178: disable cid beam
 	// clear out existing data
@@ -49,5 +53,4 @@ func mustExec(db *sql.DB, ddl string) {
 		fmt.Println(ddl)
 		log.Fatal(err)
 	}
-	// fmt.Println("OK", ddl)
 }
