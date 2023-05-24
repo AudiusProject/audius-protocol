@@ -225,7 +225,7 @@ export const getCanCreateChat = createSelector(
     const canCreateChat =
       !isBlockee &&
       !isBlocker &&
-      (userPermissions?.current_user_has_permission ?? false)
+      (userPermissions?.current_user_has_permission ?? true)
 
     let action = ChatPermissionAction.NOT_APPLICABLE
     if (!canCreateChat) {
