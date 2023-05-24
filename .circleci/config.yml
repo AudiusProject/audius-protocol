@@ -14,17 +14,6 @@ parameters:
     type: string
     default: "main"
 
-  # release-audius-sdk params
-  sdk-release-commit:
-    type: string
-    default: ""
-  sdk-release-version:
-    type: string
-    default: ""
-  sdk-release-preid:
-    type: string
-    default: ""
-
 jobs:
   # Generate the CircleCI continue_config.yml from .circleci/src
   generate-config:
@@ -165,10 +154,10 @@ workflows:
             - generate-config
           workspace_path: ../workspace
 
-  generate-release:
+  release-create-branch:
     when:
       and:
         - equal: [scheduled_pipeline, << pipeline.trigger_source >>]
-        - equal: ["generate-release", << pipeline.schedule.name >>]
+        - equal: ["release-create-branch", << pipeline.schedule.name >>]
     jobs:
       - generate-release

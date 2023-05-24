@@ -10,7 +10,8 @@
     "indexer",
     "postgres",
     "redis",
-    "comms"
+    "comms",
+    "notifications"
   ]
   exclude_containers = [
     # System containers
