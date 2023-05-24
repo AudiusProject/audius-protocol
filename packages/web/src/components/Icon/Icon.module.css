@@ -1,0 +1,10 @@
+.iconContainer {
+  position: relative;
+}
+
+.iconDecoration {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+}

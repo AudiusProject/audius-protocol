@@ -30,6 +30,12 @@
   fill: var(--neutral-light-4);
 }
 
+.popupItemText {
+  display: flex;
+  align-items: center;
+  gap: var(--unit-2);
+}
+
 /* Apply color svg transitions on hover */
 .icon:hover path,
 .icon:active path {
