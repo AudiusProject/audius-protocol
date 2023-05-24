@@ -123,7 +123,7 @@ export const ChatHeader = forwardRef<HTMLDivElement, ChatHeaderProps>(
           </div>
         </div>
         <div className={styles.right}>
-          {user ? <ChatUser user={user} /> : null}
+          {user ? <ChatUser user={user} key={user.user_id} /> : null}
           {user ? (
             <div className={styles.overflow}>
               <PopupMenu
