@@ -7,8 +7,8 @@ import { Nullable } from '../../utils'
 type CollectiblesState = {
   userCollectibles: {
     [id: ID]: {
-      [Chain.Eth]: Collectible[]
-      [Chain.Sol]: Collectible[]
+      [Chain.Eth]?: Collectible[]
+      [Chain.Sol]?: Collectible[]
     }
   }
   solCollections: {
