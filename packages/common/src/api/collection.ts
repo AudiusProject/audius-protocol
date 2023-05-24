@@ -1,6 +1,5 @@
 import { Kind } from 'models'
-
-import { createApi } from './createApi'
+import { createApi } from 'src/audius-query/createApi'
 
 const collectionApi = createApi({
   reducerPath: 'collectionApi',
@@ -24,4 +23,4 @@ const collectionApi = createApi({
 })
 
 export const { useGetPlaylistByPermalink } = collectionApi.hooks
-export default collectionApi.reducer
+export const collectionApiReducer = collectionApi.reducer

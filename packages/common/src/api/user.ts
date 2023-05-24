@@ -1,6 +1,5 @@
 import { Kind } from 'models'
-
-import { createApi } from './createApi'
+import { createApi } from 'src/audius-query/createApi'
 
 const userApi = createApi({
   reducerPath: 'userApi',
@@ -20,4 +19,4 @@ const userApi = createApi({
 })
 
 export const { useGetUserById } = userApi.hooks
-export default userApi.reducer
+export const userApiReducer = userApi.reducer
