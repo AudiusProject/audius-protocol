@@ -123,7 +123,13 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this._isBehind = false
     this.unhealthyServices = new Set([])
     this.backupServices = {}
-    this.selectedNode = this.config.initialSelectedNode
+    this.selectedNode =
+      this.config.initialSelectedNode &&
+      (!this.config.allowlist ||
+        this.config.allowlist?.has(this.config.initialSelectedNode)) &&
+      !this.config.blocklist?.has(this.config.initialSelectedNode)
+        ? this.config.initialSelectedNode
+        : null
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
     // Potentially need many event listeners for discovery reselection (to prevent race condition)
