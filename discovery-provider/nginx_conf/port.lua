@@ -6,7 +6,7 @@ local _M = {}
 
 function _M.get_public_ip()
     local httpc = http.new()
-    local res, err = httpc:request_uri("https://api.ipify.org")
+    local res, err = httpc:request_uri("https://icanhazip.com")
 
     if not res then
         return nil
