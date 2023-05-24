@@ -29,11 +29,12 @@ import { AbortController as AbortControllerPolyfill } from 'node-abort-controlle
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
 
 const getPathFromUrl = (url: string) => {
-  const pathRegex = /^(?:https?:\/\/(?:www\.)?)?([^\/]+)?(.*)$/
+  const pathRegex = /^([a-z]+:\/\/)?(?:www\.)?([^\/]+)?(.*)$/
+
   const match = url.match(pathRegex)
 
-  if (match) {
-    const path = match[2]
+  if (match && match[3]) {
+    const path = match[3]
     return path
   } else {
     throw new Error(`Invalid URL, couldn't get path.`)
@@ -125,6 +126,9 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     this.selectedNode = this.config.initialSelectedNode
     this.eventEmitter =
       new EventEmitter() as TypedEventEmitter<ServiceSelectionEvents>
+    // Potentially need many event listeners for discovery reselection (to prevent race condition)
+    this.eventEmitter.setMaxListeners(1000)
+
     this.addEventListener = this.eventEmitter.addListener.bind(
       this.eventEmitter
     )
@@ -162,21 +166,20 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    * @returns the middleware
    */
   public createMiddleware(): Middleware {
-    const selectionPromise = this.getSelectedEndpoint()
     return {
       pre: async (context: RequestContext) => {
         let url = context.url
         if (!url.startsWith('http')) {
-          const endpoint = await selectionPromise
+          const endpoint = await this.getSelectedEndpoint()
           url = `${endpoint}${context.url}`
         }
         return { url, init: context.init }
       },
       post: async (context: ResponseContext) => {
         const response = context.response
-        const endpoint = await selectionPromise
+        const endpoint = await this.getSelectedEndpoint()
         if (!endpoint) {
-          await this.select()
+          await this.select(endpoint)
         } else if (response.ok) {
           // Even when successful, copy response to read JSON body to
           // check for signs the DN is unhealthy and reselect if necessary.
@@ -205,10 +208,10 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         return response
       },
       onError: async (context: ErrorContext) => {
-        const endpoint = await selectionPromise
+        const endpoint = await this.getSelectedEndpoint()
         const response = context.response
         if (!endpoint) {
-          await this.select()
+          await this.select(endpoint)
         } else {
           return await this.reselectAndRetry({ context, endpoint })
         }
@@ -225,7 +228,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
     if (this.selectedNode !== null) {
       return this.selectedNode
     }
-    return await this.select()
+    return await this.select(null)
   }
 
   /**
@@ -239,18 +242,16 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
    * Finds a healthy discovery node
    * @returns a healthy discovery node endpoint
    */
-  private async select() {
+  private async select(prevSelectedNode: string | null) {
     if (this.reselectLock) {
-      const prevNode = this.selectedNode
       await new Promise<void>((resolve) => {
         this.eventEmitter.once('reselectAttemptComplete', () => {
           resolve()
         })
       })
-
-      if (prevNode !== this.selectedNode && this.selectedNode != null) {
-        return this.selectedNode
-      }
+    }
+    if (prevSelectedNode !== this.selectedNode && this.selectedNode != null) {
+      return this.selectedNode
     }
     this.reselectLock = true
 
@@ -477,7 +478,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
         health,
         reason
       )
-      return await this.select()
+      return await this.select(endpoint)
     }
   }
 
