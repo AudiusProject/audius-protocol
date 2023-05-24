@@ -15,8 +15,8 @@ var cidLookupDDL string
 var delistStatusesDDL string
 
 func Migrate(db *sql.DB) {
-	mustExec(db, cidLookupDDL)
-	mustExec(db, delistStatusesDDL)
+	mustExec(db, cidLookupDDL, true)
+	mustExec(db, delistStatusesDDL, false)
 
 	// flare-178: disable cid beam
 	// clear out existing data
@@ -35,17 +35,19 @@ func Migrate(db *sql.DB) {
 	}
 }
 
-func mustExec(db *sql.DB, ddl string) {
+func mustExec(db *sql.DB, ddl string, skipIfExists bool) {
 
 	// this is a hack to skip running ddl if the index exists...
 	// since ddl can block for several minutes
 	// pg_migrate.sh soon
-	q := `select count(*) = 1 from pg_indexes where indexname = 'idx_cid_log_updated_at'`
-	var indexExists bool
-	db.QueryRow(q).Scan(&indexExists)
-	if indexExists {
-		fmt.Println("indexExists... skipping ddl")
-		return
+	if skipIfExists {
+		q := `select count(*) = 1 from pg_indexes where indexname = 'idx_cid_log_updated_at'`
+		var indexExists bool
+		db.QueryRow(q).Scan(&indexExists)
+		if indexExists {
+			fmt.Println("indexExists... skipping ddl")
+			return
+		}
 	}
 
 	_, err := db.Exec(ddl)
