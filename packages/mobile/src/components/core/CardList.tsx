@@ -33,19 +33,14 @@ const getSkeletonData = (skeletonCount = 6): LoadingCard[] => {
 const DefaultLoadingCard = () => null
 
 const useStyles = makeStyles(({ spacing }) => ({
+  cardList: {
+    padding: spacing(3),
+    paddingRight: 0
+  },
   card: {
-    paddingTop: spacing(3),
-    paddingHorizontal: spacing(3) / 2,
-    width: '50%'
-  },
-  bottomCard: {
+    width: '50%',
+    paddingRight: spacing(3),
     paddingBottom: spacing(3)
-  },
-  leftCard: {
-    paddingLeft: spacing(3)
-  },
-  rightCard: {
-    paddingRight: spacing(3)
   }
 }))
 
@@ -77,20 +72,8 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
     return [...(dataProp ?? []), ...skeletonData]
   }, [dataProp, isLoading, totalCount])
 
-  const dataLength = data.length
-
   const handleRenderItem: ListRenderItem<ItemT | LoadingCard> = useCallback(
     (info) => {
-      const { index } = info
-      const isInLeftColumn = !(index % 2)
-      const isLastRow = index + 2 > dataLength
-
-      const style = [
-        styles.card,
-        isLastRow && styles.bottomCard,
-        isInLeftColumn ? styles.leftCard : styles.rightCard
-      ]
-
       const itemElement =
         '_loading' in info.item ? (
           <LoadingCardComponent />
@@ -98,13 +81,14 @@ export function CardList<ItemT extends {}>(props: CardListProps<ItemT>) {
           renderItem?.(info as ListRenderItemInfo<ItemT>) ?? null
         )
 
-      return <View style={style}>{itemElement}</View>
+      return <View style={styles.card}>{itemElement}</View>
     },
-    [renderItem, dataLength, LoadingCardComponent, styles]
+    [LoadingCardComponent, renderItem, styles.card]
   )
 
   return (
     <FlatListComponent
+      style={styles.cardList}
       ref={ref}
       data={data}
       renderItem={handleRenderItem}
