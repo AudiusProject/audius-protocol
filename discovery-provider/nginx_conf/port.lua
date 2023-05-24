@@ -6,12 +6,17 @@ local _M = {}
 
 function _M.get_public_ip()
     local httpc = http.new()
-    local res, err = httpc:request_uri("https://icanhazip.com")
+    local res, err = httpc:request_uri("http://icanhazip.com")
 
     if not res then
+        ngx.log(ngx.ERR, "error: ", err)
         return nil
     end
-    return res.body
+    local ip = res.body
+    ip = string.gsub(ip, "\\", "")
+    ip = string.gsub(ip, " ", "")
+    ip = string.gsub(ip, "\n", "")
+    return ip
 end
 
 function _M.get_is_port_exposed(ip, port)
