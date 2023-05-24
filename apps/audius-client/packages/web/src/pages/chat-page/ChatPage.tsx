@@ -3,9 +3,8 @@ import { useCallback, useEffect, useRef } from 'react'
 import {
   chatActions,
   ChatPermissionAction,
-  chatSelectors,
   FeatureFlags,
-  useProxySelector,
+  useCanSendMessage,
   User
 } from '@audius/common'
 import { ResizeObserver } from '@juggle/resize-observer'
@@ -14,7 +13,6 @@ import { useDispatch } from 'react-redux'
 import { RouteComponentProps } from 'react-router-dom'
 import useMeasure from 'react-use-measure'
 
-import { useSelector } from 'common/hooks/useSelector'
 import Page from 'components/page/Page'
 import { UserNameAndBadges } from 'components/user-name-and-badges/UserNameAndBadges'
 import { useFlag } from 'hooks/useRemoteConfig'
@@ -27,7 +25,6 @@ import { ChatList } from './components/ChatList'
 import { ChatMessageList } from './components/ChatMessageList'
 import { CreateChatPrompt } from './components/CreateChatPrompt'
 
-const { getOtherChatUsers, getCanSendMessage } = chatSelectors
 const { connect, disconnect, fetchPermissions } = chatActions
 
 const messages = {
@@ -74,17 +71,8 @@ export const ChatPage = ({ match }: RouteComponentProps<{ id?: string }>) => {
   const currentChatId = match.params.id
   const dispatch = useDispatch()
   const { isEnabled: isChatEnabled } = useFlag(FeatureFlags.CHAT_ENABLED)
-  const users = useProxySelector(
-    (state) => getOtherChatUsers(state, currentChatId),
-    [currentChatId]
-  )
-  const firstOtherUser = users[0]
-  const { canSendMessage, callToAction } = useSelector((state) =>
-    getCanSendMessage(state, {
-      userId: users[0]?.user_id,
-      chatId: currentChatId
-    })
-  )
+  const { firstOtherUser, canSendMessage, callToAction } =
+    useCanSendMessage(currentChatId)
 
   // Get the height of the header so we can slide the messages list underneath it for the blur effect
   const [headerRef, headerBounds] = useMeasure({
