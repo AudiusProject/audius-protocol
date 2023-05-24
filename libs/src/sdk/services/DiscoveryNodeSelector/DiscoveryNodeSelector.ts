@@ -8,6 +8,7 @@ import {
 import { promiseAny } from '../../utils/promiseAny'
 import { defaultDiscoveryNodeSelectorConfig } from './constants'
 import type {
+  ErrorContext,
   Middleware,
   RequestContext,
   ResponseContext
@@ -26,6 +27,18 @@ import type TypedEventEmitter from 'typed-emitter'
 import EventEmitter from 'events'
 import { AbortController as AbortControllerPolyfill } from 'node-abort-controller'
 import { mergeConfigWithDefaults } from '../../utils/mergeConfigs'
+
+const getPathFromUrl = (url: string) => {
+  const pathRegex = /^(?:https?:\/\/(?:www\.)?)?([^\/]+)?(.*)$/
+  const match = url.match(pathRegex)
+
+  if (match) {
+    const path = match[2]
+    return path
+  } else {
+    throw new Error(`Invalid URL, couldn't get path.`)
+  }
+}
 
 export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
   /**
@@ -191,32 +204,17 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
             }
           })
         } else {
-          // On request failure, check health_check and reselect if unhealthy
-          this.warn('request failed', endpoint, context)
-          const { health, data, reason } = await getDiscoveryNodeHealthCheck({
-            endpoint,
-            healthCheckThresholds: this.config.healthCheckThresholds
-          })
-          const newEndpoint = await this.reselectIfNecessary({
-            endpoint,
-            health,
-            reason,
-            data: {
-              block_difference: data?.block_difference ?? 0,
-              version: data?.version ?? ''
-            }
-          })
-          if (newEndpoint && newEndpoint !== endpoint) {
-            try {
-              // Retry once on new endpoint
-              return await context.fetch(
-                `${newEndpoint}${context.url.replace(endpoint, '')}`,
-                context.init
-              )
-            } catch (e) {
-              console.error('Retry on new node failed', newEndpoint)
-            }
-          }
+          return await this.reselectAndRetry({ context, endpoint })
+        }
+        return response
+      },
+      onError: async (context: ErrorContext) => {
+        const endpoint = await selectionPromise
+        const response = context.response
+        if (!endpoint) {
+          await this.select()
+        } else {
+          return await this.reselectAndRetry({ context, endpoint })
         }
         return response
       }
@@ -509,6 +507,40 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
       return nextBest.endpoint
     }
     return goodBlockdiffBadVersion?.endpoint ?? null
+  }
+
+  private async reselectAndRetry({
+    context,
+    endpoint
+  }: {
+    context: ResponseContext | ErrorContext
+    endpoint: string
+  }): Promise<Response | undefined> {
+    // On request failure, check health_check and reselect if unhealthy
+    this.warn('request failed', endpoint, context)
+    const { health, data, reason } = await getDiscoveryNodeHealthCheck({
+      endpoint,
+      healthCheckThresholds: this.config.healthCheckThresholds
+    })
+    const newEndpoint = await this.reselectIfNecessary({
+      endpoint,
+      health,
+      reason,
+      data: {
+        block_difference: data?.block_difference ?? 0,
+        version: data?.version ?? ''
+      }
+    })
+    if (newEndpoint && newEndpoint !== endpoint) {
+      try {
+        const path = getPathFromUrl(context.url)
+        // Retry once on new endpoint
+        return await context.fetch(`${newEndpoint}${path}`, context.init)
+      } catch (e) {
+        console.error('Retry on new node failed', newEndpoint)
+      }
+    }
+    return undefined
   }
 
   private debug(...args: any[]) {
