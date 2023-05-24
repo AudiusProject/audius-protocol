@@ -21,6 +21,7 @@ export const LeftNavLink = (props: LeftNavLinkProps) => {
   const className = cn(classNameProp, styles.link, {
     [styles.disabledLink]: disabled
   })
+
   if ('to' in other) {
     return <NavLink {...other} activeClassName='active' className={className} />
   }
@@ -41,7 +42,9 @@ export const LeftNavDroppable = (props: LeftNavDroppableProps) => {
       : styles.droppableLinkHoverPlaylist
 
   const activeClassName =
-    kind === 'track' ? styles.droppableLinkActive : undefined
+    kind === 'track'
+      ? cn(styles.droppableLinkActive, 'droppableLinkActive')
+      : undefined
 
   return (
     <Droppable

@@ -1,8 +1,18 @@
 .root {
+  display: flex;
+  align-items: center;
+  line-height: normal;
+}
+
+.content {
   position: relative;
   display: flex;
   align-items: center;
   line-height: normal;
+}
+
+.level1 {
+  margin-left: var(--unit-2);
 }
 
 .collectionName {
@@ -11,16 +21,6 @@
   text-overflow: ellipsis;
 }
 
-.playlistLevel1 {
-  padding-left: var(--unit-2);
-}
-
-.editPlaylistButton {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.editable {
-  visibility: visible;
-  pointer-events: all;
+:global(.droppableLinkActive) .collectionName {
+  color: var(--secondary);
 }

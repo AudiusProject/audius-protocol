@@ -15,11 +15,12 @@ import { useFlag } from 'hooks/useRemoteConfig'
 import styles from './NavItemKebabButton.module.css'
 
 type EditNavItemButtonProps = Omit<IconButtonButtonProps, 'icon'> & {
+  visible: boolean
   items: PopupMenuProps['items']
 }
 
 export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
-  const { className, items, ...other } = props
+  const { className, visible, items, ...other } = props
 
   const { isEnabled: isPlaylistUpdatesEnabled } = useFlag(
     FeatureFlags.PLAYLIST_UPDATES_PRE_QA
@@ -30,7 +31,7 @@ export const NavItemKebabButton = (props: EditNavItemButtonProps) => {
       <IconButton
         {...other}
         {...buttonProps}
-        className={cn(styles.root, className)}
+        className={cn(styles.root, className, { [styles.visible]: visible })}
         icon={<IconKebabHorizontal height={11} width={11} />}
       />
     )
