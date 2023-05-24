@@ -163,7 +163,7 @@ export class Announcement extends BaseNotification<AnnouncementNotificationRow> 
         receiver_user_id: userId,
         ...this.notification
       }
-      await sendNotificationEmail({
+      sendNotificationEmail({
         userId: userId,
         email: userNotificationSettings.getUserEmail(userId),
         frequency: 'live',
