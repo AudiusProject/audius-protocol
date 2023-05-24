@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 
 import { chatActions, chatSelectors, Status } from '@audius/common'
 import { View, Text } from 'react-native'
@@ -9,16 +9,16 @@ import IconCompose from 'app/assets/images/iconCompose.svg'
 import IconMessage from 'app/assets/images/iconMessage.svg'
 import Button, { ButtonType } from 'app/components/button'
 import { Screen, FlatList, ScreenContent } from 'app/components/core'
-import LoadingSpinner from 'app/components/loading-spinner'
 import { useNavigation } from 'app/hooks/useNavigation'
 import type { AppTabScreenParamList } from 'app/screens/app-screen'
 import { makeStyles } from 'app/styles'
 import { useThemePalette, useColor } from 'app/utils/theme'
 
 import { ChatListItem } from './ChatListItem'
+import { ChatListItemSkeleton } from './ChatListItemSkeleton'
 
 const { getChats, getChatsStatus } = chatSelectors
-const { fetchMoreMessages } = chatActions
+const { fetchMoreMessages, fetchMoreChats } = chatActions
 
 const CHATS_MESSAGES_PREFETCH_LIMIT = 10
 
@@ -111,6 +111,10 @@ export const ChatListScreen = () => {
   const chats = useSelector(getChats)
   const chatsStatus = useSelector(getChatsStatus)
 
+  // If this is the first fetch, we want to show the fade-out loading skeleton
+  // On subsequent loads, we want to show a skeleton in each incoming chat row.
+  const isLoadingFirstTime =
+    chats.length === 0 && (chatsStatus ?? Status.LOADING) === Status.LOADING
   const navigateToChatUserList = () => navigation.navigate('ChatUserList')
   const iconCompose = (
     <TouchableWithoutFeedback onPress={navigateToChatUserList}>
@@ -132,6 +136,11 @@ export const ChatListScreen = () => {
     }
   }, [chats, dispatch])
 
+  const handleLoadMore = useCallback(() => {
+    if (chatsStatus === Status.LOADING) return
+    dispatch(fetchMoreChats())
+  }, [chatsStatus, dispatch])
+
   return (
     <Screen
       url='/chat'
@@ -143,7 +152,17 @@ export const ChatListScreen = () => {
       <ScreenContent>
         <View style={styles.shadow} />
         <View style={styles.rootContainer}>
-          {chatsStatus === Status.SUCCESS ? (
+          {isLoadingFirstTime ? (
+            Array(4)
+              .fill(null)
+              .map((_, index) => (
+                <ChatListItemSkeleton
+                  key={index}
+                  index={index}
+                  shouldFade={true}
+                />
+              ))
+          ) : (
             <FlatList
               data={chats}
               contentContainerStyle={styles.listContainer}
@@ -152,11 +171,8 @@ export const ChatListScreen = () => {
               ListEmptyComponent={() => (
                 <ChatsEmpty onPress={navigateToChatUserList} />
               )}
+              onEndReached={handleLoadMore}
             />
-          ) : (
-            <View style={styles.loadingSpinnerContainer}>
-              <LoadingSpinner style={styles.loadingSpinner} />
-            </View>
           )}
         </View>
       </ScreenContent>
