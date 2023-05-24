@@ -30,7 +30,7 @@ export audius_prometheus_container=server
 # run alembic migrations
 if [ "$audius_db_run_migrations" != false ]; then
     echo "Running pg_migrate.sh migrations"
-    (cd ddl ; DB_URL='audius_db_url' bash pg_migrate.sh)
+    (cd ddl ; DB_URL="$audius_db_url" bash pg_migrate.sh)
     echo "Finished running pg_migrate.sh migrations"
 fi
 
