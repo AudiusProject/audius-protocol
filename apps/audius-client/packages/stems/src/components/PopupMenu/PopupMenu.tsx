@@ -1,5 +1,4 @@
-import { forwardRef, useCallback, useRef, useState } from 'react'
-import * as React from 'react'
+import { forwardRef, useCallback, useRef, useState, MouseEvent } from 'react'
 
 import cn from 'classnames'
 
@@ -43,9 +42,9 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
     }, [setIsPopupVisible, onClose])
 
     const handleMenuItemClick = useCallback(
-      (item: PopupMenuItem) => (e: React.MouseEvent) => {
+      (item: PopupMenuItem) => (e: MouseEvent<HTMLLIElement>) => {
         e.stopPropagation()
-        item.onClick()
+        item.onClick(e)
         handlePopupClose()
       },
       [handlePopupClose]
@@ -83,6 +82,7 @@ export const PopupMenu = forwardRef<HTMLDivElement, PopupMenuProps>(
           containerRef={containerRef}
           transformOrigin={transformOrigin}
           anchorOrigin={anchorOrigin}
+          wrapperClassName={styles.popup}
         >
           <ul
             className={styles.menu}

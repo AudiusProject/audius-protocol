@@ -6,10 +6,14 @@ import {
   cacheCollectionsActions,
   playlistLibraryActions,
   PlaylistLibraryKind,
-  PlaylistLibraryID
+  PlaylistLibraryID,
+  shareModalUIActions,
+  ShareSource
 } from '@audius/common'
+import { PopupMenuItem } from '@audius/stems'
 import cn from 'classnames'
 import { useDispatch } from 'react-redux'
+import { useToggle } from 'react-use'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import { Draggable } from 'components/dragndrop'
@@ -24,14 +28,19 @@ import { useSelector } from 'utils/reducer'
 import { LeftNavDroppable, LeftNavLink } from '../LeftNavLink'
 
 import styles from './CollectionNavItem.module.css'
-import { EditNavItemButton } from './EditNavItemButton'
+import { DeleteCollectionConfirmationModal } from './DeleteCollectionConfirmationModal'
+import { NavItemKebabButton } from './NavItemKebabButton'
 import { PlaylistUpdateDot } from './PlaylistUpdateDot'
 
 const { addTrackToPlaylist } = cacheCollectionsActions
 const { reorder } = playlistLibraryActions
+const { requestOpen } = shareModalUIActions
 
 const messages = {
-  editPlaylistLabel: 'Edit playlist'
+  editPlaylistLabel: 'Edit playlist',
+  edit: 'Edit',
+  share: 'Share',
+  delete: 'Delete'
 }
 
 const acceptedKinds: DragDropKind[] = [
@@ -57,6 +66,8 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   const [isHovering, setIsHovering] = useState(false)
   const dispatch = useDispatch()
   const record = useRecord()
+  const [isDeleteConfirmationOpen, toggleDeleteConfirmationOpen] =
+    useToggle(false)
 
   const handleDragEnter = useCallback(() => {
     setIsDraggingOver(true)
@@ -87,6 +98,31 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
     [dispatch, id, record]
   )
 
+  const handleShare = useCallback(() => {
+    if (typeof id === 'number') {
+      dispatch(
+        requestOpen({
+          type: 'collection',
+          collectionId: id,
+          source: ShareSource.LEFT_NAV
+        })
+      )
+    }
+  }, [dispatch, id])
+
+  const handleDelete = useCallback(() => {
+    toggleDeleteConfirmationOpen()
+  }, [toggleDeleteConfirmationOpen])
+
+  const kebabItems: PopupMenuItem[] = [
+    {
+      text: messages.edit,
+      onClick: handleClickEdit
+    },
+    { text: messages.share, onClick: handleShare },
+    { text: messages.delete, onClick: handleDelete }
+  ]
+
   const handleDrop = useCallback(
     (draggingId: PlaylistLibraryID, kind: DragDropKind) => {
       if (kind === 'track') {
@@ -112,39 +148,50 @@ export const CollectionNavItem = (props: CollectionNavItemProps) => {
   if (!name || !url) return null
 
   return (
-    <LeftNavDroppable
-      acceptedKinds={acceptedKinds}
-      onDrop={handleDrop}
-      disabled={isDisabled}
-    >
-      <Draggable id={id} text={name} link={url} kind='library-playlist'>
-        <LeftNavLink
-          to={url}
-          onClick={onClick}
-          disabled={isDisabled}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          className={styles.root}
-        >
-          {hasUpdate ? <PlaylistUpdateDot /> : null}
-          <span
-            className={cn(styles.collectionName, {
-              [styles.playlistLevel1]: level === 1
-            })}
+    <>
+      <LeftNavDroppable
+        acceptedKinds={acceptedKinds}
+        onDrop={handleDrop}
+        disabled={isDisabled}
+      >
+        <Draggable id={id} text={name} link={url} kind='library-playlist'>
+          <LeftNavLink
+            to={url}
+            onClick={onClick}
+            disabled={isDisabled}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+            className={styles.root}
           >
-            {name}
-          </span>
-          <EditNavItemButton
-            className={cn(styles.editPlaylistButton, {
-              [styles.editable]: isOwned && isHovering && !isDraggingOver
-            })}
-            aria-label={messages.editPlaylistLabel}
-            onClick={handleClickEdit}
-          />
-        </LeftNavLink>
-      </Draggable>
-    </LeftNavDroppable>
+            {hasUpdate ? <PlaylistUpdateDot /> : null}
+            <span
+              className={cn(styles.collectionName, {
+                [styles.playlistLevel1]: level === 1
+              })}
+            >
+              {name}
+            </span>
+            <NavItemKebabButton
+              className={cn(styles.editPlaylistButton, {
+                [styles.editable]: isOwned && isHovering && !isDraggingOver
+              })}
+              aria-label={messages.editPlaylistLabel}
+              onClick={handleClickEdit}
+              items={kebabItems}
+            />
+          </LeftNavLink>
+        </Draggable>
+      </LeftNavDroppable>
+
+      {isOwned && typeof id === 'number' ? (
+        <DeleteCollectionConfirmationModal
+          collectionId={id}
+          isOpen={isDeleteConfirmationOpen}
+          onClose={toggleDeleteConfirmationOpen}
+        />
+      ) : null}
+    </>
   )
 }

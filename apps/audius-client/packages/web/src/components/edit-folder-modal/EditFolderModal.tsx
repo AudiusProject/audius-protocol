@@ -19,7 +19,7 @@ import { useDispatch } from 'react-redux'
 import { useModalState } from 'common/hooks/useModalState'
 import { make, useRecord } from 'common/store/analytics/actions'
 import FolderForm from 'components/create-playlist/FolderForm'
-import DeleteConfirmationModal from 'components/delete-confirmation/DeleteConfirmationModal'
+import { DeleteFolderConfirmationModal } from 'components/nav/desktop/PlaylistLibrary/DeleteFolderConfirmationModal'
 import { getFolderId } from 'store/application/ui/editFolderModal/selectors'
 import { setFolderId } from 'store/application/ui/editFolderModal/slice'
 import { useSelector } from 'utils/reducer'
@@ -27,17 +27,11 @@ import { zIndex } from 'utils/zIndex'
 
 import styles from './EditFolderModal.module.css'
 const { update: updatePlaylistLibrary } = playlistLibraryActions
-const { removePlaylistFolderInLibrary, renamePlaylistFolderInLibrary } =
-  playlistLibraryHelpers
+const { renamePlaylistFolderInLibrary } = playlistLibraryHelpers
 const { getPlaylistLibrary } = accountSelectors
 
 const messages = {
   editFolderModalTitle: 'Edit Folder',
-  confirmDeleteFolderModalTitle: 'Delete Folder',
-  confirmDeleteFolderModalHeader:
-    'Are you sure you want to delete this folder?',
-  confirmDeleteFolderModalDescription:
-    'Any playlists inside will be moved out before the folder is deleted.',
   folderEntity: 'Folder'
 }
 
@@ -53,7 +47,7 @@ const EditFolderModal = () => {
           (item) => item.type === 'folder' && item.id === folderId
         ) as PlaylistLibraryFolder | undefined)
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
-  const onCancelDelete = () => setShowDeleteConfirmation(false)
+  const onCloseDeleteConfirmation = () => setShowDeleteConfirmation(false)
 
   const dispatch = useDispatch()
 
@@ -90,19 +84,6 @@ const EditFolderModal = () => {
     setShowDeleteConfirmation(true)
   }, [])
 
-  const handleConfirmDelete = useCallback(() => {
-    if (!(playlistLibrary == null || folderId == null || folder == null)) {
-      const newLibrary = removePlaylistFolderInLibrary(
-        playlistLibrary,
-        folderId
-      )
-      setShowDeleteConfirmation(false)
-      dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary }))
-    }
-    record(make(Name.FOLDER_DELETE, {}))
-    handleClose()
-  }, [dispatch, folder, folderId, handleClose, playlistLibrary, record])
-
   return (
     <>
       <Modal
@@ -128,15 +109,13 @@ const EditFolderModal = () => {
           />
         </ModalContent>
       </Modal>
-      <DeleteConfirmationModal
-        customHeader={messages.confirmDeleteFolderModalHeader}
-        customDescription={messages.confirmDeleteFolderModalDescription}
-        title={messages.confirmDeleteFolderModalTitle}
-        entity={messages.folderEntity}
-        visible={showDeleteConfirmation}
-        onDelete={handleConfirmDelete}
-        onCancel={onCancelDelete}
-      />
+      {folder ? (
+        <DeleteFolderConfirmationModal
+          folderId={folder.id}
+          isOpen={showDeleteConfirmation}
+          onClose={onCloseDeleteConfirmation}
+        />
+      ) : null}
     </>
   )
 }

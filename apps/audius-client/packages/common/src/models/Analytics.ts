@@ -533,7 +533,8 @@ export enum ShareSource {
   TILE = 'tile',
   PAGE = 'page',
   NOW_PLAYING = 'now playing',
-  OVERFLOW = 'overflow'
+  OVERFLOW = 'overflow',
+  LEFT_NAV = 'left-nav'
 }
 export enum RepostSource {
   TILE = 'tile',

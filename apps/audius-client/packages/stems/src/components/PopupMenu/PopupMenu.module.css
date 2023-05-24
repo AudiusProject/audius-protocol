@@ -1,3 +1,7 @@
+.popup {
+  padding: var(--unit-2);
+}
+
 .menu {
   all: unset;
 }

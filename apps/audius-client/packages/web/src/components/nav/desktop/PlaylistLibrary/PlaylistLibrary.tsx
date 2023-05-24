@@ -15,13 +15,12 @@ import { useDispatch } from 'react-redux'
 import { make, useRecord } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
 import { Droppable } from 'components/dragndrop'
-import Pill from 'components/pill/Pill'
-import { Tooltip } from 'components/tooltip'
 import { DragDropKind, selectDraggingKind } from 'store/dragndrop/slice'
 import { useSelector } from 'utils/reducer'
 
 import { GroupHeader } from '../GroupHeader'
 
+import { CreatePlaylistLibraryItemButton } from './CreatePlaylistLibraryItemButton'
 import { EmptyLibraryNavLink } from './EmptyLibraryNavLink'
 import styles from './PlaylistLibrary.module.css'
 import { PlaylistLibraryNavItem, keyExtractor } from './PlaylistLibraryNavItem'
@@ -72,11 +71,6 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
     }
   }, [isSignedIn, dispatch, record])
 
-  const getTooltipPopupContainer = useCallback(
-    () => scrollbarRef.current?.parentNode,
-    [scrollbarRef]
-  )
-
   return (
     <Droppable
       className={styles.droppable}
@@ -90,16 +84,7 @@ export const PlaylistLibrary = (props: PlaylistLibraryProps) => {
         })}
       >
         {messages.header}
-        <Tooltip
-          text={messages.newPlaylistOrFolderTooltip}
-          getPopupContainer={getTooltipPopupContainer}
-        >
-          <Pill
-            text={messages.new}
-            icon='save'
-            onClick={handleCreatePlaylist}
-          />
-        </Tooltip>
+        <CreatePlaylistLibraryItemButton scrollbarRef={scrollbarRef} />
       </GroupHeader>
       {!library || isEmpty(library?.contents) ? (
         <EmptyLibraryNavLink onClick={handleCreatePlaylist} />

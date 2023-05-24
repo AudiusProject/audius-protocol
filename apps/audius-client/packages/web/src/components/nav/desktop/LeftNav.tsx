@@ -1,21 +1,14 @@
 import { MouseEvent, useCallback, useRef, useState } from 'react'
 
 import {
-  CreatePlaylistSource,
   FavoriteSource,
   Name,
   SquareSizes,
-  PlaylistLibrary as PlaylistLibraryType,
   Status,
   accountSelectors,
-  cacheCollectionsActions,
   collectionsSocialActions,
   tracksSocialActions,
-  createPlaylistModalUISelectors,
-  createPlaylistModalUIActions as createPlaylistModalActions,
   imageProfilePicEmpty,
-  playlistLibraryActions,
-  playlistLibraryHelpers,
   CreateAccountOpen
 } from '@audius/common'
 import { Scrollbar } from '@audius/stems'
@@ -29,8 +22,6 @@ import { Dispatch } from 'redux'
 
 import { make, useRecord } from 'common/store/analytics/actions'
 import * as signOnActions from 'common/store/pages/signon/actions'
-import CreatePlaylistModal from 'components/create-playlist/CreatePlaylistModal'
-import { PlaylistFormFields } from 'components/create-playlist/PlaylistForm'
 import { DragAutoscroller } from 'components/drag-autoscroller/DragAutoscroller'
 import DynamicImage from 'components/dynamic-image/DynamicImage'
 import ConnectedProfileCompletionPane from 'components/profile-progress/ConnectedProfileCompletionPane'
@@ -39,7 +30,6 @@ import { useUserProfilePicture } from 'hooks/useUserProfilePicture'
 import { selectDraggingKind } from 'store/dragndrop/slice'
 import { AppState } from 'store/types'
 import {
-  DASHBOARD_PAGE,
   EXPLORE_PAGE,
   FEED_PAGE,
   HISTORY_PAGE,
@@ -58,14 +48,9 @@ import { NowPlayingArtworkTile } from './NowPlayingArtworkTile'
 import { PlaylistLibrary } from './PlaylistLibrary'
 import { RouteNav } from './RouteNav'
 
-const { update: updatePlaylistLibrary } = playlistLibraryActions
-const { addFolderToLibrary, constructPlaylistFolder } = playlistLibraryHelpers
-const { getHideFolderTab, getIsOpen } = createPlaylistModalUISelectors
 const { saveTrack } = tracksSocialActions
 const { saveCollection } = collectionsSocialActions
-const { addTrackToPlaylist, createPlaylist } = cacheCollectionsActions
-const { getAccountStatus, getAccountUser, getPlaylistLibrary } =
-  accountSelectors
+const { getAccountStatus, getAccountUser } = accountSelectors
 
 const messages = {
   discover: 'Discover',
@@ -84,13 +69,7 @@ type NavColumnProps = OwnProps &
 const LeftNav = ({
   account,
   showActionRequiresAccount,
-  createPlaylist,
-  library,
-  closeCreatePlaylistModal,
   isElectron,
-  showCreatePlaylistModal,
-  hideCreatePlaylistModalFolderTab,
-  updatePlaylistLibrary,
   draggingKind,
   saveTrack,
   saveCollection,
@@ -129,26 +108,6 @@ const LeftNav = ({
       goToRoute(profilePage(account.handle))
     }
   }, [account, goToRoute])
-
-  const onCreatePlaylist = useCallback(
-    (metadata: PlaylistFormFields) => {
-      createPlaylist(metadata)
-      closeCreatePlaylistModal()
-    },
-    [createPlaylist, closeCreatePlaylistModal]
-  )
-
-  const onCreateFolder = useCallback(
-    (folderName: string) => {
-      const newLibrary = addFolderToLibrary(
-        library,
-        constructPlaylistFolder(folderName)
-      )
-      updatePlaylistLibrary(newLibrary)
-      closeCreatePlaylistModal()
-    },
-    [library, updatePlaylistLibrary, closeCreatePlaylistModal]
-  )
 
   const onClickNavLinkWithAccount = useCallback(
     (e?: MouseEvent) => {
@@ -303,13 +262,6 @@ const LeftNav = ({
             </div>
           </DragAutoscroller>
         </Scrollbar>
-        <CreatePlaylistModal
-          visible={showCreatePlaylistModal}
-          onCreatePlaylist={onCreatePlaylist}
-          onCreateFolder={onCreateFolder}
-          onCancel={closeCreatePlaylistModal}
-          hideFolderTab={hideCreatePlaylistModalFolderTab}
-        />
       </div>
       <div className={styles.navAnchor}>
         {profileCompletionMeter}
@@ -324,29 +276,18 @@ const mapStateToProps = (state: AppState) => {
   return {
     account: getAccountUser(state),
     accountStatus: getAccountStatus(state),
-    draggingKind: selectDraggingKind(state),
-    library: getPlaylistLibrary(state),
-    showCreatePlaylistModal: getIsOpen(state),
-    hideCreatePlaylistModalFolderTab: getHideFolderTab(state)
+    draggingKind: selectDraggingKind(state)
   }
 }
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  createPlaylist: (metadata: PlaylistFormFields) =>
-    dispatch(createPlaylist(metadata, CreatePlaylistSource.NAV)),
   goToRoute: (route: string) => dispatch(pushRoute(route)),
   saveTrack: (trackId: number) =>
     dispatch(saveTrack(trackId, FavoriteSource.NAVIGATOR)),
   saveCollection: (collectionId: number) =>
     dispatch(saveCollection(collectionId, FavoriteSource.NAVIGATOR)),
-  addTrackToPlaylist: (trackId: number, playlistId: number) =>
-    dispatch(addTrackToPlaylist(trackId, playlistId)),
   showActionRequiresAccount: () =>
     dispatch(signOnActions.showRequiresAccountModal()),
-  closeCreatePlaylistModal: () => dispatch(createPlaylistModalActions.close()),
-  updatePlaylistLibrary: (newLibrary: PlaylistLibraryType) =>
-    dispatch(updatePlaylistLibrary({ playlistLibrary: newLibrary })),
-  goToDashboard: () => dispatch(pushRoute(DASHBOARD_PAGE)),
   goToSignUp: () => dispatch(signOnActions.openSignOn(/** signIn */ false)),
   goToSignIn: () => dispatch(signOnActions.openSignOn(/** signIn */ true))
 })

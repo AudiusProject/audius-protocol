@@ -1,4 +1,6 @@
 .pill {
+  border: unset;
+  text-transform: uppercase;
   height: 18px;
   padding: 7px;
   border-radius: 8px;
