@@ -247,9 +247,7 @@ export class DiscoveryNodeSelector implements DiscoveryNodeSelectorService {
           resolve()
         })
       })
-      console.log(
-        `'waited. prevnode and new node ${prevNode}, ${this.selectedNode}`
-      )
+
       if (prevNode !== this.selectedNode && this.selectedNode != null) {
         return this.selectedNode
       }
